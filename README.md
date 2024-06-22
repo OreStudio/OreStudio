@@ -10,8 +10,6 @@
 [![CDash](https://img.shields.io/badge/cdash-dashboard-00cc00.svg)](https://my.cdash.org/index.php?project=OreStudio)
 [![Releases](https://img.shields.io/github/release/OreStudio/OreStudio.svg)](https://github.com/OreStudio/OreStudio/releases)
 [![GitHub commits](https://img.shields.io/github/commits-since/OreStudio/OreStudio/v1.0.32.svg)](https://github.com/OreStudio/OreStudio/commits/main)
-[![Documentation](https://github.com/OreStudio/OreStudio/blob/main/assets/doxygen_badge.svg)](https://mcraveiro.github.io/OreStudio/doxygen/index.html)
-[![Language](https://img.shields.io/badge/Language-C++-blue.svg)](https://www.openhub.net/p/OreStudio/analyses/latest/languages_summary)
 [![C++](https://img.shields.io/badge/std-C++17-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B17)
 [![gcc-11](https://img.shields.io/badge/GCC-11-blue.svg)](https://www.gnu.org/software/gcc/gcc-11)
 [![clang-14](https://img.shields.io/badge/CLANG-14-blue.svg)](https://releases.llvm.org/14.0.0/tools/clang/docs/ReleaseNotes.html)

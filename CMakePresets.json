@@ -17,7 +17,7 @@
             "hidden": true,
             "binaryDir": "${sourceDir}/build/output/${presetName}",
             "description": "Setup the build directory."
-        }
+        },
         {
             "name": "cmake",
             "hidden": true,

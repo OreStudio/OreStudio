@@ -60,7 +60,7 @@ set(Boost_USE_MULTITHREADED ON)
 
 # Note: it is possible to build with older versions of boost, but
 # these require patches.
-find_package(Boost 1.81 REQUIRED COMPONENTS
+find_package(Boost 1.85 REQUIRED COMPONENTS
     date_time
     exception
     filesystem
@@ -110,10 +110,11 @@ else()
   message(STATUS "Could not find clang-tidy.")
 endif()
 
+include(CPackConfig.cmake)
+
 #
 # aggregate targets and their aliases
 #
-include(CPackConfig.cmake)
 add_custom_target(run_all_tests)
 add_custom_target(rat)
 add_dependencies(rat run_all_tests)

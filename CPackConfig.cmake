@@ -17,7 +17,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA.
 #
-include(CPack)
+
 include(GNUInstallDirs)
 include(InstallRequiredSystemLibraries)
 
@@ -51,7 +51,7 @@ set(CPACK_PACKAGE_VENDOR "OreStudio")
 # )
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY ${CPACK_PACKAGE_NAME})
-SET(CPACK_OUTPUT_FILE_PREFIX "${CMAKE_SOURCE_DIR}/_packages")
+set(CPACK_OUTPUT_FILE_PREFIX "${CMAKE_BINARY_DIR}/packages")
 set(CPACK_STRIP_FILES YES)
 
 set(CPACK_INSTALL_DEFAULT_DIRECTORY_PERMISSIONS
@@ -59,8 +59,8 @@ set(CPACK_INSTALL_DEFAULT_DIRECTORY_PERMISSIONS
     GROUP_READ GROUP_EXECUTE
     WORLD_READ WORLD_EXECUTE)
 
-# set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/some")#/${CMAKE_PROJECT_VERSION}")
 
+# set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/some")#/${CMAKE_PROJECT_VERSION}")
 set(CPACK_PACKAGE_CONTACT "marco.craveiro@gmail.com")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Marco Craveiro <${CPACK_PACKAGE_CONTACT}>")
 
@@ -189,3 +189,5 @@ elseif(UNIX)
 else()
     message(FATAL_ERROR "unknown operating system")
 endif()
+
+include(CPack)

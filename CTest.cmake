@@ -63,11 +63,6 @@ if(NOT DEFINED build_group)
     message(FATAL_ERROR "Parameter build_group not defined.")
 endif()
 
-if(NOT DEFINED with_full_generation)
-    set(with_full_generation OFF)
-endif()
-message(STATUS "Full generation: ${with_full_generation}")
-
 if(NOT DEFINED with_memcheck)
     set(with_memcheck OFF)
 endif()
@@ -276,14 +271,6 @@ endif()
 
 # Setup the preset for configuration.
 set(cmake_args ${cmake_args} "--preset ${preset}")
-
-# Setup full generation if requested.
-if(with_full_generation)
-    message(STATUS "Full generation is ON.")
-    set(cmake_args ${cmake_args} "-DWITH_FULL_GENERATION=ON")
-else()
-    message(STATUS "Full generation is OFF.")
-endif()
 
 message(STATUS "CMake args: ${cmake_args}")
 ctest_configure(OPTIONS "${cmake_args}" RETURN_VALUE configure_result)

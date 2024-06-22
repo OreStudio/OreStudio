@@ -6,6 +6,8 @@
   <string>English</string>
   <key>CFBundleExecutable</key>
   <string>OreStudio</string>
+  <key>CFBundleIconFile</key>
+  <string>application_orestudio.icns</string>
   <key>CFBundleIdentifier</key>
   <string>com.github.OreStudio</string>
   <key>CFBundleInfoDictionaryVersion</key>

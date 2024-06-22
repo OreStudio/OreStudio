@@ -156,6 +156,7 @@ elseif(APPLE)
 
     set(CPACK_GENERATOR "Bundle")
     set(CPACK_BUNDLE_PLIST ${CMAKE_BINARY_DIR}/Info.plist)
+    set(CPACK_BUNDLE_ICON ${CMAKE_CURRENT_SOURCE_DIR}/application_orestudio.icns)
     set(CPACK_BUNDLE_NAME "OreStudio")
     set(CPACK_BUNDLE_STARTUP_COMMAND ${CMAKE_BINARY_DIR}/start)
     set(CPACK_PACKAGE_EXECUTABLES "ores.console" "Console tool")

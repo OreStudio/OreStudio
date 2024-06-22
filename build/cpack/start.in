@@ -1,0 +1,4 @@
+#!/bin/bash
+
+export DYLD_LIBRARY_PATH="`dirname "$0"`"/../Resources/bin/""
+`dirname "$0"`"/../Resources/bin/ores.console"

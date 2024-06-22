@@ -64,9 +64,6 @@ set(CPACK_INSTALL_DEFAULT_DIRECTORY_PERMISSIONS
 set(CPACK_PACKAGE_CONTACT "marco.craveiro@gmail.com")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Marco Craveiro <${CPACK_PACKAGE_CONTACT}>")
 
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
-set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
-
 # optionally, you can add various meta information to the components defined in INSTALLs
 # cpack_add_component(some-application
 #     DISPLAY_NAME "Some application"
@@ -106,6 +103,13 @@ set(CPACK_COMPONENT_APPLICATIONS_DESCRIPTION "OreStudio - GUI for ORE.")
 set(CPACK_COMPONENT_APPLICATIONS_GROUP "Runtime")
 set(CPACK_COMPONENTS_IGNORE_GROUPS TRUE)
 set(CPACK_ARCHIVE_COMPONENT_INSTALL TRUE)
+set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
+
+# This is for WiX so that it does not complain about unsupported extension
+# of license file.
+configure_file("${CMAKE_SOURCE_DIR}/LICENSE"
+    "${CMAKE_BINARY_DIR}/LICENSE.TXT" COPYONLY)
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_BINARY_DIR}/LICENSE.TXT")
 
 #
 # platform specific
@@ -147,14 +151,13 @@ if(WIN32)
 elseif(APPLE)
     # set(CPACK_SOURCE_GENERATOR "TGZ")
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "${PROJECT_NAME}")
-    # configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in ${stage_dir}/tmp_pkg/macosx/Info.plist)
-    # configure_file(${CMAKE_CURRENT_SOURCE_DIR}/start.in ${stage_dir}/tmp_pkg/macosx/start)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in ${CMAKE_BINARY_DIR}/Info.plist)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/start.in ${CMAKE_BINARY_DIR}/start)
 
     set(CPACK_GENERATOR "Bundle")
-    # set(CPACK_BUNDLE_PLIST ${stage_dir}/tmp_pkg/macosx/Info.plist)
-    # set(CPACK_BUNDLE_ICON ${CMAKE_CURRENT_SOURCE_DIR}/application_dogen.icns)
-    set(CPACK_BUNDLE_NAME "dogen")
-    # set(CPACK_BUNDLE_STARTUP_COMMAND ${stage_dir}/tmp_pkg/macosx/start)
+    set(CPACK_BUNDLE_PLIST ${CMAKE_BINARY_DIR}/Info.plist)
+    set(CPACK_BUNDLE_NAME "OreStudio")
+    set(CPACK_BUNDLE_STARTUP_COMMAND ${CMAKE_BINARY_DIR}/start)
     set(CPACK_PACKAGE_EXECUTABLES "ores.console" "Console tool")
 
     set(CPACK_ALL_INSTALL_TYPES Full Developer)

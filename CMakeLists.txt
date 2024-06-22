@@ -110,8 +110,6 @@ else()
   message(STATUS "Could not find clang-tidy.")
 endif()
 
-include(CPackConfig.cmake)
-
 #
 # aggregate targets and their aliases
 #
@@ -119,4 +117,5 @@ add_custom_target(run_all_tests)
 add_custom_target(rat)
 add_dependencies(rat run_all_tests)
 
+add_subdirectory(${CMAKE_SOURCE_DIR}/build)
 add_subdirectory(${CMAKE_SOURCE_DIR}/projects)

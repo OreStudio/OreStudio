@@ -15,21 +15,23 @@
 ** Active
 
 #+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
-#+CAPTION: Clock summary at [2024-06-22 Sat 23:09]
-| <75>                                    |        |      |      |       |
-| Headline                                | Time   |      |      |     % |
-|-----------------------------------------+--------+------+------+-------|
-| *Total time*                            | *9:14* |      |      | 100.0 |
-|-----------------------------------------+--------+------+------+-------|
-| Stories                                 | 9:14   |      |      | 100.0 |
-| Active                                  |        | 9:14 |      | 100.0 |
-| Create a basic git hub repository       |        |      | 0:35 |   6.3 |
-| Sprint and product backlog refinement   |        |      | 0:05 |   0.9 |
-| Setup a discord channel for the project |        |      | 0:14 |   2.5 |
-| Setup vcpkg and cmake                   |        |      | 1:21 |  14.6 |
-| Setup github actions                    |        |      | 1:21 |  14.6 |
-| Create and upload a package             |        |      | 3:28 |  37.5 |
-| Create a basic project structure        |        |      | 2:10 |  23.5 |
+#+CAPTION: Clock summary at [2024-06-23 Sun 00:46]
+| <75>                                    |         |       |      |       |
+| Headline                                | Time    |       |      |     % |
+|-----------------------------------------+---------+-------+------+-------|
+| *Total time*                            | *10:13* |       |      | 100.0 |
+|-----------------------------------------+---------+-------+------+-------|
+| Stories                                 | 10:13   |       |      | 100.0 |
+| Active                                  |         | 10:13 |      | 100.0 |
+| Sprint and product backlog refinement   |         |       | 0:14 |   2.3 |
+| Create a basic git hub repository       |         |       | 0:35 |   5.7 |
+| Setup a discord channel for the project |         |       | 0:14 |   2.3 |
+| Setup vcpkg and cmake                   |         |       | 1:21 |  13.2 |
+| Setup github actions                    |         |       | 1:21 |  13.2 |
+| Create and upload a package             |         |       | 3:28 |  33.9 |
+| Create a basic project structure        |         |       | 2:10 |  21.2 |
+| Add a Qt hello world                    |         |       | 0:46 |   7.5 |
+| Add nightly support with memcheck       |         |       | 0:04 |   0.7 |
 #+end:
 
 Agenda:
@@ -38,7 +40,16 @@ Agenda:
 (org-agenda-file-to-front)
 #+end_src
 
-*** STARTED Create a basic git hub repository                         :story:
+*** STARTED Sprint and product backlog refinement                     :story:
+    :LOGBOOK:
+    CLOCK: [2024-06-22 Sat 23:14]--[2024-06-22 Sat 23:20] =>  0:06
+    CLOCK: [2024-06-22 Sat 23:10]--[2024-06-22 Sat 23:13] =>  0:03
+    CLOCK: [2024-06-15 Sat 21:16]--[2024-06-15 Sat 21:21] =>  0:05
+    :END:
+
+Updates to sprint and product backlog.
+
+*** COMPLETED Create a basic git hub repository                       :story:
     :LOGBOOK:
     CLOCK: [2024-06-15 Sat 21:03]--[2024-06-15 Sat 21:15] =>  0:18
     CLOCK: [2024-06-15 Sat 20:40]--[2024-06-15 Sat 21:03] =>  0:23
@@ -46,13 +57,6 @@ Agenda:
 
 - add a new organisation and repo.
 - add a simple project with vcpkg support.
-
-*** STARTED Sprint and product backlog refinement                     :story:
-    :LOGBOOK:
-    CLOCK: [2024-06-15 Sat 21:16]--[2024-06-15 Sat 21:21] =>  0:05
-    :END:
-
-Updates to sprint and product backlog.
 
 *** COMPLETED Setup a discord channel for the project                 :story:
     :LOGBOOK:
@@ -85,7 +89,7 @@ Setup a basic build with vcpkg.
 
 Get a basic green build in github, showing up in CDash.
 
-*** STARTED Create and upload a package                               :story:
+*** COMPLETED Create and upload a package                             :story:
     :LOGBOOK:
     CLOCK: [2024-06-22 Sat 22:45]--[2024-06-22 Sat 23:09] =>  0:24
     CLOCK: [2024-06-22 Sat 21:41]--[2024-06-22 Sat 22:44] =>  1:03
@@ -94,11 +98,7 @@ Get a basic green build in github, showing up in CDash.
 
 We should create a basic package, and upload it to github.
 
-*** Add nightly support with memcheck                                 :story:
-
-We need to check for memory issues with nightlies.
-
-*** STARTED Create a basic project structure                          :story:
+*** COMPLETED Create a basic project structure                        :story:
     :LOGBOOK:
     CLOCK: [2024-06-22 Sat 13:57]--[2024-06-22 Sat 14:10] =>  0:13
     CLOCK: [2024-06-22 Sat 12:00]--[2024-06-22 Sat 13:57] =>  1:57
@@ -109,6 +109,21 @@ side-project, mainly for learning about ORE, it is going to be very simple: one
 or more fat clients connecting to a postgres database. We don't mind having
 business logic in the database; the most important thing is for it to be really
 quick to add new features with the least amount of layers and duplication.
+
+*** STARTED Add a Qt hello world                                      :story:
+    :LOGBOOK:
+    CLOCK: [2024-06-23 Sun 00:20]--[2024-06-23 Sun 00:45] =>  0:25
+    CLOCK: [2024-06-22 Sat 23:53]--[2024-06-23 Sun 00:14] =>  0:21
+    :END:
+
+Create a trivial application in Qt that exercises the pipelines.
+
+*** STARTED Add nightly support with memcheck                         :story:
+    :LOGBOOK:
+    CLOCK: [2024-06-23 Sun 00:15]--[2024-06-23 Sun 00:19] =>  0:04
+    :END:
+
+We need to check for memory issues with nightlies.
 
 *** Add XML parsing support for currency                              :story:
 

@@ -1,7 +1,10 @@
 {
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
     "name": "ores",
-    "version-string": "0.0.01",
+    "description": "GUI for Open Source Risk Engine (ORE)",
+    "version-string": "0.0.1",
     "dependencies": [
+        "qtbase",
         "boost-system",
         "boost-serialization",
         "boost-date-time",

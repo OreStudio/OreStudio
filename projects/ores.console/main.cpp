@@ -20,7 +20,7 @@
  */
 #include <iostream>
 
-int main(void)
+int main()
 {
     std::cout << "Hello VisualOre" << std::endl;
     return 0;

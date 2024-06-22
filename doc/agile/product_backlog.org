@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 9E38C418-7B9B-B044-21DB-F0BF029FE617
+:ID: 558650A4-C3E5-8964-4193-7D9125E29B83
 :END:
 #+options: date:nil toc:nil author:nil num:nil
 #+title: Product Backlog
@@ -19,7 +19,6 @@ product backlog.
 The vision for VisualOre is:
 
 ** Vision Quotes
-
 
 * Release Checklist
 

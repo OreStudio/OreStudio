@@ -1,0 +1,18 @@
+{
+    "name": "ores",
+    "version-string": "0.0.01",
+    "dependencies": [
+        "boost-system",
+        "boost-serialization",
+        "boost-date-time",
+        "boost-log",
+        "boost-filesystem",
+        "boost-program-options",
+        "boost-test",
+        "boost-scope-exit",
+        "boost-graph",
+        "boost-uuid",
+        "boost-spirit",
+        "boost-iostreams"
+    ]
+}

@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 9E38C418-7B9B-B044-21DB-F0BF029FE617
+:END:
+#+options: date:nil toc:nil author:nil num:nil
+#+title: Product Backlog
+#+tags: { reviewing(r) }
+#+tags: { story(s) epic(e) }
+
+This document contains the [[http://www.mountaingoatsoftware.com/agile/scrum/product-backlog][product backlog]] for VisualOre.
+
+* Product Vision
+
+Here we define what we consider to be the [[http://www.scaledagileframework.com/vision/][the vision]] for the product; what
+guides us when we think about the product and what can and cannot go into the
+product backlog.
+
+** Vision Statement
+
+The vision for VisualOre is:
+
+** Vision Quotes
+
+
+* Release Checklist
+
+Steps to create a new release.
+
+** Close previous sprint
+
+To be done on the last Sunday of the sprint.
+
+1. Make a copy of current sprint backlog and name it current sprint + 1 but
+   don't check it in.
+2. Move all untouched stories into product backlog.
+3. Close current sprint: close all open tasks, delete tasks we did not work on,
+   update clocks.
+4. Push commit and wait for builds. This ensures that if there are any failures
+   you can fix them before the release tag.
+4. Tag commit and sign it with key.
+5. Push tag. You can generate new builds overnight.
+
+** Open new sprint
+
+To be done on the Monday morning of the new sprint.
+
+1. Open new sprint, updating CMake version, README, GitHub, and decoration
+   formatter tests. Build all and run tests (some will fail). This should all be
+   in one commit.
+2. Create a demo. Publish it on youtube.
+3. Write up release notes, publish them in github.
+4. When tag build is finished, unpack and copy binaries into release, announce
+   on gitter, twitter and linked in.

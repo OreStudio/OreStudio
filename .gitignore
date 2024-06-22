@@ -1,32 +1,36 @@
-# Prerequisites
-*.d
+# -*- mode: sh; tab-width: 4; indent-tabs-mode: nil -*-
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+# backup files and emacs source control checkouts
+*~
 
-# Precompiled Headers
-*.gch
-*.pch
+# windows thumbnails
+Thumbs.db
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+# OSX system configuration files
+.DS_Store
 
-# Fortran module files
-*.mod
-*.smod
+# CLion files
+.idea
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
+# build directory
+build/output
 
-# Executables
-*.exe
-*.out
-*.app
+# .Net ignores
+packages
+*.userprefs
+test-results
+obj
+bin
+*.suo
+TestResult.xml
+
+# clangd
+compile_commands.json
+
+# org-roam
+org-roam.db
+
+.cache
+
+# vcpkg
+vcpkg_installed

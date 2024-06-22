@@ -1,0 +1,10 @@
+Diagnostics:
+  ClangTidy:
+    Add:
+      - misc-*
+      - modernize*
+      - clang-diagnostic-*
+    Remove:
+      - misc-no-recursion
+      - modernize-use-trailing-return-type
+      - modernize-use-nodiscard

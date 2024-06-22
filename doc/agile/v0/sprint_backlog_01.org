@@ -1,0 +1,195 @@
+:PROPERTIES:
+:ID: 34EDDBB5-CB52-35C4-E123-E0A70FB32799
+:END:
+#+title: Sprint Backlog 01
+#+options: date:nil toc:nil author:nil num:nil
+#+todo: STARTED | COMPLETED CANCELLED POSTPONED
+#+tags: { story(s) epic(e) spike(p) }
+
+* Sprint Goals
+
+- Create basic project infrastructure.
+
+* Stories
+
+** Active
+
+#+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
+#+CAPTION: Clock summary at [2024-06-22 Sat 13:57]
+| <75>                                  |        |      |      |       |
+| Headline                              | Time   |      |      |     % |
+|---------------------------------------+--------+------+------+-------|
+| *Total time*                          | *2:37* |      |      | 100.0 |
+|---------------------------------------+--------+------+------+-------|
+| Stories                               | 2:37   |      |      | 100.0 |
+| Active                                |        | 2:37 |      | 100.0 |
+| Create a basic git hub repository     |        |      | 0:35 |  22.3 |
+| Sprint and product backlog refinement |        |      | 0:05 |   3.2 |
+| Create a basic project structure      |        |      | 1:57 |  74.5 |
+#+end:
+
+Agenda:
+
+#+begin_src emacs-lisp
+(org-agenda-file-to-front)
+#+end_src
+
+*** STARTED Create a basic git hub repository                         :story:
+    :LOGBOOK:
+    CLOCK: [2024-06-15 Sat 21:03]--[2024-06-15 Sat 21:15] =>  0:18
+    CLOCK: [2024-06-15 Sat 20:40]--[2024-06-15 Sat 21:03] =>  0:23
+    :END:
+
+- add a new organisation and repo.
+- add a simple project with vcpkg support.
+
+*** STARTED Sprint and product backlog refinement                     :story:
+    :LOGBOOK:
+    CLOCK: [2024-06-15 Sat 21:16]--[2024-06-15 Sat 21:21] =>  0:05
+    :END:
+
+Updates to sprint and product backlog.
+
+*** STARTED Create a basic project structure                          :story:
+    :LOGBOOK:
+    CLOCK: [2024-06-22 Sat 13:57]
+    CLOCK: [2024-06-22 Sat 12:00]--[2024-06-22 Sat 13:57] =>  1:57
+    :END:
+
+We need to decide on the basic architecture for the project. As this is a
+side-project, mainly for learning about ORE, it is going to be very simple: one
+or more fat clients connecting to a postgres database. We don't mind having
+business logic in the database; the most important thing is for it to be really
+quick to add new features with the least amount of layers and duplication.
+
+*** Add XML parsing support for currency                              :story:
+
+We need to have the ability to read and write currencies from XML. Copy all
+currency input data from examples.
+
+*** Add JSON parsing support for currency                             :story:
+
+We need to have the ability to read and write currencies from JSON.
+
+*** Add postgres support for currency                                 :story:
+
+We need to have the ability to read and write currencies from a postgres
+database.
+
+*** Work through all types required for Example 1                      :epic:
+
+We want to be able to visualise all the data types needed in order to be able to
+run the most basic example of ORE. For each of these types, create a stories.
+
+The files are as follows. First, there are the files in the =Input= directory:
+
+- [[https://github.com/OpenSourceRisk/Engine/tree/master/Examples/Example_1/Input][Example_1 Inputs]]
+
+Specifically:
+
+- =currencies.xml=
+- =netting.xml=
+- =ore.xml=
+- =ore_swaption.xml=
+- =plot.gp=
+- =portfolio.xml=
+- =portfolio_swap.xml=
+- =portfolio_swap_20151023.xml=
+- =portfolio_swaption.xml=
+- =portfolio_swaption_20151023.xml=
+- =simulation.xml=
+
+In addition, we need all of the common inputs under:
+
+- [[https://github.com/OpenSourceRisk/Engine/tree/master/Examples/Input][Examples - Common Inputs]]
+
+These are:
+
+- =calendaradjustment.xml=
+- =conventions.xml=
+- =currencies.xml=
+- =curveconfig.xml=
+- =fixings_20160205.txt=
+- =market_20160205.txt=
+- =market_20160205_flat.txt=
+- =pricingengine.xml=
+- =todaysmarket.xml=
+
+Finally, we need support for the outputs. We can grab these from the expected
+outputs:
+
+- [[https://github.com/OpenSourceRisk/Engine/tree/master/Examples/Example_1/ExpectedOutput][Example_1 Expected Outputs]]
+
+These are:
+
+- =colva_nettingset_CPTY_A.csv=
+- =curves.csv=
+- =exposure_nettingset_CPTY_A.csv=
+- =exposure_trade_Swap_20y.csv=
+- =flows.csv=
+- =log_progress.json=
+- =netcube.csv=
+- =npv.csv=
+- =swaption_npv.csv=
+- =xva.csv=
+
+*** Create a set of fake currencies                                   :story:
+
+We need to create fake data so we can explore the problem domain. This is
+something to work on in the future. We can use LLMs to help with the fake data,
+where it makes sense.
+
+Example:
+
+| Country code | Country name | Currency Code | Currency Number | Currency           |
+|--------------+--------------+---------------+-----------------+--------------------|
+| AL           | Aerilon      | ALD           |           10001 | Aerilonian Dollar  |
+| AR           | Arcturia     | ARA           |           10002 | Arcturian Arct     |
+| BA           | Balthoria    | BAF           |           10003 | Balthorian Florin  |
+| BE           | Belloria     | BEB           |           10004 | Bellorian Bell     |
+| CA           | Calandria    | CAC           |           10005 | Calandrian Crown   |
+| CD           | Caledonia    | CDC           |           10006 | Caledonian Caled   |
+| DA           | Daeloria     | DAD           |           10007 | Daelorian Dinar    |
+| DE           | Delvadia     | DED           |           10008 | Delvadian Delv     |
+| ER           | Eriador      | ERE           |           10009 | Eriadoran Euro     |
+| ES           | Esteria      | ESE           |           10010 | Esterian Est       |
+| FE           | Feloria      | FEF           |           10011 | Felorian Franc     |
+| FN           | Fendaria     | FNF           |           10012 | Fendarian Fen      |
+| GA           | Galdoria     | GAG           |           10013 | Galdorian Galleon  |
+| GR           | Grendoria    | GRG           |           10014 | Grendorian Grend   |
+| HE           | Helvetia     | HEF           |           10015 | Helvetian Franc    |
+| HY           | Hydronia     | HYH           |           10016 | Hydronian Hyd      |
+| IR           | Iridia       | IRD           |           10017 | Iridian Dollar     |
+| IT           | Ithaca       | ITI           |           10018 | Ithacan Ith        |
+| JE           | Jethro       | JEJ           |           10019 | Jethronian Jet     |
+| JO           | Jorvik       | JOK           |           10020 | Jorvikian Krona    |
+| KA           | Kaelor       | KAK           |           10021 | Kaelorian Krown    |
+| KR           | Krynn        | KRK           |           10022 | Krynnish Krynn     |
+| LU           | Luminia      | LUL           |           10023 | Luminian Lum       |
+| LY           | Lysandria    | LYL           |           10024 | Lysandrian Lira    |
+| MA           | Maldoria     | MAM           |           10025 | Maldorian Mal      |
+| MR           | Mariposa     | MRP           |           10026 | Mariposan Peso     |
+| NE           | Nektonia     | NEN           |           10027 | Nektonian Nek      |
+| NT           | Netharia     | NTN           |           10028 | Netharian Naira    |
+| OR           | Orinoco      | ORB           |           10029 | Orinocan Bolivar   |
+| OL           | Orlanthia    | OLO           |           10030 | Orlanthian Orl     |
+| PA           | Paldoria     | PAP           |           10031 | Paldorian Peso     |
+| PY           | Pyrrhia      | PYP           |           10032 | Pyrrhian Pyr       |
+| QU           | Quentaria    | QUQ           |           10033 | Quentarian Quen    |
+| QN           | Quinaria     | QNQ           |           10034 | Quinarian Quetzal  |
+| RE           | Rendellia    | RER           |           10035 | Rendellian Rend    |
+| RI           | Rivenia      | RIR           |           10036 | Rivenian Ruble     |
+| SE           | Serendia     | SES           |           10037 | Serendian Shilling |
+| SI           | Sildoria     | SIS           |           10038 | Sildorian Sild     |
+| TA           | Tandor       | TAT           |           10039 | Tandorian Taka     |
+| TE           | Tenebria     | TET           |           10040 | Tenebrian Ten      |
+| UL           | Uldoria      | ULU           |           10041 | Uldorian Uld       |
+| UT           | Utopia       | UTU           |           10042 | Utopian Unit       |
+| VA           | Valoria      | VAV           |           10042 | Valorian Valt      |
+| VL           | Valtaria     | VLV           |           10043 | Valtarian Val      |
+| WI           | Wintervale   | WIW           |           10044 | Wintervalean Won   |
+| WY           | Wysteria     | WYW           |           10045 | Wysterian Wys      |
+| XA           | Xandria      | XAX           |           10046 | Xandrian Xan       |
+| XE           | Xenoria      | XEX           |           10047 | Xenorian Xen       |
+| YS           | Yslandia     | YSY           |           10048 | Yslandian Yen      |
+| ZE           | Zephyria     | ZEZ           |           10049 | Zephyrian Zephyr   |

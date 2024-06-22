@@ -15,7 +15,6 @@
 [![clang-14](https://img.shields.io/badge/CLANG-14-blue.svg)](https://releases.llvm.org/14.0.0/tools/clang/docs/ReleaseNotes.html)
 [![msvc2022](https://img.shields.io/badge/MSVC-2022-blue.svg)](https://visualstudio.microsoft.com/vs/whatsnew/)
 [![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/OreStudio/OreStudio)](https://www.tickgit.com/browse?repo=github.com/OreStudio/OreStudio)
-[![Project Stats](https://www.openhub.net/p/OreStudio/widgets/project_thin_badge.gif)](https://www.openhub.net/p/OreStudio)
 
 # OreStudio
 

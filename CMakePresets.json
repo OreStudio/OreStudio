@@ -33,7 +33,6 @@
             "inherits": [
                 "ninja",
                 "build-dir",
-                "environment",
                 "cmake"
             ],
             "description": "Base class for common configuration options."

@@ -69,4 +69,4 @@ jobs:
         uses: actions/upload-artifact@v4.3.3
         with:
           name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
-          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/stage/pkg/ores_0.0.01_amd64.deb
+          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/packages/orestudio_0.0.1_amd64.deb

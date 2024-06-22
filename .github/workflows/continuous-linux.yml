@@ -56,10 +56,10 @@ jobs:
 
       - name: Run CTest workflow
         run: |
-          export VORE_BUILD_PROVIDER="github"
-          export VORE_BUILD_COMMIT="${GITHUB_SHA}"
-          export VORE_BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
-          export VORE_BUILD_TIMESTAMP=`date "+%Y/%m/%d %H:%M:%S"`
+          export ORES_BUILD_PROVIDER="github"
+          export ORES_BUILD_COMMIT="${GITHUB_SHA}"
+          export ORES_BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
+          export ORES_BUILD_TIMESTAMP=`date "+%Y/%m/%d %H:%M:%S"`
           export preset=${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
           export cmake_args="build_group=Continuous,preset=${preset}"
           if [[ "${{matrix.buildtype}}" == "debug" ]]; then

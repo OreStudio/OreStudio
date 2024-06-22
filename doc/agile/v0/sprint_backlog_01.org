@@ -63,14 +63,21 @@ Links:
 - [[https://www.emacswiki.org/emacs/BitlBee][emacs wiki BitlBee]]
 - [[https://aliquote.org/post/discord-bitlbee/][Discord on Emacs]]
 
-*** STARTED Setup vcpkg and cmake                                     :story:
+*** COMPLETED Setup vcpkg and cmake                                   :story:
     :LOGBOOK:
-    CLOCK: [2024-06-22 Sat 15:51]
+    CLOCK: [2024-06-22 Sat 15:51]--[2024-06-22 Sat 16:30] =>  0:39
     CLOCK: [2024-06-22 Sat 15:15]--[2024-06-22 Sat 15:26] =>  0:11
     CLOCK: [2024-06-22 Sat 14:43]--[2024-06-22 Sat 15:14] =>  0:31
    :END:
 
 Setup a basic build with vcpkg.
+
+*** STARTED Setup github actions                                      :story:
+    :LOGBOOK:
+    CLOCK: [2024-06-22 Sat 16:30]--[2024-06-22 Sat 16:50] =>  0:20
+    :END:
+
+Get a basic green build in github, showing up in CDash.
 
 *** STARTED Create a basic project structure                          :story:
     :LOGBOOK:

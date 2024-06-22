@@ -50,9 +50,31 @@ Agenda:
 
 Updates to sprint and product backlog.
 
+*** COMPLETED Setup a discord channel for the project                 :story:
+    :LOGBOOK:
+    CLOCK: [2024-06-22 Sat 14:28]--[2024-06-22 Sat 14:42] =>  0:14
+    :END:
+
+Created VisualOre and setup emacs to connect to it.
+
+Links:
+
+- [[https://github.com/sm00th/bitlbee-discord][bitlbee-discord]]
+- [[https://www.emacswiki.org/emacs/BitlBee][emacs wiki BitlBee]]
+- [[https://aliquote.org/post/discord-bitlbee/][Discord on Emacs]]
+
+*** STARTED Setup vcpkg and cmake                                     :story:
+    :LOGBOOK:
+    CLOCK: [2024-06-22 Sat 15:51]
+    CLOCK: [2024-06-22 Sat 15:15]--[2024-06-22 Sat 15:26] =>  0:11
+    CLOCK: [2024-06-22 Sat 14:43]--[2024-06-22 Sat 15:14] =>  0:31
+   :END:
+
+Setup a basic build with vcpkg.
+
 *** STARTED Create a basic project structure                          :story:
     :LOGBOOK:
-    CLOCK: [2024-06-22 Sat 13:57]
+    CLOCK: [2024-06-22 Sat 13:57]--[2024-06-22 Sat 14:10] =>  0:13
     CLOCK: [2024-06-22 Sat 12:00]--[2024-06-22 Sat 13:57] =>  1:57
     :END:
 
@@ -132,6 +154,18 @@ These are:
 - =npv.csv=
 - =swaption_npv.csv=
 - =xva.csv=
+
+*** Base the compute approach on BOINC                                :story:
+
+Copy the BOINC data model.
+
+Links:
+
+- [[https://boinc.berkeley.edu/trac/wiki/DataBase][wiki: DataBase]]
+- [[https://wiki.debian.org/BOINC/ServerGuide][BOINC Debian Server Guide]]
+- [[https://boinc.berkeley.edu/trac/wiki/ProjectMain][wiki: BOINC Project Main]]
+- [[https://www.reddit.com/r/BOINC/][BOINC reddit]]
+
 
 *** Create a set of fake currencies                                   :story:
 

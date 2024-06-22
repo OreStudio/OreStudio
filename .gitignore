@@ -34,3 +34,5 @@ org-roam.db
 
 # vcpkg
 vcpkg_installed
+
+build/output

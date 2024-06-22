@@ -1,0 +1,61 @@
+name: Continuous MacOS
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - '*'
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+    runs-on: macos-latest
+    environment: CI
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [macos-clang]
+        buildtype: [debug, release]
+        include:
+          - name: macos-clang
+            family: macos
+            compiler: clang
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Ccache for gh actions
+        uses: hendrikmuhs/ccache-action@v1.2.13
+        with:
+          variant: sccache
+          key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+          max-size: 1000M
+
+      - name: get-cmake
+        uses: lukka/get-cmake@v3.29.6
+
+      - name: run-vcpkg
+        uses: lukka/run-vcpkg@v11.5
+        with:
+          appendedCacheKey: ${{matrix.name}}${{matrix.buildtype}}
+
+      - name: Run CTest workflow
+        run: |
+          export VORE_BUILD_PROVIDER="github"
+          export VORE_BUILD_COMMIT="${GITHUB_SHA}"
+          export VORE_BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
+          export VORE_BUILD_TIMESTAMP=`date "+%Y/%m/%d %H:%M:%S"`
+          export preset=${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+          export cmake_args="build_group=Continuous,preset=${preset}"
+          ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
+
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v4.3.3
+        with:
+          name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/stage/pkg/VORE-1.0.33-Darwin-x86_64.dmg

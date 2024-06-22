@@ -99,15 +99,23 @@ message(STATUS "Product version: ${DOGEN_VERSION}")
 #
 find_package(ClangTools)
 if (CLANG_FORMAT_FOUND)
-    message(STATUS "Found clang-format (${CLANG_FORMAT_BIN}).")
+  message(STATUS "Found clang-format (${CLANG_FORMAT_BIN}).")
 else()
-    message(STATUS "Could not find clang-format.")
+  message(STATUS "Could not find clang-format.")
 endif()
 
 if (CLANG_TIDY_FOUND)
-    message(STATUS "Found clang-tidy (${CLANG_FORMAT_BIN}).")
+  message(STATUS "Found clang-tidy (${CLANG_FORMAT_BIN}).")
 else()
-    message(STATUS "Could not find clang-tidy.")
+  message(STATUS "Could not find clang-tidy.")
 endif()
+
+  #
+# aggregate targets and their aliases
+#
+add_custom_target(run_all_tests)
+add_custom_target(rat)
+add_dependencies(rat run_all_tests)
+
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/projects)

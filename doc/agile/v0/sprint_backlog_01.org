@@ -74,6 +74,7 @@ Setup a basic build with vcpkg.
 
 *** STARTED Setup github actions                                      :story:
     :LOGBOOK:
+    CLOCK: [2024-06-22 Sat 17:45]--[2024-06-22 Sat 18:09] =>  0:24
     CLOCK: [2024-06-22 Sat 16:30]--[2024-06-22 Sat 16:50] =>  0:20
     :END:
 

@@ -24,15 +24,6 @@ set(boost_test_parameters "--log_level=error")
 # tests to ignore
 set(boost_tests_ignore "")
 
-if (WIN32)
-    # This test fails on windows. This is because we are generating paths
-    # that are too large for windows. We tried moving it to TEMP but even
-    # then the test still fails. The test is set to ignore from the
-    # CMakeLists that adds boost tests.
-    set(boost_tests_ignore
-        enabling_detailed_tracing_with_org_mode_results_in_expected_trace_files)
-endif()
-
 #
 # macro to create CTest tests for each boost unit tests
 #
@@ -44,34 +35,34 @@ macro(add_boost_tests test_module)
             found_suites ${contents})
 
         list(LENGTH found_suites total_suites)
-         if (total_suites GREATER 1)
-             message(FATAL_ERROR "Only one test suite per file is supported. File: ${cpp_file}")
-         elseif (total_suites EQUAL 1)
-             list (GET found_suites 0 test_suite)
-             string(REGEX REPLACE "BOOST_AUTO_TEST_SUITE(\\([A-Za-z_0-9]+\\))"
-                 "\\1" test_suite ${test_suite})
-             string(REPLACE "(" "" test_suite ${test_suite})
-             string(REPLACE ")" "" test_suite ${test_suite})
+        if (total_suites GREATER 1)
+            message(FATAL_ERROR "Only one test suite per file is supported. File: ${cpp_file}")
+        elseif (total_suites EQUAL 1)
+            list (GET found_suites 0 test_suite)
+            string(REGEX REPLACE "BOOST_AUTO_TEST_SUITE(\\([A-Za-z_0-9]+\\))"
+                "\\1" test_suite ${test_suite})
+            string(REPLACE "(" "" test_suite ${test_suite})
+            string(REPLACE ")" "" test_suite ${test_suite})
 
-             string(REGEX MATCHALL "BOOST_AUTO_TEST_CASE\\(([A-Za-z_0-9]+)\\)"
-                 found_tests ${contents})
-             foreach(hit ${found_tests})
-                 string(REGEX REPLACE "BOOST_AUTO_TEST_CASE(\\([A-Za-z_0-9]+\\))"
-                     "\\1" test_name ${hit})
-                 string(REPLACE "(" "" test_name ${test_name})
-                 string(REPLACE ")" "" test_name ${test_name})
+            string(REGEX MATCHALL "BOOST_AUTO_TEST_CASE\\(([A-Za-z_0-9]+)\\)"
+                found_tests ${contents})
+            foreach(hit ${found_tests})
+                string(REGEX REPLACE "BOOST_AUTO_TEST_CASE(\\([A-Za-z_0-9]+\\))"
+                    "\\1" test_name ${hit})
+                string(REPLACE "(" "" test_name ${test_name})
+                string(REPLACE ")" "" test_name ${test_name})
 
-                 if (${test_name} IN_LIST boost_tests_ignore)
-                     message(STATUS "Ignoring test: ${test_name}")
-                 else()
-                     set(tests_cmd ${stage_bin_dir}/${test_module})
-                     add_test(${test_module}/${test_suite}/${test_name}
-                         ${CMAKE_COMMAND} -E chdir ${stage_bin_dir}
-                         ${tests_cmd} --run_test=${test_suite}/${test_name}
-                         ${boost_test_parameters})
-                 endif()
-             endforeach()
-         endif()
+                if (${test_name} IN_LIST boost_tests_ignore)
+                    message(STATUS "Ignoring test: ${test_name}")
+                else()
+                    set(output_dir ${PROJECT_BINARY_DIR}/projects/${test_module}/)
+                    add_test(${test_module}/${test_suite}/${test_name}
+                        ${CMAKE_COMMAND} -E chdir ${output_dir}
+                        ${output_dir}/${test_module} --run_test=${test_suite}/${test_name}
+                        ${boost_test_parameters})
+                endif()
+            endforeach()
+        endif()
     endforeach()
 endmacro()
 

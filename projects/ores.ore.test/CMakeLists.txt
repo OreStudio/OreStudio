@@ -17,10 +17,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA.
 #
-set(name "ores.ore.test")
+set(name "ores.ore")
 set(lib_target_name ${name}.lib)
-set(tests_binary_name ${name}.tests)
-set(tests_target_name ${name}.tests)
+set(tests_binary_name ${name}.test)
+set(tests_target_name ${name}.test)
 
 set(files "")
 file(GLOB_RECURSE files RELATIVE

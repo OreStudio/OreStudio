@@ -71,4 +71,4 @@ jobs:
         uses: actions/upload-artifact@v4.3.3
         with:
           name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
-          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/stage/pkg/dogen_1.0.33_amd64-applications.deb
+          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/stage/pkg/ores_0.0.01_amd64.deb

@@ -50,9 +50,7 @@ jobs:
         uses: lukka/get-cmake@v3.29.6
 
       - name: run-vcpkg
-        uses: lukka/run-vcpkg@v11.5
-        with:
-          appendedCacheKey: ${{matrix.name}}${{matrix.buildtype}}
+        uses: lukka/run-vcpkg@v11
 
       - name: Run CTest workflow
         run: |

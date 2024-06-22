@@ -1,0 +1,84 @@
+name: Nightly Build
+
+on:
+   schedule:
+     - cron: '0 1 * * *'
+
+jobs:
+  check_changes:
+    runs-on: ubuntu-latest
+    name: Check latest master commit
+    outputs:
+      should_run: ${{ steps.should_run.outputs.should_run }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: check latest commit is less than a day
+        id: should_run
+        continue-on-error: true
+        run: |
+          export latest_commit="`git log -1 --format='%H'`"
+          echo "Latest commit: ${latest_commit}"
+          test -z $(git rev-list --after="24 hours" ${latest_commit}) && echo "should_run=false" >> $GITHUB_OUTPUT
+
+  build:
+    needs: [check_changes]
+    if: ${{ needs.check_changes.outputs.should_run != 'false' }}
+    name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+    runs-on: ubuntu-latest
+    environment: CI
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [linux-gcc, linux-clang]
+        buildtype: [debug]
+        include:
+          - name: linux-gcc
+            family: linux
+            compiler: gcc
+          - name: linux-clang
+            family: linux
+            compiler: clang
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          submodules: true
+
+      - name: Setup Clang
+        uses: egor-tensin/setup-clang@v1.4
+        if: ${{matrix.compiler}} == clang
+        with:
+          version: latest
+          platform: x64
+
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2.13
+        with:
+          variant: sccache
+          key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+          max-size: 1000M
+
+      - name: Install Valgrind
+        run: sudo apt install valgrind
+
+      - name: Get latest CMake
+        uses: lukka/get-cmake@v3.29.6
+
+      - name: Run vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          appendedCacheKey: ${{matrix.name}}${{matrix.buildtype}}
+
+      - name: Run CTest workflow
+        run: |
+          export ORES_BUILD_PROVIDER="github"
+          export ORES_BUILD_COMMIT="${GITHUB_SHA}"
+          export ORES_BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
+          export ORES_BUILD_TIMESTAMP=`date "+%Y/%m/%d %H:%M:%S"`
+          export preset=${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+          export cmake_args="build_group=Nightly,preset=${preset}"
+          cmake_args="${cmake_args},code_coverage=1,with_memcheck=1"
+          ctest -VV --timeout 12000 --preset ${preset} --script "CTest.cmake,${cmake_args}"

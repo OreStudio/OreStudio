@@ -248,7 +248,7 @@ if(with_memcheck)
 
         set(valgrind_options "--trace-children=yes")
         set(valgrind_options "${valgrind_options} --quiet")
-        set(valgrind_option(OPT "docstring" value)ions "${valgrind_options} --tool=memcheck")
+        set(valgrind_options "${valgrind_options} --tool=memcheck")
         set(valgrind_options "${valgrind_options} --leak-check=full")
         set(valgrind_options "${valgrind_options} --show-reachable=yes")
         set(valgrind_options "${valgrind_options} --num-callers=50")
@@ -294,16 +294,16 @@ endif()
 #
 # Step: build.
 #
+set(CTEST_BUILD_TARGET "package")
 ctest_build(PARALLEL_LEVEL ${nproc})
-
 
 #
 # Step: test.
 #
-# Note: because we are doing nothing with the return value, the build will
-# be green even when tests fail. This is OK because we rely on CDash to see
-# the testing status. Travis/AppVeyor just tells us weather the build and
-# packaging steps have worked or failed.
+# Note: because we are doing nothing with the return value, the build will be
+# green even when tests fail. This is OK because we rely on CDash to see the
+# testing status. Travis/AppVeyor just tells us weather the build and packaging
+# steps have worked or failed.
 #
 ctest_test(PARALLEL_LEVEL ${nproc} QUIET)
 

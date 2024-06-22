@@ -49,7 +49,7 @@ else()
     message(STATUS "SCCache NOT found.")
 endif()
 
-project(OreStudio VERSION 0.0.01 LANGUAGES CXX
+project(OreStudio VERSION 0.0.1 LANGUAGES CXX
     DESCRIPTION "UI and other utilities for the Open Source Risk Engine (ORE).")
 
 # threads
@@ -113,6 +113,7 @@ endif()
 #
 # aggregate targets and their aliases
 #
+include(CPackConfig.cmake)
 add_custom_target(run_all_tests)
 add_custom_target(rat)
 add_dependencies(rat run_all_tests)

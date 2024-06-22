@@ -72,13 +72,25 @@ Links:
 
 Setup a basic build with vcpkg.
 
-*** STARTED Setup github actions                                      :story:
+*** COMPLETED Setup github actions                                    :story:
     :LOGBOOK:
+    CLOCK: [2024-06-22 Sat 18:50]--[2024-06-22 Sat 19:27] =>  0:37
     CLOCK: [2024-06-22 Sat 17:45]--[2024-06-22 Sat 18:09] =>  0:24
     CLOCK: [2024-06-22 Sat 16:30]--[2024-06-22 Sat 16:50] =>  0:20
     :END:
 
 Get a basic green build in github, showing up in CDash.
+
+*** STARTED Create and upload a package                               :story:
+    :LOGBOOK:
+    CLOCK: [2024-06-22 Sat 19:28]--[2024-06-22 Sat 21:29] =>  2:01
+    :END:
+
+We should create a basic package, and upload it to github.
+
+*** Add nightly support with memcheck                                 :story:
+
+We need to check for memory issues with nightlies.
 
 *** STARTED Create a basic project structure                          :story:
     :LOGBOOK:

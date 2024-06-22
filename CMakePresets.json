@@ -1,5 +1,5 @@
 {
-    "version": 2,
+    "version": 6,
     "cmakeMinimumRequired": {
         "major": 3,
         "minor": 20,
@@ -367,6 +367,26 @@
             "inherits": [
                 "test-default"
             ]
+        }
+    ],
+    "packagePresets": [
+        {
+            "name": "linux-gcc-release",
+            "packageName": "VisualOre",
+            "packageVersion": "0.0.01",
+            "displayName": "Distribute Release",
+            "configurePreset": "linux-gcc-release",
+            "generators": [ "DEB" ],
+            "configurations": [ "Release" ]
+        },
+        {
+            "name": "linux-clang-release",
+            "packageName": "VisualOre",
+            "packageVersion": "0.0.01",
+            "displayName": "Distribute Release",
+            "configurePreset": "linux-clang-release",
+            "generators": [ "DEB" ],
+            "configurations": [ "Release" ]
         }
     ]
 }

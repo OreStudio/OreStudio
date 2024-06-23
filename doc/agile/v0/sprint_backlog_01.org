@@ -15,22 +15,22 @@
 ** Active
 
 #+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
-#+CAPTION: Clock summary at [2024-06-23 Sun 15:15]
+#+CAPTION: Clock summary at [2024-06-23 Sun 16:09]
 | <75>                                    |         |       |      |       |
 | Headline                                | Time    |       |      |     % |
 |-----------------------------------------+---------+-------+------+-------|
-| *Total time*                            | *12:35* |       |      | 100.0 |
+| *Total time*                            | *12:43* |       |      | 100.0 |
 |-----------------------------------------+---------+-------+------+-------|
-| Stories                                 | 12:35   |       |      | 100.0 |
-| Active                                  |         | 12:35 |      | 100.0 |
-| Sprint and product backlog refinement   |         |       | 0:14 |   1.9 |
+| Stories                                 | 12:43   |       |      | 100.0 |
+| Active                                  |         | 12:43 |      | 100.0 |
+| Sprint and product backlog refinement   |         |       | 0:22 |   2.9 |
 | Create a basic git hub repository       |         |       | 0:35 |   4.6 |
-| Setup a discord channel for the project |         |       | 0:14 |   1.9 |
-| Setup vcpkg and cmake                   |         |       | 1:21 |  10.7 |
-| Setup github actions                    |         |       | 1:21 |  10.7 |
-| Create and upload a package             |         |       | 3:28 |  27.5 |
-| Create a basic project structure        |         |       | 2:10 |  17.2 |
-| Add a Qt hello world                    |         |       | 3:08 |  24.9 |
+| Setup a discord channel for the project |         |       | 0:14 |   1.8 |
+| Setup vcpkg and cmake                   |         |       | 1:21 |  10.6 |
+| Setup github actions                    |         |       | 1:21 |  10.6 |
+| Create and upload a package             |         |       | 3:28 |  27.3 |
+| Create a basic project structure        |         |       | 2:10 |  17.0 |
+| Add a Qt hello world                    |         |       | 3:08 |  24.6 |
 | Add nightly support with memcheck       |         |       | 0:04 |   0.5 |
 #+end:
 
@@ -42,6 +42,7 @@ Agenda:
 
 *** STARTED Sprint and product backlog refinement                     :story:
     :LOGBOOK:
+    CLOCK: [2024-06-23 Sun 16:00]--[2024-06-23 Sun 16:08] =>  0:08
     CLOCK: [2024-06-22 Sat 23:14]--[2024-06-22 Sat 23:20] =>  0:06
     CLOCK: [2024-06-22 Sat 23:10]--[2024-06-22 Sat 23:13] =>  0:03
     CLOCK: [2024-06-15 Sat 21:16]--[2024-06-15 Sat 21:21] =>  0:05
@@ -110,7 +111,7 @@ or more fat clients connecting to a postgres database. We don't mind having
 business logic in the database; the most important thing is for it to be really
 quick to add new features with the least amount of layers and duplication.
 
-*** STARTED Add a Qt hello world                                      :story:
+*** COMPLETED Add a Qt hello world                                    :story:
     :LOGBOOK:
     CLOCK: [2024-06-23 Sun 15:02]--[2024-06-23 Sun 15:15] =>  0:13
     CLOCK: [2024-06-23 Sun 10:19]--[2024-06-23 Sun 10:29] =>  0:10
@@ -123,6 +124,38 @@ quick to add new features with the least amount of layers and duplication.
 
 Create a trivial application in Qt that exercises the pipelines.
 
+*** COMPLETED Add a splash screen to applciation                      :story:
+    :LOGBOOK:
+    CLOCK: [2024-06-23 Sun 16:09]--[2024-06-23 Sun 16:50] =>  0:41
+    :END:
+
+It would be nice to have a simple splash screen with the project logo.
+
+#+begin_quote c++
+#include "mainwindow.h"
+#include <QApplication>
+#include <QSplashScreen>
+#include <QTimer>
+
+int main(int argc, char *argv[])
+{
+    QApplication a(argc, argv);
+
+    QSplashScreen *splash = new QSplashScreen;
+    splash->setPixmap(QPixmap("C:/Users/9589693153/Desktop/Vids/pk.png"));
+    splash->show();
+
+    MainWindow w;
+
+    QTimer::singleShot(5000, splash, SLOT(close()));
+    QTimer::singleShot(5000, &w, SLOT(show()));
+
+    // w.show();
+
+    return a.exec();
+}
+#+end_quote
+
 *** STARTED Add nightly support with memcheck                         :story:
     :LOGBOOK:
     CLOCK: [2024-06-23 Sun 00:15]--[2024-06-23 Sun 00:19] =>  0:04
@@ -130,10 +163,24 @@ Create a trivial application in Qt that exercises the pipelines.
 
 We need to check for memory issues with nightlies.
 
+*** Create a staging directory                                        :story:
+
+At present the binaries are scattered around the build directory. We should take
+the same approach as Dogen and create clean directories for this.
+
+*** Create an icon for the application                                :story:
+
+We copied the Dogen icon to get us going. We should really grab our own logo.
+
 *** Add XML parsing support for currency                              :story:
 
 We need to have the ability to read and write currencies from XML. Copy all
 currency input data from examples.
+
+*** Exclude vcpkg directories from coverage                           :story:
+
+At present coverage is very low because its picking up some files from vcpkg
+install. We need to ignore those.
 
 *** Add JSON parsing support for currency                             :story:
 

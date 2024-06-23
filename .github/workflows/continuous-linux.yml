@@ -56,6 +56,7 @@ jobs:
         run: |
           export PATH=${PATH}:/usr/sbin
           sudo apt-get install autoconf automake autoconf-archive
+          apt-get install libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libegl1-mesa-dev
           export ORES_BUILD_PROVIDER="github"
           export ORES_BUILD_COMMIT="${GITHUB_SHA}"
           export ORES_BUILD_NUMBER="${GITHUB_RUN_NUMBER}"

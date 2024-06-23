@@ -67,9 +67,13 @@ find_package(Boost 1.85 REQUIRED COMPONENTS
     serialization
     unit_test_framework)
 
+# Qt
 find_package(Qt6Core REQUIRED)
 find_package(Qt6Gui REQUIRED)
 find_package(Qt6Widgets REQUIRED)
+
+# XML
+find_path(RAPIDXML_NS_INCLUDE_DIRS "rapidxml-ns/rapidxml_ns.hpp")
 
 # site (for ctest)
 site_name(VORE_SITE)

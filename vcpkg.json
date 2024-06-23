@@ -5,6 +5,7 @@
     "version-string": "0.0.1",
     "dependencies": [
         "qtbase",
+        "rapidxml-ns",
         "boost-system",
         "boost-serialization",
         "boost-date-time",

@@ -15,23 +15,25 @@
 ** Active
 
 #+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
-#+CAPTION: Clock summary at [2024-06-23 Sun 16:09]
+#+CAPTION: Clock summary at [2024-06-23 Sun 22:34]
 | <75>                                    |         |       |      |       |
 | Headline                                | Time    |       |      |     % |
 |-----------------------------------------+---------+-------+------+-------|
-| *Total time*                            | *12:43* |       |      | 100.0 |
+| *Total time*                            | *14:52* |       |      | 100.0 |
 |-----------------------------------------+---------+-------+------+-------|
-| Stories                                 | 12:43   |       |      | 100.0 |
-| Active                                  |         | 12:43 |      | 100.0 |
-| Sprint and product backlog refinement   |         |       | 0:22 |   2.9 |
-| Create a basic git hub repository       |         |       | 0:35 |   4.6 |
-| Setup a discord channel for the project |         |       | 0:14 |   1.8 |
-| Setup vcpkg and cmake                   |         |       | 1:21 |  10.6 |
-| Setup github actions                    |         |       | 1:21 |  10.6 |
-| Create and upload a package             |         |       | 3:28 |  27.3 |
-| Create a basic project structure        |         |       | 2:10 |  17.0 |
-| Add a Qt hello world                    |         |       | 3:08 |  24.6 |
-| Add nightly support with memcheck       |         |       | 0:04 |   0.5 |
+| Stories                                 | 14:52   |       |      | 100.0 |
+| Active                                  |         | 14:52 |      | 100.0 |
+| Sprint and product backlog refinement   |         |       | 0:26 |   2.9 |
+| Create a basic git hub repository       |         |       | 0:35 |   3.9 |
+| Setup a discord channel for the project |         |       | 0:14 |   1.6 |
+| Setup vcpkg and cmake                   |         |       | 1:21 |   9.1 |
+| Setup github actions                    |         |       | 1:21 |   9.1 |
+| Create and upload a package             |         |       | 3:28 |  23.3 |
+| Create a basic project structure        |         |       | 2:10 |  14.6 |
+| Add a Qt hello world                    |         |       | 3:08 |  21.1 |
+| Add a splash screen to applciation      |         |       | 0:41 |   4.6 |
+| Add nightly support with memcheck       |         |       | 0:04 |   0.4 |
+| Add XML parsing support for currency    |         |       | 1:24 |   9.4 |
 #+end:
 
 Agenda:
@@ -42,6 +44,7 @@ Agenda:
 
 *** STARTED Sprint and product backlog refinement                     :story:
     :LOGBOOK:
+    CLOCK: [2024-06-23 Sun 16:50]--[2024-06-23 Sun 16:54] =>  0:04
     CLOCK: [2024-06-23 Sun 16:00]--[2024-06-23 Sun 16:08] =>  0:08
     CLOCK: [2024-06-22 Sat 23:14]--[2024-06-22 Sat 23:20] =>  0:06
     CLOCK: [2024-06-22 Sat 23:10]--[2024-06-22 Sat 23:13] =>  0:03
@@ -163,6 +166,10 @@ int main(int argc, char *argv[])
 
 We need to check for memory issues with nightlies.
 
+*** Add packaging support for images                                  :story:
+
+At present we are not adding images to packages.
+
 *** Create a staging directory                                        :story:
 
 At present the binaries are scattered around the build directory. We should take
@@ -172,10 +179,22 @@ the same approach as Dogen and create clean directories for this.
 
 We copied the Dogen icon to get us going. We should really grab our own logo.
 
-*** Add XML parsing support for currency                              :story:
+*** STARTED Add XML parsing support for currency                      :story:
+    :LOGBOOK:
+    CLOCK: [2024-06-23 Sun 22:30]--[2024-06-23 Sun 22:34] =>  0:04
+    CLOCK: [2024-06-23 Sun 18:45]--[2024-06-23 Sun 20:05] =>  1:20
+    :END:
 
 We need to have the ability to read and write currencies from XML. Copy all
 currency input data from examples.
+
+*** Add faker support to model                                        :story:
+
+vcpkg will support faker soon:
+
+- [[https://github.com/microsoft/vcpkg/pull/38583][#38583: [faker-cxx] add new port]]
+
+When that is available, we should try to add support for it.
 
 *** Exclude vcpkg directories from coverage                           :story:
 

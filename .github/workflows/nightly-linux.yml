@@ -7,7 +7,7 @@ on:
 jobs:
   check_changes:
     runs-on: ubuntu-latest
-    name: Check latest master commit
+    name: Check latest main commit
     outputs:
       should_run: ${{ steps.should_run.outputs.should_run }}
     steps:
@@ -44,7 +44,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: main
           submodules: true
 
       - name: Setup Clang

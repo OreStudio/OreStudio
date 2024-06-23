@@ -69,6 +69,7 @@ jobs:
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
       - name: Dump logs
+        if: always()
         run: |
           cat /home/runner/work/OreStudio/OreStudio/vcpkg/buildtrees/qtbase/config-x64-linux-out.log
           cat /home/runner/work/OreStudio/OreStudio/build/output/linux-gcc-debug/vcpkg-manifest-install.log

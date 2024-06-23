@@ -56,7 +56,7 @@ jobs:
         run: |
           export PATH=${PATH}:/usr/sbin
           sudo apt-get install autoconf automake autoconf-archive
-          sudo apt-get install libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libegl1-mesa-dev
+          sudo apt-get install '^libxcb.*-dev'
           export ORES_BUILD_PROVIDER="github"
           export ORES_BUILD_COMMIT="${GITHUB_SHA}"
           export ORES_BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
@@ -67,6 +67,7 @@ jobs:
               cmake_args="${cmake_args},code_coverage=1"
           fi
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
+          cat /home/runner/work/OreStudio/OreStudio/vcpkg/buildtrees/qtbase/config-x64-linux-out.log
 
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v4.3.3

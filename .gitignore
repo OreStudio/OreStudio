@@ -36,3 +36,6 @@ org-roam.db
 vcpkg_installed
 
 build/output
+
+# Qt Designer
+CMakeLists.txt.user

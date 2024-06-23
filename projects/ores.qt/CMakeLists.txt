@@ -15,7 +15,18 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-target_link_libraries(main PRIVATE
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+
+add_executable(ores.qt
+    main.cpp
+    main_window.ui
+    #ui_main_window.cpp
+)
+
+target_link_libraries(ores.qt PRIVATE
   Qt6::Core
   Qt6::Gui
   Qt6::Widgets)

@@ -54,6 +54,7 @@ jobs:
 
       - name: Run CTest workflow
         run: |
+          export PATH=${PATH}:/usr/sbin
           export ORES_BUILD_PROVIDER="github"
           export ORES_BUILD_COMMIT="${GITHUB_SHA}"
           export ORES_BUILD_NUMBER="${GITHUB_RUN_NUMBER}"

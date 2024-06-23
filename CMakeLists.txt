@@ -120,4 +120,5 @@ add_custom_target(rat)
 add_dependencies(rat run_all_tests)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/build)
+add_subdirectory(${CMAKE_SOURCE_DIR}/assets)
 add_subdirectory(${CMAKE_SOURCE_DIR}/projects)

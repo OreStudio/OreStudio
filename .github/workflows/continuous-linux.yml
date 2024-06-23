@@ -56,6 +56,7 @@ jobs:
         run: |
           export PATH=${PATH}:/usr/sbin
           sudo apt-get install autoconf automake autoconf-archive
+          sudo apt-get install libegl1-mesa-dev libegl1-dev
           sudo apt-get install '^libxcb.*-dev'
           export ORES_BUILD_PROVIDER="github"
           export ORES_BUILD_COMMIT="${GITHUB_SHA}"

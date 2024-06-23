@@ -23,10 +23,12 @@ set(CMAKE_AUTORCC ON)
 add_executable(ores.qt
     main.cpp
     main_window.ui
-    #ui_main_window.cpp
 )
 
 target_link_libraries(ores.qt PRIVATE
   Qt6::Core
   Qt6::Gui
   Qt6::Widgets)
+
+install(TARGETS ores.qt RUNTIME DESTINATION bin
+    COMPONENT applications)

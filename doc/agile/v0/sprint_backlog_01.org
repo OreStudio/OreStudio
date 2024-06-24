@@ -161,6 +161,7 @@ int main(int argc, char *argv[])
 
 *** STARTED Add nightly support with memcheck                         :story:
     :LOGBOOK:
+    CLOCK: [2024-06-24 Mon 22:40]--[2024-06-24 Mon 22:53] =>  0:13
     CLOCK: [2024-06-23 Sun 00:15]--[2024-06-23 Sun 00:19] =>  0:04
     :END:
 

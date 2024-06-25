@@ -2,7 +2,7 @@ name: Nightly Build
 
 on:
    schedule:
-     - cron: '0 1 * * *'
+     - cron: '0 0 * * *'
 
 jobs:
   check_changes:
@@ -17,11 +17,15 @@ jobs:
 
       - name: check latest commit is less than a day
         id: should_run
-        continue-on-error: true
+        continue-on-error: false
         run: |
           export latest_commit="`git log -1 --format='%H'`"
           echo "Latest commit: ${latest_commit}"
-          test -z $(git rev-list --after="24 hours" ${latest_commit}) && echo "should_run=false" >> $GITHUB_OUTPUT
+          if [[ -z $(git rev-list --after="24 hours" ${latest_commit}) ]]; then
+              echo "should_run=false" >> $GITHUB_OUTPUT
+          else
+              echo "should_run=true" >> $GITHUB_OUTPUT
+          fi
 
   build:
     needs: [check_changes]

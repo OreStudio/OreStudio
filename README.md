@@ -15,7 +15,6 @@
 [![gcc-13](https://img.shields.io/badge/GCC-13-blue.svg)](https://www.gnu.org/software/gcc/gcc-13)
 [![clang-16](https://img.shields.io/badge/CLANG-16-blue.svg)](https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html)
 [![msvc2022](https://img.shields.io/badge/MSVC-2022-blue.svg)](https://visualstudio.microsoft.com/vs/whatsnew/)
-[![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/OreStudio/OreStudio)](https://www.tickgit.com/browse?repo=github.com/OreStudio/OreStudio)
 [![Discord](https://dcbadge.limes.pink/api/server/https://discord.gg/gcrYsjW3pd)](https://discord.gg/https://discord.gg/gcrYsjW3pd)
 
 # OreStudio

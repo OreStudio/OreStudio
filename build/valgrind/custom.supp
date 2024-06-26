@@ -1,0 +1,28 @@
+# -*- mode: cmake; tab-width: 4; indent-tabs-mode: nil -*-
+#
+# Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+#
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+{
+    boost log 1
+    Memcheck:Leak
+    match-leak-kinds: reachable
+    fun:_Znwm
+    ...
+    fun:_ZN5boost3log12v2s_mt_posix7sources21basic_severity_loggerINS2_20basic_channel_loggerINS2_12basic_loggerIcNS2_23severity_channel_loggerIN5dogen7utility3log14severity_levelENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEENS2_19single_thread_modelEEESG_EESA_E20open_record_unlockedINS_9parameter3aux15tagged_argumentINS1_8keywords3tag8severityEKSA_EEEENS1_6recordERKT_
+    fun:_ZN5boost3log12v2s_mt_posix7sources22basic_composite_loggerIcNS2_23severity_channel_loggerIN5dogen7utility3log14severity_levelENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEENS2_19single_thread_modelENS2_8featuresIJNS2_8severityIS8_EENS2_7channelISE_EEEEEE11open_recordINS_9parameter3aux15tagged_argumentINS1_8keywords3tag8severityEKS8_EEEENS1_6recordERKT_
+    ...
+}

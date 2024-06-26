@@ -46,6 +46,12 @@ jobs:
           key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
           max-size: 1000M
 
+      - name: Install dev packages
+        run: |
+          sudo apt-get install autoconf automake autoconf-archive
+          sudo apt-get install libegl1-mesa-dev libegl1
+          sudo apt-get install fontconfig '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev
+
       - name: get-cmake
         uses: lukka/get-cmake@v3.29.6
 
@@ -55,9 +61,6 @@ jobs:
       - name: Run CTest workflow
         run: |
           export PATH=${PATH}:/usr/sbin
-          sudo apt-get install autoconf automake autoconf-archive
-          sudo apt-get install libegl1-mesa-dev libegl1
-          sudo apt-get install fontconfig '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev
           export ORES_BUILD_PROVIDER="github"
           export ORES_BUILD_COMMIT="${GITHUB_SHA}"
           export ORES_BUILD_NUMBER="${GITHUB_RUN_NUMBER}"

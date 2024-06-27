@@ -15,26 +15,27 @@
 ** Active
 
 #+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
-#+CAPTION: Clock summary at [2024-06-26 Wed 19:44]
+#+CAPTION: Clock summary at [2024-06-27 Thu 22:59]
 | <75>                                    |         |       |      |       |
 | Headline                                | Time    |       |      |     % |
 |-----------------------------------------+---------+-------+------+-------|
-| *Total time*                            | *15:55* |       |      | 100.0 |
+| *Total time*                            | *16:56* |       |      | 100.0 |
 |-----------------------------------------+---------+-------+------+-------|
-| Stories                                 | 15:55   |       |      | 100.0 |
-| Active                                  |         | 15:55 |      | 100.0 |
-| Sprint and product backlog refinement   |         |       | 0:31 |   3.2 |
-| Create a basic git hub repository       |         |       | 0:35 |   3.7 |
-| Setup a discord channel for the project |         |       | 0:14 |   1.5 |
-| Setup vcpkg and cmake                   |         |       | 1:21 |   8.5 |
-| Setup github actions                    |         |       | 1:21 |   8.5 |
-| Create and upload a package             |         |       | 3:28 |  21.8 |
-| Create a basic project structure        |         |       | 2:10 |  13.6 |
-| Add a Qt hello world                    |         |       | 3:08 |  19.7 |
-| Add a splash screen to applciation      |         |       | 0:41 |   4.3 |
-| Add nightly support with memcheck       |         |       | 0:41 |   4.3 |
-| Add XML parsing support for currency    |         |       | 1:24 |   8.8 |
-| Create a containing structure for data  |         |       | 0:21 |   2.2 |
+| Stories                                 | 16:56   |       |      | 100.0 |
+| Active                                  |         | 16:56 |      | 100.0 |
+| Sprint and product backlog refinement   |         |       | 0:47 |   4.6 |
+| Create a basic git hub repository       |         |       | 0:35 |   3.4 |
+| Setup a discord channel for the project |         |       | 0:14 |   1.4 |
+| Setup vcpkg and cmake                   |         |       | 1:21 |   8.0 |
+| Setup github actions                    |         |       | 1:21 |   8.0 |
+| Create and upload a package             |         |       | 3:28 |  20.5 |
+| Create a basic project structure        |         |       | 2:10 |  12.8 |
+| Add a Qt hello world                    |         |       | 3:08 |  18.5 |
+| Add a splash screen to applciation      |         |       | 0:41 |   4.0 |
+| Add nightly support with memcheck       |         |       | 1:00 |   5.9 |
+| Add XML parsing support for currency    |         |       | 1:24 |   8.3 |
+| Create a containing structure for data  |         |       | 0:21 |   2.1 |
+| Add basic widgets to display currencies |         |       | 0:26 |   2.6 |
 #+end:
 
 Agenda:
@@ -45,6 +46,7 @@ Agenda:
 
 *** STARTED Sprint and product backlog refinement                     :story:
     :LOGBOOK:
+    CLOCK: [2024-06-26 Wed 23:27]--[2024-06-26 Wed 23:43] =>  0:16
     CLOCK: [2024-06-25 Tue 19:06]--[2024-06-25 Tue 19:11] =>  0:05
     CLOCK: [2024-06-23 Sun 16:50]--[2024-06-23 Sun 16:54] =>  0:04
     CLOCK: [2024-06-23 Sun 16:00]--[2024-06-23 Sun 16:08] =>  0:08
@@ -163,6 +165,7 @@ int main(int argc, char *argv[])
 
 *** STARTED Add nightly support with memcheck                         :story:
     :LOGBOOK:
+    CLOCK: [2024-06-27 Thu 22:40]--[2024-06-27 Thu 22:59] =>  0:19
     CLOCK: [2024-06-26 Wed 19:30]--[2024-06-26 Wed 19:44] =>  0:14
     CLOCK: [2024-06-25 Tue 18:22]--[2024-06-25 Tue 18:32] =>  0:10
     CLOCK: [2024-06-24 Mon 22:40]--[2024-06-24 Mon 22:53] =>  0:13
@@ -223,8 +226,39 @@ There are two types of these containers:
 
 Elements within a component is of two kinds: input and output. However, this may
 not necessarily be a good classification because some outputs can be used as
-inputs to output other elements.
+inputs to output other elements. Perhaps this is more of a tag.
 
+*** STARTED Add basic widgets to display currencies                   :story:
+    :LOGBOOK:
+    CLOCK: [2024-06-26 Wed 23:00]--[2024-06-26 Wed 23:26] =>  0:26
+    :END:
+
+We need some kind of tree view and list view.
+
+*** Support multiple ORE "toolchains"                                 :story:
+
+Much like with an IDE, where one can have multiple toolchains configured, we
+need to also support multiple versions of ORE. Unlike with IDEs, it may be
+desirable to run computations with more than one version of ORE for comparison
+purposes. This means we need a way to associate outputs with their ORE version.
+This approach does not necessarily fit the existing example code, because these
+have a single "output directory". However, we just need  way to associate N
+toolchains with a given workspace or possibly component; when present, the
+output directory starts to reflect the toolchain configuration. For example,
+with CMake we use presets:
+
+- =linux-clang-debug=
+- =linux-clang-release=
+- =linux-gcc-debug=
+- =linux-gcc-release=
+
+For ORE the only dimension under which variability is possible is the version.
+We can then have pricing engine configurations that are either the same, or
+possibly different:
+
+- for a workspace;
+- for a component;
+- for a toolchain version.
 
 *** Add packaging support for images                                  :story:
 

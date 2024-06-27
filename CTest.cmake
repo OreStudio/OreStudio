@@ -181,11 +181,6 @@ endif()
 message(STATUS "Number of parallel jobs: ${nproc}")
 set(CTEST_BUILD_FLAGS "-l${nproc}")
 
-# Set limits for test output
-set(CTEST_CUSTOM_MAXIMUM_PASSED_TEST_OUTPUT_SIZE 0)
-set(CTEST_CUSTOM_MAXIMUM_FAILED_TEST_OUTPUT_SIZE 0)
-set(CTEST_CUSTOM_MAXIMUM_NUMBER_OF_WARNINGS 50)
-
 # How long to wait between timed-out CTest submissions
 set(retry_delay 300)
 
@@ -277,6 +272,9 @@ ctest_configure(OPTIONS "${cmake_args}" RETURN_VALUE configure_result)
 if(configure_result)
     message(FATAL_ERROR "Failed to configure")
 endif()
+
+# Read custom files
+ctest_read_custom_files(${CTEST_SOURCE_DIRECTORY})
 
 #
 # Step: build.

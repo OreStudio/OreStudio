@@ -15,27 +15,27 @@
 ** Active
 
 #+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
-#+CAPTION: Clock summary at [2024-06-27 Thu 22:59]
+#+CAPTION: Clock summary at [2024-06-27 Thu 23:21]
 | <75>                                    |         |       |      |       |
 | Headline                                | Time    |       |      |     % |
 |-----------------------------------------+---------+-------+------+-------|
-| *Total time*                            | *16:56* |       |      | 100.0 |
+| *Total time*                            | *17:17* |       |      | 100.0 |
 |-----------------------------------------+---------+-------+------+-------|
-| Stories                                 | 16:56   |       |      | 100.0 |
-| Active                                  |         | 16:56 |      | 100.0 |
-| Sprint and product backlog refinement   |         |       | 0:47 |   4.6 |
+| Stories                                 | 17:17   |       |      | 100.0 |
+| Active                                  |         | 17:17 |      | 100.0 |
+| Sprint and product backlog refinement   |         |       | 0:47 |   4.5 |
 | Create a basic git hub repository       |         |       | 0:35 |   3.4 |
 | Setup a discord channel for the project |         |       | 0:14 |   1.4 |
-| Setup vcpkg and cmake                   |         |       | 1:21 |   8.0 |
-| Setup github actions                    |         |       | 1:21 |   8.0 |
-| Create and upload a package             |         |       | 3:28 |  20.5 |
-| Create a basic project structure        |         |       | 2:10 |  12.8 |
-| Add a Qt hello world                    |         |       | 3:08 |  18.5 |
+| Setup vcpkg and cmake                   |         |       | 1:21 |   7.8 |
+| Setup github actions                    |         |       | 1:21 |   7.8 |
+| Create and upload a package             |         |       | 3:28 |  20.1 |
+| Create a basic project structure        |         |       | 2:10 |  12.5 |
+| Add a Qt hello world                    |         |       | 3:08 |  18.1 |
 | Add a splash screen to applciation      |         |       | 0:41 |   4.0 |
-| Add nightly support with memcheck       |         |       | 1:00 |   5.9 |
-| Add XML parsing support for currency    |         |       | 1:24 |   8.3 |
-| Create a containing structure for data  |         |       | 0:21 |   2.1 |
-| Add basic widgets to display currencies |         |       | 0:26 |   2.6 |
+| Add nightly support with memcheck       |         |       | 1:21 |   7.8 |
+| Add XML parsing support for currency    |         |       | 1:24 |   8.1 |
+| Create a containing structure for data  |         |       | 0:21 |   2.0 |
+| Add basic widgets to display currencies |         |       | 0:26 |   2.5 |
 #+end:
 
 Agenda:
@@ -165,6 +165,7 @@ int main(int argc, char *argv[])
 
 *** STARTED Add nightly support with memcheck                         :story:
     :LOGBOOK:
+    CLOCK: [2024-06-27 Thu 23:00]--[2024-06-27 Thu 23:21] =>  0:21
     CLOCK: [2024-06-27 Thu 22:40]--[2024-06-27 Thu 22:59] =>  0:19
     CLOCK: [2024-06-26 Wed 19:30]--[2024-06-26 Wed 19:44] =>  0:14
     CLOCK: [2024-06-25 Tue 18:22]--[2024-06-25 Tue 18:32] =>  0:10

@@ -32,7 +32,13 @@ set(CTEST_CUSTOM_MAXIMUM_PASSED_TEST_OUTPUT_SIZE 0)
 set(CTEST_CUSTOM_MAXIMUM_FAILED_TEST_OUTPUT_SIZE 0)
 
 # warning execptions
-# set(CTEST_CUSTOM_WARNING_EXCEPTION ${CTEST_CUSTOM_WARNING_EXCEPTION})
+set(CTEST_CUSTOM_WARNING_EXCEPTION
+  ${CTEST_CUSTOM_WARNING_EXCEPTION}
+  # boost-system's buildsystem uses very long paths
+  "vcpkg_buildpath_length_warning.cmake"
+  # could not find a matching pdb file
+  "vcpkg_copy_pdbs.cmake"
+)
 
 # warning addons
 set(CTEST_CUSTOM_WARNING_MATCH ${CTEST_CUSTOM_WARNING_MATCH})

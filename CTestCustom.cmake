@@ -38,6 +38,10 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
   "vcpkg_buildpath_length_warning.cmake"
   # could not find a matching pdb file
   "vcpkg_copy_pdbs.cmake"
+  # icu currently requires the following programs
+  "CMake Warning at ports/icu/portfile.cmake"
+  # qtbase currently requires packages
+  "CMake Warning at ports/qtbase/portfile.cmake"
 )
 
 # warning addons

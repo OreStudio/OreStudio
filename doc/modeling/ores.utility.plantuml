@@ -7,7 +7,7 @@ namespace ores #F2F2F2 {
     namespace utility #F2F2F2 {
 
         note "Generic exception classes" as N1
-        log --- N1
+        exception --- N1
         namespace exception #F2F2F2 {
             class invalid_enum_value <<std::exception>> #E8C2F8
             note top of invalid_enum_value

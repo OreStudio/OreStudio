@@ -74,9 +74,9 @@
          :section-numbers nil       ;; Don't include section numbers
          :time-stamp-file nil)      ;; Don't include time stamp in file
         ("site:images"
-         :base-directory "./assets/images"
+         :base-directory "./"
          :base-extension "png\\|jpg\\|gif\\|svg"
-         :publishing-directory "./build/output/site/assets/images"
+         :publishing-directory "./build/output/site/"
          :publishing-function org-publish-attachment)
         ("site:main" :components("site:pages" "site:images"))))
 

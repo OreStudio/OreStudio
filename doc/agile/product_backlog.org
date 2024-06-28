@@ -49,3 +49,122 @@ To be done on the Monday morning of the new sprint.
 3. Write up release notes, publish them in github.
 4. When tag build is finished, unpack and copy binaries into release, announce
    on gitter, twitter and linked in.
+
+* Stories
+
+** Near
+
+Stories we may get two in the next two or three sprints.
+
+
+** Far
+
+Stories that we want to capture, but won't work on for a while.
+
+*** Support multiple ORE "toolchains"                                 :story:
+
+Much like with an IDE, where one can have multiple toolchains configured, we
+need to also support multiple versions of ORE. Unlike with IDEs, it may be
+desirable to run computations with more than one version of ORE for comparison
+purposes. This means we need a way to associate outputs with their ORE version.
+This approach does not necessarily fit the existing example code, because these
+have a single "output directory". However, we just need  way to associate N
+toolchains with a given workspace or possibly component; when present, the
+output directory starts to reflect the toolchain configuration. For example,
+with CMake we use presets:
+
+- =linux-clang-debug=
+- =linux-clang-release=
+- =linux-gcc-debug=
+- =linux-gcc-release=
+
+For ORE the only dimension under which variability is possible is the version.
+We can then have pricing engine configurations that are either the same, or
+possibly different:
+
+- for a workspace;
+- for a component;
+- for a toolchain version.
+
+
+
+*** Add faker support to model                                        :story:
+
+vcpkg will support faker soon:
+
+- [[https://github.com/microsoft/vcpkg/pull/38583][#38583: [faker-cxx] add new port]]
+
+When that is available, we should try to add support for it.
+
+*** Base the compute approach on BOINC                                :story:
+
+Copy the BOINC data model.
+
+Links:
+
+- [[https://boinc.berkeley.edu/trac/wiki/DataBase][wiki: DataBase]]
+- [[https://wiki.debian.org/BOINC/ServerGuide][BOINC Debian Server Guide]]
+- [[https://boinc.berkeley.edu/trac/wiki/ProjectMain][wiki: BOINC Project Main]]
+- [[https://www.reddit.com/r/BOINC/][BOINC reddit]]
+
+
+*** Create a set of fake currencies                                   :story:
+
+We need to create fake data so we can explore the problem domain. This is
+something to work on in the future. We can use LLMs to help with the fake data,
+where it makes sense.
+
+Example:
+
+| Country code | Country name | Currency Code | Currency Number | Currency           |
+|--------------+--------------+---------------+-----------------+--------------------|
+| AL           | Aerilon      | ALD           |           10001 | Aerilonian Dollar  |
+| AR           | Arcturia     | ARA           |           10002 | Arcturian Arct     |
+| BA           | Balthoria    | BAF           |           10003 | Balthorian Florin  |
+| BE           | Belloria     | BEB           |           10004 | Bellorian Bell     |
+| CA           | Calandria    | CAC           |           10005 | Calandrian Crown   |
+| CD           | Caledonia    | CDC           |           10006 | Caledonian Caled   |
+| DA           | Daeloria     | DAD           |           10007 | Daelorian Dinar    |
+| DE           | Delvadia     | DED           |           10008 | Delvadian Delv     |
+| ER           | Eriador      | ERE           |           10009 | Eriadoran Euro     |
+| ES           | Esteria      | ESE           |           10010 | Esterian Est       |
+| FE           | Feloria      | FEF           |           10011 | Felorian Franc     |
+| FN           | Fendaria     | FNF           |           10012 | Fendarian Fen      |
+| GA           | Galdoria     | GAG           |           10013 | Galdorian Galleon  |
+| GR           | Grendoria    | GRG           |           10014 | Grendorian Grend   |
+| HE           | Helvetia     | HEF           |           10015 | Helvetian Franc    |
+| HY           | Hydronia     | HYH           |           10016 | Hydronian Hyd      |
+| IR           | Iridia       | IRD           |           10017 | Iridian Dollar     |
+| IT           | Ithaca       | ITI           |           10018 | Ithacan Ith        |
+| JE           | Jethro       | JEJ           |           10019 | Jethronian Jet     |
+| JO           | Jorvik       | JOK           |           10020 | Jorvikian Krona    |
+| KA           | Kaelor       | KAK           |           10021 | Kaelorian Krown    |
+| KR           | Krynn        | KRK           |           10022 | Krynnish Krynn     |
+| LU           | Luminia      | LUL           |           10023 | Luminian Lum       |
+| LY           | Lysandria    | LYL           |           10024 | Lysandrian Lira    |
+| MA           | Maldoria     | MAM           |           10025 | Maldorian Mal      |
+| MR           | Mariposa     | MRP           |           10026 | Mariposan Peso     |
+| NE           | Nektonia     | NEN           |           10027 | Nektonian Nek      |
+| NT           | Netharia     | NTN           |           10028 | Netharian Naira    |
+| OR           | Orinoco      | ORB           |           10029 | Orinocan Bolivar   |
+| OL           | Orlanthia    | OLO           |           10030 | Orlanthian Orl     |
+| PA           | Paldoria     | PAP           |           10031 | Paldorian Peso     |
+| PY           | Pyrrhia      | PYP           |           10032 | Pyrrhian Pyr       |
+| QU           | Quentaria    | QUQ           |           10033 | Quentarian Quen    |
+| QN           | Quinaria     | QNQ           |           10034 | Quinarian Quetzal  |
+| RE           | Rendellia    | RER           |           10035 | Rendellian Rend    |
+| RI           | Rivenia      | RIR           |           10036 | Rivenian Ruble     |
+| SE           | Serendia     | SES           |           10037 | Serendian Shilling |
+| SI           | Sildoria     | SIS           |           10038 | Sildorian Sild     |
+| TA           | Tandor       | TAT           |           10039 | Tandorian Taka     |
+| TE           | Tenebria     | TET           |           10040 | Tenebrian Ten      |
+| UL           | Uldoria      | ULU           |           10041 | Uldorian Uld       |
+| UT           | Utopia       | UTU           |           10042 | Utopian Unit       |
+| VA           | Valoria      | VAV           |           10042 | Valorian Valt      |
+| VL           | Valtaria     | VLV           |           10043 | Valtarian Val      |
+| WI           | Wintervale   | WIW           |           10044 | Wintervalean Won   |
+| WY           | Wysteria     | WYW           |           10045 | Wysterian Wys      |
+| XA           | Xandria      | XAX           |           10046 | Xandrian Xan       |
+| XE           | Xenoria      | XEX           |           10047 | Xenorian Xen       |
+| YS           | Yslandia     | YSY           |           10048 | Yslandian Yen      |
+| ZE           | Zephyria     | ZEZ           |           10049 | Zephyrian Zephyr   |

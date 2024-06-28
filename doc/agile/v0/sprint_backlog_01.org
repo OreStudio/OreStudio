@@ -9,36 +9,37 @@
 * Sprint Goals
 
 - Create basic project infrastructure.
+- Handle currencies front to back.
 
 * Stories
 
 ** Active
 
 #+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
-#+CAPTION: Clock summary at [2024-06-29 Sat 00:33]
+#+CAPTION: Clock summary at [2024-06-29 Sat 00:52]
 | <75>                                    |         |       |      |       |
 | Headline                                | Time    |       |      |     % |
 |-----------------------------------------+---------+-------+------+-------|
-| *Total time*                            | *20:50* |       |      | 100.0 |
+| *Total time*                            | *21:08* |       |      | 100.0 |
 |-----------------------------------------+---------+-------+------+-------|
-| Stories                                 | 20:50   |       |      | 100.0 |
-| Active                                  |         | 20:50 |      | 100.0 |
-| Sprint and product backlog refinement   |         |       | 0:47 |   3.8 |
+| Stories                                 | 21:08   |       |      | 100.0 |
+| Active                                  |         | 21:08 |      | 100.0 |
+| Sprint and product backlog refinement   |         |       | 0:54 |   4.3 |
 | Create a basic git hub repository       |         |       | 0:35 |   2.8 |
 | Setup a discord channel for the project |         |       | 0:14 |   1.1 |
-| Setup vcpkg and cmake                   |         |       | 1:21 |   6.5 |
-| Setup github actions                    |         |       | 1:21 |   6.5 |
-| Create and upload a package             |         |       | 3:28 |  16.6 |
-| Create a basic project structure        |         |       | 2:10 |  10.4 |
-| Add a Qt hello world                    |         |       | 3:08 |  15.0 |
-| Add a splash screen to applciation      |         |       | 0:41 |   3.3 |
+| Setup vcpkg and cmake                   |         |       | 1:21 |   6.4 |
+| Setup github actions                    |         |       | 1:21 |   6.4 |
+| Create and upload a package             |         |       | 3:28 |  16.4 |
+| Create a basic project structure        |         |       | 2:10 |  10.3 |
+| Add a Qt hello world                    |         |       | 3:08 |  14.8 |
+| Add a splash screen to applciation      |         |       | 0:41 |   3.2 |
 | Add basic site                          |         |       | 0:34 |   2.7 |
-| Add modeling infrastructure             |         |       | 1:19 |   6.3 |
-| Add nightly support with memcheck       |         |       | 1:40 |   8.0 |
-| Add XML parsing support for currency    |         |       | 1:24 |   6.7 |
+| Add modeling infrastructure             |         |       | 1:30 |   7.1 |
+| Add nightly support with memcheck       |         |       | 1:40 |   7.9 |
+| Add XML parsing support for currency    |         |       | 1:24 |   6.6 |
 | Create a containing structure for data  |         |       | 0:28 |   2.2 |
 | Add basic widgets to display currencies |         |       | 0:26 |   2.1 |
-| Add basic logging support               |         |       | 1:14 |   5.9 |
+| Add basic logging support               |         |       | 1:14 |   5.8 |
 #+end:
 
 Agenda:
@@ -49,6 +50,7 @@ Agenda:
 
 *** STARTED Sprint and product backlog refinement                     :story:
     :LOGBOOK:
+    CLOCK: [2024-06-29 Sat 00:46]--[2024-06-29 Sat 00:54] =>  0:08
     CLOCK: [2024-06-26 Wed 23:27]--[2024-06-26 Wed 23:43] =>  0:16
     CLOCK: [2024-06-25 Tue 19:06]--[2024-06-25 Tue 19:11] =>  0:05
     CLOCK: [2024-06-23 Sun 16:50]--[2024-06-23 Sun 16:54] =>  0:04
@@ -176,13 +178,19 @@ We need a basic website for the project.
 
 *** COMPLETED Add modeling infrastructure                             :story:
    :LOGBOOK:
+   CLOCK: [2024-06-29 Sat 00:34]--[2024-06-29 Sat 00:45] =>  0:11
    CLOCK: [2024-06-28 Fri 23:14]--[2024-06-29 Sat 00:33] =>  1:19
    :END:
 
 We need to be able to draw some simple PlantUML diagrams to describe the code as
 we go along. They should be linked to the documentation.
 
-*** STARTED Add nightly support with memcheck                         :story:
+*** COMPLETED Exclude vcpkg directories from coverage                 :story:
+
+At present coverage is very low because its picking up some files from vcpkg
+install. We need to ignore those.
+
+*** COMPLETED Add nightly support with memcheck                       :story:
     :LOGBOOK:
     CLOCK: [2024-06-28 Fri 07:45]--[2024-06-28 Fri 08:04] =>  0:19
     CLOCK: [2024-06-27 Thu 23:00]--[2024-06-27 Thu 23:21] =>  0:21
@@ -221,12 +229,12 @@ in a way that allows users to load and save the samples. The data in the
 filesystem has the following structure:
 
 - Examples
-  - Example_1:
+  - Example 1:
     - Input
     - ExpectedOutput, e.g. Output
-  - Example_2
+  - Example 2
   - ...
-  - Example_n
+  - Example n
   - Input
 
 The overall context under which valuation is taking place needs a name. Options:
@@ -270,31 +278,6 @@ We need some kind of tree view and list view.
 
 Copy across from dogen basic logging.
 
-*** Support multiple ORE "toolchains"                                 :story:
-
-Much like with an IDE, where one can have multiple toolchains configured, we
-need to also support multiple versions of ORE. Unlike with IDEs, it may be
-desirable to run computations with more than one version of ORE for comparison
-purposes. This means we need a way to associate outputs with their ORE version.
-This approach does not necessarily fit the existing example code, because these
-have a single "output directory". However, we just need  way to associate N
-toolchains with a given workspace or possibly component; when present, the
-output directory starts to reflect the toolchain configuration. For example,
-with CMake we use presets:
-
-- =linux-clang-debug=
-- =linux-clang-release=
-- =linux-gcc-debug=
-- =linux-gcc-release=
-
-For ORE the only dimension under which variability is possible is the version.
-We can then have pricing engine configurations that are either the same, or
-possibly different:
-
-- for a workspace;
-- for a component;
-- for a toolchain version.
-
 *** Add packaging support for images                                  :story:
 
 At present we are not adding images to packages.
@@ -307,19 +290,6 @@ the same approach as Dogen and create clean directories for this.
 *** Create an icon for the application                                :story:
 
 We copied the Dogen icon to get us going. We should really grab our own logo.
-
-*** Add faker support to model                                        :story:
-
-vcpkg will support faker soon:
-
-- [[https://github.com/microsoft/vcpkg/pull/38583][#38583: [faker-cxx] add new port]]
-
-When that is available, we should try to add support for it.
-
-*** Exclude vcpkg directories from coverage                           :story:
-
-At present coverage is very low because its picking up some files from vcpkg
-install. We need to ignore those.
 
 *** Add JSON parsing support for currency                             :story:
 
@@ -337,7 +307,7 @@ run the most basic example of ORE. For each of these types, create a stories.
 
 The files are as follows. First, there are the files in the =Input= directory:
 
-- [[https://github.com/OpenSourceRisk/Engine/tree/master/Examples/Example_1/Input][Example_1 Inputs]]
+- [[https://github.com/OpenSourceRisk/Engine/tree/master/Examples/Example_1/Input][Example 1 Inputs]]
 
 Specifically:
 
@@ -372,7 +342,7 @@ These are:
 Finally, we need support for the outputs. We can grab these from the expected
 outputs:
 
-- [[https://github.com/OpenSourceRisk/Engine/tree/master/Examples/Example_1/ExpectedOutput][Example_1 Expected Outputs]]
+- [[https://github.com/OpenSourceRisk/Engine/tree/master/Examples/Example_1/ExpectedOutput][Example 1 Expected Outputs]]
 
 These are:
 
@@ -386,76 +356,3 @@ These are:
 - =npv.csv=
 - =swaption_npv.csv=
 - =xva.csv=
-
-*** Base the compute approach on BOINC                                :story:
-
-Copy the BOINC data model.
-
-Links:
-
-- [[https://boinc.berkeley.edu/trac/wiki/DataBase][wiki: DataBase]]
-- [[https://wiki.debian.org/BOINC/ServerGuide][BOINC Debian Server Guide]]
-- [[https://boinc.berkeley.edu/trac/wiki/ProjectMain][wiki: BOINC Project Main]]
-- [[https://www.reddit.com/r/BOINC/][BOINC reddit]]
-
-
-*** Create a set of fake currencies                                   :story:
-
-We need to create fake data so we can explore the problem domain. This is
-something to work on in the future. We can use LLMs to help with the fake data,
-where it makes sense.
-
-Example:
-
-| Country code | Country name | Currency Code | Currency Number | Currency           |
-|--------------+--------------+---------------+-----------------+--------------------|
-| AL           | Aerilon      | ALD           |           10001 | Aerilonian Dollar  |
-| AR           | Arcturia     | ARA           |           10002 | Arcturian Arct     |
-| BA           | Balthoria    | BAF           |           10003 | Balthorian Florin  |
-| BE           | Belloria     | BEB           |           10004 | Bellorian Bell     |
-| CA           | Calandria    | CAC           |           10005 | Calandrian Crown   |
-| CD           | Caledonia    | CDC           |           10006 | Caledonian Caled   |
-| DA           | Daeloria     | DAD           |           10007 | Daelorian Dinar    |
-| DE           | Delvadia     | DED           |           10008 | Delvadian Delv     |
-| ER           | Eriador      | ERE           |           10009 | Eriadoran Euro     |
-| ES           | Esteria      | ESE           |           10010 | Esterian Est       |
-| FE           | Feloria      | FEF           |           10011 | Felorian Franc     |
-| FN           | Fendaria     | FNF           |           10012 | Fendarian Fen      |
-| GA           | Galdoria     | GAG           |           10013 | Galdorian Galleon  |
-| GR           | Grendoria    | GRG           |           10014 | Grendorian Grend   |
-| HE           | Helvetia     | HEF           |           10015 | Helvetian Franc    |
-| HY           | Hydronia     | HYH           |           10016 | Hydronian Hyd      |
-| IR           | Iridia       | IRD           |           10017 | Iridian Dollar     |
-| IT           | Ithaca       | ITI           |           10018 | Ithacan Ith        |
-| JE           | Jethro       | JEJ           |           10019 | Jethronian Jet     |
-| JO           | Jorvik       | JOK           |           10020 | Jorvikian Krona    |
-| KA           | Kaelor       | KAK           |           10021 | Kaelorian Krown    |
-| KR           | Krynn        | KRK           |           10022 | Krynnish Krynn     |
-| LU           | Luminia      | LUL           |           10023 | Luminian Lum       |
-| LY           | Lysandria    | LYL           |           10024 | Lysandrian Lira    |
-| MA           | Maldoria     | MAM           |           10025 | Maldorian Mal      |
-| MR           | Mariposa     | MRP           |           10026 | Mariposan Peso     |
-| NE           | Nektonia     | NEN           |           10027 | Nektonian Nek      |
-| NT           | Netharia     | NTN           |           10028 | Netharian Naira    |
-| OR           | Orinoco      | ORB           |           10029 | Orinocan Bolivar   |
-| OL           | Orlanthia    | OLO           |           10030 | Orlanthian Orl     |
-| PA           | Paldoria     | PAP           |           10031 | Paldorian Peso     |
-| PY           | Pyrrhia      | PYP           |           10032 | Pyrrhian Pyr       |
-| QU           | Quentaria    | QUQ           |           10033 | Quentarian Quen    |
-| QN           | Quinaria     | QNQ           |           10034 | Quinarian Quetzal  |
-| RE           | Rendellia    | RER           |           10035 | Rendellian Rend    |
-| RI           | Rivenia      | RIR           |           10036 | Rivenian Ruble     |
-| SE           | Serendia     | SES           |           10037 | Serendian Shilling |
-| SI           | Sildoria     | SIS           |           10038 | Sildorian Sild     |
-| TA           | Tandor       | TAT           |           10039 | Tandorian Taka     |
-| TE           | Tenebria     | TET           |           10040 | Tenebrian Ten      |
-| UL           | Uldoria      | ULU           |           10041 | Uldorian Uld       |
-| UT           | Utopia       | UTU           |           10042 | Utopian Unit       |
-| VA           | Valoria      | VAV           |           10042 | Valorian Valt      |
-| VL           | Valtaria     | VLV           |           10043 | Valtarian Val      |
-| WI           | Wintervale   | WIW           |           10044 | Wintervalean Won   |
-| WY           | Wysteria     | WYW           |           10045 | Wysterian Wys      |
-| XA           | Xandria      | XAX           |           10046 | Xandrian Xan       |
-| XE           | Xenoria      | XEX           |           10047 | Xenorian Xen       |
-| YS           | Yslandia     | YSY           |           10048 | Yslandian Yen      |
-| ZE           | Zephyria     | ZEZ           |           10049 | Zephyrian Zephyr   |

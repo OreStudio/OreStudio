@@ -15,27 +15,27 @@
 ** Active
 
 #+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
-#+CAPTION: Clock summary at [2024-06-28 Fri 00:44]
+#+CAPTION: Clock summary at [2024-06-28 Fri 08:05]
 | <75>                                    |         |       |      |       |
 | Headline                                | Time    |       |      |     % |
 |-----------------------------------------+---------+-------+------+-------|
-| *Total time*                            | *18:08* |       |      | 100.0 |
+| *Total time*                            | *18:27* |       |      | 100.0 |
 |-----------------------------------------+---------+-------+------+-------|
-| Stories                                 | 18:08   |       |      | 100.0 |
-| Active                                  |         | 18:08 |      | 100.0 |
-| Sprint and product backlog refinement   |         |       | 0:47 |   4.3 |
+| Stories                                 | 18:27   |       |      | 100.0 |
+| Active                                  |         | 18:27 |      | 100.0 |
+| Sprint and product backlog refinement   |         |       | 0:47 |   4.2 |
 | Create a basic git hub repository       |         |       | 0:35 |   3.2 |
 | Setup a discord channel for the project |         |       | 0:14 |   1.3 |
-| Setup vcpkg and cmake                   |         |       | 1:21 |   7.4 |
-| Setup github actions                    |         |       | 1:21 |   7.4 |
-| Create and upload a package             |         |       | 3:28 |  19.1 |
-| Create a basic project structure        |         |       | 2:10 |  11.9 |
-| Add a Qt hello world                    |         |       | 3:08 |  17.3 |
-| Add a splash screen to applciation      |         |       | 0:41 |   3.8 |
-| Add nightly support with memcheck       |         |       | 1:21 |   7.4 |
-| Add XML parsing support for currency    |         |       | 1:24 |   7.7 |
-| Create a containing structure for data  |         |       | 0:28 |   2.6 |
-| Add basic widgets to display currencies |         |       | 0:26 |   2.4 |
+| Setup vcpkg and cmake                   |         |       | 1:21 |   7.3 |
+| Setup github actions                    |         |       | 1:21 |   7.3 |
+| Create and upload a package             |         |       | 3:28 |  18.8 |
+| Create a basic project structure        |         |       | 2:10 |  11.7 |
+| Add a Qt hello world                    |         |       | 3:08 |  17.0 |
+| Add a splash screen to applciation      |         |       | 0:41 |   3.7 |
+| Add nightly support with memcheck       |         |       | 1:40 |   9.0 |
+| Add XML parsing support for currency    |         |       | 1:24 |   7.6 |
+| Create a containing structure for data  |         |       | 0:28 |   2.5 |
+| Add basic widgets to display currencies |         |       | 0:26 |   2.3 |
 | Add basic logging support               |         |       | 0:44 |   4.0 |
 #+end:
 
@@ -166,6 +166,7 @@ int main(int argc, char *argv[])
 
 *** STARTED Add nightly support with memcheck                         :story:
     :LOGBOOK:
+    CLOCK: [2024-06-28 Fri 07:45]--[2024-06-28 Fri 08:04] =>  0:19
     CLOCK: [2024-06-27 Thu 23:00]--[2024-06-27 Thu 23:21] =>  0:21
     CLOCK: [2024-06-27 Thu 22:40]--[2024-06-27 Thu 22:59] =>  0:19
     CLOCK: [2024-06-26 Wed 19:30]--[2024-06-26 Wed 19:44] =>  0:14
@@ -175,6 +176,11 @@ int main(int argc, char *argv[])
     :END:
 
 We need to check for memory issues with nightlies.
+
+Notes:
+
+- error with valgrind appears to be related to DWARF version: [[https://github.com/llvm/llvm-project/issues/56550][#56550: Clang
+  Generates DWARF Info That Valgrind Can't Read]]. Change it to v4.
 
 *** STARTED Add XML parsing support for currency                      :story:
     :LOGBOOK:

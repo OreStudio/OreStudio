@@ -85,9 +85,6 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX
     # enable as many warnings as possible
     set(warning_flags "-Wall -Wextra -Wconversion")
 
-    # force DWARF version to 4 in order to keep Valgrind happy.
-    set(warning_flags "${warning_flags} -gdwarf-4 -gstrict-dwarf")
-
     if (CMAKE_COMPILER_IS_GNUCXX)
         set(warning_flags "${warning_flags} -Wno-maybe-uninitialized")
     endif()
@@ -121,6 +118,9 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX
 
     # enable RTTI
     set(other_flags "${other_flags} -frtti")
+
+    # force DWARF version to 4 in order to keep Valgrind happy.
+    set(other_flags "${other_flags} -gdwarf-4 -gstrict-dwarf")
 
     # handle visibility settings
     if(APPLE)

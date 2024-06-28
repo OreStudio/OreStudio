@@ -1,0 +1,11 @@
+:PROPERTIES:
+:ID: CB42DFE5-804B-E1C4-E1E3-0A6C4766609C
+:END:
+#+title: VisualOre
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* OreStudio
+
+Graphical wrapper around the Open Source Risk Engine (ORE).

@@ -1,0 +1,100 @@
+@startuml
+
+namespace ores #F2F2F2 {
+
+    note "Contains assorted basic functionality that does not fit elsewhere." as N1
+    utility --- N1
+    namespace utility #F2F2F2 {
+
+        note "Generic exception classes" as N1
+        log --- N1
+        namespace exception #F2F2F2 {
+            class invalid_enum_value <<std::exception>> #E8C2F8
+            note top of invalid_enum_value
+                The exception thrown when an enum has an unexpected value.
+            end note
+        }
+
+        note "Infrastructure related to logging to files." as N2
+        log --- N2
+        namespace log #F2F2F2 {
+            class invalid_logging_configuration <<std::exception>> #E8C2F8
+            note top of invalid_logging_configuration
+                The values supplied for the logging configuration are not valid.
+            end note
+
+            enum severity_level #F2DAFD {
+                trace,
+                debug,
+                info,
+                warn,
+                error
+            }
+            note top of severity_level
+                Logging severity as per boost logging.
+            end note
+
+            class logger <<boost::log::sources::severity_channel_logger<severity_level, std::string>> #F7E5FF
+            logger o--- severity_level
+
+            class logger_factory #DDA9F3 {
+                +{static} logger logger_factory(std::string component_name)
+            }
+            logger_factory o--- logger
+            note top of logger_factory
+                Creates loggers.
+            end note
+
+            class logging_configuration #F7E5FF {
+                +{field} std::string severity;
+                +{field} std::string filename;
+                +{field} bool output_to_console;
+                +{field} boost::filesystem::path output_directory;
+            }
+            note top of logging_configuration
+                Configuration options related to logging.
+            end note
+
+            class logging_configuration_validator #DDA9F3 {
+                +{static} validate(const logging_configuration& cfg)
+            }
+            logging_configuration_validator o--- logging_configuration : validates >
+            logging_configuration_validator o--- invalid_logging_configuration : throws >
+            note top of logging_configuration_validator
+                Checks the validity of the supplied logging configuration.
+            end note
+
+            class lifecycle_manager #DDA9F3 {
+                -{static} create_file_backend(boost::filesystem::path path, severity_level severity)
+                -{static} create_console_backend(severity_level severity)
+                +{static} initialise(boost::optional<logging_configuration> ocfg)
+                +{static} void shutdown()
+            }
+            lifecycle_manager o--- severity_level : backend is at level >
+            lifecycle_manager o--- logging_configuration : is configured by >
+
+            note top of lifecycle_manager
+                Manages the starting and stopping of logging for an application.
+            end note
+
+            class scoped_lifecycle_manager #DDA9F3 {
+                +{method} initialise(const boost::optional<logging_configuration>& ocfg)
+                +{method} bool is_initialised()
+            }
+            scoped_lifecycle_manager o--- lifecycle_manager : wraps with scope >
+            note top of scoped_lifecycle_manager
+                Provides a RAII wrapper around the logging lifecycle manager.
+            end note
+        }
+
+        note "Testing infrastructure" as N3
+        test --- N3
+        namespace test #F2F2F2 {
+            class exception_fixture #DDA9F3
+            note top of exception_fixture
+                Translates boost expcetions by dumping diagnostic information.
+            end note
+        }
+    }
+}
+@enduml

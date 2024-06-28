@@ -1,0 +1,22 @@
+:PROPERTIES:
+:ID: E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E
+:END:
+#+title: Agile
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Task and time tracking activities.
+
+* Product Backlog
+
+Contains all of the captured stories that have not yet been assigned to a
+sprint. Available here: [[id:558650A4-C3E5-8964-4193-7D9125E29B83][Product Backlog]].
+
+* Sprint Backlogs
+
+For each sprint, we capture all of the work we have undertaken. When it clocks
+around eighty hours, we call it a sprint and make a release. Each sprint is
+organised around one or two themes which we call the /Sprint Goals/.
+
+- [[id:34EDDBB5-CB52-35C4-E123-E0A70FB32799][Sprint Backlog 01]]

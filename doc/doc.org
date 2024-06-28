@@ -1,0 +1,15 @@
+:PROPERTIES:
+:ID: C0CF98E8-082F-2F04-2533-94B2DA9BE3D2
+:END:
+#+title: Documentation
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Contains project documentation. This project does not use a wiki or any other
+form of documentation; it is all expected to be in git and used to generate the
+product website.
+
+- [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]]: documentation related to the [[https://masd-project.github.io/progen/docs/mde_and_the_software_development_process.htm][software development process]] used to
+  develop this project.
+- [[id:680CEB24-8DC4-9884-9B3B-C8CFBF6CD400][Modeling]]: models used to document its structure and functionality.

@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 680CEB24-8DC4-9884-9B3B-C8CFBF6CD400
+:END:
+#+title: Modeling
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+
+Documentation related to models for this software project. If you want to
+understand what we mean by a model, read this document: [[https://masd-project.github.io/progen/docs/models_and_transformations.html][Models and
+Transformations.]] Note however that we make little use of automated tooling for
+modeling in this project, by design.
+
+* UML Class Diagrams
+
+** =ores.utility=
+
+[[./ores.utility.png]]

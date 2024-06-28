@@ -9,3 +9,7 @@
 * OreStudio
 
 Graphical wrapper around the Open Source Risk Engine (ORE).
+
+* Index
+
+- [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]]: Main page for the documentation of this project.

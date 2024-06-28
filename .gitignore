@@ -28,7 +28,7 @@ TestResult.xml
 compile_commands.json
 
 # org-roam
-org-roam.db
+.org-roam.db
 
 .cache
 

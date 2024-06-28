@@ -30,5 +30,10 @@ target_link_libraries(ores.qt PRIVATE
   Qt6::Gui
   Qt6::Widgets)
 
+add_custom_target(run_ores_qt
+    COMMENT "Running ores.qt" VERBATIM
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/projects/ores.qt
+    COMMAND ./ores.qt)
+
 install(TARGETS ores.qt RUNTIME DESTINATION bin
     COMPONENT applications)

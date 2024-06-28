@@ -28,6 +28,9 @@
 
 namespace ores::utility::log {
 
+/**
+ * @brief Checks the validity of the supplied logging configuration.
+ */
 class logging_configuration_validator final {
 public:
     logging_configuration_validator() = delete;

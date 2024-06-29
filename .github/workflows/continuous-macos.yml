@@ -44,8 +44,7 @@ jobs:
 
       - name: Run CTest workflow
         run: |
-          brew install autoconf automake libtool
-          brew install autoconf automake autoconf-archive
+          brew install autoconf automake libtool autoconf-archive
           export ORES_BUILD_PROVIDER="github"
           export ORES_BUILD_COMMIT="${GITHUB_SHA}"
           export ORES_BUILD_NUMBER="${GITHUB_RUN_NUMBER}"

@@ -16,32 +16,32 @@
 ** Active
 
 #+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
-#+CAPTION: Clock summary at [2024-06-29 Sat 18:14]
+#+CAPTION: Clock summary at [2024-06-29 Sat 18:33]
 | <75>                                    |         |       |      |       |
 | Headline                                | Time    |       |      |     % |
 |-----------------------------------------+---------+-------+------+-------|
-| *Total time*                            | *22:28* |       |      | 100.0 |
+| *Total time*                            | *22:46* |       |      | 100.0 |
 |-----------------------------------------+---------+-------+------+-------|
-| Stories                                 | 22:28   |       |      | 100.0 |
-| Active                                  |         | 22:28 |      | 100.0 |
-| Sprint and product backlog refinement   |         |       | 0:55 |   4.1 |
+| Stories                                 | 22:46   |       |      | 100.0 |
+| Active                                  |         | 22:46 |      | 100.0 |
+| Sprint and product backlog refinement   |         |       | 0:55 |   4.0 |
 | Create a basic git hub repository       |         |       | 0:35 |   2.6 |
 | Setup a discord channel for the project |         |       | 0:14 |   1.0 |
-| Setup vcpkg and cmake                   |         |       | 1:21 |   6.0 |
-| Setup github actions                    |         |       | 1:21 |   6.0 |
-| Create and upload a package             |         |       | 3:28 |  15.4 |
-| Create a basic project structure        |         |       | 2:10 |   9.6 |
-| Add a Qt hello world                    |         |       | 3:08 |  13.9 |
+| Setup vcpkg and cmake                   |         |       | 1:21 |   5.9 |
+| Setup github actions                    |         |       | 1:21 |   5.9 |
+| Create and upload a package             |         |       | 3:28 |  15.2 |
+| Create a basic project structure        |         |       | 2:10 |   9.5 |
+| Add a Qt hello world                    |         |       | 3:08 |  13.8 |
 | Add a splash screen to applciation      |         |       | 0:41 |   3.0 |
 | Add basic site                          |         |       | 0:34 |   2.5 |
-| Add modeling infrastructure             |         |       | 1:30 |   6.7 |
+| Add modeling infrastructure             |         |       | 1:30 |   6.6 |
 | Fix code syntax highlighting in site    |         |       | 0:10 |   0.7 |
-| Merge index with readme                 |         |       | 0:24 |   1.8 |
-| Add nightly support with memcheck       |         |       | 2:25 |  10.8 |
-| Add XML parsing support for currency    |         |       | 1:24 |   6.2 |
-| Create a containing structure for data  |         |       | 0:28 |   2.1 |
+| Merge index with readme                 |         |       | 0:42 |   3.1 |
+| Add nightly support with memcheck       |         |       | 2:25 |  10.6 |
+| Add XML parsing support for currency    |         |       | 1:24 |   6.1 |
+| Create a containing structure for data  |         |       | 0:28 |   2.0 |
 | Add basic widgets to display currencies |         |       | 0:26 |   1.9 |
-| Add basic logging support               |         |       | 1:14 |   5.5 |
+| Add basic logging support               |         |       | 1:14 |   5.4 |
 #+end:
 
 Agenda:
@@ -201,6 +201,7 @@ For some reason we are not getting syntax highlighting in the website.
 
 *** COMPLETED Merge index with readme                                 :story:
     :LOGBOOK:
+    CLOCK: [2024-06-29 Sat 18:15]--[2024-06-29 Sat 18:33] =>  0:18
     CLOCK: [2024-06-29 Sat 17:50]--[2024-06-29 Sat 18:14] =>  0:24
     :END:
 

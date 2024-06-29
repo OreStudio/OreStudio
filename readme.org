@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: CB42DFE5-804B-E1C4-E1E3-0A6C4766609C
+:END:
+#+title: Ore Studio
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+export_file_name: index
+#+startup: inlineimages
+
+[[./assets/images/splash_screen.png]]
+
+[[https://img.shields.io/badge/license-GPL_3-green.svg?dummy][https://raw.githubusercontent.com/OreStudio/OreStudio/main/LICENCE]]
+[[https://img.shields.io/badge/status-active-brightgreen.svg?style=flat][https://github.com/OreStudio/OreStudio/pulse/monthly]]
+[[https://img.shields.io/github/issues/OreStudio/OreStudio.svg][https://github.com/OreStudio/OreStudio/issues]]
+[[https://img.shields.io/github/contributors/OreStudio/OreStudio.svg][https://github.com/OreStudio/OreStudio/graphs/contributors]]
+[[https://img.shields.io/badge/PRs%20-welcome-brightgreen.svg][https://github.com/OreStudio/OreStudio/blob/main/CONTRIBUTING.md]]
+[[https://img.shields.io/github/downloads/OreStudio/OreStudio/total.svg][https://github.com/OreStudio/OreStudio/releases]]
+[[https://github.com/OreStudio/OreStudio/actions/workflows/continuous-linux.yml/badge.svg][https://github.com/OreStudio/OreStudio/actions/workflows/continuous-linux.yml]]
+[[https://github.com/OreStudio/OreStudio/actions/workflows/continuous-windows.yml/badge.svg][https://github.com/OreStudio/OreStudio/actions/workflows/continuous-windows.yml]]
+[[https://github.com/OreStudio/OreStudio/actions/workflows/continuous-macos.yml/badge.svg][https://github.com/OreStudio/OreStudio/actions/workflows/continuous-macos.yml]]
+[[https://github.com/OreStudio/OreStudio/actions/workflows/nightly-linux.yml/badge.svg][https://github.com/OreStudio/OreStudio/actions/workflows/nightly-linux.yml]]
+[[https://img.shields.io/badge/cdash-dashboard-00cc00.svg][https://my.cdash.org/index.php?project=OreStudio]]
+[[https://img.shields.io/github/release/OreStudio/OreStudio.svg][https://github.com/OreStudio/OreStudio/releases]]
+[[https://img.shields.io/github/commits-since/OreStudio/OreStudio/v1.0.32.svg][https://github.com/OreStudio/OreStudio/commits/main]]
+[[https://img.shields.io/badge/std-C++17-blue.svg][https://en.wikipedia.org/wiki/C%2B%2B17]]
+[[https://img.shields.io/badge/GCC-13-blue.svg][https://www.gnu.org/software/gcc/gcc-13]]
+[[https://img.shields.io/badge/CLANG-16-blue.svg][https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html]]
+[[https://img.shields.io/badge/MSVC-2022-blue.svg][https://visualstudio.microsoft.com/vs/whatsnew/]]
+[[https://dcbadge.limes.pink/api/server/https://discord.gg/gcrYsjW3pd][https://discord.gg/https://discord.gg/gcrYsjW3pd]]
+
+* OreStudio
+
+Graphical wrapper around the Open Source Risk Engine (ORE).
+
+* Links
+
+- [[https://github.com/OreStudio/OreStudio][Project in GitHub]]
+
+* Index
+
+- [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]]: Main page for the documentation of this project.

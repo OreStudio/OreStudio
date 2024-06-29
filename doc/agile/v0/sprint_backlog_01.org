@@ -16,30 +16,32 @@
 ** Active
 
 #+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
-#+CAPTION: Clock summary at [2024-06-29 Sat 14:12]
+#+CAPTION: Clock summary at [2024-06-29 Sat 18:14]
 | <75>                                    |         |       |      |       |
 | Headline                                | Time    |       |      |     % |
 |-----------------------------------------+---------+-------+------+-------|
-| *Total time*                            | *21:54* |       |      | 100.0 |
+| *Total time*                            | *22:28* |       |      | 100.0 |
 |-----------------------------------------+---------+-------+------+-------|
-| Stories                                 | 21:54   |       |      | 100.0 |
-| Active                                  |         | 21:54 |      | 100.0 |
-| Sprint and product backlog refinement   |         |       | 0:55 |   4.2 |
-| Create a basic git hub repository       |         |       | 0:35 |   2.7 |
-| Setup a discord channel for the project |         |       | 0:14 |   1.1 |
-| Setup vcpkg and cmake                   |         |       | 1:21 |   6.2 |
-| Setup github actions                    |         |       | 1:21 |   6.2 |
-| Create and upload a package             |         |       | 3:28 |  15.8 |
-| Create a basic project structure        |         |       | 2:10 |   9.9 |
-| Add a Qt hello world                    |         |       | 3:08 |  14.3 |
-| Add a splash screen to applciation      |         |       | 0:41 |   3.1 |
-| Add basic site                          |         |       | 0:34 |   2.6 |
-| Add modeling infrastructure             |         |       | 1:30 |   6.8 |
-| Add nightly support with memcheck       |         |       | 2:25 |  11.0 |
-| Add XML parsing support for currency    |         |       | 1:24 |   6.4 |
+| Stories                                 | 22:28   |       |      | 100.0 |
+| Active                                  |         | 22:28 |      | 100.0 |
+| Sprint and product backlog refinement   |         |       | 0:55 |   4.1 |
+| Create a basic git hub repository       |         |       | 0:35 |   2.6 |
+| Setup a discord channel for the project |         |       | 0:14 |   1.0 |
+| Setup vcpkg and cmake                   |         |       | 1:21 |   6.0 |
+| Setup github actions                    |         |       | 1:21 |   6.0 |
+| Create and upload a package             |         |       | 3:28 |  15.4 |
+| Create a basic project structure        |         |       | 2:10 |   9.6 |
+| Add a Qt hello world                    |         |       | 3:08 |  13.9 |
+| Add a splash screen to applciation      |         |       | 0:41 |   3.0 |
+| Add basic site                          |         |       | 0:34 |   2.5 |
+| Add modeling infrastructure             |         |       | 1:30 |   6.7 |
+| Fix code syntax highlighting in site    |         |       | 0:10 |   0.7 |
+| Merge index with readme                 |         |       | 0:24 |   1.8 |
+| Add nightly support with memcheck       |         |       | 2:25 |  10.8 |
+| Add XML parsing support for currency    |         |       | 1:24 |   6.2 |
 | Create a containing structure for data  |         |       | 0:28 |   2.1 |
-| Add basic widgets to display currencies |         |       | 0:26 |   2.0 |
-| Add basic logging support               |         |       | 1:14 |   5.6 |
+| Add basic widgets to display currencies |         |       | 0:26 |   1.9 |
+| Add basic logging support               |         |       | 1:14 |   5.5 |
 #+end:
 
 Agenda:
@@ -143,7 +145,7 @@ Create a trivial application in Qt that exercises the pipelines.
 
 It would be nice to have a simple splash screen with the project logo.
 
-#+begin_quote c++
+#+begin_src c++
 #include "mainwindow.h"
 #include <QApplication>
 #include <QSplashScreen>
@@ -166,7 +168,7 @@ int main(int argc, char *argv[])
 
     return a.exec();
 }
-#+end_quote
+#+end_src
 
 *** COMPLETED Add basic site                                          :story:
     :LOGBOOK:
@@ -189,6 +191,21 @@ we go along. They should be linked to the documentation.
 
 At present coverage is very low because its picking up some files from vcpkg
 install. We need to ignore those.
+
+*** COMPLETED Fix code syntax highlighting in site                    :story:
+    :LOGBOOK:
+    CLOCK: [2024-06-29 Sat 17:30]--[2024-06-29 Sat 17:40] =>  0:10
+    :END:
+
+For some reason we are not getting syntax highlighting in the website.
+
+*** COMPLETED Merge index with readme                                 :story:
+    :LOGBOOK:
+    CLOCK: [2024-06-29 Sat 17:50]--[2024-06-29 Sat 18:14] =>  0:24
+    :END:
+
+Its a bit annoying to have both a =readme= and an =index= file, since they are
+both just landing pages. Look into merging them.
 
 *** STARTED Add nightly support with memcheck                         :story:
     :LOGBOOK:

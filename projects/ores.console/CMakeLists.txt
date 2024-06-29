@@ -59,10 +59,11 @@ set_target_properties(${exe_target_name} PROPERTIES
     OUTPUT_NAME ${exe_binary_name})
 
 target_include_directories(${exe_target_name}
-    PRIVATE ${CMAKE_SOURCE_DIR}/projects/${name}/include)
+    PRIVATE ${CMAKE_SOURCE_DIR}/projects)
 
 target_link_libraries(${exe_target_name} PRIVATE
     # ${lib_target_name}
+    ores.utility.lib
     Boost::boost
     Boost::date_time
     Boost::program_options

@@ -3,7 +3,7 @@
 :END:
 #+title: Ore Studio
 #+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: title:nil <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+export_file_name: index
 #+startup: inlineimages
 
@@ -30,13 +30,163 @@
 
 * OreStudio
 
-Graphical wrapper around the Open Source Risk Engine (ORE).
+Graphical wrapper around [[https://www.opensourcerisk.org/][Acadia's]] [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine (ORE)]]. Please note
+that this open source project has *no* affiliation with either Acadia or ORE.
 
 * Links
 
 - [[https://github.com/OreStudio/OreStudio][Project in GitHub]]
 - [[https://orestudio.github.io/OreStudio/][Website]]
 
-* Index
+* Overview
+
+The objective of this project is to create a simple User Interface for ORE, /for
+didactic purposes/. Significantly, our intent is *not* to create a professional
+tool for enterprise-grade trading. Instead, we follow on the footsteps of those
+who, like [[https://x.com/karpathy/status/1756380066580455557?lang=en][Karpathy]], view learning as deeply enmeshed with the act of building.
+With this in mind, our strategy is two-fold:
+
+- to learn by /creating the tool itself/; and
+- to create a tool specifically designed to learn, explore and experiment within
+  the domain of quantitative finance, both by using the tool as well as by
+  extending it for their own purposes.
+
+The next section explains how we are going to go about this.
+
+** Approach
+
+To attain our goals we have decided to remove as many infrastructural moving
+parts as possible from the engineering stack. Most financial systems involve a
+myriad of micro-services, a veritable zoo of storage technologies, assorted
+messaging queues, orchestration engines and much, much more. Whilst these may be
+deemed necessary for enterprise systems, they are counterproductive from a
+teaching perspective, as they obscure considerably the underlying domain
+concepts which they purport to implement. In contrast, OreStudio will only ever
+have two components: a /client/ and a [[https://www.postgresql.org/][Postgres]] relational database. Business
+logic will be divided between these two components, as required; they are to be
+implemented wherever the implementation can be done with the least amount of
+complexity and the highest amount of clarity. Performance and scalability are
+not direct concerns. Note also that we will focus on [[https://github.com/OpenSourceRisk/Engine][ORE]] and [[https://github.com/lballabio/QuantLib][QuantLib]]
+/exclusively/, and will not support any other Quant libraries or engines. The
+project is tightly coupled with these two, /by design/.
+
+The implementation language of choice is [[https://isocpp.org/][C++]], for somewhat arbitrary reasons.
+After many years of development, both academically and professionally, I now
+find myself estranged from the language. Thus, this project is an opportunity to
+catch up with the latest and greatest. Python would have been a suitable
+alternative, particularly given its popularity within Quants and Quant Devs.
+However, in the interest of simplicity, we'll stick to just the /one/ language
+--- other than [[https://en.wikipedia.org/wiki/SQL][SQL]] for the database, or course.
+
+I am the single maintainer of OreStudio and thus its [[https://en.wikipedia.org/wiki/Benevolent_dictator_for_life][BFDL]]. If you want to know
+more about me, do have a peek at [[https://mcraveiro.github.io/][my personal website]], in particular [[https://mcraveiro.github.io/about.html][this section]]
+section.[[https://github.com/OreStudio/OreStudio/blob/main/CONTRIBUTING.md][PRs are welcome]], provided they are in the spirit of what is described
+here.
+
+* Content
+
+All documentation for this project is kept within [[https://git-scm.com/][git]], right next to its source
+code. It uses Emacs and [[https://orgmode.org/][org-mode]] to [[https://github.com/OreStudio/OreStudio/actions/workflows/build-site.yml][automatically generate]] its [[https://orestudio.github.io/OreStudio/][website]], in a
+variation of [[https://en.wikipedia.org/wiki/Literate_programming][literate programming]]. We also use [[https://www.orgroam.com/][org-roam]] internally to organise
+our notes and [[https://orgmode.org/worg/org-contrib/babel/][org-babel]] to make code blocks executable where possible. Org-roam
+is an implementation of the [[https://en.wikipedia.org/wiki/Zettelkasten][Zettelkasten method]], though you need not care too
+much about it if you do not use Emacs; just browse through the content via [[https://orestudio.github.io/OreStudio/][the
+website]]. If however you do use Emacs, you can make use of a much richer roam
+experience; the file [[https://github.com/OreStudio/OreStudio/blob/main/.dir-locals.el][.dir-locals.el]] is configured to generate a local roam
+database when you run:
+
+#+begin_src emacs-lisp
+(org-roam-db-sync)
+#+end_src
+
+You can then jump through all the pages using the normal org-roam facilities.
+For those exploring through the website, the following is a set of useful entry
+point links.
 
 - [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]]: Main page for the documentation of this project.
+
+* Binary Packages
+
+Binary packages are available for each release in [[https://github.com/OreStudio/OreStudio/releases][GitHub]] (links at the end of
+each release note). The binaries cover Debian Linux, OSX and Windows - 64-bit
+only. Packages are also generated for each commit and saved with the
+corresponding [[https://github.com/OreStudio/OreStudio/actions][GitHub Workflow]]. Development is done from [[https://github.com/OreStudio/OreStudio][main in git]], so latest
+should always be greatest, but you may want to use packages from the [[https://orestudio.github.io/OreStudio/doc/agile/agile.html][previous
+sprint]] rather than what is currently under development (see badges above).
+
+Notes:
+
+- Other than Linux, we do not test the packages manually. If you find any issues
+  with a binary package, please raise an issue.
+- The OSX installer provides you with a DMG. Once you open it in Finder, it
+  mounts under =/Volumes/=, /e.g/.:
+
+#+begin_src sh
+/Volumes/OreStudio-${VERSION}-Darwin-x86_64/orestudio.app/Contents/Resources/bin
+#+end_src
+
+Where =${VERSION}= is your OreStudio version such as =0.0.1=.
+
+* Building From Source
+
+In order to build OreStudio you will need a C++ toolchain. On Linux and OSX,
+you'll need a recent compiler with C++ 17 support, such as [[https://www.gnu.org/software/gcc/gcc-13][GCC 13]] or [[https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html][Clang 14]],
+and [[https://ninja-build.org/manual.html][Ninja]] or [[https://www.gnu.org/software/make/][GNU Make]]. On Windows you'll need [[https://visualstudio.microsoft.com/vs/whatsnew/][Visual Studio 2022]]. On all
+platforms, we make use of [[https://cmake.org/][CMake]]. Older compilers may work, but we try to always
+use the most recent releases. So, if you can, please try using to those.
+
+In terms of dependencies, though OreStudio should build fine with package
+manager supplied libraries or even with hand-built dependencies, the recommended
+way to setup a development environment on all supported platforms is by using
+[[https://github.com/Microsoft/vcpkg][vcpkg]], which is what this document describes. OreStudio uses the "sub-module
+setup", whereby vcpkg is a git submodule of OreStudio. All of the dependencies
+are declared in the [[https://github.com/OreStudio/OreStudio/blob/main/vcpkg.json][vcpkg.json]] file. We also makes use of [[https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html][CMake Presets]]. To know
+what these are, you can have a look at our presets file [[https://github.com/OreStudio/OreStudio/blob/main/CMakePresets.json][CMakePresets.json]] for a
+list of available presets; alternatively, just use CMake:
+
+#+begin_src sh :results verbatim drawer
+cmake --list-presets
+#+end_src
+
+#+RESULTS:
+:results:
+Available configure presets:
+
+  "linux-clang-debug"             - Linux Clang Debug
+  "linux-clang-release"           - Linux Clang Release
+  "linux-gcc-debug"               - Linux GCC debug
+  "linux-gcc-release"             - Linux GCC Release
+  "windows-msvc-debug"            - Windows x64 Debug
+  "windows-msvc-release"          - Windows x64 Release
+  "windows-msvc-clang-cl-debug"   - Windows x64 Debug
+  "windows-msvc-clang-cl-release" - Windows x64 Release
+  "macos-clang-debug"             - Mac OSX Debug
+  "macos-clang-release"           - Mac OSX Release
+:end:
+
+For the remainder of this document we shall assume =linux-clang-release=, which
+is our preferred preset. If it isn't yours, remember to update the preset name
+to match your desired build.
+
+To checkout OreStudio, clone as follows:
+
+#+begin_src sh
+git clone https://github.com/OreStudio/OreStudio.git --recurse-submodules
+#+end_src
+
+This takes into account the vcpkg submodule setup, as well as test data
+(explained below). For the configure step:
+
+#+begin_src sh
+cd OreStudio
+cmake --preset linux-clang-release
+#+end_src
+
+You can build OreStudio on all platforms (modulus preset) as follows:
+
+#+begin_src sh
+cmake --build --preset linux-clang-release
+#+end_src
+
+If you'd like to run the project tests, execute the target =run_all_tests= or
+its abbreviation =rat=.

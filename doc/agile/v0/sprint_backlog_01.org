@@ -16,32 +16,33 @@
 ** Active
 
 #+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
-#+CAPTION: Clock summary at [2024-06-29 Sat 18:33]
+#+CAPTION: Clock summary at [2024-06-29 Sat 20:44]
 | <75>                                    |         |       |      |       |
 | Headline                                | Time    |       |      |     % |
 |-----------------------------------------+---------+-------+------+-------|
-| *Total time*                            | *22:46* |       |      | 100.0 |
+| *Total time*                            | *24:25* |       |      | 100.0 |
 |-----------------------------------------+---------+-------+------+-------|
-| Stories                                 | 22:46   |       |      | 100.0 |
-| Active                                  |         | 22:46 |      | 100.0 |
-| Sprint and product backlog refinement   |         |       | 0:55 |   4.0 |
-| Create a basic git hub repository       |         |       | 0:35 |   2.6 |
+| Stories                                 | 24:25   |       |      | 100.0 |
+| Active                                  |         | 24:25 |      | 100.0 |
+| Sprint and product backlog refinement   |         |       | 0:55 |   3.8 |
+| Create a basic git hub repository       |         |       | 0:35 |   2.4 |
 | Setup a discord channel for the project |         |       | 0:14 |   1.0 |
-| Setup vcpkg and cmake                   |         |       | 1:21 |   5.9 |
-| Setup github actions                    |         |       | 1:21 |   5.9 |
-| Create and upload a package             |         |       | 3:28 |  15.2 |
-| Create a basic project structure        |         |       | 2:10 |   9.5 |
-| Add a Qt hello world                    |         |       | 3:08 |  13.8 |
-| Add a splash screen to applciation      |         |       | 0:41 |   3.0 |
-| Add basic site                          |         |       | 0:34 |   2.5 |
-| Add modeling infrastructure             |         |       | 1:30 |   6.6 |
+| Setup vcpkg and cmake                   |         |       | 1:21 |   5.5 |
+| Setup github actions                    |         |       | 1:21 |   5.5 |
+| Create and upload a package             |         |       | 3:28 |  14.2 |
+| Create a basic project structure        |         |       | 2:10 |   8.9 |
+| Add a Qt hello world                    |         |       | 3:08 |  12.8 |
+| Add a splash screen to applciation      |         |       | 0:41 |   2.8 |
+| Add basic site                          |         |       | 0:34 |   2.3 |
+| Add modeling infrastructure             |         |       | 1:30 |   6.1 |
 | Fix code syntax highlighting in site    |         |       | 0:10 |   0.7 |
-| Merge index with readme                 |         |       | 0:42 |   3.1 |
-| Add nightly support with memcheck       |         |       | 2:25 |  10.6 |
-| Add XML parsing support for currency    |         |       | 1:24 |   6.1 |
-| Create a containing structure for data  |         |       | 0:28 |   2.0 |
-| Add basic widgets to display currencies |         |       | 0:26 |   1.9 |
-| Add basic logging support               |         |       | 1:14 |   5.4 |
+| Merge index with readme                 |         |       | 0:42 |   2.9 |
+| Add project objective to readme         |         |       | 1:39 |   6.8 |
+| Add nightly support with memcheck       |         |       | 2:25 |   9.9 |
+| Add XML parsing support for currency    |         |       | 1:24 |   5.7 |
+| Create a containing structure for data  |         |       | 0:28 |   1.9 |
+| Add basic widgets to display currencies |         |       | 0:26 |   1.8 |
+| Add basic logging support               |         |       | 1:14 |   5.1 |
 #+end:
 
 Agenda:
@@ -207,6 +208,13 @@ For some reason we are not getting syntax highlighting in the website.
 
 Its a bit annoying to have both a =readme= and an =index= file, since they are
 both just landing pages. Look into merging them.
+
+*** COMPLETED Add project objective to readme                         :story:
+    :LOGBOOK:
+    CLOCK: [2024-06-29 Sat 19:05]--[2024-06-29 Sat 20:44] =>  1:39
+    :END:
+
+Explain the objective of the project and the approach.
 
 *** STARTED Add nightly support with memcheck                         :story:
     :LOGBOOK:

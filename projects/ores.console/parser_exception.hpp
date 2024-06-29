@@ -17,39 +17,33 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.console/configuration.hpp"
+#ifndef ORES_CONSOLE_PARSER_EXCEPTION_HPP
+#define ORES_CONSOLE_PARSER_EXCEPTION_HPP
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
+
+#include <string>
+#include <boost/exception/info.hpp>
 
 namespace ores::console {
 
-configuration::configuration(configuration&& rhs) noexcept
-    : logging_(std::move(rhs.logging_)) { }
+/**
+ * @brief A fatal error has occurred during option parsing.
+ */
+class parser_exception : public virtual std::exception, public virtual boost::exception {
+public:
+    explicit parser_exception(std::string message)
+        : message_(std::move(message)) { }
+    parser_exception() = default;
+    ~parser_exception() noexcept override = default;
+    const char* what() const noexcept final { return(message_.c_str()); }
 
-configuration::configuration(
-    boost::optional<ores::utility::log::logging_configuration> logging)
-    : logging_(logging) { }
-
-void configuration::swap(configuration& other) noexcept {
-    using std::swap;
-    swap(logging_, other.logging_);
-}
-
-bool configuration::operator==(const configuration& rhs) const {
-    return logging_ == rhs.logging_;
-}
-
-configuration& configuration::operator=(configuration other) {
-    using std::swap;
-    swap(*this, other);
-    return *this;
-}
-
-boost::optional<ores::utility::log::logging_configuration>
-configuration::logging() const {
-    return logging_;
-}
-
-void configuration::logging(boost::optional<ores::utility::log::logging_configuration> v) {
-    logging_ = v;
-}
+private:
+    std::string message_;
+};
 
 }
+
+#endif

@@ -17,3 +17,9 @@ modeling in this project, by design.
 [[./ores.utility.png]]
 
 - [[./ores.utility.png][Big version]]
+
+** =ores.console=
+
+[[./ores.console.png]]
+
+- [[./ores.console.png][Big version]]

@@ -28,7 +28,7 @@
 #include <boost/optional.hpp>
 #include "ores.utility/log/logging_configuration.hpp"
 
-namespace ores::cli {
+namespace ores::console {
 
 /**
  * @brief All of the configuration required by the command line application.
@@ -39,7 +39,6 @@ public:
     configuration(const configuration&) = default;
     ~configuration() = default;
     configuration(configuration&& rhs) noexcept;
-
     configuration(
         boost::optional<ores::utility::log::logging_configuration> logging);
 
@@ -69,8 +68,7 @@ namespace std {
 
 template<>
 inline void swap(
-    ores::cli::configuration& lhs,
-    ores::cli::configuration& rhs) {
+    ores::console::configuration& lhs, ores::console::configuration& rhs) {
     lhs.swap(rhs);
 }
 

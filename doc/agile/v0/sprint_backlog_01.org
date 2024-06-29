@@ -211,11 +211,36 @@ both just landing pages. Look into merging them.
 
 *** COMPLETED Add project objective to readme                         :story:
     :LOGBOOK:
+    CLOCK: [2024-06-29 Sat 22:55]--[2024-06-29 Sat 23:28] =>  0:33
     CLOCK: [2024-06-29 Sat 20:50]--[2024-06-29 Sat 20:55] =>  0:05
     CLOCK: [2024-06-29 Sat 19:05]--[2024-06-29 Sat 20:44] =>  1:39
     :END:
 
 Explain the objective of the project and the approach.
+
+*** COMPLETED Add basic logging support                               :story:
+   :LOGBOOK:
+   CLOCK: [2024-06-28 Fri 22:02]--[2024-06-28 Fri 22:32] =>  0:30
+   CLOCK: [2024-06-28 Fri 00:00]--[2024-06-28 Fri 00:44] =>  0:44
+   :END:
+
+Copy across from dogen basic logging.
+
+*** STARTED Add command line options support                          :story:
+    :LOGBOOK:
+    CLOCK: [2024-06-29 Sat 23:33]--[2024-06-30 Sun 00:17] =>  0:44
+    :END:
+
+Add a simple command to command line options that deals with data, for example:
+
+#+begin_src sh
+ores.console data --import currencies.xml
+#+end_src
+
+Notes:
+
+- missing version support. Need template, etc. Try to use existing CMake
+  variables to setup the version.
 
 *** STARTED Add nightly support with memcheck                         :story:
     :LOGBOOK:
@@ -299,13 +324,9 @@ inputs to output other elements. Perhaps this is more of a tag.
 
 We need some kind of tree view and list view.
 
-*** STARTED Add basic logging support                                 :story:
-   :LOGBOOK:
-   CLOCK: [2024-06-28 Fri 22:02]--[2024-06-28 Fri 22:32] =>  0:30
-   CLOCK: [2024-06-28 Fri 00:00]--[2024-06-28 Fri 00:44] =>  0:44
-   :END:
+*** Copy domain notes on core concepts                                :story:
 
-Copy across from dogen basic logging.
+Move assorted notes we have in the domain over to the documentation folder.
 
 *** Add packaging support for images                                  :story:
 

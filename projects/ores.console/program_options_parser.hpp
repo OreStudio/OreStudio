@@ -28,9 +28,9 @@
 #include <vector>
 #include <string>
 #include <boost/optional.hpp>
-#include "dogen.cli/types/configuration.hpp"
+#include "ores.console/configuration.hpp"
 
-namespace ores::cli {
+namespace ores::console {
 
 /**
  * Command-line parser implementation using boost program options.
@@ -42,11 +42,11 @@ namespace ores::cli {
  * output is very confusing users that are accustomed to normal
  * console applications.
  */
-class program_options_parser final : public command_line_parser {
+class program_options_parser final {
 public:
     boost::optional<configuration>
     parse(const std::vector<std::string>& arguments, std::ostream& info,
-        std::ostream& error) const override;
+        std::ostream& error) const;
 };
 
 }

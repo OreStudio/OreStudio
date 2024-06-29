@@ -26,27 +26,27 @@ file(GLOB_RECURSE files RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
-# set(lib_files ${files})
-# list(FILTER lib_files EXCLUDE REGEX "main.cpp")
+set(lib_files ${files})
+list(FILTER lib_files EXCLUDE REGEX "main.cpp")
 
-# add_library(${lib_target_name} ${lib_files})
-# set_target_properties(${lib_target_name} PROPERTIES
-#     OUTPUT_NAME ${lib_binary_name})
-# set_target_properties(${lib_target_name}
-#     PROPERTIES VERSION ${DOGEN_VERSION} SOVERSION ${DOGEN_VERSION_MAJOR})
+add_library(${lib_target_name} ${lib_files})
+set_target_properties(${lib_target_name} PROPERTIES
+    OUTPUT_NAME ${lib_binary_name})
+set_target_properties(${lib_target_name}
+    PROPERTIES VERSION ${DOGEN_VERSION} SOVERSION ${DOGEN_VERSION_MAJOR})
 
-# target_include_directories(${lib_target_name}
-#     PUBLIC ${CMAKE_SOURCE_DIR}/projects/${name}/include
-# )
+target_include_directories(${lib_target_name}
+    PUBLIC ${CMAKE_SOURCE_DIR}/projects/
+)
 
-# target_link_libraries(${lib_target_name} PRIVATE
-#     Boost::boost
-#     Boost::program_options)
+target_link_libraries(${lib_target_name} PRIVATE
+    Boost::boost
+    Boost::program_options)
 
-# install(TARGETS ${lib_target_name}
-#     ARCHIVE DESTINATION lib
-#     LIBRARY DESTINATION lib
-#     COMPONENT libraries)
+install(TARGETS ${lib_target_name}
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    COMPONENT libraries)
 
 set(exe_binary_name ${name})
 set(exe_target_name ${name}.exe)
@@ -62,7 +62,7 @@ target_include_directories(${exe_target_name}
     PRIVATE ${CMAKE_SOURCE_DIR}/projects)
 
 target_link_libraries(${exe_target_name} PRIVATE
-    # ${lib_target_name}
+    ${lib_target_name}
     ores.utility.lib
     Boost::boost
     Boost::date_time

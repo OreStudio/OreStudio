@@ -1,0 +1,34 @@
+@startuml
+
+namespace ores #F2F2F2 {
+
+    note "Console tool that exercises all OreStudio functionality." as N1
+    console --- N1
+    namespace console #F2F2F2 {
+
+        class configuration #F7E5FF {
+            +{field} boost::optional<ores::utility::log::logging_configuration> logging
+        }
+        note top of configuration
+            All of the configuration required by the command line application.
+        end note
+
+        class parser_exception #E8C2F8
+        note top of parser_exception
+            A fatal error has occurred during option parsing.
+        end note
+
+        class program_options_parser #DDA9F3 {
+            +{method} boost::optional<configuration> parse(const std::vector<std::string>& arguments, std::ostream& info, std::ostream& error) const
+        }
+        program_options_parser o--- configuration
+        note top of program_options_parser
+            Command-line parser that uses boost program options.
+        end note
+
+        class main #DDA9F3
+        main o--- parser_exception : > catches
+        main o--- program_options_parser : parses command line with >
+    }
+}
+@enduml

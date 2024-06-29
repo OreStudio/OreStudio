@@ -19,4 +19,5 @@
 
 # OreStudio
 
-Graphical wrapper around the Open Source Risk Engine (ORE).
+Graphical wrapper around the Open Source Risk Engine (ORE). For more details,
+see the [project website](https://orestudio.github.io/OreStudio/).

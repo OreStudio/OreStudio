@@ -16,33 +16,33 @@
 ** Active
 
 #+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
-#+CAPTION: Clock summary at [2024-06-29 Sat 20:44]
+#+CAPTION: Clock summary at [2024-06-29 Sat 20:55]
 | <75>                                    |         |       |      |       |
 | Headline                                | Time    |       |      |     % |
 |-----------------------------------------+---------+-------+------+-------|
-| *Total time*                            | *24:25* |       |      | 100.0 |
+| *Total time*                            | *24:30* |       |      | 100.0 |
 |-----------------------------------------+---------+-------+------+-------|
-| Stories                                 | 24:25   |       |      | 100.0 |
-| Active                                  |         | 24:25 |      | 100.0 |
-| Sprint and product backlog refinement   |         |       | 0:55 |   3.8 |
+| Stories                                 | 24:30   |       |      | 100.0 |
+| Active                                  |         | 24:30 |      | 100.0 |
+| Sprint and product backlog refinement   |         |       | 0:55 |   3.7 |
 | Create a basic git hub repository       |         |       | 0:35 |   2.4 |
 | Setup a discord channel for the project |         |       | 0:14 |   1.0 |
 | Setup vcpkg and cmake                   |         |       | 1:21 |   5.5 |
 | Setup github actions                    |         |       | 1:21 |   5.5 |
-| Create and upload a package             |         |       | 3:28 |  14.2 |
-| Create a basic project structure        |         |       | 2:10 |   8.9 |
+| Create and upload a package             |         |       | 3:28 |  14.1 |
+| Create a basic project structure        |         |       | 2:10 |   8.8 |
 | Add a Qt hello world                    |         |       | 3:08 |  12.8 |
 | Add a splash screen to applciation      |         |       | 0:41 |   2.8 |
 | Add basic site                          |         |       | 0:34 |   2.3 |
 | Add modeling infrastructure             |         |       | 1:30 |   6.1 |
 | Fix code syntax highlighting in site    |         |       | 0:10 |   0.7 |
 | Merge index with readme                 |         |       | 0:42 |   2.9 |
-| Add project objective to readme         |         |       | 1:39 |   6.8 |
+| Add project objective to readme         |         |       | 1:44 |   7.1 |
 | Add nightly support with memcheck       |         |       | 2:25 |   9.9 |
 | Add XML parsing support for currency    |         |       | 1:24 |   5.7 |
 | Create a containing structure for data  |         |       | 0:28 |   1.9 |
 | Add basic widgets to display currencies |         |       | 0:26 |   1.8 |
-| Add basic logging support               |         |       | 1:14 |   5.1 |
+| Add basic logging support               |         |       | 1:14 |   5.0 |
 #+end:
 
 Agenda:
@@ -211,6 +211,7 @@ both just landing pages. Look into merging them.
 
 *** COMPLETED Add project objective to readme                         :story:
     :LOGBOOK:
+    CLOCK: [2024-06-29 Sat 20:50]--[2024-06-29 Sat 20:55] =>  0:05
     CLOCK: [2024-06-29 Sat 19:05]--[2024-06-29 Sat 20:44] =>  1:39
     :END:
 

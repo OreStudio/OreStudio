@@ -15,3 +15,5 @@ modeling in this project, by design.
 ** =ores.utility=
 
 [[./ores.utility.png]]
+
+- [[./ores.utility.png][Big version]]

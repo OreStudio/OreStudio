@@ -64,16 +64,17 @@
 (setq org-publish-project-alist
       '(
         ("site:pages"
-         :recursive f
+         :recursive t
          :base-directory "./"
          :publishing-function org-html-publish-to-html
          :publishing-directory "./build/output/site"
-         :with-author nil           ;; Don't include author name
-         :with-creator t            ;; Include Emacs and Org versions in footer
-         :with-toc t                ;; Include a table of contents
-         :section-numbers nil       ;; Don't include section numbers
-         :time-stamp-file nil)      ;; Don't include time stamp in file
+         :with-author nil
+         :with-creator t
+         :with-toc t
+         :section-numbers nil
+         :time-stamp-file nil)
         ("site:images"
+         :recursive t
          :base-directory "./"
          :base-extension "png\\|jpg\\|gif\\|svg"
          :publishing-directory "./build/output/site/"

@@ -16,30 +16,30 @@
 ** Active
 
 #+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
-#+CAPTION: Clock summary at [2024-06-29 Sat 00:52]
+#+CAPTION: Clock summary at [2024-06-29 Sat 09:15]
 | <75>                                    |         |       |      |       |
 | Headline                                | Time    |       |      |     % |
 |-----------------------------------------+---------+-------+------+-------|
-| *Total time*                            | *21:08* |       |      | 100.0 |
+| *Total time*                            | *21:42* |       |      | 100.0 |
 |-----------------------------------------+---------+-------+------+-------|
-| Stories                                 | 21:08   |       |      | 100.0 |
-| Active                                  |         | 21:08 |      | 100.0 |
-| Sprint and product backlog refinement   |         |       | 0:54 |   4.3 |
-| Create a basic git hub repository       |         |       | 0:35 |   2.8 |
+| Stories                                 | 21:42   |       |      | 100.0 |
+| Active                                  |         | 21:42 |      | 100.0 |
+| Sprint and product backlog refinement   |         |       | 0:55 |   4.2 |
+| Create a basic git hub repository       |         |       | 0:35 |   2.7 |
 | Setup a discord channel for the project |         |       | 0:14 |   1.1 |
-| Setup vcpkg and cmake                   |         |       | 1:21 |   6.4 |
-| Setup github actions                    |         |       | 1:21 |   6.4 |
-| Create and upload a package             |         |       | 3:28 |  16.4 |
-| Create a basic project structure        |         |       | 2:10 |  10.3 |
-| Add a Qt hello world                    |         |       | 3:08 |  14.8 |
-| Add a splash screen to applciation      |         |       | 0:41 |   3.2 |
-| Add basic site                          |         |       | 0:34 |   2.7 |
-| Add modeling infrastructure             |         |       | 1:30 |   7.1 |
-| Add nightly support with memcheck       |         |       | 1:40 |   7.9 |
-| Add XML parsing support for currency    |         |       | 1:24 |   6.6 |
+| Setup vcpkg and cmake                   |         |       | 1:21 |   6.2 |
+| Setup github actions                    |         |       | 1:21 |   6.2 |
+| Create and upload a package             |         |       | 3:28 |  16.0 |
+| Create a basic project structure        |         |       | 2:10 |  10.0 |
+| Add a Qt hello world                    |         |       | 3:08 |  14.4 |
+| Add a splash screen to applciation      |         |       | 0:41 |   3.1 |
+| Add basic site                          |         |       | 0:34 |   2.6 |
+| Add modeling infrastructure             |         |       | 1:30 |   6.9 |
+| Add nightly support with memcheck       |         |       | 2:13 |  10.2 |
+| Add XML parsing support for currency    |         |       | 1:24 |   6.5 |
 | Create a containing structure for data  |         |       | 0:28 |   2.2 |
-| Add basic widgets to display currencies |         |       | 0:26 |   2.1 |
-| Add basic logging support               |         |       | 1:14 |   5.8 |
+| Add basic widgets to display currencies |         |       | 0:26 |   2.0 |
+| Add basic logging support               |         |       | 1:14 |   5.7 |
 #+end:
 
 Agenda:
@@ -190,8 +190,9 @@ we go along. They should be linked to the documentation.
 At present coverage is very low because its picking up some files from vcpkg
 install. We need to ignore those.
 
-*** COMPLETED Add nightly support with memcheck                       :story:
+*** STARTED Add nightly support with memcheck                         :story:
     :LOGBOOK:
+    CLOCK: [2024-06-29 Sat 08:42]--[2024-06-29 Sat 09:15] =>  0:33
     CLOCK: [2024-06-28 Fri 07:45]--[2024-06-28 Fri 08:04] =>  0:19
     CLOCK: [2024-06-27 Thu 23:00]--[2024-06-27 Thu 23:21] =>  0:21
     CLOCK: [2024-06-27 Thu 22:40]--[2024-06-27 Thu 22:59] =>  0:19

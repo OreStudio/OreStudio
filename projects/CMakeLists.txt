@@ -119,8 +119,8 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX
     # enable RTTI
     set(other_flags "${other_flags} -frtti")
 
-    # force DWARF version to 4 in order to keep Valgrind happy.
-    set(other_flags "${other_flags} -gdwarf-4 -gstrict-dwarf")
+    # force DWARF version to 3 in order to keep Valgrind happy.
+    set(other_flags "${other_flags} -gdwarf-3 -gstrict-dwarf")
 
     # handle visibility settings
     if(APPLE)

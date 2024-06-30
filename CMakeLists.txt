@@ -117,6 +117,18 @@ else()
 endif()
 
 #
+# PlantUML
+#
+find_program(PLANTUML_PROGRAM plantuml)
+if (PLANTUML_PROGRAM)
+    message(STATUS "Found PlantUML: ${PLANTUML_PROGRAM}")
+    set(WITH_PLANTUML "on")
+    set(PLANTUML_ENVIRONMENT PLANTUML_LIMIT_SIZE=65536 PLANTUML_SECURITY_PROFILE=UNSECURE)
+else()
+    message(STATUS "PlantUML not found.")
+endif()
+
+#
 # aggregate targets and their aliases
 #
 add_custom_target(run_all_tests)

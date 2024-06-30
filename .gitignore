@@ -39,3 +39,4 @@ build/output
 
 # Qt Designer
 CMakeLists.txt.user
+CMakeUserPresets.json

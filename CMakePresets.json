@@ -1,40 +1,37 @@
 {
-    "version": 6,
+    "version": 8,
     "cmakeMinimumRequired": {
         "major": 3,
-        "minor": 20,
+        "minor": 29,
         "patch": 0
     },
     "configurePresets": [
         {
-            "name": "ninja",
+            "name": "base-configuration",
+            "description": "Base class for common configuration options.",
             "hidden": true,
             "generator": "Ninja",
-            "description": "Setup the Ninja generator."
-        },
-        {
-            "name": "build-dir",
-            "hidden": true,
             "binaryDir": "${sourceDir}/build/output/${presetName}",
-            "description": "Setup the build directory."
-        },
-        {
-            "name": "cmake",
-            "hidden": true,
-            "cacheVariables" : {
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            "cacheVariables": {
+                "CMAKE_POSITION_INDEPENDENT_CODE": true,
+                "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+                "CMAKE_CXX_STANDARD": "17",
+                "CMAKE_CXX_STANDARD_REQUIRED": true,
+                "CMAKE_CXX_EXTENSIONS": false
             },
-            "description": "Setup common CMake configuration."
-        },
-        {
-            "name": "base-configuration",
-            "hidden": true,
-            "inherits": [
-                "ninja",
-                "build-dir",
-                "cmake"
-            ],
-            "description": "Base class for common configuration options."
+            "warnings": {
+                "uninitialized": true,
+                "dev": false,
+                "deprecated": true,
+                "systemVars": true
+            },
+            "errors": {
+                "dev": false
+            },
+            "architecture": {
+                "value": "unknown",
+                "strategy": "external"
+            }
         },
         {
             "name": "debug-build",
@@ -239,7 +236,7 @@
             "displayName": "Mac OSX Release",
             "inherits": [
                 "base-configuration",
-                "release-with-debug-build"
+                "release-build"
             ],
             "description": "OreStudio release build for MacOSX Clang."
         }

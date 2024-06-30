@@ -206,7 +206,6 @@ if(DEFINED code_coverage)
             set(WITH_COVERAGE false)
         else()
             message(STATUS "Found coverage command: (${CTEST_COVERAGE_COMMAND}).")
-            set(cmake_args ${cmake_args} "-DWITH_PROFILING=On")
             set(CTEST_COVERAGE_EXTRA_FLAGS
                 "${CTEST_COVERAGE_EXTRA_FLAGS} --preserve-paths")
             set(WITH_COVERAGE true)
@@ -265,7 +264,7 @@ if(git_result)
 endif()
 
 # Setup the preset for configuration.
-set(cmake_args ${cmake_args} "--preset ${preset}")
+set(cmake_args "--preset ${preset}")
 
 message(STATUS "CMake args: ${cmake_args}")
 ctest_configure(OPTIONS "${cmake_args}" RETURN_VALUE configure_result)

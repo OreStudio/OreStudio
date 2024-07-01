@@ -61,10 +61,7 @@
             "name": "clang",
             "hidden": true,
             "cacheVariables": {
-                "CMAKE_CXX_COMPILER": "clang++",
-                "CMAKE_CXX_FLAGS": "-stdlib=libstdc++",
-                "CMAKE_EXE_LINKER_FLAGS": "-stdlib=libstdc++",
-                "CMAKE_SHARED_LINKER_FLAGS": "-stdlib=libstdc++"
+                "CMAKE_CXX_COMPILER": "clang++"
             },
             "description": "Setup the Clang C++ compiler."
         },
@@ -226,9 +223,6 @@
                 "base-configuration",
                 "debug-build"
             ],
-            "cacheVariables": {
-                "CMAKE_CXX_FLAGS": "-fprofile-arcs -ftest-coverage"
-            },
             "description": "OreStudio debug build for MacOSX Clang."
         },
         {

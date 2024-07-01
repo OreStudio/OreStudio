@@ -37,6 +37,11 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build/cmake)
 include(AddBoostTests)
 
 #
+# options
+#
+option(WITH_PROFILING "Generate profiling information for code coverage." OFF)
+
+#
 # Setup CCache
 #
 find_program(CCACHE_PROGRAM sccache)

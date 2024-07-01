@@ -329,6 +329,7 @@ We need some kind of tree view and list view.
 
 *** STARTED Clean up toolchains and presets                           :story:
     :LOGBOOK:
+    CLOCK: [2024-07-01 Mon 07:46]--[2024-07-01 Mon 08:17] =>  0:31
     CLOCK: [2024-06-30 Sun 23:03]--[2024-06-30 Sun 23:57] =>  0:54
     CLOCK: [2024-06-30 Sun 10:31]--[2024-06-30 Sun 10:37] =>  0:06
     CLOCK: [2024-06-30 Sun 10:09]--[2024-06-30 Sun 10:31] =>  0:22

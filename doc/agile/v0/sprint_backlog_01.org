@@ -16,35 +16,36 @@
 ** Active
 
 #+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
-#+CAPTION: Clock summary at [2024-06-30 Sun 23:57]
+#+CAPTION: Clock summary at [2024-07-02 Tue 00:09]
 | <75>                                    |         |       |      |       |
 | Headline                                | Time    |       |      |     % |
 |-----------------------------------------+---------+-------+------+-------|
-| *Total time*                            | *27:27* |       |      | 100.0 |
+| *Total time*                            | *29:03* |       |      | 100.0 |
 |-----------------------------------------+---------+-------+------+-------|
-| Stories                                 | 27:27   |       |      | 100.0 |
-| Active                                  |         | 27:27 |      | 100.0 |
-| Sprint and product backlog refinement   |         |       | 0:55 |   3.3 |
-| Create a basic git hub repository       |         |       | 0:35 |   2.1 |
-| Setup a discord channel for the project |         |       | 0:14 |   0.9 |
-| Setup vcpkg and cmake                   |         |       | 1:21 |   4.9 |
-| Setup github actions                    |         |       | 1:21 |   4.9 |
-| Create and upload a package             |         |       | 3:28 |  12.6 |
-| Create a basic project structure        |         |       | 2:10 |   7.9 |
-| Add a Qt hello world                    |         |       | 3:08 |  11.4 |
-| Add a splash screen to applciation      |         |       | 0:41 |   2.5 |
-| Add basic site                          |         |       | 0:34 |   2.1 |
-| Add modeling infrastructure             |         |       | 1:30 |   5.5 |
+| Stories                                 | 29:03   |       |      | 100.0 |
+| Active                                  |         | 29:03 |      | 100.0 |
+| Sprint and product backlog refinement   |         |       | 0:55 |   3.2 |
+| Create a basic git hub repository       |         |       | 0:35 |   2.0 |
+| Setup a discord channel for the project |         |       | 0:14 |   0.8 |
+| Setup vcpkg and cmake                   |         |       | 1:21 |   4.6 |
+| Setup github actions                    |         |       | 1:21 |   4.6 |
+| Create and upload a package             |         |       | 3:28 |  11.9 |
+| Create a basic project structure        |         |       | 2:10 |   7.5 |
+| Add a Qt hello world                    |         |       | 3:08 |  10.8 |
+| Add a splash screen to applciation      |         |       | 0:41 |   2.4 |
+| Add basic site                          |         |       | 0:34 |   2.0 |
+| Add modeling infrastructure             |         |       | 1:30 |   5.2 |
 | Fix code syntax highlighting in site    |         |       | 0:10 |   0.6 |
-| Merge index with readme                 |         |       | 0:42 |   2.6 |
-| Add project objective to readme         |         |       | 2:17 |   8.3 |
-| Add basic logging support               |         |       | 1:14 |   4.5 |
-| Add command line options support        |         |       | 0:44 |   2.7 |
-| Add nightly support with memcheck       |         |       | 2:43 |   9.9 |
-| Add XML parsing support for currency    |         |       | 1:24 |   5.1 |
-| Create a containing structure for data  |         |       | 0:28 |   1.7 |
-| Add basic widgets to display currencies |         |       | 0:26 |   1.6 |
-| Clean up toolchains and presets         |         |       | 1:22 |   5.0 |
+| Merge index with readme                 |         |       | 0:42 |   2.4 |
+| Add project objective to readme         |         |       | 2:17 |   7.9 |
+| Add basic logging support               |         |       | 1:14 |   4.2 |
+| Add command line options support        |         |       | 0:44 |   2.5 |
+| Add nightly support with memcheck       |         |       | 2:43 |   9.4 |
+| Add XML parsing support for currency    |         |       | 1:24 |   4.8 |
+| Create a containing structure for data  |         |       | 0:28 |   1.6 |
+| Add basic widgets to display currencies |         |       | 0:26 |   1.5 |
+| Clean up toolchains and presets         |         |       | 1:53 |   6.5 |
+| Convert plantuml diagrams to org-babel  |         |       | 1:05 |   3.7 |
 #+end:
 
 Agenda:
@@ -338,6 +339,14 @@ We need some kind of tree view and list view.
 We are using CMake in a legacy way when defining warnings, etc. We need to move
 towards the modern approach, by defining toolchain files and using presets
 correctly.
+
+*** STARTED Convert plantuml diagrams to org-babel                    :story:
+    :LOGBOOK:
+    CLOCK: [2024-07-01 Mon 23:04]--[2024-07-02 Tue 00:09] =>  1:05
+    :END:
+
+It may be easier to integrate diagrams with roam if they are org-mode documents.
+Experiment with babel for this.
 
 *** Copy domain notes on core concepts                                :story:
 

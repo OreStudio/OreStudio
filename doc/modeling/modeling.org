@@ -10,6 +10,8 @@ understand what we mean by a model, read this document: [[https://masd-project.g
 Transformations.]] Note however that we make little use of automated tooling for
 modeling in this project, by design.
 
+- [[id:CA6D359D-B1FA-8EC4-C02B-EF1A90FBC7CF][ores.utility]]
+
 * UML Class Diagrams
 
 ** =ores.utility=

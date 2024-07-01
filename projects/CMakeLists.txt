@@ -20,7 +20,7 @@ if(WITH_PROFILING)
     if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
         set(profiling_flags "-fprofile-abs-path --coverage")
         if (CMAKE_COMPILER_IS_CLANGXX)
-            set(profiling_flags "${profiling_flags} -fdebug-default-version=4"
+            set(profiling_flags "${profiling_flags} -fdebug-default-version=4")
         endif()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${profiling_flags}")
     endif()

@@ -34,6 +34,7 @@ enable_testing()
 # add our own modules
 #
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build/cmake)
+include(AddBoostTests)
 
 #
 # Setup CCache

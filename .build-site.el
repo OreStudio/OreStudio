@@ -45,6 +45,7 @@
 ;; Install dependencies
 (package-install 'htmlize)
 (package-install 'citeproc)
+(package-install 'org-ref)
 
 ;; Load the publishing system
 (require 'ox-publish)

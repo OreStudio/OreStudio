@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: CE1D1ADC-E267-8AD4-7033-3A0FEA7F89EC
+:END:
+#+title: Domain
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Documentation about the domain of finance. These are assorted notes I have
+collected over the years and are of some relevance to this application.
+
+* Money and its Close Relatives
+
+#+begin_verse
+Finance is concerned with the relations between the values of
+securities and their risk, and with the behavior of those values. It
+aspires to be a practical field, like physics or chemistry or electrical
+engineering. As John Maynard Keynes once remarked about economics, “If
+economists could manage to get themselves thought of as humble, competent
+people on a level with dentists, that would be splendid.” Dentists rely on
+science, engineering, empirical knowledge, and heuristics, and there are
+no theorems in dentistry. Similarly, one would hope that finance would be
+concerned with laws rather than theorems, with behavior rather than
+assumptions. One doesn’t seriously describe the behavior of a market with
+theorems.
+
+    --- Emanuel Derman citep:derman2016volatility
+#+end_verse
+
+#+begin_src bibtex :tangle yes
+@book{derman2016volatility,
+  title={The volatility smile},
+  author={Derman, Emanuel and Miller, Michael B},
+  year={2016},
+  publisher={John Wiley \& Sons}
+}
+#+end_src
+
+As they say, it's always best to start a story at the beginning. However,
+problem domains are not simple yarns that merely need unspooling. The very
+notions of domain order and structure are artificial constructs, coarse
+linearisations imposed by those attempting to make sense of the mess of concepts
+and relationships between entities, as well as their behaviours. Because it is
+imposed, such structure will always be inadequate; what is left to the writer is
+to choose how inadequate the linear presentation will be.
+
+These structural problems are particularly acute in finance and its sister
+subject economics because, unlike other subjects, they are hostile environments
+to the scientific method (/c.f./ Section FIXME #chap1:discussion). As Derman and
+Miller informed us, "Markets are plagued with anomalies that violate standard
+financial theories (or, more accurately, theories are plagued by their inability
+to systematically account for the actual behaviour of markets)."
+citep:derman2016volatility It is important to take this subjectivity into
+account as we enter our first foray into the domain.
+
+Topics:
+
+- [[id:D564B035-80F8-0D04-B1DB-2832CD93B95B][Money]]
+- [[id:08222DF0-CF56-B9D4-1133-80AEABD6E116][Functions of Money]]
+
+#+print_bibliography:

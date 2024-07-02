@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 08222DF0-CF56-B9D4-1133-80AEABD6E116
+:END:
+#+title: Functions of Money
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+One way in which to define money is to focus on its /functional characteristics/
+--- that is to say, what can it be used for in practical terms. In the
+[[https://en.wikipedia.org/wiki/Money][before-mentioned]] page, Wikipedia goes on to state (/emphasis ours/):
+
+#+name: definition_2_2
+#+begin_quote
+*Definition 2.2*: The main functions of money are distinguished as: a /medium of
+exchange/, a /unit of account/, a /store of value/ and sometimes, a /standard of
+deferred payment/. Any item or verifiable record that fulfils these functions
+/can be considered as money/.
+#+end_quote
+
+The first two functions are more or less self-explanatory; the latter two less
+so, and somewhat interconnected. For good measure, we will provide a common
+sense explanation of all four. A /medium of exchange/ is understood to mean that
+money can be used as an intermediary to facilitate the exchange of goods and
+services --- /i.e./ it is much more efficient than bartering goods or services
+directly. A /unit of account/ brings money to the realm of arithmetic; it means
+we can /assign numeric values/ to goods and services, and then to use these to
+compute all sorts of measures related to accounting. These we shall cover in the
+future.
+
+#+caption: Use cases for money.
+#+label: use_cases
+#+attr_org: :width 50 :height 50
+#+attr_latex: :width 150pt :height 150pt
+[[file:money_use_case.png]]
+
+
+A /standard of deferred payment/ in layperson's terms just means that if you
+agree today to pay an amount in the future, when the day arrives, the agreed
+amount is expected to have more or less the same properties. If there was a
+collapse in belief and suddenly the money became worthless, it would not be very
+useful for deferred payments. Similarly, if its value oscillated too much
+through time, it would also make it unsuitable for deferred payments. In other
+words, money is expected to preserve the majority of its value over time --- to
+act as a /store of value/.
+
+Taken as a whole, these four functions make money what it is. And, as the
+definition stated, pretty much anything which can fulfil the functions above
+/can be considered money/. However, the different types of /things/ used for
+this purposes have very different characteristics, so its worthwhile looking at
+them in more detail.

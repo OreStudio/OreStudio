@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: D564B035-80F8-0D04-B1DB-2832CD93B95B
+:END:
+#+title: Money
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Money lies at the root of many things --- evil or otherwise --- so it's not
+exactly surprising to find it at the heart of the Computational Finance
+discipline. Its central role makes it a fitting point from which to start our
+incursion into the domain, and our "trusty" old Wikipedia can speed us along
+with a fairly reasonable [[https://en.wikipedia.org/wiki/Money][working definition]] (/emphasis ours/):
+
+#+name: definition_2_1
+#+begin_quote
+*Definition 2.1*: Money is /any item or verifiable record/ that is /generally
+accepted as payment/ \marginpar{Money} for goods and services /and repayment of
+debts/, such as taxes, in /a particular country/ or /socio-economic context/.
+#+end_quote
+
+The first key take-away here is that money is mostly a /social convention/,
+based on use, and, typically, enforced by legal apparatus; that is how /general
+acceptance/ emerges. In other words, money is able to fulfil its role largely
+because the individuals within a society /will/ for it to act in that way,
+irrespective of the means by which consensus is achieved (/e.g./, coercion).
+This rather important but somewhat confusing notion underpins much of the power
+of money and also many of its challenges. Since we tend to experience money as a
+concrete, physical phenomena, it is difficult to penetrate through the fog of
+custom and see it for what it really is --- more of an object of philosophy,
+sociology or law rather than a real world thing. Because these ideas are so
+terribly important, lets make them even clearer:
+
+- Money works mostly because /we/ --- for sufficiently large definitions of /we/
+  --- /believe/ that it works.
+- When we stop believing in money, in sufficiently large numbers, it stops
+  working.
+- If we resume believing in money, in sufficiently large numbers, it starts
+  working again.
+- Force may assist in creating belief, but its neither a necessary nor a
+  sufficient condition.
+- Because the belief is so deeply held, we mistakenly equate it to a natural
+  law[fn:natural_law].
+- It is difficult to get people to start or stop /believing/; belief emerges as
+  part of a long historical process.
+
+[fn:kernel] The kernel of these ideas forms part of a recurring theme that
+permeates this entire text. We will attempt to make the kernel more explicit at
+the rear end of this part's domain survey.
+
+[fn:natural_law] Alas, though the term "law" is bandied about a lot in
+Computational Finance, there are no real /laws/ in the discipline --- at least
+not as far as they are understood in the hard sciences. As the term is used in a
+much less rigorous way, we'll try our best to avoid it.
+
+
+Clearly, most of these notions fly in the face of the common sense understanding
+of money, so the reader may not find them entirely convincing; they aren't
+particularly reassuring either. Unfortunately, we must not lose ourselves in
+philosophical debate this early in the proceedings, so we'll have to let these
+words linger and leave it at that for now. However, do keep in mind that this is
+the standpoint from which the remainder of this work is anchored[fn:kernel].
+
+A second take-away from *[[definition_2_1][Definition 2.1]]* is perhaps even broader in its
+consequences: the fact that any form of /verifiable record/ can be considered
+money. The full implications of this notion can only be made apparent by
+analysing the /kinds/ of money in existence, which we shall do later on in this
+part.
+
+The third and final point we'd like to extract from *[[definition_2_1][Definition 2.1]]* is related
+to the use of money for /payments/ of goods and services and the /repayment/ of
+debts; these can be thought of as money's /use cases/ or /applications/. This
+notion can be further generalised into a set of /functional/ attributes, which
+the next section will cover in detail.

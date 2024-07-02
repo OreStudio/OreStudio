@@ -16,6 +16,10 @@
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set(CMAKE_COMPILER_IS_CLANGXX "TRUE")
+endif()
+
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
     set(flags "-gdwarf-4 -gstrict-dwarf")
     if(WITH_PROFILING)

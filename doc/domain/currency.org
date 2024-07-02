@@ -1,0 +1,259 @@
+:PROPERTIES:
+:ID: 2A81E1EB-2B9F-27B4-93B3-266A634E07B3
+:END:
+#+title: Currency
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+A concept closely coupled with that of [[id:D564B035-80F8-0D04-B1DB-2832CD93B95B][money]] is /currency/. Wikipedia [[https://en.wikipedia.org/wiki/Currency][states]]
+(/emphasis ours/):
+
+#+name: definition_2_8
+#+begin_quote
+*Definition 2.8*: A /currency/ [...], in the most specific sense is money in any
+form /when in use or circulation/ as a medium of exchange, especially
+circulating banknotes and coins. A more general definition is that a currency is
+/a system of money/ (monetary units) /in common use/, especially for people in a
+nation.
+#+end_quote
+
+The simplest idea that comes out of this definition is the notion that
+currencies /circulate/; that is, they "move" freely within an /area of
+circulation/, which is typically circumscribed to a country or group of
+countries. Within the area of circulation, the currency can be used without
+impediments in economic activity --- modulus any particular legal restrictions
+that may be in place. Outside it, a conversion is normally required into the
+currency whose area of circulation one finds oneself in. This conversion is the
+domain of /Foreign Exchange/ or FX, which will be covered in a future
+instalment.
+
+Additionally, *[[definition_2_8][Definition 2.8]]* brings to the fore the dual meaning of the word
+"currency": on one hand it signifies the physical representation of money, but
+it must also be understood as a /system of money/. Though the physical viewpoint
+of bank notes and coins is obviously relevant to what makes up a currency, as
+we've already seen, their role is nowadays quite limited (/c.f./ FIXME
+*[[id:FCC97499-78A9-F4B4-1F6B-3144AAD74933][Definition 2.6]]*), meaning we should instead shift our attention to currencies
+as a system of money. The term /system/ is employed here in the same sense as
+used by the International System of Units (SI) --- the institution which defines
+units such as /kilogram/, /metre/ and the like, and which are crystallised by
+means of ISO (International Organization for Standardization) standards. As it
+turns out, these exist for currencies too.
+
+* Standard Currencies
+
+The well-known document [[https://www.iso.org/iso-4217-currency-codes.html][ISO 4217:2015]] defines a standard for currencies. It
+formalises a listing of /official/ currencies, and is designed to inter-operate
+with other ISO standards. In it, we find the notion of /currency designators/,
+also known as /alphabetic codes/, which are unique identifiers composed of three
+letters[fn:unique]. These can be classified into roughly three kinds of buckets.
+Firstly, for "regular" fiat currencies, the two initial letters make up an [[https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2][ISO
+3166 Alpha-2 country code]], and the last designates the currency itself.
+However, there are exceptions to this rule (/e.g./ =USN= for US next day,
+/etc/).
+
+[fn:unique] By /unique/ we of course mean that no two currencies can have the
+same alphabetic code within the ISO standard. Other currency systems,
+particularly the informal ones, may repurpose the same codes.
+
+
+Secondly, for "other currencies"[fn:supranational], the currency code must
+always begin with the letter =X=, followed by a two digit code. Then, the rules
+become even fuzzier:
+
+- there are commodities such as gold (=XAU=), silver (=XAG=) and the like, which
+  use the periodic table element code;
+- there are currencies of countries or other territories (=XPF= for "franc
+  Pacifique" and so forth);
+- there are "operational" entries such =XTS=, which is a test currency, and
+  =XXX= which stands for "no currency" --- these are intended to be used for
+  testing and setup purposes;
+- and, of course, there are the special cases such as =XDR=, which are IMF's
+  Special Drawing Rights.
+
+[fn:supranational] Wikipedia defines these as "'supranational' currencies,
+procedural purposes, and several things which are 'similar to' currencies".
+
+
+ #+caption: Fragment of the contents of ISO 4217:2017. Source: Wikipedia.
+ #+name: iso_4217
+ | Alpha | Numeric | Digits | Currency Name                 |
+ |-------+---------+--------+-------------------------------|
+ | AED   |     784 |      2 | United Arab Emirates dirham   |
+ | AFN   |     971 |      2 | Afghan afghani                |
+ | ALL   |     008 |      2 | Albanian lek                  |
+ | AMD   |     051 |      2 | Armenian dram                 |
+ | ANG   |     532 |      2 | Netherlands Antillean guilder |
+ | AOA   |     973 |      2 | Angolan kwanza                |
+
+Thirdly, and to make matters even more interesting, there are codes that do not
+fit any particular pattern such as =EUR= for the Euro. After all, the EU is not
+actually a country, though of course it is a legal and political entity; nor is
+=R= representative of the currency itself, called the "Euro".
+
+In summary, though it is a cornerstone of the modern financial system, it is
+important to avoid ascribing /too much method/ to currency codes. There is some,
+clearly, but the diversity of structure and purpose is perhaps best understood
+if one thinks of this document as a standard which has evolved over time,
+mapping to a very complex and constantly shifting geo-political /status quo/,
+and where, in the end, pragmatism had to win over rigour. A creature far more of
+politics than science.
+
+A closing word is perhaps warranted on the remaining properties of each
+currency. As per Table [[iso_4217][iso_4217]], in addition to currency codes there is also a
+corresponding /Currency Name/, for the official name of the currency, and a
+three-digit /numeric code/ which can also be used to uniquely identify a
+currency. Finally, as depicted in the "Digits" column, the standard also
+captures the minor units for a given currency --- /i.e./ whether it divides into
+100 or 1000, /etc/.
+
+* Non-Standard Currencies
+
+It is important not to confuse the notion of an "ISO standardised currency" with
+the notion of a "currency". Pretty much anything can be a currency --- just like
+anything can be used as money --- provided the previously stated requirements
+are met. The fact that a currency is part of the ISO standard gives it a "seal
+of approval", together with respectability and availability to a set of economic
+actors, but it does not make non-standardised currencies any less of a currency
+/from a conceptual perspective/. And, as it happens, there are many in this
+position.
+
+Traditionally, these have been fiat currencies for smaller nations or
+territories, or currency codes for specific purposes such as restrictions in
+circulation[fn:onshore]. Now, however, there is a new kid on the block (if the
+pun may be pardoned). /Cryptocurrencies/, also known as /cryptos/, offer in our
+opinion the most prominent example of /non-standard currencies/ due to their
+apparent popularity within certain segments[fn:popularity]. But can they be
+rightfully considered /currencies/?
+
+[fn:onshore] On which more will be said later, when we eventually reach /Foreign
+Exchange/.
+
+[fn:popularity] Granted, we are perhaps biased since, as stated on our
+[[https://mcraveiro.blogspot.com/2020/04/nerd-food-computational-finance-part-i.html][introduction]], we'd like to use cryptos as our source of market data; but, to be
+fair, there appears to be genuine interest in these, as judging by market
+volume.
+
+
+Wikipedia defines cryptos [[https://en.wikipedia.org/wiki/Cryptocurrency][as follows]] (/emphasis ours/):
+
+#+name: definition_2_9
+#+begin_quote
+*Definition 2.9*: A cryptocurrency (or crypto currency) is a /digital asset/
+that is used as a medium of exchange wherein individual /digital token coin
+ownership records/ are stored in a /digital ledger/ or computerized database
+using /strong cryptography/ to secure financial transaction record entries, to
+/control the creation of additional digital token coin records/, and to verify
+the transfer of token coin ownership. /It typically does not exist in physical
+form/ (like paper money) and is typically /not issued by a central authority/.
+#+end_quote
+
+Firstly, this definition is teeming with terms that require further elaboration
+but, sadly, we need to defer their discussion, as it would get us too bogged
+down on the machinery of crypto implementation. Secondly, notice how carefully
+the definition is worded in order to avoid stating whether cryptos /are/ or
+/aren't/ currencies; this is no coincidence. That cryptos are a very different
+beast from their regular fiat cousins is patently clear, since they belong to no
+country or territory --- it's probably more apt to state that the Internet is
+their area of circulation --- and, thus far, there is no government support for
+their continued existence. It is also obvious they possess certain properties of
+money but not all --- /e.g./, at the time of this writing, you cannot pay your
+taxes with cryptos, though that may change soon. In addition, unlike regular
+currencies, they are not associated directly with state actors, to our
+knowledge, nor are they considered to be fiat --- at least under certain
+definitions of the term.
+
+A compelling argument can be made to demonstrate that cryptos satisfy most of
+the definitions presented thus far and, therefore, should be considered
+currencies. Trouble is, it is also entirely possible to argue the converse, and
+with an equal measure of success. The subject is very complex, straddling
+economic theory, law and even philosophy, and so an authoritative discussion of
+this topic lies well beyond the remit of the present work. Instead, for our
+purposes, we shall take the easy path and "declare" cryptos to be /currencies/.
+This is clearly an unsatisfactory stance for certain use cases, and that is the
+crux of the argument: the answer to this question is deeply rooted on the
+context in which cryptos are used. From a general Computational Finance
+perspective, there little that is special about cryptos to prevent their use;
+and, since they bear a close resemblance to currencies, they can be treated in
+very much the same way for great many cases. This rationale may not apply to
+other specific use cases, but "thereof we must remain silent"
+[[citep:white2006wittgenstein]].
+
+#+begin_src bibtex :tangle yes
+@book{white2006wittgenstein,
+  title={Wittgenstein's' Tractatus Logico-Philosophicus': A Reader's Guide},
+  author={White, Roger M},
+  year={2006},
+  publisher={A\&C Black}
+}
+#+end_src
+
+With that dealt with, we can now look at the schemes for the identification of
+cryptos. Due to their /suis generis/ existence, cryptocurrencies do not have a
+seat at the ISO table, which means they do not get to have an ISO currency
+code [fn:btc_iso]. However, since inception there have been informal "currency
+codes", at times called /symbols/, which do not necessarily follow the ISO
+4217:2015 conventions described above. Though there is no formal standardisation
+process for these currencies, the codes in use are /de facto standards/ within
+the community, and have stood the (admittedly limited) test of time. In this
+material, we shall be making heavy use of these /de facto/ standards, with the
+list defined in [[https://en.wikipedia.org/wiki/List_of_cryptocurrencies][Wikipedia]] forming a base for our universe of cryptos.
+
+#+caption: Fragment of the list of cryptocurrencies. Source: Wikipedia.
+#+name: list_cryptocurrencies
+| Release | Currency | Symbol    | Founder(s)             |
+|---------+----------+-----------+------------------------|
+|    2009 | Bitcoin  | BTC, XBT  | Satoshi Nakamoto       |
+|    2011 | Litecoin | LTC       | Charlie Lee            |
+|    2011 | Namecoin | NMC       | Vincent Durham         |
+|    2012 | Peercoin | PPC       | Sunny King (pseudonym) |
+|    2013 | Dogecoin | DOGE, XDG | Jackson Palmer         |
+
+[fn:btc_iso] At the time of this writing, Bitcoin is going through the process
+of applying for an ISO currency code. For more details on this matter see [[https://www.coindesk.com/bitcoin-needs-iso-certified-currency-code][Why
+Bitcoin Needs an ISO-Certified Currency Code]].
+
+Table [[list_cryptocurrencies][list_cryptocurrencies]] provides a small sample of the Wikipedia page's
+dataset. Its worth noticing that, unlike ISO 4217, some of the entries have more
+than one symbol and at least one of these symbols has more than 3 characters
+(/e.g./, =DOGE=). Note also that the Wikipedia page is but a small subset of all
+known cryptocurrencies; for a more representative range see the CoinMarketCap
+website[fn:coinmarketcap]. Last but not least, please note that some
+cryptocurrency symbols clash with currency codes defined within ISO 4217.
+
+With both standard and non-standard currencies been introduced, we can now shift
+our attention to the different stages in the life of a currency.
+
+[fn:coinmarketcap] https://coinmarketcap.com/all/views/all/
+
+* Lifecycle
+
+As [[id:FCC97499-78A9-F4B4-1F6B-3144AAD74933][Definition 2.7]] already hinted, the most obvious physical manifestation of a
+currency are the notes and coins associated with it. These have a lifecycle:
+they enter circulation, circulate amongst the economic agents for a period of
+time, fulfilling their functions, and, ultimately, are retired and stop
+circulating --- perhaps because of damage or due to a decision by the issuer.
+Interestingly, the exact same pattern is fractal-like, repeating itself at three
+separate levels:
+
+1. the currency itself;
+2. the types of notes and coins, called /denominations/; and
+3. the instances of bank notes and coins.
+
+For the purposes of Computational Finance, we're particularly interested in the
+first item of this list. Just as with a bank note, currencies themselves have a
+/lifecycle/: they are "born" when they are created and instances of it enter
+into circulation --- that is, when they are made available to a set of economic
+agents for general use; they "live", that is, they are in circulation for a
+period of time; and eventually, they "die" when taken out of circulation.
+However, even after "death" records must still be kept regarding transactions
+that were made during their life time.
+
+Whilst it may appear that the lifecycle of a currency is far too long to be of
+relevance to those developing IT systems, in practice they occur much more often
+than one may think, and the circumstances under which these transitions take
+place don't always allow for careful operational planning. Due to this, events
+on a currency lifecycle can be extremely disruptive to systems which are not
+designed to take them into account.
+
+| Previous: [[id:FCC97499-78A9-F4B4-1F6B-3144AAD74933][Kinds of Money]] | Next: [[id:CBC966ED-BE48-6204-1BBB-72360BFEC554][Cash]] | Top: [[id:CE1D1ADC-E267-8AD4-7033-3A0FEA7F89EC][Domain]] |

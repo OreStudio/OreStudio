@@ -16,37 +16,37 @@
 ** Active
 
 #+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
-#+CAPTION: Clock summary at [2024-07-02 Tue 22:34]
+#+CAPTION: Clock summary at [2024-07-03 Wed 00:14]
 | <75>                                    |         |       |      |       |
 | Headline                                | Time    |       |      |     % |
 |-----------------------------------------+---------+-------+------+-------|
-| *Total time*                            | *30:07* |       |      | 100.0 |
+| *Total time*                            | *31:06* |       |      | 100.0 |
 |-----------------------------------------+---------+-------+------+-------|
-| Stories                                 | 30:07   |       |      | 100.0 |
-| Active                                  |         | 30:07 |      | 100.0 |
-| Sprint and product backlog refinement   |         |       | 1:05 |   3.6 |
+| Stories                                 | 31:06   |       |      | 100.0 |
+| Active                                  |         | 31:06 |      | 100.0 |
+| Sprint and product backlog refinement   |         |       | 1:05 |   3.5 |
 | Create a basic git hub repository       |         |       | 0:35 |   1.9 |
 | Setup a discord channel for the project |         |       | 0:14 |   0.8 |
-| Setup vcpkg and cmake                   |         |       | 1:21 |   4.5 |
-| Setup github actions                    |         |       | 1:21 |   4.5 |
-| Create and upload a package             |         |       | 3:28 |  11.5 |
-| Create a basic project structure        |         |       | 2:10 |   7.2 |
-| Add a Qt hello world                    |         |       | 3:08 |  10.4 |
-| Add a splash screen to applciation      |         |       | 0:41 |   2.3 |
-| Add basic site                          |         |       | 0:34 |   1.9 |
-| Add modeling infrastructure             |         |       | 1:30 |   5.0 |
-| Fix code syntax highlighting in site    |         |       | 0:10 |   0.6 |
+| Setup vcpkg and cmake                   |         |       | 1:21 |   4.3 |
+| Setup github actions                    |         |       | 1:21 |   4.3 |
+| Create and upload a package             |         |       | 3:28 |  11.1 |
+| Create a basic project structure        |         |       | 2:10 |   7.0 |
+| Add a Qt hello world                    |         |       | 3:08 |  10.1 |
+| Add a splash screen to applciation      |         |       | 0:41 |   2.2 |
+| Add basic site                          |         |       | 0:34 |   1.8 |
+| Add modeling infrastructure             |         |       | 1:30 |   4.8 |
+| Fix code syntax highlighting in site    |         |       | 0:10 |   0.5 |
 | Merge index with readme                 |         |       | 0:42 |   2.3 |
-| Add project objective to readme         |         |       | 2:17 |   7.6 |
-| Add basic logging support               |         |       | 1:14 |   4.1 |
-| Add nightly support with memcheck       |         |       | 3:21 |  11.1 |
-| Clean up toolchains and presets         |         |       | 1:53 |   6.3 |
+| Add project objective to readme         |         |       | 2:17 |   7.3 |
+| Add basic logging support               |         |       | 1:14 |   4.0 |
+| Add nightly support with memcheck       |         |       | 3:21 |  10.8 |
+| Clean up toolchains and presets         |         |       | 1:53 |   6.1 |
 | Add command line options support        |         |       | 0:44 |   2.4 |
-| Add XML parsing support for currency    |         |       | 1:24 |   4.6 |
+| Add XML parsing support for currency    |         |       | 1:24 |   4.5 |
 | Create a containing structure for data  |         |       | 0:28 |   1.5 |
 | Add basic widgets to display currencies |         |       | 0:26 |   1.4 |
-| Convert plantuml diagrams to org-babel  |         |       | 1:05 |   3.6 |
-| Copy domain notes on core concepts      |         |       | 0:16 |   0.9 |
+| Convert plantuml diagrams to org-babel  |         |       | 1:05 |   3.5 |
+| Copy domain notes on core concepts      |         |       | 1:15 |   4.0 |
 #+end:
 
 Agenda:
@@ -358,6 +358,8 @@ Experiment with babel for this.
 
 *** STARTED Copy domain notes on core concepts                        :story:
     :LOGBOOK:
+    CLOCK: [2024-07-02 Tue 23:21]--[2024-07-03 Wed 00:14] =>  0:53
+    CLOCK: [2024-07-02 Tue 22:35]--[2024-07-02 Tue 22:41] =>  0:06
     CLOCK: [2024-07-02 Tue 22:18]--[2024-07-02 Tue 22:34] =>  0:16
     :END:
 

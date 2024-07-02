@@ -1,0 +1,174 @@
+:PROPERTIES:
+:ID: 005E63CB-D2BB-6504-822B-905EF969AEB2
+:END:
+#+title: Trading
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Cash flows suggested the idea of events in time. Prior to any cash flowing,
+however, there must be an agreement between parties to exchange items for money;
+and a key precondition of any such agreement is for both parties to have the
+ability to perform some kind of /valuation/ of the items in question. The term
+/value/ was already introduced, but with a focus on use value (/c.f./ [[id:FCC97499-78A9-F4B4-1F6B-3144AAD74933][Definition
+2.4]]) and intrinsic value (/c.f./ [[id:FCC97499-78A9-F4B4-1F6B-3144AAD74933][Definition 2.5]]). We shall now delve once more
+into this crucial concept, but this time with the aim of extricating a
+generalisation.
+
+Wikipedia [[https://en.wikipedia.org/wiki/Value_(economics)][tells us that]] (/emphasis ours/):
+
+#+name: definition_2_15
+#+begin_quote
+*Definition 2.15*: /Economic value/ is /a measure of the benefit/ provided by a
+good or service to an economic agent. It is generally /measured relative to
+units of currency/, and the interpretation is therefore "what is the maximum
+amount of money a specific actor is willing and able to pay for the good or
+service"?
+#+end_quote
+
+It is important to note that economic value is distinct from /price/, which is
+instead [[https://en.wikipedia.org/wiki/Price][defined as follows]] (/emphasis ours/):
+
+#+name: definition_2_16
+#+begin_quote
+*Definition 2.16*: A /price/ is the (/usually not negative/) quantity of payment
+or compensation /given by one party to another/ /in return for one unit of goods
+or services/.
+#+end_quote
+
+Before we proceed, please keep in mind that this is not the only possible
+interpretation for these terms. Differing interpretations come bundled as part
+of a larger body of economic concepts, called /theories of value/, and these can
+be quite complex. Nonetheless, these coarse simplifications are quite adequate
+for our goals, so we needn't explore alternatives [fn:suitability]. Secondly,
+notice that the key distinction between value and price is that price implies
+the agreement between parties as part of an exchange; for this reason, price is
+also known as the /exchange value/. Last but certainly not least, we should
+point out the /extremely important/ but somewhat hidden statement that gives a
+hint to the numeric domain of prices: "/usually/ not negative". We shall not yet
+go into details of how this can happen, but for now it suffices to say that in
+some extremely unusual circumstances, one party may be required to
+simultaneously pay the other party /and/ also supply the product. This is
+modeled as a negative price, and systems must be designed with this eventuality
+in mind.
+
+[fn:suitability] They can, of course, be entirely unsuitable for other purposes,
+so they must be used with care outside of our simplified world.
+
+
+The third concept related to value is cost. By "cost" we mean /cost of
+production/, which can be [[https://en.wikipedia.org/w/index.php?title=Price&section=6#Confusion_between_prices_and_costs_of_production][defined as]] (/emphasis ours/):
+
+#+name: definition_2_17
+#+begin_quote
+*Definition 2.17*: /Cost of production/ concerns the /seller's expenses/
+(/e.g./, manufacturing expense) in producing the product being exchanged with a
+buyer.
+#+end_quote
+
+Needless to say, determining the /cost of production/ is in itself a very
+complex subject, but we have chosen to completely ignore these details. The
+general notion is that there are costs in producing an item, and that those
+costs will have an influence on the price of the item, though these are two
+distinct concepts. Alas, "price" is itself a simplified concept. In practice,
+there are three interlinked notions of "price", all of which are extremely
+important to Computational Finance (/emphasis ours/):
+
+#+name: definition_2_18
+#+begin_quote
+*Definition 2.18*: "Price" sometimes refers to the quantity of payment requested
+by a seller of goods or services, rather than the eventual payment amount. This
+requested amount is often called the /asking price/ or /selling price/, while
+the actual payment may be called the /transaction price/ or /traded price/.
+Likewise, the /bid price/ or /buying price/ is the quantity of payment offered
+by a buyer of goods or services [...].
+#+end_quote
+
+The /traded price/ is of significance here; the exchange between parties is
+performed in the context of a /trade/. Wikipedia [[https://en.wikipedia.org/wiki/Trade][informs us that]] (/emphasis
+ours/):
+
+#+name: definition_2_19
+#+begin_quote
+*Definition 2.19*: /Trade/ involves the /transfer/ of goods or services /from
+one person or entity to another/, often /in exchange for money/. Economists
+refer to a system or network that allows trade as a /market/.
+#+end_quote
+
+The /indicative prices/ that the buyer and seller haggle over are known as
+/quotes/, and defined [[https://en.wikipedia.org/wiki/Financial_quote][as follows]] (/emphasis ours/):
+
+#+name: definition_2_20
+#+begin_quote
+*Definition 2.20*: A /financial quotation/ refers to specific market data
+relating to a /security/ or commodity. While the term /quote/ specifically
+refers to the /bid price/ or /ask price/ of an instrument, it may be more
+generically used to relate to /the last price/ which the security /traded at/
+("last sale").
+#+end_quote
+
+Since /security/ is a very important term, we should take this opportunity to
+[[https://en.wikipedia.org/wiki/Security_(finance)][define it]], as well as the related but somewhat more generic notion of [[https://en.wikipedia.org/wiki/Financial_instrument][an
+instrument]] (/emphasis ours/):
+
+#+name: definition_2_21
+#+begin_quote
+*Definition 2.21*: A /security/ is a /tradable financial asset/. The term
+commonly refers to /any form of financial instrument/, but its legal definition
+varies by jurisdiction. In some countries and languages the term "security" is
+commonly used in day-to-day parlance to mean any form of financial instrument,
+even though the underlying legal and regulatory regime may not have such a broad
+definition.
+#+end_quote
+
+#+name: definition_2_22
+#+begin_quote
+*Definition 2.22*: /Financial instruments/ are /monetary contracts between
+parties/. They can be created, traded, modified and settled. They can be cash
+(currency), evidence of an ownership interest in an entity or a contractual
+right to receive or deliver [...].
+#+end_quote
+
+With this, the basic vocabulary has been established. All of these moving parts
+can now be assembled together to form an overall picture in the following
+manner. A /seller/, that is, /a party/ with items to sell, comes up with a
+/valuation/ for the items --- called the /asking price/ or just /ask/; a
+/buyer/, that is, /a party/ wishing to buy items, also has its own valuation ---
+called the /bidding price/ or just /bid/. They come to /a market/ to conduct
+their negotiation. If the buyer and the seller can agree on terms, /a
+transaction/ is made --- called a /trade/ or a /deal/. Prices are generally
+/quoted/ in /currency units/. In the domain of Computational Finance, the items
+of interest are /financial products/, also known as /financial instruments/, and
+the markets in which these are traded are called /financial markets/. The term
+/financial/ is often omitted for brevity.
+
+There is one wrinkle in this picture. In a typical /public/ financial market,
+not all parties are able to /make prices/. That is, the buyer normally does not
+tell the seller directly its asking price, as you would when you are conducting
+an informal negotiation at your local market. Instead, there exists a group of
+privileged entities who are responsible for quoting /both sides/ of a price,
+making what is known as a /2-way price/ --- /i.e./ providing /both/ the bid
+/and/ the ask at which they are willing to transact. These are known as /market
+makers/ and their role is defined [[https://en.wikipedia.org/wiki/Market_maker][as follows]]:(/emphasis ours/):
+
+#+name: definition_2_23
+#+begin_quote
+*Definition 2.23*: A /market maker/ or /liquidity provider/ is a company or an
+individual that quotes both /a buy and a sell price/ in a /financial instrument/
+or /commodity/ held in inventory, hoping to make a profit on the /bid–ask
+spread/, or turn. The U.S. Securities and Exchange Commission defines a "market
+maker" as a firm that stands ready to /buy and sell/ stock on /a regular and
+continuous basis/ /at a publicly quoted price/.
+#+end_quote
+
+#+caption: UML diagram of domain concepts.
+#+name: uml_domain_concepts
+#+attr_latex: :width 370pt :height 130pt
+[[file:concepts_class.png]]
+
+Figure [[uml_domain_concepts][uml_domain_concepts]] puts together all of the concepts we've introduced
+and, with it, we complete this part's domain survey. Next, we shall round up
+this information by placing it in a broader, and somewhat more philosophical,
+context.
+
+| Previous: [[id:CBC966ED-BE48-6204-1BBB-72360BFEC554][Cash]]  [[id:D564B035-80F8-0D04-B1DB-2832CD93B95B][Money]] | Top: [[id:CE1D1ADC-E267-8AD4-7033-3A0FEA7F89EC][Domain]] |

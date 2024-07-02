@@ -1,0 +1,309 @@
+:PROPERTIES:
+:ID: FCC97499-78A9-F4B4-1F6B-3144AAD74933
+:END:
+#+title: Kinds of Money
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Money has evolved over time in a long and convoluted manner, eventually
+transforming itself into the complex entity that it is today[fn:ascent_money].
+We need not analyse all of the intermediate steps that were taken, but can
+instead focus on the most salient aspects that emerged from the process.
+
+[fn:ascent_money] Ferguson's /The Ascent of Money/: /A Financial History of the
+World/ provides an accessible introduction for those interested in the topic
+[[citep:ferguson2008ascent]].
+
+
+#+begin_src bibtex :tangle yes
+@book{ferguson2008ascent,
+  title={The ascent of money: A financial history of the world},
+  author={Ferguson, Niall},
+  year={2008},
+  publisher={Penguin}
+}
+#+end_src
+
+* Commodity Money
+
+The simplest kind of money is /commodity money/, which roughly means that we use
+a /commodity/ to perform the role of money. Because /commodity/ is one of those
+loaded terms in this field, its worthwhile attempting to define it, even if we
+can only do so superficially at this moment. Wikipedia [[https://en.m.wikipedia.org/wiki/Commodity][states]] (/emphasis ours/):
+
+#+name: definition_2_3
+#+begin_quote
+*Definition 2.3*: [...] [A] commodity is an economic good or service that has
+full or substantial /fungibility/[fn:fungibility]: that is, the market treats
+instances of the good /as equivalent or nearly so/ with no regard to who
+produced them.
+#+end_quote
+
+Examples of commodities that have been used as money are precious metals such as
+gold and silver, and others less so such as copper and zinc. Note that this
+property of /fungibility/ --- the ability to treat all instances of the
+commodity in the same way --- is a core requirement. A second important aspect
+is that commodity money has a /value/ in and of itself. There are two types of
+value we may ascribe to it: /use value/ and /intrinsic value/, which Wikipedia
+[[https://en.m.wikipedia.org/wiki/Use_value
+ ][defines as follows]] (/emphasis ours/):
+
+#+name: definition_2_4
+#+begin_quote
+*Definition 2.4*: /Use value/ [...] refers to the tangible features of a
+commodity (a tradeable object) which can satisfy some human requirement, want or
+need, or which serves a useful purpose.
+ #+end_quote
+
+#+name: definition_2_5
+#+begin_quote
+*Definition 2.5*: /Intrinsic value/ [...] [can] be partially or entirely due to
+the desirable features of the object as a medium of exchange and a store of
+value. Examples of such features include /divisibility/; easily and securely
+/storable and transportable/; /scarcity/; and /difficulty to counterfeit/.
+ #+end_quote
+
+It is not difficult to find challenges with these definitions. Intrinsic value
+is believed to be /intrinsic/ to the commodities in question because it is
+thought that they are /naturally endowed/ of a set of features that make them
+suitable for their role as money. Now, an /intrinsic property/ typically
+signifies something that exists independently of any observer, but in
+Computational Finance very few things have this robust characteristic.
+Similarly, /my notion/ of use value may be quite distinct from /your notion/,
+and its hard to envisage how any type of value would exist were there to be no
+modern /homo sapiens/. The fact that gold and silver are considered special is
+as much a factor of social custom as is a consequence of their scarcity on our
+planet, ease of divisibility or transport; worse: in most cases, these are
+subjective judgements rather than objective[fn:diamonds].
+
+Nor could it be said that precious metals have had any relevance or special role
+for the majority of the existence of our species for, as far as we know, money
+is a relatively recent invention[fn:sapiens]. However, in a non-rigorous way, we
+can let ourselves be persuaded that a "large percentage of humans" would likely
+agree on the fact that certain commodities are "valuable", in and of itself, and
+that shall have to suffice for the purposes of this discussion.
+
+[fn:fungibility] Notice how carefully the authors worded the definition, leaving
+plenty of wiggle room by stating "/full or substantial/ fungibility". As with so
+many things in Computational Finance, rather than being an absolute term,
+fungibility comes instead in varying shades of grey. The picture will hopefully
+become clearer when we look at commodity markets.
+
+[fn:diamonds] For example, diamonds are thought to be precious even though, by
+[[https://en.wikipedia.org/wiki/Artificial_scarcity][most definitions]] of the term, they are not scarce. We then enter the world of
+/artificial scarcity/, making the entire concept rather difficult to pin down
+precisely.
+
+[fn:sapiens] [[https://en.wikipedia.org/wiki/Homo_sapiens][Wikipedia]] tells us that something resembling the anatomically
+modern /homo sapiens/ has been in existence for some two hundred thousand years.
+This makes the last ten thousand years a very small chapter on our long history.
+For an interesting "species level" view, we recommend Harari's /Sapiens: A Brief
+History of Humankind/ [[citep:harari2014sapiens]].
+
+
+#+begin_src bibtex :tangle yes
+@book{harari2014sapiens,
+  title={Sapiens: A brief history of humankind},
+  author={Harari, Yuval Noah},
+  year={2014},
+  publisher={Random House}
+}
+#+end_src
+
+* Fiat Money
+
+A second, more modern approach to money is /fiat money/. Fiat is Latin for /let
+it be done/, but it is more generally understood as "an order, decree or
+resolution." Wikipedia [[https://en.m.wikipedia.org/wiki/fiat_money][informs us that]] (/emphasis ours/):
+
+#+name: definition_2_6
+#+begin_quote
+*Definition 2.6*: Fiat money is a currency /without intrinsic value/ that has
+been established as money, often by government regulation. Fiat money /does not
+have use value/, and has value only because a /government maintains its value/,
+or because /parties engaging in exchange agree on its value/.
+#+end_quote
+
+The key point about fiat is the fact that the illusive characteristics of use
+value and intrinsic value which were still present in commodity money, flimsy
+though they might have been, are now finally allowed to dissipate, as if by
+conjure. But fiat is no mere cheap parlour trick; it has proven itself an
+extremely successful approach, such that the vast majority of money systems in
+existence today are based on it.
+
+Interestingly, its biggest advantage is also its biggest disadvantage. Since one
+can bring money into existence by decree, there is no need to wait for the
+discovery of raw materials, nor is the money system hostage to third parties who
+control their supply. However, if more money can be created at will, at very low
+cost to the producer (the government), why not simply create /yet more money/
+whenever required? Alas, excesses in supply can cause the fickle illusion to
+dissolve, causing a collapse of the money system. The downfall of fiat money
+tends to be closely associated with this phenomenon, even in present
+times[fn:debasing].
+
+Fiat should be viewed as a "barer essence" of money: money when stripped of most
+of its historical baggage; thought-stuff, a purer creation of the mind. In this
+sense, commodity money was the scaffolding with which fiat money was built, but
+once the edifice is finished, the scaffolding becomes surplus to requirements
+and can be allowed to fall by the wayside[fn:story]. Commodity money has its
+uses, of course, but it is no longer allowed to act the central part in the
+play. Fiat questions the dependency on rare physical materials, and swaps them
+for others that can be produced under control; but why stop there? One can
+continue to climb this abstraction ladder, and the next logical step is to
+question the need for a /physical representation/ altogether.
+
+[fn:story] The actual historical process is, of course, much more complex than
+this coarse simplification. Again, we refer the interested reader to Ferguson's
+work [[citep:ferguson2008ascent]] as a good starting point.
+
+[fn:debasing] In all fairness, a similar phenomena already existed with
+commodity money called /debasement/, which Wikipedia [[https://en.wikipedia.org/wiki/Debasement][defines as follows]]
+(/emphasis ours/): "A /debasement/ of coinage is the practice of lowering the
+intrinsic value of coins, especially when used in connection with commodity
+money, such as gold or silver coins. A coin is said to be debased if /the
+quantity of gold, silver, copper or nickel in the coin is reduced/."
+
+However, commodity money is still closely anchored to the physical reality,
+placing natural limits to the expansion process. Due to its nature, fiat takes
+the idea of debasement to its logical conclusion: /hyperinflation/. This is a
+topic for a future instalment.
+
+* Bank Money
+
+Previously, we mentioned that /verifiable records/ are an important candidate
+for money. The significance of this idea can hopefully be made apparent by means
+of a small thought experiment. Picture the distribution of money across a
+country, at any given time point $t$, as a kind of a gigantic
+/ledger/[fn:ledger] which emerged as a result of the activity between economic
+agents; and think of the transfers of money between agents as /changes/ to the
+"records", as the clock ticks. In such a world, it would be very difficult to
+distinguish between money as a physical thing and money as merely the records of
+the activity that has taken place, provided that all the agents /trust the
+record/. Further: given these premises, it follows that it should therefore be
+theoretically possible to tally up all the "records" (/i.e./ the money), at any
+time point $t$, and see exactly who owns what.
+
+Whilst there are practical difficulties in doing this for an entire country ---
+stopping time being chief amongst them --- there are indeed those who make a
+business model out of a slightly less ambitious version of these ideas. They go
+by the name of /Banks/, and the techniques employed to discretise time should
+already be familiar from the world of relational databases; they are used to
+ensure the correctness of their records[fn:mesopotamia]. The records they keep
+are known as /Bank Money/, [[https://en.wikipedia.org/wiki/Money][defined thusly by Wikipedia]] (/emphasis ours/):
+
+#+name: definition_2_7
+#+begin_quote
+*Definition 2.7*: /Bank money/, or broad money (M1/M2) is /the money created by
+private banks/ /through the recording of loans as deposits of borrowing
+clients/, with partial support indicated by the cash ratio. Currently, bank
+money is created as electronic money. [...] Bank money, which /consists only of
+records/ (mostly computerized in modern banking), forms by far the largest part
+of broad money in developed countries.
+#+end_quote
+
+[fn:ledger] Ledger is just the technical name for a particular way of keeping
+records, typically used in accounting to keep track of who has done what when.
+We shall look into ledgers properly much later on.
+
+[fn:mesopotamia] It is perhaps worthwhile stressing once more that all of this
+text greatly simplifies and linearizes an /extremely/ non-linear historical
+process. For example, in [[citep:dos1914pays]], dos Santos discusses the use of
+/cashless payments/ in ancient Mesopotamia, which bears a great resemblance to
+the ideas described here.
+
+
+#+begin_src bibtex :tangle yes
+@article{dos1914pays,
+  title={What pays What? Cashless Payment in Ancient Mesopotamia (626-331 BC)},
+  author={dos Santos, Ant{\'o}nio Ramos},
+  journal={Cashless Payments and Transactions from the Antiquity to},
+  pages={15--32},
+  year={1914}
+}
+#+end_src
+
+A great deal could be said about bank money, but to keep us from straying too
+much we shall focus on only two key points that emerge from this definition.
+First, it is important to understand that when you deposit your money in a bank,
+you are effectively selling the government supplied representation of money and
+exchanging it for a bank-supplied representation of money --- /i.e./ a receipt
+acknowledging the deposit is a proof that the bank now has you on their records
+and, therefore, that /you own bank money/. The fact that these appear to be one
+and the same to a layperson is not incidental, but a /crucial property/ of the
+process, for it hides the true complexity of the exchange taking place.
+Similarly, as you transfer money from one bank to another you are exchanging one
+form of bank money for a different one.
+
+Secondly, as the definition states, most money in a modern economy is bank
+money. Counter-intuitively, what a layperson tends to associate with "money" ---
+/e.g./, notes and coins --- is only a tiny sliver of the total money supply; it
+typically does not exceed 3% of the overall amount. Thus, the process of
+/creation/ of bank money is really the only relevant factor in the expansion of
+the money supply in most economies. McLeay /et al./ explain it in great detail
+on a Bank of England publication [[citep:mcleay2014money]], but, for our purposes,
+the key points are fairly straightforward:
+
+#+begin_src bibtex :tangle yes
+@article{mcleay2014money,
+  title={Money creation in the modern economy},
+  author={McLeay, Michael and Radia, Amar and Thomas, Ryland},
+  journal={Bank of England Quarterly Bulletin},
+  pages={Q1},
+  year={2014}
+}
+#+end_src
+
+- money is created by banks when they /lend/ out money to customers. The loan
+  results on a /deposit/ into the customer's account;
+- money is destroyed when customers /repay/ their loans to the bank.
+
+Alas, as you can imagine, loans --- or better still, /credit/ --- is a world of
+complexity in its own right, and now is not the time for us to properly immerse
+ourselves in these dark deep waters; but if we keep our focus solely on the
+money creation part of the process, even this brief explanation should have
+already have given you a hint of the somewhat /magical/ nature of the process.
+Varoufarkis [[citep:varoufakis2017talking]] brings it to life by means of an
+imaginary bank customer called Miriam, who has been given a loan to setup a new
+business (/emphasis ours/):
+
+#+begin_src bibtex :tangle yes
+@book{varoufakis2017talking,
+  title={Talking to my daughter about the economy: A brief history of capitalism},
+  author={Varoufakis, Yanis},
+  year={2017},
+  publisher={Random House}
+}
+#+end_src
+
+#+begin_quote
+[...] [It] is hard to believe that /value can be born/ /from nothing/. [...] In
+a sense, the banker arranged for the present Miriam --- an entrepreneur with a
+plan to sell bicycles --- to sit in front of the time membrane and reach through
+it to the Miriam who will exist five years from now --- a wealthy businesswoman
+with a successful bicycle company --- and snatch half a million pounds from her,
+/bringing it to the present/, invest it in the bicycle business and thus allow
+the future Miriam to become that successful businesswoman.
+#+end_quote
+
+Predictably, this ability to reach out to future value can be misused:
+
+#+begin_quote
+Since they are not constrained to lend existing exchange value, bankers have
+every reason to keep conjuring up loans in the same manner --- by a few strokes
+on their keyboards --- for the more people they lend to and the more money they
+create for the economy, the greater the profits their retain for themselves.
+#+end_quote
+
+Alas, as with fiat, so with credit: nothing good ever comes from excesses in the
+monetary supply --- or, to misquote Varoufakis, "by messing around with the
+timeline". Of course, there are constraints on how much money a given bank can
+create: some of the constraining factors are the /due diligence/ processes,
+which means that only customers who are able to repay their loans are expected
+to be given a loan; there are also regulatory bodies who try to ensure banks
+keep a "balanced" balance sheet --- /i.e./, the /cash ratio/ *[[definition_2_6][Definition 2.6]]*
+alludes to. But these and other measures are not always sufficient. As you can
+imagine, this opens the door to all kinds of exciting questions, but we best
+move on before we get too bogged down in this very muddy trail.
+
+| Previous: [[id:D564B035-80F8-0D04-B1DB-2832CD93B95B][Money]] | Next: [[id:2A81E1EB-2B9F-27B4-93B3-266A634E07B3][Currency]] | Top: [[id:CE1D1ADC-E267-8AD4-7033-3A0FEA7F89EC][Domain]] |

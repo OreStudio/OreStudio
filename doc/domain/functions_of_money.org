@@ -6,7 +6,7 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+startup: inlineimages
 
-One way in which to define money is to focus on its /functional characteristics/
+One way in which to define [[id:D564B035-80F8-0D04-B1DB-2832CD93B95B][money]] is to focus on its /functional characteristics/
 --- that is to say, what can it be used for in practical terms. In the
 [[https://en.wikipedia.org/wiki/Money][before-mentioned]] page, Wikipedia goes on to state (/emphasis ours/):
 
@@ -29,7 +29,7 @@ compute all sorts of measures related to accounting. These we shall cover in the
 future.
 
 #+caption: Use cases for money.
-#+label: use_cases
+#+name: use_cases
 #+attr_org: :width 50 :height 50
 #+attr_latex: :width 150pt :height 150pt
 [[file:money_use_case.png]]
@@ -49,3 +49,5 @@ definition stated, pretty much anything which can fulfil the functions above
 /can be considered money/. However, the different types of /things/ used for
 this purposes have very different characteristics, so its worthwhile looking at
 them in more detail.
+
+| Previous: [[id:D564B035-80F8-0D04-B1DB-2832CD93B95B][Money]] | Next: [[id:FCC97499-78A9-F4B4-1F6B-3144AAD74933][Kinds of Money]] | Top: [[id:CE1D1ADC-E267-8AD4-7033-3A0FEA7F89EC][Domain]] |

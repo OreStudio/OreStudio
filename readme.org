@@ -9,7 +9,13 @@
 
 [[./assets/images/documentation_banner.png]]
 
-[[https://github.com/OreStudio/OreStudio/blob/main/LICENSE][https://img.shields.io/badge/license-GPL_3-green.svg]]
+#+html: <a href="https://www.gnu.org/software/emacs/"><img alt="GNU Emacs" src="https://img.shields.io/static/v1?logo=gnuemacs&logoColor=fafafa&label=Made%20with&message=GNU%20Emacs&color=7F5AB6&style=flat"/></a>
+[[https://github.com/OreStudio/OreStudio/blob/main/LICENSE][https://img.shields.io/badge/License-GPLv3-blue.svg]]
+[[https://en.wikipedia.org/wiki/C%2B%2B17][https://img.shields.io/badge/std-C++17-blue.svg]]
+[[https://www.gnu.org/software/gcc/gcc-13][https://img.shields.io/badge/GCC-13-blue.svg]]
+[[https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html][https://img.shields.io/badge/CLANG-16-blue.svg]]
+[[https://visualstudio.microsoft.com/vs/whatsnew/][https://img.shields.io/badge/MSVC-2022-blue.svg]]
+[[https://discord.gg/gcrYsjW3pd][https://img.shields.io/badge/Discord-blue.svg]]
 [[https://github.com/OreStudio/OreStudio/pulse/monthly][https://img.shields.io/badge/status-active-brightgreen.svg]]
 [[https://github.com/OreStudio/OreStudio/issues][https://img.shields.io/github/issues/OreStudio/OreStudio.svg]]
 [[https://github.com/OreStudio/OreStudio/graphs/contributors][https://img.shields.io/github/contributors/OreStudio/OreStudio.svg]]
@@ -22,11 +28,6 @@
 [[https://github.com/OreStudio/OreStudio/releases][https://img.shields.io/github/downloads/OreStudio/OreStudio/total.svg]]
 [[https://github.com/OreStudio/OreStudio/releases][https://img.shields.io/github/release/OreStudio/OreStudio.svg]]
 [[https://github.com/OreStudio/OreStudio/commits/main][https://img.shields.io/github/commits-since/OreStudio/OreStudio/v1.0.32.svg]]
-[[https://en.wikipedia.org/wiki/C%2B%2B17][https://img.shields.io/badge/std-C++17-blue.svg]]
-[[https://www.gnu.org/software/gcc/gcc-13][https://img.shields.io/badge/GCC-13-blue.svg]]
-[[https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html][https://img.shields.io/badge/CLANG-16-blue.svg]]
-[[https://visualstudio.microsoft.com/vs/whatsnew/][https://img.shields.io/badge/MSVC-2022-blue.svg]]
-[[https://discord.gg/gcrYsjW3pd][https://img.shields.io/badge/Discord-blue.svg]]
 
 * OreStudio
 
@@ -67,23 +68,25 @@ have two components: a /client/ and a [[https://www.postgresql.org/][Postgres]] 
 logic will be divided between these two components, as required; they are to be
 situated wherever the implementation can be done with the least amount of
 complexity and the highest amount of clarity. Furthermore, performance and
-scalability are not direct concerns. Finally, we shall focus /exclusively/ on
-[[https://github.com/OpenSourceRisk/Engine][ORE]] and [[https://github.com/lballabio/QuantLib][QuantLib]], and will not support any other Quant libraries or engines. The
-project is tightly coupled with these two, /by design/.
+scalability are not direct concerns, though we shall try our best to make things
+fast within these constraints. Finally, we shall focus /exclusively/ on [[https://github.com/OpenSourceRisk/Engine][ORE]] and
+[[https://github.com/lballabio/QuantLib][QuantLib]], and will not support any other Quant libraries or engines. The project
+is tightly coupled with these two, /by design/.
 
 The implementation language of choice is [[https://isocpp.org/][C++]], for somewhat arbitrary reasons.
 After many years of software engineering with it --- both [[https://github.com/MASD-Project/dogen][academically]] as well
-as professionally --- I have now found myself estrange from the language for the
-last few years. This project is thus an opportunity for me to catch up with the
-latest and greatest developments in the C++ ecosystem. Python would have been a
-suitable alternative, particularly given its popularity with Quants and Quant
-Devs. However, in the interest of simplicity, we'll stick to just the /one/
-language --- other than [[https://en.wikipedia.org/wiki/SQL][SQL]] for the database, or course.
+as professionally --- I have now found myself estranged from the language for
+the last few years. This project is thus an opportunity for me to catch up with
+the latest and greatest developments in the C++ ecosystem. Python would have
+been a suitable alternative, particularly given its popularity with Quants and
+Quant Devs. However, in the interest of simplicity, we'll stick to just the
+/one/ language --- other than [[https://en.wikipedia.org/wiki/SQL][SQL]] for the database, or course.
 
 I am the single maintainer of OreStudio and thus its [[https://en.wikipedia.org/wiki/Benevolent_dictator_for_life][BFDL]]. If you want to know
 more about me, do have a peek at [[https://mcraveiro.github.io/][my personal website]], in particular [[https://mcraveiro.github.io/about.html][this section]]
 section. As with most open source projects, [[https://github.com/OreStudio/OreStudio/blob/main/CONTRIBUTING.md][PRs are welcome]] but they must be in
-the spirit of what has been described thus far.
+the spirit of what has been described thus far. And you can always reach out to
+our [[https://discord.gg/gcrYsjW3pd][discord channel]] for a chat.
 
 * Content
 
@@ -93,27 +96,33 @@ variation of [[https://en.wikipedia.org/wiki/Literate_programming][literate prog
 our notes and [[https://orgmode.org/worg/org-contrib/babel/][org-babel]] to make code blocks executable where possible. Org-roam
 is an implementation of the [[https://en.wikipedia.org/wiki/Zettelkasten][Zettelkasten method]], though you need not care too
 much about it if you do not use Emacs; just browse through the content via [[https://orestudio.github.io/OreStudio/][the
-website]]. If however you do use Emacs, you can make use of a much richer roam
-experience. The file [[https://github.com/OreStudio/OreStudio/blob/main/.dir-locals.el][.dir-locals.el]] is configured to generate a local roam
-database when you run:
+website]] and use page "[[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]]" as the "entry point" for most of the
+documentation of this project.
+
+If you do use Emacs, you can make use of a much richer roam experience. The file
+[[https://github.com/OreStudio/OreStudio/blob/main/.dir-locals.el][.dir-locals.el]] is configured to generate a local roam database when you run:
 
 #+begin_src emacs-lisp
 (org-roam-db-sync)
 #+end_src
 
 You can then jump through all the pages using the normal org-roam facilities.
-For those exploring through the website, what follows is a set of useful "entry
-point" links.
+For those exploring through the website.
 
-** Index
-
-- [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]]: Main page for the documentation of this project.
+Lastly, you may notice that this content is somewhat academic in tone. Though we
+are not affiliated with any academic effort, I have kept a lot of bad habits
+from my [[https://masd-project.github.io/progen/docs/masd_academic_papers.html#ID-5FA85AF3-E55C-B174-D943-1E2246CAEB14][days at university]] and these inform the approach, such as how we
+research prior art, organise the documentation, the use of references and so on.
+Nonetheless, rather than a research model, the project intends to be useful to
+academics and practitioners alike --- within its stated constraints. If you do
+want to use the project for research, a [[https://www.earthdata.nasa.gov/engage/doi-process][DOI]] will be made available in [[https://zenodo.org/][Zenodo]]
+when we do our first release.
 
 * Binary Packages
 
 Binary packages are available for each release in [[https://github.com/OreStudio/OreStudio/releases][GitHub]], with the links shown
 at the end of each release note. The binaries cover [[https://www.debian.org/][Debian Linux]] (though they
-probably also work for [[https://ubuntu.com/][Ubuntu]] and other flavours), [[https://en.wikipedia.org/wiki/MacOS][MacOS]] and [[https://en.wikipedia.org/wiki/Microsoft_Windows][Windows]] - all
+probably also work for [[https://ubuntu.com/][Ubuntu]] and other flavours), [[https://en.wikipedia.org/wiki/MacOS][MacOS]] and [[https://en.wikipedia.org/wiki/Microsoft_Windows][Windows]] --- all
 64-bit only. Packages are also generated per commit for each Operative System
 and stored with the corresponding [[https://github.com/OreStudio/OreStudio/actions][GitHub Workflow]]. Development is done from the
 [[https://github.com/OreStudio/OreStudio][main branch in git]], so latest should always be greatest; but you may want to use
@@ -198,4 +207,16 @@ its abbreviation =rat=.
 
 #+begin_src sh :results verbatim html
 cmake --build --preset linux-clang-release --target rat
+#+end_src
+
+A quicker way to do all of these steps in one go is to use the [[https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html#workflow-preset][workflow preset]]:
+
+#+begin_src sh
+cmake --workflow --preset linux-clang-debug && cmake --build --preset linux-clang-debug
+#+end_src
+
+Last but not least, you can start the GUI via the target =run_ores_qt=:
+
+#+begin_src sh
+cmake --build --preset linux-clang-debug --target run_ores_qt
 #+end_src

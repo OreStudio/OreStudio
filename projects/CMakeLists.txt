@@ -16,17 +16,15 @@
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 
-if(WITH_PROFILING)
-    if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
-        set(profiling_flags "-fprofile-abs-path")
-        set(profiling_flags "${profiling_flags} -fprofile-arcs")
-        set(profiling_flags "${profiling_flags} -ftest-coverage")
-
-        if (CMAKE_COMPILER_IS_CLANGXX)
-            set(profiling_flags "${profiling_flags} -fdebug-default-version=4")
-        endif()
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${profiling_flags}")
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
+    set(flags "-gdwarf-4 -gstrict-dwarf")
+    if(WITH_PROFILING)
+        set(flags "${flags} -fprofile-abs-path")
+        set(flags "${flags} -fprofile-arcs")
+        set(flags "${flags} -ftest-coverage")
     endif()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flags}")
+    message(STATUS "C++ flags: ${CMAKE_CXX_FLAGS}")
 endif()
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.console)

@@ -67,6 +67,7 @@
         ("site:pages"
          :recursive t
          :base-directory "./"
+         :exclude ".*/.packages/.*"
          :publishing-function org-html-publish-to-html
          :publishing-directory "./build/output/site"
          :with-author nil
@@ -77,6 +78,7 @@
         ("site:images"
          :recursive t
          :base-directory "./"
+         :exclude ".*/.packages/.*"
          :base-extension "png\\|jpg\\|gif\\|svg"
          :publishing-directory "./build/output/site/"
          :publishing-function org-publish-attachment)

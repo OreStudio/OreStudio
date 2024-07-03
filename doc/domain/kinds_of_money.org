@@ -5,6 +5,8 @@
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+startup: inlineimages
+#+cite_export: csl
+#+bibliography: ../../bibliography.bib
 
 Money has evolved over time in a long and convoluted manner, eventually
 transforming itself into the complex entity that it is today[fn:ascent_money].
@@ -13,17 +15,8 @@ instead focus on the most salient aspects that emerged from the process.
 
 [fn:ascent_money] Ferguson's /The Ascent of Money/: /A Financial History of the
 World/ provides an accessible introduction for those interested in the topic
-[[citep:ferguson2008ascent]].
+[cite:@ferguson2008ascent].
 
-
-#+begin_src bibtex :tangle yes
-@book{ferguson2008ascent,
-  title={The ascent of money: A financial history of the world},
-  author={Ferguson, Niall},
-  year={2008},
-  publisher={Penguin}
-}
-#+end_src
 
 * Commodity Money
 
@@ -99,17 +92,8 @@ precisely.
 modern /homo sapiens/ has been in existence for some two hundred thousand years.
 This makes the last ten thousand years a very small chapter on our long history.
 For an interesting "species level" view, we recommend Harari's /Sapiens: A Brief
-History of Humankind/ [[citep:harari2014sapiens]].
+History of Humankind/ [cite:@harari2014sapiens].
 
-
-#+begin_src bibtex :tangle yes
-@book{harari2014sapiens,
-  title={Sapiens: A brief history of humankind},
-  author={Harari, Yuval Noah},
-  year={2014},
-  publisher={Random House}
-}
-#+end_src
 
 * Fiat Money
 
@@ -155,7 +139,7 @@ question the need for a /physical representation/ altogether.
 
 [fn:story] The actual historical process is, of course, much more complex than
 this coarse simplification. Again, we refer the interested reader to Ferguson's
-work [[citep:ferguson2008ascent]] as a good starting point.
+work [cite:@ferguson2008ascent] as a good starting point.
 
 [fn:debasing] In all fairness, a similar phenomena already existed with
 commodity money called /debasement/, which Wikipedia [[https://en.wikipedia.org/wiki/Debasement][defines as follows]]
@@ -208,20 +192,10 @@ We shall look into ledgers properly much later on.
 
 [fn:mesopotamia] It is perhaps worthwhile stressing once more that all of this
 text greatly simplifies and linearizes an /extremely/ non-linear historical
-process. For example, in [[citep:dos1914pays]], dos Santos discusses the use of
+process. For example, in [cite:@dos1914pays], dos Santos discusses the use of
 /cashless payments/ in ancient Mesopotamia, which bears a great resemblance to
 the ideas described here.
 
-
-#+begin_src bibtex :tangle yes
-@article{dos1914pays,
-  title={What pays What? Cashless Payment in Ancient Mesopotamia (626-331 BC)},
-  author={dos Santos, Ant{\'o}nio Ramos},
-  journal={Cashless Payments and Transactions from the Antiquity to},
-  pages={15--32},
-  year={1914}
-}
-#+end_src
 
 A great deal could be said about bank money, but to keep us from straying too
 much we shall focus on only two key points that emerge from this definition.
@@ -241,18 +215,8 @@ money. Counter-intuitively, what a layperson tends to associate with "money" ---
 typically does not exceed 3% of the overall amount. Thus, the process of
 /creation/ of bank money is really the only relevant factor in the expansion of
 the money supply in most economies. McLeay /et al./ explain it in great detail
-on a Bank of England publication [[citep:mcleay2014money]], but, for our purposes,
+on a Bank of England publication [cite:@mcleay2014money], but, for our purposes,
 the key points are fairly straightforward:
-
-#+begin_src bibtex :tangle yes
-@article{mcleay2014money,
-  title={Money creation in the modern economy},
-  author={McLeay, Michael and Radia, Amar and Thomas, Ryland},
-  journal={Bank of England Quarterly Bulletin},
-  pages={Q1},
-  year={2014}
-}
-#+end_src
 
 - money is created by banks when they /lend/ out money to customers. The loan
   results on a /deposit/ into the customer's account;
@@ -263,18 +227,9 @@ complexity in its own right, and now is not the time for us to properly immerse
 ourselves in these dark deep waters; but if we keep our focus solely on the
 money creation part of the process, even this brief explanation should have
 already have given you a hint of the somewhat /magical/ nature of the process.
-Varoufarkis [[citep:varoufakis2017talking]] brings it to life by means of an
-imaginary bank customer called Miriam, who has been given a loan to setup a new
-business (/emphasis ours/):
-
-#+begin_src bibtex :tangle yes
-@book{varoufakis2017talking,
-  title={Talking to my daughter about the economy: A brief history of capitalism},
-  author={Varoufakis, Yanis},
-  year={2017},
-  publisher={Random House}
-}
-#+end_src
+Varoufarkis [cite:@varoufakis2017talking] brings it to life by means of an imaginary
+bank customer called Miriam, who has been given a loan to setup a new business
+(/emphasis ours/):
 
 #+begin_quote
 [...] [It] is hard to believe that /value can be born/ /from nothing/. [...] In
@@ -305,5 +260,9 @@ keep a "balanced" balance sheet --- /i.e./, the /cash ratio/ *[[definition_2_6][
 alludes to. But these and other measures are not always sufficient. As you can
 imagine, this opens the door to all kinds of exciting questions, but we best
 move on before we get too bogged down in this very muddy trail.
+
+* Bibliography
+
+#+print_bibliography:
 
 | Previous: [[id:D564B035-80F8-0D04-B1DB-2832CD93B95B][Money]] | Next: [[id:2A81E1EB-2B9F-27B4-93B3-266A634E07B3][Currency]] | Top: [[id:CE1D1ADC-E267-8AD4-7033-3A0FEA7F89EC][Domain]] |

@@ -5,6 +5,8 @@
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+startup: inlineimages
+#+cite_export: csl
+#+bibliography: ../../bibliography.bib
 
 A concept closely coupled with that of [[id:D564B035-80F8-0D04-B1DB-2832CD93B95B][money]] is /currency/. Wikipedia [[https://en.wikipedia.org/wiki/Currency][states]]
 (/emphasis ours/):
@@ -177,16 +179,7 @@ perspective, there little that is special about cryptos to prevent their use;
 and, since they bear a close resemblance to currencies, they can be treated in
 very much the same way for great many cases. This rationale may not apply to
 other specific use cases, but "thereof we must remain silent"
-[[citep:white2006wittgenstein]].
-
-#+begin_src bibtex :tangle yes
-@book{white2006wittgenstein,
-  title={Wittgenstein's' Tractatus Logico-Philosophicus': A Reader's Guide},
-  author={White, Roger M},
-  year={2006},
-  publisher={A\&C Black}
-}
-#+end_src
+[cite:@white2006wittgenstein].
 
 With that dealt with, we can now look at the schemes for the identification of
 cryptos. Due to their /suis generis/ existence, cryptocurrencies do not have a
@@ -255,5 +248,9 @@ than one may think, and the circumstances under which these transitions take
 place don't always allow for careful operational planning. Due to this, events
 on a currency lifecycle can be extremely disruptive to systems which are not
 designed to take them into account.
+
+* Bibliography
+
+#+print_bibliography:
 
 | Previous: [[id:FCC97499-78A9-F4B4-1F6B-3144AAD74933][Kinds of Money]] | Next: [[id:CBC966ED-BE48-6204-1BBB-72360BFEC554][Cash]] | Top: [[id:CE1D1ADC-E267-8AD4-7033-3A0FEA7F89EC][Domain]] |

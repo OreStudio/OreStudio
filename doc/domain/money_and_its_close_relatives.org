@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 9EB4715F-5A5D-4F14-0CAB-A4208240A813
+:END:
+#+title: Money and its Close Relatives
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+#+cite_export: csl
+#+bibliography: ../../bibliography.bib
+
+#+begin_quote
+Finance is concerned with the relations between the values of securities and
+their risk, and with the behavior of those values. It aspires to be a practical
+field, like physics or chemistry or electrical engineering. As John Maynard
+Keynes once remarked about economics, “If economists could manage to get
+themselves thought of as humble, competent people on a level with dentists, that
+would be splendid.” Dentists rely on science, engineering, empirical knowledge,
+and heuristics, and there are no theorems in dentistry. Similarly, one would
+hope that finance would be concerned with laws rather than theorems, with
+behavior rather than assumptions. One doesn’t seriously describe the behavior of
+a market with theorems.
+
+    --- Emanuel Derman [cite:@derman2016volatility]
+#+end_quote
+
+As they say, it's always best to start a story at the beginning. However,
+problem domains are not simple yarns that merely need unspooling. The very
+notions of domain order and structure are artificial constructs, coarse
+linearisations imposed by those attempting to make sense of the mess of concepts
+and relationships between entities, as well as their behaviours. Because it is
+imposed, such structure will always be inadequate; what is left to the writer is
+to choose how inadequate the linear presentation will be.
+
+These structural problems are particularly acute in finance and its sister
+subject economics because, unlike other subjects, they are hostile environments
+to the scientific method (/c.f./ Section FIXME #chap1:discussion). As Derman and
+Miller informed us, "Markets are plagued with anomalies that violate standard
+financial theories (or, more accurately, theories are plagued by their inability
+to systematically account for the actual behaviour of markets)."
+[cite:@derman2016volatility] It is important to take this subjectivity into
+account as we enter our first foray into the domain.
+
+Topics:
+
+- [[id:D564B035-80F8-0D04-B1DB-2832CD93B95B][Money]]
+- [[id:08222DF0-CF56-B9D4-1133-80AEABD6E116][Functions of Money]]
+- [[id:FCC97499-78A9-F4B4-1F6B-3144AAD74933][Kinds of Money]]
+- [[id:2A81E1EB-2B9F-27B4-93B3-266A634E07B3][Currency]]
+- [[id:CBC966ED-BE48-6204-1BBB-72360BFEC554][Cash]]
+- [[id:005E63CB-D2BB-6504-822B-905EF969AEB2][Trading]]

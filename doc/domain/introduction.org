@@ -1,0 +1,236 @@
+:PROPERTIES:
+:ID: 8BF323A0-B868-7AA4-EC7B-D988934482AA
+:END:
+#+title: Introduction
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+#+cite_export: csl
+#+bibliography: ../../bibliography.bib
+
+#+begin_quote
+Everything you read in any theoretical finance book, including this one, you
+must take with a generous pinch of salt.
+
+    --- Paul Wilmott [cite:@wilmott1998derivatives]
+#+end_quote
+
+Even though I've been a software engineer in the financial sector for over
+twenty years, I've always felt I lacked a deep understanding of the foundational
+concepts that make up the domain. As a self-confessed
+reductionist[fn:reductionist], I find this state of affairs uncomfortable, akin
+to hearing a continuous loop of David Hilbert's words: /wir müssen wissen, wir
+werden wissen/[fn:hilbert]. The situation had to be remedied /somehow/, and the
+material now in your hands is the proposed fix to all my ailments.
+
+[fn:reductionist] More aptly, an /hierarchical reductionist/ in the mould of
+Dawkins: "[the] hierarchical reductionist [..] explains a complex entity at any
+particular level in the hierarchy of organization, in terms of entities only one
+level down the hierarchy; entities which, themselves, are likely to be complex
+enough to need further reducing to their own component parts; and so on."
+[cite:@richards1987blind] (p. 13)
+
+As to the methodology: given I've had some success in applying the Feynman
+Technique[fn:feynman] to [[https://mcraveiro.github.io/neuroscience/neurons_for_geeks_part_1.html][other complex domains]], it seemed only natural to try
+and use it for this endeavour too. Past experience also demonstrated writing is
+an adequate replacement for /in vivo/ communication, which was just as well
+since this exercise begun during the brave new world of social distancing.
+Perhaps more significantly, throughout my long software engineering career I
+have been greatly inspired by Evans and his ideas around the importance of
+making domain modeling concepts more explicit:
+
+#+begin_quote
+Aligning the behavior, intent, and message of code using current standard
+technology requires discipline and a certain way of thinking about design [...].
+Importance of language To communicate effectively, the code must be based on the
+same language used to write the requirements --- the same language that the
+developers speak with each other and with domain experts.
+[cite:@evans2004domaindriven] (p. 40)
+#+end_quote
+
+In other words, we are aiming to capture the essence of the /ubiquitous
+language/ [cite:@evans2004domaindriven] for the domain in question. Doing so
+will hopefully allow us to write code with a smaller impedance mismatch with
+regards to the domain experts, which is just as well since "[the] heart of
+software is its ability to solve domain-related problems for its user."
+[cite:@evans2004domaindriven] (p. 4) That's that for the /why/ and the /how/.
+But, /what/ exactly are we researching?
+
+[fn:hilbert] Translates to: "we must know, we will know". As per [[https://en.wikipedia.org/wiki/David_Hilbert][Wikipedia]]: "The
+epitaph on his tombstone in Göttingen consists of the famous lines he spoke at
+the conclusion of his retirement address to the Society of German Scientists and
+Physicians on 8 September 1930. The words were given in response to the Latin
+maxim: '/Ignoramus et ignorabimus/' or 'We do not know, we shall not know'."
+
+[fn:feynman] The [[https://www.farnamstreetblog.com/2012/04/learn-anything-faster-with-the-feynman-technique/][Feynman Technique]] is a well-established learning methodology.
+For more details, see [[https://www.farnamstreetblog.com/2015/01/richard-feynman-knowing-something/][Richard Feynman: The Difference Between Knowing the Name
+of Something and Knowing Something]].
+
+** Scope
+
+These notes are largely an amble through wherever our fancy took us, within the
+porous boundaries of finance. Alas, we can hardly keep calling our target domain
+"trading, accounting, crypto and a bit of quantitative finance, when viewed
+through the lens of FOSS, descriptive though that might be. For we are Software
+Engineers after all, and if there is one thing we do is to name things,
+/especially/ when we lack competence to do so.[fn:confidence] In this vein, I
+decided to call this motley domain of ours "Computational Finance". Should the
+name have any merit, I'm afraid I have little claim to it as it was shamelessly
+stolen from this passage in [[https://writings.stephenwolfram.com/2016/09/how-to-teach-computational-thinking/][Wolfram's writings]] (/emphasis ours/):
+
+[fn:confidence] There are no circumstances under which I have seen software
+developers lacking confidence. I feel that the motto of our profession should be
+the Latin translation of /Make up with confidence that which you lack for in
+competence./ In many ways, that is just another way of saying "explore the
+problem space".
+
+
+#+begin_quote
+Doctors, lawyers, teachers, farmers, whatever. The future of all these
+professions will be full of computational thinking. Whether it’s sensor-based
+medicine, computational contracts, education analytics or computational
+agriculture --- success is going to rely on being able to do computational
+thinking well.
+
+I’ve noticed an interesting trend. Pick any field X, from archeology to zoology.
+/There either is now a “computational X” or there soon will be/. And it’s widely
+viewed as the future of the field.
+#+end_quote
+
+These seemed like inspiring words for anyone embarking on a long and uncertain
+journey, so we made them our own and, in turn, it gave us a banner to rally
+around with. But what to make of its boundaries?
+
+One of the biggest challenges facing the reductionist is that, in the limit,
+/everything is interconnected with everything else/, for there is no natural
+halting function. Thus, if you are not careful, all paths will eventually lead
+you to the realm of quarks and particle physics, regardless of the starting
+point. This is a problem familiar to all reductionists, so it is perhaps
+worthwhile heeding the words of Dawkins:
+
+#+begin_quote
+The biologist's problem is the problem of complexity. The biologist tries to
+explain the workings, and the coming into existence, of complex things, in terms
+of simpler things. He can regard his task as done when he has arrived at
+entities so simple that they can safely be handed over to physicists.
+[cite:@richards1987blind] (p. 15)
+#+end_quote
+
+As easy as Dawkins makes it sound, I personally have never found a completely
+satisfactory answer to this question in any on my previous meanderings; in
+general, I tend to follow an empiric approach and let /taste/ be my
+guide.[fn:linus_taste] Granted, its probably not the scientific solution you
+were expecting, but it seems that there are "intuitive" boundaries in subjects,
+and when we hit one of those we shall stop.[fn:my_taste] As an example: we will
+not look in detail at legal frameworks when trying to understand financial
+concepts, though the two disciplines are deeply intertwined. This is a decision
+which is unacceptable for certain use cases, but suffices for our purposes --- a
+dilemma which is also found when structuring the content.
+
+[fn:linus_taste] An idea that was most likely inspired by Linus' views on /good
+taste/. For details see [[https://medium.com/@bartobri/applying-the-linus-tarvolds-good-taste-coding-requirement-99749f37684a][Applying the Linus Torvalds “Good Taste” Coding
+Requirement]].
+
+[fn:my_taste] Of course, /your/ intuition is not /my/ intuition. I'm afraid you
+will have to take my taste as a given, even where you disagree. Feel free to
+make your views heard though.
+
+
+** Audience
+
+The target audience for the material is the fabled /homo developus/, that
+non-existent "standard developer". In this particular case, our /homo developus/
+is one which is moderately competent with C++ but not completely familiar with
+computational finance. Those already up to speed with parts of the finantial
+jargon will no doubt find the content /very/ slow going, though perhaps not
+completely without value. I'm afraid slowness /is by design/, since the
+objective is to try to build up concepts with a solid foundation for those /not
+in the know/.[fn:malembe]
+
+[fn:malembe] As they say in my home country of Angola, /malembe malembe/. The
+expression can be loosely translated to English as "slowly but surely", or
+"slowly does it".
+
+
+The astute reader will perhaps point out that there already exists a great deal
+of programming material on QuantLib, ORE and many other libraries of similar
+ilk, and hundreds of books have been written on quantitative finance. One could
+be forgiven for wondering if there is a need to pile on more literature onto a
+seemingly crowded subject. In our defense, we are yet to find a work that
+targets directly "plain" software developers and provides them with sufficiently
+broad view of the domain. In addition, most of the existing material is aimed at
+either those with strong mathematical abilities but no domain knowledge, or its
+converse, leaving many gaps in the understanding. What we are aiming for instead
+is to target those with strong programming abilities but no particular knowledge
+of either computational finance /or/ mathematics. And the latter is /the/ key
+difficulty of the exercise.
+
+** Mathematics
+
+Finance is rife with complicated maths. Our assumption is that you, dear reader,
+are not able to attain deep levels of understanding by staring at page after
+page of complex mathematical formulae. I, for one, certainly cannot.
+Unfortunately, non-trivial mathematics is difficult to avoid when covering a
+subject matter of this nature so, as a counterweight, we shall strive to use it
+sparingly and only from a software engineering /application/ perspective. Note
+that this approach is clearly not suitable for the mathematically savvy amongst
+us, as they will find it unnecessarily laboured and ultimately imprecise. Then
+again, our focus lies elsewhere.
+
+Our core belief is that an /average reader/ (like me) should be able to attain a
+software engineer's intuition of /how things work/ just by fooling around with
+software models of formulae. The reason why I am very confident on this regard
+is because that's how developers learn: by coding and seeing what happens. In
+fact, it is this very tight feedback loop between having an idea and
+experimenting with it that got many of us hooked into programming in the first
+place, so its a very powerful tool in the motivational arsenal. And, as it turns
+out, these ideas are related to Wolfram's concept of [[https://www.wolframscience.com/nks/notes-3-12--history-of-experimental-mathematics/][Experimental Mathematics]].
+Ultimately, our aspiration is to copy the approach taken by Klein
+[cite:@klein2013coding], though perhaps that sets the bar a tad too high. Well, at
+least you get the spirit.
+
+** Non Goals
+
+For those looking to learn about /real/ trading, I'm sorry to disappoint you but
+this material is not for you. Even when we discuss trading strategies and
+similar topics, our focus is always on uncovering how the machinery works rather
+than making money with it. Similarly, if you are a quant or are trying to become
+one, you are better off reading traditional /bibles/ such as Hull, Wilmott
+[cite:@hull2006options] [cite:@wilmott2013paul] and the like, for our treatment
+of mathematics is far too naive to meet your requirements. This is content about
+finantial modeling /per se/, but rather a discussion of software engineering
+pertaining to the domain of finance. Nonetheless, if you are a subject matter
+expert with suggestions --- or if you spot any mistakes --- please do let me
+know.
+
+** Legal Disclaimer
+
+All of the content, including source code, is either written by the author, or
+obtained from freely available sites in the internet, with suitable software
+licences. All content sources shall be clearly identified at the point of use.
+No proprietary information /of any kind/ --- including, but not limited to,
+source code, text, market data or mathematical models --- shall be used within
+this material.
+
+All of the views expressed here represent exclusively myself and are not those
+of any corporation I may be engaged in commercial activities with.
+
+The information available in this manuscript is for your general information and
+use and is not intended to address your particular requirements. In particular,
+the information does not constitute any form of financial advice or
+recommendation and is not intended to be relied upon by users in making (or
+refraining from making) any investment decisions.[fn:trulyifa]
+
+All software written by the author is licensed under the GNU GPL v3. As per the
+licence, it is "distributed in the hope that it will be useful, but without any
+warranty; without even the implied warranty of merchantability or fitness for a
+particular purpose. See the GNU General Public License for more details."
+
+[fn:trulyifa] This paragraph was obtained from the [[https://trulyifa.co.uk/disclaimer/][Truly Independent Ltd]] and
+modified to suit our needs.
+
+* Bibliography
+
+#+print_bibliography:
+
+| Next: [[id:9EB4715F-5A5D-4F14-0CAB-A4208240A813][Money and its Close Relatives]] | Top: [[id:CE1D1ADC-E267-8AD4-7033-3A0FEA7F89EC][Domain]] |

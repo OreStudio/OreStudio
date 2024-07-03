@@ -45,7 +45,6 @@
 ;; Install dependencies
 (package-install 'htmlize)
 (package-install 'citeproc)
-(package-install 'org-ref)
 
 ;; Load the publishing system
 (require 'ox-publish)
@@ -67,7 +66,7 @@
         ("site:pages"
          :recursive t
          :base-directory "./"
-         :exclude ".*/.packages/.*"
+         :exclude ".packages\\|vcpkg\\|build"
          :publishing-function org-html-publish-to-html
          :publishing-directory "./build/output/site"
          :with-author nil
@@ -78,7 +77,7 @@
         ("site:images"
          :recursive t
          :base-directory "./"
-         :exclude ".*/.packages/.*"
+         :exclude ".packages\\|vcpkg\\|build"
          :base-extension "png\\|jpg\\|gif\\|svg"
          :publishing-directory "./build/output/site/"
          :publishing-function org-publish-attachment)

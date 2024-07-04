@@ -1,0 +1,282 @@
+:PROPERTIES:
+:ID: 8D7F5CE2-FA9F-53F4-D373-D9B3A21BEC69
+:END:
+#+title: Finance and Modeling
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+bibliography: ../bibliography.bib
+
+Most of the concepts introduced thus far are foundational to a number of
+disciplines like economics, accounting and so forth. In a very real sense, these
+are /core concepts/ of Computational Finance. Yet, as you no doubt noticed,
+there is no indisputable clarity and rigour to these notions as there is to
+their analogues in established fields such as physics[fn:models_behaving]. You
+may, of course, argue that lose definitions sourced from Wikipedia aren't
+suitable building material to those seeking rigour --- and you'd certainly have
+a point; but it's worthwhile bearing in mind that this approach was chosen after
+a great deal of deliberation and practical experience.
+
+[fn:models_behaving] This comparison is carried out in great detail by Derman in
+his magnificent work [cite:@derman2011models]; a book we cannot recommend
+enough. In fact, one may go as far as saying that the present section is a poor
+attempt at distilling the fundamental issues highlighted by Derman.
+
+
+In order to understand why Computational Finance so greatly differs from
+physics, one must first make a distinction between a /theory/ and a /model/.
+Availing ourselves with Derman's /Metaphors, Models & Theories/
+[cite:@derman2011metaphors], we start with his clear demarcation (/emphasis
+ours/):
+
+#+begin_quote
+/Theories/ deal with the world on its own terms, absolutely. /Models are
+metaphors/, /relative descriptions/ of the object of their attention that
+compare it to something similar already better understood via theories. /Models
+are reductions in dimensionality/ that /always simplify/ and sweep dirt under
+the rug. Theories tell you what something is. /Models tell you merely what
+something/ /is partially like/.
+#+end_quote
+
+Further on, he deals the knock-out blow:
+
+#+begin_quote
+/There are no genuine theories in finance/. /Financial models are always models
+of comparison/, of relative value. /They are metaphors/. The efficient market
+model assumes stock prices behave like smoke diffusing through a room. These are
+comparisons that have some reasonableness, but they’re not even remotely fact.
+Newton’s laws and Maxwell’s equations are. There is almost no gap between the
+object and their description. You can say that stock prices behave like smoke.
+You cannot say that light behaves like Maxwell’s equations. Light is Maxwell’s
+equations. All concepts, perhaps all things, are mental. But /there are no
+genuine theories in finance/ /because finance is concerned with value/, /an even
+more subjective concept than heat or pressure/.
+
+Furthermore, it is very difficult to find the scientific laws or even
+regularities governing the behavior of economies: there are very few isolated
+economic machines, and so /one cannot carry out the repeated experiments that
+science requires/. /History is important in economics/. Credit markets tomorrow
+won't behave like credit markets last year because we have learned what happened
+last year, and cannot get back to the initial conditions of a year ago. /Human
+beings and societies learn/; /physical systems by and large don't/.
+#+end_quote
+
+Stern stuff. To be sure, the kernel of these ideas had already been touched upon
+earlier in Soros' work, when he introduced --- or perhaps recovered --- the
+notion of /relflexity/. For me, personally, relflexity marks the first time I
+encountered philosophical discussions around trading, and it made a lasting
+impression; to this day, I still find it to be one of the most crucial
+properties of the field. Soros defines /reflexivity/ and /fallibility/ as
+follows [cite:@soros2013fallibility] (/emphasis his/):
+
+#+begin_quote
+My conceptual framework is built on two relatively simple propositions. The
+first is that in situations that have thinking participants, the participants'
+views of the world never perfectly correspond to the actual state of affairs.
+People can gain knowledge of individual facts, but when it comes to formulating
+theories or forming an overall view, their perspective is bound to be either
+biased or inconsistent or both. That is the /principle of fallibility/.
+
+The second proposition is that these imperfect views can influence the situation
+to which they relate through the actions of the participants. For example, if
+investors believe that markets are efficient then that belief will change the
+way they invest, which in turn will change the nature of the markets in which
+they are participating (though not necessarily making them more efficient). That
+is the /principle of reflexivity/.
+#+end_quote
+
+In other words, all models are and will always be /imperfect/; and, when they do
+work, it is not entirely clear whether it is due to their predictive power and
+ability to model the real world, or whether /adoption itself/ is causing the
+model to be good at prediction, or whether it is due to something else entirely.
+Perversely, in many cases, as the model increases in popularity so do its
+predictive powers, reinforcing the belief that the model works. All of these
+forces are probably always at play, in varying degrees, but what makes the
+situation difficult is that it is not possible to unpick them within any
+reasonable confidence interval because of the inoperativeness of the scientific
+method in this realm.
+
+One may be tempted to read the words of Derman and Soros and visualise complex
+mathematical equations describing highly specialised financial products. This,
+in our view, does not get to the truth of the matter, for the issue lies much
+deeper within. It starts with /value/, as Derman says, and continues, to the
+point that /almost all concepts/ within Computational Finance /are models/ ---
+and those that aren't, are so deeply intermingled with all the rest that they
+might as well be models too.
+
+When we use terms like "price", "money" or "currency", we are inadvertently
+referring to models, for these things are not of the world in the same way an
+atom or a molecule is, and the best one can do is to create /models as
+metaphors/ to represent them. These models are hazy neo-cortical constructs,
+programs running in people's brains that have a faint connection to the real
+world[fn:wittgenstein]; and the field is made up of models within models which
+point to other models, /ad infinitum/[fn:astronomer]. To get a flavour of what
+is meant by this, we shall dip our toes on the famous debate on the origins of
+money, as reported by Svizzero and Tisdell [cite:@svizzero2019barter] (/emphasis
+ours/):
+
+#+begin_quote
+Metallists believe that money developed spontaneously as a medium of exchange in
+order to eliminate the obvious limitations of barter. In other words, the
+origins and the early evolution of money are viewed as an /unintended
+consequence of spontaneous individual actions/ in the context of barter. Thus,
+money emerged via a natural process of transaction cost minimization. Metallism
+was an economic principle stating that the value of money derived from the
+purchasing power of the commodity upon which it is based. [...]
+
+On the other hand, there is the Platonic vision of currency, also called the
+credit theory of money. This contends that /money is a social construction/
+rather than a physical commodity. The abstract entity in question is a credit
+relationship; that is, a promise from someone to repay a favor (product or
+service) to the holder of the token.
+#+end_quote
+
+In other words, even at this late stage, we still have no consensus as to what
+exactly money is; and whatever it /is/, it appears to be deeply intermingled
+with /how it came to be/. As is with money, so it is with most, if not all, of
+the notions put forward in this work. Therefore, there is hardly a need for
+elaborate definitions, since little or nothing is gained with regards to
+subjectiveness and much --- when not all --- is lost in terms of comprehension.
+One should search instead for /sufficient explanations/, for /intuitive
+descriptions/, for the simplest of things that allow us to progress in
+constructing our tower of models. This is the guiding principle of the present
+work[fn:philosophy].
+
+[fn:astronomer] In Computational Finance, the astronomer anecdote is not apt
+[cite:@hawking2009brief], for we are truly dealing with "turtles all the way
+down."
+
+[fn:wittgenstein] As with all things, if one digs deep enough, one seemingly
+always ends up in Russel and Wittgenstein. The early Wittgenstein would probably
+consider much of this field a part of the set of things one cannot speak of. The
+latter Wittgenstein would likely view all of it as a perfectly reasonable
+language game. Kemerling [[http://www.philosophypages.com/hy/6s.htm][says]] (/emphasis ours/):
+
+#+begin_quote
+On this conception of the philosophical enterprise, the vagueness of ordinary
+usage is not a problem to be eliminated but rather the source of linguistic
+riches. /It is misleading even to attempt/ /to fix the meaning of particular
+expressions/ /by linking them referentially to things in the world/. The meaning
+of a word or phrase or proposition is nothing other than the set of (informal)
+rules governing the use of the expression in actual life.
+#+end_quote
+
+[fn:philosophy] Its important to understand that we are not saying that there
+aren't deep philosophical debates in the hard sciences; instead, what we argue
+is that the hard sciences at least have the scientific method to fall back on,
+helping to resolve or guide these debates. Within computational finance, the
+philosophical debates are /all that is/ and, more importantly, /all that can
+be/.
+
+
+At this juncture, the alert reader will probably question the purpose of the
+entire enterprise, given its wanton disregard for rigour. Here, the words of the
+experienced practitioner are of great assistance. Box informed us that "all
+models are wrong, but some are useful" [cite:@box1979all] and Wilmott went one
+step further by claiming, not without justification, that "every financial axiom
+I've ever seen is demonstrably wrong --- the real question is how wrong is the
+theory and how useful is it regardless of its validity."
+[cite:@wilmott1998derivatives] In this vein, one must keep in mind that none of
+these challenges make Computational Finance any less /useful/; after all, for
+better or worse, the world's economy runs on constructs such as these, proving
+there is no shortage of /uses/. Instead, what we must not lose sight of are the
+properties of models, and how they relate to the real world. Wilmott and Derman
+stated on this regard [cite:@derman2009financial] (/emphasis ours/):
+
+#+begin_quote
+We do need models and mathematics --- /you cannot think about finance/ /and
+economics without them/ --- but one must never forget that /models are not the
+world/. Whenever we make a model of something involving human beings, we are
+trying to force the ugly stepsister’s foot into Cinderella’s pretty glass
+slipper. It doesn't fit without cutting off some essential parts. And in cutting
+off parts for the sake of beauty and precision, /models inevitably mask the true
+risk/ /rather than exposing it/. The most important question about any financial
+model is /how wrong it is likely to be/, and /how useful it is despite its
+assumptions/. You must start with models and then /overlay them with common
+sense and experience/.
+#+end_quote
+
+These are all wise words, but the word "assumption" is one of disproportionate
+importance. This is because underlying /all models/ lie assumptions, and its not
+necessarily just because you might misuse models deliberately; much more
+dangerous are those assumptions which are hidden. Henney [[https://twitter.com/KevlinHenney/status/1252952622128128000][puts it]] quite
+poignantly:
+
+#+begin_quote
+Epistemologically speaking, assumptions are the barefoot-trodden Lego bricks in
+the dark of knowledge. You don't know they're there until you know that they're
+there. And even if you know there are some there, you don't know exactly where
+and you'll still end up stepping on some.
+#+end_quote
+
+With all of this said, it should by now be clear that we must understand the
+modeling activity better, given its all we'll be doing. For models to be truly
+of use one must first know their limits, and that effort must surely begin by
+developing a clear understanding what is meant by the term. Regrettably, we
+cannot investigate Model Theory at the level of detail it demands, but we are at
+least able to provide some basic intuition via Stachowiak's work, and his
+classic /Allgemeine Modelltheorie/ (/General Model Theory/) in particular,
+wherein he proposes a model-based concept of cognition. He identifies three
+principal features of model[fn:podnieks]:
+
+[fn:podnieks] As we don't read German, we could not access the sources directly.
+Instead, we got to Stachowiak via Podnieks [cite:@podnieks2017philosophy]. If
+you know of an English translation of the book, we would be extremely
+interested.
+
+
+- *Mapping*: Models map individuals, original or artificial, to a category of
+  all such individuals sharing similar properties. The object of the mapping
+  could itself be a model, thus allowing for complex composition. - *Reduction*:
+  Models focus only on a subset of the individual's properties, ignoring aspects
+  that are deemed irrelevant. - *Pragmatism*: Models have a purpose as defined
+  by its creators, which guides the modeling process. Stachowiak states
+  (/emphasis ours/): "[models] are not only models of something. They are also
+  models /for somebody/, a human or an artificial model user. They perform
+  therefore their functions in time, within a time interval. /And they are
+  finally models for a definite purpose/." [cite:@podnieks2017philosophy]
+
+Much of the expressive power of models arises from these three fundamental
+properties; this is what models are /good for/. They must therefore be used with
+great care, and for their intended purposes. However, once you find yourself
+outside the model, /anything can happen/. And, given sufficient time, you will
+/always/ find yourself outside the model. Lewis, in his usually prosaic manner,
+put it best [cite:@lewis2009panic]:
+
+#+begin_quote
+Everything, in retrospect, is obvious. But if everything were obvious, authors
+of histories of financial folly would be rich.
+#+end_quote
+
+With these parting words, we have reached the summit of our brief philosophical
+ascent. In the context of the broader domain, this discussion is roughly placed
+within the porous boundaries of /Model Risk/, which Wikipedia [[https://en.wikipedia.org/wiki/Model_risk][defines]] like so
+(/emphasis ours/):
+
+#+begin_quote
+*Definition 2.23*: In finance, /model risk/ is /the risk of loss/ resulting from
+using /insufficiently accurate models/ to make decisions, originally and
+frequently in the context of valuing financial securities.
+#+end_quote
+
+We won't delve further into model risk for now[fn:model_risk], but do keep in
+mind that we have barely scratched the surface on this topic; in particular,
+we've ignored significant voices such as Mandelbrot
+[cite:@mandelbrot2007misbehavior], Taleb [cite:@taleb2005fooled] and many others
+--- Derman, for one, had much more to say on the subject. Nonetheless, the
+purpose of this section is merely to sketch out the /why/ for our approach and
+to give sufficient context for the decisions taken, rather than to perform a
+comprehensive literature review, which, sadly, must be left as an exercise to
+the diligent reader.
+
+[fn:model_risk] Having said that, we cannot resist in pointing out that the very
+notion of /model risk/ is, in itself, /a model/; thus, it suffers from the very
+same ailments all models do and will, by definition, always be incomplete. This
+is one in a long string of ironies that litter this domain.
+
+
+
+* Bibliography
+
+#+print_bibliography:
+
+| Previous: [[id:005E63CB-D2BB-6504-822B-905EF969AEB2][Trading]] | Top: [[id:CE1D1ADC-E267-8AD4-7033-3A0FEA7F89EC][Domain]] |

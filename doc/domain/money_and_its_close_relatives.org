@@ -33,10 +33,10 @@ to choose how inadequate the linear presentation will be.
 
 These structural problems are particularly acute in finance and its sister
 subject economics because, unlike other subjects, they are hostile environments
-to the scientific method (/c.f./ Section FIXME #chap1:discussion). As Derman and
-Miller informed us, "Markets are plagued with anomalies that violate standard
-financial theories (or, more accurately, theories are plagued by their inability
-to systematically account for the actual behaviour of markets)."
+to the scientific method (/c.f./ [[id:8D7F5CE2-FA9F-53F4-D373-D9B3A21BEC69][Finance and Modeling]]). As Derman and Miller
+informed us, "Markets are plagued with anomalies that violate standard financial
+theories (or, more accurately, theories are plagued by their inability to
+systematically account for the actual behaviour of markets)."
 [cite:@derman2016volatility] It is important to take this subjectivity into
 account as we enter our first foray into the domain.
 
@@ -48,3 +48,10 @@ Topics:
 - [[id:2A81E1EB-2B9F-27B4-93B3-266A634E07B3][Currency]]
 - [[id:CBC966ED-BE48-6204-1BBB-72360BFEC554][Cash]]
 - [[id:005E63CB-D2BB-6504-822B-905EF969AEB2][Trading]]
+- [[id:8D7F5CE2-FA9F-53F4-D373-D9B3A21BEC69][Finance and Modeling]]
+
+| Previous: [[id:8BF323A0-B868-7AA4-EC7B-D988934482AA][Introduction]] | Next: [[id:D564B035-80F8-0D04-B1DB-2832CD93B95B][Money]] | Top: [[id:CE1D1ADC-E267-8AD4-7033-3A0FEA7F89EC][Domain]] |
+
+* Bibliography
+
+#+print_bibliography:

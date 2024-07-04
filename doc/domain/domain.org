@@ -12,7 +12,8 @@ organise this content in a meaningful manner over time.
 
 Topics:
 
-- [[id:8BF323A0-B868-7AA4-EC7B-D988934482AA][Introduction]]
-- [[id:9EB4715F-5A5D-4F14-0CAB-A4208240A813][Money and its Close Relatives]]
+- [[id:8BF323A0-B868-7AA4-EC7B-D988934482AA][Computational Finance]]: Introduction to the field and scoping of the ambitions
+  of the present effort.
+- [[id:9EB4715F-5A5D-4F14-0CAB-A4208240A813][Money and its Close Relatives]]: Fundamental concepts related to money.
 
 | Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] |

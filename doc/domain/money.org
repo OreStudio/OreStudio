@@ -15,8 +15,8 @@ with a fairly reasonable [[https://en.wikipedia.org/wiki/Money][working definiti
 #+name: definition_2_1
 #+begin_quote
 *Definition 2.1*: Money is /any item or verifiable record/ that is /generally
-accepted as payment/ \marginpar{Money} for goods and services /and repayment of
-debts/, such as taxes, in /a particular country/ or /socio-economic context/.
+accepted as payment/ for goods and services /and repayment of debts/, such as
+taxes, in /a particular country/ or /socio-economic context/.
 #+end_quote
 
 The first key take-away here is that money is mostly a /social convention/,

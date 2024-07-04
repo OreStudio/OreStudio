@@ -3,7 +3,7 @@
 :END:
 #+title: Ore Studio
 #+author: Marco Craveiro
-#+options: title:nil <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: title:nil <:nil c:nil todo:nil ^:nil d:nil author:nil toc:nil html-postamble:nil
 #+export_file_name: index
 #+startup: inlineimages
 

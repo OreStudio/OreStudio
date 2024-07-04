@@ -6,7 +6,7 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+startup: inlineimages
 #+cite_export: csl
-#+bibliography: ../../bibliography.bib
+#+bibliography: ../bibliography.bib
 
 #+begin_quote
 Everything you read in any theoretical finance book, including this one, you

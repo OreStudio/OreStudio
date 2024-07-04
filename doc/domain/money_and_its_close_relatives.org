@@ -6,7 +6,7 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+startup: inlineimages
 #+cite_export: csl
-#+bibliography: ../../bibliography.bib
+#+bibliography: ../bibliography.bib
 
 #+begin_quote
 Finance is concerned with the relations between the values of securities and

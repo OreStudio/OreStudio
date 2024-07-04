@@ -6,7 +6,7 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+startup: inlineimages
 #+cite_export: csl
-#+bibliography: ../../bibliography.bib
+#+bibliography: ../bibliography.bib
 
 A concept closely coupled with that of [[id:D564B035-80F8-0D04-B1DB-2832CD93B95B][money]] is /currency/. Wikipedia [[https://en.wikipedia.org/wiki/Currency][states]]
 (/emphasis ours/):

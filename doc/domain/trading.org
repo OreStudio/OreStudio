@@ -171,4 +171,4 @@ and, with it, we complete this part's domain survey. Next, we shall round up
 this information by placing it in a broader, and somewhat more philosophical,
 context.
 
-| Previous: [[id:CBC966ED-BE48-6204-1BBB-72360BFEC554][Cash]] | Top: [[id:CE1D1ADC-E267-8AD4-7033-3A0FEA7F89EC][Domain]] |
+| Previous: [[id:CBC966ED-BE48-6204-1BBB-72360BFEC554][Cash]] | Next: [[id:8D7F5CE2-FA9F-53F4-D373-D9B3A21BEC69][Finance and Modeling]] | Top: [[id:CE1D1ADC-E267-8AD4-7033-3A0FEA7F89EC][Domain]] |

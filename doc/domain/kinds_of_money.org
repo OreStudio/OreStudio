@@ -6,7 +6,7 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+startup: inlineimages
 #+cite_export: csl
-#+bibliography: ../../bibliography.bib
+#+bibliography: ../bibliography.bib
 
 Money has evolved over time in a long and convoluted manner, eventually
 transforming itself into the complex entity that it is today[fn:ascent_money].

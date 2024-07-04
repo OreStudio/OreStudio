@@ -71,13 +71,6 @@ jobs:
               cmake_args="${cmake_args},code_coverage=1"
           fi
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
-      - name: VCPKG Logs
-        if: always()
-        run: |
-          echo "HERE: autoconf-x64-linux-out.log"
-          cat /home/runner/work/OreStudio/OreStudio/vcpkg/buildtrees/libxcrypt/autoconf-x64-linux-out.log
-          echo "HERE autoconf-x64-linux-err.log"
-          cat /home/runner/work/OreStudio/OreStudio/vcpkg/buildtrees/libxcrypt/autoconf-x64-linux-err.log
 
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v4.3.3

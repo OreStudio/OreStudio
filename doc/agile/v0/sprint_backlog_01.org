@@ -18,38 +18,38 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: summary
-#+CAPTION: Clock summary at [2024-07-04 Thu 23:04]
+#+CAPTION: Clock summary at [2024-07-05 Fri 00:04]
 | <75>                                    |         |       |      |       |
 | Headline                                | Time    |       |      |     % |
 |-----------------------------------------+---------+-------+------+-------|
-| *Total time*                            | *33:57* |       |      | 100.0 |
+| *Total time*                            | *34:48* |       |      | 100.0 |
 |-----------------------------------------+---------+-------+------+-------|
-| Stories                                 | 33:57   |       |      | 100.0 |
-| Active                                  |         | 33:57 |      | 100.0 |
-| Sprint and product backlog refinement   |         |       | 1:05 |   3.2 |
+| Stories                                 | 34:48   |       |      | 100.0 |
+| Active                                  |         | 34:48 |      | 100.0 |
+| Sprint and product backlog refinement   |         |       | 1:05 |   3.1 |
 | Create a basic git hub repository       |         |       | 0:35 |   1.7 |
 | Setup a discord channel for the project |         |       | 0:14 |   0.7 |
-| Setup vcpkg and cmake                   |         |       | 1:21 |   4.0 |
-| Setup github actions                    |         |       | 1:21 |   4.0 |
-| Create and upload a package             |         |       | 3:28 |  10.2 |
-| Create a basic project structure        |         |       | 2:10 |   6.4 |
-| Add a Qt hello world                    |         |       | 3:08 |   9.2 |
+| Setup vcpkg and cmake                   |         |       | 1:21 |   3.9 |
+| Setup github actions                    |         |       | 1:21 |   3.9 |
+| Create and upload a package             |         |       | 3:28 |  10.0 |
+| Create a basic project structure        |         |       | 2:10 |   6.2 |
+| Add a Qt hello world                    |         |       | 3:08 |   9.0 |
 | Add a splash screen to applciation      |         |       | 0:41 |   2.0 |
-| Add basic site                          |         |       | 0:34 |   1.7 |
-| Add modeling infrastructure             |         |       | 1:30 |   4.4 |
+| Add basic site                          |         |       | 0:34 |   1.6 |
+| Add modeling infrastructure             |         |       | 1:30 |   4.3 |
 | Fix code syntax highlighting in site    |         |       | 0:10 |   0.5 |
-| Merge index with readme                 |         |       | 0:42 |   2.1 |
-| Add project objective to readme         |         |       | 2:24 |   7.1 |
-| Add basic logging support               |         |       | 1:14 |   3.6 |
-| Add nightly support with memcheck       |         |       | 3:21 |   9.9 |
-| Clean up toolchains and presets         |         |       | 1:53 |   5.5 |
-| Valgrind fails to run unit tests        |         |       | 0:53 |   2.6 |
-| Add command line options support        |         |       | 0:44 |   2.2 |
-| Add XML parsing support for currency    |         |       | 1:24 |   4.1 |
-| Create a containing structure for data  |         |       | 0:28 |   1.4 |
-| Add basic widgets to display currencies |         |       | 0:26 |   1.3 |
-| Convert plantuml diagrams to org-babel  |         |       | 1:05 |   3.2 |
-| Copy domain notes on core concepts      |         |       | 3:06 |   9.1 |
+| Merge index with readme                 |         |       | 0:42 |   2.0 |
+| Add project objective to readme         |         |       | 2:24 |   6.9 |
+| Add basic logging support               |         |       | 1:14 |   3.5 |
+| Add nightly support with memcheck       |         |       | 3:21 |   9.6 |
+| Clean up toolchains and presets         |         |       | 1:53 |   5.4 |
+| Valgrind fails to run unit tests        |         |       | 0:53 |   2.5 |
+| Add command line options support        |         |       | 0:56 |   2.7 |
+| Add XML parsing support for currency    |         |       | 1:24 |   4.0 |
+| Create a containing structure for data  |         |       | 0:28 |   1.3 |
+| Add basic widgets to display currencies |         |       | 0:26 |   1.2 |
+| Convert plantuml diagrams to org-babel  |         |       | 1:05 |   3.1 |
+| Copy domain notes on core concepts      |         |       | 3:45 |  10.8 |
 #+end:
 
 #+name: piechart
@@ -318,6 +318,7 @@ valgrind 3.22.
 
 *** STARTED Add command line options support                          :story:
     :LOGBOOK:
+    CLOCK: [2024-07-04 Thu 23:52]--[2024-07-05 Fri 00:04] =>  0:12
     CLOCK: [2024-06-29 Sat 23:33]--[2024-06-30 Sun 00:17] =>  0:44
     :END:
 

@@ -35,13 +35,13 @@ set(CTEST_CUSTOM_MAXIMUM_FAILED_TEST_OUTPUT_SIZE 0)
 set(CTEST_CUSTOM_WARNING_EXCEPTION
   ${CTEST_CUSTOM_WARNING_EXCEPTION}
   # boost-system's buildsystem uses very long paths
-  "vcpkg_buildpath_length_warning.cmake"
+  ".*vcpkg_buildpath_length_warning.cmake.*"
   # could not find a matching pdb file
-  "vcpkg_copy_pdbs.cmake"
+  ".*vcpkg_copy_pdbs.cmake.*"
   # icu currently requires the following programs
-  "CMake Warning at ports/icu/portfile.cmake"
+  ".*CMake Warning at ports/icu/portfile.cmake.*"
   # qtbase currently requires packages
-  "CMake Warning at ports/qtbase/portfile.cmake"
+  ".*CMake Warning at ports/qtbase/portfile.cmake.*"
 )
 
 # warning addons

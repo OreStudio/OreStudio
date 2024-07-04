@@ -72,6 +72,7 @@ jobs:
           fi
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
       - name: VCPKG Logs
+        if: always()
         run: |
           echo "HERE: autoconf-x64-linux-out.log"
           cat /home/runner/work/OreStudio/OreStudio/vcpkg/buildtrees/libxcrypt/autoconf-x64-linux-out.log

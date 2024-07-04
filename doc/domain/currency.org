@@ -206,6 +206,7 @@ list defined in [[https://en.wikipedia.org/wiki/List_of_cryptocurrencies][Wikipe
 of applying for an ISO currency code. For more details on this matter see [[https://www.coindesk.com/bitcoin-needs-iso-certified-currency-code][Why
 Bitcoin Needs an ISO-Certified Currency Code]].
 
+
 Table [[list_cryptocurrencies][list_cryptocurrencies]] provides a small sample of the Wikipedia page's
 dataset. Its worth noticing that, unlike ISO 4217, some of the entries have more
 than one symbol and at least one of these symbols has more than 3 characters
@@ -218,6 +219,7 @@ With both standard and non-standard currencies been introduced, we can now shift
 our attention to the different stages in the life of a currency.
 
 [fn:coinmarketcap] https://coinmarketcap.com/all/views/all/
+
 
 * Lifecycle
 

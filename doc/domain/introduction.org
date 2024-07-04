@@ -30,6 +30,7 @@ level down the hierarchy; entities which, themselves, are likely to be complex
 enough to need further reducing to their own component parts; and so on."
 [cite:@richards1987blind] (p. 13)
 
+
 As to the methodology: given I've had some success in applying the Feynman
 Technique[fn:feynman] to [[https://mcraveiro.github.io/neuroscience/neurons_for_geeks_part_1.html][other complex domains]], it seemed only natural to try
 and use it for this endeavour too. Past experience also demonstrated writing is
@@ -65,6 +66,7 @@ maxim: '/Ignoramus et ignorabimus/' or 'We do not know, we shall not know'."
 [fn:feynman] The [[https://www.farnamstreetblog.com/2012/04/learn-anything-faster-with-the-feynman-technique/][Feynman Technique]] is a well-established learning methodology.
 For more details, see [[https://www.farnamstreetblog.com/2015/01/richard-feynman-knowing-something/][Richard Feynman: The Difference Between Knowing the Name
 of Something and Knowing Something]].
+
 
 ** Scope
 
@@ -228,6 +230,7 @@ particular purpose. See the GNU General Public License for more details."
 
 [fn:trulyifa] This paragraph was obtained from the [[https://trulyifa.co.uk/disclaimer/][Truly Independent Ltd]] and
 modified to suit our needs.
+
 
 * Bibliography
 

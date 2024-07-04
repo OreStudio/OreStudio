@@ -148,6 +148,7 @@ intrinsic value of coins, especially when used in connection with commodity
 money, such as gold or silver coins. A coin is said to be debased if /the
 quantity of gold, silver, copper or nickel in the coin is reduced/."
 
+
 However, commodity money is still closely anchored to the physical reality,
 placing natural limits to the expansion process. Due to its nature, fiat takes
 the idea of debasement to its logical conclusion: /hyperinflation/. This is a

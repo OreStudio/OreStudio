@@ -21,7 +21,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
-    set(flags "-gdwarf-3 -gstrict-dwarf")
     if(WITH_PROFILING)
         if(CMAKE_COMPILER_IS_GNUCXX)
             set(flags "${flags} -fprofile-abs-path")

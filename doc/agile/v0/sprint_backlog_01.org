@@ -53,7 +53,7 @@
 #+end:
 
 #+name: piechart
-#+begin_src R :results file graphics :file sprint_backlog_01.png :var summary=summary :width 1000 :height 600
+#+begin_src R :results file graphics :file sprint_backlog_01.png :var summary=summary :width 1000 :height 600 :exports results
 clean <- tail(summary, -4)
 pie(as.numeric(clean[,5]), labels = clean[,1])
 #+end_src

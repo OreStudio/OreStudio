@@ -398,6 +398,60 @@
                     "name": "linux-clang-debug"
                 }
             ]
+        },
+        {
+            "description": "Developer workflow without installation",
+            "name": "linux-clang-release",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "linux-clang-release"
+                },
+                {
+                    "type": "build",
+                    "name": "linux-clang-release"
+                },
+                {
+                    "type": "test",
+                    "name": "linux-clang-release"
+                }
+            ]
+        },
+        {
+            "description": "Developer workflow without installation",
+            "name": "linux-gcc-debug",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "linux-gcc-debug"
+                },
+                {
+                    "type": "build",
+                    "name": "linux-gcc-debug"
+                },
+                {
+                    "type": "test",
+                    "name": "linux-gcc-debug"
+                }
+            ]
+        },
+        {
+            "description": "Developer workflow without installation",
+            "name": "linux-gcc-release",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "linux-gcc-release"
+                },
+                {
+                    "type": "build",
+                    "name": "linux-gcc-release"
+                },
+                {
+                    "type": "test",
+                    "name": "linux-gcc-release"
+                }
+            ]
         }
     ]
 }

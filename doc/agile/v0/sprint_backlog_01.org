@@ -16,38 +16,38 @@
 ** Active
 
 #+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
-#+CAPTION: Clock summary at [2024-07-04 Thu 08:28]
+#+CAPTION: Clock summary at [2024-07-04 Thu 09:01]
 | <75>                                    |         |       |      |       |
 | Headline                                | Time    |       |      |     % |
 |-----------------------------------------+---------+-------+------+-------|
-| *Total time*                            | *33:08* |       |      | 100.0 |
+| *Total time*                            | *33:35* |       |      | 100.0 |
 |-----------------------------------------+---------+-------+------+-------|
-| Stories                                 | 33:08   |       |      | 100.0 |
-| Active                                  |         | 33:08 |      | 100.0 |
-| Sprint and product backlog refinement   |         |       | 1:05 |   3.3 |
-| Create a basic git hub repository       |         |       | 0:35 |   1.8 |
+| Stories                                 | 33:35   |       |      | 100.0 |
+| Active                                  |         | 33:35 |      | 100.0 |
+| Sprint and product backlog refinement   |         |       | 1:05 |   3.2 |
+| Create a basic git hub repository       |         |       | 0:35 |   1.7 |
 | Setup a discord channel for the project |         |       | 0:14 |   0.7 |
-| Setup vcpkg and cmake                   |         |       | 1:21 |   4.1 |
-| Setup github actions                    |         |       | 1:21 |   4.1 |
-| Create and upload a package             |         |       | 3:28 |  10.5 |
+| Setup vcpkg and cmake                   |         |       | 1:21 |   4.0 |
+| Setup github actions                    |         |       | 1:21 |   4.0 |
+| Create and upload a package             |         |       | 3:28 |  10.3 |
 | Create a basic project structure        |         |       | 2:10 |   6.5 |
-| Add a Qt hello world                    |         |       | 3:08 |   9.5 |
-| Add a splash screen to applciation      |         |       | 0:41 |   2.1 |
+| Add a Qt hello world                    |         |       | 3:08 |   9.3 |
+| Add a splash screen to applciation      |         |       | 0:41 |   2.0 |
 | Add basic site                          |         |       | 0:34 |   1.7 |
 | Add modeling infrastructure             |         |       | 1:30 |   4.5 |
 | Fix code syntax highlighting in site    |         |       | 0:10 |   0.5 |
 | Merge index with readme                 |         |       | 0:42 |   2.1 |
-| Add project objective to readme         |         |       | 2:17 |   6.9 |
+| Add project objective to readme         |         |       | 2:24 |   7.1 |
 | Add basic logging support               |         |       | 1:14 |   3.7 |
-| Add nightly support with memcheck       |         |       | 3:21 |  10.1 |
-| Clean up toolchains and presets         |         |       | 1:53 |   5.7 |
+| Add nightly support with memcheck       |         |       | 3:21 |  10.0 |
+| Clean up toolchains and presets         |         |       | 1:53 |   5.6 |
+| Valgrind fails to run unit tests        |         |       | 0:46 |   2.3 |
 | Add command line options support        |         |       | 0:44 |   2.2 |
 | Add XML parsing support for currency    |         |       | 1:24 |   4.2 |
 | Create a containing structure for data  |         |       | 0:28 |   1.4 |
 | Add basic widgets to display currencies |         |       | 0:26 |   1.3 |
-| Convert plantuml diagrams to org-babel  |         |       | 1:05 |   3.3 |
-| Copy domain notes on core concepts      |         |       | 2:31 |   7.6 |
-| Valgrind fails to run unit tests        |         |       | 0:46 |   2.3 |
+| Convert plantuml diagrams to org-babel  |         |       | 1:05 |   3.2 |
+| Copy domain notes on core concepts      |         |       | 2:51 |   8.5 |
 #+end:
 
 Agenda:
@@ -217,6 +217,7 @@ both just landing pages. Look into merging them.
 
 *** COMPLETED Add project objective to readme                         :story:
     :LOGBOOK:
+    CLOCK: [2024-07-04 Thu 08:29]--[2024-07-04 Thu 08:36] =>  0:07
     CLOCK: [2024-06-29 Sat 22:55]--[2024-06-29 Sat 23:28] =>  0:33
     CLOCK: [2024-06-29 Sat 20:50]--[2024-06-29 Sat 20:55] =>  0:05
     CLOCK: [2024-06-29 Sat 19:05]--[2024-06-29 Sat 20:44] =>  1:39
@@ -266,6 +267,42 @@ Notes:
 We are using CMake in a legacy way when defining warnings, etc. We need to move
 towards the modern approach, by defining toolchain files and using presets
 correctly.
+
+*** STARTED Valgrind fails to run unit tests                          :story:
+    :LOGBOOK:
+    CLOCK: [2024-07-04 Thu 07:58]--[2024-07-04 Thu 08:27] =>  0:29
+    CLOCK: [2024-07-03 Wed 23:48]--[2024-07-03 Wed 23:50] =>  0:02
+    CLOCK: [2024-07-03 Wed 07:42]--[2024-07-03 Wed 07:57] =>  0:15
+    :END:
+
+At present we get the following failure:
+
+#+begin_src
+### unhandled dwarf2 abbrev form code 0x25
+### unhandled dwarf2 abbrev form code 0x25
+### unhandled dwarf2 abbrev form code 0x25
+### unhandled dwarf2 abbrev form code 0x23
+==6610== Valgrind: debuginfo reader: ensure_valid failed:
+==6610== Valgrind:   during call to ML_(img_get)
+==6610== Valgrind:   request for range [1940368405, +4) exceeds
+==6610== Valgrind:   valid image size of 7099560 for image:
+==6610== Valgrind:   "/home/runner/work/OreStudio/OreStudio/build/output/linux-clang-debug/projects/ores.ore.test/ores.ore.test"
+==6610==
+==6610== Valgrind: debuginfo reader: Possibly corrupted debuginfo file.
+==6610== Valgrind: I can't recover.  Giving up.  Sorry.
+==6610==
+#+end_src
+
+This normally means we are generating DWARF5:
+
+- [[https://github.com/llvm/llvm-project/issues/56550][#56550: Clang Generates DWARF Info That Valgrind Can't Read]]
+
+We still get the error with DWARF2 v4. Try v3. The problem is with valgrind:
+
+- [[https://bugs.kde.org/show_bug.cgi?id=452758][Bug 452758: Valgrind does not read properly DWARF5 as generated by Clang14]]
+
+We need to upgrade to latest valgrind. Try moving to latest ubuntu LTS which has
+valgrind 3.22.
 
 *** STARTED Add command line options support                          :story:
     :LOGBOOK:
@@ -359,6 +396,8 @@ Experiment with babel for this.
 
 *** STARTED Copy domain notes on core concepts                        :story:
     :LOGBOOK:
+    CLOCK: [2024-07-04 Thu 08:44]--[2024-07-04 Thu 08:57] =>  0:13
+    CLOCK: [2024-07-04 Thu 08:36]--[2024-07-04 Thu 08:43] =>  0:07
     CLOCK: [2024-07-03 Wed 22:30]--[2024-07-03 Wed 23:46] =>  1:16
     CLOCK: [2024-07-02 Tue 23:21]--[2024-07-03 Wed 00:14] =>  0:53
     CLOCK: [2024-07-02 Tue 22:35]--[2024-07-02 Tue 22:41] =>  0:06
@@ -371,42 +410,6 @@ Notes:
 
 - Fix issues with publishing by ignoring emacs package directories and vcpkg.
 - add basic support for bibliography as per progen setup (manual bib file).
-
-*** STARTED Valgrind fails to run unit tests                          :story:
-    :LOGBOOK:
-    CLOCK: [2024-07-04 Thu 07:58]--[2024-07-04 Thu 08:27] =>  0:29
-    CLOCK: [2024-07-03 Wed 23:48]--[2024-07-03 Wed 23:50] =>  0:02
-    CLOCK: [2024-07-03 Wed 07:42]--[2024-07-03 Wed 07:57] =>  0:15
-    :END:
-
-At present we get the following failure:
-
-#+begin_src
-### unhandled dwarf2 abbrev form code 0x25
-### unhandled dwarf2 abbrev form code 0x25
-### unhandled dwarf2 abbrev form code 0x25
-### unhandled dwarf2 abbrev form code 0x23
-==6610== Valgrind: debuginfo reader: ensure_valid failed:
-==6610== Valgrind:   during call to ML_(img_get)
-==6610== Valgrind:   request for range [1940368405, +4) exceeds
-==6610== Valgrind:   valid image size of 7099560 for image:
-==6610== Valgrind:   "/home/runner/work/OreStudio/OreStudio/build/output/linux-clang-debug/projects/ores.ore.test/ores.ore.test"
-==6610==
-==6610== Valgrind: debuginfo reader: Possibly corrupted debuginfo file.
-==6610== Valgrind: I can't recover.  Giving up.  Sorry.
-==6610==
-#+end_src
-
-This normally means we are generating DWARF5:
-
-- [[https://github.com/llvm/llvm-project/issues/56550][#56550: Clang Generates DWARF Info That Valgrind Can't Read]]
-
-We still get the error with DWARF2 v4. Try v3. The problem is with valgrind:
-
-- [[https://bugs.kde.org/show_bug.cgi?id=452758][Bug 452758: Valgrind does not read properly DWARF5 as generated by Clang14]]
-
-We need to upgrade to latest valgrind. Try moving to latest ubuntu LTS which has
-valgrind 3.22.
 
 *** Add packaging support for images                                  :story:
 

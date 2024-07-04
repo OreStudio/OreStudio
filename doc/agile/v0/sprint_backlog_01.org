@@ -408,6 +408,7 @@ Experiment with babel for this.
 
 *** STARTED Copy domain notes on core concepts                        :story:
     :LOGBOOK:
+    CLOCK: [2024-07-04 Thu 23:12]--[2024-07-04 Thu 23:51] =>  0:39
     CLOCK: [2024-07-04 Thu 22:40]--[2024-07-04 Thu 22:55] =>  0:15
     CLOCK: [2024-07-04 Thu 08:44]--[2024-07-04 Thu 08:57] =>  0:13
     CLOCK: [2024-07-04 Thu 08:36]--[2024-07-04 Thu 08:43] =>  0:07

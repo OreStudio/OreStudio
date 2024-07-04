@@ -28,8 +28,12 @@ problem domains are not simple yarns that merely need unspooling. The very
 notions of domain order and structure are artificial constructs, coarse
 linearisations imposed by those attempting to make sense of the mess of concepts
 and relationships between entities, as well as their behaviours. Because it is
-imposed, such structure will always be inadequate; what is left to the writer is
-to choose how inadequate the linear presentation will be.
+imposed, such structure will always be inadequate; the task left to the writer
+is to choose how inadequate the linear presentation is to be.[fn:wrong_models]
+
+[fn:wrong_models] Box comes to mind: "All models are wrong but some are useful."
+[cite:@box1979robustness]
+
 
 These structural problems are particularly acute in finance and its sister
 subject economics because, unlike other subjects, they are hostile environments
@@ -38,7 +42,8 @@ informed us, "Markets are plagued with anomalies that violate standard financial
 theories (or, more accurately, theories are plagued by their inability to
 systematically account for the actual behaviour of markets)."
 [cite:@derman2016volatility] It is important to take this subjectivity into
-account as we enter our first foray into the domain.
+account as we enter our first foray into the domain. The next sections discuss
+the core topics of the [[id:8BF323A0-B868-7AA4-EC7B-D988934482AA][Computational Finance]] domain.
 
 Topics:
 

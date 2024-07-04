@@ -73,7 +73,7 @@ void report_exception(const bool can_log, const std::exception& e) {
 /**
  * @brief Executes the console workflow.
  */
-int execute_console_workflow(std::vector<std::string> args,
+int execute_console_workflow(const std::vector<std::string>& args,
     ores::utility::log::scoped_lifecycle_manager& slm) {
 
     /*
@@ -105,15 +105,9 @@ int execute_console_workflow(std::vector<std::string> args,
     BOOST_LOG_SEV(lg, info) << "Command line arguments: "/* << args*/;
     // BOOST_LOG_SEV(lg, debug) << "Configuration: " << cfg;
 
-//     /*
-//      * Now perform DI initialisation. It uses logging so it must be done after
-//      * logging initialisation.
-//      */
-//     initializer::initialize();
-
-//     /*
-//      * Execute the application.
-//      */
+    /*
+     * Execute the application.
+     */
 //     using namespace ores::orchestration;
 //     converter c;
 //     generator g;

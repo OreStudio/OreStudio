@@ -33,14 +33,16 @@ jobs:
           emacs -Q --script .build-site.el
       - name: Setup Pages
         uses: actions/configure-pages@v5
+      - name: Doxygen
+        run: |
+          sudo apt-get install fonts-firacode graphviz doxygen fonts-freefont-ttf
+          doxygen --version
+          echo "Running Doxygen"
+          doxygen build/doxygen/Doxyfile
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3.0.1
         with:
           path: 'build/output/site'
-      - name: Doxygen
-        run: |
-          sudo apt-get install fonts-firacode graphviz doxygen fonts-freefont-ttf
-          doxygen build/doxygen/Doxyfile
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4.0.5

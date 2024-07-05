@@ -24,14 +24,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install dev packages
+      - name: Doxygen
         run: |
-          sudo apt-get install fonts-firacode
-      - name: Build doxygen
-        uses: mattnotmitt/doxygen-action@v1.9.8
-        with:
-          additional-packages: font-fira-code
-          doxyfile-path: 'build/doxygen/Doxyfile'
+          sudo apt-get install fonts-firacode graphviz ttf-freefont doxygen
+          doxygen build/doxygen/Doxyfile
       - name: Setup Emacs
         uses: purcell/setup-emacs@v6.0
         with:

@@ -35,12 +35,11 @@ namespace ores::console {
 /**
  * Command-line parser implementation using boost program options.
  *
- * Note on logging: we are NOT logging any of the exceptions to the
- * log in this class. This is by design. The logger is only
- * initialised after the options have been parsed; were we to log
- * prior to this, we would dump all the messages into the console. The
- * output is very confusing users that are accustomed to normal
- * console applications.
+ * Note on logging: we are NOT logging any of the exceptions to the log in this
+ * class. This is by design. The logger is only initialised after the options
+ * have been parsed; were we to log prior to this, we would dump all the
+ * messages into the console. The output is very confusing users that are
+ * accustomed to normal console applications.
  */
 class program_options_parser final {
 public:

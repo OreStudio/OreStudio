@@ -26,7 +26,7 @@ configuration::configuration(configuration&& rhs) noexcept
 
 configuration::configuration(
     boost::optional<ores::utility::log::logging_configuration> logging)
-    : logging_(logging) { }
+    : logging_(std::move(logging)) { }
 
 void configuration::swap(configuration& other) noexcept {
     using std::swap;
@@ -49,7 +49,7 @@ configuration::logging() const {
 }
 
 void configuration::logging(boost::optional<ores::utility::log::logging_configuration> v) {
-    logging_ = v;
+    logging_ = std::move(v);
 }
 
 }

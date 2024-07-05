@@ -1,0 +1,9 @@
+:PROPERTIES:
+:ID: 46F5ED07-9E63-77B4-2783-E0147EFF45D0
+:END:
+#+title: Recipes
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+- [[id:60086B77-B674-0B34-10AB-BF8AF3F8D75E][Console Recipes]]

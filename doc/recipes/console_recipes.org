@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 60086B77-B674-0B34-10AB-BF8AF3F8D75E
+:END:
+#+title: Console Recipes
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* General
+
+** Help
+
+#+begin_src sh :exports both :results raw
+cd ../../build/output/linux-clang-release/projects/ores.console/
+./ores.console --help
+#+END_SRC
+
+#+RESULTS:
+ORE Studio is a User Interface for Open Source Risk Engine (ORE).Console provides a CLI based version of the interface.
+ORE Studio is created by the ORE Studio project.
+ores.console uses a command-based interface: <command> <options>.
+See below for a list of valid commands.
+
+Global options:
+
+General:
+  -h [ --help ]           Display usage and exit.
+  -v [ --version ]        Output version information and exit.
+
+Output:
+  --byproduct-directory   Directory in which to place all of the byproducts of
+                          the run such as log files, traces, etc.
+
+Logging:
+  -e [ --log-enabled ]    Generate a log file.
+  -l [ --log-level ] arg  What level to use for logging. Valid values: trace,
+                          debug, info, warn, error. Defaults to info.
+  --log-to-console        Output logging to the console, as well as to file.
+
+Commands:
+
+   data           Operates directly on data.
+
+For command specific options, type <command> --help.
+0
+
+** Version
+
+#+begin_src sh :exports both :results raw
+cd ../../build/output/linux-clang-release/projects/ores.console/
+./ores.console --version
+#+END_SRC
+
+#+RESULTS:
+OreStudio v
+Copyright (C) 2024 Marco Craveiro.
+License GPLv3: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+FIXME
+IMPORTANT: build details are NOT for security purposes.
+
+* Data
+
+** Import currencies
+
+#+begin_src sh :exports both
+cd ../../build/output/linux-clang-release/projects/ores.console/
+./ores.console data --log-enabled --log-level trace
+#+END_SRC
+
+#+RESULTS:

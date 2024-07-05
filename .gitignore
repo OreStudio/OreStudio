@@ -42,3 +42,5 @@ CMakeLists.txt.user
 CMakeUserPresets.json
 /.org-id-locations-file
 /.packages/
+
+projects/ores.utility/config/config.hpp

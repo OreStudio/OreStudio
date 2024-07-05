@@ -24,10 +24,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Doxygen
-        run: |
-          sudo apt-get install fonts-firacode graphviz doxygen fonts-freefont-ttf
-          doxygen build/doxygen/Doxyfile
       - name: Setup Emacs
         uses: purcell/setup-emacs@v6.0
         with:
@@ -41,6 +37,10 @@ jobs:
         uses: actions/upload-pages-artifact@v3.0.1
         with:
           path: 'build/output/site'
+      - name: Doxygen
+        run: |
+          sudo apt-get install fonts-firacode graphviz doxygen fonts-freefont-ttf
+          doxygen build/doxygen/Doxyfile
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4.0.5

@@ -1,0 +1,17 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+
+/**
+ * @mainpage About
+ *
+ * This is the API documentation for @b ORE Studio. ORE Studio is a graphical
+ * wrapper aroundAcadia's Open Source Risk Engine (ORE).
+ *
+ * ORE Studio's source code is available in git:
+ *
+ * - <a href="https://github.com/OreStudio/OreStudio">GitHub</a>
+ *
+ * You can find details on the ongoing work in the <a href="https://orestudio.github.io/OreStudio/doc/agile/agile.html">Agile folder</A>. Look for the latest sprint.
+ *
+ * For more details on ORE Studio itself, please have a look at <a href="https://orestudio.github.io/OreStudio/index.html">the website</A>.
+ *
+ */

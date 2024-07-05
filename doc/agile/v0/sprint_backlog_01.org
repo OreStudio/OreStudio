@@ -18,39 +18,39 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: summary
-#+CAPTION: Clock summary at [2024-07-05 Fri 22:48]
+#+CAPTION: Clock summary at [2024-07-06 Sat 00:57]
 | <75>                                              |         |       |      |       |
 | Headline                                          | Time    |       |      |     % |
 |---------------------------------------------------+---------+-------+------+-------|
-| *Total time*                                      | *36:42* |       |      | 100.0 |
+| *Total time*                                      | *38:14* |       |      | 100.0 |
 |---------------------------------------------------+---------+-------+------+-------|
-| Stories                                           | 36:42   |       |      | 100.0 |
-| Active                                            |         | 36:42 |      | 100.0 |
-| Sprint and product backlog refinement             |         |       | 1:05 |   3.0 |
-| Create a basic git hub repository                 |         |       | 0:35 |   1.6 |
+| Stories                                           | 38:14   |       |      | 100.0 |
+| Active                                            |         | 38:14 |      | 100.0 |
+| Sprint and product backlog refinement             |         |       | 1:18 |   3.4 |
+| Create a basic git hub repository                 |         |       | 0:35 |   1.5 |
 | Setup a discord channel for the project           |         |       | 0:14 |   0.6 |
-| Setup vcpkg and cmake                             |         |       | 1:21 |   3.7 |
-| Setup github actions                              |         |       | 1:21 |   3.7 |
-| Create and upload a package                       |         |       | 3:28 |   9.4 |
-| Create a basic project structure                  |         |       | 2:10 |   5.9 |
-| Add a Qt hello world                              |         |       | 3:08 |   8.5 |
-| Add a splash screen to applciation                |         |       | 0:41 |   1.9 |
+| Setup vcpkg and cmake                             |         |       | 1:21 |   3.5 |
+| Setup github actions                              |         |       | 1:21 |   3.5 |
+| Create and upload a package                       |         |       | 3:28 |   9.1 |
+| Create a basic project structure                  |         |       | 2:10 |   5.7 |
+| Add a Qt hello world                              |         |       | 3:08 |   8.2 |
+| Add a splash screen to applciation                |         |       | 0:41 |   1.8 |
 | Add basic site                                    |         |       | 0:34 |   1.5 |
-| Add modeling infrastructure                       |         |       | 1:30 |   4.1 |
-| Fix code syntax highlighting in site              |         |       | 0:10 |   0.5 |
-| Merge index with readme                           |         |       | 0:42 |   1.9 |
-| Add project objective to readme                   |         |       | 2:24 |   6.5 |
-| Add basic logging support                         |         |       | 1:14 |   3.4 |
-| Add nightly support with memcheck                 |         |       | 3:21 |   9.1 |
-| Clean up toolchains and presets                   |         |       | 1:53 |   5.1 |
-| Valgrind fails to run unit tests                  |         |       | 1:05 |   3.0 |
-| Add command line options support                  |         |       | 1:47 |   4.9 |
-| Generate Doxygen documentation and add it to site |         |       | 0:51 |   2.3 |
-| Add XML parsing support for currency              |         |       | 1:24 |   3.8 |
-| Create a containing structure for data            |         |       | 0:28 |   1.3 |
-| Add basic widgets to display currencies           |         |       | 0:26 |   1.2 |
-| Convert plantuml diagrams to org-babel            |         |       | 1:05 |   3.0 |
-| Copy domain notes on core concepts                |         |       | 3:45 |  10.2 |
+| Add modeling infrastructure                       |         |       | 1:30 |   3.9 |
+| Fix code syntax highlighting in site              |         |       | 0:10 |   0.4 |
+| Merge index with readme                           |         |       | 0:42 |   1.8 |
+| Add project objective to readme                   |         |       | 2:24 |   6.3 |
+| Add basic logging support                         |         |       | 1:14 |   3.2 |
+| Add nightly support with memcheck                 |         |       | 3:21 |   8.8 |
+| Clean up toolchains and presets                   |         |       | 1:53 |   4.9 |
+| Generate Doxygen documentation and add it to site |         |       | 0:51 |   2.2 |
+| Copy domain notes on core concepts                |         |       | 3:45 |   9.8 |
+| Valgrind fails to run unit tests                  |         |       | 1:05 |   2.8 |
+| Add command line options support                  |         |       | 3:06 |   8.1 |
+| Add XML parsing support for currency              |         |       | 1:24 |   3.7 |
+| Create a containing structure for data            |         |       | 0:28 |   1.2 |
+| Add basic widgets to display currencies           |         |       | 0:26 |   1.1 |
+| Convert plantuml diagrams to org-babel            |         |       | 1:05 |   2.8 |
 #+end:
 
 #+name: piechart
@@ -70,6 +70,7 @@ Agenda:
 
 *** STARTED Sprint and product backlog refinement                     :story:
     :LOGBOOK:
+    CLOCK: [2024-07-05 Fri 23:13]--[2024-07-05 Fri 23:26] =>  0:13
     CLOCK: [2024-07-02 Tue 07:40]--[2024-07-02 Tue 07:50] =>  0:10
     CLOCK: [2024-06-29 Sat 00:46]--[2024-06-29 Sat 00:54] =>  0:08
     CLOCK: [2024-06-26 Wed 23:27]--[2024-06-26 Wed 23:43] =>  0:16
@@ -280,6 +281,33 @@ We are using CMake in a legacy way when defining warnings, etc. We need to move
 towards the modern approach, by defining toolchain files and using presets
 correctly.
 
+*** COMPLETED Generate Doxygen documentation and add it to site       :story:
+    :LOGBOOK:
+    CLOCK: [2024-07-05 Fri 22:30]--[2024-07-05 Fri 22:48] =>  0:18
+    CLOCK: [2024-07-05 Fri 20:45]--[2024-07-05 Fri 20:59] =>  0:14
+    CLOCK: [2024-07-05 Fri 19:41]--[2024-07-05 Fri 20:00] =>  0:19
+    :END:
+
+
+*** COMPLETED Copy domain notes on core concepts                      :story:
+    :LOGBOOK:
+    CLOCK: [2024-07-04 Thu 23:12]--[2024-07-04 Thu 23:51] =>  0:39
+    CLOCK: [2024-07-04 Thu 22:40]--[2024-07-04 Thu 22:55] =>  0:15
+    CLOCK: [2024-07-04 Thu 08:44]--[2024-07-04 Thu 08:57] =>  0:13
+    CLOCK: [2024-07-04 Thu 08:36]--[2024-07-04 Thu 08:43] =>  0:07
+    CLOCK: [2024-07-03 Wed 22:30]--[2024-07-03 Wed 23:46] =>  1:16
+    CLOCK: [2024-07-02 Tue 23:21]--[2024-07-03 Wed 00:14] =>  0:53
+    CLOCK: [2024-07-02 Tue 22:35]--[2024-07-02 Tue 22:41] =>  0:06
+    CLOCK: [2024-07-02 Tue 22:18]--[2024-07-02 Tue 22:34] =>  0:16
+    :END:
+
+Move assorted notes we have in the domain over to the documentation folder.
+
+Notes:
+
+- Fix issues with publishing by ignoring emacs package directories and vcpkg.
+- add basic support for bibliography as per progen setup (manual bib file).
+
 *** STARTED Valgrind fails to run unit tests                          :story:
     :LOGBOOK:
     CLOCK: [2024-07-05 Fri 07:55]--[2024-07-05 Fri 08:07] =>  0:12
@@ -320,6 +348,8 @@ valgrind 3.22.
 
 *** STARTED Add command line options support                          :story:
     :LOGBOOK:
+    CLOCK: [2024-07-06 Sat 00:49]--[2024-07-06 Sat 00:57] =>  0:08
+    CLOCK: [2024-07-05 Fri 23:37]--[2024-07-06 Sat 00:48] =>  1:11
     CLOCK: [2024-07-05 Fri 08:08]--[2024-07-05 Fri 08:59] =>  0:51
     CLOCK: [2024-07-04 Thu 23:52]--[2024-07-05 Fri 00:04] =>  0:12
     CLOCK: [2024-06-29 Sat 23:33]--[2024-06-30 Sun 00:17] =>  0:44
@@ -335,14 +365,6 @@ Notes:
 
 - missing version support. Need template, etc. Try to use existing CMake
   variables to setup the version.
-
-*** STARTED Generate Doxygen documentation and add it to site         :story:
-    :LOGBOOK:
-    CLOCK: [2024-07-05 Fri 22:30]--[2024-07-05 Fri 22:48] =>  0:18
-    CLOCK: [2024-07-05 Fri 20:45]--[2024-07-05 Fri 20:59] =>  0:14
-    CLOCK: [2024-07-05 Fri 19:41]--[2024-07-05 Fri 20:00] =>  0:19
-    :END:
-
 
 *** STARTED Add XML parsing support for currency                      :story:
     :LOGBOOK:
@@ -417,25 +439,6 @@ We need some kind of tree view and list view.
 
 It may be easier to integrate diagrams with roam if they are org-mode documents.
 Experiment with babel for this.
-
-*** STARTED Copy domain notes on core concepts                        :story:
-    :LOGBOOK:
-    CLOCK: [2024-07-04 Thu 23:12]--[2024-07-04 Thu 23:51] =>  0:39
-    CLOCK: [2024-07-04 Thu 22:40]--[2024-07-04 Thu 22:55] =>  0:15
-    CLOCK: [2024-07-04 Thu 08:44]--[2024-07-04 Thu 08:57] =>  0:13
-    CLOCK: [2024-07-04 Thu 08:36]--[2024-07-04 Thu 08:43] =>  0:07
-    CLOCK: [2024-07-03 Wed 22:30]--[2024-07-03 Wed 23:46] =>  1:16
-    CLOCK: [2024-07-02 Tue 23:21]--[2024-07-03 Wed 00:14] =>  0:53
-    CLOCK: [2024-07-02 Tue 22:35]--[2024-07-02 Tue 22:41] =>  0:06
-    CLOCK: [2024-07-02 Tue 22:18]--[2024-07-02 Tue 22:34] =>  0:16
-    :END:
-
-Move assorted notes we have in the domain over to the documentation folder.
-
-Notes:
-
-- Fix issues with publishing by ignoring emacs package directories and vcpkg.
-- add basic support for bibliography as per progen setup (manual bib file).
 
 *** Add packaging support for images                                  :story:
 

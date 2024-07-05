@@ -85,6 +85,39 @@ find_path(RAPIDXML_NS_INCLUDE_DIRS "rapidxml-ns/rapidxml_ns.hpp")
 site_name(VORE_SITE)
 
 #
+# Handle build information
+#
+set(WITH_BUILD_INFO ON)
+set(ORES_BUILD_INFO "")
+
+if (NOT DEFINED ENV{ORES_BUILD_PROVIDER})
+    set(WITH_BUILD_INFO OFF)
+endif()
+
+if (NOT DEFINED ENV{ORES_BUILD_COMMIT})
+    set(WITH_BUILD_INFO OFF)
+endif()
+
+if (NOT DEFINED ENV{ORES_BUILD_NUMBER})
+    set(WITH_BUILD_INFO OFF)
+endif()
+
+if (NOT DEFINED ENV{ORES_BUILD_TIMESTAMP})
+    set(WITH_BUILD_INFO OFF)
+endif()
+
+if (WITH_BUILD_INFO)
+    set(ORES_BUILD_INFO "Build: Provider = '$ENV{ORES_BUILD_PROVIDER}'")
+    set(ORES_BUILD_INFO "${ORES_BUILD_INFO} Number = '$ENV{ORES_BUILD_NUMBER}'")
+    set(ORES_BUILD_INFO "${ORES_BUILD_INFO} Commit = '$ENV{ORES_BUILD_COMMIT}'")
+    set(ORES_BUILD_INFO "${ORES_BUILD_INFO} Timestamp = '$ENV{ORES_BUILD_TIMESTAMP}'")
+else()
+    set(ORES_BUILD_INFO "Build: Provider = LOCAL")
+    message(STATUS "Not adding build info.")
+endif()
+message(STATUS "${ORES_BUILD_INFO}")
+
+#
 # Build type
 #
 if(CMAKE_BUILD_TYPE MATCHES Debug)

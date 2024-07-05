@@ -22,7 +22,7 @@
 #include <string_view>
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
-// #include "ores/config.hpp"
+#include "ores.utility/config/config.hpp"
 #include "ores.utility/log/severity_level.hpp"
 #include "ores.utility/log/logging_configuration.hpp"
 #include "ores.console/parser_exception.hpp"
@@ -35,8 +35,8 @@ const std::string indent("   ");
 const std::string run_identifier_prefix("console.");
 
 const std::string more_information("Try --help' for more information.");
-const std::string product_version("OreStudio v" /*ORES_VERSION*/); // FIXME
-const std::string build_info("FIXME"/*ORES_BUILD_INFO*/);
+const std::string product_version("OreStudio v" ORES_VERSION);
+const std::string build_info(ORES_BUILD_INFO);
 const std::string usage_error_msg("Usage error: ");
 const std::string fatal_error_msg("Fatal Error: " );
 const std::string no_command_msg("No command supplied. ");

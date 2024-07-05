@@ -106,8 +106,8 @@ options_description make_top_level_visible_options_description() {
 }
 
 /**
- * @brief Creates the the top-level option descriptions that are
- * hidden to end users.
+ * @brief Creates the the top-level option descriptions that are hidden to end
+ * users.
  */
 options_description make_top_level_hidden_options_description() {
     options_description r("Commands");
@@ -132,6 +132,7 @@ positional_options_description make_positional_options() {
  * @brief Creates the options related to code generation.
  */
 options_description make_generate_options_description() {
+    // FIXME
     options_description r("Generation");
     r.add_options()
         ("target,t",
@@ -148,52 +149,50 @@ options_description make_generate_options_description() {
 }
 
 /**
- * @brief ensures the supplied command is a valid command. If not,
- * reports the erros into stream and throws.
+ * @brief Ensures the supplied command is a valid command.
  */
 void validate_command_name(const std::string& command_name) {
-    const bool is_valid_command_name(
-        command_name == data_command_name);
+    const bool is_valid_command_name(command_name == data_command_name);
 
-    if (is_valid_command_name)
-        return;
-
-    BOOST_THROW_EXCEPTION(parser_exception(invalid_command + command_name));
+    if (!is_valid_command_name)
+    {
+        BOOST_THROW_EXCEPTION(parser_exception(invalid_command + command_name));
+    }
 }
 
 /**
  * @brief Prints the header of the help text, applicable to all cases.
  */
 void print_help_header(std::ostream& s) {
-    s << "Dogen is a Model Driven Engineering tool that processes models"
-      << " encoded in supported codecs." << std::endl
-      << "Dogen is created by the MASD project. " << std::endl;
+    s << "ORE Studio is a User Interface for Open Source Risk Engine (ORE)."
+      << "Console provides a CLI based version of the interface." << std::endl
+      << "ORE Studio is created by the ORE Studio project. " << std::endl;
 }
 
 /**
  * @brief Prints the top-level help text when no command is supplied.
  *
  * @param od top-level options.
- * @param s info stream.
+ * @param info information stream.
  */
 void print_help(const boost::program_options::options_description& od,
-    std::ostream& s) {
-    print_help_header(s);
-    s << "dogen.cli uses a command-based interface: <command> <options>. "
-      << std::endl << "See below for a list of valid commands. " << std::endl
-      << std::endl << "Global options: " << std::endl << od << std::endl
-      <<  "Commands: "<< std::endl << std::endl;
+    std::ostream& info) {
+    print_help_header(info);
+    info << "ores.console uses a command-based interface: <command> <options>. "
+         << std::endl << "See below for a list of valid commands. " << std::endl
+         << std::endl << "Global options: " << std::endl << od << std::endl
+         <<  "Commands: "<< std::endl << std::endl;
 
     auto lambda([&](const std::string& name, const std::string& desc) {
-                    const unsigned int command_width(15);
-                    s << indent << std::setfill(' ') << std::left
-                      << std::setw(command_width)
-                      << name << desc << std::endl;
-                });
+        const unsigned int command_width(15);
+        info << indent << std::setfill(' ') << std::left
+             << std::setw(command_width)
+             << name << desc << std::endl;
+    });
     lambda(data_command_name, data_command_desc);
 
-    s << std::endl << "For command specific options, type <command> --help."
-      << std::endl;
+    info << std::endl << "For command specific options, type <command> --help."
+         << std::endl;
 }
 
 /**
@@ -201,55 +200,55 @@ void print_help(const boost::program_options::options_description& od,
  *
  * @param command_name name of the command to print help for.
  * @param od command options.
- * @param s info stream.
+ * @param info information stream.
  */
 void print_help_command(const std::string& command_name,
-    const boost::program_options::options_description& od, std::ostream& s) {
-    print_help_header(s);
-    s << "Displaying options specific to the " << command_name << " command. "
-      << std::endl
-      << "For global options, type --help." << std::endl << std::endl
-      << od;
+    const boost::program_options::options_description& od, std::ostream& info) {
+    print_help_header(info);
+    info << "Displaying options specific to the " << command_name << " command. "
+         << std::endl
+         << "For global options, type --help." << std::endl << std::endl
+         << od;
 }
 
 /**
  * @brief Print the program's version details.
  *
- * @param s info stream.
+ * @param info information stream.
  */
-void version(std::ostream& s) {
-    s << product_version << std::endl
-      << "Copyright (C) 2024 Marco Craveiro." << std::endl
-      << "License GPLv3: GNU GPL version 3 or later "
-      << "<http://gnu.org/licenses/gpl.html>." << std::endl
-      << "This is free software: you are free to change and redistribute it."
-      << std::endl << "There is NO WARRANTY, to the extent permitted by law."
-      << std::endl;
+void version(std::ostream& info) {
+    info << product_version << std::endl
+         << "Copyright (C) 2024 Marco Craveiro." << std::endl
+         << "License GPLv3: GNU GPL version 3 or later "
+         << "<http://gnu.org/licenses/gpl.html>." << std::endl
+         << "This is free software: you are free to change and redistribute it."
+         << std::endl << "There is NO WARRANTY, to the extent permitted by law."
+         << std::endl;
 
     if (!build_info.empty()) {
-        s << build_info << std::endl;
-        s << "IMPORTANT: build details are NOT for security purposes."
-          << std::endl;
+        info << build_info << std::endl;
+        info << "IMPORTANT: build details are NOT for security purposes."
+             << std::endl;
     }
 }
 
 /**
- * @brief Contains the processing logic for when the user did not
- * supply a command in the command line.
+ * @brief Contains the processing logic for when the user did not supply a
+ * command in the command line.
  */
 boost::optional<configuration>
 handle_no_command(const bool has_version, const bool has_help,
     const options_description& od, std::ostream& info) {
     /*
-     * The only valid options are help or version, so if those are not
-     * present we can safely throw.
+     * The only valid options are help or version, so if those are not present
+     * we can safely throw.
      */
     if (!has_version && !has_help)
         BOOST_THROW_EXCEPTION(parser_exception(no_command_msg));
 
     /*
-     * Note that we do not mind if the user has supplied both help and
-     * version - help takes priority.
+     * Note that we do not mind if the user has supplied both help and version -
+     * help takes priority.
      */
     if (has_help)
         print_help(od, info);
@@ -261,16 +260,16 @@ handle_no_command(const bool has_version, const bool has_help,
 
 /**
  * @brief Reads the tracing configuration from the variables map.
- */
+*/
 boost::optional<logging_configuration> read_logging_configuration(
-    const std::string& run_identifier, const variables_map& vm,
+    const variables_map& vm,
     const boost::filesystem::path& byproduct_dir) {
     const auto enabled(vm.count(logging_log_enabled_arg) != 0);
     if (!enabled)
         return {};
 
     logging_configuration r;
-    r.filename(run_identifier);
+    r.filename("ores.console.log");
     r.output_to_console(vm.count(logging_log_to_console_arg) != 0);
     r.output_directory(byproduct_dir);
 
@@ -292,8 +291,8 @@ boost::optional<logging_configuration> read_logging_configuration(
 }
 
 /**
- * @brief Contains the processing logic for when the user supplies a
- * command in the command line.
+ * @brief Contains the processing logic for when the user supplies a command in
+ * the command line.
  */
 boost::optional<configuration>
 handle_command(const std::string& command_name, const bool has_help,
@@ -301,8 +300,8 @@ handle_command(const std::string& command_name, const bool has_help,
     variables_map& vm) {
 
     /*
-     * Collect all the unrecognized options from the first pass. It
-     * includes the positional command name, so we need to erase it.
+     * Collect all the unrecognized options from the first pass. It includes the
+     * positional command name, so we need to erase it.
      */
     using boost::program_options::include_positional;
     using boost::program_options::collect_unrecognized;
@@ -310,13 +309,11 @@ handle_command(const std::string& command_name, const bool has_help,
     options.erase(options.begin());
 
     /*
-     * For each command we need to setup their set of options, parse
-     * them and then generate the appropriate options.
+     * For each command we need to setup their set of options, parse them and
+     * then generate the appropriate options.
      */
     configuration r;
-    boost::filesystem::path target;
     using boost::program_options::command_line_parser;
-    // typedef boost::optional<configuration> empty_config;
     if (command_name == data_command_name) {
         const auto d(make_generate_options_description());
         if (has_help) {
@@ -325,26 +322,25 @@ handle_command(const std::string& command_name, const bool has_help,
         }
 
         store(command_line_parser(options).options(d).run(), vm);
-        // const auto c(read_data_configuration(vm));
-        // target = c.target();
-        // r.cli().activity(c);
     }
 
     /*
-     * Now process the common options. We must do this at the end
-     * because we require the model name.
+     * Now process the common options.
      */
-    r.logging(read_logging_configuration("FIXME", vm, "FIXME"));
+    r.logging(read_logging_configuration(vm, "log"));
     return r;
 }
 
+/**
+ * @brief Parses the arguments supplied in the command line and converts them
+ * into a configuration object.
+ */
 boost::optional<configuration>
-parse(const std::vector<std::string>& arguments, std::ostream& info) {
+parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     /*
-     * Create the top-level command line options, parse them and
-     * retrieve the results of the parsing. Note that we split then
-     * into visible and hidden to avoid showing the hidden options to
-     * the user in the help description.
+     * Create the top-level command line options, parse them and retrieve the
+     * results of the parsing. Note that we split then into visible and hidden
+     * to avoid showing the hidden options to the user in the help description.
      */
     const auto visible(make_top_level_visible_options_description());
     const auto hidden(make_top_level_hidden_options_description());
@@ -363,39 +359,37 @@ parse(const std::vector<std::string>& arguments, std::ostream& info) {
 
     variables_map vm;
     boost::program_options::store(po, vm);
-    const bool has_command((bool)vm.count(command_arg));
-    const bool has_version((bool)vm.count(version_arg));
-    const bool has_help((bool)vm.count(help_arg));
+    const bool has_command(vm.count(command_arg) != 0);
+    const bool has_version(vm.count(version_arg) != 0);
+    const bool has_help(vm.count(help_arg) != 0);
 
     /*
-     * First, handle the simpler case where no command is
-     * supplied. Note that we only supply the visible options here.
+     * First, handle the simpler case where no command is supplied. Note that we
+     * only supply the visible options here.
      */
     if (!has_command)
         return handle_no_command(has_version, has_help, visible, info);
 
     /*
-     * If the user supplied a command, we need to retrieve it and
-     * ensure it is valid.
+     * If the user supplied a command, we need to retrieve it and ensure it is
+     * valid.
      */
     const auto command_name(vm[command_arg].as<std::string>());
     validate_command_name(command_name);
 
     /*
-     * Copying the same approach as git, we also consider version to
-     * be invalid at the command level. We don't bother to handle this
-     * at program options level, but instead check for the presence of
-     * the (supposedly valid, according to program options) version
-     * command and throw.
+     * Copying the same approach as git, we also consider version to be invalid
+     * at the command level. We don't bother to handle this at program options
+     * level, but instead check for the presence of the (supposedly valid,
+     * according to program options) version command and throw.
      */
     if (has_version)
         BOOST_THROW_EXCEPTION(parser_exception(invalid_option + "version"));
 
     /*
-     * We can now process the command. Notice that we are suppliying
-     * the variables map into the handler by reference. This is
-     * because we need access to the global options that may have
-     * already been setup.
+     * We can now process the command. Notice that we are supplying the
+     * variables map into the handler by reference. This is because we need
+     * access to the global options that may have already been setup.
      */
     return handle_command(command_name, has_help, po, info, vm);
 }
@@ -409,7 +403,7 @@ program_options_parser::parse(const std::vector<std::string>& arguments,
     std::ostream& info, std::ostream& err) const {
 
     try {
-        return ::parse(arguments, info);
+        return parse_arguments(arguments, info);
     } catch(const parser_exception& e) {
         err << usage_error_msg << e.what() << std::endl
             << more_information << std::endl;

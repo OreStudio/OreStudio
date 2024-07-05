@@ -23,6 +23,7 @@
 #include <ostream>
 #include <iostream>
 #include <boost/exception/diagnostic_information.hpp>
+#include "ores.utility/io/vector_io.hpp"
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/log/severity_level.hpp"
 // #include "ores.utility/log/logging_configuration.hpp"
@@ -101,8 +102,8 @@ int execute_console_workflow(const std::vector<std::string>& args,
     /*
      * Log the configuration and command line arguments.
      */
-    BOOST_LOG_SEV(lg, info) << "Command line arguments: "/* << args*/;
-    // BOOST_LOG_SEV(lg, debug) << "Configuration: " << cfg;
+    BOOST_LOG_SEV(lg, info) << "Command line arguments: " << args;
+    BOOST_LOG_SEV(lg, debug) << "Configuration: " << cfg;
 
     /*
      * Execute the application.

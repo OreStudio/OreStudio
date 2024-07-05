@@ -24,6 +24,7 @@
 #pragma once
 #endif
 
+#include <iosfwd>
 #include <algorithm>
 #include <boost/optional.hpp>
 #include "ores.utility/log/logging_configuration.hpp"
@@ -61,6 +62,8 @@ public:
 private:
     boost::optional<ores::utility::log::logging_configuration> logging_;
 };
+
+std::ostream& operator<<(std::ostream& s, const configuration& v);
 
 }
 

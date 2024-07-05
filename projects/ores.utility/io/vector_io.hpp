@@ -17,36 +17,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONSOLE_PROGRAM_OPTIONS_PARSER_HPP
-#define ORES_CONSOLE_PROGRAM_OPTIONS_PARSER_HPP
+#ifndef ORES_UTILITY_IO_VECTOR_IO_HPP
+#define ORES_UTILITY_IO_VECTOR_IO_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <iosfwd>
 #include <vector>
-#include <string>
-#include <boost/optional.hpp>
-#include "ores.console/configuration.hpp"
+#include <ostream>
+#include "ores.utility/io/jsonify_io.hpp"
 
-namespace ores::console {
+namespace std {
 
-/**
- * @brief Command-line parser implementation using boost program options.
- *
- * Note on logging: we are NOT logging any of the exceptions to the log in this
- * class. This is by design. The logger is only initialised after the options
- * have been parsed; were we to log prior to this, we would dump all the
- * messages into the console. The output is very confusing users that are
- * accustomed to normal console applications.
- */
-class program_options_parser final {
-public:
-    boost::optional<configuration>
-    parse(const std::vector<std::string>& arguments, std::ostream& info,
-        std::ostream& error) const;
-};
+template<typename Containee>
+inline ostream& operator<<(ostream& stream, const vector<Containee>& vector) {
+    stream << "[ ";
+    for(typename std::vector<Containee>::const_iterator i(vector.begin());
+        i != vector.end();
+        ++i) {
+        if (i != vector.begin()) stream << ", ";
+        stream << ores::utility::io::jsonify(*i);
+    }
+    stream << " ]";
+    return(stream);
+}
 
 }
 

@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/io/boost_optional_io.hpp"
 #include "ores.console/configuration.hpp"
 
 namespace ores::console {
@@ -50,6 +51,14 @@ configuration::logging() const {
 
 void configuration::logging(boost::optional<ores::utility::log::logging_configuration> v) {
     logging_ = std::move(v);
+}
+
+std::ostream& operator<<(std::ostream& s, const configuration& v) {
+    s << " { "
+      << "\"__type__\": " << "\"ores::console::configuration\"" << ", "
+      << "\"logging\": " << v.logging()
+      << " }";
+    return(s);
 }
 
 }

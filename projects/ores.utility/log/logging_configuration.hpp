@@ -24,6 +24,7 @@
 #pragma once
 #endif
 
+#include <iosfwd>
 #include <string>
 #include <algorithm>
 #include <boost/filesystem/path.hpp>
@@ -91,6 +92,8 @@ private:
     bool output_to_console_;
     boost::filesystem::path output_directory_;
 };
+
+std::ostream& operator<<(std::ostream& s, const logging_configuration& v);
 
 }
 

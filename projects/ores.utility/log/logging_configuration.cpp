@@ -90,4 +90,17 @@ void logging_configuration::output_directory(boost::filesystem::path v) {
     output_directory_ = std::move(v);
 }
 
+std::ostream& operator<<(std::ostream& s, const logging_configuration& v) {
+    s << " { "
+      << "\"__type__\": " << "\"ores::console::logging_configuration\"" << ", "
+      << "\"severity\": " << "\"" << v.severity() << "\", "
+      << "\"filename\": " << "\"" << v.filename() << "\", "
+      << "\"output_to_console\": " << v.output_to_console() << ", "
+      << "\"output_directory\": " << "\""
+      << v.output_directory().generic_string() << "\""
+      << " }";
+    return(s);
+}
+
+
 }

@@ -56,6 +56,7 @@ const std::string reference_directory_arg("reference-directory");
 const std::string logging_log_enabled_arg("log-enabled");
 const std::string logging_log_to_console_arg("log-to-console");
 const std::string logging_log_level_arg("log-level");
+const std::string logging_log_dir_arg("log-directory");
 const std::string logging_log_level_trace("trace");
 const std::string logging_log_level_debug("debug");
 const std::string logging_log_level_info("info");
@@ -87,12 +88,6 @@ options_description make_top_level_visible_options_description() {
     options_description r;
     r.add(god);
 
-    options_description bod("Output");
-    bod.add_options()
-        ("byproduct-directory", "Directory in which to place all of the "
-            "byproducts of the run such as log files, traces, etc.");
-    r.add(bod);
-
     options_description lod("Logging");
     lod.add_options()
         ("log-enabled,e", "Generate a log file.")
@@ -100,7 +95,9 @@ options_description make_top_level_visible_options_description() {
             "What level to use for logging. Valid values: trace, debug, info, "
             "warn, error. Defaults to info.")
         ("log-to-console",
-            "Output logging to the console, as well as to file.");
+            "Output logging to the console, as well as to file.")
+        ("log-directory", value<std::string>(),
+            "Where to place the log files.");
     r.add(lod);
     return r;
 }
@@ -261,9 +258,8 @@ handle_no_command(const bool has_version, const bool has_help,
 /**
  * @brief Reads the tracing configuration from the variables map.
 */
-boost::optional<logging_configuration> read_logging_configuration(
-    const variables_map& vm,
-    const boost::filesystem::path& byproduct_dir) {
+boost::optional<logging_configuration>
+read_logging_configuration(const variables_map& vm) {
     const auto enabled(vm.count(logging_log_enabled_arg) != 0);
     if (!enabled)
         return {};
@@ -271,7 +267,17 @@ boost::optional<logging_configuration> read_logging_configuration(
     logging_configuration r;
     r.filename("ores.console.log");
     r.output_to_console(vm.count(logging_log_to_console_arg) != 0);
-    r.output_directory(byproduct_dir);
+
+    const bool log_dir_set(vm.count(logging_log_dir_arg) != 0);
+    if (!log_dir_set) {
+        r.output_directory("log");
+    }
+    else {
+        const auto log_dir(vm[logging_log_dir_arg].as<std::string>());
+        r.output_directory(log_dir);
+    }
+
+
 
     const bool log_level_set(vm.count(logging_log_level_arg) != 0);
     if (!log_level_set) {
@@ -327,7 +333,7 @@ handle_command(const std::string& command_name, const bool has_help,
     /*
      * Now process the common options.
      */
-    r.logging(read_logging_configuration(vm, "log"));
+    r.logging(read_logging_configuration(vm));
     return r;
 }
 

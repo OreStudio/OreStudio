@@ -16,6 +16,7 @@
 #+html: <a href="https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html"><img alt="Clang Version" src="https://img.shields.io/badge/CLANG-16-blue.svg"/></a>
 #+html: <a href="https://visualstudio.microsoft.com/vs/whatsnew/"><img alt="MSVC Version" src="https://img.shields.io/badge/MSVC-2022-blue.svg"/></a>
 #+html: <a href="https://discord.gg/gcrYsjW3pd"><img alt="Discord" src="https://img.shields.io/badge/chat-Discord-blue.svg"/></a>
+#+html: <a href="https://orestudio.github.io/OreStudio/doxygen/html/index.html"><img alt="Commits" src="https://github.com/OreStudio/OreStudio/blob/main/assets/images/doxygen_badge.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/pulse/monthly"><img alt="Status" src="https://img.shields.io/badge/status-active-brightgreen.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/issues"><img alt="Issues" src="https://img.shields.io/github/issues/OreStudio/OreStudio.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/graphs/contributors"><img alt="Contributors" src="https://img.shields.io/github/contributors/OreStudio/OreStudio.svg"/></a>
@@ -29,6 +30,9 @@
 #+html: <a href="https://github.com/OreStudio/OreStudio/releases"><img alt="Releases" src="https://img.shields.io/github/release/OreStudio/OreStudio.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/commits/main"><img alt="Commits" src="https://img.shields.io/github/commits-since/OreStudio/OreStudio/v0.0.0.svg"/></a>
 
+
+
+
 * OreStudio
 
 Graphical wrapper around [[https://www.opensourcerisk.org/][Acadia's]] [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine (ORE)]]. Please note
@@ -38,6 +42,7 @@ that this open source project has *no affiliation* with either Acadia or ORE.
 
 - [[https://github.com/OreStudio/OreStudio][Project in GitHub]]
 - [[https://orestudio.github.io/OreStudio/][Website]]
+- [[https://orestudio.github.io/OreStudio/doxygen/html/index.html][Doxygen]]
 
 * Overview
 

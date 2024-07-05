@@ -31,7 +31,7 @@ jobs:
     needs: [check_changes]
     if: ${{ needs.check_changes.outputs.should_run != 'false' }}
     name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: CI
     strategy:
       fail-fast: false

@@ -52,12 +52,12 @@ cd ../../build/output/linux-clang-release/projects/ores.console/
 #+END_SRC
 
 #+RESULTS:
-OreStudio v
+OreStudio v0.0.1
 Copyright (C) 2024 Marco Craveiro.
 License GPLv3: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
-FIXME
+Build: Provider = LOCAL
 IMPORTANT: build details are NOT for security purposes.
 
 * Data

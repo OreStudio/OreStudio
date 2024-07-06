@@ -18,41 +18,41 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: summary
-#+CAPTION: Clock summary at [2024-07-06 Sat 08:46]
+#+CAPTION: Clock summary at [2024-07-06 Sat 13:12]
 | <75>                                              |         |       |      |       |
 | Headline                                          | Time    |       |      |     % |
 |---------------------------------------------------+---------+-------+------+-------|
-| *Total time*                                      | *39:22* |       |      | 100.0 |
+| *Total time*                                      | *40:40* |       |      | 100.0 |
 |---------------------------------------------------+---------+-------+------+-------|
-| Stories                                           | 39:22   |       |      | 100.0 |
-| Active                                            |         | 39:22 |      | 100.0 |
-| Sprint and product backlog refinement             |         |       | 1:18 |   3.3 |
-| Create a basic git hub repository                 |         |       | 0:35 |   1.5 |
+| Stories                                           | 40:40   |       |      | 100.0 |
+| Active                                            |         | 40:40 |      | 100.0 |
+| Sprint and product backlog refinement             |         |       | 1:18 |   3.2 |
+| Create a basic git hub repository                 |         |       | 0:35 |   1.4 |
 | Setup a discord channel for the project           |         |       | 0:14 |   0.6 |
-| Setup vcpkg and cmake                             |         |       | 1:21 |   3.4 |
-| Setup github actions                              |         |       | 1:21 |   3.4 |
-| Create and upload a package                       |         |       | 3:28 |   8.8 |
-| Create a basic project structure                  |         |       | 2:10 |   5.5 |
-| Add a Qt hello world                              |         |       | 3:08 |   8.0 |
+| Setup vcpkg and cmake                             |         |       | 1:21 |   3.3 |
+| Setup github actions                              |         |       | 1:21 |   3.3 |
+| Create and upload a package                       |         |       | 3:28 |   8.5 |
+| Create a basic project structure                  |         |       | 2:10 |   5.3 |
+| Add a Qt hello world                              |         |       | 3:08 |   7.7 |
 | Add a splash screen to applciation                |         |       | 0:41 |   1.7 |
 | Add basic site                                    |         |       | 0:34 |   1.4 |
-| Add modeling infrastructure                       |         |       | 1:30 |   3.8 |
+| Add modeling infrastructure                       |         |       | 1:30 |   3.7 |
 | Fix code syntax highlighting in site              |         |       | 0:10 |   0.4 |
-| Merge index with readme                           |         |       | 0:42 |   1.8 |
-| Add project objective to readme                   |         |       | 2:24 |   6.1 |
-| Add basic logging support                         |         |       | 1:14 |   3.1 |
-| Add nightly support with memcheck                 |         |       | 3:21 |   8.5 |
-| Clean up toolchains and presets                   |         |       | 1:53 |   4.8 |
-| Generate Doxygen documentation and add it to site |         |       | 0:51 |   2.2 |
-| Copy domain notes on core concepts                |         |       | 4:17 |  10.9 |
+| Merge index with readme                           |         |       | 0:42 |   1.7 |
+| Add project objective to readme                   |         |       | 2:24 |   5.9 |
+| Add basic logging support                         |         |       | 1:14 |   3.0 |
+| Add nightly support with memcheck                 |         |       | 3:21 |   8.2 |
+| Clean up toolchains and presets                   |         |       | 1:53 |   4.6 |
+| Generate Doxygen documentation and add it to site |         |       | 0:51 |   2.1 |
+| Copy domain notes on core concepts                |         |       | 4:30 |  11.1 |
 | Valgrind fails to run unit tests                  |         |       | 1:12 |   3.0 |
-| Initial sanity test generated packages            |         |       | 0:25 |   1.1 |
-| Clang tests show up twice in nighlies             |         |       | 0:04 |   0.2 |
-| Add command line options support                  |         |       | 3:06 |   7.9 |
-| Add XML parsing support for currency              |         |       | 1:24 |   3.6 |
-| Create a containing structure for data            |         |       | 0:28 |   1.2 |
+| Initial sanity test generated packages            |         |       | 0:25 |   1.0 |
+| Clang tests show up twice in nightlies            |         |       | 0:04 |   0.2 |
+| Add command line options support                  |         |       | 3:06 |   7.6 |
+| Add XML parsing support for currency              |         |       | 2:29 |   6.1 |
+| Create a containing structure for data            |         |       | 0:28 |   1.1 |
 | Add basic widgets to display currencies           |         |       | 0:26 |   1.1 |
-| Convert plantuml diagrams to org-babel            |         |       | 1:05 |   2.8 |
+| Convert plantuml diagrams to org-babel            |         |       | 1:05 |   2.7 |
 #+end:
 
 #+name: piechart
@@ -449,7 +449,7 @@ This is because the filename is incorrect:
 CPack: - package: /Users/runner/work/OreStudio/OreStudio/build/output/macos-clang-release/packages/OreStudio-0.0.1-Darwin.dmg generated.
 #+end_src
 
-*** STARTED Clang tests show up twice in nighlies                     :story:
+*** STARTED Clang tests show up twice in nightlies                    :story:
     :LOGBOOK:
     CLOCK: [2024-07-06 Sat 07:44]--[2024-07-06 Sat 07:48] =>  0:04
     :END:
@@ -480,6 +480,7 @@ Notes:
 
 *** STARTED Add XML parsing support for currency                      :story:
     :LOGBOOK:
+    CLOCK: [2024-07-06 Sat 12:06]--[2024-07-06 Sat 13:11] =>  1:05
     CLOCK: [2024-06-23 Sun 22:30]--[2024-06-23 Sun 22:34] =>  0:04
     CLOCK: [2024-06-23 Sun 18:45]--[2024-06-23 Sun 20:05] =>  1:20
     :END:

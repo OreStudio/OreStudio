@@ -480,6 +480,7 @@ Notes:
 
 *** STARTED Add XML parsing support for currency                      :story:
     :LOGBOOK:
+    CLOCK: [2024-07-06 Sat 17:50]--[2024-07-06 Sat 18:03] =>  0:13
     CLOCK: [2024-07-06 Sat 16:09]--[2024-07-06 Sat 16:32] =>  0:23
     CLOCK: [2024-07-06 Sat 12:06]--[2024-07-06 Sat 13:11] =>  1:05
     CLOCK: [2024-06-23 Sun 22:30]--[2024-06-23 Sun 22:34] =>  0:04

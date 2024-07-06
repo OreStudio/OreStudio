@@ -13,6 +13,8 @@ Demonstrates all of the functionality available on the command line tool
 
 ** Help
 
+*** Global
+
 #+begin_src sh :exports both :results raw
 cd ../../build/output/linux-clang-release/projects/ores.console/
 ./ores.console --help
@@ -47,6 +49,24 @@ Commands:
 For command specific options, type <command> --help.
 0
 
+*** Importing
+
+#+begin_src sh :exports both :results raw
+cd ../../build/output/linux-clang-release/projects/ores.console/
+./ores.console import --help
+#+END_SRC
+
+#+RESULTS:
+ORE Studio is a User Interface for Open Source Risk Engine (ORE).
+Console provides a CLI based version of the interface.
+ORE Studio is created by the ORE Studio project.
+Displaying options specific to the 'import' command.
+For global options, type --help.
+
+Importing:
+  --currency-configuration arg One or more currency configuration files, in XML
+                               representation.
+
 ** Version
 
 #+begin_src sh :exports both :results raw
@@ -69,7 +89,7 @@ IMPORTANT: build details are NOT for security purposes.
 
 #+begin_src sh :exports both
 cd ../../build/output/linux-clang-release/projects/ores.console/
-./ores.console import --log-enabled --log-level trace --log-directory log
+./ores.console import --log-enabled --log-level trace --log-directory log --currency-configuration /home/marco/Development/ql/OreStudio/assets/test_data/ore_sample_data/currencies/currencies.xml
 #+END_SRC
 
 #+RESULTS:

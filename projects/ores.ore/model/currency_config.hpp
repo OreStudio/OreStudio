@@ -21,8 +21,14 @@
 #ifndef ORES_ORE_MODEL_CURRENCY_CONFIG_HPP
 #define ORES_ORE_MODEL_CURRENCY_CONFIG_HPP
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
+
 #include <vector>
 #include "ores.ore/model/currency.hpp"
+
+namespace ores::ore::model {
 
 struct currency_config {
 public:
@@ -34,5 +40,7 @@ public:
 private:
     std::vector<currency> currencies_;
 };
+
+}
 
 #endif

@@ -25,14 +25,17 @@
 
 using namespace rapidxml_ns;
 
-std::string currency_config_serialiser::serialise(const currency_config& cfg)
+namespace ores::ore::xml {
+
+std::string
+currency_config_serialiser::serialise(const model::currency_config& cfg)
 {
     xml_document<> doc;
     xml_node<>* root = doc.allocate_node(node_element, "CurrencyConfig");
     doc.append_node(root);
 
     currency_serialiser ser;
-    for (const currency& ccy : cfg.currencies()) {
+    for (const model::currency& ccy : cfg.currencies()) {
         ser.serialise(*root, ccy);
     }
 
@@ -41,8 +44,16 @@ std::string currency_config_serialiser::serialise(const currency_config& cfg)
     return os.str();
 }
 
-currency_config currency_config_serialiser::deserialise(std::istream& /*is*/)
+model::currency_config currency_config_serialiser::deserialise(std::istream& /*is*/)
 {
-    currency_config cfg;
+    model::currency_config cfg;
     return cfg;
+}
+
+model::currency_config currency_config_serialiser::deserialise(const std::string& /*s*/)
+{
+    model::currency_config cfg;
+    return cfg;
+}
+
 }

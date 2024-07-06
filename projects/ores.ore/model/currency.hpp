@@ -21,7 +21,13 @@
 #ifndef ORES_ORE_MODEL_CURRENCY_HPP
 #define ORES_ORE_MODEL_CURRENCY_HPP
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
+
 #include <string>
+
+namespace ores::ore::model {
 
 class currency {
 public:
@@ -29,32 +35,32 @@ public:
     void name(const std::string& name) { name_ = name; }
 
     std::string iso_code() const { return iso_code_; }
-    void iso_code(const std::string& isoCode) { iso_code_ = isoCode; }
+    void iso_code(const std::string& iso_code) { iso_code_ = iso_code; }
 
     int numeric_code() const { return numeric_code_; }
-    void numeric_code(int numericCode) { numeric_code_ = numericCode; }
+    void numeric_code(int numeric_code) { numeric_code_ = numeric_code; }
 
     std::string symbol() const { return symbol_; }
     void symbol(const std::string& symbol) { symbol_ = symbol; }
 
     std::string fraction_symbol() const { return fraction_symbol_; }
-    void fraction_symbol(const std::string& fractionSymbol) {
-        fraction_symbol_ = fractionSymbol;
+    void fraction_symbol(const std::string& fraction_symbol) {
+        fraction_symbol_ = fraction_symbol;
     }
 
     int fractions_per_unit() const { return fractions_per_unit_; }
-    void fractions_per_unit(int fractionsPerUnit) {
-        fractions_per_unit_ = fractionsPerUnit;
+    void fractions_per_unit(int fractions_per_unit) {
+        fractions_per_unit_ = fractions_per_unit;
     }
 
     std::string rounding_type() const { return rounding_type_; }
-    void rounding_type(const std::string& roundingType) {
-        rounding_type_ = roundingType;
+    void rounding_type(const std::string& rounding_type) {
+        rounding_type_ = rounding_type;
     }
 
     int rounding_precision() const { return rounding_precision_; }
-    void rounding_precision(int roundingPrecision) {
-        rounding_precision_ = roundingPrecision;
+    void rounding_precision(int rounding_precision) {
+        rounding_precision_ = rounding_precision;
     }
 
     std::string format() const { return format_; }
@@ -71,5 +77,7 @@ private:
     int rounding_precision_;
     std::string format_;
 };
+
+}
 
 #endif

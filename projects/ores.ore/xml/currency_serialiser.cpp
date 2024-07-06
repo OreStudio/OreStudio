@@ -22,14 +22,18 @@
 #include <istream>
 #include "ores.ore/xml/currency_serialiser.hpp"
 
+namespace ores::ore::xml {
+
 void currency_serialiser::
-serialise(rapidxml_ns::xml_node<>& /*parent*/, const currency& /*ccy*/)
+serialise(rapidxml_ns::xml_node<>& /*parent*/, const model::currency& /*ccy*/)
 {
 
 }
 
-currency currency_serialiser::deserialise(rapidxml_ns::xml_node<>& /*node*/)
+model::currency currency_serialiser::deserialise(rapidxml_ns::xml_node<>& /*node*/)
 {
-    currency r;
+    model::currency r;
     return r;
+}
+
 }

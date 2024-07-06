@@ -18,23 +18,24 @@
  * MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ORE_XML_CURRENCY_SERIALISER_HPP
-#define ORES_ORE_XML_CURRENCY_SERIALISER_HPP
+#ifndef ORES_ORE_XML_XML_IMPORTER_HPP
+#define ORES_ORE_XML_XML_IMPORTER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <iosfwd>
-#include <rapidxml-ns/rapidxml_ns.hpp>
-#include "ores.ore/model/currency.hpp"
+#include <filesystem>
+#include "ores.ore/model/currency_config.hpp"
 
 namespace ores::ore::xml {
 
-class currency_serialiser {
+/**
+ * @brief Imports model elements from an XML representation.
+ */
+class xml_importer {
 public:
-    void serialise(rapidxml_ns::xml_node<>& parent, const model::currency& cfg);
-    model::currency deserialise(rapidxml_ns::xml_node<>& node);
+    model::currency_config import_currency_config(std::filesystem::path path);
 };
 
 }

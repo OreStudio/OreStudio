@@ -23,7 +23,7 @@
 #include <ostream>
 #include <iostream>
 #include <boost/exception/diagnostic_information.hpp>
-#include "ores.utility/io/vector_io.hpp"
+#include "ores.utility/io/vector_io.hpp" // IWYU pragma: keep.
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/log/severity_level.hpp"
 // #include "ores.utility/log/logging_configuration.hpp"

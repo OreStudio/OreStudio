@@ -21,14 +21,23 @@
 #ifndef ORES_ORE_XML_CURRENCY_CONFIG_SERIALISER_HPP
 #define ORES_ORE_XML_CURRENCY_CONFIG_SERIALISER_HPP
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
+
 #include <iosfwd>
 #include <string>
 #include "ores.ore/model/currency_config.hpp"
 
+namespace ores::ore::xml {
+
 class currency_config_serialiser {
 public:
-    std::string serialise(const currency_config& cfg);
-    currency_config deserialise(std::istream& is);
+    std::string serialise(const model::currency_config& cfg);
+    model::currency_config deserialise(std::istream& is);
+    model::currency_config deserialise(const std::string& s);
 };
+
+}
 
 #endif

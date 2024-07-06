@@ -46,11 +46,11 @@ const std::string errors_msg(" finished with errors.");
 
 const std::string importing_command_name("import");
 const std::string importing_command_desc("Imports data into the system.");
+const std::string importing_curency_config_arg("currency-configuration");
 
 const std::string help_arg("help");
 const std::string version_arg("version");
 const std::string command_arg("command");
-const std::string reference_directory_arg("reference-directory");
 
 const std::string logging_log_enabled_arg("log-enabled");
 const std::string logging_log_to_console_arg("log-to-console");
@@ -65,6 +65,7 @@ const std::string logging_log_level_error("error");
 const std::string invalid_log_level("Log level is invalid: ");
 const std::string invalid_command("Command is invalid or unsupported: ");
 const std::string invalid_option("Option is not valid for command: ");
+const std::string missing_import_target("Supply at least one import target.");
 
 using boost::program_options::value;
 using boost::program_options::variables_map;
@@ -73,6 +74,7 @@ using boost::program_options::positional_options_description;
 using ores::console::configuration;
 using ores::console::parser_exception;
 using ores::utility::log::logging_configuration;
+using ores::console::importing_configuration;
 
 /**
  * @brief Creates the the top-level option descriptions that are visible to the
@@ -125,21 +127,14 @@ positional_options_description make_positional_options() {
 }
 
 /**
- * @brief Creates the options related to code generation.
+ * @brief Creates the options related to importing.
  */
-options_description make_generate_options_description() {
-    // FIXME
-    options_description r("Generation");
+options_description make_importing_options_description() {
+    options_description r("Importing");
     r.add_options()
-        ("target,t",
-            value<std::string>(),
-            "Model to generate code for, in any of the supported formats.")
-        ("output-directory,o",
-            value<std::string>(), "Output directory for the generated code. "
-            "Defaults to the current working directory.")
-        ("reference-directory,r",
-            value<std::vector<std::string>>(), "One or more directories to"
-            " check for referenced models.");
+        ("currency-configuration",
+            value<std::vector<std::string>>(),
+            "One or more currency configuration files, in XML representation.");
 
     return r;
 }
@@ -160,7 +155,7 @@ void validate_command_name(const std::string& command_name) {
  * @brief Prints the header of the help text, applicable to all cases.
  */
 void print_help_header(std::ostream& s) {
-    s << "ORE Studio is a User Interface for Open Source Risk Engine (ORE)."
+    s << "ORE Studio is a User Interface for Open Source Risk Engine (ORE)." << std::endl
       << "Console provides a CLI based version of the interface." << std::endl
       << "ORE Studio is created by the ORE Studio project. " << std::endl;
 }
@@ -202,7 +197,7 @@ void print_help(const boost::program_options::options_description& od,
 void print_help_command(const std::string& command_name,
     const boost::program_options::options_description& od, std::ostream& info) {
     print_help_header(info);
-    info << "Displaying options specific to the " << command_name << " command. "
+    info << "Displaying options specific to the '" << command_name << "' command. "
          << std::endl
          << "For global options, type --help." << std::endl << std::endl
          << od;
@@ -295,6 +290,36 @@ read_logging_configuration(const variables_map& vm) {
 }
 
 /**
+ * @brief Reads the importing configuration from the variables map.
+ */
+importing_configuration
+read_importing_configuration(const variables_map& vm) {
+    importing_configuration r;
+
+    using std::filesystem::absolute;
+
+    bool found_imports(false);
+    if (vm.count(importing_curency_config_arg) != 0) {
+        found_imports = true;
+        const auto ccy_cfgs(vm[importing_curency_config_arg].
+            as<std::vector<std::string>>());
+
+        std::vector<std::filesystem::path> currency_configurations;
+        currency_configurations.reserve(ccy_cfgs.size());
+        for (const auto& ccy_cfg : ccy_cfgs) {
+            currency_configurations.push_back(absolute(ccy_cfg));
+        }
+        r.currency_configurations(currency_configurations);
+    }
+
+    if (!found_imports)
+        BOOST_THROW_EXCEPTION(parser_exception(missing_import_target));
+
+    return r;
+}
+
+
+/**
  * @brief Contains the processing logic for when the user supplies a command in
  * the command line.
  */
@@ -319,13 +344,14 @@ handle_command(const std::string& command_name, const bool has_help,
     configuration r;
     using boost::program_options::command_line_parser;
     if (command_name == importing_command_name) {
-        const auto d(make_generate_options_description());
+        const auto d(make_importing_options_description());
         if (has_help) {
             print_help_command(importing_command_name, d, info);
             return {};
         }
 
         store(command_line_parser(options).options(d).run(), vm);
+        r.importing(read_importing_configuration(vm));
     }
 
     /*

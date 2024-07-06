@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <optional>
 #include "ores.utility/log/logging_configuration.hpp"
+#include "ores.console/importing_configuration.hpp"
 
 namespace ores::console {
 
@@ -40,8 +41,9 @@ public:
     configuration(const configuration&) = default;
     ~configuration() = default;
     configuration(configuration&& rhs) noexcept;
-    explicit configuration(
-        std::optional<ores::utility::log::logging_configuration> logging);
+    configuration(
+        std::optional<ores::utility::log::logging_configuration> logging,
+        std::optional<importing_configuration> importing);
 
     /**
      * @brief Configuration related to logging, if any.
@@ -49,6 +51,14 @@ public:
     /**@{*/
     std::optional<ores::utility::log::logging_configuration> logging() const;
     void logging(std::optional<ores::utility::log::logging_configuration> v);
+    /**@}*/
+
+    /**
+     * @brief Configuration related to importing, if any.
+     */
+    /**@{*/
+    std::optional<importing_configuration> importing() const;
+    void importing(std::optional<importing_configuration> v);
     /**@}*/
 
     bool operator==(const configuration& rhs) const;
@@ -61,6 +71,7 @@ public:
 
 private:
     std::optional<ores::utility::log::logging_configuration> logging_;
+    std::optional<importing_configuration> importing_;
 };
 
 std::ostream& operator<<(std::ostream& s, const configuration& v);

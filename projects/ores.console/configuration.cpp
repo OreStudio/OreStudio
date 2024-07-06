@@ -26,8 +26,9 @@ configuration::configuration(configuration&& rhs) noexcept
     : logging_(std::move(rhs.logging_)) { }
 
 configuration::configuration(
-    std::optional<ores::utility::log::logging_configuration> logging)
-    : logging_(std::move(logging)) { }
+    std::optional<ores::utility::log::logging_configuration> logging,
+    std::optional<importing_configuration> importing)
+    : logging_(std::move(logging)), importing_(std::move(importing)) { }
 
 void configuration::swap(configuration& other) noexcept {
     using std::swap;
@@ -53,10 +54,19 @@ void configuration::logging(std::optional<ores::utility::log::logging_configurat
     logging_ = std::move(v);
 }
 
+std::optional<importing_configuration> configuration::importing() const {
+    return importing_;
+}
+
+void configuration::importing(std::optional<importing_configuration> v) {
+    importing_ = std::move(v);
+}
+
 std::ostream& operator<<(std::ostream& s, const configuration& v) {
     s << " { "
       << "\"__type__\": " << "\"ores::console::configuration\"" << ", "
-      << "\"logging\": " << v.logging()
+      << "\"logging\": " << v.logging() << ", "
+      << "\"importing\": " << v.importing()
       << " }";
     return(s);
 }

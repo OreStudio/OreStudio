@@ -65,7 +65,7 @@ ORE Studio builds on top of ORE with the eventual aim of providing:
 - graphical user interface both for data generation as well as data exploration;
 - ability to configure and orchestrate ORE execution.
 
-The remainder of these documents describes our approach in greater detail.
+The remainder of this document describes our approach in greater detail.
 
 * Links
 
@@ -96,9 +96,10 @@ myriad of micro-services, a veritable zoo of storage technologies, assorted
 messaging queues, orchestration engines and much, much more. Whilst these may be
 deemed necessary for enterprise systems, we find them counterproductive from a
 teaching perspective as they obscure considerably the underlying domain concepts
-which they purport to implement. In contrast, OreStudio will only ever have two
-components: a /client/ and a [[https://www.postgresql.org/][Postgres]] relational database. This has several
-implications:
+they purport to implement.
+
+In stark contrast, OreStudio will only ever have two components: a /client/ and
+a [[https://www.postgresql.org/][Postgres]] relational database. This has several implications:
 
 - [[https://en.wikipedia.org/wiki/Business_logic][business logic]] will be divided between these two components, as required; it
   is to be located wherever the implementation can be done with the least amount
@@ -111,7 +112,9 @@ implications:
   support any other Quant libraries or engines. ORE Studio is designed to be
   fused with these two technologies. Furthermore, we will only support features
   that are present in ORE, and the project itself will strive to contain as
-  little as possible quant code, so that regular developers can contribute.
+  little quant code as possible, so that regular developers can contribute.
+
+*** Technology
 
 The implementation language of choice is [[https://isocpp.org/][C++]], for somewhat arbitrary reasons.
 After many years of software engineering with it --- both [[https://github.com/MASD-Project/dogen][academically]] as well
@@ -120,7 +123,9 @@ the last few years. This project is thus an opportunity for me to catch up with
 the latest and greatest developments in the C++ ecosystem. Python would have
 been a suitable alternative, particularly given its popularity with [[https://en.wikipedia.org/wiki/Quantitative_analysis_(finance)][Quants]] and
 Quant Devs. However, in the interest of simplicity, we'll stick to just the
-/one/ language --- other than [[https://en.wikipedia.org/wiki/SQL][SQL]] for the database, or course.
+/one/ language (other than [[https://en.wikipedia.org/wiki/SQL][SQL]] for the database, or course).
+
+*** About the Author
 
 I am the single maintainer of OreStudio and thus its [[https://en.wikipedia.org/wiki/Benevolent_dictator_for_life][BFDL]]. If you want to know
 more about me, do have a peek at [[https://mcraveiro.github.io/][my personal website]], in particular [[https://mcraveiro.github.io/about.html][this section]]
@@ -173,22 +178,22 @@ development (see badges above).
 
 Notes:
 
-- Other than Linux, we do not test the packages manually. If you find any issues
-  with a binary package, please [[https://github.com/OreStudio/OreStudio/issues][raise an issue]].
+- Other than Linux, we do not test the packages frequently. If you find any
+  issues with a binary package, please [[https://github.com/OreStudio/OreStudio/issues][raise an issue]].
 - The OSX installer provides you with a DMG. Once you open it in Finder, it
   mounts under =/Volumes/=, /e.g/.:
 
 #+begin_src sh
-/Volumes/OreStudio-${VERSION}-Darwin-x86_64/orestudio.app/Contents/Resources/bin
+/Volumes/OreStudio-${VERSION}-Darwin/orestudio.app/Contents/Resources/bin
 #+end_src
 
 Where =${VERSION}= is your OreStudio version, such as =0.0.1=.
 
 * Building From Source
 
-In order to build OreStudio you will need a C++ toolchain. On Linux and OSX,
-you'll need a recent compiler with [[https://en.wikipedia.org/wiki/C%2B%2B17][C++ 17]] support, such as [[https://www.gnu.org/software/gcc/gcc-13][GCC 13]] or [[https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html][Clang 14]],
-and [[https://ninja-build.org/manual.html][Ninja]] or [[https://www.gnu.org/software/make/][GNU Make]]. On Windows you'll need [[https://visualstudio.microsoft.com/vs/whatsnew/][Visual Studio 2022]]. On all
+In order to build OreStudio you will need a modern C++ toolchain. On Linux and
+OSX, you'll need a recent compiler with [[https://en.wikipedia.org/wiki/C%2B%2B17][C++ 17]] support, such as [[https://www.gnu.org/software/gcc/gcc-13][GCC 13]] or [[https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html][Clang
+14]], and [[https://ninja-build.org/manual.html][Ninja]] or [[https://www.gnu.org/software/make/][GNU Make]]. On Windows you'll need [[https://visualstudio.microsoft.com/vs/whatsnew/][Visual Studio 2022]]. On all
 platforms, we make extensive use of [[https://cmake.org/][CMake]]. Older compilers may work, but we try
 to always use the most recent releases. So, if you can, please try using to
 those.

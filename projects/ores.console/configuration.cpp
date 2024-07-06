@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/io/boost_optional_io.hpp"
+#include "ores.utility/io/std_optional_io.hpp"
 #include "ores.console/configuration.hpp"
 
 namespace ores::console {
@@ -26,7 +26,7 @@ configuration::configuration(configuration&& rhs) noexcept
     : logging_(std::move(rhs.logging_)) { }
 
 configuration::configuration(
-    boost::optional<ores::utility::log::logging_configuration> logging)
+    std::optional<ores::utility::log::logging_configuration> logging)
     : logging_(std::move(logging)) { }
 
 void configuration::swap(configuration& other) noexcept {
@@ -44,12 +44,12 @@ configuration& configuration::operator=(configuration other) {
     return *this;
 }
 
-boost::optional<ores::utility::log::logging_configuration>
+std::optional<ores::utility::log::logging_configuration>
 configuration::logging() const {
     return logging_;
 }
 
-void configuration::logging(boost::optional<ores::utility::log::logging_configuration> v) {
+void configuration::logging(std::optional<ores::utility::log::logging_configuration> v) {
     logging_ = std::move(v);
 }
 

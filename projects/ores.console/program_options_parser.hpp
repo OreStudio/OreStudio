@@ -27,7 +27,7 @@
 #include <iosfwd>
 #include <vector>
 #include <string>
-#include <boost/optional.hpp>
+#include <optional>
 #include "ores.console/configuration.hpp"
 
 namespace ores::console {
@@ -43,7 +43,7 @@ namespace ores::console {
  */
 class program_options_parser final {
 public:
-    boost::optional<configuration>
+    std::optional<configuration>
     parse(const std::vector<std::string>& arguments, std::ostream& info,
         std::ostream& error) const;
 };

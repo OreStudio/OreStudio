@@ -233,7 +233,7 @@ void version(std::ostream& info) {
  * @brief Contains the processing logic for when the user did not supply a
  * command in the command line.
  */
-boost::optional<configuration>
+std::optional<configuration>
 handle_no_command(const bool has_version, const bool has_help,
     const options_description& od, std::ostream& info) {
     /*
@@ -258,7 +258,7 @@ handle_no_command(const bool has_version, const bool has_help,
 /**
  * @brief Reads the tracing configuration from the variables map.
 */
-boost::optional<logging_configuration>
+std::optional<logging_configuration>
 read_logging_configuration(const variables_map& vm) {
     const auto enabled(vm.count(logging_log_enabled_arg) != 0);
     if (!enabled)
@@ -300,7 +300,7 @@ read_logging_configuration(const variables_map& vm) {
  * @brief Contains the processing logic for when the user supplies a command in
  * the command line.
  */
-boost::optional<configuration>
+std::optional<configuration>
 handle_command(const std::string& command_name, const bool has_help,
     const boost::program_options::parsed_options& po, std::ostream& info,
     variables_map& vm) {
@@ -341,7 +341,7 @@ handle_command(const std::string& command_name, const bool has_help,
  * @brief Parses the arguments supplied in the command line and converts them
  * into a configuration object.
  */
-boost::optional<configuration>
+std::optional<configuration>
 parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     /*
      * Create the top-level command line options, parse them and retrieve the
@@ -404,7 +404,7 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
 
 namespace ores::console {
 
-boost::optional<configuration>
+std::optional<configuration>
 program_options_parser::parse(const std::vector<std::string>& arguments,
     std::ostream& info, std::ostream& err) const {
 

@@ -26,9 +26,8 @@
 
 #include <list>
 #include <string>
-#include <boost/optional.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/filesystem/path.hpp>
+#include <optional>
+#include <filesystem>
 #include "ores.utility/log/severity_level.hpp"
 #include "ores.utility/log/logging_configuration.hpp"
 
@@ -51,7 +50,7 @@ private:
      *
      * @note path is non-const by ref by design.
      */
-    static void create_file_backend(boost::filesystem::path path,
+    static void create_file_backend(std::filesystem::path path,
         severity_level severity);
 
     /**
@@ -67,7 +66,7 @@ public:
      *
      * @note Must be done in a thread-safe context.
      */
-    static void initialise(boost::optional<logging_configuration> ocfg);
+    static void initialise(std::optional<logging_configuration> ocfg);
 
     /**
      * @brief Shutdown logging for the entire application.

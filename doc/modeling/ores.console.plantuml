@@ -23,7 +23,7 @@ namespace ores #F2F2F2 {
     namespace console #F2F2F2 {
 
         class configuration #F7E5FF {
-            +{field} boost::optional<ores::utility::log::logging_configuration> logging
+            +{field} std::optional<ores::utility::log::logging_configuration> logging
         }
         note top of configuration
             All of the configuration required by the command line application.
@@ -35,16 +35,21 @@ namespace ores #F2F2F2 {
         end note
 
         class program_options_parser #DDA9F3 {
-            +{method} boost::optional<configuration> parse(const std::vector<std::string>& arguments, std::ostream& info, std::ostream& error) const
+            +{method} std::optional<configuration> parse(const std::vector<std::string>& arguments, std::ostream& info, std::ostream& error) const
         }
         program_options_parser o--- configuration
         note top of program_options_parser
             Command-line parser that uses boost program options.
         end note
 
+        class application #DDA9F3 {
+            +{method} void run(const configuration& cfg) const
+        }
+
         class main #DDA9F3
         main o--- parser_exception : > catches
         main o--- program_options_parser : parses command line with >
+        main o--- application
     }
 }
 

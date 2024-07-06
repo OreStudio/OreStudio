@@ -27,7 +27,7 @@
 #include <iosfwd>
 #include <string>
 #include <algorithm>
-#include <boost/filesystem/path.hpp>
+#include <filesystem>
 
 namespace ores::utility::log {
 
@@ -42,7 +42,7 @@ public:
     logging_configuration(logging_configuration&& rhs) noexcept;
 
     logging_configuration(std::string severity, std::string filename,
-        bool output_to_console, boost::filesystem::path output_directory);
+        bool output_to_console, std::filesystem::path output_directory);
 
     /**
      * @brief Level at which to log.
@@ -74,8 +74,8 @@ public:
      * @brief Directory in which to place the output.
      */
     /**@{*/
-    boost::filesystem::path output_directory() const;
-    void output_directory(boost::filesystem::path v);
+    std::filesystem::path output_directory() const;
+    void output_directory(std::filesystem::path v);
     /**@}*/
 
     bool operator==(const logging_configuration& rhs) const;
@@ -90,7 +90,7 @@ private:
     std::string severity_;
     std::string filename_;
     bool output_to_console_;
-    boost::filesystem::path output_directory_;
+    std::filesystem::path output_directory_;
 };
 
 std::ostream& operator<<(std::ostream& s, const logging_configuration& v);

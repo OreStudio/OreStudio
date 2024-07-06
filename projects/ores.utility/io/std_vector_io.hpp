@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_IO_VECTOR_IO_HPP
-#define ORES_UTILITY_IO_VECTOR_IO_HPP
+#ifndef ORES_UTILITY_IO_STD_VECTOR_IO_HPP
+#define ORES_UTILITY_IO_STD_VECTOR_IO_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once

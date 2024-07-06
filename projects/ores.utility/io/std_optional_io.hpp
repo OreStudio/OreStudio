@@ -17,17 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_IO_BOOST_OPTIONAL_IO_HPP
-#define ORES_UTILITY_IO_BOOST_OPTIONAL_IO_HPP
+#ifndef ORES_UTILITY_IO_STD_OPTIONAL_IO_HPP
+#define ORES_UTILITY_IO_STD_OPTIONAL_IO_HPP
 
 #include <ostream>
-#include <boost/optional.hpp>
+#include <optional>
 
-namespace boost {
+namespace std {
 
 template<typename Containee>
-inline std::ostream& operator<<(std::ostream& s, const boost::optional<Containee>& v) {
-    s << "{ " << "\"__type__\": " << "\"boost::optional\"" << ", ";
+inline std::ostream& operator<<(std::ostream& s, const std::optional<Containee>& v) {
+    s << "{ " << "\"__type__\": " << "\"std::optional\"" << ", ";
 
     if (v)
         s << "\"data\": " << *v;

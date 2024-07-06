@@ -44,7 +44,7 @@ const std::string time_stamp_format("%Y-%m-%d %H:%M:%S.%f");
 namespace ores::utility::log {
 
 void lifecycle_manager::create_file_backend(
-    boost::filesystem::path path, const severity_level severity) {
+    std::filesystem::path path, const severity_level severity) {
     using namespace boost::log;
 
     if (path.extension() != extension)
@@ -77,9 +77,9 @@ void lifecycle_manager::create_console_backend(const severity_level severity) {
     using namespace boost; // to handle empty deleter moving namespaces
     using namespace boost::log;
 
-    boost::shared_ptr<std::ostream> s(&std::clog, null_deleter());
+    boost::shared_ptr<std::ostream> os(&std::clog, null_deleter());
     auto backend(boost::make_shared<sinks::text_ostream_backend>());
-    backend->add_stream(s);
+    backend->add_stream(os);
 
     typedef sinks::synchronous_sink<sinks::text_ostream_backend> sink_type;
     auto sink(boost::make_shared<sink_type>(backend));
@@ -98,7 +98,7 @@ void lifecycle_manager::create_console_backend(const severity_level severity) {
 }
 
 void lifecycle_manager::
-initialise(boost::optional<logging_configuration> ocfg) {
+initialise(std::optional<logging_configuration> ocfg) {
     /*
      * If no configuration is supplied, logging is to be disabled.
      */

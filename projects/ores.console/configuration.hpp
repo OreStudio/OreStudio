@@ -26,7 +26,7 @@
 
 #include <iosfwd>
 #include <algorithm>
-#include <boost/optional.hpp>
+#include <optional>
 #include "ores.utility/log/logging_configuration.hpp"
 
 namespace ores::console {
@@ -41,14 +41,14 @@ public:
     ~configuration() = default;
     configuration(configuration&& rhs) noexcept;
     configuration(
-        boost::optional<ores::utility::log::logging_configuration> logging);
+        std::optional<ores::utility::log::logging_configuration> logging);
 
     /**
      * @brief Configuration related to logging, if any.
      */
     /**@{*/
-    boost::optional<ores::utility::log::logging_configuration> logging() const;
-    void logging(boost::optional<ores::utility::log::logging_configuration> v);
+    std::optional<ores::utility::log::logging_configuration> logging() const;
+    void logging(std::optional<ores::utility::log::logging_configuration> v);
     /**@}*/
 
     bool operator==(const configuration& rhs) const;
@@ -60,7 +60,7 @@ public:
     configuration& operator=(configuration other);
 
 private:
-    boost::optional<ores::utility::log::logging_configuration> logging_;
+    std::optional<ores::utility::log::logging_configuration> logging_;
 };
 
 std::ostream& operator<<(std::ostream& s, const configuration& v);

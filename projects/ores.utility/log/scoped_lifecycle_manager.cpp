@@ -26,7 +26,7 @@ scoped_lifecycle_manager::scoped_lifecycle_manager()
     : is_initialised_(false) {}
 
 scoped_lifecycle_manager::
-scoped_lifecycle_manager(const boost::optional<logging_configuration>& ocfg) {
+scoped_lifecycle_manager(const std::optional<logging_configuration>& ocfg) {
     initialise(ocfg);
 }
 
@@ -36,7 +36,7 @@ scoped_lifecycle_manager::~scoped_lifecycle_manager() {
 }
 
 void scoped_lifecycle_manager::
-initialise(const boost::optional<logging_configuration>& ocfg) {
+initialise(const std::optional<logging_configuration>& ocfg) {
     is_initialised_ = true;
     lifecycle_manager::initialise(ocfg);
 }

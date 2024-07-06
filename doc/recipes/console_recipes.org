@@ -8,6 +8,9 @@
 
 * General
 
+Demonstrates all of the functionality available on the command line tool
+=ores.console=.
+
 ** Help
 
 #+begin_src sh :exports both :results raw

@@ -32,7 +32,7 @@ logging_configuration::logging_configuration(logging_configuration&& rhs) noexce
 
 logging_configuration::logging_configuration(
     std::string severity, std::string filename,
-    bool output_to_console, boost::filesystem::path output_directory)
+    bool output_to_console, std::filesystem::path output_directory)
     : severity_(std::move(severity)), filename_(std::move(filename)),
       output_to_console_(output_to_console),
       output_directory_(std::move(output_directory)) { }
@@ -82,11 +82,11 @@ void logging_configuration::output_to_console(bool v) {
     output_to_console_ = v;
 }
 
-boost::filesystem::path logging_configuration::output_directory() const {
+std::filesystem::path logging_configuration::output_directory() const {
     return output_directory_;
 }
 
-void logging_configuration::output_directory(boost::filesystem::path v) {
+void logging_configuration::output_directory(std::filesystem::path v) {
     output_directory_ = std::move(v);
 }
 

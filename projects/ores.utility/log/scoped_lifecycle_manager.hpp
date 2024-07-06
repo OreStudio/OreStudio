@@ -24,7 +24,7 @@
 #pragma once
 #endif
 
-#include <boost/optional.hpp>
+#include <optional>
 #include "ores.utility/log/logging_configuration.hpp"
 
 namespace ores::utility::log {
@@ -41,14 +41,13 @@ public:
     operator=(const scoped_lifecycle_manager&) = delete;
 
     scoped_lifecycle_manager();
-    scoped_lifecycle_manager(
-        const boost::optional<logging_configuration>& ocfg);
+    scoped_lifecycle_manager(const std::optional<logging_configuration>& ocfg);
     ~scoped_lifecycle_manager();
 
     /**
      * @brief Forces a initialisation / re-initialisation of logging.
      */
-    void initialise(const boost::optional<logging_configuration>& ocfg);
+    void initialise(const std::optional<logging_configuration>& ocfg);
 
     /**
      * @brief Returns true if the logging system has been initialised

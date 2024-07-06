@@ -26,7 +26,7 @@
 #include "ores.utility/io/vector_io.hpp" // IWYU pragma: keep.
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/log/severity_level.hpp"
-// #include "ores.utility/log/logging_configuration.hpp"
+#include "ores.console/application.hpp"
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
 #include "ores.console/program_options_parser.hpp"
 #include "ores.console/parser_exception.hpp"
@@ -108,12 +108,8 @@ int execute_console_workflow(const std::vector<std::string>& args,
     /*
      * Execute the application.
      */
-//     using namespace ores::orchestration;
-//     converter c;
-//     generator g;
-//     spec_dumper sd;
-//     const application app(c, g, sd);
-//     app.run(cfg);
+    application app;
+    app.run(cfg);
     return EXIT_SUCCESS;
 }
 

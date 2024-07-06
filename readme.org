@@ -33,7 +33,7 @@
 * In a nutshell
 
 ORE Studio is a graphical wrapper around [[https://www.opensourcerisk.org/][Acadia's]] [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine (ORE)]].
-Please note that this open source project has *no affiliation* whatsoever with
+Please note that this open source project has *no affiliation whatsoever* with
 either Acadia or the ORE project.
 
 ORE Studio is tightly coupled with ORE itself, so its important to understand
@@ -98,8 +98,9 @@ deemed necessary for enterprise systems, we find them counterproductive from a
 teaching perspective as they obscure considerably the underlying domain concepts
 they purport to implement.
 
-In stark contrast, OreStudio will only ever have two components: a /client/ and
-a [[https://www.postgresql.org/][Postgres]] relational database. This has several implications:
+In stark contrast, ORE Studio will only ever have two layers: the /client/ and
+the [[https://www.postgresql.org/][Postgres]] relational database. This simple architecture has several
+implications:
 
 - [[https://en.wikipedia.org/wiki/Business_logic][business logic]] will be divided between these two components, as required; it
   is to be located wherever the implementation can be done with the least amount
@@ -108,11 +109,13 @@ a [[https://www.postgresql.org/][Postgres]] relational database. This has severa
   /after/ clarity. That is to say that we shall try our best to make things fast
   /within/ the stated constraints. The one exception is the interactive
   experience, which is to be prioritised.
-- finally, we shall focus /exclusively/ on [[https://github.com/OpenSourceRisk/Engine][ORE]] and [[https://github.com/lballabio/QuantLib][QuantLib]], and will not
-  support any other Quant libraries or engines. ORE Studio is designed to be
-  fused with these two technologies. Furthermore, we will only support features
-  that are present in ORE, and the project itself will strive to contain as
-  little quant code as possible, so that regular developers can contribute.
+- we shall focus /exclusively/ on the latest versions of [[https://github.com/OpenSourceRisk/Engine][ORE]] and [[https://github.com/lballabio/QuantLib][QuantLib]], and
+  will not support any other Quant libraries or engines. ORE Studio is designed
+  to be fused with these two technologies.
+- finally, all of the heavy quantitative / mathematical lifting will reside
+  exclusively within ORE and QuantLib; ORE Studio itself will contain as little
+  quant logic as possible, making it more accessible to regular developers. Our
+  focus is on [[https://en.wikipedia.org/wiki/Create,_read,_update_and_delete][CRUD]] infrastructure and graphical presentation.
 
 *** Technology
 
@@ -127,7 +130,7 @@ Quant Devs. However, in the interest of simplicity, we'll stick to just the
 
 *** About the Author
 
-I am the single maintainer of OreStudio and thus its [[https://en.wikipedia.org/wiki/Benevolent_dictator_for_life][BFDL]]. If you want to know
+I am the single maintainer of ORE Studio and thus its [[https://en.wikipedia.org/wiki/Benevolent_dictator_for_life][BFDL]]. If you want to know
 more about me, do have a peek at [[https://mcraveiro.github.io/][my personal website]], in particular [[https://mcraveiro.github.io/about.html][this section]]
 section. As with most open source projects, [[https://github.com/OreStudio/OreStudio/blob/main/CONTRIBUTING.md][PRs are welcome]] but they must be in
 the spirit of what has been described thus far. And you can always reach out to
@@ -154,12 +157,11 @@ If you do use Emacs, you can make use of a much richer roam experience. The file
 #+end_src
 
 You can then jump through all the pages using the normal org-roam facilities.
-For those exploring through the website.
 
 Lastly, you may notice that this content is somewhat academic in tone. Though we
 are not affiliated with any academic effort, I have kept a lot of bad habits
-from my [[https://masd-project.github.io/progen/docs/masd_academic_papers.html#ID-5FA85AF3-E55C-B174-D943-1E2246CAEB14][days at university]] and these inform the approach, such as how we
-research prior art, organise the documentation, the use of references and so on.
+from my [[https://masd-project.github.io/progen/docs/masd_academic_papers.html#ID-5FA85AF3-E55C-B174-D943-1E2246CAEB14][days at university]] and these inform the approach --- for example how we
+research prior art, organise the documentation, the use of [[https://github.com/OreStudio/OreStudio/blob/464525bd80e8cb5d69550bbcf06ed3da4e702966/doc/bibliography.bib][references]] and so on.
 Nonetheless, rather than a research model, the project intends to be useful to
 academics and practitioners alike --- within its stated constraints. If you do
 want to use the project for research, a [[https://www.earthdata.nasa.gov/engage/doi-process][DOI]] will be made available in [[https://zenodo.org/][Zenodo]]
@@ -187,11 +189,11 @@ Notes:
 /Volumes/OreStudio-${VERSION}-Darwin/orestudio.app/Contents/Resources/bin
 #+end_src
 
-Where =${VERSION}= is your OreStudio version, such as =0.0.1=.
+Where =${VERSION}= is your ORE Studio version, such as =0.0.1=.
 
 * Building From Source
 
-In order to build OreStudio you will need a modern C++ toolchain. On Linux and
+In order to build ORE Studio you will need a modern C++ toolchain. On Linux and
 OSX, you'll need a recent compiler with [[https://en.wikipedia.org/wiki/C%2B%2B17][C++ 17]] support, such as [[https://www.gnu.org/software/gcc/gcc-13][GCC 13]] or [[https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html][Clang
 14]], and [[https://ninja-build.org/manual.html][Ninja]] or [[https://www.gnu.org/software/make/][GNU Make]]. On Windows you'll need [[https://visualstudio.microsoft.com/vs/whatsnew/][Visual Studio 2022]]. On all
 platforms, we make extensive use of [[https://cmake.org/][CMake]]. Older compilers may work, but we try

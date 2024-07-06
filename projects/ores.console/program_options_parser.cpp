@@ -22,7 +22,7 @@
 #include <string_view>
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
-#include "ores.hpp"
+#include "ores.utility/config/config.hpp"
 #include "ores.utility/log/severity_level.hpp"
 #include "ores.utility/log/logging_configuration.hpp"
 #include "ores.console/parser_exception.hpp"

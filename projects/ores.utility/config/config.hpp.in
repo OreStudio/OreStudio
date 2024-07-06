@@ -16,22 +16,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_HPP
-#define ORES_HPP
-
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #define ORES_VERSION_MAJOR @OreStudio_VERSION_MAJOR@
 #define ORES_VERSION_MINOR @OreStudio_VERSION_MINOR@
 #define ORES_VERSION_PATCH @OreStudio_VERSION_PATCH@
 #define ORES_VERSION "@OreStudio_VERSION_MAJOR@.@OreStudio_VERSION_MINOR@.@OreStudio_VERSION_PATCH@"
 #define ORES_BUILD_INFO "@ORES_BUILD_INFO@"
-
-/**
- * @brief The ORE Studio application.
- */
-namespace ores { }
-
-#endif

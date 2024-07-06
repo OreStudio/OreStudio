@@ -31,9 +31,6 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
     message(STATUS "C++ flags: ${CMAKE_CXX_FLAGS}")
 endif()
 
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/ores.hpp.in"
-    "${CMAKE_CURRENT_SOURCE_DIR}/ores.hpp")
-
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.console)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.ore)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.utility)

@@ -39,6 +39,7 @@ target_include_directories(${lib_target_name} PUBLIC
 )
 
 target_link_libraries(${lib_target_name} PRIVATE
+    ores.utility.lib
     Boost::boost
     Boost::program_options)
 

@@ -17,30 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_IO_STD_VECTOR_IO_HPP
-#define ORES_UTILITY_IO_STD_VECTOR_IO_HPP
+#ifndef ORES_UTILITY_IO_STD_OPTIONAL_HPP
+#define ORES_UTILITY_IO_STD_OPTIONAL_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
-#include <vector>
 #include <ostream>
-#include "ores.utility/io/jsonify_io.hpp"
+#include <optional>
 
 namespace std {
 
 template<typename Containee>
-inline ostream& operator<<(ostream& stream, const vector<Containee>& vector) {
-    stream << "[ ";
-    for(typename std::vector<Containee>::const_iterator i(vector.begin());
-        i != vector.end();
-        ++i) {
-        if (i != vector.begin()) stream << ", ";
-        stream << ores::utility::io::jsonify(*i);
-    }
-    stream << " ]";
-    return(stream);
+inline std::ostream& operator<<(std::ostream& s, const std::optional<Containee>& v) {
+    s << "{ " << "\"__type__\": " << "\"std::optional\"" << ", ";
+
+    if (v)
+        s << "\"data\": " << *v;
+    else
+        s << "\"data\": ""\"<null>\"";
+    s << " }";
+    return s;
 }
 
 }

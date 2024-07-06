@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONSOLE_ORES_CONSOLE_HPP
-#define ORES_CONSOLE_ORES_CONSOLE_HPP
+#ifndef ORES_UTILITY_ORES_UTILITY_HPP
+#define ORES_UTILITY_ORES_UTILITY_HPP
 
 /**
- * @brief Console tool for ORE Studio.
+ * @brief Miscellaneous classes that do not fit elsewhere.
  */
-namespace ores::console { }
+namespace ores::utility { }
 
 #endif

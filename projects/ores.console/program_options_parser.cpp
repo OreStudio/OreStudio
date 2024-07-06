@@ -277,8 +277,6 @@ read_logging_configuration(const variables_map& vm) {
         r.output_directory(log_dir);
     }
 
-
-
     const bool log_level_set(vm.count(logging_log_level_arg) != 0);
     if (!log_level_set) {
         r.severity(logging_log_level_info);

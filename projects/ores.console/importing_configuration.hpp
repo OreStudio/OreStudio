@@ -17,53 +17,52 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONSOLE_CONFIGURATION_HPP
-#define ORES_CONSOLE_CONFIGURATION_HPP
+#ifndef ORES_CONSOLE_IMPORTING_CONFIGURATION_HPP
+#define ORES_CONSOLE_IMPORTING_CONFIGURATION_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
 #include <iosfwd>
+#include <vector>
 #include <algorithm>
-#include <optional>
-#include "ores.utility/log/logging_configuration.hpp"
+#include <filesystem>
 
 namespace ores::console {
 
 /**
- * @brief All of the configuration required by the command line application.
+ * @brief Configuration related to importing data into the system.
  */
-class configuration final {
+class importing_configuration final {
 public:
-    configuration() = default;
-    configuration(const configuration&) = default;
-    ~configuration() = default;
-    configuration(configuration&& rhs) noexcept;
-    explicit configuration(
-        std::optional<ores::utility::log::logging_configuration> logging);
+    importing_configuration() = default;
+    importing_configuration(const importing_configuration&) = default;
+    ~importing_configuration() = default;
+    importing_configuration(importing_configuration&& rhs) noexcept;
 
     /**
-     * @brief Configuration related to logging, if any.
+     * @brief Currency configuration files to import.
      */
     /**@{*/
-    std::optional<ores::utility::log::logging_configuration> logging() const;
-    void logging(std::optional<ores::utility::log::logging_configuration> v);
+    std::vector<std::filesystem::path> currency_configurations() const;
+    void currency_configurations(std::vector<std::filesystem::path> v);
     /**@}*/
 
-    bool operator==(const configuration& rhs) const;
-    bool operator!=(const configuration& rhs) const {
+
+    bool operator==(const importing_configuration& rhs) const;
+    bool operator!=(const importing_configuration& rhs) const {
         return !this->operator==(rhs);
     }
 
-    void swap(configuration& other) noexcept;
-    configuration& operator=(configuration other);
+    void swap(importing_configuration& other) noexcept;
+    importing_configuration& operator=(importing_configuration other);
 
 private:
-    std::optional<ores::utility::log::logging_configuration> logging_;
+    std::vector<std::filesystem::path> currency_configurations_;
 };
 
-std::ostream& operator<<(std::ostream& s, const configuration& v);
+std::ostream& operator<<(std::ostream& s, const importing_configuration& v);
 
 }
 
@@ -71,7 +70,8 @@ namespace std {
 
 template<>
 inline void swap(
-    ores::console::configuration& lhs, ores::console::configuration& rhs) {
+    ores::console::importing_configuration& lhs,
+    ores::console::importing_configuration& rhs) {
     lhs.swap(rhs);
 }
 

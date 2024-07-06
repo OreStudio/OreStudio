@@ -23,7 +23,8 @@
 namespace ores::console {
 
 configuration::configuration(configuration&& rhs) noexcept
-    : logging_(std::move(rhs.logging_)) { }
+    : logging_(std::move(rhs.logging_)),
+      importing_(std::move(rhs.importing_)) { }
 
 configuration::configuration(
     std::optional<ores::utility::log::logging_configuration> logging,
@@ -33,10 +34,13 @@ configuration::configuration(
 void configuration::swap(configuration& other) noexcept {
     using std::swap;
     swap(logging_, other.logging_);
+    swap(importing_, other.importing_);
 }
 
 bool configuration::operator==(const configuration& rhs) const {
-    return logging_ == rhs.logging_;
+    return
+        logging_ == rhs.logging_ &&
+        importing_ == rhs.importing_;
 }
 
 configuration& configuration::operator=(configuration other) {
@@ -50,7 +54,8 @@ configuration::logging() const {
     return logging_;
 }
 
-void configuration::logging(std::optional<ores::utility::log::logging_configuration> v) {
+void configuration::
+logging(std::optional<ores::utility::log::logging_configuration> v) {
     logging_ = std::move(v);
 }
 

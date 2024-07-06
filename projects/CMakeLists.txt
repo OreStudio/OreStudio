@@ -15,7 +15,6 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(CMAKE_COMPILER_IS_CLANGXX "TRUE")
 endif()
@@ -31,6 +30,9 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flags}")
     message(STATUS "C++ flags: ${CMAKE_CXX_FLAGS}")
 endif()
+
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/ores.hpp.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/ores.hpp")
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.console)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.ore)

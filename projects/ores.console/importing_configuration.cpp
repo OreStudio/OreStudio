@@ -22,6 +22,10 @@
 
 namespace ores::console {
 
+importing_configuration::
+importing_configuration(importing_configuration&& rhs) noexcept
+    : currency_configurations_(std::move(rhs.currency_configurations_)) { }
+
 std::vector<std::filesystem::path>
 importing_configuration::currency_configurations() const
 {

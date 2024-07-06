@@ -40,6 +40,10 @@ public:
     ~application() = default;
     application& operator=(const application&) = delete;
 
+private:
+    void perform_importing(const std::optional<importing_configuration>& ocfg) const;
+
+public:
     /**
      * Executes the application.
      *

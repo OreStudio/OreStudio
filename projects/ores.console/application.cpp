@@ -30,9 +30,28 @@ auto lg(logger_factory("ores.console.application"));
 
 namespace ores::console {
 
-void application::run(const configuration& /*cfg*/) const {
+void application::
+perform_importing(const std::optional<importing_configuration>& ocfg) const
+{
+    if (!ocfg.has_value())
+    {
+        BOOST_LOG_SEV(lg, debug) << "No importing configuration found.";
+        return;
+    }
+
+    const auto& cfg(ocfg.value());
+    for(const auto& ccy_cfg : cfg.currency_configurations())
+    {
+        BOOST_LOG_SEV(lg, debug) << "Processing currency configuration: "
+                                 << ccy_cfg;
+        xml_importer_.import_currency_config(ccy_cfg);
+    }
+}
+
+void application::run(const configuration& cfg) const {
     BOOST_LOG_SEV(lg, info) << "Started application.";
 
+    perform_importing(cfg.importing());
 
     BOOST_LOG_SEV(lg, info) << "Finished application.";
 }

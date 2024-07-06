@@ -25,7 +25,7 @@
 namespace ores::ore::xml {
 
 model::currency_config
-xml_importer::import_currency_config(std::filesystem::path path) {
+xml_importer::import_currency_config(std::filesystem::path path) const {
     currency_config_serialiser ser;
     using namespace ores::utility::filesystem;
     const std::string c(read_file_content(std::move(path)));

@@ -35,7 +35,7 @@ namespace ores::ore::xml {
  */
 class xml_importer {
 public:
-    model::currency_config import_currency_config(std::filesystem::path path);
+    model::currency_config import_currency_config(std::filesystem::path path) const;
 };
 
 }

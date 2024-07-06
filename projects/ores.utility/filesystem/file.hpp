@@ -43,7 +43,7 @@ std::string read_file_content(std::istream& s);
 /**
  * @brief Returns the contents of the file.
  */
-std::string read_file_content(std::filesystem::path p);
+std::string read_file_content(const std::filesystem::path& p);
 
 /**
  * @brief Writes the string to a file located at path.

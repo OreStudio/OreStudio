@@ -69,7 +69,7 @@ IMPORTANT: build details are NOT for security purposes.
 
 #+begin_src sh :exports both
 cd ../../build/output/linux-clang-release/projects/ores.console/
-./ores.console data --log-enabled --log-level trace --log-directory log
+./ores.console import --log-enabled --log-level trace --log-directory log
 #+END_SRC
 
 #+RESULTS:

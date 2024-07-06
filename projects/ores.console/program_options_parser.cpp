@@ -44,9 +44,8 @@ const std::string code_generation_failure("Code generation failure.");
 const std::string log_file_msg("See the log file for details: ");
 const std::string errors_msg(" finished with errors.");
 
-const std::string data_command_name("data");
-const std::string data_command_desc(
-    "Operates directly on data.");
+const std::string importing_command_name("import");
+const std::string importing_command_desc("Imports data into the system.");
 
 const std::string help_arg("help");
 const std::string version_arg("version");
@@ -149,7 +148,7 @@ options_description make_generate_options_description() {
  * @brief Ensures the supplied command is a valid command.
  */
 void validate_command_name(const std::string& command_name) {
-    const bool is_valid_command_name(command_name == data_command_name);
+    const bool is_valid_command_name(command_name == importing_command_name);
 
     if (!is_valid_command_name)
     {
@@ -186,7 +185,8 @@ void print_help(const boost::program_options::options_description& od,
              << std::setw(command_width)
              << name << desc << std::endl;
     });
-    lambda(data_command_name, data_command_desc);
+
+    lambda(importing_command_name, importing_command_desc);
 
     info << std::endl << "For command specific options, type <command> --help."
          << std::endl;
@@ -318,10 +318,10 @@ handle_command(const std::string& command_name, const bool has_help,
      */
     configuration r;
     using boost::program_options::command_line_parser;
-    if (command_name == data_command_name) {
+    if (command_name == importing_command_name) {
         const auto d(make_generate_options_description());
         if (has_help) {
-            print_help_command(data_command_name, d, info);
+            print_help_command(importing_command_name, d, info);
             return {};
         }
 

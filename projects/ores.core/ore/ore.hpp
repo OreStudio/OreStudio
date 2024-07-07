@@ -17,18 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ostream>
-#include "ores.utility/streaming/std_vector.hpp"
-#include "ores.ore/model/currency_config.hpp"
+#ifndef ORES_CORE_ORE_HPP
+#define ORES_CORE_ORE_HPP
 
-namespace ores::ore::model {
+/**
+ * @brief Contains all the code to interface with ORE, including a data model
+ * and serialisation.
+ */
+namespace ores::core::ore {}
 
-std::ostream& operator<<(std::ostream& s, const currency_config& v) {
-    s << " { "
-      << "\"__type__\": " << "\"ores::ore::model::currency_config\"" << ", "
-      << "\"currencies\": " << v.currencies()
-      << " }";
-    return(s);
-}
-
-}
+#endif

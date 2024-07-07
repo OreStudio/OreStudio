@@ -17,13 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ORE_ORES_ORE_HPP
-#define ORES_ORE_ORES_ORE_HPP
+#ifndef ORES_CORE_ORE_XML_CURRENCY_SERIALISER_HPP
+#define ORES_CORE_ORE_XML_CURRENCY_SERIALISER_HPP
 
-/**
- * @brief Contains all the code to interface with ORE, including a data model
- * and serialisation.
- */
-namespace ores::ore { }
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
+
+#include <iosfwd>
+#include <rapidxml-ns/rapidxml_ns.hpp>
+#include "ores.core/ore/model/currency.hpp"
+
+namespace ores::core::ore::xml {
+
+class currency_serialiser {
+public:
+    void serialise(rapidxml_ns::xml_node<>& parent, const model::currency& cfg);
+    model::currency deserialise(rapidxml_ns::xml_node<>& node);
+};
+
+}
 
 #endif

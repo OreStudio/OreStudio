@@ -9,23 +9,34 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. Seethe GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU General PublicLicense along with
+ * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ORE_MODEL_MODEL_HPP
-#define ORES_ORE_MODEL_MODEL_HPP
+#ifndef ORES_CORE_ORE_XML_CURRENCY_CONFIG_SERIALISER_HPP
+#define ORES_CORE_ORE_XML_CURRENCY_CONFIG_SERIALISER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-/**
- * @brief Domain model for the ORE core types.
- */
-namespace ores::ore::model { }
+#include <iosfwd>
+#include <string>
+#include "ores.core/ore/model/currency_config.hpp"
+
+namespace ores::core::ore::xml {
+
+class currency_config_serialiser {
+public:
+    std::string serialise(const model::currency_config& cfg);
+    model::currency_config deserialise(std::istream& is);
+    model::currency_config deserialise(const std::string& s);
+};
+
+}
 
 #endif

@@ -25,7 +25,7 @@
 #endif
 
 #include "ores.console/configuration.hpp"
-#include "ores.ore/xml/xml_importer.hpp"
+#include "ores.core/ore/xml/importer.hpp"
 
 namespace ores::console {
 
@@ -52,7 +52,7 @@ public:
     void run(const configuration& cfg) const;
 
 private:
-    ore::xml::xml_importer xml_importer_;
+    core::ore::xml::importer importer_;
 };
 
 }

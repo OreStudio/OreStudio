@@ -17,25 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ORE_XML_CURRENCY_SERIALISER_HPP
-#define ORES_ORE_XML_CURRENCY_SERIALISER_HPP
+#include <ostream>
+#include "ores.core/ore/model/currency.hpp"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
+namespace ores::core::ore::model {
 
-#include <iosfwd>
-#include <rapidxml-ns/rapidxml_ns.hpp>
-#include "ores.ore/model/currency.hpp"
-
-namespace ores::ore::xml {
-
-class currency_serialiser {
-public:
-    void serialise(rapidxml_ns::xml_node<>& parent, const model::currency& cfg);
-    model::currency deserialise(rapidxml_ns::xml_node<>& node);
-};
-
+std::ostream& operator<<(std::ostream& os, const currency& v) {
+    os << " { "
+       << "\"__type__\": " << "\"ores::core::ore::model::currency\"" << ", "
+       << "\"name\": " << v.name() << ", "
+       << "\"iso_code\": " << v.iso_code() << ", "
+       << "\"numeric_code\": " << v.numeric_code() << ", "
+       << "\"symbol\": " << v.symbol() << ", "
+       << "\"fraction_symbol\": " << v.fraction_symbol() << ", "
+       << "\"fractions_per_unit\": " << v.fractions_per_unit() << ", "
+       << "\"rounding_type\": " << v.rounding_type() << ", "
+       << "\"rounding_precision\": " << v.rounding_precision() << ", "
+       << "\"format\": " << v.format() << ", "
+       << " }";
+    return os;
 }
 
-#endif
+}

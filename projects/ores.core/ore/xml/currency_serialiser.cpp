@@ -18,24 +18,21 @@
  *
  */
 #include <ostream>
-#include "ores.ore/model/currency.hpp"
+#include <istream>
+#include "ores.core/ore/xml/currency_serialiser.hpp"
 
-namespace ores::ore::model {
+namespace ores::core::ore::xml {
 
-std::ostream& operator<<(std::ostream& os, const currency& v) {
-    os << " { "
-       << "\"__type__\": " << "\"ores::console::configuration\"" << ", "
-       << "\"name\": " << v.name() << ", "
-       << "\"iso_code\": " << v.iso_code() << ", "
-       << "\"numeric_code\": " << v.numeric_code() << ", "
-       << "\"symbol\": " << v.symbol() << ", "
-       << "\"fraction_symbol\": " << v.fraction_symbol() << ", "
-       << "\"fractions_per_unit\": " << v.fractions_per_unit() << ", "
-       << "\"rounding_type\": " << v.rounding_type() << ", "
-       << "\"rounding_precision\": " << v.rounding_precision() << ", "
-       << "\"format\": " << v.format() << ", "
-       << " }";
-    return os;
+void currency_serialiser::
+serialise(rapidxml_ns::xml_node<>& /*parent*/, const model::currency& /*ccy*/)
+{
+
+}
+
+model::currency currency_serialiser::deserialise(rapidxml_ns::xml_node<>& /*node*/)
+{
+    model::currency r;
+    return r;
 }
 
 }

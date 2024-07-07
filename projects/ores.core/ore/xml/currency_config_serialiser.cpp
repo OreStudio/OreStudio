@@ -19,12 +19,12 @@
  */
 #include <sstream>
 #include <rapidxml-ns/rapidxml_ns_print.hpp>
-#include "ores.ore/xml/currency_serialiser.hpp"
-#include "ores.ore/xml/currency_config_serialiser.hpp"
+#include "ores.core/ore/xml/currency_serialiser.hpp"
+#include "ores.core/ore/xml/currency_config_serialiser.hpp"
 
 using namespace rapidxml_ns;
 
-namespace ores::ore::xml {
+namespace ores::core::ore::xml {
 
 std::string
 currency_config_serialiser::serialise(const model::currency_config& cfg)

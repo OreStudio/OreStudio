@@ -17,26 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ORE_XML_CURRENCY_CONFIG_SERIALISER_HPP
-#define ORES_ORE_XML_CURRENCY_CONFIG_SERIALISER_HPP
+#ifndef ORES_CORE_ORES_CORE_HPP
+#define ORES_CORE_ORES_CORE_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
-#include <iosfwd>
-#include <string>
-#include "ores.ore/model/currency_config.hpp"
-
-namespace ores::ore::xml {
-
-class currency_config_serialiser {
-public:
-    std::string serialise(const model::currency_config& cfg);
-    model::currency_config deserialise(std::istream& is);
-    model::currency_config deserialise(const std::string& s);
-};
-
-}
+/**
+ * @brief Library with all of the core logic of ORE Studio. Does not contain any
+ * presentation logic, just domain logic and supporting CRUD infrastructure.
+ */
+namespace ores::core {}
 
 #endif

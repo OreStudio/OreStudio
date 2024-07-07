@@ -15,7 +15,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.ore")
+set(name "ores.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
@@ -25,8 +25,6 @@ file(GLOB_RECURSE files RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 set(lib_files ${files})
-list(FILTER lib_files EXCLUDE REGEX "main.cpp")
-
 add_library(${lib_target_name} ${lib_files})
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})

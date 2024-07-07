@@ -44,7 +44,7 @@ perform_importing(const std::optional<importing_configuration>& ocfg) const
     {
         BOOST_LOG_SEV(lg, debug) << "Processing currency configuration: "
                                  << ccy_cfg;
-        xml_importer_.import_currency_config(ccy_cfg);
+        importer_.import_currency_config(ccy_cfg);
     }
 }
 

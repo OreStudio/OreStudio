@@ -16,45 +16,46 @@
 
 ** Active
 
-#+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
+#+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2024-07-07 Sun 18:05]
-| <75>                                              |         |       |      |       |
-| Headline                                          | Time    |       |      |     % |
-|---------------------------------------------------+---------+-------+------+-------|
-| *Total time*                                      | *48:27* |       |      | 100.0 |
-|---------------------------------------------------+---------+-------+------+-------|
-| Stories                                           | 48:27   |       |      | 100.0 |
-| Active                                            |         | 48:27 |      | 100.0 |
-| Sprint and product backlog refinement             |         |       | 1:29 |   3.1 |
-| Create a basic git hub repository                 |         |       | 0:35 |   1.2 |
-| Setup a discord channel for the project           |         |       | 0:14 |   0.5 |
-| Setup vcpkg and cmake                             |         |       | 1:21 |   2.8 |
-| Setup github actions                              |         |       | 1:21 |   2.8 |
-| Create and upload a package                       |         |       | 3:28 |   7.2 |
-| Create a basic project structure                  |         |       | 2:10 |   4.5 |
-| Add a Qt hello world                              |         |       | 3:08 |   6.5 |
-| Add a splash screen to applciation                |         |       | 0:41 |   1.4 |
-| Add basic site                                    |         |       | 0:34 |   1.2 |
-| Add modeling infrastructure                       |         |       | 1:30 |   3.1 |
-| Fix code syntax highlighting in site              |         |       | 0:10 |   0.3 |
-| Merge index with readme                           |         |       | 0:42 |   1.4 |
-| Add project objective to readme                   |         |       | 2:24 |   5.0 |
-| Add basic logging support                         |         |       | 1:14 |   2.5 |
-| Add nightly support with memcheck                 |         |       | 3:21 |   6.9 |
-| Clean up toolchains and presets                   |         |       | 1:53 |   3.9 |
-| Generate Doxygen documentation and add it to site |         |       | 0:51 |   1.8 |
-| Copy domain notes on core concepts                |         |       | 4:41 |   9.7 |
-| Valgrind fails to run unit tests                  |         |       | 1:12 |   2.5 |
-| Initial sanity test generated packages            |         |       | 0:25 |   0.9 |
-| Add command line options support                  |         |       | 5:45 |  11.9 |
-| Unit tests show up twice in nightlies             |         |       | 0:13 |   0.4 |
-| Add recipes for command line                      |         |       | 0:51 |   1.8 |
-| Use a bar chart for sprint resourcing cost        |         |       | 2:57 |   6.1 |
-| Add XML parsing support for currency              |         |       | 3:18 |   6.8 |
-| Create a containing structure for data            |         |       | 0:28 |   1.0 |
-| Add basic widgets to display currencies           |         |       | 0:26 |   0.9 |
-| Convert plantuml diagrams to org-babel            |         |       | 1:05 |   2.2 |
+#+CAPTION: Clock summary at [2024-07-07 Sun 18:10]
+|       | <75>                                              |         |       |      |       |
+| Tags  | Headline                                          | Time    |       |      |     % |
+|-------+---------------------------------------------------+---------+-------+------+-------|
+|       | *Total time*                                      | *48:31* |       |      | 100.0 |
+|-------+---------------------------------------------------+---------+-------+------+-------|
+|       | Stories                                           | 48:31   |       |      | 100.0 |
+|       | Active                                            |         | 48:31 |      | 100.0 |
+| story | Sprint and product backlog refinement             |         |       | 1:29 |   3.1 |
+| story | Create a basic git hub repository                 |         |       | 0:35 |   1.2 |
+| story | Setup a discord channel for the project           |         |       | 0:14 |   0.5 |
+| story | Setup vcpkg and cmake                             |         |       | 1:21 |   2.8 |
+| story | Setup github actions                              |         |       | 1:21 |   2.8 |
+| story | Create and upload a package                       |         |       | 3:28 |   7.1 |
+| story | Create a basic project structure                  |         |       | 2:10 |   4.5 |
+| story | Add a Qt hello world                              |         |       | 3:08 |   6.5 |
+| story | Add a splash screen to applciation                |         |       | 0:41 |   1.4 |
+| story | Add basic site                                    |         |       | 0:34 |   1.2 |
+| story | Add modeling infrastructure                       |         |       | 1:30 |   3.1 |
+| story | Fix code syntax highlighting in site              |         |       | 0:10 |   0.3 |
+| story | Merge index with readme                           |         |       | 0:42 |   1.4 |
+| story | Add project objective to readme                   |         |       | 2:24 |   4.9 |
+| story | Add basic logging support                         |         |       | 1:14 |   2.5 |
+| story | Add nightly support with memcheck                 |         |       | 3:21 |   6.9 |
+| story | Clean up toolchains and presets                   |         |       | 1:53 |   3.9 |
+| story | Generate Doxygen documentation and add it to site |         |       | 0:51 |   1.8 |
+| story | Copy domain notes on core concepts                |         |       | 4:41 |   9.7 |
+| story | Valgrind fails to run unit tests                  |         |       | 1:12 |   2.5 |
+| story | Initial sanity test generated packages            |         |       | 0:25 |   0.9 |
+| story | Add command line options support                  |         |       | 5:45 |  11.9 |
+| story | Unit tests show up twice in nightlies             |         |       | 0:13 |   0.4 |
+| story | Add recipes for command line                      |         |       | 0:51 |   1.8 |
+| story | Use a bar chart for sprint resourcing cost        |         |       | 2:57 |   6.1 |
+| story | Add XML parsing support for currency              |         |       | 3:18 |   6.8 |
+| story | Create a containing structure for data            |         |       | 0:28 |   1.0 |
+| story | Add basic widgets to display currencies           |         |       | 0:26 |   0.9 |
+| story | Convert plantuml diagrams to org-babel            |         |       | 1:05 |   2.2 |
+| story | Classify stories by type                          |         |       | 0:04 |   0.1 |
 #+end:
 
 #+name: barchart
@@ -66,8 +67,8 @@ library(tibble)
 
 # Remove unnecessary rows.
 clean_sprint_summary <- tail(sprint_summary, -4)
-names <- unlist(clean_sprint_summary[1])
-values <- as.numeric(unlist(clean_sprint_summary[5]))
+names <- unlist(clean_sprint_summary[2])
+values <- as.numeric(unlist(clean_sprint_summary[6]))
 
 # Create a data frame.
 df <- data.frame(
@@ -628,7 +629,10 @@ We need some kind of tree view and list view.
 It may be easier to integrate diagrams with roam if they are org-mode documents.
 Experiment with babel for this.
 
-*** Classify stories by type                                          :story:
+*** STARTED Classify stories by type                                  :story:
+    :LOGBOOK:
+    CLOCK: [2024-07-07 Sun 18:06]--[2024-07-07 Sun 18:10] =>  0:04
+    :END:
 
 We should tag the stories by their "type" or "kind" and then generate a table
 with how the resourcing was split. Sample tags:
@@ -643,9 +647,9 @@ Seems like this is not easy to do within org itself:
 - [[https://www.reddit.com/r/emacs/comments/jrf5eg/org_clocktable_how_to_sum_time_by_tags/][Org clocktable, how to sum time by tags]]
 - [[https://stackoverflow.com/questions/38545767/org-mode-clock-table-by-tag/38548368#38548368][org-mode clock table by tag]]
 
-But we could perhaps do it within R.
+But we could perhaps do it within R. We can raise a separate story for this.
 
- :tags t
+
 
 *** Install Windows package on Windows machine                        :story:
 

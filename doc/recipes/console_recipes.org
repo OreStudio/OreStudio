@@ -4,7 +4,6 @@
 #+title: Console Recipes
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
-#+startup: inlineimages
 #+startup: showeverything
 
 Demonstrates all of the functionality available on the command line tool
@@ -104,15 +103,15 @@ IMPORTANT: build details are NOT for security purposes.
 
 #+RESULTS:
 #+begin_src logview
-2024-07-07 09:58:40.139399 [INFO] [main] Command line arguments: [ "import", "--log-enabled", "--log-level", "trace", "--log-directory", "log", "--log-to-console", "--currency-configuration", "/home/marco/Development/ql/OreStudio/assets/test_data/ore_sample_data/currencies/currencies.xml" ]
-2024-07-07 09:58:40.139731 [DEBUG] [main] Configuration:  { "__type__": "ores::console::configuration", "logging": { "__type__": "std::optional", "data":  { "__type__": "ores::console::logging_configuration", "severity": "trace", "filename": "ores.console.log", "output_to_console": true, "output_directory": "log" } }, "importing": { "__type__": "std::optional", "data":  { "__type__": "ores::console::configuration", "currency_configurations": [ "/home/marco/Development/ql/OreStudio/assets/test_data/ore_sample_data/currencies/currencies.xml" ] } } }
-2024-07-07 09:58:40.139821 [INFO] [ores.console.application] Started application.
-2024-07-07 09:58:40.139845 [DEBUG] [ores.console.application] Processing currency configuration: "/home/marco/Development/ql/OreStudio/assets/test_data/ore_sample_data/currencies/currencies.xml"
-2024-07-07 09:58:40.139870 [DEBUG] [ores.ore.xml.xml_importer] Starting to import. File: /home/marco/Development/ql/OreStudio/assets/test_data/ore_sample_data/currencies/currencies.xml
-2024-07-07 09:58:40.139893 [TRACE] [utility.filesystem.file] Reading content for path:/home/marco/Development/ql/OreStudio/assets/test_data/ore_sample_data/currencies/currencies.xml
-2024-07-07 09:58:40.141047 [TRACE] [utility.filesystem.file] Total bytes read:67280
-2024-07-07 09:58:40.141134 [DEBUG] [ores.ore.xml.xml_importer] Finished importing. Result:  { "__type__": "ores::ore::model::currency_config", "currencies": [  ] }
-2024-07-07 09:58:40.141234 [INFO] [ores.console.application] Finished application.
+2024-07-08 00:09:19.191179 [INFO] [main] Command line arguments: [ "import", "--log-enabled", "--log-level", "trace", "--log-directory", "log", "--log-to-console", "--currency-configuration", "/home/marco/Development/ql/OreStudio/assets/test_data/ore_sample_data/currencies/currencies.xml" ]
+2024-07-08 00:09:19.191501 [DEBUG] [main] Configuration:  { "__type__": "ores::console::configuration", "logging": { "__type__": "std::optional", "data":  { "__type__": "ores::console::logging_configuration", "severity": "trace", "filename": "ores.console.log", "output_to_console": true, "output_directory": "log" } }, "importing": { "__type__": "std::optional", "data":  { "__type__": "ores::console::configuration", "currency_configurations": [ "/home/marco/Development/ql/OreStudio/assets/test_data/ore_sample_data/currencies/currencies.xml" ] } } }
+2024-07-08 00:09:19.191595 [INFO] [ores.console.application] Started application.
+2024-07-08 00:09:19.191620 [DEBUG] [ores.console.application] Processing currency configuration: "/home/marco/Development/ql/OreStudio/assets/test_data/ore_sample_data/currencies/currencies.xml"
+2024-07-08 00:09:19.191647 [DEBUG] [ores.core.ore.xml.importer] Starting to import. File: /home/marco/Development/ql/OreStudio/assets/test_data/ore_sample_data/currencies/currencies.xml
+2024-07-08 00:09:19.191857 [TRACE] [utility.filesystem.file] Reading content for path:/home/marco/Development/ql/OreStudio/assets/test_data/ore_sample_data/currencies/currencies.xml
+2024-07-08 00:09:19.193466 [TRACE] [utility.filesystem.file] Total bytes read:67280
+2024-07-08 00:09:19.193545 [DEBUG] [ores.core.ore.xml.importer] Finished importing. Result:  { "__type__": "ores::core::ore::model::currency_config", "currencies": [  ] }
+2024-07-08 00:09:19.193633 [INFO] [ores.console.application] Finished application.
 #+end_src
 
 

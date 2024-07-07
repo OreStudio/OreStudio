@@ -11,7 +11,7 @@
 
 #+html: <a href="https://www.gnu.org/software/emacs/"><img alt="GNU Emacs" src="https://img.shields.io/static/v1?logo=gnuemacs&logoColor=fafafa&label=Made%20with&message=GNU%20Emacs&color=7F5AB6&style=flat"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/blob/main/LICENSE"><img alt="Licence" src="https://img.shields.io/badge/License-GPLv3-blue.svg"/></a>
-#+html: <a href="https://en.wikipedia.org/wiki/C%2B%2B17"><img alt="C++ Version" src="https://img.shields.io/badge/std-C++17-blue.svg"/></a>
+#+html: <a href="https://en.wikipedia.org/wiki/C%2B%2B20"><img alt="C++ Version" src="https://img.shields.io/badge/std-C++20-blue.svg"/></a>
 #+html: <a href="https://www.gnu.org/software/gcc/gcc-13"><img alt="GCC Version" src="https://img.shields.io/badge/GCC-13-blue.svg"/></a>
 #+html: <a href="https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html"><img alt="Clang Version" src="https://img.shields.io/badge/CLANG-16-blue.svg"/></a>
 #+html: <a href="https://visualstudio.microsoft.com/vs/whatsnew/"><img alt="MSVC Version" src="https://img.shields.io/badge/MSVC-2022-blue.svg"/></a>
@@ -193,8 +193,8 @@ Where =${VERSION}= is your ORE Studio version, such as =0.0.1=.
 
 * Building From Source
 
-In order to build ORE Studio you will need a modern C++ toolchain. On Linux and
-OSX, you'll need a recent compiler with [[https://en.wikipedia.org/wiki/C%2B%2B17][C++ 17]] support, such as [[https://www.gnu.org/software/gcc/gcc-13][GCC 13]] or [[https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html][Clang
+In order to build ORE Studio you will need a modern [[https://en.wikipedia.org/wiki/C%2B%2B][C++]] [[https://en.wikipedia.org/wiki/Toolchain][toolchain]]. On Linux and
+OSX, you'll need a recent compiler with [[https://en.wikipedia.org/wiki/C%2B%2B20][C++ 20]] support, such as [[https://www.gnu.org/software/gcc/gcc-13][GCC 13]] or [[https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html][Clang
 14]], and [[https://ninja-build.org/manual.html][Ninja]] or [[https://www.gnu.org/software/make/][GNU Make]]. On Windows you'll need [[https://visualstudio.microsoft.com/vs/whatsnew/][Visual Studio 2022]]. On all
 platforms, we make extensive use of [[https://cmake.org/][CMake]]. Older compilers may work, but we try
 to always use the most recent releases. So, if you can, please try using to

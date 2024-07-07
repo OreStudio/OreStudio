@@ -7,7 +7,7 @@
 
 Documentation related to models for this software project. If you want to
 understand what we mean by a model, read this document: [[https://masd-project.github.io/progen/docs/models_and_transformations.html][Models and
-Transformations.]] Note however that we make little use of automated tooling for
+Transformations]]. Note however that we make little use of automated tooling for
 modeling in this project, by design.
 
 - [[id:CA6D359D-B1FA-8EC4-C02B-EF1A90FBC7CF][ores.utility]]

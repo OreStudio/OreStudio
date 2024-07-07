@@ -18,15 +18,15 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2024-07-07 Sun 17:40]
+#+CAPTION: Clock summary at [2024-07-07 Sun 18:05]
 | <75>                                              |         |       |      |       |
 | Headline                                          | Time    |       |      |     % |
 |---------------------------------------------------+---------+-------+------+-------|
-| *Total time*                                      | *48:04* |       |      | 100.0 |
+| *Total time*                                      | *48:27* |       |      | 100.0 |
 |---------------------------------------------------+---------+-------+------+-------|
-| Stories                                           | 48:04   |       |      | 100.0 |
-| Active                                            |         | 48:04 |      | 100.0 |
-| Sprint and product backlog refinement             |         |       | 1:18 |   2.7 |
+| Stories                                           | 48:27   |       |      | 100.0 |
+| Active                                            |         | 48:27 |      | 100.0 |
+| Sprint and product backlog refinement             |         |       | 1:29 |   3.1 |
 | Create a basic git hub repository                 |         |       | 0:35 |   1.2 |
 | Setup a discord channel for the project           |         |       | 0:14 |   0.5 |
 | Setup vcpkg and cmake                             |         |       | 1:21 |   2.8 |
@@ -38,23 +38,23 @@
 | Add basic site                                    |         |       | 0:34 |   1.2 |
 | Add modeling infrastructure                       |         |       | 1:30 |   3.1 |
 | Fix code syntax highlighting in site              |         |       | 0:10 |   0.3 |
-| Merge index with readme                           |         |       | 0:42 |   1.5 |
+| Merge index with readme                           |         |       | 0:42 |   1.4 |
 | Add project objective to readme                   |         |       | 2:24 |   5.0 |
-| Add basic logging support                         |         |       | 1:14 |   2.6 |
-| Add nightly support with memcheck                 |         |       | 3:21 |   7.0 |
+| Add basic logging support                         |         |       | 1:14 |   2.5 |
+| Add nightly support with memcheck                 |         |       | 3:21 |   6.9 |
 | Clean up toolchains and presets                   |         |       | 1:53 |   3.9 |
 | Generate Doxygen documentation and add it to site |         |       | 0:51 |   1.8 |
 | Copy domain notes on core concepts                |         |       | 4:41 |   9.7 |
 | Valgrind fails to run unit tests                  |         |       | 1:12 |   2.5 |
 | Initial sanity test generated packages            |         |       | 0:25 |   0.9 |
-| Add command line options support                  |         |       | 5:45 |  12.0 |
-| Unit tests show up twice in nightlies             |         |       | 0:13 |   0.5 |
+| Add command line options support                  |         |       | 5:45 |  11.9 |
+| Unit tests show up twice in nightlies             |         |       | 0:13 |   0.4 |
 | Add recipes for command line                      |         |       | 0:51 |   1.8 |
-| Use a bar chart for sprint resourcing cost        |         |       | 2:45 |   5.7 |
-| Add XML parsing support for currency              |         |       | 3:18 |   6.9 |
+| Use a bar chart for sprint resourcing cost        |         |       | 2:57 |   6.1 |
+| Add XML parsing support for currency              |         |       | 3:18 |   6.8 |
 | Create a containing structure for data            |         |       | 0:28 |   1.0 |
 | Add basic widgets to display currencies           |         |       | 0:26 |   0.9 |
-| Convert plantuml diagrams to org-babel            |         |       | 1:05 |   2.3 |
+| Convert plantuml diagrams to org-babel            |         |       | 1:05 |   2.2 |
 #+end:
 
 #+name: barchart
@@ -72,20 +72,16 @@ values <- as.numeric(unlist(clean_sprint_summary[5]))
 # Create a data frame.
 df <- data.frame(
   cost = values,
-  stories = factor(names, levels = names),
+  stories = factor(names, levels = names[order(values, decreasing = FALSE)]),
   y = seq(length(names)) * 0.9
 )
-
-# Sort the data
-# df <- df[order(data$values), ]
-df <- df[order(df$cost, decreasing = TRUE), ]
-mpg$class = with(mpg, reorder(class, hwy, median))
 
 # Setup the colors
 blue <- "#076fa2"
 
 p <- ggplot(df) +
-  geom_col(aes(x = cost, y = stories), fill = blue, width = 0.6) +
+  aes(x = cost, y = stories) +
+  geom_col(fill = blue, width = 0.6) +
   ggtitle("Sprint 1: Resourcing per Story") +
   xlab("Resourcing (%)") + ylab("Stories") +
   theme(text = element_text(size = 15))
@@ -105,6 +101,7 @@ print(p)
 
 *** STARTED Sprint and product backlog refinement                     :story:
     :LOGBOOK:
+    CLOCK: [2024-07-07 Sun 17:54]--[2024-07-07 Sun 18:05] =>  0:11
     CLOCK: [2024-07-05 Fri 23:13]--[2024-07-05 Fri 23:26] =>  0:13
     CLOCK: [2024-07-02 Tue 07:40]--[2024-07-02 Tue 07:50] =>  0:10
     CLOCK: [2024-06-29 Sat 00:46]--[2024-06-29 Sat 00:54] =>  0:08
@@ -529,8 +526,9 @@ We need to run the tests just once to avoid this issue.
 Using org-babel, create a simple recipe file that exercises all options for the
 command line tool.
 
-*** STARTED Use a bar chart for sprint resourcing cost                :story:
+*** COMPLETED Use a bar chart for sprint resourcing cost              :story:
     :LOGBOOK:
+    CLOCK: [2024-07-07 Sun 17:41]--[2024-07-07 Sun 17:53] =>  0:12
     CLOCK: [2024-07-07 Sun 16:24]--[2024-07-07 Sun 17:40] =>  1:16
     CLOCK: [2024-07-07 Sun 15:00]--[2024-07-07 Sun 15:50] =>  0:50
     CLOCK: [2024-07-07 Sun 11:30]--[2024-07-07 Sun 11:38] =>  0:08
@@ -629,6 +627,25 @@ We need some kind of tree view and list view.
 
 It may be easier to integrate diagrams with roam if they are org-mode documents.
 Experiment with babel for this.
+
+*** Classify stories by type                                          :story:
+
+We should tag the stories by their "type" or "kind" and then generate a table
+with how the resourcing was split. Sample tags:
+
+- code: real coding task.
+- infra: infrastructure work such as build, tooling, etc.
+- agile: other types of overhead such as agile bookkeeping, release notes, etc.
+- doc: documentation related tasks.
+
+Seems like this is not easy to do within org itself:
+
+- [[https://www.reddit.com/r/emacs/comments/jrf5eg/org_clocktable_how_to_sum_time_by_tags/][Org clocktable, how to sum time by tags]]
+- [[https://stackoverflow.com/questions/38545767/org-mode-clock-table-by-tag/38548368#38548368][org-mode clock table by tag]]
+
+But we could perhaps do it within R.
+
+ :tags t
 
 *** Install Windows package on Windows machine                        :story:
 

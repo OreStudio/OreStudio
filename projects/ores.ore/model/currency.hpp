@@ -77,6 +77,8 @@ private:
     std::string format_;
 };
 
+std::ostream& operator<<(std::ostream& s, const currency& v);
+
 }
 
 #endif

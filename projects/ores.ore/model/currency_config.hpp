@@ -24,6 +24,7 @@
 #pragma once
 #endif
 
+#include <iosfwd>
 #include <vector>
 #include "ores.ore/model/currency.hpp"
 
@@ -39,6 +40,8 @@ public:
 private:
     std::vector<currency> currencies_;
 };
+
+std::ostream& operator<<(std::ostream& s, const currency_config& v);
 
 }
 

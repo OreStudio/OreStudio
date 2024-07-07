@@ -17,33 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/log/logger.hpp"
-#include "ores.utility/filesystem/file.hpp"
-#include "ores.ore/xml/xml_importer.hpp"
+#include <ostream>
+#include "ores.utility/io/std_vector.hpp"
 #include "ores.ore/model/currency_config.hpp"
-#include "ores.ore/xml/currency_config_serialiser.hpp"
 
-namespace {
+namespace ores::ore::model {
 
-using namespace ores::utility::log;
-auto lg(logger_factory("ores.ore.xml.xml_importer"));
-
-}
-
-namespace ores::ore::xml {
-
-model::currency_config
-xml_importer::import_currency_config(const std::filesystem::path& path) const {
-    BOOST_LOG_SEV(lg, debug) << "Starting to import. File: " << path.generic_string();
-
-    currency_config_serialiser ser;
-    using namespace ores::utility::filesystem;
-    const std::string c(read_file_content(path));
-    auto r(ser.deserialise(c));
-
-    BOOST_LOG_SEV(lg, debug) << "Finished importing. Result: " << r;
-
-    return r;
+std::ostream& operator<<(std::ostream& s, const currency_config& v) {
+    s << " { "
+      << "\"__type__\": " << "\"ores::ore::model::currency_config\"" << ", "
+      << "\"currencies\": " << v.currencies()
+      << " }";
+    return(s);
 }
 
 }

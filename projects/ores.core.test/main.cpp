@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#define BOOST_TEST_MODULE ores.ore.test
+#define BOOST_TEST_MODULE ores.core.test
 #include <boost/test/unit_test.hpp>
 #include "ores.utility/test/fixture.hpp"
 

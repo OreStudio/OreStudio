@@ -15,7 +15,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.ore")
+set(name "ores.core")
 set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.test)
 set(tests_target_name ${name}.test)
@@ -35,7 +35,7 @@ target_include_directories(${tests_binary_name}
     PRIVATE ${CMAKE_SOURCE_DIR}/projects/)
 
 target_link_libraries(${tests_target_name} PRIVATE
-    # ${lib_target_name}
+    ${lib_target_name}
     ores.utility.lib
     Boost::unit_test_framework
     ${CMAKE_THREAD_LIBS_INIT})

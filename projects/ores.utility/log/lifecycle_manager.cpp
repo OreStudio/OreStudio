@@ -74,10 +74,10 @@ void lifecycle_manager::create_file_backend(
 }
 
 void lifecycle_manager::create_console_backend(const severity_level severity) {
-    using namespace boost; // to handle empty deleter moving namespaces
+    using namespace boost;
     using namespace boost::log;
 
-    boost::shared_ptr<std::ostream> os(&std::clog, null_deleter());
+    boost::shared_ptr<std::ostream> os(&std::cout, null_deleter());
     auto backend(boost::make_shared<sinks::text_ostream_backend>());
     backend->add_stream(os);
 

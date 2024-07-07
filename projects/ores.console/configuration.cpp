@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/io/std_optional.hpp"
+#include "ores.utility/streaming/std_optional.hpp"
 #include "ores.console/configuration.hpp"
 
 namespace ores::console {

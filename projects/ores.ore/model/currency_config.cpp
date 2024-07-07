@@ -18,7 +18,7 @@
  *
  */
 #include <ostream>
-#include "ores.utility/io/std_vector.hpp"
+#include "ores.utility/streaming/std_vector.hpp"
 #include "ores.ore/model/currency_config.hpp"
 
 namespace ores::ore::model {

@@ -25,7 +25,7 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/log/severity_level.hpp"
-#include "ores.utility/io/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
 #include "ores.console/application.hpp"
 #include "ores.console/program_options_parser.hpp"

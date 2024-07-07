@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_IO_JSONIFY_IO_HPP
-#define ORES_UTILITY_IO_JSONIFY_IO_HPP
+#ifndef ORES_UTILITY_STREAMING_JSONIFY_IO_HPP
+#define ORES_UTILITY_STREAMING_JSONIFY_IO_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -27,7 +27,7 @@
 #include <string>
 #include <ostream>
 
-namespace ores::utility::io::detail {
+namespace ores::utility::streaming::detail {
 
 template<typename Target>
 class json_number_type {
@@ -71,7 +71,7 @@ private:
 
 }
 
-namespace ores::utility::io {
+namespace ores::utility::streaming {
 
 /**
  * @brief String handling.
@@ -149,7 +149,7 @@ jsonify(const Insertee& insertee) {
 
 }
 
-namespace ores::utility::io::detail {
+namespace ores::utility::streaming::detail {
 
 template<typename Target>
 inline std::ostream&

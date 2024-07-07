@@ -32,7 +32,8 @@ namespace ores::utility::filesystem {
 /**
  * @brief File was not found.
  */
-class file_not_found : public virtual std::exception, public virtual boost::exception {
+class file_not_found : public virtual std::exception,
+                       public virtual boost::exception {
 public:
     file_not_found() = default;
     ~file_not_found() noexcept override = default;

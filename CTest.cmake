@@ -285,12 +285,17 @@ ctest_build(PARALLEL_LEVEL ${nproc})
 #
 # Step: test.
 #
+# If memcheck is enabled, run tests with valgrind, otherwise, run them normally.
+#
 # Note: because we are doing nothing with the return value, the build will be
 # green even when tests fail. This is OK because we rely on CDash to see the
 # testing status. Travis/AppVeyor just tells us weather the build and packaging
 # steps have worked or failed.
-#
-ctest_test(PARALLEL_LEVEL ${nproc} QUIET)
+if(USE_MEMCHECK)
+    ctest_memcheck(PARALLEL_LEVEL ${nproc})
+else()
+    ctest_test(PARALLEL_LEVEL ${nproc} QUIET)
+endif()
 
 #
 # Step: code coverage
@@ -303,13 +308,6 @@ if(WITH_COVERAGE)
         QUIET)
     message(STATUS "Result: ${cov_result}")
     message(STATUS "Cov capture result: ${cov_capture_result}")
-endif()
-
-#
-# Step: memcheck.
-#
-if(USE_MEMCHECK)
-    ctest_memcheck(PARALLEL_LEVEL ${nproc})
 endif()
 
 #

@@ -3,7 +3,7 @@
 :END:
 #+title: Sprint Backlog 01
 #+options: date:nil toc:nil author:nil num:nil
-#+todo: STARTED | COMPLETED CANCELLED POSTPONED
+#+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED
 #+tags: { story(s) epic(e) spike(p) }
 #+startup: inlineimages
 
@@ -18,47 +18,49 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: summary
-#+CAPTION: Clock summary at [2024-07-07 Sun 01:16]
+#+CAPTION: Clock summary at [2024-07-07 Sun 10:16]
 | <75>                                              |         |       |      |       |
 | Headline                                          | Time    |       |      |     % |
 |---------------------------------------------------+---------+-------+------+-------|
-| *Total time*                                      | *44:19* |       |      | 100.0 |
+| *Total time*                                      | *45:50* |       |      | 100.0 |
 |---------------------------------------------------+---------+-------+------+-------|
-| Stories                                           | 44:19   |       |      | 100.0 |
-| Active                                            |         | 44:19 |      | 100.0 |
-| Sprint and product backlog refinement             |         |       | 1:18 |   2.9 |
+| Stories                                           | 45:50   |       |      | 100.0 |
+| Active                                            |         | 45:50 |      | 100.0 |
+| Sprint and product backlog refinement             |         |       | 1:18 |   2.8 |
 | Create a basic git hub repository                 |         |       | 0:35 |   1.3 |
 | Setup a discord channel for the project           |         |       | 0:14 |   0.5 |
-| Setup vcpkg and cmake                             |         |       | 1:21 |   3.0 |
-| Setup github actions                              |         |       | 1:21 |   3.0 |
-| Create and upload a package                       |         |       | 3:28 |   7.8 |
-| Create a basic project structure                  |         |       | 2:10 |   4.9 |
-| Add a Qt hello world                              |         |       | 3:08 |   7.1 |
+| Setup vcpkg and cmake                             |         |       | 1:21 |   2.9 |
+| Setup github actions                              |         |       | 1:21 |   2.9 |
+| Create and upload a package                       |         |       | 3:28 |   7.6 |
+| Create a basic project structure                  |         |       | 2:10 |   4.7 |
+| Add a Qt hello world                              |         |       | 3:08 |   6.8 |
 | Add a splash screen to applciation                |         |       | 0:41 |   1.5 |
-| Add basic site                                    |         |       | 0:34 |   1.3 |
-| Add modeling infrastructure                       |         |       | 1:30 |   3.4 |
+| Add basic site                                    |         |       | 0:34 |   1.2 |
+| Add modeling infrastructure                       |         |       | 1:30 |   3.3 |
 | Fix code syntax highlighting in site              |         |       | 0:10 |   0.4 |
-| Merge index with readme                           |         |       | 0:42 |   1.6 |
-| Add project objective to readme                   |         |       | 2:24 |   5.4 |
-| Add basic logging support                         |         |       | 1:14 |   2.8 |
-| Add nightly support with memcheck                 |         |       | 3:21 |   7.6 |
-| Clean up toolchains and presets                   |         |       | 1:53 |   4.2 |
+| Merge index with readme                           |         |       | 0:42 |   1.5 |
+| Add project objective to readme                   |         |       | 2:24 |   5.2 |
+| Add basic logging support                         |         |       | 1:14 |   2.7 |
+| Add nightly support with memcheck                 |         |       | 3:21 |   7.3 |
+| Clean up toolchains and presets                   |         |       | 1:53 |   4.1 |
 | Generate Doxygen documentation and add it to site |         |       | 0:51 |   1.9 |
-| Copy domain notes on core concepts                |         |       | 4:41 |  10.6 |
-| Valgrind fails to run unit tests                  |         |       | 1:12 |   2.7 |
+| Copy domain notes on core concepts                |         |       | 4:41 |  10.2 |
+| Valgrind fails to run unit tests                  |         |       | 1:12 |   2.6 |
 | Initial sanity test generated packages            |         |       | 0:25 |   0.9 |
-| Add command line options support                  |         |       | 5:45 |  13.0 |
-| Clang tests show up twice in nightlies            |         |       | 0:04 |   0.2 |
-| Add XML parsing support for currency              |         |       | 3:18 |   7.4 |
-| Create a containing structure for data            |         |       | 0:28 |   1.1 |
-| Add basic widgets to display currencies           |         |       | 0:26 |   1.0 |
+| Add command line options support                  |         |       | 5:45 |  12.5 |
+| Unit tests show up twice in nightlies             |         |       | 0:13 |   0.5 |
+| Add recipes for command line                      |         |       | 0:51 |   1.9 |
+| Pie charts considered harmful                     |         |       | 0:31 |   1.1 |
+| Add XML parsing support for currency              |         |       | 3:18 |   7.2 |
+| Create a containing structure for data            |         |       | 0:28 |   1.0 |
+| Add basic widgets to display currencies           |         |       | 0:26 |   0.9 |
 | Convert plantuml diagrams to org-babel            |         |       | 1:05 |   2.4 |
 #+end:
 
 #+name: piechart
 #+begin_src R :results file graphics :file sprint_backlog_01.png :var summary=summary :width 1000 :height 600 :exports results
 clean <- tail(summary, -4)
-pie(as.numeric(clean[,5]), labels = clean[,1])
+pie(as.numeric(clean[,5]), labels = clean[,1], radius = 1, cex = 0.8)
 #+end_src
 
 #+RESULTS: piechart
@@ -472,15 +474,49 @@ Notes:
 
 - missing version support. Need template, etc. Try to use existing CMake
   variables to setup the version.
-
-*** STARTED Clang tests show up twice in nightlies                    :story:
+*** BLOCKED Unit tests show up twice in nightlies                     :story:
     :LOGBOOK:
+    CLOCK: [2024-07-07 Sun 08:36]--[2024-07-07 Sun 08:45] =>  0:09
     CLOCK: [2024-07-06 Sat 07:44]--[2024-07-06 Sat 07:48] =>  0:04
     :END:
 
 For some reason we see the dummy test coming out twice in the nightlies. We
 checked CTest submission and it seems there is only one entry. This could be
 some kind of timing bug in CDash.
+
+This is now happening for GCC as well. This is as expected:
+
+- [[https://discourse.cmake.org/t/duplication-of-test-execution-with-ctest-memcheck-and-sanitizers/3784][duplication of test execution with ctest_memcheck() and sanitizers]]
+
+We need to run the tests just once to avoid this issue.
+
+*** COMPLETED Add recipes for command line                            :story:
+    :LOGBOOK:
+    CLOCK: [2024-07-07 Sun 09:16]--[2024-07-07 Sun 10:07] =>  0:51
+    :END:
+
+Using org-babel, create a simple recipe file that exercises all options for the
+command line tool.
+
+*** STARTED Pie charts considered harmful                             :story:
+    :LOGBOOK:
+    CLOCK: [2024-07-07 Sun 10:09]--[2024-07-07 Sun 10:16] =>  0:07
+    CLOCK: [2024-07-07 Sun 09:02]--[2024-07-07 Sun 09:15] =>  0:13
+    CLOCK: [2024-07-07 Sun 08:46]--[2024-07-07 Sun 08:57] =>  0:11
+    :END:
+
+We started to struggle with how we use pie charts in the sprint backlog. The
+main issue is described here:
+
+- [[https://orestudio.github.io/OreStudio/doc/agile/v0/sprint_backlog_01.html#ID-34EDDBB5-CB52-35C4-E123-E0A70FB32799][SO: R prevent overlap in pie charts]]
+
+But it seems more generally that we should avoid them altogether:
+
+- [[https://www.perceptualedge.com/articles/visual_business_intelligence/save_the_pies_for_dessert.pdf][Save the Pies for Dessert]]
+
+Links:
+
+- [[https://r-graph-gallery.com/web-horizontal-barplot-with-labels-the-economist.html][Horizontal barplot with R and ggplot2]]
 
 *** STARTED Add XML parsing support for currency                      :story:
     :LOGBOOK:

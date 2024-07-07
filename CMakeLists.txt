@@ -42,6 +42,11 @@ include(AddBoostTests)
 option(WITH_PROFILING "Generate profiling information for code coverage." OFF)
 
 #
+# c++ standard.
+#
+message(STATUS "Targeting C++ standard: ${CMAKE_CXX_STANDARD}")
+
+#
 # Setup CCache
 #
 find_program(CCACHE_PROGRAM sccache)

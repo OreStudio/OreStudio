@@ -5,23 +5,39 @@
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+startup: inlineimages
-
-* General
+#+startup: showeverything
 
 Demonstrates all of the functionality available on the command line tool
 =ores.console=.
 
-** Help
+* Recipes
+   :PROPERTIES:
+   :header-args: :exports both
+   :header-args+: :results raw
+   :header-args+: :dir ../../build/output/linux-clang-release/projects/ores.console/
+   :END:
 
-*** Global
+** General
+   :PROPERTIES:
+   :header-args+: :wrap src text
+   :END:
 
-#+begin_src sh :exports both :results raw
-cd ../../build/output/linux-clang-release/projects/ores.console/
+General commands that do not exercise domain functionality.
+
+*** Help
+
+Displays the available options.
+
+**** Global
+
+#+begin_src sh
 ./ores.console --help
 #+END_SRC
 
 #+RESULTS:
-ORE Studio is a User Interface for Open Source Risk Engine (ORE).Console provides a CLI based version of the interface.
+#+begin_src text
+ORE Studio is a User Interface for Open Source Risk Engine (ORE).
+Console provides a CLI based version of the interface.
 ORE Studio is created by the ORE Studio project.
 ores.console uses a command-based interface: <command> <options>.
 See below for a list of valid commands.
@@ -32,49 +48,38 @@ General:
   -h [ --help ]           Display usage and exit.
   -v [ --version ]        Output version information and exit.
 
-Output:
-  --byproduct-directory   Directory in which to place all of the byproducts of
-                          the run such as log files, traces, etc.
-
 Logging:
   -e [ --log-enabled ]    Generate a log file.
   -l [ --log-level ] arg  What level to use for logging. Valid values: trace,
                           debug, info, warn, error. Defaults to info.
   --log-to-console        Output logging to the console, as well as to file.
+  --log-directory arg     Where to place the log files.
 
 Commands:
 
-   data           Operates directly on data.
+   import         Imports data into the system.
 
 For command specific options, type <command> --help.
-0
+#+end_src
 
-*** Importing
+**** Importing
 
-#+begin_src sh :exports both :results raw
-cd ../../build/output/linux-clang-release/projects/ores.console/
+#+begin_src sh
 ./ores.console import --help
 #+END_SRC
 
 #+RESULTS:
-ORE Studio is a User Interface for Open Source Risk Engine (ORE).
-Console provides a CLI based version of the interface.
-ORE Studio is created by the ORE Studio project.
-Displaying options specific to the 'import' command.
-For global options, type --help.
+#+begin_src text
+#+end_src
 
-Importing:
-  --currency-configuration arg One or more currency configuration files, in XML
-                               representation.
+*** Version
 
-** Version
-
-#+begin_src sh :exports both :results raw
-cd ../../build/output/linux-clang-release/projects/ores.console/
+#+begin_src sh
 ./ores.console --version
 #+END_SRC
 
 #+RESULTS:
+#+begin_src text
 OreStudio v0.0.1
 Copyright (C) 2024 Marco Craveiro.
 License GPLv3: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
@@ -82,14 +87,35 @@ This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
 Build: Provider = LOCAL
 IMPORTANT: build details are NOT for security purposes.
+#+end_src
 
-* Data
+** Importing
+   :PROPERTIES:
+   :header-args+: :var log_args="--log-enabled --log-level trace --log-directory log --log-to-console"
+   :header-args+: :var currency_config_dir="/home/marco/Development/ql/OreStudio/assets/test_data/ore_sample_data/currencies"
+   :header-args+: :wrap src logview
+   :END:
 
-** Import currencies
+*** Import currencies
 
-#+begin_src sh :exports both
-cd ../../build/output/linux-clang-release/projects/ores.console/
-./ores.console import --log-enabled --log-level trace --log-directory log --currency-configuration /home/marco/Development/ql/OreStudio/assets/test_data/ore_sample_data/currencies/currencies.xml
+#+begin_src sh
+./ores.console import ${log_args} --currency-configuration ${currency_config_dir}/currencies.xml
 #+END_SRC
 
 #+RESULTS:
+#+begin_src logview
+2024-07-07 09:58:40.139399 [INFO] [main] Command line arguments: [ "import", "--log-enabled", "--log-level", "trace", "--log-directory", "log", "--log-to-console", "--currency-configuration", "/home/marco/Development/ql/OreStudio/assets/test_data/ore_sample_data/currencies/currencies.xml" ]
+2024-07-07 09:58:40.139731 [DEBUG] [main] Configuration:  { "__type__": "ores::console::configuration", "logging": { "__type__": "std::optional", "data":  { "__type__": "ores::console::logging_configuration", "severity": "trace", "filename": "ores.console.log", "output_to_console": true, "output_directory": "log" } }, "importing": { "__type__": "std::optional", "data":  { "__type__": "ores::console::configuration", "currency_configurations": [ "/home/marco/Development/ql/OreStudio/assets/test_data/ore_sample_data/currencies/currencies.xml" ] } } }
+2024-07-07 09:58:40.139821 [INFO] [ores.console.application] Started application.
+2024-07-07 09:58:40.139845 [DEBUG] [ores.console.application] Processing currency configuration: "/home/marco/Development/ql/OreStudio/assets/test_data/ore_sample_data/currencies/currencies.xml"
+2024-07-07 09:58:40.139870 [DEBUG] [ores.ore.xml.xml_importer] Starting to import. File: /home/marco/Development/ql/OreStudio/assets/test_data/ore_sample_data/currencies/currencies.xml
+2024-07-07 09:58:40.139893 [TRACE] [utility.filesystem.file] Reading content for path:/home/marco/Development/ql/OreStudio/assets/test_data/ore_sample_data/currencies/currencies.xml
+2024-07-07 09:58:40.141047 [TRACE] [utility.filesystem.file] Total bytes read:67280
+2024-07-07 09:58:40.141134 [DEBUG] [ores.ore.xml.xml_importer] Finished importing. Result:  { "__type__": "ores::ore::model::currency_config", "currencies": [  ] }
+2024-07-07 09:58:40.141234 [INFO] [ores.console.application] Finished application.
+#+end_src
+
+
+# Local Variables:
+# eval: (whitespace-mode -1)
+# End:

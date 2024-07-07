@@ -4,7 +4,7 @@
 #+title: Sprint Backlog 01
 #+options: date:nil toc:nil author:nil num:nil
 #+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED
-#+tags: { story(s) epic(e) spike(p) }
+#+tags: { code(c) infra(i) doc(d) agile(a) }
 #+startup: inlineimages
 
 * Sprint Goals
@@ -18,48 +18,48 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2024-07-07 Sun 18:10]
+#+CAPTION: Clock summary at [2024-07-07 Sun 18:42]
 |       | <75>                                              |         |       |      |       |
 | Tags  | Headline                                          | Time    |       |      |     % |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                      | *48:31* |       |      | 100.0 |
+|       | *Total time*                                      | *49:01* |       |      | 100.0 |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                           | 48:31   |       |      | 100.0 |
-|       | Active                                            |         | 48:31 |      | 100.0 |
-| story | Sprint and product backlog refinement             |         |       | 1:29 |   3.1 |
-| story | Create a basic git hub repository                 |         |       | 0:35 |   1.2 |
-| story | Setup a discord channel for the project           |         |       | 0:14 |   0.5 |
-| story | Setup vcpkg and cmake                             |         |       | 1:21 |   2.8 |
-| story | Setup github actions                              |         |       | 1:21 |   2.8 |
-| story | Create and upload a package                       |         |       | 3:28 |   7.1 |
-| story | Create a basic project structure                  |         |       | 2:10 |   4.5 |
-| story | Add a Qt hello world                              |         |       | 3:08 |   6.5 |
-| story | Add a splash screen to applciation                |         |       | 0:41 |   1.4 |
-| story | Add basic site                                    |         |       | 0:34 |   1.2 |
-| story | Add modeling infrastructure                       |         |       | 1:30 |   3.1 |
-| story | Fix code syntax highlighting in site              |         |       | 0:10 |   0.3 |
-| story | Merge index with readme                           |         |       | 0:42 |   1.4 |
-| story | Add project objective to readme                   |         |       | 2:24 |   4.9 |
-| story | Add basic logging support                         |         |       | 1:14 |   2.5 |
-| story | Add nightly support with memcheck                 |         |       | 3:21 |   6.9 |
-| story | Clean up toolchains and presets                   |         |       | 1:53 |   3.9 |
-| story | Generate Doxygen documentation and add it to site |         |       | 0:51 |   1.8 |
-| story | Copy domain notes on core concepts                |         |       | 4:41 |   9.7 |
-| story | Valgrind fails to run unit tests                  |         |       | 1:12 |   2.5 |
-| story | Initial sanity test generated packages            |         |       | 0:25 |   0.9 |
-| story | Add command line options support                  |         |       | 5:45 |  11.9 |
-| story | Unit tests show up twice in nightlies             |         |       | 0:13 |   0.4 |
-| story | Add recipes for command line                      |         |       | 0:51 |   1.8 |
-| story | Use a bar chart for sprint resourcing cost        |         |       | 2:57 |   6.1 |
-| story | Add XML parsing support for currency              |         |       | 3:18 |   6.8 |
-| story | Create a containing structure for data            |         |       | 0:28 |   1.0 |
-| story | Add basic widgets to display currencies           |         |       | 0:26 |   0.9 |
-| story | Convert plantuml diagrams to org-babel            |         |       | 1:05 |   2.2 |
-| story | Classify stories by type                          |         |       | 0:04 |   0.1 |
+|       | Stories                                           | 49:01   |       |      | 100.0 |
+|       | Active                                            |         | 49:01 |      | 100.0 |
+| agile | Sprint and product backlog refinement             |         |       | 1:29 |   3.0 |
+| infra | Create a basic git hub repository                 |         |       | 0:35 |   1.2 |
+| infra | Setup a discord channel for the project           |         |       | 0:14 |   0.5 |
+| infra | Setup vcpkg and cmake                             |         |       | 1:21 |   2.8 |
+| infra | Setup github actions                              |         |       | 1:21 |   2.8 |
+| infra | Create and upload a package                       |         |       | 3:28 |   7.1 |
+| code  | Create a basic project structure                  |         |       | 2:10 |   4.4 |
+| code  | Add a Qt hello world                              |         |       | 3:08 |   6.4 |
+| code  | Add a splash screen to applciation                |         |       | 0:41 |   1.4 |
+| infra | Add basic site                                    |         |       | 0:34 |   1.2 |
+| code  | Add modeling infrastructure                       |         |       | 1:30 |   3.1 |
+| infra | Fix code syntax highlighting in site              |         |       | 0:10 |   0.3 |
+| doc   | Merge index with readme                           |         |       | 0:42 |   1.4 |
+| doc   | Add project objective to readme                   |         |       | 2:24 |   4.9 |
+| code  | Add basic logging support                         |         |       | 1:14 |   2.5 |
+| infra | Add nightly support with memcheck                 |         |       | 3:21 |   6.8 |
+| code  | Clean up toolchains and presets                   |         |       | 1:53 |   3.8 |
+| doc   | Generate Doxygen documentation and add it to site |         |       | 0:51 |   1.7 |
+| doc   | Copy domain notes on core concepts                |         |       | 4:41 |   9.6 |
+| infra | Valgrind fails to run unit tests                  |         |       | 1:12 |   2.4 |
+| infra | Initial sanity test generated packages            |         |       | 0:25 |   0.9 |
+| code  | Add command line options support                  |         |       | 5:45 |  11.7 |
+| infra | Unit tests show up twice in nightlies             |         |       | 0:13 |   0.4 |
+| doc   | Add recipes for command line                      |         |       | 0:51 |   1.7 |
+| agile | Use a bar chart for sprint resourcing cost        |         |       | 2:57 |   6.0 |
+| agile | Classify stories by type                          |         |       | 0:34 |   1.2 |
+| code  | Add XML parsing support for currency              |         |       | 3:18 |   6.7 |
+| code  | Create a containing structure for data            |         |       | 0:28 |   1.0 |
+| code  | Add basic widgets to display currencies           |         |       | 0:26 |   0.9 |
+| doc   | Convert plantuml diagrams to org-babel            |         |       | 1:05 |   2.2 |
 #+end:
 
-#+name: barchart
-#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_01.png :width 1200 :height 650
+#+name: stories-chart
+#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_01_stories.png :width 1200 :height 650
 library(conflicted)
 library(grid)
 library(tidyverse)
@@ -90,17 +90,52 @@ p <- ggplot(df) +
 print(p)
 #+end_src
 
-#+RESULTS: barchart
-[[file:sprint_backlog_01.png]]
+#+RESULTS: stories-chart
+[[file:sprint_backlog_01_stories.png]]
 
-#+RESULTS:
+#+name: tags-chart
+#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_01_tags.png :width 600 :height 400
+library(conflicted)
+library(grid)
+library(tidyverse)
+library(tibble)
+
+# Remove unnecessary rows.
+clean_sprint_summary <- tail(sprint_summary, -4)
+names <- unlist(clean_sprint_summary[1])
+values <- as.numeric(unlist(clean_sprint_summary[6]))
+
+# Create a data frame.
+df <- data.frame(
+  cost = values,
+  tags = names,
+  y = seq(length(names)) * 0.9
+)
+# factor(names, levels = names[order(values, decreasing = FALSE)])
+
+df2 <- setNames(aggregate(df$cost, by = list(df$tags), FUN = sum),  c("cost", "tags"))
+# Setup the colors
+blue <- "#076fa2"
+
+p <- ggplot(df2) +
+  aes(x = cost, y = tags) +
+  geom_col(fill = blue, width = 0.6) +
+  ggtitle("Sprint 1: Resourcing per Tag") +
+  xlab("Resourcing (%)") + ylab("Stories") +
+  theme(text = element_text(size = 15))
+
+print(p)
+#+end_src
+
+#+RESULTS: tags-chart
+[[file:sprint_backlog_01_tags.png]]
 
 #+begin_src emacs-lisp :exports none
 ;; agenda
 (org-agenda-file-to-front)
 #+end_src
 
-*** STARTED Sprint and product backlog refinement                     :story:
+*** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
     CLOCK: [2024-07-07 Sun 17:54]--[2024-07-07 Sun 18:05] =>  0:11
     CLOCK: [2024-07-05 Fri 23:13]--[2024-07-05 Fri 23:26] =>  0:13
@@ -117,7 +152,7 @@ print(p)
 
 Updates to sprint and product backlog.
 
-*** COMPLETED Create a basic git hub repository                       :story:
+*** COMPLETED Create a basic git hub repository                       :infra:
     :LOGBOOK:
     CLOCK: [2024-06-15 Sat 21:03]--[2024-06-15 Sat 21:15] =>  0:18
     CLOCK: [2024-06-15 Sat 20:40]--[2024-06-15 Sat 21:03] =>  0:23
@@ -126,7 +161,7 @@ Updates to sprint and product backlog.
 - add a new organisation and repo.
 - add a simple project with vcpkg support.
 
-*** COMPLETED Setup a discord channel for the project                 :story:
+*** COMPLETED Setup a discord channel for the project                 :infra:
     :LOGBOOK:
     CLOCK: [2024-06-22 Sat 14:28]--[2024-06-22 Sat 14:42] =>  0:14
     :END:
@@ -139,7 +174,7 @@ Links:
 - [[https://www.emacswiki.org/emacs/BitlBee][emacs wiki BitlBee]]
 - [[https://aliquote.org/post/discord-bitlbee/][Discord on Emacs]]
 
-*** COMPLETED Setup vcpkg and cmake                                   :story:
+*** COMPLETED Setup vcpkg and cmake                                   :infra:
     :LOGBOOK:
     CLOCK: [2024-06-22 Sat 15:51]--[2024-06-22 Sat 16:30] =>  0:39
     CLOCK: [2024-06-22 Sat 15:15]--[2024-06-22 Sat 15:26] =>  0:11
@@ -148,7 +183,7 @@ Links:
 
 Setup a basic build with vcpkg.
 
-*** COMPLETED Setup github actions                                    :story:
+*** COMPLETED Setup github actions                                    :infra:
     :LOGBOOK:
     CLOCK: [2024-06-22 Sat 18:50]--[2024-06-22 Sat 19:27] =>  0:37
     CLOCK: [2024-06-22 Sat 17:45]--[2024-06-22 Sat 18:09] =>  0:24
@@ -157,7 +192,7 @@ Setup a basic build with vcpkg.
 
 Get a basic green build in github, showing up in CDash.
 
-*** COMPLETED Create and upload a package                             :story:
+*** COMPLETED Create and upload a package                             :infra:
     :LOGBOOK:
     CLOCK: [2024-06-22 Sat 22:45]--[2024-06-22 Sat 23:09] =>  0:24
     CLOCK: [2024-06-22 Sat 21:41]--[2024-06-22 Sat 22:44] =>  1:03
@@ -166,7 +201,7 @@ Get a basic green build in github, showing up in CDash.
 
 We should create a basic package, and upload it to github.
 
-*** COMPLETED Create a basic project structure                        :story:
+*** COMPLETED Create a basic project structure                         :code:
     :LOGBOOK:
     CLOCK: [2024-06-22 Sat 13:57]--[2024-06-22 Sat 14:10] =>  0:13
     CLOCK: [2024-06-22 Sat 12:00]--[2024-06-22 Sat 13:57] =>  1:57
@@ -178,7 +213,7 @@ or more fat clients connecting to a postgres database. We don't mind having
 business logic in the database; the most important thing is for it to be really
 quick to add new features with the least amount of layers and duplication.
 
-*** COMPLETED Add a Qt hello world                                    :story:
+*** COMPLETED Add a Qt hello world                                     :code:
     :LOGBOOK:
     CLOCK: [2024-06-23 Sun 15:02]--[2024-06-23 Sun 15:15] =>  0:13
     CLOCK: [2024-06-23 Sun 10:19]--[2024-06-23 Sun 10:29] =>  0:10
@@ -191,7 +226,7 @@ quick to add new features with the least amount of layers and duplication.
 
 Create a trivial application in Qt that exercises the pipelines.
 
-*** COMPLETED Add a splash screen to applciation                      :story:
+*** COMPLETED Add a splash screen to applciation                       :code:
     :LOGBOOK:
     CLOCK: [2024-06-23 Sun 16:09]--[2024-06-23 Sun 16:50] =>  0:41
     :END:
@@ -223,7 +258,7 @@ int main(int argc, char *argv[])
 }
 #+end_src
 
-*** COMPLETED Add basic site                                          :story:
+*** COMPLETED Add basic site                                          :infra:
     :LOGBOOK:
     CLOCK: [2024-06-28 Fri 22:50]--[2024-06-28 Fri 23:13] =>  0:23
     CLOCK: [2024-06-28 Fri 08:05]--[2024-06-28 Fri 08:16] =>  0:11
@@ -231,7 +266,7 @@ int main(int argc, char *argv[])
 
 We need a basic website for the project.
 
-*** COMPLETED Add modeling infrastructure                             :story:
+*** COMPLETED Add modeling infrastructure                              :code:
    :LOGBOOK:
    CLOCK: [2024-06-29 Sat 00:34]--[2024-06-29 Sat 00:45] =>  0:11
    CLOCK: [2024-06-28 Fri 23:14]--[2024-06-29 Sat 00:33] =>  1:19
@@ -240,19 +275,19 @@ We need a basic website for the project.
 We need to be able to draw some simple PlantUML diagrams to describe the code as
 we go along. They should be linked to the documentation.
 
-*** COMPLETED Exclude vcpkg directories from coverage                 :story:
+*** COMPLETED Exclude vcpkg directories from coverage                 :infra:
 
 At present coverage is very low because its picking up some files from vcpkg
 install. We need to ignore those.
 
-*** COMPLETED Fix code syntax highlighting in site                    :story:
+*** COMPLETED Fix code syntax highlighting in site                    :infra:
     :LOGBOOK:
     CLOCK: [2024-06-29 Sat 17:30]--[2024-06-29 Sat 17:40] =>  0:10
     :END:
 
 For some reason we are not getting syntax highlighting in the website.
 
-*** COMPLETED Merge index with readme                                 :story:
+*** COMPLETED Merge index with readme                                   :doc:
     :LOGBOOK:
     CLOCK: [2024-06-29 Sat 18:15]--[2024-06-29 Sat 18:33] =>  0:18
     CLOCK: [2024-06-29 Sat 17:50]--[2024-06-29 Sat 18:14] =>  0:24
@@ -261,7 +296,7 @@ For some reason we are not getting syntax highlighting in the website.
 Its a bit annoying to have both a =readme= and an =index= file, since they are
 both just landing pages. Look into merging them.
 
-*** COMPLETED Add project objective to readme                         :story:
+*** COMPLETED Add project objective to readme                           :doc:
     :LOGBOOK:
     CLOCK: [2024-07-04 Thu 08:29]--[2024-07-04 Thu 08:36] =>  0:07
     CLOCK: [2024-06-29 Sat 22:55]--[2024-06-29 Sat 23:28] =>  0:33
@@ -271,7 +306,7 @@ both just landing pages. Look into merging them.
 
 Explain the objective of the project and the approach.
 
-*** COMPLETED Add basic logging support                               :story:
+*** COMPLETED Add basic logging support                                :code:
    :LOGBOOK:
    CLOCK: [2024-06-28 Fri 22:02]--[2024-06-28 Fri 22:32] =>  0:30
    CLOCK: [2024-06-28 Fri 00:00]--[2024-06-28 Fri 00:44] =>  0:44
@@ -279,7 +314,7 @@ Explain the objective of the project and the approach.
 
 Copy across from dogen basic logging.
 
-*** COMPLETED Add nightly support with memcheck                       :story:
+*** COMPLETED Add nightly support with memcheck                       :infra:
     :LOGBOOK:
     CLOCK: [2024-07-02 Tue 21:48]--[2024-07-02 Tue 21:58] =>  0:10
     CLOCK: [2024-07-02 Tue 07:50]--[2024-07-02 Tue 08:18] =>  0:28
@@ -302,7 +337,7 @@ Notes:
 - error with valgrind appears to be related to DWARF version: [[https://github.com/llvm/llvm-project/issues/56550][#56550: Clang
   Generates DWARF Info That Valgrind Can't Read]]. Change it to v4.
 
-*** COMPLETED Clean up toolchains and presets                         :story:
+*** COMPLETED Clean up toolchains and presets                          :code:
     :LOGBOOK:
     CLOCK: [2024-07-01 Mon 07:46]--[2024-07-01 Mon 08:17] =>  0:31
     CLOCK: [2024-06-30 Sun 23:03]--[2024-06-30 Sun 23:57] =>  0:54
@@ -314,7 +349,7 @@ We are using CMake in a legacy way when defining warnings, etc. We need to move
 towards the modern approach, by defining toolchain files and using presets
 correctly.
 
-*** COMPLETED Generate Doxygen documentation and add it to site       :story:
+*** COMPLETED Generate Doxygen documentation and add it to site         :doc:
     :LOGBOOK:
     CLOCK: [2024-07-05 Fri 22:30]--[2024-07-05 Fri 22:48] =>  0:18
     CLOCK: [2024-07-05 Fri 20:45]--[2024-07-05 Fri 20:59] =>  0:14
@@ -322,7 +357,7 @@ correctly.
     :END:
 
 
-*** COMPLETED Copy domain notes on core concepts                      :story:
+*** COMPLETED Copy domain notes on core concepts                        :doc:
     :LOGBOOK:
     CLOCK: [2024-07-06 Sat 20:52]--[2024-07-06 Sat 21:03] =>  0:11
     CLOCK: [2024-07-06 Sat 08:47]--[2024-07-06 Sat 09:00] =>  0:13
@@ -344,7 +379,7 @@ Notes:
 - Fix issues with publishing by ignoring emacs package directories and vcpkg.
 - add basic support for bibliography as per progen setup (manual bib file).
 
-*** COMPLETED Valgrind fails to run unit tests                        :story:
+*** COMPLETED Valgrind fails to run unit tests                        :infra:
     :LOGBOOK:
     CLOCK: [2024-07-06 Sat 07:36]--[2024-07-06 Sat 07:43] =>  0:07
     CLOCK: [2024-07-05 Fri 07:55]--[2024-07-05 Fri 08:07] =>  0:12
@@ -385,7 +420,7 @@ valgrind 3.22.
 
 Updating to Ubunbtu 22.04 and valgrind 3.22 resolved the issue.
 
-*** COMPLETED Initial sanity test generated packages                  :story:
+*** COMPLETED Initial sanity test generated packages                  :infra:
     :LOGBOOK:
     CLOCK: [2024-07-06 Sat 08:21]--[2024-07-06 Sat 08:46] =>  0:25
     :END:
@@ -481,7 +516,7 @@ This is because the filename is incorrect:
 CPack: - package: /Users/runner/work/OreStudio/OreStudio/build/output/macos-clang-release/packages/OreStudio-0.0.1-Darwin.dmg generated.
 #+end_src
 
-*** COMPLETED Add command line options support                        :story:
+*** COMPLETED Add command line options support                         :code:
     :LOGBOOK:
     CLOCK: [2024-07-06 Sat 23:51]--[2024-07-07 Sun 01:15] =>  1:24
     CLOCK: [2024-07-06 Sat 22:17]--[2024-07-06 Sat 23:11] =>  0:54
@@ -503,7 +538,7 @@ Notes:
 
 - missing version support. Need template, etc. Try to use existing CMake
   variables to setup the version.
-*** BLOCKED Unit tests show up twice in nightlies                     :story:
+*** BLOCKED Unit tests show up twice in nightlies                     :infra:
     :LOGBOOK:
     CLOCK: [2024-07-07 Sun 08:36]--[2024-07-07 Sun 08:45] =>  0:09
     CLOCK: [2024-07-06 Sat 07:44]--[2024-07-06 Sat 07:48] =>  0:04
@@ -519,7 +554,7 @@ This is now happening for GCC as well. This is as expected:
 
 We need to run the tests just once to avoid this issue.
 
-*** COMPLETED Add recipes for command line                            :story:
+*** COMPLETED Add recipes for command line                              :doc:
     :LOGBOOK:
     CLOCK: [2024-07-07 Sun 09:16]--[2024-07-07 Sun 10:07] =>  0:51
     :END:
@@ -527,7 +562,7 @@ We need to run the tests just once to avoid this issue.
 Using org-babel, create a simple recipe file that exercises all options for the
 command line tool.
 
-*** COMPLETED Use a bar chart for sprint resourcing cost              :story:
+*** COMPLETED Use a bar chart for sprint resourcing cost              :agile:
     :LOGBOOK:
     CLOCK: [2024-07-07 Sun 17:41]--[2024-07-07 Sun 17:53] =>  0:12
     CLOCK: [2024-07-07 Sun 16:24]--[2024-07-07 Sun 17:40] =>  1:16
@@ -551,7 +586,28 @@ Links:
 
 - [[https://r-graph-gallery.com/web-horizontal-barplot-with-labels-the-economist.html][Horizontal barplot with R and ggplot2]]
 
-*** STARTED Add XML parsing support for currency                      :story:
+*** COMPLETED Classify stories by type                                :agile:
+    :LOGBOOK:
+    CLOCK: [2024-07-07 Sun 18:16]--[2024-07-07 Sun 18:41] =>  0:25
+    CLOCK: [2024-07-07 Sun 18:06]--[2024-07-07 Sun 18:15] =>  0:09
+    :END:
+
+We should tag the stories by their "type" or "kind" and then generate a table
+with how the resourcing was split. Sample tags:
+
+- code: real coding task.
+- infra: infrastructure work such as build, tooling, etc.
+- agile: other types of overhead such as agile bookkeeping, release notes, etc.
+- doc: documentation related tasks.
+
+Seems like this is not easy to do within org itself:
+
+- [[https://www.reddit.com/r/emacs/comments/jrf5eg/org_clocktable_how_to_sum_time_by_tags/][Org clocktable, how to sum time by tags]]
+- [[https://stackoverflow.com/questions/38545767/org-mode-clock-table-by-tag/38548368#38548368][org-mode clock table by tag]]
+
+But we could perhaps do it within R.
+
+*** STARTED Add XML parsing support for currency                       :code:
     :LOGBOOK:
     CLOCK: [2024-07-06 Sat 20:10]--[2024-07-06 Sat 20:23] =>  0:13
     CLOCK: [2024-07-06 Sat 17:50]--[2024-07-06 Sat 18:03] =>  0:13
@@ -564,7 +620,7 @@ Links:
 We need to have the ability to read and write currencies from XML. Copy all
 currency input data from examples.
 
-*** STARTED Create a containing structure for data                    :story:
+*** STARTED Create a containing structure for data                     :code:
    :LOGBOOK:
    CLOCK: [2024-06-27 Thu 23:22]--[2024-06-27 Thu 23:29] =>  0:07
    CLOCK: [2024-06-25 Tue 19:24]--[2024-06-25 Tue 19:33] =>  0:09
@@ -614,14 +670,14 @@ Notes:
 
 - move this analysis to documentation.
 
-*** STARTED Add basic widgets to display currencies                   :story:
+*** STARTED Add basic widgets to display currencies                    :code:
     :LOGBOOK:
     CLOCK: [2024-06-26 Wed 23:00]--[2024-06-26 Wed 23:26] =>  0:26
     :END:
 
 We need some kind of tree view and list view.
 
-*** STARTED Convert plantuml diagrams to org-babel                    :story:
+*** STARTED Convert plantuml diagrams to org-babel                      :doc:
     :LOGBOOK:
     CLOCK: [2024-07-01 Mon 23:04]--[2024-07-02 Tue 00:09] =>  1:05
     :END:
@@ -629,61 +685,39 @@ We need some kind of tree view and list view.
 It may be easier to integrate diagrams with roam if they are org-mode documents.
 Experiment with babel for this.
 
-*** STARTED Classify stories by type                                  :story:
-    :LOGBOOK:
-    CLOCK: [2024-07-07 Sun 18:06]--[2024-07-07 Sun 18:10] =>  0:04
-    :END:
-
-We should tag the stories by their "type" or "kind" and then generate a table
-with how the resourcing was split. Sample tags:
-
-- code: real coding task.
-- infra: infrastructure work such as build, tooling, etc.
-- agile: other types of overhead such as agile bookkeeping, release notes, etc.
-- doc: documentation related tasks.
-
-Seems like this is not easy to do within org itself:
-
-- [[https://www.reddit.com/r/emacs/comments/jrf5eg/org_clocktable_how_to_sum_time_by_tags/][Org clocktable, how to sum time by tags]]
-- [[https://stackoverflow.com/questions/38545767/org-mode-clock-table-by-tag/38548368#38548368][org-mode clock table by tag]]
-
-But we could perhaps do it within R. We can raise a separate story for this.
-
-
-
-*** Install Windows package on Windows machine                        :story:
+*** Install Windows package on Windows machine                        :infra:
 
 We need to install and run the windows package and make sure it works. Check
 console and GUI start.
 
-*** Install OSX package on OSX machine                                :story:
+*** Install OSX package on OSX machine                                :infra:
 
 We need to install and run the windows package and make sure it works. Check
 console and GUI start.
 
-*** Add packaging support for images                                  :story:
+*** Add packaging support for images                                  :infra:
 
 At present we are not adding images to packages.
 
-*** Create a staging directory                                        :story:
+*** Create a staging directory                                        :infra:
 
 At present the binaries are scattered around the build directory. We should take
 the same approach as Dogen and create clean directories for this.
 
-*** Create an icon for the application                                :story:
+*** Create an icon for the application                                :infra:
 
 We copied the Dogen icon to get us going. We should really grab our own logo.
 
-*** Add JSON parsing support for currency                             :story:
+*** Add JSON parsing support for currency                              :code:
 
 We need to have the ability to read and write currencies from JSON.
 
-*** Add postgres support for currency                                 :story:
+*** Add postgres support for currency                                  :code:
 
 We need to have the ability to read and write currencies from a postgres
 database.
 
-*** Work through all types required for Example 1                      :epic:
+*** Work through all types required for Example 1                      :code:
 
 We want to be able to visualise all the data types needed in order to be able to
 run the most basic example of ORE. For each of these types, create a stories.

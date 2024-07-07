@@ -24,7 +24,8 @@ namespace ores::utility::log {
 logging_configuration::logging_configuration()
     : output_to_console_(false) { }
 
-logging_configuration::logging_configuration(logging_configuration&& rhs) noexcept
+logging_configuration::
+logging_configuration(logging_configuration&& rhs) noexcept
     : severity_(std::move(rhs.severity_)),
       filename_(std::move(rhs.filename_)),
       output_to_console_(rhs.output_to_console_),
@@ -43,13 +44,6 @@ void logging_configuration::swap(logging_configuration& other) noexcept {
     swap(filename_, other.filename_);
     swap(output_to_console_, other.output_to_console_);
     swap(output_directory_, other.output_directory_);
-}
-
-bool logging_configuration::operator==(const logging_configuration& rhs) const {
-    return severity_ == rhs.severity_ &&
-        filename_ == rhs.filename_ &&
-        output_to_console_ == rhs.output_to_console_ &&
-        output_directory_ == rhs.output_directory_;
 }
 
 logging_configuration& logging_configuration::operator=(logging_configuration other) {
@@ -101,6 +95,5 @@ std::ostream& operator<<(std::ostream& s, const logging_configuration& v) {
       << " }";
     return(s);
 }
-
 
 }

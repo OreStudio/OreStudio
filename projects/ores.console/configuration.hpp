@@ -61,11 +61,6 @@ public:
     void importing(std::optional<importing_configuration> v);
     /**@}*/
 
-    bool operator==(const configuration& rhs) const;
-    bool operator!=(const configuration& rhs) const {
-        return !this->operator==(rhs);
-    }
-
     void swap(configuration& other) noexcept;
     configuration& operator=(configuration other);
 

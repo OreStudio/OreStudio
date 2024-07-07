@@ -38,9 +38,9 @@ class logging_configuration final {
 public:
     logging_configuration(const logging_configuration&) = default;
     ~logging_configuration() = default;
+
     logging_configuration();
     logging_configuration(logging_configuration&& rhs) noexcept;
-
     logging_configuration(std::string severity, std::string filename,
         bool output_to_console, std::filesystem::path output_directory);
 
@@ -77,11 +77,6 @@ public:
     std::filesystem::path output_directory() const;
     void output_directory(std::filesystem::path v);
     /**@}*/
-
-    bool operator==(const logging_configuration& rhs) const;
-    bool operator!=(const logging_configuration& rhs) const {
-        return !this->operator==(rhs);
-    }
 
     void swap(logging_configuration& other) noexcept;
     logging_configuration& operator=(logging_configuration other);

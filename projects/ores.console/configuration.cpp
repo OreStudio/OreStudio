@@ -37,12 +37,6 @@ void configuration::swap(configuration& other) noexcept {
     swap(importing_, other.importing_);
 }
 
-bool configuration::operator==(const configuration& rhs) const {
-    return
-        logging_ == rhs.logging_ &&
-        importing_ == rhs.importing_;
-}
-
 configuration& configuration::operator=(configuration other) {
     using std::swap;
     swap(*this, other);

@@ -17,22 +17,14 @@ following essays may be of interest (in no particular order).
 | [[https://mcraveiro.github.io/nerd_food/on_maintenance.html][On Maintenance]]                  | The code-base as a repository of knowledge in a given problem domain. |
 | [[https://mcraveiro.github.io/nerd_food/on_evolutionary_methodology.html][On Evolutionary Methodology]]     | Lessons from the Linux kernel.                                        |
 
+* Backlogs
 
-* Product Backlog
+All agile related information is kept in /Backlogs/. There are two types of
+backlogs:
 
-Contains all of the captured stories that have not yet been assigned to a
-sprint. Available here: [[id:558650A4-C3E5-8964-4193-7D9125E29B83][Product Backlog]].
-
-* Sprint Backlogs
-
-For each sprint, we capture all of the work we have undertaken. When it clocks
-around eighty hours, we call it a sprint and make a release. Each sprint is
-organised around one or two themes which we call the /Sprint Goals/. The last
-sprint in the list is the active sprint - /i.e./ the sprint we are currently
-working on. All other sprints are archives of past activity.
-
-| Sprint            | Mission                                                               |
-|-------------------+-----------------------------------------------------------------------|
-| [[id:34EDDBB5-CB52-35C4-E123-E0A70FB32799][Sprint Backlog 01]] | Create basic project infrastructure; handle currencies front to back. |
+- [[id:558650A4-C3E5-8964-4193-7D9125E29B83][Product Backlog]]: Contains all of the captured stories that have not yet been
+  assigned to a sprint.
+- [[id:57A7FABC-21FE-5124-45EB-9685D0712176][Sprint Backlog]]: Either archives of stories we have worked on or the stories we
+  are currently working on.
 
 | Previous: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] |

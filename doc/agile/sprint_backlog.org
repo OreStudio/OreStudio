@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID: 57A7FABC-21FE-5124-45EB-9685D0712176
+:END:
+#+options: date:nil toc:nil author:nil num:nil
+#+title: Sprint Backlog
+
+All work undertaken is captured into stories, and these are grouped into
+sprints. A sprint is made up of around eighty hours of work, at which point we
+/close/ it and make a new [[https://github.com/OreStudio/OreStudio/releases][release]]. Each sprint is organised around a /sprint
+mission/, which is made up of one or two themes. The sprint we are currently
+working on is called the /active sprint/. All other non-active sprints are
+read-only archives of past activity.
+
+We group sprints by /version/. Each version has a /version mission/. The version
+mission is the overall objective for that particular group of sprints. We
+/close/ a version when that objective has been achieved. The version we are
+currently working on is called the /active version/. The version is encoded into
+CMake as the /major version/ (i.e. [[https://cmake.org/cmake/help/latest/variable/CMAKE_PROJECT_VERSION_MAJOR.html][CMAKE_PROJECT_VERSION_MAJOR]]) and the sprint
+as the /minor version/ (i.e. [[https://cmake.org/cmake/help/latest/variable/CMAKE_MINOR_VERSION.html#variable:CMAKE_MINOR_VERSION][CMAKE_MINOR_VERSION]]). For example, the following
+[[https://cmake.org/cmake/help/latest/variable/CMAKE_VERSION.html][CMAKE_VERSION]] 0.1.0 is /version 0/ for /sprint 1/.
+
+* List of Versions
+
+What follows is the list of all versions that have been worked on. The last
+entry is the active version.
+
+| Version      | Mission                                                     |
+|--------------+-------------------------------------------------------------|
+| [[id:154212FF-BB02-8D84-1E33-9338B458380A][Version Zero]] | create the data layer; add GUI support for data operations. |
+
+| Previous: [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]] |

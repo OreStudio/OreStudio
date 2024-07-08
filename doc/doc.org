@@ -16,4 +16,4 @@ product website.
 - [[id:CE1D1ADC-E267-8AD4-7033-3A0FEA7F89EC][Domain]]: assorted documents covering domain related topics.
 - [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]]: Notebooks on how to use ORE Studio.
 
-| Top: [[id:CB42DFE5-804B-E1C4-E1E3-0A6C4766609C][Ore Studio]] |
+| Previous: [[id:CB42DFE5-804B-E1C4-E1E3-0A6C4766609C][Ore Studio]] |

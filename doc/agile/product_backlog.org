@@ -4,7 +4,7 @@
 #+options: date:nil toc:nil author:nil num:nil
 #+title: Product Backlog
 #+tags: { reviewing(r) }
-#+tags: { story(s) epic(e) }
+#+tags: { code(c) infra(i) doc(d) agile(a) }
 
 This document contains the [[http://www.mountaingoatsoftware.com/agile/scrum/product-backlog][product backlog]] for VisualOre.
 
@@ -16,9 +16,21 @@ product backlog.
 
 ** Vision Statement
 
-The vision for VisualOre is:
+The vision for ORE Studio is to build on top of [[https://github.com/OpenSourceRisk/Engine][ORE]] with the aim of providing:
+
+- a persistent database storage for all of its inputs and outputs;
+- a graphical user interface both for data generation as well as data exploration;
+- the ability to configure and orchestrate ORE execution.
 
 ** Vision Quotes
+
+#+begin_quote
+People think focus means saying yes to the thing you've got to focus on. But
+that's not what it means at all. It means saying no to the hundred other good
+ideas that there are. You have to pick carefully. I'm actually as proud of the
+things we haven't done as the things I have done. Innovation is saying no to
+1,000 things. -- Steve Jobs
+#+end_quote
 
 * Release Checklist
 
@@ -28,8 +40,7 @@ Steps to create a new release.
 
 To be done on the last Sunday of the sprint.
 
-1. Make a copy of current sprint backlog and name it current sprint + 1 but
-   don't check it in.
+1. Make a copy of current sprint backlog and name it current sprint + 1.
 2. Move all untouched stories into product backlog.
 3. Close current sprint: close all open tasks, delete tasks we did not work on,
    update clocks.
@@ -40,15 +51,12 @@ To be done on the last Sunday of the sprint.
 
 ** Open new sprint
 
-To be done on the Monday morning of the new sprint.
-
-1. Open new sprint, updating CMake version, README, GitHub, and decoration
-   formatter tests. Build all and run tests (some will fail). This should all be
-   in one commit.
+1. Open new sprint, updating CMake version, README, GitHub. Build all and run
+   tests (some will fail). This should all be in one commit.
 2. Create a demo. Publish it on youtube.
 3. Write up release notes, publish them in github.
 4. When tag build is finished, unpack and copy binaries into release, announce
-   on gitter, twitter and linked in.
+   twitter and linked in.
 
 * Stories
 
@@ -168,3 +176,5 @@ Example:
 | XE           | Xenoria      | XEX           |           10047 | Xenorian Xen       |
 | YS           | Yslandia     | YSY           |           10048 | Yslandian Yen      |
 | ZE           | Zephyria     | ZEZ           |           10049 | Zephyrian Zephyr   |
+
+| Previous: [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]] |

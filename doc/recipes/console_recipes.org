@@ -114,6 +114,7 @@ IMPORTANT: build details are NOT for security purposes.
 2024-07-08 00:09:19.193633 [INFO] [ores.console.application] Finished application.
 #+end_src
 
+| Previous: [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] |
 
 # Local Variables:
 # eval: (whitespace-mode -1)

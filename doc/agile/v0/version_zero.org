@@ -1,0 +1,22 @@
+:PROPERTIES:
+:ID: 154212FF-BB02-8D84-1E33-9338B458380A
+:ROAM_ALIASES: V0
+:END:
+#+options: date:nil toc:nil author:nil num:nil
+#+title: Version Zero
+
+* Version Mission
+
+- create the data layer.
+- add GUI support for data operations.
+
+* List of Sprints
+
+This version is made up of the following sprints. The last entry is the active
+sprint.
+
+| Sprint            | Mission                                                               |
+|-------------------+-----------------------------------------------------------------------|
+| [[id:34EDDBB5-CB52-35C4-E123-E0A70FB32799][Sprint Backlog 01]] | Create basic project infrastructure; handle currencies front to back. |
+
+| Previous: [[id:57A7FABC-21FE-5124-45EB-9685D0712176][Sprint Backlog]] |

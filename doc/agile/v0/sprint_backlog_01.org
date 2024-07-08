@@ -2,7 +2,7 @@
 :ID: 34EDDBB5-CB52-35C4-E123-E0A70FB32799
 :END:
 #+title: Sprint Backlog 01
-#+options: title:nil <:nil c:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED
 #+tags: { code(c) infra(i) doc(d) agile(a) }
 #+startup: inlineimages
@@ -18,15 +18,15 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2024-07-08 Mon 08:59]
+#+CAPTION: Clock summary at [2024-07-08 Mon 22:56]
 |       | <75>                                              |         |       |      |       |
 | Tags  | Headline                                          | Time    |       |      |     % |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                      | *51:22* |       |      | 100.0 |
+|       | *Total time*                                      | *51:47* |       |      | 100.0 |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                           | 51:22   |       |      | 100.0 |
-|       | Active                                            |         | 51:22 |      | 100.0 |
-| agile | Sprint and product backlog refinement             |         |       | 2:08 |   4.2 |
+|       | Stories                                           | 51:47   |       |      | 100.0 |
+|       | Active                                            |         | 51:47 |      | 100.0 |
+| agile | Sprint and product backlog refinement             |         |       | 2:33 |   4.9 |
 | infra | Create a basic git hub repository                 |         |       | 0:35 |   1.1 |
 | infra | Setup a discord channel for the project           |         |       | 0:14 |   0.5 |
 | infra | Setup vcpkg and cmake                             |         |       | 1:21 |   2.6 |
@@ -39,21 +39,21 @@
 | code  | Add modeling infrastructure                       |         |       | 1:30 |   2.9 |
 | infra | Fix code syntax highlighting in site              |         |       | 0:10 |   0.3 |
 | doc   | Merge index with readme                           |         |       | 0:42 |   1.4 |
-| doc   | Add project objective to readme                   |         |       | 2:24 |   4.7 |
+| doc   | Add project objective to readme                   |         |       | 2:24 |   4.6 |
 | code  | Add basic logging support                         |         |       | 1:14 |   2.4 |
 | infra | Add nightly support with memcheck                 |         |       | 3:21 |   6.5 |
-| code  | Clean up toolchains and presets                   |         |       | 1:53 |   3.7 |
-| doc   | Generate Doxygen documentation and add it to site |         |       | 0:51 |   1.7 |
-| doc   | Copy domain notes on core concepts                |         |       | 4:41 |   9.1 |
+| code  | Clean up toolchains and presets                   |         |       | 1:53 |   3.6 |
+| doc   | Generate Doxygen documentation and add it to site |         |       | 0:51 |   1.6 |
+| doc   | Copy domain notes on core concepts                |         |       | 4:41 |   9.0 |
 | infra | Valgrind fails to run unit tests                  |         |       | 1:12 |   2.3 |
 | infra | Initial sanity test generated packages            |         |       | 0:25 |   0.8 |
-| code  | Add command line options support                  |         |       | 5:45 |  11.2 |
+| code  | Add command line options support                  |         |       | 5:45 |  11.1 |
 | infra | Unit tests show up twice in nightlies             |         |       | 0:13 |   0.4 |
-| doc   | Add recipes for command line                      |         |       | 0:51 |   1.7 |
+| doc   | Add recipes for command line                      |         |       | 0:51 |   1.6 |
 | agile | Use a bar chart for sprint resourcing cost        |         |       | 2:57 |   5.7 |
 | agile | Classify stories by type                          |         |       | 0:34 |   1.1 |
 | code  | Update C++ standard                               |         |       | 0:29 |   0.9 |
-| code  | Add XML parsing support for currency              |         |       | 4:31 |   8.8 |
+| code  | Add XML parsing support for currency              |         |       | 4:31 |   8.7 |
 | code  | Create a containing structure for data            |         |       | 0:28 |   0.9 |
 | code  | Add basic widgets to display currencies           |         |       | 0:26 |   0.8 |
 | doc   | Convert plantuml diagrams to org-babel            |         |       | 1:05 |   2.1 |
@@ -61,6 +61,7 @@
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2024-07-08 Mon 22:30]--[2024-07-08 Mon 22:55] =>  0:25
     CLOCK: [2024-07-08 Mon 08:30]--[2024-07-08 Mon 08:59] =>  0:29
     CLOCK: [2024-07-08 Mon 08:10]--[2024-07-08 Mon 08:20] =>  0:10
     CLOCK: [2024-07-07 Sun 17:54]--[2024-07-07 Sun 18:05] =>  0:11
@@ -465,7 +466,7 @@ Notes:
 Result:
 
 - [[https://github.com/OreStudio/OreStudio/tree/2a7b9fa8c021f08252b0951f193cec8dbd52ddff/doc/domain][Domain folder in github]].
-- [[https://orestudio.github.io/OreStudio/doc/domain/domain.html][Domain folder in github]].
+- [[https://orestudio.github.io/OreStudio/doc/domain/domain.html][Domain page on website]].
 
 *** COMPLETED Valgrind fails to run unit tests                        :infra:
     :LOGBOOK:
@@ -511,6 +512,7 @@ Updating to Ubunbtu 22.04 and valgrind 3.22 resolved the issue.
 Result:
 
 - [[https://my.cdash.org/index.php?project=OreStudio][Nightly build]] is now green.
+- [[https://github.com/OreStudio/OreStudio/commit/f5e5ba3d8c298077aaf35fbfc720fa2ccaf3f0b9][commit]].
 
 *** COMPLETED Initial sanity test generated packages                  :infra:
     :LOGBOOK:
@@ -948,4 +950,4 @@ These are:
 - =swaption_npv.csv=
 - =xva.csv=
 
-| Previous: [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]] |
+| Previous: [[id:154212FF-BB02-8D84-1E33-9338B458380A][Version Zero]] |

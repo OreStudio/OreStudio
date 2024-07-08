@@ -10,10 +10,13 @@ Task and time tracking activities. If you want a bit of background on how we use
 Agile and, more generally, on our ideas around software engineering, the
 following essays may be of interest (in no particular order).
 
-- [[https://mcraveiro.github.io/nerd_food/on_product_backlog.html][On Product Backlog]]
-- [[https://mcraveiro.github.io/nerd_food/pull_request_driven_development.html][Pull Request Driven Development]]
-- [[https://mcraveiro.github.io/nerd_food/on_maintenance.html][On Maintenance]]
-- [[https://mcraveiro.github.io/nerd_food/on_evolutionary_methodology.html][On Evolutionary Methodology]]
+| Post                            | Description                                                           |
+|---------------------------------+-----------------------------------------------------------------------|
+| [[https://mcraveiro.github.io/nerd_food/on_product_backlog.html][On Product Backlog]]              | How stories flow in our sprints, from capture to implementation.      |
+| [[https://mcraveiro.github.io/nerd_food/pull_request_driven_development.html][Pull Request Driven Development]] | The importance of pull requests in the development process.           |
+| [[https://mcraveiro.github.io/nerd_food/on_maintenance.html][On Maintenance]]                  | The code-base as a repository of knowledge in a given problem domain. |
+| [[https://mcraveiro.github.io/nerd_food/on_evolutionary_methodology.html][On Evolutionary Methodology]]     | Lessons from the Linux kernel.                                        |
+
 
 * Product Backlog
 
@@ -28,8 +31,8 @@ organised around one or two themes which we call the /Sprint Goals/. The last
 sprint in the list is the active sprint - /i.e./ the sprint we are currently
 working on. All other sprints are archives of past activity.
 
-| Sprint            | Goals                                                                 |
+| Sprint            | Mission                                                               |
 |-------------------+-----------------------------------------------------------------------|
-| [[id:34EDDBB5-CB52-35C4-E123-E0A70FB32799][Sprint Backlog 01]] | Create basic project infrastructure. Handle currencies front to back. |
+| [[id:34EDDBB5-CB52-35C4-E123-E0A70FB32799][Sprint Backlog 01]] | Create basic project infrastructure; handle currencies front to back. |
 
 | Previous: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] |

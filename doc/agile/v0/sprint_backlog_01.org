@@ -2,12 +2,12 @@
 :ID: 34EDDBB5-CB52-35C4-E123-E0A70FB32799
 :END:
 #+title: Sprint Backlog 01
-#+options: title:nil <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: title:nil <:nil c:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED
 #+tags: { code(c) infra(i) doc(d) agile(a) }
 #+startup: inlineimages
 
-* Sprint Goals
+* Sprint Mission
 
 - Create basic project infrastructure.
 - Handle currencies front to back.
@@ -18,49 +18,51 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2024-07-08 Mon 00:10]
+#+CAPTION: Clock summary at [2024-07-08 Mon 08:59]
 |       | <75>                                              |         |       |      |       |
 | Tags  | Headline                                          | Time    |       |      |     % |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                      | *50:43* |       |      | 100.0 |
+|       | *Total time*                                      | *51:22* |       |      | 100.0 |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                           | 50:43   |       |      | 100.0 |
-|       | Active                                            |         | 50:43 |      | 100.0 |
-| agile | Sprint and product backlog refinement             |         |       | 1:29 |   2.9 |
-| infra | Create a basic git hub repository                 |         |       | 0:35 |   1.2 |
+|       | Stories                                           | 51:22   |       |      | 100.0 |
+|       | Active                                            |         | 51:22 |      | 100.0 |
+| agile | Sprint and product backlog refinement             |         |       | 2:08 |   4.2 |
+| infra | Create a basic git hub repository                 |         |       | 0:35 |   1.1 |
 | infra | Setup a discord channel for the project           |         |       | 0:14 |   0.5 |
-| infra | Setup vcpkg and cmake                             |         |       | 1:21 |   2.7 |
-| infra | Setup github actions                              |         |       | 1:21 |   2.7 |
-| infra | Create and upload a package                       |         |       | 3:28 |   6.8 |
-| code  | Create a basic project structure                  |         |       | 2:10 |   4.3 |
-| code  | Add a Qt hello world                              |         |       | 3:08 |   6.2 |
+| infra | Setup vcpkg and cmake                             |         |       | 1:21 |   2.6 |
+| infra | Setup github actions                              |         |       | 1:21 |   2.6 |
+| infra | Create and upload a package                       |         |       | 3:28 |   6.7 |
+| code  | Create a basic project structure                  |         |       | 2:10 |   4.2 |
+| code  | Add a Qt hello world                              |         |       | 3:08 |   6.1 |
 | code  | Add a splash screen to applciation                |         |       | 0:41 |   1.3 |
 | infra | Add basic site                                    |         |       | 0:34 |   1.1 |
-| code  | Add modeling infrastructure                       |         |       | 1:30 |   3.0 |
+| code  | Add modeling infrastructure                       |         |       | 1:30 |   2.9 |
 | infra | Fix code syntax highlighting in site              |         |       | 0:10 |   0.3 |
 | doc   | Merge index with readme                           |         |       | 0:42 |   1.4 |
 | doc   | Add project objective to readme                   |         |       | 2:24 |   4.7 |
 | code  | Add basic logging support                         |         |       | 1:14 |   2.4 |
-| infra | Add nightly support with memcheck                 |         |       | 3:21 |   6.6 |
+| infra | Add nightly support with memcheck                 |         |       | 3:21 |   6.5 |
 | code  | Clean up toolchains and presets                   |         |       | 1:53 |   3.7 |
 | doc   | Generate Doxygen documentation and add it to site |         |       | 0:51 |   1.7 |
-| doc   | Copy domain notes on core concepts                |         |       | 4:41 |   9.2 |
-| infra | Valgrind fails to run unit tests                  |         |       | 1:12 |   2.4 |
+| doc   | Copy domain notes on core concepts                |         |       | 4:41 |   9.1 |
+| infra | Valgrind fails to run unit tests                  |         |       | 1:12 |   2.3 |
 | infra | Initial sanity test generated packages            |         |       | 0:25 |   0.8 |
-| code  | Add command line options support                  |         |       | 5:45 |  11.3 |
+| code  | Add command line options support                  |         |       | 5:45 |  11.2 |
 | infra | Unit tests show up twice in nightlies             |         |       | 0:13 |   0.4 |
 | doc   | Add recipes for command line                      |         |       | 0:51 |   1.7 |
-| agile | Use a bar chart for sprint resourcing cost        |         |       | 2:57 |   5.8 |
+| agile | Use a bar chart for sprint resourcing cost        |         |       | 2:57 |   5.7 |
 | agile | Classify stories by type                          |         |       | 0:34 |   1.1 |
-| code  | Update C++ standard                               |         |       | 0:29 |   1.0 |
-| code  | Add XML parsing support for currency              |         |       | 4:31 |   8.9 |
+| code  | Update C++ standard                               |         |       | 0:29 |   0.9 |
+| code  | Add XML parsing support for currency              |         |       | 4:31 |   8.8 |
 | code  | Create a containing structure for data            |         |       | 0:28 |   0.9 |
-| code  | Add basic widgets to display currencies           |         |       | 0:26 |   0.9 |
+| code  | Add basic widgets to display currencies           |         |       | 0:26 |   0.8 |
 | doc   | Convert plantuml diagrams to org-babel            |         |       | 1:05 |   2.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2024-07-08 Mon 08:30]--[2024-07-08 Mon 08:59] =>  0:29
+    CLOCK: [2024-07-08 Mon 08:10]--[2024-07-08 Mon 08:20] =>  0:10
     CLOCK: [2024-07-07 Sun 17:54]--[2024-07-07 Sun 18:05] =>  0:11
     CLOCK: [2024-07-05 Fri 23:13]--[2024-07-05 Fri 23:26] =>  0:13
     CLOCK: [2024-07-02 Tue 07:40]--[2024-07-02 Tue 07:50] =>  0:10
@@ -162,12 +164,20 @@ print(p)
 - add a new organisation and repo.
 - add a simple project with vcpkg support.
 
+Result:
+
+- Git repository: [[https://github.com/OreStudio/OreStudio/]]
+
 *** COMPLETED Setup a discord channel for the project                 :infra:
     :LOGBOOK:
     CLOCK: [2024-06-22 Sat 14:28]--[2024-06-22 Sat 14:42] =>  0:14
     :END:
 
 Created VisualOre and setup emacs to connect to it.
+
+Result:
+
+- Discord channel: https://discord.gg/gcrYsjW3pd
 
 Links:
 
@@ -184,6 +194,10 @@ Links:
 
 Setup a basic build with vcpkg.
 
+Result:
+
+- vcpkg in git repository: [[https://github.com/OreStudio/OreStudio/]]
+
 *** COMPLETED Setup github actions                                    :infra:
     :LOGBOOK:
     CLOCK: [2024-06-22 Sat 18:50]--[2024-06-22 Sat 19:27] =>  0:37
@@ -193,6 +207,11 @@ Setup a basic build with vcpkg.
 
 Get a basic green build in github, showing up in CDash.
 
+Result:
+
+- Workflow definitions: https://github.com/OreStudio/OreStudio/tree/main/.github/workflows
+- Pipelines: https://github.com/OreStudio/OreStudio/actions
+
 *** COMPLETED Create and upload a package                             :infra:
     :LOGBOOK:
     CLOCK: [2024-06-22 Sat 22:45]--[2024-06-22 Sat 23:09] =>  0:24
@@ -201,6 +220,11 @@ Get a basic green build in github, showing up in CDash.
     :END:
 
 We should create a basic package, and upload it to github.
+
+Result:
+
+- Packages available in action:
+  https://github.com/OreStudio/OreStudio/actions/runs/9830998231
 
 *** COMPLETED Create a basic project structure                         :code:
     :LOGBOOK:
@@ -213,6 +237,10 @@ side-project, mainly for learning about ORE, it is going to be very simple: one
 or more fat clients connecting to a postgres database. We don't mind having
 business logic in the database; the most important thing is for it to be really
 quick to add new features with the least amount of layers and duplication.
+
+Result:
+
+- Structure in github: https://github.com/OreStudio/OreStudio/
 
 *** COMPLETED Add a Qt hello world                                     :code:
     :LOGBOOK:
@@ -227,12 +255,18 @@ quick to add new features with the least amount of layers and duplication.
 
 Create a trivial application in Qt that exercises the pipelines.
 
+Result:
+
+- Qt project: https://github.com/OreStudio/OreStudio/tree/main/projects/ores.qt
+
 *** COMPLETED Add a splash screen to applciation                       :code:
     :LOGBOOK:
     CLOCK: [2024-06-23 Sun 16:09]--[2024-06-23 Sun 16:50] =>  0:41
     :END:
 
 It would be nice to have a simple splash screen with the project logo.
+
+Example:
 
 #+begin_src c++
 #include "mainwindow.h"
@@ -259,6 +293,12 @@ int main(int argc, char *argv[])
 }
 #+end_src
 
+Source: [[https://www.youtube.com/watch?v=1i0k3rjXu9E][QT C++ GUI Tutorial - How to display a Splash Screen in Qt]]
+
+Result:
+
+- Code: [[https://github.com/OreStudio/OreStudio/blob/1594a8e5726b055fbf1793380ba773f8b7c75017/projects/ores.qt/main.cpp][QT main.cpp]]
+
 *** COMPLETED Add basic site                                          :infra:
     :LOGBOOK:
     CLOCK: [2024-06-28 Fri 22:50]--[2024-06-28 Fri 23:13] =>  0:23
@@ -266,6 +306,10 @@ int main(int argc, char *argv[])
     :END:
 
 We need a basic website for the project.
+
+Result:
+
+- site: https://orestudio.github.io/OreStudio/
 
 *** COMPLETED Add modeling infrastructure                              :code:
    :LOGBOOK:
@@ -276,10 +320,18 @@ We need a basic website for the project.
 We need to be able to draw some simple PlantUML diagrams to describe the code as
 we go along. They should be linked to the documentation.
 
+Result:
+
+- [[https://github.com/OreStudio/OreStudio/tree/2a7b9fa8c021f08252b0951f193cec8dbd52ddff/doc/modeling][Modeling folder]]
+
 *** COMPLETED Exclude vcpkg directories from coverage                 :infra:
 
 At present coverage is very low because its picking up some files from vcpkg
 install. We need to ignore those.
+
+Result:
+
+- [[https://github.com/OreStudio/OreStudio/blob/2a7b9fa8c021f08252b0951f193cec8dbd52ddff/CTestCustom.cmake][CTestCustom.cmake]]
 
 *** COMPLETED Fix code syntax highlighting in site                    :infra:
     :LOGBOOK:
@@ -287,6 +339,10 @@ install. We need to ignore those.
     :END:
 
 For some reason we are not getting syntax highlighting in the website.
+
+Result:
+
+- The issue was with the markers on source code blocks.
 
 *** COMPLETED Merge index with readme                                   :doc:
     :LOGBOOK:
@@ -296,6 +352,10 @@ For some reason we are not getting syntax highlighting in the website.
 
 Its a bit annoying to have both a =readme= and an =index= file, since they are
 both just landing pages. Look into merging them.
+
+Result:
+
+- [[https://github.com/OreStudio/OreStudio/blob/2a7b9fa8c021f08252b0951f193cec8dbd52ddff/readme.org][readme.org]]
 
 *** COMPLETED Add project objective to readme                           :doc:
     :LOGBOOK:
@@ -307,6 +367,10 @@ both just landing pages. Look into merging them.
 
 Explain the objective of the project and the approach.
 
+Result:
+
+- [[https://github.com/OreStudio/OreStudio/blob/2a7b9fa8c021f08252b0951f193cec8dbd52ddff/readme.org][readme.org]]: section "Project Overview".
+
 *** COMPLETED Add basic logging support                                :code:
    :LOGBOOK:
    CLOCK: [2024-06-28 Fri 22:02]--[2024-06-28 Fri 22:32] =>  0:30
@@ -314,6 +378,10 @@ Explain the objective of the project and the approach.
    :END:
 
 Copy across from dogen basic logging.
+
+Result:
+
+- [[https://github.com/OreStudio/OreStudio/tree/2a7b9fa8c021f08252b0951f193cec8dbd52ddff/projects/ores.utility/log][log folder]]
 
 *** COMPLETED Add nightly support with memcheck                       :infra:
     :LOGBOOK:
@@ -338,6 +406,11 @@ Notes:
 - error with valgrind appears to be related to DWARF version: [[https://github.com/llvm/llvm-project/issues/56550][#56550: Clang
   Generates DWARF Info That Valgrind Can't Read]]. Change it to v4.
 
+Result:
+
+- [[https://github.com/OreStudio/OreStudio/blob/2a7b9fa8c021f08252b0951f193cec8dbd52ddff/.github/workflows/nightly-linux.yml][Nightly workflow]].
+- [[https://my.cdash.org/index.php?project=OreStudio][Nightly in CDash]].
+
 *** COMPLETED Clean up toolchains and presets                          :code:
     :LOGBOOK:
     CLOCK: [2024-07-01 Mon 07:46]--[2024-07-01 Mon 08:17] =>  0:31
@@ -350,6 +423,10 @@ We are using CMake in a legacy way when defining warnings, etc. We need to move
 towards the modern approach, by defining toolchain files and using presets
 correctly.
 
+Result:
+
+- [[https://github.com/OreStudio/OreStudio/blob/2a7b9fa8c021f08252b0951f193cec8dbd52ddff/CMakePresets.json][presets file]], with workflow.
+
 *** COMPLETED Generate Doxygen documentation and add it to site         :doc:
     :LOGBOOK:
     CLOCK: [2024-07-05 Fri 22:30]--[2024-07-05 Fri 22:48] =>  0:18
@@ -357,6 +434,11 @@ correctly.
     CLOCK: [2024-07-05 Fri 19:41]--[2024-07-05 Fri 20:00] =>  0:19
     :END:
 
+We need to create the project documentation in Doxygen.
+
+Result:
+
+- [[https://orestudio.github.io/OreStudio/doxygen/html/index.html][Doxygen documentation]].
 
 *** COMPLETED Copy domain notes on core concepts                        :doc:
     :LOGBOOK:
@@ -379,6 +461,11 @@ Notes:
 
 - Fix issues with publishing by ignoring emacs package directories and vcpkg.
 - add basic support for bibliography as per progen setup (manual bib file).
+
+Result:
+
+- [[https://github.com/OreStudio/OreStudio/tree/2a7b9fa8c021f08252b0951f193cec8dbd52ddff/doc/domain][Domain folder in github]].
+- [[https://orestudio.github.io/OreStudio/doc/domain/domain.html][Domain folder in github]].
 
 *** COMPLETED Valgrind fails to run unit tests                        :infra:
     :LOGBOOK:
@@ -421,6 +508,10 @@ valgrind 3.22.
 
 Updating to Ubunbtu 22.04 and valgrind 3.22 resolved the issue.
 
+Result:
+
+- [[https://my.cdash.org/index.php?project=OreStudio][Nightly build]] is now green.
+
 *** COMPLETED Initial sanity test generated packages                  :infra:
     :LOGBOOK:
     CLOCK: [2024-07-06 Sat 08:21]--[2024-07-06 Sat 08:46] =>  0:25
@@ -428,6 +519,8 @@ Updating to Ubunbtu 22.04 and valgrind 3.22 resolved the issue.
 
 We need to do a simple check of the packages just to make sure they install and
 run.
+
+*Result*
 
 Linux package looks correct:
 
@@ -539,7 +632,38 @@ Notes:
 
 - missing version support. Need template, etc. Try to use existing CMake
   variables to setup the version.
-*** BLOCKED Unit tests show up twice in nightlies                     :infra:
+
+Result:
+
+#+begin_src text
+$ ./ores.console --help
+ORE Studio is a User Interface for Open Source Risk Engine (ORE).
+Console provides a CLI based version of the interface.
+ORE Studio is created by the ORE Studio project.
+ores.console uses a command-based interface: <command> <options>.
+See below for a list of valid commands.
+
+Global options:
+
+General:
+  -h [ --help ]           Display usage and exit.
+  -v [ --version ]        Output version information and exit.
+
+Logging:
+  -e [ --log-enabled ]    Generate a log file.
+  -l [ --log-level ] arg  What level to use for logging. Valid values: trace,
+                          debug, info, warn, error. Defaults to info.
+  --log-to-console        Output logging to the console, as well as to file.
+  --log-directory arg     Where to place the log files.
+
+Commands:
+
+   import         Imports data into the system.
+
+For command specific options, type <command> --help.
+#+end_src
+
+*** COMPLETED Unit tests show up twice in nightlies                   :infra:
     :LOGBOOK:
     CLOCK: [2024-07-07 Sun 08:36]--[2024-07-07 Sun 08:45] =>  0:09
     CLOCK: [2024-07-06 Sat 07:44]--[2024-07-06 Sat 07:48] =>  0:04
@@ -555,6 +679,10 @@ This is now happening for GCC as well. This is as expected:
 
 We need to run the tests just once to avoid this issue.
 
+Result:
+
+- [[https://my.cdash.org/index.php?project=OreStudio][Nightly build]] has tests only once.
+
 *** COMPLETED Add recipes for command line                              :doc:
     :LOGBOOK:
     CLOCK: [2024-07-07 Sun 09:16]--[2024-07-07 Sun 10:07] =>  0:51
@@ -562,6 +690,11 @@ We need to run the tests just once to avoid this issue.
 
 Using org-babel, create a simple recipe file that exercises all options for the
 command line tool.
+
+Result:
+
+- [[https://github.com/OreStudio/OreStudio/tree/2a7b9fa8c021f08252b0951f193cec8dbd52ddff/doc/recipes][recipes in git]].
+- [[https://orestudio.github.io/OreStudio/doc/recipes/console_recipes.html#ID-60086B77-B674-0B34-10AB-BF8AF3F8D75E][console recipes in site]].
 
 *** COMPLETED Use a bar chart for sprint resourcing cost              :agile:
     :LOGBOOK:
@@ -587,6 +720,10 @@ Links:
 
 - [[https://r-graph-gallery.com/web-horizontal-barplot-with-labels-the-economist.html][Horizontal barplot with R and ggplot2]]
 
+Result:
+
+- [[https://github.com/OreStudio/OreStudio/blob/c1c6780ff3027e30229f28a0c863d97d457bfb49/doc/agile/v0/sprint_backlog_01.org][Bar chart added to sprint backlog.]]
+
 *** COMPLETED Classify stories by type                                :agile:
     :LOGBOOK:
     CLOCK: [2024-07-07 Sun 18:16]--[2024-07-07 Sun 18:41] =>  0:25
@@ -608,6 +745,10 @@ Seems like this is not easy to do within org itself:
 
 But we could perhaps do it within R.
 
+Result:
+
+- [[https://github.com/OreStudio/OreStudio/blob/c1c6780ff3027e30229f28a0c863d97d457bfb49/doc/agile/v0/sprint_backlog_01.org][Bar chart added to sprint backlog.]]
+
 *** COMPLETED Update C++ standard                                      :code:
     :LOGBOOK:
     CLOCK: [2024-07-07 Sun 22:45]--[2024-07-07 Sun 23:00] =>  0:15
@@ -618,6 +759,10 @@ But we could perhaps do it within R.
 We are using C++ 17 at present. Change it to 20 or even 23 and see what breaks.
 
 Seems like 20 is the highest we can go for now.
+
+Result:
+
+- [[https://github.com/OreStudio/OreStudio/blob/c1c6780ff3027e30229f28a0c863d97d457bfb49/CMakePresets.json#L18][presets updated to C++ 20]].
 
 *** STARTED Add XML parsing support for currency                       :code:
     :LOGBOOK:
@@ -698,6 +843,21 @@ We need some kind of tree view and list view.
 
 It may be easier to integrate diagrams with roam if they are org-mode documents.
 Experiment with babel for this.
+
+*** Recipes do not show variables in org-babel                        :infra:
+
+At present when we look at a recipe in the site, we cannot tell what the
+environment variables are:
+
+#+begin_src sh
+./ores.console import ${log_args} --currency-configuration ${currency_config_dir}/currencies.xml
+#+END_SRC
+
+It would be nice if =log_args= etc showed up in the recipe.
+
+Links:
+
+- [[https://kitchingroup.cheme.cmu.edu/blog/2019/02/12/Using-results-from-one-code-block-in-another-org-mode/][Using results from one code block in another org-mode]]
 
 *** Install Windows package on Windows machine                        :infra:
 

@@ -101,10 +101,12 @@ The JSON payload would describe the action:
     ....
 #+end_src
 
-A trivial lookup table could serialise the JSON, and execute the action. All
+A trivial lookup table could de-serialise the JSON and execute the action. All
 that is required is for the LLM to "learn" how to generate JSON compliant with
-the desired format, which should be quite straightforward. Agents probably
-provide most of this infrastructure already.
+the desired format, which should be quite straightforward (perhaps with the help
+of fine-tuning). Agents probably provide most of this infrastructure already.
+The key thing is to ensure all functionality in the core becomes UI agnostic
+such that one could bolt an NLP UI around it.
 
 *** Support multiple ORE "toolchains"                                  :code:
 

@@ -60,8 +60,9 @@
 | doc   | Convert plantuml diagrams to org-babel            |         |       | 1:05 |   2.0 |
 #+end:
 
-*** STARTED Sprint and product backlog refinement                     :agile:
+*** STARTED Sprint and product backlog refinement                    :agile:
     :LOGBOOK:
+    CLOCK: [2024-07-09 Tue 18:48]--[2024-07-09 Tue 18:52] =>  0:04
     CLOCK: [2024-07-09 Tue 08:38]--[2024-07-09 Tue 08:43] =>  0:05
     CLOCK: [2024-07-09 Tue 08:24]--[2024-07-09 Tue 08:35] =>  0:11
     CLOCK: [2024-07-08 Mon 22:30]--[2024-07-08 Mon 22:55] =>  0:25
@@ -784,9 +785,15 @@ Tasks:
 
 - install R.
 - get latest cunene with R support.
+- seems like the current libsystemd does not build. This is a bit weird because
+  we should be pinned to the same vcpkg commit. However, for some reason it
+  fails to build in the laptop. It seems there already is a fix in main, so we
+  can probably solve the issue by doing an update to vcpkg. We just need to
+  understand why it works everywhere else.
 
 *** STARTED Add XML parsing support for currency                       :code:
     :LOGBOOK:
+    CLOCK: [2024-07-09 Tue 18:53]--[2024-07-09 Tue 19:14] =>  0:21
     CLOCK: [2024-07-07 Sun 23:01]--[2024-07-08 Mon 00:10] =>  1:09
     CLOCK: [2024-07-07 Sun 21:44]--[2024-07-07 Sun 21:48] =>  0:04
     CLOCK: [2024-07-06 Sat 20:10]--[2024-07-06 Sat 20:23] =>  0:13

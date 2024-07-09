@@ -32,7 +32,8 @@ namespace ores::console {
 /**
  * @brief A fatal error has occurred during option parsing.
  */
-class parser_exception : public virtual std::exception, public virtual boost::exception {
+class parser_exception : public virtual std::exception,
+                         public virtual boost::exception {
 public:
     explicit parser_exception(std::string message)
         : message_(std::move(message)) { }

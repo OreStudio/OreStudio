@@ -30,19 +30,12 @@
 
 namespace {
 
-const std::string empty;
 const std::string indent("   ");
-const std::string run_identifier_prefix("console.");
-
 const std::string more_information("Try --help' for more information.");
 const std::string product_version("OreStudio v" ORES_VERSION);
 const std::string build_info(ORES_BUILD_INFO);
 const std::string usage_error_msg("Usage error: ");
-const std::string fatal_error_msg("Fatal Error: " );
 const std::string no_command_msg("No command supplied. ");
-const std::string code_generation_failure("Code generation failure.");
-const std::string log_file_msg("See the log file for details: ");
-const std::string errors_msg(" finished with errors.");
 
 const std::string importing_command_name("import");
 const std::string importing_command_desc("Imports data into the system.");
@@ -69,8 +62,10 @@ const std::string missing_import_target("Supply at least one import target.");
 
 using boost::program_options::value;
 using boost::program_options::variables_map;
+using boost::program_options::parsed_options;
 using boost::program_options::options_description;
 using boost::program_options::positional_options_description;
+
 using ores::console::configuration;
 using ores::console::parser_exception;
 using ores::utility::log::logging_configuration;
@@ -111,7 +106,7 @@ options_description make_top_level_hidden_options_description() {
     options_description r("Commands");
     r.add_options()
         ("command", value<std::string>(), "Command to execute. "
-            "Available commands: generate, convert, dumpspecs.")
+            "Available commands: import.")
         ("args", value<std::vector<std::string> >(),
             "Arguments for command");
     return r;
@@ -155,7 +150,8 @@ void validate_command_name(const std::string& command_name) {
  * @brief Prints the header of the help text, applicable to all cases.
  */
 void print_help_header(std::ostream& s) {
-    s << "ORE Studio is a User Interface for Open Source Risk Engine (ORE)." << std::endl
+    s << "ORE Studio is a User Interface for Open Source Risk Engine (ORE)."
+      << std::endl
       << "Console provides a CLI based version of the interface." << std::endl
       << "ORE Studio is created by the ORE Studio project. " << std::endl;
 }
@@ -166,8 +162,7 @@ void print_help_header(std::ostream& s) {
  * @param od top-level options.
  * @param info information stream.
  */
-void print_help(const boost::program_options::options_description& od,
-    std::ostream& info) {
+void print_help(const options_description& od, std::ostream& info) {
     print_help_header(info);
     info << "ores.console uses a command-based interface: <command> <options>. "
          << std::endl << "See below for a list of valid commands. " << std::endl
@@ -195,7 +190,7 @@ void print_help(const boost::program_options::options_description& od,
  * @param info information stream.
  */
 void print_help_command(const std::string& command_name,
-    const boost::program_options::options_description& od, std::ostream& info) {
+    const options_description& od, std::ostream& info) {
     print_help_header(info);
     info << "Displaying options specific to the '" << command_name << "' command. "
          << std::endl
@@ -325,8 +320,7 @@ read_importing_configuration(const variables_map& vm) {
  */
 std::optional<configuration>
 handle_command(const std::string& command_name, const bool has_help,
-    const boost::program_options::parsed_options& po, std::ostream& info,
-    variables_map& vm) {
+    const parsed_options& po, std::ostream& info, variables_map& vm) {
 
     /*
      * Collect all the unrecognized options from the first pass. It includes the

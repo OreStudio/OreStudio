@@ -60,7 +60,8 @@ importing_configuration::operator=(importing_configuration other)
 
 std::ostream& operator<<(std::ostream& s, const importing_configuration& v) {
     s << " { "
-      << "\"__type__\": " << "\"ores::console::configuration\"" << ", "
+      << "\"__type__\": "
+      << "\"ores::console::importing_configuration\"" << ", "
       << "\"currency_configurations\": " << v.currency_configurations()
       << " }";
     return(s);

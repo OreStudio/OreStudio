@@ -69,7 +69,44 @@ Stories we may get two in the next two or three sprints.
 
 Stories that we want to capture, but won't work on for a while.
 
-*** Support multiple ORE "toolchains"                                 :story:
+*** LLM Integration                                                    :code:
+
+LLMs can be useful when learning a new subject as they can provide additional
+context to the information displayed in the screen. For example, a user can ask
+the LLM to explain a graph or a table. It would probably be fairly straight
+forward to allow dumping some of the information in a format that is friendly to
+LLMs (.e.g./ PNG, Markdown, plain text) and then make an API call to a local or
+remote LLM. We could probably create a set of useful canned prompts (explain
+this report, explain this chart).
+
+On a more blue skies approach, one could conceive asking the LLM for suggestions
+on how to act, on the basis of the analysis. This could result in suggestions
+for action the user could implement, or even on actions directly taken based on
+the LLM's suggestions. This is conceptually straightforward: the LLM could for
+example generate a well defined JSON with the proposed action, and the system
+would look for some predefined markers in the LLM output:
+
+#+begin_src text
+----- ACTION START
+<JSON>
+----- ACTION END
+#+end_src
+
+The JSON payload would describe the action:
+
+#+begin_src json
+{
+    "action": "some_action_type",
+    "key1": "value1",
+    ....
+#+end_src
+
+A trivial lookup table could serialise the JSON, and execute the action. All
+that is required is for the LLM to "learn" how to generate JSON compliant with
+the desired format, which should be quite straightforward. Agents probably
+provide most of this infrastructure already.
+
+*** Support multiple ORE "toolchains"                                  :code:
 
 Much like with an IDE, where one can have multiple toolchains configured, we
 need to also support multiple versions of ORE. Unlike with IDEs, it may be
@@ -96,7 +133,7 @@ possibly different:
 
 
 
-*** Add faker support to model                                        :story:
+*** Add faker support to model                                         :code:
 
 vcpkg will support faker soon:
 
@@ -104,7 +141,7 @@ vcpkg will support faker soon:
 
 When that is available, we should try to add support for it.
 
-*** Base the compute approach on BOINC                                :story:
+*** Base the compute approach on BOINC                                 :code:
 
 Copy the BOINC data model.
 
@@ -116,7 +153,7 @@ Links:
 - [[https://www.reddit.com/r/BOINC/][BOINC reddit]]
 
 
-*** Create a set of fake currencies                                   :story:
+*** Create a set of fake currencies                                    :code:
 
 We need to create fake data so we can explore the problem domain. This is
 something to work on in the future. We can use LLMs to help with the fake data,

@@ -15,9 +15,9 @@ We group sprints by /version/. Each version has a /version mission/. The version
 mission is the overall objective for that particular group of sprints. We
 /close/ a version when that objective has been achieved. The version we are
 currently working on is called the /active version/. The version is encoded into
-CMake as the /major version/ (i.e. [[https://cmake.org/cmake/help/latest/variable/CMAKE_PROJECT_VERSION_MAJOR.html][CMAKE_PROJECT_VERSION_MAJOR]]) and the sprint
-as the /minor version/ (i.e. [[https://cmake.org/cmake/help/latest/variable/CMAKE_MINOR_VERSION.html#variable:CMAKE_MINOR_VERSION][CMAKE_MINOR_VERSION]]). For example, the following
-[[https://cmake.org/cmake/help/latest/variable/CMAKE_VERSION.html][CMAKE_VERSION]] 0.1.0 is /version 0/ for /sprint 1/.
+CMake as the /major version/ (/i.e./ [[https://cmake.org/cmake/help/latest/variable/CMAKE_PROJECT_VERSION_MAJOR.html][=CMAKE_PROJECT_VERSION_MAJOR=]] and the
+sprint as the /minor version/ (/i.e./ [[https://cmake.org/cmake/help/latest/variable/CMAKE_MINOR_VERSION.html#variable:CMAKE_MINOR_VERSION][=CMAKE_MINOR_VERSION=]]). For example, the
+following [[https://cmake.org/cmake/help/latest/variable/CMAKE_VERSION.html][=CMAKE_VERSION=]] 0.1.0 is /version 0/ for /sprint 1/.
 
 * List of Versions
 

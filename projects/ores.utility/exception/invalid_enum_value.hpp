@@ -41,8 +41,8 @@ namespace ores::utility::exception {
  * context.
  *
  */
-class invalid_enum_value
-    : public virtual std::exception, public virtual boost::exception {
+class invalid_enum_value : public virtual std::exception,
+                           public virtual boost::exception {
 public:
     explicit invalid_enum_value(std::string message)
         : message_(std::move(message)) { }

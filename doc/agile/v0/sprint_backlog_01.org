@@ -18,44 +18,44 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2024-07-09 Tue 08:43]
+#+CAPTION: Clock summary at [2024-07-10 Wed 08:11]
 |       | <75>                                              |         |       |      |       |
 | Tags  | Headline                                          | Time    |       |      |     % |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                      | *54:39* |       |      | 100.0 |
+|       | *Total time*                                      | *55:20* |       |      | 100.0 |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                           | 54:39   |       |      | 100.0 |
-|       | Active                                            |         | 54:39 |      | 100.0 |
-| agile | Sprint and product backlog refinement             |         |       | 2:49 |   5.2 |
+|       | Stories                                           | 55:20   |       |      | 100.0 |
+|       | Active                                            |         | 55:20 |      | 100.0 |
+| agile | Sprint and product backlog refinement             |         |       | 2:53 |   5.2 |
 | infra | Create a basic git hub repository                 |         |       | 0:35 |   1.1 |
 | infra | Setup a discord channel for the project           |         |       | 0:14 |   0.4 |
-| infra | Setup vcpkg and cmake                             |         |       | 1:21 |   2.5 |
-| infra | Setup github actions                              |         |       | 1:21 |   2.5 |
+| infra | Setup vcpkg and cmake                             |         |       | 1:21 |   2.4 |
+| infra | Setup github actions                              |         |       | 1:21 |   2.4 |
 | infra | Create and upload a package                       |         |       | 3:28 |   6.3 |
-| code  | Create a basic project structure                  |         |       | 2:10 |   4.0 |
+| code  | Create a basic project structure                  |         |       | 2:10 |   3.9 |
 | code  | Add a Qt hello world                              |         |       | 3:08 |   5.7 |
-| code  | Add a splash screen to applciation                |         |       | 0:41 |   1.3 |
+| code  | Add a splash screen to applciation                |         |       | 0:41 |   1.2 |
 | infra | Add basic site                                    |         |       | 0:34 |   1.0 |
 | code  | Add modeling infrastructure                       |         |       | 1:30 |   2.7 |
 | infra | Fix code syntax highlighting in site              |         |       | 0:10 |   0.3 |
 | doc   | Merge index with readme                           |         |       | 0:42 |   1.3 |
-| doc   | Add project objective to readme                   |         |       | 2:24 |   4.4 |
-| code  | Add basic logging support                         |         |       | 1:14 |   2.3 |
+| doc   | Add project objective to readme                   |         |       | 2:24 |   4.3 |
+| code  | Add basic logging support                         |         |       | 1:14 |   2.2 |
 | infra | Add nightly support with memcheck                 |         |       | 3:21 |   6.1 |
 | code  | Clean up toolchains and presets                   |         |       | 1:53 |   3.4 |
-| doc   | Generate Doxygen documentation and add it to site |         |       | 0:51 |   1.6 |
-| doc   | Copy domain notes on core concepts                |         |       | 4:41 |   8.6 |
+| doc   | Generate Doxygen documentation and add it to site |         |       | 0:51 |   1.5 |
+| doc   | Copy domain notes on core concepts                |         |       | 4:41 |   8.5 |
 | infra | Valgrind fails to run unit tests                  |         |       | 1:12 |   2.2 |
 | infra | Initial sanity test generated packages            |         |       | 0:25 |   0.8 |
-| code  | Add command line options support                  |         |       | 5:45 |  10.5 |
+| code  | Add command line options support                  |         |       | 5:45 |  10.4 |
 | infra | Unit tests show up twice in nightlies             |         |       | 0:13 |   0.4 |
-| doc   | Add recipes for command line                      |         |       | 0:51 |   1.6 |
-| agile | Use a bar chart for sprint resourcing cost        |         |       | 2:57 |   5.4 |
+| doc   | Add recipes for command line                      |         |       | 0:51 |   1.5 |
+| agile | Use a bar chart for sprint resourcing cost        |         |       | 2:57 |   5.3 |
 | agile | Classify stories by type                          |         |       | 0:34 |   1.0 |
 | code  | Update C++ standard                               |         |       | 0:29 |   0.9 |
-| infra | Setup laptop for development                      |         |       | 2:36 |   4.8 |
-| code  | Add XML parsing support for currency              |         |       | 4:31 |   8.3 |
-| code  | Create a containing structure for data            |         |       | 0:28 |   0.9 |
+| infra | Setup laptop for development                      |         |       | 2:52 |   5.2 |
+| code  | Add XML parsing support for currency              |         |       | 4:52 |   8.8 |
+| code  | Create a containing structure for data            |         |       | 0:28 |   0.8 |
 | code  | Add basic widgets to display currencies           |         |       | 0:26 |   0.8 |
 | doc   | Convert plantuml diagrams to org-babel            |         |       | 1:05 |   2.0 |
 #+end:
@@ -772,6 +772,7 @@ Result:
 
 *** STARTED Setup laptop for development                              :infra:
     :LOGBOOK:
+    CLOCK: [2024-07-10 Wed 07:55]--[2024-07-10 Wed 08:11] =>  0:16
     CLOCK: [2024-07-09 Tue 08:36]--[2024-07-09 Tue 08:38] =>  0:02
     CLOCK: [2024-07-09 Tue 08:20]--[2024-07-09 Tue 08:23] =>  0:03
     CLOCK: [2024-07-09 Tue 08:02]--[2024-07-09 Tue 08:19] =>  0:17
@@ -789,7 +790,15 @@ Tasks:
   we should be pinned to the same vcpkg commit. However, for some reason it
   fails to build in the laptop. It seems there already is a fix in main, so we
   can probably solve the issue by doing an update to vcpkg. We just need to
-  understand why it works everywhere else.
+  understand why it works everywhere else. The issue appears to be with a
+  filesystem:
+
+  - [[https://github.com/microsoft/vcpkg/issues/39365][#39365: [libsystemd] Build error on x64-linux]]
+
+  We just need to make sure we are running latest vcpkg as the fix has made it
+  in via this MR:
+
+  - [[https://github.com/microsoft/vcpkg/pull/39741][#39741: [libsystemd] Update to 256.2]]
 
 *** STARTED Add XML parsing support for currency                       :code:
     :LOGBOOK:
@@ -871,6 +880,11 @@ We need some kind of tree view and list view.
 
 It may be easier to integrate diagrams with roam if they are org-mode documents.
 Experiment with babel for this.
+
+*** Fix site links                                                      :doc:
+
+At present we renamed readme to index in the HTML export. Do a symlink or a copy
+of this file to fix links.
 
 *** Recipes do not show variables in org-babel                        :infra:
 

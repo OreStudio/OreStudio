@@ -65,6 +65,11 @@ public:
     std::string format() const { return format_; }
     void format(const std::string& format) { format_ = format; }
 
+    std::string currency_type() const { return currency_type_; }
+    void currency_type(const std::string& currency_type) {
+        currency_type_ = currency_type;
+    }
+
 private:
     std::string name_;
     std::string iso_code_;
@@ -75,6 +80,7 @@ private:
     std::string rounding_type_;
     int rounding_precision_;
     std::string format_;
+    std::string currency_type_;
 };
 
 std::ostream& operator<<(std::ostream& s, const currency& v);

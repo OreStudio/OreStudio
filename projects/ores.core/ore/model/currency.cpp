@@ -17,23 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <iomanip>
 #include <ostream>
 #include "ores.core/ore/model/currency.hpp"
 
 namespace ores::core::ore::model {
 
 std::ostream& operator<<(std::ostream& os, const currency& v) {
+    using std::quoted;
     os << " { "
-       << "\"__type__\": " << "\"ores::core::ore::model::currency\"" << ", "
-       << "\"name\": " << v.name() << ", "
-       << "\"iso_code\": " << v.iso_code() << ", "
-       << "\"numeric_code\": " << v.numeric_code() << ", "
-       << "\"symbol\": " << v.symbol() << ", "
-       << "\"fraction_symbol\": " << v.fraction_symbol() << ", "
-       << "\"fractions_per_unit\": " << v.fractions_per_unit() << ", "
-       << "\"rounding_type\": " << v.rounding_type() << ", "
-       << "\"rounding_precision\": " << v.rounding_precision() << ", "
-       << "\"format\": " << v.format() << ", "
+       << quoted("__type__") << ": " << quoted("ores::core::ore::model::currency") << ", "
+       << quoted("name") << ": " << quoted(v.name()) << ", "
+       << quoted("iso_code") << ": " << quoted(v.iso_code()) << ", "
+       << quoted("numeric_code") << ": " << v.numeric_code() << ", "
+       << quoted("symbol") << ": " << quoted(v.symbol()) << ", "
+       << quoted("fraction_symbol") << ": " << quoted(v.fraction_symbol()) << ", "
+       << quoted("fractions_per_unit") << ": " << v.fractions_per_unit() << ", "
+       << quoted("rounding_type") << ": " << quoted(v.rounding_type()) << ", "
+       << quoted("rounding_precision") << ": " << v.rounding_precision() << ", "
+       << quoted("format") << ": " << quoted(v.format())
        << " }";
     return os;
 }

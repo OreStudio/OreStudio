@@ -19,9 +19,6 @@
 #
 cmake_minimum_required(VERSION 3.29 FATAL_ERROR)
 
-# Read custom files
-ctest_read_custom_files(${CTEST_SOURCE_DIRECTORY})
-
 #
 # Handle input parameters to script. Define them as internal CMake
 # variables.
@@ -169,6 +166,9 @@ message(STATUS "Source directory: ${CTEST_SOURCE_DIRECTORY}")
 # nice but since it should not change often, it suffices.
 set(CTEST_BINARY_DIRECTORY "${CTEST_SOURCE_DIRECTORY}/build/output/${preset}")
 message(STATUS "Binary directory: ${CTEST_BINARY_DIRECTORY}")
+
+# Read custom files
+ctest_read_custom_files(${CTEST_SOURCE_DIRECTORY})
 
 # Determine the number of jobs to run in parallel.
 include(ProcessorCount)

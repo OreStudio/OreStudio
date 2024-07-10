@@ -108,6 +108,11 @@ of fine-tuning). Agents probably provide most of this infrastructure already.
 The key thing is to ensure all functionality in the core becomes UI agnostic
 such that one could bolt an NLP UI around it.
 
+Links:
+
+- [[https://llama.meta.com/docs/how-to-guides/prompting/][How-to guides: Prompting]]
+- [[https://mychen76.medium.com/practical-techniques-to-constraint-llm-output-in-json-format-e3e72396c670][Practical Techniques to constraint LLM output in JSON format]]
+
 *** Support multiple ORE "toolchains"                                  :code:
 
 Much like with an IDE, where one can have multiple toolchains configured, we

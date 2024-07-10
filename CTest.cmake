@@ -19,6 +19,9 @@
 #
 cmake_minimum_required(VERSION 3.29 FATAL_ERROR)
 
+# Read custom files
+ctest_read_custom_files(${CTEST_SOURCE_DIRECTORY})
+
 #
 # Handle input parameters to script. Define them as internal CMake
 # variables.
@@ -272,9 +275,6 @@ ctest_configure(OPTIONS "${cmake_args}" RETURN_VALUE configure_result)
 if(configure_result)
     message(FATAL_ERROR "Failed to configure")
 endif()
-
-# Read custom files
-ctest_read_custom_files(${CTEST_SOURCE_DIRECTORY})
 
 #
 # Step: build.

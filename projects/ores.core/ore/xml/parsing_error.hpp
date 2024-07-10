@@ -17,22 +17,32 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_ORE_XML_CURRENCY_CONFIG_SERIALISER_HPP
-#define ORES_CORE_ORE_XML_CURRENCY_CONFIG_SERIALISER_HPP
+#ifndef ORES_CORE_ORE_PARSING_ERROR_HPP
+#define ORES_CORE_ORE_PARSING_ERROR_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
 #include <string>
-#include "ores.core/ore/model/currency_config.hpp"
+#include <boost/exception/info.hpp>
 
 namespace ores::core::ore::xml {
 
-class currency_config_serialiser {
+/**
+ * @brief A fatal error has occurred during XML parsing.
+ */
+class parsing_error : public virtual std::exception,
+                          public virtual boost::exception {
 public:
-    std::string serialise(const model::currency_config& cfg);
-    model::currency_config deserialise(std::string s);
+    explicit parsing_error(std::string message)
+        : message_(std::move(message)) { }
+    parsing_error() = default;
+    ~parsing_error() noexcept override = default;
+    const char* what() const noexcept final { return(message_.c_str()); }
+
+private:
+    std::string message_;
 };
 
 }

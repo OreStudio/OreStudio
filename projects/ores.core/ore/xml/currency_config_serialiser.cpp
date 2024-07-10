@@ -18,13 +18,25 @@
  *
  */
 #include <sstream>
+#include "rapidxml-ns/rapidxml_ns.hpp"
 #include <rapidxml-ns/rapidxml_ns_print.hpp>
+#include "ores.utility/log/logger.hpp"
+#include "ores.core/ore/xml/parsing_error.hpp"
 #include "ores.core/ore/xml/currency_serialiser.hpp"
 #include "ores.core/ore/xml/currency_config_serialiser.hpp"
 
-using namespace rapidxml_ns;
+namespace {
+
+using namespace ores::utility::log;
+auto lg(logger_factory("ores.core.ore.xml.currency_config_serialiser"));
+
+const std::string missing_currency_config("No CurrencyConfig element found");
+
+}
 
 namespace ores::core::ore::xml {
+
+using namespace rapidxml_ns;
 
 std::string
 currency_config_serialiser::serialise(const model::currency_config& cfg)
@@ -43,16 +55,36 @@ currency_config_serialiser::serialise(const model::currency_config& cfg)
     return os.str();
 }
 
-model::currency_config currency_config_serialiser::deserialise(std::istream& /*is*/)
+model::currency_config currency_config_serialiser::deserialise(std::string s)
 {
-    model::currency_config cfg;
-    return cfg;
-}
+    BOOST_LOG_SEV(lg, debug) << "Deserialising XML. Peek: " << s.substr(0, 50);
 
-model::currency_config currency_config_serialiser::deserialise(const std::string& /*s*/)
-{
-    model::currency_config cfg;
-    return cfg;
+    std::vector<char> v(s.begin(), s.end());
+    s.push_back('\0');
+
+    xml_document<> doc;
+    doc.parse<parse_full>(v.data());
+
+    auto* currency_config_node(doc.first_node());
+    if (currency_config_node == nullptr) {
+        BOOST_LOG_SEV(lg, error) << missing_currency_config;
+        BOOST_THROW_EXCEPTION(parsing_error(missing_currency_config));
+    }
+
+    std::vector<model::currency> currencies;
+    auto* currency_node(currency_config_node->first_node("Currency"));
+    currency_serialiser ccy_ser;
+    while(currency_node != nullptr) {
+        currencies.push_back(ccy_ser.deserialise(*currency_node));
+        currency_node = currency_node->next_sibling("Currency");
+    }
+
+    model::currency_config r;
+    r.currencies(currencies);
+
+    BOOST_LOG_SEV(lg, debug) << "Finished deserialising XML. Total currencies found: "
+                             << currencies.size();
+    return r;
 }
 
 }

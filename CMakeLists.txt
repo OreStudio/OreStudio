@@ -86,6 +86,9 @@ find_package(Qt6Widgets REQUIRED)
 # XML
 find_path(RAPIDXML_NS_INCLUDE_DIRS "rapidxml-ns/rapidxml_ns.hpp")
 
+# Postgres
+find_package(libpqxx CONFIG REQUIRED)
+
 # site (for ctest)
 site_name(VORE_SITE)
 

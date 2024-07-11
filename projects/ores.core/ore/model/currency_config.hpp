@@ -30,7 +30,7 @@
 
 namespace ores::core::ore::model {
 
-struct currency_config {
+class currency_config {
 public:
     std::vector<currency> currencies() const { return currencies_; }
     void currencies(const std::vector<currency>& currencies) {

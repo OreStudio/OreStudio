@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_ORE_PARSING_ERROR_HPP
-#define ORES_CORE_ORE_PARSING_ERROR_HPP
+#ifndef ORES_CORE_ORE_XML_PARSING_ERROR_HPP
+#define ORES_CORE_ORE_XML_PARSING_ERROR_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -33,7 +33,7 @@ namespace ores::core::ore::xml {
  * @brief A fatal error has occurred during XML parsing.
  */
 class parsing_error : public virtual std::exception,
-                          public virtual boost::exception {
+                      public virtual boost::exception {
 public:
     explicit parsing_error(std::string message)
         : message_(std::move(message)) { }

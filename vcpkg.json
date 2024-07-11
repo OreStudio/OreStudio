@@ -6,6 +6,7 @@
     "dependencies": [
         "qtbase",
         "rapidxml-ns",
+        "rapidjson",
         "boost-system",
         "boost-serialization",
         "boost-date-time",

@@ -18,7 +18,10 @@
  * MA 02110-1301, USA.
  *
  */
+#include <iostream>
 #include "ores.utility/log/logger.hpp"
+#include "ores.core/ore/model/currency_config.hpp"
+#include "ores.core/ore/json/currency_config_serialiser.hpp"
 #include "ores.console/application.hpp"
 
 namespace {
@@ -44,7 +47,9 @@ perform_importing(const std::optional<importing_configuration>& ocfg) const
     {
         BOOST_LOG_SEV(lg, debug) << "Processing currency configuration: "
                                  << ccy_cfg;
-        importer_.import_currency_config(ccy_cfg);
+        auto cc(importer_.import_currency_config(ccy_cfg));
+        using core::ore::json::currency_config_serialiser;
+        std::cout << currency_config_serialiser::serialise(cc) << std::endl;
     }
 }
 

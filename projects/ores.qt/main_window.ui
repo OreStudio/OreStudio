@@ -47,6 +47,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QTabWidget" name="tabWidget">
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
        <widget class="QWidget" name="tab">
         <attribute name="title">
          <string>Tab 1</string>
@@ -58,6 +61,16 @@
            <y>1</y>
            <width>681</width>
            <height>541</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QTableView" name="currencyTableView">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>681</width>
+           <height>521</height>
           </rect>
          </property>
         </widget>
@@ -83,16 +96,17 @@
    </property>
    <widget class="QMenu" name="menutest">
     <property name="title">
-     <string>test</string>
+     <string>&amp;File</string>
     </property>
-    <addaction name="actiontest1"/>
-    <addaction name="actiontest2"/>
+    <addaction name="separator"/>
+    <addaction name="ActionConnect"/>
+    <addaction name="ExitAction"/>
    </widget>
    <widget class="QMenu" name="menutest2">
     <property name="title">
-     <string>test2</string>
+     <string>&amp;Reference Data</string>
     </property>
-    <addaction name="actiontest4"/>
+    <addaction name="CurrenciesAction"/>
    </widget>
    <addaction name="menutest"/>
    <addaction name="menutest2"/>
@@ -108,35 +122,24 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionNew"/>
+   <addaction name="ActionConnect"/>
   </widget>
-  <action name="actiontest1">
+  <action name="ExitAction">
    <property name="text">
-    <string>test1</string>
+    <string>E&amp;xit</string>
    </property>
   </action>
-  <action name="actiontest2">
+  <action name="CurrenciesAction">
    <property name="text">
-    <string>test2</string>
+    <string>&amp;Currencies</string>
    </property>
   </action>
-  <action name="actiontest4">
-   <property name="text">
-    <string>test4</string>
-   </property>
-  </action>
-  <action name="actionNew">
+  <action name="ActionConnect">
    <property name="icon">
-    <iconset theme="accessories-calculator"/>
+    <iconset theme="network-workgroup"/>
    </property>
    <property name="text">
-    <string>New</string>
-   </property>
-   <property name="toolTip">
-    <string>New</string>
-   </property>
-   <property name="menuRole">
-    <enum>QAction::TextHeuristicRole</enum>
+    <string>&amp;Connect</string>
    </property>
   </action>
  </widget>

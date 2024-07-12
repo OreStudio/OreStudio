@@ -17,29 +17,33 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <QTimer>
-#include <QTableView>
-#include <QApplication>
-#include <QSplashScreen>
-#include "ores.qt/CurrencyModel.hpp"
-#include "ui_main_window.h"
+#ifndef ORES_QT_CURRENCY_MODEL_HPP
+#define ORES_QT_CURRENCY_MODEL_HPP
 
-int main(int argc, char *argv[])
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
+
+#include "ores.core/ore/model/currency.hpp"
+#include <QAbstractTableModel>
+
+namespace ores::qt {
+
+class CurrencyModel : public QAbstractTableModel
 {
-    QApplication app(argc, argv);
+    Q_OBJECT
+public:
+    explicit CurrencyModel(QObject* parent = nullptr);
 
-    QSplashScreen splash;
-    splash.setPixmap(QPixmap("splash_screen.png"));
-    splash.show();
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex& index,
+        int role = Qt::DisplayRole) const override;
 
-    QMainWindow mainWindow;
-    Ui::MainWindow window;
-    window.setupUi(&mainWindow);
-    ores::qt::CurrencyModel currencyModel;
-    window.currencyTableView->setModel(&currencyModel);
+private:
+    std::vector<ores::core::ore::model::currency> currencies_;
+};
 
-    QTimer::singleShot(1000, &splash, SLOT(close()));
-    QTimer::singleShot(1000, &mainWindow, SLOT(show()));
-
-    return QApplication::exec();
 }
+
+#endif

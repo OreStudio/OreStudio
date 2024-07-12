@@ -22,13 +22,18 @@ set(CMAKE_AUTORCC ON)
 
 add_executable(ores.qt
     main.cpp
+    CurrencyModel.cpp
     main_window.ui
 )
 
 target_link_libraries(ores.qt PRIVATE
-  Qt6::Core
-  Qt6::Gui
-  Qt6::Widgets)
+    ores.core.lib
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets)
+
+target_include_directories(ores.qt
+    PRIVATE ${CMAKE_SOURCE_DIR}/projects)
 
 add_custom_target(run_ores_qt
     COMMENT "Running ores.qt" VERBATIM

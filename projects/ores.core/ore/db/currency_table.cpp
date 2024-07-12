@@ -41,7 +41,8 @@ void currency_table::write(const std::vector<model::currency>& currencies) {
     std::ostringstream query;
     query << "insert into oresdb.currencies "
           << "(name, iso_code, numeric_code, symbol, fraction_symbol, "
-          << "fractions_per_unit, rounding_type, rounding_precision, format, currency_type)"
+          << "fractions_per_unit, rounding_type, rounding_precision, "
+          << "format, currency_type)"
           << "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)";
     c.prepare("insert_to_currencies", query.str());
 
@@ -52,6 +53,40 @@ void currency_table::write(const std::vector<model::currency>& currencies) {
             ccy.currency_type());
     }
     w.commit();
+}
+
+std::vector<model::currency> currency_table::read() {
+    std::string connection_string("postgresql://ores:ores@localhost:5433/oresdb");
+    pqxx::connection c(connection_string);
+    pqxx::work w(c);
+
+    std::ostringstream query;
+    query << "select "
+          << "name, iso_code, numeric_code, symbol, fraction_symbol, "
+          << "fractions_per_unit, rounding_type, rounding_precision, "
+          << "format, currency_type "
+          << "from oresdb.currencies;";
+
+    std::vector<model::currency> r;
+    for (auto [name, iso_code, numeric_code, symbol, fraction_symbol,
+            fractions_per_unit, rounding_type, rounding_precision,
+            format, currency_type] : w.query<std::string, std::string,
+             int, std::string, std::string, int, std::string, int, std::string,
+             std::string>(query.str())) {
+        model::currency ccy;
+        ccy.name(name);
+        ccy.iso_code(iso_code);
+        ccy.numeric_code(numeric_code);
+        ccy.symbol(symbol);
+        ccy.fraction_symbol(fraction_symbol);
+        ccy.fractions_per_unit(fractions_per_unit);
+        ccy.rounding_type(rounding_type);
+        ccy.rounding_precision(rounding_precision);
+        ccy.format(format);
+        ccy.currency_type(currency_type);
+        r.push_back(ccy);
+    }
+    return r;
 }
 
 }

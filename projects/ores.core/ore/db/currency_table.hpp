@@ -32,6 +32,7 @@ namespace ores::core::ore::db {
 class currency_table {
 public:
     void write(const std::vector<model::currency>& currencies);
+    std::vector<model::currency> read();
 };
 
 }

@@ -98,7 +98,7 @@ IMPORTANT: build details are NOT for security purposes.
 *** Import currencies
 
 #+begin_src sh
-./ores.console import ${log_args} --currency-configuration ${currency_config_dir}/currencies.xml | jq .
+./ores.console import ${log_args} --currency-configuration ${currency_config_dir}/currencies_API.xml | jq .
 #+END_SRC
 
 #+RESULTS:
@@ -116,7 +116,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Afghan afghani",
@@ -128,7 +128,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Albanian lek",
@@ -140,7 +140,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Armenian dram",
@@ -152,7 +152,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Netherlands Antillean guilder",
@@ -164,7 +164,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Angolan kwanza",
@@ -176,7 +176,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Argentine peso",
@@ -188,7 +188,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Australian dollar",
@@ -200,7 +200,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Aruban florin",
@@ -212,7 +212,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Azerbaijani manat",
@@ -224,7 +224,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Bosnia and Herzegovina convertible mark",
@@ -236,7 +236,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Barbados dollar",
@@ -248,7 +248,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Bangladeshi taka",
@@ -260,7 +260,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Bulgarian lev",
@@ -272,7 +272,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Bahraini dinar",
@@ -284,7 +284,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 3,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Burundian franc",
@@ -296,7 +296,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 0,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Bermudian dollar",
@@ -308,7 +308,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Brunei dollar",
@@ -320,7 +320,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Boliviano",
@@ -332,7 +332,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Bolivian Mvdol (funds code)",
@@ -344,7 +344,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Brazilian real",
@@ -356,7 +356,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Bahamian dollar",
@@ -368,7 +368,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Bhutanese ngultrum",
@@ -380,7 +380,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Botswana pula",
@@ -392,7 +392,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Belarusian ruble",
@@ -404,7 +404,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Belize dollar",
@@ -416,7 +416,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Canadian dollar",
@@ -428,7 +428,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Congolese franc",
@@ -440,7 +440,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "WIR euro (complementary currency)",
@@ -452,7 +452,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Swiss franc",
@@ -464,7 +464,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "WIR franc (complementary currency)",
@@ -476,7 +476,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Unidad de Fomento (funds code)",
@@ -488,7 +488,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 4,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Chilean peso",
@@ -500,7 +500,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 0,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Offshore Chinese Yuan traded in Hong Kong (Non-ISO)",
@@ -512,7 +512,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Offshore Chinese Yuan traded in Taiwan (Non-ISO)",
@@ -524,7 +524,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Chinese yuan",
@@ -536,7 +536,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Colombian peso",
@@ -548,7 +548,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Unidad de Valor Real (UVR) (funds code)",
@@ -560,7 +560,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Costa Rican colon",
@@ -572,7 +572,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Cuban convertible peso",
@@ -584,7 +584,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Cuban peso",
@@ -596,7 +596,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Cape Verdean escudo",
@@ -608,7 +608,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Czech koruna",
@@ -620,7 +620,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Djiboutian franc",
@@ -632,7 +632,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 0,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Danish krone",
@@ -644,7 +644,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Dominican peso",
@@ -656,7 +656,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Algerian dinar",
@@ -668,7 +668,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Egyptian pound",
@@ -680,7 +680,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Eritrean nakfa",
@@ -692,7 +692,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Ethiopian birr",
@@ -704,7 +704,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Euro",
@@ -716,7 +716,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Fiji dollar",
@@ -728,7 +728,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Falkland Islands pound",
@@ -740,7 +740,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Pound sterling",
@@ -752,7 +752,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Georgian lari",
@@ -764,7 +764,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Guernsey Pound (Non-ISO)",
@@ -776,7 +776,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Ghanaian cedi",
@@ -788,7 +788,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Gibraltar pound",
@@ -800,7 +800,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Gambian dalasi",
@@ -812,7 +812,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Guinean franc",
@@ -824,7 +824,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 0,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Guatemalan quetzal",
@@ -836,7 +836,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Guyanese dollar",
@@ -848,7 +848,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Hong Kong dollar",
@@ -860,7 +860,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Honduran lempira",
@@ -872,7 +872,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Croatian kuna",
@@ -884,7 +884,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Haitian gourde",
@@ -896,7 +896,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Hungarian forint",
@@ -908,7 +908,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Indonesian rupiah",
@@ -920,7 +920,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Israeli new shekel",
@@ -932,7 +932,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Isle of Man Pound (Non-ISO)",
@@ -944,7 +944,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Indian rupee",
@@ -956,7 +956,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Iraqi dinar",
@@ -968,7 +968,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 3,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Iranian rial",
@@ -980,7 +980,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Icelandic krona",
@@ -992,7 +992,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 0,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Jersey Pound (Non-ISO)",
@@ -1004,7 +1004,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Jamaican dollar",
@@ -1016,7 +1016,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Jordanian dinar",
@@ -1028,7 +1028,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 3,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Japanese yen",
@@ -1040,7 +1040,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 0,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Kenyan shilling",
@@ -1052,7 +1052,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Kyrgyzstani som",
@@ -1064,7 +1064,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Cambodian riel",
@@ -1076,7 +1076,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Kiribati dollar (Non-ISO)",
@@ -1088,7 +1088,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Comoro franc",
@@ -1100,7 +1100,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 0,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "North Korean won",
@@ -1112,7 +1112,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "South Korean won",
@@ -1124,7 +1124,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 0,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Kuwaiti dinar",
@@ -1136,7 +1136,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 3,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Cayman Islands dollar",
@@ -1148,7 +1148,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Kazakhstani tenge",
@@ -1160,7 +1160,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Lao kip",
@@ -1172,7 +1172,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Lebanese pound",
@@ -1184,7 +1184,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Sri Lankan rupee",
@@ -1196,7 +1196,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Liberian dollar",
@@ -1208,7 +1208,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Lesotho loti",
@@ -1220,7 +1220,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Libyan dinar",
@@ -1232,7 +1232,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 3,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Moroccan dirham",
@@ -1244,7 +1244,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Moldovan leu",
@@ -1256,7 +1256,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Malagasy ariary",
@@ -1268,7 +1268,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Macedonian denar",
@@ -1280,7 +1280,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Myanmar kyat",
@@ -1292,7 +1292,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Mongolian toegroeg",
@@ -1304,7 +1304,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Macanese pataca",
@@ -1316,7 +1316,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Mauritanian ouguiya",
@@ -1328,7 +1328,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Mauritian rupee",
@@ -1340,7 +1340,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Maldivian rufiyaa",
@@ -1352,7 +1352,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Malawian kwacha",
@@ -1364,7 +1364,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Mexican peso",
@@ -1376,7 +1376,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Mexican Unidad de Inversion (UDI) (funds code)",
@@ -1388,7 +1388,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Malaysian ringgit",
@@ -1400,7 +1400,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Mozambican metical",
@@ -1412,7 +1412,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Namibian dollar",
@@ -1424,7 +1424,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Nigerian naira",
@@ -1436,7 +1436,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Nicaraguan cordoba",
@@ -1448,7 +1448,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Norwegian krone",
@@ -1460,7 +1460,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Nepalese rupee",
@@ -1472,7 +1472,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "New Zealand dollar",
@@ -1484,7 +1484,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Omani rial",
@@ -1496,7 +1496,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 3,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Panamanian balboa",
@@ -1508,7 +1508,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Peruvian sol",
@@ -1520,7 +1520,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Papua New Guinean kina",
@@ -1532,7 +1532,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Philippine peso",
@@ -1544,7 +1544,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Pakistani rupee",
@@ -1556,7 +1556,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Polish z_oty",
@@ -1568,7 +1568,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Paraguayan guarani",
@@ -1580,7 +1580,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 0,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Qatari riyal",
@@ -1592,7 +1592,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Romanian leu",
@@ -1604,7 +1604,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Serbian dinar",
@@ -1616,7 +1616,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Russian ruble",
@@ -1628,7 +1628,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Rwandan franc",
@@ -1640,7 +1640,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 0,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Saudi riyal",
@@ -1652,7 +1652,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Solomon Islands dollar",
@@ -1664,7 +1664,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Seychelles rupee",
@@ -1676,7 +1676,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Sudanese pound",
@@ -1688,7 +1688,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Swedish krona/kronor",
@@ -1700,7 +1700,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Singapore dollar",
@@ -1712,7 +1712,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Saint Helena pound",
@@ -1724,7 +1724,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Sierra Leonean leone",
@@ -1736,7 +1736,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Somali shilling",
@@ -1748,7 +1748,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Surinamese dollar",
@@ -1760,7 +1760,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "South Sudanese pound",
@@ -1772,7 +1772,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Sao Tome and Principe dobra",
@@ -1784,7 +1784,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Salvadoran colon",
@@ -1796,7 +1796,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Syrian pound",
@@ -1808,7 +1808,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Swazi lilangeni",
@@ -1820,7 +1820,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Thai baht",
@@ -1832,7 +1832,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Tajikistani somoni",
@@ -1844,7 +1844,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Turkmenistan manat",
@@ -1856,7 +1856,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Tunisian dinar",
@@ -1868,7 +1868,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 3,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Tongan pa_anga",
@@ -1880,7 +1880,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Turkish lira",
@@ -1892,7 +1892,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Trinidad and Tobago dollar",
@@ -1904,7 +1904,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "New Taiwan dollar",
@@ -1916,7 +1916,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Tanzanian shilling",
@@ -1928,7 +1928,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Ukrainian hryvnia",
@@ -1940,7 +1940,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Ugandan shilling",
@@ -1952,7 +1952,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 0,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "United States dollar",
@@ -1964,7 +1964,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "United States dollar (next day) (funds code)",
@@ -1976,7 +1976,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Uruguay Peso en Unidades Indexadas (URUIURUI) (funds code)",
@@ -1988,7 +1988,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 0,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Uruguayan peso",
@@ -2000,7 +2000,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Unidad previsional",
@@ -2012,7 +2012,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 4,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Uzbekistan som",
@@ -2024,7 +2024,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Venezuelan bolivar soberano",
@@ -2036,7 +2036,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Vietnamese dong",
@@ -2048,7 +2048,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 0,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Vanuatu vatu",
@@ -2060,7 +2060,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 0,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Samoan tala",
@@ -2072,7 +2072,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "CFA franc BEAC",
@@ -2084,7 +2084,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 0,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Silver (one troy ounce)",
@@ -2096,7 +2096,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Gold (one troy ounce)",
@@ -2108,7 +2108,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "East Caribbean dollar",
@@ -2120,7 +2120,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "CFA franc BCEAO",
@@ -2132,7 +2132,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 0,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Palladium (one troy ounce)",
@@ -2144,7 +2144,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Metal"
+        "CurrencyType": ""
       },
       {
         "Name": "CFP franc (franc Pacifique)",
@@ -2156,7 +2156,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 0,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Platinum (one troy ounce)",
@@ -2168,7 +2168,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Metal"
+        "CurrencyType": ""
       },
       {
         "Name": "SUCRE",
@@ -2180,7 +2180,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "ADB Unit of Account",
@@ -2204,7 +2204,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "South African rand",
@@ -2216,7 +2216,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Zambian kwacha",
@@ -2228,7 +2228,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
+        "CurrencyType": ""
       },
       {
         "Name": "Zimbabwean dollar",
@@ -2240,19 +2240,7 @@ IMPORTANT: build details are NOT for security purposes.
         "RoundingType": "Closest",
         "RoundingPrecision": 2,
         "Format": "",
-        "CurrencyType": "Major"
-      },
-      {
-        "Name": "Bitcoin",
-        "ISOCode": "BTC",
-        "NumericCode": 0,
-        "Symbol": "",
-        "FractionSymbol": "",
-        "FractionsPerUnit": 100000000,
-        "RoundingType": "Closest",
-        "RoundingPrecision": 2,
-        "Format": "",
-        "CurrencyType": "Crypto"
+        "CurrencyType": ""
       }
     ]
   }

@@ -21,11 +21,31 @@
 #include <QTableView>
 #include <QApplication>
 #include <QSplashScreen>
-#include "ores.qt/CurrencyModel.hpp"
+#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/logging_configuration.hpp"
+#include "ores.utility/log/scoped_lifecycle_manager.hpp"
 #include "ui_main_window.h"
+#include "ores.qt/CurrencyModel.hpp"
+
+namespace {
+
+using namespace ores::utility::log;
+auto lg(logger_factory("main"));
+
+}
 
 int main(int argc, char *argv[])
 {
+    ores::utility::log::logging_configuration cfg;
+    cfg.filename("ores.console.log");
+    cfg.output_to_console(false);
+    cfg.output_directory("log");
+    cfg.severity("debug");
+
+    ores::utility::log::scoped_lifecycle_manager slm;
+    slm.initialise(cfg);
+    BOOST_LOG_SEV(lg, info) << "Started UI.";
+
     QApplication app(argc, argv);
 
     QSplashScreen splash;

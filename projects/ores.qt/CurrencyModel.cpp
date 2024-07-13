@@ -37,6 +37,25 @@ int CurrencyModel::columnCount(const QModelIndex& /*parent*/) const {
     return 10;
 }
 
+QVariant CurrencyModel::
+headerData(int section, Qt::Orientation orientation, int role) const {
+    if (role == Qt::DisplayRole && orientation != Qt::Vertical) {
+        switch(section) {
+        case 0: return QString("Currency Name");
+        case 1: return QString("ISO Code");
+        case 2: return QString("Numeric Code");
+        case 3: return QString("Symbol");
+        case 4: return QString("Frac. Symbol");
+        case 5: return QString("Frac. per unit");
+        case 6: return QString("Rounding type");
+        case 7: return QString("Rounding precision");
+        case 8: return QString("Format");
+        case 9: return QString("Currency Type");
+        }
+    }
+    return {};
+}
+
 QVariant CurrencyModel::data(const QModelIndex& index, int role) const {
     if (role == Qt::DisplayRole) {
         auto currency = currencies_[index.row()];

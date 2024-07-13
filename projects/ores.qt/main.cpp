@@ -57,6 +57,11 @@ int main(int argc, char *argv[])
     window.setupUi(&mainWindow);
     ores::qt::CurrencyModel currencyModel;
     window.currencyTableView->setModel(&currencyModel);
+    window.currencyTableView->resizeRowsToContents();
+    QHeaderView* verticalHeader = window.currencyTableView->verticalHeader();
+    QHeaderView* horizontalHeader =  window.currencyTableView->horizontalHeader();
+    verticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+    horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     QTimer::singleShot(1000, &splash, SLOT(close()));
     QTimer::singleShot(1000, &mainWindow, SLOT(show()));

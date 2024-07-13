@@ -6,85 +6,59 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>982</width>
-    <height>654</height>
+    <width>1069</width>
+    <height>672</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="horizontalLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>-1</x>
-      <y>-1</y>
-      <width>251</width>
-      <height>571</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QTreeWidget" name="treeWidget">
-       <column>
-        <property name="text">
-         <string notr="true">1</string>
-        </property>
-       </column>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="horizontalLayoutWidget_2">
-    <property name="geometry">
-     <rect>
-      <x>249</x>
-      <y>-1</y>
-      <width>681</width>
-      <height>561</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout_2"/>
-   </widget>
-   <widget class="QTabWidget" name="tabWidget">
-    <property name="geometry">
-     <rect>
-      <x>248</x>
-      <y>-2</y>
-      <width>681</width>
-      <height>561</height>
-     </rect>
-    </property>
-    <property name="currentIndex">
-     <number>1</number>
-    </property>
-    <widget class="QWidget" name="tab">
-     <attribute name="title">
-      <string>Tab 1</string>
-     </attribute>
-     <layout class="QHBoxLayout" name="horizontalLayout_3">
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,3">
       <item>
-       <widget class="QTableView" name="currencyTableView"/>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QTreeView" name="treeView"/>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QTabWidget" name="tabWidget">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <widget class="QWidget" name="tab">
+           <attribute name="title">
+            <string>Currencies</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <widget class="QTableView" name="currencyTableView"/>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
-    </widget>
-    <widget class="QWidget" name="tab_2">
-     <attribute name="title">
-      <string>Tab 2</string>
-     </attribute>
-    </widget>
-   </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>982</width>
+     <width>1069</width>
      <height>23</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menutest">
+   <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>&amp;File</string>
     </property>
@@ -92,14 +66,14 @@
     <addaction name="ActionConnect"/>
     <addaction name="ExitAction"/>
    </widget>
-   <widget class="QMenu" name="menutest2">
+   <widget class="QMenu" name="menuRefereceData">
     <property name="title">
      <string>&amp;Reference Data</string>
     </property>
     <addaction name="CurrenciesAction"/>
    </widget>
-   <addaction name="menutest"/>
-   <addaction name="menutest2"/>
+   <addaction name="menuFile"/>
+   <addaction name="menuRefereceData"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">

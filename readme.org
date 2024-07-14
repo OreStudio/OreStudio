@@ -9,15 +9,15 @@
 
 [[./assets/images/documentation_banner.png]]
 
-#+html: <a href="https://www.gnu.org/software/emacs/"><img alt="GNU Emacs" src="https://img.shields.io/static/v1?logo=gnuemacs&logoColor=fafafa&label=Made%20with&message=GNU%20Emacs&color=7F5AB6&style=flat"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/blob/main/LICENSE"><img alt="Licence" src="https://img.shields.io/badge/License-GPLv3-blue.svg"/></a>
 #+html: <a href="https://en.wikipedia.org/wiki/C%2B%2B20"><img alt="C++ Version" src="https://img.shields.io/badge/std-C++20-blue.svg"/></a>
 #+html: <a href="https://www.gnu.org/software/gcc/gcc-13"><img alt="GCC Version" src="https://img.shields.io/badge/GCC-13-blue.svg"/></a>
 #+html: <a href="https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html"><img alt="Clang Version" src="https://img.shields.io/badge/CLANG-16-blue.svg"/></a>
 #+html: <a href="https://visualstudio.microsoft.com/vs/whatsnew/"><img alt="MSVC Version" src="https://img.shields.io/badge/MSVC-2022-blue.svg"/></a>
 #+html: <a href="https://doc.qt.io/qt-6/"><img alt="Qt6" src="https://img.shields.io/badge/Qt-6-blue"/></a>
-#+html: <a href="https://discord.gg/gcrYsjW3pd"><img alt="Discord" src="https://img.shields.io/badge/chat-Discord-blue.svg"/></a>
 #+html: <a href="https://orestudio.github.io/OreStudio/doxygen/html/index.html"><img alt="Doxygen" src="https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/doxygen_badge.svg"/></a>
+#+html: <a href="https://www.gnu.org/software/emacs/"><img alt="GNU Emacs" src="https://img.shields.io/static/v1?logo=gnuemacs&logoColor=fafafa&label=Made%20with&message=GNU%20Emacs&color=7F5AB6&style=flat"/></a>
+#+html: <a href="https://discord.gg/gcrYsjW3pd"><img alt="Discord" src="https://img.shields.io/discord/1254062142626332732?color=5865F2&amp;logo=discord&amp;logoColor=white"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/pulse"><img alt="Commit Activity" src="https://img.shields.io/github/commit-activity/m/OreStudio/OreStudio"/></a>
 #+html: <a href="https://orestudio.github.io/OreStudio/"><img alt="Website" src="https://img.shields.io/badge/Website-orestudio.github.io-green.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/pulse/monthly"><img alt="Status" src="https://img.shields.io/badge/status-active-brightgreen.svg"/></a>
@@ -40,12 +40,21 @@
 
 * In a nutshell
 
-ORE Studio is a graphical wrapper around [[https://www.opensourcerisk.org/][Acadia's]] [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine (ORE)]].
-Please note that this open source project has *no affiliation whatsoever* with
-either Acadia or the ORE project.
+ORE Studio is a graphical wrapper around [[https://www.opensourcerisk.org/][Acadia's]] [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine (ORE)]],
+which itself builds atop of [[https://github.com/lballabio/QuantLib][QuantLib]]. Please note that this open source project
+has *no affiliation whatsoever* with ORE or QuantLib, but you cannot understand
+ORE Studio without at least a basic understanding of both of these projects.
 
-ORE Studio is tightly coupled with ORE itself, so its important to understand
-ORE first. Their website states that
+QuantLib is defined as follows:
+
+#+begin_quote
+The QuantLib project (https://www.quantlib.org) is aimed at providing a
+comprehensive software framework for quantitative finance. QuantLib is a
+free/open-source library for modeling, trading, and risk management in
+real-life.
+#+end_quote
+
+ORE tells us that
 
 #+begin_quote
 The [[https://www.opensourcerisk.org/][Open Source Risk]] project aims at establishing a transparent peer-reviewed
@@ -67,11 +76,14 @@ it extends QuantLib in terms of simulation models, financial instruments and
 pricing engines.
 #+end_quote
 
-ORE Studio builds on top of ORE with the eventual aim of providing:
+/ORE Studio/ builds on top of ORE with the eventual aim of providing:
 
-- persistent database storage for all of its inputs and outputs;
+- persistent database storage for all of its inputs and outputs, with basic [[https://en.wikipedia.org/wiki/Create,_read,_update_and_delete][CRUD]]
+  support;
 - graphical user interface both for data generation as well as data exploration;
 - ability to configure and orchestrate ORE execution.
+
+[[./assets/images/ore_studio_stack.png]]
 
 The remainder of this document describes our approach in greater detail.
 

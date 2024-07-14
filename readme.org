@@ -18,11 +18,10 @@
 #+html: <a href="https://doc.qt.io/qt-6/"><img alt="Qt6" src="https://img.shields.io/badge/Qt-6-blue"/></a>
 #+html: <a href="https://discord.gg/gcrYsjW3pd"><img alt="Discord" src="https://img.shields.io/badge/chat-Discord-blue.svg"/></a>
 #+html: <a href="https://orestudio.github.io/OreStudio/doxygen/html/index.html"><img alt="Doxygen" src="https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/doxygen_badge.svg"/></a>
+#+html: <a href="https://github.com/OreStudio/OreStudio/pulse"><img alt="Commit Activity" src="https://img.shields.io/github/commit-activity/m/OreStudio/OreStudio"/></a>
 #+html: <a href="https://orestudio.github.io/OreStudio/"><img alt="Website" src="https://img.shields.io/badge/Website-orestudio.github.io-green.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/pulse/monthly"><img alt="Status" src="https://img.shields.io/badge/status-active-brightgreen.svg"/></a>
-#+html: <a href="https://github.com/OreStudio/OreStudio/pulse"><img alt="Commit Activity" src="https://img.shields.io/github/commit-activity/m/OreStudio/OreStudio"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/pulse"><img alt="Last Commit" src="https://img.shields.io/github/last-commit/OreStudio/OreStudio"/></a>
-#+html: <a href="https://github.com/OreStudio/OreStudio/commits/main"><img alt="Commits" src= "https://img.shields.io/github/commits-since/OreStudio/OreStudio/v0.0.0.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/issues"><img alt="Open Issues" src="https://img.shields.io/github/issues/OreStudio/OreStudio"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/issues?q=is%3Aissue+is%3Aclosed"><img alt="Closed Issues" src="https://img.shields.io/github/issues-closed/OreStudio/OreStudio"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/pulls"><img alt="Open PRs" src="https://img.shields.io/github/issues-pr/OreStudio/OreStudio"/></a>
@@ -35,6 +34,7 @@
 #+html: <a href="https://github.com/OreStudio/OreStudio/actions/workflows/nightly-linux.yml"><img alt="Nightly Linux" src="https://github.com/OreStudio/OreStudio/actions/workflows/nightly-linux.yml/badge.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/actions/workflows/codeql-analysis.yml"><img alt="CodeQL" src="https://github.com/OreStudio/OreStudio/actions/workflows/codeql-analysis.yml/badge.svg"/></a>
 #+html: <a href="https://my.cdash.org/index.php?project=OreStudio"><img alt="CDash Dashboard" src="https://img.shields.io/badge/cdash-dashboard-00cc00.svg"/></a>
+#+html: <a href="https://github.com/OreStudio/OreStudio/commits/main"><img alt="Commits" src= "https://img.shields.io/github/commits-since/OreStudio/OreStudio/v0.0.0.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/OreStudio/OreStudio/total.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/releases"><img alt="Releases" src="https://img.shields.io/github/release/OreStudio/OreStudio.svg"/></a>
 

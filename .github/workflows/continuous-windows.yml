@@ -35,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [windows-msvc, windows-msvc-clang-cl]
+        name: [windows-msvc]
         buildtype: [debug, release]
         include:
           - name: windows-msvc

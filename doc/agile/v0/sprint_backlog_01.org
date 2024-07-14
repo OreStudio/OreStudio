@@ -1019,6 +1019,10 @@ Links:
 - [[https://forum.qt.io/topic/75414/new-thread-to-add-new-tab-when-menu-item-is-clicked][New Thread to add new tab when menu item is clicked]]
 - [[https://doc.qt.io/qt-6/modelview.html][Model/View Tutorial]]
 
+*** Add support for =windows-msvc-clang-cl=                           :infra:
+
+We need to setup a build for MSVC clang.
+
 *** Implement database connectivity                                    :code:
 
 We have hard coded database configuration. Implement this properly both for

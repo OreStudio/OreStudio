@@ -1,11 +1,30 @@
+# Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+
+# This document was copied from Code QL.
+#
 # For most projects, this workflow file will not need changing; you simply need
 # to commit it to your repository.
 #
 # You may wish to alter this file to override the set of languages analyzed,
 # or to provide custom queries or build logic.
+---
 name: "CodeQL"
 
-on:
+on:  # yamllint disable-line rule:truthy
   schedule:
     - cron: '0 0 * * 0'
   workflow_dispatch:
@@ -16,36 +35,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
 
-    # Initializes the CodeQL tools for scanning.
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: cpp
+      - name: Install Clang
+        uses: egor-tensin/setup-clang@v1.4
+        if: ${{matrix.compiler}} == clang
+        with:
+          version: latest
+          platform: x64
 
-    # Set up build environment
-    - name: Setup
-      run: |
-        sudo apt update
-        sudo apt install -y libboost-dev
+      - name: Ccache for gh actions
+        uses: hendrikmuhs/ccache-action@v1.2.13
+        with:
+          variant: sccache
+          key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+          max-size: 1000M
 
-    # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
-    # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
+      - name: Install dev packages
+        run: ./build/scripts/install_debian_packages.sh
 
-    # ℹ️ Command-line programs to run using the OS shell.
-    # 📚 https://git.io/JvXDl
+      - name: get-cmake
+        uses: lukka/get-cmake@v3.29.6
 
-    # ✏️ If the Autobuild fails above, remove it and uncomment the following three lines
-    #    and modify them (or add more) to build your code if your project
-    #    uses a compiled language
+      - name: run-vcpkg
+        uses: lukka/run-vcpkg@v11
 
-    #- run: |
-    #   make bootstrap
-    #   make release
+      # Initializes the CodeQL tools for scanning.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: cpp
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+      # Autobuild attempts to build any compiled languages (C/C++, C#, or Java).
+      # If this step fails, then you should remove it and run the build manually
+      # (see below)
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3

@@ -18,22 +18,22 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2024-07-13 Sat 23:34]
+#+CAPTION: Clock summary at [2024-07-14 Sun 10:14]
 |       | <75>                                              |         |       |      |       |
 | Tags  | Headline                                          | Time    |       |      |     % |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                      | *68:40* |       |      | 100.0 |
+|       | *Total time*                                      | *69:24* |       |      | 100.0 |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                           | 68:40   |       |      | 100.0 |
-|       | Active                                            |         | 68:40 |      | 100.0 |
+|       | Stories                                           | 69:24   |       |      | 100.0 |
+|       | Active                                            |         | 69:24 |      | 100.0 |
 | agile | Sprint and product backlog refinement             |         |       | 3:11 |   4.6 |
 | infra | Create a basic git hub repository                 |         |       | 0:35 |   0.8 |
 | infra | Setup a discord channel for the project           |         |       | 0:14 |   0.3 |
-| infra | Setup vcpkg and cmake                             |         |       | 1:21 |   2.0 |
-| infra | Setup github actions                              |         |       | 1:21 |   2.0 |
+| infra | Setup vcpkg and cmake                             |         |       | 1:21 |   1.9 |
+| infra | Setup github actions                              |         |       | 1:21 |   1.9 |
 | infra | Create and upload a package                       |         |       | 3:28 |   5.0 |
-| code  | Create a basic project structure                  |         |       | 2:10 |   3.2 |
-| code  | Add a Qt hello world                              |         |       | 3:08 |   4.6 |
+| code  | Create a basic project structure                  |         |       | 2:10 |   3.1 |
+| code  | Add a Qt hello world                              |         |       | 3:08 |   4.5 |
 | code  | Add a splash screen to applciation                |         |       | 0:41 |   1.0 |
 | infra | Add basic site                                    |         |       | 0:34 |   0.8 |
 | code  | Add modeling infrastructure                       |         |       | 1:30 |   2.2 |
@@ -41,13 +41,13 @@
 | doc   | Merge index with readme                           |         |       | 0:42 |   1.0 |
 | doc   | Add project objective to readme                   |         |       | 2:24 |   3.5 |
 | code  | Add basic logging support                         |         |       | 1:14 |   1.8 |
-| infra | Add nightly support with memcheck                 |         |       | 3:21 |   4.9 |
+| infra | Add nightly support with memcheck                 |         |       | 3:21 |   4.8 |
 | code  | Clean up toolchains and presets                   |         |       | 1:53 |   2.7 |
 | doc   | Generate Doxygen documentation and add it to site |         |       | 0:51 |   1.2 |
-| doc   | Copy domain notes on core concepts                |         |       | 4:41 |   6.8 |
+| doc   | Copy domain notes on core concepts                |         |       | 4:41 |   6.7 |
 | infra | Valgrind fails to run unit tests                  |         |       | 1:12 |   1.7 |
 | infra | Initial sanity test generated packages            |         |       | 0:25 |   0.6 |
-| code  | Add command line options support                  |         |       | 5:45 |   8.4 |
+| code  | Add command line options support                  |         |       | 5:45 |   8.3 |
 | infra | Unit tests show up twice in nightlies             |         |       | 0:13 |   0.3 |
 | doc   | Add recipes for command line                      |         |       | 0:51 |   1.2 |
 | agile | Use a bar chart for sprint resourcing cost        |         |       | 2:57 |   4.3 |
@@ -55,14 +55,14 @@
 | code  | Update C++ standard                               |         |       | 0:29 |   0.7 |
 | infra | Setup laptop for development                      |         |       | 3:47 |   5.5 |
 | infra | Add database support for currency                 |         |       | 1:19 |   1.9 |
-| code  | Add XML parsing support for currency              |         |       | 6:32 |   9.5 |
+| code  | Add XML parsing support for currency              |         |       | 6:32 |   9.4 |
 | code  | Add JSON support for currency                     |         |       | 2:03 |   3.0 |
-| code  | Add basic widgets to display currencies           |         |       | 1:50 |   2.7 |
+| code  | Add basic widgets to display currencies           |         |       | 1:50 |   2.6 |
 | infra | Ignore vcpkg warnings                             |         |       | 0:21 |   0.5 |
 | code  | Create a containing structure for data            |         |       | 0:28 |   0.7 |
 | doc   | Convert plantuml diagrams to org-babel            |         |       | 1:05 |   1.6 |
-| infra | Setup code quality actions                        |         |       | 0:14 |   0.3 |
-| code  | Updates to Qt UI                                  |         |       | 5:06 |   7.4 |
+| infra | Setup code quality actions                        |         |       | 0:58 |   1.4 |
+| code  | Updates to Qt UI                                  |         |       | 5:06 |   7.3 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                    :agile:
@@ -931,6 +931,7 @@ Experiment with babel for this.
 
 *** STARTED Setup code quality actions                                :infra:
     :LOGBOOK:
+    CLOCK: [2024-07-14 Sun 09:30]--[2024-07-14 Sun 10:14] =>  0:44
     CLOCK: [2024-07-13 Sat 08:21]--[2024-07-13 Sat 08:35] =>  0:19
     :END:
 
@@ -943,6 +944,30 @@ detected by the github actions:
 
 It wasn't. We need to figure out which actions need to be setup for this. Add
 any other actions we may be missing.
+
+The build seems to be failing:
+
+#+begin_src sh
+-- SCCache NOT found.
+ CMake Error at /usr/local/share/cmake-3.30/Modules/CMakeDetermineSystem.cmake:152 (message):
+   Could not find toolchain file:
+   /home/runner/work/OreStudio/OreStudio/vcpkg/scripts/buildsystems/vcpkg.cmake
+ Call Stack (most recent call first):
+ CMakeLists.txt:61 (project)
+
+
+ CMake Error: CMake was unable to find a build program corresponding to "Unix Makefiles".  CMAKE_MAKE_PROGRAM is not set.  You probably need to select a different build tool.
+ CMake Error: CMAKE_CXX_COMPILER not set, after EnableLanguage
+ -- Configuring incomplete, errors occurred!
+ ~/work/OreStudio/OreStudio ~/work/OreStudio/OreStudio
+ ~/work/OreStudio/OreStudio
+ cpp/autobuilder: No supported build command succeeded.
+ cpp/autobuilder: autobuild summary.
+ Error: We were unable to automatically build your code. Please replace the call to the autobuild action with your custom build steps. Encountered a fatal error while running "/opt/hostedtoolcache/CodeQL/2.18.0/x64/codeql/cpp/tools/autobuild.sh". Exit code was 1 and last log line was: cpp/autobuilder: autobuild summary. See the logs for more details.
+#+end_src
+
+This may be due to a missing sub-module for vcpkg.
+
 
 *** STARTED Updates to Qt UI                                           :code:
     :LOGBOOK:

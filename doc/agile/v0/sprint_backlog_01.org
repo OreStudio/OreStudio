@@ -18,21 +18,21 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2024-07-14 Sun 23:32]
+#+CAPTION: Clock summary at [2024-07-16 Tue 00:03]
 |       | <75>                                              |         |       |      |       |
 | Tags  | Headline                                          | Time    |       |      |     % |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                      | *70:53* |       |      | 100.0 |
+|       | *Total time*                                      | *71:30* |       |      | 100.0 |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                           | 70:53   |       |      | 100.0 |
-|       | Active                                            |         | 70:53 |      | 100.0 |
+|       | Stories                                           | 71:30   |       |      | 100.0 |
+|       | Active                                            |         | 71:30 |      | 100.0 |
 | agile | Sprint and product backlog refinement             |         |       | 3:26 |   4.8 |
 | infra | Create a basic git hub repository                 |         |       | 0:35 |   0.8 |
 | infra | Setup a discord channel for the project           |         |       | 0:14 |   0.3 |
 | infra | Setup vcpkg and cmake                             |         |       | 1:21 |   1.9 |
 | infra | Setup github actions                              |         |       | 1:21 |   1.9 |
-| infra | Create and upload a package                       |         |       | 3:28 |   4.9 |
-| code  | Create a basic project structure                  |         |       | 2:10 |   3.1 |
+| infra | Create and upload a package                       |         |       | 3:28 |   4.8 |
+| code  | Create a basic project structure                  |         |       | 2:10 |   3.0 |
 | code  | Add a Qt hello world                              |         |       | 3:08 |   4.4 |
 | code  | Add a splash screen to applciation                |         |       | 0:41 |   1.0 |
 | infra | Add basic site                                    |         |       | 0:34 |   0.8 |
@@ -42,20 +42,20 @@
 | doc   | Add project objective to readme                   |         |       | 2:24 |   3.4 |
 | code  | Add basic logging support                         |         |       | 1:14 |   1.7 |
 | infra | Add nightly support with memcheck                 |         |       | 3:21 |   4.7 |
-| code  | Clean up toolchains and presets                   |         |       | 1:53 |   2.7 |
+| code  | Clean up toolchains and presets                   |         |       | 1:53 |   2.6 |
 | doc   | Generate Doxygen documentation and add it to site |         |       | 0:51 |   1.2 |
 | doc   | Copy domain notes on core concepts                |         |       | 4:41 |   6.6 |
 | infra | Valgrind fails to run unit tests                  |         |       | 1:12 |   1.7 |
 | infra | Initial sanity test generated packages            |         |       | 0:25 |   0.6 |
-| code  | Add command line options support                  |         |       | 5:45 |   8.1 |
+| code  | Add command line options support                  |         |       | 5:45 |   8.0 |
 | infra | Unit tests show up twice in nightlies             |         |       | 0:13 |   0.3 |
 | doc   | Add recipes for command line                      |         |       | 0:51 |   1.2 |
-| agile | Use a bar chart for sprint resourcing cost        |         |       | 2:57 |   4.2 |
+| agile | Use a bar chart for sprint resourcing cost        |         |       | 2:57 |   4.1 |
 | agile | Classify stories by type                          |         |       | 0:34 |   0.8 |
 | code  | Update C++ standard                               |         |       | 0:29 |   0.7 |
 | infra | Setup laptop for development                      |         |       | 3:47 |   5.3 |
-| infra | Add database support for currency                 |         |       | 1:19 |   1.9 |
-| code  | Add XML parsing support for currency              |         |       | 6:32 |   9.2 |
+| infra | Add database support for currency                 |         |       | 1:19 |   1.8 |
+| code  | Add XML parsing support for currency              |         |       | 6:32 |   9.1 |
 | code  | Add JSON support for currency                     |         |       | 2:03 |   2.9 |
 | code  | Add basic widgets to display currencies           |         |       | 1:50 |   2.6 |
 | infra | Ignore vcpkg warnings                             |         |       | 0:21 |   0.5 |
@@ -63,7 +63,7 @@
 | code  | Create a containing structure for data            |         |       | 0:28 |   0.7 |
 | doc   | Convert plantuml diagrams to org-babel            |         |       | 1:05 |   1.5 |
 | infra | Setup code quality actions                        |         |       | 0:58 |   1.4 |
-| code  | Updates to Qt UI                                  |         |       | 6:07 |   8.6 |
+| code  | Updates to Qt UI                                  |         |       | 6:44 |   9.4 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                    :agile:
@@ -993,6 +993,7 @@ This may be due to a missing sub-module for vcpkg.
 
 *** STARTED Updates to Qt UI                                           :code:
     :LOGBOOK:
+    CLOCK: [2024-07-15 Mon 23:26]--[2024-07-16 Tue 00:03] =>  0:37
     CLOCK: [2024-07-14 Sun 18:46]--[2024-07-14 Sun 19:27] =>  0:41
     CLOCK: [2024-07-14 Sun 16:33]--[2024-07-14 Sun 16:53] =>  0:20
     CLOCK: [2024-07-13 Sat 21:41]--[2024-07-13 Sat 23:33] =>  1:52
@@ -1012,6 +1013,11 @@ We need to do some minor tidy-ups to the Qt UI:
   currencies tab.
 - columns do not have names.
 - rows are too big.
+
+Notes:
+
+- spent some time analysing [[https://github.com/FastTrackOrg/FastTrack/][FastTrack]], a Qt application. Need to do a write up
+  of the features we can copy across.
 
 Links:
 

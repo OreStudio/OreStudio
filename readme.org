@@ -137,6 +137,19 @@ implications:
   quant logic as possible, making it more accessible to regular developers. Our
   focus is on [[https://en.wikipedia.org/wiki/Create,_read,_update_and_delete][CRUD]] infrastructure and graphical presentation.
 
+You may think this architecture is far too simple, and you are probably right.
+But we prefer to align ourselves with others such as Schmidt and his call for
+[[https://www.radicalsimpli.city/]["Radical Simplicity in Technology"]]:
+
+#+begin_quote
+As developers we love complexity. We create complexity with SPAs, Vue/React,
+Transpiling, Typescript, Babel, Webpack, PureCSS, GraphQL, JSON, and on the
+backend with microservices, protobuf, Kafka, InfluxDB, or NoSQL databases. This
+complexity is accidental and not in the problem domain. This complexity slows us
+down and makes development tiresome. This complexity leads to shallow domains.
+Radical Simplicity makes development fast and joyful again.
+#+end_quote
+
 *** Technology
 
 The implementation language of choice is [[https://isocpp.org/][C++]], for somewhat arbitrary reasons.

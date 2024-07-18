@@ -16,6 +16,7 @@
 #+html: <a href="https://visualstudio.microsoft.com/vs/whatsnew/"><img alt="MSVC Version" src="https://img.shields.io/badge/MSVC-2022-blue.svg"/></a>
 #+html: <a href="https://doc.qt.io/qt-6/"><img alt="Qt6" src="https://img.shields.io/badge/Qt-6-blue"/></a>
 #+html: <a href="https://orestudio.github.io/OreStudio/doxygen/html/index.html"><img alt="Doxygen" src="https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/doxygen_badge.svg"/></a>
+#+html: <a href="https://orestudio.github.io/OreStudio/doc/agile/v0/sprint_backlog_01.html"><img alt="Agile Sprint" src="https://img.shields.io/badge/Sprint-1-blue.svg"/></a>
 #+html: <a href="https://www.gnu.org/software/emacs/"><img alt="GNU Emacs" src="https://img.shields.io/static/v1?logo=gnuemacs&logoColor=fafafa&label=Made%20with&message=GNU%20Emacs&color=7F5AB6&style=flat"/></a>
 #+html: <a href="https://discord.gg/gcrYsjW3pd"><img alt="Discord" src="https://img.shields.io/discord/1254062142626332732?color=5865F2&amp;logo=discord&amp;logoColor=white"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/pulse"><img alt="Commit Activity" src="https://img.shields.io/github/commit-activity/m/OreStudio/OreStudio"/></a>
@@ -138,7 +139,7 @@ implications:
   focus is on [[https://en.wikipedia.org/wiki/Create,_read,_update_and_delete][CRUD]] infrastructure and graphical presentation.
 
 You may think this architecture is far too simple, and you are probably right.
-But we prefer to align ourselves with others such as Schmidt and his call for
+We prefer to align ourselves with others such as Schmidt, and heed his call for
 [[https://www.radicalsimpli.city/]["Radical Simplicity in Technology"]]:
 
 #+begin_quote
@@ -164,10 +165,10 @@ Quant Devs. However, in the interest of simplicity, we'll stick to just the
 *** About the Author
 
 I am the single maintainer of ORE Studio and thus its [[https://en.wikipedia.org/wiki/Benevolent_dictator_for_life][BFDL]]. If you want to know
-more about me, do have a peek at [[https://mcraveiro.github.io/][my personal website]], in particular [[https://mcraveiro.github.io/about.html][this section]]
-section. As with most open source projects, [[https://github.com/OreStudio/OreStudio/blob/main/CONTRIBUTING.md][PRs are welcome]] but they must be in
-the spirit of what has been described thus far. And you can always reach out to
-our [[https://discord.gg/gcrYsjW3pd][discord channel]] for a chat.
+more about me, do have a peek at [[https://mcraveiro.github.io/][my personal website]] --- the [[https://mcraveiro.github.io/about.html][about section]] in
+particular. As with most open source projects, [[https://github.com/OreStudio/OreStudio/blob/main/CONTRIBUTING.md][PRs are welcome]] but they must be
+in the spirit of what has been described thus far. And you can always reach out
+to our [[https://discord.gg/gcrYsjW3pd][discord channel]] for a chat.
 
 * Project Documentation
 
@@ -177,10 +178,9 @@ variation of [[https://en.wikipedia.org/wiki/Literate_programming][literate prog
 our notes and [[https://orgmode.org/worg/org-contrib/babel/][org-babel]] to make code blocks executable where possible. Org-roam
 is an implementation of the [[https://en.wikipedia.org/wiki/Zettelkasten][Zettelkasten method]], though you need not care too
 much about it if you do not use Emacs; just browse through the content via [[https://orestudio.github.io/OreStudio/][the
-website]] and use page "[[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]]" as the "entry point" for most of the
-documentation of this project. Unfortunately this only works via the website, so
-you will not see some of the links within GitHub's rendering of the org-mode
-files.
+website]] and start with "[[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]]" as the entry point. Unfortunately this
+only works via the website, so you will not see some of the links within
+GitHub's rendering of the org-mode files.
 
 If you do use Emacs, you can make use of a much richer roam experience. The file
 [[https://github.com/OreStudio/OreStudio/blob/main/.dir-locals.el][.dir-locals.el]] is configured to generate a local roam database when you run:
@@ -189,16 +189,19 @@ If you do use Emacs, you can make use of a much richer roam experience. The file
 (org-roam-db-sync)
 #+end_src
 
-You can then jump through all the pages using the normal org-roam facilities.
+This snippet, as well as many like it, is an executable snippet via org-babel.
+Once you run it, you can then jump through all the pages using the normal
+org-roam facilities.
 
 Lastly, you may notice that this content is somewhat academic in tone. Though we
 are not affiliated with any academic effort, I have kept a lot of bad habits
 from my [[https://masd-project.github.io/progen/docs/masd_academic_papers.html#ID-5FA85AF3-E55C-B174-D943-1E2246CAEB14][days at university]] and these inform the approach --- for example how we
 research prior art, organise the documentation, the use of [[https://github.com/OreStudio/OreStudio/blob/464525bd80e8cb5d69550bbcf06ed3da4e702966/doc/bibliography.bib][references]] and so on.
 Nonetheless, rather than a research model, the project intends to be useful to
-academics and practitioners alike --- within its stated constraints. If you do
-want to use the project for research, a [[https://www.earthdata.nasa.gov/engage/doi-process][DOI]] will be made available in [[https://zenodo.org/][Zenodo]]
-when we do our first release.
+academics and practitioners alike, within its stated constraints. If you do want
+to use the project for research, a [[https://www.earthdata.nasa.gov/engage/doi-process][DOI]] will be made available in [[https://zenodo.org/][Zenodo]] when we
+do our first release. Once sufficient functionality has been implemented to
+justify the effort, we'll write a Technical Report describing the tool.
 
 * Binary Packages
 

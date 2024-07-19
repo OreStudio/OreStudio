@@ -19,11 +19,11 @@
  */
 #include <QTimer>
 #include <QApplication>
-#include <QSplashScreen>
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/log/logging_configuration.hpp"
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
 #include "ores.qt/MainWindow.hpp"
+#include "ores.qt/SplashScreen.hpp"
 
 namespace {
 
@@ -46,8 +46,7 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
 
-    QSplashScreen splash;
-    splash.setPixmap(QPixmap("splash_screen.png"));
+    ores::qt::SplashScreen splash(QPixmap("splash_screen.png"));
     splash.show();
 
     ores::qt::MainWindow mainWindow;

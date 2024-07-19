@@ -17,36 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_MAIN_WINDOW_HPP
-#define ORES_QT_MAIN_WINDOW_HPP
-
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
-#include <QMainWindow>
-#include "ui_MainWindow.h"
-#include "ores.qt/CurrencyModel.hpp"
-
-namespace Ui {
-
-class MainWindow;
-
-}
+#include "ores.qt/SplashScreen.hpp"
 
 namespace ores::qt {
 
-class MainWindow : public QMainWindow {
-    Q_OBJECT
+SplashScreen::SplashScreen(const QPixmap& pixmap)
+    : QSplashScreen(pixmap) {}
 
-public:
-    explicit MainWindow(QWidget* parent = 0);
-
-private:
-    Ui::MainWindow* ui_;
-    ores::qt::CurrencyModel currencyModel_;
-};
-
+void SplashScreen::paintEvent(QPaintEvent* e) {
+    QSplashScreen::paintEvent(e);
+    painted_ = true;
 }
 
-#endif
+void SplashScreen::ensureFirstPaint() const {
+    while(!painted_) {
+        QThread::usleep(1e3);
+        qApp->processEvents();
+    }
+}
+
+}

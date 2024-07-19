@@ -30,27 +30,30 @@ namespace {
 using namespace ores::utility::log;
 auto lg(logger_factory("main"));
 
+ores::utility::log::logging_configuration createLoggingConfiguration() {
+    ores::utility::log::logging_configuration r;
+    r.filename("ores.console.log");
+    r.output_to_console(false);
+    r.output_directory("log");
+    r.severity("debug");
+    return r;
+}
+
 }
 
 int main(int argc, char *argv[])
 {
-    ores::utility::log::logging_configuration cfg;
-    cfg.filename("ores.console.log");
-    cfg.output_to_console(false);
-    cfg.output_directory("log");
-    cfg.severity("debug");
-
+    auto cfg(createLoggingConfiguration());
     ores::utility::log::scoped_lifecycle_manager slm;
     slm.initialise(cfg);
+
     BOOST_LOG_SEV(lg, info) << "Started UI.";
 
     QApplication app(argc, argv);
-
     ores::qt::SplashScreen splash(QPixmap("splash_screen.png"));
     splash.show();
 
     ores::qt::MainWindow mainWindow;
-
     QTimer::singleShot(1000, &splash, SLOT(close()));
     QTimer::singleShot(1000, &mainWindow, SLOT(show()));
 

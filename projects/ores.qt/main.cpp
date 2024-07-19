@@ -18,14 +18,12 @@
  *
  */
 #include <QTimer>
-#include <QTableView>
 #include <QApplication>
 #include <QSplashScreen>
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/log/logging_configuration.hpp"
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
-#include "ui_main_window.h"
-#include "ores.qt/CurrencyModel.hpp"
+#include "ores.qt/MainWindow.hpp"
 
 namespace {
 
@@ -52,16 +50,7 @@ int main(int argc, char *argv[])
     splash.setPixmap(QPixmap("splash_screen.png"));
     splash.show();
 
-    QMainWindow mainWindow;
-    Ui::MainWindow window;
-    window.setupUi(&mainWindow);
-    ores::qt::CurrencyModel currencyModel;
-    window.currencyTableView->setModel(&currencyModel);
-    window.currencyTableView->resizeRowsToContents();
-    QHeaderView* verticalHeader = window.currencyTableView->verticalHeader();
-    QHeaderView* horizontalHeader =  window.currencyTableView->horizontalHeader();
-    verticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
-    horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ores::qt::MainWindow mainWindow;
 
     QTimer::singleShot(1000, &splash, SLOT(close()));
     QTimer::singleShot(1000, &mainWindow, SLOT(show()));

@@ -22,8 +22,9 @@ set(CMAKE_AUTORCC ON)
 
 add_executable(ores.qt
     main.cpp
+    MainWindow.cpp
     CurrencyModel.cpp
-    main_window.ui
+    MainWindow.ui
 )
 
 target_link_libraries(ores.qt PRIVATE

@@ -18,53 +18,53 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2024-07-19 Fri 23:39]
+#+CAPTION: Clock summary at [2024-07-20 Sat 22:51]
 |       | <75>                                               |         |       |      |       |
 | Tags  | Headline                                           | Time    |       |      |     % |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                       | *73:30* |       |      | 100.0 |
+|       | *Total time*                                       | *74:55* |       |      | 100.0 |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                            | 73:30   |       |      | 100.0 |
-|       | Active                                             |         | 73:30 |      | 100.0 |
-| agile | Sprint and product backlog refinement              |         |       | 3:26 |   4.7 |
+|       | Stories                                            | 74:55   |       |      | 100.0 |
+|       | Active                                             |         | 74:55 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       | 3:26 |   4.6 |
 | infra | Create a basic git hub repository                  |         |       | 0:35 |   0.8 |
 | infra | Setup a discord channel for the project            |         |       | 0:14 |   0.3 |
 | infra | Setup vcpkg and cmake                              |         |       | 1:21 |   1.8 |
 | infra | Setup github actions                               |         |       | 1:21 |   1.8 |
-| infra | Create and upload a package                        |         |       | 3:28 |   4.7 |
+| infra | Create and upload a package                        |         |       | 3:28 |   4.6 |
 | code  | Create a basic project structure                   |         |       | 2:10 |   2.9 |
-| code  | Add a Qt hello world                               |         |       | 3:08 |   4.3 |
+| code  | Add a Qt hello world                               |         |       | 3:08 |   4.2 |
 | code  | Add a splash screen to applciation                 |         |       | 0:41 |   0.9 |
 | infra | Add basic site                                     |         |       | 0:34 |   0.8 |
 | code  | Add modeling infrastructure                        |         |       | 1:30 |   2.0 |
 | infra | Fix code syntax highlighting in site               |         |       | 0:10 |   0.2 |
-| doc   | Merge index with readme                            |         |       | 0:42 |   1.0 |
-| doc   | Add project objective to readme                    |         |       | 2:24 |   3.3 |
-| code  | Add basic logging support                          |         |       | 1:14 |   1.7 |
-| infra | Add nightly support with memcheck                  |         |       | 3:21 |   4.6 |
-| code  | Clean up toolchains and presets                    |         |       | 1:53 |   2.6 |
-| doc   | Generate Doxygen documentation and add it to site  |         |       | 0:51 |   1.2 |
-| doc   | Copy domain notes on core concepts                 |         |       | 4:41 |   6.4 |
+| doc   | Merge index with readme                            |         |       | 0:42 |   0.9 |
+| doc   | Add project objective to readme                    |         |       | 2:24 |   3.2 |
+| code  | Add basic logging support                          |         |       | 1:14 |   1.6 |
+| infra | Add nightly support with memcheck                  |         |       | 3:21 |   4.5 |
+| code  | Clean up toolchains and presets                    |         |       | 1:53 |   2.5 |
+| doc   | Generate Doxygen documentation and add it to site  |         |       | 0:51 |   1.1 |
+| doc   | Copy domain notes on core concepts                 |         |       | 4:41 |   6.3 |
 | infra | Valgrind fails to run unit tests                   |         |       | 1:12 |   1.6 |
 | infra | Initial sanity test generated packages             |         |       | 0:25 |   0.6 |
-| code  | Add command line options support                   |         |       | 5:45 |   7.8 |
+| code  | Add command line options support                   |         |       | 5:45 |   7.7 |
 | infra | Unit tests show up twice in nightlies              |         |       | 0:13 |   0.3 |
-| doc   | Add recipes for command line                       |         |       | 0:51 |   1.2 |
-| agile | Use a bar chart for sprint resourcing cost         |         |       | 2:57 |   4.0 |
+| doc   | Add recipes for command line                       |         |       | 0:51 |   1.1 |
+| agile | Use a bar chart for sprint resourcing cost         |         |       | 2:57 |   3.9 |
 | agile | Classify stories by type                           |         |       | 0:34 |   0.8 |
-| code  | Update C++ standard                                |         |       | 0:29 |   0.7 |
+| code  | Update C++ standard                                |         |       | 0:29 |   0.6 |
 | infra | Setup laptop for development                       |         |       | 3:47 |   5.1 |
 | infra | Add database support for currency                  |         |       | 1:19 |   1.8 |
-| code  | Add XML parsing support for currency               |         |       | 6:32 |   8.9 |
-| code  | Add JSON support for currency                      |         |       | 2:03 |   2.8 |
-| code  | Add basic widgets to display currencies            |         |       | 1:50 |   2.5 |
+| code  | Add XML parsing support for currency               |         |       | 6:32 |   8.7 |
+| code  | Add JSON support for currency                      |         |       | 2:03 |   2.7 |
+| code  | Add basic widgets to display currencies            |         |       | 1:50 |   2.4 |
 | infra | Ignore vcpkg warnings                              |         |       | 0:21 |   0.5 |
 | infra | Add badges from JKQTPlotter                        |         |       | 0:13 |   0.3 |
 | code  | Investigate other Qt Applications with similar UIs |         |       | 2:09 |   2.9 |
 | code  | Create a containing structure for data             |         |       | 0:28 |   0.6 |
-| doc   | Convert plantuml diagrams to org-babel             |         |       | 1:05 |   1.5 |
+| doc   | Convert plantuml diagrams to org-babel             |         |       | 1:05 |   1.4 |
 | infra | Setup code quality actions                         |         |       | 0:58 |   1.3 |
-| code  | Refactor Qt UI                                     |         |       | 6:35 |   9.0 |
+| code  | Refactor Qt UI                                     |         |       | 8:00 |  10.7 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                    :agile:
@@ -1025,6 +1025,9 @@ This may be due to a missing sub-module for vcpkg.
 
 *** STARTED Refactor Qt UI                                             :code:
     :LOGBOOK:
+    CLOCK: [2024-07-20 Sat 22:06]--[2024-07-20 Sat 22:51] =>  0:45
+    CLOCK: [2024-07-20 Sat 21:21]--[2024-07-20 Sat 21:48] =>  0:27
+    CLOCK: [2024-07-19 Fri 23:40]--[2024-07-19 Fri 23:53] =>  0:13
     CLOCK: [2024-07-19 Fri 22:30]--[2024-07-19 Fri 23:39] =>  1:09
     CLOCK: [2024-07-14 Sun 16:33]--[2024-07-14 Sun 16:53] =>  0:20
     CLOCK: [2024-07-13 Sat 21:41]--[2024-07-13 Sat 23:33] =>  1:52
@@ -1058,6 +1061,14 @@ Links:
 - [[https://forum.qt.io/topic/89920/draw-in-an-empty-qtabwidget][Draw in an empty QTabWidget]]
 - [[https://forum.qt.io/topic/75414/new-thread-to-add-new-tab-when-menu-item-is-clicked][New Thread to add new tab when menu item is clicked]]
 - [[https://doc.qt.io/qt-6/modelview.html][Model/View Tutorial]]
+
+*** Add progress bar to splash                                         :code:
+
+Apparently its possible to add a progress bar to the splash.
+
+Links:
+
+- [[https://stackoverflow.com/questions/12682888/qt-c-aligning-qprogressbar-inside-a-qsplashscreen][Qt C++ - Aligning QProgressBar inside a QSplashScreen]]
 
 *** Add support for =windows-msvc-clang-cl=                           :infra:
 

@@ -26,7 +26,6 @@
 
 #include <QMainWindow>
 #include "ui_MainWindow.h"
-#include "ores.qt/CurrencyModel.hpp"
 
 namespace Ui {
 
@@ -40,11 +39,13 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget* parent = 0);
+    explicit MainWindow(QWidget* parent = nullptr);
+
+private slots:
+    void openCurrencyTab();
 
 private:
     Ui::MainWindow* ui_;
-    ores::qt::CurrencyModel currencyModel_;
 };
 
 }

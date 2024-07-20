@@ -19,6 +19,7 @@
  */
 #include <QTableView>
 #include "ui_MainWindow.h"
+#include "ores.qt/MainTab.hpp"
 #include "ores.qt/MainWindow.hpp"
 
 namespace ores::qt {
@@ -28,13 +29,14 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_(new Ui::MainWindow) {
 
     ui_->setupUi(this);
+    ui_->horizontalLayout_3->addWidget(new MainTab());
 
-    ui_->currencyTableView->setModel(&currencyModel_);
-    ui_->currencyTableView->resizeRowsToContents();
-    QHeaderView* verticalHeader = ui_->currencyTableView->verticalHeader();
-    QHeaderView* horizontalHeader =  ui_->currencyTableView->horizontalHeader();
-    verticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
-    horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
+
+void MainWindow::openCurrencyTab() {
+    //ui->tabWidget->addTab(new tabScreen(), "tabtitle");
+
+}
+
 
 }

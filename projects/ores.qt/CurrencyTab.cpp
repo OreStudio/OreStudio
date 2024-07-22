@@ -17,39 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_MAIN_WINDOW_HPP
-#define ORES_QT_MAIN_WINDOW_HPP
-
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
-#include <QMainWindow>
-#include "ores.qt/MainTab.hpp"
-#include "ui_MainWindow.h"
-
-namespace Ui {
-
-class MainWindow;
-
-}
+#include "ui_CurrencyTableView.h"
+#include "ores.qt/CurrencyTab.hpp"
 
 namespace ores::qt {
 
-class MainWindow : public QMainWindow {
-    Q_OBJECT
-
-public:
-    explicit MainWindow(QWidget* parent = nullptr);
-
-private slots:
-    void openCurrencyTab();
-
-private:
-    Ui::MainWindow* ui_;
-    QTabWidget* mainTab_;
-};
-
+CurrencyTab::CurrencyTab(QWidget* parent) {
+    ui_->setupUi(parent);
+    ui_->currencyTableView->setModel(&currencyModel_);
+    ui_->currencyTableView->resizeRowsToContents();
+    QHeaderView* verticalHeader = ui_->currencyTableView->verticalHeader();
+    QHeaderView* horizontalHeader =  ui_->currencyTableView->horizontalHeader();
+    verticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+    horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
 
-#endif
+}

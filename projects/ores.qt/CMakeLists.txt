@@ -27,6 +27,8 @@ add_executable(ores.qt
     SplashScreen.cpp
     CurrencyModel.cpp
     MainTab.cpp
+    CurrencyTab.cpp
+    CurrencyTableView.ui
 )
 
 target_link_libraries(ores.qt PRIVATE

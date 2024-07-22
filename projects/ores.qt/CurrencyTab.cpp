@@ -22,8 +22,9 @@
 
 namespace ores::qt {
 
-CurrencyTab::CurrencyTab(QWidget* parent) {
-    ui_->setupUi(parent);
+CurrencyTab::CurrencyTab(QWidget* parent)
+    : QWidget(parent), ui_(new Ui::Form) {
+    ui_->setupUi(this);
     ui_->currencyTableView->setModel(&currencyModel_);
     ui_->currencyTableView->resizeRowsToContents();
     QHeaderView* verticalHeader = ui_->currencyTableView->verticalHeader();

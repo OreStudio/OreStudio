@@ -32,5 +32,4 @@ void MainTab::paintEvent(QPaintEvent* e ) {
     }
 }
 
-
 }

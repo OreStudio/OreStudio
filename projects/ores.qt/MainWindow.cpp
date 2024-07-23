@@ -19,7 +19,6 @@
  */
 #include <QTableView>
 #include "ui_MainWindow.h"
-#include "ores.qt/CurrencyTab.hpp"
 #include "ores.qt/MainWindow.hpp"
 
 namespace ores::qt {
@@ -29,13 +28,10 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->setupUi(this);
     ui_->horizontalLayout_3->addWidget(mainTab_);
 
-    connect(ui_->CurrenciesAction, &QAction::triggered, this, [=]() {
-        this->openCurrencyTab();
+    connect(ui_->CurrenciesAction, &QAction::triggered, mainTab_, [=, this]() {
+        mainTab_->openCurrencyTab();
     });
 }
 
-void MainWindow::openCurrencyTab() {
-    mainTab_->addTab(new CurrencyTab(), "Currencies");
-}
 
 }

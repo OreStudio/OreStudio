@@ -42,12 +42,9 @@ class MainWindow : public QMainWindow {
 public:
     explicit MainWindow(QWidget* parent = nullptr);
 
-private slots:
-    void openCurrencyTab();
-
 private:
     Ui::MainWindow* ui_;
-    QTabWidget* mainTab_;
+    MainTab* mainTab_;
 };
 
 }

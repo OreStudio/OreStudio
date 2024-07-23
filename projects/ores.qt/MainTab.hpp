@@ -34,8 +34,15 @@ class MainTab : public QTabWidget {
 public:
     explicit MainTab(QWidget* parent = nullptr);
 
+public slots:
+    void openCurrencyTab();
+    void closeTab(const int& index);
+
 protected:
     void paintEvent(QPaintEvent* e ) override;
+
+private:
+    int currenciesIndex_;
 };
 
 }

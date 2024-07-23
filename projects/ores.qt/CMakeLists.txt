@@ -28,7 +28,6 @@ add_executable(ores.qt
     CurrencyModel.cpp
     MainTab.cpp
     CurrencyTab.cpp
-    CurrencyTableView.ui
 )
 
 target_link_libraries(ores.qt PRIVATE

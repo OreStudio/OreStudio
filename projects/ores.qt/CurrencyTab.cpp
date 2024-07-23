@@ -17,18 +17,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ui_CurrencyTableView.h"
+#include <QtCore/QVariant>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QHeaderView>
+#include <QtWidgets/QTableView>
+#include <QtWidgets/QWidget>
 #include "ores.qt/CurrencyTab.hpp"
 
 namespace ores::qt {
 
-CurrencyTab::CurrencyTab(QWidget* parent)
-    : QWidget(parent), ui_(new Ui::Form) {
-    ui_->setupUi(this);
-    ui_->currencyTableView->setModel(&currencyModel_);
-    ui_->currencyTableView->resizeRowsToContents();
-    QHeaderView* verticalHeader = ui_->currencyTableView->verticalHeader();
-    QHeaderView* horizontalHeader =  ui_->currencyTableView->horizontalHeader();
+CurrencyTab::CurrencyTab(QWidget* parent) : QWidget(parent) {
+
+    verticalLayout_ = new QVBoxLayout(this);
+    currencyTableView_ = new QTableView(this);
+    verticalLayout_->addWidget(currencyTableView_);
+
+    currencyTableView_->setObjectName("currencyTableView");
+    currencyTableView_->setGeometry(QRect(0, 0, 1071, 641));
+    currencyTableView_->setAlternatingRowColors(true);
+    currencyTableView_->setSelectionMode(QAbstractItemView::SingleSelection);
+    currencyTableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
+    currencyTableView_->setModel(&currencyModel_);
+    currencyTableView_->resizeRowsToContents();
+
+    QHeaderView* verticalHeader(currencyTableView_->verticalHeader());
+    QHeaderView* horizontalHeader(currencyTableView_->horizontalHeader());
     verticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
     horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
 }

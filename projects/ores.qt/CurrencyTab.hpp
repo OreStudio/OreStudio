@@ -25,13 +25,9 @@
 #endif
 
 #include <QWidget>
+#include <QTableView>
+#include <QVBoxLayout>
 #include "ores.qt/CurrencyModel.hpp"
-
-namespace Ui {
-
-class Form;
-
-}
 
 namespace ores::qt {
 
@@ -42,7 +38,8 @@ public:
     explicit CurrencyTab(QWidget* parent = nullptr);
 
 private:
-    Ui::Form* ui_;
+    QVBoxLayout* verticalLayout_;
+    QTableView* currencyTableView_;
     ores::qt::CurrencyModel currencyModel_;
 };
 

@@ -18,7 +18,7 @@
  *
  */
 #include <QPainter>
-#include "ores.qt/CurrencyTab.hpp"
+#include "ores.qt/CurrencyTabPage.hpp"
 #include "ores.qt/MainTabWidget.hpp"
 
 namespace ores::qt {
@@ -28,11 +28,11 @@ MainTabWidget::MainTabWidget(QWidget* parent) : QTabWidget(parent), currenciesIn
     connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTab(int)));
 }
 
-void MainTabWidget::openCurrencyTab() {
+void MainTabWidget::openCurrencyTabPage() {
     if (currenciesIndex_ != -1) {
         setCurrentIndex(currenciesIndex_);
     } else {
-        currenciesIndex_ = addTab(new CurrencyTab(), "Currencies");
+        currenciesIndex_ = addTab(new CurrencyTabPage(), "Currencies");
     }
 }
 

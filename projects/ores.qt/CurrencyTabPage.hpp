@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_CURRENCYTABLEVIEW_HPP
-#define ORES_QT_CURRENCYTABLEVIEW_HPP
+#ifndef ORES_QT_CURRENCY_TAB_PAGE_HPP
+#define ORES_QT_CURRENCY_TAB_PAGE_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -31,11 +31,11 @@
 
 namespace ores::qt {
 
-class CurrencyTab : public QWidget {
+class CurrencyTabPage : public QWidget {
     Q_OBJECT
 
 public:
-    explicit CurrencyTab(QWidget* parent = nullptr);
+    explicit CurrencyTabPage(QWidget* parent = nullptr);
 
 private:
     QVBoxLayout* verticalLayout_;

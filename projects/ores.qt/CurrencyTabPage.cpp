@@ -18,15 +18,15 @@
  *
  */
 #include <QtCore/QVariant>
-#include <QtWidgets/QApplication>
+#include <QtWidgets/QWidget>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QTableView>
-#include <QtWidgets/QWidget>
-#include "ores.qt/CurrencyTab.hpp"
+#include <QtWidgets/QApplication>
+#include "ores.qt/CurrencyTabPage.hpp"
 
 namespace ores::qt {
 
-CurrencyTab::CurrencyTab(QWidget* parent) : QWidget(parent) {
+CurrencyTabPage::CurrencyTabPage(QWidget* parent) : QWidget(parent) {
 
     verticalLayout_ = new QVBoxLayout(this);
     currencyTableView_ = new QTableView(this);

@@ -35,7 +35,7 @@ public:
     explicit MainTabWidget(QWidget* parent = nullptr);
 
 public slots:
-    void openCurrencyTab();
+    void openCurrencyTabPage();
     void closeTab(const int& index);
 
 protected:

@@ -29,9 +29,8 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->horizontalLayout_3->addWidget(mainTab_);
 
     connect(ui_->CurrenciesAction, &QAction::triggered, mainTab_, [=, this]() {
-        mainTab_->openCurrencyTab();
+        mainTab_->openCurrencyTabPage();
     });
 }
-
 
 }

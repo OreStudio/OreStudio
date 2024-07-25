@@ -34,7 +34,10 @@ target_link_libraries(ores.qt PRIVATE
     ores.core.lib
     Qt6::Core
     Qt6::Gui
-    Qt6::Widgets)
+    Qt6::Widgets
+    Qt6::Sql
+    Qt6::SqlPrivate
+)
 
 target_include_directories(ores.qt
     PRIVATE ${CMAKE_SOURCE_DIR}/projects)

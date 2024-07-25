@@ -17,9 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+
+#include <QDebug>
 #include <QTableView>
+#include <QtSql/QSqlError>
 #include "ui_MainWindow.h"
+#include "ores.utility/log/logger.hpp"
 #include "ores.qt/MainWindow.hpp"
+
+namespace {
+
+using namespace ores::utility::log;
+auto lg(logger_factory("ores.qt.main_window"));
+
+}
 
 namespace ores::qt {
 
@@ -31,6 +42,21 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->CurrenciesAction, &QAction::triggered, mainTab_, [=, this]() {
         mainTab_->openCurrencyTabPage();
     });
+
+    // FIXME: test
+    database_ = QSqlDatabase::addDatabase("QPSQL");
+    database_.setHostName("localhost");
+    database_.setDatabaseName("oresdb");
+    database_.setPort(5433);
+    database_.setPassword("ores");
+    database_.setUserName("ores");
+    if (database_.open())
+    {
+        BOOST_LOG_SEV(lg, info) << "Opened connection to database.";
+    }  else {
+        BOOST_LOG_SEV(lg, error) << "Failed to open connection to database: "
+                                 << database_.lastError().text().toStdString();
+    }
 }
 
 }

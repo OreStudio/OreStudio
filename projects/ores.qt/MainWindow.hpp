@@ -25,6 +25,7 @@
 #endif
 
 #include <QMainWindow>
+#include <QtSql/QSqlDatabase>
 #include "ores.qt/MainTabWidget.hpp"
 #include "ui_MainWindow.h"
 
@@ -45,6 +46,7 @@ public:
 private:
     Ui::MainWindow* ui_;
     MainTabWidget* mainTab_;
+    QSqlDatabase database_;
 };
 
 }

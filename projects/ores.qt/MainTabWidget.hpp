@@ -28,11 +28,11 @@
 
 namespace ores::qt {
 
-class MainTab : public QTabWidget {
+class MainTabWidget : public QTabWidget {
     Q_OBJECT
 
 public:
-    explicit MainTab(QWidget* parent = nullptr);
+    explicit MainTabWidget(QWidget* parent = nullptr);
 
 public slots:
     void openCurrencyTab();

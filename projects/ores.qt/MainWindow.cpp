@@ -24,7 +24,7 @@
 namespace ores::qt {
 
 MainWindow::MainWindow(QWidget* parent) :
-    QMainWindow(parent), ui_(new Ui::MainWindow), mainTab_(new MainTab()) {
+    QMainWindow(parent), ui_(new Ui::MainWindow), mainTab_(new MainTabWidget()) {
     ui_->setupUi(this);
     ui_->horizontalLayout_3->addWidget(mainTab_);
 

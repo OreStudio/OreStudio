@@ -25,7 +25,7 @@
 #endif
 
 #include <QMainWindow>
-#include "ores.qt/MainTab.hpp"
+#include "ores.qt/MainTabWidget.hpp"
 #include "ui_MainWindow.h"
 
 namespace Ui {
@@ -44,7 +44,7 @@ public:
 
 private:
     Ui::MainWindow* ui_;
-    MainTab* mainTab_;
+    MainTabWidget* mainTab_;
 };
 
 }

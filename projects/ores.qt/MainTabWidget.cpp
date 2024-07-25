@@ -19,25 +19,24 @@
  */
 #include <QPainter>
 #include "ores.qt/CurrencyTab.hpp"
-#include "ores.qt/MainTab.hpp"
+#include "ores.qt/MainTabWidget.hpp"
 
 namespace ores::qt {
 
-MainTab::MainTab(QWidget* parent) : QTabWidget(parent), currenciesIndex_(-1) {
+MainTabWidget::MainTabWidget(QWidget* parent) : QTabWidget(parent), currenciesIndex_(-1) {
     setTabsClosable(true);
     connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTab(int)));
 }
 
-void MainTab::openCurrencyTab() {
+void MainTabWidget::openCurrencyTab() {
     if (currenciesIndex_ != -1) {
-        // setCurrentWidget(ui->tab);
         setCurrentIndex(currenciesIndex_);
     } else {
         currenciesIndex_ = addTab(new CurrencyTab(), "Currencies");
     }
 }
 
-void MainTab::closeTab(const int& index)
+void MainTabWidget::closeTab(const int& index)
 {
     if (index == -1) {
         return;
@@ -53,7 +52,7 @@ void MainTab::closeTab(const int& index)
     }
 }
 
-void MainTab::paintEvent(QPaintEvent* e ) {
+void MainTabWidget::paintEvent(QPaintEvent* e ) {
     QTabWidget::paintEvent(e);
     QPainter painter(this);
     if (count() == 0) {

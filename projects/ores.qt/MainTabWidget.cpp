@@ -23,7 +23,8 @@
 
 namespace ores::qt {
 
-MainTabWidget::MainTabWidget(QWidget* parent) : QTabWidget(parent), currenciesIndex_(-1) {
+MainTabWidget::MainTabWidget(QWidget* parent)
+    : QTabWidget(parent), currenciesIndex_(-1) {
     setTabsClosable(true);
     connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTab(int)));
 }

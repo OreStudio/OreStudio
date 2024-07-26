@@ -21,8 +21,8 @@
 
 namespace ores::qt {
 
-CurrencyModel2::CurrencyModel2(QObject* parent)
-    : QSqlRelationalTableModel(parent) {
+CurrencyModel2::CurrencyModel2(QObject* parent, const QSqlDatabase& db)
+    : QSqlRelationalTableModel(parent, db) {
 
     setTable("oresdb.currencies");
     setRelation(10, QSqlRelation("Currencies", "iso_code", "name"));

@@ -26,6 +26,7 @@ add_executable(ores.qt
     MainWindow.ui
     SplashScreen.cpp
     CurrencyModel.cpp
+    CurrencyModel2.cpp
     MainTabWidget.cpp
     CurrencyTabPage.cpp
 )

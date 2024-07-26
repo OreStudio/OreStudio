@@ -18,54 +18,54 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2024-07-26 Fri 00:12]
+#+CAPTION: Clock summary at [2024-07-27 Sat 00:23]
 |       | <75>                                               |         |       |       |       |
 | Tags  | Headline                                           | Time    |       |       |     % |
 |-------+----------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                       | *78:24* |       |       | 100.0 |
+|       | *Total time*                                       | *79:44* |       |       | 100.0 |
 |-------+----------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                            | 78:24   |       |       | 100.0 |
-|       | Active                                             |         | 78:24 |       | 100.0 |
-| agile | Sprint and product backlog refinement              |         |       |  3:26 |   4.4 |
+|       | Stories                                            | 79:44   |       |       | 100.0 |
+|       | Active                                             |         | 79:44 |       | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       |  3:26 |   4.3 |
 | infra | Create a basic git hub repository                  |         |       |  0:35 |   0.7 |
 | infra | Setup a discord channel for the project            |         |       |  0:14 |   0.3 |
 | infra | Setup vcpkg and cmake                              |         |       |  1:21 |   1.7 |
 | infra | Setup github actions                               |         |       |  1:21 |   1.7 |
-| infra | Create and upload a package                        |         |       |  3:28 |   4.4 |
-| code  | Create a basic project structure                   |         |       |  2:10 |   2.8 |
-| code  | Add a Qt hello world                               |         |       |  3:08 |   4.0 |
+| infra | Create and upload a package                        |         |       |  3:28 |   4.3 |
+| code  | Create a basic project structure                   |         |       |  2:10 |   2.7 |
+| code  | Add a Qt hello world                               |         |       |  3:08 |   3.9 |
 | code  | Add a splash screen to applciation                 |         |       |  0:41 |   0.9 |
 | infra | Add basic site                                     |         |       |  0:34 |   0.7 |
 | code  | Add modeling infrastructure                        |         |       |  1:30 |   1.9 |
 | infra | Fix code syntax highlighting in site               |         |       |  0:10 |   0.2 |
 | doc   | Merge index with readme                            |         |       |  0:42 |   0.9 |
-| doc   | Add project objective to readme                    |         |       |  2:24 |   3.1 |
-| code  | Add basic logging support                          |         |       |  1:14 |   1.6 |
-| infra | Add nightly support with memcheck                  |         |       |  3:21 |   4.3 |
+| doc   | Add project objective to readme                    |         |       |  2:24 |   3.0 |
+| code  | Add basic logging support                          |         |       |  1:14 |   1.5 |
+| infra | Add nightly support with memcheck                  |         |       |  3:21 |   4.2 |
 | code  | Clean up toolchains and presets                    |         |       |  1:53 |   2.4 |
 | doc   | Generate Doxygen documentation and add it to site  |         |       |  0:51 |   1.1 |
-| doc   | Copy domain notes on core concepts                 |         |       |  4:41 |   6.0 |
+| doc   | Copy domain notes on core concepts                 |         |       |  4:41 |   5.9 |
 | infra | Valgrind fails to run unit tests                   |         |       |  1:12 |   1.5 |
 | infra | Initial sanity test generated packages             |         |       |  0:25 |   0.5 |
-| code  | Add command line options support                   |         |       |  5:45 |   7.3 |
+| code  | Add command line options support                   |         |       |  5:45 |   7.2 |
 | infra | Unit tests show up twice in nightlies              |         |       |  0:13 |   0.3 |
 | doc   | Add recipes for command line                       |         |       |  0:51 |   1.1 |
-| agile | Use a bar chart for sprint resourcing cost         |         |       |  2:57 |   3.8 |
+| agile | Use a bar chart for sprint resourcing cost         |         |       |  2:57 |   3.7 |
 | agile | Classify stories by type                           |         |       |  0:34 |   0.7 |
 | code  | Update C++ standard                                |         |       |  0:29 |   0.6 |
-| infra | Setup laptop for development                       |         |       |  3:47 |   4.8 |
+| infra | Setup laptop for development                       |         |       |  3:47 |   4.7 |
 | infra | Add database support for currency                  |         |       |  1:19 |   1.7 |
-| code  | Add XML parsing support for currency               |         |       |  6:32 |   8.3 |
+| code  | Add XML parsing support for currency               |         |       |  6:32 |   8.2 |
 | code  | Add JSON support for currency                      |         |       |  2:03 |   2.6 |
 | code  | Add basic widgets to display currencies            |         |       |  1:50 |   2.3 |
 | infra | Ignore vcpkg warnings                              |         |       |  0:21 |   0.4 |
 | infra | Add badges from JKQTPlotter                        |         |       |  0:13 |   0.3 |
 | code  | Investigate other Qt Applications with similar UIs |         |       |  2:09 |   2.7 |
-| code  | Refactor Qt UI                                     |         |       | 10:05 |  12.9 |
+| code  | Refactor Qt UI                                     |         |       | 10:05 |  12.6 |
 | code  | Create a containing structure for data             |         |       |  0:28 |   0.6 |
 | doc   | Convert plantuml diagrams to org-babel             |         |       |  1:05 |   1.4 |
 | infra | Setup code quality actions                         |         |       |  0:58 |   1.2 |
-| infra | Use Qt SQL classes                                 |         |       |  1:24 |   1.8 |
+| infra | Use Qt SQL classes                                 |         |       |  2:44 |   3.4 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                    :agile:
@@ -1068,6 +1068,7 @@ This may be due to a missing sub-module for vcpkg.
 
 *** STARTED Use Qt SQL classes                                        :infra:
     :LOGBOOK:
+    CLOCK: [2024-07-26 Fri 23:02]--[2024-07-27 Sat 00:22] =>  1:20
     CLOCK: [2024-07-25 Thu 23:24]--[2024-07-26 Fri 00:12] =>  0:48
     CLOCK: [2024-07-24 Wed 23:20]--[2024-07-24 Wed 23:23] =>  0:00
     CLOCK: [2024-07-24 Wed 22:46]--[2024-07-24 Wed 23:19] =>  0:33

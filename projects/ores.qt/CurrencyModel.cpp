@@ -26,7 +26,17 @@ CurrencyModel::CurrencyModel(QObject* parent, const QSqlDatabase& db)
 
     setTable("oresdb.currencies");
     setRelation(10, QSqlRelation("Currencies", "iso_code", "name"));
-// name, iso_code, numeric_code, symbol, fraction_symbol, fractions_per_unit, rounding_type, rounding_precision, format, currency_type
+
+    setHeaderData(0, Qt::Horizontal, QObject::tr("Currency Name"));
+    setHeaderData(1, Qt::Horizontal, QObject::tr("ISO Code"));
+    setHeaderData(2, Qt::Horizontal, QObject::tr("Numeric Code"));
+    setHeaderData(3, Qt::Horizontal, QObject::tr("Symbol"));
+    setHeaderData(4, Qt::Horizontal, QObject::tr("Frac. Symbol"));
+    setHeaderData(5, Qt::Horizontal, QObject::tr("Frac. per unit"));
+    setHeaderData(6, Qt::Horizontal, QObject::tr("Rounding type"));
+    setHeaderData(7, Qt::Horizontal, QObject::tr("Rounding precision"));
+    setHeaderData(8, Qt::Horizontal, QObject::tr("Format"));
+    setHeaderData(9, Qt::Horizontal, QObject::tr("Currency Type"));
 }
 
 }

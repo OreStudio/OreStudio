@@ -24,26 +24,15 @@
 #pragma once
 #endif
 
-#include "ores.core/ore/model/currency.hpp"
-#include <QAbstractTableModel>
+#include <QtSql/QSqlRelationalTableModel>
 
 namespace ores::qt {
 
-class CurrencyModel : public QAbstractTableModel
+class CurrencyModel : public QSqlRelationalTableModel
 {
-    Q_OBJECT
 public:
-    explicit CurrencyModel(QObject* parent = nullptr);
-
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role) const override;
-    QVariant data(const QModelIndex& index,
-        int role = Qt::DisplayRole) const override;
-
-private:
-    std::vector<ores::core::ore::model::currency> currencies_;
+    CurrencyModel(QObject* parent = nullptr,
+        const QSqlDatabase &db = QSqlDatabase());
 };
 
 }

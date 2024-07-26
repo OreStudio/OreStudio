@@ -17,63 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.core/ore/db/currency_table.hpp"
 #include "ores.qt/CurrencyModel.hpp"
 
 namespace ores::qt {
 
-CurrencyModel::CurrencyModel(QObject* parent)
-    : QAbstractTableModel(parent) {
+CurrencyModel::CurrencyModel(QObject* parent, const QSqlDatabase& db)
+    : QSqlRelationalTableModel(parent, db) {
 
-    ores::core::ore::db::currency_table table;
-    currencies_ = table.read();
-}
-
-int CurrencyModel::rowCount(const QModelIndex& /*parent*/) const {
-    return currencies_.size();
-}
-
-int CurrencyModel::columnCount(const QModelIndex& /*parent*/) const {
-    return 10;
-}
-
-QVariant CurrencyModel::
-headerData(int section, Qt::Orientation orientation, int role) const {
-    if (role == Qt::DisplayRole && orientation != Qt::Vertical) {
-        switch(section) {
-        case 0: return QString("Currency Name");
-        case 1: return QString("ISO Code");
-        case 2: return QString("Numeric Code");
-        case 3: return QString("Symbol");
-        case 4: return QString("Frac. Symbol");
-        case 5: return QString("Frac. per unit");
-        case 6: return QString("Rounding type");
-        case 7: return QString("Rounding precision");
-        case 8: return QString("Format");
-        case 9: return QString("Currency Type");
-        }
-    }
-    return {};
-}
-
-QVariant CurrencyModel::data(const QModelIndex& index, int role) const {
-    if (role == Qt::DisplayRole) {
-        auto currency = currencies_[index.row()];
-        switch(index.column()) {
-        case 0: return QString::fromStdString(currency.name());
-        case 1: return QString::fromStdString(currency.iso_code());
-        case 2: return QString::number(currency.numeric_code());
-        case 3: return QString::fromStdString(currency.symbol());
-        case 4: return QString::fromStdString(currency.fraction_symbol());
-        case 5: return QString::number(currency.fractions_per_unit());
-        case 6: return QString::fromStdString(currency.rounding_type());
-        case 7: return QString::number(currency.rounding_precision());
-        case 8: return QString::fromStdString(currency.format());
-        case 9: return QString::fromStdString(currency.currency_type());
-        }
-    }
-
-    return {};
+    setTable("oresdb.currencies");
+    setRelation(10, QSqlRelation("Currencies", "iso_code", "name"));
+// name, iso_code, numeric_code, symbol, fraction_symbol, fractions_per_unit, rounding_type, rounding_precision, format, currency_type
 }
 
 }

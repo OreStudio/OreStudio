@@ -28,7 +28,6 @@
 #include <QTableView>
 #include <QVBoxLayout>
 #include "ores.qt/CurrencyModel.hpp"
-#include "ores.qt/CurrencyModel2.hpp"
 
 namespace ores::qt {
 
@@ -42,7 +41,6 @@ private:
     QVBoxLayout* verticalLayout_;
     QTableView* currencyTableView_;
     CurrencyModel currencyModel_;
-    CurrencyModel2 currencyModel2_;
 };
 
 }

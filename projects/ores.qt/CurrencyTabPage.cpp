@@ -39,9 +39,9 @@ CurrencyTabPage::CurrencyTabPage(QWidget* parent) : QWidget(parent) {
     currencyTableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     currencyTableView_->resizeRowsToContents();
 
-    // currencyTableView_->setModel(&currencyModel_);
-    currencyModel2_.select();
-    currencyTableView_->setModel(&currencyModel2_);
+    currencyModel_.select();
+    currencyTableView_->setModel(&currencyModel_);
+
 
     QHeaderView* verticalHeader(currencyTableView_->verticalHeader());
     QHeaderView* horizontalHeader(currencyTableView_->horizontalHeader());

@@ -69,6 +69,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="ActionConnect"/>
+   <addaction name="CurrenciesAction"/>
   </widget>
   <action name="ExitAction">
    <property name="text">
@@ -76,13 +77,20 @@
    </property>
   </action>
   <action name="CurrenciesAction">
+   <property name="icon">
+    <iconset>
+     <normaloff>money-pound-box-line.png</normaloff>
+     <normalon>money-pound-box-line.svg</normalon>money-pound-box-line.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Currencies</string>
    </property>
   </action>
   <action name="ActionConnect">
    <property name="icon">
-    <iconset theme="network-workgroup"/>
+    <iconset>
+     <normaloff>database-2-line.png</normaloff>
+     <normalon>money-pound-box-line.svg</normalon>database-2-line.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Connect</string>

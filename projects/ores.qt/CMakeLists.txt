@@ -39,6 +39,8 @@ target_link_libraries(ores.qt PRIVATE
     Qt6::SqlPrivate
 )
 
+# file(COPY assets DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+
 target_include_directories(ores.qt
     PRIVATE ${CMAKE_SOURCE_DIR}/projects)
 

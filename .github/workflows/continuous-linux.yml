@@ -67,7 +67,7 @@ jobs:
         run: ./build/scripts/install_debian_packages.sh
 
       - name: get-cmake
-        uses: lukka/get-cmake@v3.29.6
+        uses: lukka/get-cmake@v3.30.3
 
       - name: run-vcpkg
         uses: lukka/run-vcpkg@v11

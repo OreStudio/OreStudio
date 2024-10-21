@@ -66,7 +66,7 @@ jobs:
           ctest -VV --preset $preset --script "CTest.cmake,$cmake_args"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4.3.4
+        uses: actions/upload-artifact@v4.4.3
         with:
           name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
           path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/packages/OreStudio-0.0.1-win64.msi

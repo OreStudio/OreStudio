@@ -29,8 +29,9 @@ on:  # yamllint disable-line rule:truthy
   #   branches: ["main"]
   # pull_request:
   #   branches: ["main"]
-  schedule:
-    - cron: '0 0 * * *'
+  # schedule:
+  #  - cron: '0 0 * * *'
+  workflow_dispatch
 
 jobs:
   analyze:

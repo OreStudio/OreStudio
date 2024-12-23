@@ -54,7 +54,7 @@ jobs:
           max-size: 1000M
 
       - name: get-cmake
-        uses: lukka/get-cmake@v3.30.5
+        uses: lukka/get-cmake@v3.31.3
 
       - name: run-vcpkg
         uses: lukka/run-vcpkg@v11

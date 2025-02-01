@@ -4,14 +4,6 @@
     "description": "GUI for Open Source Risk Engine (ORE)",
     "version-string": "0.0.1",
     "dependencies": [
-        {
-            "name": "qtbase",
-            "features": [
-                "sql",
-                "sql-sqlite",
-                "sql-psql"
-            ]
-        },
         "libpqxx",
         "rapidxml-ns",
         "rapidjson",

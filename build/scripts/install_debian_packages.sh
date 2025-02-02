@@ -15,23 +15,25 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-sudo apt-get \
-     install autoconf \
-     automake \
+sudo apt-get install \
+     autoconf \
      autoconf-archive \
-     libtool \
-     pkg-config \
-     libltdl-dev \
-     libegl1-mesa-dev \
-     libegl1 \
-     libglu1-mesa-dev \
-     libxrender-dev \
-     libglu1-mesa-dev \
-     freeglut3-dev \
-     mesa-common-dev \
+     automake \
      fontconfig \
-     '^libxcb.*-dev' \
+     freeglut3-dev \
+     libegl1 \
+     libegl1-mesa-dev \
+     libglu1-mesa-dev \
+     libltdl-dev \
+     libtool \
      libx11-xcb-dev \
+     '^libxcb.*-dev' \
+     libxcursor-dev  \
      libxi-dev \
+     libxinerama-dev  \
      libxkbcommon-dev \
-     libxkbcommon-x11-dev
+     libxkbcommon-x11-dev \
+     libxrender-dev \
+     mesa-common-dev \
+     pkg-config \
+     xorg-dev

@@ -4,6 +4,19 @@
     "description": "GUI for Open Source Risk Engine (ORE)",
     "version-string": "0.0.1",
     "dependencies": [
+        "glfw3",
+        "glad",
+        "glm",
+        "freetype",
+        {
+            "name": "imgui",
+            "features": [
+                "opengl3-binding",
+                "glfw-binding",
+                "freetype"
+            ]
+        },
+        "implot",
         "libpqxx",
         "rapidxml-ns",
         "rapidjson",

@@ -84,6 +84,13 @@ find_path(RAPIDXML_NS_INCLUDE_DIRS "rapidxml-ns/rapidxml_ns.hpp")
 # Postgres
 find_package(libpqxx CONFIG REQUIRED)
 
+# ImGui
+find_package(imgui CONFIG REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
+find_package(glad CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
+find_package(Freetype REQUIRED)
+
 # site (for ctest)
 site_name(VORE_SITE)
 

@@ -18,7 +18,7 @@
  *
  */
 #include <sstream>
-#include <iostream>
+//#include <iostream>
 #include <pqxx/pqxx>
 #include "ores.utility/log/logger.hpp"
 #include "ores.core/ore/db/currency_table.hpp"
@@ -68,7 +68,7 @@ std::vector<model::currency> currency_table::read() {
           << "from oresdb.currencies;";
 
     std::vector<model::currency> r;
-    for (auto [name, iso_code, numeric_code, symbol, fraction_symbol,
+    for (const auto& [name, iso_code, numeric_code, symbol, fraction_symbol,
             fractions_per_unit, rounding_type, rounding_precision,
             format, currency_type] : w.query<std::string, std::string,
              int, std::string, std::string, int, std::string, int, std::string,

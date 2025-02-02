@@ -35,7 +35,9 @@ set_target_properties(${exe_target_name} PROPERTIES
     OUTPUT_NAME ${exe_binary_name})
 
 target_include_directories(${exe_target_name}
-    PRIVATE ${CMAKE_SOURCE_DIR}/projects)
+    PRIVATE ${CMAKE_SOURCE_DIR}/projects
+    ${OPENGL_INCLUDE_DIRS}
+    ${GLUT_INCLUDE_DIRS})
 
 target_link_libraries(${exe_target_name} PRIVATE
     # ${lib_target_name}
@@ -47,8 +49,8 @@ target_link_libraries(${exe_target_name} PRIVATE
     Freetype::Freetype
     glm::glm
     glad::glad
-    GL
-    GLU
+    OpenGL::OpenGL
+    ${GLUT_LIBRARY}
     glfw
     imgui::imgui
     ${CMAKE_THREAD_LIBS_INIT})

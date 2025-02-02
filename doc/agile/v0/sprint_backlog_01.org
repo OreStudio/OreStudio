@@ -197,6 +197,12 @@ Result:
 
 - Discord channel: https://discord.gg/gcrYsjW3pd
 
+Commands:
+
+#+begin_src
+account add discord <email> <password>
+#+end_src
+
 Links:
 
 - [[https://github.com/sm00th/bitlbee-discord][bitlbee-discord]]

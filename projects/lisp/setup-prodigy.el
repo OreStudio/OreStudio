@@ -26,7 +26,7 @@
   "Return the path to the qt user interface directory."
   (let* ((pr (project-current t))
          (root (project-root pr))
-         (path (concat root "build/output/linux-clang-release/projects/ores.qt/")))
+         (path (concat root "build/output/linux-clang-release/projects/ores.ui/")))
     path))
 
 (setq prodigy-services nil)
@@ -34,9 +34,9 @@
 (prodigy-define-tag :name 'ui)
 
 (prodigy-define-service
-  :name "ORE Studio Qt."
+  :name "ORE Studio ImGui."
   :cwd (ores/path-to-ui)
-  :command (concat (ores/path-to-ui) "ores.qt")
+  :command (concat (ores/path-to-ui) "ores.ui")
   :tags '(ores ui)
   :stop-signal 'sigkill
   :kill-process-buffer-on-stop t)

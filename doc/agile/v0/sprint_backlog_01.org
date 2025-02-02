@@ -69,7 +69,7 @@
 | infra | Use Qt SQL classes                                 |         |       |  2:44 |   3.4 |
 #+end:
 
-*** STARTED Sprint and product backlog refinement                    :agile:
+*** COMPLETED Sprint and product backlog refinement                   :agile:
     :LOGBOOK:
     CLOCK: [2024-07-14 Sun 23:26]--[2024-07-14 Sun 23:31] =>  0:05
     CLOCK: [2024-07-14 Sun 23:15]--[2024-07-14 Sun 23:25] =>  0:10
@@ -974,7 +974,7 @@ Links:
     CLOCK: [2024-07-28 Sun 22:40]--[2024-07-28 Sun 23:09] =>  0:29
     :END:
 
-*** STARTED Create a containing structure for data                     :code:
+*** POSTPONED Create a containing structure for data                   :code:
    :LOGBOOK:
    CLOCK: [2024-06-27 Thu 23:22]--[2024-06-27 Thu 23:29] =>  0:07
    CLOCK: [2024-06-25 Tue 19:24]--[2024-06-25 Tue 19:33] =>  0:09
@@ -1024,7 +1024,7 @@ Notes:
 
 - move this analysis to documentation.
 
-*** STARTED Convert plantuml diagrams to org-babel                      :doc:
+*** POSTPONED Convert plantuml diagrams to org-babel                    :doc:
     :LOGBOOK:
     CLOCK: [2024-07-01 Mon 23:04]--[2024-07-02 Tue 00:09] =>  1:05
     :END:
@@ -1032,7 +1032,7 @@ Notes:
 It may be easier to integrate diagrams with roam if they are org-mode documents.
 Experiment with babel for this.
 
-*** STARTED Setup code quality actions                                :infra:
+*** POSTPONED Setup code quality actions                              :infra:
     :LOGBOOK:
     CLOCK: [2024-07-14 Sun 09:30]--[2024-07-14 Sun 10:14] =>  0:44
     CLOCK: [2024-07-13 Sat 08:21]--[2024-07-13 Sat 08:35] =>  0:19
@@ -1072,7 +1072,7 @@ The build seems to be failing:
 This may be due to a missing sub-module for vcpkg.
 
 
-*** STARTED Use Qt SQL classes                                        :infra:
+*** CANCELLED Use Qt SQL classes                                      :infra:
     :LOGBOOK:
     CLOCK: [2024-07-26 Fri 23:02]--[2024-07-27 Sat 00:22] =>  1:20
     CLOCK: [2024-07-25 Thu 23:24]--[2024-07-26 Fri 00:12] =>  0:48
@@ -1104,197 +1104,3 @@ Links:
 - [[https://forum.qt.io/topic/33926/postgresql-and-trying-to-connect-using-qt][PostgreSQL and Trying to connect using Qt]]
 - [[https://code.qt.io/cgit/qt/qtbase.git/tree/examples/sql/books?h=6.7][index : qt/qtbase.git]]
 - [[https://doc.qt.io/qt-6/examples-sql.html][SQL Examples]]
-
-*** Add progress bar to splash                                         :code:
-
-Apparently its possible to add a progress bar to the splash.
-
-Links:
-
-- [[https://stackoverflow.com/questions/12682888/qt-c-aligning-qprogressbar-inside-a-qsplashscreen][Qt C++ - Aligning QProgressBar inside a QSplashScreen]]
-
-*** Add support for =windows-msvc-clang-cl=                           :infra:
-
-We need to setup a build for MSVC clang.
-
-*** Implement database connectivity                                    :code:
-
-We have hard coded database configuration. Implement this properly both for
-console and UI.
-
-*** Starting UI from file manager does not work                       :infra:
-
-At present we can't start the Qt UI because the file manager thinks its a video.
-Maybe we need a desktop file.
-
-Example desktop file:
-
-#+begin_src conf
-[Desktop Entry]
-Comment=
-Terminal=true
-Name=fixvideo
-Exec=/home/user/fixvideo.sh %f
-Type=Application
-Icon=/usr/share/icons/gnome/48x48/apps/gnome-settings-theme.png
-Encoding=UTF-8
-Hidden=false
-NoDisplay=false
-Categories=AudioVideo;Player;Recorder;
-MimeType=video/dv;v
-#+end_src
-
-Source: [[https://emacs.stackexchange.com/questions/58037/is-there-a-standard-mode-for-ini-files][Is there a standard mode for .ini files?]]
-
-Tasks:
-
-- create a desktop file for the application.
-- add an icon.
-
-*** Consider adding the update copyrights action from quantlib        :infra:
-
-We should remove copyrights from each file and instead have it only at the
-top-level to make maintenance easier.
-
-See [[https://github.com/OpenSourceRisk/QuantLib/blob/master/.github/workflows/copyrights.yml][=copyrights.yml=]] in QuantLib repo.
-
-*** Consider adding clang-tidy build                                  :infra:
-
-As per QuantLib build: [[https://github.com/OpenSourceRisk/QuantLib/blob/master/.github/workflows/tidy.yml][=tidy.yml=]].
-
-*** Consider adding test times build                                  :infra:
-
-As per QuantLib build: [[https://github.com/OpenSourceRisk/QuantLib/blob/master/.github/workflows/test-times.yml][=test-times.yml=]].
-
-*** Consider adding sanitizer build                                   :infra:
-
-As per QuantLib build: [[https://github.com/OpenSourceRisk/QuantLib/blob/master/.github/workflows/sanitizer.yml][=sanitizer.yml=]].
-
-*** Use string views for static strings                               :infra:
-
-We are creating =std::strings= where we don't need them, use string views
-instead.
-
-*** Create HTTP end point for currencies                              :infra:
-
-Add a basic HTTP server using boost beast. Then we just need a couple of verbs:
-
-- GET: return all currencies in database.
-- POST: add one or more currencies.
-
-*** Fix site links to main page                                         :doc:
-
-At present we renamed readme to index in the HTML export. Do a symlink or a copy
-of this file to fix links.
-
-*** Add discord support to app                                        :infra:
-
-Links:
-
-- [[https://github.com/RealTimeChris/DiscordCoreAPI][DiscordCoreAPI]]
-
-*** Recipes do not show variables in org-babel                        :infra:
-
-At present when we look at a recipe in the site, we cannot tell what the
-environment variables are:
-
-#+begin_src sh
-./ores.console import ${log_args} --currency-configuration ${currency_config_dir}/currencies.xml
-#+END_SRC
-
-It would be nice if =log_args= etc showed up in the recipe.
-
-Links:
-
-- [[https://kitchingroup.cheme.cmu.edu/blog/2019/02/12/Using-results-from-one-code-block-in-another-org-mode/][Using results from one code block in another org-mode]]
-
-*** Install Windows package on Windows machine                        :infra:
-
-We need to install and run the windows package and make sure it works. Check
-console and GUI start.
-
-*** Install OSX package on OSX machine                                :infra:
-
-We need to install and run the windows package and make sure it works. Check
-console and GUI start.
-
-*** Add packaging support for images                                  :infra:
-
-At present we are not adding images to packages.
-
-*** Create a staging directory                                        :infra:
-
-At present the binaries are scattered around the build directory. We should take
-the same approach as Dogen and create clean directories for this.
-
-*** Create an icon for the application                                :infra:
-
-We copied the Dogen icon to get us going. We should really grab our own logo.
-
-*** Add JSON parsing support for currency                              :code:
-
-We need to have the ability to read and write currencies from JSON.
-
-*** Add postgres support for currency                                  :code:
-
-We need to have the ability to read and write currencies from a postgres
-database.
-
-*** Work through all types required for Example 1                      :code:
-
-We want to be able to visualise all the data types needed in order to be able to
-run the most basic example of ORE. For each of these types, create a stories.
-
-The files are as follows. First, there are the files in the =Input= directory:
-
-- [[https://github.com/OpenSourceRisk/Engine/tree/master/Examples/Example_1/Input][Example 1 Inputs]]
-
-Specifically:
-
-- =currencies.xml=
-- =netting.xml=
-- =ore.xml=
-- =ore_swaption.xml=
-- =plot.gp=
-- =portfolio.xml=
-- =portfolio_swap.xml=
-- =portfolio_swap_20151023.xml=
-- =portfolio_swaption.xml=
-- =portfolio_swaption_20151023.xml=
-- =simulation.xml=
-
-In addition, we need all of the common inputs under:
-
-- [[https://github.com/OpenSourceRisk/Engine/tree/master/Examples/Input][Examples - Common Inputs]]
-
-These are:
-
-- =calendaradjustment.xml=
-- =conventions.xml=
-- =currencies.xml=
-- =curveconfig.xml=
-- =fixings_20160205.txt=
-- =market_20160205.txt=
-- =market_20160205_flat.txt=
-- =pricingengine.xml=
-- =todaysmarket.xml=
-
-Finally, we need support for the outputs. We can grab these from the expected
-outputs:
-
-- [[https://github.com/OpenSourceRisk/Engine/tree/master/Examples/Example_1/ExpectedOutput][Example 1 Expected Outputs]]
-
-These are:
-
-- =colva_nettingset_CPTY_A.csv=
-- =curves.csv=
-- =exposure_nettingset_CPTY_A.csv=
-- =exposure_trade_Swap_20y.csv=
-- =flows.csv=
-- =log_progress.json=
-- =netcube.csv=
-- =npv.csv=
-- =swaption_npv.csv=
-- =xva.csv=
-
-| Previous: [[id:154212FF-BB02-8D84-1E33-9338B458380A][Version Zero]] |

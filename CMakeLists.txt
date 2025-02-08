@@ -58,7 +58,7 @@ else()
     message(STATUS "SCCache NOT found.")
 endif()
 
-project(OreStudio VERSION 0.0.1 LANGUAGES CXX
+project(OreStudio VERSION 0.0.2 LANGUAGES CXX
     DESCRIPTION "UI and other utilities for the Open Source Risk Engine (ORE).")
 
 # threads

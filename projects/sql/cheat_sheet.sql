@@ -73,3 +73,6 @@ select current_user(), current_database();
 
 -- running stored procs from psql
 select ores.run_some_proc();
+
+-- load files
+\i psqlrc.sql

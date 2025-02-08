@@ -7,6 +7,8 @@
 #include <GLES2/gl2.h>
 #endif
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
+//#include "ores.ui/currency_table.hpp"
+//#include "ores.core/ore/db/currency_table.hpp"
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
 // To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do using this pragma.
@@ -141,7 +143,9 @@ int main(int, char**)
 
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
         if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
+                ImGui::ShowDemoWindow(&show_demo_window);
+
+        // ores::ui::currency_table::display();
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
         {

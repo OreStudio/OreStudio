@@ -69,6 +69,15 @@ For command specific options, type <command> --help.
 
 #+RESULTS:
 #+begin_src text
+ORE Studio is a User Interface for Open Source Risk Engine (ORE).
+Console provides a CLI based version of the interface.
+ORE Studio is created by the ORE Studio project.
+Displaying options specific to the 'import' command.
+For global options, type --help.
+
+Importing:
+  --currency-configuration arg One or more currency configuration files, in XML
+                               representation.
 #+end_src
 
 *** Version
@@ -79,7 +88,7 @@ For command specific options, type <command> --help.
 
 #+RESULTS:
 #+begin_src text
-OreStudio v0.0.1
+OreStudio v0.0.2
 Copyright (C) 2024 Marco Craveiro.
 License GPLv3: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
@@ -91,7 +100,7 @@ IMPORTANT: build details are NOT for security purposes.
 ** Importing
    :PROPERTIES:
    :header-args+: :var log_args="--log-enabled --log-level trace --log-directory log"
-   :header-args+: :var currency_config_dir="/home/marco/Development/ql/OreStudio/assets/test_data/ore_sample_data/currencies"
+   :header-args+: :var currency_config_dir="/home/marco/Development/OreStudio/assets/test_data/ore_sample_data/currencies"
    :header-args+: :wrap src json
    :END:
 

@@ -24,14 +24,14 @@
 ---
 name: "CodeQL"
 
-on:  # yamllint disable-line rule:truthy
+# disabled for now.
+on: workflow_dispatch  # yamllint disable-line rule:truthy
   # push:
   #   branches: ["main"]
   # pull_request:
   #   branches: ["main"]
   # schedule:
   #  - cron: '0 0 * * *'
-  workflow_dispatch
 
 jobs:
   analyze:

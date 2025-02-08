@@ -17,15 +17,16 @@
 ---
 name: Continuous MacOS
 
-on:  # yamllint disable-line rule:truthy
-  push:
-    branches:
-      - main
-    tags:
-      - '*'
-  pull_request:
-    branches:
-      - main
+# disabled for now.
+on: workflow_dispatch  # yamllint disable-line rule:truthy
+  # push:
+  #   branches:
+  #     - main
+  #   tags:
+  #     - '*'
+  # pull_request:
+  #   branches:
+  #     - main
 
 jobs:
   build:

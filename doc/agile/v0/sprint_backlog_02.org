@@ -116,7 +116,19 @@ print(p)
     :LOGBOOK:
     CLOCK: [2024-07-28 Sun 22:40]--[2024-07-28 Sun 23:09] =>  0:29
     :END:
-*** Create a containing structure for data                             :code:
+*** COMPLETED Fix broken builds                                       :infra:
+    :LOGBOOK:
+    CLOCK: [2025-02-02 Sun 12:54]--[2025-02-02 Sun 13:30] =>  0:36
+   :END:
+
+With the move to ImGui the builds started failing across the board.
+
+Disable other OSs for now.
+
+*** COMPLETED Create a containing structure for data                   :code:
+    :LOGBOOK:
+    CLOCK: [2025-02-03 Mon 22:07]--[2025-02-03 Mon 22:42] =>  0:35
+    :END:
 
 We need to be able to represent the data in the filesystem for the ORE samples
 in a way that allows users to load and save the samples. The data in the
@@ -151,7 +163,7 @@ There are two types of these containers:
   components; and
 - executables: components whose content is sufficient to execute computations.
 
-- component
+- component, elements.
 
 Elements within a component is of two kinds: input and output. However, this may
 not necessarily be a good classification because some outputs can be used as
@@ -160,6 +172,12 @@ inputs to output other elements. Perhaps this is more of a tag.
 Notes:
 
 - move this analysis to documentation.
+
+*** STARTED Refactor code for currencies                               :code:
+    :LOGBOOK:
+    CLOCK: [2025-02-08 Sat 18:58]--[2025-02-08 Sat 19:37] =>  0:39
+    CLOCK: [2025-02-08 Sat 16:30]--[2025-02-08 Sat 18:58] =>  2:28
+    :END:
 
 *** Convert plantuml diagrams to org-babel                              :doc:
 

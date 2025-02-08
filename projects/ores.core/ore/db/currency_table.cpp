@@ -34,7 +34,7 @@ namespace ores::core::ore::db {
 
 void currency_table::write(const std::vector<model::currency>& currencies) {
     // FIXME: test
-    std::string connection_string("postgresql://ores:ores@localhost:5437/oresdb");
+    std::string connection_string("postgresql://ores:ores@localhost:5432/oresdb");
     pqxx::connection c(connection_string);
     pqxx::work w(c);
 
@@ -56,7 +56,7 @@ void currency_table::write(const std::vector<model::currency>& currencies) {
 }
 
 std::vector<model::currency> currency_table::read() {
-    std::string connection_string("postgresql://ores:ores@localhost:5437/oresdb");
+    std::string connection_string("postgresql://ores:ores@localhost:5432/oresdb");
     pqxx::connection c(connection_string);
     pqxx::work w(c);
 

@@ -76,3 +76,6 @@ select ores.run_some_proc();
 
 -- load files
 \i psqlrc.sql
+
+-- get function signature
+select oid::regprocedure from pg_procedure where proname = 'currencies_insert';

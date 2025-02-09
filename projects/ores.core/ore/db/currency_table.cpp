@@ -39,15 +39,12 @@ void currency_table::write(const std::vector<model::currency>& currencies) {
     pqxx::work w(c);
 
     std::ostringstream query;
-    query << "insert into oresdb.currencies "
-          << "(name, iso_code, numeric_code, symbol, fraction_symbol, "
-          << "fractions_per_unit, rounding_type, rounding_precision, "
-          << "format, currency_type)"
-          << "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)";
-    c.prepare("insert_to_currencies", query.str());
+    query << "select oresdb.currencies_insert"
+          << "($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)";
+    c.prepare("currencies_insert_stmt", query.str());
 
     for(const auto& ccy : currencies) {
-        w.exec_prepared("insert_to_currencies", ccy.name(), ccy.iso_code(),
+        w.exec_prepared("currencies_insert_stmt", ccy.name(), ccy.iso_code(),
             ccy.numeric_code(), ccy.symbol(), ccy.fraction_symbol(),
             ccy.fractions_per_unit(), ccy.rounding_type(), ccy.rounding_precision(), ccy.format(),
             ccy.currency_type());
@@ -65,7 +62,7 @@ std::vector<model::currency> currency_table::read() {
           << "name, iso_code, numeric_code, symbol, fraction_symbol, "
           << "fractions_per_unit, rounding_type, rounding_precision, "
           << "format, currency_type "
-          << "from oresdb.currencies;";
+          << "from oresdb.currencies_latest;";
 
     std::vector<model::currency> r;
     for (const auto& [name, iso_code, numeric_code, symbol, fraction_symbol,

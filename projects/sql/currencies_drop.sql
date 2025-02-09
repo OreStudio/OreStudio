@@ -17,18 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-create schema oresdb;
-set schema 'oresdb';
-
-create table currencies (
-    name varchar(255),
-    iso_code char(3),
-    numeric_code int,
-    symbol char(10),
-    fraction_symbol char(10),
-    fractions_per_unit int,
-    rounding_type varchar(50),
-    rounding_precision int,
-    format varchar(50),
-    currency_type varchar(20)
-);
+drop function if exists currencies_as_of;
+drop view if exists currencies_latest;
+drop function if exists currencies_insert;
+drop table if exists currencies;
+drop extension if exists btree_gist;
+drop schema if exists oresdb;

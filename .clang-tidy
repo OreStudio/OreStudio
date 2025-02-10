@@ -57,6 +57,8 @@ Checks: >
           -readability-simplify-boolean-expr,
           -readability-suspicious-call-argument,
           -readability-use-anyofallof,
+Warnings:
+  - '-performance-avoid-endl'
 HeaderFilterRegex: '.*'
 FormatStyle: file
 CheckOptions:

@@ -35,7 +35,7 @@ auto lg(logger_factory("ores.console.application"));
 namespace ores::console {
 
 void application::
-perform_importing(const std::optional<importing_configuration>& ocfg) const
+import_data(const std::optional<importing_configuration>& ocfg) const
 {
     if (!ocfg.has_value())
     {
@@ -59,7 +59,7 @@ perform_importing(const std::optional<importing_configuration>& ocfg) const
 void application::run(const configuration& cfg) const {
     BOOST_LOG_SEV(lg, info) << "Started application.";
 
-    perform_importing(cfg.importing());
+    import_data(cfg.importing());
 
     BOOST_LOG_SEV(lg, info) << "Finished application.";
 }

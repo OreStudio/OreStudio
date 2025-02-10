@@ -22,42 +22,6 @@
 
 namespace ores::console {
 
-importing_configuration::
-importing_configuration(importing_configuration&& rhs) noexcept
-    : currency_configurations_(std::move(rhs.currency_configurations_)) { }
-
-std::vector<std::filesystem::path>
-importing_configuration::currency_configurations() const
-{
-    return currency_configurations_;
-}
-
-void importing_configuration::
-currency_configurations(std::vector<std::filesystem::path> v)
-{
-    currency_configurations_ = std::move(v);
-}
-
-bool importing_configuration::
-operator==(const importing_configuration& rhs) const
-{
-    return currency_configurations_ == rhs.currency_configurations();
-}
-
-void importing_configuration::swap(importing_configuration& other) noexcept
-{
-    using std::swap;
-    swap(currency_configurations_, other.currency_configurations_);
-}
-
-importing_configuration&
-importing_configuration::operator=(importing_configuration other)
-{
-    using std::swap;
-    swap(*this, other);
-    return *this;
-}
-
 std::ostream& operator<<(std::ostream& s, const importing_configuration& v) {
     s << " { "
       << "\"__type__\": "

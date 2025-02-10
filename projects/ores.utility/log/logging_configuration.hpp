@@ -26,7 +26,6 @@
 
 #include <iosfwd>
 #include <string>
-#include <algorithm>
 #include <filesystem>
 
 namespace ores::utility::log {
@@ -37,10 +36,13 @@ namespace ores::utility::log {
 class logging_configuration final {
 public:
     logging_configuration(const logging_configuration&) = default;
+    logging_configuration(logging_configuration&& rhs) noexcept = default;
     ~logging_configuration() = default;
 
-    logging_configuration();
-    logging_configuration(logging_configuration&& rhs) noexcept;
+    logging_configuration& operator=(const logging_configuration&) = default;
+    logging_configuration& operator=(logging_configuration&&) noexcept = default;
+
+    logging_configuration() : output_to_console_(false) { }
     logging_configuration(std::string severity, std::string filename,
         bool output_to_console, std::filesystem::path output_directory);
 
@@ -48,8 +50,9 @@ public:
      * @brief Level at which to log.
      */
     /**@{*/
-    std::string severity() const;
-    void severity(std::string v);
+    std::string severity() const { return severity_; }
+    void severity(const std::string& v) { severity_ = v; }
+    void severity(std::string&& v) { severity_ = std::move(v); }
     /**@}*/
 
     /**
@@ -58,28 +61,33 @@ public:
      * If empty, file logging is disabled.
      */
     /**@{*/
-    std::string filename() const;
-    void filename(std::string v);
+    std::string filename() const { return filename_; }
+    void filename(const std::string& v) { filename_ = v; }
+    void filename(std::string&& v) { filename_ = std::move(v); }
     /**@}*/
 
     /**
      * @brief If true, dumps the log into the console.
      */
     /**@{*/
-    bool output_to_console() const;
-    void output_to_console(bool v);
+    bool output_to_console() const { return output_to_console_; }
+    void output_to_console(bool v) { output_to_console_ = v; }
     /**@}*/
 
     /**
      * @brief Directory in which to place the output.
      */
     /**@{*/
-    std::filesystem::path output_directory() const;
-    void output_directory(std::filesystem::path v);
+    std::filesystem::path output_directory() const { return output_directory_; }
+    void output_directory(const std::filesystem::path& v) {
+        output_directory_ = v;
+    }
+    void output_directory(std::filesystem::path&& v) {
+        output_directory_ = std::move(v);
+    }
     /**@}*/
 
     void swap(logging_configuration& other) noexcept;
-    logging_configuration& operator=(logging_configuration other);
 
 private:
     std::string severity_;
@@ -90,16 +98,7 @@ private:
 
 std::ostream& operator<<(std::ostream& s, const logging_configuration& v);
 
-}
-
-namespace std {
-
-template<>
-inline void swap(
-    ores::utility::log::logging_configuration& lhs,
-    ores::utility::log::logging_configuration& rhs) {
-    lhs.swap(rhs);
-}
+void swap(logging_configuration& lhs, logging_configuration& rhs);
 
 }
 

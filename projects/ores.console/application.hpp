@@ -30,7 +30,7 @@
 namespace ores::console {
 
 /**
- * @brief Entry point for the dogen command line application.
+ * @brief Entry point for the ores command line application.
  */
 class application final {
 public:
@@ -41,7 +41,7 @@ public:
     application& operator=(const application&) = delete;
 
 private:
-    void perform_importing(const std::optional<importing_configuration>& ocfg) const;
+    void import_data(const std::optional<importing_configuration>& ocfg) const;
 
 public:
     /**

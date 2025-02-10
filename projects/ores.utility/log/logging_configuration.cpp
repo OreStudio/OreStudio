@@ -21,16 +21,6 @@
 
 namespace ores::utility::log {
 
-logging_configuration::logging_configuration()
-    : output_to_console_(false) { }
-
-logging_configuration::
-logging_configuration(logging_configuration&& rhs) noexcept
-    : severity_(std::move(rhs.severity_)),
-      filename_(std::move(rhs.filename_)),
-      output_to_console_(rhs.output_to_console_),
-      output_directory_(std::move(rhs.output_directory_)) { }
-
 logging_configuration::logging_configuration(
     std::string severity, std::string filename,
     bool output_to_console, std::filesystem::path output_directory)
@@ -46,44 +36,6 @@ void logging_configuration::swap(logging_configuration& other) noexcept {
     swap(output_directory_, other.output_directory_);
 }
 
-logging_configuration& logging_configuration::operator=(logging_configuration other) {
-    using std::swap;
-    swap(*this, other);
-    return *this;
-}
-
-std::string logging_configuration::severity() const {
-    return severity_;
-}
-
-void logging_configuration::severity(std::string v) {
-    severity_ = std::move(v);
-}
-
-std::string logging_configuration::filename() const {
-    return filename_;
-}
-
-void logging_configuration::filename(std::string v) {
-    filename_ = std::move(v);
-}
-
-bool logging_configuration::output_to_console() const {
-    return output_to_console_;
-}
-
-void logging_configuration::output_to_console(bool v) {
-    output_to_console_ = v;
-}
-
-std::filesystem::path logging_configuration::output_directory() const {
-    return output_directory_;
-}
-
-void logging_configuration::output_directory(std::filesystem::path v) {
-    output_directory_ = std::move(v);
-}
-
 std::ostream& operator<<(std::ostream& s, const logging_configuration& v) {
     s << " { "
       << "\"__type__\": " << "\"ores::console::logging_configuration\"" << ", "
@@ -94,6 +46,10 @@ std::ostream& operator<<(std::ostream& s, const logging_configuration& v) {
       << v.output_directory().generic_string() << "\""
       << " }";
     return(s);
+}
+
+void swap(logging_configuration& lhs, logging_configuration& rhs) {
+    lhs.swap(rhs);
 }
 
 }

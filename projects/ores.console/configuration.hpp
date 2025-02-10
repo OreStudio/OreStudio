@@ -25,7 +25,6 @@
 #endif
 
 #include <iosfwd>
-#include <algorithm>
 #include <optional>
 #include "ores.utility/log/logging_configuration.hpp"
 #include "ores.console/importing_configuration.hpp"
@@ -39,8 +38,12 @@ class configuration final {
 public:
     configuration() = default;
     configuration(const configuration&) = default;
+    configuration(configuration&& rhs) noexcept = default;
     ~configuration() = default;
-    configuration(configuration&& rhs) noexcept;
+
+    configuration& operator=(const configuration&) = default;
+    configuration& operator=(configuration&&) noexcept = default;
+
     configuration(
         std::optional<ores::utility::log::logging_configuration> logging,
         std::optional<importing_configuration> importing);
@@ -49,20 +52,29 @@ public:
      * @brief Configuration related to logging, if any.
      */
     /**@{*/
-    std::optional<ores::utility::log::logging_configuration> logging() const;
-    void logging(std::optional<ores::utility::log::logging_configuration> v);
+    std::optional<ores::utility::log::logging_configuration>
+    logging() const { return logging_; }
+    void logging(const std::optional<ores::utility::log::logging_configuration>& v) {
+        logging_ = v;
+    }
+    void logging(std::optional<ores::utility::log::logging_configuration>&& v) {
+        logging_ = std::move(v);
+    }
     /**@}*/
 
     /**
      * @brief Configuration related to importing, if any.
      */
     /**@{*/
-    std::optional<importing_configuration> importing() const;
-    void importing(std::optional<importing_configuration> v);
+    std::optional<importing_configuration> importing() const {
+        return importing_;
+    }
+    void importing(std::optional<importing_configuration>&& v) {
+        importing_ = std::move(v);
+    }
     /**@}*/
 
     void swap(configuration& other) noexcept;
-    configuration& operator=(configuration other);
 
 private:
     std::optional<ores::utility::log::logging_configuration> logging_;
@@ -70,16 +82,7 @@ private:
 };
 
 std::ostream& operator<<(std::ostream& s, const configuration& v);
-
-}
-
-namespace std {
-
-template<>
-inline void swap(
-    ores::console::configuration& lhs, ores::console::configuration& rhs) {
-    lhs.swap(rhs);
-}
+void swap(configuration& lhs, configuration& rhs);
 
 }
 

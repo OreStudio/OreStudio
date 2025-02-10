@@ -190,6 +190,17 @@ Links:
 
 - [[https://stackoverflow.com/questions/52426656/track-last-modification-timestamp-of-a-row-in-postgres][Track last modification timestamp of a row in Postgres]]
 
+*** STARTED Add command to dump currencies                             :code:
+    :LOGBOOK:
+    CLOCK: [2025-02-10 Mon 22:35]--[2025-02-10 Mon 23:15] =>  0:40
+    CLOCK: [2025-02-09 Sun 23:19]--[2025-02-09 Sun 23:59] =>  0:40
+    :END:
+
+We need:
+
+- latest
+- as of
+- all
 
 *** STARTED Refactor code for currencies                               :code:
     :LOGBOOK:

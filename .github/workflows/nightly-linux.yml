@@ -76,7 +76,7 @@ jobs:
           platform: x64
 
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2.16
+        uses: hendrikmuhs/ccache-action@v1.2.17
         with:
           variant: sccache
           key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}

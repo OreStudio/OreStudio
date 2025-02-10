@@ -56,10 +56,33 @@ import_data(const std::optional<importing_configuration>& ocfg) const
     }
 }
 
+void application::
+dump_data(const std::optional<dumping_configuration>& ocfg) const
+{
+    if (!ocfg.has_value())
+    {
+        BOOST_LOG_SEV(lg, debug) << "No dumping configuration found.";
+        return;
+    }
+
+    const auto& cfg(ocfg.value());
+    if (cfg.currency_configurations())
+    {
+        BOOST_LOG_SEV(lg, debug) << "Dumping currency configurations.";
+        core::ore::db::currency_table ct;
+        const auto vec(ct.read());
+        using ores::core::ore::model::currency_config;
+        const currency_config cc(vec);
+        using core::ore::json::currency_config_serialiser;
+        std::cout << currency_config_serialiser::serialise(cc) << std::endl;
+    }
+}
+
 void application::run(const configuration& cfg) const {
     BOOST_LOG_SEV(lg, info) << "Started application.";
 
     import_data(cfg.importing());
+    dump_data(cfg.dumping());
 
     BOOST_LOG_SEV(lg, info) << "Finished application.";
 }

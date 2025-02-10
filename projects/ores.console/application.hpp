@@ -42,6 +42,7 @@ public:
 
 private:
     void import_data(const std::optional<importing_configuration>& ocfg) const;
+    void dump_data(const std::optional<dumping_configuration>& ocfg) const;
 
 public:
     /**

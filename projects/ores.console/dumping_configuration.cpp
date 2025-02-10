@@ -17,38 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_ORE_MODEL_CURRENCY_CONFIG_HPP
-#define ORES_CORE_ORE_MODEL_CURRENCY_CONFIG_HPP
+#include <ostream>
+#include "ores.console/dumping_configuration.hpp"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
+namespace ores::console {
 
-#include <iosfwd>
-#include <vector>
-#include "ores.core/ore/model/currency.hpp"
-
-namespace ores::core::ore::model {
-
-class currency_config {
-public:
-    currency_config() = default;
-    explicit currency_config(const std::vector<currency>& currencies)
-        : currencies_(currencies) { }
-    explicit currency_config(std::vector<currency>&& currencies)
-        : currencies_(currencies) { }
-
-    std::vector<currency> currencies() const { return currencies_; }
-    void currencies(const std::vector<currency>& currencies) {
-        currencies_ = currencies;
-    }
-
-private:
-    std::vector<currency> currencies_;
-};
-
-std::ostream& operator<<(std::ostream& s, const currency_config& v);
-
+std::ostream& operator<<(std::ostream& s, const dumping_configuration& v) {
+    s << " { "
+      << "\"__type__\": "
+      << "\"ores::console::dumping_configuration\"" << ", "
+      << "\"currency_configurations\": " << v.currency_configurations()
+      << " }";
+    return(s);
 }
 
-#endif
+}

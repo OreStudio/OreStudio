@@ -58,7 +58,6 @@ public:
     }
     /**@}*/
 
-
     bool operator==(const importing_configuration& rhs) const;
     bool operator!=(const importing_configuration& rhs) const {
         return !this->operator==(rhs);

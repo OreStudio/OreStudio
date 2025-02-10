@@ -79,8 +79,7 @@ model::currency_config currency_config_serialiser::deserialise(std::string s)
         currency_node = currency_node->next_sibling("Currency");
     }
 
-    model::currency_config r;
-    r.currencies(currencies);
+    const model::currency_config r(currencies);
 
     BOOST_LOG_SEV(lg, debug) << "Finished deserialising XML. Total currencies found: "
                              << currencies.size();

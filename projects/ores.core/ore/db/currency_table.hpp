@@ -24,7 +24,7 @@
 #pragma once
 #endif
 
-#include<vector>
+#include <vector>
 #include "ores.core/ore/model/currency.hpp"
 
 namespace ores::core::ore::db {

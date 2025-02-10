@@ -23,7 +23,6 @@
 #include <boost/throw_exception.hpp>
 #include "ores.utility/config/config.hpp"
 #include "ores.utility/log/severity_level.hpp"
-#include "ores.utility/log/logging_configuration.hpp"
 #include "ores.console/parser_exception.hpp"
 #include "ores.console/program_options_parser.hpp"
 
@@ -39,6 +38,10 @@ const std::string no_command_msg("No command supplied. ");
 const std::string importing_command_name("import");
 const std::string importing_command_desc("Imports data into the system.");
 const std::string importing_curency_config_arg("currency-configuration");
+
+const std::string dumping_command_name("dump");
+const std::string dumping_command_desc("Dumps data from the system.");
+const std::string dumping_curency_config_arg("currency-configuration");
 
 const std::string help_arg("help");
 const std::string version_arg("version");
@@ -58,6 +61,7 @@ const std::string invalid_log_level("Log level is invalid: ");
 const std::string invalid_command("Command is invalid or unsupported: ");
 const std::string invalid_option("Option is not valid for command: ");
 const std::string missing_import_target("Supply at least one import target.");
+const std::string missing_dump_target("Supply at least one dump target.");
 
 using boost::program_options::value;
 using boost::program_options::variables_map;
@@ -69,6 +73,7 @@ using ores::console::configuration;
 using ores::console::parser_exception;
 using ores::utility::log::logging_configuration;
 using ores::console::importing_configuration;
+using ores::console::dumping_configuration;
 
 /**
  * @brief Creates the the top-level option descriptions that are visible to the
@@ -134,10 +139,24 @@ options_description make_importing_options_description() {
 }
 
 /**
+ * @brief Creates the options related to dumping.
+ */
+options_description make_dumping_options_description() {
+    options_description r("Dumping");
+    r.add_options()
+        ("currency-configuration",
+           "Dumps currency configurations, in JSON representation.");
+
+    return r;
+}
+
+/**
  * @brief Ensures the supplied command is a valid command.
  */
 void validate_command_name(const std::string& command_name) {
-    const bool is_valid_command_name(command_name == importing_command_name);
+    const bool is_valid_command_name(
+        command_name == importing_command_name ||
+        command_name == dumping_command_name);
 
     if (!is_valid_command_name)
     {
@@ -312,6 +331,27 @@ read_importing_configuration(const variables_map& vm) {
     return r;
 }
 
+/**
+ * @brief Reads the dumping configuration from the variables map.
+ */
+dumping_configuration
+read_dumping_configuration(const variables_map& vm) {
+    dumping_configuration r;
+
+    using std::filesystem::absolute;
+
+    bool found_dumps(false);
+    if (vm.count(dumping_curency_config_arg) != 0) {
+        found_dumps = true;
+        const auto ccy_cfgs(vm.count(dumping_curency_config_arg) != 0);
+        r.currency_configurations(ccy_cfgs);
+    }
+
+    if (!found_dumps)
+        BOOST_THROW_EXCEPTION(parser_exception(missing_import_target));
+
+    return r;
+}
 
 /**
  * @brief Contains the processing logic for when the user supplies a command in
@@ -345,6 +385,15 @@ handle_command(const std::string& command_name, const bool has_help,
 
         store(command_line_parser(options).options(d).run(), vm);
         r.importing(read_importing_configuration(vm));
+    } else if (command_name == dumping_command_name) {
+        const auto d(make_dumping_options_description());
+        if (has_help) {
+            print_help_command(dumping_command_name, d, info);
+            return {};
+        }
+
+        store(command_line_parser(options).options(d).run(), vm);
+        r.dumping(read_dumping_configuration(vm));
     }
 
     /*

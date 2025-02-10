@@ -28,6 +28,7 @@
 #include <optional>
 #include "ores.utility/log/logging_configuration.hpp"
 #include "ores.console/importing_configuration.hpp"
+#include "ores.console/dumping_configuration.hpp"
 
 namespace ores::console {
 
@@ -46,7 +47,8 @@ public:
 
     configuration(
         std::optional<ores::utility::log::logging_configuration> logging,
-        std::optional<importing_configuration> importing);
+        std::optional<importing_configuration> importing,
+        std::optional<dumping_configuration> dumping);
 
     /**
      * @brief Configuration related to logging, if any.
@@ -74,11 +76,24 @@ public:
     }
     /**@}*/
 
+    /**
+     * @brief Configuration related to dumping, if any.
+     */
+    /**@{*/
+    std::optional<dumping_configuration> dumping() const {
+        return dumping_;
+    }
+    void dumping(std::optional<dumping_configuration>&& v) {
+        dumping_ = std::move(v);
+    }
+    /**@}*/
+
     void swap(configuration& other) noexcept;
 
 private:
     std::optional<ores::utility::log::logging_configuration> logging_;
     std::optional<importing_configuration> importing_;
+    std::optional<dumping_configuration> dumping_;
 };
 
 std::ostream& operator<<(std::ostream& s, const configuration& v);

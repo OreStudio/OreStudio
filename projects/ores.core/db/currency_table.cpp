@@ -17,8 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <iostream>
 #include <sstream>
 #include <pqxx/pqxx>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "ores.utility/log/logger.hpp"
 #include "ores.core/db/currency_table.hpp"
 
@@ -60,15 +62,16 @@ std::vector<types::currency> currency_table::read() {
     query << "select "
           << "name, iso_code, numeric_code, symbol, fraction_symbol, "
           << "fractions_per_unit, rounding_type, rounding_precision, "
-          << "format, currency_type "
+          << "format, currency_type, modified_by, valid_from, valid_to "
           << "from oresdb.currencies_latest;";
 
     std::vector<types::currency> r;
     for (const auto& [name, iso_code, numeric_code, symbol, fraction_symbol,
             fractions_per_unit, rounding_type, rounding_precision,
-            format, currency_type] : w.query<std::string, std::string,
-             int, std::string, std::string, int, std::string, int, std::string,
-             std::string>(query.str())) {
+            format, currency_type, modified_by, valid_from, valid_to] :
+             w.query<std::string, std::string, int, std::string, std::string,
+             int, std::string, int, std::string, std::string, std::string,
+             std::string, std::string>(query.str())) {
         types::currency ccy;
         ccy.name(name);
         ccy.iso_code(iso_code);
@@ -80,6 +83,10 @@ std::vector<types::currency> currency_table::read() {
         ccy.rounding_precision(rounding_precision);
         ccy.format(format);
         ccy.currency_type(currency_type);
+        ccy.modified_by(modified_by);
+        ccy.valid_from(valid_from);
+        ccy.valid_to(valid_to);
+
         r.push_back(ccy);
     }
     return r;

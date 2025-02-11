@@ -31,44 +31,45 @@ namespace ores::core::types {
 class currency {
 public:
     std::string name() const { return name_; }
-    void name(const std::string& name) { name_ = name; }
+    void name(const std::string& v) { name_ = v; }
 
     std::string iso_code() const { return iso_code_; }
-    void iso_code(const std::string& iso_code) { iso_code_ = iso_code; }
+    void iso_code(const std::string& v) { iso_code_ = v; }
 
     int numeric_code() const { return numeric_code_; }
-    void numeric_code(int numeric_code) { numeric_code_ = numeric_code; }
+    void numeric_code(int v) { numeric_code_ = v; }
 
     std::string symbol() const { return symbol_; }
-    void symbol(const std::string& symbol) { symbol_ = symbol; }
+    void symbol(const std::string& v) { symbol_ = v; }
 
     std::string fraction_symbol() const { return fraction_symbol_; }
-    void fraction_symbol(const std::string& fraction_symbol) {
-        fraction_symbol_ = fraction_symbol;
+    void fraction_symbol(const std::string& v) {
+        fraction_symbol_ = v;
     }
 
     int fractions_per_unit() const { return fractions_per_unit_; }
-    void fractions_per_unit(int fractions_per_unit) {
-        fractions_per_unit_ = fractions_per_unit;
-    }
+    void fractions_per_unit(int v) { fractions_per_unit_ = v; }
 
     std::string rounding_type() const { return rounding_type_; }
-    void rounding_type(const std::string& rounding_type) {
-        rounding_type_ = rounding_type;
-    }
+    void rounding_type(const std::string& v) { rounding_type_ = v; }
 
     int rounding_precision() const { return rounding_precision_; }
-    void rounding_precision(int rounding_precision) {
-        rounding_precision_ = rounding_precision;
-    }
+    void rounding_precision(int v) { rounding_precision_ = v; }
 
     std::string format() const { return format_; }
-    void format(const std::string& format) { format_ = format; }
+    void format(const std::string& v) { format_ = v; }
 
     std::string currency_type() const { return currency_type_; }
-    void currency_type(const std::string& currency_type) {
-        currency_type_ = currency_type;
-    }
+    void currency_type(const std::string& v) { currency_type_ = v; }
+
+    std::string modified_by() const { return modified_by_; }
+    void modified_by(const std::string& v) { modified_by_ = v; }
+
+    std::string valid_from() const { return valid_from_; }
+    void valid_from(std::string v) { valid_from_ = v; }
+
+    std::string valid_to() const { return valid_to_; }
+    void valid_to(std::string v) { valid_to_ = v; }
 
 private:
     std::string name_;
@@ -81,6 +82,9 @@ private:
     int rounding_precision_;
     std::string format_;
     std::string currency_type_;
+    std::string modified_by_;
+    std::string valid_from_;
+    std::string valid_to_;
 };
 
 std::ostream& operator<<(std::ostream& s, const currency& v);

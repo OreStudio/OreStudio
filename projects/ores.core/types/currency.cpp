@@ -35,7 +35,10 @@ std::ostream& operator<<(std::ostream& os, const currency& v) {
        << quoted("fractions_per_unit") << ": " << v.fractions_per_unit() << ", "
        << quoted("rounding_type") << ": " << quoted(v.rounding_type()) << ", "
        << quoted("rounding_precision") << ": " << v.rounding_precision() << ", "
-       << quoted("format") << ": " << quoted(v.format())
+       << quoted("format") << ": " << quoted(v.format()) << ", "
+       << quoted("modified_by") << ": " << quoted(v.modified_by()) << ", "
+       << quoted("valid_from") << ": " << quoted(v.valid_from()) << ", "
+       << quoted("valid_to") << ": " << quoted(v.valid_to())
        << " }";
     return os;
 }

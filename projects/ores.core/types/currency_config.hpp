@@ -17,24 +17,37 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_ORE_XML_CURRENCY_SERIALISER_HPP
-#define ORES_CORE_ORE_XML_CURRENCY_SERIALISER_HPP
+#ifndef ORES_CORE_TYPES_CURRENCY_CONFIG_HPP
+#define ORES_CORE_TYPES_CURRENCY_CONFIG_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
 #include <iosfwd>
-#include <rapidxml-ns/rapidxml_ns.hpp>
-#include "ores.core/ore/model/currency.hpp"
+#include <vector>
+#include "ores.core/types/currency.hpp"
 
-namespace ores::core::ore::xml {
+namespace ores::core::types {
 
-class currency_serialiser {
+class currency_config {
 public:
-    void serialise(rapidxml_ns::xml_node<>& parent, const model::currency& cfg);
-    model::currency deserialise(rapidxml_ns::xml_node<>& node);
+    currency_config() = default;
+    explicit currency_config(const std::vector<currency>& currencies)
+        : currencies_(currencies) { }
+    explicit currency_config(std::vector<currency>&& currencies)
+        : currencies_(currencies) { }
+
+    std::vector<currency> currencies() const { return currencies_; }
+    void currencies(const std::vector<currency>& currencies) {
+        currencies_ = currencies;
+    }
+
+private:
+    std::vector<currency> currencies_;
 };
+
+std::ostream& operator<<(std::ostream& s, const currency_config& v);
 
 }
 

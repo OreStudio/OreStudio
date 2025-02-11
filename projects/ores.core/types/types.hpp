@@ -9,34 +9,23 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * FOR A PARTICULAR PURPOSE. Seethe GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
+ * You should have received a copy of the GNU General PublicLicense along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_ORE_JSON_CURRENCY_SERIALISER_HPP
-#define ORES_CORE_ORE_JSON_CURRENCY_SERIALISER_HPP
+#ifndef ORES_CORE_TYPES_HPP
+#define ORES_CORE_TYPES_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <iosfwd>
-#include "rapidjson/document.h"
-#include "ores.core/ore/model/currency.hpp"
-
-namespace ores::core::ore::json {
-
-class currency_serialiser {
-public:
-    static void serialise(const model::currency& ccy, rapidjson::Value& v,
-        rapidjson::Document::AllocatorType& a);
-    static model::currency deserialise(const rapidjson::Value& v);
-};
-
-}
+/**
+ * @brief Domain model for the ORE types and other related classes.
+ */
+namespace ores::core::types {}
 
 #endif

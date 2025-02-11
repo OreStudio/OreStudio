@@ -20,9 +20,9 @@
  */
 #include <iostream>
 #include "ores.utility/log/logger.hpp"
-#include "ores.core/ore/db/currency_table.hpp"
-#include "ores.core/ore/model/currency_config.hpp"
-#include "ores.core/ore/json/currency_config_serialiser.hpp"
+#include "ores.core/db/currency_table.hpp"
+#include "ores.core/types/currency_config.hpp"
+#include "ores.core/json/currency_config_serialiser.hpp"
 #include "ores.console/application.hpp"
 
 namespace {
@@ -49,9 +49,9 @@ import_data(const std::optional<importing_configuration>& ocfg) const
         BOOST_LOG_SEV(lg, debug) << "Processing currency configuration: "
                                  << ccy_cfg;
         auto cc(importer_.import_currency_config(ccy_cfg));
-        core::ore::db::currency_table ct;
+        core::db::currency_table ct;
         ct.write(cc.currencies());
-        using core::ore::json::currency_config_serialiser;
+        using core::json::currency_config_serialiser;
         std::cout << currency_config_serialiser::serialise(cc) << std::endl;
     }
 }
@@ -69,11 +69,11 @@ dump_data(const std::optional<dumping_configuration>& ocfg) const
     if (cfg.currency_configurations())
     {
         BOOST_LOG_SEV(lg, debug) << "Dumping currency configurations.";
-        core::ore::db::currency_table ct;
+        core::db::currency_table ct;
         const auto vec(ct.read());
-        using ores::core::ore::model::currency_config;
+        using ores::core::types::currency_config;
         const currency_config cc(vec);
-        using core::ore::json::currency_config_serialiser;
+        using core::json::currency_config_serialiser;
         std::cout << currency_config_serialiser::serialise(cc) << std::endl;
     }
 }

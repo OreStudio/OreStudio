@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_ORE_MODEL_CURRENCY_HPP
-#define ORES_CORE_ORE_MODEL_CURRENCY_HPP
+#ifndef ORES_CORE_TYPES_CURRENCY_HPP
+#define ORES_CORE_TYPES_CURRENCY_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -26,7 +26,7 @@
 
 #include <string>
 
-namespace ores::core::ore::model {
+namespace ores::core::types {
 
 class currency {
 public:

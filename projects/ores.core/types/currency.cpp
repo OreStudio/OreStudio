@@ -19,19 +19,25 @@
  */
 #include <iomanip>
 #include <ostream>
-#include "ores.utility/streaming/std_vector.hpp"
-#include "ores.core/ore/model/currency_config.hpp"
+#include "ores.core/types/currency.hpp"
 
-namespace ores::core::ore::model {
+namespace ores::core::types {
 
-std::ostream& operator<<(std::ostream& s, const currency_config& v) {
+std::ostream& operator<<(std::ostream& os, const currency& v) {
     using std::quoted;
-    s << " { "
-      << quoted("__type__") << ": "
-      << quoted("ores::core::ore::model::currency_config") << ", "
-      << quoted("currencies") << ": " << v.currencies()
-      << " }";
-    return(s);
+    os << " { "
+       << quoted("__type__") << ": " << quoted("ores::core::ore::model::currency") << ", "
+       << quoted("name") << ": " << quoted(v.name()) << ", "
+       << quoted("iso_code") << ": " << quoted(v.iso_code()) << ", "
+       << quoted("numeric_code") << ": " << v.numeric_code() << ", "
+       << quoted("symbol") << ": " << quoted(v.symbol()) << ", "
+       << quoted("fraction_symbol") << ": " << quoted(v.fraction_symbol()) << ", "
+       << quoted("fractions_per_unit") << ": " << v.fractions_per_unit() << ", "
+       << quoted("rounding_type") << ": " << quoted(v.rounding_type()) << ", "
+       << quoted("rounding_precision") << ": " << v.rounding_precision() << ", "
+       << quoted("format") << ": " << quoted(v.format())
+       << " }";
+    return os;
 }
 
 }

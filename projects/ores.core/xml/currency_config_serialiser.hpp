@@ -17,22 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_ORE_JSON_CURRENCY_CONFIG_SERIALISER_HPP
-#define ORES_CORE_ORE_JSON_CURRENCY_CONFIG_SERIALISER_HPP
+#ifndef ORES_CORE_XML_CURRENCY_CONFIG_SERIALISER_HPP
+#define ORES_CORE_XML_CURRENCY_CONFIG_SERIALISER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
 #include <string>
-#include "ores.core/ore/model/currency_config.hpp"
+#include "ores.core/types/currency_config.hpp"
 
-namespace ores::core::ore::json {
+namespace ores::core::xml {
 
 class currency_config_serialiser {
 public:
-    static std::string serialise(const model::currency_config& cfg);
-    static model::currency_config deserialise(const std::string& s);
+    std::string serialise(const types::currency_config& cfg);
+    types::currency_config deserialise(std::string s);
 };
 
 }

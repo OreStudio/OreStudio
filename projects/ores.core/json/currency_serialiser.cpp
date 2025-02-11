@@ -17,17 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ostream>
-#include <istream>
-#include "ores.core/ore/json/currency_serialiser.hpp"
+#include "ores.core/json/currency_serialiser.hpp"
 
-namespace ores::core::ore::json {
+namespace ores::core::json {
 
 using rapidjson::Value;
 using rapidjson::Document;
 
 void currency_serialiser::
-serialise(const model::currency& ccy, Value& v, Document::AllocatorType& a) {
+serialise(const types::currency& ccy, Value& v, Document::AllocatorType& a) {
     v.SetObject();
 
     using rapidjson::StringRef;
@@ -43,8 +41,8 @@ serialise(const model::currency& ccy, Value& v, Document::AllocatorType& a) {
     v.AddMember("CurrencyType", Value(ccy.currency_type(), a).Move(), a);
 }
 
-model::currency currency_serialiser::deserialise(const Value& value) {
-    model::currency r;
+types::currency currency_serialiser::deserialise(const Value& value) {
+    types::currency r;
 
     r.name(value["Name"].GetString());
     r.iso_code(value["ISOCode"].GetString());

@@ -17,24 +17,33 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_ORE_XML_CURRENCY_CONFIG_SERIALISER_HPP
-#define ORES_CORE_ORE_XML_CURRENCY_CONFIG_SERIALISER_HPP
+#include "ores.utility/log/logger.hpp"
+#include "ores.utility/filesystem/file.hpp"
+#include "ores.core/types/currency_config.hpp"
+#include "ores.core/xml/currency_config_serialiser.hpp"
+#include "ores.core/xml/importer.hpp"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
+namespace {
 
-#include <string>
-#include "ores.core/ore/model/currency_config.hpp"
-
-namespace ores::core::ore::xml {
-
-class currency_config_serialiser {
-public:
-    std::string serialise(const model::currency_config& cfg);
-    model::currency_config deserialise(std::string s);
-};
+using namespace ores::utility::log;
+auto lg(logger_factory("ores.core.xml.importer"));
 
 }
 
-#endif
+namespace ores::core::xml {
+
+types::currency_config
+importer::import_currency_config(const std::filesystem::path& path) const {
+    BOOST_LOG_SEV(lg, debug) << "Starting to import. File: " << path.generic_string();
+
+    currency_config_serialiser ser;
+    using namespace ores::utility::filesystem;
+    const std::string c(read_file_content(path));
+    auto r(ser.deserialise(c));
+
+    BOOST_LOG_SEV(lg, debug) << "Finished importing. Result: " << r;
+
+    return r;
+}
+
+}

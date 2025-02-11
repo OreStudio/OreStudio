@@ -16,8 +16,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_ORE_XML_XML_HPP
-#define ORES_CORE_ORE_XML_XML_HPP
+#ifndef ORES_CORE_XML_XML_HPP
+#define ORES_CORE_XML_XML_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -26,6 +26,6 @@
 /**
  * @brief Provides XML serialisation support for the ORE domain model types.
  */
-namespace ores::core::ore::xml {}
+namespace ores::core::xml {}
 
 #endif

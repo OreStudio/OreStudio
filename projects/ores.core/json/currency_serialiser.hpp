@@ -17,32 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_ORE_XML_PARSING_ERROR_HPP
-#define ORES_CORE_ORE_XML_PARSING_ERROR_HPP
+#ifndef ORES_CORE_JSON_CURRENCY_SERIALISER_HPP
+#define ORES_CORE_JSON_CURRENCY_SERIALISER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <string>
-#include <boost/exception/info.hpp>
+#include "rapidjson/document.h"
+#include "ores.core/types/currency.hpp"
 
-namespace ores::core::ore::xml {
+namespace ores::core::json {
 
-/**
- * @brief A fatal error has occurred during XML parsing.
- */
-class parsing_error : public virtual std::exception,
-                      public virtual boost::exception {
+class currency_serialiser {
 public:
-    explicit parsing_error(std::string message)
-        : message_(std::move(message)) { }
-    parsing_error() = default;
-    ~parsing_error() noexcept override = default;
-    const char* what() const noexcept final { return(message_.c_str()); }
-
-private:
-    std::string message_;
+    static void serialise(const types::currency& ccy, rapidjson::Value& v,
+        rapidjson::Document::AllocatorType& a);
+    static types::currency deserialise(const rapidjson::Value& v);
 };
 
 }

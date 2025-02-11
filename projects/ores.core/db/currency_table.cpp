@@ -18,21 +18,20 @@
  *
  */
 #include <sstream>
-//#include <iostream>
 #include <pqxx/pqxx>
 #include "ores.utility/log/logger.hpp"
-#include "ores.core/ore/db/currency_table.hpp"
+#include "ores.core/db/currency_table.hpp"
 
 namespace {
 
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.core.ore.db.currency_table"));
+auto lg(logger_factory("ores.core.db.currency_table"));
 
 }
 
-namespace ores::core::ore::db {
+namespace ores::core::db {
 
-void currency_table::write(const std::vector<model::currency>& currencies) {
+void currency_table::write(const std::vector<types::currency>& currencies) {
     // FIXME: test
     std::string connection_string("postgresql://ores:ores@localhost:5432/oresdb");
     pqxx::connection c(connection_string);
@@ -52,7 +51,7 @@ void currency_table::write(const std::vector<model::currency>& currencies) {
     w.commit();
 }
 
-std::vector<model::currency> currency_table::read() {
+std::vector<types::currency> currency_table::read() {
     std::string connection_string("postgresql://ores:ores@localhost:5432/oresdb");
     pqxx::connection c(connection_string);
     pqxx::work w(c);
@@ -64,13 +63,13 @@ std::vector<model::currency> currency_table::read() {
           << "format, currency_type "
           << "from oresdb.currencies_latest;";
 
-    std::vector<model::currency> r;
+    std::vector<types::currency> r;
     for (const auto& [name, iso_code, numeric_code, symbol, fraction_symbol,
             fractions_per_unit, rounding_type, rounding_precision,
             format, currency_type] : w.query<std::string, std::string,
              int, std::string, std::string, int, std::string, int, std::string,
              std::string>(query.str())) {
-        model::currency ccy;
+        types::currency ccy;
         ccy.name(name);
         ccy.iso_code(iso_code);
         ccy.numeric_code(numeric_code);

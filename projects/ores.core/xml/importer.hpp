@@ -18,24 +18,24 @@
  * MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_ORE_XML_IMPORTER_HPP
-#define ORES_CORE_ORE_XML_IMPORTER_HPP
+#ifndef ORES_CORE_XML_IMPORTER_HPP
+#define ORES_CORE_XML_IMPORTER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
 #include <filesystem>
-#include "ores.core/ore/model/currency_config.hpp"
+#include "ores.core/types/currency_config.hpp"
 
-namespace ores::core::ore::xml {
+namespace ores::core::xml {
 
 /**
  * @brief Imports model elements from an XML representation.
  */
 class importer {
 public:
-    model::currency_config
+    types::currency_config
     import_currency_config(const std::filesystem::path& path) const;
 };
 

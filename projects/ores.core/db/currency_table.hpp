@@ -9,23 +9,32 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. Seethe GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU General PublicLicense along with
+ * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_ORE_MODEL_HPP
-#define ORES_CORE_ORE_MODEL_HPP
+#ifndef ORES_CORE_DB_CURRENCY_TABLE_HPP
+#define ORES_CORE_DB_CURRENCY_TABLE_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-/**
- * @brief Domain model for the ORE types.
- */
-namespace ores::core::ore::model {}
+#include <vector>
+#include "ores.core/types/currency.hpp"
+
+namespace ores::core::db {
+
+class currency_table {
+public:
+    void write(const std::vector<types::currency>& currencies);
+    std::vector<types::currency> read();
+};
+
+}
 
 #endif

@@ -17,34 +17,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ostream>
-#include <istream>
-#include <charconv>
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/string/converter.hpp"
-#include "ores.core/ore/xml/currency_serialiser.hpp"
+#include "ores.core/xml/currency_serialiser.hpp"
 
 namespace {
 
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.core.ore.xml.currency_serialiser"));
+auto lg(logger_factory("ores.core.xml.currency_serialiser"));
 
 const std::string missing_root_node("Could not find a root XML node.");
 const std::string missing_currency_config("No CurrencyConfig element found");
 
 }
 
-namespace ores::core::ore::xml {
+namespace ores::core::xml {
 
 using namespace rapidxml_ns;
 
 void currency_serialiser::
-serialise(rapidxml_ns::xml_node<>& /*parent*/, const model::currency& /*ccy*/) {
+serialise(rapidxml_ns::xml_node<>& /*parent*/, const types::currency& /*ccy*/) {
 
 }
 
-model::currency currency_serialiser::deserialise(rapidxml_ns::xml_node<>& node) {
-    model::currency r;
+types::currency currency_serialiser::deserialise(rapidxml_ns::xml_node<>& node) {
+    types::currency r;
     xml_node<> *name = node.first_node("Name");
     if (name != nullptr)
         r.name(name->value());

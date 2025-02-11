@@ -17,27 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <sstream>
 #include "rapidjson/writer.h"
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
 #include "ores.utility/log/logger.hpp"
-#include "ores.core/ore/json/parsing_error.hpp"
-#include "ores.core/ore/json/currency_serialiser.hpp"
-#include "ores.core/ore/json/currency_config_serialiser.hpp"
+#include "ores.core/json/parsing_error.hpp"
+#include "ores.core/json/currency_serialiser.hpp"
+#include "ores.core/json/currency_config_serialiser.hpp"
 
 namespace {
 
 // exceptions only
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.core.ore.json.currency_config_serialiser"));
+auto lg(logger_factory("ores.core.json.currency_config_serialiser"));
 
 const std::string missing_currency_config("No CurrencyConfig found");
 const std::string missing_currencies("No Currencies found");
 
 }
 
-namespace ores::core::ore::json {
+namespace ores::core::json {
 
 using rapidjson::Value;
 using rapidjson::Writer;
@@ -45,7 +44,7 @@ using rapidjson::Document;
 using rapidjson::StringBuffer;
 
 std::string
-currency_config_serialiser::serialise(const model::currency_config& cfg) {
+currency_config_serialiser::serialise(const types::currency_config& cfg) {
     Document doc;
     doc.SetObject();
 
@@ -71,7 +70,7 @@ currency_config_serialiser::serialise(const model::currency_config& cfg) {
     return r;
 }
 
-model::currency_config
+types::currency_config
 currency_config_serialiser::deserialise(const std::string& s) {
     rapidjson::Document d;
     d.Parse(s.c_str());
@@ -87,13 +86,13 @@ currency_config_serialiser::deserialise(const std::string& s) {
         BOOST_THROW_EXCEPTION(parsing_error(missing_currency_config));
     }
 
-    std::vector<model::currency> currencies;
+    std::vector<types::currency> currencies;
     const auto& currencies_array(currencyConfigValue["Currencies"].GetArray());
     for (const auto& currency_value : currencies_array) {
         currencies.push_back(currency_serialiser::deserialise(currency_value));
     }
 
-    model::currency_config r;
+    types::currency_config r;
     r.currencies(currencies);
 
     BOOST_LOG_SEV(lg, debug) << "Finished deserialising JSON. Total currencies found: "

@@ -17,37 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_ORE_MODEL_CURRENCY_CONFIG_HPP
-#define ORES_CORE_ORE_MODEL_CURRENCY_CONFIG_HPP
+#ifndef ORES_CORE_JSON_CURRENCY_CONFIG_SERIALISER_HPP
+#define ORES_CORE_JSON_CURRENCY_CONFIG_SERIALISER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <iosfwd>
-#include <vector>
-#include "ores.core/ore/model/currency.hpp"
+#include <string>
+#include "ores.core/types/currency_config.hpp"
 
-namespace ores::core::ore::model {
+namespace ores::core::json {
 
-class currency_config {
+class currency_config_serialiser {
 public:
-    currency_config() = default;
-    explicit currency_config(const std::vector<currency>& currencies)
-        : currencies_(currencies) { }
-    explicit currency_config(std::vector<currency>&& currencies)
-        : currencies_(currencies) { }
-
-    std::vector<currency> currencies() const { return currencies_; }
-    void currencies(const std::vector<currency>& currencies) {
-        currencies_ = currencies;
-    }
-
-private:
-    std::vector<currency> currencies_;
+    static std::string serialise(const types::currency_config& cfg);
+    static types::currency_config deserialise(const std::string& s);
 };
-
-std::ostream& operator<<(std::ostream& s, const currency_config& v);
 
 }
 

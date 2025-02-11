@@ -32,6 +32,10 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
     message(STATUS "C++ flags: ${CMAKE_CXX_FLAGS}")
 endif()
 
+add_compile_options(
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Werror>
+    $<$<CXX_COMPILER_ID:MSVC>:/WX>)
+
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.console)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.core)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.core.test)

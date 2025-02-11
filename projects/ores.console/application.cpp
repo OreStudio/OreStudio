@@ -70,10 +70,18 @@ dump_data(const std::optional<dumping_configuration>& ocfg) const
     {
         BOOST_LOG_SEV(lg, debug) << "Dumping currency configurations.";
         core::db::currency_table ct;
-        const auto vec(ct.read());
+
         using ores::core::types::currency_config;
-        const currency_config cc(vec);
         using core::json::currency_config_serialiser;
+        const auto reader([&]() {
+            if (cfg.as_of().empty()) {
+                return ct.read();
+            } else {
+                BOOST_LOG_SEV(lg, debug) << "Using timepoint: " << cfg.as_of();
+                return ct.read(cfg.as_of());
+            }
+        });
+        const currency_config cc(reader());
         std::cout << currency_config_serialiser::serialise(cc) << std::endl;
     }
 }

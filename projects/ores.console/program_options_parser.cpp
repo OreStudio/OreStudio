@@ -42,6 +42,7 @@ const std::string importing_curency_config_arg("currency-configuration");
 const std::string dumping_command_name("dump");
 const std::string dumping_command_desc("Dumps data from the system.");
 const std::string dumping_curency_config_arg("currency-configuration");
+const std::string dumping_as_of_arg("as-of");
 
 const std::string help_arg("help");
 const std::string version_arg("version");
@@ -145,7 +146,9 @@ options_description make_dumping_options_description() {
     options_description r("Dumping");
     r.add_options()
         ("currency-configuration",
-           "Dumps currency configurations, in JSON representation.");
+           "Dumps currency configurations, in JSON representation.")
+        ("as-of", value<std::string>(),
+            "Timepoint from which to dump data.");
 
     return r;
 }
@@ -345,6 +348,11 @@ read_dumping_configuration(const variables_map& vm) {
         found_dumps = true;
         const auto ccy_cfgs(vm.count(dumping_curency_config_arg) != 0);
         r.currency_configurations(ccy_cfgs);
+    }
+
+    if (vm.count(dumping_as_of_arg) != 0) {
+        const auto as_of(vm[dumping_as_of_arg].as<std::string>());
+        r.as_of(as_of);
     }
 
     if (!found_dumps)

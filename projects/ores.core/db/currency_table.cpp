@@ -53,17 +53,11 @@ void currency_table::write(const std::vector<types::currency>& currencies) {
     w.commit();
 }
 
-std::vector<types::currency> currency_table::read() {
+std::vector<types::currency>
+currency_table::read_internal(const std::string& query) {
     std::string connection_string("postgresql://ores:ores@localhost:5432/oresdb");
     pqxx::connection c(connection_string);
     pqxx::work w(c);
-
-    std::ostringstream query;
-    query << "select "
-          << "name, iso_code, numeric_code, symbol, fraction_symbol, "
-          << "fractions_per_unit, rounding_type, rounding_precision, "
-          << "format, currency_type, modified_by, valid_from, valid_to "
-          << "from oresdb.currencies_latest;";
 
     std::vector<types::currency> r;
     for (const auto& [name, iso_code, numeric_code, symbol, fraction_symbol,
@@ -71,7 +65,7 @@ std::vector<types::currency> currency_table::read() {
             format, currency_type, modified_by, valid_from, valid_to] :
              w.query<std::string, std::string, int, std::string, std::string,
              int, std::string, int, std::string, std::string, std::string,
-             std::string, std::string>(query.str())) {
+             std::string, std::string>(query)) {
         types::currency ccy;
         ccy.name(name);
         ccy.iso_code(iso_code);
@@ -90,6 +84,28 @@ std::vector<types::currency> currency_table::read() {
         r.push_back(ccy);
     }
     return r;
+}
+
+std::vector<types::currency> currency_table::read() {
+    std::ostringstream query;
+    query << "select "
+          << "name, iso_code, numeric_code, symbol, fraction_symbol, "
+          << "fractions_per_unit, rounding_type, rounding_precision, "
+          << "format, currency_type, modified_by, valid_from, valid_to "
+          << "from oresdb.currencies_latest;";
+
+    return read_internal(query.str());
+}
+
+std::vector<types::currency> currency_table::read(const std::string& as_of) {
+    std::ostringstream query;
+    query << "select "
+          << "name, iso_code, numeric_code, symbol, fraction_symbol, "
+          << "fractions_per_unit, rounding_type, rounding_precision, "
+          << "format, currency_type, modified_by, valid_from, valid_to "
+          << "from oresdb.currencies_as_of('" << as_of << "')";
+
+    return read_internal(query.str());
 }
 
 }

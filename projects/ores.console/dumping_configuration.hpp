@@ -54,6 +54,18 @@ public:
     }
     /**@}*/
 
+    /**
+     * @brief Timepoint to use for the reading.
+     */
+    /**@{*/
+    std::string as_of() const {
+        return as_of_;
+    }
+    void as_of(const std::string v) {
+        as_of_ = v;
+    }
+    /**@}*/
+
     bool operator==(const dumping_configuration& rhs) const;
     bool operator!=(const dumping_configuration& rhs) const {
         return !this->operator==(rhs);
@@ -65,6 +77,7 @@ public:
 
 private:
     bool currency_configurations_;
+    std::string as_of_;
 };
 
 std::ostream& operator<<(std::ostream& s, const dumping_configuration& v);

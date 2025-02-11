@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <iomanip>
 #include <ostream>
 #include "ores.console/dumping_configuration.hpp"
 
@@ -26,7 +27,8 @@ std::ostream& operator<<(std::ostream& s, const dumping_configuration& v) {
     s << " { "
       << "\"__type__\": "
       << "\"ores::console::dumping_configuration\"" << ", "
-      << "\"currency_configurations\": " << v.currency_configurations()
+      << "\"currency_configurations\": " << v.currency_configurations() << ", "
+      << "\"as_of\": " << quoted(v.as_of())
       << " }";
     return(s);
 }

@@ -24,15 +24,20 @@
 #pragma once
 #endif
 
+#include <string>
 #include <vector>
 #include "ores.core/types/currency.hpp"
 
 namespace ores::core::db {
 
 class currency_table {
+private:
+    std::vector<types::currency> read_internal(const std::string& query);
+
 public:
     void write(const std::vector<types::currency>& currencies);
     std::vector<types::currency> read();
+    std::vector<types::currency> read(const std::string& as_of);
 };
 
 }

@@ -20,13 +20,13 @@
 #ifndef ORES_UI_CURRENCY_TABLE_HPP
 #define ORES_UI_CURRENCY_TABLE_HPP
 
-#include "ores.core/ore/model/currency_config.hpp"
+#include "ores.core/types/currency_config.hpp"
 
 namespace ores::ui {
 
 class currency_table {
 public:
-    static void display(const ores::core::ore::model::currency_config& ccy_cfg);
+    static void display(const ores::core::types::currency_config& ccy_cfg);
 };
 
 }

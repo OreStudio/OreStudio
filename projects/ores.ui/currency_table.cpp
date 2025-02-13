@@ -3,7 +3,7 @@
 
 namespace ores::ui {
 
-void currency_table::display(const ores::core::ore::model::currency_config& ccy_cfg) {
+void currency_table::display(const ores::core::types::currency_config& ccy_cfg) {
 
     // Start the table with 10 columns
     if (ImGui::BeginTable("Currencies", 10, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {

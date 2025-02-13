@@ -25,6 +25,7 @@
 #endif
 
 #include <iosfwd>
+#include <string>
 #include <algorithm>
 
 namespace ores::console {
@@ -78,6 +79,18 @@ public:
     }
     /**@}*/
 
+    /**
+     * @brief If true, output all versions.
+     */
+    /**@{*/
+    bool all_versions() const {
+        return all_versions_;
+    }
+    void all_versions(const bool v) {
+        all_versions_ = v;
+    }
+    /**@}*/
+
     bool operator==(const dumping_configuration& rhs) const;
     bool operator!=(const dumping_configuration& rhs) const {
         return !this->operator==(rhs);
@@ -91,6 +104,7 @@ private:
     bool currency_configurations_;
     std::string as_of_;
     std::string key_;
+    bool all_versions_;
 };
 
 std::ostream& operator<<(std::ostream& s, const dumping_configuration& v);

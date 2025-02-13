@@ -74,12 +74,16 @@ dump_data(const std::optional<dumping_configuration>& ocfg) const
         using ores::core::types::currency_config;
         using core::json::currency_config_serialiser;
         const auto reader([&]() {
-            if (cfg.as_of().empty()) {
-                return ct.read();
-            } else {
-                BOOST_LOG_SEV(lg, debug) << "Using timepoint: " << cfg.as_of();
-                return ct.read(cfg.as_of());
+            if (cfg.all_versions()) {
+                BOOST_LOG_SEV(lg, debug) << "Reading all versions for currencies.";
+                return ct.read_all(cfg.key());
+            } else if (cfg.as_of().empty()) {
+                BOOST_LOG_SEV(lg, debug) << "Reading latest currencies.";
+                return ct.read_latest(cfg.key());
             }
+            BOOST_LOG_SEV(lg, debug) << "Reading currencies at timepoint: "
+                                     << cfg.as_of();
+            return ct.read_at_timepoint(cfg.as_of(), cfg.key());
         });
         const currency_config cc(reader());
         std::cout << currency_config_serialiser::serialise(cc) << std::endl;

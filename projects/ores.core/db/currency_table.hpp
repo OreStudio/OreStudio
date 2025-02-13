@@ -35,9 +35,31 @@ private:
     std::vector<types::currency> read_internal(const std::string& query);
 
 public:
+    /**
+     * @brief Writes currencies to database. Expects the currency set to have
+     * unique ISO codes.
+     */
     void write(const std::vector<types::currency>& currencies);
-    std::vector<types::currency> read();
-    std::vector<types::currency> read(const std::string& as_of);
+
+    /**
+     * @brief Reads latest currencies, possibly filtered by ISO code.
+     */
+    std::vector<types::currency>
+    read_latest(const std::string& iso_code = std::string());
+
+    /**
+     * @brief Reads currencies at the supplied time point, possibly filtered by
+     * ISO code.
+     */
+    std::vector<types::currency>
+    read_at_timepoint(const std::string& as_of,
+        const std::string& iso_code = std::string());
+
+    /**
+     * @brief Reads all currencies, possibly filtered by ISO code.
+     */
+    std::vector<types::currency>
+    read_all(const std::string& iso_code = std::string());
 };
 
 }

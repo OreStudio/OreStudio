@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <iostream>
 #include <sstream>
 #include <pqxx/pqxx>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -55,6 +54,8 @@ void currency_table::write(const std::vector<types::currency>& currencies) {
 
 std::vector<types::currency>
 currency_table::read_internal(const std::string& query) {
+    BOOST_LOG_SEV(lg, debug) << "Reading using query: " << query;
+
     std::string connection_string("postgresql://ores:ores@localhost:5432/oresdb");
     pqxx::connection c(connection_string);
     pqxx::work w(c);
@@ -86,18 +87,25 @@ currency_table::read_internal(const std::string& query) {
     return r;
 }
 
-std::vector<types::currency> currency_table::read() {
+std::vector<types::currency> currency_table::
+read_latest(const std::string& iso_code) {
     std::ostringstream query;
     query << "select "
           << "name, iso_code, numeric_code, symbol, fraction_symbol, "
           << "fractions_per_unit, rounding_type, rounding_precision, "
           << "format, currency_type, modified_by, valid_from, valid_to "
-          << "from oresdb.currencies_latest;";
+          << "from oresdb.currencies_latest";
+
+    if (!iso_code.empty()) {
+        query << " where iso_code = '" << iso_code << "'";
+    }
+    query << " order by valid_from;";
 
     return read_internal(query.str());
 }
 
-std::vector<types::currency> currency_table::read(const std::string& as_of) {
+std::vector<types::currency> currency_table::
+read_at_timepoint(const std::string& as_of, const std::string& iso_code) {
     std::ostringstream query;
     query << "select "
           << "name, iso_code, numeric_code, symbol, fraction_symbol, "
@@ -105,7 +113,30 @@ std::vector<types::currency> currency_table::read(const std::string& as_of) {
           << "format, currency_type, modified_by, valid_from, valid_to "
           << "from oresdb.currencies_as_of('" << as_of << "')";
 
+    if (!iso_code.empty()) {
+        query << " where iso_code = '" << iso_code << "'";
+    }
+    query << " order by valid_from;";
+
     return read_internal(query.str());
 }
+
+std::vector<types::currency> currency_table::
+read_all(const std::string& iso_code) {
+    std::ostringstream query;
+    query << "select "
+          << "name, iso_code, numeric_code, symbol, fraction_symbol, "
+          << "fractions_per_unit, rounding_type, rounding_precision, "
+          << "format, currency_type, modified_by, valid_from, valid_to "
+          << "from oresdb.currencies";
+
+    if (!iso_code.empty()) {
+        query << " where iso_code = '" << iso_code << "'";
+    }
+
+    return read_internal(query.str());
+
+}
+
 
 }

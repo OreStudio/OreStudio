@@ -44,6 +44,7 @@ const std::string dumping_command_desc("Dumps data from the system.");
 const std::string dumping_curency_config_arg("currency-configuration");
 const std::string dumping_as_of_arg("as-of");
 const std::string dumping_key_arg("key");
+const std::string dumping_all_versions_arg("all-versions");
 
 const std::string help_arg("help");
 const std::string version_arg("version");
@@ -150,7 +151,8 @@ options_description make_dumping_options_description() {
            "Dumps currency configurations, in JSON representation.")
         ("as-of", value<std::string>(),
             "Timepoint from which to dump data.")
-        ("key", value<std::string>(), "Key to filter data by.");
+        ("key", value<std::string>(), "Key to filter data by.")
+        ("all-versions", "Retrieve all versions.");
 
     return r;
 }
@@ -361,6 +363,8 @@ read_dumping_configuration(const variables_map& vm) {
         const auto key(vm[dumping_key_arg].as<std::string>());
         r.key(key);
     }
+
+    r.all_versions(vm.count(dumping_all_versions_arg) != 0);
 
     if (!found_dumps)
         BOOST_THROW_EXCEPTION(parser_exception(missing_import_target));

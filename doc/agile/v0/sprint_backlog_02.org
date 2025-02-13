@@ -211,6 +211,14 @@ Notes:
 
 - add timestamp fields to domain objects.
 
+*** STARTED Add workspace as a container                               :code:
+    :LOGBOOK:
+    CLOCK: [2025-02-13 Thu 22:18]--[2025-02-13 Thu 22:35] =>  0:17
+    CLOCK: [2025-02-13 Thu 21:21]--[2025-02-13 Thu 22:17] =>  0:56
+    :END:
+
+Core needs to have a container for all of the data stored within a context.
+
 *** STARTED Refactor code for currencies                               :code:
     :LOGBOOK:
     CLOCK: [2025-02-11 Tue 21:41]--[2025-02-11 Tue 22:06] =>  0:25

@@ -66,6 +66,18 @@ public:
     }
     /**@}*/
 
+    /**
+     * @brief Key to filter by.
+     */
+    /**@{*/
+    std::string key() const {
+        return key_;
+    }
+    void key(const std::string v) {
+        key_ = v;
+    }
+    /**@}*/
+
     bool operator==(const dumping_configuration& rhs) const;
     bool operator!=(const dumping_configuration& rhs) const {
         return !this->operator==(rhs);
@@ -78,6 +90,7 @@ public:
 private:
     bool currency_configurations_;
     std::string as_of_;
+    std::string key_;
 };
 
 std::ostream& operator<<(std::ostream& s, const dumping_configuration& v);

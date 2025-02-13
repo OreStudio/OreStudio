@@ -18,20 +18,20 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-02-11 Tue 23:45]
+#+CAPTION: Clock summary at [2025-02-13 Thu 00:34]
 |       | <75>                                   |         |       |      |       |
 | Tags  | Headline                               | Time    |       |      |     % |
 |-------+----------------------------------------+---------+-------+------+-------|
-|       | *Total time*                           | *12:54* |       |      | 100.0 |
+|       | *Total time*                           | *13:42* |       |      | 100.0 |
 |-------+----------------------------------------+---------+-------+------+-------|
-|       | Stories                                | 12:54   |       |      | 100.0 |
-|       | Active                                 |         | 12:54 |      | 100.0 |
-| agile | Sprint and product backlog refinement  |         |       | 1:22 |  10.6 |
-| infra | Fix broken builds                      |         |       | 0:36 |   4.7 |
-| code  | Create a containing structure for data |         |       | 0:35 |   4.5 |
-| code  | Add temporal support to currencies     |         |       | 2:59 |  23.1 |
-| code  | Add command to dump currencies         |         |       | 3:30 |  27.1 |
-| code  | Refactor code for currencies           |         |       | 3:52 |  30.0 |
+|       | Stories                                | 13:42   |       |      | 100.0 |
+|       | Active                                 |         | 13:42 |      | 100.0 |
+| agile | Sprint and product backlog refinement  |         |       | 1:22 |  10.0 |
+| infra | Fix broken builds                      |         |       | 0:36 |   4.4 |
+| code  | Create a containing structure for data |         |       | 0:35 |   4.3 |
+| code  | Add temporal support to currencies     |         |       | 2:59 |  21.8 |
+| code  | Add command to dump currencies         |         |       | 4:18 |  31.4 |
+| code  | Refactor code for currencies           |         |       | 3:52 |  28.2 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -191,8 +191,9 @@ Links:
 
 - [[https://stackoverflow.com/questions/52426656/track-last-modification-timestamp-of-a-row-in-postgres][Track last modification timestamp of a row in Postgres]]
 
-*** STARTED Add command to dump currencies                             :code:
+*** COMPLETED Add command to dump currencies                           :code:
     :LOGBOOK:
+    CLOCK: [2025-02-12 Wed 23:46]--[2025-02-13 Thu 00:34] =>  0:48
     CLOCK: [2025-02-11 Tue 23:01]--[2025-02-11 Tue 23:42] =>  0:41
     CLOCK: [2025-02-11 Tue 22:13]--[2025-02-11 Tue 23:00] =>  0:47
     CLOCK: [2025-02-10 Mon 23:16]--[2025-02-10 Mon 23:58] =>  0:42

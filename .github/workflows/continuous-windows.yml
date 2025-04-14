@@ -51,7 +51,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1.13.0
 
       - name: get-cmake
-        uses: lukka/get-cmake@v3.31.5
+        uses: lukka/get-cmake@v4.0.1
 
       - name: run-vcpkg
         uses: lukka/run-vcpkg@v11

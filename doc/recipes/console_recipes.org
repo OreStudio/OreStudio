@@ -13,7 +13,8 @@ Demonstrates all of the functionality available on the command line tool
    :PROPERTIES:
    :header-args: :exports both
    :header-args+: :results raw
-   :header-args+: :dir ../../build/output/linux-clang-release/projects/ores.console/
+   :header-args+: :dir ../../build/output/linux-clang-debug/projects/ores.console/
+   :header-args+: :var data_dir="../../../../../assets/test_data/ore_sample_data"
    :END:
 
 ** General
@@ -119,14 +120,13 @@ IMPORTANT: build details are NOT for security purposes.
 ** Importing
    :PROPERTIES:
    :header-args+: :var log_args="--log-enabled --log-level trace --log-directory log"
-   :header-args+: :var currency_config_dir="/home/marco/Development/OreStudio/assets/test_data/ore_sample_data/currencies"
    :header-args+: :wrap src json
    :END:
 
 *** Import currencies
 
 #+begin_src sh
-./ores.console import ${log_args} --currency-configuration ${currency_config_dir}/currencies_API.xml | jq .
+./ores.console import ${log_args} --currency-configuration ${data_dir}/currencies/currencies_API.xml | jq .
 #+END_SRC
 
 #+RESULTS:

@@ -18,8 +18,10 @@
  *
  */
 #include <sstream>
-#include <pqxx/pqxx>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <pqxx/pqxx>
+#include "pqxx/params"
+#include <pqxx/prepared_statement>
 #include "ores.utility/log/logger.hpp"
 #include "ores.core/db/currency_table.hpp"
 
@@ -34,7 +36,7 @@ namespace ores::core::db {
 
 void currency_table::write(const std::vector<types::currency>& currencies) {
     // FIXME: test
-    std::string connection_string("postgresql://ores:ores@localhost:5432/oresdb");
+    std::string connection_string("postgresql://ores:ahV6aehuij6eingohsiajaiT0@localhost:5434/oresdb");
     pqxx::connection c(connection_string);
     pqxx::work w(c);
 
@@ -43,11 +45,14 @@ void currency_table::write(const std::vector<types::currency>& currencies) {
           << "($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)";
     c.prepare("currencies_insert_stmt", query.str());
 
-    for(const auto& ccy : currencies) {
-        w.exec_prepared("currencies_insert_stmt", ccy.name(), ccy.iso_code(),
-            ccy.numeric_code(), ccy.symbol(), ccy.fraction_symbol(),
-            ccy.fractions_per_unit(), ccy.rounding_type(), ccy.rounding_precision(), ccy.format(),
-            ccy.currency_type());
+    for (const auto& ccy : currencies) {
+        pqxx::params params {
+            ccy.name(), ccy.iso_code(), ccy.numeric_code(), ccy.symbol(), ccy.fraction_symbol(),
+                ccy.fractions_per_unit(), ccy.rounding_type(),
+                ccy.rounding_precision(), ccy.format(),
+                ccy.currency_type()};
+
+        w.exec(pqxx::prepped{"currencies_insert_stmt"}, params);
     }
     w.commit();
 }

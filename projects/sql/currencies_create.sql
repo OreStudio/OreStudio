@@ -98,7 +98,7 @@ with latest_currencies as (
     from currencies
     group by iso_code)
 select
-    oresdb.currencies.name,
+    name,
     iso_code,
     numeric_code,
     symbol,

@@ -69,7 +69,7 @@ select version();
 select now();
 
 -- current user, database
-select current_user(), current_database();
+select current_user, current_database();
 
 -- running stored procs from psql
 select ores.run_some_proc();
@@ -79,3 +79,6 @@ select ores.run_some_proc();
 
 -- get function signature
 select oid::regprocedure from pg_procedure where proname = 'currencies_insert';
+
+-- get currencies
+select * from currencies;

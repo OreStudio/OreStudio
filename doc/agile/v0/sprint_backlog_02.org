@@ -17,23 +17,25 @@
 ** Active
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
-#+CAPTION: Clock summary at [2025-08-07 Thu 20:32]
-|       | <75>                                   |         |       |      |       |
-| Tags  | Headline                               | Time    |       |      |     % |
-|-------+----------------------------------------+---------+-------+------+-------|
-|       | *Total time*                           | *17:20* |       |      | 100.0 |
-|-------+----------------------------------------+---------+-------+------+-------|
-|       | Stories                                | 17:20   |       |      | 100.0 |
-|       | Active                                 |         | 17:20 |      | 100.0 |
-| agile | Sprint and product backlog refinement  |         |       | 1:22 |   7.9 |
-| infra | Fix broken builds                      |         |       | 0:36 |   3.5 |
-| code  | Create a containing structure for data |         |       | 0:35 |   3.4 |
-| code  | Add temporal support to currencies     |         |       | 2:59 |  17.2 |
-| code  | Add command to dump currencies         |         |       | 4:18 |  24.8 |
-| code  | Refactor code for currencies           |         |       | 3:52 |  22.3 |
-| code  | Restore qt setup                       |         |       | 2:20 |  13.5 |
-| code  | Add gemini action                      |         |       | 0:05 |   0.5 |
-| code  | Add workspace as a container           |         |       | 1:13 |   7.0 |
+#+TBLNAME: sprint_summary
+#+CAPTION: Clock summary at [2025-08-08 Fri 09:11]
+|       | <75>                                    |         |       |      |       |
+| Tags  | Headline                                | Time    |       |      |     % |
+|-------+-----------------------------------------+---------+-------+------+-------|
+|       | *Total time*                            | *19:07* |       |      | 100.0 |
+|-------+-----------------------------------------+---------+-------+------+-------|
+|       | Stories                                 | 19:07   |       |      | 100.0 |
+|       | Active                                  |         | 19:07 |      | 100.0 |
+| agile | Sprint and product backlog refinement   |         |       | 1:22 |   7.1 |
+| infra | Fix broken builds                       |         |       | 0:36 |   3.1 |
+| code  | Create a containing structure for data  |         |       | 0:35 |   3.1 |
+| code  | Add temporal support to currencies      |         |       | 2:59 |  15.6 |
+| code  | Add command to dump currencies          |         |       | 4:18 |  22.5 |
+| code  | Refactor code for currencies            |         |       | 3:52 |  20.2 |
+| code  | Restore qt setup                        |         |       | 2:20 |  12.2 |
+| code  | Add gemini action                       |         |       | 0:05 |   0.4 |
+| code  | Use bitemporal support from Postgres 18 |         |       | 1:47 |   9.3 |
+| code  | Add workspace as a container            |         |       | 1:13 |   6.4 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -249,7 +251,37 @@ Links:
 - [[https://github.com/google-github-actions/run-gemini-cli][GH run-gemini-cli]]
 - [[https://blog.google/technology/developers/introducing-gemini-cli-github-actions][Meet your new AI coding teammate: Gemini CLI GitHub Actions]]
 
+*** STARTED Use bitemporal support from Postgres 18                    :code:
+    :LOGBOOK:
+    CLOCK: [2025-08-08 Fri 08:27]--[2025-08-08 Fri 09:09] =>  0:42
+    CLOCK: [2025-08-08 Fri 08:24]--[2025-08-08 Fri 08:26] =>  0:02
+    CLOCK: [2025-08-07 Thu 23:51]--[2025-08-07 Thu 23:59] =>  0:08
+    CLOCK: [2025-08-07 Thu 22:12]--[2025-08-07 Thu 23:07] =>  0:55
+    :END:
+
+Links:
+
+- [[https://hdombrovskaya.wordpress.com/2024/05/05/3937/][(Bi)Temporal Tables, PostgreSQL and SQL Standard]]
+- [[https://neon.com/postgresql/postgresql-18/temporal-constraints][PostgreSQL 18 Temporal Constraints]]
+- [[https://www.depesz.com/2024/10/03/waiting-for-postgresql-18-add-temporal-foreign-key-contraints/][Waiting for PostgreSQL 18 – Add temporal FOREIGN KEY contraints]]
+- [[https://neon.com/postgresql/postgresql-tutorial/postgresql-identity-column][PostgreSQL Identity Column]]
+- [[https://wiki.postgresql.org/wiki/SQL2011Temporal][SQL2011Temporal]]
+- [[https://neon.com/postgresql/postgresql-18-new-features][PostgreSQL 18 New Features]]
+- [[https://lord.technology/2025/01/28/understanding-temporal-primary-keys.html][Understanding Bitemporal Primary Keys]]
+- [[https://hypirion.com/musings/implementing-system-versioned-tables-in-postgres][Implementing System-Versioned Tables in Postgres]]
+- [[https://clarkdave.net/2015/02/historical-records-with-postgresql-and-temporal-tables-and-sql-2011/][Historical records with PostgreSQL, temporal tables and SQL:2011]]
+- [[https://github.com/arkhipov/temporal_tables][temporal_tables]]
+
+*** Configure postgres with async IO                                   :code:
+
+Links:
+
+- [[https://neon.com/postgresql/postgresql-18/asynchronous-io][PostgreSQL 18 Asynchronous I/O]]
+
 *** Consider using sqls for LSP                                        :code:
+
+We are presently testing postgrestools. If that does not work well, we should
+consider sqls.
 
 Links:
 

@@ -16,6 +16,14 @@
                 "freetype"
             ]
         },
+        {
+            "name": "qtbase",
+            "features": [
+                "sql",
+                "sql-sqlite",
+                "sql-psql"
+            ]
+        },
         "implot",
         "libpqxx",
         "rapidxml-ns",

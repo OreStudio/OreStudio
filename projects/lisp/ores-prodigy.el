@@ -1,6 +1,6 @@
-;;; setup-prodigy.el --- Sets up prodigy for this project.  -*- lexical-binding: t; -*-
+;;; ores-prodigy.el --- Sets up prodigy for this project.  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2024  Marco Craveiro
+;; Copyright (C) 2025  Marco Craveiro
 
 ;; Author: Marco Craveiro <marco.craveiro@gmail.com>
 ;; Keywords: local
@@ -22,24 +22,39 @@
 
 ;;
 ;;; Code:
-(defun ores/path-to-ui ()
+(require 'project)
+(autoload 'prodigy-define-tag "prodigy")
+(autoload 'prodigy-define-service "prodigy")
+(defvar prodigy-services)
+
+(defun ores/path-to-output ()
   "Return the path to the qt user interface directory."
   (let* ((pr (project-current t))
          (root (project-root pr))
-         (path (concat root "build/output/linux-clang-release/projects/ores.ui/")))
+         (path (concat root "build/output")))
     path))
 
 (setq prodigy-services nil)
 (prodigy-define-tag :name 'ores)
 (prodigy-define-tag :name 'ui)
+(prodigy-define-tag :name 'debug)
+(prodigy-define-tag :name 'release)
 
 (prodigy-define-service
-  :name "ORE Studio ImGui."
-  :cwd (ores/path-to-ui)
-  :command (concat (ores/path-to-ui) "ores.ui")
-  :tags '(ores ui)
+  :name "ORE Studio QT - Debug."
+  :cwd (concat (ores/path-to-output) "/linux-clang-debug/projects/ores.qt")
+  :command (concat (ores/path-to-output) "/linux-clang-debug/projects/ores.qt/ores.qt")
+  :tags '(ores ui debug)
   :stop-signal 'sigkill
   :kill-process-buffer-on-stop t)
 
-(provide 'setup-prodigy)
-;;; setup-prodigy.el ends here
+(prodigy-define-service
+  :name "ORE Studio QT - Release."
+  :cwd (concat (ores/path-to-output) "/linux-clang-debug/projects/ores.qt")
+  :command (concat (ores/path-to-output) "/linux-clang-release/projects/ores.qt/ores.qt")
+  :tags '(ores ui release)
+  :stop-signal 'sigkill
+  :kill-process-buffer-on-stop t)
+
+(provide 'ores-prodigy)
+;;; ores-prodigy.el ends here

@@ -251,6 +251,20 @@ Links:
 - [[https://github.com/google-github-actions/run-gemini-cli][GH run-gemini-cli]]
 - [[https://blog.google/technology/developers/introducing-gemini-cli-github-actions][Meet your new AI coding teammate: Gemini CLI GitHub Actions]]
 
+*** COMPLETED Remove ImGui support                                     :code:
+    :LOGBOOK:
+    CLOCK: [2025-08-10 Sun 13:41]--[2025-08-10 Sun 13:49] =>  0:08
+    :END:
+
+We never got it to compile under windows and osx.
+
+*** STARTED Create a GRPc based service                                :code:
+    :LOGBOOK:
+    CLOCK: [2025-08-10 Sun 13:20]--[2025-08-10 Sun 13:37] =>  0:17
+    :END:
+
+Needs to be able to login, and retrieve currencies.
+
 *** STARTED Use bitemporal support from Postgres 18                    :code:
     :LOGBOOK:
     CLOCK: [2025-08-08 Fri 08:27]--[2025-08-08 Fri 09:09] =>  0:42

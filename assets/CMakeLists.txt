@@ -16,7 +16,7 @@
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/images/splash_screen.png"
-    "${CMAKE_BINARY_DIR}/projects/ores.qt/splash_screen.png" COPYONLY)
+    "${CMAKE_BINARY_DIR}/projects/ores.qt/splash_screen_new.png" COPYONLY)
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/images/database-2-line.png"
     "${CMAKE_BINARY_DIR}/projects/ores.qt/database-2-line.png" COPYONLY)
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/images/money-pound-box-line.png"

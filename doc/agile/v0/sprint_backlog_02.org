@@ -284,7 +284,7 @@ Links:
 
 - [[https://hdombrovskaya.wordpress.com/2024/05/05/3937/][(Bi)Temporal Tables, PostgreSQL and SQL Standard]]
 - [[https://neon.com/postgresql/postgresql-18/temporal-constraints][PostgreSQL 18 Temporal Constraints]]
-- [[https://www.depesz.com/2024/10/03/waiting-for-postgresql-18-add-temporal-foreign-key-contraints/][Waiting for PostgreSQL 18 – Add temporal FOREIGN KEY contraints]]
+- [[https://www.depesz.com/2024/10/03/waiting-for-postgresql-18-add-temporal-foreign-key-contraints/][Waiting for PostgreSQL 18 – Add temporal FOREIGN KEY constraints]]
 - [[https://neon.com/postgresql/postgresql-tutorial/postgresql-identity-column][PostgreSQL Identity Column]]
 - [[https://wiki.postgresql.org/wiki/SQL2011Temporal][SQL2011Temporal]]
 - [[https://neon.com/postgresql/postgresql-18-new-features][PostgreSQL 18 New Features]]

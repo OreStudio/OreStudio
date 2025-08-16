@@ -260,10 +260,17 @@ We never got it to compile under windows and osx.
 
 *** STARTED Create a GRPc based service                                :code:
     :LOGBOOK:
+    CLOCK: [2025-08-15 Fri 20:51]--[2025-08-15 Fri 21:04] =>  0:13
+    CLOCK: [2025-08-10 Sun 14:10]--[2025-08-10 Sun 15:30] =>  1:20
+    CLOCK: [2025-08-10 Sun 13:50]--[2025-08-10 Sun 14:09] =>  0:19
     CLOCK: [2025-08-10 Sun 13:20]--[2025-08-10 Sun 13:37] =>  0:17
     :END:
 
 Needs to be able to login, and retrieve currencies.
+
+Links:
+
+- [[https://iniakunhuda.medium.com/building-secure-jwt-authentication-in-go-with-postgresql-94b6724f9b75][Building Secure JWT Authentication in Go with PostgreSQL]]
 
 *** STARTED Use bitemporal support from Postgres 18                    :code:
     :LOGBOOK:

@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <iostream>
-#include "ores.service/service.hpp"
+#include "ores.service.pb.h"
 
-void service::stuff() {
-    std::cout << "hello" << std::endl;
-}
+class service { /* final : public RouteGuide::Service {*/
+ public:
+    void stuff();
+};

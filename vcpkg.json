@@ -4,6 +4,7 @@
     "description": "GUI for Open Source Risk Engine (ORE)",
     "version-string": "0.0.1",
     "dependencies": [
+        "grpc",
         "glfw3",
         "glad",
         "glm",

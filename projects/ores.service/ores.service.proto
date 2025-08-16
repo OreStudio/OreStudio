@@ -19,11 +19,12 @@
  *
  */
 syntax = "proto3";
-
+import "google/protobuf/empty.proto";
 package Ores;
 
-service Service {
+service NewService {
     rpc Login (LoginRequest) returns (LoginResponse);
+    rpc TEST(google.protobuf.Empty) returns (google.protobuf.Empty);
     rpc Register (RegisterRequest) returns (RegisterResponse);
 }
 

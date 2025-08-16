@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.service.pb.h"
+#include "ores.service.grpc.pb.h"
 
-class service { /* final : public RouteGuide::Service {*/
+class service final : public Ores::NewService::Service {
  public:
     void stuff();
 };

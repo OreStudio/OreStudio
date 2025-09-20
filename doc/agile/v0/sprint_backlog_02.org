@@ -288,6 +288,54 @@ Links:
 *Rationale*: Actually we should experiment with raw asio first before adding
 more complexity.
 
+*** STARTED Fix misspell fixer errors                                  :code:
+    :LOGBOOK:
+    CLOCK: [2025-09-20 Sat 14:50]--[2025-09-20 Sat 14:58] =>  0:08
+    :END:
+
+Error:
+
+#+begin_src
+misspell-fixer: -r Enable real run. Overwrite original files!
+misspell-fixer: -s Enable showing of diffs.
+misspell-fixer: -v Enable verbose mode.
+misspell-fixer: -n Disable backups.
+misspell-fixer: Target directories: .
+misspell-fixer: Your grep version is +zstd which is at least the optimal: 2.28.
+misspell-fixer: Iteration 0: prefiltering.
+misspell-fixer: Results of prefiltering: (filename:line:pattern)
+./doc/agile/v0/sprint_backlog_02.org:382:constraints
+misspell-fixer: Iteration 0: processing.
+misspell-fixer: actual file: ./doc/agile/v0/sprint_backlog_02.org
+misspell-fixer: temp file: ./doc/agile/v0/sprint_backlog_02.org.64
+misspell-fixer: misspellings are fixed!
+misspell-fixer: Iteration 0: done.
+misspell-fixer: Iteration 1: prefiltering.
+misspell-fixer: Results of prefiltering: (filename:line:pattern)
+misspell-fixer: Iteration 1: nothing to replace.
+misspell-fixer: Iteration 1: done.
+=================================
+
+Error: Unable to process file command 'output' successfully.
+Error: Invalid format '+++ ./doc/agile/v0/sprint_backlog_02.org.64	2025-09-20 10:57:51.112708427 +0000'
+#+end_src
+
+The problem may be related to the error in the URL.
+
+
+*** STARTED Remove URL support from prog mode in emacs                 :code:
+    :LOGBOOK:
+    CLOCK: [2025-09-20 Sat 14:58]
+    :END:
+
+*** Fix gemini cli action                                              :code:
+*** STARTED Remove GRPC support                                        :code:
+    :LOGBOOK:
+    CLOCK: [2025-09-20 Sat 11:51]--[2025-09-20 Sat 12:07] =>  0:16
+    :END:
+
+- remove code using GRPC, leave only server and client skeletons.
+
 *** Implement a cobalt based server and client                         :code:
 
 Using the examples, create a really simple server and client. Must use SSL.
@@ -379,7 +427,7 @@ Links:
 
 - [[https://hdombrovskaya.wordpress.com/2024/05/05/3937/][(Bi)Temporal Tables, PostgreSQL and SQL Standard]]
 - [[https://neon.com/postgresql/postgresql-18/temporal-constraints][PostgreSQL 18 Temporal Constraints]]
-- [[https://www.depesz.com/2024/10/03/waiting-for-postgresql-18-add-temporal-foreign-key-contraints/][Waiting for PostgreSQL 18 – Add temporal FOREIGN KEY constraints]]
+- [[https://www.depesz.com/2024/10/03/waiting-for-postgresql-18-add-temporal-foreign-key-constraints/][Waiting for PostgreSQL 18 – Add temporal FOREIGN KEY constraints]]
 - [[https://neon.com/postgresql/postgresql-tutorial/postgresql-identity-column][PostgreSQL Identity Column]]
 - [[https://wiki.postgresql.org/wiki/SQL2011Temporal][SQL2011Temporal]]
 - [[https://neon.com/postgresql/postgresql-18-new-features][PostgreSQL 18 New Features]]

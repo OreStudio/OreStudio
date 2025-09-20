@@ -288,7 +288,7 @@ Links:
 *Rationale*: Actually we should experiment with raw asio first before adding
 more complexity.
 
-*** STARTED Fix misspell fixer errors                                  :code:
+*** COMPLETED Fix misspell fixer errors                                :code:
     :LOGBOOK:
     CLOCK: [2025-09-20 Sat 14:50]--[2025-09-20 Sat 14:58] =>  0:08
     :END:
@@ -323,9 +323,16 @@ Error: Invalid format '+++ ./doc/agile/v0/sprint_backlog_02.org.64	2025-09-20 10
 The problem may be related to the error in the URL.
 
 
-*** STARTED Remove URL support from prog mode in emacs                 :code:
+***
+
+*** STARTED Fix windows and osx builds                                 :code:
     :LOGBOOK:
-    CLOCK: [2025-09-20 Sat 14:58]
+    CLOCK: [2025-09-20 Sat 14:58]--[2025-09-20 Sat 15:25] =>  0:27
+    :END:
+
+*** COMPLETED Remove URL support from prog mode in emacs               :code:
+    :LOGBOOK:
+    CLOCK: [2025-09-20 Sat 15:26]--[2025-09-20 Sat 15:40] =>  0:14
     :END:
 
 *** Fix gemini cli action                                              :code:

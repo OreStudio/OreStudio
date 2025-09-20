@@ -18,27 +18,31 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-09-20 Sat 08:44]
+#+CAPTION: Clock summary at [2025-09-20 Sat 16:00]
 |       | <75>                                         |         |       |      |       |
 | Tags  | Headline                                     | Time    |       |      |     % |
 |-------+----------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                 | *25:40* |       |      | 100.0 |
+|       | *Total time*                                 | *26:45* |       |      | 100.0 |
 |-------+----------------------------------------------+---------+-------+------+-------|
-|       | Stories                                      | 25:40   |       |      | 100.0 |
-|       | Active                                       |         | 25:40 |      | 100.0 |
-| agile | Sprint and product backlog refinement        |         |       | 1:43 |   6.7 |
-| infra | Fix broken builds                            |         |       | 0:36 |   2.3 |
-| code  | Create a containing structure for data       |         |       | 0:35 |   2.3 |
-| code  | Add temporal support to currencies           |         |       | 2:59 |  11.6 |
-| code  | Add command to dump currencies               |         |       | 4:18 |  16.8 |
-| code  | Refactor code for currencies                 |         |       | 3:52 |  15.1 |
-| code  | Restore qt setup                             |         |       | 2:20 |   9.1 |
+|       | Stories                                      | 26:45   |       |      | 100.0 |
+|       | Active                                       |         | 26:45 |      | 100.0 |
+| agile | Sprint and product backlog refinement        |         |       | 1:43 |   6.4 |
+| infra | Fix broken builds                            |         |       | 0:36 |   2.2 |
+| code  | Create a containing structure for data       |         |       | 0:35 |   2.2 |
+| code  | Add temporal support to currencies           |         |       | 2:59 |  11.2 |
+| code  | Add command to dump currencies               |         |       | 4:18 |  16.1 |
+| code  | Refactor code for currencies                 |         |       | 3:52 |  14.5 |
+| code  | Restore qt setup                             |         |       | 2:20 |   8.7 |
 | code  | Add gemini action                            |         |       | 0:05 |   0.3 |
 | code  | Remove ImGui support                         |         |       | 0:08 |   0.5 |
-| code  | Create a GRPC based service                  |         |       | 2:09 |   8.4 |
-| code  | Implement a 0MQ based RPC service and client |         |       | 3:55 |  15.3 |
-| code  | Use bitemporal support from Postgres 18      |         |       | 1:47 |   6.9 |
-| code  | Add workspace as a container                 |         |       | 1:13 |   4.7 |
+| code  | Create a GRPC based service                  |         |       | 2:09 |   8.0 |
+| code  | Implement a 0MQ based RPC service and client |         |       | 3:55 |  14.6 |
+| code  | Fix misspell fixer errors                    |         |       | 0:08 |   0.5 |
+| code  | Remove URL support from prog mode in emacs   |         |       | 0:14 |   0.9 |
+| code  | Use bitemporal support from Postgres 18      |         |       | 1:47 |   6.7 |
+| code  | Fix windows and osx builds                   |         |       | 0:27 |   1.7 |
+| code  | Remove GRPC support                          |         |       | 0:16 |   1.0 |
+| code  | Add workspace as a container                 |         |       | 1:13 |   4.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -275,10 +279,6 @@ We never got it to compile under windows and osx.
 
 Needs to be able to login, and retrieve currencies.
 
-Links:
-
-- [[https://iniakunhuda.medium.com/building-secure-jwt-authentication-in-go-with-postgresql-94b6724f9b75][Building Secure JWT Authentication in Go with PostgreSQL]]
-
 *** CANCELLED Implement a 0MQ based RPC service and client             :code:
     :LOGBOOK:
     CLOCK: [2025-09-18 Thu 13:57]--[2025-09-18 Thu 17:26] =>  3:29
@@ -325,25 +325,55 @@ The problem may be related to the error in the URL.
 
 ***
 
-*** STARTED Fix windows and osx builds                                 :code:
-    :LOGBOOK:
-    CLOCK: [2025-09-20 Sat 14:58]--[2025-09-20 Sat 15:25] =>  0:27
-    :END:
-
 *** COMPLETED Remove URL support from prog mode in emacs               :code:
     :LOGBOOK:
     CLOCK: [2025-09-20 Sat 15:26]--[2025-09-20 Sat 15:40] =>  0:14
     :END:
 
-*** Fix gemini cli action                                              :code:
-*** STARTED Remove GRPC support                                        :code:
+*** COMPLETED Remove GRPC support                                      :code:
     :LOGBOOK:
     CLOCK: [2025-09-20 Sat 11:51]--[2025-09-20 Sat 12:07] =>  0:16
     :END:
 
 - remove code using GRPC, leave only server and client skeletons.
 
-*** Implement a cobalt based server and client                         :code:
+*** STARTED Use bitemporal support from Postgres 18                    :code:
+    :LOGBOOK:
+    CLOCK: [2025-08-08 Fri 08:27]--[2025-08-08 Fri 09:09] =>  0:42
+    CLOCK: [2025-08-08 Fri 08:24]--[2025-08-08 Fri 08:26] =>  0:02
+    CLOCK: [2025-08-07 Thu 23:51]--[2025-08-07 Thu 23:59] =>  0:08
+    CLOCK: [2025-08-07 Thu 22:12]--[2025-08-07 Thu 23:07] =>  0:55
+    :END:
+
+Links:
+
+- [[https://hdombrovskaya.wordpress.com/2024/05/05/3937/][(Bi)Temporal Tables, PostgreSQL and SQL Standard]]
+- [[https://neon.com/postgresql/postgresql-18/temporal-constraints][PostgreSQL 18 Temporal Constraints]]
+- [[https://www.depesz.com/2024/10/03/waiting-for-postgresql-18-add-temporal-foreign-key-constraints/][Waiting for PostgreSQL 18 – Add temporal FOREIGN KEY constraints]]
+- [[https://neon.com/postgresql/postgresql-tutorial/postgresql-identity-column][PostgreSQL Identity Column]]
+- [[https://wiki.postgresql.org/wiki/SQL2011Temporal][SQL2011Temporal]]
+- [[https://neon.com/postgresql/postgresql-18-new-features][PostgreSQL 18 New Features]]
+- [[https://lord.technology/2025/01/28/understanding-temporal-primary-keys.html][Understanding Bitemporal Primary Keys]]
+- [[https://hypirion.com/musings/implementing-system-versioned-tables-in-postgres][Implementing System-Versioned Tables in Postgres]]
+- [[https://clarkdave.net/2015/02/historical-records-with-postgresql-and-temporal-tables-and-sql-2011/][Historical records with PostgreSQL, temporal tables and SQL:2011]]
+- [[https://github.com/arkhipov/temporal_tables][GH temporal_tables]]
+- [[https://learn.microsoft.com/en-us/sql/relational-databases/tables/querying-data-in-a-system-versioned-temporal-table?view=sql-server-ver17][Query data in a system-versioned temporal table]]
+
+*** STARTED Fix windows and osx builds                                 :code:
+    :LOGBOOK:
+    CLOCK: [2025-09-20 Sat 14:58]--[2025-09-20 Sat 15:25] =>  0:27
+    :END:
+
+*** STARTED Fix gemini cli action                                      :code:
+    :LOGBOOK:
+    CLOCK: [2025-09-20 Sat 15:50]--[2025-09-20 Sat 16:35] =>  0:45
+    :END:
+
+
+*** STARTED Implement a cobalt based server and client                 :code:
+    :LOGBOOK:
+    CLOCK: [2025-09-20 Sat 16:36]--[2025-09-20 Sat 17:15] =>  0:39
+    :END:
 
 Using the examples, create a really simple server and client. Must use SSL.
 
@@ -351,6 +381,13 @@ Links:
 
 - [[https://www.boost.org/doc/libs/latest/libs/cobalt/doc/html/index.html][cobalt docs]]
 - [[https://github.com/boostorg/cobalt][GH cobalt]]
+
+*** Add support for JWT                                                :code:
+
+Links:
+
+- [[https://iniakunhuda.medium.com/building-secure-jwt-authentication-in-go-with-postgresql-94b6724f9b75][Building Secure JWT Authentication in Go with PostgreSQL]]
+- [[https://github.com/Thalhammer/jwt-cpp][GH jwt-cpp]]
 
 *** Add serialisation support for reflect-cpp                          :code:
 
@@ -422,27 +459,6 @@ Links:
   for this very purpose."
 - [[https://getml.com/latest/user_guide/quick_start/][user guide quick start]]
 
-*** STARTED Use bitemporal support from Postgres 18                    :code:
-    :LOGBOOK:
-    CLOCK: [2025-08-08 Fri 08:27]--[2025-08-08 Fri 09:09] =>  0:42
-    CLOCK: [2025-08-08 Fri 08:24]--[2025-08-08 Fri 08:26] =>  0:02
-    CLOCK: [2025-08-07 Thu 23:51]--[2025-08-07 Thu 23:59] =>  0:08
-    CLOCK: [2025-08-07 Thu 22:12]--[2025-08-07 Thu 23:07] =>  0:55
-    :END:
-
-Links:
-
-- [[https://hdombrovskaya.wordpress.com/2024/05/05/3937/][(Bi)Temporal Tables, PostgreSQL and SQL Standard]]
-- [[https://neon.com/postgresql/postgresql-18/temporal-constraints][PostgreSQL 18 Temporal Constraints]]
-- [[https://www.depesz.com/2024/10/03/waiting-for-postgresql-18-add-temporal-foreign-key-constraints/][Waiting for PostgreSQL 18 – Add temporal FOREIGN KEY constraints]]
-- [[https://neon.com/postgresql/postgresql-tutorial/postgresql-identity-column][PostgreSQL Identity Column]]
-- [[https://wiki.postgresql.org/wiki/SQL2011Temporal][SQL2011Temporal]]
-- [[https://neon.com/postgresql/postgresql-18-new-features][PostgreSQL 18 New Features]]
-- [[https://lord.technology/2025/01/28/understanding-temporal-primary-keys.html][Understanding Bitemporal Primary Keys]]
-- [[https://hypirion.com/musings/implementing-system-versioned-tables-in-postgres][Implementing System-Versioned Tables in Postgres]]
-- [[https://clarkdave.net/2015/02/historical-records-with-postgresql-and-temporal-tables-and-sql-2011/][Historical records with PostgreSQL, temporal tables and SQL:2011]]
-- [[https://github.com/arkhipov/temporal_tables][temporal_tables]]
-
 *** Configure postgres with async IO                                   :code:
 
 Links:
@@ -512,6 +528,11 @@ The build seems to be failing:
 
 This may be due to a missing sub-module for vcpkg.
 
+*** Add a message queue                                                :code:
+
+Links:
+
+- [[https://www.oliverlambson.com/pgmq][Use what you already have: Building a message queue on Postgres]]
 
 *** Add support for =windows-msvc-clang-cl=                           :infra:
 

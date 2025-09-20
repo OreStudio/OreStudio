@@ -1,6 +1,6 @@
 # -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
 #
-# Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -50,25 +50,10 @@ install(TARGETS ${lib_target_name}
 set(exe_binary_name ${name})
 set(exe_target_name ${name}.exe)
 
-add_library(ProtoTest ores.service.proto)
-target_link_libraries(ProtoTest PUBLIC gRPC::grpc++)
-
-protobuf_generate(TARGET ProtoTest)
-protobuf_generate(
-    TARGET ProtoTest
-    LANGUAGE grpc
-    PLUGIN protoc-gen-grpc=$<TARGET_FILE:gRPC::grpc_cpp_plugin>
-    PLUGIN_OPTIONS generate_mock_code=true
-    GENERATE_EXTENSIONS .grpc.pb.h .grpc.pb.cc)
-
-# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ores.service.proto)
-# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS EXPORT_MACRO DLL_EXPORT ores.service.proto)
-# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS DESCRIPTORS PROTO_DESCS ores.service.proto)
 set(exe_files ${files})
 list(FILTER exe_files INCLUDE REGEX "main.cpp")
 
-add_executable(${exe_target_name} ${exe_files} ${PROTO_SRCS} ${PROTO_HDRS})
-message(STATUS "xxx ${PROTO_SRCS} ${PROTO_HDRS}")
+add_executable(${exe_target_name} ${exe_files})
 set_target_properties(${exe_target_name} PROPERTIES
     OUTPUT_NAME ${exe_binary_name})
 
@@ -82,7 +67,6 @@ target_link_libraries(${exe_target_name} PRIVATE
     Boost::boost
     Boost::date_time
     Boost::program_options
-    ${Protobuf_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT})
 
 

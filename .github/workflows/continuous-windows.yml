@@ -1,4 +1,4 @@
-# Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -18,16 +18,15 @@
 name: Continuous Windows
 
 # disabled for now.
-on: workflow_dispatch  # yamllint disable-line rule:truthy
-  # push:
-  #   branches:
-  #     - main
-  #   tags:
-  #     - '*'
-  # pull_request:
-  #   branches:
-  #     - main
-
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+    pull_request:
+      branches:
+        - main
 jobs:
   windows:
     name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}

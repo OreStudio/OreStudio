@@ -41,7 +41,7 @@
 (prodigy-define-tag :name 'release)
 
 (prodigy-define-service
-  :name "ORE Studio QT - Debug."
+  :name "ORE Studio QT - Debug"
   :cwd (concat (ores/path-to-output) "/linux-clang-debug/projects/ores.qt")
   :command (concat (ores/path-to-output) "/linux-clang-debug/projects/ores.qt/ores.qt")
   :tags '(ores ui debug)
@@ -49,10 +49,26 @@
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name "ORE Studio QT - Release."
+  :name "ORE Studio QT - Release"
   :cwd (concat (ores/path-to-output) "/linux-clang-debug/projects/ores.qt")
   :command (concat (ores/path-to-output) "/linux-clang-release/projects/ores.qt/ores.qt")
   :tags '(ores ui release)
+  :stop-signal 'sigkill
+  :kill-process-buffer-on-stop t)
+
+(prodigy-define-service
+  :name "ORE Studio Service - Debug"
+  :cwd (concat (ores/path-to-output) "/linux-clang-debug/projects/ores.service")
+  :command (concat (ores/path-to-output) "/linux-clang-debug/projects/ores.service/ores.service")
+  :tags '(ores debug)
+  :stop-signal 'sigkill
+  :kill-process-buffer-on-stop t)
+
+(prodigy-define-service
+  :name "ORE Studio Service - Release"
+  :cwd (concat (ores/path-to-output) "/linux-clang-debug/projects/ores.service")
+  :command (concat (ores/path-to-output) "/linux-clang-release/projects/ores.service/ores.service")
+  :tags '(ores release)
   :stop-signal 'sigkill
   :kill-process-buffer-on-stop t)
 

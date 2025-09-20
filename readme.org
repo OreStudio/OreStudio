@@ -119,13 +119,13 @@ deemed necessary for enterprise systems, we find them counterproductive from a
 teaching perspective as they obscure considerably the underlying domain concepts
 they purport to implement.
 
-In stark contrast, ORE Studio will only ever have two layers: the /client/ and
-the [[https://www.postgresql.org/][Postgres]] relational database. This simple architecture has several
-implications:
+In stark contrast, ORE Studio will only ever have three layers: the /client/,
+the /server/ and the [[https://www.postgresql.org/][Postgres]] relational database. This simple architecture has
+several implications:
 
-- [[https://en.wikipedia.org/wiki/Business_logic][business logic]] will be divided between these two components, as required; it
-  is to be located wherever the implementation can be done with the least amount
-  of complexity and the highest amount of clarity.
+- [[https://en.wikipedia.org/wiki/Business_logic][business logic]] will be divided between the server and database layers, as
+  required; it is to be located wherever the implementation can be done with the
+  least amount of complexity and the highest amount of clarity.
 - unlike with enterprise-grade software, performance and scalability come
   /after/ clarity. That is to say that we shall try our best to make things fast
   /within/ the stated constraints. The one exception is the interactive

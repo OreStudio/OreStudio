@@ -90,15 +90,6 @@ find_package(Qt6Gui REQUIRED)
 find_package(Qt6Widgets REQUIRED)
 find_package(Qt6Sql REQUIRED)
 
-# ImGui
-find_package(imgui CONFIG REQUIRED)
-find_package(glfw3 CONFIG REQUIRED)
-find_package(glad CONFIG REQUIRED)
-find_package(glm CONFIG REQUIRED)
-find_package(Freetype REQUIRED)
-find_package(OpenGL REQUIRED)
-find_package(GLUT REQUIRED)
-
 # site (for ctest)
 site_name(VORE_SITE)
 
@@ -184,11 +175,6 @@ if (PLANTUML_PROGRAM)
 else()
     message(STATUS "PlantUML not found.")
 endif()
-
-find_package(gRPC CONFIG REQUIRED)
-find_package(Protobuf REQUIRED)
-include_directories(${Protobuf_INCLUDE_DIRS})
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 #
 # aggregate targets and their aliases

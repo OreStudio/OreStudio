@@ -185,6 +185,11 @@ else()
     message(STATUS "PlantUML not found.")
 endif()
 
+find_package(gRPC CONFIG REQUIRED)
+find_package(Protobuf REQUIRED)
+include_directories(${Protobuf_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 #
 # aggregate targets and their aliases
 #

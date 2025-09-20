@@ -4,28 +4,13 @@
     "description": "GUI for Open Source Risk Engine (ORE)",
     "version-string": "0.0.1",
     "dependencies": [
-        "grpc",
-        "glfw3",
-        "glad",
-        "glm",
-        "freetype",
-        {
-            "name": "imgui",
-            "features": [
-                "opengl3-binding",
-                "glfw-binding",
-                "freetype"
-            ]
-        },
         {
             "name": "qtbase",
             "features": [
                 "sql",
-                "sql-sqlite",
-                "sql-psql"
+                "sql-sqlite"
             ]
         },
-        "implot",
         "libpqxx",
         "rapidxml-ns",
         "rapidjson",

@@ -17,46 +17,49 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <array>
 #include <boost/cobalt.hpp>
 #include <boost/cobalt/main.hpp>
-
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/write.hpp>
-#include <array>
+#include <boost/asio/ssl.hpp>
 
 namespace cobalt = boost::cobalt;
 using boost::asio::ip::tcp;
+namespace ssl = boost::asio::ssl;
 using tcp_acceptor = cobalt::use_op_t::as_default_on_t<tcp::acceptor>;
-using tcp_socket   = cobalt::use_op_t::as_default_on_t<tcp::socket>;
+using ssl_socket   = ssl::stream<tcp::socket>;
 
 namespace {
 
-cobalt::promise<void> echo(tcp_socket socket) {
+cobalt::promise<void> echo(ssl_socket socket) {
     try {
+        co_await socket.async_handshake(ssl::stream_base::server, cobalt::use_op);
         std::array<char, 4096> data;
-        while (socket.is_open()) {
-            std::size_t n = co_await socket.async_read_some(boost::asio::buffer(data)); // <3>
-            co_await async_write(socket, boost::asio::buffer(data, n));
+        while (socket.lowest_layer().is_open()) {
+            std::size_t n = co_await socket.async_read_some(boost::asio::buffer(data), cobalt::use_op);
+            co_await async_write(socket, boost::asio::buffer(data, n), cobalt::use_op);
         }
     } catch (std::exception& e) {
         std::printf("echo: exception: %s\n", e.what());
     }
 }
 
-cobalt::generator<tcp_socket> listen() {
+cobalt::generator<ssl_socket> listen(ssl::context& ctx) {
     tcp_acceptor acceptor({co_await cobalt::this_coro::executor}, {tcp::v4(), 55555});
     for (;;) {
-        tcp_socket sock = co_await acceptor.async_accept();
-        co_yield std::move(sock);
+        tcp::socket sock = co_await acceptor.async_accept();
+        ssl_socket ssl_sock(std::move(sock), ctx);
+        co_yield std::move(ssl_sock);
     }
-    co_return tcp_socket{acceptor.get_executor()};
+    co_return ssl_socket{tcp::socket{acceptor.get_executor()}, ctx};
 }
 
-cobalt::promise<void> run_server(cobalt::wait_group & workers) {
-    auto l = listen();
+cobalt::promise<void> run_server(cobalt::wait_group & workers, ssl::context& ctx) {
+    auto l = listen(ctx);
     while (true)
     {
         if (workers.size() == 10u)
@@ -69,6 +72,13 @@ cobalt::promise<void> run_server(cobalt::wait_group & workers) {
 }
 
 cobalt::main co_main(int argc, char ** argv) {
-    co_await cobalt::with(cobalt::wait_group(), &run_server);
+    ssl::context ctx(ssl::context::tlsv12);
+    ctx.set_options(ssl::context::default_workarounds
+                  | ssl::context::no_sslv2
+                  | ssl::context::single_dh_use);
+    ctx.use_certificate_chain_file("server.crt");
+    ctx.use_private_key_file("server.key", ssl::context::pem);
+
+    co_await cobalt::with(cobalt::wait_group(), [&ctx](auto& wg) { return run_server(wg, ctx); });
     co_return 0u;
 }

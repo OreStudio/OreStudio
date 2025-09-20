@@ -17,15 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <boost/asio/ssl/verify_mode.hpp>
 #include <boost/cobalt.hpp>
 #include <boost/cobalt/spawn.hpp>
 #include <boost/asio.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ssl.hpp>
 #include <iostream>
 #include <string>
 
 namespace cobalt = boost::cobalt;
 namespace asio = boost::asio;
+namespace ssl = asio::ssl;
 using asio::ip::tcp;
 
 namespace {
@@ -34,17 +37,26 @@ cobalt::task<void> echo_client(cobalt::executor exec, const std::string& host, c
 {
     try
     {
-        tcp::socket socket(exec);
+        ssl::context ctx(ssl::context::tlsv12);
+        ctx.set_verify_mode(ssl::verify_peer);
+        ctx.load_verify_file("../ores.service/server.crt");
+        ctx.set_verify_callback([](bool /*preverified*/, ssl::verify_context& /*ctx*/) {
+            return true;
+        });
+
+        ssl::stream<tcp::socket> socket(exec, ctx);
         tcp::resolver resolver(exec);
 
         auto endpoints = co_await resolver.async_resolve(host, port, cobalt::use_op);
-        co_await asio::async_connect(socket, endpoints, cobalt::use_op);
+        co_await asio::async_connect(socket.lowest_layer(), endpoints, cobalt::use_op);
+
+        co_await socket.async_handshake(ssl::stream_base::client, cobalt::use_op);
 
         std::string message = "Hello, Echo Server!";
         std::vector<char> buffer(1024);
 
-        co_await socket.async_send(asio::buffer(message), cobalt::use_op);
-        std::size_t bytes_received = co_await socket.async_receive(asio::buffer(buffer), cobalt::use_op);
+        co_await socket.async_write_some(asio::buffer(message), cobalt::use_op);
+        std::size_t bytes_received = co_await socket.async_read_some(asio::buffer(buffer), cobalt::use_op);
 
         std::cout << "Echoed response: " << std::string(buffer.data(), bytes_received) << std::endl;
     }

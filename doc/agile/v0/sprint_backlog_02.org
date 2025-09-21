@@ -4,7 +4,7 @@
 #+title: Sprint Backlog 02
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED
-#+tags: { code(c) infra(i) doc(d) agile(a) }
+#+tags: { code(c) infra(i) analysis(n) agile(a) }
 #+startup: inlineimages
 
 * Sprint Mission
@@ -17,52 +17,59 @@
 ** Active
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
-#+CAPTION: Clock summary at [2025-09-21 Sun 10:04], for Sunday, September 21, 2025.
+#+TBLNAME: today_summary
+#+CAPTION: Clock summary at [2025-09-21 Sun 10:24], for Sunday, September 21, 2025.
 |       | <75>                                               |        |      |      |       |
 | Tags  | Headline                                           | Time   |      |      |     % |
 |-------+----------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                       | *1:00* |      |      | 100.0 |
+|       | *Total time*                                       | *1:29* |      |      | 100.0 |
 |-------+----------------------------------------------------+--------+------+------+-------|
-|       | Stories                                            | 1:00   |      |      | 100.0 |
-|       | Active                                             |        | 1:00 |      | 100.0 |
-| code  | Implement a cobalt based server and client         |        |      | 0:35 |  58.3 |
-| infra | Investigate build warning for vcpkg binary caching |        |      | 0:25 |  41.7 |
+|       | Stories                                            | 1:29   |      |      | 100.0 |
+|       | Active                                             |        | 1:29 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |        |      | 0:04 |   4.5 |
+| code  | Implement a cobalt based server and client         |        |      | 0:35 |  39.3 |
+| infra | Investigate build warning for vcpkg binary caching |        |      | 0:25 |  28.1 |
+| infra | Investigate build warning for qtbase               |        |      | 0:10 |  11.2 |
+| infra | vcpkg caching seems disabled                       |        |      | 0:15 |  16.9 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-09-21 Sun 10:01]
+#+CAPTION: Clock summary at [2025-09-21 Sun 10:24]
 |       | <75>                                               |         |       |      |       |
 | Tags  | Headline                                           | Time    |       |      |     % |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                       | *30:48* |       |      | 100.0 |
+|       | *Total time*                                       | *31:17* |       |      | 100.0 |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                            | 30:48   |       |      | 100.0 |
-|       | Active                                             |         | 30:48 |      | 100.0 |
-| agile | Sprint and product backlog refinement              |         |       | 1:43 |   5.6 |
+|       | Stories                                            | 31:17   |       |      | 100.0 |
+|       | Active                                             |         | 31:17 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       | 1:47 |   5.7 |
 | infra | Fix broken builds                                  |         |       | 0:36 |   1.9 |
 | code  | Create a containing structure for data             |         |       | 0:35 |   1.9 |
-| code  | Add temporal support to currencies                 |         |       | 2:59 |   9.7 |
-| code  | Add command to dump currencies                     |         |       | 4:18 |  14.0 |
-| code  | Refactor code for currencies                       |         |       | 3:52 |  12.6 |
-| code  | Restore qt setup                                   |         |       | 2:20 |   7.6 |
+| code  | Add temporal support to currencies                 |         |       | 2:59 |   9.5 |
+| code  | Add command to dump currencies                     |         |       | 4:18 |  13.7 |
+| code  | Refactor code for currencies                       |         |       | 3:52 |  12.4 |
+| code  | Restore qt setup                                   |         |       | 2:20 |   7.5 |
 | code  | Add gemini action                                  |         |       | 0:05 |   0.3 |
 | code  | Remove ImGui support                               |         |       | 0:08 |   0.4 |
-| code  | Create a GRPC based service                        |         |       | 2:09 |   7.0 |
-| code  | Implement a 0MQ based RPC service and client       |         |       | 3:55 |  12.7 |
+| code  | Create a GRPC based service                        |         |       | 2:09 |   6.9 |
+| code  | Implement a 0MQ based RPC service and client       |         |       | 3:55 |  12.5 |
 | code  | Fix misspell fixer errors                          |         |       | 0:08 |   0.4 |
-| code  | Remove URL support from prog mode in emacs         |         |       | 0:14 |   0.8 |
+| code  | Remove URL support from prog mode in emacs         |         |       | 0:14 |   0.7 |
 | code  | Remove GRPC support                                |         |       | 0:16 |   0.9 |
-| code  | Implement a cobalt based server and client         |         |       | 2:53 |   9.4 |
-| infra | Investigate build warning for vcpkg binary caching |         |       | 0:25 |   1.4 |
-| code  | Use bitemporal support from Postgres 18            |         |       | 1:47 |   5.8 |
-| code  | Fix windows and osx builds                         |         |       | 0:27 |   1.5 |
+| code  | Implement a cobalt based server and client         |         |       | 2:53 |   9.2 |
+| infra | Investigate build warning for vcpkg binary caching |         |       | 0:25 |   1.3 |
+| infra | Investigate build warning for qtbase               |         |       | 0:10 |   0.5 |
+| code  | Use bitemporal support from Postgres 18            |         |       | 1:47 |   5.7 |
+| code  | Fix windows and osx builds                         |         |       | 0:27 |   1.4 |
 | code  | Fix gemini cli action                              |         |       | 0:45 |   2.4 |
-| code  | Add workspace as a container                       |         |       | 1:13 |   4.0 |
+| infra | vcpkg caching seems disabled                       |         |       | 0:15 |   0.8 |
+| code  | Add workspace as a container                       |         |       | 1:13 |   3.9 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-09-21 Sun 10:06]--[2025-09-21 Sun 10:34] =>  0:28
     CLOCK: [2025-09-21 Sun 10:01]--[2025-09-21 Sun 10:05] =>  0:04
     CLOCK: [2025-09-20 Sat 08:23]--[2025-09-20 Sat 08:44] =>  0:21
     CLOCK: [2025-02-02 Sun 12:00]--[2025-02-02 Sun 12:53] =>  0:53
@@ -370,6 +377,32 @@ Links:
 - [[https://www.boost.org/doc/libs/latest/libs/cobalt/doc/html/index.html][cobalt docs]]
 - [[https://github.com/boostorg/cobalt][GH cobalt]]
 
+*** STARTED Completions in emacs org mode are incorrect                :code:
+    :LOGBOOK:
+    CLOCK: [2025-09-21 Sun 11:28]--[2025-09-21 Sun 11:44] =>  0:16
+    CLOCK: [2025-09-21 Sun 11:16]--[2025-09-21 Sun 11:27] =>  0:11
+    CLOCK: [2025-09-21 Sun 10:40]--[2025-09-21 Sun 11:15] =>  0:35
+    :END:
+
+At present we are getting random lisp snippets when filling in agile backlogs.
+
+Does not solve all the problems but helps:
+
+#+begin_src emacs-lisp
+(defun cunene/org-mode-hook ()
+  "Hook to run in org mode."
+  ;; Make sure Org's native completions are prioritized
+  (setq-local completion-at-point-functions
+              (append (list #'org-pcomplete-initial) ; Org's native completion
+                      completion-at-point-functions)))
+
+#+end_src
+
+Notes:
+
+- fixed assorted ilist issues.
+- fixed completion on git commit.
+
 *** STARTED Investigate build warning for vcpkg binary caching        :infra:
     :LOGBOOK:
     CLOCK: [2025-09-21 Sun 09:25]--[2025-09-21 Sun 09:50] =>  0:25
@@ -421,7 +454,7 @@ need to:
 export VCPKG_DISABLE_SYSTEM_PACKAGE_CHECK=1
 #+end_src
 
-*** STARTED Use bitemporal support from Postgres 18                    :code:
+*** STARTED Investigate bitemporal support from Postgres 18        :analysis:
     :LOGBOOK:
     CLOCK: [2025-08-08 Fri 08:27]--[2025-08-08 Fri 09:09] =>  0:42
     CLOCK: [2025-08-08 Fri 08:24]--[2025-08-08 Fri 08:26] =>  0:02
@@ -461,8 +494,12 @@ Links:
 
 It seems caching is not kicking in so builds are very slow.
 
-*** Improve client and server                                          :code:
+*** STARTED Create a =comms= library                                   :code:
+    :LOGBOOK:
+    :END:
 
+Move comms related code to it's own library.
+Mo
 Tasks:
 
 - add options for port, key file etc.
@@ -474,6 +511,23 @@ po::store(po::parse_environment(desc, "MYAPP_"), vm);
 #+end_src
 
 - refactor server and client code into their own classes.
+
+*** Merge client into console                                          :code:
+
+We don't really need a client, we can add this functionality to console.
+
+Notes:
+
+- rename console to cli.
+- add a mode in console called =client=.
+- add port, etc as configuration variables.
+- add the location of cert as configuration variables.
+- read variables from environment.
+
+*** Rename =core= to =risk=                                            :code:
+
+We need to distinguish between the types in =comms= etc and the core types for
+domain modeling. We need a good name for this.
 
 *** Add support for JWT                                                :code:
 
@@ -488,7 +542,7 @@ Links:
 
 - [[https://github.com/getml/reflect-cpp/][GH reflect-cpp]]
 
-*** Read up on ECS                                                     :code:
+*** Read up on ECS                                                 :analysis:
 
 Links:
 

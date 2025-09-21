@@ -72,7 +72,7 @@ jobs:
       - name: run-vcpkg
         uses: lukka/run-vcpkg@v11
         with:
-          - doNotCache: false
+          doNotCache: false
 
       - name: Run CTest workflow
         run: |

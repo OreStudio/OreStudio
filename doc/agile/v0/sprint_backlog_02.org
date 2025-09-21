@@ -496,10 +496,11 @@ It seems caching is not kicking in so builds are very slow.
 
 *** STARTED Create a =comms= library                                   :code:
     :LOGBOOK:
+    CLOCK: [2025-09-21 Sun 11:45]--[2025-09-21 Sun 11:46] =>  0:01
     :END:
 
 Move comms related code to it's own library.
-Mo
+
 Tasks:
 
 - add options for port, key file etc.

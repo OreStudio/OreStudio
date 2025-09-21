@@ -28,7 +28,7 @@ on:  # yamllint disable-line rule:truthy
       branches:
         - main
 jobs:
-  windows:
+  build:
     name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
     runs-on: windows-latest
     environment: CI

@@ -25,3 +25,7 @@ The project is implemented in C++ 20 and uses CMake as the build system.
 
 - Minimum C++ version: 20
 - External dependencies managed through vcpkg
+
+## Pull Requests
+
+- do not add "Test plan" section to PRs.

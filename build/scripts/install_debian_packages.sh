@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -22,18 +22,18 @@ sudo apt-get install \
      fontconfig \
      freeglut3-dev \
      libegl1 \
-     libegl1-mesa-dev \
-     libglu1-mesa-dev \
      libltdl-dev \
      libtool \
-     libx11-xcb-dev \
      '^libxcb.*-dev' \
-     libxcursor-dev  \
+     libx11-xcb-dev \
+     libglu1-mesa-dev \
+     libxrender-dev \
      libxi-dev \
-     libxinerama-dev  \
      libxkbcommon-dev \
      libxkbcommon-x11-dev \
-     libxrender-dev \
+     libegl1-mesa-dev \
+     libxcursor-dev  \
+     libxinerama-dev  \
      mesa-common-dev \
      pkg-config \
      xorg-dev

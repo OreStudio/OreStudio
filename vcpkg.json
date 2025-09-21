@@ -11,6 +11,7 @@
                 "sql-sqlite"
             ]
         },
+        "openssl",
         "libpqxx",
         "rapidxml-ns",
         "rapidjson",

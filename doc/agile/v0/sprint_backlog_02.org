@@ -16,39 +16,54 @@
 
 ** Active
 
+#+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
+#+CAPTION: Clock summary at [2025-09-21 Sun 10:04], for Sunday, September 21, 2025.
+|       | <75>                                               |        |      |      |       |
+| Tags  | Headline                                           | Time   |      |      |     % |
+|-------+----------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                       | *1:00* |      |      | 100.0 |
+|-------+----------------------------------------------------+--------+------+------+-------|
+|       | Stories                                            | 1:00   |      |      | 100.0 |
+|       | Active                                             |        | 1:00 |      | 100.0 |
+| code  | Implement a cobalt based server and client         |        |      | 0:35 |  58.3 |
+| infra | Investigate build warning for vcpkg binary caching |        |      | 0:25 |  41.7 |
+#+end:
+
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-09-21 Sun 01:16]
-|       | <75>                                         |         |       |      |       |
-| Tags  | Headline                                     | Time    |       |      |     % |
-|-------+----------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                 | *30:23* |       |      | 100.0 |
-|-------+----------------------------------------------+---------+-------+------+-------|
-|       | Stories                                      | 30:23   |       |      | 100.0 |
-|       | Active                                       |         | 30:23 |      | 100.0 |
-| agile | Sprint and product backlog refinement        |         |       | 1:43 |   5.7 |
-| infra | Fix broken builds                            |         |       | 0:36 |   2.0 |
-| code  | Create a containing structure for data       |         |       | 0:35 |   1.9 |
-| code  | Add temporal support to currencies           |         |       | 2:59 |   9.8 |
-| code  | Add command to dump currencies               |         |       | 4:18 |  14.2 |
-| code  | Refactor code for currencies                 |         |       | 3:52 |  12.7 |
-| code  | Restore qt setup                             |         |       | 2:20 |   7.7 |
-| code  | Add gemini action                            |         |       | 0:05 |   0.3 |
-| code  | Remove ImGui support                         |         |       | 0:08 |   0.4 |
-| code  | Create a GRPC based service                  |         |       | 2:09 |   7.1 |
-| code  | Implement a 0MQ based RPC service and client |         |       | 3:55 |  12.9 |
-| code  | Fix misspell fixer errors                    |         |       | 0:08 |   0.4 |
-| code  | Remove URL support from prog mode in emacs   |         |       | 0:14 |   0.8 |
-| code  | Remove GRPC support                          |         |       | 0:16 |   0.9 |
-| code  | Implement a cobalt based server and client   |         |       | 2:53 |   9.5 |
-| code  | Use bitemporal support from Postgres 18      |         |       | 1:47 |   5.9 |
-| code  | Fix windows and osx builds                   |         |       | 0:27 |   1.5 |
-| code  | Fix gemini cli action                        |         |       | 0:45 |   2.5 |
-| code  | Add workspace as a container                 |         |       | 1:13 |   4.0 |
+#+CAPTION: Clock summary at [2025-09-21 Sun 10:01]
+|       | <75>                                               |         |       |      |       |
+| Tags  | Headline                                           | Time    |       |      |     % |
+|-------+----------------------------------------------------+---------+-------+------+-------|
+|       | *Total time*                                       | *30:48* |       |      | 100.0 |
+|-------+----------------------------------------------------+---------+-------+------+-------|
+|       | Stories                                            | 30:48   |       |      | 100.0 |
+|       | Active                                             |         | 30:48 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       | 1:43 |   5.6 |
+| infra | Fix broken builds                                  |         |       | 0:36 |   1.9 |
+| code  | Create a containing structure for data             |         |       | 0:35 |   1.9 |
+| code  | Add temporal support to currencies                 |         |       | 2:59 |   9.7 |
+| code  | Add command to dump currencies                     |         |       | 4:18 |  14.0 |
+| code  | Refactor code for currencies                       |         |       | 3:52 |  12.6 |
+| code  | Restore qt setup                                   |         |       | 2:20 |   7.6 |
+| code  | Add gemini action                                  |         |       | 0:05 |   0.3 |
+| code  | Remove ImGui support                               |         |       | 0:08 |   0.4 |
+| code  | Create a GRPC based service                        |         |       | 2:09 |   7.0 |
+| code  | Implement a 0MQ based RPC service and client       |         |       | 3:55 |  12.7 |
+| code  | Fix misspell fixer errors                          |         |       | 0:08 |   0.4 |
+| code  | Remove URL support from prog mode in emacs         |         |       | 0:14 |   0.8 |
+| code  | Remove GRPC support                                |         |       | 0:16 |   0.9 |
+| code  | Implement a cobalt based server and client         |         |       | 2:53 |   9.4 |
+| infra | Investigate build warning for vcpkg binary caching |         |       | 0:25 |   1.4 |
+| code  | Use bitemporal support from Postgres 18            |         |       | 1:47 |   5.8 |
+| code  | Fix windows and osx builds                         |         |       | 0:27 |   1.5 |
+| code  | Fix gemini cli action                              |         |       | 0:45 |   2.4 |
+| code  | Add workspace as a container                       |         |       | 1:13 |   4.0 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-09-21 Sun 10:01]--[2025-09-21 Sun 10:05] =>  0:04
     CLOCK: [2025-09-20 Sat 08:23]--[2025-09-20 Sat 08:44] =>  0:21
     CLOCK: [2025-02-02 Sun 12:00]--[2025-02-02 Sun 12:53] =>  0:53
     :END:
@@ -355,6 +370,57 @@ Links:
 - [[https://www.boost.org/doc/libs/latest/libs/cobalt/doc/html/index.html][cobalt docs]]
 - [[https://github.com/boostorg/cobalt][GH cobalt]]
 
+*** STARTED Investigate build warning for vcpkg binary caching        :infra:
+    :LOGBOOK:
+    CLOCK: [2025-09-21 Sun 09:25]--[2025-09-21 Sun 09:50] =>  0:25
+    :END:
+
+At present we are getting:
+
+#+begin_src
+Additional packages (*) will be modified to complete this operation.
+$VCPKG_BINARY_SOURCES: warning: The 'x-gha' binary caching backend has been removed. Consider using a NuGet-based binary caching provider instead, see extended documentation at https://learn.microsoft.com/vcpkg/users/binarycaching?WT.mc_id=vcpkg_inproduct_cli.
+  on expression: clear;x-gha,readwrite
+#+end_src
+
+Raised:
+
+- [[https://github.com/lukka/run-vcpkg/issues/253][#253: Addressing vcpkg warning related to binary caching]]
+
+*** STARTED Investigate build warning for qtbase                      :infra:
+    :LOGBOOK:
+    CLOCK: [2025-09-21 Sun 09:51]--[2025-09-21 Sun 10:01] =>  0:10
+    :END:
+
+At present we are getting:
+
+#+begin_src
+Building qtbase[brotli,concurrent,core,dbus,dnslookup,doubleconversion,egl,fontconfig,freetype,gui,harfbuzz,icu,jpeg,network,opengl,openssl,pcre2,png,sql,sql-psql,sql-sqlite,testlib,thread,widgets,xcb,xcb-xlib,xkb,xkbcommon-x11,xlib,xrender,zstd]:x64-linux@6.8.3#5...
+CMake Warning at ports/qtbase/portfile.cmake:49 (message):
+  qtbase currently requires packages from the system package manager.  They
+  can be installed on Ubuntu systems via sudo apt-get install '^libxcb.*-dev'
+  libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev
+  libxkbcommon-x11-dev libegl1-mesa-dev.
+#+end_src
+
+According to grok:
+
+#+begin_quote
+The CMake warning from ports/qtbase/portfile.cmake indicates that the qtbase
+package in vcpkg requires additional system dependencies (like libxcb and
+others) to be installed on your system, specifically for Ubuntu. This warning
+appears because vcpkg detects that these dependencies are not satisfied. To
+remove the warning, you need to install the required system packages or suppress
+the warning if you’re sure the dependencies are met or not needed.
+#+end_quote
+
+We seem to be installing all of the required libraries on our script. We may
+need to:
+
+#+begin_src bash
+export VCPKG_DISABLE_SYSTEM_PACKAGE_CHECK=1
+#+end_src
+
 *** STARTED Use bitemporal support from Postgres 18                    :code:
     :LOGBOOK:
     CLOCK: [2025-08-08 Fri 08:27]--[2025-08-08 Fri 09:09] =>  0:42
@@ -387,6 +453,13 @@ Links:
     CLOCK: [2025-09-20 Sat 15:50]--[2025-09-20 Sat 16:35] =>  0:45
     :END:
 
+
+*** STARTED vcpkg caching seems disabled                             :infra:
+    :LOGBOOK:
+    CLOCK: [2025-09-21 Sun 10:06]--[2025-09-21 Sun 10:21] =>  0:15
+    :END:
+
+It seems caching is not kicking in so builds are very slow.
 
 *** Improve client and server                                          :code:
 

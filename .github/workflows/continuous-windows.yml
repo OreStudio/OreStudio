@@ -17,7 +17,6 @@
 ---
 name: Continuous Windows
 
-# disabled for now.
 on:  # yamllint disable-line rule:truthy
   push:
     branches:
@@ -27,6 +26,7 @@ on:  # yamllint disable-line rule:truthy
     pull_request:
       branches:
         - main
+
 jobs:
   build:
     name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
@@ -54,6 +54,8 @@ jobs:
 
       - name: run-vcpkg
         uses: lukka/run-vcpkg@v11
+        with:
+          - doNotCache: false
 
       - name: Run CTest workflow
         run: |

@@ -454,6 +454,13 @@ Links:
     :END:
 
 
+*** STARTED vcpkg caching seems disabled                             :infra:
+    :LOGBOOK:
+    CLOCK: [2025-09-21 Sun 10:06]--[2025-09-21 Sun 10:21] =>  0:15
+    :END:
+
+It seems caching is not kicking in so builds are very slow.
+
 *** Improve client and server                                          :code:
 
 Tasks:

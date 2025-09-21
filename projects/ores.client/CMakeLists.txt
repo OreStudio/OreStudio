@@ -39,6 +39,8 @@ target_include_directories(${lib_target_name}
 )
 
 target_link_libraries(${lib_target_name} PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
     Boost::boost
     Boost::cobalt
     Boost::program_options)

@@ -79,6 +79,9 @@ find_package(Boost 1.88 REQUIRED COMPONENTS
     unit_test_framework
     cobalt)
 
+# OpenSSL
+find_package(OpenSSL REQUIRED)
+
 # XML
 find_path(RAPIDXML_NS_INCLUDE_DIRS "rapidxml-ns/rapidxml_ns.hpp")
 

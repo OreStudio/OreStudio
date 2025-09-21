@@ -79,6 +79,8 @@ cobalt::main co_main(int argc, char ** argv) {
     ctx.use_certificate_chain_file("server.crt");
     ctx.use_private_key_file("server.key", ssl::context::pem);
 
-    co_await cobalt::with(cobalt::wait_group(), [&ctx](auto& wg) { return run_server(wg, ctx); });
+    co_await cobalt::with(cobalt::wait_group(), [&ctx](auto& wg) {
+        return run_server(wg, ctx);
+    });
     co_return 0u;
 }

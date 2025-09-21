@@ -40,8 +40,8 @@ cobalt::task<void> echo_client(cobalt::executor exec, const std::string& host, c
         ssl::context ctx(ssl::context::tlsv12);
         ctx.set_verify_mode(ssl::verify_peer);
         ctx.load_verify_file("../ores.service/server.crt");
-        ctx.set_verify_callback([](bool /*preverified*/, ssl::verify_context& /*ctx*/) {
-            return true;
+        ctx.set_verify_callback([](bool pre_verified, ssl::verify_context& /*ctx*/) {
+            return pre_verified;
         });
 
         ssl::stream<tcp::socket> socket(exec, ctx);

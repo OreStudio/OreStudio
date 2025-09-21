@@ -69,14 +69,15 @@ set(Boost_USE_MULTITHREADED ON)
 
 # Note: it is possible to build with older versions of boost, but
 # these require patches.
-find_package(Boost 1.85 REQUIRED COMPONENTS
+find_package(Boost 1.88 REQUIRED COMPONENTS
     date_time
     exception
     filesystem
     log
     program_options
     serialization
-    unit_test_framework)
+    unit_test_framework
+    cobalt)
 
 # XML
 find_path(RAPIDXML_NS_INCLUDE_DIRS "rapidxml-ns/rapidxml_ns.hpp")

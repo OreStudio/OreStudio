@@ -15,10 +15,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/generate_certs.sh"
-    "${CMAKE_BINARY_DIR}/projects/ores.service/generate_certs.sh" COPYONLY)
-
-set(name "ores.service")
+set(name "ores.client")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 

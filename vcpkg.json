@@ -25,6 +25,7 @@
         "boost-graph",
         "boost-uuid",
         "boost-spirit",
-        "boost-iostreams"
+        "boost-iostreams",
+        "boost-cobalt"
     ]
 }

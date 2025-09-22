@@ -78,6 +78,7 @@ jobs:
         run: |
           export PATH=${PATH}:/usr/sbin
           export ZIC=1
+          export VCPKG_DISABLE_SYSTEM_PACKAGE_CHECK=1
           export ORES_BUILD_PROVIDER="github"
           export ORES_BUILD_COMMIT="${GITHUB_SHA}"
           export ORES_BUILD_NUMBER="${GITHUB_RUN_NUMBER}"

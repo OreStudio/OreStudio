@@ -1,15 +1,17 @@
-name: '💬 Gemini CLI'
+name: 'Gemini CLI'
 
-on:
-  pull_request_review_comment:
-    types:
-      - 'created'
-  pull_request_review:
-    types:
-      - 'submitted'
-  issue_comment:
-    types:
-      - 'created'
+# disabled for now.
+on: workflow_dispatch  # yamllint disable-line rule:truthy
+# on:
+#   pull_request_review_comment:
+#     types:
+#       - 'created'
+#   pull_request_review:
+#     types:
+#       - 'submitted'
+#   issue_comment:
+#     types:
+#       - 'created'
 
 concurrency:
   group: '${{ github.workflow }}-${{ github.event.issue.number }}'

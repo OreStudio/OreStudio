@@ -17,10 +17,12 @@
 ---
 name: 'Gemini Scheduled Issue Triage'
 
-on:  # yamllint disable-line rule:truthy
-  schedule:
-    - cron: '0 0 * * *'  # Runs once at midnight
-  workflow_dispatch:
+# disabled for now.
+on: workflow_dispatch  # yamllint disable-line rule:truthy
+# on:  # yamllint disable-line rule:truthy
+#   schedule:
+#     - cron: '0 0 * * *'  # Runs once at midnight
+#   workflow_dispatch:
 
 concurrency:
   group: '${{ github.workflow }}'

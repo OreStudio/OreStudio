@@ -17,20 +17,22 @@
 ---
 name: 'Gemini Automated Issue Triage'
 
-on:  # yamllint disable-line rule:truthy
-  issues:
-    types:
-      - 'opened'
-      - 'reopened'
-  issue_comment:
-    types:
-      - 'created'
-  workflow_dispatch:
-    inputs:
-      issue_number:
-        description: 'issue number to triage'
-        required: true
-        type: 'number'
+# disabled for now.
+on: workflow_dispatch  # yamllint disable-line rule:truthy
+# on:  # yamllint disable-line rule:truthy
+#   issues:
+#     types:
+#       - 'opened'
+#       - 'reopened'
+#   issue_comment:
+#     types:
+#       - 'created'
+#   workflow_dispatch:
+#     inputs:
+#       issue_number:
+#         description: 'issue number to triage'
+#         required: true
+#         type: 'number'
 
 concurrency:
   group: '${{ github.workflow }}-${{ github.event.issue.number }}'

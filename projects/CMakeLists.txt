@@ -39,6 +39,7 @@ add_compile_options(
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.console)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.core)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.core.test)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.comms)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.service)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.client)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.utility)

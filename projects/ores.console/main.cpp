@@ -96,7 +96,7 @@ int execute_console_workflow(const std::vector<std::string>& args,
      * logging subsystem.
      */
     const auto& cfg(*ocfg);
-    slm.initialise(cfg.logging());
+    slm.initialise(cfg.logging);
 
     /*
      * Log the configuration and command line arguments.

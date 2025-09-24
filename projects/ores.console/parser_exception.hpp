@@ -35,16 +35,16 @@ namespace ores::console {
 class parser_exception : public virtual std::exception,
                          public virtual boost::exception {
 public:
-    explicit parser_exception(std::string message)
-        : message_(std::move(message)) { }
-    parser_exception() = default;
-    ~parser_exception() noexcept override = default;
-    const char* what() const noexcept final { return(message_.c_str()); }
+    explicit parser_exception(std::string_view message = "")
+        : message_(message) {}
+
+    [[nodiscard]] const char* what() const noexcept override {
+        return message_.c_str();
+    }
 
 private:
     std::string message_;
 };
-
 }
 
 #endif

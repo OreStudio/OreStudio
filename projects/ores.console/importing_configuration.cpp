@@ -18,17 +18,14 @@
  *
  */
 #include <ostream>
-#include "ores.utility/streaming/std_vector.hpp"
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 #include "ores.console/importing_configuration.hpp"
 
 namespace ores::console {
 
 std::ostream& operator<<(std::ostream& s, const importing_configuration& v) {
-    s << " { "
-      << "\"__type__\": "
-      << "\"ores::console::importing_configuration\"" << ", "
-      << "\"currency_configurations\": " << v.currency_configurations()
-      << " }";
+    rfl::json::write(v, s);
     return(s);
 }
 

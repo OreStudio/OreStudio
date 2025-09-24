@@ -13,6 +13,7 @@
         },
         "openssl",
         "libpqxx",
+        "reflectcpp",
         "rapidxml-ns",
         "rapidjson",
         "boost-system",

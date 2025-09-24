@@ -33,49 +33,14 @@ namespace ores::console {
 /**
  * @brief Configuration related to importing data into the system.
  */
-class importing_configuration final {
-public:
-    importing_configuration() = default;
-    importing_configuration(const importing_configuration&) = default;
-    importing_configuration(importing_configuration&&) noexcept = default;
-    ~importing_configuration() = default;
-
-    importing_configuration& operator=(const importing_configuration&) = default;
-    importing_configuration& operator=(importing_configuration&&) noexcept = default;
-
+struct importing_configuration final {
     /**
      * @brief Currency configuration files to import.
      */
-    /**@{*/
-    std::vector<std::filesystem::path> currency_configurations() const {
-        return currency_configurations_;
-    }
-    void currency_configurations(const std::vector<std::filesystem::path>& v) {
-        currency_configurations_ = v;
-    }
-    void currency_configurations(std::vector<std::filesystem::path>&& v) {
-        currency_configurations_ = std::move(v);
-    }
-    /**@}*/
-
-    bool operator==(const importing_configuration& rhs) const;
-    bool operator!=(const importing_configuration& rhs) const {
-        return !this->operator==(rhs);
-    }
-
-    void swap(importing_configuration& other) noexcept {
-        std::swap(currency_configurations_, other.currency_configurations_);
-    }
-
-private:
-    std::vector<std::filesystem::path> currency_configurations_;
+    std::vector<std::filesystem::path> currency_configurations;
 };
 
 std::ostream& operator<<(std::ostream& s, const importing_configuration& v);
-
-inline void swap(importing_configuration& lhs, importing_configuration& rhs) {
-    lhs.swap(rhs);
-}
 
 }
 

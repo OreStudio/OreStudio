@@ -35,69 +35,22 @@ namespace ores::console {
 /**
  * @brief All of the configuration required by the command line application.
  */
-class configuration final {
-public:
-    configuration() = default;
-    configuration(const configuration&) = default;
-    configuration(configuration&& rhs) noexcept = default;
-    ~configuration() = default;
-
-    configuration& operator=(const configuration&) = default;
-    configuration& operator=(configuration&&) noexcept = default;
-
-    configuration(
-        std::optional<ores::utility::log::logging_configuration> logging,
-        std::optional<importing_configuration> importing,
-        std::optional<dumping_configuration> dumping);
-
+struct configuration final {
     /**
      * @brief Configuration related to logging, if any.
      */
-    /**@{*/
-    std::optional<ores::utility::log::logging_configuration>
-    logging() const { return logging_; }
-    void logging(const std::optional<ores::utility::log::logging_configuration>& v) {
-        logging_ = v;
-    }
-    void logging(std::optional<ores::utility::log::logging_configuration>&& v) {
-        logging_ = std::move(v);
-    }
-    /**@}*/
-
+    std::optional<ores::utility::log::logging_configuration> logging;
     /**
      * @brief Configuration related to importing, if any.
      */
-    /**@{*/
-    std::optional<importing_configuration> importing() const {
-        return importing_;
-    }
-    void importing(std::optional<importing_configuration>&& v) {
-        importing_ = std::move(v);
-    }
-    /**@}*/
-
+    std::optional<importing_configuration> importing;
     /**
      * @brief Configuration related to dumping, if any.
      */
-    /**@{*/
-    std::optional<dumping_configuration> dumping() const {
-        return dumping_;
-    }
-    void dumping(std::optional<dumping_configuration>&& v) {
-        dumping_ = std::move(v);
-    }
-    /**@}*/
-
-    void swap(configuration& other) noexcept;
-
-private:
-    std::optional<ores::utility::log::logging_configuration> logging_;
-    std::optional<importing_configuration> importing_;
-    std::optional<dumping_configuration> dumping_;
+    std::optional<dumping_configuration> dumping;
 };
 
 std::ostream& operator<<(std::ostream& s, const configuration& v);
-void swap(configuration& lhs, configuration& rhs);
 
 }
 

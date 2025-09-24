@@ -38,8 +38,8 @@ validate(const logging_configuration& cfg) {
     /*
      * We must have at least one form of logging, file or console.
      */
-    const bool output_to_file(!cfg.filename().empty());
-    if (!cfg.output_to_console() && !output_to_file)
+    const bool output_to_file(!cfg.filename.empty());
+    if (!cfg.output_to_console && !output_to_file)
         BOOST_THROW_EXCEPTION(invalid_logging_configuration(no_logging));
 
     /*
@@ -47,13 +47,13 @@ validate(const logging_configuration& cfg) {
      * directory to have been supplied either, as its only applicable
      * to file logging.
      */
-    if (cfg.filename().empty() && !cfg.output_directory().empty())
+    if (cfg.filename.empty() && !cfg.output_directory.empty())
         BOOST_THROW_EXCEPTION(invalid_logging_configuration(unexpected_dir));
 
     /*
      * Attempt to convert severity. Function throws if invalid.
      */
-    to_severity_level(cfg.severity());
+    to_severity_level(cfg.severity);
 }
 
 }

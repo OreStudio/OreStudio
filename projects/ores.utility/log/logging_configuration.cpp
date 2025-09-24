@@ -17,39 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 #include "ores.utility/log/logging_configuration.hpp"
 
 namespace ores::utility::log {
 
-logging_configuration::logging_configuration(
-    std::string severity, std::string filename,
-    bool output_to_console, std::filesystem::path output_directory)
-    : severity_(std::move(severity)), filename_(std::move(filename)),
-      output_to_console_(output_to_console),
-      output_directory_(std::move(output_directory)) { }
-
-void logging_configuration::swap(logging_configuration& other) noexcept {
-    using std::swap;
-    swap(severity_, other.severity_);
-    swap(filename_, other.filename_);
-    swap(output_to_console_, other.output_to_console_);
-    swap(output_directory_, other.output_directory_);
-}
-
 std::ostream& operator<<(std::ostream& s, const logging_configuration& v) {
-    s << " { "
-      << "\"__type__\": " << "\"ores::console::logging_configuration\"" << ", "
-      << "\"severity\": " << "\"" << v.severity() << "\", "
-      << "\"filename\": " << "\"" << v.filename() << "\", "
-      << "\"output_to_console\": " << v.output_to_console() << ", "
-      << "\"output_directory\": " << "\""
-      << v.output_directory().generic_string() << "\""
-      << " }";
+    rfl::json::write(v, s);
     return(s);
-}
-
-void swap(logging_configuration& lhs, logging_configuration& rhs) {
-    lhs.swap(rhs);
 }
 
 }

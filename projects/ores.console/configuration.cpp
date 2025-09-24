@@ -17,32 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/streaming/std_optional.hpp"
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 #include "ores.console/configuration.hpp"
 
 namespace ores::console {
 
-configuration::configuration(
-    std::optional<ores::utility::log::logging_configuration> logging,
-    std::optional<importing_configuration> importing,
-    std::optional<dumping_configuration> dumping)
-    : logging_(std::move(logging)), importing_(std::move(importing)),
-      dumping_(std::move(dumping)) { }
-
-void configuration::swap(configuration& other) noexcept {
-    using std::swap;
-    swap(logging_, other.logging_);
-    swap(importing_, other.importing_);
-    swap(dumping_, other.dumping_);
-}
-
 std::ostream& operator<<(std::ostream& s, const configuration& v) {
-    s << " { "
-      << "\"__type__\": " << "\"ores::console::configuration\"" << ", "
-      << "\"logging\": " << v.logging() << ", "
-      << "\"importing\": " << v.importing()
-      << "\"dumping\": " << v.dumping()
-      << " }";
+    rfl::json::write(v, s);
     return(s);
 }
 

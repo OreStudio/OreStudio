@@ -26,92 +26,32 @@
 
 #include <iosfwd>
 #include <string>
-#include <algorithm>
 
 namespace ores::console {
 
 /**
  * @brief Configuration related to dumping data from the system.
  */
-class dumping_configuration final {
-public:
-    dumping_configuration() = default;
-    dumping_configuration(const dumping_configuration&) = default;
-    dumping_configuration(dumping_configuration&&) noexcept = default;
-    ~dumping_configuration() = default;
-
-    dumping_configuration& operator=(const dumping_configuration&) = default;
-    dumping_configuration& operator=(dumping_configuration&&) noexcept = default;
-
+struct dumping_configuration final {
     /**
      * @brief Whether to dump currency configurations or not.
      */
-    /**@{*/
-    bool currency_configurations() const {
-        return currency_configurations_;
-    }
-    void currency_configurations(const bool v) {
-        currency_configurations_ = v;
-    }
-    /**@}*/
-
+    bool currency_configurations;
     /**
      * @brief Timepoint to use for the reading.
      */
-    /**@{*/
-    std::string as_of() const {
-        return as_of_;
-    }
-    void as_of(const std::string v) {
-        as_of_ = v;
-    }
-    /**@}*/
-
+    std::string as_of;
     /**
      * @brief Key to filter by.
      */
-    /**@{*/
-    std::string key() const {
-        return key_;
-    }
-    void key(const std::string v) {
-        key_ = v;
-    }
-    /**@}*/
-
+    std::string key;
     /**
      * @brief If true, output all versions.
      */
-    /**@{*/
-    bool all_versions() const {
-        return all_versions_;
-    }
-    void all_versions(const bool v) {
-        all_versions_ = v;
-    }
-    /**@}*/
-
-    bool operator==(const dumping_configuration& rhs) const;
-    bool operator!=(const dumping_configuration& rhs) const {
-        return !this->operator==(rhs);
-    }
-
-    void swap(dumping_configuration& other) noexcept {
-        std::swap(currency_configurations_, other.currency_configurations_);
-    }
-
-private:
-    bool currency_configurations_;
-    std::string as_of_;
-    std::string key_;
-    bool all_versions_;
+    bool all_versions;
 };
 
 std::ostream& operator<<(std::ostream& s, const dumping_configuration& v);
-
-inline void swap(dumping_configuration& lhs, dumping_configuration& rhs) {
-    lhs.swap(rhs);
-}
 
 }
 

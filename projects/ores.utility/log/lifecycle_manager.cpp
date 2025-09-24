@@ -43,9 +43,10 @@ const std::string time_stamp_format("%Y-%m-%d %H:%M:%S.%f");
 
 namespace ores::utility::log {
 
+using namespace boost::log;
+
 void lifecycle_manager::create_file_backend(
     std::filesystem::path path, const severity_level severity) {
-    using namespace boost::log;
 
     if (path.extension() != extension)
         path += extension;
@@ -57,7 +58,7 @@ void lifecycle_manager::create_file_backend(
             sinks::file::rotation_at_time_point(12, 0, 0)));
     backend->auto_flush(true);
 
-    typedef sinks::synchronous_sink<sinks::text_file_backend> sink_type;
+    using sink_type = sinks::synchronous_sink<sinks::text_file_backend>;
     auto sink(boost::make_shared<sink_type>(backend));
 
     sink->set_filter(
@@ -74,14 +75,11 @@ void lifecycle_manager::create_file_backend(
 }
 
 void lifecycle_manager::create_console_backend(const severity_level severity) {
-    using namespace boost;
-    using namespace boost::log;
-
-    boost::shared_ptr<std::ostream> os(&std::cout, null_deleter());
+    boost::shared_ptr<std::ostream> os(&std::cout, boost::null_deleter());
     auto backend(boost::make_shared<sinks::text_ostream_backend>());
     backend->add_stream(os);
 
-    typedef sinks::synchronous_sink<sinks::text_ostream_backend> sink_type;
+    using sink_type = sinks::synchronous_sink<sinks::text_ostream_backend>;
     auto sink(boost::make_shared<sink_type>(backend));
 
     sink->set_filter(
@@ -116,17 +114,16 @@ initialise(std::optional<logging_configuration> ocfg) {
     core.set_logging_enabled(true);
 
     /*
-     * Use the configuration to setup the logging infrastructure for
-     * both console and file, if enabled. We don't have to worry about
-     * making sure that at least one is enabled - that is the
-     * validator's job.
+     * Use the configuration to setup the logging infrastructure for both
+     * console and file, if enabled. We don't have to worry about making sure
+     * that at least one is enabled - that is the validator's job.
      */
-    const auto sl(to_severity_level(cfg.severity()));
-    if (cfg.output_to_console())
+    const auto sl(to_severity_level(cfg.severity));
+    if (cfg.output_to_console)
         create_console_backend(sl);
 
-    if (!cfg.filename().empty()) {
-        const auto path(cfg.output_directory() / cfg.filename());
+    if (!cfg.filename.empty()) {
+        const auto path(cfg.output_directory / cfg.filename);
         create_file_backend(path, sl);
     }
 

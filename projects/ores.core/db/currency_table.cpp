@@ -61,7 +61,7 @@ std::vector<types::currency>
 currency_table::read_internal(const std::string& query) {
     BOOST_LOG_SEV(lg, debug) << "Reading using query: " << query;
 
-    std::string connection_string("postgresql://ores:ores@localhost:5432/oresdb");
+    std::string connection_string("postgresql://ores:ahV6aehuij6eingohsiajaiT0@localhost:5434/oresdb");
     pqxx::connection c(connection_string);
     pqxx::work w(c);
 

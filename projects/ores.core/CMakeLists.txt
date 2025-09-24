@@ -36,11 +36,16 @@ target_include_directories(${lib_target_name} PUBLIC
     ${RAPIDXML_NS_INCLUDE_DIRS}
 )
 
-target_link_libraries(${lib_target_name} PRIVATE
-    ores.utility.lib
-    libpqxx::pqxx
-    Boost::boost
-    Boost::program_options)
+target_link_libraries(${lib_target_name}
+    PRIVATE
+        ores.utility.lib
+        libpqxx::pqxx
+        Boost::boost
+        Boost::program_options
+        sqlgen::sqlgen
+    PUBLIC
+        reflectcpp::reflectcpp
+    )
 
 install(TARGETS ${lib_target_name}
     ARCHIVE DESTINATION lib

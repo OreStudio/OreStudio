@@ -41,8 +41,6 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         Boost::boost
         Boost::program_options
-    PUBLIC
-        reflectcpp::reflectcpp
     )
 
 install(TARGETS ${lib_target_name}

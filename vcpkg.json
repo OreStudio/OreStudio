@@ -14,6 +14,7 @@
         "openssl",
         "libpqxx",
         "reflectcpp",
+        "sqlgen",
         "rapidxml-ns",
         "rapidjson",
         "boost-system",

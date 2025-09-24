@@ -58,6 +58,7 @@ Logging:
 Commands:
 
    import         Imports data into the system.
+   dump           Dumps data from the system.
 
 For command specific options, type <command> --help.
 #+end_src
@@ -98,6 +99,9 @@ For global options, type --help.
 Dumping:
   --currency-configuration  Dumps currency configurations, in JSON
                             representation.
+  --as-of arg               Timepoint from which to dump data.
+  --key arg                 Key to filter data by.
+  --all-versions            Retrieve all versions.
 #+end_src
 
 *** Version
@@ -2838,7 +2842,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -2853,7 +2857,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -2868,7 +2872,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -2883,7 +2887,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -2898,7 +2902,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -2913,7 +2917,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -2928,7 +2932,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -2943,7 +2947,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -2958,7 +2962,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -2973,7 +2977,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -2988,7 +2992,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3003,7 +3007,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3018,7 +3022,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3033,7 +3037,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3048,7 +3052,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3063,7 +3067,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3078,7 +3082,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3093,7 +3097,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3108,7 +3112,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3123,7 +3127,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3138,7 +3142,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3153,7 +3157,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3168,7 +3172,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3183,7 +3187,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3198,7 +3202,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3213,7 +3217,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3228,7 +3232,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3243,7 +3247,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3258,7 +3262,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3273,7 +3277,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3288,7 +3292,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3303,7 +3307,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3318,7 +3322,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3333,7 +3337,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3348,7 +3352,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3363,7 +3367,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3378,7 +3382,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3393,7 +3397,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3408,7 +3412,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3423,7 +3427,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3438,7 +3442,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3453,7 +3457,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3468,7 +3472,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3483,7 +3487,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3498,7 +3502,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3513,7 +3517,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3528,7 +3532,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3543,7 +3547,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3558,7 +3562,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3573,7 +3577,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3588,7 +3592,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3603,7 +3607,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3618,7 +3622,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3633,7 +3637,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3648,7 +3652,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3663,7 +3667,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3678,7 +3682,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3693,7 +3697,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3708,7 +3712,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3723,7 +3727,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3738,7 +3742,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3753,7 +3757,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3768,7 +3772,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3783,7 +3787,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3798,7 +3802,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3813,7 +3817,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3828,7 +3832,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3843,7 +3847,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3858,7 +3862,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3873,7 +3877,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3888,7 +3892,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3903,7 +3907,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3918,7 +3922,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3933,7 +3937,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3948,7 +3952,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3963,7 +3967,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3978,7 +3982,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -3993,7 +3997,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4008,7 +4012,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4023,7 +4027,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4038,7 +4042,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4053,7 +4057,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4068,7 +4072,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4083,7 +4087,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4098,7 +4102,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4113,7 +4117,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4128,7 +4132,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4143,7 +4147,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4158,7 +4162,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4173,7 +4177,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4188,7 +4192,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4203,7 +4207,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4218,7 +4222,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4233,7 +4237,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4248,7 +4252,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4263,7 +4267,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4278,7 +4282,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4293,7 +4297,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4308,7 +4312,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4323,7 +4327,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4338,7 +4342,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4353,7 +4357,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4368,7 +4372,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4383,7 +4387,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4398,7 +4402,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4413,7 +4417,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4428,7 +4432,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4443,7 +4447,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4458,7 +4462,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4473,7 +4477,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4488,7 +4492,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4503,7 +4507,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4518,7 +4522,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4533,7 +4537,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4548,7 +4552,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4563,7 +4567,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4578,7 +4582,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4593,7 +4597,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4608,7 +4612,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4623,7 +4627,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4638,7 +4642,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4653,7 +4657,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4668,7 +4672,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4683,7 +4687,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4698,7 +4702,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4713,7 +4717,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4728,7 +4732,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4743,7 +4747,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4758,7 +4762,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4773,7 +4777,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4788,7 +4792,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4803,7 +4807,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4818,7 +4822,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4833,7 +4837,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4848,7 +4852,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4863,7 +4867,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4878,7 +4882,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4893,7 +4897,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4908,7 +4912,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4923,7 +4927,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4938,7 +4942,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4953,7 +4957,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4968,7 +4972,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4983,7 +4987,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -4998,7 +5002,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5013,7 +5017,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5028,7 +5032,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5043,7 +5047,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5058,7 +5062,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5073,7 +5077,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5088,7 +5092,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5103,7 +5107,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5118,7 +5122,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5133,7 +5137,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5148,7 +5152,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5163,7 +5167,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5178,7 +5182,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5193,7 +5197,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5208,7 +5212,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5223,7 +5227,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5238,7 +5242,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5253,7 +5257,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5268,7 +5272,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5283,7 +5287,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5298,7 +5302,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5313,7 +5317,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5328,7 +5332,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5343,7 +5347,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5358,7 +5362,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5373,7 +5377,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5388,7 +5392,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5403,7 +5407,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5418,7 +5422,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5433,7 +5437,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5448,7 +5452,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5463,7 +5467,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5478,7 +5482,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       },
       {
@@ -5493,7 +5497,7 @@ IMPORTANT: build details are NOT for security purposes.
         "format": "",
         "currency_type": "",
         "modified_by": "ores",
-        "valid_from": "2025-02-11 23:34:36.194595+00",
+        "valid_from": "2025-09-24 11:31:59.158672+01",
         "valid_to": "infinity"
       }
     ]

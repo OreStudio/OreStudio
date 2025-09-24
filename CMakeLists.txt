@@ -94,6 +94,9 @@ find_package(Qt6Gui REQUIRED)
 find_package(Qt6Widgets REQUIRED)
 find_package(Qt6Sql REQUIRED)
 
+# Reflect CPP
+find_package(reflectcpp CONFIG REQUIRED)
+
 # site (for ctest)
 site_name(VORE_SITE)
 

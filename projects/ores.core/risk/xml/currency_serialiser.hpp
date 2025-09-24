@@ -17,16 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.core/risk/currency.hpp"
+#ifndef ORES_CORE_RISK_XML_CURRENCY_SERIALISER_HPP
+#define ORES_CORE_RISK_XML_CURRENCY_SERIALISER_HPP
 
-namespace ores::core::risk {
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
 
-std::ostream& operator<<(std::ostream& s, const currency& v) {
-    rfl::json::write(v, s);
-    return(s);
+#include <rapidxml-ns/rapidxml_ns.hpp>
+#include "ores.core/risk/types/currency.hpp"
+
+namespace ores::core::risk::xml {
+
+class currency_serialiser {
+public:
+    void serialise(rapidxml_ns::xml_node<>& parent, const types::currency& cfg);
+    types::currency deserialise(rapidxml_ns::xml_node<>& node);
+};
+
 }
 
-}
+#endif

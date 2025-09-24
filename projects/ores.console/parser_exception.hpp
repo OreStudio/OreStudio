@@ -45,6 +45,7 @@ public:
 private:
     std::string message_;
 };
+
 }
 
 #endif

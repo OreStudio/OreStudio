@@ -17,38 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_RISK_CURRENCY_HPP
-#define ORES_CORE_RISK_CURRENCY_HPP
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.core/risk/types/currency_config.hpp"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
+namespace ores::core::risk::types {
 
-#include <string>
-
-namespace ores::core::risk {
-
-/**
- * @brief Represents an ORE currency.
- */
-struct currency {
-    std::string name;
-    std::string iso_code;
-    int numeric_code;
-    std::string symbol;
-    std::string fraction_symbol;
-    int fractions_per_unit;
-    std::string rounding_type;
-    int rounding_precision;
-    std::string format;
-    std::string currency_type;
-    std::string modified_by;
-    std::string valid_from;
-    std::string valid_to;
-};
-
-std::ostream& operator<<(std::ostream& s, const currency& v);
-
+std::ostream& operator<<(std::ostream& s, const currency_config& v) {
+    rfl::json::write(v, s);
+    return(s);
 }
 
-#endif
+}

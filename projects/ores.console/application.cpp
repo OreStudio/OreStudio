@@ -21,8 +21,8 @@
 #include <iostream>
 #include <optional>
 #include "ores.utility/log/logger.hpp"
-#include "ores.core/db/currency_table.hpp"
-#include "ores.core/risk/currency_config.hpp"
+#include "ores.core/risk/db/currency_table.hpp"
+#include "ores.core/risk/types/currency_config.hpp"
 #include "ores.console/application.hpp"
 
 namespace {
@@ -49,7 +49,7 @@ import_data(const std::optional<importing_configuration>& ocfg) const
         BOOST_LOG_SEV(lg, debug) << "Processing currency configuration: "
                                  << ccy_cfg;
         auto cc(importer_.import_currency_config(ccy_cfg));
-        core::db::currency_table ct;
+        core::risk::db::currency_table ct;
         ct.write(cc.currencies);
         std::cout << cc << std::endl;
     }
@@ -68,9 +68,9 @@ dump_data(const std::optional<dumping_configuration>& ocfg) const
     if (cfg.currency_configurations)
     {
         BOOST_LOG_SEV(lg, debug) << "Dumping currency configurations.";
-        core::db::currency_table ct;
+        core::risk::db::currency_table ct;
 
-        using ores::core::risk::currency_config;
+        using ores::core::risk::types::currency_config;
         const auto reader([&]() {
             if (cfg.all_versions) {
                 BOOST_LOG_SEV(lg, debug) << "Reading all versions for currencies.";

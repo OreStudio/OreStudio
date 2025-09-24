@@ -9,23 +9,46 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. Seethe GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU General PublicLicense along with
+ * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_XML_XML_HPP
-#define ORES_CORE_XML_XML_HPP
+#ifndef ORES_CORE_RISK_TYPES_CURRENCY_HPP
+#define ORES_CORE_RISK_TYPES_CURRENCY_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
+#include <string>
+
+namespace ores::core::risk::types {
+
 /**
- * @brief Provides XML serialisation support for the ORE domain model types.
+ * @brief Represents an ORE currency.
  */
-namespace ores::core::xml {}
+struct currency {
+    std::string name;
+    std::string iso_code;
+    int numeric_code;
+    std::string symbol;
+    std::string fraction_symbol;
+    int fractions_per_unit;
+    std::string rounding_type;
+    int rounding_precision;
+    std::string format;
+    std::string currency_type;
+    std::string modified_by;
+    std::string valid_from;
+    std::string valid_to;
+};
+
+std::ostream& operator<<(std::ostream& s, const currency& v);
+
+}
 
 #endif

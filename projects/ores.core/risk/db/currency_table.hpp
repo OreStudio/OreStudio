@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_DB_CURRENCY_TABLE_HPP
-#define ORES_CORE_DB_CURRENCY_TABLE_HPP
+#ifndef ORES_CORE_RISK_DB_CURRENCY_TABLE_HPP
+#define ORES_CORE_RISK_DB_CURRENCY_TABLE_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -26,39 +26,39 @@
 
 #include <string>
 #include <vector>
-#include "ores.core/risk/currency.hpp"
+#include "ores.core/risk/types/currency.hpp"
 
-namespace ores::core::db {
+namespace ores::core::risk::db {
 
 class currency_table {
 private:
-    std::vector<risk::currency> read_internal(const std::string& query);
+    std::vector<types::currency> read_internal(const std::string& query);
 
 public:
     /**
      * @brief Writes currencies to database. Expects the currency set to have
      * unique ISO codes.
      */
-    void write(const std::vector<risk::currency>& currencies);
+    void write(const std::vector<types::currency>& currencies);
 
     /**
      * @brief Reads latest currencies, possibly filtered by ISO code.
      */
-    std::vector<risk::currency>
+    std::vector<types::currency>
     read_latest(const std::string& iso_code = std::string());
 
     /**
      * @brief Reads currencies at the supplied time point, possibly filtered by
      * ISO code.
      */
-    std::vector<risk::currency>
+    std::vector<types::currency>
     read_at_timepoint(const std::string& as_of,
         const std::string& iso_code = std::string());
 
     /**
      * @brief Reads all currencies, possibly filtered by ISO code.
      */
-    std::vector<risk::currency>
+    std::vector<types::currency>
     read_all(const std::string& iso_code = std::string());
 };
 

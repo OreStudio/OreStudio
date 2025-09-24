@@ -17,34 +17,35 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_XML_PARSING_ERROR_HPP
-#define ORES_CORE_XML_PARSING_ERROR_HPP
+#include "ores.utility/log/logger.hpp"
+#include "ores.utility/filesystem/file.hpp"
+#include "ores.core/risk/types/currency_config.hpp"
+#include "ores.core/risk/xml/currency_config_serialiser.hpp"
+#include "ores.core/risk/xml/importer.hpp"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
+namespace {
 
-#include <string>
-#include <boost/exception/info.hpp>
-
-namespace ores::core::xml {
-
-/**
- * @brief A fatal error has occurred during XML parsing.
- */
-class parsing_error : public virtual std::exception,
-                      public virtual boost::exception {
-public:
-    explicit parsing_error(std::string message)
-        : message_(std::move(message)) { }
-    parsing_error() = default;
-    ~parsing_error() noexcept override = default;
-    const char* what() const noexcept final { return(message_.c_str()); }
-
-private:
-    std::string message_;
-};
+using namespace ores::utility::log;
+auto lg(logger_factory("ores.core.xml.importer"));
 
 }
 
-#endif
+namespace ores::core::risk::xml {
+
+using types::currency_config;
+
+currency_config
+importer::import_currency_config(const std::filesystem::path& path) const {
+    BOOST_LOG_SEV(lg, debug) << "Started import: " << path.generic_string();
+
+    currency_config_serialiser ser;
+    using namespace ores::utility::filesystem;
+    const std::string c(read_file_content(path));
+    auto r(ser.deserialise(c));
+
+    BOOST_LOG_SEV(lg, debug) << "Finished importing. Result: " << r;
+
+    return r;
+}
+
+}

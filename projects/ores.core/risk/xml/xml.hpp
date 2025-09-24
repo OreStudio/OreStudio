@@ -9,32 +9,24 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * FOR A PARTICULAR PURPOSE. Seethe GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
+ * You should have received a copy of the GNU General PublicLicense along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_XML_CURRENCY_SERIALISER_HPP
-#define ORES_CORE_XML_CURRENCY_SERIALISER_HPP
+#ifndef ORES_CORE_RISK_XML_XML_HPP
+#define ORES_CORE_RISK_XML_XML_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <rapidxml-ns/rapidxml_ns.hpp>
-#include "ores.core/risk/currency.hpp"
-
-namespace ores::core::xml {
-
-class currency_serialiser {
-public:
-    void serialise(rapidxml_ns::xml_node<>& parent, const risk::currency& cfg);
-    risk::currency deserialise(rapidxml_ns::xml_node<>& node);
-};
-
-}
+/**
+ * @brief Provides XML serialisation support for the ORE domain model types
+ * using native ORE XML.
+ */
+namespace ores::core::xml {}
 
 #endif

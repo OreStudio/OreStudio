@@ -19,7 +19,7 @@
  */
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/string/converter.hpp"
-#include "ores.core/xml/currency_serialiser.hpp"
+#include "ores.core/risk/xml/currency_serialiser.hpp"
 
 namespace {
 
@@ -31,17 +31,18 @@ const std::string missing_currency_config("No CurrencyConfig element found");
 
 }
 
-namespace ores::core::xml {
+namespace ores::core::risk::xml {
 
+using types::currency;
 using namespace rapidxml_ns;
 
 void currency_serialiser::
-serialise(rapidxml_ns::xml_node<>& /*parent*/, const risk::currency& /*ccy*/) {
-
+serialise(rapidxml_ns::xml_node<>& /*parent*/, const currency& /*ccy*/) {
+    // FIXME: implement
 }
 
-risk::currency currency_serialiser::deserialise(rapidxml_ns::xml_node<>& node) {
-    risk::currency r;
+currency currency_serialiser::deserialise(rapidxml_ns::xml_node<>& node) {
+    currency r;
     xml_node<> *name = node.first_node("Name");
     if (name != nullptr)
         r.name = name->value();

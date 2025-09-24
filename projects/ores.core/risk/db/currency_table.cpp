@@ -23,18 +23,20 @@
 #include "pqxx/params"
 #include <pqxx/prepared_statement>
 #include "ores.utility/log/logger.hpp"
-#include "ores.core/db/currency_table.hpp"
+#include "ores.core/risk/db/currency_table.hpp"
 
 namespace {
 
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.core.db.currency_table"));
+auto lg(logger_factory("ores.core.risk.db.currency_table"));
 
 }
 
-namespace ores::core::db {
+namespace ores::core::risk::db {
 
-void currency_table::write(const std::vector<risk::currency>& currencies) {
+using types::currency;
+
+void currency_table::write(const std::vector<currency>& currencies) {
     // FIXME: test
     std::string connection_string("postgresql://ores:ahV6aehuij6eingohsiajaiT0@localhost:5434/oresdb");
     pqxx::connection c(connection_string);
@@ -57,7 +59,7 @@ void currency_table::write(const std::vector<risk::currency>& currencies) {
     w.commit();
 }
 
-std::vector<risk::currency>
+std::vector<currency>
 currency_table::read_internal(const std::string& query) {
     BOOST_LOG_SEV(lg, debug) << "Reading using query: " << query;
 
@@ -65,14 +67,14 @@ currency_table::read_internal(const std::string& query) {
     pqxx::connection c(connection_string);
     pqxx::work w(c);
 
-    std::vector<risk::currency> r;
+    std::vector<currency> r;
     for (const auto& [name, iso_code, numeric_code, symbol, fraction_symbol,
             fractions_per_unit, rounding_type, rounding_precision,
             format, currency_type, modified_by, valid_from, valid_to] :
              w.query<std::string, std::string, int, std::string, std::string,
              int, std::string, int, std::string, std::string, std::string,
              std::string, std::string>(query)) {
-        risk::currency ccy;
+        currency ccy;
         ccy.name = name;
         ccy.iso_code = iso_code;
         ccy.numeric_code = numeric_code;
@@ -92,7 +94,7 @@ currency_table::read_internal(const std::string& query) {
     return r;
 }
 
-std::vector<risk::currency> currency_table::
+std::vector<currency> currency_table::
 read_latest(const std::string& iso_code) {
     std::ostringstream query;
     query << "select "
@@ -109,7 +111,7 @@ read_latest(const std::string& iso_code) {
     return read_internal(query.str());
 }
 
-std::vector<risk::currency> currency_table::
+std::vector<currency> currency_table::
 read_at_timepoint(const std::string& as_of, const std::string& iso_code) {
     std::ostringstream query;
     query << "select "
@@ -126,7 +128,7 @@ read_at_timepoint(const std::string& as_of, const std::string& iso_code) {
     return read_internal(query.str());
 }
 
-std::vector<risk::currency> currency_table::
+std::vector<currency> currency_table::
 read_all(const std::string& iso_code) {
     std::ostringstream query;
     query << "select "
@@ -140,8 +142,6 @@ read_all(const std::string& iso_code) {
     }
 
     return read_internal(query.str());
-
 }
-
 
 }

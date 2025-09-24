@@ -17,27 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_RISK_CURRENCY_CONFIG_HPP
-#define ORES_CORE_RISK_CURRENCY_CONFIG_HPP
+#ifndef ORES_CORE_RISK_XML_CURRENCY_CONFIG_SERIALISER_HPP
+#define ORES_CORE_RISK_XML_CURRENCY_CONFIG_SERIALISER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <iosfwd>
-#include <vector>
-#include "ores.core/risk/currency.hpp"
+#include <string>
+#include "ores.core/risk/types/currency_config.hpp"
 
-namespace ores::core::risk {
+namespace ores::core::risk::xml {
 
-/**
- * @brief Represents a set of ORE currencies.
- */
-struct currency_config {
-    std::vector<currency> currencies;
+class currency_config_serialiser {
+public:
+    std::string serialise(const types::currency_config& cfg);
+    types::currency_config deserialise(std::string s);
 };
-
-std::ostream& operator<<(std::ostream& s, const currency_config& v);
 
 }
 

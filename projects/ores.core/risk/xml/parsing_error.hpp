@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,22 +17,32 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_XML_CURRENCY_CONFIG_SERIALISER_HPP
-#define ORES_CORE_XML_CURRENCY_CONFIG_SERIALISER_HPP
+#ifndef ORES_CORE_RISK_XML_PARSING_ERROR_HPP
+#define ORES_CORE_RISK_XML_PARSING_ERROR_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
 #include <string>
-#include "ores.core/risk/currency_config.hpp"
+#include <boost/exception/info.hpp>
 
-namespace ores::core::xml {
+namespace ores::core::risk::xml {
 
-class currency_config_serialiser {
+/**
+ * @brief A fatal error has occurred during parsing of ORE XML.
+ */
+class parsing_error : public virtual std::exception,
+                      public virtual boost::exception {
 public:
-    std::string serialise(const risk::currency_config& cfg);
-    risk::currency_config deserialise(std::string s);
+    explicit parsing_error(std::string_view message = "")
+        : message_(message) {}
+    [[nodiscard]] const char* what() const noexcept override {
+        return message_.c_str();
+    }
+
+private:
+    std::string message_;
 };
 
 }

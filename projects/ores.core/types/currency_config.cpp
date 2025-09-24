@@ -17,20 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <iomanip>
 #include <ostream>
-#include "ores.utility/streaming/std_vector.hpp"
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 #include "ores.core/types/currency_config.hpp"
 
 namespace ores::core::types {
 
 std::ostream& operator<<(std::ostream& s, const currency_config& v) {
-    using std::quoted;
-    s << " { "
-      << quoted("__type__") << ": "
-      << quoted("ores::core::types::currency_config") << ", "
-      << quoted("currencies") << ": " << v.currencies()
-      << " }";
+    rfl::json::write(v, s);
     return(s);
 }
 

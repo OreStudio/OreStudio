@@ -46,7 +46,7 @@ currency_config_serialiser::serialise(const types::currency_config& cfg)
     doc.append_node(root);
 
     currency_serialiser ser;
-    for (const types::currency& ccy : cfg.currencies()) {
+    for (const types::currency& ccy : cfg.currencies) {
         ser.serialise(*root, ccy);
     }
 

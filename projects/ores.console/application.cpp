@@ -19,10 +19,10 @@
  *
  */
 #include <iostream>
+#include <optional>
 #include "ores.utility/log/logger.hpp"
 #include "ores.core/db/currency_table.hpp"
 #include "ores.core/types/currency_config.hpp"
-#include "ores.core/json/currency_config_serialiser.hpp"
 #include "ores.console/application.hpp"
 
 namespace {
@@ -50,9 +50,8 @@ import_data(const std::optional<importing_configuration>& ocfg) const
                                  << ccy_cfg;
         auto cc(importer_.import_currency_config(ccy_cfg));
         core::db::currency_table ct;
-        ct.write(cc.currencies());
-        using core::json::currency_config_serialiser;
-        std::cout << currency_config_serialiser::serialise(cc) << std::endl;
+        ct.write(cc.currencies);
+        std::cout << cc << std::endl;
     }
 }
 
@@ -72,7 +71,6 @@ dump_data(const std::optional<dumping_configuration>& ocfg) const
         core::db::currency_table ct;
 
         using ores::core::types::currency_config;
-        using core::json::currency_config_serialiser;
         const auto reader([&]() {
             if (cfg.all_versions) {
                 BOOST_LOG_SEV(lg, debug) << "Reading all versions for currencies.";
@@ -86,7 +84,7 @@ dump_data(const std::optional<dumping_configuration>& ocfg) const
             return ct.read_at_timepoint(cfg.as_of, cfg.key);
         });
         const currency_config cc(reader());
-        std::cout << currency_config_serialiser::serialise(cc) << std::endl;
+        std::cout << cc << std::endl;
     }
 }
 

@@ -47,10 +47,10 @@ void currency_table::write(const std::vector<types::currency>& currencies) {
 
     for (const auto& ccy : currencies) {
         pqxx::params params {
-            ccy.name(), ccy.iso_code(), ccy.numeric_code(), ccy.symbol(), ccy.fraction_symbol(),
-                ccy.fractions_per_unit(), ccy.rounding_type(),
-                ccy.rounding_precision(), ccy.format(),
-                ccy.currency_type()};
+            ccy.name, ccy.iso_code, ccy.numeric_code, ccy.symbol, ccy.fraction_symbol,
+                ccy.fractions_per_unit, ccy.rounding_type,
+                ccy.rounding_precision, ccy.format,
+                ccy.currency_type};
 
         w.exec(pqxx::prepped{"currencies_insert_stmt"}, params);
     }
@@ -73,19 +73,19 @@ currency_table::read_internal(const std::string& query) {
              int, std::string, int, std::string, std::string, std::string,
              std::string, std::string>(query)) {
         types::currency ccy;
-        ccy.name(name);
-        ccy.iso_code(iso_code);
-        ccy.numeric_code(numeric_code);
-        ccy.symbol(symbol);
-        ccy.fraction_symbol(fraction_symbol);
-        ccy.fractions_per_unit(fractions_per_unit);
-        ccy.rounding_type(rounding_type);
-        ccy.rounding_precision(rounding_precision);
-        ccy.format(format);
-        ccy.currency_type(currency_type);
-        ccy.modified_by(modified_by);
-        ccy.valid_from(valid_from);
-        ccy.valid_to(valid_to);
+        ccy.name = name;
+        ccy.iso_code = iso_code;
+        ccy.numeric_code = numeric_code;
+        ccy.symbol = symbol;
+        ccy.fraction_symbol = fraction_symbol;
+        ccy.fractions_per_unit = fractions_per_unit;
+        ccy.rounding_type = rounding_type;
+        ccy.rounding_precision = rounding_precision;
+        ccy.format = format;
+        ccy.currency_type = currency_type;
+        ccy.modified_by = modified_by;
+        ccy.valid_from = valid_from;
+        ccy.valid_to = valid_to;
 
         r.push_back(ccy);
     }

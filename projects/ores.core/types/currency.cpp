@@ -17,30 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <iomanip>
 #include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 #include "ores.core/types/currency.hpp"
 
 namespace ores::core::types {
 
-std::ostream& operator<<(std::ostream& os, const currency& v) {
-    using std::quoted;
-    os << " { "
-       << quoted("__type__") << ": " << quoted("ores::core::ore::model::currency") << ", "
-       << quoted("name") << ": " << quoted(v.name()) << ", "
-       << quoted("iso_code") << ": " << quoted(v.iso_code()) << ", "
-       << quoted("numeric_code") << ": " << v.numeric_code() << ", "
-       << quoted("symbol") << ": " << quoted(v.symbol()) << ", "
-       << quoted("fraction_symbol") << ": " << quoted(v.fraction_symbol()) << ", "
-       << quoted("fractions_per_unit") << ": " << v.fractions_per_unit() << ", "
-       << quoted("rounding_type") << ": " << quoted(v.rounding_type()) << ", "
-       << quoted("rounding_precision") << ": " << v.rounding_precision() << ", "
-       << quoted("format") << ": " << quoted(v.format()) << ", "
-       << quoted("modified_by") << ": " << quoted(v.modified_by()) << ", "
-       << quoted("valid_from") << ": " << quoted(v.valid_from()) << ", "
-       << quoted("valid_to") << ": " << quoted(v.valid_to())
-       << " }";
-    return os;
+std::ostream& operator<<(std::ostream& s, const currency& v) {
+    rfl::json::write(v, s);
+    return(s);
 }
 
 }

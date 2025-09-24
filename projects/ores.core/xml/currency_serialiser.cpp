@@ -44,45 +44,45 @@ types::currency currency_serialiser::deserialise(rapidxml_ns::xml_node<>& node) 
     types::currency r;
     xml_node<> *name = node.first_node("Name");
     if (name != nullptr)
-        r.name(name->value());
+        r.name = name->value();
 
     xml_node<> *isoCode = node.first_node("ISOCode");
     if (isoCode != nullptr)
-        r.iso_code(isoCode->value());
+        r.iso_code = isoCode->value();
 
     using ores::utility::string::convert_to_int;
     xml_node<> *numericCode = node.first_node("NumericCode");
     if (numericCode != nullptr) {
-        r.numeric_code(convert_to_int(numericCode->value()));
+        r.numeric_code = convert_to_int(numericCode->value());
     }
 
     xml_node<> *symbol = node.first_node("Symbol");
     if (symbol != nullptr)
-        r.symbol(symbol->value());
+        r.symbol = symbol->value();
 
     xml_node<> *fractionSymbol = node.first_node("FractionSymbol");
     if (fractionSymbol != nullptr)
-        r.fraction_symbol(fractionSymbol->value());
+        r.fraction_symbol = fractionSymbol->value();
 
     xml_node<> *fractionsPerUnit = node.first_node("FractionsPerUnit");
     if (fractionsPerUnit != nullptr)
-        r.fractions_per_unit(convert_to_int(fractionsPerUnit->value()));
+        r.fractions_per_unit = convert_to_int(fractionsPerUnit->value());
 
     xml_node<> *roundingType = node.first_node("RoundingType");
     if (roundingType != nullptr)
-        r.rounding_type(roundingType->value());
+        r.rounding_type = roundingType->value();
 
     xml_node<> *roundingPrecision = node.first_node("RoundingPrecision");
     if (roundingPrecision != nullptr)
-        r.rounding_precision(convert_to_int(roundingPrecision->value()));
+        r.rounding_precision = convert_to_int(roundingPrecision->value());
 
     xml_node<> *format = node.first_node("Format");
     if (format != nullptr)
-        r.format(format->value());
+        r.format = format->value();
 
     xml_node<> *currencyType = node.first_node("CurrencyType");
     if (currencyType != nullptr)
-        r.currency_type(currencyType->value());
+        r.currency_type = currencyType->value();
 
     return r;
 }

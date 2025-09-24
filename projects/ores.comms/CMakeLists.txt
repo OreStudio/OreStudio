@@ -36,12 +36,16 @@ target_include_directories(${lib_target_name} PUBLIC
     ${RAPIDXML_NS_INCLUDE_DIRS}
 )
 
-target_link_libraries(${lib_target_name} PRIVATE
-    ores.utility.lib
-    OpenSSL::SSL
-    OpenSSL::Crypto
-    Boost::boost
-    Boost::cobalt)
+target_link_libraries(${lib_target_name}
+    PRIVATE
+        ores.utility.lib
+        OpenSSL::SSL
+        OpenSSL::Crypto
+        Boost::boost
+        Boost::cobalt
+    PUBLIC
+        reflectcpp::reflectcpp
+    )
 
 install(TARGETS ${lib_target_name}
     ARCHIVE DESTINATION lib

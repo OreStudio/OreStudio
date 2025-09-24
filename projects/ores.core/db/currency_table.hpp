@@ -26,39 +26,39 @@
 
 #include <string>
 #include <vector>
-#include "ores.core/types/currency.hpp"
+#include "ores.core/risk/currency.hpp"
 
 namespace ores::core::db {
 
 class currency_table {
 private:
-    std::vector<types::currency> read_internal(const std::string& query);
+    std::vector<risk::currency> read_internal(const std::string& query);
 
 public:
     /**
      * @brief Writes currencies to database. Expects the currency set to have
      * unique ISO codes.
      */
-    void write(const std::vector<types::currency>& currencies);
+    void write(const std::vector<risk::currency>& currencies);
 
     /**
      * @brief Reads latest currencies, possibly filtered by ISO code.
      */
-    std::vector<types::currency>
+    std::vector<risk::currency>
     read_latest(const std::string& iso_code = std::string());
 
     /**
      * @brief Reads currencies at the supplied time point, possibly filtered by
      * ISO code.
      */
-    std::vector<types::currency>
+    std::vector<risk::currency>
     read_at_timepoint(const std::string& as_of,
         const std::string& iso_code = std::string());
 
     /**
      * @brief Reads all currencies, possibly filtered by ISO code.
      */
-    std::vector<types::currency>
+    std::vector<risk::currency>
     read_all(const std::string& iso_code = std::string());
 };
 

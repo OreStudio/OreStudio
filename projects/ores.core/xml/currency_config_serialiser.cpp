@@ -39,14 +39,14 @@ namespace ores::core::xml {
 using namespace rapidxml_ns;
 
 std::string
-currency_config_serialiser::serialise(const types::currency_config& cfg)
+currency_config_serialiser::serialise(const risk::currency_config& cfg)
 {
     xml_document<> doc;
     xml_node<>* root = doc.allocate_node(node_element, "CurrencyConfig");
     doc.append_node(root);
 
     currency_serialiser ser;
-    for (const types::currency& ccy : cfg.currencies) {
+    for (const risk::currency& ccy : cfg.currencies) {
         ser.serialise(*root, ccy);
     }
 
@@ -55,7 +55,7 @@ currency_config_serialiser::serialise(const types::currency_config& cfg)
     return os.str();
 }
 
-types::currency_config currency_config_serialiser::deserialise(std::string s)
+risk::currency_config currency_config_serialiser::deserialise(std::string s)
 {
     BOOST_LOG_SEV(lg, debug) << "Deserialising XML. Peek: " << s.substr(0, 50);
 
@@ -71,7 +71,7 @@ types::currency_config currency_config_serialiser::deserialise(std::string s)
         BOOST_THROW_EXCEPTION(parsing_error(missing_currency_config));
     }
 
-    std::vector<types::currency> currencies;
+    std::vector<risk::currency> currencies;
     auto* currency_node(currency_config_node->first_node("Currency"));
     currency_serialiser ccy_ser;
     while(currency_node != nullptr) {
@@ -79,7 +79,7 @@ types::currency_config currency_config_serialiser::deserialise(std::string s)
         currency_node = currency_node->next_sibling("Currency");
     }
 
-    const types::currency_config r(currencies);
+    const risk::currency_config r(currencies);
 
     BOOST_LOG_SEV(lg, debug) << "Finished deserialising XML. Total currencies found: "
                              << currencies.size();

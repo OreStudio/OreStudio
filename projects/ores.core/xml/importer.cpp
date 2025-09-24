@@ -19,7 +19,7 @@
  */
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/filesystem/file.hpp"
-#include "ores.core/types/currency_config.hpp"
+#include "ores.core/risk/currency_config.hpp"
 #include "ores.core/xml/currency_config_serialiser.hpp"
 #include "ores.core/xml/importer.hpp"
 
@@ -32,7 +32,7 @@ auto lg(logger_factory("ores.core.xml.importer"));
 
 namespace ores::core::xml {
 
-types::currency_config
+risk::currency_config
 importer::import_currency_config(const std::filesystem::path& path) const {
     BOOST_LOG_SEV(lg, debug) << "Starting to import. File: " << path.generic_string();
 

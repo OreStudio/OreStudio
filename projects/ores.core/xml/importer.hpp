@@ -26,7 +26,7 @@
 #endif
 
 #include <filesystem>
-#include "ores.core/types/currency_config.hpp"
+#include "ores.core/risk/currency_config.hpp"
 
 namespace ores::core::xml {
 
@@ -35,7 +35,7 @@ namespace ores::core::xml {
  */
 class importer {
 public:
-    types::currency_config
+    risk::currency_config
     import_currency_config(const std::filesystem::path& path) const;
 };
 

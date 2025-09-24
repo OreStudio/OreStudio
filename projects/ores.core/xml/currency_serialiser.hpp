@@ -25,14 +25,14 @@
 #endif
 
 #include <rapidxml-ns/rapidxml_ns.hpp>
-#include "ores.core/types/currency.hpp"
+#include "ores.core/risk/currency.hpp"
 
 namespace ores::core::xml {
 
 class currency_serialiser {
 public:
-    void serialise(rapidxml_ns::xml_node<>& parent, const types::currency& cfg);
-    types::currency deserialise(rapidxml_ns::xml_node<>& node);
+    void serialise(rapidxml_ns::xml_node<>& parent, const risk::currency& cfg);
+    risk::currency deserialise(rapidxml_ns::xml_node<>& node);
 };
 
 }

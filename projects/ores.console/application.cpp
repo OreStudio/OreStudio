@@ -22,7 +22,7 @@
 #include <optional>
 #include "ores.utility/log/logger.hpp"
 #include "ores.core/db/currency_table.hpp"
-#include "ores.core/types/currency_config.hpp"
+#include "ores.core/risk/currency_config.hpp"
 #include "ores.console/application.hpp"
 
 namespace {
@@ -70,7 +70,7 @@ dump_data(const std::optional<dumping_configuration>& ocfg) const
         BOOST_LOG_SEV(lg, debug) << "Dumping currency configurations.";
         core::db::currency_table ct;
 
-        using ores::core::types::currency_config;
+        using ores::core::risk::currency_config;
         const auto reader([&]() {
             if (cfg.all_versions) {
                 BOOST_LOG_SEV(lg, debug) << "Reading all versions for currencies.";

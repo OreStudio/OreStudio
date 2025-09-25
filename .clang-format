@@ -1,16 +1,13 @@
 # -*- mode: yaml; yaml-tab-width: 4; indent-tabs-mode: nil -*-
 ---
-Language:        Cpp
-Standard:        c++14
+Language: Cpp
+Standard: c++14
 
-
-# The following is close to the style we've been using all these years
-# without formalizing it.  Formatting won't be enforced, but this file
-# can help if you want to use the general feel of the library.
-
+# The following is close to the style we've been using all these years without
+# formalizing it. Formatting won't be enforced, but this file can help if you
+# want to use the general feel of the library.
 
 # General appearance:
-
 BasedOnStyle: LLVM
 
 IndentWidth: 4
@@ -26,23 +23,21 @@ AllowShortFunctionsOnASingleLine: Inline
 AlwaysBreakTemplateDeclarations: true
 
 # T& x, not T &x:
-
 DerivePointerAlignment: false
 PointerAlignment: Left
 
 # QuantLib headers first, then Boost, then std
-
 SortIncludes: true
 IncludeBlocks: Merge
 IncludeCategories:
-  - Regex:           '^"'
-    Priority:        1
-  - Regex:           '^<ql/'
-    Priority:        2
-  - Regex:           '^<boost/'
-    Priority:        3
-  - Regex:           '^<'
-    Priority:        4
+  - Regex: '^"'
+    Priority: 1
+  - Regex: '^<ql/'
+    Priority: 2
+  - Regex: '^<boost/'
+    Priority: 3
+  - Regex: '^<'
+    Priority: 4
 
 # Other:
 
@@ -52,5 +47,3 @@ ConstructorInitializerIndentWidth: 0
 SortUsingDeclarations: false
 IndentCaseLabels: true
 IndentPPDirectives: AfterHash
-
-...

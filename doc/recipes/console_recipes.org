@@ -138,8 +138,8 @@ IMPORTANT: build details are NOT for security purposes.
 {
   "currencies": [
     {
-      "name": "United Arab Emirates dirham",
       "iso_code": "AED",
+      "name": "United Arab Emirates dirham",
       "numeric_code": 784,
       "symbol": "",
       "fraction_symbol": "",
@@ -149,12 +149,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Afghan afghani",
       "iso_code": "AFN",
+      "name": "Afghan afghani",
       "numeric_code": 971,
       "symbol": "",
       "fraction_symbol": "",
@@ -164,12 +164,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Albanian lek",
       "iso_code": "ALL",
+      "name": "Albanian lek",
       "numeric_code": 8,
       "symbol": "",
       "fraction_symbol": "",
@@ -179,12 +179,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Armenian dram",
       "iso_code": "AMD",
+      "name": "Armenian dram",
       "numeric_code": 51,
       "symbol": "",
       "fraction_symbol": "",
@@ -194,12 +194,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Netherlands Antillean guilder",
       "iso_code": "ANG",
+      "name": "Netherlands Antillean guilder",
       "numeric_code": 532,
       "symbol": "",
       "fraction_symbol": "",
@@ -209,12 +209,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Angolan kwanza",
       "iso_code": "AOA",
+      "name": "Angolan kwanza",
       "numeric_code": 973,
       "symbol": "",
       "fraction_symbol": "",
@@ -224,12 +224,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Argentine peso",
       "iso_code": "ARS",
+      "name": "Argentine peso",
       "numeric_code": 32,
       "symbol": "",
       "fraction_symbol": "",
@@ -239,12 +239,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Australian dollar",
       "iso_code": "AUD",
+      "name": "Australian dollar",
       "numeric_code": 36,
       "symbol": "",
       "fraction_symbol": "",
@@ -254,12 +254,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Aruban florin",
       "iso_code": "AWG",
+      "name": "Aruban florin",
       "numeric_code": 533,
       "symbol": "",
       "fraction_symbol": "",
@@ -269,12 +269,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Azerbaijani manat",
       "iso_code": "AZN",
+      "name": "Azerbaijani manat",
       "numeric_code": 944,
       "symbol": "",
       "fraction_symbol": "",
@@ -284,12 +284,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Bosnia and Herzegovina convertible mark",
       "iso_code": "BAM",
+      "name": "Bosnia and Herzegovina convertible mark",
       "numeric_code": 977,
       "symbol": "",
       "fraction_symbol": "",
@@ -299,12 +299,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Barbados dollar",
       "iso_code": "BBD",
+      "name": "Barbados dollar",
       "numeric_code": 52,
       "symbol": "",
       "fraction_symbol": "",
@@ -314,12 +314,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Bangladeshi taka",
       "iso_code": "BDT",
+      "name": "Bangladeshi taka",
       "numeric_code": 50,
       "symbol": "",
       "fraction_symbol": "",
@@ -329,12 +329,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Bulgarian lev",
       "iso_code": "BGN",
+      "name": "Bulgarian lev",
       "numeric_code": 975,
       "symbol": "",
       "fraction_symbol": "",
@@ -344,12 +344,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Bahraini dinar",
       "iso_code": "BHD",
+      "name": "Bahraini dinar",
       "numeric_code": 48,
       "symbol": "",
       "fraction_symbol": "",
@@ -359,12 +359,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Burundian franc",
       "iso_code": "BIF",
+      "name": "Burundian franc",
       "numeric_code": 108,
       "symbol": "",
       "fraction_symbol": "",
@@ -374,12 +374,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Bermudian dollar",
       "iso_code": "BMD",
+      "name": "Bermudian dollar",
       "numeric_code": 60,
       "symbol": "",
       "fraction_symbol": "",
@@ -389,12 +389,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Brunei dollar",
       "iso_code": "BND",
+      "name": "Brunei dollar",
       "numeric_code": 96,
       "symbol": "",
       "fraction_symbol": "",
@@ -404,12 +404,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Boliviano",
       "iso_code": "BOB",
+      "name": "Boliviano",
       "numeric_code": 68,
       "symbol": "",
       "fraction_symbol": "",
@@ -419,12 +419,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Bolivian Mvdol (funds code)",
       "iso_code": "BOV",
+      "name": "Bolivian Mvdol (funds code)",
       "numeric_code": 984,
       "symbol": "",
       "fraction_symbol": "",
@@ -434,12 +434,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Brazilian real",
       "iso_code": "BRL",
+      "name": "Brazilian real",
       "numeric_code": 986,
       "symbol": "",
       "fraction_symbol": "",
@@ -449,12 +449,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Bahamian dollar",
       "iso_code": "BSD",
+      "name": "Bahamian dollar",
       "numeric_code": 44,
       "symbol": "",
       "fraction_symbol": "",
@@ -464,12 +464,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Bhutanese ngultrum",
       "iso_code": "BTN",
+      "name": "Bhutanese ngultrum",
       "numeric_code": 64,
       "symbol": "",
       "fraction_symbol": "",
@@ -479,12 +479,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Botswana pula",
       "iso_code": "BWP",
+      "name": "Botswana pula",
       "numeric_code": 72,
       "symbol": "",
       "fraction_symbol": "",
@@ -494,12 +494,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Belarusian ruble",
       "iso_code": "BYN",
+      "name": "Belarusian ruble",
       "numeric_code": 933,
       "symbol": "",
       "fraction_symbol": "",
@@ -509,12 +509,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Belize dollar",
       "iso_code": "BZD",
+      "name": "Belize dollar",
       "numeric_code": 84,
       "symbol": "",
       "fraction_symbol": "",
@@ -524,12 +524,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Canadian dollar",
       "iso_code": "CAD",
+      "name": "Canadian dollar",
       "numeric_code": 124,
       "symbol": "",
       "fraction_symbol": "",
@@ -539,12 +539,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Congolese franc",
       "iso_code": "CDF",
+      "name": "Congolese franc",
       "numeric_code": 976,
       "symbol": "",
       "fraction_symbol": "",
@@ -554,12 +554,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "WIR euro (complementary currency)",
       "iso_code": "CHE",
+      "name": "WIR euro (complementary currency)",
       "numeric_code": 947,
       "symbol": "",
       "fraction_symbol": "",
@@ -569,12 +569,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Swiss franc",
       "iso_code": "CHF",
+      "name": "Swiss franc",
       "numeric_code": 756,
       "symbol": "",
       "fraction_symbol": "",
@@ -584,12 +584,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "WIR franc (complementary currency)",
       "iso_code": "CHW",
+      "name": "WIR franc (complementary currency)",
       "numeric_code": 948,
       "symbol": "",
       "fraction_symbol": "",
@@ -599,12 +599,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Unidad de Fomento (funds code)",
       "iso_code": "CLF",
+      "name": "Unidad de Fomento (funds code)",
       "numeric_code": 990,
       "symbol": "",
       "fraction_symbol": "",
@@ -614,12 +614,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Chilean peso",
       "iso_code": "CLP",
+      "name": "Chilean peso",
       "numeric_code": 152,
       "symbol": "",
       "fraction_symbol": "",
@@ -629,12 +629,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Offshore Chinese Yuan traded in Hong Kong (Non-ISO)",
       "iso_code": "CNH",
+      "name": "Offshore Chinese Yuan traded in Hong Kong (Non-ISO)",
       "numeric_code": 0,
       "symbol": "",
       "fraction_symbol": "",
@@ -644,12 +644,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Offshore Chinese Yuan traded in Taiwan (Non-ISO)",
       "iso_code": "CNT",
+      "name": "Offshore Chinese Yuan traded in Taiwan (Non-ISO)",
       "numeric_code": 0,
       "symbol": "",
       "fraction_symbol": "",
@@ -659,12 +659,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Chinese yuan",
       "iso_code": "CNY",
+      "name": "Chinese yuan",
       "numeric_code": 156,
       "symbol": "",
       "fraction_symbol": "",
@@ -674,12 +674,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Colombian peso",
       "iso_code": "COP",
+      "name": "Colombian peso",
       "numeric_code": 170,
       "symbol": "",
       "fraction_symbol": "",
@@ -689,12 +689,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Unidad de Valor Real (UVR) (funds code)",
       "iso_code": "COU",
+      "name": "Unidad de Valor Real (UVR) (funds code)",
       "numeric_code": 970,
       "symbol": "",
       "fraction_symbol": "",
@@ -704,12 +704,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Costa Rican colon",
       "iso_code": "CRC",
+      "name": "Costa Rican colon",
       "numeric_code": 188,
       "symbol": "",
       "fraction_symbol": "",
@@ -719,12 +719,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Cuban convertible peso",
       "iso_code": "CUC",
+      "name": "Cuban convertible peso",
       "numeric_code": 931,
       "symbol": "",
       "fraction_symbol": "",
@@ -734,12 +734,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Cuban peso",
       "iso_code": "CUP",
+      "name": "Cuban peso",
       "numeric_code": 192,
       "symbol": "",
       "fraction_symbol": "",
@@ -749,12 +749,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Cape Verdean escudo",
       "iso_code": "CVE",
+      "name": "Cape Verdean escudo",
       "numeric_code": 132,
       "symbol": "",
       "fraction_symbol": "",
@@ -764,12 +764,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Czech koruna",
       "iso_code": "CZK",
+      "name": "Czech koruna",
       "numeric_code": 203,
       "symbol": "",
       "fraction_symbol": "",
@@ -779,12 +779,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Djiboutian franc",
       "iso_code": "DJF",
+      "name": "Djiboutian franc",
       "numeric_code": 262,
       "symbol": "",
       "fraction_symbol": "",
@@ -794,12 +794,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Danish krone",
       "iso_code": "DKK",
+      "name": "Danish krone",
       "numeric_code": 208,
       "symbol": "",
       "fraction_symbol": "",
@@ -809,12 +809,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Dominican peso",
       "iso_code": "DOP",
+      "name": "Dominican peso",
       "numeric_code": 214,
       "symbol": "",
       "fraction_symbol": "",
@@ -824,12 +824,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Algerian dinar",
       "iso_code": "DZD",
+      "name": "Algerian dinar",
       "numeric_code": 12,
       "symbol": "",
       "fraction_symbol": "",
@@ -839,12 +839,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Egyptian pound",
       "iso_code": "EGP",
+      "name": "Egyptian pound",
       "numeric_code": 818,
       "symbol": "",
       "fraction_symbol": "",
@@ -854,12 +854,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Eritrean nakfa",
       "iso_code": "ERN",
+      "name": "Eritrean nakfa",
       "numeric_code": 232,
       "symbol": "",
       "fraction_symbol": "",
@@ -869,12 +869,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Ethiopian birr",
       "iso_code": "ETB",
+      "name": "Ethiopian birr",
       "numeric_code": 230,
       "symbol": "",
       "fraction_symbol": "",
@@ -884,12 +884,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Euro",
       "iso_code": "EUR",
+      "name": "Euro",
       "numeric_code": 978,
       "symbol": "",
       "fraction_symbol": "",
@@ -899,12 +899,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Fiji dollar",
       "iso_code": "FJD",
+      "name": "Fiji dollar",
       "numeric_code": 242,
       "symbol": "",
       "fraction_symbol": "",
@@ -914,12 +914,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Falkland Islands pound",
       "iso_code": "FKP",
+      "name": "Falkland Islands pound",
       "numeric_code": 238,
       "symbol": "",
       "fraction_symbol": "",
@@ -929,12 +929,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Pound sterling",
       "iso_code": "GBP",
+      "name": "Pound sterling",
       "numeric_code": 826,
       "symbol": "",
       "fraction_symbol": "",
@@ -944,12 +944,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Georgian lari",
       "iso_code": "GEL",
+      "name": "Georgian lari",
       "numeric_code": 981,
       "symbol": "",
       "fraction_symbol": "",
@@ -959,12 +959,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Guernsey Pound (Non-ISO)",
       "iso_code": "GGP",
+      "name": "Guernsey Pound (Non-ISO)",
       "numeric_code": 0,
       "symbol": "",
       "fraction_symbol": "",
@@ -974,12 +974,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Ghanaian cedi",
       "iso_code": "GHS",
+      "name": "Ghanaian cedi",
       "numeric_code": 936,
       "symbol": "",
       "fraction_symbol": "",
@@ -989,12 +989,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Gibraltar pound",
       "iso_code": "GIP",
+      "name": "Gibraltar pound",
       "numeric_code": 292,
       "symbol": "",
       "fraction_symbol": "",
@@ -1004,12 +1004,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Gambian dalasi",
       "iso_code": "GMD",
+      "name": "Gambian dalasi",
       "numeric_code": 270,
       "symbol": "",
       "fraction_symbol": "",
@@ -1019,12 +1019,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Guinean franc",
       "iso_code": "GNF",
+      "name": "Guinean franc",
       "numeric_code": 324,
       "symbol": "",
       "fraction_symbol": "",
@@ -1034,12 +1034,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Guatemalan quetzal",
       "iso_code": "GTQ",
+      "name": "Guatemalan quetzal",
       "numeric_code": 320,
       "symbol": "",
       "fraction_symbol": "",
@@ -1049,12 +1049,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Guyanese dollar",
       "iso_code": "GYD",
+      "name": "Guyanese dollar",
       "numeric_code": 328,
       "symbol": "",
       "fraction_symbol": "",
@@ -1064,12 +1064,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Hong Kong dollar",
       "iso_code": "HKD",
+      "name": "Hong Kong dollar",
       "numeric_code": 344,
       "symbol": "",
       "fraction_symbol": "",
@@ -1079,12 +1079,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Honduran lempira",
       "iso_code": "HNL",
+      "name": "Honduran lempira",
       "numeric_code": 340,
       "symbol": "",
       "fraction_symbol": "",
@@ -1094,12 +1094,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Croatian kuna",
       "iso_code": "HRK",
+      "name": "Croatian kuna",
       "numeric_code": 191,
       "symbol": "",
       "fraction_symbol": "",
@@ -1109,12 +1109,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Haitian gourde",
       "iso_code": "HTG",
+      "name": "Haitian gourde",
       "numeric_code": 332,
       "symbol": "",
       "fraction_symbol": "",
@@ -1124,12 +1124,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Hungarian forint",
       "iso_code": "HUF",
+      "name": "Hungarian forint",
       "numeric_code": 348,
       "symbol": "",
       "fraction_symbol": "",
@@ -1139,12 +1139,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Indonesian rupiah",
       "iso_code": "IDR",
+      "name": "Indonesian rupiah",
       "numeric_code": 360,
       "symbol": "",
       "fraction_symbol": "",
@@ -1154,12 +1154,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Israeli new shekel",
       "iso_code": "ILS",
+      "name": "Israeli new shekel",
       "numeric_code": 376,
       "symbol": "",
       "fraction_symbol": "",
@@ -1169,12 +1169,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Isle of Man Pound (Non-ISO)",
       "iso_code": "IMP",
+      "name": "Isle of Man Pound (Non-ISO)",
       "numeric_code": 0,
       "symbol": "",
       "fraction_symbol": "",
@@ -1184,12 +1184,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Indian rupee",
       "iso_code": "INR",
+      "name": "Indian rupee",
       "numeric_code": 356,
       "symbol": "",
       "fraction_symbol": "",
@@ -1199,12 +1199,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Iraqi dinar",
       "iso_code": "IQD",
+      "name": "Iraqi dinar",
       "numeric_code": 368,
       "symbol": "",
       "fraction_symbol": "",
@@ -1214,12 +1214,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Iranian rial",
       "iso_code": "IRR",
+      "name": "Iranian rial",
       "numeric_code": 364,
       "symbol": "",
       "fraction_symbol": "",
@@ -1229,12 +1229,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Icelandic krona",
       "iso_code": "ISK",
+      "name": "Icelandic krona",
       "numeric_code": 352,
       "symbol": "",
       "fraction_symbol": "",
@@ -1244,12 +1244,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Jersey Pound (Non-ISO)",
       "iso_code": "JEP",
+      "name": "Jersey Pound (Non-ISO)",
       "numeric_code": 0,
       "symbol": "",
       "fraction_symbol": "",
@@ -1259,12 +1259,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Jamaican dollar",
       "iso_code": "JMD",
+      "name": "Jamaican dollar",
       "numeric_code": 388,
       "symbol": "",
       "fraction_symbol": "",
@@ -1274,12 +1274,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Jordanian dinar",
       "iso_code": "JOD",
+      "name": "Jordanian dinar",
       "numeric_code": 400,
       "symbol": "",
       "fraction_symbol": "",
@@ -1289,12 +1289,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Japanese yen",
       "iso_code": "JPY",
+      "name": "Japanese yen",
       "numeric_code": 392,
       "symbol": "",
       "fraction_symbol": "",
@@ -1304,12 +1304,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Kenyan shilling",
       "iso_code": "KES",
+      "name": "Kenyan shilling",
       "numeric_code": 404,
       "symbol": "",
       "fraction_symbol": "",
@@ -1319,12 +1319,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Kyrgyzstani som",
       "iso_code": "KGS",
+      "name": "Kyrgyzstani som",
       "numeric_code": 417,
       "symbol": "",
       "fraction_symbol": "",
@@ -1334,12 +1334,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Cambodian riel",
       "iso_code": "KHR",
+      "name": "Cambodian riel",
       "numeric_code": 116,
       "symbol": "",
       "fraction_symbol": "",
@@ -1349,12 +1349,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Kiribati dollar (Non-ISO)",
       "iso_code": "KID",
+      "name": "Kiribati dollar (Non-ISO)",
       "numeric_code": 0,
       "symbol": "",
       "fraction_symbol": "",
@@ -1364,12 +1364,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Comoro franc",
       "iso_code": "KMF",
+      "name": "Comoro franc",
       "numeric_code": 174,
       "symbol": "",
       "fraction_symbol": "",
@@ -1379,12 +1379,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "North Korean won",
       "iso_code": "KPW",
+      "name": "North Korean won",
       "numeric_code": 408,
       "symbol": "",
       "fraction_symbol": "",
@@ -1394,12 +1394,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "South Korean won",
       "iso_code": "KRW",
+      "name": "South Korean won",
       "numeric_code": 410,
       "symbol": "",
       "fraction_symbol": "",
@@ -1409,12 +1409,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Kuwaiti dinar",
       "iso_code": "KWD",
+      "name": "Kuwaiti dinar",
       "numeric_code": 414,
       "symbol": "",
       "fraction_symbol": "",
@@ -1424,12 +1424,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Cayman Islands dollar",
       "iso_code": "KYD",
+      "name": "Cayman Islands dollar",
       "numeric_code": 136,
       "symbol": "",
       "fraction_symbol": "",
@@ -1439,12 +1439,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Kazakhstani tenge",
       "iso_code": "KZT",
+      "name": "Kazakhstani tenge",
       "numeric_code": 398,
       "symbol": "",
       "fraction_symbol": "",
@@ -1454,12 +1454,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Lao kip",
       "iso_code": "LAK",
+      "name": "Lao kip",
       "numeric_code": 418,
       "symbol": "",
       "fraction_symbol": "",
@@ -1469,12 +1469,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Lebanese pound",
       "iso_code": "LBP",
+      "name": "Lebanese pound",
       "numeric_code": 422,
       "symbol": "",
       "fraction_symbol": "",
@@ -1484,12 +1484,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Sri Lankan rupee",
       "iso_code": "LKR",
+      "name": "Sri Lankan rupee",
       "numeric_code": 144,
       "symbol": "",
       "fraction_symbol": "",
@@ -1499,12 +1499,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Liberian dollar",
       "iso_code": "LRD",
+      "name": "Liberian dollar",
       "numeric_code": 430,
       "symbol": "",
       "fraction_symbol": "",
@@ -1514,12 +1514,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Lesotho loti",
       "iso_code": "LSL",
+      "name": "Lesotho loti",
       "numeric_code": 426,
       "symbol": "",
       "fraction_symbol": "",
@@ -1529,12 +1529,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Libyan dinar",
       "iso_code": "LYD",
+      "name": "Libyan dinar",
       "numeric_code": 434,
       "symbol": "",
       "fraction_symbol": "",
@@ -1544,12 +1544,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Moroccan dirham",
       "iso_code": "MAD",
+      "name": "Moroccan dirham",
       "numeric_code": 504,
       "symbol": "",
       "fraction_symbol": "",
@@ -1559,12 +1559,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Moldovan leu",
       "iso_code": "MDL",
+      "name": "Moldovan leu",
       "numeric_code": 498,
       "symbol": "",
       "fraction_symbol": "",
@@ -1574,12 +1574,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Malagasy ariary",
       "iso_code": "MGA",
+      "name": "Malagasy ariary",
       "numeric_code": 969,
       "symbol": "",
       "fraction_symbol": "",
@@ -1589,12 +1589,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Macedonian denar",
       "iso_code": "MKD",
+      "name": "Macedonian denar",
       "numeric_code": 807,
       "symbol": "",
       "fraction_symbol": "",
@@ -1604,12 +1604,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Myanmar kyat",
       "iso_code": "MMK",
+      "name": "Myanmar kyat",
       "numeric_code": 104,
       "symbol": "",
       "fraction_symbol": "",
@@ -1619,12 +1619,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Mongolian toegroeg",
       "iso_code": "MNT",
+      "name": "Mongolian toegroeg",
       "numeric_code": 496,
       "symbol": "",
       "fraction_symbol": "",
@@ -1634,12 +1634,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Macanese pataca",
       "iso_code": "MOP",
+      "name": "Macanese pataca",
       "numeric_code": 446,
       "symbol": "",
       "fraction_symbol": "",
@@ -1649,12 +1649,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Mauritanian ouguiya",
       "iso_code": "MRU",
+      "name": "Mauritanian ouguiya",
       "numeric_code": 929,
       "symbol": "",
       "fraction_symbol": "",
@@ -1664,12 +1664,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Mauritian rupee",
       "iso_code": "MUR",
+      "name": "Mauritian rupee",
       "numeric_code": 480,
       "symbol": "",
       "fraction_symbol": "",
@@ -1679,12 +1679,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Maldivian rufiyaa",
       "iso_code": "MVR",
+      "name": "Maldivian rufiyaa",
       "numeric_code": 462,
       "symbol": "",
       "fraction_symbol": "",
@@ -1694,12 +1694,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Malawian kwacha",
       "iso_code": "MWK",
+      "name": "Malawian kwacha",
       "numeric_code": 454,
       "symbol": "",
       "fraction_symbol": "",
@@ -1709,12 +1709,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Mexican peso",
       "iso_code": "MXN",
+      "name": "Mexican peso",
       "numeric_code": 484,
       "symbol": "",
       "fraction_symbol": "",
@@ -1724,12 +1724,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Mexican Unidad de Inversion (UDI) (funds code)",
       "iso_code": "MXV",
+      "name": "Mexican Unidad de Inversion (UDI) (funds code)",
       "numeric_code": 979,
       "symbol": "",
       "fraction_symbol": "",
@@ -1739,12 +1739,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Malaysian ringgit",
       "iso_code": "MYR",
+      "name": "Malaysian ringgit",
       "numeric_code": 458,
       "symbol": "",
       "fraction_symbol": "",
@@ -1754,12 +1754,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Mozambican metical",
       "iso_code": "MZN",
+      "name": "Mozambican metical",
       "numeric_code": 943,
       "symbol": "",
       "fraction_symbol": "",
@@ -1769,12 +1769,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Namibian dollar",
       "iso_code": "NAD",
+      "name": "Namibian dollar",
       "numeric_code": 516,
       "symbol": "",
       "fraction_symbol": "",
@@ -1784,12 +1784,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Nigerian naira",
       "iso_code": "NGN",
+      "name": "Nigerian naira",
       "numeric_code": 566,
       "symbol": "",
       "fraction_symbol": "",
@@ -1799,12 +1799,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Nicaraguan cordoba",
       "iso_code": "NIO",
+      "name": "Nicaraguan cordoba",
       "numeric_code": 558,
       "symbol": "",
       "fraction_symbol": "",
@@ -1814,12 +1814,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Norwegian krone",
       "iso_code": "NOK",
+      "name": "Norwegian krone",
       "numeric_code": 578,
       "symbol": "",
       "fraction_symbol": "",
@@ -1829,12 +1829,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Nepalese rupee",
       "iso_code": "NPR",
+      "name": "Nepalese rupee",
       "numeric_code": 524,
       "symbol": "",
       "fraction_symbol": "",
@@ -1844,12 +1844,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "New Zealand dollar",
       "iso_code": "NZD",
+      "name": "New Zealand dollar",
       "numeric_code": 554,
       "symbol": "",
       "fraction_symbol": "",
@@ -1859,12 +1859,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Omani rial",
       "iso_code": "OMR",
+      "name": "Omani rial",
       "numeric_code": 512,
       "symbol": "",
       "fraction_symbol": "",
@@ -1874,12 +1874,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Panamanian balboa",
       "iso_code": "PAB",
+      "name": "Panamanian balboa",
       "numeric_code": 590,
       "symbol": "",
       "fraction_symbol": "",
@@ -1889,12 +1889,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Peruvian sol",
       "iso_code": "PEN",
+      "name": "Peruvian sol",
       "numeric_code": 604,
       "symbol": "",
       "fraction_symbol": "",
@@ -1904,12 +1904,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Papua New Guinean kina",
       "iso_code": "PGK",
+      "name": "Papua New Guinean kina",
       "numeric_code": 598,
       "symbol": "",
       "fraction_symbol": "",
@@ -1919,12 +1919,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Philippine peso",
       "iso_code": "PHP",
+      "name": "Philippine peso",
       "numeric_code": 608,
       "symbol": "",
       "fraction_symbol": "",
@@ -1934,12 +1934,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Pakistani rupee",
       "iso_code": "PKR",
+      "name": "Pakistani rupee",
       "numeric_code": 586,
       "symbol": "",
       "fraction_symbol": "",
@@ -1949,12 +1949,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Polish z_oty",
       "iso_code": "PLN",
+      "name": "Polish z_oty",
       "numeric_code": 985,
       "symbol": "",
       "fraction_symbol": "",
@@ -1964,12 +1964,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Paraguayan guarani",
       "iso_code": "PYG",
+      "name": "Paraguayan guarani",
       "numeric_code": 600,
       "symbol": "",
       "fraction_symbol": "",
@@ -1979,12 +1979,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Qatari riyal",
       "iso_code": "QAR",
+      "name": "Qatari riyal",
       "numeric_code": 634,
       "symbol": "",
       "fraction_symbol": "",
@@ -1994,12 +1994,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Romanian leu",
       "iso_code": "RON",
+      "name": "Romanian leu",
       "numeric_code": 946,
       "symbol": "",
       "fraction_symbol": "",
@@ -2009,12 +2009,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Serbian dinar",
       "iso_code": "RSD",
+      "name": "Serbian dinar",
       "numeric_code": 941,
       "symbol": "",
       "fraction_symbol": "",
@@ -2024,12 +2024,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Russian ruble",
       "iso_code": "RUB",
+      "name": "Russian ruble",
       "numeric_code": 643,
       "symbol": "",
       "fraction_symbol": "",
@@ -2039,12 +2039,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Rwandan franc",
       "iso_code": "RWF",
+      "name": "Rwandan franc",
       "numeric_code": 646,
       "symbol": "",
       "fraction_symbol": "",
@@ -2054,12 +2054,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Saudi riyal",
       "iso_code": "SAR",
+      "name": "Saudi riyal",
       "numeric_code": 682,
       "symbol": "",
       "fraction_symbol": "",
@@ -2069,12 +2069,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Solomon Islands dollar",
       "iso_code": "SBD",
+      "name": "Solomon Islands dollar",
       "numeric_code": 90,
       "symbol": "",
       "fraction_symbol": "",
@@ -2084,12 +2084,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Seychelles rupee",
       "iso_code": "SCR",
+      "name": "Seychelles rupee",
       "numeric_code": 690,
       "symbol": "",
       "fraction_symbol": "",
@@ -2099,12 +2099,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Sudanese pound",
       "iso_code": "SDG",
+      "name": "Sudanese pound",
       "numeric_code": 938,
       "symbol": "",
       "fraction_symbol": "",
@@ -2114,12 +2114,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Swedish krona/kronor",
       "iso_code": "SEK",
+      "name": "Swedish krona/kronor",
       "numeric_code": 752,
       "symbol": "",
       "fraction_symbol": "",
@@ -2129,12 +2129,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Singapore dollar",
       "iso_code": "SGD",
+      "name": "Singapore dollar",
       "numeric_code": 702,
       "symbol": "",
       "fraction_symbol": "",
@@ -2144,12 +2144,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Saint Helena pound",
       "iso_code": "SHP",
+      "name": "Saint Helena pound",
       "numeric_code": 654,
       "symbol": "",
       "fraction_symbol": "",
@@ -2159,12 +2159,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Sierra Leonean leone",
       "iso_code": "SLL",
+      "name": "Sierra Leonean leone",
       "numeric_code": 694,
       "symbol": "",
       "fraction_symbol": "",
@@ -2174,12 +2174,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Somali shilling",
       "iso_code": "SOS",
+      "name": "Somali shilling",
       "numeric_code": 706,
       "symbol": "",
       "fraction_symbol": "",
@@ -2189,12 +2189,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Surinamese dollar",
       "iso_code": "SRD",
+      "name": "Surinamese dollar",
       "numeric_code": 968,
       "symbol": "",
       "fraction_symbol": "",
@@ -2204,12 +2204,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "South Sudanese pound",
       "iso_code": "SSP",
+      "name": "South Sudanese pound",
       "numeric_code": 728,
       "symbol": "",
       "fraction_symbol": "",
@@ -2219,12 +2219,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Sao Tome and Principe dobra",
       "iso_code": "STN",
+      "name": "Sao Tome and Principe dobra",
       "numeric_code": 930,
       "symbol": "",
       "fraction_symbol": "",
@@ -2234,12 +2234,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Salvadoran colon",
       "iso_code": "SVC",
+      "name": "Salvadoran colon",
       "numeric_code": 222,
       "symbol": "",
       "fraction_symbol": "",
@@ -2249,12 +2249,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Syrian pound",
       "iso_code": "SYP",
+      "name": "Syrian pound",
       "numeric_code": 760,
       "symbol": "",
       "fraction_symbol": "",
@@ -2264,12 +2264,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Swazi lilangeni",
       "iso_code": "SZL",
+      "name": "Swazi lilangeni",
       "numeric_code": 748,
       "symbol": "",
       "fraction_symbol": "",
@@ -2279,12 +2279,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Thai baht",
       "iso_code": "THB",
+      "name": "Thai baht",
       "numeric_code": 764,
       "symbol": "",
       "fraction_symbol": "",
@@ -2294,12 +2294,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Tajikistani somoni",
       "iso_code": "TJS",
+      "name": "Tajikistani somoni",
       "numeric_code": 972,
       "symbol": "",
       "fraction_symbol": "",
@@ -2309,12 +2309,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Turkmenistan manat",
       "iso_code": "TMT",
+      "name": "Turkmenistan manat",
       "numeric_code": 934,
       "symbol": "",
       "fraction_symbol": "",
@@ -2324,12 +2324,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Tunisian dinar",
       "iso_code": "TND",
+      "name": "Tunisian dinar",
       "numeric_code": 788,
       "symbol": "",
       "fraction_symbol": "",
@@ -2339,12 +2339,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Tongan pa_anga",
       "iso_code": "TOP",
+      "name": "Tongan pa_anga",
       "numeric_code": 776,
       "symbol": "",
       "fraction_symbol": "",
@@ -2354,12 +2354,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Turkish lira",
       "iso_code": "TRY",
+      "name": "Turkish lira",
       "numeric_code": 949,
       "symbol": "",
       "fraction_symbol": "",
@@ -2369,12 +2369,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Trinidad and Tobago dollar",
       "iso_code": "TTD",
+      "name": "Trinidad and Tobago dollar",
       "numeric_code": 780,
       "symbol": "",
       "fraction_symbol": "",
@@ -2384,12 +2384,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "New Taiwan dollar",
       "iso_code": "TWD",
+      "name": "New Taiwan dollar",
       "numeric_code": 901,
       "symbol": "",
       "fraction_symbol": "",
@@ -2399,12 +2399,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Tanzanian shilling",
       "iso_code": "TZS",
+      "name": "Tanzanian shilling",
       "numeric_code": 834,
       "symbol": "",
       "fraction_symbol": "",
@@ -2414,12 +2414,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Ukrainian hryvnia",
       "iso_code": "UAH",
+      "name": "Ukrainian hryvnia",
       "numeric_code": 980,
       "symbol": "",
       "fraction_symbol": "",
@@ -2429,12 +2429,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Ugandan shilling",
       "iso_code": "UGX",
+      "name": "Ugandan shilling",
       "numeric_code": 800,
       "symbol": "",
       "fraction_symbol": "",
@@ -2444,12 +2444,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "United States dollar",
       "iso_code": "USD",
+      "name": "United States dollar",
       "numeric_code": 840,
       "symbol": "",
       "fraction_symbol": "",
@@ -2459,12 +2459,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "United States dollar (next day) (funds code)",
       "iso_code": "USN",
+      "name": "United States dollar (next day) (funds code)",
       "numeric_code": 997,
       "symbol": "",
       "fraction_symbol": "",
@@ -2474,12 +2474,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Uruguay Peso en Unidades Indexadas (URUIURUI) (funds code)",
       "iso_code": "UYI",
+      "name": "Uruguay Peso en Unidades Indexadas (URUIURUI) (funds code)",
       "numeric_code": 940,
       "symbol": "",
       "fraction_symbol": "",
@@ -2489,12 +2489,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Uruguayan peso",
       "iso_code": "UYU",
+      "name": "Uruguayan peso",
       "numeric_code": 858,
       "symbol": "",
       "fraction_symbol": "",
@@ -2504,12 +2504,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Unidad previsional",
       "iso_code": "UYW",
+      "name": "Unidad previsional",
       "numeric_code": 927,
       "symbol": "",
       "fraction_symbol": "",
@@ -2519,12 +2519,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Uzbekistan som",
       "iso_code": "UZS",
+      "name": "Uzbekistan som",
       "numeric_code": 860,
       "symbol": "",
       "fraction_symbol": "",
@@ -2534,12 +2534,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Venezuelan bolivar soberano",
       "iso_code": "VES",
+      "name": "Venezuelan bolivar soberano",
       "numeric_code": 928,
       "symbol": "",
       "fraction_symbol": "",
@@ -2549,12 +2549,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Vietnamese dong",
       "iso_code": "VND",
+      "name": "Vietnamese dong",
       "numeric_code": 704,
       "symbol": "",
       "fraction_symbol": "",
@@ -2564,12 +2564,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Vanuatu vatu",
       "iso_code": "VUV",
+      "name": "Vanuatu vatu",
       "numeric_code": 548,
       "symbol": "",
       "fraction_symbol": "",
@@ -2579,12 +2579,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Samoan tala",
       "iso_code": "WST",
+      "name": "Samoan tala",
       "numeric_code": 882,
       "symbol": "",
       "fraction_symbol": "",
@@ -2594,12 +2594,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "CFA franc BEAC",
       "iso_code": "XAF",
+      "name": "CFA franc BEAC",
       "numeric_code": 950,
       "symbol": "",
       "fraction_symbol": "",
@@ -2609,12 +2609,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Silver (one troy ounce)",
       "iso_code": "XAG",
+      "name": "Silver (one troy ounce)",
       "numeric_code": 961,
       "symbol": "",
       "fraction_symbol": "",
@@ -2624,12 +2624,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Gold (one troy ounce)",
       "iso_code": "XAU",
+      "name": "Gold (one troy ounce)",
       "numeric_code": 959,
       "symbol": "",
       "fraction_symbol": "",
@@ -2639,12 +2639,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "East Caribbean dollar",
       "iso_code": "XCD",
+      "name": "East Caribbean dollar",
       "numeric_code": 951,
       "symbol": "",
       "fraction_symbol": "",
@@ -2654,12 +2654,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "CFA franc BCEAO",
       "iso_code": "XOF",
+      "name": "CFA franc BCEAO",
       "numeric_code": 952,
       "symbol": "",
       "fraction_symbol": "",
@@ -2669,12 +2669,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Palladium (one troy ounce)",
       "iso_code": "XPD",
+      "name": "Palladium (one troy ounce)",
       "numeric_code": 964,
       "symbol": "",
       "fraction_symbol": "",
@@ -2684,12 +2684,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "CFP franc (franc Pacifique)",
       "iso_code": "XPF",
+      "name": "CFP franc (franc Pacifique)",
       "numeric_code": 953,
       "symbol": "",
       "fraction_symbol": "",
@@ -2699,12 +2699,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Platinum (one troy ounce)",
       "iso_code": "XPT",
+      "name": "Platinum (one troy ounce)",
       "numeric_code": 962,
       "symbol": "",
       "fraction_symbol": "",
@@ -2714,12 +2714,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "SUCRE",
       "iso_code": "XSU",
+      "name": "SUCRE",
       "numeric_code": 994,
       "symbol": "",
       "fraction_symbol": "",
@@ -2729,12 +2729,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "ADB Unit of Account",
       "iso_code": "XUA",
+      "name": "ADB Unit of Account",
       "numeric_code": 965,
       "symbol": "",
       "fraction_symbol": "",
@@ -2744,12 +2744,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Yemeni rial",
       "iso_code": "YER",
+      "name": "Yemeni rial",
       "numeric_code": 886,
       "symbol": "",
       "fraction_symbol": "",
@@ -2759,12 +2759,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "South African rand",
       "iso_code": "ZAR",
+      "name": "South African rand",
       "numeric_code": 710,
       "symbol": "",
       "fraction_symbol": "",
@@ -2774,12 +2774,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Zambian kwacha",
       "iso_code": "ZMW",
+      "name": "Zambian kwacha",
       "numeric_code": 967,
       "symbol": "",
       "fraction_symbol": "",
@@ -2789,12 +2789,12 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     },
     {
-      "name": "Zimbabwean dollar",
       "iso_code": "ZWL",
+      "name": "Zimbabwean dollar",
       "numeric_code": 932,
       "symbol": "",
       "fraction_symbol": "",
@@ -2804,8 +2804,8 @@ IMPORTANT: build details are NOT for security purposes.
       "format": "",
       "currency_type": "",
       "modified_by": "",
-      "valid_from": "",
-      "valid_to": ""
+      "valid_from": "2024-03-20 15:30:00+0000",
+      "valid_to": "2024-03-20 15:30:00+0000"
     }
   ]
 }

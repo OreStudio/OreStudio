@@ -85,6 +85,10 @@ currency currency_serialiser::deserialise(rapidxml_ns::xml_node<>& node) {
     if (currencyType != nullptr)
         r.currency_type = currencyType->value();
 
+    // FIXME
+    r.valid_from = "2024-03-20 15:30:00+0000";
+    r.valid_to = "2024-03-20 15:30:00+0000";
+
     return r;
 }
 

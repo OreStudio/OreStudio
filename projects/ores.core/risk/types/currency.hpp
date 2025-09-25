@@ -25,6 +25,8 @@
 #endif
 
 #include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::core::risk::types {
 
@@ -32,8 +34,9 @@ namespace ores::core::risk::types {
  * @brief Represents an ORE currency.
  */
 struct currency {
+    constexpr static const char* schema = "oresdb";
+    sqlgen::PrimaryKey<std::string> iso_code;
     std::string name;
-    std::string iso_code;
     int numeric_code;
     std::string symbol;
     std::string fraction_symbol;
@@ -43,8 +46,8 @@ struct currency {
     std::string format;
     std::string currency_type;
     std::string modified_by;
-    std::string valid_from;
-    std::string valid_to;
+    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S%z"> valid_from;
+    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S%z"> valid_to;
 };
 
 std::ostream& operator<<(std::ostream& s, const currency& v);

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -26,12 +26,14 @@
 
 #include <string>
 #include <vector>
+#include <sqlgen/postgres.hpp>
 #include "ores.core/risk/types/currency.hpp"
 
 namespace ores::core::risk::db {
 
 class currency_table {
 private:
+    using sqlgen_connection = sqlgen::Result<rfl::Ref<sqlgen::postgres::Connection>>;
     std::vector<types::currency> read_internal(const std::string& query);
 
 public:
@@ -39,27 +41,30 @@ public:
      * @brief Writes currencies to database. Expects the currency set to have
      * unique ISO codes.
      */
-    void write(const std::vector<types::currency>& currencies);
+    void write(sqlgen_connection c,
+        const std::vector<types::currency>& currencies);
 
     /**
      * @brief Reads latest currencies, possibly filtered by ISO code.
      */
-    std::vector<types::currency>
-    read_latest(const std::string& iso_code = std::string());
+    std::vector<types::currency> read_latest(sqlgen_connection c,
+        const std::string& iso_code = std::string());
 
     /**
      * @brief Reads currencies at the supplied time point, possibly filtered by
      * ISO code.
      */
-    std::vector<types::currency>
-    read_at_timepoint(const std::string& as_of,
-        const std::string& iso_code = std::string());
+    std::vector<types::currency> read_at_timepoint(sqlgen_connection c,
+        const std::string& as_of, const std::string& iso_code = std::string());
 
     /**
      * @brief Reads all currencies, possibly filtered by ISO code.
      */
-    std::vector<types::currency>
-    read_all(const std::string& iso_code = std::string());
+    /**@{*/
+    std::vector<types::currency> read_all(sqlgen_connection c);
+    std::vector<types::currency> read_all(sqlgen_connection c,
+        const std::string& iso_code = std::string());
+    /**@}*/
 };
 
 }

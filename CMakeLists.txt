@@ -87,6 +87,7 @@ find_path(RAPIDXML_NS_INCLUDE_DIRS "rapidxml-ns/rapidxml_ns.hpp")
 
 # Postgres
 find_package(libpqxx CONFIG REQUIRED)
+find_package(PostgreSQL REQUIRED)
 
 # Qt
 find_package(Qt6Core REQUIRED)

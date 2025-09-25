@@ -45,6 +45,7 @@ target_link_libraries(${lib_target_name}
         sqlgen::sqlgen
     PUBLIC
         reflectcpp::reflectcpp
+        PostgreSQL::PostgreSQL
     )
 
 install(TARGETS ${lib_target_name}

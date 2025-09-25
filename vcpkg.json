@@ -14,7 +14,12 @@
         "openssl",
         "libpqxx",
         "reflectcpp",
-        "sqlgen",
+        {
+            "name": "sqlgen",
+            "features": [
+                "postgres"
+            ]
+        },
         "rapidxml-ns",
         "rapidjson",
         "boost-system",

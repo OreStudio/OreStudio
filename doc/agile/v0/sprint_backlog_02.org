@@ -18,54 +18,55 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-09-26 Fri 19:10], for Friday, September 26, 2025.
-|      | <75>                    |        |      |      |       |
-| Tags | Headline                | Time   |      |      |     % |
-|------+-------------------------+--------+------+------+-------|
-|      | *Total time*            | *4:33* |      |      | 100.0 |
-|------+-------------------------+--------+------+------+-------|
-|      | Stories                 | 4:33   |      |      | 100.0 |
-|      | Active                  |        | 4:33 |      | 100.0 |
-| code | Use sqlgen for postgres |        |      | 4:33 | 100.0 |
+#+CAPTION: Clock summary at [2025-09-27 Sat 00:11], for Saturday, September 27, 2025.
+|      | <75>                                          |        |      |      |       |
+| Tags | Headline                                      | Time   |      |      |     % |
+|------+-----------------------------------------------+--------+------+------+-------|
+|      | *Total time*                                  | *0:11* |      |      | 100.0 |
+|------+-----------------------------------------------+--------+------+------+-------|
+|      | Stories                                       | 0:11   |      |      | 100.0 |
+|      | Active                                        |        | 0:11 |      | 100.0 |
+| code | Refactor code to follow new project structure |        |      | 0:11 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-09-26 Fri 19:10]
+#+CAPTION: Clock summary at [2025-09-27 Sat 00:11]
 |          | <75>                                               |         |       |      |       |
 | Tags     | Headline                                           | Time    |       |      |     % |
 |----------+----------------------------------------------------+---------+-------+------+-------|
-|          | *Total time*                                       | *46:19* |       |      | 100.0 |
+|          | *Total time*                                       | *49:44* |       |      | 100.0 |
 |----------+----------------------------------------------------+---------+-------+------+-------|
-|          | Stories                                            | 46:19   |       |      | 100.0 |
-|          | Active                                             |         | 46:19 |      | 100.0 |
-| agile    | Sprint and product backlog refinement              |         |       | 2:15 |   4.9 |
-| infra    | Fix broken builds                                  |         |       | 0:36 |   1.3 |
-| code     | Create a containing structure for data             |         |       | 0:35 |   1.3 |
-| code     | Add temporal support to currencies                 |         |       | 2:59 |   6.4 |
-| code     | Add command to dump currencies                     |         |       | 4:18 |   9.3 |
-| code     | Refactor code for currencies                       |         |       | 3:52 |   8.3 |
-| code     | Restore qt setup                                   |         |       | 2:20 |   5.0 |
+|          | Stories                                            | 49:44   |       |      | 100.0 |
+|          | Active                                             |         | 49:44 |      | 100.0 |
+| agile    | Sprint and product backlog refinement              |         |       | 2:15 |   4.5 |
+| infra    | Fix broken builds                                  |         |       | 0:36 |   1.2 |
+| code     | Create a containing structure for data             |         |       | 0:35 |   1.2 |
+| code     | Add temporal support to currencies                 |         |       | 2:59 |   6.0 |
+| code     | Add command to dump currencies                     |         |       | 4:18 |   8.6 |
+| code     | Refactor code for currencies                       |         |       | 3:52 |   7.8 |
+| code     | Restore qt setup                                   |         |       | 2:20 |   4.7 |
 | code     | Add gemini action                                  |         |       | 0:05 |   0.2 |
 | code     | Remove ImGui support                               |         |       | 0:08 |   0.3 |
-| code     | Create a GRPC based service                        |         |       | 2:09 |   4.6 |
-| code     | Implement a 0MQ based RPC service and client       |         |       | 3:55 |   8.5 |
+| code     | Create a GRPC based service                        |         |       | 2:09 |   4.3 |
+| code     | Implement a 0MQ based RPC service and client       |         |       | 3:55 |   7.9 |
 | code     | Fix misspell fixer errors                          |         |       | 0:08 |   0.3 |
 | code     | Remove URL support from prog mode in emacs         |         |       | 0:14 |   0.5 |
-| code     | Remove GRPC support                                |         |       | 0:16 |   0.6 |
-| code     | Implement a cobalt based server and client         |         |       | 2:53 |   6.2 |
-| code     | Add serialisation support for reflect-cpp          |         |       | 3:07 |   6.7 |
-| analysis | White-boarding for new architecture                |         |       | 1:52 |   4.0 |
-| code     | Use sqlgen for postgres                            |         |       | 7:23 |  15.9 |
-| code     | Completions in emacs org mode are incorrect        |         |       | 1:02 |   2.2 |
-| infra    | Investigate build warning for vcpkg binary caching |         |       | 0:25 |   0.9 |
-| infra    | Investigate build warning for qtbase               |         |       | 0:10 |   0.4 |
-| analysis | Investigate bitemporal support from Postgres 18    |         |       | 1:47 |   3.9 |
-| code     | Fix windows and osx builds                         |         |       | 0:27 |   1.0 |
-| code     | Fix gemini cli action                              |         |       | 0:45 |   1.6 |
+| code     | Remove GRPC support                                |         |       | 0:16 |   0.5 |
+| code     | Implement a cobalt based server and client         |         |       | 2:53 |   5.8 |
+| code     | Add serialisation support for reflect-cpp          |         |       | 3:07 |   6.3 |
+| analysis | White-boarding for new architecture                |         |       | 1:52 |   3.8 |
+| code     | Use sqlgen for postgres                            |         |       | 7:23 |  14.8 |
+| code     | Completions in emacs org mode are incorrect        |         |       | 1:02 |   2.1 |
+| infra    | Investigate build warning for vcpkg binary caching |         |       | 0:25 |   0.8 |
+| infra    | Investigate build warning for qtbase               |         |       | 0:10 |   0.3 |
+| analysis | Investigate bitemporal support from Postgres 18    |         |       | 1:47 |   3.6 |
+| code     | Fix windows and osx builds                         |         |       | 0:27 |   0.9 |
+| code     | Fix gemini cli action                              |         |       | 0:45 |   1.5 |
 | infra    | vcpkg caching seems disabled                       |         |       | 0:15 |   0.5 |
-| code     | Create a =comms= library                           |         |       | 1:10 |   2.5 |
-| code     | Add workspace as a container                       |         |       | 1:13 |   2.6 |
+| code     | Create a =comms= library                           |         |       | 1:10 |   2.3 |
+| code     | Refactor code to follow new project structure      |         |       | 3:25 |   6.9 |
+| code     | Add workspace as a container                       |         |       | 1:13 |   2.4 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -415,8 +416,6 @@ Notes:
 - Consider naming server and client after the protocol (nexus).
 - HTTP is implemented as a separate server.
 
-
-
 *** COMPLETED Use sqlgen for postgres                                  :code:
     :LOGBOOK:
     CLOCK: [2025-09-26 Fri 15:54]--[2025-09-26 Fri 17:02] =>  1:08
@@ -582,6 +581,18 @@ po::store(po::parse_environment(desc, "MYAPP_"), vm);
 #+end_src
 
 - refactor server and client code into their own classes.
+
+*** STARTED Refactor code to follow new project structure              :code:
+    :LOGBOOK:
+    CLOCK: [2025-09-26 Fri 22:45]--[2025-09-27 Sat 00:11] =>  1:26
+    CLOCK: [2025-09-26 Fri 21:48]--[2025-09-26 Fri 22:13] =>  0:25
+    CLOCK: [2025-09-26 Fri 20:21]--[2025-09-26 Fri 21:42] =>  1:21
+    CLOCK: [2025-09-26 Fri 19:12]--[2025-09-26 Fri 19:25] =>  0:13
+    :END:
+
+As defined in analysis story.
+
+- refactor CLI with new approach.
 
 *** Replace XML parsing with reflect cpp                               :code:
 

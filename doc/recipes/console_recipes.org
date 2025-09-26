@@ -2838,31 +2838,82 @@ IMPORTANT: build details are NOT for security purposes.
 
 #+RESULTS:
 #+begin_src json
+{
+  "currencies": [
+    {
+      "iso_code": "AOA",
+      "name": "Angolan kwanza",
+      "numeric_code": 973,
+      "symbol": "",
+      "fraction_symbol": "",
+      "fractions_per_unit": 100,
+      "rounding_type": "Closest",
+      "rounding_precision": 2,
+      "format": "",
+      "currency_type": "",
+      "modified_by": "ores",
+      "valid_from": "2025-09-26 16:09:40",
+      "valid_to": "9999-12-31 23:59:59"
+    }
+  ]
+}
 #+end_src
 
 *** Dump currencies as of
 
 #+begin_src sh
-./ores.console dump ${log_args} --currency-configuration --as-of "2025-02-09 23:11:50" | jq .
+./ores.console dump ${log_args} --currency-configuration --key 'AOA' --as-of "2025-09-26 16:08:06" | jq .
 #+END_SRC
 
 #+RESULTS:
 #+begin_src json
 {
-  "currencies": []
+  "currencies": [
+    {
+      "iso_code": "AOA",
+      "name": "Angolan kwanza",
+      "numeric_code": 973,
+      "symbol": "",
+      "fraction_symbol": "",
+      "fractions_per_unit": 100,
+      "rounding_type": "Closest",
+      "rounding_precision": 2,
+      "format": "",
+      "currency_type": "",
+      "modified_by": "ores",
+      "valid_from": "2025-09-26 16:07:39",
+      "valid_to": "2025-09-26 16:08:37"
+    }
+  ]
 }
 #+end_src
 
 *** Dump currencies as of by iso code
 
 #+begin_src sh
-./ores.console dump ${log_args} --currency-configuration --as-of "2025-02-09 23:11:50" --key 'AOA' | jq .
+./ores.console dump ${log_args} --currency-configuration --as-of "2025-09-26 16:08:06" --key 'AOA' | jq .
 #+END_SRC
 
 #+RESULTS:
 #+begin_src json
 {
-  "currencies": []
+  "currencies": [
+    {
+      "iso_code": "AOA",
+      "name": "Angolan kwanza",
+      "numeric_code": 973,
+      "symbol": "",
+      "fraction_symbol": "",
+      "fractions_per_unit": 100,
+      "rounding_type": "Closest",
+      "rounding_precision": 2,
+      "format": "",
+      "currency_type": "",
+      "modified_by": "ores",
+      "valid_from": "2025-09-26 16:07:39",
+      "valid_to": "2025-09-26 16:08:37"
+    }
+  ]
 }
 #+end_src
 

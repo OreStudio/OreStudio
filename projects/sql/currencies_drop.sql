@@ -17,9 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-drop function if exists currencies_as_of;
-drop view if exists currencies_latest;
-drop function if exists currencies_insert;
+-- drop function if exists currencies_as_of;
+drop function if exists update_currencies;
+drop trigger if exists update_currencies_trigger on currencies;
+-- drop view if exists currencies_latest;
+-- drop function if exists currencies_insert;
 drop table if exists currencies;
-drop extension if exists btree_gist;
-drop schema if exists oresdb;
+-- drop extension if exists btree_gist;
+-- drop schema if exists oresdb;

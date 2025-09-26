@@ -35,6 +35,8 @@ namespace ores::core::risk::types {
  */
 struct currency {
     constexpr static const char* schema = "oresdb";
+    constexpr static const char* tablename = "currencies";
+
     sqlgen::PrimaryKey<std::string> iso_code;
     std::string name;
     int numeric_code;

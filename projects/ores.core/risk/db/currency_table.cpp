@@ -40,6 +40,11 @@ using namespace sqlgen::literals;
 void currency_table::
 write(sqlgen_connection c, const std::vector<currency>& currencies) {
     BOOST_LOG_SEV(lg, debug) << "HERE";
+    const auto create_query = create_table<currency> |
+        if_not_exists;
+    const auto sql = postgres::to_sql(create_query);
+    BOOST_LOG_SEV(lg, debug) << sql;
+
     const auto result = begin_transaction(c)
                         .and_then(create_table<currency> | if_not_exists)
                         .and_then(insert(std::ref(currencies)))
@@ -70,7 +75,7 @@ currency_table::read_at_timepoint(sqlgen_connection c,
     const std::string& as_of,
     const std::string& iso_code) {
 
-    const auto ts = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(as_of);
+    const auto ts = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S%z">::from_string(as_of);
     const auto query = sqlgen::read<std::vector<currency>> |
         where("iso_code"_c == iso_code/* &&
                                         "valid_from"_c <= ts && "valid_to"_c >= ts*/);

@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+// #include <chrono>
+// #include <format>
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/string/converter.hpp"
 #include "ores.core/risk/xml/currency_serialiser.hpp"
@@ -86,8 +88,12 @@ currency currency_serialiser::deserialise(rapidxml_ns::xml_node<>& node) {
         r.currency_type = currencyType->value();
 
     // FIXME
-    r.valid_from = "2024-03-20 15:30:00+0000";
-    r.valid_to = "2024-03-20 15:30:00+0000";
+    // using namespace std::chrono;
+    // auto now_utc = utc_clock::now();
+    // auto now_seconds = time_point_cast<seconds>(now_utc);
+    // auto zt = zoned_time{utc_clock::to_sys(now_seconds)};
+    // r.valid_from = std::format("{:%Y-%m-%d %H:%M:%S%z}", zt);
+    // r.valid_to = "9999-12-31 00:00:00+0000";
 
     return r;
 }

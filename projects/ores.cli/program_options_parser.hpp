@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -38,8 +38,8 @@ namespace ores::cli {
  * Note on logging: we are NOT logging any of the exceptions to the log in this
  * class. This is by design. The logger is only initialised after the options
  * have been parsed; were we to log prior to this, we would dump all the
- * messages into the cli. The output is very confusing users that are
- * accustomed to normal cli applications.
+ * messages into the cli. The output is very confusing users that are accustomed
+ * to normal cli applications.
  */
 class program_options_parser final {
 public:

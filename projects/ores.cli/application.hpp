@@ -17,33 +17,43 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONSOLE_PARSER_EXCEPTION_HPP
-#define ORES_CONSOLE_PARSER_EXCEPTION_HPP
+#ifndef ORES_CLI_APPLICATION_HPP
+#define ORES_CLI_APPLICATION_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <string>
-#include <boost/exception/info.hpp>
+#include "ores.cli/configuration.hpp"
+#include "ores.core/risk/xml/importer.hpp"
 
-namespace ores::console {
+namespace ores::cli {
 
 /**
- * @brief A fatal error has occurred during option parsing.
+ * @brief Entry point for the ores command line application.
  */
-class parser_exception : public virtual std::exception,
-                         public virtual boost::exception {
+class application final {
 public:
-    explicit parser_exception(std::string_view message = "")
-        : message_(message) {}
-
-    [[nodiscard]] const char* what() const noexcept override {
-        return message_.c_str();
-    }
+    application() = default;
+    application(const application&) = delete;
+    application(application&&) = delete;
+    ~application() = default;
+    application& operator=(const application&) = delete;
 
 private:
-    std::string message_;
+    void import_data(const std::optional<importing_configuration>& ocfg) const;
+    void dump_data(const std::optional<dumping_configuration>& ocfg) const;
+
+public:
+    /**
+     * Executes the application.
+     *
+     * @param cfg Application configuration.
+     */
+    void run(const configuration& cfg) const;
+
+private:
+    core::risk::xml::importer importer_;
 };
 
 }

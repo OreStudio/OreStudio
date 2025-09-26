@@ -24,8 +24,8 @@
 #include <boost/throw_exception.hpp>
 #include "ores.utility/config/config.hpp"
 #include "ores.utility/log/severity_level.hpp"
-#include "ores.console/parser_exception.hpp"
-#include "ores.console/program_options_parser.hpp"
+#include "ores.cli/parser_exception.hpp"
+#include "ores.cli/program_options_parser.hpp"
 
 namespace {
 
@@ -67,11 +67,11 @@ using boost::program_options::parsed_options;
 using boost::program_options::options_description;
 using boost::program_options::positional_options_description;
 
-using ores::console::configuration;
-using ores::console::parser_exception;
+using ores::cli::configuration;
+using ores::cli::parser_exception;
 using ores::utility::log::logging_configuration;
-using ores::console::importing_configuration;
-using ores::console::dumping_configuration;
+using ores::cli::importing_configuration;
+using ores::cli::dumping_configuration;
 
 /**
  * @brief Creates the the top-level option descriptions that are visible to the
@@ -186,7 +186,7 @@ void print_help_header(std::ostream& s) {
  */
 void print_help(const options_description& od, std::ostream& info) {
     print_help_header(info);
-    info << "ores.console uses a command-based interface: <command> <options>. "
+    info << "ores.cli uses a command-based interface: <command> <options>. "
          << std::endl << "See below for a list of valid commands. " << std::endl
          << std::endl << "Global options: " << std::endl << od << std::endl
          <<  "Commands: "<< std::endl << std::endl;
@@ -278,7 +278,7 @@ read_logging_configuration(const variables_map& vm) {
         return {};
 
     logging_configuration r;
-    r.filename = "ores.console.log";
+    r.filename = "ores.cli.log";
     r.output_to_console = vm.count(logging_log_to_console_arg) != 0;
 
     const bool log_dir_set(vm.count(logging_log_dir_arg) != 0);
@@ -490,7 +490,7 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
 
 }
 
-namespace ores::console {
+namespace ores::cli {
 
 std::optional<configuration>
 program_options_parser::parse(const std::vector<std::string>& arguments,

@@ -17,44 +17,40 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONSOLE_APPLICATION_HPP
-#define ORES_CONSOLE_APPLICATION_HPP
+#ifndef ORES_CLI_CONFIGURATION_HPP
+#define ORES_CLI_CONFIGURATION_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include "ores.console/configuration.hpp"
-#include "ores.core/risk/xml/importer.hpp"
+#include <iosfwd>
+#include <optional>
+#include "ores.utility/log/logging_configuration.hpp"
+#include "ores.cli/importing_configuration.hpp"
+#include "ores.cli/dumping_configuration.hpp"
 
-namespace ores::console {
+namespace ores::cli {
 
 /**
- * @brief Entry point for the ores command line application.
+ * @brief All of the configuration required by the command line application.
  */
-class application final {
-public:
-    application() = default;
-    application(const application&) = delete;
-    application(application&&) = delete;
-    ~application() = default;
-    application& operator=(const application&) = delete;
-
-private:
-    void import_data(const std::optional<importing_configuration>& ocfg) const;
-    void dump_data(const std::optional<dumping_configuration>& ocfg) const;
-
-public:
+struct configuration final {
     /**
-     * Executes the application.
-     *
-     * @param cfg Application configuration.
+     * @brief Configuration related to logging, if any.
      */
-    void run(const configuration& cfg) const;
-
-private:
-    core::risk::xml::importer importer_;
+    std::optional<ores::utility::log::logging_configuration> logging;
+    /**
+     * @brief Configuration related to importing, if any.
+     */
+    std::optional<importing_configuration> importing;
+    /**
+     * @brief Configuration related to dumping, if any.
+     */
+    std::optional<dumping_configuration> dumping;
 };
+
+std::ostream& operator<<(std::ostream& s, const configuration& v);
 
 }
 

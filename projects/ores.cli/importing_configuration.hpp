@@ -17,40 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONSOLE_CONFIGURATION_HPP
-#define ORES_CONSOLE_CONFIGURATION_HPP
+#ifndef ORES_CLI_IMPORTING_CONFIGURATION_HPP
+#define ORES_CLI_IMPORTING_CONFIGURATION_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
 #include <iosfwd>
-#include <optional>
-#include "ores.utility/log/logging_configuration.hpp"
-#include "ores.console/importing_configuration.hpp"
-#include "ores.console/dumping_configuration.hpp"
+#include <vector>
+#include <filesystem>
 
-namespace ores::console {
+namespace ores::cli {
 
 /**
- * @brief All of the configuration required by the command line application.
+ * @brief Configuration related to importing data into the system.
  */
-struct configuration final {
+struct importing_configuration final {
     /**
-     * @brief Configuration related to logging, if any.
+     * @brief Currency configuration files to import.
      */
-    std::optional<ores::utility::log::logging_configuration> logging;
-    /**
-     * @brief Configuration related to importing, if any.
-     */
-    std::optional<importing_configuration> importing;
-    /**
-     * @brief Configuration related to dumping, if any.
-     */
-    std::optional<dumping_configuration> dumping;
+    std::vector<std::filesystem::path> currency_configurations;
 };
 
-std::ostream& operator<<(std::ostream& s, const configuration& v);
+std::ostream& operator<<(std::ostream& s, const importing_configuration& v);
 
 }
 

@@ -19,9 +19,9 @@
  */
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.console/configuration.hpp"
+#include "ores.cli/configuration.hpp"
 
-namespace ores::console {
+namespace ores::cli {
 
 std::ostream& operator<<(std::ostream& s, const configuration& v) {
     rfl::json::write(v, s);

@@ -17,42 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONSOLE_DUMPING_CONFIGURATION_HPP
-#define ORES_CONSOLE_DUMPING_CONFIGURATION_HPP
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.cli/importing_configuration.hpp"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
+namespace ores::cli {
 
-#include <iosfwd>
-#include <string>
-
-namespace ores::console {
-
-/**
- * @brief Configuration related to dumping data from the system.
- */
-struct dumping_configuration final {
-    /**
-     * @brief Whether to dump currency configurations or not.
-     */
-    bool currency_configurations;
-    /**
-     * @brief Timepoint to use for the reading.
-     */
-    std::string as_of;
-    /**
-     * @brief Key to filter by.
-     */
-    std::string key;
-    /**
-     * @brief If true, output all versions.
-     */
-    bool all_versions;
-};
-
-std::ostream& operator<<(std::ostream& s, const dumping_configuration& v);
-
+std::ostream& operator<<(std::ostream& s, const importing_configuration& v) {
+    rfl::json::write(v, s);
+    return(s);
 }
 
-#endif
+}

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONSOLE_IMPORTING_CONFIGURATION_HPP
-#define ORES_CONSOLE_IMPORTING_CONFIGURATION_HPP
+#ifndef ORES_CLI_PROGRAM_OPTIONS_PARSER_HPP
+#define ORES_CLI_PROGRAM_OPTIONS_PARSER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -26,21 +26,27 @@
 
 #include <iosfwd>
 #include <vector>
-#include <filesystem>
+#include <string>
+#include <optional>
+#include "ores.cli/configuration.hpp"
 
-namespace ores::console {
+namespace ores::cli {
 
 /**
- * @brief Configuration related to importing data into the system.
+ * @brief Command-line parser implementation using boost program options.
+ *
+ * Note on logging: we are NOT logging any of the exceptions to the log in this
+ * class. This is by design. The logger is only initialised after the options
+ * have been parsed; were we to log prior to this, we would dump all the
+ * messages into the cli. The output is very confusing users that are
+ * accustomed to normal cli applications.
  */
-struct importing_configuration final {
-    /**
-     * @brief Currency configuration files to import.
-     */
-    std::vector<std::filesystem::path> currency_configurations;
+class program_options_parser final {
+public:
+    std::optional<configuration>
+    parse(const std::vector<std::string>& arguments, std::ostream& info,
+        std::ostream& error) const;
 };
-
-std::ostream& operator<<(std::ostream& s, const importing_configuration& v);
 
 }
 

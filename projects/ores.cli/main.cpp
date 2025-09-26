@@ -26,9 +26,9 @@
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
-#include "ores.console/application.hpp"
-#include "ores.console/program_options_parser.hpp"
-#include "ores.console/parser_exception.hpp"
+#include "ores.cli/application.hpp"
+#include "ores.cli/program_options_parser.hpp"
+#include "ores.cli/parser_exception.hpp"
 
 namespace {
 
@@ -78,7 +78,7 @@ int execute_console_workflow(const std::vector<std::string>& args,
     /*
      * Create the configuration from command line options.
      */
-    using namespace ores::console;
+    using namespace ores::cli;
     program_options_parser p;
     const auto ocfg(p.parse(args, std::cout, std::cerr));
 
@@ -120,7 +120,7 @@ int main(const int argc, const char* argv[]) {
         const auto args(std::vector<std::string>(argv + 1, argv + argc));
         return execute_console_workflow(args, slm);
         return 0;
-    } catch (const ores::console::parser_exception& /*e*/) {
+    } catch (const ores::cli::parser_exception& /*e*/) {
         /*
          * Reporting of these types of errors to the console has
          * already been handled by the parser itself.

@@ -17,16 +17,35 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include <ostream>
-#include "ores.console/dumping_configuration.hpp"
+#ifndef ORES_CLI_PARSER_EXCEPTION_HPP
+#define ORES_CLI_PARSER_EXCEPTION_HPP
 
-namespace ores::console {
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
 
-std::ostream& operator<<(std::ostream& s, const dumping_configuration& v) {
-    rfl::json::write(v, s);
-    return(s);
+#include <string>
+#include <boost/exception/info.hpp>
+
+namespace ores::cli {
+
+/**
+ * @brief A fatal error has occurred during option parsing.
+ */
+class parser_exception : public virtual std::exception,
+                         public virtual boost::exception {
+public:
+    explicit parser_exception(std::string_view message = "")
+        : message_(message) {}
+
+    [[nodiscard]] const char* what() const noexcept override {
+        return message_.c_str();
+    }
+
+private:
+    std::string message_;
+};
+
 }
 
-}
+#endif

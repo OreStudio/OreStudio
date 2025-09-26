@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,16 +24,16 @@
 #include "ores.utility/log/logger.hpp"
 #include "ores.core/risk/db/currency_table.hpp"
 #include "ores.core/risk/types/currency_config.hpp"
-#include "ores.console/application.hpp"
+#include "ores.cli/application.hpp"
 
 namespace {
 
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.console.application"));
+auto lg(logger_factory("ores.cli.application"));
 
 }
 
-namespace ores::console {
+namespace ores::cli {
 
 using sqlgen_connection = sqlgen::Result<rfl::Ref<sqlgen::postgres::Connection>>;
 

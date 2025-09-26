@@ -17,12 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_ORES_QT_HPP
-#define ORES_QT_ORES_QT_HPP
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include <ostream>
+#include "ores.cli/dumping_configuration.hpp"
 
-/**
- * @brief Qt based Graphical User Interface for ORE Studio.
- */
-namespace ores::cli { }
+namespace ores::cli {
 
-#endif
+std::ostream& operator<<(std::ostream& s, const dumping_configuration& v) {
+    rfl::json::write(v, s);
+    return(s);
+}
+
+}

@@ -18,14 +18,16 @@
  *
  */
 #include <format>
-#include <iomanip>
-#include <iostream>
+#include <ostream>
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
+#include <magic_enum/magic_enum.hpp>
+#include "ores.cli/config/format.hpp"
 #include "ores.utility/config/config.hpp"
 #include "ores.utility/log/severity_level.hpp"
-#include "ores.cli/parser_exception.hpp"
-#include "ores.cli/program_options_parser.hpp"
+#include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/parser_exception.hpp"
+#include "ores.cli/config/parser.hpp"
 
 namespace {
 
@@ -36,16 +38,18 @@ const std::string build_info(ORES_BUILD_INFO);
 const std::string usage_error_msg("Usage error: ");
 const std::string no_command_msg("No command supplied. ");
 
-const std::string importing_command_name("import");
-const std::string importing_command_desc("Imports data into the system.");
-const std::string importing_curency_config_arg("currency-configuration");
+const std::string import_command_name("import");
+const std::string import_command_desc("Imports data into the system.");
+const std::string import_entity_arg("entity");
+const std::string import_targets_arg("target");
 
-const std::string dumping_command_name("dump");
-const std::string dumping_command_desc("Dumps data from the system.");
-const std::string dumping_curency_config_arg("currency-configuration");
-const std::string dumping_as_of_arg("as-of");
-const std::string dumping_key_arg("key");
-const std::string dumping_all_versions_arg("all-versions");
+const std::string export_command_name("export");
+const std::string export_command_desc("Exports data from the system.");
+const std::string export_entity_arg("entity");
+const std::string export_as_of_arg("as-of");
+const std::string export_key_arg("key");
+const std::string export_all_versions_arg("all-versions");
+const std::string export_format_arg("format");
 
 const std::string help_arg("help");
 const std::string version_arg("version");
@@ -67,11 +71,13 @@ using boost::program_options::parsed_options;
 using boost::program_options::options_description;
 using boost::program_options::positional_options_description;
 
-using ores::cli::configuration;
-using ores::cli::parser_exception;
 using ores::utility::log::logging_configuration;
-using ores::cli::importing_configuration;
-using ores::cli::dumping_configuration;
+using ores::cli::config::entity;
+using ores::cli::config::format;
+using ores::cli::config::options;
+using ores::cli::config::import_options;
+using ores::cli::config::export_options;
+using ores::cli::config::parser_exception;
 
 /**
  * @brief Creates the the top-level option descriptions that are visible to the
@@ -126,28 +132,33 @@ positional_options_description make_positional_options() {
 /**
  * @brief Creates the options related to importing.
  */
-options_description make_importing_options_description() {
-    options_description r("Importing");
+options_description make_import_options_description() {
+    options_description r("Import");
     r.add_options()
-        ("currency-configuration",
+        ("entity",
+            value<std::string>(),
+            "Entity to import, e.g. 'currency_config', etc.")
+        ("target",
             value<std::vector<std::string>>(),
-            "One or more currency configuration files, in XML representation.");
+            "One or more target files containing entities.");
 
     return r;
 }
 
 /**
- * @brief Creates the options related to dumping.
+ * @brief Creates the options related to ORE exporting.
  */
-options_description make_dumping_options_description() {
-    options_description r("Dumping");
+options_description make_export_options_description() {
+    options_description r("Export");
     r.add_options()
-        ("currency-configuration",
-           "Dumps currency configurations, in JSON representation.")
+        ("entity",
+            value<std::string>(),
+            "Entity to export, e.g. 'currency_config', etc.")
         ("as-of", value<std::string>(),
-            "Timepoint from which to dump data.")
+            "Time point from which to dump data. If not supplied, defaults to latest.")
         ("key", value<std::string>(), "Key to filter data by.")
-        ("all-versions", "Retrieve all versions.");
+        ("all-versions", "If supplied, retrieves all versions.")
+        ("format", value<std::string>(), "Format to export data in, e.g. xml or json.");
 
     return r;
 }
@@ -157,8 +168,8 @@ options_description make_dumping_options_description() {
  */
 void validate_command_name(const std::string& command_name) {
     const bool is_valid_command_name(
-        command_name == importing_command_name ||
-        command_name == dumping_command_name);
+        command_name == import_command_name ||
+        command_name == export_command_name);
 
     if (!is_valid_command_name)
     {
@@ -174,7 +185,7 @@ void validate_command_name(const std::string& command_name) {
 void print_help_header(std::ostream& s) {
     s << "ORE Studio is a User Interface for Open Source Risk Engine (ORE)."
       << std::endl
-      << "Console provides a CLI based version of the interface." << std::endl
+      << "CLI provides a command line version of the interface." << std::endl
       << "ORE Studio is created by the ORE Studio project. " << std::endl;
 }
 
@@ -198,8 +209,8 @@ void print_help(const options_description& od, std::ostream& info) {
              << name << desc << std::endl;
     });
 
-    lambda(importing_command_name, importing_command_desc);
-    lambda(dumping_command_name, dumping_command_desc);
+    lambda(import_command_name, import_command_desc);
+    lambda(export_command_name, export_command_desc);
 
     info << std::endl << "For command specific options, type <command> --help."
          << std::endl;
@@ -228,7 +239,7 @@ void print_help_command(const std::string& command_name,
  */
 void version(std::ostream& info) {
     info << product_version << std::endl
-         << "Copyright (C) 2024 Marco Craveiro." << std::endl
+         << "Copyright (C) 2025 Marco Craveiro." << std::endl
          << "License GPLv3: GNU GPL version 3 or later "
          << "<http://gnu.org/licenses/gpl.html>." << std::endl
          << "This is free software: you are free to change and redistribute it."
@@ -246,7 +257,7 @@ void version(std::ostream& info) {
  * @brief Contains the processing logic for when the user did not supply a
  * command in the command line.
  */
-std::optional<configuration>
+std::optional<options>
 handle_no_command(const bool has_version, const bool has_help,
     const options_description& od, std::ostream& info) {
     /*
@@ -309,67 +320,73 @@ read_logging_configuration(const variables_map& vm) {
 }
 
 /**
- * @brief Reads the importing configuration from the variables map.
+ * @brief Reads entity from the variables map.
  */
-importing_configuration
-read_importing_configuration(const variables_map& vm) {
-    importing_configuration r;
+entity read_entity(const variables_map& vm) {
+    if (vm.count(import_entity_arg) == 0)
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply entity."));
 
-    using std::filesystem::absolute;
+    const auto s(vm[import_entity_arg].as<std::string>());
+    auto e = magic_enum::enum_cast<entity>(s);
+    if (e.has_value())
+        return e.value();
 
-    bool found_imports(false);
-    if (vm.count(importing_curency_config_arg) != 0) {
-        found_imports = true;
-        const auto ccy_cfgs(vm[importing_curency_config_arg].
-            as<std::vector<std::string>>());
+    BOOST_THROW_EXCEPTION(
+        parser_exception("Invalid or unsupported entity: '" + s + "'"));
+}
 
-        std::vector<std::filesystem::path> currency_configurations;
-        currency_configurations.reserve(ccy_cfgs.size());
-        for (const auto& ccy_cfg : ccy_cfgs) {
-            currency_configurations.push_back(absolute(ccy_cfg));
-        }
-        r.currency_configurations = currency_configurations;
+/**
+ * @brief Reads format from the variables map.
+ */
+format read_format(const variables_map& vm) {
+    if (vm.count(export_format_arg) == 0)
+        return format::json;
+
+    const auto s(vm[import_entity_arg].as<std::string>());
+    auto f = magic_enum::enum_cast<format>(s);
+    if (f.has_value())
+        return f.value();
+
+    BOOST_THROW_EXCEPTION(
+        parser_exception("Invalid or unsupported format: '" + s + "'"));
+}
+
+/**
+ * @brief Reads the import configuration from the variables map.
+ */
+import_options read_import_options(const variables_map& vm) {
+    import_options r;
+
+    r.entity = read_entity(vm);
+
+    const auto t(vm[import_targets_arg].as<std::vector<std::string>>());
+    if (t.empty()) {
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply at least one import target."));
     }
 
-    if (!found_imports)
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Supply at least one import target."));
-
+    r.targets.reserve(t.size());
+    using std::filesystem::absolute;
+    std::ranges::transform(t, std::back_inserter(r.targets),
+        [](const auto& s) { return absolute(s); });
     return r;
 }
 
 /**
- * @brief Reads the dumping configuration from the variables map.
+ * @brief Reads the ore_export configuration from the variables map.
  */
-dumping_configuration
-read_dumping_configuration(const variables_map& vm) {
-    dumping_configuration r;
+export_options read_export_options(const variables_map& vm) {
+    export_options r;
 
-    using std::filesystem::absolute;
+    r.entity = read_entity(vm);
+    r.format = read_format(vm);
+    r.all_versions = vm.count(export_all_versions_arg) != 0;
 
-    bool found_dumps(false);
-    if (vm.count(dumping_curency_config_arg) != 0) {
-        found_dumps = true;
-        const auto ccy_cfgs(vm.count(dumping_curency_config_arg) != 0);
-        r.currency_configurations = ccy_cfgs;
-    }
+    if (vm.count(export_as_of_arg) != 0)
+        r.as_of = vm[export_as_of_arg].as<std::string>();
 
-    if (vm.count(dumping_as_of_arg) != 0) {
-        const auto as_of(vm[dumping_as_of_arg].as<std::string>());
-        r.as_of = as_of;
-    }
-
-    if (vm.count(dumping_key_arg) != 0) {
-        const auto key(vm[dumping_key_arg].as<std::string>());
-        r.key = key;
-    }
-
-    r.all_versions = vm.count(dumping_all_versions_arg) != 0;
-
-    if (!found_dumps) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Supply at least one dump target."));
-    }
+    if (vm.count(export_key_arg) != 0)
+        r.key = vm[export_key_arg].as<std::string>();
 
     return r;
 }
@@ -378,7 +395,7 @@ read_dumping_configuration(const variables_map& vm) {
  * @brief Contains the processing logic for when the user supplies a command in
  * the command line.
  */
-std::optional<configuration>
+std::optional<options>
 handle_command(const std::string& command_name, const bool has_help,
     const parsed_options& po, std::ostream& info, variables_map& vm) {
 
@@ -388,33 +405,33 @@ handle_command(const std::string& command_name, const bool has_help,
      */
     using boost::program_options::include_positional;
     using boost::program_options::collect_unrecognized;
-    auto options(collect_unrecognized(po.options, include_positional));
-    options.erase(options.begin());
+    auto o(collect_unrecognized(po.options, include_positional));
+    o.erase(o.begin());
 
     /*
      * For each command we need to setup their set of options, parse them and
      * then generate the appropriate options.
      */
-    configuration r;
+    options r;
     using boost::program_options::command_line_parser;
-    if (command_name == importing_command_name) {
-        const auto d(make_importing_options_description());
+    if (command_name == import_command_name) {
+        const auto d(make_import_options_description());
         if (has_help) {
-            print_help_command(importing_command_name, d, info);
+            print_help_command(import_command_name, d, info);
             return {};
         }
 
-        store(command_line_parser(options).options(d).run(), vm);
-        r.importing = read_importing_configuration(vm);
-    } else if (command_name == dumping_command_name) {
-        const auto d(make_dumping_options_description());
+        store(command_line_parser(o).options(d).run(), vm);
+        r.importing = read_import_options(vm);
+    } else if (command_name == export_command_name) {
+        const auto d(make_export_options_description());
         if (has_help) {
-            print_help_command(dumping_command_name, d, info);
+            print_help_command(export_command_name, d, info);
             return {};
         }
 
-        store(command_line_parser(options).options(d).run(), vm);
-        r.dumping = read_dumping_configuration(vm);
+        store(command_line_parser(o).options(d).run(), vm);
+        r.exporting = read_export_options(vm);
     }
 
     /*
@@ -428,7 +445,7 @@ handle_command(const std::string& command_name, const bool has_help,
  * @brief Parses the arguments supplied in the command line and converts them
  * into a configuration object.
  */
-std::optional<configuration>
+std::optional<options>
 parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     /*
      * Create the top-level command line options, parse them and retrieve the
@@ -490,10 +507,10 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
 
 }
 
-namespace ores::cli {
+namespace ores::cli::config {
 
-std::optional<configuration>
-program_options_parser::parse(const std::vector<std::string>& arguments,
+std::optional<options>
+parser::parse(const std::vector<std::string>& arguments,
     std::ostream& info, std::ostream& err) const {
 
     try {

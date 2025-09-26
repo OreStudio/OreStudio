@@ -17,34 +17,41 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_PARSER_EXCEPTION_HPP
-#define ORES_CLI_PARSER_EXCEPTION_HPP
+#ifndef ORES_CLI_CONFIG_HPP
+#define ORES_CLI_CONFIG_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <string>
-#include <boost/exception/info.hpp>
+#include <iosfwd>
+#include <optional>
+#include "ores.utility/log/logging_configuration.hpp"
+#include "ores.cli/config/import_options.hpp"
+#include "ores.cli/config/export_options.hpp"
 
-namespace ores::cli {
+namespace ores::cli::config {
 
 /**
- * @brief A fatal error has occurred during option parsing.
+ * @brief All of the configuration options required by the command line
+ * application.
  */
-class parser_exception : public virtual std::exception,
-                         public virtual boost::exception {
-public:
-    explicit parser_exception(std::string_view message = "")
-        : message_(message) {}
-
-    [[nodiscard]] const char* what() const noexcept override {
-        return message_.c_str();
-    }
-
-private:
-    std::string message_;
+struct options final {
+    /**
+     * @brief Configuration options related to logging, if any.
+     */
+    std::optional<ores::utility::log::logging_configuration> logging;
+    /**
+     * @brief Configuration related to importing of data, if any.
+     */
+    std::optional<import_options> importing;
+    /**
+     * @brief Configuration related to exporting of data, if any.
+     */
+    std::optional<export_options> exporting;
 };
+
+std::ostream& operator<<(std::ostream& s, const options& v);
 
 }
 

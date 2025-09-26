@@ -17,41 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_DUMPING_CONFIGURATION_HPP
-#define ORES_CLI_DUMPING_CONFIGURATION_HPP
+#ifndef ORES_CLI_CONFIG_ENTITY_HPP
+#define ORES_CLI_CONFIG_ENTITY_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <iosfwd>
-#include <string>
-
-namespace ores::cli {
+namespace ores::cli::config {
 
 /**
- * @brief Configuration related to dumping data from the system.
+ * @brief List of available entities to target.
  */
-struct dumping_configuration final {
-    /**
-     * @brief Whether to dump currency configurations or not.
-     */
-    bool currency_configurations;
-    /**
-     * @brief Timepoint to use for the reading.
-     */
-    std::string as_of;
-    /**
-     * @brief Key to filter by.
-     */
-    std::string key;
-    /**
-     * @brief If true, output all versions.
-     */
-    bool all_versions;
+enum class entity {
+    currency_config
 };
-
-std::ostream& operator<<(std::ostream& s, const dumping_configuration& v);
 
 }
 

@@ -41,6 +41,7 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         Boost::boost
         Boost::program_options
+        magic_enum::magic_enum
     )
 
 install(TARGETS ${lib_target_name}

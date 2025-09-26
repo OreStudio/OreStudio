@@ -19,12 +19,11 @@
  */
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include <ostream>
-#include "ores.cli/dumping_configuration.hpp"
+#include "ores.cli/config/options.hpp"
 
-namespace ores::cli {
+namespace ores::cli::config {
 
-std::ostream& operator<<(std::ostream& s, const dumping_configuration& v) {
+std::ostream& operator<<(std::ostream& s, const options& v) {
     rfl::json::write(v, s);
     return(s);
 }

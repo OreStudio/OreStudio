@@ -17,31 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_IMPORTING_CONFIGURATION_HPP
-#define ORES_CLI_IMPORTING_CONFIGURATION_HPP
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include <ostream>
+#include "ores.cli/config/export_options.hpp"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
+namespace ores::cli::config {
 
-#include <iosfwd>
-#include <vector>
-#include <filesystem>
-
-namespace ores::cli {
-
-/**
- * @brief Configuration related to importing data into the system.
- */
-struct importing_configuration final {
-    /**
-     * @brief Currency configuration files to import.
-     */
-    std::vector<std::filesystem::path> currency_configurations;
-};
-
-std::ostream& operator<<(std::ostream& s, const importing_configuration& v);
-
+std::ostream& operator<<(std::ostream& s, const export_options& v) {
+    rfl::json::write(v, s);
+    return(s);
 }
 
-#endif
+}

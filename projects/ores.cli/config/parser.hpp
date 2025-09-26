@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_PROGRAM_OPTIONS_PARSER_HPP
-#define ORES_CLI_PROGRAM_OPTIONS_PARSER_HPP
+#ifndef ORES_CLI_CONFIG_PARSER_HPP
+#define ORES_CLI_CONFIG_PARSER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -28,9 +28,9 @@
 #include <vector>
 #include <string>
 #include <optional>
-#include "ores.cli/configuration.hpp"
+#include "ores.cli/config/options.hpp"
 
-namespace ores::cli {
+namespace ores::cli::config {
 
 /**
  * @brief Command-line parser implementation using boost program options.
@@ -41,9 +41,9 @@ namespace ores::cli {
  * messages into the cli. The output is very confusing users that are accustomed
  * to normal cli applications.
  */
-class program_options_parser final {
+class parser final {
 public:
-    std::optional<configuration>
+    std::optional<options>
     parse(const std::vector<std::string>& arguments, std::ostream& info,
         std::ostream& error) const;
 };

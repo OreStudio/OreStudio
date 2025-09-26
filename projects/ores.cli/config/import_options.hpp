@@ -17,44 +17,36 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_APPLICATION_HPP
-#define ORES_CLI_APPLICATION_HPP
+#ifndef ORES_CLI_CONFIG_IMPORTING_CONFIG_HPP
+#define ORES_CLI_CONFIG_IMPORTING_CONFIG_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include "ores.cli/configuration.hpp"
-#include "ores.core/risk/xml/importer.hpp"
+#include <iosfwd>
+#include <vector>
+#include <filesystem>
+#include "ores.cli/config/entity.hpp"
 
-namespace ores::cli {
+namespace ores::cli::config {
 
 /**
- * @brief Entry point for the ores command line application.
+ * @brief Configuration related to importing data into the system.
  */
-class application final {
-public:
-    application() = default;
-    application(const application&) = delete;
-    application(application&&) = delete;
-    ~application() = default;
-    application& operator=(const application&) = delete;
-
-private:
-    void import_data(const std::optional<importing_configuration>& ocfg) const;
-    void dump_data(const std::optional<dumping_configuration>& ocfg) const;
-
-public:
+struct import_options final {
     /**
-     * Executes the application.
-     *
-     * @param cfg Application configuration.
+     * @brief Which entity to target.
      */
-    void run(const configuration& cfg) const;
-
-private:
-    core::risk::xml::importer importer_;
+    entity entity;
+    /**
+     * @brief Target files containing import data. Format is inferred from
+     * extension.
+     */
+    std::vector<std::filesystem::path> targets;
 };
+
+std::ostream& operator<<(std::ostream& s, const import_options& v);
 
 }
 

@@ -17,40 +17,48 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIGURATION_HPP
-#define ORES_CLI_CONFIGURATION_HPP
+#ifndef ORES_CLI_CONFIG_EXPORT_OPTIONS_HPP
+#define ORES_CLI_CONFIG_EXPORT_OPTIONS_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
 #include <iosfwd>
-#include <optional>
-#include "ores.utility/log/logging_configuration.hpp"
-#include "ores.cli/importing_configuration.hpp"
-#include "ores.cli/dumping_configuration.hpp"
+#include <string>
+#include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/format.hpp"
 
-namespace ores::cli {
+namespace ores::cli::config {
 
 /**
- * @brief All of the configuration required by the command line application.
+ * @brief Configuration related to exporting data into a supported export
+ * format.
  */
-struct configuration final {
+struct export_options final {
     /**
-     * @brief Configuration related to logging, if any.
+     * @brief Which entity to export.
      */
-    std::optional<ores::utility::log::logging_configuration> logging;
+    entity entity;
     /**
-     * @brief Configuration related to importing, if any.
+     * @brief Timepoint to use for the reading. If empty, use latest.
      */
-    std::optional<importing_configuration> importing;
+    std::string as_of;
     /**
-     * @brief Configuration related to dumping, if any.
+     * @brief Key to filter by, if any.
      */
-    std::optional<dumping_configuration> dumping;
+    std::string key;
+    /**
+     * @brief If true, output all versions of this entity.
+     */
+    bool all_versions;
+    /**
+     * @brief Format to use for the export.
+     */
+    format format;
 };
 
-std::ostream& operator<<(std::ostream& s, const configuration& v);
+std::ostream& operator<<(std::ostream& s, const export_options& v);
 
 }
 

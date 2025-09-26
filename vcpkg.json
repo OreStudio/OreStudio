@@ -22,6 +22,7 @@
         },
         "rapidxml-ns",
         "rapidjson",
+        "magic-enum",
         "boost-system",
         "boost-serialization",
         "boost-date-time",

@@ -34,9 +34,13 @@ namespace ores::core::risk::db {
 class currency_table {
 private:
     using sqlgen_connection = sqlgen::Result<rfl::Ref<sqlgen::postgres::Connection>>;
-    std::vector<types::currency> read_internal(const std::string& query);
 
 public:
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
+    std::string table_sql();
+
     /**
      * @brief Writes currencies to database. Expects the currency set to have
      * unique ISO codes.

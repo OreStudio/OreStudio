@@ -48,8 +48,8 @@ struct currency {
     std::string format;
     std::string currency_type;
     std::string modified_by;
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S%z"> valid_from;
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S%z"> valid_to;
+    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
+    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const currency& v);

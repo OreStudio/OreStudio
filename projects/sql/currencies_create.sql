@@ -51,11 +51,11 @@ begin
     update "oresdb"."currencies"
     set valid_to = current_timestamp
     where iso_code = new.iso_code
-    and valid_to = 'infinity'::timestamptz
+    and valid_to = '9999-12-31 23:59:59'::timestamptz
     and valid_from < current_timestamp;
 
     new.valid_from = current_timestamp;
-    new.valid_to = 'infinity'::timestamptz;
+    new.valid_to = '9999-12-31 23:59:59'::timestamptz;
     new.modified_by = current_user;
 
     return new;

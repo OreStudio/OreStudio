@@ -62,9 +62,7 @@ currency_table::read_latest(sqlgen_connection c,
         order_by("valid_from"_c.desc());
 
     const auto result = query(c);
-    if (result)
-        BOOST_LOG_SEV(lg, debug) << rfl::json::write(*result);
-    else
+    if (!result)
         BOOST_LOG_SEV(lg, debug) << "Error: " << result.error().what();
 
     return *result;
@@ -81,9 +79,7 @@ currency_table::read_at_timepoint(sqlgen_connection c,
                                         "valid_from"_c <= ts && "valid_to"_c >= ts*/);
 
     const auto result = query(c);
-    if (result)
-        BOOST_LOG_SEV(lg, debug) << rfl::json::write(*result);
-    else
+    if (!result)
         BOOST_LOG_SEV(lg, debug) << "Error: " << result.error().what();
 
     return *result;
@@ -95,24 +91,20 @@ read_all(sqlgen_connection c) {
         order_by("valid_from"_c.desc());
 
     const auto result = query(c);
-    if (result)
-        BOOST_LOG_SEV(lg, debug) << rfl::json::write(*result);
-    else
+    if (!result)
         BOOST_LOG_SEV(lg, debug) << "Error: " << result.error().what();
 
     return *result;
 }
 
 std::vector<currency> currency_table::
-read_all(sqlgen_connection c, const std::string& iso_code) {
+read_all(sqlgen_connection c, const std::string& /*iso_code*/) {
     const auto query = sqlgen::read<std::vector<currency>> |
-                where("iso_code"_c == iso_code) |
-                order_by("valid_from"_c.desc());
+        // where("iso_code"_c == iso_code) |
+        order_by("valid_from"_c.desc());
 
     const auto result = query(c);
-    if (result)
-        BOOST_LOG_SEV(lg, debug) << rfl::json::write(*result);
-    else
+    if (!result)
         BOOST_LOG_SEV(lg, debug) << "Error: " << result.error().what();
 
     return *result;

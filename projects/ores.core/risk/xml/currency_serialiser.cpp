@@ -87,14 +87,6 @@ currency currency_serialiser::deserialise(rapidxml_ns::xml_node<>& node) {
     if (currencyType != nullptr)
         r.currency_type = currencyType->value();
 
-    // FIXME
-    // using namespace std::chrono;
-    // auto now_utc = utc_clock::now();
-    // auto now_seconds = time_point_cast<seconds>(now_utc);
-    // auto zt = zoned_time{utc_clock::to_sys(now_seconds)};
-    // r.valid_from = std::format("{:%Y-%m-%d %H:%M:%S%z}", zt);
-    // r.valid_to = "9999-12-31 00:00:00+0000";
-
     return r;
 }
 

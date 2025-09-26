@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <format>
 #include <iomanip>
 #include <iostream>
 #include <boost/program_options.hpp>
@@ -30,9 +31,9 @@ namespace {
 
 const std::string indent("   ");
 const std::string more_information("Try --help' for more information.");
-const std::string product_version("OreStudio v" ORES_VERSION);
-const std::string build_info(ORES_BUILD_INFO);
-const std::string usage_error_msg("Usage error: ");
+const std::string  product_version("OreStudio v" ORES_VERSION);
+const std::string  build_info(ORES_BUILD_INFO);
+const std::string  usage_error_msg("Usage error: ");
 const std::string no_command_msg("No command supplied. ");
 
 const std::string importing_command_name("import");
@@ -59,12 +60,6 @@ const std::string logging_log_level_debug("debug");
 const std::string logging_log_level_info("info");
 const std::string logging_log_level_warn("warn");
 const std::string logging_log_level_error("error");
-
-const std::string invalid_log_level("Log level is invalid: ");
-const std::string invalid_command("Command is invalid or unsupported: ");
-const std::string invalid_option("Option is not valid for command: ");
-const std::string missing_import_target("Supply at least one import target.");
-const std::string missing_dump_target("Supply at least one dump target.");
 
 using boost::program_options::value;
 using boost::program_options::variables_map;
@@ -167,7 +162,9 @@ void validate_command_name(const std::string& command_name) {
 
     if (!is_valid_command_name)
     {
-        BOOST_THROW_EXCEPTION(parser_exception(invalid_command + command_name));
+        BOOST_THROW_EXCEPTION(parser_exception(
+                std::format("Invalid or unsupported command: {}",
+                    command_name)));
     }
 }
 
@@ -202,6 +199,7 @@ void print_help(const options_description& od, std::ostream& info) {
     });
 
     lambda(importing_command_name, importing_command_desc);
+    lambda(dumping_command_name, dumping_command_desc);
 
     info << std::endl << "For command specific options, type <command> --help."
          << std::endl;
@@ -280,21 +278,21 @@ read_logging_configuration(const variables_map& vm) {
         return {};
 
     logging_configuration r;
-    r.filename("ores.console.log");
-    r.output_to_console(vm.count(logging_log_to_console_arg) != 0);
+    r.filename = "ores.console.log";
+    r.output_to_console = vm.count(logging_log_to_console_arg) != 0;
 
     const bool log_dir_set(vm.count(logging_log_dir_arg) != 0);
     if (!log_dir_set) {
-        r.output_directory("log");
+        r.output_directory = "log";
     }
     else {
         const auto log_dir(vm[logging_log_dir_arg].as<std::string>());
-        r.output_directory(log_dir);
+        r.output_directory = log_dir;
     }
 
     const bool log_level_set(vm.count(logging_log_level_arg) != 0);
     if (!log_level_set) {
-        r.severity(logging_log_level_info);
+        r.severity = logging_log_level_info;
         return r;
     }
 
@@ -302,9 +300,10 @@ read_logging_configuration(const variables_map& vm) {
     try {
         using ores::utility::log::to_severity_level;
         to_severity_level(s);
-        r.severity(s);
+        r.severity = s;
     } catch(const std::exception&) {
-        BOOST_THROW_EXCEPTION(parser_exception(invalid_log_level + s));
+        BOOST_THROW_EXCEPTION(parser_exception(
+                std::format("Log level is invalid: {}!", s)));
     }
     return r;
 }
@@ -329,11 +328,12 @@ read_importing_configuration(const variables_map& vm) {
         for (const auto& ccy_cfg : ccy_cfgs) {
             currency_configurations.push_back(absolute(ccy_cfg));
         }
-        r.currency_configurations(currency_configurations);
+        r.currency_configurations = currency_configurations;
     }
 
     if (!found_imports)
-        BOOST_THROW_EXCEPTION(parser_exception(missing_import_target));
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Supply at least one import target."));
 
     return r;
 }
@@ -351,23 +351,25 @@ read_dumping_configuration(const variables_map& vm) {
     if (vm.count(dumping_curency_config_arg) != 0) {
         found_dumps = true;
         const auto ccy_cfgs(vm.count(dumping_curency_config_arg) != 0);
-        r.currency_configurations(ccy_cfgs);
+        r.currency_configurations = ccy_cfgs;
     }
 
     if (vm.count(dumping_as_of_arg) != 0) {
         const auto as_of(vm[dumping_as_of_arg].as<std::string>());
-        r.as_of(as_of);
+        r.as_of = as_of;
     }
 
     if (vm.count(dumping_key_arg) != 0) {
         const auto key(vm[dumping_key_arg].as<std::string>());
-        r.key(key);
+        r.key = key;
     }
 
-    r.all_versions(vm.count(dumping_all_versions_arg) != 0);
+    r.all_versions = vm.count(dumping_all_versions_arg) != 0;
 
-    if (!found_dumps)
-        BOOST_THROW_EXCEPTION(parser_exception(missing_import_target));
+    if (!found_dumps) {
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Supply at least one dump target."));
+    }
 
     return r;
 }
@@ -403,7 +405,7 @@ handle_command(const std::string& command_name, const bool has_help,
         }
 
         store(command_line_parser(options).options(d).run(), vm);
-        r.importing(read_importing_configuration(vm));
+        r.importing = read_importing_configuration(vm);
     } else if (command_name == dumping_command_name) {
         const auto d(make_dumping_options_description());
         if (has_help) {
@@ -412,13 +414,13 @@ handle_command(const std::string& command_name, const bool has_help,
         }
 
         store(command_line_parser(options).options(d).run(), vm);
-        r.dumping(read_dumping_configuration(vm));
+        r.dumping = read_dumping_configuration(vm);
     }
 
     /*
      * Now process the common options.
      */
-    r.logging(read_logging_configuration(vm));
+    r.logging = read_logging_configuration(vm);
     return r;
 }
 
@@ -475,7 +477,8 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
      * according to program options) version command and throw.
      */
     if (has_version)
-        BOOST_THROW_EXCEPTION(parser_exception(invalid_option + "version"));
+        BOOST_THROW_EXCEPTION(parser_exception(
+                "Option is not valid for command: 'version'."));
 
     /*
      * We can now process the command. Notice that we are supplying the

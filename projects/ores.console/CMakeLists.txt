@@ -37,9 +37,11 @@ target_include_directories(${lib_target_name}
     PUBLIC ${CMAKE_SOURCE_DIR}/projects/
 )
 
-target_link_libraries(${lib_target_name} PRIVATE
-    Boost::boost
-    Boost::program_options)
+target_link_libraries(${lib_target_name}
+    PRIVATE
+        Boost::boost
+        Boost::program_options
+    )
 
 install(TARGETS ${lib_target_name}
     ARCHIVE DESTINATION lib

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,21 +17,34 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <iomanip>
-#include <ostream>
-#include "ores.utility/streaming/std_vector.hpp"
-#include "ores.core/types/currency_config.hpp"
+#ifndef ORES_CORE_RISK_XML_PARSING_ERROR_HPP
+#define ORES_CORE_RISK_XML_PARSING_ERROR_HPP
 
-namespace ores::core::types {
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
 
-std::ostream& operator<<(std::ostream& s, const currency_config& v) {
-    using std::quoted;
-    s << " { "
-      << quoted("__type__") << ": "
-      << quoted("ores::core::types::currency_config") << ", "
-      << quoted("currencies") << ": " << v.currencies()
-      << " }";
-    return(s);
+#include <string>
+#include <boost/exception/info.hpp>
+
+namespace ores::core::risk::xml {
+
+/**
+ * @brief A fatal error has occurred during parsing of ORE XML.
+ */
+class parsing_error : public virtual std::exception,
+                      public virtual boost::exception {
+public:
+    explicit parsing_error(std::string_view message = "")
+        : message_(message) {}
+    [[nodiscard]] const char* what() const noexcept override {
+        return message_.c_str();
+    }
+
+private:
+    std::string message_;
+};
+
 }
 
-}
+#endif

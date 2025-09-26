@@ -1,6 +1,6 @@
 # -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
 #
-# Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -15,7 +15,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.core")
+set(name "ores.comms")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
@@ -39,13 +39,12 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PRIVATE
         ores.utility.lib
-        libpqxx::pqxx
+        OpenSSL::SSL
+        OpenSSL::Crypto
         Boost::boost
-        Boost::program_options
-        sqlgen::sqlgen
+        Boost::cobalt
     PUBLIC
         reflectcpp::reflectcpp
-        PostgreSQL::PostgreSQL
     )
 
 install(TARGETS ${lib_target_name}

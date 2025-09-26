@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_TYPES_CURRENCY_CONFIG_HPP
-#define ORES_CORE_TYPES_CURRENCY_CONFIG_HPP
+#ifndef ORES_CORE_RISK_TYPES_CURRENCY_CONFIG_HPP
+#define ORES_CORE_RISK_TYPES_CURRENCY_CONFIG_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -26,25 +26,15 @@
 
 #include <iosfwd>
 #include <vector>
-#include "ores.core/types/currency.hpp"
+#include "ores.core/risk/types/currency.hpp"
 
-namespace ores::core::types {
+namespace ores::core::risk::types {
 
-class currency_config {
-public:
-    currency_config() = default;
-    explicit currency_config(const std::vector<currency>& currencies)
-        : currencies_(currencies) { }
-    explicit currency_config(std::vector<currency>&& currencies)
-        : currencies_(currencies) { }
-
-    std::vector<currency> currencies() const { return currencies_; }
-    void currencies(const std::vector<currency>& currencies) {
-        currencies_ = currencies;
-    }
-
-private:
-    std::vector<currency> currencies_;
+/**
+ * @brief Represents a set of ORE currencies.
+ */
+struct currency_config {
+    std::vector<currency> currencies;
 };
 
 std::ostream& operator<<(std::ostream& s, const currency_config& v);

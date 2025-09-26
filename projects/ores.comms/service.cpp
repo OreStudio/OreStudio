@@ -9,23 +9,17 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. Seethe GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU General PublicLicense along with
+ * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_XML_XML_HPP
-#define ORES_CORE_XML_XML_HPP
+#include <iostream>
+#include "ores.service/service.hpp"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
-/**
- * @brief Provides XML serialisation support for the ORE domain model types.
- */
-namespace ores::core::xml {}
-
-#endif
+void service::stuff() {
+    std::cout << "hello" << std::endl;
+}

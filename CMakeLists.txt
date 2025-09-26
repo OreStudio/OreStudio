@@ -87,12 +87,19 @@ find_path(RAPIDXML_NS_INCLUDE_DIRS "rapidxml-ns/rapidxml_ns.hpp")
 
 # Postgres
 find_package(libpqxx CONFIG REQUIRED)
+find_package(PostgreSQL REQUIRED)
 
 # Qt
 find_package(Qt6Core REQUIRED)
 find_package(Qt6Gui REQUIRED)
 find_package(Qt6Widgets REQUIRED)
 find_package(Qt6Sql REQUIRED)
+
+# Reflect CPP
+find_package(reflectcpp CONFIG REQUIRED)
+
+# SQLGen
+find_package(sqlgen REQUIRED)
 
 # site (for ctest)
 site_name(VORE_SITE)

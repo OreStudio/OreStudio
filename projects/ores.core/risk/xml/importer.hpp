@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,20 +18,20 @@
  * MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_XML_IMPORTER_HPP
-#define ORES_CORE_XML_IMPORTER_HPP
+#ifndef ORES_CORE_RISK_XML_IMPORTER_HPP
+#define ORES_CORE_RISK_XML_IMPORTER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
 #include <filesystem>
-#include "ores.core/types/currency_config.hpp"
+#include "ores.core/risk/types/currency_config.hpp"
 
-namespace ores::core::xml {
+namespace ores::core::risk::xml {
 
 /**
- * @brief Imports model elements from an XML representation.
+ * @brief Imports domain objects from their ORE XML representation.
  */
 class importer {
 public:

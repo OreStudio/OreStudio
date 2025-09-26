@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,22 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_XML_CURRENCY_SERIALISER_HPP
-#define ORES_CORE_XML_CURRENCY_SERIALISER_HPP
+#ifndef ORES_CORE_RISK_XML_CURRENCY_CONFIG_SERIALISER_HPP
+#define ORES_CORE_RISK_XML_CURRENCY_CONFIG_SERIALISER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <rapidxml-ns/rapidxml_ns.hpp>
-#include "ores.core/types/currency.hpp"
+#include <string>
+#include "ores.core/risk/types/currency_config.hpp"
 
-namespace ores::core::xml {
+namespace ores::core::risk::xml {
 
-class currency_serialiser {
+class currency_config_serialiser {
 public:
-    void serialise(rapidxml_ns::xml_node<>& parent, const types::currency& cfg);
-    types::currency deserialise(rapidxml_ns::xml_node<>& node);
+    std::string serialise(const types::currency_config& cfg);
+    types::currency_config deserialise(std::string s);
 };
 
 }

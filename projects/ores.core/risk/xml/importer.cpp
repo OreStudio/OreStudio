@@ -17,42 +17,35 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONSOLE_DUMPING_CONFIGURATION_HPP
-#define ORES_CONSOLE_DUMPING_CONFIGURATION_HPP
+#include "ores.utility/log/logger.hpp"
+#include "ores.utility/filesystem/file.hpp"
+#include "ores.core/risk/types/currency_config.hpp"
+#include "ores.core/risk/xml/currency_config_serialiser.hpp"
+#include "ores.core/risk/xml/importer.hpp"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
+namespace {
 
-#include <iosfwd>
-#include <string>
-
-namespace ores::console {
-
-/**
- * @brief Configuration related to dumping data from the system.
- */
-struct dumping_configuration final {
-    /**
-     * @brief Whether to dump currency configurations or not.
-     */
-    bool currency_configurations;
-    /**
-     * @brief Timepoint to use for the reading.
-     */
-    std::string as_of;
-    /**
-     * @brief Key to filter by.
-     */
-    std::string key;
-    /**
-     * @brief If true, output all versions.
-     */
-    bool all_versions;
-};
-
-std::ostream& operator<<(std::ostream& s, const dumping_configuration& v);
+using namespace ores::utility::log;
+auto lg(logger_factory("ores.core.xml.importer"));
 
 }
 
-#endif
+namespace ores::core::risk::xml {
+
+using types::currency_config;
+
+currency_config
+importer::import_currency_config(const std::filesystem::path& path) const {
+    BOOST_LOG_SEV(lg, debug) << "Started import: " << path.generic_string();
+
+    currency_config_serialiser ser;
+    using namespace ores::utility::filesystem;
+    const std::string c(read_file_content(path));
+    auto r(ser.deserialise(c));
+
+    BOOST_LOG_SEV(lg, debug) << "Finished importing. Result: " << r;
+
+    return r;
+}
+
+}

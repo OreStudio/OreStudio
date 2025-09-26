@@ -17,19 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <iomanip>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 #include <ostream>
 #include "ores.console/dumping_configuration.hpp"
 
 namespace ores::console {
 
 std::ostream& operator<<(std::ostream& s, const dumping_configuration& v) {
-    s << " { "
-      << "\"__type__\": "
-      << "\"ores::console::dumping_configuration\"" << ", "
-      << "\"currency_configurations\": " << v.currency_configurations() << ", "
-      << "\"as_of\": " << quoted(v.as_of())
-      << " }";
+    rfl::json::write(v, s);
     return(s);
 }
 

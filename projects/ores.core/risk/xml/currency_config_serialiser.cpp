@@ -21,21 +21,24 @@
 #include "rapidxml-ns/rapidxml_ns.hpp"
 #include <rapidxml-ns/rapidxml_ns_print.hpp>
 #include "ores.utility/log/logger.hpp"
-#include "ores.core/xml/parsing_error.hpp"
-#include "ores.core/xml/currency_serialiser.hpp"
-#include "ores.core/xml/currency_config_serialiser.hpp"
+#include "ores.core/risk/xml/parsing_error.hpp"
+#include "ores.core/risk/xml/currency_serialiser.hpp"
+#include "ores.core/risk/xml/currency_config_serialiser.hpp"
 
 namespace {
 
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.core.xml.currency_config_serialiser"));
+auto lg(logger_factory(
+        "ores.core.risk.xml.currency_config_serialiser"));
 
 const std::string missing_currency_config("No CurrencyConfig element found");
 
 }
 
-namespace ores::core::xml {
+namespace ores::core::risk::xml {
 
+using types::currency;
+using types::currency_config;
 using namespace rapidxml_ns;
 
 std::string
@@ -46,7 +49,7 @@ currency_config_serialiser::serialise(const types::currency_config& cfg)
     doc.append_node(root);
 
     currency_serialiser ser;
-    for (const types::currency& ccy : cfg.currencies()) {
+    for (const currency& ccy : cfg.currencies) {
         ser.serialise(*root, ccy);
     }
 
@@ -55,7 +58,7 @@ currency_config_serialiser::serialise(const types::currency_config& cfg)
     return os.str();
 }
 
-types::currency_config currency_config_serialiser::deserialise(std::string s)
+currency_config currency_config_serialiser::deserialise(std::string s)
 {
     BOOST_LOG_SEV(lg, debug) << "Deserialising XML. Peek: " << s.substr(0, 50);
 
@@ -71,7 +74,7 @@ types::currency_config currency_config_serialiser::deserialise(std::string s)
         BOOST_THROW_EXCEPTION(parsing_error(missing_currency_config));
     }
 
-    std::vector<types::currency> currencies;
+    std::vector<currency> currencies;
     auto* currency_node(currency_config_node->first_node("Currency"));
     currency_serialiser ccy_ser;
     while(currency_node != nullptr) {
@@ -79,7 +82,7 @@ types::currency_config currency_config_serialiser::deserialise(std::string s)
         currency_node = currency_node->next_sibling("Currency");
     }
 
-    const types::currency_config r(currencies);
+    const currency_config r(currencies);
 
     BOOST_LOG_SEV(lg, debug) << "Finished deserialising XML. Total currencies found: "
                              << currencies.size();

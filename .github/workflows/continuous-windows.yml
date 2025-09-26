@@ -55,10 +55,11 @@ jobs:
       - name: run-vcpkg
         uses: lukka/run-vcpkg@v11
         with:
-          - doNotCache: false
+          doNotCache: false
 
       - name: Run CTest workflow
         run: |
+          $env:VCPKG_DISABLE_SYSTEM_PACKAGE_CHECK=1
           $env:ORES_BUILD_PROVIDER="github"
           $env:ORES_BUILD_COMMIT="$env:GITHUB_SHA"
           $env:ORES_BUILD_NUMBER="$env:GITHUB_RUN_NUMBER"

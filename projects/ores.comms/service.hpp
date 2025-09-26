@@ -17,34 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_JSON_PARSING_ERROR_HPP
-#define ORES_CORE_JSON_PARSING_ERROR_HPP
-
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
-#include <string>
-#include <boost/exception/info.hpp>
-
-namespace ores::core::json {
-
-/**
- * @brief A fatal error has occurred during JSON parsing.
- */
-class parsing_error : public virtual std::exception,
-                      public virtual boost::exception {
-public:
-    explicit parsing_error(std::string message)
-        : message_(std::move(message)) { }
-    parsing_error() = default;
-    ~parsing_error() noexcept override = default;
-    const char* what() const noexcept final { return(message_.c_str()); }
-
-private:
-    std::string message_;
+class service final {
+ public:
+    void stuff();
 };
-
-}
-
-#endif

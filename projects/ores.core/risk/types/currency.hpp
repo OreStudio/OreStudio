@@ -17,33 +17,42 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_XML_PARSING_ERROR_HPP
-#define ORES_CORE_XML_PARSING_ERROR_HPP
+#ifndef ORES_CORE_RISK_TYPES_CURRENCY_HPP
+#define ORES_CORE_RISK_TYPES_CURRENCY_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
 #include <string>
-#include <boost/exception/info.hpp>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
 
-namespace ores::core::xml {
+namespace ores::core::risk::types {
 
 /**
- * @brief A fatal error has occurred during XML parsing.
+ * @brief Represents an ORE currency.
  */
-class parsing_error : public virtual std::exception,
-                      public virtual boost::exception {
-public:
-    explicit parsing_error(std::string message)
-        : message_(std::move(message)) { }
-    parsing_error() = default;
-    ~parsing_error() noexcept override = default;
-    const char* what() const noexcept final { return(message_.c_str()); }
+struct currency {
+    constexpr static const char* schema = "oresdb";
+    constexpr static const char* tablename = "currencies";
 
-private:
-    std::string message_;
+    sqlgen::PrimaryKey<std::string> iso_code;
+    std::string name;
+    int numeric_code;
+    std::string symbol;
+    std::string fraction_symbol;
+    int fractions_per_unit;
+    std::string rounding_type;
+    int rounding_precision;
+    std::string format;
+    std::string currency_type;
+    std::string modified_by;
+    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
+    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";
 };
+
+std::ostream& operator<<(std::ostream& s, const currency& v);
 
 }
 

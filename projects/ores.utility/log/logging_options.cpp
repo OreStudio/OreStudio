@@ -17,35 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_LOG_INVALID_LOGGING_CONFIGURATION_HPP
-#define ORES_UTILITY_LOG_INVALID_LOGGING_CONFIGURATION_HPP
-
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
-#include <string>
-#include <boost/exception/info.hpp>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/log/logging_options.hpp"
 
 namespace ores::utility::log {
 
-/**
- * @brief The values supplied for the logging configuration are not valid.
- */
-class invalid_logging_configuration
-    : public virtual std::exception, public virtual boost::exception {
-public:
-    invalid_logging_configuration() = default;
-    ~invalid_logging_configuration() noexcept override = default;
-
-    explicit invalid_logging_configuration(std::string message)
-        : message_(std::move(message)) { }
-    const char* what() const noexcept final { return(message_.c_str()); }
-
-private:
-    std::string message_;
-};
-
+std::ostream& operator<<(std::ostream& s, const logging_options& v) {
+    rfl::json::write(v, s);
+    return(s);
 }
 
-#endif
+}

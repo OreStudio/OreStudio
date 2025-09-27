@@ -20,8 +20,8 @@
 #include <boost/throw_exception.hpp>
 #include <boost/filesystem/operations.hpp>
 #include "ores.utility/log/severity_level.hpp"
-#include "ores.utility/log/invalid_logging_configuration.hpp"
-#include "ores.utility/log/logging_configuration_validator.hpp"
+#include "ores.utility/log/logging_exception.hpp"
+#include "ores.utility/log/logging_options_validator.hpp"
 
 namespace {
 
@@ -33,22 +33,20 @@ const std::string unexpected_dir(
 
 namespace ores::utility::log {
 
-void logging_configuration_validator::
-validate(const logging_configuration& cfg) {
+void logging_options_validator::validate(const logging_options& cfg) {
     /*
      * We must have at least one form of logging, file or console.
      */
     const bool output_to_file(!cfg.filename.empty());
     if (!cfg.output_to_console && !output_to_file)
-        BOOST_THROW_EXCEPTION(invalid_logging_configuration(no_logging));
+        BOOST_THROW_EXCEPTION(logging_exception(no_logging));
 
     /*
-     * If the filename was not supplied, we do not expect the output
-     * directory to have been supplied either, as its only applicable
-     * to file logging.
+     * If the filename was not supplied, we do not expect the output directory
+     * to have been supplied either, as its only applicable to file logging.
      */
     if (cfg.filename.empty() && !cfg.output_directory.empty())
-        BOOST_THROW_EXCEPTION(invalid_logging_configuration(unexpected_dir));
+        BOOST_THROW_EXCEPTION(logging_exception(unexpected_dir));
 
     /*
      * Attempt to convert severity. Function throws if invalid.

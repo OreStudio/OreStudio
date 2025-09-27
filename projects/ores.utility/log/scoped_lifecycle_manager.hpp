@@ -25,7 +25,7 @@
 #endif
 
 #include <optional>
-#include "ores.utility/log/logging_configuration.hpp"
+#include "ores.utility/log/logging_options.hpp"
 
 namespace ores::utility::log {
 
@@ -35,19 +35,15 @@ namespace ores::utility::log {
  */
 class scoped_lifecycle_manager {
 public:
-    scoped_lifecycle_manager(const scoped_lifecycle_manager&) = delete;
-    scoped_lifecycle_manager(scoped_lifecycle_manager&&) = default;
-    scoped_lifecycle_manager&
-    operator=(const scoped_lifecycle_manager&) = delete;
-
     scoped_lifecycle_manager();
-    scoped_lifecycle_manager(const std::optional<logging_configuration>& ocfg);
+    scoped_lifecycle_manager(const std::optional<logging_options>& ocfg);
+    scoped_lifecycle_manager(const scoped_lifecycle_manager&) = delete;
     ~scoped_lifecycle_manager();
 
     /**
      * @brief Forces a initialisation / re-initialisation of logging.
      */
-    void initialise(const std::optional<logging_configuration>& ocfg);
+    void initialise(const std::optional<logging_options>& ocfg);
 
     /**
      * @brief Returns true if the logging system has been initialised

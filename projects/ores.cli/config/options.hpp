@@ -26,7 +26,7 @@
 
 #include <iosfwd>
 #include <optional>
-#include "ores.utility/log/logging_configuration.hpp"
+#include "ores.utility/log/logging_options.hpp"
 #include "ores.cli/config/import_options.hpp"
 #include "ores.cli/config/export_options.hpp"
 
@@ -40,7 +40,7 @@ struct options final {
     /**
      * @brief Configuration options related to logging, if any.
      */
-    std::optional<ores::utility::log::logging_configuration> logging;
+    std::optional<ores::utility::log::logging_options> logging;
     /**
      * @brief Configuration related to importing of data, if any.
      */

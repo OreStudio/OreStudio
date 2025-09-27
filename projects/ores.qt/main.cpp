@@ -20,7 +20,7 @@
 #include <QTimer>
 #include <QApplication>
 #include "ores.utility/log/logger.hpp"
-#include "ores.utility/log/logging_configuration.hpp"
+#include "ores.utility/log/logging_options.hpp"
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
 #include "ores.qt/MainWindow.hpp"
 #include "ores.qt/SplashScreen.hpp"
@@ -30,8 +30,8 @@ namespace {
 using namespace ores::utility::log;
 auto lg(logger_factory("main"));
 
-ores::utility::log::logging_configuration createLoggingConfiguration() {
-    ores::utility::log::logging_configuration r;
+ores::utility::log::logging_options createLoggingConfiguration() {
+    ores::utility::log::logging_options r;
     r.filename = "ores.cli.log";
     r.output_to_console = false;
     r.output_directory = "log";

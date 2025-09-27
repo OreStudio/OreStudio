@@ -24,12 +24,10 @@
 #pragma once
 #endif
 
-#include <list>
-#include <string>
 #include <optional>
 #include <filesystem>
 #include "ores.utility/log/severity_level.hpp"
-#include "ores.utility/log/logging_configuration.hpp"
+#include "ores.utility/log/logging_options.hpp"
 
 namespace ores::utility::log {
 
@@ -66,7 +64,7 @@ public:
      *
      * @note Must be done in a thread-safe context.
      */
-    static void initialise(std::optional<logging_configuration> ocfg);
+    static void initialise(std::optional<logging_options> ocfg);
 
     /**
      * @brief Shutdown logging for the entire application.

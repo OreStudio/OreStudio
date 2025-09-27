@@ -17,44 +17,34 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_LOG_LOGGING_CONFIGURATION_HPP
-#define ORES_UTILITY_LOG_LOGGING_CONFIGURATION_HPP
+#ifndef ORES_UTILITY_LOG_LOGGING_EXCEPTION_HPP
+#define ORES_UTILITY_LOG_LOGGING_EXCEPTION_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <iosfwd>
 #include <string>
-#include <filesystem>
+#include <boost/exception/info.hpp>
 
 namespace ores::utility::log {
 
 /**
- * @brief Options related to logging.
+ * @brief An exception has occurred during logging.
  */
-struct logging_configuration final {
-    /**
-     * @brief Level at which to log.
-     */
-    std::string severity;
-    /**
-     * @brief Name of the file to log into.
-     *
-     * If empty, file logging is disabled.
-     */
-    std::string filename;
-    /**
-     * @brief If true, dumps the log into the console.
-     */
-    bool output_to_console;
-    /**
-     * @brief Directory in which to place the output.
-     */
-    std::filesystem::path output_directory;
-};
+class logging_exception : public virtual std::exception,
+                          public virtual boost::exception {
+public:
+    explicit logging_exception(std::string_view message = "")
+        : message_(message) {}
 
-std::ostream& operator<<(std::ostream& s, const logging_configuration& v);
+    [[nodiscard]] const char* what() const noexcept override {
+        return message_.c_str();
+    }
+
+private:
+    std::string message_;
+};
 
 }
 

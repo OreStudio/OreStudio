@@ -71,7 +71,7 @@ using boost::program_options::parsed_options;
 using boost::program_options::options_description;
 using boost::program_options::positional_options_description;
 
-using ores::utility::log::logging_configuration;
+using ores::utility::log::logging_options;
 using ores::cli::config::entity;
 using ores::cli::config::format;
 using ores::cli::config::options;
@@ -280,15 +280,15 @@ handle_no_command(const bool has_version, const bool has_help,
 }
 
 /**
- * @brief Reads the tracing configuration from the variables map.
+ * @brief Reads the logging configuration from the variables map.
 */
-std::optional<logging_configuration>
+std::optional<logging_options>
 read_logging_configuration(const variables_map& vm) {
     const auto enabled(vm.count(logging_log_enabled_arg) != 0);
     if (!enabled)
         return {};
 
-    logging_configuration r;
+    logging_options r;
     r.filename = "ores.cli.log";
     r.output_to_console = vm.count(logging_log_to_console_arg) != 0;
 
@@ -307,15 +307,14 @@ read_logging_configuration(const variables_map& vm) {
         return r;
     }
 
+    using ores::utility::log::severity_level;
     const auto s(vm[logging_log_level_arg].as<std::string>());
-    try {
-        using ores::utility::log::to_severity_level;
-        to_severity_level(s);
-        r.severity = s;
-    } catch(const std::exception&) {
+    auto sl = magic_enum::enum_cast<severity_level>(s);
+    if (sl.has_value())
+        r.severity = sl.value();
+    else
         BOOST_THROW_EXCEPTION(parser_exception(
                 std::format("Log level is invalid: {}!", s)));
-    }
     return r;
 }
 

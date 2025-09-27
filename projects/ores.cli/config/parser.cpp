@@ -307,14 +307,15 @@ read_logging_configuration(const variables_map& vm) {
         return r;
     }
 
-    using ores::utility::log::severity_level;
     const auto s(vm[logging_log_level_arg].as<std::string>());
-    auto sl = magic_enum::enum_cast<severity_level>(s);
-    if (sl.has_value())
-        r.severity = sl.value();
-    else
+    try {
+        using ores::utility::log::to_severity_level;
+        to_severity_level(s);
+        r.severity = s;
+    } catch(const std::exception&) {
         BOOST_THROW_EXCEPTION(parser_exception(
                 std::format("Log level is invalid: {}!", s)));
+    }
     return r;
 }
 

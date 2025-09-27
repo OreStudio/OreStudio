@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -26,22 +26,15 @@
 
 #include <vector>
 #include <ostream>
-#include "ores.utility/streaming/jsonify.hpp"
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 
 namespace std {
 
 template<typename Containee>
-inline ostream& operator<<(ostream& stream, const vector<Containee>& vector) {
-    stream << "[ ";
-    using ores::utility::streaming::jsonify;
-    for(typename std::vector<Containee>::const_iterator i(vector.begin());
-        i != vector.end();
-        ++i) {
-        if (i != vector.begin()) stream << ", ";
-        stream << jsonify(*i);
-    }
-    stream << " ]";
-    return(stream);
+inline ostream& operator<<(ostream& s, const vector<Containee>& v) {
+    rfl::json::write(v, s);
+    return(s);
 }
 
 }

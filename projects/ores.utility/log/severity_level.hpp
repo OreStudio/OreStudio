@@ -34,7 +34,8 @@ namespace ores::utility::log {
 /**
  * @brief Logging severity.
  *
- * This must be a C++-03 enum due to the boost::log internals.
+ * @warn This must be a C++-03 enum due to the boost::log internals. It also
+ * makes logging easier otherwise we'd have to always prefix "severity_level::".
  */
 enum severity_level {
     trace,
@@ -46,6 +47,8 @@ enum severity_level {
 
 /**
  * @brief Converts the supplied string into the severity level, if valid.
+ *
+ * Cannot use magic enums as we can't use enum classes.
  */
 severity_level to_severity_level(const std::string& s);
 

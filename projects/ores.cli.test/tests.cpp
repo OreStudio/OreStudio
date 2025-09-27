@@ -198,8 +198,7 @@ BOOST_AUTO_TEST_CASE(test_invalid_command) {
     std::ostringstream info, error;
 
     std::vector<std::string> args = {"invalid_command"};
-    
-    BOOST_CHECK_THROW(p.parse(args, info, error), boost::wrapexcept<parser_exception>);
+    BOOST_CHECK_THROW(p.parse(args, info, error), parser_exception);
 }
 
 BOOST_AUTO_TEST_CASE(test_missing_required_import_args) {
@@ -207,8 +206,7 @@ BOOST_AUTO_TEST_CASE(test_missing_required_import_args) {
     std::ostringstream info, error;
 
     std::vector<std::string> args = {"import"};
-    
-    BOOST_CHECK_THROW(p.parse(args, info, error), boost::wrapexcept<parser_exception>);
+    BOOST_CHECK_THROW(p.parse(args, info, error), parser_exception);
 }
 
 BOOST_AUTO_TEST_CASE(test_missing_required_export_args) {
@@ -216,8 +214,7 @@ BOOST_AUTO_TEST_CASE(test_missing_required_export_args) {
     std::ostringstream info, error;
 
     std::vector<std::string> args = {"export"};
-    
-    BOOST_CHECK_THROW(p.parse(args, info, error), boost::wrapexcept<parser_exception>);
+    BOOST_CHECK_THROW(p.parse(args, info, error), parser_exception);
 }
 
 BOOST_AUTO_TEST_CASE(test_import_with_logging) {

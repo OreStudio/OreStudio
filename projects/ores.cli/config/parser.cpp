@@ -323,10 +323,10 @@ read_logging_configuration(const variables_map& vm) {
  * @brief Reads entity from the variables map.
  */
 entity read_entity(const variables_map& vm) {
-    if (vm.count(import_entity_arg) == 0)
+    if (vm.count("entity") == 0)
         BOOST_THROW_EXCEPTION(parser_exception("Must supply entity."));
 
-    const auto s(vm[import_entity_arg].as<std::string>());
+    const auto s(vm["entity"].as<std::string>());
     auto e = magic_enum::enum_cast<entity>(s);
     if (e.has_value())
         return e.value();
@@ -342,7 +342,7 @@ format read_format(const variables_map& vm) {
     if (vm.count(export_format_arg) == 0)
         return format::json;
 
-    const auto s(vm[import_entity_arg].as<std::string>());
+    const auto s(vm[export_format_arg].as<std::string>());
     auto f = magic_enum::enum_cast<format>(s);
     if (f.has_value())
         return f.value();

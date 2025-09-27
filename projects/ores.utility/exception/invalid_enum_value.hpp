@@ -43,15 +43,17 @@ namespace ores::utility::exception {
  */
 class invalid_enum_value : public virtual std::exception,
                            public virtual boost::exception {
-public:
-    explicit invalid_enum_value(std::string message)
-        : message_(std::move(message)) { }
-    invalid_enum_value() = default;
-    ~invalid_enum_value() noexcept override = default;
-    const char* what() const noexcept final { return(message_.c_str()); }
+  public:
+        explicit invalid_enum_value(std::string_view message = "")
+        : message_(message) {}
+
+    [[nodiscard]] const char* what() const noexcept override {
+        return message_.c_str();
+    }
 
 private:
     std::string message_;
+
 };
 
 }

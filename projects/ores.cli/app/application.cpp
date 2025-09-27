@@ -79,14 +79,14 @@ import_data(const std::optional<config::import_options>& ocfg) const {
     }
 
     const auto& cfg(ocfg.value());
-    switch (cfg.entity) {
+    switch (cfg.target_entity) {
         case config::entity::currency_config:
             import_currencies(cfg.targets);
             break;
         default:
             BOOST_THROW_EXCEPTION(
                 application_exception(std::format("Unsupported entity: {}",
-                        magic_enum::enum_name(cfg.entity))));
+                        magic_enum::enum_name(cfg.target_entity))));
     }
 }
 
@@ -119,14 +119,14 @@ export_data(const std::optional<config::export_options>& ocfg) const {
     }
 
     const auto& cfg(ocfg.value());
-    switch (cfg.entity) {
+    switch (cfg.target_entity) {
         case config::entity::currency_config:
             export_currencies(cfg);
             break;
         default:
             BOOST_THROW_EXCEPTION(
                 application_exception(std::format("Unsupported entity: {}",
-                        magic_enum::enum_name(cfg.entity))));
+                        magic_enum::enum_name(cfg.target_entity))));
     }
 }
 

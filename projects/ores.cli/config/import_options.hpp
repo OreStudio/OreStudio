@@ -38,7 +38,7 @@ struct import_options final {
     /**
      * @brief Which entity to target.
      */
-    entity entity;
+    entity target_entity;
     /**
      * @brief Target files containing import data. Format is inferred from
      * extension.

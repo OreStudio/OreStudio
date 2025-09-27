@@ -39,7 +39,7 @@ struct export_options final {
     /**
      * @brief Which entity to export.
      */
-    entity entity;
+    entity target_entity;
     /**
      * @brief Timepoint to use for the reading. If empty, use latest.
      */
@@ -55,7 +55,7 @@ struct export_options final {
     /**
      * @brief Format to use for the export.
      */
-    format format;
+    format target_format;
 };
 
 std::ostream& operator<<(std::ostream& s, const export_options& v);

@@ -357,7 +357,7 @@ format read_format(const variables_map& vm) {
 import_options read_import_options(const variables_map& vm) {
     import_options r;
 
-    r.entity = read_entity(vm);
+    r.target_entity = read_entity(vm);
 
     const auto t(vm[import_targets_arg].as<std::vector<std::string>>());
     if (t.empty()) {
@@ -378,8 +378,8 @@ import_options read_import_options(const variables_map& vm) {
 export_options read_export_options(const variables_map& vm) {
     export_options r;
 
-    r.entity = read_entity(vm);
-    r.format = read_format(vm);
+    r.target_entity = read_entity(vm);
+    r.target_format = read_format(vm);
     r.all_versions = vm.count(export_all_versions_arg) != 0;
 
     if (vm.count(export_as_of_arg) != 0)

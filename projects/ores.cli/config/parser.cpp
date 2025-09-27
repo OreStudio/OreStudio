@@ -38,14 +38,13 @@ const std::string build_info(ORES_BUILD_INFO);
 const std::string usage_error_msg("Usage error: ");
 const std::string no_command_msg("No command supplied. ");
 
+const std::string entity_arg("entity");
 const std::string import_command_name("import");
 const std::string import_command_desc("Imports data into the system.");
-const std::string import_entity_arg("entity");
 const std::string import_targets_arg("target");
 
 const std::string export_command_name("export");
 const std::string export_command_desc("Exports data from the system.");
-const std::string export_entity_arg("entity");
 const std::string export_as_of_arg("as-of");
 const std::string export_key_arg("key");
 const std::string export_all_versions_arg("all-versions");
@@ -323,10 +322,10 @@ read_logging_configuration(const variables_map& vm) {
  * @brief Reads entity from the variables map.
  */
 entity read_entity(const variables_map& vm) {
-    if (vm.count("entity") == 0)
+    if (vm.count(entity_arg) == 0)
         BOOST_THROW_EXCEPTION(parser_exception("Must supply entity."));
 
-    const auto s(vm["entity"].as<std::string>());
+    const auto s(vm[entity_arg].as<std::string>());
     auto e = magic_enum::enum_cast<entity>(s);
     if (e.has_value())
         return e.value();

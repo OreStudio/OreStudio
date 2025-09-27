@@ -24,6 +24,7 @@
 #include "ores.cli/config/parser.hpp"
 #include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/format.hpp"
+#include "ores.cli/config/parser_exception.hpp"
 
 using namespace ores::cli::config;
 
@@ -32,10 +33,10 @@ BOOST_AUTO_TEST_SUITE(parser_tests)
 BOOST_AUTO_TEST_CASE(test_help_option) {
     parser p;
     std::ostringstream info, error;
-    
+
     std::vector<std::string> args = {"--help"};
     auto result = p.parse(args, info, error);
-    
+
     BOOST_CHECK(!result.has_value());
     BOOST_CHECK(!info.str().empty());
     BOOST_CHECK(info.str().find("ORE Studio") != std::string::npos);
@@ -47,10 +48,10 @@ BOOST_AUTO_TEST_CASE(test_help_option) {
 BOOST_AUTO_TEST_CASE(test_version_option) {
     parser p;
     std::ostringstream info, error;
-    
+
     std::vector<std::string> args = {"--version"};
     auto result = p.parse(args, info, error);
-    
+
     BOOST_CHECK(!result.has_value());
     BOOST_CHECK(!info.str().empty());
     BOOST_CHECK(info.str().find("OreStudio") != std::string::npos);
@@ -60,10 +61,10 @@ BOOST_AUTO_TEST_CASE(test_version_option) {
 BOOST_AUTO_TEST_CASE(test_import_help) {
     parser p;
     std::ostringstream info, error;
-    
+
     std::vector<std::string> args = {"import", "--help"};
     auto result = p.parse(args, info, error);
-    
+
     BOOST_CHECK(!result.has_value());
     BOOST_CHECK(!info.str().empty());
     BOOST_CHECK(info.str().find("import") != std::string::npos);
@@ -74,10 +75,10 @@ BOOST_AUTO_TEST_CASE(test_import_help) {
 BOOST_AUTO_TEST_CASE(test_export_help) {
     parser p;
     std::ostringstream info, error;
-    
+
     std::vector<std::string> args = {"export", "--help"};
     auto result = p.parse(args, info, error);
-    
+
     BOOST_CHECK(!result.has_value());
     BOOST_CHECK(!info.str().empty());
     BOOST_CHECK(info.str().find("export") != std::string::npos);
@@ -91,7 +92,7 @@ BOOST_AUTO_TEST_CASE(test_export_help) {
 BOOST_AUTO_TEST_CASE(test_logging_options) {
     parser p;
     std::ostringstream info, error;
-    
+
     std::vector<std::string> args = {
         "import",
         "--log-enabled",
@@ -102,7 +103,7 @@ BOOST_AUTO_TEST_CASE(test_logging_options) {
         "--target", "test.xml"
     };
     auto result = p.parse(args, info, error);
-    
+
     BOOST_REQUIRE(result.has_value());
     BOOST_REQUIRE(result->logging.has_value());
     BOOST_CHECK_EQUAL(result->logging->severity, "debug");
@@ -113,14 +114,14 @@ BOOST_AUTO_TEST_CASE(test_logging_options) {
 BOOST_AUTO_TEST_CASE(test_import_basic) {
     parser p;
     std::ostringstream info, error;
-    
+
     std::vector<std::string> args = {
         "import",
         "--entity", "currency_config",
         "--target", "test_file.xml"
     };
     auto result = p.parse(args, info, error);
-    
+
     BOOST_REQUIRE(result.has_value());
     BOOST_REQUIRE(result->importing.has_value());
     BOOST_CHECK(result->importing->target_entity == entity::currency_config);
@@ -131,7 +132,7 @@ BOOST_AUTO_TEST_CASE(test_import_basic) {
 BOOST_AUTO_TEST_CASE(test_import_multiple_targets) {
     parser p;
     std::ostringstream info, error;
-    
+
     std::vector<std::string> args = {
         "import",
         "--entity", "currency_config",
@@ -140,7 +141,7 @@ BOOST_AUTO_TEST_CASE(test_import_multiple_targets) {
         "--target", "file3.xml"
     };
     auto result = p.parse(args, info, error);
-    
+
     BOOST_REQUIRE(result.has_value());
     BOOST_REQUIRE(result->importing.has_value());
     BOOST_CHECK(result->importing->target_entity == entity::currency_config);
@@ -153,13 +154,13 @@ BOOST_AUTO_TEST_CASE(test_import_multiple_targets) {
 BOOST_AUTO_TEST_CASE(test_export_basic) {
     parser p;
     std::ostringstream info, error;
-    
+
     std::vector<std::string> args = {
         "export",
         "--entity", "currency_config"
     };
     auto result = p.parse(args, info, error);
-    
+
     BOOST_REQUIRE(result.has_value());
     BOOST_REQUIRE(result->exporting.has_value());
     BOOST_CHECK(result->exporting->target_entity == entity::currency_config);
@@ -172,7 +173,7 @@ BOOST_AUTO_TEST_CASE(test_export_basic) {
 BOOST_AUTO_TEST_CASE(test_export_full_options) {
     parser p;
     std::ostringstream info, error;
-    
+
     std::vector<std::string> args = {
         "export",
         "--entity", "currency_config",
@@ -182,7 +183,7 @@ BOOST_AUTO_TEST_CASE(test_export_full_options) {
         "--format", "xml"
     };
     auto result = p.parse(args, info, error);
-    
+
     BOOST_REQUIRE(result.has_value());
     BOOST_REQUIRE(result->exporting.has_value());
     BOOST_CHECK(result->exporting->target_entity == entity::currency_config);
@@ -195,43 +196,34 @@ BOOST_AUTO_TEST_CASE(test_export_full_options) {
 BOOST_AUTO_TEST_CASE(test_invalid_command) {
     parser p;
     std::ostringstream info, error;
-    
+
     std::vector<std::string> args = {"invalid_command"};
-    auto result = p.parse(args, info, error);
     
-    BOOST_CHECK(!result.has_value());
-    BOOST_CHECK(!error.str().empty());
-    BOOST_CHECK(error.str().find("Invalid or unsupported command") != std::string::npos);
+    BOOST_CHECK_THROW(p.parse(args, info, error), boost::wrapexcept<parser_exception>);
 }
 
 BOOST_AUTO_TEST_CASE(test_missing_required_import_args) {
     parser p;
     std::ostringstream info, error;
-    
+
     std::vector<std::string> args = {"import"};
-    auto result = p.parse(args, info, error);
     
-    BOOST_CHECK(!result.has_value());
-    BOOST_CHECK(!error.str().empty());
-    BOOST_CHECK(error.str().find("Must supply entity") != std::string::npos);
+    BOOST_CHECK_THROW(p.parse(args, info, error), boost::wrapexcept<parser_exception>);
 }
 
 BOOST_AUTO_TEST_CASE(test_missing_required_export_args) {
     parser p;
     std::ostringstream info, error;
-    
+
     std::vector<std::string> args = {"export"};
-    auto result = p.parse(args, info, error);
     
-    BOOST_CHECK(!result.has_value());
-    BOOST_CHECK(!error.str().empty());
-    BOOST_CHECK(error.str().find("Must supply entity") != std::string::npos);
+    BOOST_CHECK_THROW(p.parse(args, info, error), boost::wrapexcept<parser_exception>);
 }
 
 BOOST_AUTO_TEST_CASE(test_import_with_logging) {
     parser p;
     std::ostringstream info, error;
-    
+
     std::vector<std::string> args = {
         "import",
         "--log-enabled",
@@ -240,7 +232,7 @@ BOOST_AUTO_TEST_CASE(test_import_with_logging) {
         "--target", "test.xml"
     };
     auto result = p.parse(args, info, error);
-    
+
     BOOST_REQUIRE(result.has_value());
     BOOST_REQUIRE(result->logging.has_value());
     BOOST_REQUIRE(result->importing.has_value());
@@ -251,7 +243,7 @@ BOOST_AUTO_TEST_CASE(test_import_with_logging) {
 BOOST_AUTO_TEST_CASE(test_export_with_logging) {
     parser p;
     std::ostringstream info, error;
-    
+
     std::vector<std::string> args = {
         "export",
         "--log-enabled",
@@ -260,7 +252,7 @@ BOOST_AUTO_TEST_CASE(test_export_with_logging) {
         "--format", "json"
     };
     auto result = p.parse(args, info, error);
-    
+
     BOOST_REQUIRE(result.has_value());
     BOOST_REQUIRE(result->logging.has_value());
     BOOST_REQUIRE(result->exporting.has_value());

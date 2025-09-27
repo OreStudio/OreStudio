@@ -25,14 +25,14 @@
 #endif
 
 #include <string>
-#include "ores.risk/types/currency_config.hpp"
+#include "ores.risk/domain/currency_config.hpp"
 
 namespace ores::risk::xml {
 
 class currency_config_serialiser {
 public:
-    std::string serialise(const types::currency_config& cfg);
-    types::currency_config deserialise(std::string s);
+    std::string serialise(const domain::currency_config& cfg);
+    domain::currency_config deserialise(std::string s);
 };
 
 }

@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 #include <sqlgen/postgres.hpp>
-#include "ores.risk/types/currency.hpp"
+#include "ores.risk/domain/currency.hpp"
 
 namespace ores::risk::db {
 
@@ -46,27 +46,27 @@ public:
      * unique ISO codes.
      */
     void write(sqlgen_connection c,
-        const std::vector<types::currency>& currencies);
+        const std::vector<domain::currency>& currencies);
 
     /**
      * @brief Reads latest currencies, possibly filtered by ISO code.
      */
-    std::vector<types::currency> read_latest(sqlgen_connection c,
+    std::vector<domain::currency> read_latest(sqlgen_connection c,
         const std::string& iso_code = std::string());
 
     /**
      * @brief Reads currencies at the supplied time point, possibly filtered by
      * ISO code.
      */
-    std::vector<types::currency> read_at_timepoint(sqlgen_connection c,
+    std::vector<domain::currency> read_at_timepoint(sqlgen_connection c,
         const std::string& as_of, const std::string& iso_code = std::string());
 
     /**
      * @brief Reads all currencies, possibly filtered by ISO code.
      */
     /**@{*/
-    std::vector<types::currency> read_all(sqlgen_connection c);
-    std::vector<types::currency> read_all(sqlgen_connection c,
+    std::vector<domain::currency> read_all(sqlgen_connection c);
+    std::vector<domain::currency> read_all(sqlgen_connection c,
         const std::string& iso_code = std::string());
     /**@}*/
 };

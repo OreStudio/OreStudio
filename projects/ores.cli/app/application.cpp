@@ -26,7 +26,7 @@
 #include "ores.cli/config/export_options.hpp"
 #include "ores.utility/log/logger.hpp"
 #include "ores.risk/db/currency_table.hpp"
-#include "ores.risk/types/currency_config.hpp"
+#include "ores.risk/domain/currency_config.hpp"
 #include "ores.cli/app/application_exception.hpp"
 #include "ores.cli/app/application.hpp"
 
@@ -95,7 +95,7 @@ export_currencies(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg, debug) << "Exporting currency configurations.";
     risk::db::currency_table ct;
 
-    using ores::risk::types::currency_config;
+    using ores::risk::domain::currency_config;
     const auto reader([&]() {
         if (cfg.all_versions) {
             BOOST_LOG_SEV(lg, debug) << "Reading all versions for currencies.";

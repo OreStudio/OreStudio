@@ -32,7 +32,7 @@ auto lg(logger_factory("ores.risk.db.currency_table"));
 
 namespace ores::risk::db {
 
-using types::currency;
+using domain::currency;
 using namespace sqlgen;
 using namespace sqlgen::literals;
 

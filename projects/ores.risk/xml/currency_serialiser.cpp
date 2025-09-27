@@ -35,7 +35,7 @@ const std::string missing_currency_config("No CurrencyConfig element found");
 
 namespace ores::risk::xml {
 
-using types::currency;
+using domain::currency;
 using namespace rapidxml_ns;
 
 void currency_serialiser::

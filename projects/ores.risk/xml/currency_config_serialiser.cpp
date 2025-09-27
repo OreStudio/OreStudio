@@ -37,12 +37,12 @@ const std::string missing_currency_config("No CurrencyConfig element found");
 
 namespace ores::risk::xml {
 
-using types::currency;
-using types::currency_config;
+using domain::currency;
+using domain::currency_config;
 using namespace rapidxml_ns;
 
 std::string
-currency_config_serialiser::serialise(const types::currency_config& cfg)
+currency_config_serialiser::serialise(const domain::currency_config& cfg)
 {
     xml_document<> doc;
     xml_node<>* root = doc.allocate_node(node_element, "CurrencyConfig");

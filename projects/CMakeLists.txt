@@ -37,6 +37,7 @@ add_compile_options(
     $<$<CXX_COMPILER_ID:MSVC>:/WX>)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.cli)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.cli.test)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.core)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.core.test)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.comms)

@@ -18,46 +18,48 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-09-27 Sat 10:33], for Saturday, September 27, 2025.
+#+CAPTION: Clock summary at [2025-09-27 Sat 21:04], for Saturday, September 27, 2025.
 |      | <75>                                         |        |      |      |       |
 | Tags | Headline                                     | Time   |      |      |     % |
 |------+----------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                 | *1:33* |      |      | 100.0 |
+|      | *Total time*                                 | *2:08* |      |      | 100.0 |
 |------+----------------------------------------------+--------+------+------+-------|
-|      | Stories                                      | 1:33   |      |      | 100.0 |
-|      | Active                                       |        | 1:33 |      | 100.0 |
-| code | Refactor cli to follow new project structure |        |      | 1:33 | 100.0 |
+|      | Stories                                      | 2:08   |      |      | 100.0 |
+|      | Active                                       |        | 2:08 |      | 100.0 |
+| code | Refactor cli to follow new project structure |        |      | 1:33 |  72.7 |
+| code | Add tests to cli parser                      |        |      | 0:35 |  27.3 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-09-27 Sat 10:33]
+#+CAPTION: Clock summary at [2025-09-27 Sat 21:04]
 |          | <75>                                               |         |       |      |       |
 | Tags     | Headline                                           | Time    |       |      |     % |
 |----------+----------------------------------------------------+---------+-------+------+-------|
-|          | *Total time*                                       | *51:06* |       |      | 100.0 |
+|          | *Total time*                                       | *51:41* |       |      | 100.0 |
 |----------+----------------------------------------------------+---------+-------+------+-------|
-|          | Stories                                            | 51:06   |       |      | 100.0 |
-|          | Active                                             |         | 51:06 |      | 100.0 |
+|          | Stories                                            | 51:41   |       |      | 100.0 |
+|          | Active                                             |         | 51:41 |      | 100.0 |
 | agile    | Sprint and product backlog refinement              |         |       | 2:15 |   4.4 |
 | infra    | Fix broken builds                                  |         |       | 0:36 |   1.2 |
 | code     | Create a containing structure for data             |         |       | 0:35 |   1.1 |
 | code     | Add temporal support to currencies                 |         |       | 2:59 |   5.8 |
-| code     | Add command to dump currencies                     |         |       | 4:18 |   8.4 |
-| code     | Refactor code for currencies                       |         |       | 3:52 |   7.6 |
-| code     | Restore qt setup                                   |         |       | 2:20 |   4.6 |
+| code     | Add command to dump currencies                     |         |       | 4:18 |   8.3 |
+| code     | Refactor code for currencies                       |         |       | 3:52 |   7.5 |
+| code     | Restore qt setup                                   |         |       | 2:20 |   4.5 |
 | code     | Add gemini action                                  |         |       | 0:05 |   0.2 |
 | code     | Remove ImGui support                               |         |       | 0:08 |   0.3 |
 | code     | Create a GRPC based service                        |         |       | 2:09 |   4.2 |
-| code     | Implement a 0MQ based RPC service and client       |         |       | 3:55 |   7.7 |
+| code     | Implement a 0MQ based RPC service and client       |         |       | 3:55 |   7.6 |
 | code     | Fix misspell fixer errors                          |         |       | 0:08 |   0.3 |
 | code     | Remove URL support from prog mode in emacs         |         |       | 0:14 |   0.5 |
 | code     | Remove GRPC support                                |         |       | 0:16 |   0.5 |
 | code     | Implement a cobalt based server and client         |         |       | 2:53 |   5.6 |
-| code     | Add serialisation support for reflect-cpp          |         |       | 3:07 |   6.1 |
-| analysis | White-boarding for new architecture                |         |       | 1:52 |   3.7 |
-| code     | Use sqlgen for postgres                            |         |       | 7:23 |  14.4 |
-| code     | Refactor cli to follow new project structure       |         |       | 4:47 |   9.4 |
+| code     | Add serialisation support for reflect-cpp          |         |       | 3:07 |   6.0 |
+| analysis | White-boarding for new architecture                |         |       | 1:52 |   3.6 |
+| code     | Use sqlgen for postgres                            |         |       | 7:23 |  14.3 |
+| code     | Refactor cli to follow new project structure       |         |       | 4:47 |   9.3 |
+| code     | Add tests to cli parser                            |         |       | 0:35 |   1.1 |
 | code     | Completions in emacs org mode are incorrect        |         |       | 1:02 |   2.0 |
 | infra    | Investigate build warning for vcpkg binary caching |         |       | 0:25 |   0.8 |
 | infra    | Investigate build warning for qtbase               |         |       | 0:10 |   0.3 |
@@ -454,6 +456,12 @@ We may need to update the SQL from sqlgen. This will make life easier.
     :END:
 
 As defined in analysis story, refactor CLI with new approach.
+
+*** COMPLETED Add tests to cli parser                                  :code:
+    :LOGBOOK:
+    CLOCK: [2025-09-27 Sat 20:50]--[2025-09-27 Sat 21:02] =>  0:12
+    CLOCK: [2025-09-27 Sat 14:01]--[2025-09-27 Sat 14:24] =>  0:23
+    :END:
 
 *** STARTED Completions in emacs org mode are incorrect                :code:
     :LOGBOOK:

@@ -23,7 +23,7 @@
 #include <boost/throw_exception.hpp>
 #include <magic_enum/magic_enum.hpp>
 #include "ores.cli/config/format.hpp"
-#include "ores.utility/config/config.hpp"
+#include "ores.utility/version/version.hpp"
 #include "ores.utility/log/severity_level.hpp"
 #include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/parser_exception.hpp"

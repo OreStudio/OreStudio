@@ -24,8 +24,8 @@ file(GLOB_RECURSE files RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config/config.hpp.in"
-    "${CMAKE_CURRENT_SOURCE_DIR}/config/config.hpp")
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/version/version.hpp.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/version/version.hpp")
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

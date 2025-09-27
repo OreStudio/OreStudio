@@ -17,13 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_ORES_CORE_HPP
-#define ORES_CORE_ORES_CORE_HPP
+#ifndef ORES_RISK_XML_CURRENCY_SERIALISER_HPP
+#define ORES_RISK_XML_CURRENCY_SERIALISER_HPP
 
-/**
- * @brief Library with all of the core logic of ORE Studio. Does not contain any
- * presentation logic, just domain logic and supporting CRUD infrastructure.
- */
-namespace ores::core {}
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
+
+#include <rapidxml-ns/rapidxml_ns.hpp>
+#include "ores.risk/types/currency.hpp"
+
+namespace ores::risk::xml {
+
+class currency_serialiser {
+public:
+    void serialise(rapidxml_ns::xml_node<>& parent, const types::currency& cfg);
+    types::currency deserialise(rapidxml_ns::xml_node<>& node);
+};
+
+}
 
 #endif

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_RISK_DB_CURRENCY_TABLE_HPP
-#define ORES_CORE_RISK_DB_CURRENCY_TABLE_HPP
+#ifndef ORES_RISK_DB_CURRENCY_TABLE_HPP
+#define ORES_RISK_DB_CURRENCY_TABLE_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -27,9 +27,9 @@
 #include <string>
 #include <vector>
 #include <sqlgen/postgres.hpp>
-#include "ores.core/risk/types/currency.hpp"
+#include "ores.risk/types/currency.hpp"
 
-namespace ores::core::risk::db {
+namespace ores::risk::db {
 
 class currency_table {
 private:

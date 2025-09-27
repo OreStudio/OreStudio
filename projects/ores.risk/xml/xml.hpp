@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -16,16 +16,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_RISK_HPP
-#define ORES_CORE_RISK_HPP
+#ifndef ORES_RISK_XML_XML_HPP
+#define ORES_RISK_XML_XML_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
 /**
- * @brief Domain model for the ORE types and other related classes.
+ * @brief Provides XML serialisation support for the ORE domain model types
+ * using native ORE XML.
  */
-namespace ores::core::risk {}
+namespace ores::risk::xml {}
 
 #endif

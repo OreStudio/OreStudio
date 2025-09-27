@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_RISK_TYPES_CURRENCY_HPP
-#define ORES_CORE_RISK_TYPES_CURRENCY_HPP
+#ifndef ORES_RISK_TYPES_CURRENCY_HPP
+#define ORES_RISK_TYPES_CURRENCY_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -28,7 +28,7 @@
 #include "sqlgen/Timestamp.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
-namespace ores::core::risk::types {
+namespace ores::risk::types {
 
 /**
  * @brief Represents an ORE currency.

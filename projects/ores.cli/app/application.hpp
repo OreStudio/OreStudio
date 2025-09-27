@@ -29,7 +29,7 @@
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
 #include "ores.cli/config/export_options.hpp"
-#include "ores.core/risk/xml/importer.hpp"
+#include "ores.risk/xml/importer.hpp"
 
 namespace ores::cli::app {
 
@@ -58,7 +58,7 @@ public:
     void run(const config::options& cfg) const;
 
 private:
-    core::risk::xml::importer importer_;
+    risk::xml::importer importer_;
 };
 
 }

@@ -18,17 +18,17 @@
  * MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_RISK_XML_IMPORTER_HPP
-#define ORES_CORE_RISK_XML_IMPORTER_HPP
+#ifndef ORES_RISK_XML_IMPORTER_HPP
+#define ORES_RISK_XML_IMPORTER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
 #include <filesystem>
-#include "ores.core/risk/types/currency_config.hpp"
+#include "ores.risk/types/currency_config.hpp"
 
-namespace ores::core::risk::xml {
+namespace ores::risk::xml {
 
 /**
  * @brief Imports domain objects from their ORE XML representation.

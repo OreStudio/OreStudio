@@ -17,33 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CORE_RISK_XML_PARSING_ERROR_HPP
-#define ORES_CORE_RISK_XML_PARSING_ERROR_HPP
+#ifndef ORES_RISK_TYPES_CURRENCY_CONFIG_HPP
+#define ORES_RISK_TYPES_CURRENCY_CONFIG_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <string>
-#include <boost/exception/info.hpp>
+#include <iosfwd>
+#include <vector>
+#include "ores.risk/types/currency.hpp"
 
-namespace ores::core::risk::xml {
+namespace ores::risk::types {
 
 /**
- * @brief A fatal error has occurred during parsing of ORE XML.
+ * @brief Represents a set of ORE currencies.
  */
-class parsing_error : public virtual std::exception,
-                      public virtual boost::exception {
-public:
-    explicit parsing_error(std::string_view message = "")
-        : message_(message) {}
-    [[nodiscard]] const char* what() const noexcept override {
-        return message_.c_str();
-    }
-
-private:
-    std::string message_;
+struct currency_config {
+    std::vector<currency> currencies;
 };
+
+std::ostream& operator<<(std::ostream& s, const currency_config& v);
 
 }
 

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,16 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.core/risk/types/currency.hpp"
+#ifndef ORES_RISK_XML_CURRENCY_CONFIG_SERIALISER_HPP
+#define ORES_RISK_XML_CURRENCY_CONFIG_SERIALISER_HPP
 
-namespace ores::core::risk::types {
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
 
-std::ostream& operator<<(std::ostream& s, const currency& v) {
-    rfl::json::write(v, s);
-    return(s);
+#include <string>
+#include "ores.risk/types/currency_config.hpp"
+
+namespace ores::risk::xml {
+
+class currency_config_serialiser {
+public:
+    std::string serialise(const types::currency_config& cfg);
+    types::currency_config deserialise(std::string s);
+};
+
 }
 
-}
+#endif

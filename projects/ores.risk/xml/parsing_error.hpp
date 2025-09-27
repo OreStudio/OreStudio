@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2012-2015 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,9 +17,34 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#define BOOST_TEST_MODULE ores.core.test
-#include <boost/test/unit_test.hpp>
-#include "ores.utility/test/fixture.hpp"
+#ifndef ORES_RISK_XML_PARSING_ERROR_HPP
+#define ORES_RISK_XML_PARSING_ERROR_HPP
 
-using namespace ores::utility::test;
-BOOST_GLOBAL_FIXTURE(exception_fixture);
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
+
+#include <string>
+#include <boost/exception/info.hpp>
+
+namespace ores::risk::xml {
+
+/**
+ * @brief A fatal error has occurred during parsing of ORE XML.
+ */
+class parsing_error : public virtual std::exception,
+                      public virtual boost::exception {
+public:
+    explicit parsing_error(std::string_view message = "")
+        : message_(message) {}
+    [[nodiscard]] const char* what() const noexcept override {
+        return message_.c_str();
+    }
+
+private:
+    std::string message_;
+};
+
+}
+
+#endif

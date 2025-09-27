@@ -21,19 +21,19 @@
 // #include <format>
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/string/converter.hpp"
-#include "ores.core/risk/xml/currency_serialiser.hpp"
+#include "ores.risk/xml/currency_serialiser.hpp"
 
 namespace {
 
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.core.xml.currency_serialiser"));
+auto lg(logger_factory("ores.xml.currency_serialiser"));
 
 const std::string missing_root_node("Could not find a root XML node.");
 const std::string missing_currency_config("No CurrencyConfig element found");
 
 }
 
-namespace ores::core::risk::xml {
+namespace ores::risk::xml {
 
 using types::currency;
 using namespace rapidxml_ns;

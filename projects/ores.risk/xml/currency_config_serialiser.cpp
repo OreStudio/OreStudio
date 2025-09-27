@@ -21,21 +21,21 @@
 #include "rapidxml-ns/rapidxml_ns.hpp"
 #include <rapidxml-ns/rapidxml_ns_print.hpp>
 #include "ores.utility/log/logger.hpp"
-#include "ores.core/risk/xml/parsing_error.hpp"
-#include "ores.core/risk/xml/currency_serialiser.hpp"
-#include "ores.core/risk/xml/currency_config_serialiser.hpp"
+#include "ores.risk/xml/parsing_error.hpp"
+#include "ores.risk/xml/currency_serialiser.hpp"
+#include "ores.risk/xml/currency_config_serialiser.hpp"
 
 namespace {
 
 using namespace ores::utility::log;
 auto lg(logger_factory(
-        "ores.core.risk.xml.currency_config_serialiser"));
+        "ores.risk.xml.currency_config_serialiser"));
 
 const std::string missing_currency_config("No CurrencyConfig element found");
 
 }
 
-namespace ores::core::risk::xml {
+namespace ores::risk::xml {
 
 using types::currency;
 using types::currency_config;

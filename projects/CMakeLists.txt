@@ -38,8 +38,8 @@ add_compile_options(
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.cli)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.cli.test)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.core)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.core.test)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.risk)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.risk.test)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.comms)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.service)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.client)

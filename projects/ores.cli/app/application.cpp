@@ -25,8 +25,8 @@
 #include <magic_enum/magic_enum.hpp>
 #include "ores.cli/config/export_options.hpp"
 #include "ores.utility/log/logger.hpp"
-#include "ores.core/risk/db/currency_table.hpp"
-#include "ores.core/risk/types/currency_config.hpp"
+#include "ores.risk/db/currency_table.hpp"
+#include "ores.risk/types/currency_config.hpp"
 #include "ores.cli/app/application_exception.hpp"
 #include "ores.cli/app/application.hpp"
 
@@ -64,7 +64,7 @@ import_currencies(const std::vector<std::filesystem::path> files) const {
     {
         BOOST_LOG_SEV(lg, debug) << "Processing file: " << f;
         auto cc(importer_.import_currency_config(f));
-        core::risk::db::currency_table ct;
+        risk::db::currency_table ct;
         ct.write(connect(), cc.currencies);
         std::cout << cc << std::endl;
     }
@@ -93,9 +93,9 @@ import_data(const std::optional<config::import_options>& ocfg) const {
 void application::
 export_currencies(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg, debug) << "Exporting currency configurations.";
-    core::risk::db::currency_table ct;
+    risk::db::currency_table ct;
 
-    using ores::core::risk::types::currency_config;
+    using ores::risk::types::currency_config;
     const auto reader([&]() {
         if (cfg.all_versions) {
             BOOST_LOG_SEV(lg, debug) << "Reading all versions for currencies.";

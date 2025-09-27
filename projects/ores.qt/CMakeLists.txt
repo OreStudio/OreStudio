@@ -31,7 +31,7 @@ add_executable(ores.qt
 )
 
 target_link_libraries(ores.qt PRIVATE
-    ores.core.lib
+    ores.risk.lib
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

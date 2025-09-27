@@ -17,16 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.core/risk/types/currency_config.hpp"
+#include <boost/test/unit_test.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 
-namespace ores::core::risk::types {
+BOOST_AUTO_TEST_SUITE(test_suite)
 
-std::ostream& operator<<(std::ostream& s, const currency_config& v) {
-    rfl::json::write(v, s);
-    return(s);
+BOOST_AUTO_TEST_CASE(test) {
+    BOOST_CHECK(true);
 }
 
-}
+BOOST_AUTO_TEST_SUITE_END()

@@ -21,16 +21,16 @@
 #include <rfl/json.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "ores.utility/log/logger.hpp"
-#include "ores.core/risk/db/currency_table.hpp"
+#include "ores.risk/db/currency_table.hpp"
 
 namespace {
 
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.core.risk.db.currency_table"));
+auto lg(logger_factory("ores.risk.db.currency_table"));
 
 }
 
-namespace ores::core::risk::db {
+namespace ores::risk::db {
 
 using types::currency;
 using namespace sqlgen;

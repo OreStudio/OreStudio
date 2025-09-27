@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,30 +17,35 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_LOG_LOGGING_CONFIGURATION_VALIDATOR_HPP
-#define ORES_UTILITY_LOG_LOGGING_CONFIGURATION_VALIDATOR_HPP
+#ifndef ORES_CLI_CONFIG_PARSER_HPP
+#define ORES_CLI_CONFIG_PARSER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include "ores.utility/log/logging_configuration.hpp"
+#include <iosfwd>
+#include <vector>
+#include <string>
+#include <optional>
+#include "ores.cli/config/options.hpp"
 
-namespace ores::utility::log {
+namespace ores::cli::config {
 
 /**
- * @brief Checks the validity of the supplied logging configuration.
+ * @brief Command-line parser implementation using boost program options.
+ *
+ * Note on logging: we are NOT logging any of the exceptions to the log in this
+ * class. This is by design. The logger is only initialised after the options
+ * have been parsed; were we to log prior to this, we would dump all the
+ * messages into the cli. The output is very confusing users that are accustomed
+ * to normal cli applications.
  */
-class logging_configuration_validator final {
+class parser final {
 public:
-    logging_configuration_validator() = delete;
-    logging_configuration_validator(const logging_configuration_validator&) = delete;
-    logging_configuration_validator(logging_configuration_validator&&) = delete;
-    ~logging_configuration_validator() = delete;
-    logging_configuration_validator&
-    operator=(const logging_configuration_validator&) = delete;
-
-    static void validate(const logging_configuration& cfg);
+    std::optional<options>
+    parse(const std::vector<std::string>& arguments, std::ostream& info,
+        std::ostream& error) const;
 };
 
 }

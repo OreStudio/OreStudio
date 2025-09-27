@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <stdexcept>
 #include "ores.utility/log/severity_level.hpp"
 #include "ores.utility/exception/invalid_enum_value.hpp"
 

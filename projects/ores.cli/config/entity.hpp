@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,15 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.utility/log/logging_configuration.hpp"
+#ifndef ORES_CLI_CONFIG_ENTITY_HPP
+#define ORES_CLI_CONFIG_ENTITY_HPP
 
-namespace ores::utility::log {
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
 
-std::ostream& operator<<(std::ostream& s, const logging_configuration& v) {
-    rfl::json::write(v, s);
-    return(s);
+namespace ores::cli::config {
+
+/**
+ * @brief List of available entities to target.
+ */
+enum class entity {
+    currency_config
+};
+
 }
 
-}
+#endif

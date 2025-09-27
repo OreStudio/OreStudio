@@ -22,19 +22,16 @@
 
 #include <ostream>
 #include <optional>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 
 namespace std {
 
-template<typename Containee>
-inline std::ostream& operator<<(std::ostream& s, const std::optional<Containee>& v) {
-    s << "{ " << "\"__type__\": " << "\"std::optional\"" << ", ";
-
-    if (v)
-        s << "\"data\": " << *v;
-    else
-        s << "\"data\": ""\"<null>\"";
-    s << " }";
-    return s;
+template <typename Containee>
+inline std::ostream&
+operator<<(std::ostream& s, const std::optional<Containee>& v) {
+    rfl::json::write(v, s);
+    return(s);
 }
 
 }

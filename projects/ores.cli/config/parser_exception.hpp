@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_LOG_INVALID_LOGGING_CONFIGURATION_HPP
-#define ORES_UTILITY_LOG_INVALID_LOGGING_CONFIGURATION_HPP
+#ifndef ORES_CLI_CONFIG_PARSER_EXCEPTION_HPP
+#define ORES_CLI_CONFIG_PARSER_EXCEPTION_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -27,20 +27,20 @@
 #include <string>
 #include <boost/exception/info.hpp>
 
-namespace ores::utility::log {
+namespace ores::cli::config {
 
 /**
- * @brief The values supplied for the logging configuration are not valid.
+ * @brief A fatal error has occurred during option parsing.
  */
-class invalid_logging_configuration
-    : public virtual std::exception, public virtual boost::exception {
+class parser_exception : public virtual std::exception,
+                         public virtual boost::exception {
 public:
-    invalid_logging_configuration() = default;
-    ~invalid_logging_configuration() noexcept override = default;
+    explicit parser_exception(std::string_view message = "")
+        : message_(message) {}
 
-    explicit invalid_logging_configuration(std::string message)
-        : message_(std::move(message)) { }
-    const char* what() const noexcept final { return(message_.c_str()); }
+    [[nodiscard]] const char* what() const noexcept override {
+        return message_.c_str();
+    }
 
 private:
     std::string message_;

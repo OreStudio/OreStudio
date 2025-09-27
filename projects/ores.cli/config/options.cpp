@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,35 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONSOLE_PARSER_EXCEPTION_HPP
-#define ORES_CONSOLE_PARSER_EXCEPTION_HPP
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.cli/config/options.hpp"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
+namespace ores::cli::config {
 
-#include <string>
-#include <boost/exception/info.hpp>
-
-namespace ores::console {
-
-/**
- * @brief A fatal error has occurred during option parsing.
- */
-class parser_exception : public virtual std::exception,
-                         public virtual boost::exception {
-public:
-    explicit parser_exception(std::string_view message = "")
-        : message_(message) {}
-
-    [[nodiscard]] const char* what() const noexcept override {
-        return message_.c_str();
-    }
-
-private:
-    std::string message_;
-};
-
+std::ostream& operator<<(std::ostream& s, const options& v) {
+    rfl::json::write(v, s);
+    return(s);
 }
 
-#endif
+}

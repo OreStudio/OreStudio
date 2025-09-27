@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,30 +17,48 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONSOLE_IMPORTING_CONFIGURATION_HPP
-#define ORES_CONSOLE_IMPORTING_CONFIGURATION_HPP
+#ifndef ORES_CLI_CONFIG_EXPORT_OPTIONS_HPP
+#define ORES_CLI_CONFIG_EXPORT_OPTIONS_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
 #include <iosfwd>
-#include <vector>
-#include <filesystem>
+#include <string>
+#include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/format.hpp"
 
-namespace ores::console {
+namespace ores::cli::config {
 
 /**
- * @brief Configuration related to importing data into the system.
+ * @brief Configuration related to exporting data into a supported export
+ * format.
  */
-struct importing_configuration final {
+struct export_options final {
     /**
-     * @brief Currency configuration files to import.
+     * @brief Which entity to export.
      */
-    std::vector<std::filesystem::path> currency_configurations;
+    entity target_entity;
+    /**
+     * @brief Timepoint to use for the reading. If empty, use latest.
+     */
+    std::string as_of;
+    /**
+     * @brief Key to filter by, if any.
+     */
+    std::string key;
+    /**
+     * @brief If true, output all versions of this entity.
+     */
+    bool all_versions;
+    /**
+     * @brief Format to use for the export.
+     */
+    format target_format;
 };
 
-std::ostream& operator<<(std::ostream& s, const importing_configuration& v);
+std::ostream& operator<<(std::ostream& s, const export_options& v);
 
 }
 

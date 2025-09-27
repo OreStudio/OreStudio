@@ -17,25 +17,36 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_STREAMING_STD_VECTOR_HPP
-#define ORES_UTILITY_STREAMING_STD_VECTOR_HPP
+#ifndef ORES_CLI_CONFIG_IMPORTING_CONFIG_HPP
+#define ORES_CLI_CONFIG_IMPORTING_CONFIG_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
+#include <iosfwd>
 #include <vector>
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include <filesystem>
+#include "ores.cli/config/entity.hpp"
 
-namespace std {
+namespace ores::cli::config {
 
-template<typename Containee>
-inline ostream& operator<<(ostream& s, const vector<Containee>& v) {
-    rfl::json::write(v, s);
-    return(s);
-}
+/**
+ * @brief Configuration related to importing data into the system.
+ */
+struct import_options final {
+    /**
+     * @brief Which entity to target.
+     */
+    entity target_entity;
+    /**
+     * @brief Target files containing import data. Format is inferred from
+     * extension.
+     */
+    std::vector<std::filesystem::path> targets;
+};
+
+std::ostream& operator<<(std::ostream& s, const import_options& v);
 
 }
 

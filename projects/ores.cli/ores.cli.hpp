@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,42 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONSOLE_DUMPING_CONFIGURATION_HPP
-#define ORES_CONSOLE_DUMPING_CONFIGURATION_HPP
-
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
-#include <iosfwd>
-#include <string>
-
-namespace ores::console {
+#ifndef ORES_CLI_ORES_CLI_HPP
+#define ORES_CLI_ORES_CLI_HPP
 
 /**
- * @brief Configuration related to dumping data from the system.
+ * @brief Console tool for ORE Studio.
  */
-struct dumping_configuration final {
-    /**
-     * @brief Whether to dump currency configurations or not.
-     */
-    bool currency_configurations;
-    /**
-     * @brief Timepoint to use for the reading.
-     */
-    std::string as_of;
-    /**
-     * @brief Key to filter by.
-     */
-    std::string key;
-    /**
-     * @brief If true, output all versions.
-     */
-    bool all_versions;
-};
-
-std::ostream& operator<<(std::ostream& s, const dumping_configuration& v);
-
-}
+namespace ores::cli { }
 
 #endif

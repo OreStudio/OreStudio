@@ -9,25 +9,15 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * FOR A PARTICULAR PURPOSE. Seethe GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
+ * You should have received a copy of the GNU General PublicLicense along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_LOG_LOGGING_CONFIGURATION_FWD_HPP
-#define ORES_UTILITY_LOG_LOGGING_CONFIGURATION_FWD_HPP
-
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
-namespace ores::utility::log {
-
-class logging_configuration;
-
-}
-
-#endif
+#define ORES_VERSION_MAJOR 0
+#define ORES_VERSION_MINOR 0
+#define ORES_VERSION_PATCH 2
+#define ORES_VERSION "0.0.2"
+#define ORES_BUILD_INFO "Build: Provider = LOCAL"

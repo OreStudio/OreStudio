@@ -101,6 +101,9 @@ find_package(reflectcpp CONFIG REQUIRED)
 # SQLGen
 find_package(sqlgen REQUIRED)
 
+# Magic enum
+find_package(magic_enum CONFIG REQUIRED)
+
 # site (for ctest)
 site_name(VORE_SITE)
 

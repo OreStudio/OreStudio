@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,12 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONSOLE_ORES_CONSOLE_HPP
-#define ORES_CONSOLE_ORES_CONSOLE_HPP
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.cli/config/import_options.hpp"
 
-/**
- * @brief Console tool for ORE Studio.
- */
-namespace ores::console { }
+namespace ores::cli::config {
 
-#endif
+std::ostream& operator<<(std::ostream& s, const import_options& v) {
+    rfl::json::write(v, s);
+    return(s);
+}
+
+}

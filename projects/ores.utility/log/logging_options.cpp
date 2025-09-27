@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,14 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.console/importing_configuration.hpp"
+#include "ores.utility/log/logging_options.hpp"
 
-namespace ores::console {
+namespace ores::utility::log {
 
-std::ostream& operator<<(std::ostream& s, const importing_configuration& v) {
+std::ostream& operator<<(std::ostream& s, const logging_options& v) {
     rfl::json::write(v, s);
     return(s);
 }

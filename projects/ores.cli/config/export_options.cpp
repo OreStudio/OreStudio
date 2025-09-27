@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -19,11 +19,12 @@
  */
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.console/configuration.hpp"
+#include <ostream>
+#include "ores.cli/config/export_options.hpp"
 
-namespace ores::console {
+namespace ores::cli::config {
 
-std::ostream& operator<<(std::ostream& s, const configuration& v) {
+std::ostream& operator<<(std::ostream& s, const export_options& v) {
     rfl::json::write(v, s);
     return(s);
 }

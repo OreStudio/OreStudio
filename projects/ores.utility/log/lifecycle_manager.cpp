@@ -27,7 +27,7 @@
 #include <boost/log/expressions.hpp>
 #include <boost/log/sources/logger.hpp>
 #include <boost/log/support/date_time.hpp>
-#include "ores.utility/log/logging_configuration_validator.hpp"
+#include "ores.utility/log/logging_options_validator.hpp"
 #include "ores.utility/log/lifecycle_manager.hpp"
 
 namespace {
@@ -96,7 +96,7 @@ void lifecycle_manager::create_console_backend(const severity_level severity) {
 }
 
 void lifecycle_manager::
-initialise(std::optional<logging_configuration> ocfg) {
+initialise(std::optional<logging_options> ocfg) {
     /*
      * If no configuration is supplied, logging is to be disabled.
      */
@@ -110,7 +110,7 @@ initialise(std::optional<logging_configuration> ocfg) {
      * A configuration was supplied. Ensure it is valid.
      */
     const auto& cfg(*ocfg);
-    logging_configuration_validator::validate(cfg);
+    logging_options_validator::validate(cfg);
     core.set_logging_enabled(true);
 
     /*

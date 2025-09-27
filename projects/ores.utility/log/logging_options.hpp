@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,40 +17,42 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONSOLE_CONFIGURATION_HPP
-#define ORES_CONSOLE_CONFIGURATION_HPP
+#ifndef ORES_UTILITY_LOG_LOGGING_OPTIONS_HPP
+#define ORES_UTILITY_LOG_LOGGING_OPTIONS_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
 #include <iosfwd>
-#include <optional>
-#include "ores.utility/log/logging_configuration.hpp"
-#include "ores.console/importing_configuration.hpp"
-#include "ores.console/dumping_configuration.hpp"
+#include <string>
+#include <filesystem>
 
-namespace ores::console {
+namespace ores::utility::log {
 
 /**
- * @brief All of the configuration required by the command line application.
+ * @brief Options related to logging.
  */
-struct configuration final {
+struct logging_options final {
     /**
-     * @brief Configuration related to logging, if any.
+     * @brief Level at which to log.
      */
-    std::optional<ores::utility::log::logging_configuration> logging;
+    std::string severity;
     /**
-     * @brief Configuration related to importing, if any.
+     * @brief Name of the file to log into. If empty, file logging is disabled.
      */
-    std::optional<importing_configuration> importing;
+    std::string filename;
     /**
-     * @brief Configuration related to dumping, if any.
+     * @brief If true, dumps the log into the console.
      */
-    std::optional<dumping_configuration> dumping;
+    bool output_to_console;
+    /**
+     * @brief Directory in which to place the output.
+     */
+    std::filesystem::path output_directory;
 };
 
-std::ostream& operator<<(std::ostream& s, const configuration& v);
+std::ostream& operator<<(std::ostream& s, const logging_options& v);
 
 }
 

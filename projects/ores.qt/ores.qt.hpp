@@ -23,6 +23,6 @@
 /**
  * @brief Qt based Graphical User Interface for ORE Studio.
  */
-namespace ores::console { }
+namespace ores::cli { }
 
 #endif

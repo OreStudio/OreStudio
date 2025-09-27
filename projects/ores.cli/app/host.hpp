@@ -9,23 +9,45 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. Seethe GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU General PublicLicense along with
+ * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_STREAMING_STREAMING_HPP
-#define ORES_UTILITY_STREAMING_STREAMING_HPP
+#ifndef ORES_CLI_APP_HOST_HPP
+#define ORES_CLI_APP_HOST_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
+#include <vector>
+#include <string>
+#include <exception>
+#include "ores.utility/log/scoped_lifecycle_manager.hpp"
+
+namespace ores::cli::app {
+
 /**
- * @brief Contains iostream related classes.
+ * @brief Hosts the console application.
  */
-namespace ores::utility::streaming {}
+class host {
+public:
+    /**
+     * @brief Reports exceptions to the log and console.
+     */
+    static void report_exception(const bool can_log, const std::exception& e);
+
+    /**
+     * @brief Executes the console workflow.
+     */
+    static int execute(const std::vector<std::string>& args,
+        ores::utility::log::scoped_lifecycle_manager& slm);
+};
+
+}
 
 #endif

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,43 +17,33 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONSOLE_APPLICATION_HPP
-#define ORES_CONSOLE_APPLICATION_HPP
+#ifndef ORES_UTILITY_LOG_LOGGING_EXCEPTION_HPP
+#define ORES_UTILITY_LOG_LOGGING_EXCEPTION_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include "ores.console/configuration.hpp"
-#include "ores.core/risk/xml/importer.hpp"
+#include <string>
+#include <boost/exception/info.hpp>
 
-namespace ores::console {
+namespace ores::utility::log {
 
 /**
- * @brief Entry point for the ores command line application.
+ * @brief An exception has occurred during logging.
  */
-class application final {
+class logging_exception : public virtual std::exception,
+                          public virtual boost::exception {
 public:
-    application() = default;
-    application(const application&) = delete;
-    application(application&&) = delete;
-    ~application() = default;
-    application& operator=(const application&) = delete;
+    explicit logging_exception(std::string_view message = "")
+        : message_(message) {}
+
+    [[nodiscard]] const char* what() const noexcept override {
+        return message_.c_str();
+    }
 
 private:
-    void import_data(const std::optional<importing_configuration>& ocfg) const;
-    void dump_data(const std::optional<dumping_configuration>& ocfg) const;
-
-public:
-    /**
-     * Executes the application.
-     *
-     * @param cfg Application configuration.
-     */
-    void run(const configuration& cfg) const;
-
-private:
-    core::risk::xml::importer importer_;
+    std::string message_;
 };
 
 }

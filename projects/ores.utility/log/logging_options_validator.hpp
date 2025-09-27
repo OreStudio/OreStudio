@@ -17,16 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include <ostream>
-#include "ores.console/dumping_configuration.hpp"
+#ifndef ORES_UTILITY_LOG_LOGGING_OPTIONS_VALIDATOR_HPP
+#define ORES_UTILITY_LOG_LOGGING_OPTIONS_VALIDATOR_HPP
 
-namespace ores::console {
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
 
-std::ostream& operator<<(std::ostream& s, const dumping_configuration& v) {
-    rfl::json::write(v, s);
-    return(s);
+#include "ores.utility/log/logging_options.hpp"
+
+namespace ores::utility::log {
+
+/**
+ * @brief Checks the validity of the supplied logging options.
+ */
+class logging_options_validator final {
+public:
+    logging_options_validator() = delete;
+    static void validate(const logging_options& cfg);
+};
+
 }
 
-}
+#endif

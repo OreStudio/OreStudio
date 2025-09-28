@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_RISK_DB_CURRENCY_TABLE_HPP
-#define ORES_RISK_DB_CURRENCY_TABLE_HPP
+#ifndef ORES_RISK_REPOSITORY_CURRENCY_REPOSITORY_HPP
+#define ORES_RISK_REPOSITORY_CURRENCY_REPOSITORY_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -27,47 +27,55 @@
 #include <string>
 #include <vector>
 #include <sqlgen/postgres.hpp>
+#include "ores.risk/repository/context.hpp"
 #include "ores.risk/domain/currency.hpp"
 
-namespace ores::risk::db {
+namespace ores::risk::repository {
 
-class currency_table {
-private:
-    using sqlgen_connection = sqlgen::Result<rfl::Ref<sqlgen::postgres::Connection>>;
-
+/**
+ * @brief Reads and writes currencies off of data storage.
+ */
+class currency_repository {
 public:
     /**
      * @brief Returns the SQL created by sqlgen to construct the table.
      */
-    std::string table_sql();
+    std::string sql();
 
     /**
      * @brief Writes currencies to database. Expects the currency set to have
      * unique ISO codes.
      */
-    void write(sqlgen_connection c,
-        const std::vector<domain::currency>& currencies);
+    void write(context ctx, const std::vector<domain::currency>& currencies);
 
     /**
      * @brief Reads latest currencies, possibly filtered by ISO code.
      */
-    std::vector<domain::currency> read_latest(sqlgen_connection c,
-        const std::string& iso_code = std::string());
+    /**@{*/
+    std::vector<domain::currency> read_latest(context ctx);
+    std::vector<domain::currency>
+    read_latest(context ctx, const std::string& iso_code);
+    /**@}*/
 
     /**
      * @brief Reads currencies at the supplied time point, possibly filtered by
      * ISO code.
      */
-    std::vector<domain::currency> read_at_timepoint(sqlgen_connection c,
-        const std::string& as_of, const std::string& iso_code = std::string());
+    /**@{*/
+    std::vector<domain::currency>
+    read_at_timepoint(context ctx, const std::string& as_of);
+    std::vector<domain::currency>
+    read_at_timepoint(context ctx, const std::string& as_of,
+        const std::string& iso_code);
+    /**@}*/
 
     /**
      * @brief Reads all currencies, possibly filtered by ISO code.
      */
     /**@{*/
-    std::vector<domain::currency> read_all(sqlgen_connection c);
-    std::vector<domain::currency> read_all(sqlgen_connection c,
-        const std::string& iso_code = std::string());
+    std::vector<domain::currency> read_all(context ctx);
+    std::vector<domain::currency>
+    read_all(context ctx, const std::string& iso_code);
     /**@}*/
 };
 

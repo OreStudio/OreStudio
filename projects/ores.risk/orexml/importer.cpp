@@ -17,24 +17,35 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_RISK_XML_CURRENCY_SERIALISER_HPP
-#define ORES_RISK_XML_CURRENCY_SERIALISER_HPP
+#include "ores.utility/log/logger.hpp"
+#include "ores.utility/filesystem/file.hpp"
+#include "ores.risk/domain/currency_config.hpp"
+#include "ores.risk/orexml/currency_config_serialiser.hpp"
+#include "ores.risk/orexml/importer.hpp"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
+namespace {
 
-#include <rapidxml-ns/rapidxml_ns.hpp>
-#include "ores.risk/domain/currency.hpp"
-
-namespace ores::risk::xml {
-
-class currency_serialiser {
-public:
-    void serialise(rapidxml_ns::xml_node<>& parent, const domain::currency& cfg);
-    domain::currency deserialise(rapidxml_ns::xml_node<>& node);
-};
+using namespace ores::utility::log;
+auto lg(logger_factory("ores.xml.importer"));
 
 }
 
-#endif
+namespace ores::risk::orexml {
+
+using domain::currency_config;
+
+currency_config
+importer::import_currency_config(const std::filesystem::path& path) const {
+    BOOST_LOG_SEV(lg, debug) << "Started import: " << path.generic_string();
+
+    currency_config_serialiser ser;
+    using namespace ores::utility::filesystem;
+    const std::string c(read_file_content(path));
+    auto r(ser.deserialise(c));
+
+    BOOST_LOG_SEV(lg, debug) << "Finished importing. Result: " << r;
+
+    return r;
+}
+
+}

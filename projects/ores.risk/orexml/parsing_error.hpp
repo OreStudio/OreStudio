@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_RISK_XML_PARSING_ERROR_HPP
-#define ORES_RISK_XML_PARSING_ERROR_HPP
+#ifndef ORES_RISK_OREXML_PARSING_ERROR_HPP
+#define ORES_RISK_OREXML_PARSING_ERROR_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -27,7 +27,7 @@
 #include <string>
 #include <boost/exception/info.hpp>
 
-namespace ores::risk::xml {
+namespace ores::risk::orexml {
 
 /**
  * @brief A fatal error has occurred during parsing of ORE XML.

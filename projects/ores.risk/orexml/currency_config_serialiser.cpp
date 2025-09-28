@@ -21,9 +21,9 @@
 #include "rapidxml-ns/rapidxml_ns.hpp"
 #include <rapidxml-ns/rapidxml_ns_print.hpp>
 #include "ores.utility/log/logger.hpp"
-#include "ores.risk/xml/parsing_error.hpp"
-#include "ores.risk/xml/currency_serialiser.hpp"
-#include "ores.risk/xml/currency_config_serialiser.hpp"
+#include "ores.risk/orexml/parsing_error.hpp"
+#include "ores.risk/orexml/currency_serialiser.hpp"
+#include "ores.risk/orexml/currency_config_serialiser.hpp"
 
 namespace {
 
@@ -35,7 +35,7 @@ const std::string missing_currency_config("No CurrencyConfig element found");
 
 }
 
-namespace ores::risk::xml {
+namespace ores::risk::orexml {
 
 using domain::currency;
 using domain::currency_config;

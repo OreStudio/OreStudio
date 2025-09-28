@@ -126,8 +126,12 @@ export_currencies(const config::export_options& cfg) const {
     });
 
     const std::vector<currency> ccys(reader());
-    std::string ccy_cfgs = exporter::export_currency_config(ccys);
-    std::cout << ccy_cfgs << std::endl;
+    if (cfg.target_format == config::format::xml) {
+        std::string ccy_cfgs = exporter::export_currency_config(ccys);
+        std::cout << ccy_cfgs << std::endl;
+    } else if (cfg.target_format == config::format::json) {
+        std::cout << ccys << std::endl;
+    }
 }
 
 void application::

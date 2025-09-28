@@ -37,9 +37,9 @@ add_compile_options(
     $<$<CXX_COMPILER_ID:MSVC>:/WX>)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.cli)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.cli.test)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.cli.tests)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.risk)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.risk.test)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.risk.tests)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.comms)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.service)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.client)

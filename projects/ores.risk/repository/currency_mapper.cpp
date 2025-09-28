@@ -74,26 +74,26 @@ currency_entity currency_mapper::map(const domain::currency& v) {
 
 std::vector<domain::currency>
 currency_mapper::map(const std::vector<currency_entity>& v) {
-    BOOST_LOG_SEV(lg, debug) << "Mapping db entity. Size: " << v.size();
+    BOOST_LOG_SEV(lg, debug) << "Mapping db entities. Total: " << v.size();
 
     std::vector<domain::currency> r;
     r.reserve(v.size());
     std::ranges::transform(v, std::back_inserter(r),
         [](const auto& ve) { return map(ve); });
 
-    BOOST_LOG_SEV(lg, debug) << "Mapped db entity.";
+    BOOST_LOG_SEV(lg, debug) << "Mapped db entities.";
     return r;
 }
 
 std::vector<currency_entity>
 currency_mapper::map(const std::vector<domain::currency>& v) {
-    BOOST_LOG_SEV(lg, debug) << "Mapping domain entity. Size: " << v.size();
+    BOOST_LOG_SEV(lg, debug) << "Mapping domain entities. Count: " << v.size();
 
     std::vector<currency_entity> r;
     r.reserve(v.size());
     std::ranges::transform(v, std::back_inserter(r),
         [](const auto& ve) { return map(ve); });
-    BOOST_LOG_SEV(lg, debug) << "Mapped domain entity.";
+    BOOST_LOG_SEV(lg, debug) << "Mapped domain entities.";
     return r;
 }
 

@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(test_logging_options) {
         "--log-level", "debug",
         "--log-directory", "test_logs",
         "--log-to-console",
-        "--entity", "currency_config",
+        "--entity", "currencies",
         "--target", "test.xml"
     };
     BOOST_LOG_SEV(lg, debug) << "Command line arguments: " << args;
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE(test_import_basic) {
 
     std::vector<std::string> args = {
         "import",
-        "--entity", "currency_config",
+        "--entity", "currencies",
         "--target", "test_file.xml"
     };
     BOOST_LOG_SEV(lg, debug) << "Command line arguments: " << args;
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE(test_import_multiple_targets) {
 
     std::vector<std::string> args = {
         "import",
-        "--entity", "currency_config",
+        "--entity", "currencies",
         "--target", "file1.xml",
         "--target", "file2.xml",
         "--target", "file3.xml"
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE(test_export_basic) {
 
     std::vector<std::string> args = {
         "export",
-        "--entity", "currency_config"
+        "--entity", "currencies"
     };
     BOOST_LOG_SEV(lg, debug) << "Command line arguments: " << args;
 
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE(test_export_full_options) {
 
     std::vector<std::string> args = {
         "export",
-        "--entity", "currency_config",
+        "--entity", "currencies",
         "--as-of", "2025-01-01",
         "--key", "USD",
         "--all-versions",
@@ -281,7 +281,7 @@ BOOST_AUTO_TEST_CASE(test_import_with_logging) {
         "import",
         "--log-enabled",
         "--log-level", "trace",
-        "--entity", "currency_config",
+        "--entity", "currencies",
         "--target", "test.xml"
     };
     BOOST_LOG_SEV(lg, debug) << "Command line arguments: " << args;
@@ -305,7 +305,7 @@ BOOST_AUTO_TEST_CASE(test_export_with_logging) {
         "export",
         "--log-enabled",
         "--log-level", "warn",
-        "--entity", "currency_config",
+        "--entity", "currencies",
         "--format", "json"
     };
     BOOST_LOG_SEV(lg, debug) << "Command line arguments: " << args;

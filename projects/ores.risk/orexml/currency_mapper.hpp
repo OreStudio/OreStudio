@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,22 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_RISK_OREXML_CURRENCY_SERIALISER_HPP
-#define ORES_RISK_OREXML_CURRENCY_SERIALISER_HPP
+#ifndef ORES_RISK_OREXML_CURRENCY_MAPPER_HPP
+#define ORES_RISK_OREXML_CURRENCY_MAPPER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <rapidxml-ns/rapidxml_ns.hpp>
 #include "ores.risk/domain/currency.hpp"
+#include "ores.risk/orexml/CurrencyConfig.hpp"
+#include "ores.risk/orexml/CurrencyElement.hpp"
 
 namespace ores::risk::orexml {
 
-class currency_serialiser {
+/**
+ * @brief Maps domain model entities to ORE XML and vice-versa.
+ */
+class currency_mapper {
 public:
-    void serialise(rapidxml_ns::xml_node<>& parent, const domain::currency& cfg);
-    domain::currency deserialise(rapidxml_ns::xml_node<>& node);
+    static domain::currency map(const CurrencyElement& v);
+    static CurrencyElement map(const domain::currency& v);
+
+    static std::vector<domain::currency>
+    map(const CurrencyConfig& v);
+    static CurrencyConfig map(const std::vector<domain::currency>& v);
 };
 
 }

@@ -25,9 +25,9 @@
 #include <magic_enum/magic_enum.hpp>
 #include "ores.cli/config/export_options.hpp"
 #include "ores.utility/log/logger.hpp"
+#include "ores.utility/streaming/std_vector.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
 #include "ores.risk/repository/context_factory.hpp"
-#include "ores.risk/domain/currency_config.hpp"
 #include "ores.cli/app/application_exception.hpp"
 #include "ores.cli/app/application.hpp"
 
@@ -65,16 +65,14 @@ application::application() : context_(make_context()) {
 
 void application::
 import_currencies(const std::vector<std::filesystem::path> files) const {
-    for(const auto& f : files)
-    {
+    for (const auto& f : files) {
         BOOST_LOG_SEV(lg, debug) << "Processing file: " << f;
         auto cc(importer_.import_currency_config(f));
         risk::repository::currency_repository rp;
-        rp.write(context_, cc.currencies);
+        rp.write(context_, cc);
         std::cout << cc << std::endl;
     }
 }
-
 
 void application::
 import_data(const std::optional<config::import_options>& ocfg) const {
@@ -100,7 +98,6 @@ export_currencies(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg, debug) << "Exporting currency configurations.";
     risk::repository::currency_repository rp;
 
-    using ores::risk::domain::currency_config;
     const auto reader([&]() {
         if (cfg.all_versions) {
             BOOST_LOG_SEV(lg, debug) << "Reading all versions for currencies.";
@@ -121,8 +118,10 @@ export_currencies(const config::export_options& cfg) const {
         else
             return rp.read_at_timepoint(context_, cfg.as_of, cfg.key);
     });
-    const currency_config cc(reader());
-    std::cout << cc << std::endl;
+
+    using ores::risk::domain::currency;
+    const std::vector<currency> ccys(reader());
+    std::cout << ccys << std::endl;
 }
 
 void application::

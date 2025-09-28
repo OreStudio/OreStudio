@@ -19,8 +19,9 @@
  */
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/filesystem/file.hpp"
-#include "ores.risk/domain/currency_config.hpp"
-#include "ores.risk/orexml/currency_config_serialiser.hpp"
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.risk/orexml/CurrencyConfig.hpp"
+#include "ores.risk/orexml/currency_mapper.hpp"
 #include "ores.risk/orexml/importer.hpp"
 
 namespace {
@@ -32,17 +33,18 @@ auto lg(logger_factory("ores.xml.importer"));
 
 namespace ores::risk::orexml {
 
-using domain::currency_config;
+using domain::currency;
 
-currency_config
+std::vector<currency>
 importer::import_currency_config(const std::filesystem::path& path) const {
     BOOST_LOG_SEV(lg, debug) << "Started import: " << path.generic_string();
 
-    currency_config_serialiser ser;
     using namespace ores::utility::filesystem;
     const std::string c(read_file_content(path));
-    auto r(ser.deserialise(c));
+    BOOST_LOG_SEV(lg, trace) << "File content: " << c;
 
+    CurrencyConfig ccy_cfg = CurrencyConfig::from_xml(c);
+    const auto r = currency_mapper::map(ccy_cfg);
     BOOST_LOG_SEV(lg, debug) << "Finished importing. Result: " << r;
 
     return r;

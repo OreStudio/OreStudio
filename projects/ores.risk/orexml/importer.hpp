@@ -25,8 +25,9 @@
 #pragma once
 #endif
 
+#include <vector>
 #include <filesystem>
-#include "ores.risk/domain/currency_config.hpp"
+#include "ores.risk/domain/currency.hpp"
 
 namespace ores::risk::orexml {
 
@@ -35,7 +36,7 @@ namespace ores::risk::orexml {
  */
 class importer {
 public:
-    domain::currency_config
+    std::vector<domain::currency>
     import_currency_config(const std::filesystem::path& path) const;
 };
 

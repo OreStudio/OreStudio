@@ -39,7 +39,7 @@ struct currency_entity {
 
     sqlgen::PrimaryKey<std::string> iso_code;
     std::string name;
-    int numeric_code;
+    std::string numeric_code;
     std::string symbol;
     std::string fraction_symbol;
     int fractions_per_unit;

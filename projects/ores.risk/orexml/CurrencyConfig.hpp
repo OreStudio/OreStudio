@@ -34,11 +34,11 @@ namespace ores::risk::orexml {
  * @brief Represents a set of currencies in ORE XML format.
  */
 struct CurrencyConfig {
-    std::vector<Currency> CurrencyConfig;
+    std::vector<Currency> Currency;
 };
 
-static std::string to_xml(const CurrencyConfig& v);
-static CurrencyConfig from_xml(const std::string& xml);
+std::string to_xml(const CurrencyConfig& v);
+CurrencyConfig from_xml(const std::string& xml);
 
 std::ostream& operator<<(std::ostream& s, const CurrencyConfig& v);
 

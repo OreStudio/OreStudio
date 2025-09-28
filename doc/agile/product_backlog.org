@@ -64,7 +64,6 @@ To be done on the last Sunday of the sprint.
 
 Stories we may get two in the next two or three sprints.
 
-
 ** Far
 
 Stories that we want to capture, but won't work on for a while.

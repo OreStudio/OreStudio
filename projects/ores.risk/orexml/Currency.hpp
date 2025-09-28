@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_RISK_DOMAIN_CURRENCY_HPP
-#define ORES_RISK_DOMAIN_CURRENCY_HPP
+#ifndef ORES_RISK_OREXML_CURRENCY_HPP
+#define ORES_RISK_OREXML_CURRENCY_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -26,34 +26,26 @@
 
 #include <string>
 #include <ostream>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 
-namespace ores::risk::domain {
+namespace ores::risk::orexml {
 
 /**
- * @brief Represents an ORE currency.
+ * @brief Represents a currencies in ORE XML format.
  */
-struct currency {
-    constexpr static const char* schema = "oresdb";
-    constexpr static const char* tablename = "currencies";
-
-    sqlgen::PrimaryKey<std::string> iso_code;
-    std::string name;
-    int numeric_code;
-    std::string symbol;
-    std::string fraction_symbol;
-    int fractions_per_unit;
-    std::string rounding_type;
-    int rounding_precision;
-    std::string format;
-    std::string currency_type;
-    std::string modified_by;
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";
+struct Currency {
+    std::string Name;
+    std::string ISOCode;
+    std::string NumericCode;
+    std::string Symbol;
+    std::string FractionSymbol;
+    int FractionsPerUnit;
+    std::string RoundingType;
+    int RoundingPrecision;
+    std::string Format;
+    std::string CurrencyType;
 };
 
-std::ostream& operator<<(std::ostream& s, const currency& v);
+std::ostream& operator<<(std::ostream& s, const Currency& v);
 
 }
 

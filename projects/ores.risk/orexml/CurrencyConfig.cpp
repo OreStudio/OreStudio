@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,13 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <boost/test/unit_test.hpp>
-#include <boost/algorithm/string/predicate.hpp>
+#include <rfl.hpp>
+#include <rfl/xml.hpp>
+#include <rfl/json.hpp>
+#include "ores.risk/orexml/CurrencyConfig.hpp"
 
-BOOST_AUTO_TEST_SUITE(test_suite)
+namespace ores::risk::orexml {
 
-BOOST_AUTO_TEST_CASE(test) {
-    BOOST_CHECK(true);
+std::string to_xml(const CurrencyConfig& v) {
+    return rfl::xml::write(v);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
+CurrencyConfig from_xml(const std::string& xml) {
+    return rfl::xml::read<CurrencyConfig>(xml).value();
+}
+
+std::ostream& operator<<(std::ostream& s, const CurrencyConfig& v) {
+    rfl::json::write(v, s);
+    return(s);
+}
+
+}

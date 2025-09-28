@@ -27,7 +27,7 @@ set schema 'oresdb';
 create table if not exists "oresdb"."currencies" (
     "iso_code" text not null,
     "name" text not null,
-    "numeric_code" integer not null,
+    "numeric_code" text not null,
     "symbol" text not null,
     "fraction_symbol" text not null,
     "fractions_per_unit" integer not null,

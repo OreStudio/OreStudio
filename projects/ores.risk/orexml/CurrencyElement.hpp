@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_RISK_OREXML_CURRENCY_HPP
-#define ORES_RISK_OREXML_CURRENCY_HPP
+#ifndef ORES_RISK_OREXML_CURRENCY_ELEMENT_HPP
+#define ORES_RISK_OREXML_CURRENCY_ELEMENT_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -32,7 +32,7 @@ namespace ores::risk::orexml {
 /**
  * @brief Represents a currencies in ORE XML format.
  */
-struct Currency {
+struct CurrencyElement {
     std::string Name;
     std::string ISOCode;
     std::string NumericCode;
@@ -45,7 +45,7 @@ struct Currency {
     std::string CurrencyType;
 };
 
-std::ostream& operator<<(std::ostream& s, const Currency& v);
+std::ostream& operator<<(std::ostream& s, const CurrencyElement& v);
 
 }
 

@@ -20,11 +20,11 @@
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.risk/orexml/Currency.hpp"
+#include "ores.risk/orexml/CurrencyElement.hpp"
 
 namespace ores::risk::orexml {
 
-std::ostream& operator<<(std::ostream& s, const Currency& v) {
+std::ostream& operator<<(std::ostream& s, const CurrencyElement& v) {
     rfl::json::write(v, s);
     return(s);
 

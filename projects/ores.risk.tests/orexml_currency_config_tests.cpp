@@ -52,20 +52,23 @@ BOOST_AUTO_TEST_CASE(currency_config_from_simple_orexml) {
   </Currency>
 </CurrencyConfig>
 )";
-    const auto currency_config = ores::risk::orexml::from_xml(simple_xml);
+    BOOST_LOG_SEV(lg, info) << "Input: " << simple_xml;
 
-    BOOST_LOG_SEV(lg, info) << "Simple XML parsed currencies count: " << currency_config.Currency.size();
-    BOOST_CHECK(!currency_config.Currency.empty());
-    if (!currency_config.Currency.empty()) {
-        const auto& first_currency = currency_config.Currency.front();
-        BOOST_CHECK_EQUAL(first_currency.Name, "United Arab Emirates dirham");
-        BOOST_CHECK_EQUAL(first_currency.ISOCode, "AED");
-        BOOST_CHECK_EQUAL(first_currency.NumericCode, "784");
-        BOOST_CHECK_EQUAL(first_currency.FractionsPerUnit, 100);
-        BOOST_CHECK_EQUAL(first_currency.RoundingType, "Closest");
-        BOOST_CHECK_EQUAL(first_currency.RoundingPrecision, 2);
-        BOOST_CHECK_EQUAL(first_currency.CurrencyType, "Major");
-    }
+    const auto ccy_cfg = ores::risk::orexml::from_xml(simple_xml);
+    BOOST_LOG_SEV(lg, info) << "Currencies count: "
+                            << ccy_cfg.Currency.size();
+    BOOST_LOG_SEV(lg, info) << "Result: " << ccy_cfg;
+
+    BOOST_REQUIRE(!ccy_cfg.Currency.empty());
+
+    const auto& first = ccy_cfg.Currency.front();
+    BOOST_CHECK_EQUAL(first.Name, "United Arab Emirates dirham");
+    BOOST_CHECK_EQUAL(first.ISOCode, "AED");
+    BOOST_CHECK_EQUAL(first.NumericCode, "784");
+    BOOST_CHECK_EQUAL(first.FractionsPerUnit, 100);
+    BOOST_CHECK_EQUAL(first.RoundingType, "Closest");
+    BOOST_CHECK_EQUAL(first.RoundingPrecision, 2);
+    BOOST_CHECK_EQUAL(first.CurrencyType, "Major");
 }
 
 BOOST_AUTO_TEST_CASE(currency_config_from_full_orexml) {
@@ -79,14 +82,14 @@ BOOST_AUTO_TEST_CASE(currency_config_from_full_orexml) {
     // BOOST_TEST_MESSAGE("Two currencies XML parsed currencies count: " << currency_config.Currency.size());
     // BOOST_CHECK(!currency_config.Currency.empty());
     // if (!currency_config.Currency.empty()) {
-    //     const auto& first_currency = currency_config.Currency.front();
-    //     BOOST_CHECK_EQUAL(first_currency.Name, "United Arab Emirates dirham");
-    //     BOOST_CHECK_EQUAL(first_currency.ISOCode, "AED");
-    //     BOOST_CHECK_EQUAL(first_currency.NumericCode, "784");
-    //     BOOST_CHECK_EQUAL(first_currency.FractionsPerUnit, 100);
-    //     BOOST_CHECK_EQUAL(first_currency.RoundingType, "Closest");
-    //     BOOST_CHECK_EQUAL(first_currency.RoundingPrecision, 2);
-    //     BOOST_CHECK_EQUAL(first_currency.CurrencyType, "Major");
+    //     const auto& first = currency_config.Currency.front();
+    //     BOOST_CHECK_EQUAL(first.Name, "United Arab Emirates dirham");
+    //     BOOST_CHECK_EQUAL(first.ISOCode, "AED");
+    //     BOOST_CHECK_EQUAL(first.NumericCode, "784");
+    //     BOOST_CHECK_EQUAL(first.FractionsPerUnit, 100);
+    //     BOOST_CHECK_EQUAL(first.RoundingType, "Closest");
+    //     BOOST_CHECK_EQUAL(first.RoundingPrecision, 2);
+    //     BOOST_CHECK_EQUAL(first.CurrencyType, "Major");
     // }
 }
 

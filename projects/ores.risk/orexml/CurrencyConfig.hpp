@@ -26,7 +26,7 @@
 
 #include <vector>
 #include <ostream>
-#include "ores.risk/orexml/Currency.hpp"
+#include "ores.risk/orexml/CurrencyElement.hpp"
 
 namespace ores::risk::orexml {
 
@@ -34,7 +34,7 @@ namespace ores::risk::orexml {
  * @brief Represents a set of currencies in ORE XML format.
  */
 struct CurrencyConfig {
-    std::vector<Currency> Currency;
+    std::vector<CurrencyElement> Currency;
 };
 
 std::string to_xml(const CurrencyConfig& v);

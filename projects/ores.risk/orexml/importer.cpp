@@ -36,7 +36,7 @@ namespace ores::risk::orexml {
 using domain::currency;
 
 std::vector<currency>
-importer::import_currency_config(const std::filesystem::path& path) const {
+importer::import_currency_config(const std::filesystem::path& path) {
     BOOST_LOG_SEV(lg, debug) << "Started import: " << path.generic_string();
 
     using namespace ores::utility::filesystem;

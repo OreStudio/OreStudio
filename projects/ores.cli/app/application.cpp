@@ -26,6 +26,8 @@
 #include "ores.cli/config/export_options.hpp"
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp"
+#include "ores.risk/orexml/importer.hpp"
+#include "ores.risk/orexml/exporter.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
 #include "ores.risk/repository/context_factory.hpp"
 #include "ores.cli/app/application_exception.hpp"
@@ -40,6 +42,10 @@ auto lg(logger_factory("ores.cli.application"));
 
 namespace ores::cli::app {
 
+using risk::orexml::importer;
+using risk::orexml::exporter;
+using ores::risk::domain::currency;
+using risk::repository::currency_repository;
 using connection = sqlgen::Result<rfl::Ref<sqlgen::postgres::Connection>>;
 
 risk::repository::context application::make_context() {
@@ -67,10 +73,10 @@ void application::
 import_currencies(const std::vector<std::filesystem::path> files) const {
     for (const auto& f : files) {
         BOOST_LOG_SEV(lg, debug) << "Processing file: " << f;
-        auto cc(importer_.import_currency_config(f));
-        risk::repository::currency_repository rp;
-        rp.write(context_, cc);
-        std::cout << cc << std::endl;
+        auto ccys(importer::import_currency_config(f));
+        currency_repository rp;
+        rp.write(context_, ccys);
+        std::cout << ccys << std::endl;
     }
 }
 
@@ -83,7 +89,7 @@ import_data(const std::optional<config::import_options>& ocfg) const {
 
     const auto& cfg(ocfg.value());
     switch (cfg.target_entity) {
-        case config::entity::currency_config:
+        case config::entity::currencies:
             import_currencies(cfg.targets);
             break;
         default:
@@ -119,9 +125,9 @@ export_currencies(const config::export_options& cfg) const {
             return rp.read_at_timepoint(context_, cfg.as_of, cfg.key);
     });
 
-    using ores::risk::domain::currency;
     const std::vector<currency> ccys(reader());
-    std::cout << ccys << std::endl;
+    std::string ccy_cfgs = exporter::export_currency_config(ccys);
+    std::cout << ccy_cfgs << std::endl;
 }
 
 void application::
@@ -133,7 +139,7 @@ export_data(const std::optional<config::export_options>& ocfg) const {
 
     const auto& cfg(ocfg.value());
     switch (cfg.target_entity) {
-        case config::entity::currency_config:
+        case config::entity::currencies:
             export_currencies(cfg);
             break;
         default:

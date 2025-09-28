@@ -30,7 +30,7 @@ namespace ores::cli::config {
  * @brief List of available entities to target.
  */
 enum class entity {
-    currency_config
+    currencies
 };
 
 }

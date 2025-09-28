@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE(test_import_basic) {
 
     BOOST_REQUIRE(result.has_value());
     BOOST_REQUIRE(result->importing.has_value());
-    BOOST_CHECK(result->importing->target_entity == entity::currency_config);
+    BOOST_CHECK(result->importing->target_entity == entity::currencies);
     BOOST_REQUIRE(result->importing->targets.size() == 1);
     BOOST_CHECK_EQUAL(result->importing->targets[0].filename().string(), "test_file.xml");
 }
@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE(test_import_multiple_targets) {
 
     BOOST_REQUIRE(result.has_value());
     BOOST_REQUIRE(result->importing.has_value());
-    BOOST_CHECK(result->importing->target_entity == entity::currency_config);
+    BOOST_CHECK(result->importing->target_entity == entity::currencies);
     BOOST_REQUIRE(result->importing->targets.size() == 3);
     BOOST_CHECK_EQUAL(result->importing->targets[0].filename().string(), "file1.xml");
     BOOST_CHECK_EQUAL(result->importing->targets[1].filename().string(), "file2.xml");
@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE(test_export_basic) {
 
     BOOST_REQUIRE(result.has_value());
     BOOST_REQUIRE(result->exporting.has_value());
-    BOOST_CHECK(result->exporting->target_entity == entity::currency_config);
+    BOOST_CHECK(result->exporting->target_entity == entity::currencies);
     BOOST_CHECK(result->exporting->as_of.empty());
     BOOST_CHECK(result->exporting->key.empty());
     BOOST_CHECK(!result->exporting->all_versions);
@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE(test_export_full_options) {
 
     BOOST_REQUIRE(result.has_value());
     BOOST_REQUIRE(result->exporting.has_value());
-    BOOST_CHECK(result->exporting->target_entity == entity::currency_config);
+    BOOST_CHECK(result->exporting->target_entity == entity::currencies);
     BOOST_CHECK_EQUAL(result->exporting->as_of, "2025-01-01");
     BOOST_CHECK_EQUAL(result->exporting->key, "USD");
     BOOST_CHECK(result->exporting->all_versions);
@@ -293,7 +293,7 @@ BOOST_AUTO_TEST_CASE(test_import_with_logging) {
     BOOST_REQUIRE(result->logging.has_value());
     BOOST_REQUIRE(result->importing.has_value());
     BOOST_CHECK_EQUAL(result->logging->severity, "trace");
-    BOOST_CHECK(result->importing->target_entity == entity::currency_config);
+    BOOST_CHECK(result->importing->target_entity == entity::currencies);
 }
 
 BOOST_AUTO_TEST_CASE(test_export_with_logging) {
@@ -317,7 +317,7 @@ BOOST_AUTO_TEST_CASE(test_export_with_logging) {
     BOOST_REQUIRE(result->logging.has_value());
     BOOST_REQUIRE(result->exporting.has_value());
     BOOST_CHECK_EQUAL(result->logging->severity, "warn");
-    BOOST_CHECK(result->exporting->target_entity == entity::currency_config);
+    BOOST_CHECK(result->exporting->target_entity == entity::currencies);
     BOOST_CHECK(result->exporting->target_format == format::json);
 }
 

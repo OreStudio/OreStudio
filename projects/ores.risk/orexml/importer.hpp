@@ -36,8 +36,8 @@ namespace ores::risk::orexml {
  */
 class importer {
 public:
-    std::vector<domain::currency>
-    import_currency_config(const std::filesystem::path& path) const;
+    static std::vector<domain::currency>
+    import_currency_config(const std::filesystem::path& path);
 };
 
 }

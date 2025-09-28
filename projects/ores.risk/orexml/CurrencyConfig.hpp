@@ -35,10 +35,10 @@ namespace ores::risk::orexml {
  */
 struct CurrencyConfig {
     std::vector<CurrencyElement> Currency;
-};
 
-std::string to_xml(const CurrencyConfig& v);
-CurrencyConfig from_xml(const std::string& xml);
+    static std::string to_xml(const CurrencyConfig& v);
+    static CurrencyConfig from_xml(const std::string& xml);
+};
 
 std::ostream& operator<<(std::ostream& s, const CurrencyConfig& v);
 

@@ -26,6 +26,7 @@
 
 #include <string>
 #include <ostream>
+#include <optional>
 
 namespace ores::risk::orexml {
 
@@ -42,7 +43,7 @@ struct CurrencyElement {
     std::string RoundingType;
     int RoundingPrecision;
     std::string Format;
-    std::string CurrencyType;
+    std::optional<std::string> CurrencyType;
 };
 
 std::ostream& operator<<(std::ostream& s, const CurrencyElement& v);

@@ -24,11 +24,11 @@
 
 namespace ores::risk::orexml {
 
-std::string to_xml(const CurrencyConfig& v) {
+std::string CurrencyConfig::to_xml(const CurrencyConfig& v) {
     return rfl::xml::write(v);
 }
 
-CurrencyConfig from_xml(const std::string& xml) {
+CurrencyConfig CurrencyConfig::from_xml(const std::string& xml) {
     return rfl::xml::read<CurrencyConfig>(xml).value();
 }
 

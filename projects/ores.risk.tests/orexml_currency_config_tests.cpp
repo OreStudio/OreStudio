@@ -29,12 +29,16 @@ namespace {
 const std::string test_module("ores.risk.tests");
 const std::string test_suite("orexml_currency_config_tests");
 
+const std::string test_data_dir = "test_data/currencies/";
+
 }
+
+using ores::risk::orexml::CurrencyConfig;
 
 BOOST_AUTO_TEST_SUITE(orexml_currency_config_tests)
 
-BOOST_AUTO_TEST_CASE(currency_config_from_simple_orexml) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("currency_config_from_simple_orexml");
+BOOST_AUTO_TEST_CASE(read_currency_config_from_simple_xml) {
+    SETUP_TEST_LOG_SOURCE_DEBUG("read_currency_config_from_simple_xml");
 
     const std::string simple_xml = R"(
 <CurrencyConfig>
@@ -52,14 +56,15 @@ BOOST_AUTO_TEST_CASE(currency_config_from_simple_orexml) {
   </Currency>
 </CurrencyConfig>
 )";
-    BOOST_LOG_SEV(lg, info) << "Input: " << simple_xml;
+    BOOST_LOG_SEV(lg, debug) << "Input: " << simple_xml;
 
-    const auto ccy_cfg = ores::risk::orexml::from_xml(simple_xml);
-    BOOST_LOG_SEV(lg, info) << "Currencies count: "
-                            << ccy_cfg.Currency.size();
-    BOOST_LOG_SEV(lg, info) << "Result: " << ccy_cfg;
+    const auto ccy_cfg = CurrencyConfig::from_xml(simple_xml);
+    BOOST_LOG_SEV(lg, debug) << "Currencies count: "
+                             << ccy_cfg.Currency.size();
+    BOOST_LOG_SEV(lg, debug) << "Result: " << ccy_cfg;
 
     BOOST_REQUIRE(!ccy_cfg.Currency.empty());
+    BOOST_REQUIRE(ccy_cfg.Currency.size() == 1);
 
     const auto& first = ccy_cfg.Currency.front();
     BOOST_CHECK_EQUAL(first.Name, "United Arab Emirates dirham");
@@ -68,29 +73,158 @@ BOOST_AUTO_TEST_CASE(currency_config_from_simple_orexml) {
     BOOST_CHECK_EQUAL(first.FractionsPerUnit, 100);
     BOOST_CHECK_EQUAL(first.RoundingType, "Closest");
     BOOST_CHECK_EQUAL(first.RoundingPrecision, 2);
-    BOOST_CHECK_EQUAL(first.CurrencyType, "Major");
+
+    BOOST_REQUIRE(first.CurrencyType);
+    BOOST_CHECK_EQUAL(first.CurrencyType.value(), "Major");
 }
 
-BOOST_AUTO_TEST_CASE(currency_config_from_full_orexml) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("currency_config_from_full_orexml");
-    BOOST_TEST_MESSAGE("Now testing with full XML file");
+BOOST_AUTO_TEST_CASE(read_currency_config_from_currencies_xml) {
+    SETUP_TEST_LOG_SOURCE_DEBUG("read_currency_config_from_currencies_xml");
 
-    // const auto currencies_file =
-    //     std::filesystem::path("assets/test_data/ore_sample_data/currencies/currencies.xml");
-    // const std::string xml_content = ores::utility::filesystem::read_file_content(currencies_file);
-    // const auto currency_config = ores::risk::orexml::from_xml(xml_content);
-    // BOOST_TEST_MESSAGE("Two currencies XML parsed currencies count: " << currency_config.Currency.size());
-    // BOOST_CHECK(!currency_config.Currency.empty());
-    // if (!currency_config.Currency.empty()) {
-    //     const auto& first = currency_config.Currency.front();
-    //     BOOST_CHECK_EQUAL(first.Name, "United Arab Emirates dirham");
-    //     BOOST_CHECK_EQUAL(first.ISOCode, "AED");
-    //     BOOST_CHECK_EQUAL(first.NumericCode, "784");
-    //     BOOST_CHECK_EQUAL(first.FractionsPerUnit, 100);
-    //     BOOST_CHECK_EQUAL(first.RoundingType, "Closest");
-    //     BOOST_CHECK_EQUAL(first.RoundingPrecision, 2);
-    //     BOOST_CHECK_EQUAL(first.CurrencyType, "Major");
-    // }
+    const auto file = std::filesystem::path(test_data_dir + "currencies.xml");
+    BOOST_LOG_SEV(lg, debug) << "Input file: " << file;
+
+    using ores::utility::filesystem::read_file_content;
+    const std::string content = read_file_content(file);
+    BOOST_LOG_SEV(lg, debug) << "Content: " << content;
+
+    const auto ccy_cfg = CurrencyConfig::from_xml(content);
+    BOOST_LOG_SEV(lg, debug) << "Currencies count: " << ccy_cfg.Currency.size();
+    BOOST_REQUIRE(!ccy_cfg.Currency.empty());
+    BOOST_REQUIRE(ccy_cfg.Currency.size() == 179);
+
+    BOOST_LOG_SEV(lg, debug) << "Result: " << ccy_cfg;
+
+    const auto& first = ccy_cfg.Currency.front();
+    BOOST_LOG_SEV(lg, debug) << "First: " << first;
+
+    BOOST_CHECK_EQUAL(first.Name, "United Arab Emirates dirham");
+    BOOST_CHECK_EQUAL(first.ISOCode, "AED");
+    BOOST_CHECK_EQUAL(first.NumericCode, "784");
+    BOOST_CHECK_EQUAL(first.FractionsPerUnit, 100);
+    BOOST_CHECK_EQUAL(first.RoundingType, "Closest");
+    BOOST_CHECK_EQUAL(first.RoundingPrecision, 2);
+
+    BOOST_REQUIRE(first.CurrencyType);
+    BOOST_CHECK_EQUAL(first.CurrencyType.value(), "Major");
+
+    const auto& last = ccy_cfg.Currency.back();
+    BOOST_LOG_SEV(lg, debug) << "Last: " << last;
+
+    BOOST_CHECK_EQUAL(last.Name, "Bitcoin");
+    BOOST_CHECK_EQUAL(last.ISOCode, "BTC");
+    BOOST_CHECK_EQUAL(last.NumericCode, "000");
+    BOOST_CHECK_EQUAL(last.FractionsPerUnit, 100000000);
+    BOOST_CHECK_EQUAL(last.RoundingType, "Closest");
+    BOOST_CHECK_EQUAL(last.RoundingPrecision, 2);
+
+    BOOST_REQUIRE(first.CurrencyType);
+    BOOST_CHECK_EQUAL(last.CurrencyType.value(), "Crypto");
+}
+
+BOOST_AUTO_TEST_CASE(read_currency_config_from_currencies_01_xml) {
+    SETUP_TEST_LOG_SOURCE_DEBUG("read_currency_config_from_currencies_01_xml");
+
+    const auto file =
+        std::filesystem::path(test_data_dir + "currencies_01.xml");
+    BOOST_LOG_SEV(lg, debug) << "Input file: " << file;
+
+    using ores::utility::filesystem::read_file_content;
+    const std::string content = read_file_content(file);
+    BOOST_LOG_SEV(lg, debug) << "Content: " << content;
+
+    const auto ccy_cfg = CurrencyConfig::from_xml(content);
+    BOOST_LOG_SEV(lg, debug) << "Currencies count: " << ccy_cfg.Currency.size();
+    BOOST_LOG_SEV(lg, debug) << "Result: " << ccy_cfg;
+    BOOST_REQUIRE(!ccy_cfg.Currency.empty());
+    BOOST_REQUIRE(ccy_cfg.Currency.size() == 2);
+
+    const auto& first = ccy_cfg.Currency.front();
+    BOOST_LOG_SEV(lg, debug) << "First: " << first;
+
+    BOOST_CHECK_EQUAL(first.Name, "Papua New Guinean kina");
+    BOOST_CHECK_EQUAL(first.ISOCode, "PGK");
+    BOOST_CHECK_EQUAL(first.NumericCode, "598");
+    BOOST_CHECK_EQUAL(first.Symbol, "K");
+    BOOST_CHECK_EQUAL(first.FractionSymbol, "");
+    BOOST_CHECK_EQUAL(first.FractionsPerUnit, 100);
+    BOOST_CHECK_EQUAL(first.RoundingType, "Closest");
+    BOOST_CHECK_EQUAL(first.RoundingPrecision, 2);
+    BOOST_CHECK_EQUAL(first.Format, "%3% %1$.2f");
+
+    BOOST_REQUIRE(!first.CurrencyType);
+}
+
+BOOST_AUTO_TEST_CASE(read_currency_config_from_currencies_41_xml) {
+    SETUP_TEST_LOG_SOURCE_DEBUG("read_currency_config_from_currencies_41_xml");
+
+    const auto file =
+        std::filesystem::path(test_data_dir + "currencies_41.xml");
+    BOOST_LOG_SEV(lg, debug) << "Input file: " << file;
+
+    using ores::utility::filesystem::read_file_content;
+    const std::string content = read_file_content(file);
+    BOOST_LOG_SEV(lg, debug) << "Content: " << content;
+
+    const auto ccy_cfg = CurrencyConfig::from_xml(content);
+    BOOST_LOG_SEV(lg, debug) << "Currencies count: " << ccy_cfg.Currency.size();
+    BOOST_LOG_SEV(lg, debug) << "Result: " << ccy_cfg;
+    BOOST_REQUIRE(!ccy_cfg.Currency.empty());
+    BOOST_REQUIRE(ccy_cfg.Currency.size() == 2);
+}
+
+BOOST_AUTO_TEST_CASE(read_currency_config_from_currencies_42_xml) {
+    SETUP_TEST_LOG_SOURCE_DEBUG("read_currency_config_from_currencies_42_xml");
+
+    const auto file =
+        std::filesystem::path(test_data_dir + "currencies_42.xml");
+    BOOST_LOG_SEV(lg, debug) << "Input file: " << file;
+
+    using ores::utility::filesystem::read_file_content;
+    const std::string content = read_file_content(file);
+    BOOST_LOG_SEV(lg, debug) << "Content: " << content;
+
+    const auto ccy_cfg = CurrencyConfig::from_xml(content);
+    BOOST_LOG_SEV(lg, debug) << "Currencies count: " << ccy_cfg.Currency.size();
+    BOOST_LOG_SEV(lg, debug) << "Result: " << ccy_cfg;
+    BOOST_REQUIRE(!ccy_cfg.Currency.empty());
+    BOOST_REQUIRE(ccy_cfg.Currency.size() == 2);
+}
+
+BOOST_AUTO_TEST_CASE(read_currency_config_from_currencies_62_xml) {
+    SETUP_TEST_LOG_SOURCE_DEBUG("read_currency_config_from_currencies_62_xml");
+
+    const auto file =
+        std::filesystem::path(test_data_dir + "currencies_62.xml");
+    BOOST_LOG_SEV(lg, debug) << "Input file: " << file;
+
+    using ores::utility::filesystem::read_file_content;
+    const std::string content = read_file_content(file);
+    BOOST_LOG_SEV(lg, debug) << "Content: " << content;
+
+    const auto ccy_cfg = CurrencyConfig::from_xml(content);
+    BOOST_LOG_SEV(lg, debug) << "Currencies count: " << ccy_cfg.Currency.size();
+    BOOST_LOG_SEV(lg, debug) << "Result: " << ccy_cfg;
+    BOOST_REQUIRE(!ccy_cfg.Currency.empty());
+    BOOST_REQUIRE(ccy_cfg.Currency.size() == 2);
+}
+
+BOOST_AUTO_TEST_CASE(read_currency_config_from_currencies_API_xml) {
+    SETUP_TEST_LOG_SOURCE_DEBUG("read_currency_config_from_currencies_API_xml");
+
+    const auto file =
+        std::filesystem::path(test_data_dir + "currencies_API.xml");
+    BOOST_LOG_SEV(lg, debug) << "Input file: " << file;
+
+    using ores::utility::filesystem::read_file_content;
+    const std::string content = read_file_content(file);
+    BOOST_LOG_SEV(lg, debug) << "Content: " << content;
+
+    const auto ccy_cfg = CurrencyConfig::from_xml(content);
+    BOOST_LOG_SEV(lg, debug) << "Currencies count: " << ccy_cfg.Currency.size();
+    BOOST_LOG_SEV(lg, debug) << "Result: " << ccy_cfg;
+    BOOST_REQUIRE(!ccy_cfg.Currency.empty());
+    BOOST_REQUIRE(ccy_cfg.Currency.size() == 178);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

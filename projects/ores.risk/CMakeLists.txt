@@ -43,7 +43,6 @@ target_link_libraries(${lib_target_name}
         Boost::boost
         Boost::program_options
         sqlgen::sqlgen
-        pugixml::static
         pugixml::pugixml
     PUBLIC
         reflectcpp::reflectcpp

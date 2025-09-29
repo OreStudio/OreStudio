@@ -18,35 +18,36 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-09-29 Mon 01:06], for Monday, September 29, 2025.
+#+CAPTION: Clock summary at [2025-09-29 Mon 11:40], for Monday, September 29, 2025.
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *1:04* |      |      | 100.0 |
+|       | *Total time*                          | *1:23* |      |      | 100.0 |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 1:04   |      |      | 100.0 |
-|       | Active                                |        | 1:04 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:03 |   4.7 |
-| code  | Replace XML parsing with reflect cpp  |        |      | 0:49 |  76.6 |
-| code  | Refactor core into risk               |        |      | 0:12 |  18.8 |
+|       | Stories                               | 1:23   |      |      | 100.0 |
+|       | Active                                |        | 1:23 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:08 |   9.6 |
+| code  | Replace XML parsing with reflect cpp  |        |      | 0:49 |  59.0 |
+| code  | Refactor core into risk               |        |      | 0:12 |  14.5 |
+| code  | Windows builds have cmake errors      |        |      | 0:14 |  16.9 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-09-29 Mon 01:06]
+#+CAPTION: Clock summary at [2025-09-29 Mon 11:40]
 |          | <75>                                               |         |       |      |       |
 | Tags     | Headline                                           | Time    |       |      |     % |
 |----------+----------------------------------------------------+---------+-------+------+-------|
-|          | *Total time*                                       | *61:41* |       |      | 100.0 |
+|          | *Total time*                                       | *62:00* |       |      | 100.0 |
 |----------+----------------------------------------------------+---------+-------+------+-------|
-|          | Stories                                            | 61:41   |       |      | 100.0 |
-|          | Active                                             |         | 61:41 |      | 100.0 |
-| agile    | Sprint and product backlog refinement              |         |       | 2:18 |   3.7 |
+|          | Stories                                            | 62:00   |       |      | 100.0 |
+|          | Active                                             |         | 62:00 |      | 100.0 |
+| agile    | Sprint and product backlog refinement              |         |       | 2:23 |   3.8 |
 | infra    | Fix broken builds                                  |         |       | 0:36 |   1.0 |
 | code     | Create a containing structure for data             |         |       | 0:35 |   0.9 |
 | code     | Add temporal support to currencies                 |         |       | 2:59 |   4.8 |
-| code     | Add command to dump currencies                     |         |       | 4:18 |   7.0 |
-| code     | Refactor code for currencies                       |         |       | 3:52 |   6.3 |
+| code     | Add command to dump currencies                     |         |       | 4:18 |   6.9 |
+| code     | Refactor code for currencies                       |         |       | 3:52 |   6.2 |
 | code     | Restore qt setup                                   |         |       | 2:20 |   3.8 |
 | code     | Add gemini action                                  |         |       | 0:05 |   0.1 |
 | code     | Remove ImGui support                               |         |       | 0:08 |   0.2 |
@@ -56,23 +57,24 @@
 | code     | Remove URL support from prog mode in emacs         |         |       | 0:14 |   0.4 |
 | code     | Remove GRPC support                                |         |       | 0:16 |   0.4 |
 | code     | Implement a cobalt based server and client         |         |       | 2:53 |   4.7 |
-| code     | Add serialisation support for reflect-cpp          |         |       | 3:07 |   5.1 |
+| code     | Add serialisation support for reflect-cpp          |         |       | 3:07 |   5.0 |
 | analysis | White-boarding for new architecture                |         |       | 1:52 |   3.0 |
-| code     | Use sqlgen for postgres                            |         |       | 7:23 |  12.0 |
-| code     | Refactor cli to follow new project structure       |         |       | 4:47 |   7.8 |
+| code     | Use sqlgen for postgres                            |         |       | 7:23 |  11.9 |
+| code     | Refactor cli to follow new project structure       |         |       | 4:47 |   7.7 |
 | code     | Add tests to cli parser                            |         |       | 0:35 |   0.9 |
 | code     | Add logging support for tests                      |         |       | 2:21 |   3.8 |
-| code     | Replace XML parsing with reflect cpp               |         |       | 2:56 |   4.8 |
+| code     | Replace XML parsing with reflect cpp               |         |       | 2:56 |   4.7 |
 | code     | Fix windows and osx builds                         |         |       | 0:27 |   0.7 |
 | code     | Completions in emacs org mode are incorrect        |         |       | 1:02 |   1.7 |
 | analysis | Investigate bitemporal support from Postgres 18    |         |       | 1:47 |   2.9 |
-| code     | Refactor core into risk                            |         |       | 4:10 |   6.8 |
+| code     | Refactor core into risk                            |         |       | 4:10 |   6.7 |
 | infra    | Add suppression to valgrind errors                 |         |       | 0:30 |   0.8 |
 | infra    | Investigate build warning for vcpkg binary caching |         |       | 0:25 |   0.7 |
 | infra    | Investigate build warning for qtbase               |         |       | 0:10 |   0.3 |
 | code     | Fix gemini cli action                              |         |       | 0:45 |   1.2 |
 | infra    | vcpkg caching seems disabled                       |         |       | 0:15 |   0.4 |
 | code     | Create a =comms= library                           |         |       | 1:10 |   1.9 |
+| code     | Windows builds have cmake errors                   |         |       | 0:14 |   0.4 |
 | code     | Add workspace as a container                       |         |       | 1:13 |   2.0 |
 #+end:
 
@@ -686,7 +688,10 @@ po::store(po::parse_environment(desc, "MYAPP_"), vm);
 
 - refactor server and client code into their own classes.
 
-*** Windows builds have cmake errors                                   :code:
+*** STARTED Windows builds have cmake errors                           :code:
+    :LOGBOOK:
+    CLOCK: [2025-09-29 Mon 11:21]--[2025-09-29 Mon 11:35] =>  0:14
+    :END:
 
 #+begin_quote
 Error:   Target "ores.risk.lib" links to:
@@ -702,6 +707,11 @@ Error:   Failed to configure
     * A find_package call is missing for an IMPORTED target.
     * An ALIAS target is missing.
 #+end_quote
+
+*** Tidy-up database code                                              :code:
+
+- add helpers to utility to ensure success, execute query, etc.
+- add helpers for max timestamp, timestamp.
 
 *** Split console recipes by entity                                    :code:
 

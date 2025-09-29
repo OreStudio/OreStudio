@@ -25,8 +25,11 @@
 #include <magic_enum/magic_enum.hpp>
 #include "ores.cli/config/export_options.hpp"
 #include "ores.utility/log/logger.hpp"
-#include "ores.core/risk/db/currency_table.hpp"
-#include "ores.core/risk/types/currency_config.hpp"
+#include "ores.utility/streaming/std_vector.hpp"
+#include "ores.risk/orexml/importer.hpp"
+#include "ores.risk/orexml/exporter.hpp"
+#include "ores.risk/repository/currency_repository.hpp"
+#include "ores.risk/repository/context_factory.hpp"
 #include "ores.cli/app/application_exception.hpp"
 #include "ores.cli/app/application.hpp"
 
@@ -39,37 +42,43 @@ auto lg(logger_factory("ores.cli.application"));
 
 namespace ores::cli::app {
 
+using risk::orexml::importer;
+using risk::orexml::exporter;
+using ores::risk::domain::currency;
+using risk::repository::currency_repository;
 using connection = sqlgen::Result<rfl::Ref<sqlgen::postgres::Connection>>;
 
-namespace {
-
-connection connect() {
-    const auto credentials = sqlgen::postgres::Credentials {
+risk::repository::context application::make_context() {
+    using configuration = risk::repository::context_factory::configuration;
+    configuration cfg {
         .user = "ores",
         .password = "ahV6aehuij6eingohsiajaiT0",
         .host = "localhost",
-        .dbname = "oresdb",
-        .port = 5434
+        .database = "oresdb",
+        .port = 5434,
+        .pool_size = 4,
+        .num_attempts = 10,
+        .wait_time_in_seconds = 1
     };
-    BOOST_LOG_SEV(lg, debug) << "connected";
 
-    return sqlgen::postgres::connect(credentials);
+    using risk::repository::context_factory;
+    return context_factory::make_context(cfg);
 }
 
+application::application() : context_(make_context()) {
+    BOOST_LOG_SEV(lg, debug) << "Creating application.";
 }
 
 void application::
 import_currencies(const std::vector<std::filesystem::path> files) const {
-    for(const auto& f : files)
-    {
+    for (const auto& f : files) {
         BOOST_LOG_SEV(lg, debug) << "Processing file: " << f;
-        auto cc(importer_.import_currency_config(f));
-        core::risk::db::currency_table ct;
-        ct.write(connect(), cc.currencies);
-        std::cout << cc << std::endl;
+        auto ccys(importer::import_currency_config(f));
+        currency_repository rp;
+        rp.write(context_, ccys);
+        std::cout << ccys << std::endl;
     }
 }
-
 
 void application::
 import_data(const std::optional<config::import_options>& ocfg) const {
@@ -80,7 +89,7 @@ import_data(const std::optional<config::import_options>& ocfg) const {
 
     const auto& cfg(ocfg.value());
     switch (cfg.target_entity) {
-        case config::entity::currency_config:
+        case config::entity::currencies:
             import_currencies(cfg.targets);
             break;
         default:
@@ -93,22 +102,36 @@ import_data(const std::optional<config::import_options>& ocfg) const {
 void application::
 export_currencies(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg, debug) << "Exporting currency configurations.";
-    core::risk::db::currency_table ct;
+    risk::repository::currency_repository rp;
 
-    using ores::core::risk::types::currency_config;
     const auto reader([&]() {
         if (cfg.all_versions) {
             BOOST_LOG_SEV(lg, debug) << "Reading all versions for currencies.";
-            return ct.read_all(connect(), cfg.key);
+            if (cfg.key.empty())
+                return rp.read_all(context_);
+            else
+                return rp.read_all(context_, cfg.key);
         } else if (cfg.as_of.empty()) {
             BOOST_LOG_SEV(lg, debug) << "Reading latest currencies.";
-            return ct.read_latest(connect(), cfg.key);
+            if (cfg.key.empty())
+                return rp.read_latest(context_);
+            else
+                return rp.read_latest(context_, cfg.key);
         }
         BOOST_LOG_SEV(lg, debug) << "Reading currencies as of: " << cfg.as_of;
-        return ct.read_at_timepoint(connect(), cfg.as_of, cfg.key);
+        if (cfg.key.empty())
+            return rp.read_at_timepoint(context_, cfg.as_of);
+        else
+            return rp.read_at_timepoint(context_, cfg.as_of, cfg.key);
     });
-    const currency_config cc(reader());
-    std::cout << cc << std::endl;
+
+    const std::vector<currency> ccys(reader());
+    if (cfg.target_format == config::format::xml) {
+        std::string ccy_cfgs = exporter::export_currency_config(ccys);
+        std::cout << ccy_cfgs << std::endl;
+    } else if (cfg.target_format == config::format::json) {
+        std::cout << ccys << std::endl;
+    }
 }
 
 void application::
@@ -120,7 +143,7 @@ export_data(const std::optional<config::export_options>& ocfg) const {
 
     const auto& cfg(ocfg.value());
     switch (cfg.target_entity) {
-        case config::entity::currency_config:
+        case config::entity::currencies:
             export_currencies(cfg);
             break;
         default:

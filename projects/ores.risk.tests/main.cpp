@@ -1,6 +1,6 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2012-2015 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,8 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-drop trigger if exists update_currencies_trigger on currencies;
-drop function if exists update_currencies;
-drop table if exists currencies;
--- drop extension if exists btree_gist;
--- drop schema if exists oresdb;
+#define BOOST_TEST_MODULE ores.risk.test
+#include <boost/test/unit_test.hpp>
+#include "ores.utility/test/fixture.hpp"
+
+using namespace ores::utility::test;
+BOOST_GLOBAL_FIXTURE(exception_fixture);

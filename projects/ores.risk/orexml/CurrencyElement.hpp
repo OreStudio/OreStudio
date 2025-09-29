@@ -17,21 +17,36 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ENTITY_HPP
-#define ORES_CLI_CONFIG_ENTITY_HPP
+#ifndef ORES_RISK_OREXML_CURRENCY_ELEMENT_HPP
+#define ORES_RISK_OREXML_CURRENCY_ELEMENT_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-namespace ores::cli::config {
+#include <string>
+#include <ostream>
+#include <optional>
+
+namespace ores::risk::orexml {
 
 /**
- * @brief List of available entities to target.
+ * @brief Represents a currencies in ORE XML format.
  */
-enum class entity {
-    currencies
+struct CurrencyElement {
+    std::string Name;
+    std::string ISOCode;
+    std::string NumericCode;
+    std::string Symbol;
+    std::string FractionSymbol;
+    int FractionsPerUnit;
+    std::string RoundingType;
+    int RoundingPrecision;
+    std::string Format;
+    std::optional<std::string> CurrencyType;
 };
+
+std::ostream& operator<<(std::ostream& s, const CurrencyElement& v);
 
 }
 

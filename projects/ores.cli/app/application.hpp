@@ -29,7 +29,7 @@
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
 #include "ores.cli/config/export_options.hpp"
-#include "ores.core/risk/xml/importer.hpp"
+#include "ores.risk/repository/context.hpp"
 
 namespace ores::cli::app {
 
@@ -38,11 +38,12 @@ namespace ores::cli::app {
  */
 class application final {
 public:
-    application() = default;
+    application();
     application(const application&) = delete;
     application& operator=(const application&) = delete;
 
 private:
+    static risk::repository::context make_context();
     void import_currencies(const std::vector<std::filesystem::path> files) const;
     void import_data(const std::optional<config::import_options>& ocfg) const;
 
@@ -51,14 +52,14 @@ private:
 
 public:
     /**
-     * Executes the application.
+     * @brief Executes the application.
      *
      * @param cfg Application configuration.
      */
     void run(const config::options& cfg) const;
 
 private:
-    core::risk::xml::importer importer_;
+    risk::repository::context context_;
 };
 
 }

@@ -17,20 +17,33 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ENTITY_HPP
-#define ORES_CLI_CONFIG_ENTITY_HPP
+#ifndef ORES_RISK_REPOSITORY_CONTEXT_HPP
+#define ORES_RISK_REPOSITORY_CONTEXT_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-namespace ores::cli::config {
+#include <sqlgen/postgres.hpp>
+
+namespace ores::risk::repository {
 
 /**
- * @brief List of available entities to target.
+ * @brief Context for the operations on a repository.
  */
-enum class entity {
-    currencies
+class context {
+public:
+    using connection_type = sqlgen::postgres::Connection;
+    using connection_pool_type = sqlgen::Result<
+        sqlgen::ConnectionPool<connection_type>>;
+
+    explicit context(connection_pool_type connection_pool)
+        : connection_pool_(std::move(connection_pool)) {}
+
+    connection_pool_type connection_pool() { return connection_pool_; }
+
+private:
+    connection_pool_type connection_pool_;
 };
 
 }

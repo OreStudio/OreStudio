@@ -1,6 +1,6 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,8 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-drop trigger if exists update_currencies_trigger on currencies;
-drop function if exists update_currencies;
-drop table if exists currencies;
--- drop extension if exists btree_gist;
--- drop schema if exists oresdb;
+#include <rfl.hpp>
+#include <rfl/xml.hpp>
+#include <rfl/json.hpp>
+#include "ores.risk/orexml/CurrencyConfig.hpp"
+
+namespace ores::risk::orexml {
+
+std::string CurrencyConfig::to_xml(const CurrencyConfig& v) {
+    return rfl::xml::write(v);
+}
+
+CurrencyConfig CurrencyConfig::from_xml(const std::string& xml) {
+    return rfl::xml::read<CurrencyConfig>(xml).value();
+}
+
+std::ostream& operator<<(std::ostream& s, const CurrencyConfig& v) {
+    rfl::json::write(v, s);
+    return(s);
+}
+
+}

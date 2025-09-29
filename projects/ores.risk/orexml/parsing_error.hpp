@@ -17,20 +17,32 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ENTITY_HPP
-#define ORES_CLI_CONFIG_ENTITY_HPP
+#ifndef ORES_RISK_OREXML_PARSING_ERROR_HPP
+#define ORES_RISK_OREXML_PARSING_ERROR_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-namespace ores::cli::config {
+#include <string>
+#include <boost/exception/info.hpp>
+
+namespace ores::risk::orexml {
 
 /**
- * @brief List of available entities to target.
+ * @brief A fatal error has occurred during parsing of ORE XML.
  */
-enum class entity {
-    currencies
+class parsing_error : public virtual std::exception,
+                      public virtual boost::exception {
+public:
+    explicit parsing_error(std::string_view message = "")
+        : message_(message) {}
+    [[nodiscard]] const char* what() const noexcept override {
+        return message_.c_str();
+    }
+
+private:
+    std::string message_;
 };
 
 }

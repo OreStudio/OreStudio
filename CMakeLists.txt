@@ -96,7 +96,9 @@ find_package(Qt6Widgets REQUIRED)
 find_package(Qt6Sql REQUIRED)
 
 # Reflect CPP
+find_package(pugixml CONFIG REQUIRED)
 find_package(reflectcpp CONFIG REQUIRED)
+
 
 # SQLGen
 find_package(sqlgen REQUIRED)

@@ -17,21 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ENTITY_HPP
-#define ORES_CLI_CONFIG_ENTITY_HPP
+#ifndef ORES_RISK_OREXML_CURRENCY_CONFIG_HPP
+#define ORES_RISK_OREXML_CURRENCY_CONFIG_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-namespace ores::cli::config {
+#include <vector>
+#include <ostream>
+#include "ores.risk/orexml/CurrencyElement.hpp"
+
+namespace ores::risk::orexml {
 
 /**
- * @brief List of available entities to target.
+ * @brief Represents a set of currencies in ORE XML format.
  */
-enum class entity {
-    currencies
+struct CurrencyConfig {
+    std::vector<CurrencyElement> Currency;
+
+    static std::string to_xml(const CurrencyConfig& v);
+    static CurrencyConfig from_xml(const std::string& xml);
 };
+
+std::ostream& operator<<(std::ostream& s, const CurrencyConfig& v);
 
 }
 

@@ -17,20 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ENTITY_HPP
-#define ORES_CLI_CONFIG_ENTITY_HPP
+#ifndef ORES_RISK_REPOSITORY_CURRENCY_MAPPERP_HPP
+#define ORES_RISK_REPOSITORY_CURRENCY_MAPPERP_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-namespace ores::cli::config {
+#include "ores.risk/domain/currency.hpp"
+#include "ores.risk/repository/currency_entity.hpp"
+
+namespace ores::risk::repository {
 
 /**
- * @brief List of available entities to target.
+ * @brief Maps domain model entities to data storage layer and vice-versa.
  */
-enum class entity {
-    currencies
+class currency_mapper {
+public:
+    static domain::currency map(const currency_entity& v);
+    static currency_entity map(const domain::currency& v);
+
+    static std::vector<domain::currency>
+    map(const std::vector<currency_entity>& v);
+    static std::vector<currency_entity>
+    map(const std::vector<domain::currency>& v);
 };
 
 }

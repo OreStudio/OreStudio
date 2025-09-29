@@ -18,39 +18,40 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-09-29 Mon 00:53], for Monday, September 29, 2025.
+#+CAPTION: Clock summary at [2025-09-29 Mon 01:06], for Monday, September 29, 2025.
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *0:52* |      |      | 100.0 |
+|       | *Total time*                          | *1:04* |      |      | 100.0 |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 0:52   |      |      | 100.0 |
-|       | Active                                |        | 0:52 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:03 |   5.8 |
-| code  | Replace XML parsing with reflect cpp  |        |      | 0:49 |  94.2 |
+|       | Stories                               | 1:04   |      |      | 100.0 |
+|       | Active                                |        | 1:04 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:03 |   4.7 |
+| code  | Replace XML parsing with reflect cpp  |        |      | 0:49 |  76.6 |
+| code  | Refactor core into risk               |        |      | 0:12 |  18.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-09-29 Mon 00:54]
+#+CAPTION: Clock summary at [2025-09-29 Mon 01:06]
 |          | <75>                                               |         |       |      |       |
 | Tags     | Headline                                           | Time    |       |      |     % |
 |----------+----------------------------------------------------+---------+-------+------+-------|
-|          | *Total time*                                       | *61:29* |       |      | 100.0 |
+|          | *Total time*                                       | *61:41* |       |      | 100.0 |
 |----------+----------------------------------------------------+---------+-------+------+-------|
-|          | Stories                                            | 61:29   |       |      | 100.0 |
-|          | Active                                             |         | 61:29 |      | 100.0 |
+|          | Stories                                            | 61:41   |       |      | 100.0 |
+|          | Active                                             |         | 61:41 |      | 100.0 |
 | agile    | Sprint and product backlog refinement              |         |       | 2:18 |   3.7 |
 | infra    | Fix broken builds                                  |         |       | 0:36 |   1.0 |
 | code     | Create a containing structure for data             |         |       | 0:35 |   0.9 |
-| code     | Add temporal support to currencies                 |         |       | 2:59 |   4.9 |
+| code     | Add temporal support to currencies                 |         |       | 2:59 |   4.8 |
 | code     | Add command to dump currencies                     |         |       | 4:18 |   7.0 |
 | code     | Refactor code for currencies                       |         |       | 3:52 |   6.3 |
 | code     | Restore qt setup                                   |         |       | 2:20 |   3.8 |
 | code     | Add gemini action                                  |         |       | 0:05 |   0.1 |
 | code     | Remove ImGui support                               |         |       | 0:08 |   0.2 |
 | code     | Create a GRPC based service                        |         |       | 2:09 |   3.5 |
-| code     | Implement a 0MQ based RPC service and client       |         |       | 3:55 |   6.4 |
+| code     | Implement a 0MQ based RPC service and client       |         |       | 3:55 |   6.3 |
 | code     | Fix misspell fixer errors                          |         |       | 0:08 |   0.2 |
 | code     | Remove URL support from prog mode in emacs         |         |       | 0:14 |   0.4 |
 | code     | Remove GRPC support                                |         |       | 0:16 |   0.4 |
@@ -65,13 +66,13 @@
 | code     | Fix windows and osx builds                         |         |       | 0:27 |   0.7 |
 | code     | Completions in emacs org mode are incorrect        |         |       | 1:02 |   1.7 |
 | analysis | Investigate bitemporal support from Postgres 18    |         |       | 1:47 |   2.9 |
+| code     | Refactor core into risk                            |         |       | 4:10 |   6.8 |
 | infra    | Add suppression to valgrind errors                 |         |       | 0:30 |   0.8 |
 | infra    | Investigate build warning for vcpkg binary caching |         |       | 0:25 |   0.7 |
 | infra    | Investigate build warning for qtbase               |         |       | 0:10 |   0.3 |
 | code     | Fix gemini cli action                              |         |       | 0:45 |   1.2 |
 | infra    | vcpkg caching seems disabled                       |         |       | 0:15 |   0.4 |
 | code     | Create a =comms= library                           |         |       | 1:10 |   1.9 |
-| code     | Refactor core into risk                            |         |       | 3:58 |   6.5 |
 | code     | Add workspace as a container                       |         |       | 1:13 |   2.0 |
 #+end:
 
@@ -559,6 +560,24 @@ Links:
 - [[https://github.com/arkhipov/temporal_tables][GH temporal_tables]]
 - [[https://learn.microsoft.com/en-us/sql/relational-databases/tables/querying-data-in-a-system-versioned-temporal-table?view=sql-server-ver17][Query data in a system-versioned temporal table]]
 
+*** COMPLETED Refactor core into risk                                  :code:
+    :LOGBOOK:
+    CLOCK: [2025-09-29 Mon 00:54]--[2025-09-29 Mon 01:06] =>  0:12
+    CLOCK: [2025-09-28 Sun 20:20]--[2025-09-28 Sun 20:50] =>  0:30
+    CLOCK: [2025-09-27 Sat 23:56]--[2025-09-28 Sun 01:02] =>  1:06
+    CLOCK: [2025-09-27 Sat 23:01]--[2025-09-27 Sat 23:56] =>  0:55
+    CLOCK: [2025-09-27 Sat 21:03]--[2025-09-27 Sat 22:30] =>  1:27
+    :END:
+
+As per the new architecture, we should have all the services within each
+subsystem.
+
+Notes:
+
+- merge tests into the project. Actually this screws up the include paths, for
+  not a huge advantage. Cancelling it.
+- clean up properties in domain entities.
+
 *** STARTED Add suppression to valgrind errors                        :infra:
     :LOGBOOK:
     CLOCK: [2025-09-28 Sun 09:20]--[2025-09-28 Sun 09:50] =>  0:30
@@ -665,21 +684,6 @@ po::store(po::parse_environment(desc, "MYAPP_"), vm);
 #+end_src
 
 - refactor server and client code into their own classes.
-
-*** STARTED Refactor core into risk                                    :code:
-    :LOGBOOK:
-    CLOCK: [2025-09-28 Sun 20:20]--[2025-09-28 Sun 20:50] =>  0:30
-    CLOCK: [2025-09-27 Sat 23:56]--[2025-09-28 Sun 01:02] =>  1:06
-    CLOCK: [2025-09-27 Sat 23:01]--[2025-09-27 Sat 23:56] =>  0:55
-    CLOCK: [2025-09-27 Sat 21:03]--[2025-09-27 Sat 22:30] =>  1:27
-    :END:
-
-As per the new architecture, we should have all the services within each
-subsystem.
-
-Notes:
-
-- merge tests into the project.
 
 *** Split console recipes by entity                                    :code:
 
@@ -903,6 +907,8 @@ As per QuantLib build: [[https://github.com/OpenSourceRisk/QuantLib/blob/master/
 
 We are creating =std::strings= where we don't need them, use string views
 instead.
+
+This is not trivial, when we tried a lot of things were borked.
 
 *** Create HTTP end point for currencies                              :infra:
 

@@ -78,6 +78,7 @@
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-09-29 Mon 01:07]--[2025-09-29 Mon 01:12] =>  0:05
     CLOCK: [2025-09-29 Mon 00:50]--[2025-09-29 Mon 00:53] =>  0:03
     CLOCK: [2025-09-21 Sun 10:06]--[2025-09-21 Sun 10:34] =>  0:28
     CLOCK: [2025-09-21 Sun 10:01]--[2025-09-21 Sun 10:05] =>  0:04
@@ -684,6 +685,23 @@ po::store(po::parse_environment(desc, "MYAPP_"), vm);
 #+end_src
 
 - refactor server and client code into their own classes.
+
+*** Windows builds have cmake errors                                   :code:
+
+#+begin_quote
+Error:   Target "ores.risk.lib" links to:
+Error(s) when configuring the project
+CMake Error at D:/a/OreStudio/OreStudio/CTest.cmake:276 (message):
+Error:   Failed to configure
+
+    pugixml::static
+
+  but the target was not found.  Possible reasons include:
+
+    * There is a typo in the target name.
+    * A find_package call is missing for an IMPORTED target.
+    * An ALIAS target is missing.
+#+end_quote
 
 *** Split console recipes by entity                                    :code:
 

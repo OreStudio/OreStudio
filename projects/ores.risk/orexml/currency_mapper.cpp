@@ -52,7 +52,7 @@ CurrencyElement currency_mapper::map(const domain::currency& v) {
     BOOST_LOG_SEV(lg, debug) << "Mapping domain entity: " << v;
 
     CurrencyElement r;
-    r.ISOCode = v.iso_code.value();
+    r.ISOCode = v.iso_code;
     r.Name = v.name;
     r.NumericCode = v.numeric_code;
     r.Symbol = v.symbol;

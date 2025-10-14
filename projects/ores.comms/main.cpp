@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,70 +17,40 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <array>
-#include <boost/cobalt.hpp>
 #include <boost/cobalt/main.hpp>
-#include <boost/asio/detached.hpp>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/signal_set.hpp>
-#include <boost/asio/write.hpp>
-#include <boost/asio/ssl.hpp>
+#include "ores.comms/client.hpp"
 
 namespace cobalt = boost::cobalt;
-using boost::asio::ip::tcp;
-namespace ssl = boost::asio::ssl;
-using tcp_acceptor = cobalt::use_op_t::as_default_on_t<tcp::acceptor>;
-using ssl_socket   = ssl::stream<tcp::socket>;
 
-namespace {
-
-cobalt::promise<void> echo(ssl_socket socket) {
+cobalt::main co_main(int argc, char** argv) {
     try {
-        co_await socket.async_handshake(ssl::stream_base::server, cobalt::use_op);
-        std::array<char, 4096> data;
-        while (socket.lowest_layer().is_open()) {
-            std::size_t n = co_await socket.async_read_some(boost::asio::buffer(data), cobalt::use_op);
-            co_await async_write(socket, boost::asio::buffer(data, n), cobalt::use_op);
+        // Configure client
+        ores::comms::client_config config;
+        config.host = "localhost";
+        config.port = 55555;
+        config.client_identifier = "test-client";
+        config.verify_certificate = false; // For testing with self-signed certificates
+
+        // Create client
+        ores::comms::client cli(config, co_await cobalt::this_coro::executor);
+
+        // Connect and perform handshake
+        bool connected = co_await cli.connect();
+        if (!connected) {
+            std::printf("Failed to connect to server\n");
+            co_return 1;
         }
-    } catch (std::exception& e) {
-        std::printf("echo: exception: %s\n", e.what());
+
+        std::printf("Successfully connected and performed handshake!\n");
+        std::printf("Client session established (disconnecting immediately for now)\n");
+
+        // Future: Add message processing loop here
+        cli.disconnect();
+
+    } catch (const std::exception& e) {
+        std::printf("Client error: %s\n", e.what());
+        co_return 1;
     }
-}
 
-cobalt::generator<ssl_socket> listen(ssl::context& ctx) {
-    tcp_acceptor acceptor({co_await cobalt::this_coro::executor}, {tcp::v4(), 55555});
-    for (;;) {
-        tcp::socket sock = co_await acceptor.async_accept();
-        ssl_socket ssl_sock(std::move(sock), ctx);
-        co_yield std::move(ssl_sock);
-    }
-    co_return ssl_socket{tcp::socket{acceptor.get_executor()}, ctx};
-}
-
-cobalt::promise<void> run_server(cobalt::wait_group & workers, ssl::context& ctx) {
-    auto l = listen(ctx);
-    while (true)
-    {
-        if (workers.size() == 10u)
-            co_await workers.wait_one();
-        else
-            workers.push_back(echo(co_await l));
-    }
-}
-
-}
-
-cobalt::main co_main(int argc, char ** argv) {
-    ssl::context ctx(ssl::context::tlsv12);
-    ctx.set_options(ssl::context::default_workarounds
-                  | ssl::context::no_sslv2
-                  | ssl::context::single_dh_use);
-    ctx.use_certificate_chain_file("server.crt");
-    ctx.use_private_key_file("server.key", ssl::context::pem);
-
-    co_await cobalt::with(cobalt::wait_group(), [&ctx](auto& wg) {
-        return run_server(wg, ctx);
-    });
-    co_return 0u;
+    co_return 0;
 }

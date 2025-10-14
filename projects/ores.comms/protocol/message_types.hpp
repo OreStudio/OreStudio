@@ -17,29 +17,35 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <boost/cobalt/main.hpp>
-#include "ores.comms/server.hpp"
+#ifndef ORES_COMMS_PROTOCOL_MESSAGE_TYPES_HPP
+#define ORES_COMMS_PROTOCOL_MESSAGE_TYPES_HPP
 
-namespace cobalt = boost::cobalt;
+#include <cstdint>
+#include <algorithm>
 
-cobalt::main co_main(int argc, char** argv) {
-    try {
-        // Configure server
-        ores::comms::server_config config;
-        config.port = 55555;
-        config.max_connections = 10;
-        config.certificate_file = "server.crt";
-        config.private_key_file = "server.key";
-        config.server_identifier = "ores-service-v1";
+namespace ores::comms::protocol {
 
-        // Create and run server
-        ores::comms::server srv(config);
-        co_await srv.run();
+constexpr uint32_t PROTOCOL_MAGIC = 0x4F524553; // "ORES" in ASCII
 
-    } catch (const std::exception& e) {
-        std::printf("Server error: %s\n", e.what());
-        co_return 1;
-    }
+constexpr uint16_t PROTOCOL_VERSION_MAJOR = 1;
+constexpr uint16_t PROTOCOL_VERSION_MINOR = 0;
 
-    co_return 0;
+enum class message_type {
+    handshake_request = 0x0001,
+    handshake_response = 0x0002,
+    handshake_ack = 0x0003,
+    error_response = 0x00FF
+};
+
+enum class error_code {
+    none = 0x0000,
+    version_mismatch = 0x0001,
+    crc_validation_failed = 0x0002,
+    invalid_message_type = 0x0003,
+    handshake_timeout = 0x0004,
+    handshake_failed = 0x0005
+};
+
 }
+
+#endif

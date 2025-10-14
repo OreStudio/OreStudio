@@ -13,9 +13,10 @@
         },
         "openssl",
         "libpqxx",
+        "libbson",
         {
             "name": "reflectcpp",
-            "features": [ "xml" ]
+            "features": [ "xml", "bson" ]
         },
         {
             "name": "sqlgen",

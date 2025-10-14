@@ -22,6 +22,8 @@
 #include "ores.comms/server.hpp"
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
+#include "ores.service/config/parser.hpp"
+#include "ores.service/config/parser_exception.hpp"
 
 namespace {
 
@@ -34,25 +36,46 @@ const std::string force_terminate("Service was forced to terminate.");
 
 cobalt::main co_main(int argc, char** argv) {
     using ores::utility::log::scoped_lifecycle_manager;
+    using ores::service::config::parser;
+    using ores::service::config::parser_exception;
 
     scoped_lifecycle_manager slm;
     try {
-        BOOST_LOG_SEV(lg, info) << "Starting ORES Service";
+        // Parse command line arguments
+        const auto args(std::vector<std::string>(argv + 1, argv + argc));
+        parser p;
+        const auto ocfg(p.parse(args, std::cout, std::cerr));
 
-        // Configure server
-        ores::comms::server_config config;
-        config.port = 55555;
-        config.max_connections = 10;
-        config.certificate_file = "server.crt";
-        config.private_key_file = "server.key";
-        config.server_identifier = "ores-service-v1";
+        // If no configuration returned, exit (help or version was displayed)
+        if (!ocfg.has_value())
+            co_return EXIT_SUCCESS;
+
+        const auto& cfg(*ocfg);
+
+        // Initialize logging if configured
+        if (cfg.logging.has_value())
+            slm.initialise(cfg.logging.value());
+
+        BOOST_LOG_SEV(lg, info) << "Starting ORES Service";
+        BOOST_LOG_SEV(lg, debug) << "Configuration: " << cfg;
+
+        // Configure server from parsed options
+        ores::comms::server_config server_cfg;
+        server_cfg.port = cfg.server.port;
+        server_cfg.max_connections = cfg.server.max_connections;
+        server_cfg.certificate_file = cfg.server.certificate_file;
+        server_cfg.private_key_file = cfg.server.private_key_file;
+        server_cfg.server_identifier = cfg.server.server_identifier;
 
         // Create and run server
-        ores::comms::server srv(config);
+        ores::comms::server srv(server_cfg);
         co_await srv.run();
 
         BOOST_LOG_SEV(lg, info) << "ORES Service stopped normally";
 
+    } catch (const parser_exception& /*e*/) {
+        // Parser has already reported errors to console
+        co_return EXIT_FAILURE;
     } catch (const std::exception& e) {
         if (slm.is_initialised())
             BOOST_LOG_SEV(lg, error) << "Server error: " << e.what();

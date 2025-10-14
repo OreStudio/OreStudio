@@ -21,12 +21,10 @@
 #define ORES_COMMS_SERVER_HPP
 
 #include <cstdint>
-#include <memory>
 #include <string>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/cobalt.hpp>
-#include "ores.comms/connection.hpp"
 
 namespace ores::comms {
 

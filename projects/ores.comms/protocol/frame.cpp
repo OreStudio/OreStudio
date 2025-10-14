@@ -58,6 +58,7 @@ uint32_t frame::calculate_crc() const {
 
     // Serialize header using reflect-cpp BSON and update CRC
     auto header_bytes = rfl::bson::write(temp_header);
+    // Convert char vector to uint8_t span
     calc.update(std::span<const uint8_t>(
         reinterpret_cast<const uint8_t*>(header_bytes.data()),
         header_bytes.size()));
@@ -90,42 +91,49 @@ std::vector<uint8_t> frame::serialize() const {
 }
 
 std::expected<frame, error_code> frame::deserialize(std::span<const uint8_t> data) {
-    // First, we need to deserialize the header to know the payload size
-    // Try to read the header - we'll use a reasonable minimum size
-    if (data.size() < 20) { // Minimum CBOR encoded size estimate
+    // BSON documents start with a 32-bit little-endian length
+    if (data.size() < 4) {
         return std::unexpected(error_code::invalid_message_type);
     }
 
-    // Deserialize header using reflect-cpp BSON
-    // We need to find where the header ends and payload begins
-    // For BSON, we'll deserialize the header and then use the payload_size field
-    auto header_result = rfl::bson::read<frame_header>(data.data(), data.size());
+    // Read the BSON document length (first 4 bytes, little-endian)
+    uint32_t bson_length = 0;
+    bson_length |= static_cast<uint32_t>(data[0]);
+    bson_length |= static_cast<uint32_t>(data[1]) << 8;
+    bson_length |= static_cast<uint32_t>(data[2]) << 16;
+    bson_length |= static_cast<uint32_t>(data[3]) << 24;
 
+    // The length includes the 4 bytes for the length itself
+    if (bson_length < 4 || data.size() < bson_length) {
+        return std::unexpected(error_code::invalid_message_type);
+    }
+
+    // Extract the header part (the BSON document)
+    std::span<const uint8_t> header_span(data.data(), bson_length);
+    
+    // Deserialize the header - use the same signature as in serialization
+    auto header_result = rfl::bson::read<frame_header>(header_span.data(), header_span.size());
+    
     if (!header_result) {
         return std::unexpected(error_code::invalid_message_type);
     }
 
     frame_header header = header_result.value();
-
+    
     // Check magic number
     if (header.magic != PROTOCOL_MAGIC) {
         return std::unexpected(error_code::invalid_message_type);
     }
 
-    // To properly extract the payload, we need to know where the BSON header ends
-    // We'll serialize the header again to determine its size
-    auto header_bytes = rfl::bson::write(header);
-    size_t header_size = header_bytes.size();
-
     // Check if we have enough data for the payload
-    if (data.size() < header_size + header.payload_size) {
+    if (data.size() < bson_length + header.payload_size) {
         return std::unexpected(error_code::invalid_message_type);
     }
 
     // Extract payload
     std::vector<uint8_t> payload;
     if (header.payload_size > 0) {
-        auto payload_start = data.begin() + header_size;
+        auto payload_start = data.begin() + bson_length;
         auto payload_end = payload_start + header.payload_size;
         payload.assign(payload_start, payload_end);
     }

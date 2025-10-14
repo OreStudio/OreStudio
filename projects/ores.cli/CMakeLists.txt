@@ -40,8 +40,10 @@ target_include_directories(${lib_target_name}
 target_link_libraries(${lib_target_name}
     PRIVATE
         Boost::boost
+        Boost::cobalt
         Boost::program_options
         magic_enum::magic_enum
+        ores.comms.lib
     )
 
 install(TARGETS ${lib_target_name}
@@ -66,7 +68,9 @@ target_link_libraries(${exe_target_name} PRIVATE
     ${lib_target_name}
     ores.risk.lib
     ores.utility.lib
+    ores.comms.lib
     Boost::boost
+    Boost::cobalt
     Boost::date_time
     Boost::program_options
     ${CMAKE_THREAD_LIBS_INIT})

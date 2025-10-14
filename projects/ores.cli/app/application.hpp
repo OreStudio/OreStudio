@@ -26,9 +26,11 @@
 
 #include <vector>
 #include <filesystem>
+#include <boost/cobalt.hpp>
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
 #include "ores.cli/config/export_options.hpp"
+#include "ores.cli/config/client_options.hpp"
 #include "ores.risk/repository/context.hpp"
 
 namespace ores::cli::app {
@@ -50,13 +52,16 @@ private:
     void export_currencies(const config::export_options& cfg) const;
     void export_data(const std::optional<config::export_options>& ocfg) const;
 
+    boost::cobalt::promise<void> run_client(
+        const std::optional<config::client_options>& ocfg) const;
+
 public:
     /**
      * @brief Executes the application.
      *
      * @param cfg Application configuration.
      */
-    void run(const config::options& cfg) const;
+    boost::cobalt::promise<void> run(const config::options& cfg) const;
 
 private:
     risk::repository::context context_;

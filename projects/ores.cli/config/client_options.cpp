@@ -17,38 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_APP_HOST_HPP
-#define ORES_CLI_APP_HOST_HPP
+#include <ostream>
+#include "ores.cli/config/client_options.hpp"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
+namespace ores::cli::config {
 
-#include <vector>
-#include <string>
-#include <exception>
-#include <boost/cobalt.hpp>
-#include "ores.utility/log/scoped_lifecycle_manager.hpp"
-
-namespace ores::cli::app {
-
-/**
- * @brief Hosts the console application.
- */
-class host {
-public:
-    /**
-     * @brief Reports exceptions to the log and console.
-     */
-    static void report_exception(const bool can_log, const std::exception& e);
-
-    /**
-     * @brief Executes the console workflow.
-     */
-    static boost::cobalt::promise<int> execute(const std::vector<std::string>& args,
-        ores::utility::log::scoped_lifecycle_manager& slm);
-};
-
+std::ostream& operator<<(std::ostream& s, const client_options& v) {
+    s << " { "
+      << "\"__type__\": " << "\"ores::cli::config::client_options\"" << ", "
+      << "\"host\": " << "\"" << v.host << "\"" << ", "
+      << "\"port\": " << v.port << ", "
+      << "\"client_identifier\": " << "\"" << v.client_identifier << "\"" << ", "
+      << "\"verify_certificate\": " << std::boolalpha << v.verify_certificate
+      << " }";
+    return s;
 }
 
-#endif
+}

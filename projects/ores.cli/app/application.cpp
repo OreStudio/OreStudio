@@ -20,7 +20,9 @@
  */
 #include <iostream>
 #include <optional>
+#include <print>
 #include <boost/throw_exception.hpp>
+#include <boost/cobalt.hpp>
 #include <sqlgen/postgres.hpp>
 #include <magic_enum/magic_enum.hpp>
 #include "ores.cli/config/export_options.hpp"
@@ -32,6 +34,7 @@
 #include "ores.risk/repository/context_factory.hpp"
 #include "ores.cli/app/application_exception.hpp"
 #include "ores.cli/app/application.hpp"
+#include "ores.comms/client.hpp"
 
 namespace {
 
@@ -153,11 +156,57 @@ export_data(const std::optional<config::export_options>& ocfg) const {
     }
 }
 
-void application::run(const config::options& cfg) const {
+boost::cobalt::promise<void>
+application::run_client(const std::optional<config::client_options>& ocfg) const {
+    if (!ocfg.has_value()) {
+        BOOST_LOG_SEV(lg, debug) << "No client configuration found.";
+        co_return;
+    }
+
+    const auto& cfg(ocfg.value());
+    BOOST_LOG_SEV(lg, info) << "Starting client connection to "
+                             << cfg.host << ":" << cfg.port;
+
+    try {
+        // Create client configuration
+        comms::client_config client_cfg;
+        client_cfg.host = cfg.host;
+        client_cfg.port = cfg.port;
+        client_cfg.client_identifier = cfg.client_identifier;
+        client_cfg.verify_certificate = cfg.verify_certificate;
+
+        // Create client
+        comms::client cli(std::move(client_cfg),
+            co_await boost::cobalt::this_coro::executor);
+
+        // Connect and perform handshake
+        bool connected = co_await cli.connect();
+        if (!connected) {
+            std::println("Failed to connect to server");
+            co_return;
+        }
+
+        std::println("Successfully connected and performed handshake!");
+        std::println("Client session established");
+
+        // For now, just disconnect immediately
+        // Future: Add message processing loop here
+        cli.disconnect();
+
+        BOOST_LOG_SEV(lg, info) << "Client session completed successfully.";
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg, error) << "Client error: " << e.what();
+        std::println("Client error: {}", e.what());
+    }
+}
+
+boost::cobalt::promise<void> application::run(const config::options& cfg) const {
     BOOST_LOG_SEV(lg, info) << "Started application.";
 
     import_data(cfg.importing);
     export_data(cfg.exporting);
+    co_await run_client(cfg.client);
 
     BOOST_LOG_SEV(lg, info) << "Finished application.";
 }

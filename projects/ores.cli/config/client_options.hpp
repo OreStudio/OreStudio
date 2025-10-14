@@ -17,46 +17,44 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_HPP
-#define ORES_CLI_CONFIG_HPP
+#ifndef ORES_CLI_CONFIG_CLIENT_OPTIONS_HPP
+#define ORES_CLI_CONFIG_CLIENT_OPTIONS_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
 #include <iosfwd>
-#include <optional>
-#include "ores.utility/log/logging_options.hpp"
-#include "ores.cli/config/import_options.hpp"
-#include "ores.cli/config/export_options.hpp"
-#include "ores.cli/config/client_options.hpp"
+#include <string>
 
 namespace ores::cli::config {
 
 /**
- * @brief All of the configuration options required by the command line
- * application.
+ * @brief Options for the client command.
  */
-struct options final {
+struct client_options final {
     /**
-     * @brief Configuration options related to logging, if any.
+     * @brief Host to connect to.
      */
-    std::optional<ores::utility::log::logging_options> logging;
+    std::string host = "localhost";
+
     /**
-     * @brief Configuration related to importing of data, if any.
+     * @brief Port to connect to.
      */
-    std::optional<import_options> importing;
+    uint16_t port = 55555;
+
     /**
-     * @brief Configuration related to exporting of data, if any.
+     * @brief Client identifier to send in handshake.
      */
-    std::optional<export_options> exporting;
+    std::string client_identifier = "ores-cli-client";
+
     /**
-     * @brief Configuration related to client operations, if any.
+     * @brief Whether to verify server certificate.
      */
-    std::optional<client_options> client;
+    bool verify_certificate = false;
 };
 
-std::ostream& operator<<(std::ostream& s, const options& v);
+std::ostream& operator<<(std::ostream& s, const client_options& v);
 
 }
 

@@ -27,6 +27,7 @@
 #include "ores.utility/log/severity_level.hpp"
 #include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/parser_exception.hpp"
+#include "ores.cli/config/client_options.hpp"
 #include "ores.cli/config/parser.hpp"
 
 namespace {
@@ -49,6 +50,13 @@ const std::string export_as_of_arg("as-of");
 const std::string export_key_arg("key");
 const std::string export_all_versions_arg("all-versions");
 const std::string export_format_arg("format");
+
+const std::string client_command_name("client");
+const std::string client_command_desc("Test client connection to ores.service.");
+const std::string client_host_arg("host");
+const std::string client_port_arg("port");
+const std::string client_identifier_arg("identifier");
+const std::string client_verify_cert_arg("verify-certificate");
 
 const std::string help_arg("help");
 const std::string version_arg("version");
@@ -76,6 +84,7 @@ using ores::cli::config::format;
 using ores::cli::config::options;
 using ores::cli::config::import_options;
 using ores::cli::config::export_options;
+using ores::cli::config::client_options;
 using ores::cli::config::parser_exception;
 
 /**
@@ -163,12 +172,28 @@ options_description make_export_options_description() {
 }
 
 /**
+ * @brief Creates the options related to client testing.
+ */
+options_description make_client_options_description() {
+    options_description r("Client");
+    r.add_options()
+        ("host", value<std::string>(), "Host to connect to. Defaults to localhost.")
+        ("port", value<uint16_t>(), "Port to connect to. Defaults to 55555.")
+        ("identifier", value<std::string>(),
+            "Client identifier for handshake. Defaults to ores-cli-client.")
+        ("verify-certificate", "Verify server SSL certificate.");
+
+    return r;
+}
+
+/**
  * @brief Ensures the supplied command is a valid command.
  */
 void validate_command_name(const std::string& command_name) {
     const bool is_valid_command_name(
         command_name == import_command_name ||
-        command_name == export_command_name);
+        command_name == export_command_name ||
+        command_name == client_command_name);
 
     if (!is_valid_command_name)
     {
@@ -210,6 +235,7 @@ void print_help(const options_description& od, std::ostream& info) {
 
     lambda(import_command_name, import_command_desc);
     lambda(export_command_name, export_command_desc);
+    lambda(client_command_name, client_command_desc);
 
     info << std::endl << "For command specific options, type <command> --help."
          << std::endl;
@@ -391,6 +417,26 @@ export_options read_export_options(const variables_map& vm) {
 }
 
 /**
+ * @brief Reads the client configuration from the variables map.
+ */
+client_options read_client_options(const variables_map& vm) {
+    client_options r;
+
+    if (vm.count(client_host_arg) != 0)
+        r.host = vm[client_host_arg].as<std::string>();
+
+    if (vm.count(client_port_arg) != 0)
+        r.port = vm[client_port_arg].as<uint16_t>();
+
+    if (vm.count(client_identifier_arg) != 0)
+        r.client_identifier = vm[client_identifier_arg].as<std::string>();
+
+    r.verify_certificate = vm.count(client_verify_cert_arg) != 0;
+
+    return r;
+}
+
+/**
  * @brief Contains the processing logic for when the user supplies a command in
  * the command line.
  */
@@ -431,6 +477,15 @@ handle_command(const std::string& command_name, const bool has_help,
 
         store(command_line_parser(o).options(d).run(), vm);
         r.exporting = read_export_options(vm);
+    } else if (command_name == client_command_name) {
+        const auto d(make_client_options_description());
+        if (has_help) {
+            print_help_command(client_command_name, d, info);
+            return {};
+        }
+
+        store(command_line_parser(o).options(d).run(), vm);
+        r.client = read_client_options(vm);
     }
 
     /*

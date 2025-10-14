@@ -8103,6 +8103,18 @@ Sliced as there are too many.
 ]
 #+end_src
 
+** Client
+   :PROPERTIES:
+   :header-args+: :var log_args="--log-enabled --log-level trace --log-directory log"
+   :END:
+
+*** Basic connect
+
+#+begin_src sh
+./ores.cli ${log_args} client
+#+END_SRC
+
+#+RESULTS:
 
 
 | Previous: [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] |

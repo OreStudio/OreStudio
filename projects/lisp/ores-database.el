@@ -28,7 +28,7 @@
 (setq sql-postgres-login-params nil)
 
 ;; define your connections
-(setq sql-connection-alist
+(add-to-list 'sql-connection-alist
       '((ores-primary-db (sql-product 'postgres)
                          (sql-database (concat "postgresql://"
                                                "ores"

@@ -17,13 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <iostream>
 #include <boost/cobalt/main.hpp>
 #include "ores.comms/server.hpp"
+#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/scoped_lifecycle_manager.hpp"
 
+namespace {
+
+using namespace ores::utility::log;
+auto lg(logger_factory("ores.service"));
 namespace cobalt = boost::cobalt;
+const std::string force_terminate("Service was forced to terminate.");
+
+}
 
 cobalt::main co_main(int argc, char** argv) {
+    using ores::utility::log::scoped_lifecycle_manager;
+
+    scoped_lifecycle_manager slm;
     try {
+        BOOST_LOG_SEV(lg, info) << "Starting ORES Service";
+
         // Configure server
         ores::comms::server_config config;
         config.port = 55555;
@@ -36,10 +51,18 @@ cobalt::main co_main(int argc, char** argv) {
         ores::comms::server srv(config);
         co_await srv.run();
 
+        BOOST_LOG_SEV(lg, info) << "ORES Service stopped normally";
+
     } catch (const std::exception& e) {
-        std::printf("Server error: %s\n", e.what());
-        co_return 1;
+        if (slm.is_initialised())
+            BOOST_LOG_SEV(lg, error) << "Server error: " << e.what();
+        else
+            std::cerr << "Server error: " << e.what() << std::endl;
+        co_return EXIT_FAILURE;
+    } catch (...) {
+        std::cerr << force_terminate << std::endl;
+        co_return EXIT_FAILURE;
     }
 
-    co_return 0;
+    co_return EXIT_SUCCESS;
 }

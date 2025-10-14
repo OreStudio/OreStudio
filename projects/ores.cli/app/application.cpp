@@ -20,7 +20,6 @@
  */
 #include <iostream>
 #include <optional>
-#include <print>
 #include <boost/throw_exception.hpp>
 #include <boost/cobalt.hpp>
 #include <sqlgen/postgres.hpp>
@@ -182,12 +181,12 @@ application::run_client(const std::optional<config::client_options>& ocfg) const
         // Connect and perform handshake
         bool connected = co_await cli.connect();
         if (!connected) {
-            std::println("Failed to connect to server");
+            BOOST_LOG_SEV(lg, error) << "Failed to connect to server";
             co_return;
         }
 
-        std::println("Successfully connected and performed handshake!");
-        std::println("Client session established");
+        BOOST_LOG_SEV(lg, info) << "Successfully connected and performed handshake!";
+        BOOST_LOG_SEV(lg, info) << "Client session established";
 
         // For now, just disconnect immediately
         // Future: Add message processing loop here
@@ -197,7 +196,6 @@ application::run_client(const std::optional<config::client_options>& ocfg) const
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg, error) << "Client error: " << e.what();
-        std::println("Client error: {}", e.what());
     }
 }
 

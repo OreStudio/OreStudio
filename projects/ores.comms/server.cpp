@@ -19,7 +19,14 @@
  */
 #include "ores.comms/server.hpp"
 #include "ores.comms/session.hpp"
-#include <iostream>
+#include "ores.utility/log/logger.hpp"
+
+namespace {
+
+using namespace ores::utility::log;
+auto lg(logger_factory("ores.comms.server"));
+
+}
 
 namespace ores::comms {
 
@@ -41,16 +48,16 @@ void server::setup_ssl_context() {
     ssl_ctx_.use_certificate_chain_file(config_.certificate_file);
     ssl_ctx_.use_private_key_file(config_.private_key_file, ssl::context::pem);
 
-    std::printf("SSL context configured with certificate: %s\n",
-               config_.certificate_file.c_str());
+    BOOST_LOG_SEV(lg, info) << "SSL context configured with certificate: "
+                             << config_.certificate_file;
 }
 
 cobalt::promise<void> server::run() {
-    std::printf("ORES Server starting on port %d (identifier: %s)\n",
-               config_.port, config_.server_identifier.c_str());
-    std::printf("Protocol version: %d.%d\n",
-               protocol::PROTOCOL_VERSION_MAJOR,
-               protocol::PROTOCOL_VERSION_MINOR);
+    BOOST_LOG_SEV(lg, info) << "ORES Server starting on port " << config_.port
+                             << " (identifier: " << config_.server_identifier << ")";
+    BOOST_LOG_SEV(lg, info) << "Protocol version: "
+                             << protocol::PROTOCOL_VERSION_MAJOR << "."
+                             << protocol::PROTOCOL_VERSION_MINOR;
 
     co_await cobalt::with(cobalt::wait_group(), [this](auto& wg) {
         return accept_loop(wg);
@@ -64,37 +71,44 @@ cobalt::promise<void> server::accept_loop(cobalt::wait_group& workers) {
         {co_await cobalt::this_coro::executor},
         {tcp::v4(), config_.port});
 
-    std::printf("Server listening on port %d\n", config_.port);
+    BOOST_LOG_SEV(lg, info) << "Server listening on port " << config_.port;
 
     while (true) {
         try {
             // Wait if we've reached max connections
             if (workers.size() >= config_.max_connections) {
-                std::printf("Max connections (%d) reached, waiting...\n",
-                           config_.max_connections);
+                BOOST_LOG_SEV(lg, info) << "Max connections (" << config_.max_connections
+                                         << ") reached, waiting...";
                 co_await workers.wait_one();
             }
 
             // Accept new connection
             tcp::socket socket = co_await acceptor.async_accept();
-            std::printf("Accepted connection from %s:%d\n",
-                       socket.remote_endpoint().address().to_string().c_str(),
-                       socket.remote_endpoint().port());
+            BOOST_LOG_SEV(lg, info) << "Accepted connection from "
+                                     << socket.remote_endpoint().address().to_string()
+                                     << ":" << socket.remote_endpoint().port();
 
-            // Create SSL socket
-            connection::ssl_socket ssl_sock(std::move(socket), ssl_ctx_);
+            // Create SSL socket and connection wrapper
+            auto conn = std::make_unique<connection>(
+                connection::ssl_socket(std::move(socket), ssl_ctx_));
 
-            // Create connection wrapper
-            auto conn = std::make_unique<connection>(std::move(ssl_sock));
+            // Create session and spawn it
+            auto sess = std::make_shared<session>(std::move(conn), config_.server_identifier);
 
-            // Create and start session
-            auto sess = std::make_unique<session>(std::move(conn), config_.server_identifier);
+            // Add session to worker group - capture sess by value to keep it alive
+            workers.push_back([](std::shared_ptr<session> s) -> cobalt::promise<void> {
+                co_await s->run();
+            }(sess));
 
-            // Add session to worker group
-            workers.push_back(sess->run());
-
+        } catch (const boost::system::system_error& e) {
+            // Check if operation was cancelled (shutdown signal)
+            if (e.code() == boost::asio::error::operation_aborted) {
+                BOOST_LOG_SEV(lg, info) << "Server shutting down...";
+                break;
+            }
+            BOOST_LOG_SEV(lg, error) << "Accept loop error: " << e.what();
         } catch (const std::exception& e) {
-            std::printf("Accept loop error: %s\n", e.what());
+            BOOST_LOG_SEV(lg, error) << "Accept loop error: " << e.what();
         }
     }
 }

@@ -17,10 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <print>
 #include <boost/asio/connect.hpp>
 #include "ores.comms/client.hpp"
 #include "ores.comms/protocol/handshake.hpp"
+#include "ores.utility/log/logger.hpp"
+
+namespace {
+
+using namespace ores::utility::log;
+auto lg(logger_factory("ores.comms.client"));
+
+}
 
 namespace ores::comms {
 
@@ -41,12 +48,12 @@ void client::setup_ssl_context() {
         ssl_ctx_.set_verify_mode(ssl::verify_none);
     }
 
-    std::println("SSL context configured for client\n");
+    BOOST_LOG_SEV(lg, info) << "SSL context configured for client";
 }
 
 cobalt::promise<bool> client::connect() {
     try {
-        std::println("Connecting to %s:%d\n", config_.host.c_str(), config_.port);
+        BOOST_LOG_SEV(lg, info) << "Connecting to " << config_.host << ":" << config_.port;
 
         // Resolve server address
         tcp::resolver resolver(executor_);
@@ -55,36 +62,34 @@ cobalt::promise<bool> client::connect() {
             std::to_string(config_.port),
             cobalt::use_op);
 
-        // Create TCP socket
+        // Create TCP socket and connect
         tcp::socket socket(executor_);
         co_await boost::asio::async_connect(socket, endpoints, cobalt::use_op);
 
-        std::println("TCP connection established\n");
+        BOOST_LOG_SEV(lg, info) << "TCP connection established";
 
-        // Create SSL socket
-        connection::ssl_socket ssl_sock(std::move(socket), ssl_ctx_);
-
-        // Create connection wrapper
-        conn_ = std::make_unique<connection>(std::move(ssl_sock));
+        // Create SSL socket - construct directly without intermediate variable
+        conn_ = std::make_unique<connection>(
+            connection::ssl_socket(std::move(socket), ssl_ctx_));
 
         // Perform SSL handshake
         co_await conn_->ssl_handshake_client();
-        std::println("SSL handshake complete\n");
+        BOOST_LOG_SEV(lg, info) << "SSL handshake complete";
 
         // Perform protocol handshake
         bool handshake_ok = co_await perform_handshake();
         if (!handshake_ok) {
-            std::println("Protocol handshake failed\n");
+            BOOST_LOG_SEV(lg, error) << "Protocol handshake failed";
             disconnect();
             co_return false;
         }
 
         connected_ = true;
-        std::println("Successfully connected to server\n");
+        BOOST_LOG_SEV(lg, info) << "Successfully connected to server";
         co_return true;
 
     } catch (const std::exception& e) {
-        std::println("Connection error: %s\n", e.what());
+        BOOST_LOG_SEV(lg, error) << "Connection error: " << e.what();
         disconnect();
         co_return false;
     }
@@ -98,15 +103,14 @@ cobalt::promise<bool> client::perform_handshake() {
             config_.client_identifier);
 
         co_await conn_->write_frame(request_frame);
-        std::println("Sent handshake request (client: %s, version: %d.%d)\n",
-                   config_.client_identifier.c_str(),
-                   protocol::PROTOCOL_VERSION_MAJOR,
-                   protocol::PROTOCOL_VERSION_MINOR);
+        BOOST_LOG_SEV(lg, info) << "Sent handshake request (client: " << config_.client_identifier
+                                 << ", version: " << protocol::PROTOCOL_VERSION_MAJOR << "."
+                                 << protocol::PROTOCOL_VERSION_MINOR << ")";
 
         // Read handshake response
         auto response_frame_result = co_await conn_->read_frame();
         if (!response_frame_result) {
-            std::println("Failed to read handshake response\n");
+            BOOST_LOG_SEV(lg, error) << "Failed to read handshake response";
             co_return false;
         }
 
@@ -114,33 +118,32 @@ cobalt::promise<bool> client::perform_handshake() {
 
         // Verify message type
         if (response_frame.header().type != protocol::message_type::handshake_response) {
-            std::println("Expected handshake response, got message type %d\n",
-                       static_cast<int>(response_frame.header().type));
+            BOOST_LOG_SEV(lg, error) << "Expected handshake response, got message type "
+                                      << static_cast<int>(response_frame.header().type);
             co_return false;
         }
 
         // Deserialize response
         auto response_result = protocol::handshake_response::deserialize(response_frame.payload());
         if (!response_result) {
-            std::println("Failed to deserialize handshake response\n");
+            BOOST_LOG_SEV(lg, error) << "Failed to deserialize handshake response";
             co_return false;
         }
 
         const auto& response = *response_result;
-        std::println("Received handshake response (server: %s, version: %d.%d, compatible: %s)\n",
-                   response.server_identifier.c_str(),
-                   response.server_version_major,
-                   response.server_version_minor,
-                   response.version_compatible ? "yes" : "no");
+        BOOST_LOG_SEV(lg, info) << "Received handshake response (server: " << response.server_identifier
+                                 << ", version: " << response.server_version_major << "."
+                                 << response.server_version_minor << ", compatible: "
+                                 << (response.version_compatible ? "yes" : "no") << ")";
 
         // Check compatibility
         if (!response.version_compatible) {
-            std::println("Version incompatible with server\n");
+            BOOST_LOG_SEV(lg, error) << "Version incompatible with server";
             co_return false;
         }
 
         if (response.status != protocol::error_code::none) {
-            std::println("Server reported error: %d\n", static_cast<int>(response.status));
+            BOOST_LOG_SEV(lg, error) << "Server reported error: " << static_cast<int>(response.status);
             co_return false;
         }
 
@@ -150,12 +153,12 @@ cobalt::promise<bool> client::perform_handshake() {
             protocol::error_code::none);
 
         co_await conn_->write_frame(ack_frame);
-        std::println("Sent handshake acknowledgment\n");
+        BOOST_LOG_SEV(lg, info) << "Sent handshake acknowledgment";
 
         co_return true;
 
     } catch (const std::exception& e) {
-        std::println("Handshake exception: %s\n", e.what());
+        BOOST_LOG_SEV(lg, error) << "Handshake exception: " << e.what();
         co_return false;
     }
 }
@@ -166,7 +169,7 @@ void client::disconnect() {
         conn_.reset();
     }
     connected_ = false;
-    std::println("Disconnected from server\n");
+    BOOST_LOG_SEV(lg, info) << "Disconnected from server";
 }
 
 bool client::is_connected() const {

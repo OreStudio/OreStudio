@@ -35,16 +35,41 @@ cobalt::promise<void> connection::ssl_handshake_client() {
 
 cobalt::promise<std::expected<protocol::frame, protocol::error_code>> connection::read_frame() {
     try {
-        // Read frame header first (32 bytes)
-        std::array<uint8_t, protocol::frame_header::size> header_buffer;
+        // Read BSON document length (first 4 bytes)
+        std::array<uint8_t, 4> length_buffer;
         co_await boost::asio::async_read(
             socket_,
-            boost::asio::buffer(header_buffer),
+            boost::asio::buffer(length_buffer),
+            cobalt::use_op);
+
+        // BSON length is little-endian int32
+        uint32_t bson_length =
+            static_cast<uint32_t>(length_buffer[0]) |
+            (static_cast<uint32_t>(length_buffer[1]) << 8) |
+            (static_cast<uint32_t>(length_buffer[2]) << 16) |
+            (static_cast<uint32_t>(length_buffer[3]) << 24);
+
+        // Sanity check on BSON length
+        if (bson_length < 5 || bson_length > 1024 * 1024) {  // Max 1MB
+            co_return std::unexpected(protocol::error_code::invalid_message_type);
+        }
+
+        // Read the rest of the BSON document (we already have the first 4 bytes)
+        std::vector<uint8_t> header_buffer;
+        header_buffer.reserve(bson_length);
+        header_buffer.insert(header_buffer.end(), length_buffer.begin(), length_buffer.end());
+
+        size_t remaining = bson_length - 4;
+        size_t old_size = header_buffer.size();
+        header_buffer.resize(bson_length);
+
+        co_await boost::asio::async_read(
+            socket_,
+            boost::asio::buffer(header_buffer.data() + old_size, remaining),
             cobalt::use_op);
 
         // Deserialize header to get payload size
-        std::span<const uint8_t> header_span(header_buffer.data(), header_buffer.size());
-        auto header_result = protocol::frame::deserialize(header_span);
+        auto header_result = protocol::frame::deserialize(header_buffer);
         if (!header_result) {
             co_return std::unexpected(header_result.error());
         }
@@ -65,7 +90,7 @@ cobalt::promise<std::expected<protocol::frame, protocol::error_code>> connection
 
         // Combine header and payload for full frame deserialization
         std::vector<uint8_t> full_frame_buffer;
-        full_frame_buffer.reserve(protocol::frame_header::size + payload_size);
+        full_frame_buffer.reserve(header_buffer.size() + payload_size);
         full_frame_buffer.insert(full_frame_buffer.end(), header_buffer.begin(), header_buffer.end());
         full_frame_buffer.insert(full_frame_buffer.end(), payload_buffer.begin(), payload_buffer.end());
 

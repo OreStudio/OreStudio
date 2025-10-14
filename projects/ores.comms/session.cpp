@@ -65,7 +65,10 @@ cobalt::promise<void> session::run() {
 
 cobalt::promise<bool> session::perform_handshake() {
     try {
+        BOOST_LOG_SEV(lg, debug) << "Starting server handshake process...";
+        
         // Read handshake request from client
+        BOOST_LOG_SEV(lg, debug) << "About to read handshake request frame from client";
         auto frame_result = co_await conn_->read_frame();
         if (!frame_result) {
             BOOST_LOG_SEV(lg, error) << "Failed to read handshake request: error code "
@@ -81,6 +84,8 @@ cobalt::promise<bool> session::perform_handshake() {
                                       << static_cast<int>(request_frame.header().type);
             co_return false;
         }
+        
+        BOOST_LOG_SEV(lg, debug) << "Received valid handshake request frame";
 
         // Deserialize handshake request
         auto request_result = protocol::handshake_request::deserialize(request_frame.payload());
@@ -104,7 +109,9 @@ cobalt::promise<bool> session::perform_handshake() {
             server_id_,
             version_compatible ? protocol::error_code::none : protocol::error_code::version_mismatch);
 
+        BOOST_LOG_SEV(lg, debug) << "About to send handshake response frame";
         co_await conn_->write_frame(response_frame);
+        BOOST_LOG_SEV(lg, debug) << "Sent handshake response frame";
 
         if (!version_compatible) {
             BOOST_LOG_SEV(lg, error) << "Version mismatch: client=" << request.client_version_major
@@ -115,9 +122,10 @@ cobalt::promise<bool> session::perform_handshake() {
         }
 
         // Read handshake acknowledgment
+        BOOST_LOG_SEV(lg, debug) << "About to read handshake acknowledgment frame from client";
         auto ack_frame_result = co_await conn_->read_frame();
         if (!ack_frame_result) {
-            BOOST_LOG_SEV(lg, error) << "Failed to read handshake ack";
+            BOOST_LOG_SEV(lg, error) << "Failed to read handshake ack, error code: " << static_cast<int>(ack_frame_result.error());
             co_return false;
         }
 
@@ -127,6 +135,8 @@ cobalt::promise<bool> session::perform_handshake() {
                                       << static_cast<int>(ack_frame.header().type);
             co_return false;
         }
+        
+        BOOST_LOG_SEV(lg, debug) << "Received valid handshake acknowledgment frame";
 
         auto ack_result = protocol::handshake_ack::deserialize(ack_frame.payload());
         if (!ack_result) {
@@ -141,6 +151,7 @@ cobalt::promise<bool> session::perform_handshake() {
         }
 
         handshake_complete_ = true;
+        BOOST_LOG_SEV(lg, debug) << "Server handshake completed successfully";
         co_return true;
 
     } catch (const std::exception& e) {

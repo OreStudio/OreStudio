@@ -102,15 +102,17 @@ cobalt::promise<bool> client::perform_handshake() {
             ++sequence_number_,
             config_.client_identifier);
 
+        BOOST_LOG_SEV(lg, debug) << "About to send handshake request frame";
         co_await conn_->write_frame(request_frame);
         BOOST_LOG_SEV(lg, info) << "Sent handshake request (client: " << config_.client_identifier
                                  << ", version: " << protocol::PROTOCOL_VERSION_MAJOR << "."
                                  << protocol::PROTOCOL_VERSION_MINOR << ")";
 
         // Read handshake response
+        BOOST_LOG_SEV(lg, debug) << "About to read handshake response frame";
         auto response_frame_result = co_await conn_->read_frame();
         if (!response_frame_result) {
-            BOOST_LOG_SEV(lg, error) << "Failed to read handshake response";
+            BOOST_LOG_SEV(lg, error) << "Failed to read handshake response, error code: " << static_cast<int>(response_frame_result.error());
             co_return false;
         }
 
@@ -152,9 +154,11 @@ cobalt::promise<bool> client::perform_handshake() {
             ++sequence_number_,
             protocol::error_code::none);
 
+        BOOST_LOG_SEV(lg, debug) << "About to send handshake acknowledgment frame";
         co_await conn_->write_frame(ack_frame);
         BOOST_LOG_SEV(lg, info) << "Sent handshake acknowledgment";
 
+        BOOST_LOG_SEV(lg, debug) << "Client handshake completed successfully";
         co_return true;
 
     } catch (const std::exception& e) {

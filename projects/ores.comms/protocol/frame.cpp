@@ -21,6 +21,14 @@
 #include "ores.comms/protocol/crc.hpp"
 #include <rfl.hpp>
 #include <rfl/bson.hpp>
+#include "ores.utility/log/logger.hpp"
+
+namespace {
+
+using namespace ores::utility::log;
+auto lg(logger_factory("ores.comms.protocol.frame"));
+
+}
 
 namespace ores::comms::protocol {
 
@@ -78,6 +86,7 @@ std::vector<uint8_t> frame::serialize() const {
 
     // Serialize header using reflect-cpp BSON
     auto header_bytes = rfl::bson::write(header_with_crc);
+    BOOST_LOG_SEV(lg, debug) << "Serialized header to " << header_bytes.size() << " bytes";
 
     // Combine header and payload
     std::vector<uint8_t> result;
@@ -87,12 +96,21 @@ std::vector<uint8_t> frame::serialize() const {
                   reinterpret_cast<const uint8_t*>(header_bytes.data()) + header_bytes.size());
     result.insert(result.end(), payload_.begin(), payload_.end());
 
+    BOOST_LOG_SEV(lg, debug) << "Total serialized frame size: " << result.size() 
+                              << " (header: " << header_bytes.size() << ", payload: " << payload_.size() << ")";
+    BOOST_LOG_SEV(lg, debug) << "Header magic: 0x" << std::hex << header_with_crc.magic << std::dec
+                              << ", type: " << static_cast<int>(header_with_crc.type)
+                              << ", payload_size: " << header_with_crc.payload_size;
+
     return result;
 }
 
 std::expected<frame, error_code> frame::deserialize(std::span<const uint8_t> data) {
+    BOOST_LOG_SEV(lg, debug) << "Starting frame deserialization, input size: " << data.size();
+    
     // BSON documents start with a 32-bit little-endian length
     if (data.size() < 4) {
+        BOOST_LOG_SEV(lg, error) << "Data too short for BSON length, size: " << data.size();
         return std::unexpected(error_code::invalid_message_type);
     }
 
@@ -103,30 +121,43 @@ std::expected<frame, error_code> frame::deserialize(std::span<const uint8_t> dat
     bson_length |= static_cast<uint32_t>(data[2]) << 16;
     bson_length |= static_cast<uint32_t>(data[3]) << 24;
 
+    BOOST_LOG_SEV(lg, debug) << "Parsed BSON length: " << bson_length;
+    
     // The length includes the 4 bytes for the length itself
     if (bson_length < 4 || data.size() < bson_length) {
+        BOOST_LOG_SEV(lg, error) << "Invalid BSON length (" << bson_length << ") or insufficient data (" << data.size() << ")";
         return std::unexpected(error_code::invalid_message_type);
     }
 
     // Extract the header part (the BSON document)
     std::span<const uint8_t> header_span(data.data(), bson_length);
     
+    BOOST_LOG_SEV(lg, debug) << "Attempting to deserialize BSON header of size: " << bson_length;
+    
     // Deserialize the header - use the same signature as in serialization
     auto header_result = rfl::bson::read<frame_header>(header_span.data(), header_span.size());
     
     if (!header_result) {
+        BOOST_LOG_SEV(lg, error) << "Failed to deserialize BSON header";
         return std::unexpected(error_code::invalid_message_type);
     }
 
     frame_header header = header_result.value();
+    BOOST_LOG_SEV(lg, debug) << "Successfully deserialized header, payload_size: " << header.payload_size 
+                              << ", magic: 0x" << std::hex << header.magic << std::dec
+                              << ", type: " << static_cast<int>(header.type);
     
     // Check magic number
     if (header.magic != PROTOCOL_MAGIC) {
+        BOOST_LOG_SEV(lg, error) << "Invalid magic number, expected: 0x" << std::hex << PROTOCOL_MAGIC 
+                                  << ", got: 0x" << header.magic << std::dec;
         return std::unexpected(error_code::invalid_message_type);
     }
 
     // Check if we have enough data for the payload
     if (data.size() < bson_length + header.payload_size) {
+        BOOST_LOG_SEV(lg, error) << "Insufficient data for payload, need: " << (bson_length + header.payload_size) 
+                                  << ", have: " << data.size();
         return std::unexpected(error_code::invalid_message_type);
     }
 
@@ -136,6 +167,7 @@ std::expected<frame, error_code> frame::deserialize(std::span<const uint8_t> dat
         auto payload_start = data.begin() + bson_length;
         auto payload_end = payload_start + header.payload_size;
         payload.assign(payload_start, payload_end);
+        BOOST_LOG_SEV(lg, debug) << "Extracted payload of size: " << payload.size();
     }
 
     // Create frame and validate
@@ -145,9 +177,11 @@ std::expected<frame, error_code> frame::deserialize(std::span<const uint8_t> dat
 
     auto validation = f.validate();
     if (!validation) {
+        BOOST_LOG_SEV(lg, error) << "Frame validation failed with error: " << static_cast<int>(validation.error());
         return std::unexpected(validation.error());
     }
 
+    BOOST_LOG_SEV(lg, debug) << "Successfully deserialized frame, type: " << static_cast<int>(f.header().type);
     return f;
 }
 

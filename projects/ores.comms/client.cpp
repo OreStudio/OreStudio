@@ -102,11 +102,14 @@ cobalt::promise<bool> client::perform_handshake() {
             ++sequence_number_,
             config_.client_identifier);
 
-        BOOST_LOG_SEV(lg, debug) << "About to send handshake request frame";
+        BOOST_LOG_SEV(lg, debug) << "About to send handshake request frame.";
         co_await conn_->write_frame(request_frame);
-        BOOST_LOG_SEV(lg, info) << "Sent handshake request (client: " << config_.client_identifier
-                                 << ", version: " << protocol::PROTOCOL_VERSION_MAJOR << "."
-                                 << protocol::PROTOCOL_VERSION_MINOR << ")";
+        BOOST_LOG_SEV(lg, info) << "Sent handshake request. Client: "
+                                << config_.client_identifier
+                                << " Version: "
+                                << protocol::PROTOCOL_VERSION_MAJOR
+                                << "."
+                                << protocol::PROTOCOL_VERSION_MINOR;
 
         // Read handshake response
         BOOST_LOG_SEV(lg, debug) << "About to read handshake response frame";
@@ -133,10 +136,12 @@ cobalt::promise<bool> client::perform_handshake() {
         }
 
         const auto& response = *response_result;
-        BOOST_LOG_SEV(lg, info) << "Received handshake response (server: " << response.server_identifier
-                                 << ", version: " << response.server_version_major << "."
-                                 << response.server_version_minor << ", compatible: "
-                                 << (response.version_compatible ? "yes" : "no") << ")";
+        BOOST_LOG_SEV(lg, info) << "Received handshake response (server: "
+                                << response.server_identifier << " version: "
+                                << response.server_version_major
+                                << "." << response.server_version_minor
+                                << ". Compatible: "
+                                << response.version_compatible;
 
         // Check compatibility
         if (!response.version_compatible) {

@@ -41,70 +41,78 @@ cobalt::promise<void> connection::ssl_handshake_client() {
     co_await socket_.async_handshake(ssl::stream_base::client, cobalt::use_op);
 }
 
-cobalt::promise<std::expected<protocol::frame, protocol::error_code>> connection::read_frame() {
+cobalt::promise<std::expected<protocol::frame, protocol::error_code>>
+connection::read_frame() {
     try {
         BOOST_LOG_SEV(lg, debug) << "Starting to read frame...";
-        
+
         // Read the fixed 32-byte header first
-        std::array<uint8_t, protocol::frame_header::size> header_buffer;
+        std::vector<uint8_t> buffer(protocol::frame_header::size);
         co_await boost::asio::async_read(
             socket_,
-            boost::asio::buffer(header_buffer),
+            boost::asio::buffer(buffer),
             cobalt::use_op);
 
-        BOOST_LOG_SEV(lg, debug) << "Successfully read 32-byte frame header";
-        
-        // Now peek at the payload size from the header (bytes 12-15 for payload_size)
-        // Since the frame uses network byte order, we need to convert from network to host byte order
-        uint32_t payload_size = 0;
-        payload_size |= static_cast<uint32_t>(header_buffer[12]);
-        payload_size |= static_cast<uint32_t>(header_buffer[13]) << 8;
-        payload_size |= static_cast<uint32_t>(header_buffer[14]) << 16;
-        payload_size |= static_cast<uint32_t>(header_buffer[15]) << 24;
+        BOOST_LOG_SEV(lg, debug) << "Read header of size: " << protocol::frame_header::size;
 
-        BOOST_LOG_SEV(lg, debug) << "Extracted payload size from header: " << payload_size;
+        // Deserialize header to get payload size
+        auto header_result = protocol::frame::deserialize(std::span<const uint8_t>(buffer));
+        if (!header_result) {
+            BOOST_LOG_SEV(lg, error) << "Failed to deserialize header, error: "
+                                     << static_cast<int>(header_result.error());
+            co_return std::unexpected(header_result.error());
+        }
 
-        // Read the payload
-        std::vector<uint8_t> payload_buffer;
+        uint32_t payload_size = header_result->header().payload_size;
+        BOOST_LOG_SEV(lg, debug) << "Header payload size: " << payload_size;
+
+        // Read payload if any
         if (payload_size > 0) {
-            payload_buffer.resize(payload_size);
-            BOOST_LOG_SEV(lg, debug) << "Reading payload of size: " << payload_size;
-            co_await boost::asio::async_read(
-                socket_,
-                boost::asio::buffer(payload_buffer),
+            if (payload_size > protocol::MAX_PAYLOAD_SIZE) {
+                BOOST_LOG_SEV(lg, error) << "Payload size exceeds maximum: "
+                                         << payload_size;
+                co_return std::unexpected(protocol::error_code::payload_too_large);
+            }
+
+            buffer.resize(protocol::frame_header::size + payload_size);
+            co_await boost::asio::async_read(socket_,
+                boost::asio::buffer(buffer.data() + protocol::frame_header::size,
+                    payload_size),
                 cobalt::use_op);
+
+            BOOST_LOG_SEV(lg, debug) << "Read payload of size: " << payload_size;
         }
 
-        // Combine header and payload for full frame deserialization
-        std::vector<uint8_t> full_frame_buffer;
-        full_frame_buffer.reserve(protocol::frame_header::size + payload_buffer.size());
-        full_frame_buffer.insert(full_frame_buffer.end(), header_buffer.begin(), header_buffer.end());
-        full_frame_buffer.insert(full_frame_buffer.end(), payload_buffer.begin(), payload_buffer.end());
-
-        BOOST_LOG_SEV(lg, debug) << "Combined frame buffer size: " << full_frame_buffer.size() 
-                                  << " (header: " << protocol::frame_header::size << ", payload: " << payload_buffer.size() << ")";
-        
-        // Deserialize and validate complete frame
-        auto frame_result = protocol::frame::deserialize(full_frame_buffer);
+        // Deserialize the full frame
+        auto frame_result = protocol::frame::deserialize(
+            std::span<const uint8_t>(buffer));
         if (!frame_result) {
-            BOOST_LOG_SEV(lg, error) << "Failed to deserialize complete frame, error code: " << static_cast<int>(frame_result.error());
-        } else {
-            BOOST_LOG_SEV(lg, debug) << "Successfully deserialized complete frame, type: " << static_cast<int>(frame_result->header().type);
+            BOOST_LOG_SEV(lg, error) << "Failed to deserialise frame, error: "
+                                     << static_cast<int>(frame_result.error());
+            co_return std::unexpected(frame_result.error());
         }
-        
+
+        BOOST_LOG_SEV(lg, debug) << "Successfully deserialised frame, type: "
+                                 << static_cast<int>(frame_result->header().type)
+                                 << " total size: " << buffer.size();
         co_return frame_result;
 
+    } catch (const boost::system::system_error& e) {
+        BOOST_LOG_SEV(lg, error) << "Network error in read_frame: "
+                                 << e.what();
+        co_return std::unexpected(protocol::error_code::network_error);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg, error) << "Exception in read_frame: " << e.what();
+        BOOST_LOG_SEV(lg, error) << "Unexpected error in read_frame: "
+                                 << e.what();
         co_return std::unexpected(protocol::error_code::invalid_message_type);
     }
 }
 
 cobalt::promise<void> connection::write_frame(const protocol::frame& frame) {
     auto data = frame.serialize();
-    BOOST_LOG_SEV(lg, debug) << "Writing frame of size " << data.size() 
-                              << ", type: " << static_cast<int>(frame.header().type) 
-                              << ", sequence: " << frame.header().sequence;
+    BOOST_LOG_SEV(lg, debug) << "Writing frame of size " << data.size()
+                             << " type: " << static_cast<int>(frame.header().type)
+                             << " sequence: " << frame.header().sequence;
     co_await boost::asio::async_write(
         socket_,
         boost::asio::buffer(data),
@@ -127,8 +135,10 @@ std::string connection::remote_address() const {
     try {
         auto endpoint = socket_.lowest_layer().remote_endpoint();
         return endpoint.address().to_string() + ":" + std::to_string(endpoint.port());
-    } catch (const std::exception&) {
-        return "unknown";
+    } catch (const std::exception& e) {
+        std::string msg(std::format("Error: {}", e.what()));
+        BOOST_LOG_SEV(lg, error) << msg;
+        return msg;
     }
 }
 

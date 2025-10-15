@@ -34,7 +34,8 @@ enum class message_type {
     handshake_request = 0x0001,
     handshake_response = 0x0002,
     handshake_ack = 0x0003,
-    error_response = 0x00FF
+    error_response = 0x004,
+    last_value
 };
 
 enum class error_code {
@@ -43,7 +44,10 @@ enum class error_code {
     crc_validation_failed = 0x0002,
     invalid_message_type = 0x0003,
     handshake_timeout = 0x0004,
-    handshake_failed = 0x0005
+    handshake_failed = 0x0005,
+    payload_too_large = 0x0006,
+    network_error = 0x0007,
+    last_value
 };
 
 }

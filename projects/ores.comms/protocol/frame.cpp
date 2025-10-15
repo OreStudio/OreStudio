@@ -17,48 +17,39 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <ostream>
+#include <cstring>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 #include "ores.comms/protocol/frame.hpp"
 #include "ores.comms/protocol/crc.hpp"
 #include "ores.utility/log/logger.hpp"
-#include <cstring> // for memcpy
-#include <algorithm> // for std::fill
+
 
 namespace {
 
 using namespace ores::utility::log;
 auto lg(logger_factory("ores.comms.protocol.frame"));
 
-// Helper functions for cross-platform binary serialization
 uint32_t host_to_network_32(uint32_t val) {
-#ifdef __GNUC__
-    return __builtin_bswap32(val);
-#elif defined(_MSC_VER)
-    return _byteswap_ulong(val);
-#else
-    return ((val & 0xFF000000) >> 24) |
-           ((val & 0x00FF0000) >> 8)  |
-           ((val & 0x0000FF00) << 8)  |
-           ((val & 0x000000FF) << 24);
-#endif
+    if constexpr (std::endian::native == std::endian::little)
+        return std::byteswap(val);
+    return val;
 }
 
 uint16_t host_to_network_16(uint16_t val) {
-#ifdef __GNUC__
-    return __builtin_bswap16(val);
-#elif defined(_MSC_VER)
-    return _byteswap_ushort(val);
-#else
-    return ((val & 0xFF00) >> 8) |
-           ((val & 0x00FF) << 8);
-#endif
+    if constexpr (std::endian::native == std::endian::little)
+        return std::byteswap(val);
+    return val;
 }
 
-uint32_t network_to_host_32(uint32_t val) {
-    return host_to_network_32(val); // BSwap is symmetric
-}
+uint32_t network_to_host_32(uint32_t val) { return host_to_network_32(val); }
+uint16_t network_to_host_16(uint16_t val) { return host_to_network_16(val); }
 
-uint16_t network_to_host_16(uint16_t val) {
-    return host_to_network_16(val); // BSwap is symmetric
+bool is_valid_message_type(uint16_t type) {
+    using ores::comms::protocol::message_type;
+    return type >= static_cast<uint16_t>(message_type::handshake_request) &&
+        type <= static_cast<uint16_t>(message_type::last_value);
 }
 
 }
@@ -90,245 +81,166 @@ frame::frame(message_type type, uint32_t sequence, std::vector<uint8_t> payload)
     header_.reserved2.fill(0);
 }
 
-uint32_t frame::calculate_crc() const {
-    crc32 calc;
-
-    // Create temporary header with CRC set to 0 for calculation
-    frame_header temp_header = header_;
-    temp_header.crc = 0;
-
-    // Serialize header to fixed 32-byte binary format for CRC calculation
-    std::array<uint8_t, frame_header::size> header_bytes;
-    size_t offset = 0;
-    
-    // Serialize each field in network byte order (for CRC calculation)
-    uint32_t temp32 = host_to_network_32(temp_header.magic);
-    std::memcpy(&header_bytes[offset], &temp32, sizeof(temp32));
-    offset += sizeof(temp32);
-    
-    uint16_t temp16 = host_to_network_16(temp_header.version_major);
-    std::memcpy(&header_bytes[offset], &temp16, sizeof(temp16));
-    offset += sizeof(temp16);
-    
-    temp16 = host_to_network_16(temp_header.version_minor);
-    std::memcpy(&header_bytes[offset], &temp16, sizeof(temp16));
-    offset += sizeof(temp16);
-    
-    temp16 = host_to_network_16(static_cast<uint16_t>(temp_header.type));
-    std::memcpy(&header_bytes[offset], &temp16, sizeof(temp16));
-    offset += sizeof(temp16);
-    
-    temp16 = host_to_network_16(temp_header.reserved1);
-    std::memcpy(&header_bytes[offset], &temp16, sizeof(temp16));
-    offset += sizeof(temp16);
-    
-    temp32 = host_to_network_32(temp_header.payload_size);
-    std::memcpy(&header_bytes[offset], &temp32, sizeof(temp32));
-    offset += sizeof(temp32);
-    
-    temp32 = host_to_network_32(temp_header.sequence);
-    std::memcpy(&header_bytes[offset], &temp32, sizeof(temp32));
-    offset += sizeof(temp32);
-    
-    temp32 = host_to_network_32(0); // CRC is 0 for calculation
-    std::memcpy(&header_bytes[offset], &temp32, sizeof(temp32));
-    offset += sizeof(temp32);
-    
-    // Copy reserved2 array (8 bytes)
-    std::memcpy(&header_bytes[offset], temp_header.reserved2.data(), temp_header.reserved2.size());
-    offset += temp_header.reserved2.size();
-
-    // Update CRC with the header bytes
-    calc.update(std::span<const uint8_t>(header_bytes.data(), header_bytes.size()));
-
-    // Update CRC with payload
-    if (!payload_.empty()) {
-        calc.update(std::span<const uint8_t>(payload_.data(), payload_.size()));
+void frame::serialize_header(frame_header header, std::span<uint8_t> buffer) const {
+    if (buffer.size() < frame_header::size) {
+        BOOST_LOG_SEV(lg, error) << "Buffer too small for header: " << buffer.size();
+        throw std::runtime_error("Invalid buffer size");
     }
 
+    size_t offset = 0;
+    auto write32 = [&](uint32_t val) {
+        val = host_to_network_32(val);
+        std::memcpy(buffer.data() + offset, &val, sizeof(val));
+        offset += sizeof(val);
+    };
+    auto write16 = [&](uint16_t val) {
+        val = host_to_network_16(val);
+        std::memcpy(buffer.data() + offset, &val, sizeof(val));
+        offset += sizeof(val);
+    };
+
+    write32(header.magic);
+    write16(header.version_major);
+    write16(header.version_minor);
+    write16(static_cast<uint16_t>(header.type));
+    write16(header.reserved1);
+    write32(header.payload_size);
+    write32(header.sequence);
+    write32(header.crc);
+    std::memcpy(buffer.data() + offset, header.reserved2.data(), header.reserved2.size());
+}
+
+uint32_t frame::calculate_crc() const {
+    crc32 calc;
+    std::array<uint8_t, frame_header::size> header_bytes;
+    frame_header temp_header = header_;
+    temp_header.crc = 0;
+    serialize_header(temp_header, header_bytes);
+    calc.update(header_bytes);
+    if (!payload_.empty()) {
+        calc.update(payload_);
+    }
     return calc.finalize();
 }
 
 std::vector<uint8_t> frame::serialize() const {
-    // Calculate CRC before serialization
     frame_header header_with_crc = header_;
     header_with_crc.crc = calculate_crc();
 
-    // Serialize header to fixed 32-byte binary format
-    std::array<uint8_t, frame_header::size> header_bytes;
-    size_t offset = 0;
-    
-    // Serialize each field in network byte order
-    uint32_t temp32 = host_to_network_32(header_with_crc.magic);
-    std::memcpy(&header_bytes[offset], &temp32, sizeof(temp32));
-    offset += sizeof(temp32);
-    
-    uint16_t temp16 = host_to_network_16(header_with_crc.version_major);
-    std::memcpy(&header_bytes[offset], &temp16, sizeof(temp16));
-    offset += sizeof(temp16);
-    
-    temp16 = host_to_network_16(header_with_crc.version_minor);
-    std::memcpy(&header_bytes[offset], &temp16, sizeof(temp16));
-    offset += sizeof(temp16);
-    
-    temp16 = host_to_network_16(static_cast<uint16_t>(header_with_crc.type));
-    std::memcpy(&header_bytes[offset], &temp16, sizeof(temp16));
-    offset += sizeof(temp16);
-    
-    temp16 = host_to_network_16(header_with_crc.reserved1);
-    std::memcpy(&header_bytes[offset], &temp16, sizeof(temp16));
-    offset += sizeof(temp16);
-    
-    temp32 = host_to_network_32(header_with_crc.payload_size);
-    std::memcpy(&header_bytes[offset], &temp32, sizeof(temp32));
-    offset += sizeof(temp32);
-    
-    temp32 = host_to_network_32(header_with_crc.sequence);
-    std::memcpy(&header_bytes[offset], &temp32, sizeof(temp32));
-    offset += sizeof(temp32);
-    
-    temp32 = host_to_network_32(header_with_crc.crc);
-    std::memcpy(&header_bytes[offset], &temp32, sizeof(temp32));
-    offset += sizeof(temp32);
-    
-    // Copy reserved2 array (8 bytes)
-    std::memcpy(&header_bytes[offset], header_with_crc.reserved2.data(), header_with_crc.reserved2.size());
-    offset += header_with_crc.reserved2.size();
-
-    // Verify we filled exactly 32 bytes
-    if (offset != frame_header::size) {
-        BOOST_LOG_SEV(lg, error) << "Header serialization error: wrong size " << offset;
+    std::vector<uint8_t> result;
+    result.resize(frame_header::size + payload_.size());
+    serialize_header(header_with_crc, result);
+    if (!payload_.empty()) {
+        std::memcpy(result.data() + frame_header::size, payload_.data(), payload_.size());
     }
 
-    // Combine header and payload
-    std::vector<uint8_t> result;
-    result.reserve(frame_header::size + payload_.size());
-    result.insert(result.end(), header_bytes.begin(), header_bytes.end());
-    result.insert(result.end(), payload_.begin(), payload_.end());
-
-    BOOST_LOG_SEV(lg, debug) << "Total serialized frame size: " << result.size() 
-                              << " (header: " << frame_header::size << ", payload: " << payload_.size() << ")";
-    BOOST_LOG_SEV(lg, debug) << "Header magic: 0x" << std::hex << header_with_crc.magic << std::dec
-                              << ", type: " << static_cast<int>(header_with_crc.type)
-                              << ", payload_size: " << header_with_crc.payload_size;
-
+    BOOST_LOG_SEV(lg, debug) << "Serialised frame, type: " << static_cast<int>(header_with_crc.type)
+                             << ", size: " << result.size();
     return result;
 }
 
 std::expected<frame, error_code> frame::deserialize(std::span<const uint8_t> data) {
-    BOOST_LOG_SEV(lg, debug) << "Starting frame deserialization, input size: " << data.size();
-    
-    // Check for minimum frame size (header only)
+    BOOST_LOG_SEV(lg, debug) << "Received data. Size: " << data.size();
+
     if (data.size() < frame_header::size) {
-        BOOST_LOG_SEV(lg, error) << "Data too short for frame header, size: " << data.size() 
-                                  << ", need at least: " << frame_header::size;
+        BOOST_LOG_SEV(lg, error) << "Data too short: " << data.size();
         return std::unexpected(error_code::invalid_message_type);
     }
 
-    // Deserialize the 32-byte header
     frame_header header{};
     size_t offset = 0;
-    
-    // Read each field in network byte order
-    uint32_t temp32;
-    std::memcpy(&temp32, &data[offset], sizeof(temp32));
-    header.magic = network_to_host_32(temp32);
-    offset += sizeof(temp32);
-    
-    uint16_t temp16;
-    std::memcpy(&temp16, &data[offset], sizeof(temp16));
-    header.version_major = network_to_host_16(temp16);
-    offset += sizeof(temp16);
-    
-    std::memcpy(&temp16, &data[offset], sizeof(temp16));
-    header.version_minor = network_to_host_16(temp16);
-    offset += sizeof(temp16);
-    
-    std::memcpy(&temp16, &data[offset], sizeof(temp16));
-    header.type = static_cast<message_type>(network_to_host_16(temp16));
-    offset += sizeof(temp16);
-    
-    std::memcpy(&temp16, &data[offset], sizeof(temp16));
-    header.reserved1 = network_to_host_16(temp16);
-    offset += sizeof(temp16);
-    
-    std::memcpy(&temp32, &data[offset], sizeof(temp32));
-    header.payload_size = network_to_host_32(temp32);
-    offset += sizeof(temp32);
-    
-    std::memcpy(&temp32, &data[offset], sizeof(temp32));
-    header.sequence = network_to_host_32(temp32);
-    offset += sizeof(temp32);
-    
-    std::memcpy(&temp32, &data[offset], sizeof(temp32));
-    header.crc = network_to_host_32(temp32);
-    offset += sizeof(temp32);
-    
-    // Read reserved2 array (8 bytes)
-    std::memcpy(header.reserved2.data(), &data[offset], header.reserved2.size());
+    auto read32 = [&]() {
+        uint32_t val;
+        std::memcpy(&val, data.data() + offset, sizeof(val));
+        offset += sizeof(val);
+        return network_to_host_32(val);
+    };
+    auto read16 = [&]() {
+        uint16_t val;
+        std::memcpy(&val, data.data() + offset, sizeof(val));
+        offset += sizeof(val);
+        return network_to_host_16(val);
+    };
+
+    header.magic = read32();
+    header.version_major = read16();
+    header.version_minor = read16();
+    uint16_t raw_type = read16();
+    if (!is_valid_message_type(raw_type)) {
+        BOOST_LOG_SEV(lg, error) << "Invalid message type: " << raw_type;
+        return std::unexpected(error_code::invalid_message_type);
+    }
+    header.type = static_cast<message_type>(raw_type);
+    header.reserved1 = read16();
+    header.payload_size = read32();
+    header.sequence = read32();
+    header.crc = read32();
+    BOOST_LOG_SEV(lg, debug) << "Read frame header: " << header;
+
+    std::memcpy(header.reserved2.data(), data.data() + offset, header.reserved2.size());
     offset += header.reserved2.size();
 
-    // Verify we read exactly 32 bytes for the header
-    if (offset != frame_header::size) {
-        BOOST_LOG_SEV(lg, error) << "Header deserialization error: read wrong size " << offset;
+    if (header.magic != PROTOCOL_MAGIC || header.reserved1 != 0 ||
+        std::ranges::any_of(header.reserved2, [](uint8_t v) {
+            return v != 0; })) {
+        BOOST_LOG_SEV(lg, error) << "Invalid header fields";
+        return std::unexpected(error_code::invalid_message_type);
+    }
+    if (header.payload_size > MAX_PAYLOAD_SIZE) {
+        BOOST_LOG_SEV(lg, error) << "Payload size too large: " << header.payload_size;
+        return std::unexpected(error_code::payload_too_large);
+    }
+
+    const auto expected_size = frame_header::size + header.payload_size;
+    if (data.size() < expected_size) {
+        BOOST_LOG_SEV(lg, error) << "Insufficient payload data. Got:"
+                                 << data.size()
+                                 << " Expected: " << expected_size;
         return std::unexpected(error_code::invalid_message_type);
     }
 
-    // Check magic number
-    if (header.magic != PROTOCOL_MAGIC) {
-        BOOST_LOG_SEV(lg, error) << "Invalid magic number, expected: 0x" << std::hex << PROTOCOL_MAGIC 
-                                  << ", got: 0x" << header.magic << std::dec;
-        return std::unexpected(error_code::invalid_message_type);
-    }
-
-    BOOST_LOG_SEV(lg, debug) << "Successfully parsed header, payload_size: " << header.payload_size 
-                              << ", magic: 0x" << std::hex << header.magic << std::dec
-                              << ", type: " << static_cast<int>(header.type);
-
-    // Check if we have enough data for the payload
-    if (data.size() < frame_header::size + header.payload_size) {
-        BOOST_LOG_SEV(lg, error) << "Insufficient data for payload, need: " << (frame_header::size + header.payload_size) 
-                                  << ", have: " << data.size();
-        return std::unexpected(error_code::invalid_message_type);
-    }
-
-    // Extract payload
-    std::vector<uint8_t> payload;
-    if (header.payload_size > 0) {
-        auto payload_start = data.begin() + frame_header::size;
-        auto payload_end = payload_start + header.payload_size;
-        payload.assign(payload_start, payload_end);
-        BOOST_LOG_SEV(lg, debug) << "Extracted payload of size: " << payload.size();
-    }
-
-    // Create frame and validate
     frame f;
     f.header_ = header;
-    f.payload_ = std::move(payload);
+    if (header.payload_size > 0) {
+        f.payload_.assign(data.begin() + frame_header::size,
+            data.begin() + frame_header::size + header.payload_size);
+    }
 
     auto validation = f.validate();
     if (!validation) {
-        BOOST_LOG_SEV(lg, error) << "Frame validation failed with error: " << static_cast<int>(validation.error());
+        BOOST_LOG_SEV(lg, error) << "Validation failed: " << static_cast<int>(validation.error());
         return std::unexpected(validation.error());
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Successfully deserialized frame, type: " << static_cast<int>(f.header().type);
     return f;
 }
 
 std::expected<void, error_code> frame::validate() const {
     // Check magic number
     if (header_.magic != PROTOCOL_MAGIC) {
+        BOOST_LOG_SEV(lg, warn) << "Invalid protocol magic: " << header_.magic;
         return std::unexpected(error_code::invalid_message_type);
     }
 
     // Check version compatibility (major version must match)
     if (header_.version_major != PROTOCOL_VERSION_MAJOR) {
+        BOOST_LOG_SEV(lg, warn) << "Invalid major version: "
+                                << header_.version_major;
         return std::unexpected(error_code::version_mismatch);
     }
 
     // Check payload size
     if (header_.payload_size != payload_.size()) {
+        BOOST_LOG_SEV(lg, warn) << "Payload size does not match message. Expected: "
+                                << header_.payload_size
+                                << " but got: " << payload_.size();
+        return std::unexpected(error_code::invalid_message_type);
+    }
+
+    if (header_.payload_size > MAX_PAYLOAD_SIZE) {
+        BOOST_LOG_SEV(lg, warn) << "Payload size too large. Size: "
+                                << header_.payload_size
+                                << " Maximum: " << MAX_PAYLOAD_SIZE;
         return std::unexpected(error_code::invalid_message_type);
     }
 
@@ -339,6 +251,11 @@ std::expected<void, error_code> frame::validate() const {
     }
 
     return {};
+}
+
+std::ostream& operator<<(std::ostream& s, const frame_header& v) {
+    rfl::json::write(v, s);
+    return(s);
 }
 
 }

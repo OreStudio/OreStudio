@@ -20,15 +20,17 @@
 #ifndef ORES_COMMS_PROTOCOL_FRAME_HPP
 #define ORES_COMMS_PROTOCOL_FRAME_HPP
 
+#include <span>
 #include <array>
+#include <vector>
+#include <iosfwd>
 #include <cstdint>
 #include <expected>
-#include <span>
-#include <string>
-#include <vector>
 #include "ores.comms/protocol/message_types.hpp"
 
 namespace ores::comms::protocol {
+
+constexpr size_t MAX_PAYLOAD_SIZE = 1'000'000; // Example limit
 
 /**
  * @brief Frame header structure for the ORES protocol.
@@ -114,13 +116,15 @@ private:
     /**
      * @brief Serialize header to bytes in network byte order.
      */
-    static std::array<uint8_t, frame_header::size> serialize_header(const frame_header& header);
+    void serialize_header(frame_header header, std::span<uint8_t> buffer) const;
 
     /**
      * @brief Deserialize header from bytes in network byte order.
      */
     static frame_header deserialize_header(std::span<const uint8_t, frame_header::size> data);
 };
+
+std::ostream& operator<<(std::ostream& s, const frame_header& v);
 
 }
 

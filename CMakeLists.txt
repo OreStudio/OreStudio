@@ -66,6 +66,10 @@ find_package(Threads REQUIRED)
 
 # boost.
 set(Boost_USE_MULTITHREADED ON)
+# In CMakeLists.txt
+if(WIN32)
+    add_compile_definitions(BOOST_USE_WINAPI_VERSION=0x0602)
+endif()
 
 # Note: it is possible to build with older versions of boost, but
 # these require patches.

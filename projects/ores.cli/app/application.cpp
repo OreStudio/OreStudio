@@ -186,13 +186,52 @@ application::run_client(const std::optional<config::client_options>& ocfg) const
         auto rootMenu = std::make_unique<::cli::Menu>("ores-client");
 
         // Add HANDSHAKE command
-        // Note: Since cobalt::promise requires a specific executor context and the cli library
-        // expects synchronous handlers, we'll need to run the handshake in a blocking manner
         rootMenu->Insert(
             "HANDSHAKE",
-            [](std::ostream& out) {
-                out << "HANDSHAKE command not yet fully implemented" << std::endl;
-                out << "Async/await integration with REPL needs further work" << std::endl;
+            [cli](std::ostream& out) {
+                out << "Performing handshake..." << std::endl;
+
+                try {
+                    // We need to create a new io_context to run the async operation
+                    // synchronously from this handler
+                    boost::asio::io_context ioc;
+
+                    // Track success
+                    bool handshake_succeeded = false;
+                    std::string error_message;
+
+                    // Create a task that uses the client's connect method
+                    auto handshake_task = [&]() -> boost::cobalt::task<void> {
+                        try {
+                            bool connected = co_await cli->connect();
+                            if (!connected) {
+                                error_message = "Failed to connect to server";
+                                co_return;
+                            }
+
+                            handshake_succeeded = true;
+
+                            // Disconnect after successful handshake
+                            cli->disconnect();
+                        } catch (const std::exception& e) {
+                            error_message = std::string("Exception: ") + e.what();
+                        }
+                    };
+
+                    // Run the task synchronously
+                    boost::cobalt::run(handshake_task());
+
+                    // Report results
+                    if (handshake_succeeded) {
+                        out << "✓ Successfully connected and performed handshake!" << std::endl;
+                        out << "✓ Disconnected from server" << std::endl;
+                    } else {
+                        out << "✗ Handshake failed: " << error_message << std::endl;
+                    }
+
+                } catch (const std::exception& e) {
+                    out << "✗ Error during handshake: " << e.what() << std::endl;
+                }
             },
             "Perform handshake with the server");
 

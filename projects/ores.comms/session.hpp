@@ -24,6 +24,7 @@
 #include <string>
 #include "ores.comms/connection.hpp"
 #include "ores.comms/protocol/handshake.hpp"
+#include "ores.comms/protocol/message_dispatcher.hpp"
 
 namespace ores::comms {
 
@@ -38,7 +39,8 @@ public:
     /**
      * @brief Construct a session from a connection.
      */
-    explicit session(std::unique_ptr<connection> conn, std::string server_id);
+    explicit session(std::unique_ptr<connection> conn, std::string server_id,
+        std::shared_ptr<protocol::message_dispatcher> dispatcher);
 
     /**
      * @brief Run the session.
@@ -64,6 +66,7 @@ private:
 
     std::unique_ptr<connection> conn_;
     std::string server_id_;
+    std::shared_ptr<protocol::message_dispatcher> dispatcher_;
     std::uint32_t sequence_number_;
     bool handshake_complete_;
 };

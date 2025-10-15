@@ -29,9 +29,11 @@ auto lg(logger_factory("ores.comms.session"));
 
 namespace ores::comms {
 
-session::session(std::unique_ptr<connection> conn, std::string server_id)
+session::session(std::unique_ptr<connection> conn, std::string server_id,
+    std::shared_ptr<protocol::message_dispatcher> dispatcher)
     : conn_(std::move(conn)),
       server_id_(std::move(server_id)),
+      dispatcher_(std::move(dispatcher)),
       sequence_number_(0),
       handshake_complete_(false) {}
 
@@ -161,10 +163,44 @@ cobalt::promise<bool> session::perform_handshake() {
 }
 
 cobalt::promise<void> session::process_messages() {
-    // Placeholder for future message processing
-    // For now, just keep the connection alive
-    BOOST_LOG_SEV(lg, debug) << "Session ready to process messages (not yet implemented)";
-    co_return;
+    BOOST_LOG_SEV(lg, debug) << "Starting message processing loop";
+
+    try {
+        while (true) {
+            // Read next message frame
+            auto frame_result = co_await conn_->read_frame();
+            if (!frame_result) {
+                auto err = frame_result.error();
+                if (err == protocol::error_code::network_error) {
+                    BOOST_LOG_SEV(lg, info) << "Client disconnected";
+                } else {
+                    BOOST_LOG_SEV(lg, error) << "Failed to read frame: "
+                                              << static_cast<int>(err);
+                }
+                co_return;
+            }
+
+            const auto& request_frame = *frame_result;
+            BOOST_LOG_SEV(lg, debug) << "Received message type "
+                                      << std::hex << static_cast<std::uint16_t>(request_frame.header().type);
+
+            // Dispatch to appropriate handler
+            auto response_result = co_await dispatcher_->dispatch(request_frame, ++sequence_number_);
+            if (!response_result) {
+                BOOST_LOG_SEV(lg, error) << "Message dispatch failed: "
+                                          << static_cast<int>(response_result.error());
+                // Optionally send error response frame here
+                co_return;
+            }
+
+            // Send response back to client
+            co_await conn_->write_frame(*response_result);
+            BOOST_LOG_SEV(lg, debug) << "Sent response for message type "
+                                      << std::hex << static_cast<std::uint16_t>(request_frame.header().type);
+        }
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg, error) << "Exception in message processing: " << e.what();
+    }
 }
 
 }

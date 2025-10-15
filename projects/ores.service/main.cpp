@@ -24,6 +24,8 @@
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
 #include "ores.service/config/parser.hpp"
 #include "ores.service/config/parser_exception.hpp"
+#include "ores.risk/repository/context_factory.hpp"
+#include "ores.risk/messaging/registration.hpp"
 
 namespace {
 
@@ -67,8 +69,25 @@ cobalt::main co_main(int argc, char** argv) {
         server_cfg.private_key_file = cfg.server.private_key_file;
         server_cfg.server_identifier = cfg.server.server_identifier;
 
-        // Create and run server
+        // Create database context
+        // TODO: Add database configuration to service options
+        ores::risk::repository::context_factory::configuration db_cfg{
+            .user = "postgres",
+            .password = "password",
+            .host = "localhost",
+            .database = "ores",
+            .port = 5432,
+            .pool_size = 10,
+            .num_attempts = 3,
+            .wait_time_in_seconds = 1
+        };
+        auto ctx = ores::risk::repository::context_factory::make_context(db_cfg);
+
+        // Create server and register message handlers
         ores::comms::server srv(server_cfg);
+        ores::risk::messaging::register_risk_handlers(srv, ctx);
+
+        // Run server
         co_await srv.run();
 
         BOOST_LOG_SEV(lg, info) << "ORES Service stopped normally";

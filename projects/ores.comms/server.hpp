@@ -21,10 +21,13 @@
 #define ORES_COMMS_SERVER_HPP
 
 #include <string>
+#include <memory>
 #include <cstdint>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/cobalt.hpp>
+#include "ores.comms/protocol/message_dispatcher.hpp"
+#include "ores.comms/protocol/message_handler.hpp"
 
 namespace ores::comms {
 
@@ -56,6 +59,14 @@ public:
     explicit server(server_config config);
 
     /**
+     * @brief Register a message handler for a range of message types.
+     *
+     * Must be called before run() to register subsystem handlers.
+     */
+    void register_handler(protocol::message_type_range range,
+        std::shared_ptr<protocol::message_handler> handler);
+
+    /**
      * @brief Run the server.
      *
      * Accepts connections and spawns sessions until stopped.
@@ -75,6 +86,7 @@ private:
 
     server_config config_;
     ssl::context ssl_ctx_;
+    std::shared_ptr<protocol::message_dispatcher> dispatcher_;
 };
 
 }

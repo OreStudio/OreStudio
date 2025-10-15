@@ -32,8 +32,14 @@ namespace ores::comms {
 
 server::server(server_config config)
     : config_(std::move(config)),
-      ssl_ctx_(ssl::context::tlsv13) {
+      ssl_ctx_(ssl::context::tlsv13),
+      dispatcher_(std::make_shared<protocol::message_dispatcher>()) {
     setup_ssl_context();
+}
+
+void server::register_handler(protocol::message_type_range range,
+    std::shared_ptr<protocol::message_handler> handler) {
+    dispatcher_->register_handler(range, std::move(handler));
 }
 
 void server::setup_ssl_context() {
@@ -93,7 +99,7 @@ cobalt::promise<void> server::accept_loop(cobalt::wait_group& workers) {
                 connection::ssl_socket(std::move(socket), ssl_ctx_));
 
             // Create session and spawn it
-            auto sess = std::make_shared<session>(std::move(conn), config_.server_identifier);
+            auto sess = std::make_shared<session>(std::move(conn), config_.server_identifier, dispatcher_);
 
             // Add session to worker group - capture sess by value to keep it alive
             workers.push_back([](std::shared_ptr<session> s) -> cobalt::promise<void> {

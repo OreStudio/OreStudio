@@ -139,8 +139,8 @@ std::vector<uint8_t> frame::serialize() const {
     return result;
 }
 
-std::expected<frame_header, error_code> frame::read_header(std::span<const uint8_t> data) {
-    BOOST_LOG_SEV(lg, debug) << "Reading frame header from data of size: " << data.size();
+std::expected<frame_header, error_code> frame::deserialize_header(std::span<const uint8_t> data) {
+    BOOST_LOG_SEV(lg, debug) << "Deserializing frame header from data of size: " << data.size();
 
     if (data.size() < frame_header::size) {
         BOOST_LOG_SEV(lg, error) << "Data too short for header: " << data.size();
@@ -179,10 +179,21 @@ std::expected<frame_header, error_code> frame::read_header(std::span<const uint8
     std::memcpy(header.reserved2.data(), data.data() + offset, header.reserved2.size());
     offset += header.reserved2.size();
 
-    if (header.magic != PROTOCOL_MAGIC || header.reserved1 != 0 ||
-        std::ranges::any_of(header.reserved2, [](uint8_t v) {
-            return v != 0; })) {
-        BOOST_LOG_SEV(lg, error) << "Invalid header fields";
+    // Validate header fields (but not CRC yet, as we don't have the payload)
+    if (header.magic != PROTOCOL_MAGIC) {
+        BOOST_LOG_SEV(lg, error) << "Invalid magic number: " << header.magic;
+        return std::unexpected(error_code::invalid_message_type);
+    }
+    if (header.version_major != PROTOCOL_VERSION_MAJOR) {
+        BOOST_LOG_SEV(lg, error) << "Invalid major version: " << header.version_major;
+        return std::unexpected(error_code::version_mismatch);
+    }
+    if (header.reserved1 != 0) {
+        BOOST_LOG_SEV(lg, error) << "Invalid reserved1 field";
+        return std::unexpected(error_code::invalid_message_type);
+    }
+    if (std::ranges::any_of(header.reserved2, [](uint8_t v) { return v != 0; })) {
+        BOOST_LOG_SEV(lg, error) << "Invalid reserved2 field";
         return std::unexpected(error_code::invalid_message_type);
     }
     if (header.payload_size > MAX_PAYLOAD_SIZE) {
@@ -190,26 +201,18 @@ std::expected<frame_header, error_code> frame::read_header(std::span<const uint8
         return std::unexpected(error_code::payload_too_large);
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Read frame header: " << header;
+    BOOST_LOG_SEV(lg, debug) << "Deserialized frame header: " << header;
     return header;
 }
 
-std::expected<frame, error_code> frame::deserialize(std::span<const uint8_t> data) {
-    BOOST_LOG_SEV(lg, debug) << "Received data. Size: " << data.size();
-
-    // First, read and validate the header
-    auto header_result = read_header(data);
-    if (!header_result) {
-        return std::unexpected(header_result.error());
-    }
-    const auto& header = *header_result;
+std::expected<frame, error_code> frame::deserialize(const frame_header& header, std::span<const uint8_t> data) {
+    BOOST_LOG_SEV(lg, debug) << "Deserializing frame with payload. Total data size: " << data.size();
 
     // Check we have enough data for the complete frame
     const auto expected_size = frame_header::size + header.payload_size;
     if (data.size() < expected_size) {
-        BOOST_LOG_SEV(lg, error) << "Insufficient payload data. Got:"
-                                 << data.size()
-                                 << " Expected: " << expected_size;
+        BOOST_LOG_SEV(lg, error) << "Insufficient data for complete frame. Got: "
+                                 << data.size() << " Expected: " << expected_size;
         return std::unexpected(error_code::invalid_message_type);
     }
 
@@ -221,13 +224,16 @@ std::expected<frame, error_code> frame::deserialize(std::span<const uint8_t> dat
             data.begin() + frame_header::size + header.payload_size);
     }
 
-    // Validate the complete frame (including CRC)
-    auto validation = f.validate();
-    if (!validation) {
-        BOOST_LOG_SEV(lg, error) << "Validation failed: " << static_cast<int>(validation.error());
-        return std::unexpected(validation.error());
+    // Validate CRC
+    uint32_t calculated_crc = f.calculate_crc();
+    if (header.crc != calculated_crc) {
+        BOOST_LOG_SEV(lg, error) << "CRC validation failed. Expected: " << header.crc
+                                 << " Calculated: " << calculated_crc;
+        return std::unexpected(error_code::crc_validation_failed);
     }
 
+    BOOST_LOG_SEV(lg, debug) << "Successfully deserialized frame, type: "
+                             << static_cast<int>(f.header_.type);
     return f;
 }
 

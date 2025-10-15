@@ -66,7 +66,7 @@ cobalt::promise<bool> client::connect() {
         tcp::socket socket(executor_);
         co_await boost::asio::async_connect(socket, endpoints, cobalt::use_op);
 
-        BOOST_LOG_SEV(lg, info) << "TCP connection established";
+        BOOST_LOG_SEV(lg, info) << "TCP connection established.";
 
         // Create SSL socket - construct directly without intermediate variable
         conn_ = std::make_unique<connection>(
@@ -74,18 +74,18 @@ cobalt::promise<bool> client::connect() {
 
         // Perform SSL handshake
         co_await conn_->ssl_handshake_client();
-        BOOST_LOG_SEV(lg, info) << "SSL handshake complete";
+        BOOST_LOG_SEV(lg, info) << "SSL handshake complete.";
 
         // Perform protocol handshake
         bool handshake_ok = co_await perform_handshake();
         if (!handshake_ok) {
-            BOOST_LOG_SEV(lg, error) << "Protocol handshake failed";
+            BOOST_LOG_SEV(lg, error) << "Protocol handshake failed.";
             disconnect();
             co_return false;
         }
 
         connected_ = true;
-        BOOST_LOG_SEV(lg, info) << "Successfully connected to server";
+        BOOST_LOG_SEV(lg, info) << "Successfully connected to server.";
         co_return true;
 
     } catch (const std::exception& e) {
@@ -115,7 +115,9 @@ cobalt::promise<bool> client::perform_handshake() {
         BOOST_LOG_SEV(lg, debug) << "About to read handshake response frame";
         auto response_frame_result = co_await conn_->read_frame();
         if (!response_frame_result) {
-            BOOST_LOG_SEV(lg, error) << "Failed to read handshake response, error code: " << static_cast<int>(response_frame_result.error());
+            BOOST_LOG_SEV(lg, error) << "Failed to read handshake response. "
+                                     << " Error code: "
+                                     << static_cast<int>(response_frame_result.error());
             co_return false;
         }
 
@@ -123,7 +125,7 @@ cobalt::promise<bool> client::perform_handshake() {
 
         // Verify message type
         if (response_frame.header().type != protocol::message_type::handshake_response) {
-            BOOST_LOG_SEV(lg, error) << "Expected handshake response, got message type "
+            BOOST_LOG_SEV(lg, error) << "Expected handshake response, got message type: "
                                       << static_cast<int>(response_frame.header().type);
             co_return false;
         }

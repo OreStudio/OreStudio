@@ -88,12 +88,22 @@ public:
     std::vector<uint8_t> serialize() const;
 
     /**
-     * @brief Deserialize frame from bytes.
+     * @brief Deserialize and validate header from bytes.
      *
-     * Validates magic number, version, and CRC32 checksum.
+     * Validates magic number, version, message type, reserved fields, and payload size.
+     * Does NOT validate CRC as that requires the full frame.
+     * Returns the validated header which can be used to determine how much payload to read.
+     */
+    static std::expected<frame_header, error_code> deserialize_header(std::span<const uint8_t> data);
+
+    /**
+     * @brief Deserialize complete frame using a pre-parsed header.
+     *
+     * Takes the header from deserialize_header() and the complete buffer (header + payload).
+     * Validates CRC32 checksum over the entire frame.
      * Returns error if validation fails.
      */
-    static std::expected<frame, error_code> deserialize(std::span<const uint8_t> data);
+    static std::expected<frame, error_code> deserialize(const frame_header& header, std::span<const uint8_t> data);
 
     /**
      * @brief Validate frame integrity.
@@ -117,20 +127,6 @@ private:
      * @brief Serialize header to bytes in network byte order.
      */
     void serialize_header(frame_header header, std::span<uint8_t> buffer) const;
-
-    /**
-     * @brief Deserialize header from bytes in network byte order.
-     */
-    static frame_header deserialize_header(std::span<const uint8_t, frame_header::size> data);
-
-public:
-    /**
-     * @brief Read only the header without validating the full frame.
-     *
-     * This is useful when you need to determine the payload size before
-     * reading the rest of the frame.
-     */
-    static std::expected<frame_header, error_code> read_header(std::span<const uint8_t> data);
 };
 
 std::ostream& operator<<(std::ostream& s, const frame_header& v);

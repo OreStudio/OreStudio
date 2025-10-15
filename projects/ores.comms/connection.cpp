@@ -53,46 +53,44 @@ connection::read_frame() {
             boost::asio::buffer(buffer),
             cobalt::use_op);
 
-        BOOST_LOG_SEV(lg, debug) << "Read header of size: " << protocol::frame_header::size;
+        BOOST_LOG_SEV(lg, debug) << "Read header of size: "
+                                 << protocol::frame_header::size;
 
-        // Read header to get payload size (without validating the full frame)
-        auto header_result = protocol::frame::read_header(std::span<const uint8_t>(buffer));
+        // Deserialize and validate the header.
+        // validates magic, version, type, reserved fields, payload size.
+        auto header_result = protocol::frame::deserialize_header(
+            std::span<const uint8_t>(buffer));
         if (!header_result) {
-            BOOST_LOG_SEV(lg, error) << "Failed to read header, error: "
+            BOOST_LOG_SEV(lg, error) << "Failed to deserialize header, error: "
                                      << static_cast<int>(header_result.error());
             co_return std::unexpected(header_result.error());
         }
 
-        uint32_t payload_size = header_result->payload_size;
-        BOOST_LOG_SEV(lg, debug) << "Header payload size: " << payload_size;
+        const auto& header = *header_result;
+        BOOST_LOG_SEV(lg, debug) << "Header payload size: "
+                                 << header.payload_size;
 
         // Read payload if any
-        if (payload_size > 0) {
-            if (payload_size > protocol::MAX_PAYLOAD_SIZE) {
-                BOOST_LOG_SEV(lg, error) << "Payload size exceeds maximum: "
-                                         << payload_size;
-                co_return std::unexpected(protocol::error_code::payload_too_large);
-            }
-
-            buffer.resize(protocol::frame_header::size + payload_size);
+        if (header.payload_size > 0) {
+            buffer.resize(protocol::frame_header::size + header.payload_size);
             co_await boost::asio::async_read(socket_,
                 boost::asio::buffer(buffer.data() + protocol::frame_header::size,
-                    payload_size),
+                    header.payload_size),
                 cobalt::use_op);
 
-            BOOST_LOG_SEV(lg, debug) << "Read payload of size: " << payload_size;
+            BOOST_LOG_SEV(lg, debug) << "Read payload of size: " << header.payload_size;
         }
 
-        // Deserialize the full frame (with validation including CRC)
-        auto frame_result = protocol::frame::deserialize(
+        // Deserialize the complete frame (validates CRC)
+        auto frame_result = protocol::frame::deserialize(header,
             std::span<const uint8_t>(buffer));
         if (!frame_result) {
-            BOOST_LOG_SEV(lg, error) << "Failed to deserialise frame, error: "
+            BOOST_LOG_SEV(lg, error) << "Failed to deserialize frame, error: "
                                      << static_cast<int>(frame_result.error());
             co_return std::unexpected(frame_result.error());
         }
 
-        BOOST_LOG_SEV(lg, debug) << "Successfully deserialised frame, type: "
+        BOOST_LOG_SEV(lg, debug) << "Successfully deserialized frame, type: "
                                  << static_cast<int>(frame_result->header().type)
                                  << " total size: " << buffer.size();
         co_return frame_result;

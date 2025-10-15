@@ -34,6 +34,19 @@ namespace {
 const std::string test_module("ores.comms.tests");
 const std::string test_suite("frame_tests");
 
+// Helper function to deserialize a complete frame (header + payload)
+std::expected<ores::comms::protocol::frame, ores::comms::protocol::error_code>
+deserialize_frame(std::span<const uint8_t> data) {
+    // First deserialize the header
+    auto header_result = ores::comms::protocol::frame::deserialize_header(data);
+    if (!header_result) {
+        return std::unexpected(header_result.error());
+    }
+
+    // Then deserialize the complete frame
+    return ores::comms::protocol::frame::deserialize(*header_result, data);
+}
+
 }
 
 BOOST_AUTO_TEST_SUITE(frame_tests)
@@ -56,7 +69,7 @@ BOOST_AUTO_TEST_CASE(test_frame_serialization) {
     BOOST_REQUIRE(!serialized.empty());
 
     // Deserialize it back
-    auto deserialized_result = ores::comms::protocol::frame::deserialize(
+    auto deserialized_result = deserialize_frame(
         std::span<const uint8_t>(serialized.data(), serialized.size())
     );
 
@@ -95,7 +108,7 @@ BOOST_AUTO_TEST_CASE(test_frame_serialization_empty_payload) {
     BOOST_REQUIRE(!serialized.empty());
 
     // Deserialize it back
-    auto deserialized_result = ores::comms::protocol::frame::deserialize(
+    auto deserialized_result = deserialize_frame(
         std::span<const uint8_t>(serialized.data(), serialized.size())
     );
 
@@ -134,7 +147,7 @@ BOOST_AUTO_TEST_CASE(test_frame_serialization_large_payload) {
     BOOST_REQUIRE(!serialized.empty());
 
     // Deserialize it back
-    auto deserialized_result = ores::comms::protocol::frame::deserialize(
+    auto deserialized_result = deserialize_frame(
         std::span<const uint8_t>(serialized.data(), serialized.size())
     );
 
@@ -159,7 +172,7 @@ BOOST_AUTO_TEST_CASE(test_frame_deserialization_invalid_data) {
 
     // Try to deserialize invalid data (too short)
     std::vector<uint8_t> invalid_data = {0x01, 0x02};
-    auto result = ores::comms::protocol::frame::deserialize(
+    auto result = deserialize_frame(
         std::span<const uint8_t>(invalid_data.data(), invalid_data.size())
     );
 
@@ -187,7 +200,7 @@ BOOST_AUTO_TEST_CASE(test_frame_deserialization_corrupted_data) {
     if (serialized.size() > 0) {
         serialized[0] ^= 0xFF; // Flip some bits to corrupt the data
 
-        auto result = ores::comms::protocol::frame::deserialize(
+        auto result = deserialize_frame(
             std::span<const uint8_t>(serialized.data(), serialized.size())
         );
 
@@ -220,7 +233,7 @@ BOOST_AUTO_TEST_CASE(test_frame_roundtrip_multiple_message_types) {
         BOOST_REQUIRE(!serialized.empty());
 
         // Deserialize
-        auto deserialized_result = ores::comms::protocol::frame::deserialize(
+        auto deserialized_result = deserialize_frame(
             std::span<const uint8_t>(serialized.data(), serialized.size())
         );
 

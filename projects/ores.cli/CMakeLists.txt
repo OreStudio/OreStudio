@@ -37,6 +37,8 @@ target_include_directories(${lib_target_name}
     PUBLIC ${CMAKE_SOURCE_DIR}/projects/
 )
 
+find_package(cli CONFIG REQUIRED)
+
 target_link_libraries(${lib_target_name}
     PRIVATE
         Boost::boost
@@ -44,6 +46,7 @@ target_link_libraries(${lib_target_name}
         Boost::program_options
         magic_enum::magic_enum
         ores.comms.lib
+        cli::cli
     )
 
 install(TARGETS ${lib_target_name}

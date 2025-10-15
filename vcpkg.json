@@ -38,6 +38,7 @@
         "boost-uuid",
         "boost-spirit",
         "boost-iostreams",
-        "boost-cobalt"
+        "boost-cobalt",
+        "cli"
     ]
 }

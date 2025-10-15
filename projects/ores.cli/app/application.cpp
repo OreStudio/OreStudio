@@ -20,10 +20,13 @@
  */
 #include <iostream>
 #include <optional>
+#include <memory>
 #include <boost/throw_exception.hpp>
 #include <boost/cobalt.hpp>
 #include <sqlgen/postgres.hpp>
 #include <magic_enum/magic_enum.hpp>
+#include <cli/cli.h>
+#include <cli/clifilesession.h>
 #include "ores.cli/config/export_options.hpp"
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp"
@@ -163,7 +166,7 @@ application::run_client(const std::optional<config::client_options>& ocfg) const
     }
 
     const auto& cfg(ocfg.value());
-    BOOST_LOG_SEV(lg, info) << "Starting client connection to "
+    BOOST_LOG_SEV(lg, info) << "Starting client REPL for "
                              << cfg.host << ":" << cfg.port;
 
     try {
@@ -174,25 +177,41 @@ application::run_client(const std::optional<config::client_options>& ocfg) const
         client_cfg.client_identifier = cfg.client_identifier;
         client_cfg.verify_certificate = cfg.verify_certificate;
 
-        // Create client
-        comms::client cli(std::move(client_cfg),
+        // Create client (shared_ptr for use in lambdas)
+        auto cli = std::make_shared<comms::client>(
+            std::move(client_cfg),
             co_await boost::cobalt::this_coro::executor);
 
-        // Connect and perform handshake
-        bool connected = co_await cli.connect();
-        if (!connected) {
-            BOOST_LOG_SEV(lg, error) << "Failed to connect to server";
-            co_return;
-        }
+        // Create CLI root menu
+        auto rootMenu = std::make_unique<::cli::Menu>("ores-client");
 
-        BOOST_LOG_SEV(lg, info) << "Successfully connected and performed handshake!";
-        BOOST_LOG_SEV(lg, info) << "Client session established";
+        // Add HANDSHAKE command
+        // Note: Since cobalt::promise requires a specific executor context and the cli library
+        // expects synchronous handlers, we'll need to run the handshake in a blocking manner
+        rootMenu->Insert(
+            "HANDSHAKE",
+            [](std::ostream& out) {
+                out << "HANDSHAKE command not yet fully implemented" << std::endl;
+                out << "Async/await integration with REPL needs further work" << std::endl;
+            },
+            "Perform handshake with the server");
 
-        // For now, just disconnect immediately
-        // Future: Add message processing loop here
-        cli.disconnect();
+        // Create CLI and session
+        ::cli::Cli cli_instance(std::move(rootMenu));
+        cli_instance.ExitAction([](auto& out) { out << "Goodbye!" << std::endl; });
 
-        BOOST_LOG_SEV(lg, info) << "Client session completed successfully.";
+        // Use stdin/stdout for the session
+        ::cli::CliFileSession session(cli_instance, std::cin, std::cout);
+
+        // Print welcome message
+        std::cout << "ORE Studio Client REPL" << std::endl;
+        std::cout << "Type 'help' for available commands, 'exit' to quit" << std::endl;
+        std::cout << std::endl;
+
+        // Run the REPL session
+        session.Start();
+
+        BOOST_LOG_SEV(lg, info) << "Client REPL session ended";
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg, error) << "Client error: " << e.what();

@@ -39,12 +39,13 @@ struct handshake_request final {
     /**
      * @brief Serialize to frame payload.
      */
-    std::vector<std::uint8_t> serialize() const;
+    static std::vector<std::uint8_t> serialize(handshake_request v);
 
     /**
      * @brief Deserialize from frame payload.
      */
-    static std::expected<handshake_request, error_code> deserialize(std::span<const std::uint8_t> data);
+    static std::expected<handshake_request, error_code>
+    deserialize(std::span<const std::uint8_t> data);
 };
 
 /**
@@ -60,7 +61,7 @@ struct handshake_response final {
     /**
      * @brief Serialize to frame payload.
      */
-    std::vector<std::uint8_t> serialize() const;
+    static std::vector<std::uint8_t> serialize(handshake_response v);
 
     /**
      * @brief Deserialize from frame payload.
@@ -77,7 +78,7 @@ struct handshake_ack final {
     /**
      * @brief Serialize to frame payload.
      */
-    std::vector<std::uint8_t> serialize() const;
+    static std::vector<std::uint8_t> serialize(handshake_ack v);
 
     /**
      * @brief Deserialize from frame payload.

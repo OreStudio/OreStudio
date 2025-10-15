@@ -24,15 +24,17 @@
 namespace ores::comms::protocol {
 
 // handshake_request implementation
-std::vector<std::uint8_t> handshake_request::serialize() const {
-    auto bson_data = rfl::bson::write(*this);
+std::vector<std::uint8_t>
+handshake_request::serialize(handshake_request v) {
+    auto bson_data = rfl::bson::write(v);
     return {
         reinterpret_cast<const std::uint8_t*>(bson_data.data()),
         reinterpret_cast<const std::uint8_t*>(bson_data.data()) + bson_data.size()
     };
 }
 
-std::expected<handshake_request, error_code> handshake_request::deserialize(std::span<const std::uint8_t> data) {
+std::expected<handshake_request, error_code>
+handshake_request::deserialize(std::span<const std::uint8_t> data) {
     auto result = rfl::bson::read<handshake_request>(data.data(), data.size());
 
     if (!result) {
@@ -43,8 +45,9 @@ std::expected<handshake_request, error_code> handshake_request::deserialize(std:
 }
 
 // handshake_response implementation
-std::vector<std::uint8_t> handshake_response::serialize() const {
-    auto bson_data = rfl::bson::write(*this);
+std::vector<std::uint8_t>
+handshake_response::serialize(handshake_response v) {
+    auto bson_data = rfl::bson::write(v);
     return {
         reinterpret_cast<const std::uint8_t*>(bson_data.data()),
         reinterpret_cast<const std::uint8_t*>(bson_data.data()) + bson_data.size()
@@ -62,8 +65,9 @@ std::expected<handshake_response, error_code> handshake_response::deserialize(st
 }
 
 // handshake_ack implementation
-std::vector<std::uint8_t> handshake_ack::serialize() const {
-    auto bson_data = rfl::bson::write(*this);
+std::vector<std::uint8_t>
+handshake_ack::serialize(handshake_ack v) {
+    auto bson_data = rfl::bson::write(v);
     return {
         reinterpret_cast<const std::uint8_t*>(bson_data.data()),
         reinterpret_cast<const std::uint8_t*>(bson_data.data()) + bson_data.size()
@@ -91,7 +95,7 @@ frame create_handshake_request_frame(
         .client_identifier = client_identifier
     };
 
-    return {message_type::handshake_request, sequence, req.serialize()};
+    return {message_type::handshake_request, sequence, req.serialize(req)};
 }
 
 frame create_handshake_response_frame(
@@ -108,7 +112,7 @@ frame create_handshake_response_frame(
         .status = status
     };
 
-    return { message_type::handshake_response, sequence, resp.serialize() };
+    return { message_type::handshake_response, sequence, resp.serialize(resp) };
 }
 
 frame create_handshake_ack_frame(
@@ -117,7 +121,7 @@ frame create_handshake_ack_frame(
 
     handshake_ack ack{status};
 
-    return { message_type::handshake_ack, sequence, ack.serialize() };
+    return { message_type::handshake_ack, sequence, ack.serialize(ack) };
 }
 
 }

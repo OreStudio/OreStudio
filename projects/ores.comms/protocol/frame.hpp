@@ -122,6 +122,15 @@ private:
      * @brief Deserialize header from bytes in network byte order.
      */
     static frame_header deserialize_header(std::span<const uint8_t, frame_header::size> data);
+
+public:
+    /**
+     * @brief Read only the header without validating the full frame.
+     *
+     * This is useful when you need to determine the payload size before
+     * reading the rest of the frame.
+     */
+    static std::expected<frame_header, error_code> read_header(std::span<const uint8_t> data);
 };
 
 std::ostream& operator<<(std::ostream& s, const frame_header& v);

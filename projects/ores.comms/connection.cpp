@@ -55,15 +55,15 @@ connection::read_frame() {
 
         BOOST_LOG_SEV(lg, debug) << "Read header of size: " << protocol::frame_header::size;
 
-        // Deserialize header to get payload size
-        auto header_result = protocol::frame::deserialize(std::span<const uint8_t>(buffer));
+        // Read header to get payload size (without validating the full frame)
+        auto header_result = protocol::frame::read_header(std::span<const uint8_t>(buffer));
         if (!header_result) {
-            BOOST_LOG_SEV(lg, error) << "Failed to deserialize header, error: "
+            BOOST_LOG_SEV(lg, error) << "Failed to read header, error: "
                                      << static_cast<int>(header_result.error());
             co_return std::unexpected(header_result.error());
         }
 
-        uint32_t payload_size = header_result->header().payload_size;
+        uint32_t payload_size = header_result->payload_size;
         BOOST_LOG_SEV(lg, debug) << "Header payload size: " << payload_size;
 
         // Read payload if any
@@ -83,7 +83,7 @@ connection::read_frame() {
             BOOST_LOG_SEV(lg, debug) << "Read payload of size: " << payload_size;
         }
 
-        // Deserialize the full frame
+        // Deserialize the full frame (with validation including CRC)
         auto frame_result = protocol::frame::deserialize(
             std::span<const uint8_t>(buffer));
         if (!frame_result) {

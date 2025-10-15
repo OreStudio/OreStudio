@@ -139,11 +139,11 @@ std::vector<uint8_t> frame::serialize() const {
     return result;
 }
 
-std::expected<frame, error_code> frame::deserialize(std::span<const uint8_t> data) {
-    BOOST_LOG_SEV(lg, debug) << "Received data. Size: " << data.size();
+std::expected<frame_header, error_code> frame::read_header(std::span<const uint8_t> data) {
+    BOOST_LOG_SEV(lg, debug) << "Reading frame header from data of size: " << data.size();
 
     if (data.size() < frame_header::size) {
-        BOOST_LOG_SEV(lg, error) << "Data too short: " << data.size();
+        BOOST_LOG_SEV(lg, error) << "Data too short for header: " << data.size();
         return std::unexpected(error_code::invalid_message_type);
     }
 
@@ -175,7 +175,6 @@ std::expected<frame, error_code> frame::deserialize(std::span<const uint8_t> dat
     header.payload_size = read32();
     header.sequence = read32();
     header.crc = read32();
-    BOOST_LOG_SEV(lg, debug) << "Read frame header: " << header;
 
     std::memcpy(header.reserved2.data(), data.data() + offset, header.reserved2.size());
     offset += header.reserved2.size();
@@ -191,6 +190,21 @@ std::expected<frame, error_code> frame::deserialize(std::span<const uint8_t> dat
         return std::unexpected(error_code::payload_too_large);
     }
 
+    BOOST_LOG_SEV(lg, debug) << "Read frame header: " << header;
+    return header;
+}
+
+std::expected<frame, error_code> frame::deserialize(std::span<const uint8_t> data) {
+    BOOST_LOG_SEV(lg, debug) << "Received data. Size: " << data.size();
+
+    // First, read and validate the header
+    auto header_result = read_header(data);
+    if (!header_result) {
+        return std::unexpected(header_result.error());
+    }
+    const auto& header = *header_result;
+
+    // Check we have enough data for the complete frame
     const auto expected_size = frame_header::size + header.payload_size;
     if (data.size() < expected_size) {
         BOOST_LOG_SEV(lg, error) << "Insufficient payload data. Got:"
@@ -199,6 +213,7 @@ std::expected<frame, error_code> frame::deserialize(std::span<const uint8_t> dat
         return std::unexpected(error_code::invalid_message_type);
     }
 
+    // Build the frame with payload
     frame f;
     f.header_ = header;
     if (header.payload_size > 0) {
@@ -206,6 +221,7 @@ std::expected<frame, error_code> frame::deserialize(std::span<const uint8_t> dat
             data.begin() + frame_header::size + header.payload_size);
     }
 
+    // Validate the complete frame (including CRC)
     auto validation = f.validate();
     if (!validation) {
         BOOST_LOG_SEV(lg, error) << "Validation failed: " << static_cast<int>(validation.error());

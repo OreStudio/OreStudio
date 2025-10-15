@@ -91,6 +91,18 @@ public:
      */
     bool is_connected() const;
 
+    /**
+     * @brief Send a request frame and receive response frame.
+     *
+     * Generic method for sending any request and receiving response.
+     * Manages sequence numbers automatically.
+     *
+     * @param request_frame The request frame to send
+     * @return Expected containing response frame, or error_code
+     */
+    cobalt::promise<std::expected<protocol::frame, protocol::error_code>>
+    send_request(protocol::frame request_frame);
+
 private:
     /**
      * @brief Perform protocol handshake with server.

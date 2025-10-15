@@ -72,13 +72,13 @@ cobalt::main co_main(int argc, char** argv) {
         // Create database context
         // TODO: Add database configuration to service options
         ores::risk::repository::context_factory::configuration db_cfg{
-            .user = "postgres",
-            .password = "password",
+            .user = "ores",
+            .password = "ahV6aehuij6eingohsiajaiT0",
             .host = "localhost",
-            .database = "ores",
-            .port = 5432,
-            .pool_size = 10,
-            .num_attempts = 3,
+            .database = "oresdb",
+            .port = 5434,
+            .pool_size = 4,
+            .num_attempts = 10,
             .wait_time_in_seconds = 1
         };
         auto ctx = ores::risk::repository::context_factory::make_context(db_cfg);

@@ -193,4 +193,45 @@ bool client::is_connected() const {
     return connected_ && conn_ && conn_->is_open();
 }
 
+cobalt::promise<std::expected<protocol::frame, protocol::error_code>>
+client::send_request(protocol::frame request_frame) {
+    if (!is_connected()) {
+        BOOST_LOG_SEV(lg, error) << "Cannot send request: not connected";
+        co_return std::unexpected(protocol::error_code::network_error);
+    }
+
+    try {
+        // Update sequence number in the frame
+        // Note: we're modifying the sequence number after frame construction
+        // This is a bit of a hack but works for now
+        request_frame = protocol::frame(
+            request_frame.header().type,
+            ++sequence_number_,
+            std::vector<std::uint8_t>(request_frame.payload()));
+
+        BOOST_LOG_SEV(lg, debug) << "Sending request frame, type: "
+                                  << std::hex << static_cast<std::uint16_t>(request_frame.header().type);
+
+        // Send request
+        co_await conn_->write_frame(request_frame);
+
+        // Read response
+        auto response_result = co_await conn_->read_frame();
+        if (!response_result) {
+            BOOST_LOG_SEV(lg, error) << "Failed to read response frame, error: "
+                                      << static_cast<int>(response_result.error());
+            co_return std::unexpected(response_result.error());
+        }
+
+        BOOST_LOG_SEV(lg, debug) << "Received response frame, type: "
+                                  << std::hex << static_cast<std::uint16_t>(response_result->header().type);
+
+        co_return *response_result;
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg, error) << "Request exception: " << e.what();
+        co_return std::unexpected(protocol::error_code::network_error);
+    }
+}
+
 }

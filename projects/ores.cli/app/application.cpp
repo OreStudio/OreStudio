@@ -37,6 +37,7 @@
 #include "ores.cli/app/application_exception.hpp"
 #include "ores.cli/app/application.hpp"
 #include "ores.comms/client.hpp"
+#include "ores.risk/messaging/protocol.hpp"
 
 namespace {
 
@@ -226,6 +227,96 @@ application::run_client(const std::optional<comms::client_options>& ocfg) const 
                 }
             },
             "Perform handshake with the server");
+
+        // Add CURRENCIES submenu
+        auto currenciesMenu = std::make_unique<::cli::Menu>("currencies");
+
+        // Add CURRENCIES GET command
+        currenciesMenu->Insert(
+            "get",
+            [client_cfg](std::ostream& out) {
+                out << "Retrieving currencies from server..." << std::endl;
+
+                try {
+                    bool success = false;
+                    std::string error_message;
+                    std::vector<ores::risk::domain::currency> currencies;
+
+                    auto get_currencies_task = [&]() -> boost::cobalt::task<void> {
+                        try {
+                            // Create client
+                            auto cli = std::make_shared<comms::client>(
+                                client_cfg,
+                                co_await boost::cobalt::this_coro::executor);
+
+                            // Connect and handshake
+                            bool connected = co_await cli->connect();
+                            if (!connected) {
+                                error_message = "Failed to connect to server";
+                                co_return;
+                            }
+
+                            // Create get_currencies request
+                            ores::risk::messaging::get_currencies_request request;
+                            auto request_payload = request.serialize();
+
+                            // Create request frame
+                            comms::protocol::frame request_frame(
+                                comms::protocol::message_type::get_currencies_request,
+                                0, // sequence will be set by send_request
+                                std::move(request_payload));
+
+                            // Send request and get response
+                            auto response_result = co_await cli->send_request(std::move(request_frame));
+                            if (!response_result) {
+                                error_message = std::format("Request failed with error code: {}",
+                                    static_cast<int>(response_result.error()));
+                                cli->disconnect();
+                                co_return;
+                            }
+
+                            // Deserialize response
+                            auto response = ores::risk::messaging::get_currencies_response::deserialize(
+                                response_result->payload());
+                            if (!response) {
+                                error_message = std::format("Failed to deserialize response, error code: {}",
+                                    static_cast<int>(response.error()));
+                                cli->disconnect();
+                                co_return;
+                            }
+
+                            currencies = std::move(response->currencies);
+                            success = true;
+
+                            // Disconnect
+                            cli->disconnect();
+
+                        } catch (const std::exception& e) {
+                            error_message = std::string("Exception: ") + e.what();
+                        }
+                    };
+
+                    // Run the task synchronously
+                    boost::cobalt::run(get_currencies_task());
+
+                    // Report results
+                    if (success) {
+                        out << "✓ Successfully retrieved " << currencies.size() << " currencies" << std::endl;
+                        out << std::endl;
+                        out << "Currencies (JSON):" << std::endl;
+                        out << currencies << std::endl;
+                    } else {
+                        out << "✗ Failed to retrieve currencies: " << error_message << std::endl;
+                    }
+
+                } catch (const std::exception& e) {
+                    out << "✗ Error: " << e.what() << std::endl;
+                }
+            },
+            "Retrieve all currencies from the server");
+
+        // Add currencies submenu to root
+        rootMenu->Insert(std::move(currenciesMenu));
 
         // Create CLI and session
         ::cli::Cli cli_instance(std::move(rootMenu));

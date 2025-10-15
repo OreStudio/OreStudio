@@ -170,17 +170,12 @@ application::run_client(const std::optional<config::client_options>& ocfg) const
                              << cfg.host << ":" << cfg.port;
 
     try {
-        // Create client configuration
+        // Store client configuration for use in REPL commands
         comms::client_config client_cfg;
         client_cfg.host = cfg.host;
         client_cfg.port = cfg.port;
         client_cfg.client_identifier = cfg.client_identifier;
         client_cfg.verify_certificate = cfg.verify_certificate;
-
-        // Create client (shared_ptr for use in lambdas)
-        auto cli = std::make_shared<comms::client>(
-            std::move(client_cfg),
-            co_await boost::cobalt::this_coro::executor);
 
         // Create CLI root menu
         auto rootMenu = std::make_unique<::cli::Menu>("ores-client");
@@ -188,21 +183,22 @@ application::run_client(const std::optional<config::client_options>& ocfg) const
         // Add HANDSHAKE command
         rootMenu->Insert(
             "HANDSHAKE",
-            [cli](std::ostream& out) {
+            [client_cfg](std::ostream& out) {
                 out << "Performing handshake..." << std::endl;
 
                 try {
-                    // We need to create a new io_context to run the async operation
-                    // synchronously from this handler
-                    boost::asio::io_context ioc;
-
                     // Track success
                     bool handshake_succeeded = false;
                     std::string error_message;
 
-                    // Create a task that uses the client's connect method
+                    // Create a task that creates its own client and performs handshake
                     auto handshake_task = [&]() -> boost::cobalt::task<void> {
                         try {
+                            // Create client with this coroutine's executor
+                            auto cli = std::make_shared<comms::client>(
+                                client_cfg,
+                                co_await boost::cobalt::this_coro::executor);
+
                             bool connected = co_await cli->connect();
                             if (!connected) {
                                 error_message = "Failed to connect to server";

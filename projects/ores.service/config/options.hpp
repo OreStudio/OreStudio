@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,9 +17,36 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <iostream>
-#include "ores.service/service.hpp"
+#ifndef ORES_SERVICE_CONFIG_OPTIONS_HPP
+#define ORES_SERVICE_CONFIG_OPTIONS_HPP
 
-void service::stuff() {
-    std::cout << "hello" << std::endl;
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
+
+#include <iosfwd>
+#include <optional>
+#include "ores.utility/log/logging_options.hpp"
+#include "ores.service/config/server_options.hpp"
+
+namespace ores::service::config {
+
+/**
+ * @brief All of the configuration options required by the service.
+ */
+struct options final {
+    /**
+     * @brief Configuration options related to logging, if any.
+     */
+    std::optional<ores::utility::log::logging_options> logging;
+    /**
+     * @brief Configuration related to server operations.
+     */
+    server_options server;
+};
+
+std::ostream& operator<<(std::ostream& s, const options& v);
+
 }
+
+#endif

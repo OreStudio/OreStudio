@@ -20,9 +20,13 @@
  */
 #include <iostream>
 #include <optional>
+#include <memory>
 #include <boost/throw_exception.hpp>
+#include <boost/cobalt.hpp>
 #include <sqlgen/postgres.hpp>
 #include <magic_enum/magic_enum.hpp>
+#include <cli/cli.h>
+#include <cli/clifilesession.h>
 #include "ores.cli/config/export_options.hpp"
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp"
@@ -32,6 +36,7 @@
 #include "ores.risk/repository/context_factory.hpp"
 #include "ores.cli/app/application_exception.hpp"
 #include "ores.cli/app/application.hpp"
+#include "ores.comms/client.hpp"
 
 namespace {
 
@@ -153,11 +158,103 @@ export_data(const std::optional<config::export_options>& ocfg) const {
     }
 }
 
-void application::run(const config::options& cfg) const {
+boost::cobalt::promise<void>
+application::run_client(const std::optional<comms::client_options>& ocfg) const {
+    if (!ocfg.has_value()) {
+        BOOST_LOG_SEV(lg, debug) << "No client configuration found.";
+        co_return;
+    }
+
+    const auto& cfg(ocfg.value());
+    BOOST_LOG_SEV(lg, info) << "Starting client REPL for "
+                             << cfg.host << ":" << cfg.port;
+
+    try {
+        // Store client configuration for use in REPL commands
+        const comms::client_options& client_cfg = cfg;
+
+        // Create CLI root menu
+        auto rootMenu = std::make_unique<::cli::Menu>("ores-client");
+
+        // Add HANDSHAKE command
+        rootMenu->Insert(
+            "HANDSHAKE",
+            [client_cfg](std::ostream& out) {
+                out << "Performing handshake..." << std::endl;
+
+                try {
+                    // Track success
+                    bool handshake_succeeded = false;
+                    std::string error_message;
+
+                    // Create a task that creates its own client and performs handshake
+                    auto handshake_task = [&]() -> boost::cobalt::task<void> {
+                        try {
+                            // Create client with this coroutine's executor
+                            auto cli = std::make_shared<comms::client>(
+                                client_cfg,
+                                co_await boost::cobalt::this_coro::executor);
+
+                            bool connected = co_await cli->connect();
+                            if (!connected) {
+                                error_message = "Failed to connect to server";
+                                co_return;
+                            }
+
+                            handshake_succeeded = true;
+
+                            // Disconnect after successful handshake
+                            cli->disconnect();
+                        } catch (const std::exception& e) {
+                            error_message = std::string("Exception: ") + e.what();
+                        }
+                    };
+
+                    // Run the task synchronously
+                    boost::cobalt::run(handshake_task());
+
+                    // Report results
+                    if (handshake_succeeded) {
+                        out << "✓ Successfully connected and performed handshake!" << std::endl;
+                        out << "✓ Disconnected from server" << std::endl;
+                    } else {
+                        out << "✗ Handshake failed: " << error_message << std::endl;
+                    }
+
+                } catch (const std::exception& e) {
+                    out << "✗ Error during handshake: " << e.what() << std::endl;
+                }
+            },
+            "Perform handshake with the server");
+
+        // Create CLI and session
+        ::cli::Cli cli_instance(std::move(rootMenu));
+        cli_instance.ExitAction([](auto& out) { out << "Goodbye!" << std::endl; });
+
+        // Use stdin/stdout for the session
+        ::cli::CliFileSession session(cli_instance, std::cin, std::cout);
+
+        // Print welcome message
+        std::cout << "ORE Studio Client REPL" << std::endl;
+        std::cout << "Type 'help' for available commands, 'exit' to quit" << std::endl;
+        std::cout << std::endl;
+
+        // Run the REPL session
+        session.Start();
+
+        BOOST_LOG_SEV(lg, info) << "Client REPL session ended";
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg, error) << "Client error: " << e.what();
+    }
+}
+
+boost::cobalt::promise<void> application::run(const config::options& cfg) const {
     BOOST_LOG_SEV(lg, info) << "Started application.";
 
     import_data(cfg.importing);
     export_data(cfg.exporting);
+    co_await run_client(cfg.client);
 
     BOOST_LOG_SEV(lg, info) << "Finished application.";
 }

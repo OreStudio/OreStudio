@@ -17,46 +17,46 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_HPP
-#define ORES_CLI_CONFIG_HPP
+#ifndef ORES_SERVICE_CONFIG_SERVER_OPTIONS_HPP
+#define ORES_SERVICE_CONFIG_SERVER_OPTIONS_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
 #include <iosfwd>
-#include <optional>
-#include "ores.utility/log/logging_options.hpp"
-#include "ores.cli/config/import_options.hpp"
-#include "ores.cli/config/export_options.hpp"
-#include "ores.comms/client.hpp"
+#include <string>
+#include <cstdint>
 
-namespace ores::cli::config {
+namespace ores::service::config {
 
 /**
- * @brief All of the configuration options required by the command line
- * application.
+ * @brief Configuration options for the ORES server.
  */
-struct options final {
+struct server_options final {
     /**
-     * @brief Configuration options related to logging, if any.
+     * @brief Port to listen on.
      */
-    std::optional<ores::utility::log::logging_options> logging;
+    std::uint16_t port = 55555;
     /**
-     * @brief Configuration related to importing of data, if any.
+     * @brief Maximum number of concurrent connections.
      */
-    std::optional<import_options> importing;
+    std::uint32_t max_connections = 10;
     /**
-     * @brief Configuration related to exporting of data, if any.
+     * @brief Path to SSL certificate file.
      */
-    std::optional<export_options> exporting;
+    std::string certificate_file = "server.crt";
     /**
-     * @brief Configuration related to client operations, if any.
+     * @brief Path to SSL private key file.
      */
-    std::optional<ores::comms::client_options> client;
+    std::string private_key_file = "server.key";
+    /**
+     * @brief Server identifier for handshake.
+     */
+    std::string server_identifier = "ores-service-v1";
 };
 
-std::ostream& operator<<(std::ostream& s, const options& v);
+std::ostream& operator<<(std::ostream& s, const server_options& v);
 
 }
 

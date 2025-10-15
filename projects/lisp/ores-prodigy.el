@@ -58,6 +58,7 @@
 
 (prodigy-define-service
   :name "ORE Studio Service - Debug"
+  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "log")
   :cwd (concat (ores/path-to-output) "/linux-clang-debug/projects/ores.service")
   :command (concat (ores/path-to-output) "/linux-clang-debug/projects/ores.service/ores.service")
   :tags '(ores debug)
@@ -66,6 +67,7 @@
 
 (prodigy-define-service
   :name "ORE Studio Service - Release"
+  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "log")
   :cwd (concat (ores/path-to-output) "/linux-clang-debug/projects/ores.service")
   :command (concat (ores/path-to-output) "/linux-clang-release/projects/ores.service/ores.service")
   :tags '(ores release)

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2012-2015 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,7 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-class service final {
- public:
-    void stuff();
-};
+#define BOOST_TEST_MODULE ores.cli.test
+#include <boost/test/unit_test.hpp>
+#include "ores.utility/test/fixture.hpp"
+
+using namespace ores::utility::test;
+BOOST_GLOBAL_FIXTURE(exception_fixture);

@@ -69,7 +69,7 @@ void host::report_exception(const bool can_log, const std::exception& e) {
     BOOST_LOG_SEV(lg, error) << activity_failure;
 }
 
-int host::execute(const std::vector<std::string>& args,
+boost::cobalt::promise<int> host::execute(const std::vector<std::string>& args,
     scoped_lifecycle_manager& slm) {
 
     /*
@@ -85,7 +85,7 @@ int host::execute(const std::vector<std::string>& args,
      * other cases must result in a configuration object.
      */
     if (!ocfg)
-        return EXIT_SUCCESS;
+        co_return EXIT_SUCCESS;
 
     /*
      * Since we have a configuration, we can now attempt to initialise the
@@ -104,8 +104,8 @@ int host::execute(const std::vector<std::string>& args,
      * Execute the application.
      */
     ores::cli::app::application app;
-    app.run(cfg);
-    return EXIT_SUCCESS;
+    co_await app.run(cfg);
+    co_return EXIT_SUCCESS;
 }
 
 }

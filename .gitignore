@@ -44,3 +44,4 @@ CMakeUserPresets.json
 /.packages/
 
 projects/ores.utility/config/config.hpp
+log

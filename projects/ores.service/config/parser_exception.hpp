@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,7 +17,35 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-class service final {
- public:
-    void stuff();
+#ifndef ORES_SERVICE_CONFIG_PARSER_EXCEPTION_HPP
+#define ORES_SERVICE_CONFIG_PARSER_EXCEPTION_HPP
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
+
+#include <string>
+#include <boost/exception/info.hpp>
+
+namespace ores::service::config {
+
+/**
+ * @brief A fatal error has occurred during option parsing.
+ */
+class parser_exception : public virtual std::exception,
+                         public virtual boost::exception {
+public:
+    explicit parser_exception(std::string_view message = "")
+        : message_(message) {}
+
+    [[nodiscard]] const char* what() const noexcept override {
+        return message_.c_str();
+    }
+
+private:
+    std::string message_;
 };
+
+}
+
+#endif

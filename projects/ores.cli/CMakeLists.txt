@@ -37,11 +37,16 @@ target_include_directories(${lib_target_name}
     PUBLIC ${CMAKE_SOURCE_DIR}/projects/
 )
 
+find_package(cli CONFIG REQUIRED)
+
 target_link_libraries(${lib_target_name}
     PRIVATE
         Boost::boost
+        Boost::cobalt
         Boost::program_options
         magic_enum::magic_enum
+        ores.comms.lib
+        cli::cli
     )
 
 install(TARGETS ${lib_target_name}
@@ -66,7 +71,9 @@ target_link_libraries(${exe_target_name} PRIVATE
     ${lib_target_name}
     ores.risk.lib
     ores.utility.lib
+    ores.comms.lib
     Boost::boost
+    Boost::cobalt
     Boost::date_time
     Boost::program_options
     ${CMAKE_THREAD_LIBS_INIT})

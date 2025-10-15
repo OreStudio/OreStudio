@@ -17,6 +17,9 @@
 ---
 name: Continuous MacOS
 
+env:
+  VCPKG_BINARY_SOURCES: 'clear;default'
+
 on:  # yamllint disable-line rule:truthy
   push:
     branches:

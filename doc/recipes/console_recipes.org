@@ -8103,6 +8103,33 @@ Sliced as there are too many.
 ]
 #+end_src
 
+** Client
+   :PROPERTIES:
+   :header-args+: :var log_args="--log-enabled --log-level trace --log-directory log"
+   :END:
+
+*** Basic connect
+
+#+begin_src sh
+./ores.cli ${log_args} client --command handshake
+#+END_SRC
+
+#+RESULTS:
+./ores.cli --log-enabled --log-level trace --log-directory log client --command handshake
+ORE Studio is a User Interface for Open Source Risk Engine (ORE).
+CLI provides a command line version of the interface.
+ORE Studio is created by the ORE Studio project.
+Displaying options specific to the 'client' command.
+For global options, type --help.
+
+Client:
+  --command arg         Client command to execute. Available: handshake.
+                        Defaults to handshake.
+  --host arg            Host to connect to. Defaults to localhost.
+  --port arg            Port to connect to. Defaults to 55555.
+  --identifier arg      Client identifier for handshake. Defaults to
+                        ores-cli-client.
+  --verify-certificate  Verify server SSL certificate.
 
 
 | Previous: [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] |

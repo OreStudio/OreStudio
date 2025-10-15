@@ -13,9 +13,10 @@
         },
         "openssl",
         "libpqxx",
+        "libbson",
         {
             "name": "reflectcpp",
-            "features": [ "xml" ]
+            "features": [ "xml", "bson" ]
         },
         {
             "name": "sqlgen",
@@ -37,6 +38,7 @@
         "boost-uuid",
         "boost-spirit",
         "boost-iostreams",
-        "boost-cobalt"
+        "boost-cobalt",
+        "cli"
     ]
 }

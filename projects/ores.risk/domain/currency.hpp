@@ -25,14 +25,14 @@
 #endif
 
 #include <string>
-#include <ostream>
+#include <iosfwd>
 
 namespace ores::risk::domain {
 
 /**
  * @brief Represents a currency.
  */
-struct currency {
+struct currency final {
     std::string iso_code;
     std::string name;
     std::string numeric_code;

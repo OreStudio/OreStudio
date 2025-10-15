@@ -15,7 +15,7 @@
             "cacheVariables": {
                 "CMAKE_POSITION_INDEPENDENT_CODE": true,
                 "CMAKE_EXPORT_COMPILE_COMMANDS": true,
-                "CMAKE_CXX_STANDARD": "20",
+                "CMAKE_CXX_STANDARD": "23",
                 "CMAKE_CXX_STANDARD_REQUIRED": true,
                 "CMAKE_CXX_EXTENSIONS": false
             },
@@ -181,7 +181,7 @@
         },
         {
             "name": "windows-msvc-clang-cl",
-            "displayName": "Windows x64 Debug",
+            "displayName": "Windows x64",
             "hidden": true,
             "inherits": [
                 "msvc-clang-cl",
@@ -215,6 +215,43 @@
                 "release-build"
             ],
             "description": "OreStudio release build for Windows Clang MSVC."
+        },
+        {
+            "name": "windows-clang",
+            "displayName": "Windows x64",
+            "hidden": true,
+            "inherits": [
+                "clang",
+                "windows-arch-x64"
+            ],
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "hostOS": [
+                        "Windows"
+                    ]
+                }
+            },
+            "description": "Setup the Clang C++ compiler for Windows."
+        },
+        {
+            "name": "windows-clang-debug",
+            "displayName": "Windows x64 Debug",
+            "inherits": [
+                "base-configuration",
+                "windows-clang",
+                "debug-build"
+            ],
+            "description": "OreStudio debug build for Windows Clang."
+        },
+        {
+            "name": "windows-clang-release",
+            "displayName": "Windows x64 Release",
+            "inherits": [
+                "base-configuration",
+                "windows-clang",
+                "release-build"
+            ],
+            "description": "OreStudio release build for Windows Clang."
         },
         {
             "name": "macos-clang-debug",
@@ -251,6 +288,14 @@
         {
             "name": "windows-msvc-clang-cl-release",
             "configurePreset": "windows-msvc-release"
+        },
+        {
+            "name": "windows-clang-debug",
+            "configurePreset": "windows-clang-debug"
+        },
+        {
+            "name": "windows-clang-release",
+            "configurePreset": "windows-clang-release"
         },
         {
             "name": "linux-clang-debug",
@@ -313,6 +358,20 @@
         {
             "name": "windows-msvc-clang-cl-debug",
             "configurePreset": "windows-msvc-clang-cl-debug",
+            "inherits": [
+                "test-default"
+            ]
+        },
+        {
+            "name": "windows-clang-release",
+            "configurePreset": "windows-clang-release",
+            "inherits": [
+                "test-default"
+            ]
+        },
+        {
+            "name": "windows-clang-debug",
+            "configurePreset": "windows-clang-debug",
             "inherits": [
                 "test-default"
             ]

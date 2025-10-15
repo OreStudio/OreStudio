@@ -18,6 +18,7 @@
  *
  */
 #include <iostream>
+#include <boost/cobalt/main.hpp>
 #include "ores.cli/app/host.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
@@ -25,10 +26,11 @@
 namespace {
 
 const std::string force_terminate("Application was forced to terminate.");
+namespace cobalt = boost::cobalt;
 
 }
 
-int main(const int argc, const char* argv[]) {
+cobalt::main co_main(int argc, char** argv) {
     using ores::cli::app::host;
     using ores::cli::config::parser_exception;
     using ores::utility::log::scoped_lifecycle_manager;
@@ -36,19 +38,18 @@ int main(const int argc, const char* argv[]) {
     scoped_lifecycle_manager slm;
     try {
         const auto args(std::vector<std::string>(argv + 1, argv + argc));
-        return host::execute(args, slm);
-        return 0;
+        co_return co_await host::execute(args, slm);
     } catch (const parser_exception& /*e*/) {
         /*
          * Reporting of these types of errors to the console has
          * already been handled by the parser itself.
          */
-        return EXIT_FAILURE;
+        co_return EXIT_FAILURE;
     } catch (const std::exception& e) {
         host::report_exception(slm.is_initialised(), e);
-        return EXIT_FAILURE;
+        co_return EXIT_FAILURE;
     } catch (...) {
         std::cerr << force_terminate << std::endl;
-        return EXIT_FAILURE;
+        co_return EXIT_FAILURE;
     }
 }

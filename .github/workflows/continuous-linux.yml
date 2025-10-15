@@ -17,6 +17,9 @@
 ---
 name: Continuous Linux
 
+env:
+  VCPKG_BINARY_SOURCES: 'clear;default'
+
 on:  # yamllint disable-line rule:truthy
   push:
     branches:
@@ -50,11 +53,11 @@ jobs:
           submodules: true
 
       - name: Install Clang
-        uses: egor-tensin/setup-clang@v1.4
+        uses: KyleMayes/install-llvm-action@v2
         if: ${{matrix.compiler}} == clang
         with:
-          version: latest
-          platform: x64
+          version: "19"
+          arch: x64
 
       - name: Ccache for gh actions
         uses: hendrikmuhs/ccache-action@v1.2.19

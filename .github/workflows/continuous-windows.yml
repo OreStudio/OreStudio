@@ -17,6 +17,9 @@
 ---
 name: Continuous Windows
 
+env:
+  VCPKG_BINARY_SOURCES: 'clear;default'
+
 on:  # yamllint disable-line rule:truthy
   push:
     branches:
@@ -35,16 +38,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [windows-msvc]
+        name: [windows-msvc, windows-clang]
         buildtype: [debug, release]
         include:
           - name: windows-msvc
             family: windows
             compiler: msvc
+          - name: windows-clang
+            family: windows
+            compiler: clang
     steps:
       - uses: actions/checkout@v5
         with:
           submodules: true
+
+      - name: Install Clang
+        uses: KyleMayes/install-llvm-action@v2
+        if: ${{matrix.compiler}} == clang
+        with:
+          version: "19"
+          arch: x64
 
       - name: Enable Developer Command Prompt
         uses: ilammy/msvc-dev-cmd@v1.13.0

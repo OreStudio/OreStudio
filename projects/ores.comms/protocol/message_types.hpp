@@ -17,36 +17,37 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_APP_HOST_HPP
-#define ORES_CLI_APP_HOST_HPP
+#ifndef ORES_COMMS_PROTOCOL_MESSAGE_TYPES_HPP
+#define ORES_COMMS_PROTOCOL_MESSAGE_TYPES_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
+#include <cstdint>
+#include <algorithm>
 
-#include <vector>
-#include <string>
-#include <exception>
-#include <boost/cobalt.hpp>
-#include "ores.utility/log/scoped_lifecycle_manager.hpp"
+namespace ores::comms::protocol {
 
-namespace ores::cli::app {
+constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553; // "ORES" in ASCII
 
-/**
- * @brief Hosts the console application.
- */
-class host {
-public:
-    /**
-     * @brief Reports exceptions to the log and console.
-     */
-    static void report_exception(const bool can_log, const std::exception& e);
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 1;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
-    /**
-     * @brief Executes the console workflow.
-     */
-    static boost::cobalt::promise<int> execute(const std::vector<std::string>& args,
-        ores::utility::log::scoped_lifecycle_manager& slm);
+enum class message_type {
+    handshake_request = 0x0001,
+    handshake_response = 0x0002,
+    handshake_ack = 0x0003,
+    error_response = 0x004,
+    last_value
+};
+
+enum class error_code {
+    none = 0x0000,
+    version_mismatch = 0x0001,
+    crc_validation_failed = 0x0002,
+    invalid_message_type = 0x0003,
+    handshake_timeout = 0x0004,
+    handshake_failed = 0x0005,
+    payload_too_large = 0x0006,
+    network_error = 0x0007,
+    last_value
 };
 
 }

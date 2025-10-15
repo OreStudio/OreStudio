@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 #include <boost/asio/connect.hpp>
 #include "ores.comms/client.hpp"
 #include "ores.comms/protocol/handshake.hpp"
@@ -31,12 +33,16 @@ auto lg(logger_factory("ores.comms.client"));
 
 namespace ores::comms {
 
+std::ostream& operator<<(std::ostream& s, const client_options& v) {
+    rfl::json::write(v, s);
+    return(s);
+}
+
 client::client(client_options config, boost::asio::any_io_executor executor)
-    : config_(std::move(config)),
-      executor_(executor),
+    : config_(std::move(config)), executor_(executor),
       ssl_ctx_(ssl::context::tlsv13_client),
-      sequence_number_(0),
-      connected_(false) {
+      sequence_number_(0), connected_(false) {
+    BOOST_LOG_SEV(lg, info) << "Client options: " << config_;
     setup_ssl_context();
 }
 

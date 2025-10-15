@@ -59,6 +59,8 @@ struct client_options final {
     bool verify_certificate = true;
 };
 
+std::ostream& operator<<(std::ostream& s, const client_options& v);
+
 /**
  * @brief ORES protocol client.
  *

@@ -21,13 +21,13 @@
 
 namespace ores::comms::protocol {
 
-uint32_t crc32::table_[256];
+std::uint32_t crc32::table_[256];
 bool crc32::table_initialized_ = false;
 
 void crc32::initialize_table() {
-    for (uint32_t i = 0; i < 256; ++i) {
-        uint32_t crc = i;
-        for (uint32_t j = 0; j < 8; ++j) {
+    for (std::uint32_t i = 0; i < 256; ++i) {
+        std::uint32_t crc = i;
+        for (std::uint32_t j = 0; j < 8; ++j) {
             if (crc & 1) {
                 crc = (crc >> 1) ^ polynomial_;
             } else {
@@ -45,19 +45,19 @@ crc32::crc32() : crc_(0xFFFFFFFF) {
     }
 }
 
-uint32_t crc32::calculate(std::span<const uint8_t> data) {
+std::uint32_t crc32::calculate(std::span<const std::uint8_t> data) {
     crc32 calc;
     calc.update(data);
     return calc.finalize();
 }
 
-void crc32::update(std::span<const uint8_t> data) {
-    for (const uint8_t byte : data) {
+void crc32::update(std::span<const std::uint8_t> data) {
+    for (const std::uint8_t byte : data) {
         crc_ = (crc_ >> 8) ^ table_[(crc_ ^ byte) & 0xFF];
     }
 }
 
-uint32_t crc32::finalize() const {
+std::uint32_t crc32::finalize() const {
     return crc_ ^ 0xFFFFFFFF;
 }
 

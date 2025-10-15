@@ -22,6 +22,7 @@
 
 #include <memory>
 #include <string>
+#include <cstdint>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl.hpp>
@@ -46,7 +47,7 @@ struct client_options final {
     /**
      * @brief Port to connect to.
      */
-    uint16_t port = 55555;
+    std::uint16_t port = 55555;
 
     /**
      * @brief Client identifier to send in handshake.
@@ -105,7 +106,7 @@ private:
     boost::asio::any_io_executor executor_;
     ssl::context ssl_ctx_;
     std::unique_ptr<connection> conn_;
-    uint32_t sequence_number_;
+    std::uint32_t sequence_number_;
     bool connected_;
 };
 

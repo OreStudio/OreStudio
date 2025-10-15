@@ -24,15 +24,15 @@
 namespace ores::comms::protocol {
 
 // handshake_request implementation
-std::vector<uint8_t> handshake_request::serialize() const {
+std::vector<std::uint8_t> handshake_request::serialize() const {
     auto bson_data = rfl::bson::write(*this);
     return {
-        reinterpret_cast<const uint8_t*>(bson_data.data()),
-        reinterpret_cast<const uint8_t*>(bson_data.data()) + bson_data.size()
+        reinterpret_cast<const std::uint8_t*>(bson_data.data()),
+        reinterpret_cast<const std::uint8_t*>(bson_data.data()) + bson_data.size()
     };
 }
 
-std::expected<handshake_request, error_code> handshake_request::deserialize(std::span<const uint8_t> data) {
+std::expected<handshake_request, error_code> handshake_request::deserialize(std::span<const std::uint8_t> data) {
     auto result = rfl::bson::read<handshake_request>(data.data(), data.size());
 
     if (!result) {
@@ -43,15 +43,15 @@ std::expected<handshake_request, error_code> handshake_request::deserialize(std:
 }
 
 // handshake_response implementation
-std::vector<uint8_t> handshake_response::serialize() const {
+std::vector<std::uint8_t> handshake_response::serialize() const {
     auto bson_data = rfl::bson::write(*this);
     return {
-        reinterpret_cast<const uint8_t*>(bson_data.data()),
-        reinterpret_cast<const uint8_t*>(bson_data.data()) + bson_data.size()
+        reinterpret_cast<const std::uint8_t*>(bson_data.data()),
+        reinterpret_cast<const std::uint8_t*>(bson_data.data()) + bson_data.size()
     };
 }
 
-std::expected<handshake_response, error_code> handshake_response::deserialize(std::span<const uint8_t> data) {
+std::expected<handshake_response, error_code> handshake_response::deserialize(std::span<const std::uint8_t> data) {
     auto result = rfl::bson::read<handshake_response>(data.data(), data.size());
 
     if (!result) {
@@ -62,15 +62,15 @@ std::expected<handshake_response, error_code> handshake_response::deserialize(st
 }
 
 // handshake_ack implementation
-std::vector<uint8_t> handshake_ack::serialize() const {
+std::vector<std::uint8_t> handshake_ack::serialize() const {
     auto bson_data = rfl::bson::write(*this);
     return {
-        reinterpret_cast<const uint8_t*>(bson_data.data()),
-        reinterpret_cast<const uint8_t*>(bson_data.data()) + bson_data.size()
+        reinterpret_cast<const std::uint8_t*>(bson_data.data()),
+        reinterpret_cast<const std::uint8_t*>(bson_data.data()) + bson_data.size()
     };
 }
 
-std::expected<handshake_ack, error_code> handshake_ack::deserialize(std::span<const uint8_t> data) {
+std::expected<handshake_ack, error_code> handshake_ack::deserialize(std::span<const std::uint8_t> data) {
     auto result = rfl::bson::read<handshake_ack>(data.data(), data.size());
 
     if (!result) {
@@ -82,7 +82,7 @@ std::expected<handshake_ack, error_code> handshake_ack::deserialize(std::span<co
 
 // Frame creation functions
 frame create_handshake_request_frame(
-    uint32_t sequence,
+    std::uint32_t sequence,
     const std::string& client_identifier) {
 
     handshake_request req {
@@ -95,7 +95,7 @@ frame create_handshake_request_frame(
 }
 
 frame create_handshake_response_frame(
-    uint32_t sequence,
+    std::uint32_t sequence,
     bool version_compatible,
     const std::string& server_identifier,
     error_code status) {
@@ -112,7 +112,7 @@ frame create_handshake_response_frame(
 }
 
 frame create_handshake_ack_frame(
-    uint32_t sequence,
+    std::uint32_t sequence,
     error_code status) {
 
     handshake_ack ack{status};

@@ -19,6 +19,7 @@
  */
 #include <format>
 #include <ostream>
+#include <cstdint>
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
 #include <magic_enum/magic_enum.hpp>
@@ -178,7 +179,7 @@ options_description make_client_options_description() {
     options_description r("Client");
     r.add_options()
         ("host", value<std::string>(), "Host to connect to. Defaults to localhost.")
-        ("port", value<uint16_t>(), "Port to connect to. Defaults to 55555.")
+        ("port", value<std::uint16_t>(), "Port to connect to. Defaults to 55555.")
         ("identifier", value<std::string>(),
             "Client identifier for handshake. Defaults to ores-cli-client.")
         ("verify-certificate", "Verify server SSL certificate.");
@@ -426,7 +427,7 @@ client_options read_client_options(const variables_map& vm) {
         r.host = vm[client_host_arg].as<std::string>();
 
     if (vm.count(client_port_arg) != 0)
-        r.port = vm[client_port_arg].as<uint16_t>();
+        r.port = vm[client_port_arg].as<std::uint16_t>();
 
     if (vm.count(client_identifier_arg) != 0)
         r.client_identifier = vm[client_identifier_arg].as<std::string>();

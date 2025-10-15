@@ -37,11 +37,11 @@ struct server_options final {
     /**
      * @brief Port to listen on.
      */
-    uint16_t port = 55555;
+    std::uint16_t port = 55555;
     /**
      * @brief Maximum number of concurrent connections.
      */
-    uint32_t max_connections = 10;
+    std::uint32_t max_connections = 10;
     /**
      * @brief Path to SSL certificate file.
      */

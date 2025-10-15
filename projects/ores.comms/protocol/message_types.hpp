@@ -25,10 +25,10 @@
 
 namespace ores::comms::protocol {
 
-constexpr uint32_t PROTOCOL_MAGIC = 0x4F524553; // "ORES" in ASCII
+constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553; // "ORES" in ASCII
 
-constexpr uint16_t PROTOCOL_VERSION_MAJOR = 1;
-constexpr uint16_t PROTOCOL_VERSION_MINOR = 0;
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 1;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 enum class message_type {
     handshake_request = 0x0001,

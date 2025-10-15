@@ -32,27 +32,27 @@ namespace ores::comms::protocol {
  * @brief Handshake request message sent by client to initiate connection.
  */
 struct handshake_request final {
-    uint16_t client_version_major;
-    uint16_t client_version_minor;
+    std::uint16_t client_version_major;
+    std::uint16_t client_version_minor;
     std::string client_identifier;
 
     /**
      * @brief Serialize to frame payload.
      */
-    std::vector<uint8_t> serialize() const;
+    std::vector<std::uint8_t> serialize() const;
 
     /**
      * @brief Deserialize from frame payload.
      */
-    static std::expected<handshake_request, error_code> deserialize(std::span<const uint8_t> data);
+    static std::expected<handshake_request, error_code> deserialize(std::span<const std::uint8_t> data);
 };
 
 /**
  * @brief Handshake response message sent by server to client.
  */
 struct handshake_response final {
-    uint16_t server_version_major;
-    uint16_t server_version_minor;
+    std::uint16_t server_version_major;
+    std::uint16_t server_version_minor;
     bool version_compatible;
     std::string server_identifier;
     error_code status;
@@ -60,12 +60,12 @@ struct handshake_response final {
     /**
      * @brief Serialize to frame payload.
      */
-    std::vector<uint8_t> serialize() const;
+    std::vector<std::uint8_t> serialize() const;
 
     /**
      * @brief Deserialize from frame payload.
      */
-    static std::expected<handshake_response, error_code> deserialize(std::span<const uint8_t> data);
+    static std::expected<handshake_response, error_code> deserialize(std::span<const std::uint8_t> data);
 };
 
 /**
@@ -77,26 +77,26 @@ struct handshake_ack final {
     /**
      * @brief Serialize to frame payload.
      */
-    std::vector<uint8_t> serialize() const;
+    std::vector<std::uint8_t> serialize() const;
 
     /**
      * @brief Deserialize from frame payload.
      */
-    static std::expected<handshake_ack, error_code> deserialize(std::span<const uint8_t> data);
+    static std::expected<handshake_ack, error_code> deserialize(std::span<const std::uint8_t> data);
 };
 
 /**
  * @brief Create a handshake request frame.
  */
 frame create_handshake_request_frame(
-    uint32_t sequence,
+    std::uint32_t sequence,
     const std::string& client_identifier);
 
 /**
  * @brief Create a handshake response frame.
  */
 frame create_handshake_response_frame(
-    uint32_t sequence,
+    std::uint32_t sequence,
     bool version_compatible,
     const std::string& server_identifier,
     error_code status = error_code::none);
@@ -105,7 +105,7 @@ frame create_handshake_response_frame(
  * @brief Create a handshake acknowledgment frame.
  */
 frame create_handshake_ack_frame(
-    uint32_t sequence,
+    std::uint32_t sequence,
     error_code status = error_code::none);
 
 }

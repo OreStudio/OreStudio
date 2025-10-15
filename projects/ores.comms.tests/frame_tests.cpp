@@ -17,7 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
+#include <span>
+#include <vector>
+#include <cstdint>
 #include <boost/test/unit_test.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include "ores.utility/test/logging.hpp"
@@ -25,9 +27,6 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep
 #include "ores.comms/protocol/frame.hpp"
 #include "ores.comms/protocol/message_types.hpp"
-#include <vector>
-#include <span>
-#include <cstdint>
 
 namespace {
 
@@ -36,7 +35,7 @@ const std::string test_suite("frame_tests");
 
 // Helper function to deserialize a complete frame (header + payload)
 std::expected<ores::comms::protocol::frame, ores::comms::protocol::error_code>
-deserialize_frame(std::span<const uint8_t> data) {
+deserialize_frame(std::span<const std::uint8_t> data) {
     // First deserialize the header
     auto header_result = ores::comms::protocol::frame::deserialize_header(data);
     if (!header_result) {
@@ -55,7 +54,7 @@ BOOST_AUTO_TEST_CASE(test_frame_serialization) {
     SETUP_TEST_LOG_SOURCE_DEBUG("test_frame_serialization")
 
     // Create a frame with some test data
-    std::vector<uint8_t> payload = {0x01, 0x02, 0x03, 0x04};
+    std::vector<std::uint8_t> payload = {0x01, 0x02, 0x03, 0x04};
     ores::comms::protocol::frame frame(
         ores::comms::protocol::message_type::handshake_request,
         123, // sequence number
@@ -70,7 +69,7 @@ BOOST_AUTO_TEST_CASE(test_frame_serialization) {
 
     // Deserialize it back
     auto deserialized_result = deserialize_frame(
-        std::span<const uint8_t>(serialized.data(), serialized.size())
+        std::span<const std::uint8_t>(serialized.data(), serialized.size())
     );
 
     BOOST_REQUIRE(deserialized_result.has_value());
@@ -94,7 +93,7 @@ BOOST_AUTO_TEST_CASE(test_frame_serialization_empty_payload) {
     SETUP_TEST_LOG_SOURCE_DEBUG("test_frame_serialization_empty_payload")
 
     // Create a frame with empty payload
-    std::vector<uint8_t> empty_payload = {};
+    std::vector<std::uint8_t> empty_payload = {};
     ores::comms::protocol::frame frame(
         ores::comms::protocol::message_type::handshake_response,
         456, // sequence number
@@ -109,7 +108,7 @@ BOOST_AUTO_TEST_CASE(test_frame_serialization_empty_payload) {
 
     // Deserialize it back
     auto deserialized_result = deserialize_frame(
-        std::span<const uint8_t>(serialized.data(), serialized.size())
+        std::span<const std::uint8_t>(serialized.data(), serialized.size())
     );
 
     BOOST_REQUIRE(deserialized_result.has_value());
@@ -129,9 +128,9 @@ BOOST_AUTO_TEST_CASE(test_frame_serialization_large_payload) {
     SETUP_TEST_LOG_SOURCE_DEBUG("test_frame_serialization_large_payload")
 
     // Create a frame with a larger payload
-    std::vector<uint8_t> large_payload(1000);
+    std::vector<std::uint8_t> large_payload(1000);
     for (size_t i = 0; i < large_payload.size(); ++i) {
-        large_payload[i] = static_cast<uint8_t>(i % 256);
+        large_payload[i] = static_cast<std::uint8_t>(i % 256);
     }
 
     ores::comms::protocol::frame frame(
@@ -148,7 +147,7 @@ BOOST_AUTO_TEST_CASE(test_frame_serialization_large_payload) {
 
     // Deserialize it back
     auto deserialized_result = deserialize_frame(
-        std::span<const uint8_t>(serialized.data(), serialized.size())
+        std::span<const std::uint8_t>(serialized.data(), serialized.size())
     );
 
     BOOST_REQUIRE(deserialized_result.has_value());
@@ -171,9 +170,9 @@ BOOST_AUTO_TEST_CASE(test_frame_deserialization_invalid_data) {
     SETUP_TEST_LOG_SOURCE_DEBUG("test_frame_deserialization_invalid_data")
 
     // Try to deserialize invalid data (too short)
-    std::vector<uint8_t> invalid_data = {0x01, 0x02};
+    std::vector<std::uint8_t> invalid_data = {0x01, 0x02};
     auto result = deserialize_frame(
-        std::span<const uint8_t>(invalid_data.data(), invalid_data.size())
+        std::span<const std::uint8_t>(invalid_data.data(), invalid_data.size())
     );
 
     // Should fail with an error
@@ -187,7 +186,7 @@ BOOST_AUTO_TEST_CASE(test_frame_deserialization_corrupted_data) {
     SETUP_TEST_LOG_SOURCE_DEBUG("test_frame_deserialization_corrupted_data")
 
     // Create a valid frame and serialize it
-    std::vector<uint8_t> payload = {0x01, 0x02, 0x03, 0x04};
+    std::vector<std::uint8_t> payload = {0x01, 0x02, 0x03, 0x04};
     ores::comms::protocol::frame frame(
         ores::comms::protocol::message_type::handshake_request,
         101, // sequence number
@@ -201,7 +200,7 @@ BOOST_AUTO_TEST_CASE(test_frame_deserialization_corrupted_data) {
         serialized[0] ^= 0xFF; // Flip some bits to corrupt the data
 
         auto result = deserialize_frame(
-            std::span<const uint8_t>(serialized.data(), serialized.size())
+            std::span<const std::uint8_t>(serialized.data(), serialized.size())
         );
 
         // Should fail with an error
@@ -216,7 +215,7 @@ BOOST_AUTO_TEST_CASE(test_frame_roundtrip_multiple_message_types) {
     SETUP_TEST_LOG_SOURCE_DEBUG("test_frame_roundtrip_multiple_message_types")
 
     // Test serialization/deserialization with different message types
-    std::vector<uint8_t> payload = {0xDE, 0xAD, 0xBE, 0xEF};
+    std::vector<std::uint8_t> payload = {0xDE, 0xAD, 0xBE, 0xEF};
 
     std::vector<ores::comms::protocol::message_type> message_types = {
         ores::comms::protocol::message_type::handshake_request,
@@ -234,7 +233,7 @@ BOOST_AUTO_TEST_CASE(test_frame_roundtrip_multiple_message_types) {
 
         // Deserialize
         auto deserialized_result = deserialize_frame(
-            std::span<const uint8_t>(serialized.data(), serialized.size())
+            std::span<const std::uint8_t>(serialized.data(), serialized.size())
         );
 
         BOOST_REQUIRE(deserialized_result.has_value());

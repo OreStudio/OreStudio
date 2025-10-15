@@ -19,6 +19,7 @@
  */
 #include <format>
 #include <ostream>
+#include <cstdint>
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
 #include "ores.service/config/parser_exception.hpp"
@@ -83,9 +84,9 @@ options_description make_options_description() {
 
     options_description sod("Server");
     sod.add_options()
-        ("port,p", value<uint16_t>(),
+        ("port,p", value<std::uint16_t>(),
             "Port to listen on. Defaults to 55555.")
-        ("max-connections,m", value<uint32_t>(),
+        ("max-connections,m", value<std::uint32_t>(),
             "Maximum number of concurrent connections. Defaults to 10.")
         ("certificate,c", value<std::string>(),
             "Path to SSL certificate file. Defaults to 'server.crt'.")
@@ -183,10 +184,10 @@ server_options read_server_configuration(const variables_map& vm) {
     server_options r;
 
     if (vm.count(server_port_arg) != 0)
-        r.port = vm[server_port_arg].as<uint16_t>();
+        r.port = vm[server_port_arg].as<std::uint16_t>();
 
     if (vm.count(server_max_connections_arg) != 0)
-        r.max_connections = vm[server_max_connections_arg].as<uint32_t>();
+        r.max_connections = vm[server_max_connections_arg].as<std::uint32_t>();
 
     if (vm.count(server_certificate_arg) != 0)
         r.certificate_file = vm[server_certificate_arg].as<std::string>();

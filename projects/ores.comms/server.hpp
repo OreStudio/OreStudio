@@ -20,10 +20,10 @@
 #ifndef ORES_COMMS_SERVER_HPP
 #define ORES_COMMS_SERVER_HPP
 
-#include <cstdint>
 #include <string>
-#include <boost/asio/ip/tcp.hpp>
+#include <cstdint>
 #include <boost/asio/ssl.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <boost/cobalt.hpp>
 
 namespace ores::comms {
@@ -36,8 +36,8 @@ namespace ssl = boost::asio::ssl;
  * @brief Configuration for the server.
  */
 struct server_config final {
-    uint16_t port = 55555;
-    uint32_t max_connections = 10;
+    std::uint16_t port = 55555;
+    std::uint32_t max_connections = 10;
     std::string certificate_file = "server.crt";
     std::string private_key_file = "server.key";
     std::string server_identifier = "ores-server";

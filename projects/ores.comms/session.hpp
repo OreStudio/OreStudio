@@ -64,7 +64,7 @@ private:
 
     std::unique_ptr<connection> conn_;
     std::string server_id_;
-    uint32_t sequence_number_;
+    std::uint32_t sequence_number_;
     bool handshake_complete_;
 };
 

@@ -37,17 +37,17 @@ public:
     /**
      * @brief Calculate CRC32 for a span of bytes.
      */
-    static uint32_t calculate(std::span<const uint8_t> data);
+    static std::uint32_t calculate(std::span<const std::uint8_t> data);
 
     /**
      * @brief Update CRC32 with additional data.
      */
-    void update(std::span<const uint8_t> data);
+    void update(std::span<const std::uint8_t> data);
 
     /**
      * @brief Get the final CRC32 value.
      */
-    uint32_t finalize() const;
+    std::uint32_t finalize() const;
 
     /**
      * @brief Reset the CRC32 calculator.
@@ -55,9 +55,9 @@ public:
     void reset();
 
 private:
-    uint32_t crc_;
-    static constexpr uint32_t polynomial_ = 0xEDB88320;
-    static uint32_t table_[256];
+    std::uint32_t crc_;
+    static constexpr std::uint32_t polynomial_ = 0xEDB88320;
+    static std::uint32_t table_[256];
     static bool table_initialized_;
 
     static void initialize_table();

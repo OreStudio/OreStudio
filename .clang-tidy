@@ -62,6 +62,8 @@ Warnings:
 HeaderFilterRegex: '.*'
 FormatStyle: file
 CheckOptions:
-  - key:   modernize-use-default-member-init.UseAssignment
+  - key: modernize-use-default-member-init.UseAssignment
     value: 1
+  - key: misc-non-private-member-variables-in-classes.IgnoreClassesWithStructKeyword
+    value: 'true'
 ...

@@ -30,7 +30,7 @@
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
 #include "ores.cli/config/export_options.hpp"
-#include "ores.cli/config/client_options.hpp"
+#include "ores.comms/client.hpp"
 #include "ores.risk/repository/context.hpp"
 
 namespace ores::cli::app {
@@ -53,7 +53,7 @@ private:
     void export_data(const std::optional<config::export_options>& ocfg) const;
 
     boost::cobalt::promise<void> run_client(
-        const std::optional<config::client_options>& ocfg) const;
+        const std::optional<comms::client_options>& ocfg) const;
 
 public:
     /**

@@ -31,7 +31,7 @@ auto lg(logger_factory("ores.comms.client"));
 
 namespace ores::comms {
 
-client::client(client_config config, boost::asio::any_io_executor executor)
+client::client(client_options config, boost::asio::any_io_executor executor)
     : config_(std::move(config)),
       executor_(executor),
       ssl_ctx_(ssl::context::tlsv13_client),

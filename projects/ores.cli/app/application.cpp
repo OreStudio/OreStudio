@@ -159,7 +159,7 @@ export_data(const std::optional<config::export_options>& ocfg) const {
 }
 
 boost::cobalt::promise<void>
-application::run_client(const std::optional<config::client_options>& ocfg) const {
+application::run_client(const std::optional<comms::client_options>& ocfg) const {
     if (!ocfg.has_value()) {
         BOOST_LOG_SEV(lg, debug) << "No client configuration found.";
         co_return;
@@ -171,11 +171,7 @@ application::run_client(const std::optional<config::client_options>& ocfg) const
 
     try {
         // Store client configuration for use in REPL commands
-        comms::client_config client_cfg;
-        client_cfg.host = cfg.host;
-        client_cfg.port = cfg.port;
-        client_cfg.client_identifier = cfg.client_identifier;
-        client_cfg.verify_certificate = cfg.verify_certificate;
+        const comms::client_options& client_cfg = cfg;
 
         // Create CLI root menu
         auto rootMenu = std::make_unique<::cli::Menu>("ores-client");

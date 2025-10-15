@@ -29,7 +29,7 @@
 #include "ores.utility/log/logging_options.hpp"
 #include "ores.cli/config/import_options.hpp"
 #include "ores.cli/config/export_options.hpp"
-#include "ores.cli/config/client_options.hpp"
+#include "ores.comms/client.hpp"
 
 namespace ores::cli::config {
 
@@ -53,7 +53,7 @@ struct options final {
     /**
      * @brief Configuration related to client operations, if any.
      */
-    std::optional<client_options> client;
+    std::optional<ores::comms::client_options> client;
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

@@ -27,7 +27,7 @@
 #include "ores.utility/log/severity_level.hpp"
 #include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/parser_exception.hpp"
-#include "ores.cli/config/client_options.hpp"
+#include "ores.comms/client.hpp"
 #include "ores.cli/config/parser.hpp"
 
 namespace {
@@ -84,7 +84,7 @@ using ores::cli::config::format;
 using ores::cli::config::options;
 using ores::cli::config::import_options;
 using ores::cli::config::export_options;
-using ores::cli::config::client_options;
+using ores::comms::client_options;
 using ores::cli::config::parser_exception;
 
 /**

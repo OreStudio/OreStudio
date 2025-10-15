@@ -37,10 +37,25 @@ namespace ssl = boost::asio::ssl;
 /**
  * @brief Configuration for the client.
  */
-struct client_config final {
+struct client_options final {
+    /**
+     * @brief Host to connect to.
+     */
     std::string host = "localhost";
+
+    /**
+     * @brief Port to connect to.
+     */
     uint16_t port = 55555;
+
+    /**
+     * @brief Client identifier to send in handshake.
+     */
     std::string client_identifier = "ores-client";
+
+    /**
+     * @brief Whether to verify server certificate.
+     */
     bool verify_certificate = true;
 };
 
@@ -54,7 +69,7 @@ public:
     /**
      * @brief Construct client with configuration and executor.
      */
-    explicit client(client_config config, boost::asio::any_io_executor executor);
+    explicit client(client_options config, boost::asio::any_io_executor executor);
 
     /**
      * @brief Connect to server and perform handshake.
@@ -84,7 +99,7 @@ private:
      */
     void setup_ssl_context();
 
-    client_config config_;
+    client_options config_;
     boost::asio::any_io_executor executor_;
     ssl::context ssl_ctx_;
     std::unique_ptr<connection> conn_;

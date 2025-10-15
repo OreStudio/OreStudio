@@ -19,10 +19,10 @@
  */
 #include <ostream>
 #include <cstring>
+#include <boost/crc.hpp>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.comms/protocol/frame.hpp"
-#include "ores.comms/protocol/crc.hpp"
 #include "ores.utility/log/logger.hpp"
 
 
@@ -111,16 +111,23 @@ void frame::serialize_header(frame_header header, std::span<std::uint8_t> buffer
 }
 
 std::uint32_t frame::calculate_crc() const {
-    crc32 calc;
+    boost::crc_32_type crc;
+
+    // Serialize header with CRC field set to 0
     std::array<std::uint8_t, frame_header::size> header_bytes;
     frame_header temp_header = header_;
     temp_header.crc = 0;
     serialize_header(temp_header, header_bytes);
-    calc.update(header_bytes);
+
+    // Process header
+    crc.process_bytes(header_bytes.data(), header_bytes.size());
+
+    // Process payload if present
     if (!payload_.empty()) {
-        calc.update(payload_);
+        crc.process_bytes(payload_.data(), payload_.size());
     }
-    return calc.finalize();
+
+    return crc.checksum();
 }
 
 std::vector<std::uint8_t> frame::serialize() const {

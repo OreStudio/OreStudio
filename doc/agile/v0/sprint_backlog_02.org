@@ -18,62 +18,62 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-10-15 Wed 21:40], for Wednesday, October 15, 2025.
-|       | <75>                     |        |      |      |       |
-| Tags  | Headline                 | Time   |      |      |     % |
-|-------+--------------------------+--------+------+------+-------|
-|       | *Total time*             | *4:31* |      |      | 100.0 |
-|-------+--------------------------+--------+------+------+-------|
-|       | Stories                  | 4:31   |      |      | 100.0 |
-|       | Active                   |        | 4:31 |      | 100.0 |
-| code  | Create a =comms= library |        |      | 3:53 |  86.0 |
-| infra | Fix broken builds        |        |      | 0:38 |  14.0 |
+#+CAPTION: Clock summary at [2025-10-16 Thu 01:11], for Thursday, October 16, 2025.
+|      | <75>                   |        |      |      |       |
+| Tags | Headline               | Time   |      |      |     % |
+|------+------------------------+--------+------+------+-------|
+|      | *Total time*           | *1:11* |      |      | 100.0 |
+|------+------------------------+--------+------+------+-------|
+|      | Stories                | 1:11   |      |      | 100.0 |
+|      | Active                 |        | 1:11 |      | 100.0 |
+| code | Add messaging for risk |        |      | 1:11 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-10-15 Wed 21:40]
+#+CAPTION: Clock summary at [2025-10-16 Thu 01:11]
 |          | <75>                                               |         |       |      |       |
 | Tags     | Headline                                           | Time    |       |      |     % |
 |----------+----------------------------------------------------+---------+-------+------+-------|
-|          | *Total time*                                       | *69:54* |       |      | 100.0 |
+|          | *Total time*                                       | *72:04* |       |      | 100.0 |
 |----------+----------------------------------------------------+---------+-------+------+-------|
-|          | Stories                                            | 69:54   |       |      | 100.0 |
-|          | Active                                             |         | 69:54 |      | 100.0 |
-| agile    | Sprint and product backlog refinement              |         |       | 2:36 |   3.7 |
-| infra    | Fix broken builds                                  |         |       | 0:36 |   0.9 |
+|          | Stories                                            | 72:04   |       |      | 100.0 |
+|          | Active                                             |         | 72:04 |      | 100.0 |
+| agile    | Sprint and product backlog refinement              |         |       | 2:36 |   3.6 |
+| infra    | Fix broken builds                                  |         |       | 0:36 |   0.8 |
 | code     | Create a containing structure for data             |         |       | 0:35 |   0.8 |
-| code     | Add temporal support to currencies                 |         |       | 2:59 |   4.3 |
-| code     | Add command to dump currencies                     |         |       | 4:18 |   6.2 |
-| code     | Refactor code for currencies                       |         |       | 3:52 |   5.5 |
-| code     | Restore qt setup                                   |         |       | 2:20 |   3.3 |
+| code     | Add temporal support to currencies                 |         |       | 2:59 |   4.1 |
+| code     | Add command to dump currencies                     |         |       | 4:18 |   6.0 |
+| code     | Refactor code for currencies                       |         |       | 3:52 |   5.4 |
+| code     | Restore qt setup                                   |         |       | 2:20 |   3.2 |
 | code     | Add gemini action                                  |         |       | 0:05 |   0.1 |
 | code     | Remove ImGui support                               |         |       | 0:08 |   0.2 |
-| code     | Create a GRPC based service                        |         |       | 2:09 |   3.1 |
-| code     | Implement a 0MQ based RPC service and client       |         |       | 3:55 |   5.6 |
+| code     | Create a GRPC based service                        |         |       | 2:09 |   3.0 |
+| code     | Implement a 0MQ based RPC service and client       |         |       | 3:55 |   5.4 |
 | code     | Fix misspell fixer errors                          |         |       | 0:08 |   0.2 |
 | code     | Remove URL support from prog mode in emacs         |         |       | 0:14 |   0.3 |
 | code     | Remove GRPC support                                |         |       | 0:16 |   0.4 |
-| code     | Implement a cobalt based server and client         |         |       | 2:53 |   4.1 |
-| code     | Add serialisation support for reflect-cpp          |         |       | 3:07 |   4.5 |
-| analysis | White-boarding for new architecture                |         |       | 1:52 |   2.7 |
-| code     | Use sqlgen for postgres                            |         |       | 7:23 |  10.6 |
-| code     | Refactor cli to follow new project structure       |         |       | 4:47 |   6.8 |
+| code     | Implement a cobalt based server and client         |         |       | 2:53 |   4.0 |
+| code     | Add serialisation support for reflect-cpp          |         |       | 3:07 |   4.3 |
+| analysis | White-boarding for new architecture                |         |       | 1:52 |   2.6 |
+| code     | Use sqlgen for postgres                            |         |       | 7:23 |  10.2 |
+| code     | Refactor cli to follow new project structure       |         |       | 4:47 |   6.6 |
 | code     | Add tests to cli parser                            |         |       | 0:35 |   0.8 |
-| code     | Add logging support for tests                      |         |       | 2:21 |   3.4 |
-| code     | Replace XML parsing with reflect cpp               |         |       | 2:56 |   4.2 |
+| code     | Add logging support for tests                      |         |       | 2:21 |   3.3 |
+| code     | Replace XML parsing with reflect cpp               |         |       | 2:56 |   4.1 |
 | code     | Fix windows and osx builds                         |         |       | 0:27 |   0.6 |
-| code     | Completions in emacs org mode are incorrect        |         |       | 1:02 |   1.5 |
-| analysis | Investigate bitemporal support from Postgres 18    |         |       | 1:47 |   2.6 |
-| code     | Refactor core into risk                            |         |       | 4:10 |   6.0 |
+| code     | Completions in emacs org mode are incorrect        |         |       | 1:02 |   1.4 |
+| analysis | Investigate bitemporal support from Postgres 18    |         |       | 1:47 |   2.5 |
+| code     | Refactor core into risk                            |         |       | 4:10 |   5.8 |
 | code     | Windows builds have cmake errors                   |         |       | 0:14 |   0.3 |
 | infra    | Add suppression to valgrind errors                 |         |       | 0:38 |   0.9 |
-| code     | Create a =comms= library                           |         |       | 8:05 |  11.6 |
+| code     | Create a =comms= library                           |         |       | 8:05 |  11.2 |
 | infra    | Investigate build warning for vcpkg binary caching |         |       | 0:25 |   0.6 |
 | infra    | Investigate build warning for qtbase               |         |       | 0:10 |   0.2 |
-| code     | Fix gemini cli action                              |         |       | 0:45 |   1.1 |
-| infra    | vcpkg caching seems disabled                       |         |       | 0:15 |   0.4 |
+| code     | Fix gemini cli action                              |         |       | 0:45 |   1.0 |
+| infra    | vcpkg caching seems disabled                       |         |       | 0:15 |   0.3 |
 | infra    | Fix broken builds                                  |         |       | 0:38 |   0.9 |
+| code     | Add messaging for risk                             |         |       | 2:10 |   3.0 |
 | code     | Add workspace as a container                       |         |       | 1:13 |   1.7 |
 #+end:
 
@@ -720,6 +720,13 @@ It seems caching is not kicking in so builds are very slow.
     :END:
 
 After latest comms changes, the builds got borked.
+
+*** STARTED Add messaging for risk                                     :code:
+    :LOGBOOK:
+    CLOCK: [2025-10-15 Wed 23:01]--[2025-10-16 Thu 01:11] =>  2:10
+    :END:
+
+We need to setup the infrastructure for messaging within the risk subsystem.
 
 *** Tidy-up database code                                              :code:
 

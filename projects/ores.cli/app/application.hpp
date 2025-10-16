@@ -52,8 +52,7 @@ private:
     void export_currencies(const config::export_options& cfg) const;
     void export_data(const std::optional<config::export_options>& ocfg) const;
 
-    boost::cobalt::promise<void> run_client(
-        const std::optional<comms::client_options>& ocfg) const;
+    boost::cobalt::promise<void> run_client() const;
 
 public:
     /**

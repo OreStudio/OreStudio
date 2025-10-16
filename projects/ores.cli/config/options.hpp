@@ -29,7 +29,6 @@
 #include "ores.utility/log/logging_options.hpp"
 #include "ores.cli/config/import_options.hpp"
 #include "ores.cli/config/export_options.hpp"
-#include "ores.comms/client.hpp"
 
 namespace ores::cli::config {
 
@@ -51,9 +50,9 @@ struct options final {
      */
     std::optional<export_options> exporting;
     /**
-     * @brief Configuration related to client operations, if any.
+     * @brief Whether to run the client REPL.
      */
-    std::optional<ores::comms::client_options> client;
+    bool client = false;
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

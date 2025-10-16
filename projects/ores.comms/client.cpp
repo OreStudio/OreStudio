@@ -20,6 +20,7 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include <boost/asio/connect.hpp>
+#include <boost/asio/detached.hpp>
 #include "ores.comms/client.hpp"
 #include "ores.comms/protocol/handshake.hpp"
 #include "ores.utility/log/logger.hpp"
@@ -36,6 +37,16 @@ namespace ores::comms {
 std::ostream& operator<<(std::ostream& s, const client_options& v) {
     rfl::json::write(v, s);
     return(s);
+}
+
+client::client(client_options config)
+    : config_(std::move(config)),
+      io_ctx_(std::make_unique<boost::asio::io_context>()),
+      executor_(io_ctx_->get_executor()),
+      ssl_ctx_(ssl::context::tlsv13_client),
+      sequence_number_(0), connected_(false) {
+    BOOST_LOG_SEV(lg, info) << "Client options: " << config_;
+    setup_ssl_context();
 }
 
 client::client(client_options config, boost::asio::any_io_executor executor)
@@ -232,6 +243,46 @@ client::send_request(protocol::frame request_frame) {
         BOOST_LOG_SEV(lg, error) << "Request exception: " << e.what();
         co_return std::unexpected(protocol::error_code::network_error);
     }
+}
+
+bool client::connect_sync() {
+    if (!io_ctx_) {
+        BOOST_LOG_SEV(lg, error) << "Cannot use connect_sync: client was created with external executor";
+        return false;
+    }
+
+    bool result = false;
+
+    auto task = [this, &result]() -> cobalt::task<void> {
+        result = co_await connect();
+    };
+
+    cobalt::spawn(*io_ctx_, task(), boost::asio::detached);
+    io_ctx_->run();
+    io_ctx_->restart();
+
+    return result;
+}
+
+std::expected<protocol::frame, protocol::error_code>
+client::send_request_sync(protocol::frame request_frame) {
+    if (!io_ctx_) {
+        BOOST_LOG_SEV(lg, error) << "Cannot use send_request_sync: client was created with external executor";
+        return std::unexpected(protocol::error_code::network_error);
+    }
+
+    std::expected<protocol::frame, protocol::error_code> result =
+        std::unexpected(protocol::error_code::network_error);
+
+    auto task = [this, &result, request_frame = std::move(request_frame)]() mutable -> cobalt::task<void> {
+        result = co_await send_request(std::move(request_frame));
+    };
+
+    cobalt::spawn(*io_ctx_, task(), boost::asio::detached);
+    io_ctx_->run();
+    io_ctx_->restart();
+
+    return result;
 }
 
 }

@@ -31,10 +31,16 @@ constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 1;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 enum class message_type {
+    // Core protocol messages (0x0000 - 0x0FFF)
     handshake_request = 0x0001,
     handshake_response = 0x0002,
     handshake_ack = 0x0003,
-    error_response = 0x004,
+    error_response = 0x0004,
+
+    // Risk subsystem messages (0x1000 - 0x1FFF)
+    get_currencies_request = 0x1001,
+    get_currencies_response = 0x1002,
+
     last_value
 };
 

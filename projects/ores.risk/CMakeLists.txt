@@ -42,9 +42,11 @@ target_link_libraries(${lib_target_name}
         libpqxx::pqxx
         Boost::boost
         Boost::program_options
+        Boost::cobalt
         sqlgen::sqlgen
         pugixml::pugixml
     PUBLIC
+        ores.comms.lib
         reflectcpp::reflectcpp
         PostgreSQL::PostgreSQL
     )

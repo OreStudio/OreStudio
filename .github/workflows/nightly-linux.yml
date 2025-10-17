@@ -68,12 +68,12 @@ jobs:
           ref: main
           submodules: true
 
-      - name: Setup Clang
-        uses: egor-tensin/setup-clang@v1.4
+      - name: Install Clang
+        uses: KyleMayes/install-llvm-action@v2
         if: ${{matrix.compiler}} == clang
         with:
-          version: latest
-          platform: x64
+          version: "19"
+          arch: x64
 
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2.19

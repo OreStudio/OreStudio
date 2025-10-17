@@ -21,8 +21,12 @@
 #include <iostream>
 #include <optional>
 #include <memory>
+#include <thread>
 #include <boost/throw_exception.hpp>
 #include <boost/cobalt.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/detached.hpp>
 #include <sqlgen/postgres.hpp>
 #include <magic_enum/magic_enum.hpp>
 #include <cli/cli.h>
@@ -37,6 +41,7 @@
 #include "ores.cli/app/application_exception.hpp"
 #include "ores.cli/app/application.hpp"
 #include "ores.comms/client.hpp"
+#include "ores.risk/messaging/protocol.hpp"
 
 namespace {
 
@@ -159,73 +164,175 @@ export_data(const std::optional<config::export_options>& ocfg) const {
 }
 
 boost::cobalt::promise<void>
-application::run_client(const std::optional<comms::client_options>& ocfg) const {
-    if (!ocfg.has_value()) {
-        BOOST_LOG_SEV(lg, debug) << "No client configuration found.";
-        co_return;
-    }
-
-    const auto& cfg(ocfg.value());
-    BOOST_LOG_SEV(lg, info) << "Starting client REPL for "
-                             << cfg.host << ":" << cfg.port;
+application::run_client() const {
+    BOOST_LOG_SEV(lg, info) << "Starting client REPL.";
 
     try {
-        // Store client configuration for use in REPL commands
-        const comms::client_options& client_cfg = cfg;
+        // Get the current executor from cobalt context
+        auto executor = co_await boost::cobalt::this_coro::executor;
+        boost::asio::io_context ctx;
+        std::thread executor_thread([&ctx]() { ctx.run(); });
+
+        // Shared client state
+        std::shared_ptr<comms::client> client;
+        comms::client_options current_config{
+            .host = "localhost",
+            .port = 55555,
+            .client_identifier = "ores-client",
+            .verify_certificate = false
+        };
 
         // Create CLI root menu
         auto rootMenu = std::make_unique<::cli::Menu>("ores-client");
 
-        // Add HANDSHAKE command
+        // Add CONNECT command
         rootMenu->Insert(
-            "HANDSHAKE",
-            [client_cfg](std::ostream& out) {
-                out << "Performing handshake..." << std::endl;
-
+            "connect",
+            [&client, &current_config, executor](std::ostream& out, std::string host, std::string port, std::string identifier) {
                 try {
-                    // Track success
-                    bool handshake_succeeded = false;
-                    std::string error_message;
-
-                    // Create a task that creates its own client and performs handshake
-                    auto handshake_task = [&]() -> boost::cobalt::task<void> {
+                    // Update config with provided arguments (if any)
+                    if (!host.empty()) {
+                        current_config.host = host;
+                    }
+                    if (!port.empty()) {
                         try {
-                            // Create client with this coroutine's executor
-                            auto cli = std::make_shared<comms::client>(
-                                client_cfg,
-                                co_await boost::cobalt::this_coro::executor);
-
-                            bool connected = co_await cli->connect();
-                            if (!connected) {
-                                error_message = "Failed to connect to server";
-                                co_return;
-                            }
-
-                            handshake_succeeded = true;
-
-                            // Disconnect after successful handshake
-                            cli->disconnect();
-                        } catch (const std::exception& e) {
-                            error_message = std::string("Exception: ") + e.what();
+                            current_config.port = static_cast<std::uint16_t>(std::stoi(port));
+                        } catch (...) {
+                            out << "✗ Invalid port number: " << port << std::endl;
+                            return;
                         }
-                    };
-
-                    // Run the task synchronously
-                    boost::cobalt::run(handshake_task());
-
-                    // Report results
-                    if (handshake_succeeded) {
-                        out << "✓ Successfully connected and performed handshake!" << std::endl;
-                        out << "✓ Disconnected from server" << std::endl;
-                    } else {
-                        out << "✗ Handshake failed: " << error_message << std::endl;
+                    }
+                    if (!identifier.empty()) {
+                        current_config.client_identifier = identifier;
                     }
 
+                    out << "Connecting to " << current_config.host << ":" << current_config.port
+                        << " (identifier: " << current_config.client_identifier << ")..." << std::endl;
+
+                    // Disconnect existing client if any
+                    if (client && client->is_connected()) {
+                        out << "Disconnecting existing connection..." << std::endl;
+                        client->disconnect();
+                    }
+
+                    // Make a copy of config for the async operation
+                    comms::client_options config_copy = current_config;
+
+                    // Spawn cobalt task to connect
+                    boost::cobalt::spawn(executor,
+                        [config_copy, &client, executor]() -> boost::cobalt::task<void> {
+                            try {
+                                BOOST_LOG_SEV(lg, debug) << "Starting async connect...";
+                                auto new_client = std::make_shared<comms::client>(config_copy, executor);
+                                bool connected = co_await new_client->connect();
+                                BOOST_LOG_SEV(lg, debug) << "Connect result: " << connected;
+                                if (connected) {
+                                    client = new_client;
+                                    std::cout << "✓ Successfully connected!" << std::endl;
+                                } else {
+                                    std::cout << "✗ Connection failed" << std::endl;
+                                }
+                            } catch (const std::exception& e) {
+                                BOOST_LOG_SEV(lg, error) << "Connect exception: " << e.what();
+                                std::cout << "✗ Connection error: " << e.what() << std::endl;
+                            }
+                        }(),
+                        boost::asio::detached);
+
                 } catch (const std::exception& e) {
-                    out << "✗ Error during handshake: " << e.what() << std::endl;
+                    out << "✗ Error during connection: " << e.what() << std::endl;
                 }
             },
-            "Perform handshake with the server");
+            "Connect to server (optional: host port identifier)");
+
+        // Add DISCONNECT command
+        rootMenu->Insert(
+            "disconnect",
+            [&client](std::ostream& out) {
+                if (!client) {
+                    out << "Not connected to any server" << std::endl;
+                    return;
+                }
+
+                if (!client->is_connected()) {
+                    out << "Already disconnected" << std::endl;
+                    client.reset();
+                    return;
+                }
+
+                client->disconnect();
+                client.reset();
+                out << "✓ Disconnected from server" << std::endl;
+            },
+            "Disconnect from server");
+
+        // Add CURRENCIES submenu
+        auto currenciesMenu = std::make_unique<::cli::Menu>("currencies");
+
+        // Add CURRENCIES GET command
+        currenciesMenu->Insert(
+            "get",
+            [&client, executor](std::ostream& out) {
+                if (!client || !client->is_connected()) {
+                    out << "✗ Not connected to server. Use 'connect' command first." << std::endl;
+                    return;
+                }
+
+                out << "Retrieving currencies from server..." << std::endl;
+
+                try {
+                    // Spawn cobalt task to get currencies
+                    boost::cobalt::spawn(executor,
+                        [client]() -> boost::cobalt::task<void> {
+                            try {
+                                // Create get_currencies request
+                                ores::risk::messaging::get_currencies_request request;
+                                auto request_payload = request.serialize();
+
+                                // Create request frame
+                                comms::protocol::frame request_frame(
+                                    comms::protocol::message_type::get_currencies_request,
+                                    0, // sequence will be set by send_request
+                                    std::move(request_payload));
+
+                                // Send request and get response asynchronously
+                                auto response_result = co_await client->send_request(std::move(request_frame));
+
+                                if (!response_result) {
+                                    std::cout << "✗ Request failed with error code: "
+                                              << static_cast<int>(response_result.error()) << std::endl;
+                                    co_return;
+                                }
+
+                                // Deserialize response
+                                auto response = ores::risk::messaging::get_currencies_response::deserialize(
+                                    response_result->payload());
+                                if (!response) {
+                                    std::cout << "✗ Failed to deserialize response, error code: "
+                                              << static_cast<int>(response.error()) << std::endl;
+                                    co_return;
+                                }
+
+                                // Display results
+                                std::cout << "✓ Successfully retrieved " << response->currencies.size() << " currencies" << std::endl;
+                                std::cout << std::endl;
+                                std::cout << "Currencies (JSON):" << std::endl;
+                                std::cout << response->currencies << std::endl;
+
+                            } catch (const std::exception& e) {
+                                std::cout << "✗ Error: " << e.what() << std::endl;
+                            }
+                        }(),
+                        boost::asio::detached);
+
+                } catch (const std::exception& e) {
+                    out << "✗ Error: " << e.what() << std::endl;
+                }
+            },
+            "Retrieve all currencies from the server");
+
+        // Add currencies submenu to root
+        rootMenu->Insert(std::move(currenciesMenu));
 
         // Create CLI and session
         ::cli::Cli cli_instance(std::move(rootMenu));
@@ -242,11 +349,13 @@ application::run_client(const std::optional<comms::client_options>& ocfg) const 
         // Run the REPL session
         session.Start();
 
-        BOOST_LOG_SEV(lg, info) << "Client REPL session ended";
+        BOOST_LOG_SEV(lg, info) << "Client REPL session ended.";
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg, error) << "Client error: " << e.what();
     }
+
+    co_return;
 }
 
 boost::cobalt::promise<void> application::run(const config::options& cfg) const {
@@ -254,7 +363,11 @@ boost::cobalt::promise<void> application::run(const config::options& cfg) const 
 
     import_data(cfg.importing);
     export_data(cfg.exporting);
-    co_await run_client(cfg.client);
+
+    // If any client operation was requested, run REPL
+    if (cfg.client) {
+        co_await run_client();
+    }
 
     BOOST_LOG_SEV(lg, info) << "Finished application.";
 }

@@ -20,6 +20,7 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include <boost/asio/connect.hpp>
+#include <boost/asio/detached.hpp>
 #include "ores.comms/client.hpp"
 #include "ores.comms/protocol/handshake.hpp"
 #include "ores.utility/log/logger.hpp"
@@ -36,6 +37,16 @@ namespace ores::comms {
 std::ostream& operator<<(std::ostream& s, const client_options& v) {
     rfl::json::write(v, s);
     return(s);
+}
+
+client::client(client_options config)
+    : config_(std::move(config)),
+      io_ctx_(std::make_unique<boost::asio::io_context>()),
+      executor_(io_ctx_->get_executor()),
+      ssl_ctx_(ssl::context::tlsv13_client),
+      sequence_number_(0), connected_(false) {
+    BOOST_LOG_SEV(lg, info) << "Client options: " << config_;
+    setup_ssl_context();
 }
 
 client::client(client_options config, boost::asio::any_io_executor executor)
@@ -191,6 +202,87 @@ void client::disconnect() {
 
 bool client::is_connected() const {
     return connected_ && conn_ && conn_->is_open();
+}
+
+cobalt::promise<std::expected<protocol::frame, protocol::error_code>>
+client::send_request(protocol::frame request_frame) {
+    if (!is_connected()) {
+        BOOST_LOG_SEV(lg, error) << "Cannot send request: not connected";
+        co_return std::unexpected(protocol::error_code::network_error);
+    }
+
+    try {
+        // Update sequence number in the frame
+        // Note: we're modifying the sequence number after frame construction
+        // This is a bit of a hack but works for now
+        request_frame = protocol::frame(
+            request_frame.header().type,
+            ++sequence_number_,
+            std::vector<std::uint8_t>(request_frame.payload()));
+
+        BOOST_LOG_SEV(lg, debug) << "Sending request frame, type: "
+                                  << std::hex << static_cast<std::uint16_t>(request_frame.header().type);
+
+        // Send request
+        co_await conn_->write_frame(request_frame);
+
+        // Read response
+        auto response_result = co_await conn_->read_frame();
+        if (!response_result) {
+            BOOST_LOG_SEV(lg, error) << "Failed to read response frame, error: "
+                                      << static_cast<int>(response_result.error());
+            co_return std::unexpected(response_result.error());
+        }
+
+        BOOST_LOG_SEV(lg, debug) << "Received response frame, type: "
+                                  << std::hex << static_cast<std::uint16_t>(response_result->header().type);
+
+        co_return *response_result;
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg, error) << "Request exception: " << e.what();
+        co_return std::unexpected(protocol::error_code::network_error);
+    }
+}
+
+bool client::connect_sync() {
+    if (!io_ctx_) {
+        BOOST_LOG_SEV(lg, error) << "Cannot use connect_sync: client was created with external executor";
+        return false;
+    }
+
+    bool result = false;
+
+    auto task = [this, &result]() -> cobalt::task<void> {
+        result = co_await connect();
+    };
+
+    cobalt::spawn(*io_ctx_, task(), boost::asio::detached);
+    io_ctx_->run();
+    io_ctx_->restart();
+
+    return result;
+}
+
+std::expected<protocol::frame, protocol::error_code>
+client::send_request_sync(protocol::frame request_frame) {
+    if (!io_ctx_) {
+        BOOST_LOG_SEV(lg, error) << "Cannot use send_request_sync: client was created with external executor";
+        return std::unexpected(protocol::error_code::network_error);
+    }
+
+    std::expected<protocol::frame, protocol::error_code> result =
+        std::unexpected(protocol::error_code::network_error);
+
+    auto task = [this, &result, request_frame = std::move(request_frame)]() mutable -> cobalt::task<void> {
+        result = co_await send_request(std::move(request_frame));
+    };
+
+    cobalt::spawn(*io_ctx_, task(), boost::asio::detached);
+    io_ctx_->run();
+    io_ctx_->restart();
+
+    return result;
 }
 
 }

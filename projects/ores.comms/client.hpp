@@ -70,16 +70,30 @@ std::ostream& operator<<(std::ostream& s, const client_options& v);
 class client final {
 public:
     /**
+     * @brief Construct client with configuration.
+     *
+     * Creates its own io_context for synchronous operations.
+     */
+    explicit client(client_options config);
+
+    /**
      * @brief Construct client with configuration and executor.
      */
     explicit client(client_options config, boost::asio::any_io_executor executor);
 
     /**
-     * @brief Connect to server and perform handshake.
+     * @brief Connect to server and perform handshake (async version).
      *
      * Returns true if connection and handshake succeed.
      */
     cobalt::promise<bool> connect();
+
+    /**
+     * @brief Connect to server and perform handshake (blocking version).
+     *
+     * Returns true if connection and handshake succeed.
+     */
+    bool connect_sync();
 
     /**
      * @brief Disconnect from server.
@@ -90,6 +104,30 @@ public:
      * @brief Check if client is connected.
      */
     bool is_connected() const;
+
+    /**
+     * @brief Send a request frame and receive response frame (async version).
+     *
+     * Generic method for sending any request and receiving response.
+     * Manages sequence numbers automatically.
+     *
+     * @param request_frame The request frame to send
+     * @return Expected containing response frame, or error_code
+     */
+    cobalt::promise<std::expected<protocol::frame, protocol::error_code>>
+    send_request(protocol::frame request_frame);
+
+    /**
+     * @brief Send a request frame and receive response frame (blocking version).
+     *
+     * Generic method for sending any request and receiving response.
+     * Manages sequence numbers automatically.
+     *
+     * @param request_frame The request frame to send
+     * @return Expected containing response frame, or error_code
+     */
+    std::expected<protocol::frame, protocol::error_code>
+    send_request_sync(protocol::frame request_frame);
 
 private:
     /**
@@ -103,6 +141,7 @@ private:
     void setup_ssl_context();
 
     client_options config_;
+    std::unique_ptr<boost::asio::io_context> io_ctx_; // Owned io_context for sync operations
     boost::asio::any_io_executor executor_;
     ssl::context ssl_ctx_;
     std::unique_ptr<connection> conn_;

@@ -72,7 +72,7 @@ internal_get_currencies(std::shared_ptr<ores::comms::client> client,
     ores::comms::protocol::frame request_frame) {
     try {
 
-        BOOST_LOG_SEV(lg, debug) << "Sending request.";
+        BOOST_LOG_SEV(lg, debug) << "Sending get currencies request.";
         auto response_result =
             co_await client->send_request(request_frame);
         BOOST_LOG_SEV(lg, debug) << "Sent request.";

@@ -227,13 +227,12 @@ bool client::is_connected() const {
 
 boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
 client::send_request(protocol::frame request_frame) {
-    {
-        std::lock_guard<std::mutex> guard{state_mutex_};
-        if (!is_connected()) {
-            BOOST_LOG_SEV(lg, error) << "Cannot send request: not connected";
-            co_return std::unexpected(protocol::error_code::network_error);
-        }
+    BOOST_LOG_SEV(lg, debug) << "Sending request.";
+    if (!is_connected()) {
+        BOOST_LOG_SEV(lg, error) << "Cannot send request: not connected";
+        co_return std::unexpected(protocol::error_code::network_error);
     }
+    BOOST_LOG_SEV(lg, debug) << "Currently connected.";
 
     try {
         // Update sequence number in the frame

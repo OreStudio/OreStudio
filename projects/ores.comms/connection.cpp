@@ -47,7 +47,7 @@ boost::asio::awaitable<void> connection::ssl_handshake_client() {
 boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
 connection::read_frame() {
     try {
-        BOOST_LOG_SEV(lg, debug) << "Starting to read frame...";
+        BOOST_LOG_SEV(lg, debug) << "Waiting to read the next frame.";
 
         // Read the fixed 32-byte header first
         std::vector<std::uint8_t> buffer(protocol::frame_header::size);
@@ -73,7 +73,7 @@ connection::read_frame() {
         BOOST_LOG_SEV(lg, debug) << "Header payload size: "
                                  << header.payload_size;
 
-        // Read payload if any
+        // Read payload if any.
         if (header.payload_size > 0) {
             buffer.resize(protocol::frame_header::size + header.payload_size);
             co_await boost::asio::async_read(socket_,

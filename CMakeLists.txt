@@ -79,15 +79,10 @@ find_package(Boost 1.88 REQUIRED COMPONENTS
     filesystem
     log
     program_options
-    serialization
-    unit_test_framework
-    cobalt)
+    unit_test_framework)
 
 # OpenSSL
 find_package(OpenSSL REQUIRED)
-
-# XML
-find_path(RAPIDXML_NS_INCLUDE_DIRS "rapidxml-ns/rapidxml_ns.hpp")
 
 # Postgres
 find_package(libpqxx CONFIG REQUIRED)

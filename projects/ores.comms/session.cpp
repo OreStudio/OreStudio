@@ -18,6 +18,7 @@
  *
  */
 #include "ores.comms/session.hpp"
+#include "ores.comms/protocol/handshake.hpp"
 #include "ores.utility/log/logger.hpp"
 
 namespace {
@@ -37,7 +38,7 @@ session::session(std::unique_ptr<connection> conn, std::string server_id,
       sequence_number_(0),
       handshake_complete_(false) {}
 
-cobalt::promise<void> session::run() {
+boost::cobalt::promise<void> session::run() {
     std::string remote_addr = conn_->remote_address();
     try {
         BOOST_LOG_SEV(lg, info) << "Session started for client: " << remote_addr;
@@ -65,10 +66,10 @@ cobalt::promise<void> session::run() {
     BOOST_LOG_SEV(lg, info) << "Session ended for client: " << remote_addr;
 }
 
-cobalt::promise<bool> session::perform_handshake() {
+boost::cobalt::promise<bool> session::perform_handshake() {
     try {
         BOOST_LOG_SEV(lg, debug) << "Starting server handshake process...";
-        
+
         // Read handshake request from client
         BOOST_LOG_SEV(lg, debug) << "About to read handshake request frame from client";
         auto frame_result = co_await conn_->read_frame();
@@ -86,7 +87,7 @@ cobalt::promise<bool> session::perform_handshake() {
                                       << static_cast<int>(request_frame.header().type);
             co_return false;
         }
-        
+
         BOOST_LOG_SEV(lg, debug) << "Received valid handshake request frame";
 
         // Deserialize handshake request
@@ -137,7 +138,7 @@ cobalt::promise<bool> session::perform_handshake() {
                                       << static_cast<int>(ack_frame.header().type);
             co_return false;
         }
-        
+
         BOOST_LOG_SEV(lg, debug) << "Received valid handshake acknowledgment frame";
 
         auto ack_result = protocol::handshake_ack::deserialize(ack_frame.payload());
@@ -162,7 +163,7 @@ cobalt::promise<bool> session::perform_handshake() {
     }
 }
 
-cobalt::promise<void> session::process_messages() {
+boost::cobalt::promise<void> session::process_messages() {
     BOOST_LOG_SEV(lg, debug) << "Starting message processing loop";
 
     try {

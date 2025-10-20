@@ -23,7 +23,6 @@
 #include <memory>
 #include <string>
 #include "ores.comms/connection.hpp"
-#include "ores.comms/protocol/handshake.hpp"
 #include "ores.comms/protocol/message_dispatcher.hpp"
 
 namespace ores::comms {
@@ -47,7 +46,7 @@ public:
      *
      * Performs handshake and processes messages until connection closes.
      */
-    cobalt::promise<void> run();
+    boost::cobalt::promise<void> run();
 
 private:
     /**
@@ -55,14 +54,14 @@ private:
      *
      * Returns true if handshake succeeds, false otherwise.
      */
-    cobalt::promise<bool> perform_handshake();
+    boost::cobalt::promise<bool> perform_handshake();
 
     /**
      * @brief Process messages from client after handshake.
      *
      * Placeholder for future message handling.
      */
-    cobalt::promise<void> process_messages();
+    boost::cobalt::promise<void> process_messages();
 
     std::unique_ptr<connection> conn_;
     std::string server_id_;

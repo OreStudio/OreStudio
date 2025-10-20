@@ -33,15 +33,17 @@ namespace ores::comms {
 
 connection::connection(ssl_socket socket) : socket_(std::move(socket)) {}
 
-cobalt::promise<void> connection::ssl_handshake_server() {
-    co_await socket_.async_handshake(ssl::stream_base::server, cobalt::use_op);
+boost::cobalt::task<void> connection::ssl_handshake_server() {
+    co_await socket_.async_handshake(boost::asio::ssl::stream_base::server,
+        boost::cobalt::use_op);
 }
 
-cobalt::promise<void> connection::ssl_handshake_client() {
-    co_await socket_.async_handshake(ssl::stream_base::client, cobalt::use_op);
+boost::cobalt::task<void> connection::ssl_handshake_client() {
+    co_await socket_.async_handshake(boost::asio::ssl::stream_base::client,
+        boost::cobalt::use_op);
 }
 
-cobalt::promise<std::expected<protocol::frame, protocol::error_code>>
+boost::cobalt::task<std::expected<protocol::frame, protocol::error_code>>
 connection::read_frame() {
     try {
         BOOST_LOG_SEV(lg, debug) << "Starting to read frame...";
@@ -51,7 +53,7 @@ connection::read_frame() {
         co_await boost::asio::async_read(
             socket_,
             boost::asio::buffer(buffer),
-            cobalt::use_op);
+            boost::cobalt::use_op);
 
         BOOST_LOG_SEV(lg, debug) << "Read header of size: "
                                  << protocol::frame_header::size;
@@ -76,7 +78,7 @@ connection::read_frame() {
             co_await boost::asio::async_read(socket_,
                 boost::asio::buffer(buffer.data() + protocol::frame_header::size,
                     header.payload_size),
-                cobalt::use_op);
+                boost::cobalt::use_op);
 
             BOOST_LOG_SEV(lg, debug) << "Read payload of size: " << header.payload_size;
         }
@@ -106,7 +108,8 @@ connection::read_frame() {
     }
 }
 
-cobalt::promise<void> connection::write_frame(const protocol::frame& frame) {
+boost::cobalt::task<void>
+connection::write_frame(const protocol::frame& frame) {
     auto data = frame.serialize();
     BOOST_LOG_SEV(lg, debug) << "Writing frame of size " << data.size()
                              << " type: " << static_cast<int>(frame.header().type)
@@ -114,7 +117,7 @@ cobalt::promise<void> connection::write_frame(const protocol::frame& frame) {
     co_await boost::asio::async_write(
         socket_,
         boost::asio::buffer(data),
-        cobalt::use_op);
+        boost::cobalt::use_op);
     BOOST_LOG_SEV(lg, debug) << "Successfully wrote frame";
 }
 

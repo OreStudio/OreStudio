@@ -26,7 +26,7 @@
 
 #include <vector>
 #include <filesystem>
-#include <boost/cobalt.hpp>
+#include <boost/asio/awaitable.hpp>
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
 #include "ores.cli/config/export_options.hpp"
@@ -52,7 +52,7 @@ private:
     void export_currencies(const config::export_options& cfg) const;
     void export_data(const std::optional<config::export_options>& ocfg) const;
 
-    boost::cobalt::promise<void> run_client() const;
+    boost::asio::awaitable<void> run_client() const;
 
 public:
     /**
@@ -60,7 +60,7 @@ public:
      *
      * @param cfg Application configuration.
      */
-    boost::cobalt::promise<void> run(const config::options& cfg) const;
+    boost::asio::awaitable<void> run(const config::options& cfg) const;
 
 private:
     risk::repository::context context_;

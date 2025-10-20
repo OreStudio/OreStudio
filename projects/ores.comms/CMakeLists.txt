@@ -42,7 +42,6 @@ target_link_libraries(${lib_target_name}
         OpenSSL::SSL
         OpenSSL::Crypto
         Boost::boost
-        Boost::cobalt
     PUBLIC
         reflectcpp::reflectcpp
     )

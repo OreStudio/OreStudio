@@ -46,7 +46,7 @@ public:
      *
      * Performs handshake and processes messages until connection closes.
      */
-    boost::cobalt::promise<void> run();
+    boost::asio::awaitable<void> run();
 
 private:
     /**
@@ -54,14 +54,14 @@ private:
      *
      * Returns true if handshake succeeds, false otherwise.
      */
-    boost::cobalt::promise<bool> perform_handshake();
+    boost::asio::awaitable<bool> perform_handshake();
 
     /**
      * @brief Process messages from client after handshake.
      *
      * Placeholder for future message handling.
      */
-    boost::cobalt::promise<void> process_messages();
+    boost::asio::awaitable<void> process_messages();
 
     std::unique_ptr<connection> conn_;
     std::string server_id_;

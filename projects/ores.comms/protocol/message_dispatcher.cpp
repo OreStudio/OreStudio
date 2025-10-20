@@ -38,7 +38,7 @@ void message_dispatcher::register_handler(message_type_range range,
     handlers_[range] = std::move(handler);
 }
 
-cobalt::promise<std::expected<frame, error_code>>
+boost::asio::awaitable<std::expected<frame, error_code>>
 message_dispatcher::dispatch(const frame& request_frame, std::uint32_t sequence) {
     const auto msg_type = request_frame.header().type;
     BOOST_LOG_SEV(lg, debug) << "Dispatching message type "

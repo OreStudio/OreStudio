@@ -38,7 +38,7 @@ session::session(std::unique_ptr<connection> conn, std::string server_id,
       sequence_number_(0),
       handshake_complete_(false) {}
 
-boost::cobalt::promise<void> session::run() {
+boost::asio::awaitable<void> session::run() {
     std::string remote_addr = conn_->remote_address();
     try {
         BOOST_LOG_SEV(lg, info) << "Session started for client: " << remote_addr;
@@ -66,7 +66,7 @@ boost::cobalt::promise<void> session::run() {
     BOOST_LOG_SEV(lg, info) << "Session ended for client: " << remote_addr;
 }
 
-boost::cobalt::promise<bool> session::perform_handshake() {
+boost::asio::awaitable<bool> session::perform_handshake() {
     try {
         BOOST_LOG_SEV(lg, debug) << "Starting server handshake process...";
 
@@ -163,7 +163,7 @@ boost::cobalt::promise<bool> session::perform_handshake() {
     }
 }
 
-boost::cobalt::promise<void> session::process_messages() {
+boost::asio::awaitable<void> session::process_messages() {
     BOOST_LOG_SEV(lg, debug) << "Starting message processing loop";
 
     try {

@@ -24,7 +24,7 @@
 #include <memory>
 #include <string>
 #include <cstdint>
-#include <boost/cobalt.hpp>
+#include <boost/asio/awaitable.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_context.hpp>
@@ -83,7 +83,7 @@ public:
      *
      * Returns true if connection and handshake succeed.
      */
-    boost::cobalt::task<bool> connect();
+    boost::asio::awaitable<bool> connect();
 
     /**
      * @brief Connect to server and perform handshake (blocking version).
@@ -111,7 +111,7 @@ public:
      * @param request_frame The request frame to send
      * @return Expected containing response frame, or error_code
      */
-    boost::cobalt::task<std::expected<protocol::frame, protocol::error_code>>
+    boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
     send_request(protocol::frame request_frame);
 
     /**
@@ -130,7 +130,7 @@ private:
     /**
      * @brief Perform protocol handshake with server.
      */
-    boost::cobalt::task<bool> perform_handshake();
+    boost::asio::awaitable<bool> perform_handshake();
 
     /**
      * @brief Setup SSL context for client.

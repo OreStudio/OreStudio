@@ -23,10 +23,7 @@
 #include <memory>
 #include <thread>
 #include <boost/throw_exception.hpp>
-#include <boost/cobalt.hpp>
-#include <boost/cobalt/spawn.hpp>
 #include <boost/asio/co_spawn.hpp>
-#include <boost/asio/spawn.hpp>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/executor_work_guard.hpp>
@@ -53,7 +50,7 @@ auto lg(logger_factory("ores.cli.application"));
 
 std::mutex cout_mutex;
 
-boost::cobalt::task<void> internal_connect(std::shared_ptr<ores::comms::client> client) {
+boost::asio::awaitable<void> internal_connect(std::shared_ptr<ores::comms::client> client) {
     try {
         bool connected = co_await client->connect();
         std::lock_guard<std::mutex> lock{cout_mutex};
@@ -70,7 +67,7 @@ boost::cobalt::task<void> internal_connect(std::shared_ptr<ores::comms::client> 
     co_return;
 }
 
-boost::cobalt::task<void>
+boost::asio::awaitable<void>
 internal_get_currencies(std::shared_ptr<ores::comms::client> client,
     ores::comms::protocol::frame request_frame) {
     try {
@@ -224,7 +221,7 @@ export_data(const std::optional<config::export_options>& ocfg) const {
 }
 
 
-boost::cobalt::promise<void>
+boost::asio::awaitable<void>
 application::run_client() const {
     BOOST_LOG_SEV(lg, info) << "Starting client REPL.";
 
@@ -288,7 +285,7 @@ application::run_client() const {
                     // Make a copy of config for the async operation
                     comms::client_options config_copy = current_config;
 
-                    boost::cobalt::spawn(executor, internal_connect(client),
+                    boost::asio::co_spawn(executor, internal_connect(client),
                         boost::asio::detached);
                 } catch (const std::exception& e) {
                     BOOST_LOG_SEV(lg, error) << "Connect setup exception: "
@@ -336,7 +333,7 @@ application::run_client() const {
                 std::move(request_payload));
             BOOST_LOG_SEV(lg, debug) << "Frame header: " << request_frame.header();
 
-            boost::cobalt::spawn(executor, internal_get_currencies(client, request_frame),
+            boost::asio::co_spawn(executor, internal_get_currencies(client, request_frame),
                 boost::asio::detached);
         }, "Retrieve all currencies from the server");
 
@@ -373,7 +370,7 @@ application::run_client() const {
     co_return;
 }
 
-boost::cobalt::promise<void> application::run(const config::options& cfg) const {
+boost::asio::awaitable<void> application::run(const config::options& cfg) const {
     BOOST_LOG_SEV(lg, info) << "Started application.";
 
     import_data(cfg.importing);

@@ -21,6 +21,10 @@
 #include <rfl/json.hpp>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/detached.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/use_awaitable.hpp>
+#include <boost/asio/use_future.hpp>
+#include <boost/asio/this_coro.hpp>
 #include <mutex>
 #include "ores.comms/client.hpp"
 #include "ores.comms/protocol/handshake.hpp"
@@ -69,23 +73,23 @@ void client::setup_ssl_context() {
     BOOST_LOG_SEV(lg, info) << "SSL context configured for client";
 }
 
-boost::cobalt::task<bool> client::connect() {
+boost::asio::awaitable<bool> client::connect() {
     try {
         BOOST_LOG_SEV(lg, info) << "Connecting to " << config_.host << ":" << config_.port;
 
-        // Get the cobalt executor from the current coroutine context
-        auto exec = co_await boost::cobalt::this_coro::executor;
+        // Get the executor from the current coroutine context
+        auto exec = co_await boost::asio::this_coro::executor;
 
         // Resolve server address
         boost::asio::ip::tcp::resolver resolver(exec);
         auto endpoints = co_await resolver.async_resolve(
             config_.host,
             std::to_string(config_.port),
-            boost::cobalt::use_op);
+            boost::asio::use_awaitable);
 
         // Create TCP socket and connect
         boost::asio::ip::tcp::socket socket(exec);
-        co_await boost::asio::async_connect(socket, endpoints, boost::cobalt::use_op);
+        co_await boost::asio::async_connect(socket, endpoints, boost::asio::use_awaitable);
 
         BOOST_LOG_SEV(lg, info) << "TCP connection established.";
 
@@ -119,7 +123,7 @@ boost::cobalt::task<bool> client::connect() {
     }
 }
 
-boost::cobalt::task<bool> client::perform_handshake() {
+boost::asio::awaitable<bool> client::perform_handshake() {
     try {
         // Send handshake request
         auto request_frame = protocol::create_handshake_request_frame(
@@ -221,7 +225,7 @@ bool client::is_connected() const {
     return connected_ && conn_ && conn_->is_open();
 }
 
-boost::cobalt::task<std::expected<protocol::frame, protocol::error_code>>
+boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
 client::send_request(protocol::frame request_frame) {
     {
         std::lock_guard<std::mutex> guard{state_mutex_};
@@ -269,7 +273,7 @@ client::send_request(protocol::frame request_frame) {
 bool client::connect_sync() {
     BOOST_LOG_SEV(lg, debug) << "connect_sync: starting";
 
-    auto task = [this]() -> boost::cobalt::task<bool> {
+    auto task = [this]() -> boost::asio::awaitable<bool> {
         BOOST_LOG_SEV(lg, debug) << "connect_sync: task started";
         bool result = co_await connect();
         BOOST_LOG_SEV(lg, debug) << "connect_sync: task completed, result=" << result;
@@ -277,7 +281,7 @@ bool client::connect_sync() {
     };
 
     BOOST_LOG_SEV(lg, debug) << "connect_sync: spawning task with use_future";
-    auto future = boost::cobalt::spawn(executor_, task(), boost::asio::use_future);
+    auto future = boost::asio::co_spawn(executor_, task(), boost::asio::use_future);
 
     if (io_ctx_) {
         BOOST_LOG_SEV(lg, debug) << "connect_sync: running io_context";
@@ -296,12 +300,12 @@ client::send_request_sync(protocol::frame request_frame) {
     using result_t = std::expected<protocol::frame, protocol::error_code>;
 
     auto task = [ this, request_frame = std::move(request_frame) ]() mutable ->
-        boost::cobalt::task<result_t> {
+        boost::asio::awaitable<result_t> {
         result_t result = co_await send_request(std::move(request_frame));
         co_return result;
     };
 
-    auto future = boost::cobalt::spawn(executor_, task(), boost::asio::use_future);
+    auto future = boost::asio::co_spawn(executor_, task(), boost::asio::use_future);
 
     if (io_ctx_) {
         io_ctx_->run();

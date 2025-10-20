@@ -18,7 +18,11 @@
  *
  */
 #include <iostream>
-#include <boost/cobalt/main.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/detached.hpp>
+#include <boost/asio/signal_set.hpp>
 #include "ores.comms/server.hpp"
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
@@ -31,12 +35,9 @@ namespace {
 
 using namespace ores::utility::log;
 auto lg(logger_factory("ores.service"));
-namespace cobalt = boost::cobalt;
 const std::string force_terminate("Service was forced to terminate.");
 
-}
-
-cobalt::main co_main(int argc, char** argv) {
+boost::asio::awaitable<int> async_main(int argc, char** argv, boost::asio::io_context& io_ctx) {
     using ores::utility::log::scoped_lifecycle_manager;
     using ores::service::config::parser;
     using ores::service::config::parser_exception;
@@ -88,7 +89,7 @@ cobalt::main co_main(int argc, char** argv) {
         ores::risk::messaging::register_risk_handlers(srv, ctx);
 
         // Run server
-        co_await srv.run();
+        co_await srv.run(io_ctx);
 
         BOOST_LOG_SEV(lg, info) << "ORES Service stopped normally";
 
@@ -107,4 +108,28 @@ cobalt::main co_main(int argc, char** argv) {
     }
 
     co_return EXIT_SUCCESS;
+}
+
+}
+
+int main(int argc, char** argv) {
+    boost::asio::io_context io_ctx;
+
+    // Setup signal handling for graceful shutdown
+    boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
+    signals.async_wait([&](auto, auto) {
+        BOOST_LOG_SEV(lg, info) << "Shutdown signal received, stopping server...";
+        io_ctx.stop();
+    });
+
+    int result = EXIT_FAILURE;
+    boost::asio::co_spawn(
+        io_ctx,
+        [&]() -> boost::asio::awaitable<void> {
+            result = co_await async_main(argc, argv, io_ctx);
+        },
+        boost::asio::detached);
+
+    io_ctx.run();
+    return result;
 }

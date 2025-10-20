@@ -27,7 +27,7 @@
 #include <vector>
 #include <string>
 #include <exception>
-#include <boost/cobalt.hpp>
+#include <boost/asio/awaitable.hpp>
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
 
 namespace ores::cli::app {
@@ -45,7 +45,7 @@ public:
     /**
      * @brief Executes the console workflow.
      */
-    static boost::cobalt::promise<int> execute(const std::vector<std::string>& args,
+    static boost::asio::awaitable<int> execute(const std::vector<std::string>& args,
         ores::utility::log::scoped_lifecycle_manager& slm);
 };
 

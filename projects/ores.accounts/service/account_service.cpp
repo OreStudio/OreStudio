@@ -120,4 +120,83 @@ void account_service::delete_account(context ctx, const boost::uuids::uuid& acco
     BOOST_LOG_SEV(lg, warn) << "Account deletion not fully implemented";
 }
 
+domain::account account_service::login(context ctx, const std::string& username,
+    const std::string& password, const boost::asio::ip::address& ip_address) {
+
+    throw_if_empty("Username", username);
+    throw_if_empty("Password", password); // FIXME: do not log
+
+    BOOST_LOG_SEV(lg, debug) << "Login attempt for username: " << username
+                             << " from IP: " << ip_address;
+
+    // Read the account by username
+    auto accounts = account_repo_.read_latest_by_username(ctx, username);
+    if (accounts.empty()) {
+        BOOST_LOG_SEV(lg, warn) << "Login failed: account not found for username: "
+                                << username;
+        throw std::runtime_error("Invalid username or password");
+    }
+
+    const auto& account = accounts[0];
+
+    // Read the login tracking information
+    auto logins_vec = logins_repo_.read(ctx, account.id);
+    if (logins_vec.empty()) {
+        BOOST_LOG_SEV(lg, error) << "Login tracking not found for account: "
+                                 << boost::uuids::to_string(account.id);
+        throw std::runtime_error("Login tracking information missing");
+    }
+
+    auto login_info = logins_vec[0];
+
+    // Check if account is locked
+    if (login_info.locked) {
+        BOOST_LOG_SEV(lg, warn) << "Login attempt for locked account: " << username;
+        throw std::runtime_error("Account is locked due to too many failed login attempts");
+    }
+
+    // Verify the password
+    using security::password_manager;
+    bool password_valid = password_manager::verify_password_hash(password, account.password_hash);
+
+    // Update login tracking based on authentication result
+    login_info.last_attempt_ip = ip_address;
+
+    if (!password_valid) {
+        // Increment failed login counter
+        login_info.failed_logins++;
+        BOOST_LOG_SEV(lg, warn) << "Failed login attempt for username: " << username
+                                << " (attempt " << login_info.failed_logins << ")";
+
+        // Lock account after 5 consecutive failed attempts
+        constexpr int max_failed_attempts = 5;
+        if (login_info.failed_logins >= max_failed_attempts) {
+            login_info.locked = true;
+            BOOST_LOG_SEV(lg, warn) << "Account locked due to too many failed attempts: "
+                                    << username;
+        }
+
+        // Update the logins table with failed attempt
+        std::vector<domain::logins> logins{login_info};
+        logins_repo_.write(ctx, logins);
+
+        throw std::runtime_error("Invalid username or password");
+    }
+
+    // Successful login - update tracking information
+    login_info.last_ip = ip_address;
+    login_info.last_login = std::chrono::system_clock::now();
+    login_info.failed_logins = 0; // Reset failed login counter
+    login_info.online = true;
+
+    BOOST_LOG_SEV(lg, info) << "Successful login for username: " << username
+                            << " from IP: " << ip_address;
+
+    // Update the logins table
+    std::vector<domain::logins> logins{login_info};
+    logins_repo_.write(ctx, logins);
+
+    return account;
+}
+
 }

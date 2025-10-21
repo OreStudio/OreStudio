@@ -85,6 +85,25 @@ public:
      */
     void delete_account(context ctx, const boost::uuids::uuid& account_id);
 
+    /**
+     * @brief Authenticates a user and updates login tracking information.
+     *
+     * This method validates the provided credentials against stored account data,
+     * and if successful, updates the logins table with the current login information.
+     * It also handles failed login attempts by incrementing the failed_logins counter
+     * and may lock the account after too many consecutive failures.
+     *
+     * @param ctx Repository context for database operations
+     * @param username The username for authentication
+     * @param password The plaintext password to verify
+     * @param ip_address The IP address of the login attempt
+     * @return The authenticated account if credentials are valid
+     * @throws std::invalid_argument If username or password is empty
+     * @throws std::runtime_error If account is locked or credentials are invalid
+     */
+    domain::account login(context ctx, const std::string& username,
+        const std::string& password, const boost::asio::ip::address& ip_address);
+
 private:
     repository::account_repository account_repo_;
     repository::logins_repository logins_repo_;

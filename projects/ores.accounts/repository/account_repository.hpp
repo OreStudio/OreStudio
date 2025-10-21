@@ -68,6 +68,12 @@ public:
     std::vector<domain::account>
     read_all(context ctx, const boost::uuids::uuid& id);
     /**@}*/
+
+    /**
+     * @brief Reads the latest account by username.
+     */
+    std::vector<domain::account>
+    read_latest_by_username(context ctx, const std::string& username);
 };
 
 }

@@ -138,4 +138,19 @@ account_repository::read_all(context ctx, const boost::uuids::uuid& id) {
     return account_mapper::map(*r);
 }
 
+std::vector<domain::account>
+account_repository::read_latest_by_username(context ctx, const std::string& username) {
+    BOOST_LOG_SEV(lg, debug) << "Reading latest account by username: " << username;
+
+    static auto max(make_timestamp(max_timestamp));
+    const auto query = sqlgen::read<std::vector<account_entity>> |
+        where("username"_c == username && "valid_to"_c == max.value()) |
+        order_by("valid_from"_c.desc());
+
+    const auto r = session(ctx.connection_pool()).and_then(query);
+    ensure_success(r);
+    BOOST_LOG_SEV(lg, debug) << "Read latest account by username. Total: " << r->size();
+    return account_mapper::map(*r);
+}
+
 }

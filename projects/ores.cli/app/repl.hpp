@@ -93,6 +93,13 @@ private:
     void register_currency_commands(::cli::Menu& root_menu);
 
     /**
+     * @brief Register account-related commands.
+     *
+     * Creates the accounts submenu and adds account operations.
+     */
+    void register_account_commands(::cli::Menu& root_menu);
+
+    /**
      * @brief Process a connection request.
      *
      * Handles the async connection workflow including configuration updates
@@ -121,6 +128,32 @@ private:
      * @param out Output stream for results
      */
     boost::asio::awaitable<void> process_get_currencies(std::ostream& out);
+
+    /**
+     * @brief Process a create account request.
+     *
+     * Creates a new account with the provided details.
+     *
+     * @param out Output stream for results
+     * @param username Account username
+     * @param password_hash Hashed password
+     * @param password_salt Password salt
+     * @param totp_secret TOTP secret for 2FA
+     * @param email Account email
+     * @param is_admin Whether the account has admin privileges
+     */
+    boost::asio::awaitable<void> process_create_account(std::ostream& out,
+        std::string username, std::string password_hash, std::string password_salt,
+        std::string totp_secret, std::string email, bool is_admin);
+
+    /**
+     * @brief Process a list accounts request.
+     *
+     * Retrieves all accounts from the server and displays them.
+     *
+     * @param out Output stream for results
+     */
+    boost::asio::awaitable<void> process_list_accounts(std::ostream& out);
 
     /**
      * @brief Start the I/O context thread.

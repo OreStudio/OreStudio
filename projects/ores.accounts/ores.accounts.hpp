@@ -31,7 +31,4 @@
  */
 namespace ores::accounts {}
 
-#include "ores.accounts/domain/account.hpp"
-#include "ores.accounts/domain/logins.hpp"
-
 #endif

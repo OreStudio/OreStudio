@@ -157,6 +157,18 @@ private:
     boost::asio::awaitable<void> process_list_accounts(std::ostream& out);
 
     /**
+     * @brief Process a login request.
+     *
+     * Authenticates a user with the provided credentials.
+     *
+     * @param out Output stream for results
+     * @param username Account username
+     * @param password Account password
+     */
+    boost::asio::awaitable<void>
+    process_login(std::ostream& out, std::string username, std::string password);
+
+    /**
      * @brief Start the I/O context thread.
      *
      * Launches a background thread to handle async operations.

@@ -175,6 +175,22 @@ void repl::register_account_commands(::cli::Menu& root_menu) {
         },
         "Retrieve all accounts from the server");
 
+    accounts_menu->Insert("login",
+        [this](std::ostream& out, std::string username, std::string password) {
+            if (!client_ || !client_->is_connected()) {
+                out << "✗ Not connected to server. Use 'connect' command first" << std::endl;
+                return;
+            }
+
+            BOOST_LOG_SEV(lg, debug) << "Initiating login request";
+
+            auto executor = io_ctx_->get_executor();
+            boost::asio::co_spawn(executor,
+                process_login(std::ref(out), std::move(username), std::move(password)),
+                boost::asio::detached);
+        },
+        "Login with username and password");
+
     root_menu.Insert(std::move(accounts_menu));
 }
 
@@ -431,6 +447,68 @@ boost::asio::awaitable<void> repl::process_list_accounts(std::ostream& out) {
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg, error) << "List accounts exception: " << e.what();
+        out << "✗ Error: " << e.what() << std::endl;
+    }
+}
+
+boost::asio::awaitable<void>
+repl::process_login(std::ostream& out, std::string username, std::string password) {
+    try {
+        BOOST_LOG_SEV(lg, debug) << "Creating login request for user: " << username;
+
+        accounts::messaging::login_request request{
+            .username = std::move(username),
+            .password = std::move(password)
+        };
+
+        auto request_payload = request.serialize();
+
+        comms::protocol::frame request_frame(
+            comms::protocol::message_type::login_request,
+            0,
+            std::move(request_payload));
+
+        BOOST_LOG_SEV(lg, debug) << "Sending login request frame";
+
+        auto response_result =
+            co_await client_->send_request(std::move(request_frame));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg, error) << "Login request failed with error code: "
+                                      << static_cast<int>(response_result.error());
+            out << "✗ Login request failed\nores-client> " << std::flush;
+            co_return;
+        }
+
+        BOOST_LOG_SEV(lg, debug) << "Deserializing login response";
+
+        auto response = accounts::messaging::login_response::deserialize(
+            response_result->payload());
+
+        if (!response) {
+            BOOST_LOG_SEV(lg, error) << "Failed to deserialize login response: "
+                                      << static_cast<int>(response.error());
+            out << "✗ Failed to parse login response" << std::endl;
+            co_return;
+        }
+
+        if (response->success) {
+            BOOST_LOG_SEV(lg, info) << "Login successful for user: " << response->username
+                                    << " (ID: " << response->account_id << ")";
+
+            out << "✓ Login successful!\n";
+            out << "  Username: " << response->username << "\n";
+            out << "  Account ID: " << response->account_id << "\n";
+            out << "  Admin: " << (response->is_admin ? "Yes" : "No") << "\n";
+            out << "ores-client> " << std::flush;
+        } else {
+            BOOST_LOG_SEV(lg, warn) << "Login failed: " << response->error_message;
+            out << "✗ Login failed: " << response->error_message
+                << "\nores-client> " << std::flush;
+        }
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg, error) << "Login exception: " << e.what();
         out << "✗ Error: " << e.what() << std::endl;
     }
 }

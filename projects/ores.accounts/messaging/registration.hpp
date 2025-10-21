@@ -20,6 +20,10 @@
 #ifndef ORES_ACCOUNTS_MESSAGING_REGISTRATION_HPP
 #define ORES_ACCOUNTS_MESSAGING_REGISTRATION_HPP
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
+
 #include "ores.comms/server.hpp"
 #include "ores.utility/repository/context.hpp"
 

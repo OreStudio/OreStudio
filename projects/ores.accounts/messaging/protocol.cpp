@@ -22,129 +22,15 @@
 #include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp"
+#include "ores.utility/messaging/write.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
 
 namespace ores::accounts::messaging {
 
-namespace {
-
-/**
- * @brief Helper to write a 16-bit integer in network byte order.
- */
-void write_uint16(std::vector<std::uint8_t>& buffer, std::uint16_t value) {
-    buffer.push_back(static_cast<std::uint8_t>(value >> 8));
-    buffer.push_back(static_cast<std::uint8_t>(value & 0xFF));
-}
-
-/**
- * @brief Helper to write a 32-bit integer in network byte order.
- */
-void write_uint32(std::vector<std::uint8_t>& buffer, std::uint32_t value) {
-    buffer.push_back(static_cast<std::uint8_t>(value >> 24));
-    buffer.push_back(static_cast<std::uint8_t>((value >> 16) & 0xFF));
-    buffer.push_back(static_cast<std::uint8_t>((value >> 8) & 0xFF));
-    buffer.push_back(static_cast<std::uint8_t>(value & 0xFF));
-}
-
-/**
- * @brief Helper to write a string with 16-bit length prefix.
- */
-void write_string(std::vector<std::uint8_t>& buffer, const std::string& str) {
-    auto len = static_cast<std::uint16_t>(std::min(str.size(), size_t(65535)));
-    write_uint16(buffer, len);
-    buffer.insert(buffer.end(), str.begin(), str.begin() + len);
-}
-
-/**
- * @brief Helper to write a UUID (16 bytes).
- */
-void write_uuid(std::vector<std::uint8_t>& buffer, const boost::uuids::uuid& uuid) {
-    buffer.insert(buffer.end(), uuid.begin(), uuid.end());
-}
-
-/**
- * @brief Helper to write a boolean (1 byte).
- */
-void write_bool(std::vector<std::uint8_t>& buffer, bool value) {
-    buffer.push_back(value ? 1 : 0);
-}
-
-/**
- * @brief Helper to read a 16-bit integer in network byte order.
- */
-std::expected<std::uint16_t, comms::protocol::error_code>
-read_uint16(std::span<const std::uint8_t>& data) {
-    if (data.size() < 2) {
-        return std::unexpected(comms::protocol::error_code::payload_too_large);
-    }
-    std::uint16_t value = (static_cast<std::uint16_t>(data[0]) << 8) |
-                          static_cast<std::uint16_t>(data[1]);
-    data = data.subspan(2);
-    return value;
-}
-
-/**
- * @brief Helper to read a 32-bit integer in network byte order.
- */
-std::expected<std::uint32_t, comms::protocol::error_code>
-read_uint32(std::span<const std::uint8_t>& data) {
-    if (data.size() < 4) {
-        return std::unexpected(comms::protocol::error_code::payload_too_large);
-    }
-    std::uint32_t value = (static_cast<std::uint32_t>(data[0]) << 24) |
-                          (static_cast<std::uint32_t>(data[1]) << 16) |
-                          (static_cast<std::uint32_t>(data[2]) << 8) |
-                          static_cast<std::uint32_t>(data[3]);
-    data = data.subspan(4);
-    return value;
-}
-
-/**
- * @brief Helper to read a string with 16-bit length prefix.
- */
-std::expected<std::string, comms::protocol::error_code>
-read_string(std::span<const std::uint8_t>& data) {
-    auto len_result = read_uint16(data);
-    if (!len_result) {
-        return std::unexpected(len_result.error());
-    }
-    auto len = *len_result;
-    if (data.size() < len) {
-        return std::unexpected(comms::protocol::error_code::payload_too_large);
-    }
-    std::string str(reinterpret_cast<const char*>(data.data()), len);
-    data = data.subspan(len);
-    return str;
-}
-
-/**
- * @brief Helper to read a UUID (16 bytes).
- */
-std::expected<boost::uuids::uuid, comms::protocol::error_code>
-read_uuid(std::span<const std::uint8_t>& data) {
-    if (data.size() < 16) {
-        return std::unexpected(comms::protocol::error_code::payload_too_large);
-    }
-    boost::uuids::uuid uuid;
-    std::copy_n(data.begin(), 16, uuid.begin());
-    data = data.subspan(16);
-    return uuid;
-}
-
-/**
- * @brief Helper to read a boolean (1 byte).
- */
-std::expected<bool, comms::protocol::error_code>
-read_bool(std::span<const std::uint8_t>& data) {
-    if (data.size() < 1) {
-        return std::unexpected(comms::protocol::error_code::payload_too_large);
-    }
-    bool value = data[0] != 0;
-    data = data.subspan(1);
-    return value;
-}
-
-}
+using namespace ores::utility::messaging;
 
 // create_account_request implementation
 std::vector<std::uint8_t> create_account_request::serialize() const {
@@ -185,6 +71,12 @@ create_account_request::deserialize(std::span<const std::uint8_t> data) {
     return request;
 }
 
+std::ostream& operator<<(std::ostream& s, const create_account_request& v)
+{
+    rfl::json::write(v, s);
+    return(s);
+}
+
 std::vector<std::uint8_t> create_account_response::serialize() const {
     std::vector<std::uint8_t> buffer;
     write_uuid(buffer, account_id);
@@ -202,6 +94,13 @@ create_account_response::deserialize(std::span<const std::uint8_t> data) {
     return response;
 }
 
+std::ostream& operator<<(std::ostream& s, const create_account_response& v)
+{
+    rfl::json::write(v, s);
+    return(s);
+}
+
+
 std::vector<std::uint8_t> list_accounts_request::serialize() const {
     return {};
 }
@@ -212,6 +111,12 @@ list_accounts_request::deserialize(std::span<const std::uint8_t> data) {
         return std::unexpected(comms::protocol::error_code::payload_too_large);
     }
     return list_accounts_request{};
+}
+
+std::ostream& operator<<(std::ostream& s, const list_accounts_request& v)
+{
+    rfl::json::write(v, s);
+    return(s);
 }
 
 std::vector<std::uint8_t> list_accounts_response::serialize() const {
@@ -292,6 +197,11 @@ list_accounts_response::deserialize(std::span<const std::uint8_t> data) {
     }
 
     return response;
+}
+std::ostream& operator<<(std::ostream& s, const list_accounts_response& v)
+{
+    rfl::json::write(v, s);
+    return(s);
 }
 
 }

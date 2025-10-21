@@ -20,7 +20,12 @@
 #ifndef ORES_ACCOUNTS_MESSAGING_PROTOCOL_HPP
 #define ORES_ACCOUNTS_MESSAGING_PROTOCOL_HPP
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
+
 #include <span>
+#include <iosfwd>
 #include <vector>
 #include <cstdint>
 #include <expected>
@@ -65,6 +70,8 @@ struct create_account_request final {
     deserialize(std::span<const std::uint8_t> data);
 };
 
+std::ostream& operator<<(std::ostream& s, const create_account_request& V);
+
 /**
  * @brief Response containing the created account ID.
  */
@@ -86,6 +93,8 @@ struct create_account_response final {
     deserialize(std::span<const std::uint8_t> data);
 };
 
+std::ostream& operator<<(std::ostream& s, const create_account_response& v);
+
 /**
  * @brief Request to retrieve all accounts.
  *
@@ -103,6 +112,8 @@ struct list_accounts_request final {
     static std::expected<list_accounts_request, comms::protocol::error_code>
     deserialize(std::span<const std::uint8_t> data);
 };
+
+std::ostream& operator<<(std::ostream& s, const list_accounts_request& v);
 
 /**
  * @brief Response containing all accounts.
@@ -140,6 +151,8 @@ struct list_accounts_response final {
     static std::expected<list_accounts_response, comms::protocol::error_code>
     deserialize(std::span<const std::uint8_t> data);
 };
+
+std::ostream& operator<<(std::ostream& s, const list_accounts_response& v);
 
 }
 

@@ -20,6 +20,12 @@
 #include "ores.comms/server.hpp"
 #include "ores.comms/session.hpp"
 #include "ores.utility/log/logger.hpp"
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
+#include <boost/asio/use_awaitable.hpp>
+#include <boost/asio/steady_timer.hpp>
+#include <boost/asio/this_coro.hpp>
+#include <chrono>
 
 namespace {
 
@@ -58,38 +64,36 @@ void server::setup_ssl_context() {
                              << config_.certificate_file;
 }
 
-cobalt::promise<void> server::run() {
+boost::asio::awaitable<void> server::run(boost::asio::io_context& io_context) {
     BOOST_LOG_SEV(lg, info) << "ORES Server starting on port " << config_.port
                              << " (identifier: " << config_.server_identifier << ")";
     BOOST_LOG_SEV(lg, info) << "Protocol version: "
                              << protocol::PROTOCOL_VERSION_MAJOR << "."
                              << protocol::PROTOCOL_VERSION_MINOR;
 
-    co_await cobalt::with(cobalt::wait_group(), [this](auto& wg) {
-        return accept_loop(wg);
-    });
+    co_await accept_loop(io_context);
 }
 
-cobalt::promise<void> server::accept_loop(cobalt::wait_group& workers) {
-    using tcp_acceptor = cobalt::use_op_t::as_default_on_t<tcp::acceptor>;
-
-    tcp_acceptor acceptor(
-        {co_await cobalt::this_coro::executor},
-        {tcp::v4(), config_.port});
+boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_context) {
+    tcp::acceptor acceptor(
+        co_await boost::asio::this_coro::executor,
+        tcp::endpoint(tcp::v4(), config_.port));
 
     BOOST_LOG_SEV(lg, info) << "Server listening on port " << config_.port;
 
     while (true) {
         try {
             // Wait if we've reached max connections
-            if (workers.size() >= config_.max_connections) {
+            while (active_connections_.load() >= config_.max_connections) {
                 BOOST_LOG_SEV(lg, info) << "Max connections (" << config_.max_connections
                                          << ") reached, waiting...";
-                co_await workers.wait_one();
+                boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
+                timer.expires_after(std::chrono::milliseconds(100));
+                co_await timer.async_wait(boost::asio::use_awaitable);
             }
 
             // Accept new connection
-            tcp::socket socket = co_await acceptor.async_accept();
+            tcp::socket socket = co_await acceptor.async_accept(boost::asio::use_awaitable);
             BOOST_LOG_SEV(lg, info) << "Accepted connection from "
                                      << socket.remote_endpoint().address().to_string()
                                      << ":" << socket.remote_endpoint().port();
@@ -101,10 +105,19 @@ cobalt::promise<void> server::accept_loop(cobalt::wait_group& workers) {
             // Create session and spawn it
             auto sess = std::make_shared<session>(std::move(conn), config_.server_identifier, dispatcher_);
 
-            // Add session to worker group - capture sess by value to keep it alive
-            workers.push_back([](std::shared_ptr<session> s) -> cobalt::promise<void> {
-                co_await s->run();
-            }(sess));
+            // Increment active connections
+            ++active_connections_;
+
+            // Spawn session - capture shared_ptr and active_connections reference
+            boost::asio::co_spawn(
+                io_context,
+                [sess, this]() -> boost::asio::awaitable<void> {
+                    co_await sess->run();
+                    --active_connections_;
+                    BOOST_LOG_SEV(lg, debug) << "Session completed, active connections: "
+                                              << active_connections_.load();
+                },
+                boost::asio::detached);
 
         } catch (const boost::system::system_error& e) {
             // Check if operation was cancelled (shutdown signal)

@@ -49,7 +49,7 @@ public:
      * @param payload The message payload
      * @return Expected containing response payload, or error code
      */
-    boost::cobalt::promise<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
+    boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
     handle_message(comms::protocol::message_type type,
         std::span<const std::uint8_t> payload) override;
 
@@ -57,7 +57,7 @@ private:
     /**
      * @brief Handle get_currencies_request message.
      */
-    boost::cobalt::promise<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
+    boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
     handle_get_currencies_request(std::span<const std::uint8_t> payload);
 
     repository::context ctx_;

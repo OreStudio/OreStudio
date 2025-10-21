@@ -24,12 +24,10 @@
 #include <vector>
 #include <cstdint>
 #include <expected>
-#include <boost/cobalt.hpp>
+#include <boost/asio/awaitable.hpp>
 #include "ores.comms/protocol/message_types.hpp"
 
 namespace ores::comms::protocol {
-
-namespace cobalt = boost::cobalt;
 
 /**
  * @brief Range of message types handled by a subsystem.
@@ -76,7 +74,7 @@ public:
      * @param payload The raw message payload to deserialize and process
      * @return Expected containing response payload bytes, or error_code on failure
      */
-    virtual cobalt::promise<std::expected<std::vector<std::uint8_t>, error_code>>
+    virtual boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, error_code>>
     handle_message(message_type type, std::span<const std::uint8_t> payload) = 0;
 };
 

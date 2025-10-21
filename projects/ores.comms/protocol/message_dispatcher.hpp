@@ -23,13 +23,11 @@
 #include <map>
 #include <memory>
 #include <expected>
-#include <boost/cobalt.hpp>
+#include <boost/asio/awaitable.hpp>
 #include "ores.comms/protocol/frame.hpp"
 #include "ores.comms/protocol/message_handler.hpp"
 
 namespace ores::comms::protocol {
-
-namespace cobalt = boost::cobalt;
 
 /**
  * @brief Dispatches incoming messages to registered subsystem handlers.
@@ -71,7 +69,7 @@ public:
      *         - No handler is registered for this message type
      *         - Handler returns an error
      */
-    cobalt::promise<std::expected<frame, error_code>>
+    boost::asio::awaitable<std::expected<frame, error_code>>
     dispatch(const frame& request_frame, std::uint32_t sequence);
 
 private:

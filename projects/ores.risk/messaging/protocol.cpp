@@ -18,6 +18,7 @@
  *
  */
 #include <cstring>
+#include <expected>
 #include <algorithm>
 #include "ores.risk/messaging/protocol.hpp"
 

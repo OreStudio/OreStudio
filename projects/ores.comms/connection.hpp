@@ -22,14 +22,10 @@
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl.hpp>
-#include <boost/cobalt.hpp>
+#include <boost/asio/awaitable.hpp>
 #include "ores.comms/protocol/frame.hpp"
 
 namespace ores::comms {
-
-namespace cobalt = boost::cobalt;
-using tcp = boost::asio::ip::tcp;
-namespace ssl = boost::asio::ssl;
 
 /**
  * @brief SSL connection wrapper for frame-based communication.
@@ -38,7 +34,7 @@ namespace ssl = boost::asio::ssl;
  */
 class connection final {
 public:
-    using ssl_socket = ssl::stream<tcp::socket>;
+    using ssl_socket = boost::asio::ssl::stream<boost::asio::ip::tcp::socket>;
 
     /**
      * @brief Construct connection from an SSL socket.
@@ -48,12 +44,12 @@ public:
     /**
      * @brief Perform SSL handshake as server.
      */
-    cobalt::promise<void> ssl_handshake_server();
+    boost::asio::awaitable<void> ssl_handshake_server();
 
     /**
      * @brief Perform SSL handshake as client.
      */
-    cobalt::promise<void> ssl_handshake_client();
+    boost::asio::awaitable<void> ssl_handshake_client();
 
     /**
      * @brief Read a complete frame from the connection.
@@ -61,14 +57,15 @@ public:
      * Reads the frame header first, then reads the payload based on
      * the size specified in the header.
      */
-    cobalt::promise<std::expected<protocol::frame, protocol::error_code>> read_frame();
+    boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
+    read_frame();
 
     /**
      * @brief Write a frame to the connection.
      *
      * Serializes the frame and writes it to the socket.
      */
-    cobalt::promise<void> write_frame(const protocol::frame& frame);
+    boost::asio::awaitable<void> write_frame(const protocol::frame& frame);
 
     /**
      * @brief Check if the connection is open.

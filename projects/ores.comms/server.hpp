@@ -23,15 +23,16 @@
 #include <string>
 #include <memory>
 #include <cstdint>
+#include <atomic>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/cobalt.hpp>
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/io_context.hpp>
 #include "ores.comms/protocol/message_dispatcher.hpp"
 #include "ores.comms/protocol/message_handler.hpp"
 
 namespace ores::comms {
 
-namespace cobalt = boost::cobalt;
 using tcp = boost::asio::ip::tcp;
 namespace ssl = boost::asio::ssl;
 
@@ -70,14 +71,16 @@ public:
      * @brief Run the server.
      *
      * Accepts connections and spawns sessions until stopped.
+     *
+     * @param io_context The io_context to run the server on
      */
-    cobalt::promise<void> run();
+    boost::asio::awaitable<void> run(boost::asio::io_context& io_context);
 
 private:
     /**
      * @brief Accept connections and spawn sessions.
      */
-    cobalt::promise<void> accept_loop(cobalt::wait_group& workers);
+    boost::asio::awaitable<void> accept_loop(boost::asio::io_context& io_context);
 
     /**
      * @brief Create and configure SSL context.
@@ -87,6 +90,7 @@ private:
     server_config config_;
     ssl::context ssl_ctx_;
     std::shared_ptr<protocol::message_dispatcher> dispatcher_;
+    std::atomic<std::size_t> active_connections_{0};
 };
 
 }

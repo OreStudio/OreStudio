@@ -20,20 +20,17 @@
 #ifndef ORES_COMMS_CLIENT_HPP
 #define ORES_COMMS_CLIENT_HPP
 
+#include <mutex>
 #include <memory>
 #include <string>
 #include <cstdint>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/awaitable.hpp>
 #include <boost/asio/ssl.hpp>
-#include <boost/cobalt.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/io_context.hpp>
 #include "ores.comms/connection.hpp"
 
 namespace ores::comms {
-
-namespace cobalt = boost::cobalt;
-using tcp = boost::asio::ip::tcp;
-namespace ssl = boost::asio::ssl;
 
 /**
  * @brief Configuration for the client.
@@ -86,7 +83,7 @@ public:
      *
      * Returns true if connection and handshake succeed.
      */
-    cobalt::promise<bool> connect();
+    boost::asio::awaitable<bool> connect();
 
     /**
      * @brief Connect to server and perform handshake (blocking version).
@@ -114,7 +111,7 @@ public:
      * @param request_frame The request frame to send
      * @return Expected containing response frame, or error_code
      */
-    cobalt::promise<std::expected<protocol::frame, protocol::error_code>>
+    boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
     send_request(protocol::frame request_frame);
 
     /**
@@ -133,7 +130,7 @@ private:
     /**
      * @brief Perform protocol handshake with server.
      */
-    cobalt::promise<bool> perform_handshake();
+    boost::asio::awaitable<bool> perform_handshake();
 
     /**
      * @brief Setup SSL context for client.
@@ -143,10 +140,11 @@ private:
     client_options config_;
     std::unique_ptr<boost::asio::io_context> io_ctx_; // Owned io_context for sync operations
     boost::asio::any_io_executor executor_;
-    ssl::context ssl_ctx_;
+    boost::asio::ssl::context ssl_ctx_;
     std::unique_ptr<connection> conn_;
     std::uint32_t sequence_number_;
     bool connected_;
+    mutable std::mutex state_mutex_; // Thread-safe state protection
 };
 
 }

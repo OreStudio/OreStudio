@@ -42,8 +42,7 @@ target_link_libraries(${lib_target_name} PRIVATE
     Boost::boost
     Boost::date_time
     Boost::exception
-    Boost::log
-    Boost::serialization)
+    Boost::log)
 
 install(TARGETS ${lib_target_name}
     ARCHIVE DESTINATION lib

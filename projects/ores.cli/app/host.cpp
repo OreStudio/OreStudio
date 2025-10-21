@@ -69,7 +69,7 @@ void host::report_exception(const bool can_log, const std::exception& e) {
     BOOST_LOG_SEV(lg, error) << activity_failure;
 }
 
-boost::cobalt::promise<int> host::execute(const std::vector<std::string>& args,
+boost::asio::awaitable<int> host::execute(const std::vector<std::string>& args,
     scoped_lifecycle_manager& slm) {
 
     /*

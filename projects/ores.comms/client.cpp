@@ -21,6 +21,11 @@
 #include <rfl/json.hpp>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/detached.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/use_awaitable.hpp>
+#include <boost/asio/use_future.hpp>
+#include <boost/asio/this_coro.hpp>
+#include <mutex>
 #include "ores.comms/client.hpp"
 #include "ores.comms/protocol/handshake.hpp"
 #include "ores.utility/log/logger.hpp"
@@ -43,15 +48,15 @@ client::client(client_options config)
     : config_(std::move(config)),
       io_ctx_(std::make_unique<boost::asio::io_context>()),
       executor_(io_ctx_->get_executor()),
-      ssl_ctx_(ssl::context::tlsv13_client),
+      ssl_ctx_(boost::asio::ssl::context::tlsv13_client),
       sequence_number_(0), connected_(false) {
     BOOST_LOG_SEV(lg, info) << "Client options: " << config_;
     setup_ssl_context();
 }
 
 client::client(client_options config, boost::asio::any_io_executor executor)
-    : config_(std::move(config)), executor_(executor),
-      ssl_ctx_(ssl::context::tlsv13_client),
+    : config_(std::move(config)), executor_(std::move(executor)),
+      ssl_ctx_(boost::asio::ssl::context::tlsv13_client),
       sequence_number_(0), connected_(false) {
     BOOST_LOG_SEV(lg, info) << "Client options: " << config_;
     setup_ssl_context();
@@ -59,33 +64,36 @@ client::client(client_options config, boost::asio::any_io_executor executor)
 
 void client::setup_ssl_context() {
     if (config_.verify_certificate) {
-        ssl_ctx_.set_verify_mode(ssl::verify_peer);
+        ssl_ctx_.set_verify_mode(boost::asio::ssl::verify_peer);
         ssl_ctx_.set_default_verify_paths();
     } else {
-        ssl_ctx_.set_verify_mode(ssl::verify_none);
+        ssl_ctx_.set_verify_mode(boost::asio::ssl::verify_none);
     }
 
     BOOST_LOG_SEV(lg, info) << "SSL context configured for client";
 }
 
-cobalt::promise<bool> client::connect() {
+boost::asio::awaitable<bool> client::connect() {
     try {
         BOOST_LOG_SEV(lg, info) << "Connecting to " << config_.host << ":" << config_.port;
 
+        // Get the executor from the current coroutine context
+        auto exec = co_await boost::asio::this_coro::executor;
+
         // Resolve server address
-        tcp::resolver resolver(executor_);
+        boost::asio::ip::tcp::resolver resolver(exec);
         auto endpoints = co_await resolver.async_resolve(
             config_.host,
             std::to_string(config_.port),
-            cobalt::use_op);
+            boost::asio::use_awaitable);
 
         // Create TCP socket and connect
-        tcp::socket socket(executor_);
-        co_await boost::asio::async_connect(socket, endpoints, cobalt::use_op);
+        boost::asio::ip::tcp::socket socket(exec);
+        co_await boost::asio::async_connect(socket, endpoints, boost::asio::use_awaitable);
 
         BOOST_LOG_SEV(lg, info) << "TCP connection established.";
 
-        // Create SSL socket - construct directly without intermediate variable
+        // Create SSL socket
         conn_ = std::make_unique<connection>(
             connection::ssl_socket(std::move(socket), ssl_ctx_));
 
@@ -101,7 +109,10 @@ cobalt::promise<bool> client::connect() {
             co_return false;
         }
 
-        connected_ = true;
+        {
+            std::lock_guard<std::mutex> guard{state_mutex_};
+            connected_ = true;
+        }
         BOOST_LOG_SEV(lg, info) << "Successfully connected to server.";
         co_return true;
 
@@ -112,11 +123,14 @@ cobalt::promise<bool> client::connect() {
     }
 }
 
-cobalt::promise<bool> client::perform_handshake() {
+boost::asio::awaitable<bool> client::perform_handshake() {
     try {
         // Send handshake request
         auto request_frame = protocol::create_handshake_request_frame(
-            ++sequence_number_,
+            [this]() {
+                std::lock_guard<std::mutex> guard{state_mutex_};
+                return ++sequence_number_;
+            }(),
             config_.client_identifier);
 
         BOOST_LOG_SEV(lg, debug) << "About to send handshake request frame.";
@@ -143,7 +157,7 @@ cobalt::promise<bool> client::perform_handshake() {
         // Verify message type
         if (response_frame.header().type != protocol::message_type::handshake_response) {
             BOOST_LOG_SEV(lg, error) << "Expected handshake response, got message type: "
-                                      << static_cast<int>(response_frame.header().type);
+                                     << static_cast<int>(response_frame.header().type);
             co_return false;
         }
 
@@ -175,7 +189,10 @@ cobalt::promise<bool> client::perform_handshake() {
 
         // Send acknowledgment
         auto ack_frame = protocol::create_handshake_ack_frame(
-            ++sequence_number_,
+            [this]() {
+                std::lock_guard<std::mutex> guard{state_mutex_};
+                return ++sequence_number_;
+            }(),
             protocol::error_code::none);
 
         BOOST_LOG_SEV(lg, debug) << "About to send handshake acknowledgment frame";
@@ -192,36 +209,43 @@ cobalt::promise<bool> client::perform_handshake() {
 }
 
 void client::disconnect() {
-    if (conn_) {
-        conn_->close();
-        conn_.reset();
+    {
+        std::lock_guard<std::mutex> guard{state_mutex_};
+        if (conn_) {
+            conn_->close();
+            conn_.reset();
+        }
+        connected_ = false;
     }
-    connected_ = false;
     BOOST_LOG_SEV(lg, info) << "Disconnected from server";
 }
 
 bool client::is_connected() const {
+    std::lock_guard<std::mutex> guard{state_mutex_};
     return connected_ && conn_ && conn_->is_open();
 }
 
-cobalt::promise<std::expected<protocol::frame, protocol::error_code>>
+boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
 client::send_request(protocol::frame request_frame) {
+    BOOST_LOG_SEV(lg, debug) << "Sending request.";
     if (!is_connected()) {
         BOOST_LOG_SEV(lg, error) << "Cannot send request: not connected";
         co_return std::unexpected(protocol::error_code::network_error);
     }
+    BOOST_LOG_SEV(lg, debug) << "Currently connected.";
 
     try {
         // Update sequence number in the frame
-        // Note: we're modifying the sequence number after frame construction
-        // This is a bit of a hack but works for now
         request_frame = protocol::frame(
             request_frame.header().type,
-            ++sequence_number_,
+            [this]() {
+                std::lock_guard<std::mutex> guard{state_mutex_};
+                return ++sequence_number_;
+            }(),
             std::vector<std::uint8_t>(request_frame.payload()));
 
         BOOST_LOG_SEV(lg, debug) << "Sending request frame, type: "
-                                  << std::hex << static_cast<std::uint16_t>(request_frame.header().type);
+                                 << std::hex << static_cast<std::uint16_t>(request_frame.header().type);
 
         // Send request
         co_await conn_->write_frame(request_frame);
@@ -230,12 +254,12 @@ client::send_request(protocol::frame request_frame) {
         auto response_result = co_await conn_->read_frame();
         if (!response_result) {
             BOOST_LOG_SEV(lg, error) << "Failed to read response frame, error: "
-                                      << static_cast<int>(response_result.error());
+                                     << static_cast<int>(response_result.error());
             co_return std::unexpected(response_result.error());
         }
 
         BOOST_LOG_SEV(lg, debug) << "Received response frame, type: "
-                                  << std::hex << static_cast<std::uint16_t>(response_result->header().type);
+                                 << std::hex << static_cast<std::uint16_t>(response_result->header().type);
 
         co_return *response_result;
 
@@ -246,43 +270,48 @@ client::send_request(protocol::frame request_frame) {
 }
 
 bool client::connect_sync() {
-    if (!io_ctx_) {
-        BOOST_LOG_SEV(lg, error) << "Cannot use connect_sync: client was created with external executor";
-        return false;
-    }
+    BOOST_LOG_SEV(lg, debug) << "connect_sync: starting";
 
-    bool result = false;
-
-    auto task = [this, &result]() -> cobalt::task<void> {
-        result = co_await connect();
+    auto task = [this]() -> boost::asio::awaitable<bool> {
+        BOOST_LOG_SEV(lg, debug) << "connect_sync: task started";
+        bool result = co_await connect();
+        BOOST_LOG_SEV(lg, debug) << "connect_sync: task completed, result=" << result;
+        co_return result;
     };
 
-    cobalt::spawn(*io_ctx_, task(), boost::asio::detached);
-    io_ctx_->run();
-    io_ctx_->restart();
+    BOOST_LOG_SEV(lg, debug) << "connect_sync: spawning task with use_future";
+    auto future = boost::asio::co_spawn(executor_, task(), boost::asio::use_future);
 
+    if (io_ctx_) {
+        BOOST_LOG_SEV(lg, debug) << "connect_sync: running io_context";
+        io_ctx_->run();
+        io_ctx_->restart();
+    }
+
+    BOOST_LOG_SEV(lg, debug) << "connect_sync: getting result from future";
+    bool result = future.get();
+    BOOST_LOG_SEV(lg, debug) << "connect_sync: returning " << result;
     return result;
 }
 
 std::expected<protocol::frame, protocol::error_code>
 client::send_request_sync(protocol::frame request_frame) {
-    if (!io_ctx_) {
-        BOOST_LOG_SEV(lg, error) << "Cannot use send_request_sync: client was created with external executor";
-        return std::unexpected(protocol::error_code::network_error);
-    }
+    using result_t = std::expected<protocol::frame, protocol::error_code>;
 
-    std::expected<protocol::frame, protocol::error_code> result =
-        std::unexpected(protocol::error_code::network_error);
-
-    auto task = [this, &result, request_frame = std::move(request_frame)]() mutable -> cobalt::task<void> {
-        result = co_await send_request(std::move(request_frame));
+    auto task = [ this, request_frame = std::move(request_frame) ]() mutable ->
+        boost::asio::awaitable<result_t> {
+        result_t result = co_await send_request(std::move(request_frame));
+        co_return result;
     };
 
-    cobalt::spawn(*io_ctx_, task(), boost::asio::detached);
-    io_ctx_->run();
-    io_ctx_->restart();
+    auto future = boost::asio::co_spawn(executor_, task(), boost::asio::use_future);
 
-    return result;
+    if (io_ctx_) {
+        io_ctx_->run();
+        io_ctx_->restart();
+    }
+
+    return future.get();
 }
 
 }

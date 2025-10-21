@@ -18,7 +18,10 @@
  *
  */
 #include <iostream>
-#include <boost/cobalt/main.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/detached.hpp>
 #include "ores.cli/app/host.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
@@ -26,11 +29,8 @@
 namespace {
 
 const std::string force_terminate("Application was forced to terminate.");
-namespace cobalt = boost::cobalt;
 
-}
-
-cobalt::main co_main(int argc, char** argv) {
+boost::asio::awaitable<int> async_main(int argc, char** argv) {
     using ores::cli::app::host;
     using ores::cli::config::parser_exception;
     using ores::utility::log::scoped_lifecycle_manager;
@@ -52,4 +52,21 @@ cobalt::main co_main(int argc, char** argv) {
         std::cerr << force_terminate << std::endl;
         co_return EXIT_FAILURE;
     }
+}
+
+}
+
+int main(int argc, char** argv) {
+    boost::asio::io_context io_ctx;
+
+    int result = EXIT_FAILURE;
+    boost::asio::co_spawn(
+        io_ctx,
+        [&]() -> boost::asio::awaitable<void> {
+            result = co_await async_main(argc, argv);
+        },
+        boost::asio::detached);
+
+    io_ctx.run();
+    return result;
 }

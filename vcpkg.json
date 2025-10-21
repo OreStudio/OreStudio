@@ -22,23 +22,15 @@
             "name": "sqlgen",
             "features": [ "postgres" ]
         },
-        "rapidxml-ns",
-        "rapidjson",
         "pugixml",
         "magic-enum",
         "boost-system",
-        "boost-serialization",
         "boost-date-time",
         "boost-log",
         "boost-filesystem",
         "boost-program-options",
         "boost-test",
-        "boost-scope-exit",
-        "boost-graph",
         "boost-uuid",
-        "boost-spirit",
-        "boost-iostreams",
-        "boost-cobalt",
         "cli"
     ]
 }

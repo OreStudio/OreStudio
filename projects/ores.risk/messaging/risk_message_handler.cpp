@@ -33,7 +33,7 @@ namespace ores::risk::messaging {
 risk_message_handler::risk_message_handler(repository::context ctx)
     : ctx_(std::move(ctx)) {}
 
-boost::cobalt::promise<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
+boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
 risk_message_handler::handle_message(comms::protocol::message_type type,
     std::span<const std::uint8_t> payload) {
 
@@ -50,7 +50,7 @@ risk_message_handler::handle_message(comms::protocol::message_type type,
     }
 }
 
-boost::cobalt::promise<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
+boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
 risk_message_handler::handle_get_currencies_request(std::span<const std::uint8_t> payload) {
     BOOST_LOG_SEV(lg, debug) << "Processing get_currencies_request";
 

@@ -18,18 +18,18 @@
  *
  */
 
-#include <boost/test/unit_test.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.accounts/service/account_service.hpp"
-#include "ores.accounts/repository/account_repository.hpp"
-#include "ores.accounts/repository/logins_repository.hpp"
-#include "ores.utility/repository/context.hpp"
+// #include <boost/test/unit_test.hpp>
+// #include <boost/uuid/uuid_generators.hpp>
+// #include <boost/uuid/uuid_io.hpp>
+// #include "ores.accounts/service/account_service.hpp"
+// #include "ores.accounts/repository/account_repository.hpp"
+// #include "ores.accounts/repository/logins_repository.hpp"
+// #include "ores.utility/repository/context.hpp"
 
 /*
 BOOST_AUTO_TEST_SUITE(account_service_tests)
 
-BOOST_AUTO_TEST_CASE(construction_test) {
+BOOST_IGNORE_AUTO_TEST_CASE(construction_test) {
     ores::accounts::repository::account_repository account_repo;
     ores::accounts::repository::logins_repository logins_repo;
     ores::accounts::service::account_service service(std::move(account_repo),
@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(construction_test) {
     BOOST_TEST(true); // Just ensuring construction worked without exceptions
 }
 
-BOOST_AUTO_TEST_CASE(create_account_valid_test) {
+BOOST_IGNORE_AUTO_TEST_CASE(create_account_valid_test) {
     // For now, just testing that the method can be called syntactically
     // A full integration test would require a proper database setup
     ores::accounts::repository::account_repository account_repo;
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(create_account_valid_test) {
     BOOST_TEST(true);
 }
 
-BOOST_AUTO_TEST_CASE(create_account_validation_test) {
+BOOST_IGNORE_AUTO_TEST_CASE(create_account_validation_test) {
     ores::accounts::repository::account_repository account_repo;
     ores::accounts::repository::logins_repository logins_repo;
     ores::accounts::service::account_service service(std::move(account_repo),

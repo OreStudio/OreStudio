@@ -24,7 +24,6 @@
 #pragma once
 #endif
 
-#include <string>
 #include <iosfwd>
 #include <chrono>
 #include <boost/uuid/uuid.hpp>

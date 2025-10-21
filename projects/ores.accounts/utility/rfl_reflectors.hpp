@@ -27,7 +27,6 @@
 #include <string>
 #include <chrono>
 #include <sstream>
-#include <iomanip>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
@@ -57,33 +56,57 @@ struct Reflector<boost::uuids::uuid> {
 /**
  * @brief Custom reflector for std::chrono::system_clock::time_point.
  *
- * Serializes time_point as ISO 8601 string representation.
+ * @details Serializes to and from an ISO 8601 compliant UTC string.
+ * This is the idiomatic C++23 approach, using std::format and
+ * std::chrono::parse for type-safe and portable operations.
+ *
+ * Serialized format: "YYYY-MM-DD HH:MM:SS" (assumed to be UTC)
+ * Example: "2023-10-27 14:45:30"
  */
 template <>
 struct Reflector<std::chrono::system_clock::time_point> {
     using ReflType = std::string;
 
+    /**
+     * @brief Parses a string into a time_point.
+     * @details Uses std::chrono::from_stream (C++20) to safely parse the
+     * string format into a std::chrono::sys_timepoint.
+     * @param str The string to parse.
+     * @return A system_clock::time_point representing the parsed time.
+     * @throws std::runtime_error if the string cannot be parsed.
+     */
     static std::chrono::system_clock::time_point to(const ReflType& str) {
-        // Parse ISO 8601 format: "YYYY-MM-DD HH:MM:SS"
-        std::tm tm = {};
         std::istringstream ss(str);
-        ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
+        std::chrono::sys_seconds tp; // Use sys_seconds for second precision
 
-        auto tp = std::chrono::system_clock::from_time_t(std::mktime(&tm));
-        return tp;
+        // The format string must match the input string.
+        // We parse into a sys_time, which is implicitly UTC.
+        ss >> std::chrono::parse("%F %T", tp);
+
+        if (ss.fail()) {
+            throw std::runtime_error("Failed to parse time_point from string: '" + str + "'");
+        }
+
+        // Convert sys_seconds back to system_clock::time_point
+        return {tp };
     }
 
+    /**
+     * @brief Formats a time_point into a string.
+     * @details Uses std::format (C++23) to create a clean, unambiguous
+     * UTC string representation. This avoids all C-style time functions.
+     * @param v The time_point to format.
+     * @return A string representation of the time_point.
+     */
     static ReflType from(const std::chrono::system_clock::time_point& v) {
-        // Format as ISO 8601: "YYYY-MM-DD HH:MM:SS"
-        auto tt = std::chrono::system_clock::to_time_t(v);
-        std::tm tm = *std::localtime(&tt);
-
-        std::ostringstream ss;
-        ss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-        return ss.str();
+        // The time_point is already in the "system clock" which is UTC.
+        // We format it directly. The format specifiers are:
+        // %F -> YYYY-MM-DD
+        // %T -> HH:MM:SS
+        // We add 'Z' to explicitly mark it as UTC, which is best practice.
+        return std::format("{:%F %T}Z", v);
     }
 };
-
 /**
  * @brief Custom reflector for boost::asio::ip::address.
  *

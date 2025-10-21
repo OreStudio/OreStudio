@@ -17,22 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ostream>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.accounts/repository/logins_entity.hpp"
+#ifndef ORES_ACCOUNTS_MESSAGING_REGISTRATION_HPP
+#define ORES_ACCOUNTS_MESSAGING_REGISTRATION_HPP
 
-namespace ores::accounts::repository {
+#include "ores.comms/server.hpp"
+#include "ores.utility/repository/context.hpp"
 
-std::ostream& operator<<(std::ostream& s, const logins_entity& v) {
-    s << "logins_entity{account_id=" << v.account_id.value()
-      << ", last_ip=" << v.last_ip
-      << ", last_attempt_ip=" << v.last_attempt_ip
-      << ", failed_logins=" << v.failed_logins
-      << ", locked=" << v.locked
-      << ", last_login=" << v.last_login.str()
-      << ", online=" << v.online
-      << "}";
-    return(s);
+namespace ores::accounts::messaging {
+
+/**
+ * @brief Register accounts subsystem message handlers with the server.
+ *
+ * Registers handlers for all accounts subsystem messages (0x2000-0x2FFF).
+ * Must be called before server.run().
+ *
+ * @param server The server to register handlers with
+ * @param ctx Database context for repository access
+ */
+void register_accounts_handlers(comms::server& server,
+    utility::repository::context ctx);
+
 }
 
-}
+#endif

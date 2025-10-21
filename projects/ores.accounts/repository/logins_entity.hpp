@@ -24,8 +24,7 @@
 #pragma once
 #endif
 
-#include <boost/uuid/uuid.hpp>
-#include <boost/asio/ip/address.hpp>
+#include <string>
 #include "sqlgen/Timestamp.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
@@ -38,12 +37,12 @@ struct logins_entity {
     constexpr static const char* schema = "oresdb";
     constexpr static const char* tablename = "logins";
 
-    sqlgen::PrimaryKey<boost::uuids::uuid> account_id;
-    boost::asio::ip::address last_ip;
-    boost::asio::ip::address last_attempt_ip;
+    sqlgen::PrimaryKey<std::string> account_id;
+    std::string last_ip;
+    std::string last_attempt_ip;
     int failed_logins;
     bool locked;
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> last_login;
+    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> last_login = "9999-12-31 23:59:59";
     bool online;
 };
 

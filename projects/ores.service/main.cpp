@@ -30,6 +30,7 @@
 #include "ores.service/config/parser.hpp"
 #include "ores.service/config/parser_exception.hpp"
 #include "ores.risk/messaging/registration.hpp"
+#include "ores.accounts/messaging/registration.hpp"
 
 namespace {
 
@@ -88,6 +89,7 @@ boost::asio::awaitable<int> async_main(int argc, char** argv, boost::asio::io_co
         // Create server and register message handlers
         ores::comms::server srv(server_cfg);
         ores::risk::messaging::register_risk_handlers(srv, ctx);
+        ores::accounts::messaging::register_accounts_handlers(srv, ctx);
 
         // Run server
         co_await srv.run(io_ctx);

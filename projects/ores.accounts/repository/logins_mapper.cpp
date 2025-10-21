@@ -58,9 +58,9 @@ domain::logins logins_mapper::map(const logins_entity& v) {
     BOOST_LOG_SEV(lg, debug) << "Mapping db entity: " << v;
 
     domain::logins r;
-    r.account_id = v.account_id.value();
-    r.last_ip = v.last_ip;
-    r.last_attempt_ip = v.last_attempt_ip;
+    r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id.value());
+    r.last_ip = boost::asio::ip::make_address(v.last_ip);
+    r.last_attempt_ip = boost::asio::ip::make_address(v.last_attempt_ip);
     r.failed_logins = v.failed_logins;
     r.locked = v.locked;
     r.last_login = timestamp_to_timepoint(v.last_login);
@@ -74,9 +74,9 @@ logins_entity logins_mapper::map(const domain::logins& v) {
     BOOST_LOG_SEV(lg, debug) << "Mapping domain entity: " << v;
 
     logins_entity r;
-    r.account_id = v.account_id;
-    r.last_ip = v.last_ip;
-    r.last_attempt_ip = v.last_attempt_ip;
+    r.account_id = boost::lexical_cast<std::string>(v.account_id);
+    r.last_ip = v.last_ip.to_string();
+    r.last_attempt_ip = v.last_attempt_ip.to_string();
     r.failed_logins = v.failed_logins;
     r.locked = v.locked;
     r.last_login = timepoint_to_timestamp(v.last_login);

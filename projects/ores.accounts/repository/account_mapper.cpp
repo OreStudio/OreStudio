@@ -37,7 +37,7 @@ domain::account account_mapper::map(const account_entity& v) {
     domain::account r;
     r.version = v.version;
     r.modified_by = v.modified_by;
-    r.id = v.id.value();
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.username = v.username;
     r.password_hash = v.password_hash;
     r.password_salt = v.password_salt;
@@ -53,7 +53,7 @@ account_entity account_mapper::map(const domain::account& v) {
     BOOST_LOG_SEV(lg, debug) << "Mapping domain entity: " << v;
 
     account_entity r;
-    r.id = v.id;
+    r.id = boost::lexical_cast<std::string>(v.id);
     r.version = v.version;
     r.username = v.username;
     r.password_hash = v.password_hash;

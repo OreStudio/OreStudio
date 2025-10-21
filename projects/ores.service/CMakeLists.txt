@@ -69,6 +69,7 @@ target_link_libraries(${exe_target_name} PRIVATE
     ${lib_target_name}
     ores.comms.lib
     ores.risk.lib
+    ores.accounts.lib
     ores.utility.lib
     Boost::boost
     Boost::date_time

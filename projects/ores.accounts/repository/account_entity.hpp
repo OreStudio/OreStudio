@@ -25,7 +25,6 @@
 #endif
 
 #include <string>
-#include <boost/uuid/uuid.hpp>
 #include "sqlgen/Timestamp.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
@@ -38,7 +37,7 @@ struct account_entity {
     constexpr static const char* schema = "oresdb";
     constexpr static const char* tablename = "accounts";
 
-    sqlgen::PrimaryKey<boost::uuids::uuid> id;
+    sqlgen::PrimaryKey<std::string> id;
     int version;
     std::string username;
     std::string password_hash;

@@ -26,9 +26,9 @@
 #include "ores.cli/app/repl.hpp"
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
-#include "ores.accounts/utility/rfl_reflectors.hpp"
 
 namespace {
 
@@ -334,7 +334,7 @@ repl::process_create_account(std::ostream& out, std::string username,
     std::string password, std::string totp_secret, std::string email,
     bool is_admin) {
     try {
-        BOOST_LOG_SEV(lg, debug) << "Creating create account request";
+        BOOST_LOG_SEV(lg, debug) << "Creating create account request.";
 
         accounts::messaging::create_account_request request{
             .username = std::move(username),
@@ -343,6 +343,8 @@ repl::process_create_account(std::ostream& out, std::string username,
             .email = std::move(email),
             .is_admin = is_admin
         };
+
+        BOOST_LOG_SEV(lg, debug) << "Request: " << request;
         auto request_payload = request.serialize();
 
         comms::protocol::frame request_frame(

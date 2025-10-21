@@ -31,6 +31,15 @@ namespace {
 using namespace ores::utility::log;
 auto lg(logger_factory("ores.accounts.service.account_service"));
 
+void throw_if_empty(const std::string& name, const std::string& value)
+{
+    BOOST_LOG_SEV(lg, debug) << name << ": '" << value << "'";
+    if (value.empty()) {
+        BOOST_LOG_SEV(lg, error) << name  << " cannot be empty.";
+        throw std::invalid_argument(name + " cannot be empty.");
+    }
+}
+
 }
 
 namespace ores::accounts::service {
@@ -43,27 +52,20 @@ account_service::account_service(repository::account_repository account_repo,
 
 domain::account account_service::
 create_account(context ctx, const std::string& username, const std::string& email,
-    const std::string& modified_by, const std::string& password, bool is_admin) {
-    // Validate input parameters
-    if (username.empty()) {
-        BOOST_LOG_SEV(lg, error) << "Username cannot be empty";
-        throw std::invalid_argument("Username cannot be empty");
-    }
-    if (email.empty()) {
-        BOOST_LOG_SEV(lg, error) << "Email cannot be empty";
-        throw std::invalid_argument("Email cannot be empty");
-    }
-    if (password.empty()) {
-        BOOST_LOG_SEV(lg, error) << "Password cannot be empty";
-        throw std::invalid_argument("Password cannot be empty");
-    }
+    const std::string& password, const std::string& modified_by, bool is_admin) {
+
+    throw_if_empty("Username", username);
+    throw_if_empty("Email", email);
+    throw_if_empty("Password", password); // FIXME: do not log
 
     // Generate a new UUID for the account
     boost::uuids::random_generator gen;
     auto id = uuid_generator_();
+    BOOST_LOG_SEV(lg, debug) << "ID for new account: " << id;
 
     // Hash the password using the password manager
-    auto password_hash = security::password_manager::create_password_hash(password);
+    using security::password_manager;
+    auto password_hash = password_manager::create_password_hash(password);
 
     // Create the account object with computed fields
     domain::account new_account {
@@ -78,7 +80,6 @@ create_account(context ctx, const std::string& username, const std::string& emai
         .is_admin = is_admin
     };
 
-    // Create and store the account
     std::vector<domain::account> accounts{new_account};
     account_repo_.write(ctx, accounts);
 

@@ -69,6 +69,7 @@ handle_create_account_request(std::span<const std::uint8_t> payload) {
     }
 
     const auto& request = *request_result;
+    BOOST_LOG_SEV(lg, debug) << "Request: " << request;
 
     try {
         service::account_service s(account_repo_, logins_repo_);

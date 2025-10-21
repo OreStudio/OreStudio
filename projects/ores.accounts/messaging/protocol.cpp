@@ -150,10 +150,10 @@ read_bool(std::span<const std::uint8_t>& data) {
 std::vector<std::uint8_t> create_account_request::serialize() const {
     std::vector<std::uint8_t> buffer;
     write_string(buffer, username);
-    write_string(buffer, password_hash);
-    write_string(buffer, password_salt);
+    write_string(buffer, password);
     write_string(buffer, totp_secret);
     write_string(buffer, email);
+    write_string(buffer, modified_by);
     write_bool(buffer, is_admin);
     return buffer;
 }
@@ -166,13 +166,9 @@ create_account_request::deserialize(std::span<const std::uint8_t> data) {
     if (!username_result) return std::unexpected(username_result.error());
     request.username = *username_result;
 
-    auto password_hash_result = read_string(data);
-    if (!password_hash_result) return std::unexpected(password_hash_result.error());
-    request.password_hash = *password_hash_result;
-
-    auto password_salt_result = read_string(data);
-    if (!password_salt_result) return std::unexpected(password_salt_result.error());
-    request.password_salt = *password_salt_result;
+    auto password_result = read_string(data);
+    if (!password_result) return std::unexpected(password_result.error());
+    request.password = *password_result;
 
     auto totp_secret_result = read_string(data);
     if (!totp_secret_result) return std::unexpected(totp_secret_result.error());
@@ -189,7 +185,6 @@ create_account_request::deserialize(std::span<const std::uint8_t> data) {
     return request;
 }
 
-// create_account_response implementation
 std::vector<std::uint8_t> create_account_response::serialize() const {
     std::vector<std::uint8_t> buffer;
     write_uuid(buffer, account_id);
@@ -207,22 +202,18 @@ create_account_response::deserialize(std::span<const std::uint8_t> data) {
     return response;
 }
 
-// list_accounts_request implementation
 std::vector<std::uint8_t> list_accounts_request::serialize() const {
-    // Empty payload - no parameters
     return {};
 }
 
 std::expected<list_accounts_request, comms::protocol::error_code>
 list_accounts_request::deserialize(std::span<const std::uint8_t> data) {
-    // Empty payload expected
     if (!data.empty()) {
         return std::unexpected(comms::protocol::error_code::payload_too_large);
     }
     return list_accounts_request{};
 }
 
-// list_accounts_response implementation
 std::vector<std::uint8_t> list_accounts_response::serialize() const {
     std::vector<std::uint8_t> buffer;
 

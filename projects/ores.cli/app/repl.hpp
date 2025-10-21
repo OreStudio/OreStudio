@@ -142,9 +142,10 @@ private:
      * @param email Account email
      * @param is_admin Whether the account has admin privileges
      */
-    boost::asio::awaitable<void> process_create_account(std::ostream& out,
-        std::string username, std::string password_hash, std::string password_salt,
-        std::string totp_secret, std::string email, bool is_admin);
+    boost::asio::awaitable<void>
+    process_create_account(std::ostream& out, std::string username,
+        std::string password, std::string totp_secret, std::string email,
+        bool is_admin);
 
     /**
      * @brief Process a list accounts request.

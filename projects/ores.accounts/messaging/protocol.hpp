@@ -34,10 +34,10 @@ namespace ores::accounts::messaging {
  */
 struct create_account_request final {
     std::string username;
-    std::string password_hash;
-    std::string password_salt;
+    std::string password;
     std::string totp_secret;
     std::string email;
+    std::string modified_by;
     bool is_admin;
 
     /**

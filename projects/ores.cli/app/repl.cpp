@@ -140,9 +140,8 @@ void repl::register_account_commands(::cli::Menu& root_menu) {
     auto accounts_menu = std::make_unique<::cli::Menu>("accounts");
 
     accounts_menu->Insert("create",
-        [this](std::ostream& out, std::string username, std::string password_hash,
-            std::string password_salt, std::string totp_secret, std::string email,
-            std::string is_admin_str) {
+        [this](std::ostream& out, std::string username, std::string password,
+            std::string totp_secret, std::string email, std::string is_admin_str) {
             if (!client_ || !client_->is_connected()) {
                 out << "✗ Not connected to server. Use 'connect' command first" << std::endl;
                 return;
@@ -152,13 +151,13 @@ void repl::register_account_commands(::cli::Menu& root_menu) {
             BOOST_LOG_SEV(lg, debug) << "Initiating create account request";
 
             auto executor = io_ctx_->get_executor();
-            boost::asio::co_spawn(executor,
-                process_create_account(std::ref(out), std::move(username),
-                    std::move(password_hash), std::move(password_salt),
-                    std::move(totp_secret), std::move(email), is_admin),
+            boost::asio::co_spawn(
+                executor, process_create_account(std::ref(out), std::move(username),
+                    std::move(password), std::move(totp_secret),
+                    std::move(email), is_admin),
                 boost::asio::detached);
         },
-        "Create a new account (username password_hash password_salt totp_secret email is_admin)");
+        "Create a new account (username password totp_secret email is_admin)");
 
     accounts_menu->Insert("list",
         [this](std::ostream& out) {
@@ -330,16 +329,16 @@ void repl::display_welcome() const {
     std::cout << std::endl;
 }
 
-boost::asio::awaitable<void> repl::
-process_create_account(std::ostream& out, std::string username, std::string password_hash,
-    std::string password_salt, std::string totp_secret, std::string email, bool is_admin) {
+boost::asio::awaitable<void>
+repl::process_create_account(std::ostream& out, std::string username,
+    std::string password, std::string totp_secret, std::string email,
+    bool is_admin) {
     try {
         BOOST_LOG_SEV(lg, debug) << "Creating create account request";
 
         accounts::messaging::create_account_request request{
             .username = std::move(username),
-            .password_hash = std::move(password_hash),
-            .password_salt = std::move(password_salt),
+            .password = std::move(password),
             .totp_secret = std::move(totp_secret),
             .email = std::move(email),
             .is_admin = is_admin

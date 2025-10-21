@@ -20,8 +20,9 @@
 #ifndef ORES_ACCOUNTS_MESSAGING_ACCOUNTS_MESSAGE_HANDLER_HPP
 #define ORES_ACCOUNTS_MESSAGING_ACCOUNTS_MESSAGE_HANDLER_HPP
 
-#include "ores.comms/protocol/message_handler.hpp"
 #include "ores.utility/repository/context.hpp"
+#include "ores.comms/protocol/message_handler.hpp"
+#include "ores.accounts/repository/logins_repository.hpp"
 #include "ores.accounts/repository/account_repository.hpp"
 
 namespace ores::accounts::messaging {
@@ -50,7 +51,8 @@ public:
      * @param payload The message payload
      * @return Expected containing response payload, or error code
      */
-    boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
+    boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
+                                         comms::protocol::error_code>>
     handle_message(comms::protocol::message_type type,
         std::span<const std::uint8_t> payload) override;
 
@@ -58,17 +60,20 @@ private:
     /**
      * @brief Handle create_account_request message.
      */
-    boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
+  boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
+                                       comms::protocol::error_code>>
     handle_create_account_request(std::span<const std::uint8_t> payload);
 
     /**
      * @brief Handle list_accounts_request message.
      */
-    boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
+  boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
+                                       comms::protocol::error_code>>
     handle_list_accounts_request(std::span<const std::uint8_t> payload);
 
     utility::repository::context ctx_;
     repository::account_repository account_repo_;
+    repository::logins_repository logins_repo_;
 };
 
 }

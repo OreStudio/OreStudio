@@ -154,6 +154,66 @@ struct list_accounts_response final {
 
 std::ostream& operator<<(std::ostream& s, const list_accounts_response& v);
 
+/**
+ * @brief Request to authenticate a user.
+ */
+struct login_request final {
+    std::string username;
+    std::string password;
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 2 bytes: username length
+     * - N bytes: username (UTF-8)
+     * - 2 bytes: password length
+     * - N bytes: password (UTF-8)
+     */
+    std::vector<std::uint8_t> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<login_request, comms::protocol::error_code>
+    deserialize(std::span<const std::uint8_t> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const login_request& v);
+
+/**
+ * @brief Response containing authentication result and account information.
+ */
+struct login_response final {
+    bool success;
+    std::string error_message;
+    boost::uuids::uuid account_id;
+    std::string username;
+    bool is_admin;
+
+    /**
+     * @brief Serialize response to bytes.
+     *
+     * Format:
+     * - 1 byte: success (boolean)
+     * - 2 bytes: error_message length
+     * - N bytes: error_message (UTF-8)
+     * - 16 bytes: account_id (UUID)
+     * - 2 bytes: username length
+     * - N bytes: username (UTF-8)
+     * - 1 byte: is_admin (boolean)
+     */
+    std::vector<std::uint8_t> serialize() const;
+
+    /**
+     * @brief Deserialize response from bytes.
+     */
+    static std::expected<login_response, comms::protocol::error_code>
+    deserialize(std::span<const std::uint8_t> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const login_response& v);
+
 }
 
 #endif

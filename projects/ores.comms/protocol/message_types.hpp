@@ -46,6 +46,8 @@ enum class message_type {
     create_account_response = 0x2002,
     list_accounts_request = 0x2003,
     list_accounts_response = 0x2004,
+    login_request = 0x2005,
+    login_response = 0x2006,
 
     last_value
 };

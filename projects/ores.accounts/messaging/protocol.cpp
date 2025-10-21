@@ -202,4 +202,77 @@ std::ostream& operator<<(std::ostream& s, const list_accounts_response& v)
     return(s);
 }
 
+// login_request implementation
+std::vector<std::uint8_t> login_request::serialize() const {
+    std::vector<std::uint8_t> buffer;
+    write_string(buffer, username);
+    write_string(buffer, password);
+    return buffer;
+}
+
+std::expected<login_request, comms::protocol::error_code>
+login_request::deserialize(std::span<const std::uint8_t> data) {
+    login_request request;
+
+    auto username_result = read_string(data);
+    if (!username_result) return std::unexpected(username_result.error());
+    request.username = *username_result;
+
+    auto password_result = read_string(data);
+    if (!password_result) return std::unexpected(password_result.error());
+    request.password = *password_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const login_request& v)
+{
+    rfl::json::write(v, s);
+    return(s);
+}
+
+// login_response implementation
+std::vector<std::uint8_t> login_response::serialize() const {
+    std::vector<std::uint8_t> buffer;
+    write_bool(buffer, success);
+    write_string(buffer, error_message);
+    write_uuid(buffer, account_id);
+    write_string(buffer, username);
+    write_bool(buffer, is_admin);
+    return buffer;
+}
+
+std::expected<login_response, comms::protocol::error_code>
+login_response::deserialize(std::span<const std::uint8_t> data) {
+    login_response response;
+
+    auto success_result = read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto error_message_result = read_string(data);
+    if (!error_message_result) return std::unexpected(error_message_result.error());
+    response.error_message = *error_message_result;
+
+    auto account_id_result = read_uuid(data);
+    if (!account_id_result) return std::unexpected(account_id_result.error());
+    response.account_id = *account_id_result;
+
+    auto username_result = read_string(data);
+    if (!username_result) return std::unexpected(username_result.error());
+    response.username = *username_result;
+
+    auto is_admin_result = read_bool(data);
+    if (!is_admin_result) return std::unexpected(is_admin_result.error());
+    response.is_admin = *is_admin_result;
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const login_response& v)
+{
+    rfl::json::write(v, s);
+    return(s);
+}
+
 }

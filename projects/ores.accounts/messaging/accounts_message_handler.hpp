@@ -38,6 +38,7 @@ namespace ores::accounts::messaging {
  * Currently handles:
  * - create_account_request: Creates a new account
  * - list_accounts_request: Retrieves all accounts from the repository
+ * - login_request: Authenticates a user and updates login tracking
  */
 class accounts_message_handler final : public comms::protocol::message_handler {
 public:
@@ -53,12 +54,14 @@ public:
      *
      * @param type The message type (must be in range 0x2000-0x2FFF)
      * @param payload The message payload
+     * @param remote_address The remote endpoint address of the client connection
      * @return Expected containing response payload, or error code
      */
     boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
                                          comms::protocol::error_code>>
     handle_message(comms::protocol::message_type type,
-        std::span<const std::uint8_t> payload) override;
+        std::span<const std::uint8_t> payload,
+        const std::string& remote_address) override;
 
 private:
     /**
@@ -74,6 +77,14 @@ private:
   boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
                                        comms::protocol::error_code>>
     handle_list_accounts_request(std::span<const std::uint8_t> payload);
+
+    /**
+     * @brief Handle login_request message.
+     */
+  boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
+                                       comms::protocol::error_code>>
+    handle_login_request(std::span<const std::uint8_t> payload,
+        const std::string& remote_address);
 
     utility::repository::context ctx_;
     repository::account_repository account_repo_;

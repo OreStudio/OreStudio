@@ -47,11 +47,13 @@ public:
      *
      * @param type The message type (must be in range 0x1000-0x1FFF)
      * @param payload The message payload
+     * @param remote_address The remote endpoint address of the client connection
      * @return Expected containing response payload, or error code
      */
     boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
     handle_message(comms::protocol::message_type type,
-        std::span<const std::uint8_t> payload) override;
+        std::span<const std::uint8_t> payload,
+        const std::string& remote_address) override;
 
 private:
     /**

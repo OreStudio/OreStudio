@@ -186,7 +186,9 @@ boost::asio::awaitable<void> session::process_messages() {
                                       << std::hex << static_cast<std::uint16_t>(request_frame.header().type);
 
             // Dispatch to appropriate handler
-            auto response_result = co_await dispatcher_->dispatch(request_frame, ++sequence_number_);
+            auto remote_addr = conn_->remote_address();
+            auto response_result = co_await dispatcher_->dispatch(request_frame,
+                ++sequence_number_, remote_addr);
             if (!response_result) {
                 BOOST_LOG_SEV(lg, error) << "Message dispatch failed: "
                                           << static_cast<int>(response_result.error());

@@ -78,6 +78,7 @@ find_package(Boost 1.88 REQUIRED COMPONENTS
     exception
     filesystem
     log
+    crc
     program_options
     unit_test_framework)
 

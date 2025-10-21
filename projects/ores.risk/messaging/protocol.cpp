@@ -17,91 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <cstring>
-#include <expected>
-#include <algorithm>
 #include "ores.risk/messaging/protocol.hpp"
+
+#include <expected>
+#include "ores.utility/messaging/write.hpp"
 
 namespace ores::risk::messaging {
 
-namespace {
-
-/**
- * @brief Helper to write a 16-bit integer in network byte order.
- */
-void write_uint16(std::vector<std::uint8_t>& buffer, std::uint16_t value) {
-    buffer.push_back(static_cast<std::uint8_t>(value >> 8));
-    buffer.push_back(static_cast<std::uint8_t>(value & 0xFF));
-}
-
-/**
- * @brief Helper to write a 32-bit integer in network byte order.
- */
-void write_uint32(std::vector<std::uint8_t>& buffer, std::uint32_t value) {
-    buffer.push_back(static_cast<std::uint8_t>(value >> 24));
-    buffer.push_back(static_cast<std::uint8_t>((value >> 16) & 0xFF));
-    buffer.push_back(static_cast<std::uint8_t>((value >> 8) & 0xFF));
-    buffer.push_back(static_cast<std::uint8_t>(value & 0xFF));
-}
-
-/**
- * @brief Helper to write a string with 16-bit length prefix.
- */
-void write_string(std::vector<std::uint8_t>& buffer, const std::string& str) {
-    auto len = static_cast<std::uint16_t>(std::min(str.size(), size_t(65535)));
-    write_uint16(buffer, len);
-    buffer.insert(buffer.end(), str.begin(), str.begin() + len);
-}
-
-/**
- * @brief Helper to read a 16-bit integer in network byte order.
- */
-std::expected<std::uint16_t, comms::protocol::error_code>
-read_uint16(std::span<const std::uint8_t>& data) {
-    if (data.size() < 2) {
-        return std::unexpected(comms::protocol::error_code::payload_too_large);
-    }
-    std::uint16_t value = (static_cast<std::uint16_t>(data[0]) << 8) |
-                          static_cast<std::uint16_t>(data[1]);
-    data = data.subspan(2);
-    return value;
-}
-
-/**
- * @brief Helper to read a 32-bit integer in network byte order.
- */
-std::expected<std::uint32_t, comms::protocol::error_code>
-read_uint32(std::span<const std::uint8_t>& data) {
-    if (data.size() < 4) {
-        return std::unexpected(comms::protocol::error_code::payload_too_large);
-    }
-    std::uint32_t value = (static_cast<std::uint32_t>(data[0]) << 24) |
-                          (static_cast<std::uint32_t>(data[1]) << 16) |
-                          (static_cast<std::uint32_t>(data[2]) << 8) |
-                          static_cast<std::uint32_t>(data[3]);
-    data = data.subspan(4);
-    return value;
-}
-
-/**
- * @brief Helper to read a string with 16-bit length prefix.
- */
-std::expected<std::string, comms::protocol::error_code>
-read_string(std::span<const std::uint8_t>& data) {
-    auto len_result = read_uint16(data);
-    if (!len_result) {
-        return std::unexpected(len_result.error());
-    }
-    auto len = *len_result;
-    if (data.size() < len) {
-        return std::unexpected(comms::protocol::error_code::payload_too_large);
-    }
-    std::string str(reinterpret_cast<const char*>(data.data()), len);
-    data = data.subspan(len);
-    return str;
-}
-
-}
+using namespace ores::utility::messaging;
 
 // get_currencies_request implementation
 std::vector<std::uint8_t> get_currencies_request::serialize() const {
@@ -118,7 +41,12 @@ get_currencies_request::deserialize(std::span<const std::uint8_t> data) {
     return get_currencies_request{};
 }
 
-// get_currencies_response implementation
+std::ostream& operator<<(std::ostream& s, const get_currencies_request& v)
+{
+    rfl::json::write(v, s);
+    return(s);
+}
+
 std::vector<std::uint8_t> get_currencies_response::serialize() const {
     std::vector<std::uint8_t> buffer;
 
@@ -218,5 +146,12 @@ get_currencies_response::deserialize(std::span<const std::uint8_t> data) {
 
     return response;
 }
+
+std::ostream& operator<<(std::ostream& s, const get_currencies_response& v)
+{
+    rfl::json::write(v, s);
+    return(s);
+}
+
 
 }

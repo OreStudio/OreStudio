@@ -21,9 +21,12 @@
 #define ORES_RISK_MESSAGING_PROTOCOL_HPP
 
 #include <span>
+#include <iosfwd>
 #include <vector>
 #include <cstdint>
 #include <expected>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 #include "ores.comms/protocol/message_types.hpp"
 #include "ores.risk/domain/currency.hpp"
 
@@ -46,6 +49,8 @@ struct get_currencies_request final {
     static std::expected<get_currencies_request, comms::protocol::error_code>
     deserialize(std::span<const std::uint8_t> data);
 };
+
+std::ostream& operator<<(std::ostream& s, const get_currencies_request& v);
 
 /**
  * @brief Response containing all currencies.
@@ -92,6 +97,8 @@ struct get_currencies_response final {
     static std::expected<get_currencies_response, comms::protocol::error_code>
     deserialize(std::span<const std::uint8_t> data);
 };
+
+std::ostream& operator<<(std::ostream& s, const get_currencies_response& v);
 
 }
 

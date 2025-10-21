@@ -18,7 +18,6 @@
  *
  */
 #include <iostream>
-#include <mutex>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <cli/cli.h>
@@ -32,7 +31,6 @@ namespace {
 
 using namespace ores::utility::log;
 auto lg(logger_factory("ores.cli.repl"));
-std::mutex cout_mutex;
 
 }
 
@@ -81,7 +79,8 @@ std::unique_ptr<::cli::Cli> repl::setup_menus() {
 
     auto cli_instance = std::make_unique<::cli::Cli>(std::move(root_menu));
     cli_instance->ExitAction([](auto& out) {
-        out << "Goodbye!" << std::endl; });
+        out << "Bye!" << std::endl;
+    });
 
     return cli_instance;
 }
@@ -90,24 +89,25 @@ void repl::register_connection_commands(::cli::Menu& root_menu) {
     root_menu.Insert("connect",
         [this](std::ostream& out, std::string host, std::string port, std::string identifier) {
             try {
+                BOOST_LOG_SEV(lg, debug) << "Initiating connection request";
                 auto executor = io_ctx_->get_executor();
                 boost::asio::co_spawn(executor,
-                    process_connect(std::move(host), std::move(port),
+                    process_connect(std::ref(out), std::move(host), std::move(port),
                         std::move(identifier)),
                     boost::asio::detached);
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg, error) << "Error connecting: " << e.what();
+                BOOST_LOG_SEV(lg, error) << "Error setting up connection: " << e.what();
                 out << "✗ Error: " << e.what() << std::endl;
             }
         },
-        "Connect to server (optional: host port identifier).");
+        "Connect to server (optional: host port identifier)");
 
     root_menu.Insert("disconnect",
         [this](std::ostream& out) {
             process_disconnect();
             out << "✓ Disconnected from server" << std::endl;
         },
-        "Disconnect from server.");
+        "Disconnect from server");
 }
 
 void repl::register_currency_commands(::cli::Menu& root_menu) {
@@ -116,46 +116,50 @@ void repl::register_currency_commands(::cli::Menu& root_menu) {
     currencies_menu->Insert("get",
         [this](std::ostream& out) {
             if (!client_ || !client_->is_connected()) {
-                out << "✗ Not connected to server. Use 'connect' command first." << std::endl;
+                out << "✗ Not connected to server. Use 'connect' command first" << std::endl;
                 return;
             }
 
-            BOOST_LOG_SEV(lg, debug) << "Retrieving currencies from server.";
+            BOOST_LOG_SEV(lg, debug) << "Initiating get currencies request";
 
             auto executor = io_ctx_->get_executor();
             boost::asio::co_spawn(executor,
-                process_get_currencies(),
+                process_get_currencies(std::ref(out)),
                 boost::asio::detached);
         },
-        "Retrieve all currencies from the server.");
+        "Retrieve all currencies from the server");
 
     root_menu.Insert(std::move(currencies_menu));
 }
 
 boost::asio::awaitable<void> repl::
-process_connect(std::string host, std::string port, std::string identifier) {
+process_connect(std::ostream& out, std::string host, std::string port, std::string identifier) {
 
     try {
-        if (!host.empty())
+        if (!host.empty()) {
+            BOOST_LOG_SEV(lg, debug) << "Updating host to: " << host;
             config_.host = std::move(host);
+        }
 
         if (!port.empty()) {
             try {
                 config_.port = static_cast<std::uint16_t>(std::stoi(port));
+                BOOST_LOG_SEV(lg, debug) << "Updating port to: " << config_.port;
             } catch (...) {
-                std::lock_guard<std::mutex> lock{cout_mutex};
-                std::cout << "✗ Invalid port number: " << port << "\nores-client> " << std::flush;
+                BOOST_LOG_SEV(lg, error) << "Invalid port number: " << port;
+                out << "✗ Invalid port number: " << port << std::endl;
                 co_return;
             }
         }
-        if (!identifier.empty())
+        if (!identifier.empty()) {
+            BOOST_LOG_SEV(lg, debug) << "Updating client identifier to: "
+                                     << identifier;
             config_.client_identifier = std::move(identifier);
-
-        {
-            std::lock_guard<std::mutex> lock{cout_mutex};
-            std::cout << "Connecting to " << config_.host << ":" << config_.port
-                      << " (identifier: " << config_.client_identifier << ")..." << std::endl;
         }
+
+        BOOST_LOG_SEV(lg, info) << "Connecting to " << config_.host << ":"
+                                << config_.port << " (identifier: "
+                                << config_.client_identifier << ")";
 
         if (client_ && client_->is_connected()) {
             BOOST_LOG_SEV(lg, info) << "Disconnecting existing connection";
@@ -166,15 +170,17 @@ process_connect(std::string host, std::string port, std::string identifier) {
 
         bool connected = co_await client_->connect();
 
-        std::lock_guard<std::mutex> lock{cout_mutex};
-        std::cout << "\n"
-                  << (connected ? "✓ Successfully connected!" : "✗ Connection failed")
-                  << "\nores-client> " << std::flush;
+        if (connected) {
+            BOOST_LOG_SEV(lg, info) << "Successfully connected";
+            out << "✓ Connected\nores-client> " << std::flush;
+        } else {
+            BOOST_LOG_SEV(lg, error) << "Connection failed";
+            out << "✗ Connection failed\nores-client> " << std::flush;
+        }
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg, error) << "Connect exception: " << e.what();
-        std::lock_guard<std::mutex> lock{cout_mutex};
-        std::cout << "\n✗ Connection error: " << e.what() << "\nores-client> " << std::flush;
+        out << "✗ Error: " << e.what() << std::endl;
     }
 }
 
@@ -193,9 +199,9 @@ void repl::process_disconnect() {
     BOOST_LOG_SEV(lg, info) << "Disconnected from server.";
 }
 
-boost::asio::awaitable<void> repl::process_get_currencies() {
+boost::asio::awaitable<void> repl::process_get_currencies(std::ostream& out) {
     try {
-        BOOST_LOG_SEV(lg, debug) << "Sending get currencies request.";
+        BOOST_LOG_SEV(lg, debug) << "Creating get currencies request";
 
         risk::messaging::get_currencies_request request;
         auto request_payload = request.serialize();
@@ -205,7 +211,7 @@ boost::asio::awaitable<void> repl::process_get_currencies() {
             0,
             std::move(request_payload));
 
-        BOOST_LOG_SEV(lg, debug) << "Sending request frame.";
+        BOOST_LOG_SEV(lg, debug) << "Sending request frame";
 
         auto response_result =
             co_await client_->send_request(std::move(request_frame));
@@ -213,8 +219,7 @@ boost::asio::awaitable<void> repl::process_get_currencies() {
         if (!response_result) {
             BOOST_LOG_SEV(lg, error) << "Request failed with error code: "
                                       << static_cast<int>(response_result.error());
-            std::lock_guard<std::mutex> lock{cout_mutex};
-            std::cout << "✗ Request failed\nores-client> " << std::flush;
+            out << "✗ Request failed\nores-client> " << std::flush;
             co_return;
         }
 
@@ -226,21 +231,18 @@ boost::asio::awaitable<void> repl::process_get_currencies() {
         if (!response) {
             BOOST_LOG_SEV(lg, error) << "Failed to deserialize response: "
                                       << static_cast<int>(response.error());
-            std::lock_guard<std::mutex> lock{cout_mutex};
-            std::cout << "✗ Failed to parse response\nores-client> " << std::flush;
+            out << "✗ Failed to parse response" << std::endl;
             co_return;
         }
 
         BOOST_LOG_SEV(lg, info) << "Successfully retrieved "
                                 << response->currencies.size() << " currencies";
 
-        std::lock_guard<std::mutex> lock{cout_mutex};
-        std::cout << "\n" << response->currencies << "\nores-client> " << std::flush;
+        out << response->currencies << "\nores-client> " << std::flush;
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg, error) << "Get currencies exception: " << e.what();
-        std::lock_guard<std::mutex> lock{cout_mutex};
-        std::cout << "\n✗ Error: " << e.what() << "\nores-client> " << std::flush;
+        out << "✗ Error: " << e.what() << std::endl;
     }
 }
 

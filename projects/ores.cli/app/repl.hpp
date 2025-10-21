@@ -98,12 +98,13 @@ private:
      * Handles the async connection workflow including configuration updates
      * and existing connection cleanup.
      *
+     * @param out Output stream for user feedback
      * @param host New host (empty to keep current)
      * @param port New port (empty to keep current)
      * @param identifier New client identifier (empty to keep current)
      */
     boost::asio::awaitable<void> process_connect(
-        std::string host, std::string port, std::string identifier);
+        std::ostream& out, std::string host, std::string port, std::string identifier);
 
     /**
      * @brief Process a disconnect request.
@@ -116,8 +117,10 @@ private:
      * @brief Process a get currencies request.
      *
      * Retrieves all currencies from the server and displays them.
+     *
+     * @param out Output stream for results
      */
-    boost::asio::awaitable<void> process_get_currencies();
+    boost::asio::awaitable<void> process_get_currencies(std::ostream& out);
 
     /**
      * @brief Start the I/O context thread.

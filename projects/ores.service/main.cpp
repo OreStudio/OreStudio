@@ -26,9 +26,9 @@
 #include "ores.comms/server.hpp"
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
+#include "ores.utility/repository/context_factory.hpp"
 #include "ores.service/config/parser.hpp"
 #include "ores.service/config/parser_exception.hpp"
-#include "ores.risk/repository/context_factory.hpp"
 #include "ores.risk/messaging/registration.hpp"
 
 namespace {
@@ -72,7 +72,8 @@ boost::asio::awaitable<int> async_main(int argc, char** argv, boost::asio::io_co
 
         // Create database context
         // TODO: Add database configuration to service options
-        ores::risk::repository::context_factory::configuration db_cfg{
+        using ores::utility::repository::context_factory;
+        context_factory::configuration db_cfg{
             .user = "ores",
             .password = "ahV6aehuij6eingohsiajaiT0",
             .host = "localhost",
@@ -82,7 +83,7 @@ boost::asio::awaitable<int> async_main(int argc, char** argv, boost::asio::io_co
             .num_attempts = 10,
             .wait_time_in_seconds = 1
         };
-        auto ctx = ores::risk::repository::context_factory::make_context(db_cfg);
+        auto ctx = context_factory::make_context(db_cfg);
 
         // Create server and register message handlers
         ores::comms::server srv(server_cfg);

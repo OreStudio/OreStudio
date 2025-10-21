@@ -22,9 +22,9 @@
 #include <rfl/json.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "ores.utility/log/logger.hpp"
+#include "ores.utility/repository/repository_exception.hpp"
 #include "ores.risk/repository/currency_mapper.hpp"
 #include "ores.risk/repository/currency_entity.hpp"
-#include "ores.risk/repository/repository_exception.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
 
 namespace {
@@ -32,7 +32,7 @@ namespace {
 using namespace ores::utility::log;
 auto lg(logger_factory("ores.risk.repository.currency_repository"));
 const std::string max_timestamp("9999-12-31 23:59:59");
-using ores::risk::repository::repository_exception;
+using ores::utility::repository::repository_exception;
 
 void ensure_success(const auto result) {
     if (!result) {

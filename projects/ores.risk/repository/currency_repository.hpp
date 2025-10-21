@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 #include <sqlgen/postgres.hpp>
-#include "ores.risk/repository/context.hpp"
+#include "ores.utility/repository/context.hpp"
 #include "ores.risk/domain/currency.hpp"
 
 namespace ores::risk::repository {
@@ -37,6 +37,8 @@ namespace ores::risk::repository {
  */
 class currency_repository {
 public:
+    using context = ores::utility::repository::context;
+
     /**
      * @brief Returns the SQL created by sqlgen to construct the table.
      */

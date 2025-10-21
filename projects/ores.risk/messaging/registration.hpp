@@ -21,7 +21,7 @@
 #define ORES_RISK_MESSAGING_REGISTRATION_HPP
 
 #include "ores.comms/server.hpp"
-#include "ores.risk/repository/context.hpp"
+#include "ores.utility/repository/context.hpp"
 
 namespace ores::risk::messaging {
 
@@ -34,7 +34,8 @@ namespace ores::risk::messaging {
  * @param server The server to register handlers with
  * @param ctx Database context for repository access
  */
-void register_risk_handlers(comms::server& server, repository::context ctx);
+void register_risk_handlers(comms::server& server,
+    utility::repository::context ctx);
 
 }
 

@@ -31,7 +31,8 @@ auto lg(logger_factory("ores.risk.messaging.registration"));
 
 namespace ores::risk::messaging {
 
-void register_risk_handlers(comms::server& server, repository::context ctx) {
+void register_risk_handlers(comms::server& server,
+    utility::repository::context ctx) {
     BOOST_LOG_SEV(lg, info) << "Registering risk subsystem message handlers";
 
     // Create handler for risk subsystem

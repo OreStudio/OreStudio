@@ -21,7 +21,7 @@
 #define ORES_RISK_MESSAGING_RISK_MESSAGE_HANDLER_HPP
 
 #include "ores.comms/protocol/message_handler.hpp"
-#include "ores.risk/repository/context.hpp"
+#include "ores.utility/repository/context.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
 
 namespace ores::risk::messaging {
@@ -40,7 +40,7 @@ public:
      *
      * @param ctx Database context for repository access
      */
-    explicit risk_message_handler(repository::context ctx);
+    explicit risk_message_handler(utility::repository::context ctx);
 
     /**
      * @brief Handle a risk subsystem message.
@@ -60,7 +60,7 @@ private:
     boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
     handle_get_currencies_request(std::span<const std::uint8_t> payload);
 
-    repository::context ctx_;
+    utility::repository::context ctx_;
     repository::currency_repository currency_repo_;
 };
 

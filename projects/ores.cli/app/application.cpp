@@ -26,10 +26,10 @@
 #include "ores.cli/config/export_options.hpp"
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp"
+#include "ores.utility/repository/context_factory.hpp"
 #include "ores.risk/orexml/importer.hpp"
 #include "ores.risk/orexml/exporter.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
-#include "ores.risk/repository/context_factory.hpp"
 #include "ores.cli/app/application_exception.hpp"
 #include "ores.cli/app/application.hpp"
 #include "ores.cli/app/repl.hpp"
@@ -49,9 +49,9 @@ using ores::risk::domain::currency;
 using risk::repository::currency_repository;
 using connection = sqlgen::Result<rfl::Ref<sqlgen::postgres::Connection>>;
 
-risk::repository::context application::make_context() {
-    using configuration = risk::repository::context_factory::configuration;
-    configuration cfg {
+utility::repository::context application::make_context() {
+    using utility::repository::context_factory;
+    context_factory::configuration cfg {
         .user = "ores",
         .password = "ahV6aehuij6eingohsiajaiT0",
         .host = "localhost",
@@ -62,7 +62,6 @@ risk::repository::context application::make_context() {
         .wait_time_in_seconds = 1
     };
 
-    using risk::repository::context_factory;
     return context_factory::make_context(cfg);
 }
 

@@ -747,6 +747,8 @@ After latest comms changes, the builds got borked.
 
 *** STARTED Add support for accounts and logins                        :code:
     :LOGBOOK:
+    CLOCK: [2025-10-21 Tue 17:05]--[2025-10-21 Tue 18:30] =>  1:25
+    CLOCK: [2025-10-21 Tue 14:12]--[2025-10-21 Tue 15:05] =>  0:53
     CLOCK: [2025-10-21 Tue 09:27]--[2025-10-21 Tue 12:55] =>  3:28
     :END:
 
@@ -788,12 +790,20 @@ Once I am happy with the code you generate, I will give you instructions for the
 next steps.
 #+end_quote
 
+#+begin_quote
 I want to add a new class to accounts responsible for password management. Think
 of a good name. create a new folder for it, suitably named. It's job will be to
 create a password hash given a password, a hash and a salt using HMACSHA512.
 then add a verify password hash method which returns true if the password hashes
 correctly. Tell me what your implmementation plan is before you start.
+#+end_quote
 
+problems:
+
+- errors in create account request drop connection, should return an error.
+- login insertion is not transactional, should rollback with account.
+- ERROR:  prepared statement "sqlgen_insert_into_table" already exists
+- test email_unique_idx
 
 *** Tidy-up database code                                              :code:
 

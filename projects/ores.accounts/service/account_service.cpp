@@ -23,8 +23,8 @@
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
-#include "ores.accounts/security/password_manager.hpp"
 #include "ores.utility/log/logger.hpp"
+#include "ores.accounts/security/password_manager.hpp"
 
 namespace {
 
@@ -43,7 +43,7 @@ account_service::account_service(repository::account_repository account_repo,
 
 domain::account account_service::
 create_account(context ctx, const std::string& username, const std::string& email,
-    const std::string& password, bool is_admin) {
+    const std::string& modified_by, const std::string& password, bool is_admin) {
     // Validate input parameters
     if (username.empty()) {
         BOOST_LOG_SEV(lg, error) << "Username cannot be empty";
@@ -60,15 +60,15 @@ create_account(context ctx, const std::string& username, const std::string& emai
 
     // Generate a new UUID for the account
     boost::uuids::random_generator gen;
-    auto id = gen();
+    auto id = uuid_generator_();
 
     // Hash the password using the password manager
     auto password_hash = security::password_manager::create_password_hash(password);
 
     // Create the account object with computed fields
     domain::account new_account {
-        .version = 0,                    // version - will be set by repository
-        .modified_by = "system",         // modified_by - initially system
+        .version = 0, // will be set by repository
+        .modified_by = modified_by,
         .id = id,
         .username = username,
         .password_hash = password_hash,

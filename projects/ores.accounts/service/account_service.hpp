@@ -26,7 +26,8 @@
 #endif
 
 #include <string>
-#include <boost/uuid/uuid.hpp>
+#    include <boost/uuid/uuid.hpp>
+#include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include "ores.accounts/domain/account.hpp"
 #include "ores.accounts/repository/account_repository.hpp"
 #include "ores.accounts/repository/logins_repository.hpp"
@@ -64,11 +65,9 @@ public:
      * @param is_admin Whether the account should have administrative privileges
      * @return The created account with computed fields
      */
-    domain::account create_account(context ctx,
-                                  const std::string& username,
-                                  const std::string& email,
-                                  const std::string& password,
-                                  bool is_admin = false);
+    domain::account create_account(context ctx, const std::string& username,
+        const std::string& email, const std::string& password,
+        const std::string& modified_by, bool is_admin = false);
 
     /**
      * @brief Lists all accounts in the system.
@@ -89,6 +88,7 @@ public:
 private:
     repository::account_repository account_repo_;
     repository::logins_repository logins_repo_;
+    utility::uuid::uuid_v7_generator uuid_generator_;
 };
 
 }

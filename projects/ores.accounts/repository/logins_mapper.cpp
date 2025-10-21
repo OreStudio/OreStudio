@@ -38,11 +38,8 @@ timestamp_to_timepoint(const sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">& ts) {
 
 sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
 timepoint_to_timestamp(const std::chrono::system_clock::time_point& tp) {
-    auto tt = std::chrono::system_clock::to_time_t(tp);
-    std::tm tm = *std::localtime(&tt);
-    std::ostringstream ss;
-    ss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-    const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(ss.str());
+    const auto s = std::format("{:%Y-%m-%d %H:%M:%S}", tp);
+    const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(s);
     if (!r) {
         BOOST_LOG_SEV(lg, error) << "Error converting timepoint to timestamp";
         return {};

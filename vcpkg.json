@@ -31,6 +31,7 @@
         "boost-program-options",
         "boost-test",
         "boost-uuid",
+        "boost-crc",
         "cli"
     ]
 }

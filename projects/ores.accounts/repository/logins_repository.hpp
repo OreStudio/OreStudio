@@ -46,9 +46,14 @@ public:
     std::string sql();
 
     /**
-     * @brief Writes or updates login information to database.
+     * @brief Writes login information to database (insert only).
      */
     void write(context ctx, const std::vector<domain::logins>& logins);
+
+    /**
+     * @brief Updates existing login information in database.
+     */
+    void update(context ctx, const domain::logins& login_info);
 
     /**
      * @brief Reads login information, possibly filtered by account ID.

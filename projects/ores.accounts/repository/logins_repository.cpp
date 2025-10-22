@@ -20,6 +20,7 @@
 #include <format>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/asio/ip/address.hpp>
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/repository/repository_exception.hpp"
 #include "ores.accounts/repository/logins_mapper.hpp"
@@ -68,6 +69,44 @@ write(context ctx, const std::vector<domain::logins>& logins) {
     ensure_success(r);
 
     BOOST_LOG_SEV(lg, debug) << "Finished writing logins to database.";
+}
+
+void logins_repository::update(context ctx, const domain::logins& login_info) {
+    BOOST_LOG_SEV(lg, debug) << "Updating logins for account: "
+                             << boost::uuids::to_string(login_info.account_id);
+
+    const auto account_id_str = boost::lexical_cast<std::string>(login_info.account_id);
+
+    // Convert IP addresses to strings
+    const auto last_ip_str = login_info.last_ip.to_string();
+    const auto last_attempt_ip_str = login_info.last_attempt_ip.to_string();
+
+    // Convert timestamp to sqlgen Timestamp type
+    const auto timestamp_str = std::format("{:%Y-%m-%d %H:%M:%S}", login_info.last_login);
+    const auto last_login_result = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(timestamp_str);
+    if (!last_login_result) {
+        BOOST_LOG_SEV(lg, severity_level::error) << "Error converting last_login timestamp";
+        BOOST_THROW_EXCEPTION(
+            repository_exception("Error converting last_login timestamp"));
+    }
+    const auto last_login_timestamp = last_login_result.value();
+
+    const auto query = sqlgen::update<logins_entity>(
+        "last_ip"_c.set(last_ip_str),
+        "last_attempt_ip"_c.set(last_attempt_ip_str),
+        "failed_logins"_c.set(login_info.failed_logins),
+        "locked"_c.set(login_info.locked ? 1 : 0),
+        "last_login"_c.set(last_login_timestamp),
+        "online"_c.set(login_info.online ? 1 : 0)
+    ) | where("account_id"_c == account_id_str);
+
+    const auto r = session(ctx.connection_pool())
+        .and_then(begin_transaction)
+        .and_then(query)
+        .and_then(commit);
+    ensure_success(r);
+
+    BOOST_LOG_SEV(lg, debug) << "Finished updating logins.";
 }
 
 std::vector<domain::logins> logins_repository::read(context ctx) {

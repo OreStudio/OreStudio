@@ -160,7 +160,8 @@ domain::account account_service::login(context ctx, const std::string& username,
 
     // Verify the password
     using security::password_manager;
-    bool password_valid = password_manager::verify_password_hash(password, account.password_hash);
+    bool password_valid = password_manager::
+        verify_password_hash(password, account.password_hash);
 
     // Update login tracking based on authentication result
     login_info.last_attempt_ip = ip_address;
@@ -180,8 +181,7 @@ domain::account account_service::login(context ctx, const std::string& username,
         }
 
         // Update the logins table with failed attempt
-        std::vector<domain::logins> logins{login_info};
-        logins_repo_.write(ctx, logins);
+        logins_repo_.update(ctx, login_info);
 
         throw std::runtime_error("Invalid username or password");
     }
@@ -196,8 +196,7 @@ domain::account account_service::login(context ctx, const std::string& username,
                             << " from IP: " << ip_address;
 
     // Update the logins table
-    std::vector<domain::logins> logins{login_info};
-    logins_repo_.write(ctx, logins);
+    logins_repo_.update(ctx, login_info);
 
     return account;
 }

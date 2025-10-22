@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_REPOSITORY_LOGINS_REPOSITORY_HPP
-#define ORES_ACCOUNTS_REPOSITORY_LOGINS_REPOSITORY_HPP
+#ifndef ORES_ACCOUNTS_REPOSITORY_LOGIN_INFO_REPOSITORY_HPP
+#define ORES_ACCOUNTS_REPOSITORY_LOGIN_INFO_REPOSITORY_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -29,14 +29,14 @@
 #include <boost/uuid/uuid.hpp>
 #include <sqlgen/postgres.hpp>
 #include "ores.utility/repository/context.hpp"
-#include "ores.accounts/domain/logins.hpp"
+#include "ores.accounts/domain/login_info.hpp"
 
 namespace ores::accounts::repository {
 
 /**
  * @brief Reads and writes login tracking information off of data storage.
  */
-class logins_repository {
+class login_info_repository {
 public:
     using context = ores::utility::repository::context;
 
@@ -48,19 +48,19 @@ public:
     /**
      * @brief Writes login information to database (insert only).
      */
-    void write(context ctx, const std::vector<domain::logins>& logins);
+    void write(context ctx, const std::vector<domain::login_info>& login_infos);
 
     /**
      * @brief Updates existing login information in database.
      */
-    void update(context ctx, const domain::logins& login_info);
+    void update(context ctx, const domain::login_info& login_info);
 
     /**
      * @brief Reads login information, possibly filtered by account ID.
      */
     /**@{*/
-    std::vector<domain::logins> read(context ctx);
-    std::vector<domain::logins>
+    std::vector<domain::login_info> read(context ctx);
+    std::vector<domain::login_info>
     read(context ctx, const boost::uuids::uuid& account_id);
     /**@}*/
 };

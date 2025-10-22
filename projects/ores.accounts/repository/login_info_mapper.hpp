@@ -17,22 +17,33 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ostream>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.accounts/repository/logins_entity.hpp"
+#ifndef ORES_ACCOUNTS_REPOSITORY_LOGIN_INFO_MAPPER_HPP
+#define ORES_ACCOUNTS_REPOSITORY_LOGIN_INFO_MAPPER_HPP
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
+
+#include <vector>
+#include "ores.accounts/domain/login_info.hpp"
+#include "ores.accounts/repository/login_info_entity.hpp"
 
 namespace ores::accounts::repository {
 
-std::ostream& operator<<(std::ostream& s, const logins_entity& v) {
-    s << "logins_entity{account_id=" << v.account_id.value()
-      << ", last_ip=" << v.last_ip
-      << ", last_attempt_ip=" << v.last_attempt_ip
-      << ", failed_logins=" << v.failed_logins
-      << ", locked=" << v.locked
-      << ", last_login=" << v.last_login.str()
-      << ", online=" << v.online
-      << "}";
-    return(s);
-}
+/**
+ * @brief Maps domain model entities to data storage layer and vice-versa.
+ */
+class login_info_mapper {
+public:
+    static domain::login_info map(const login_info_entity& v);
+    static login_info_entity map(const domain::login_info& v);
+
+    static std::vector<domain::login_info>
+    map(const std::vector<login_info_entity>& v);
+    static std::vector<login_info_entity>
+    map(const std::vector<domain::login_info>& v);
+};
 
 }
+
+#endif

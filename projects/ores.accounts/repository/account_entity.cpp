@@ -18,21 +18,14 @@
  *
  */
 #include <ostream>
-#include <boost/uuid/uuid_io.hpp>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 #include "ores.accounts/repository/account_entity.hpp"
 
 namespace ores::accounts::repository {
 
 std::ostream& operator<<(std::ostream& s, const account_entity& v) {
-    s << "account_entity{id=" << v.id.value()
-      << ", version=" << v.version
-      << ", username=" << v.username
-      << ", email=" << v.email
-      << ", is_admin=" << v.is_admin
-      << ", modified_by=" << v.modified_by
-      << ", valid_from=" << v.valid_from.str()
-      << ", valid_to=" << v.valid_to.str()
-      << "}";
+    rfl::json::write(v, s);
     return(s);
 }
 

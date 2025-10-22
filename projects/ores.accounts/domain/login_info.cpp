@@ -17,37 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_REPOSITORY_LOGINS_ENTITY_HPP
-#define ORES_ACCOUNTS_REPOSITORY_LOGINS_ENTITY_HPP
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.accounts/domain/login_info.hpp"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
+namespace ores::accounts::domain {
 
-#include <string>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
-
-namespace ores::accounts::repository {
-
-/**
- * @brief Represents login tracking information in the database.
- */
-struct logins_entity {
-    constexpr static const char* schema = "oresdb";
-    constexpr static const char* tablename = "logins";
-
-    sqlgen::PrimaryKey<std::string> account_id;
-    std::string last_ip;
-    std::string last_attempt_ip;
-    int failed_logins;
-    int locked;
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> last_login = "9999-12-31 23:59:59";
-    int online;
-};
-
-std::ostream& operator<<(std::ostream& s, const logins_entity& v);
-
+std::ostream& operator<<(std::ostream& s, const login_info& v) {
+    rfl::json::write(v, s);
+    return(s);
 }
 
-#endif
+}

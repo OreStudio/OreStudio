@@ -26,7 +26,7 @@
 
 #include "ores.utility/repository/context.hpp"
 #include "ores.comms/protocol/message_handler.hpp"
-#include "ores.accounts/repository/logins_repository.hpp"
+#include "ores.accounts/repository/login_info_repository.hpp"
 #include "ores.accounts/repository/account_repository.hpp"
 
 namespace ores::accounts::messaging {
@@ -88,7 +88,7 @@ private:
 
     utility::repository::context ctx_;
     repository::account_repository account_repo_;
-    repository::logins_repository logins_repo_;
+    repository::login_info_repository login_info_repo_;
 };
 
 }

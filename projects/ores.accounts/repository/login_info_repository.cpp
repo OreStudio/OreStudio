@@ -23,14 +23,14 @@
 #include <boost/asio/ip/address.hpp>
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/repository/repository_exception.hpp"
-#include "ores.accounts/repository/logins_mapper.hpp"
-#include "ores.accounts/repository/logins_entity.hpp"
-#include "ores.accounts/repository/logins_repository.hpp"
+#include "ores.accounts/repository/login_info_mapper.hpp"
+#include "ores.accounts/repository/login_info_entity.hpp"
+#include "ores.accounts/repository/login_info_repository.hpp"
 
 namespace {
 
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.accounts.repository.logins_repository"));
+auto lg(logger_factory("ores.accounts.repository.login_info_repository"));
 using ores::utility::repository::repository_exception;
 
 void ensure_success(const auto result) {
@@ -49,49 +49,54 @@ namespace ores::accounts::repository {
 using namespace sqlgen;
 using namespace sqlgen::literals;
 
-std::string logins_repository::sql() {
-    const auto query = create_table<logins_entity> | if_not_exists;
+std::string login_info_repository::sql() {
+    const auto query = create_table<login_info_entity> | if_not_exists;
     const auto sql = postgres::to_sql(query);
 
     BOOST_LOG_SEV(lg, debug) << sql;
     return sql;
 }
 
-void logins_repository::
-write(context ctx, const std::vector<domain::logins>& logins) {
-    BOOST_LOG_SEV(lg, debug) << "Writing logins to database. Count: "
-                             << logins.size();
+void login_info_repository::
+write(context ctx, const std::vector<domain::login_info>& login_infos) {
+    BOOST_LOG_SEV(lg, debug) << "Writing login_info to database. Count: "
+                             << login_infos.size();
 
     const auto r = session(ctx.connection_pool())
         .and_then(begin_transaction)
-        .and_then(insert(logins_mapper::map(logins)))
+        .and_then(insert(login_info_mapper::map(login_infos)))
         .and_then(commit);
     ensure_success(r);
 
-    BOOST_LOG_SEV(lg, debug) << "Finished writing logins to database.";
+    BOOST_LOG_SEV(lg, debug) << "Finished writing login_info to database.";
 }
 
-void logins_repository::update(context ctx, const domain::logins& login_info) {
-    BOOST_LOG_SEV(lg, debug) << "Updating logins for account: "
+void login_info_repository::
+update(context ctx, const domain::login_info& login_info) {
+    BOOST_LOG_SEV(lg, debug) << "Updating login_info for account: "
                              << boost::uuids::to_string(login_info.account_id);
 
-    const auto account_id_str = boost::lexical_cast<std::string>(login_info.account_id);
+    const auto account_id_str =
+        boost::lexical_cast<std::string>(login_info.account_id);
 
     // Convert IP addresses to strings
     const auto last_ip_str = login_info.last_ip.to_string();
     const auto last_attempt_ip_str = login_info.last_attempt_ip.to_string();
 
     // Convert timestamp to sqlgen Timestamp type
-    const auto timestamp_str = std::format("{:%Y-%m-%d %H:%M:%S}", login_info.last_login);
-    const auto last_login_result = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(timestamp_str);
+    const auto timestamp_str =
+        std::format("{:%Y-%m-%d %H:%M:%S}", login_info.last_login);
+    const auto last_login_result = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::
+        from_string(timestamp_str);
     if (!last_login_result) {
-        BOOST_LOG_SEV(lg, severity_level::error) << "Error converting last_login timestamp";
+        BOOST_LOG_SEV(lg, severity_level::error)
+            << "Error converting last_login timestamp";
         BOOST_THROW_EXCEPTION(
             repository_exception("Error converting last_login timestamp"));
     }
     const auto last_login_timestamp = last_login_result.value();
 
-    const auto query = sqlgen::update<logins_entity>(
+    const auto query = sqlgen::update<login_info_entity>(
         "last_ip"_c.set(last_ip_str),
         "last_attempt_ip"_c.set(last_attempt_ip_str),
         "failed_logins"_c.set(login_info.failed_logins),
@@ -106,33 +111,33 @@ void logins_repository::update(context ctx, const domain::logins& login_info) {
         .and_then(commit);
     ensure_success(r);
 
-    BOOST_LOG_SEV(lg, debug) << "Finished updating logins.";
+    BOOST_LOG_SEV(lg, debug) << "Finished updating login_info.";
 }
 
-std::vector<domain::logins> logins_repository::read(context ctx) {
-    BOOST_LOG_SEV(lg, debug) << "Reading all logins.";
+std::vector<domain::login_info> login_info_repository::read(context ctx) {
+    BOOST_LOG_SEV(lg, debug) << "Reading all login_info.";
 
-    const auto query = sqlgen::read<std::vector<logins_entity>>;
+    const auto query = sqlgen::read<std::vector<login_info_entity>>;
 
     const auto r = session(ctx.connection_pool())
         .and_then(query);
     ensure_success(r);
-    BOOST_LOG_SEV(lg, debug) << "Read all logins. Total: " << r->size();
-    return logins_mapper::map(*r);
+    BOOST_LOG_SEV(lg, debug) << "Read all login_info. Total: " << r->size();
+    return login_info_mapper::map(*r);
 }
 
-std::vector<domain::logins>
-logins_repository::read(context ctx, const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg, debug) << "Reading logins for account: " << account_id;
+std::vector<domain::login_info>
+login_info_repository::read(context ctx, const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg, debug) << "Reading login_info for account: " << account_id;
 
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
-    const auto query = sqlgen::read<std::vector<logins_entity>> |
+    const auto query = sqlgen::read<std::vector<login_info_entity>> |
         where("account_id"_c == account_id_str);
 
     const auto r = session(ctx.connection_pool()).and_then(query);
     ensure_success(r);
-    BOOST_LOG_SEV(lg, debug) << "Read logins. Total: " << r->size();
-    return logins_mapper::map(*r);
+    BOOST_LOG_SEV(lg, debug) << "Read login_info. Total: " << r->size();
+    return login_info_mapper::map(*r);
 }
 
 }

@@ -314,3 +314,27 @@ Last but not least, you can start the GUI via the target =run_ores_qt=:
 #+begin_src sh
 cmake --build --preset linux-clang-release --target run_ores_qt
 #+end_src
+
+Note: if you bump into posgres errors, do:
+
+#+begin_src sh
+ZIC=zic cmake --preset linux-clang-debug
+#+end_src
+
+** Updating vcpkg
+
+Occasionally we need to pull latest vcpkg from the remote. To do so:
+
+#+begin_src sh
+cd vcpkg
+git checkout master
+git pull origin master
+cd ..
+git add vcpkg
+#+end_src
+
+Check the branch and then commit the update:
+
+#+begin_src sh
+git commit -m "[vcpkg] Update to 2025.07.25-765-g7220a4eebf"
+#+end_src

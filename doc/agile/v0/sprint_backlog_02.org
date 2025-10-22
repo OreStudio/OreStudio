@@ -18,68 +18,65 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-10-21 Tue 12:55], for Tuesday, October 21, 2025.
-|       | <75>                                |        |      |      |       |
-| Tags  | Headline                            | Time   |      |      |     % |
-|-------+-------------------------------------+--------+------+------+-------|
-|       | *Total time*                        | *5:09* |      |      | 100.0 |
-|-------+-------------------------------------+--------+------+------+-------|
-|       | Stories                             | 5:09   |      |      | 100.0 |
-|       | Active                              |        | 5:09 |      | 100.0 |
-| code  | Add messaging for risk              |        |      | 0:35 |  11.3 |
-| code  | Clean up repl code                  |        |      | 0:46 |  14.9 |
-| infra | Fix broken builds                   |        |      | 0:20 |   6.5 |
-| code  | Add support for accounts and logins |        |      | 3:28 |  67.3 |
+#+CAPTION: Clock summary at [2025-10-22 Wed 01:24], for Wednesday, October 22, 2025.
+|      | <75>                                |        |      |      |       |
+| Tags | Headline                            | Time   |      |      |     % |
+|------+-------------------------------------+--------+------+------+-------|
+|      | *Total time*                        | *1:24* |      |      | 100.0 |
+|------+-------------------------------------+--------+------+------+-------|
+|      | Stories                             | 1:24   |      |      | 100.0 |
+|      | Active                              |        | 1:24 |      | 100.0 |
+| code | Add support for accounts and logins |        |      | 1:24 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-10-21 Tue 12:55]
+#+CAPTION: Clock summary at [2025-10-22 Wed 01:24]
 |          | <75>                                               |         |       |      |       |
 | Tags     | Headline                                           | Time    |       |      |     % |
 |----------+----------------------------------------------------+---------+-------+------+-------|
-|          | *Total time*                                       | *82:28* |       |      | 100.0 |
+|          | *Total time*                                       | *86:28* |       |      | 100.0 |
 |----------+----------------------------------------------------+---------+-------+------+-------|
-|          | Stories                                            | 82:28   |       |      | 100.0 |
-|          | Active                                             |         | 82:28 |      | 100.0 |
-| agile    | Sprint and product backlog refinement              |         |       | 2:36 |   3.2 |
+|          | Stories                                            | 86:28   |       |      | 100.0 |
+|          | Active                                             |         | 86:28 |      | 100.0 |
+| agile    | Sprint and product backlog refinement              |         |       | 2:36 |   3.0 |
 | infra    | Fix broken builds                                  |         |       | 0:36 |   0.7 |
 | code     | Create a containing structure for data             |         |       | 0:35 |   0.7 |
-| code     | Add temporal support to currencies                 |         |       | 2:59 |   3.6 |
-| code     | Add command to dump currencies                     |         |       | 4:18 |   5.2 |
-| code     | Refactor code for currencies                       |         |       | 3:52 |   4.7 |
-| code     | Restore qt setup                                   |         |       | 2:20 |   2.8 |
+| code     | Add temporal support to currencies                 |         |       | 2:59 |   3.5 |
+| code     | Add command to dump currencies                     |         |       | 4:18 |   5.0 |
+| code     | Refactor code for currencies                       |         |       | 3:52 |   4.5 |
+| code     | Restore qt setup                                   |         |       | 2:20 |   2.7 |
 | code     | Add gemini action                                  |         |       | 0:05 |   0.1 |
 | code     | Remove ImGui support                               |         |       | 0:08 |   0.2 |
-| code     | Create a GRPC based service                        |         |       | 2:09 |   2.6 |
-| code     | Implement a 0MQ based RPC service and client       |         |       | 3:55 |   4.7 |
+| code     | Create a GRPC based service                        |         |       | 2:09 |   2.5 |
+| code     | Implement a 0MQ based RPC service and client       |         |       | 3:55 |   4.5 |
 | code     | Fix misspell fixer errors                          |         |       | 0:08 |   0.2 |
 | code     | Remove URL support from prog mode in emacs         |         |       | 0:14 |   0.3 |
 | code     | Remove GRPC support                                |         |       | 0:16 |   0.3 |
-| code     | Implement a cobalt based server and client         |         |       | 2:53 |   3.5 |
-| code     | Add serialisation support for reflect-cpp          |         |       | 3:07 |   3.8 |
-| analysis | White-boarding for new architecture                |         |       | 1:52 |   2.3 |
-| code     | Use sqlgen for postgres                            |         |       | 7:23 |   9.0 |
-| code     | Refactor cli to follow new project structure       |         |       | 4:47 |   5.8 |
+| code     | Implement a cobalt based server and client         |         |       | 2:53 |   3.3 |
+| code     | Add serialisation support for reflect-cpp          |         |       | 3:07 |   3.6 |
+| analysis | White-boarding for new architecture                |         |       | 1:52 |   2.2 |
+| code     | Use sqlgen for postgres                            |         |       | 7:23 |   8.5 |
+| code     | Refactor cli to follow new project structure       |         |       | 4:47 |   5.5 |
 | code     | Add tests to cli parser                            |         |       | 0:35 |   0.7 |
-| code     | Add logging support for tests                      |         |       | 2:21 |   2.8 |
-| code     | Replace XML parsing with reflect cpp               |         |       | 2:56 |   3.6 |
+| code     | Add logging support for tests                      |         |       | 2:21 |   2.7 |
+| code     | Replace XML parsing with reflect cpp               |         |       | 2:56 |   3.4 |
 | code     | Fix windows and osx builds                         |         |       | 0:27 |   0.5 |
-| code     | Completions in emacs org mode are incorrect        |         |       | 1:02 |   1.3 |
-| analysis | Investigate bitemporal support from Postgres 18    |         |       | 1:47 |   2.2 |
-| code     | Refactor core into risk                            |         |       | 4:10 |   5.1 |
+| code     | Completions in emacs org mode are incorrect        |         |       | 1:02 |   1.2 |
+| analysis | Investigate bitemporal support from Postgres 18    |         |       | 1:47 |   2.1 |
+| code     | Refactor core into risk                            |         |       | 4:10 |   4.8 |
 | code     | Windows builds have cmake errors                   |         |       | 0:14 |   0.3 |
-| infra    | Add suppression to valgrind errors                 |         |       | 0:38 |   0.8 |
-| code     | Create a =comms= library                           |         |       | 8:05 |   9.8 |
-| code     | Add messaging for risk                             |         |       | 8:00 |   9.7 |
+| infra    | Add suppression to valgrind errors                 |         |       | 0:38 |   0.7 |
+| code     | Create a =comms= library                           |         |       | 8:05 |   9.3 |
+| code     | Add messaging for risk                             |         |       | 8:00 |   9.3 |
 | code     | Clean up repl code                                 |         |       | 0:46 |   0.9 |
 | infra    | Investigate build warning for vcpkg binary caching |         |       | 0:25 |   0.5 |
 | infra    | Investigate build warning for qtbase               |         |       | 0:10 |   0.2 |
 | code     | Fix gemini cli action                              |         |       | 0:45 |   0.9 |
 | infra    | vcpkg caching seems disabled                       |         |       | 0:15 |   0.3 |
-| infra    | Fix broken builds                                  |         |       | 0:58 |   1.2 |
-| code     | Add support for accounts and logins                |         |       | 3:28 |   4.2 |
-| code     | Add workspace as a container                       |         |       | 1:13 |   1.5 |
+| infra    | Fix broken builds                                  |         |       | 0:58 |   1.1 |
+| code     | Add support for accounts and logins                |         |       | 7:28 |   8.6 |
+| code     | Add workspace as a container                       |         |       | 1:13 |   1.4 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -747,6 +744,7 @@ After latest comms changes, the builds got borked.
 
 *** STARTED Add support for accounts and logins                        :code:
     :LOGBOOK:
+    CLOCK: [2025-10-21 Tue 23:42]--[2025-10-22 Wed 01:24] =>  1:42
     CLOCK: [2025-10-21 Tue 17:05]--[2025-10-21 Tue 18:30] =>  1:25
     CLOCK: [2025-10-21 Tue 14:12]--[2025-10-21 Tue 15:05] =>  0:53
     CLOCK: [2025-10-21 Tue 09:27]--[2025-10-21 Tue 12:55] =>  3:28
@@ -804,6 +802,10 @@ problems:
 - login insertion is not transactional, should rollback with account.
 - ERROR:  prepared statement "sqlgen_insert_into_table" already exists
 - test email_unique_idx
+
+Links:
+
+- [[https://github.com/getml/sqlgen/issues/68][#68: Deallocating prepared statements on error]]
 
 *** Tidy-up database code                                              :code:
 

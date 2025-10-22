@@ -17,8 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-drop index if exists logins_account_id_idx;
-drop index if exists logins_locked_idx;
-drop table if exists logins;
--- drop extension if exists btree_gist;
--- drop schema if exists oresdb;
+create schema if not exists oresdb;
+create extension if not exists btree_gist;
+set schema 'oresdb';
+
+--
+-- login_info table tracks login security information for accounts.
+-- note: this is a current-state table without temporal versioning.
+--
+create table if not exists "oresdb"."login_info" (
+    "account_id" uuid not null,
+    "last_ip" inet not null,
+    "last_attempt_ip" inet not null,
+    "failed_logins" integer not null,
+    "locked" integer not null,
+    "last_login" timestamp with time zone not null,
+    "online" integer not null,
+    primary key (account_id)
+);
+
+create index if not exists login_info_account_id_idx
+on "oresdb"."login_info" (account_id);
+
+create index if not exists login_info_locked_idx
+on "oresdb"."login_info" (locked)
+where locked = 1;

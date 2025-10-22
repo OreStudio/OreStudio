@@ -21,7 +21,7 @@
 #define ORES_RISK_MESSAGING_RISK_MESSAGE_HANDLER_HPP
 
 #include "ores.comms/protocol/message_handler.hpp"
-#include "ores.risk/repository/context.hpp"
+#include "ores.utility/repository/context.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
 
 namespace ores::risk::messaging {
@@ -40,18 +40,20 @@ public:
      *
      * @param ctx Database context for repository access
      */
-    explicit risk_message_handler(repository::context ctx);
+    explicit risk_message_handler(utility::repository::context ctx);
 
     /**
      * @brief Handle a risk subsystem message.
      *
      * @param type The message type (must be in range 0x1000-0x1FFF)
      * @param payload The message payload
+     * @param remote_address The remote endpoint address of the client connection
      * @return Expected containing response payload, or error code
      */
     boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
     handle_message(comms::protocol::message_type type,
-        std::span<const std::uint8_t> payload) override;
+        std::span<const std::uint8_t> payload,
+        const std::string& remote_address) override;
 
 private:
     /**
@@ -60,7 +62,7 @@ private:
     boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
     handle_get_currencies_request(std::span<const std::uint8_t> payload);
 
-    repository::context ctx_;
+    utility::repository::context ctx_;
     repository::currency_repository currency_repo_;
 };
 

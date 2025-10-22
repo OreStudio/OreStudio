@@ -2,15 +2,8 @@
     "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
     "name": "ores",
     "description": "GUI for Open Source Risk Engine (ORE)",
-    "version-string": "0.0.1",
+    "version-string": "0.0.2",
     "dependencies": [
-        {
-            "name": "qtbase",
-            "features": [
-                "sql",
-                "sql-sqlite"
-            ]
-        },
         "openssl",
         "libpqxx",
         "libbson",
@@ -31,6 +24,7 @@
         "boost-program-options",
         "boost-test",
         "boost-uuid",
+        "boost-crc",
         "cli"
     ]
 }

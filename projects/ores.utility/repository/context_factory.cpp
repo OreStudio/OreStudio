@@ -19,16 +19,16 @@
  */
 #include <rfl/json.hpp>
 #include "ores.utility/log/logger.hpp"
-#include "ores.risk/repository/context_factory.hpp"
+#include "ores.utility/repository/context_factory.hpp"
 
 namespace {
 
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.risk.repository.context_factory"));
+auto lg(logger_factory("ores.utility.repository.context_factory"));
 
 }
 
-namespace ores::risk::repository {
+namespace ores::utility::repository {
 
 std::ostream&
 operator<<(std::ostream& s, const context_factory::configuration& v) {

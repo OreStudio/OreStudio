@@ -20,12 +20,15 @@
 #include <iostream>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <cli/cli.h>
 #include <cli/clifilesession.h>
 #include "ores.cli/app/repl.hpp"
 #include "ores.utility/log/logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.risk/messaging/protocol.hpp"
+#include "ores.accounts/messaging/protocol.hpp"
 
 namespace {
 
@@ -76,6 +79,7 @@ std::unique_ptr<::cli::Cli> repl::setup_menus() {
 
     register_connection_commands(*root_menu);
     register_currency_commands(*root_menu);
+    register_account_commands(*root_menu);
 
     auto cli_instance = std::make_unique<::cli::Cli>(std::move(root_menu));
     cli_instance->ExitAction([](auto& out) {
@@ -130,6 +134,64 @@ void repl::register_currency_commands(::cli::Menu& root_menu) {
         "Retrieve all currencies from the server");
 
     root_menu.Insert(std::move(currencies_menu));
+}
+
+void repl::register_account_commands(::cli::Menu& root_menu) {
+    auto accounts_menu = std::make_unique<::cli::Menu>("accounts");
+
+    accounts_menu->Insert("create",
+        [this](std::ostream& out, std::string username, std::string password,
+            std::string totp_secret, std::string email, std::string is_admin_str) {
+            if (!client_ || !client_->is_connected()) {
+                out << "✗ Not connected to server. Use 'connect' command first" << std::endl;
+                return;
+            }
+
+            bool is_admin = (is_admin_str == "true" || is_admin_str == "1");
+            BOOST_LOG_SEV(lg, debug) << "Initiating create account request";
+
+            auto executor = io_ctx_->get_executor();
+            boost::asio::co_spawn(
+                executor, process_create_account(std::ref(out), std::move(username),
+                    std::move(password), std::move(totp_secret),
+                    std::move(email), is_admin),
+                boost::asio::detached);
+        },
+        "Create a new account (username password totp_secret email is_admin)");
+
+    accounts_menu->Insert("list",
+        [this](std::ostream& out) {
+            if (!client_ || !client_->is_connected()) {
+                out << "✗ Not connected to server. Use 'connect' command first" << std::endl;
+                return;
+            }
+
+            BOOST_LOG_SEV(lg, debug) << "Initiating list accounts request";
+
+            auto executor = io_ctx_->get_executor();
+            boost::asio::co_spawn(executor,
+                process_list_accounts(std::ref(out)),
+                boost::asio::detached);
+        },
+        "Retrieve all accounts from the server");
+
+    accounts_menu->Insert("login",
+        [this](std::ostream& out, std::string username, std::string password) {
+            if (!client_ || !client_->is_connected()) {
+                out << "✗ Not connected to server. Use 'connect' command first" << std::endl;
+                return;
+            }
+
+            BOOST_LOG_SEV(lg, debug) << "Initiating login request";
+
+            auto executor = io_ctx_->get_executor();
+            boost::asio::co_spawn(executor,
+                process_login(std::ref(out), std::move(username), std::move(password)),
+                boost::asio::detached);
+        },
+        "Login with username and password");
+
+    root_menu.Insert(std::move(accounts_menu));
 }
 
 boost::asio::awaitable<void> repl::
@@ -281,6 +343,174 @@ void repl::display_welcome() const {
     std::cout << "ORE Studio Client REPL" << std::endl;
     std::cout << "Type 'help' for available commands, 'exit' to quit" << std::endl;
     std::cout << std::endl;
+}
+
+boost::asio::awaitable<void>
+repl::process_create_account(std::ostream& out, std::string username,
+    std::string password, std::string totp_secret, std::string email,
+    bool is_admin) {
+    try {
+        BOOST_LOG_SEV(lg, debug) << "Creating create account request.";
+
+        accounts::messaging::create_account_request request{
+            .username = std::move(username),
+            .password = std::move(password),
+            .totp_secret = std::move(totp_secret),
+            .email = std::move(email),
+            .is_admin = is_admin
+        };
+
+        BOOST_LOG_SEV(lg, debug) << "Request: " << request;
+        auto request_payload = request.serialize();
+
+        comms::protocol::frame request_frame(
+            comms::protocol::message_type::create_account_request,
+            0,
+            std::move(request_payload));
+
+        BOOST_LOG_SEV(lg, debug) << "Sending request frame";
+
+        auto response_result =
+            co_await client_->send_request(std::move(request_frame));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg, error) << "Request failed with error code: "
+                                      << static_cast<int>(response_result.error());
+            out << "✗ Request failed\nores-client> " << std::flush;
+            co_return;
+        }
+
+        BOOST_LOG_SEV(lg, debug) << "Deserializing response";
+
+        auto response = accounts::messaging::create_account_response::deserialize(
+            response_result->payload());
+
+        if (!response) {
+            BOOST_LOG_SEV(lg, error) << "Failed to deserialize response: "
+                                      << static_cast<int>(response.error());
+            out << "✗ Failed to parse response" << std::endl;
+            co_return;
+        }
+
+        BOOST_LOG_SEV(lg, info) << "Successfully created account with ID: "
+                                << response->account_id;
+
+        out << "✓ Account created with ID: " << response->account_id
+            << "\nores-client> " << std::flush;
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg, error) << "Create account exception: " << e.what();
+        out << "✗ Error: " << e.what() << std::endl;
+    }
+}
+
+boost::asio::awaitable<void> repl::process_list_accounts(std::ostream& out) {
+    try {
+        BOOST_LOG_SEV(lg, debug) << "Creating list accounts request";
+
+        accounts::messaging::list_accounts_request request;
+        auto request_payload = request.serialize();
+
+        comms::protocol::frame request_frame(
+            comms::protocol::message_type::list_accounts_request,
+            0,
+            std::move(request_payload));
+
+        BOOST_LOG_SEV(lg, debug) << "Sending request frame";
+
+        auto response_result =
+            co_await client_->send_request(std::move(request_frame));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg, error) << "Request failed with error code: "
+                                      << static_cast<int>(response_result.error());
+            out << "✗ Request failed\nores-client> " << std::flush;
+            co_return;
+        }
+
+        BOOST_LOG_SEV(lg, debug) << "Deserializing response";
+
+        auto response = accounts::messaging::list_accounts_response::deserialize(
+            response_result->payload());
+
+        if (!response) {
+            BOOST_LOG_SEV(lg, error) << "Failed to deserialize response: "
+                                      << static_cast<int>(response.error());
+            out << "✗ Failed to parse response" << std::endl;
+            co_return;
+        }
+
+        BOOST_LOG_SEV(lg, info) << "Successfully retrieved "
+                                << response->accounts.size() << " accounts";
+
+        out << response->accounts << "\nores-client> " << std::flush;
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg, error) << "List accounts exception: " << e.what();
+        out << "✗ Error: " << e.what() << std::endl;
+    }
+}
+
+boost::asio::awaitable<void>
+repl::process_login(std::ostream& out, std::string username, std::string password) {
+    try {
+        BOOST_LOG_SEV(lg, debug) << "Creating login request for user: " << username;
+
+        accounts::messaging::login_request request{
+            .username = std::move(username),
+            .password = std::move(password)
+        };
+
+        auto request_payload = request.serialize();
+
+        comms::protocol::frame request_frame(
+            comms::protocol::message_type::login_request,
+            0,
+            std::move(request_payload));
+
+        BOOST_LOG_SEV(lg, debug) << "Sending login request frame";
+
+        auto response_result =
+            co_await client_->send_request(std::move(request_frame));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg, error) << "Login request failed with error code: "
+                                      << static_cast<int>(response_result.error());
+            out << "✗ Login request failed\nores-client> " << std::flush;
+            co_return;
+        }
+
+        BOOST_LOG_SEV(lg, debug) << "Deserializing login response";
+
+        auto response = accounts::messaging::login_response::deserialize(
+            response_result->payload());
+
+        if (!response) {
+            BOOST_LOG_SEV(lg, error) << "Failed to deserialize login response: "
+                                      << static_cast<int>(response.error());
+            out << "✗ Failed to parse login response" << std::endl;
+            co_return;
+        }
+
+        if (response->success) {
+            BOOST_LOG_SEV(lg, info) << "Login successful for user: " << response->username
+                                    << " (ID: " << response->account_id << ")";
+
+            out << "✓ Login successful!\n";
+            out << "  Username: " << response->username << "\n";
+            out << "  Account ID: " << response->account_id << "\n";
+            out << "  Admin: " << (response->is_admin ? "Yes" : "No") << "\n";
+            out << "ores-client> " << std::flush;
+        } else {
+            BOOST_LOG_SEV(lg, warn) << "Login failed: " << response->error_message;
+            out << "✗ Login failed: " << response->error_message
+                << "\nores-client> " << std::flush;
+        }
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg, error) << "Login exception: " << e.what();
+        out << "✗ Error: " << e.what() << std::endl;
+    }
 }
 
 }

@@ -30,8 +30,7 @@
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
 #include "ores.cli/config/export_options.hpp"
-#include "ores.comms/client.hpp"
-#include "ores.risk/repository/context.hpp"
+#include "ores.utility/repository/context.hpp"
 
 namespace ores::cli::app {
 
@@ -45,7 +44,7 @@ public:
     application& operator=(const application&) = delete;
 
 private:
-    static risk::repository::context make_context();
+    static utility::repository::context make_context();
     void import_currencies(const std::vector<std::filesystem::path> files) const;
     void import_data(const std::optional<config::import_options>& ocfg) const;
 
@@ -63,7 +62,7 @@ public:
     boost::asio::awaitable<void> run(const config::options& cfg) const;
 
 private:
-    risk::repository::context context_;
+    utility::repository::context context_;
 };
 
 }

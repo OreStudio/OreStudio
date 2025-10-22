@@ -39,7 +39,8 @@ void message_dispatcher::register_handler(message_type_range range,
 }
 
 boost::asio::awaitable<std::expected<frame, error_code>>
-message_dispatcher::dispatch(const frame& request_frame, std::uint32_t sequence) {
+message_dispatcher::dispatch(const frame& request_frame, std::uint32_t sequence,
+    const std::string& remote_address) {
     const auto msg_type = request_frame.header().type;
     BOOST_LOG_SEV(lg, debug) << "Dispatching message type "
                               << std::hex << static_cast<std::uint16_t>(msg_type);
@@ -53,7 +54,8 @@ message_dispatcher::dispatch(const frame& request_frame, std::uint32_t sequence)
     }
 
     // Invoke the handler
-    auto result = co_await handler->handle_message(msg_type, request_frame.payload());
+    auto result = co_await handler->handle_message(msg_type, request_frame.payload(),
+        remote_address);
     if (!result) {
         BOOST_LOG_SEV(lg, error) << "Handler failed for message type "
                                   << std::hex << static_cast<std::uint16_t>(msg_type)

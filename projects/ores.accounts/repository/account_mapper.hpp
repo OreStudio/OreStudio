@@ -17,33 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_RISK_REPOSITORY_CONTEXT_HPP
-#define ORES_RISK_REPOSITORY_CONTEXT_HPP
+#ifndef ORES_ACCOUNTS_REPOSITORY_ACCOUNT_MAPPER_HPP
+#define ORES_ACCOUNTS_REPOSITORY_ACCOUNT_MAPPER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <sqlgen/postgres.hpp>
+#include "ores.accounts/domain/account.hpp"
+#include "ores.accounts/repository/account_entity.hpp"
 
-namespace ores::risk::repository {
+namespace ores::accounts::repository {
 
 /**
- * @brief Context for the operations on a repository.
+ * @brief Maps domain model entities to data storage layer and vice-versa.
  */
-class context {
+class account_mapper {
 public:
-    using connection_type = sqlgen::postgres::Connection;
-    using connection_pool_type = sqlgen::Result<
-        sqlgen::ConnectionPool<connection_type>>;
+    static domain::account map(const account_entity& v);
+    static account_entity map(const domain::account& v);
 
-    explicit context(connection_pool_type connection_pool)
-        : connection_pool_(std::move(connection_pool)) {}
-
-    connection_pool_type connection_pool() { return connection_pool_; }
-
-private:
-    connection_pool_type connection_pool_;
+    static std::vector<domain::account>
+    map(const std::vector<account_entity>& v);
+    static std::vector<account_entity>
+    map(const std::vector<domain::account>& v);
 };
 
 }

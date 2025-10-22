@@ -65,12 +65,14 @@ public:
      *
      * @param request_frame The incoming request frame
      * @param sequence The sequence number for the response frame
+     * @param remote_address The remote endpoint address of the client connection
      * @return Expected containing response frame, or error_code if:
      *         - No handler is registered for this message type
      *         - Handler returns an error
      */
     boost::asio::awaitable<std::expected<frame, error_code>>
-    dispatch(const frame& request_frame, std::uint32_t sequence);
+    dispatch(const frame& request_frame, std::uint32_t sequence,
+             const std::string& remote_address);
 
 private:
     /**

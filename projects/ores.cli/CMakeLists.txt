@@ -69,6 +69,7 @@ target_include_directories(${exe_target_name}
 target_link_libraries(${exe_target_name} PRIVATE
     ${lib_target_name}
     ores.risk.lib
+    ores.accounts.lib
     ores.utility.lib
     ores.comms.lib
     Boost::boost

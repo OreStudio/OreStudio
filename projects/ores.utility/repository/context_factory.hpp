@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_RISK_REPOSITORY_CONTEXT_FACTORY_HPP
-#define ORES_RISK_REPOSITORY_CONTEXT_FACTORY_HPP
+#ifndef ORES_UTILITY_REPOSITORY_CONTEXT_FACTORY_HPP
+#define ORES_UTILITY_REPOSITORY_CONTEXT_FACTORY_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -27,9 +27,9 @@
 #include <iosfwd>
 #include <string>
 #include <rfl.hpp>
-#include "ores.risk/repository/context.hpp"
+#include "ores.utility/repository/context.hpp"
 
-namespace ores::risk::repository {
+namespace ores::utility::repository {
 
 /**
  * @brief Generates a new repository context.

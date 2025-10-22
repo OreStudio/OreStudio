@@ -41,6 +41,14 @@ enum class message_type {
     get_currencies_request = 0x1001,
     get_currencies_response = 0x1002,
 
+    // Accounts subsystem messages (0x2000 - 0x2FFF)
+    create_account_request = 0x2001,
+    create_account_response = 0x2002,
+    list_accounts_request = 0x2003,
+    list_accounts_response = 0x2004,
+    login_request = 0x2005,
+    login_response = 0x2006,
+
     last_value
 };
 

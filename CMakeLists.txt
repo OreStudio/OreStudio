@@ -78,6 +78,7 @@ find_package(Boost 1.88 REQUIRED COMPONENTS
     exception
     filesystem
     log
+    crc
     program_options
     unit_test_framework)
 
@@ -89,10 +90,10 @@ find_package(libpqxx CONFIG REQUIRED)
 find_package(PostgreSQL REQUIRED)
 
 # Qt
-find_package(Qt6Core REQUIRED)
-find_package(Qt6Gui REQUIRED)
-find_package(Qt6Widgets REQUIRED)
-find_package(Qt6Sql REQUIRED)
+# find_package(Qt6Core REQUIRED)
+# find_package(Qt6Gui REQUIRED)
+# find_package(Qt6Widgets REQUIRED)
+# find_package(Qt6Sql REQUIRED)
 
 # Reflect CPP
 find_package(pugixml CONFIG REQUIRED)

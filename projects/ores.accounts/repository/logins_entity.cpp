@@ -17,36 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_RISK_STORAGE_REPOSITORY_EXCEPTION_HPP
-#define ORES_RISK_STORAGE_REPOSITORY_EXCEPTION_HPP
+#include <ostream>
+#include <boost/uuid/uuid_io.hpp>
+#include "ores.accounts/repository/logins_entity.hpp"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
+namespace ores::accounts::repository {
 
-#include <string>
-#include <boost/exception/info.hpp>
-
-namespace ores::risk::repository {
-
-/**
- * @brief A fatal error has occurred whilst reading or writing to the
- * repository.
- */
-class repository_exception : public virtual std::exception,
-                             public virtual boost::exception {
-public:
-    explicit repository_exception(std::string_view message = "")
-        : message_(message) {}
-
-    [[nodiscard]] const char* what() const noexcept override {
-        return message_.c_str();
-    }
-
-private:
-    std::string message_;
-};
-
+std::ostream& operator<<(std::ostream& s, const logins_entity& v) {
+    s << "logins_entity{account_id=" << v.account_id.value()
+      << ", last_ip=" << v.last_ip
+      << ", last_attempt_ip=" << v.last_attempt_ip
+      << ", failed_logins=" << v.failed_logins
+      << ", locked=" << v.locked
+      << ", last_login=" << v.last_login.str()
+      << ", online=" << v.online
+      << "}";
+    return(s);
 }
 
-#endif
+}

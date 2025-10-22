@@ -30,12 +30,12 @@ auto lg(logger_factory("ores.risk.messaging.risk_message_handler"));
 
 namespace ores::risk::messaging {
 
-risk_message_handler::risk_message_handler(repository::context ctx)
+risk_message_handler::risk_message_handler(utility::repository::context ctx)
     : ctx_(std::move(ctx)) {}
 
 boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
 risk_message_handler::handle_message(comms::protocol::message_type type,
-    std::span<const std::uint8_t> payload) {
+    std::span<const std::uint8_t> payload, const std::string& remote_address) {
 
     BOOST_LOG_SEV(lg, debug) << "Handling risk message type "
                               << std::hex << static_cast<std::uint16_t>(type);

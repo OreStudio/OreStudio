@@ -32,7 +32,7 @@ create table if not exists "oresdb"."accounts" (
     "password_salt" text not null,
     "totp_secret" text not null,
     "email" text not null,
-    "is_admin" integer not null,
+    "is_admin" boolean not null,
     "modified_by" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,

@@ -41,9 +41,9 @@ struct login_info_entity {
     std::string last_ip;
     std::string last_attempt_ip;
     int failed_logins;
-    int locked;
+    bool locked;
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> last_login = "9999-12-31 23:59:59";
-    int online;
+    bool online;
 };
 
 std::ostream& operator<<(std::ostream& s, const login_info_entity& v);

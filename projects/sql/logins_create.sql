@@ -30,9 +30,9 @@ create table if not exists "oresdb"."logins" (
     "last_ip" inet not null,
     "last_attempt_ip" inet not null,
     "failed_logins" integer not null,
-    "locked" boolean not null,
+    "locked" integer not null,
     "last_login" timestamp with time zone not null,
-    "online" boolean not null,
+    "online" integer not null,
     primary key (account_id)
 );
 
@@ -41,4 +41,4 @@ on "oresdb"."logins" (account_id);
 
 create index if not exists logins_locked_idx
 on "oresdb"."logins" (locked)
-where locked = true;
+where locked = 1;

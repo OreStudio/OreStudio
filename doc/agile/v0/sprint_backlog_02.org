@@ -669,7 +669,7 @@ We need to setup the infrastructure for messaging within the risk subsystem.
 Move all of the code in application related to repl into it's own class and tidy
 it up.
 
-*** STARTED Investigate build warning for vcpkg binary caching        :infra:
+*** COMPLETED Investigate build warning for vcpkg binary caching      :infra:
     :LOGBOOK:
     CLOCK: [2025-09-21 Sun 09:25]--[2025-09-21 Sun 09:50] =>  0:25
     :END:
@@ -727,14 +727,14 @@ export VCPKG_DISABLE_SYSTEM_PACKAGE_CHECK=1
 
 The action to review PRs using gemini is failing.
 
-*** STARTED vcpkg caching seems disabled                             :infra:
+*** COMPLETED vcpkg caching seems disabled                            :infra:
     :LOGBOOK:
     CLOCK: [2025-09-21 Sun 10:06]--[2025-09-21 Sun 10:21] =>  0:15
     :END:
 
 It seems caching is not kicking in so builds are very slow.
 
-*** STARTED Fix broken builds                                         :infra:
+*** COMPLETED Fix broken builds                                       :infra:
     :LOGBOOK:
     CLOCK: [2025-10-21 Tue 08:50]--[2025-10-21 Tue 09:10] =>  0:20
     CLOCK: [2025-10-15 Wed 21:01]--[2025-10-15 Wed 21:39] =>  0:38
@@ -742,8 +742,25 @@ It seems caching is not kicking in so builds are very slow.
 
 After latest comms changes, the builds got borked.
 
+*** COMPLETED Update vcpkg to latest                                  :infra:
+    :LOGBOOK:
+    CLOCK: [2025-10-22 Wed 15:55]--[2025-10-22 Wed 16:59] =>  1:04
+    CLOCK: [2025-10-22 Wed 13:01]--[2025-10-22 Wed 15:54] =>  2:53
+    :END:
+
+We need to get latest vcpkg as we haven't updated in a while.
+
+Notes:
+
+- latest sqlgen seems borked.
+
+Links:
+
+- [[https://github.com/getml/sqlgen/issues/70][#70: Problem with queries and schemas after v0.3.0 update]]
+
 *** STARTED Add support for accounts and logins                        :code:
     :LOGBOOK:
+    CLOCK: [2025-10-22 Wed 11:34]--[2025-10-22 Wed 11:50] =>  0:16
     CLOCK: [2025-10-21 Tue 23:42]--[2025-10-22 Wed 01:24] =>  1:42
     CLOCK: [2025-10-21 Tue 17:05]--[2025-10-21 Tue 18:30] =>  1:25
     CLOCK: [2025-10-21 Tue 14:12]--[2025-10-21 Tue 15:05] =>  0:53

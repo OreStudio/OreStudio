@@ -29,13 +29,13 @@
 
 ;; define your connections
 (add-to-list 'sql-connection-alist
-      '((ores-primary-db (sql-product 'postgres)
-                         (sql-database (concat "postgresql://"
-                                               "ores"
-                                               ":" (auth-source-pick-first-password :host "localhost")
-                                               "@localhost"
-                                               ":5434"
-                                               "/oresdb"
-                                               )))))
+      '("ores-primary-db" (sql-product 'postgres)
+        (sql-database (concat "postgresql://"
+                              "ores"
+                              ":" (auth-source-pick-first-password :host "localhost")
+                              "@localhost"
+                              ":5434"
+                              "/oresdb"
+                              ))))
 (provide 'ores-database)
 ;;; ores-database.el ends here

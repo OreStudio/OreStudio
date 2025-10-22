@@ -48,6 +48,9 @@ account_service::account_service(repository::account_repository account_repo,
     repository::logins_repository logins_repo)
     : account_repo_(std::move(account_repo)),
       logins_repo_(std::move(logins_repo)) {
+
+    BOOST_LOG_SEV(lg, debug) << "DML for account: " << account_repo_.sql();
+    BOOST_LOG_SEV(lg, debug) << "DML for account: " << logins_repo_.sql();
 }
 
 domain::account account_service::

@@ -21,23 +21,23 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/asio/ip/address.hpp>
 #include "ores.utility/test/logging.hpp"
-#include "ores.accounts/domain/logins.hpp"
+#include "ores.accounts/domain/login_info.hpp"
 
 namespace {
 
 const std::string test_module("ores.accounts.tests");
-const std::string test_suite("domain_logins_tests");
+const std::string test_suite("domain_login_info_tests");
 
 }
 
-using ores::accounts::domain::logins;
+using ores::accounts::domain::login_info;
 
-BOOST_AUTO_TEST_SUITE(domain_logins_tests)
+BOOST_AUTO_TEST_SUITE(domain_login_info_tests)
 
-BOOST_AUTO_TEST_CASE(create_logins_with_ipv4_addresses) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("create_logins_with_ipv4_addresses");
+BOOST_AUTO_TEST_CASE(create_login_info_with_ipv4_addresses) {
+    SETUP_TEST_LOG_SOURCE_DEBUG("create_login_info_with_ipv4_addresses");
 
-    logins login_info;
+    login_info login_info;
     login_info.account_id = boost::uuids::random_generator()();
     login_info.last_ip = boost::asio::ip::make_address("192.168.1.100");
     login_info.last_attempt_ip = boost::asio::ip::make_address("192.168.1.101");
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(create_logins_with_ipv4_addresses) {
     login_info.last_login = std::chrono::system_clock::now();
     login_info.online = true;
 
-    BOOST_LOG_SEV(lg, debug) << "Created logins with IPv4: " << login_info;
+    BOOST_LOG_SEV(lg, debug) << "Created login_info with IPv4: " << login_info;
 
     BOOST_CHECK_EQUAL(login_info.failed_logins, 0);
     BOOST_CHECK_EQUAL(login_info.locked, false);
@@ -55,10 +55,10 @@ BOOST_AUTO_TEST_CASE(create_logins_with_ipv4_addresses) {
     BOOST_CHECK_EQUAL(login_info.last_attempt_ip.to_string(), "192.168.1.101");
 }
 
-BOOST_AUTO_TEST_CASE(create_logins_with_ipv6_addresses) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("create_logins_with_ipv6_addresses");
+BOOST_AUTO_TEST_CASE(create_login_info_with_ipv6_addresses) {
+    SETUP_TEST_LOG_SOURCE_DEBUG("create_login_info_with_ipv6_addresses");
 
-    logins login_info;
+    login_info login_info;
     login_info.account_id = boost::uuids::random_generator()();
     login_info.last_ip = boost::asio::ip::make_address("2001:0db8:85a3:0000:0000:8a2e:0370:7334");
     login_info.last_attempt_ip = boost::asio::ip::make_address("::1");
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(create_logins_with_ipv6_addresses) {
     login_info.last_login = std::chrono::system_clock::now();
     login_info.online = false;
 
-    BOOST_LOG_SEV(lg, debug) << "Created logins with IPv6: " << login_info;
+    BOOST_LOG_SEV(lg, debug) << "Created login_info with IPv6: " << login_info;
 
     BOOST_CHECK_EQUAL(login_info.failed_logins, 0);
     BOOST_CHECK_EQUAL(login_info.locked, false);
@@ -75,10 +75,10 @@ BOOST_AUTO_TEST_CASE(create_logins_with_ipv6_addresses) {
     BOOST_CHECK_EQUAL(login_info.last_attempt_ip.to_string(), "::1");
 }
 
-BOOST_AUTO_TEST_CASE(create_locked_account_logins) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("create_locked_account_logins");
+BOOST_AUTO_TEST_CASE(create_locked_account_login_info) {
+    SETUP_TEST_LOG_SOURCE_DEBUG("create_locked_account_login_info");
 
-    logins login_info;
+    login_info login_info;
     login_info.account_id = boost::uuids::random_generator()();
     login_info.last_ip = boost::asio::ip::make_address("10.0.0.50");
     login_info.last_attempt_ip = boost::asio::ip::make_address("203.0.113.42");
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(create_locked_account_logins) {
     login_info.last_login = std::chrono::system_clock::now() - std::chrono::hours(24);
     login_info.online = false;
 
-    BOOST_LOG_SEV(lg, debug) << "Created locked account logins: " << login_info;
+    BOOST_LOG_SEV(lg, debug) << "Created locked account login_info: " << login_info;
 
     BOOST_CHECK_EQUAL(login_info.failed_logins, 5);
     BOOST_CHECK_EQUAL(login_info.locked, true);
@@ -95,10 +95,10 @@ BOOST_AUTO_TEST_CASE(create_locked_account_logins) {
     BOOST_CHECK_EQUAL(login_info.last_attempt_ip.to_string(), "203.0.113.42");
 }
 
-BOOST_AUTO_TEST_CASE(logins_with_failed_attempts) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("logins_with_failed_attempts");
+BOOST_AUTO_TEST_CASE(login_info_with_failed_attempts) {
+    SETUP_TEST_LOG_SOURCE_DEBUG("login_info_with_failed_attempts");
 
-    logins login_info;
+    login_info login_info;
     login_info.account_id = boost::uuids::random_generator()();
     login_info.last_ip = boost::asio::ip::make_address("172.16.0.1");
     login_info.last_attempt_ip = boost::asio::ip::make_address("172.16.0.1");
@@ -107,20 +107,20 @@ BOOST_AUTO_TEST_CASE(logins_with_failed_attempts) {
     login_info.last_login = std::chrono::system_clock::now() - std::chrono::minutes(30);
     login_info.online = false;
 
-    BOOST_LOG_SEV(lg, debug) << "Logins with failed attempts: " << login_info;
+    BOOST_LOG_SEV(lg, debug) << "Login_Info with failed attempts: " << login_info;
 
     BOOST_CHECK_EQUAL(login_info.failed_logins, 3);
     BOOST_CHECK_EQUAL(login_info.locked, false);
     BOOST_CHECK_EQUAL(login_info.last_ip.to_string(), "172.16.0.1");
 }
 
-BOOST_AUTO_TEST_CASE(logins_serialization_to_json) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("logins_serialization_to_json");
+BOOST_AUTO_TEST_CASE(login_info_serialization_to_json) {
+    SETUP_TEST_LOG_SOURCE_DEBUG("login_info_serialization_to_json");
 
     boost::uuids::string_generator uuid_gen;
     const auto account_uuid = uuid_gen("123e4567-e89b-12d3-a456-426614174000");
 
-    logins login_info;
+    login_info login_info;
     login_info.account_id = account_uuid;
     login_info.last_ip = boost::asio::ip::make_address("198.51.100.42");
     login_info.last_attempt_ip = boost::asio::ip::make_address("198.51.100.43");
@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(logins_serialization_to_json) {
     login_info.last_login = std::chrono::system_clock::now();
     login_info.online = true;
 
-    BOOST_LOG_SEV(lg, debug) << "Logins before serialization: " << login_info;
+    BOOST_LOG_SEV(lg, debug) << "Login_Info before serialization: " << login_info;
 
     std::ostringstream oss;
     oss << login_info;
@@ -142,10 +142,10 @@ BOOST_AUTO_TEST_CASE(logins_serialization_to_json) {
     BOOST_CHECK(json_output.find("198.51.100.42") != std::string::npos);
 }
 
-BOOST_AUTO_TEST_CASE(logins_with_different_ip_versions) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("logins_with_different_ip_versions");
+BOOST_AUTO_TEST_CASE(login_info_with_different_ip_versions) {
+    SETUP_TEST_LOG_SOURCE_DEBUG("login_info_with_different_ip_versions");
 
-    logins login_info;
+    login_info login_info;
     login_info.account_id = boost::uuids::random_generator()();
     login_info.last_ip = boost::asio::ip::make_address("192.0.2.1");
     login_info.last_attempt_ip = boost::asio::ip::make_address("2001:db8::1");
@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE(logins_with_different_ip_versions) {
     login_info.last_login = std::chrono::system_clock::now();
     login_info.online = true;
 
-    BOOST_LOG_SEV(lg, debug) << "Logins with mixed IP versions: " << login_info;
+    BOOST_LOG_SEV(lg, debug) << "Login_Info with mixed IP versions: " << login_info;
 
     BOOST_CHECK(login_info.last_ip.is_v4());
     BOOST_CHECK(login_info.last_attempt_ip.is_v6());

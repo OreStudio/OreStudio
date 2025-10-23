@@ -17,47 +17,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_REPOSITORY_LOGINS_REPOSITORY_HPP
-#define ORES_ACCOUNTS_REPOSITORY_LOGINS_REPOSITORY_HPP
+#ifndef ORES_ACCOUNTS_REPOSITORY_LOGIN_INFO_MAPPER_HPP
+#define ORES_ACCOUNTS_REPOSITORY_LOGIN_INFO_MAPPER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <string>
 #include <vector>
-#include <boost/uuid/uuid.hpp>
-#include <sqlgen/postgres.hpp>
-#include "ores.utility/repository/context.hpp"
-#include "ores.accounts/domain/logins.hpp"
+#include "ores.accounts/domain/login_info.hpp"
+#include "ores.accounts/repository/login_info_entity.hpp"
 
 namespace ores::accounts::repository {
 
 /**
- * @brief Reads and writes login tracking information off of data storage.
+ * @brief Maps domain model entities to data storage layer and vice-versa.
  */
-class logins_repository {
+class login_info_mapper {
 public:
-    using context = ores::utility::repository::context;
+    static domain::login_info map(const login_info_entity& v);
+    static login_info_entity map(const domain::login_info& v);
 
-    /**
-     * @brief Returns the SQL created by sqlgen to construct the table.
-     */
-    std::string sql();
-
-    /**
-     * @brief Writes or updates login information to database.
-     */
-    void write(context ctx, const std::vector<domain::logins>& logins);
-
-    /**
-     * @brief Reads login information, possibly filtered by account ID.
-     */
-    /**@{*/
-    std::vector<domain::logins> read(context ctx);
-    std::vector<domain::logins>
-    read(context ctx, const boost::uuids::uuid& account_id);
-    /**@}*/
+    static std::vector<domain::login_info>
+    map(const std::vector<login_info_entity>& v);
+    static std::vector<login_info_entity>
+    map(const std::vector<domain::login_info>& v);
 };
 
 }

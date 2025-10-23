@@ -30,7 +30,7 @@
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include "ores.accounts/domain/account.hpp"
 #include "ores.accounts/repository/account_repository.hpp"
-#include "ores.accounts/repository/logins_repository.hpp"
+#include "ores.accounts/repository/login_info_repository.hpp"
 
 namespace ores::accounts::service {
 
@@ -45,10 +45,10 @@ public:
      * @brief Constructs an account_service with required repositories and security components.
      *
      * @param account_repo The repository for managing account data.
-     * @param logins_repo The repository for managing login tracking data.
+     * @param login_info_repo The repository for managing login tracking data.
      */
     account_service(repository::account_repository account_repo,
-                    repository::logins_repository logins_repo);
+                    repository::login_info_repository login_info_repo);
 
     /**
      * @brief Creates a new account with the provided details.
@@ -89,8 +89,8 @@ public:
      * @brief Authenticates a user and updates login tracking information.
      *
      * This method validates the provided credentials against stored account data,
-     * and if successful, updates the logins table with the current login information.
-     * It also handles failed login attempts by incrementing the failed_logins counter
+     * and if successful, updates the login_info table with the current login information.
+     * It also handles failed login attempts by incrementing the failed_login_info counter
      * and may lock the account after too many consecutive failures.
      *
      * @param ctx Repository context for database operations
@@ -106,7 +106,7 @@ public:
 
 private:
     repository::account_repository account_repo_;
-    repository::logins_repository logins_repo_;
+    repository::login_info_repository login_info_repo_;
     utility::uuid::uuid_v7_generator uuid_generator_;
 };
 

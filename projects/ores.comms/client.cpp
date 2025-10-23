@@ -110,7 +110,7 @@ boost::asio::awaitable<bool> client::connect() {
         }
 
         {
-            std::lock_guard<std::mutex> guard{state_mutex_};
+            std::lock_guard guard{state_mutex_};
             connected_ = true;
         }
         BOOST_LOG_SEV(lg, info) << "Successfully connected to server.";
@@ -128,7 +128,7 @@ boost::asio::awaitable<bool> client::perform_handshake() {
         // Send handshake request
         auto request_frame = protocol::create_handshake_request_frame(
             [this]() {
-                std::lock_guard<std::mutex> guard{state_mutex_};
+                std::lock_guard guard{state_mutex_};
                 return ++sequence_number_;
             }(),
             config_.client_identifier);
@@ -190,7 +190,7 @@ boost::asio::awaitable<bool> client::perform_handshake() {
         // Send acknowledgment
         auto ack_frame = protocol::create_handshake_ack_frame(
             [this]() {
-                std::lock_guard<std::mutex> guard{state_mutex_};
+                std::lock_guard guard{state_mutex_};
                 return ++sequence_number_;
             }(),
             protocol::error_code::none);
@@ -210,7 +210,7 @@ boost::asio::awaitable<bool> client::perform_handshake() {
 
 void client::disconnect() {
     {
-        std::lock_guard<std::mutex> guard{state_mutex_};
+        std::lock_guard guard{state_mutex_};
         if (conn_) {
             conn_->close();
             conn_.reset();
@@ -221,7 +221,7 @@ void client::disconnect() {
 }
 
 bool client::is_connected() const {
-    std::lock_guard<std::mutex> guard{state_mutex_};
+    std::lock_guard guard{state_mutex_};
     return connected_ && conn_ && conn_->is_open();
 }
 
@@ -239,7 +239,7 @@ client::send_request(protocol::frame request_frame) {
         request_frame = protocol::frame(
             request_frame.header().type,
             [this]() {
-                std::lock_guard<std::mutex> guard{state_mutex_};
+                std::lock_guard guard{state_mutex_};
                 return ++sequence_number_;
             }(),
             std::vector<std::uint8_t>(request_frame.payload()));

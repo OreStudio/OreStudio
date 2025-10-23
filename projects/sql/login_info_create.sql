@@ -22,23 +22,23 @@ create extension if not exists btree_gist;
 set schema 'oresdb';
 
 --
--- logins table tracks login security information for accounts.
+-- login_info table tracks login security information for accounts.
 -- note: this is a current-state table without temporal versioning.
 --
-create table if not exists "oresdb"."logins" (
+create table if not exists "oresdb"."login_info" (
     "account_id" uuid not null,
     "last_ip" inet not null,
     "last_attempt_ip" inet not null,
     "failed_logins" integer not null,
-    "locked" integer not null,
+    "locked" boolean not null,
     "last_login" timestamp with time zone not null,
-    "online" integer not null,
+    "online" boolean not null,
     primary key (account_id)
 );
 
-create index if not exists logins_account_id_idx
-on "oresdb"."logins" (account_id);
+create index if not exists login_info_account_id_idx
+on "oresdb"."login_info" (account_id);
 
-create index if not exists logins_locked_idx
-on "oresdb"."logins" (locked)
-where locked = 1;
+create index if not exists login_info_locked_idx
+on "oresdb"."login_info" (locked)
+where locked = false;

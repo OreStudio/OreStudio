@@ -18,20 +18,15 @@
  *
  */
 #include <ostream>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.accounts/repository/logins_entity.hpp"
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.accounts/domain/login_info.hpp"
 
-namespace ores::accounts::repository {
+namespace ores::accounts::domain {
 
-std::ostream& operator<<(std::ostream& s, const logins_entity& v) {
-    s << "logins_entity{account_id=" << v.account_id.value()
-      << ", last_ip=" << v.last_ip
-      << ", last_attempt_ip=" << v.last_attempt_ip
-      << ", failed_logins=" << v.failed_logins
-      << ", locked=" << v.locked
-      << ", last_login=" << v.last_login.str()
-      << ", online=" << v.online
-      << "}";
+std::ostream& operator<<(std::ostream& s, const login_info& v) {
+    rfl::json::write(v, s);
     return(s);
 }
 

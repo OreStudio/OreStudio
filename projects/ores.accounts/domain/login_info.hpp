@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_DOMAIN_LOGINS_HPP
-#define ORES_ACCOUNTS_DOMAIN_LOGINS_HPP
+#ifndef ORES_ACCOUNTS_DOMAIN_LOGIN_INFO_HPP
+#define ORES_ACCOUNTS_DOMAIN_LOGIN_INFO_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -34,7 +34,7 @@ namespace ores::accounts::domain {
 /**
  * @brief Represents login tracking and security information for an account.
  */
-struct logins final {
+struct login_info final {
     /**
      * @brief Foreign key referencing the associated account.
      */
@@ -71,7 +71,7 @@ struct logins final {
     bool online;
 };
 
-std::ostream& operator<<(std::ostream& s, const logins& v);
+std::ostream& operator<<(std::ostream& s, const login_info& v);
 
 }
 

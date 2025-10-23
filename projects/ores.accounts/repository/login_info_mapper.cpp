@@ -20,12 +20,12 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.utility/log/logger.hpp"
-#include "ores.accounts/repository/logins_mapper.hpp"
+#include "ores.accounts/repository/login_info_mapper.hpp"
 
 namespace {
 
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.accounts.repository.logins_mapper"));
+auto lg(logger_factory("ores.accounts.repository.login_info_mapper"));
 
 std::chrono::system_clock::time_point
 timestamp_to_timepoint(const sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">& ts) {
@@ -51,10 +51,10 @@ timepoint_to_timestamp(const std::chrono::system_clock::time_point& tp) {
 
 namespace ores::accounts::repository {
 
-domain::logins logins_mapper::map(const logins_entity& v) {
+domain::login_info login_info_mapper::map(const login_info_entity& v) {
     BOOST_LOG_SEV(lg, debug) << "Mapping db entity: " << v;
 
-    domain::logins r;
+    domain::login_info r;
     r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id.value());
     r.last_ip = boost::asio::ip::make_address(v.last_ip);
     r.last_attempt_ip = boost::asio::ip::make_address(v.last_attempt_ip);
@@ -67,10 +67,10 @@ domain::logins logins_mapper::map(const logins_entity& v) {
     return r;
 }
 
-logins_entity logins_mapper::map(const domain::logins& v) {
+login_info_entity login_info_mapper::map(const domain::login_info& v) {
     BOOST_LOG_SEV(lg, debug) << "Mapping domain entity: " << v;
 
-    logins_entity r;
+    login_info_entity r;
     r.account_id = boost::lexical_cast<std::string>(v.account_id);
     r.last_ip = v.last_ip.to_string();
     r.last_attempt_ip = v.last_attempt_ip.to_string();
@@ -83,11 +83,11 @@ logins_entity logins_mapper::map(const domain::logins& v) {
     return r;
 }
 
-std::vector<domain::logins>
-logins_mapper::map(const std::vector<logins_entity>& v) {
+std::vector<domain::login_info>
+login_info_mapper::map(const std::vector<login_info_entity>& v) {
     BOOST_LOG_SEV(lg, debug) << "Mapping db entities. Total: " << v.size();
 
-    std::vector<domain::logins> r;
+    std::vector<domain::login_info> r;
     r.reserve(v.size());
     std::ranges::transform(v, std::back_inserter(r),
         [](const auto& ve) { return map(ve); });
@@ -96,11 +96,11 @@ logins_mapper::map(const std::vector<logins_entity>& v) {
     return r;
 }
 
-std::vector<logins_entity>
-logins_mapper::map(const std::vector<domain::logins>& v) {
+std::vector<login_info_entity>
+login_info_mapper::map(const std::vector<domain::login_info>& v) {
     BOOST_LOG_SEV(lg, debug) << "Mapping domain entities. Count: " << v.size();
 
-    std::vector<logins_entity> r;
+    std::vector<login_info_entity> r;
     r.reserve(v.size());
     std::ranges::transform(v, std::back_inserter(r),
         [](const auto& ve) { return map(ve); });

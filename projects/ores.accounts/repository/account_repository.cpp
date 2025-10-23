@@ -147,6 +147,9 @@ account_repository::read_latest_by_username(context ctx, const std::string& user
         where("username"_c == username && "valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
 
+    const auto sql = postgres::to_sql(query);
+    BOOST_LOG_SEV(lg, debug) << "Query: " << sql;
+
     const auto r = session(ctx.connection_pool()).and_then(query);
     ensure_success(r);
     BOOST_LOG_SEV(lg, debug) << "Read latest account by username. Total: " << r->size();

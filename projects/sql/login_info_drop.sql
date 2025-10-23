@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,17 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.accounts/domain/logins.hpp"
-
-namespace ores::accounts::domain {
-
-std::ostream& operator<<(std::ostream& s, const logins& v) {
-    rfl::json::write(v, s);
-    return(s);
-}
-
-}
+drop index if exists login_info_account_id_idx;
+drop index if exists login_info_locked_idx;
+drop table if exists login_info;
+-- drop extension if exists btree_gist;
+-- drop schema if exists oresdb;

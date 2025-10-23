@@ -74,9 +74,10 @@ handle_create_account_request(std::span<const std::uint8_t> payload) {
     BOOST_LOG_SEV(lg, debug) << "Request: " << request;
 
     try {
-        service::account_service s(account_repo_, logins_repo_);
+        service::account_service s(account_repo_, login_info_repo_);
         domain::account account = s.create_account(ctx_, request.username, request.email,
-            request.password, request.modified_by, request.is_admin);
+                                                   request.password, request.modified_by,
+            request.is_admin);
 
         BOOST_LOG_SEV(lg, info) << "Created account with ID: " << account.id
                                  << " for username: " << account.username;
@@ -138,13 +139,16 @@ accounts_message_handler::handle_login_request(std::span<const std::uint8_t> pay
             remote_address.substr(0, colon_pos) : remote_address;
 
         // Parse IP address from string
-        boost::asio::ip::address ip_address = boost::asio::ip::make_address(ip_string);
+        using namespace boost::asio::ip;
+        address ip_address = make_address(ip_string);
 
         // Attempt login
-        service::account_service s(account_repo_, logins_repo_);
-        domain::account account = s.login(ctx_, request.username, request.password, ip_address);
+        service::account_service s(account_repo_, login_info_repo_);
+        domain::account account = s.login(ctx_, request.username,
+            request.password, ip_address);
 
-        BOOST_LOG_SEV(lg, info) << "Successful login for username: " << account.username
+        BOOST_LOG_SEV(lg, info) << "Successful login for username: "
+                                << account.username
                                  << " from IP: " << ip_address;
 
         // Create successful response

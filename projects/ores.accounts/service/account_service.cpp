@@ -45,12 +45,12 @@ void throw_if_empty(const std::string& name, const std::string& value)
 namespace ores::accounts::service {
 
 account_service::account_service(repository::account_repository account_repo,
-    repository::logins_repository logins_repo)
+    repository::login_info_repository login_info_repo)
     : account_repo_(std::move(account_repo)),
-      logins_repo_(std::move(logins_repo)) {
+      login_info_repo_(std::move(login_info_repo)) {
 
     BOOST_LOG_SEV(lg, debug) << "DML for account: " << account_repo_.sql();
-    BOOST_LOG_SEV(lg, debug) << "DML for account: " << logins_repo_.sql();
+    BOOST_LOG_SEV(lg, debug) << "DML for account: " << login_info_repo_.sql();
 }
 
 domain::account account_service::
@@ -87,7 +87,7 @@ create_account(context ctx, const std::string& username, const std::string& emai
     account_repo_.write(ctx, accounts);
 
     // Create a corresponding login tracking entry
-    domain::logins login_info{
+    domain::login_info li{
         .account_id = id,
         .last_ip = {},
         .last_attempt_ip = {},
@@ -97,8 +97,8 @@ create_account(context ctx, const std::string& username, const std::string& emai
         .online = false
     };
 
-    std::vector<domain::logins> logins{login_info};
-    logins_repo_.write(ctx, logins);
+    std::vector<domain::login_info> login_infos{li};
+    login_info_repo_.write(ctx, login_infos);
 
     return new_account;
 }
@@ -143,14 +143,14 @@ domain::account account_service::login(context ctx, const std::string& username,
     const auto& account = accounts[0];
 
     // Read the login tracking information
-    auto logins_vec = logins_repo_.read(ctx, account.id);
-    if (logins_vec.empty()) {
+    auto login_info_vec = login_info_repo_.read(ctx, account.id);
+    if (login_info_vec.empty()) {
         BOOST_LOG_SEV(lg, error) << "Login tracking not found for account: "
                                  << boost::uuids::to_string(account.id);
         throw std::runtime_error("Login tracking information missing");
     }
 
-    auto login_info = logins_vec[0];
+    auto login_info = login_info_vec[0];
 
     // Check if account is locked
     if (login_info.locked) {
@@ -160,7 +160,8 @@ domain::account account_service::login(context ctx, const std::string& username,
 
     // Verify the password
     using security::password_manager;
-    bool password_valid = password_manager::verify_password_hash(password, account.password_hash);
+    bool password_valid = password_manager::
+        verify_password_hash(password, account.password_hash);
 
     // Update login tracking based on authentication result
     login_info.last_attempt_ip = ip_address;
@@ -179,9 +180,8 @@ domain::account account_service::login(context ctx, const std::string& username,
                                     << username;
         }
 
-        // Update the logins table with failed attempt
-        std::vector<domain::logins> logins{login_info};
-        logins_repo_.write(ctx, logins);
+        // Update the login_info table with failed attempt
+        login_info_repo_.update(ctx, login_info);
 
         throw std::runtime_error("Invalid username or password");
     }
@@ -195,9 +195,8 @@ domain::account account_service::login(context ctx, const std::string& username,
     BOOST_LOG_SEV(lg, info) << "Successful login for username: " << username
                             << " from IP: " << ip_address;
 
-    // Update the logins table
-    std::vector<domain::logins> logins{login_info};
-    logins_repo_.write(ctx, logins);
+    // Update the login_info table
+    login_info_repo_.update(ctx, login_info);
 
     return account;
 }

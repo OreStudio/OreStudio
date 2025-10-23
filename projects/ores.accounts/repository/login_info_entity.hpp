@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_REPOSITORY_LOGINS_ENTITY_HPP
-#define ORES_ACCOUNTS_REPOSITORY_LOGINS_ENTITY_HPP
+#ifndef ORES_ACCOUNTS_REPOSITORY_LOGIN_INFO_ENTITY_HPP
+#define ORES_ACCOUNTS_REPOSITORY_LOGIN_INFO_ENTITY_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -33,20 +33,20 @@ namespace ores::accounts::repository {
 /**
  * @brief Represents login tracking information in the database.
  */
-struct logins_entity {
+struct login_info_entity {
     constexpr static const char* schema = "oresdb";
-    constexpr static const char* tablename = "logins";
+    constexpr static const char* tablename = "login_info";
 
     sqlgen::PrimaryKey<std::string> account_id;
     std::string last_ip;
     std::string last_attempt_ip;
     int failed_logins;
-    int locked;
+    bool locked;
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> last_login = "9999-12-31 23:59:59";
-    int online;
+    bool online;
 };
 
-std::ostream& operator<<(std::ostream& s, const logins_entity& v);
+std::ostream& operator<<(std::ostream& s, const login_info_entity& v);
 
 }
 

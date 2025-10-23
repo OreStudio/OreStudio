@@ -32,7 +32,7 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-10-23 Thu 09:20]
+#+CAPTION: Clock summary at [2025-10-23 Thu 09:37]
 |          | <75>                                               |         |       |      |       |
 | Tags     | Headline                                           | Time    |       |      |     % |
 |----------+----------------------------------------------------+---------+-------+------+-------|
@@ -41,7 +41,7 @@
 |          | Stories                                            | 90:59   |       |      | 100.0 |
 |          | Active                                             |         | 90:59 |      | 100.0 |
 | agile    | Sprint and product backlog refinement              |         |       | 2:45 |   3.0 |
-| infra    | Fix broken builds                                  |         |       | 0:36 |   0.7 |
+| infra    | Fix imgui broken build                             |         |       | 0:36 |   0.7 |
 | code     | Create a containing structure for data             |         |       | 0:35 |   0.6 |
 | code     | Add temporal support to currencies                 |         |       | 2:59 |   3.3 |
 | code     | Add command to dump currencies                     |         |       | 4:18 |   4.7 |
@@ -125,7 +125,7 @@ blue <- "#076fa2"
 p <- ggplot(df) +
   aes(x = cost, y = stories) +
   geom_col(fill = blue, width = 0.6) +
-  ggtitle("Sprint 1: Resourcing per Story") +
+  ggtitle("Sprint 2: Resourcing per Story") +
   xlab("Resourcing (%)") + ylab("Stories") +
   theme(text = element_text(size = 15))
 
@@ -172,7 +172,7 @@ print(p)
 #+RESULTS: tags-chart
 [[file:sprint_backlog_02_tags.png]]
 
-*** COMPLETED Fix broken builds                                       :infra:
+*** COMPLETED Fix imgui broken build                                 :infra:
     :LOGBOOK:
     CLOCK: [2025-02-02 Sun 12:54]--[2025-02-02 Sun 13:30] =>  0:36
    :END:
@@ -360,9 +360,6 @@ Error: Invalid format '+++ ./doc/agile/v0/sprint_backlog_02.org.64	2025-09-20 10
 #+end_src
 
 The problem may be related to the error in the URL.
-
-
-***
 
 *** COMPLETED Remove URL support from prog mode in emacs               :code:
     :LOGBOOK:

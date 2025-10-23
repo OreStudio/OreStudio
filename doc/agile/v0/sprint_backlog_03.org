@@ -1,0 +1,521 @@
+:PROPERTIES:
+:ID: D35D43C9-46BF-9A94-F03B-A3B706020498
+:END:
+#+title: Sprint Backlog 03
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED
+#+tags: { code(c) infra(i) analysis(n) agile(a) }
+#+startup: inlineimages
+
+* Sprint Mission
+
+- update UI layer to use new socket code.
+- finish login related functionality.
+
+* Stories
+
+** Active
+
+#+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
+#+TBLNAME: today_summary
+#+CAPTION: Clock summary at [2025-10-23 Thu 09:46], for Thursday, October 23, 2025.
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *0:35* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 0:35   |      |      | 100.0 |
+|       | Active                                |        | 0:35 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:35 | 100.0 |
+#+end:
+
+#+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
+#+TBLNAME: sprint_summary
+#+CAPTION: Clock summary at [2025-10-23 Thu 09:46]
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *1:48* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 1:48   |      |      | 100.0 |
+|       | Active                                |        | 1:48 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:35 |  32.4 |
+| code  | Add workspace as a container          |        |      | 1:13 |  67.6 |
+#+end:
+
+*** STARTED Sprint and product backlog refinement                     :agile:
+    :LOGBOOK:
+    CLOCK: [2025-10-23 Thu 09:10]--[2025-10-23 Thu 09:45] =>  0:35
+    :END:
+
+Updates to sprint and product backlog.
+
+#+begin_src emacs-lisp :exports none
+;; agenda
+(org-agenda-file-to-front)
+#+end_src
+
+#+name: stories-chart
+#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_03_stories.png :width 1200 :height 650
+library(conflicted)
+library(grid)
+library(tidyverse)
+library(tibble)
+
+# Remove unnecessary rows.
+clean_sprint_summary <- tail(sprint_summary, -4)
+names <- unlist(clean_sprint_summary[2])
+values <- as.numeric(unlist(clean_sprint_summary[6]))
+
+# Create a data frame.
+df <- data.frame(
+  cost = values,
+  stories = factor(names, levels = names[order(values, decreasing = FALSE)]),
+  y = seq(length(names)) * 0.9
+)
+
+# Setup the colors
+blue <- "#076fa2"
+
+p <- ggplot(df) +
+  aes(x = cost, y = stories) +
+  geom_col(fill = blue, width = 0.6) +
+  ggtitle("Sprint 1: Resourcing per Story") +
+  xlab("Resourcing (%)") + ylab("Stories") +
+  theme(text = element_text(size = 15))
+
+print(p)
+#+end_src
+
+#+RESULTS: stories-chart
+[[file:sprint_backlog_03_stories.png]]
+
+#+name: tags-chart
+#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_03_tags.png :width 600 :height 400
+library(conflicted)
+library(grid)
+library(tidyverse)
+library(tibble)
+
+# Remove unnecessary rows.
+clean_sprint_summary <- tail(sprint_summary, -4)
+names <- unlist(clean_sprint_summary[1])
+values <- as.numeric(unlist(clean_sprint_summary[6]))
+
+# Create a data frame.
+df <- data.frame(
+  cost = values,
+  tags = names,
+  y = seq(length(names)) * 0.9
+)
+# factor(names, levels = names[order(values, decreasing = FALSE)])
+
+df2 <- setNames(aggregate(df$cost, by = list(df$tags), FUN = sum),  c("cost", "tags"))
+# Setup the colors
+blue <- "#076fa2"
+
+p <- ggplot(df2) +
+  aes(x = cost, y = tags) +
+  geom_col(fill = blue, width = 0.6) +
+  ggtitle("Sprint 1: Resourcing per Tag") +
+  xlab("Resourcing (%)") + ylab("Story types") +
+  theme(text = element_text(size = 15))
+
+print(p)
+#+end_src
+
+#+RESULTS: tags-chart
+[[file:sprint_backlog_03_tags.png]]
+
+*** Investigate build warning for qtbase                              :infra:
+
+At present we are getting:
+
+#+begin_src
+Building qtbase[brotli,concurrent,core,dbus,dnslookup,doubleconversion,egl,fontconfig,freetype,gui,harfbuzz,icu,jpeg,network,opengl,openssl,pcre2,png,sql,sql-psql,sql-sqlite,testlib,thread,widgets,xcb,xcb-xlib,xkb,xkbcommon-x11,xlib,xrender,zstd]:x64-linux@6.8.3#5...
+CMake Warning at ports/qtbase/portfile.cmake:49 (message):
+  qtbase currently requires packages from the system package manager.  They
+  can be installed on Ubuntu systems via sudo apt-get install '^libxcb.*-dev'
+  libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev
+  libxkbcommon-x11-dev libegl1-mesa-dev.
+#+end_src
+
+According to grok:
+
+#+begin_quote
+The CMake warning from ports/qtbase/portfile.cmake indicates that the qtbase
+package in vcpkg requires additional system dependencies (like libxcb and
+others) to be installed on your system, specifically for Ubuntu. This warning
+appears because vcpkg detects that these dependencies are not satisfied. To
+remove the warning, you need to install the required system packages or suppress
+the warning if you’re sure the dependencies are met or not needed.
+#+end_quote
+
+We seem to be installing all of the required libraries on our script. We may
+need to:
+
+#+begin_src bash
+export VCPKG_DISABLE_SYSTEM_PACKAGE_CHECK=1
+#+end_src
+
+*** Fix gemini cli action                                              :code:
+
+The action to review PRs using gemini is failing.
+
+*** Tidy-up database code                                              :code:
+
+- add helpers to utility to ensure success, execute query, etc.
+- add helpers for max timestamp, timestamp.
+
+*** Split console recipes by entity                                    :code:
+
+At present we have one very long file, but this is not scalable. We could split
+out:
+
+- general args (help, info, etc)
+- by entity
+
+Notes:
+
+- Rename console to CLI.
+- reduce output, only first few entries are needed.
+- add a toc.
+
+*** Merge client into console                                          :code:
+
+We don't really need a client, we can add this functionality to console.
+
+Notes:
+
+- rename console to cli.
+- add a mode in console called =client=.
+- add port, etc as configuration variables.
+- add the location of cert as configuration variables.
+- read variables from environment.
+
+*** Add support for JWT                                                :code:
+
+Links:
+
+- [[https://iniakunhuda.medium.com/building-secure-jwt-authentication-in-go-with-postgresql-94b6724f9b75][Building Secure JWT Authentication in Go with PostgreSQL]]
+- [[https://github.com/Thalhammer/jwt-cpp][GH jwt-cpp]]
+
+*** Read up on ECS                                                 :analysis:
+
+Links:
+
+- [[https://en.wikipedia.org/wiki/Entity_component_system][wikipedia: Entity component system]]
+- [[https://github.com/skypjack/entt][GH entt]]: "EnTT is a header-only, tiny and easy to use library for game
+  programming and much more written in modern C++."
+
+*** Consider adding otel support                                       :code:
+
+Links:
+
+- [[https://github.com/destrex271/postgresexporter][GH postgresexporter]]: "Unofficial Postgres Exporter for OTEL"
+- [[https://opentelemetry-cpp.readthedocs.io/en/latest/otel_docs/classopentelemetry_1_1sdk_1_1trace_1_1SpanExporter.html][SpanExporter]]: create your own exporter.
+
+*** Add chat support                                                   :code:
+
+Links:
+
+- [[https://github.com/communi/libcommuni][GH libcommuni]]: "A cross-platform IRC framework written with Qt."
+- [[https://github.com/inspircd/inspircd/tree/insp4][GH insp4]]: "InspIRCd is a modular C++ Internet Relay Chat (IRC) server for
+  UNIX-like and Windows systems."
+- https://www.inspircd.org/
+
+*** Add account support                                                :code:
+
+Links:
+
+- [[https://www.azerothcore.org/wiki/creating-accounts][azeroth: Creating Accounts]]
+- [[https://www.azerothcore.org/wiki/account][azeroth: account]]
+- [[https://www.mongodb.com/docs/manual/reference/built-in-roles/#std-label-built-in-roles][mongo: Built-In Roles]]
+
+*** Add session support                                                :code:
+
+Users must be able to login and logout.
+
+*** Consider exposing end points via HTTP                              :code:
+
+Having a binary protocol is helpful for performance but it may make life easier
+to expose some functionality via HTTP.
+
+Links:
+
+- [[https://github.com/dfleury2/beauty][GH: beauty]]: "Beauty is a layer above Boost.Beast which provide facilities to
+  create Http server or client. Beauty allows the creation of synchronous or
+  asynchronous server and client, and adds some signals and timer management
+  based on Boost.Asio"
+
+*** Consider using getML to integrate ML                               :code:
+
+Links:
+
+- [[https://github.com/getml/getml-community][GH: getml]]: "getML is a tool for automating feature engineering on relational
+  data and time series. It includes a specifically customized database Engine
+  for this very purpose."
+- [[https://getml.com/latest/user_guide/quick_start/][user guide quick start]]
+
+*** Configure postgres with async IO                                   :code:
+
+Links:
+
+- [[https://neon.com/postgresql/postgresql-18/asynchronous-io][PostgreSQL 18 Asynchronous I/O]]
+
+*** Consider using sqls for LSP                                        :code:
+
+We are presently testing postgrestools. If that does not work well, we should
+consider sqls.
+
+Links:
+
+- [[https://www.reddit.com/r/emacs/comments/ijbvwv/eglot_sqls_sql_client/][eglot + sqls = SQL client?]]
+
+*** Add workspace as a container                                       :code:
+    :LOGBOOK:
+    CLOCK: [2025-02-13 Thu 22:18]--[2025-02-13 Thu 22:35] =>  0:17
+    CLOCK: [2025-02-13 Thu 21:21]--[2025-02-13 Thu 22:17] =>  0:56
+    :END:
+
+Core needs to have a container for all of the data stored within a context.
+
+*** Add portfolio support                                              :code:
+
+Links:
+
+- [[https://leonardqmarcq.com/posts/modeling-hierarchical-tree-data][Modeling Hierarchical Tree Data in PostgreSQL]]
+
+*** Convert plantuml diagrams to org-babel                              :doc:
+
+It may be easier to integrate diagrams with roam if they are org-mode documents.
+Experiment with babel for this.
+
+*** Setup code quality actions                                        :infra:
+
+We added a test password to the repo on purpose to see if it was going to be
+detected by the github actions:
+
+#+begin_src c++
+    std::string connection_string("postgresql://ores:ores@localhost:5433/oresdb");
+#+end_src
+
+It wasn't. We need to figure out which actions need to be setup for this. Add
+any other actions we may be missing.
+
+The build seems to be failing:
+
+#+begin_src sh
+-- SCCache NOT found.
+ CMake Error at /usr/local/share/cmake-3.30/Modules/CMakeDetermineSystem.cmake:152 (message):
+   Could not find toolchain file:
+   /home/runner/work/OreStudio/OreStudio/vcpkg/scripts/buildsystems/vcpkg.cmake
+ Call Stack (most recent call first):
+ CMakeLists.txt:61 (project)
+
+
+ CMake Error: CMake was unable to find a build program corresponding to "Unix Makefiles".  CMAKE_MAKE_PROGRAM is not set.  You probably need to select a different build tool.
+ CMake Error: CMAKE_CXX_COMPILER not set, after EnableLanguage
+ -- Configuring incomplete, errors occurred!
+ ~/work/OreStudio/OreStudio ~/work/OreStudio/OreStudio
+ ~/work/OreStudio/OreStudio
+ cpp/autobuilder: No supported build command succeeded.
+ cpp/autobuilder: autobuild summary.
+ Error: We were unable to automatically build your code. Please replace the call to the autobuild action with your custom build steps. Encountered a fatal error while running "/opt/hostedtoolcache/CodeQL/2.18.0/x64/codeql/cpp/tools/autobuild.sh". Exit code was 1 and last log line was: cpp/autobuilder: autobuild summary. See the logs for more details.
+#+end_src
+
+This may be due to a missing sub-module for vcpkg.
+
+*** Add a message queue                                                :code:
+
+Links:
+
+- [[https://www.oliverlambson.com/pgmq][Use what you already have: Building a message queue on Postgres]]
+
+*** Add support for =windows-msvc-clang-cl=                           :infra:
+
+We need to setup a build for MSVC clang.
+
+*** Implement database connectivity                                    :code:
+
+We have hard coded database configuration. Implement this properly both for
+console and UI.
+
+*** Starting UI from file manager does not work                       :infra:
+
+At present we can't start the Qt UI because the file manager thinks its a video.
+Maybe we need a desktop file.
+
+Example desktop file:
+
+#+begin_src conf
+[Desktop Entry]
+Comment=
+Terminal=true
+Name=fixvideo
+Exec=/home/user/fixvideo.sh %f
+Type=Application
+Icon=/usr/share/icons/gnome/48x48/apps/gnome-settings-theme.png
+Encoding=UTF-8
+Hidden=false
+NoDisplay=false
+Categories=AudioVideo;Player;Recorder;
+MimeType=video/dv;v
+#+end_src
+
+Source: [[https://emacs.stackexchange.com/questions/58037/is-there-a-standard-mode-for-ini-files][Is there a standard mode for .ini files?]]
+
+Tasks:
+
+- create a desktop file for the application.
+- add an icon.
+
+*** Consider adding the update copyrights action from quantlib        :infra:
+
+We should remove copyrights from each file and instead have it only at the
+top-level to make maintenance easier.
+
+See [[https://github.com/OpenSourceRisk/QuantLib/blob/master/.github/workflows/copyrights.yml][=copyrights.yml=]] in QuantLib repo.
+
+*** Consider adding clang-tidy build                                  :infra:
+
+As per QuantLib build: [[https://github.com/OpenSourceRisk/QuantLib/blob/master/.github/workflows/tidy.yml][=tidy.yml=]].
+
+*** Consider adding test times build                                  :infra:
+
+As per QuantLib build: [[https://github.com/OpenSourceRisk/QuantLib/blob/master/.github/workflows/test-times.yml][=test-times.yml=]].
+
+*** Consider adding sanitizer build                                   :infra:
+
+As per QuantLib build: [[https://github.com/OpenSourceRisk/QuantLib/blob/master/.github/workflows/sanitizer.yml][=sanitizer.yml=]].
+
+*** Use string views for static strings                               :infra:
+
+We are creating =std::strings= where we don't need them, use string views
+instead.
+
+This is not trivial, when we tried a lot of things were borked.
+
+*** Create HTTP end point for currencies                              :infra:
+
+Add a basic HTTP server using boost beast. Then we just need a couple of verbs:
+
+- GET: return all currencies in database.
+- POST: add one or more currencies.
+
+*** Fix site links to main page                                         :doc:
+
+At present we renamed readme to index in the HTML export. Do a symlink or a copy
+of this file to fix links.
+
+*** Add discord support to app                                        :infra:
+
+Links:
+
+- [[https://github.com/RealTimeChris/DiscordCoreAPI][DiscordCoreAPI]]
+
+*** Recipes do not show variables in org-babel                        :infra:
+
+At present when we look at a recipe in the site, we cannot tell what the
+environment variables are:
+
+#+begin_src sh
+./ores.console import ${log_args} --currency-configuration ${currency_config_dir}/currencies.xml
+#+END_SRC
+
+It would be nice if =log_args= etc showed up in the recipe.
+
+Links:
+
+- [[https://kitchingroup.cheme.cmu.edu/blog/2019/02/12/Using-results-from-one-code-block-in-another-org-mode/][Using results from one code block in another org-mode]]
+
+*** Install Windows package on Windows machine                        :infra:
+
+We need to install and run the windows package and make sure it works. Check
+console and GUI start.
+
+*** Install OSX package on OSX machine                                :infra:
+
+We need to install and run the windows package and make sure it works. Check
+console and GUI start.
+
+*** Add packaging support for images                                  :infra:
+
+At present we are not adding images to packages.
+
+*** Create a staging directory                                        :infra:
+
+At present the binaries are scattered around the build directory. We should take
+the same approach as Dogen and create clean directories for this.
+
+*** Create an icon for the application                                :infra:
+
+We copied the Dogen icon to get us going. We should really grab our own logo.
+
+*** Add JSON parsing support for currency                              :code:
+
+We need to have the ability to read and write currencies from JSON.
+
+*** Add postgres support for currency                                  :code:
+
+We need to have the ability to read and write currencies from a postgres
+database.
+
+*** Work through all types required for Example 1                      :code:
+
+We want to be able to visualise all the data types needed in order to be able to
+run the most basic example of ORE. For each of these types, create a stories.
+
+The files are as follows. First, there are the files in the =Input= directory:
+
+- [[https://github.com/OpenSourceRisk/Engine/tree/master/Examples/Example_1/Input][Example 1 Inputs]]
+
+Specifically:
+
+- =currencies.xml=
+- =netting.xml=
+- =ore.xml=
+- =ore_swaption.xml=
+- =plot.gp=
+- =portfolio.xml=
+- =portfolio_swap.xml=
+- =portfolio_swap_20151023.xml=
+- =portfolio_swaption.xml=
+- =portfolio_swaption_20151023.xml=
+- =simulation.xml=
+
+In addition, we need all of the common inputs under:
+
+- [[https://github.com/OpenSourceRisk/Engine/tree/master/Examples/Input][Examples - Common Inputs]]
+
+These are:
+
+- =calendaradjustment.xml=
+- =conventions.xml=
+- =currencies.xml=
+- =curveconfig.xml=
+- =fixings_20160205.txt=
+- =market_20160205.txt=
+- =market_20160205_flat.txt=
+- =pricingengine.xml=
+- =todaysmarket.xml=
+
+Finally, we need support for the outputs. We can grab these from the expected
+outputs:
+
+- [[https://github.com/OpenSourceRisk/Engine/tree/master/Examples/Example_1/ExpectedOutput][Example 1 Expected Outputs]]
+
+These are:
+
+- =colva_nettingset_CPTY_A.csv=
+- =curves.csv=
+- =exposure_nettingset_CPTY_A.csv=
+- =exposure_trade_Swap_20y.csv=
+- =flows.csv=
+- =log_progress.json=
+- =netcube.csv=
+- =npv.csv=
+- =swaption_npv.csv=
+- =xva.csv=
+
+| Previous: [[id:154212FF-BB02-8D84-1E33-9338B458380A][Version Zero]] |

@@ -18,29 +18,33 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-10-23 Thu 09:46], for Thursday, October 23, 2025.
+#+CAPTION: Clock summary at [2025-10-23 Thu 16:00], for Thursday, October 23, 2025.
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *0:35* |      |      | 100.0 |
+|       | *Total time*                          | *2:49* |      |      | 100.0 |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 0:35   |      |      | 100.0 |
-|       | Active                                |        | 0:35 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:35 | 100.0 |
+|       | Stories                               | 2:49   |      |      | 100.0 |
+|       | Active                                |        | 2:49 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:35 |  20.7 |
+| code  | Investigate leaks from valgrind       |        |      | 0:46 |  27.2 |
+| code  | Add locking up logic                  |        |      | 1:28 |  52.1 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-10-23 Thu 09:46]
+#+CAPTION: Clock summary at [2025-10-23 Thu 16:00]
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *1:48* |      |      | 100.0 |
+|       | *Total time*                          | *4:02* |      |      | 100.0 |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 1:48   |      |      | 100.0 |
-|       | Active                                |        | 1:48 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:35 |  32.4 |
-| code  | Add workspace as a container          |        |      | 1:13 |  67.6 |
+|       | Stories                               | 4:02   |      |      | 100.0 |
+|       | Active                                |        | 4:02 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:35 |  14.5 |
+| code  | Investigate leaks from valgrind       |        |      | 0:46 |  19.0 |
+| code  | Add locking up logic                  |        |      | 1:28 |  36.4 |
+| code  | Add workspace as a container          |        |      | 1:13 |  30.2 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -126,6 +130,80 @@ print(p)
 
 #+RESULTS: tags-chart
 [[file:sprint_backlog_03_tags.png]]
+
+*** STARTED Investigate leaks from valgrind                            :code:
+    :LOGBOOK:
+    CLOCK: [2025-10-23 Thu 09:46]--[2025-10-23 Thu 10:32] =>  0:46
+    :END:
+
+We have a number of new leaks in valgrind, check if they are real leaks or
+require suppressions.
+
+Leak 1:
+
+#+begin_src valgrind-leak
+<b>MPK</b> ==46924== 32 bytes in 1 blocks are still reachable in loss record 1 of 12
+==46924==    at 0x4846828: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==46924==    by 0x75A94B: CRYPTO_malloc (mem.c:212)
+==46924==    by 0x75A9AE: CRYPTO_zalloc (mem.c:224)
+==46924==    by 0x975D85: ossl_sa_new (sparse_array.c:60)
+==46924==    by 0x76E804: ossl_sa_CTX_TABLE_ENTRY_new (threads_common.c:110)
+==46924==    by 0x76EB87: CRYPTO_THREAD_set_local_ex (threads_common.c:379)
+==46924==    by 0x718766: ossl_err_get_state_int (err.c:678)
+==46924==    by 0x719855: ERR_set_mark (err_mark.c:19)
+==46924==    by 0x6BBE13: CONF_modules_load_file_ex (conf_mod.c:198)
+==46924==    by 0x90DED3: ossl_config_int (conf_sap.c:70)
+==46924==    by 0x759087: ossl_init_config (init.c:282)
+==46924==    by 0x759069: ossl_init_config_ossl_ (init.c:280)
+==46924==    by 0x4C9CED2: __pthread_once_slow (pthread_once.c:116)
+==46924==    by 0x76F93D: CRYPTO_THREAD_run_once (threads_pthread.c:975)
+==46924==    by 0x75983D: OPENSSL_init_crypto (init.c:634)
+==46924==    by 0x942821: ossl_engine_table_select (eng_table.c:209)
+==46924==    by 0x942D2F: ENGINE_get_default_RAND (tb_rand.c:61)
+==46924==    by 0x782C1F: RAND_get_rand_method (rand_lib.c:290)
+==46924==    by 0x7831AA: RAND_bytes_ex (rand_lib.c:466)
+==46924==    by 0x78336D: RAND_bytes (rand_lib.c:501)
+==46924==    by 0x287012: ores::accounts::security::password_manager::create_password_hash(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (projects/ores.accounts/security/password_manager.cpp:128)
+==46924==    by 0x228EF7: security_password_manager_tests::verify_password_hash::test_method() (projects/ores.accounts.tests/security_password_manager_tests.cpp:39)
+==46924==    by 0x228832: security_password_manager_tests::verify_password_hash_invoker() (projects/ores.accounts.tests/security_password_manager_tests.cpp:35)
+==46924==    by 0x20BF7B: boost::detail::function::void_function_invoker<void (*)(), void>::invoke(boost::detail::function::function_buffer&) (function_template.hpp:59)
+==46924==    by 0x2E5DA2: boost::function_n<void>::operator()() const (function_template.hpp:789)
+==46924==    by 0x369D38: boost::detail::forward::operator()() (execution_monitor.ipp:1416)
+==46924==    by 0x36B0D7: boost::detail::function::function_obj_invoker<boost::detail::forward, int>::invoke(boost::detail::function::function_buffer&) (function_template.hpp:79)
+==46924==    by 0x29AF78: boost::function_n<int>::operator()() const (function_template.hpp:789)
+==46924==    by 0x29A83C: boost::detail::translator_holder<boost::exception, void (*)(boost::exception const&)>::operator()(boost::function<int ()> const&) (execution_monitor.hpp:448)
+==46924==    by 0x36A3B0: int boost::detail::do_invoke<boost::shared_ptr<boost::detail::translator_holder_base>, boost::function<int ()> >(boost::shared_ptr<boost::detail::translator_holder_base> const&, boost::function<int ()> const&) (execution_monitor.ipp:329)
+==46924==    by 0x368638: boost::execution_monitor::catch_signals(boost::function<int ()> const&) (execution_monitor.ipp:931)
+==46924==    by 0x3687E6: boost::execution_monitor::execute(boost::function<int ()> const&) (execution_monitor.ipp:1329)
+==46924==    by 0x36971F: boost::execution_monitor::vexecute(boost::function<void ()> const&) (execution_monitor.ipp:1425)
+==46924==    by 0x3216EC: boost::unit_test::unit_test_monitor_t::execute_and_translate(boost::function<void ()> const&, unsigned long) (unit_test_monitor.ipp:49)
+==46924==    by 0x2E4691: boost::unit_test::framework::state::execute_test_tree(unsigned long, unsigned long, boost::unit_test::framework::state::random_generator_helper const*) (framework.ipp:815)
+==46924==    by 0x2E3B3D: boost::unit_test::framework::state::execute_test_tree(unsigned long, unsigned long, boost::unit_test::framework::state::random_generator_helper const*) (framework.ipp:740)
+==46924==    by 0x2E3B3D: boost::unit_test::framework::state::execute_test_tree(unsigned long, unsigned long, boost::unit_test::framework::state::random_generator_helper const*) (framework.ipp:740)
+==46924==    by 0x2DD37B: boost::unit_test::framework::run(unsigned long, bool) (framework.ipp:1722)
+==46924==    by 0x31F63D: boost::unit_test::unit_test_main(boost::unit_test::test_suite* (*)(int, char**), int, char**) (unit_test_main.ipp:250)
+==46924==    by 0x31F9E1: main (unit_test_main.ipp:306)
+==46924==
+#+end_src
+
+All leaks are related to OpenSSL. Let's see if gemini's fix helps.
+
+
+*** COMPLETED Add locking up logic                                     :code:
+    :LOGBOOK:
+    CLOCK: [2025-10-23 Thu 15:06]--[2025-10-23 Thu 16:00] =>  0:54
+    CLOCK: [2025-10-23 Thu 10:34]--[2025-10-23 Thu 11:08] =>  0:34
+    :END:
+
+Incorrect password N times should lock up the account.
+
+Notes:
+
+- need to make bools ints a gain as we can't update them.
+
+Links:
+
+- [[https://github.com/getml/sqlgen/issues/74][#74: Updating boolean data causes an error]]
 
 *** Investigate build warning for qtbase                              :infra:
 

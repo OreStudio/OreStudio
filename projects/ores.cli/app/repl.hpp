@@ -169,6 +169,17 @@ private:
     process_login(std::ostream& out, std::string username, std::string password);
 
     /**
+     * @brief Process an unlock account request.
+     *
+     * Unlocks a locked account by account ID.
+     *
+     * @param out Output stream for results
+     * @param account_id_str Account ID as a string (UUID)
+     */
+    boost::asio::awaitable<void>
+    process_unlock_account(std::ostream& out, std::string account_id_str);
+
+    /**
      * @brief Start the I/O context thread.
      *
      * Launches a background thread to handle async operations.

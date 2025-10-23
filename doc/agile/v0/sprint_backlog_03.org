@@ -18,33 +18,37 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-10-23 Thu 16:00], for Thursday, October 23, 2025.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *2:49* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 2:49   |      |      | 100.0 |
-|       | Active                                |        | 2:49 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:35 |  20.7 |
-| code  | Investigate leaks from valgrind       |        |      | 0:46 |  27.2 |
-| code  | Add locking up logic                  |        |      | 1:28 |  52.1 |
+#+CAPTION: Clock summary at [2025-10-23 Thu 17:59], for Thursday, October 23, 2025.
+|       | <75>                                               |        |      |      |       |
+| Tags  | Headline                                           | Time   |      |      |     % |
+|-------+----------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                       | *3:17* |      |      | 100.0 |
+|-------+----------------------------------------------------+--------+------+------+-------|
+|       | Stories                                            | 3:17   |      |      | 100.0 |
+|       | Active                                             |        | 3:17 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |        |      | 0:35 |  17.8 |
+| code  | Investigate leaks from valgrind                    |        |      | 0:46 |  23.4 |
+| code  | Add locking up logic                               |        |      | 1:28 |  44.7 |
+| code  | Ensure user is logged in for certain message types |        |      | 0:25 |  12.7 |
+| code  | Enable qt gui                                      |        |      | 0:03 |   1.5 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-10-23 Thu 16:00]
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *4:02* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 4:02   |      |      | 100.0 |
-|       | Active                                |        | 4:02 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:35 |  14.5 |
-| code  | Investigate leaks from valgrind       |        |      | 0:46 |  19.0 |
-| code  | Add locking up logic                  |        |      | 1:28 |  36.4 |
-| code  | Add workspace as a container          |        |      | 1:13 |  30.2 |
+#+CAPTION: Clock summary at [2025-10-23 Thu 17:59]
+|       | <75>                                               |        |      |      |       |
+| Tags  | Headline                                           | Time   |      |      |     % |
+|-------+----------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                       | *4:30* |      |      | 100.0 |
+|-------+----------------------------------------------------+--------+------+------+-------|
+|       | Stories                                            | 4:30   |      |      | 100.0 |
+|       | Active                                             |        | 4:30 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |        |      | 0:35 |  13.0 |
+| code  | Investigate leaks from valgrind                    |        |      | 0:46 |  17.0 |
+| code  | Add locking up logic                               |        |      | 1:28 |  32.6 |
+| code  | Ensure user is logged in for certain message types |        |      | 0:25 |   9.3 |
+| code  | Enable qt gui                                      |        |      | 0:03 |   1.1 |
+| code  | Add workspace as a container                       |        |      | 1:13 |  27.0 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -204,6 +208,106 @@ Notes:
 Links:
 
 - [[https://github.com/getml/sqlgen/issues/74][#74: Updating boolean data causes an error]]
+
+*** STARTED Ensure user is logged in for certain message types         :code:
+    :LOGBOOK:
+    CLOCK: [2025-10-23 Thu 17:30]--[2025-10-23 Thu 17:55] =>  0:25
+    :END:
+
+Notes:
+
+- when there are no accounts setup, the repl should say to the user that it
+  needs to create an admin account.
+- first account must be admin.
+- once there is an account we need to make sure the user is logged in before we
+  process most message types.
+
+Mongo message:
+
+#+begin_src logview
+2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] ** WARNING: Access control is not enabled for the database.
+2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] **          Read and write access to data and configuration is unrestricted.
+#+end_src
+
+Requirements:
+
+#+begin_src markdown
+# Authentication Bootstrapping Requirements
+
+## R1: Initial System State (Bootstrap Mode)
+
+The system **MUST** start in a special **"Bootstrap Mode"** where the only
+permitted action is the creation of the initial Administrator account.
+
+## R2: Access Control in Bootstrap Mode
+
+While the system is in Bootstrap Mode:
+
+- **R2.1: Allowed Endpoint:** The service **MUST** only expose and accept
+  requests for a single endpoint: `POST /api/v1/accounts/create-admin` (or
+  equivalent).
+- **R2.2: Local-Only Restriction:** All requests to the allowed endpoint
+  ,**MUST** originate from a **trusted local interface** (e.g., `127.0.0.1` or
+  the server's designated internal IP range). Requests from any external/public
+  IP address **MUST** be rejected.
+- **R2.3: General Endpoint Rejection:** All other API endpoints (e.g., login,
+  user creation, data access) **MUST** immediately return a $\mathbf{403}$
+  ,**Forbidden** or $\mathbf{401}$ **Unauthorized** status, along with a clear
+  message indicating the system is in setup mode.
+
+## R3: Initial Admin Account Creation
+
+The first account created through the allowed endpoint **MUST** adhere to the
+following:
+
+- **R3.1: Mandatory Admin Role:** The account **MUST** be assigned the highest
+  level of **Administrator privileges** (`is_admin: true`).
+- **R3.2: Strong Password Policy:** The request **MUST** be validated against a
+  strong password policy (e.g., minimum 12 characters, requiring a mix of case,
+  numbers, and symbols). Failure to meet this standard **MUST** result in a
+  $\mathbf{400}$ **Bad Request** error.
+- **R3.3: One-Time Execution:** The administrator creation process **MUST** only
+  be allowed to succeed **exactly once**.
+
+## R4: System State Transition
+
+Upon successful creation of the first Administrator account (R3):
+
+- **R4.1: State Change:** The system **MUST** immediately and atomically
+  transition from **"Bootstrap Mode"** to **"Secure Mode"**. This state change
+  ,**MUST** be persisted.
+- **R4.2: Bootstrap Endpoint Deactivation:** The `POST
+  /api/v1/accounts/create-admin` endpoint **MUST** be permanently disabled. Any
+  subsequent request to this endpoint **MUST** return a $\mathbf{403}$
+  ,**Forbidden** error.
+
+## R5: Secure Mode Operation
+
+Once the system is in **"Secure Mode"**:
+
+- **R5.1: General Access Control:** All operational API endpoints **MUST** now
+  enforce **full authentication and authorization**.
+- **R5.2: Mandatory Login:** All users, including the newly created
+  Administrator, **MUST** successfully complete a login process to obtain a
+  valid session token before accessing any resource.
+- **R5.3: Standard Account Creation:** The standard non-admin account creation
+  endpoint (`POST /api/v1/accounts/create`) **MUST** become available, subject
+  to any configured access controls (e.g., only open to logged-in Admins, or
+  fully public).
+#+end_src
+
+
+Links:
+
+- [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
+
+*** STARTED Enable qt gui                                              :code:
+    :LOGBOOK:
+    CLOCK: [2025-10-23 Thu 17:56]--[2025-10-23 Thu 17:59] =>  0:03
+    :END:
+
+Due to problems building we disabled qt. Enable it again as we are close to
+working on it.
 
 *** Investigate build warning for qtbase                              :infra:
 

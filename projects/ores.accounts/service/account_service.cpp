@@ -142,7 +142,6 @@ domain::account account_service::login(context ctx, const std::string& username,
 
     const auto& account = accounts[0];
 
-    // Read the login tracking information
     auto login_info_vec = login_info_repo_.read(ctx, account.id);
     if (login_info_vec.empty()) {
         BOOST_LOG_SEV(lg, error) << "Login tracking not found for account: "
@@ -152,28 +151,23 @@ domain::account account_service::login(context ctx, const std::string& username,
 
     auto login_info = login_info_vec[0];
 
-    // Check if account is locked
     if (login_info.locked) {
         BOOST_LOG_SEV(lg, warn) << "Login attempt for locked account: " << username;
         throw std::runtime_error("Account is locked due to too many failed login attempts");
     }
 
-    // Verify the password
     using security::password_manager;
     bool password_valid = password_manager::
         verify_password_hash(password, account.password_hash);
 
-    // Update login tracking based on authentication result
     login_info.last_attempt_ip = ip_address;
 
     if (!password_valid) {
-        // Increment failed login counter
         login_info.failed_logins++;
         BOOST_LOG_SEV(lg, warn) << "Failed login attempt for username: "
                                 << username << ". Attempt: "
                                 << login_info.failed_logins;
 
-        // Lock account after 5 consecutive failed attempts
         constexpr int max_failed_attempts = 5;
         if (login_info.failed_logins >= max_failed_attempts) {
             login_info.locked = true;
@@ -181,25 +175,53 @@ domain::account account_service::login(context ctx, const std::string& username,
                                     << username;
         }
 
-        // Update the login_info table with failed attempt
         login_info_repo_.update(ctx, login_info);
 
         throw std::runtime_error("Invalid username or password");
     }
 
-    // Successful login - update tracking information
     login_info.last_ip = ip_address;
     login_info.last_login = std::chrono::system_clock::now();
-    login_info.failed_logins = 0; // Reset failed login counter
+    login_info.failed_logins = 0;
     login_info.online = true;
 
     BOOST_LOG_SEV(lg, info) << "Successful login for username: " << username
                             << " from IP: " << ip_address;
 
-    // Update the login_info table
     login_info_repo_.update(ctx, login_info);
 
     return account;
+}
+
+void account_service::unlock_account(context ctx, const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg, debug) << "Unlocking account: " << boost::uuids::to_string(account_id);
+
+    auto accounts = account_repo_.read_latest(ctx, account_id);
+    if (accounts.empty()) {
+        BOOST_LOG_SEV(lg, warn) << "Attempted to unlock non-existent account: "
+                                << boost::uuids::to_string(account_id);
+        throw std::invalid_argument("Account does not exist");
+    }
+
+    auto login_info_vec = login_info_repo_.read(ctx, account_id);
+    if (login_info_vec.empty()) {
+        BOOST_LOG_SEV(lg, error) << "Login tracking not found for account: "
+                                 << boost::uuids::to_string(account_id);
+        throw std::runtime_error("Login tracking information missing");
+    }
+
+    auto login_info = login_info_vec[0];
+
+    if (login_info.locked == false)
+        BOOST_LOG_SEV(lg, warn) << "Account is not locked.";
+
+    login_info.locked = false;
+    login_info.failed_logins = 0;
+
+    BOOST_LOG_SEV(lg, info) << "Account unlocked: "
+                            << boost::uuids::to_string(account_id);
+
+    login_info_repo_.update(ctx, login_info);
 }
 
 }

@@ -7,7 +7,11 @@
         {
             "name": "qtbase",
             "features": [
-                "sql"
+                "core",
+                "gui",
+                "widgets",
+                "sql",
+                "sqlite"
             ]
         },
         "openssl",

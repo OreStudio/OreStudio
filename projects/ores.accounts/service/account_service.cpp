@@ -169,8 +169,9 @@ domain::account account_service::login(context ctx, const std::string& username,
     if (!password_valid) {
         // Increment failed login counter
         login_info.failed_logins++;
-        BOOST_LOG_SEV(lg, warn) << "Failed login attempt for username: " << username
-                                << " (attempt " << login_info.failed_logins << ")";
+        BOOST_LOG_SEV(lg, warn) << "Failed login attempt for username: "
+                                << username << ". Attempt: "
+                                << login_info.failed_logins;
 
         // Lock account after 5 consecutive failed attempts
         constexpr int max_failed_attempts = 5;

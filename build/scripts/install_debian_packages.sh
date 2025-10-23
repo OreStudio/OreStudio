@@ -36,4 +36,7 @@ sudo apt-get install \
      libxinerama-dev  \
      mesa-common-dev \
      pkg-config \
-     xorg-dev
+     xorg-dev \
+     libltdl-dev
+
+apt-get clean sudo apt-get autoremove -y

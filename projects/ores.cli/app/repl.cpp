@@ -25,6 +25,7 @@
 #include <cli/clifilesession.h>
 #include "ores.cli/app/repl.hpp"
 #include "ores.utility/log/logger.hpp"
+#include "ores.utility/version/version.hpp"
 #include "ores.utility/streaming/std_vector.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.risk/messaging/protocol.hpp"
@@ -340,7 +341,7 @@ void repl::stop_io_thread() {
 }
 
 void repl::display_welcome() const {
-    std::cout << "ORE Studio Client REPL" << std::endl;
+    std::cout << "ORE Studio Client REPL v" << ORES_VERSION << std::endl;
     std::cout << "Type 'help' for available commands, 'exit' to quit" << std::endl;
     std::cout << std::endl;
 }

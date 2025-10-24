@@ -6,10 +6,7 @@
     "dependencies": [
         {
             "name": "qtbase",
-            "features": [
-                "widgets",
-                "sql"
-            ]
+            "default-features": false
         },
         "openssl",
         "libpqxx",

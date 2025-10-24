@@ -25,7 +25,6 @@
 #endif
 
 #include <QMainWindow>
-#include <QtSql/QSqlDatabase>
 #include <memory>
 #include <thread>
 #include <boost/asio/io_context.hpp>
@@ -58,7 +57,6 @@ public:
 private:
     Ui::MainWindow* ui_;
     MainTabWidget* mainTab_;
-    QSqlDatabase database_;  // TODO: Remove after migration
 
     // Client infrastructure
     std::unique_ptr<boost::asio::io_context> io_context_;

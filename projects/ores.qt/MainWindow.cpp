@@ -23,7 +23,6 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QApplication>
-#include <QtSql/QSqlError>
 #include "ui_MainWindow.h"
 #include "ores.utility/log/logger.hpp"
 #include "ores.qt/MainWindow.hpp"
@@ -76,21 +75,6 @@ MainWindow::MainWindow(QWidget* parent) :
         return;
     }
 
-    // TODO: Remove database connection after full migration to client-server
-    // FIXME: test - keeping for backwards compatibility during migration
-    database_ = QSqlDatabase::addDatabase("QPSQL");
-    database_.setHostName("localhost");
-    database_.setDatabaseName("oresdb");
-    database_.setPort(5434);
-    database_.setPassword("ahV6aehuij6eingohsiajaiT0");
-    database_.setUserName("ores");
-    if (database_.open())
-    {
-        BOOST_LOG_SEV(lg, info) << "Opened connection to database.";
-    }  else {
-        BOOST_LOG_SEV(lg, error) << "Failed to open connection to database: "
-                                 << database_.lastError().text().toStdString();
-    }
 }
 
 MainWindow::~MainWindow() {

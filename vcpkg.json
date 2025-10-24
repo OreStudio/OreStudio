@@ -6,7 +6,12 @@
     "dependencies": [
         {
             "name": "qtbase",
-            "default-features": false
+            "default-features": false,
+            "features": [
+                "gui",
+                "xcb",
+                "widgets",
+                "concurrent" ]
         },
         "openssl",
         "libpqxx",

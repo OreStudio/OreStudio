@@ -20,11 +20,13 @@
 #include <iostream>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <cli/cli.h>
 #include <cli/clifilesession.h>
 #include "ores.cli/app/repl.hpp"
 #include "ores.utility/log/logger.hpp"
+#include "ores.utility/version/version.hpp"
 #include "ores.utility/streaming/std_vector.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.risk/messaging/protocol.hpp"
@@ -191,6 +193,22 @@ void repl::register_account_commands(::cli::Menu& root_menu) {
         },
         "Login with username and password");
 
+    accounts_menu->Insert("unlock",
+        [this](std::ostream& out, std::string account_id_str) {
+            if (!client_ || !client_->is_connected()) {
+                out << "✗ Not connected to server. Use 'connect' command first" << std::endl;
+                return;
+            }
+
+            BOOST_LOG_SEV(lg, debug) << "Initiating unlock account request";
+
+            auto executor = io_ctx_->get_executor();
+            boost::asio::co_spawn(executor,
+                process_unlock_account(std::ref(out), std::move(account_id_str)),
+                boost::asio::detached);
+        },
+        "Unlock a locked account (account_id)");
+
     root_menu.Insert(std::move(accounts_menu));
 }
 
@@ -340,7 +358,7 @@ void repl::stop_io_thread() {
 }
 
 void repl::display_welcome() const {
-    std::cout << "ORE Studio Client REPL" << std::endl;
+    std::cout << "ORE Studio Client REPL v" << ORES_VERSION << std::endl;
     std::cout << "Type 'help' for available commands, 'exit' to quit" << std::endl;
     std::cout << std::endl;
 }
@@ -509,6 +527,75 @@ repl::process_login(std::ostream& out, std::string username, std::string passwor
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg, error) << "Login exception: " << e.what();
+        out << "✗ Error: " << e.what() << std::endl;
+    }
+}
+
+boost::asio::awaitable<void>
+repl::process_unlock_account(std::ostream& out, std::string account_id_str) {
+    try {
+        BOOST_LOG_SEV(lg, debug) << "Creating unlock account request for ID: "
+                                 << account_id_str;
+
+        // Parse the UUID from the string
+        boost::uuids::uuid account_id;
+        try {
+            account_id = boost::lexical_cast<boost::uuids::uuid>(account_id_str);
+        } catch (const boost::bad_lexical_cast& e) {
+            BOOST_LOG_SEV(lg, error) << "Invalid account ID format: " << account_id_str;
+            out << "✗ Invalid account ID format. Expected UUID.\nores-client> " << std::flush;
+            co_return;
+        }
+
+        accounts::messaging::unlock_account_request request{
+            .account_id = account_id
+        };
+
+        auto request_payload = request.serialize();
+
+        comms::protocol::frame request_frame(
+            comms::protocol::message_type::unlock_account_request,
+            0,
+            std::move(request_payload));
+
+        BOOST_LOG_SEV(lg, debug) << "Sending unlock account request frame";
+
+        auto response_result =
+            co_await client_->send_request(std::move(request_frame));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg, error) << "Unlock account request failed with error code: "
+                                      << static_cast<int>(response_result.error());
+            out << "✗ Unlock account request failed\nores-client> " << std::flush;
+            co_return;
+        }
+
+        BOOST_LOG_SEV(lg, debug) << "Deserializing unlock account response";
+
+        auto response = accounts::messaging::unlock_account_response::deserialize(
+            response_result->payload());
+
+        if (!response) {
+            BOOST_LOG_SEV(lg, error) << "Failed to deserialize unlock account response: "
+                                      << static_cast<int>(response.error());
+            out << "✗ Failed to parse unlock account response" << std::endl;
+            co_return;
+        }
+
+        if (response->success) {
+            BOOST_LOG_SEV(lg, info) << "Successfully unlocked account: " << account_id;
+
+            out << "✓ Account unlocked successfully!\n";
+            out << "  Account ID: " << account_id << "\n";
+            out << "ores-client> " << std::flush;
+        } else {
+            BOOST_LOG_SEV(lg, warn) << "Failed to unlock account: " << response->error_message;
+            out << "✗ Failed to unlock account: " << response->error_message
+                << "\nores-client> " << std::flush;
+        }
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg, error) << "Unlock account exception: " << e.what();
         out << "✗ Error: " << e.what() << std::endl;
     }
 }

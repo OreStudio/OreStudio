@@ -148,8 +148,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "AFN",
@@ -163,8 +163,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "ALL",
@@ -178,8 +178,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "AMD",
@@ -193,8 +193,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "ANG",
@@ -208,8 +208,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "AOA",
@@ -223,8 +223,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "ARS",
@@ -238,8 +238,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "AUD",
@@ -253,8 +253,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "AWG",
@@ -268,8 +268,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "AZN",
@@ -283,8 +283,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "BAM",
@@ -298,8 +298,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "BBD",
@@ -313,8 +313,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "BDT",
@@ -328,8 +328,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "BGN",
@@ -343,8 +343,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "BHD",
@@ -358,8 +358,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "BIF",
@@ -373,8 +373,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "BMD",
@@ -388,8 +388,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "BND",
@@ -403,8 +403,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "BOB",
@@ -418,8 +418,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "BOV",
@@ -433,8 +433,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "BRL",
@@ -448,8 +448,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "BSD",
@@ -463,8 +463,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "BTN",
@@ -478,8 +478,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "BWP",
@@ -493,8 +493,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "BYN",
@@ -508,8 +508,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "BZD",
@@ -523,8 +523,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "CAD",
@@ -538,8 +538,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "CDF",
@@ -553,8 +553,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "CHE",
@@ -568,8 +568,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "CHF",
@@ -583,8 +583,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "CHW",
@@ -598,8 +598,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "CLF",
@@ -613,8 +613,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "CLP",
@@ -628,8 +628,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "CNH",
@@ -643,8 +643,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "CNT",
@@ -658,8 +658,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "CNY",
@@ -673,8 +673,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "COP",
@@ -688,8 +688,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "COU",
@@ -703,8 +703,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "CRC",
@@ -718,8 +718,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "CUC",
@@ -733,8 +733,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "CUP",
@@ -748,8 +748,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "CVE",
@@ -763,8 +763,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "CZK",
@@ -778,8 +778,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "DJF",
@@ -793,8 +793,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "DKK",
@@ -808,8 +808,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "DOP",
@@ -823,8 +823,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "DZD",
@@ -838,8 +838,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "EGP",
@@ -853,8 +853,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "ERN",
@@ -868,8 +868,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "ETB",
@@ -883,8 +883,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "EUR",
@@ -898,8 +898,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "FJD",
@@ -913,8 +913,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "FKP",
@@ -928,8 +928,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "GBP",
@@ -943,8 +943,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "GEL",
@@ -958,8 +958,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "GGP",
@@ -973,8 +973,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "GHS",
@@ -988,8 +988,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "GIP",
@@ -1003,8 +1003,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "GMD",
@@ -1018,8 +1018,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "GNF",
@@ -1033,8 +1033,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "GTQ",
@@ -1048,8 +1048,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "GYD",
@@ -1063,8 +1063,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "HKD",
@@ -1078,8 +1078,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "HNL",
@@ -1093,8 +1093,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "HRK",
@@ -1108,8 +1108,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "HTG",
@@ -1123,8 +1123,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "HUF",
@@ -1138,8 +1138,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "IDR",
@@ -1153,8 +1153,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "ILS",
@@ -1168,8 +1168,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "IMP",
@@ -1183,8 +1183,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "INR",
@@ -1198,8 +1198,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "IQD",
@@ -1213,8 +1213,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "IRR",
@@ -1228,8 +1228,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "ISK",
@@ -1243,8 +1243,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "JEP",
@@ -1258,8 +1258,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "JMD",
@@ -1273,8 +1273,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "JOD",
@@ -1288,8 +1288,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "JPY",
@@ -1303,8 +1303,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "KES",
@@ -1318,8 +1318,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "KGS",
@@ -1333,8 +1333,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "KHR",
@@ -1348,8 +1348,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "KID",
@@ -1363,8 +1363,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "KMF",
@@ -1378,8 +1378,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "KPW",
@@ -1393,8 +1393,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "KRW",
@@ -1408,8 +1408,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "KWD",
@@ -1423,8 +1423,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "KYD",
@@ -1438,8 +1438,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "KZT",
@@ -1453,8 +1453,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "LAK",
@@ -1468,8 +1468,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "LBP",
@@ -1483,8 +1483,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "LKR",
@@ -1498,8 +1498,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "LRD",
@@ -1513,8 +1513,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "LSL",
@@ -1528,8 +1528,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "LYD",
@@ -1543,8 +1543,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "MAD",
@@ -1558,8 +1558,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "MDL",
@@ -1573,8 +1573,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "MGA",
@@ -1588,8 +1588,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "MKD",
@@ -1603,8 +1603,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "MMK",
@@ -1618,8 +1618,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "MNT",
@@ -1633,8 +1633,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "MOP",
@@ -1648,8 +1648,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "MRU",
@@ -1663,8 +1663,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "MUR",
@@ -1678,8 +1678,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "MVR",
@@ -1693,8 +1693,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "MWK",
@@ -1708,8 +1708,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "MXN",
@@ -1723,8 +1723,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "MXV",
@@ -1738,8 +1738,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "MYR",
@@ -1753,8 +1753,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "MZN",
@@ -1768,8 +1768,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "NAD",
@@ -1783,8 +1783,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "NGN",
@@ -1798,8 +1798,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "NIO",
@@ -1813,8 +1813,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "NOK",
@@ -1828,8 +1828,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "NPR",
@@ -1843,8 +1843,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "NZD",
@@ -1858,8 +1858,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "OMR",
@@ -1873,8 +1873,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "PAB",
@@ -1888,8 +1888,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "PEN",
@@ -1903,8 +1903,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "PGK",
@@ -1918,8 +1918,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "PHP",
@@ -1933,8 +1933,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "PKR",
@@ -1948,8 +1948,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "PLN",
@@ -1963,8 +1963,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "PYG",
@@ -1978,8 +1978,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "QAR",
@@ -1993,8 +1993,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "RON",
@@ -2008,8 +2008,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "RSD",
@@ -2023,8 +2023,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "RUB",
@@ -2038,8 +2038,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "RWF",
@@ -2053,8 +2053,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "SAR",
@@ -2068,8 +2068,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "SBD",
@@ -2083,8 +2083,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "SCR",
@@ -2098,8 +2098,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "SDG",
@@ -2113,8 +2113,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "SEK",
@@ -2128,8 +2128,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "SGD",
@@ -2143,8 +2143,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "SHP",
@@ -2158,8 +2158,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "SLL",
@@ -2173,8 +2173,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "SOS",
@@ -2188,8 +2188,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "SRD",
@@ -2203,8 +2203,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "SSP",
@@ -2218,8 +2218,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "STN",
@@ -2233,8 +2233,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "SVC",
@@ -2248,8 +2248,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "SYP",
@@ -2263,8 +2263,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "SZL",
@@ -2278,8 +2278,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "THB",
@@ -2293,8 +2293,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "TJS",
@@ -2308,8 +2308,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "TMT",
@@ -2323,8 +2323,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "TND",
@@ -2338,8 +2338,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "TOP",
@@ -2353,8 +2353,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "TRY",
@@ -2368,8 +2368,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "TTD",
@@ -2383,8 +2383,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "TWD",
@@ -2398,8 +2398,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "TZS",
@@ -2413,8 +2413,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "UAH",
@@ -2428,8 +2428,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "UGX",
@@ -2443,8 +2443,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "USD",
@@ -2458,8 +2458,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "USN",
@@ -2473,8 +2473,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "UYI",
@@ -2488,8 +2488,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "UYU",
@@ -2503,8 +2503,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "UYW",
@@ -2518,8 +2518,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "UZS",
@@ -2533,8 +2533,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "VES",
@@ -2548,8 +2548,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "VND",
@@ -2563,8 +2563,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "VUV",
@@ -2578,8 +2578,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "WST",
@@ -2593,8 +2593,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "XAF",
@@ -2608,8 +2608,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "XAG",
@@ -2623,8 +2623,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "XAU",
@@ -2638,8 +2638,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "XCD",
@@ -2653,8 +2653,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "XOF",
@@ -2668,8 +2668,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "XPD",
@@ -2683,8 +2683,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "XPF",
@@ -2698,8 +2698,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "XPT",
@@ -2713,8 +2713,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "XSU",
@@ -2728,8 +2728,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "XUA",
@@ -2743,8 +2743,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "YER",
@@ -2758,8 +2758,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "ZAR",
@@ -2773,8 +2773,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "ZMW",
@@ -2788,8 +2788,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   },
   {
     "iso_code": "ZWL",
@@ -2803,8 +2803,8 @@ IMPORTANT: build details are NOT for security purposes.
     "format": "",
     "currency_type": "",
     "modified_by": "",
-    "valid_from": "9999-12-31 23:59:59",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "",
+    "valid_to": ""
   }
 ]
 #+end_src

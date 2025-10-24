@@ -275,4 +275,57 @@ std::ostream& operator<<(std::ostream& s, const login_response& v)
     return(s);
 }
 
+// unlock_account_request implementation
+std::vector<std::uint8_t> unlock_account_request::serialize() const {
+    std::vector<std::uint8_t> buffer;
+    write_uuid(buffer, account_id);
+    return buffer;
+}
+
+std::expected<unlock_account_request, comms::protocol::error_code>
+unlock_account_request::deserialize(std::span<const std::uint8_t> data) {
+    unlock_account_request request;
+
+    auto account_id_result = read_uuid(data);
+    if (!account_id_result) return std::unexpected(account_id_result.error());
+    request.account_id = *account_id_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const unlock_account_request& v)
+{
+    rfl::json::write(v, s);
+    return(s);
+}
+
+// unlock_account_response implementation
+std::vector<std::uint8_t> unlock_account_response::serialize() const {
+    std::vector<std::uint8_t> buffer;
+    write_bool(buffer, success);
+    write_string(buffer, error_message);
+    return buffer;
+}
+
+std::expected<unlock_account_response, comms::protocol::error_code>
+unlock_account_response::deserialize(std::span<const std::uint8_t> data) {
+    unlock_account_response response;
+
+    auto success_result = read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto error_message_result = read_string(data);
+    if (!error_message_result) return std::unexpected(error_message_result.error());
+    response.error_message = *error_message_result;
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const unlock_account_response& v)
+{
+    rfl::json::write(v, s);
+    return(s);
+}
+
 }

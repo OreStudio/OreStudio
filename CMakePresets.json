@@ -17,7 +17,14 @@
                 "CMAKE_EXPORT_COMPILE_COMMANDS": true,
                 "CMAKE_CXX_STANDARD": "23",
                 "CMAKE_CXX_STANDARD_REQUIRED": true,
-                "CMAKE_CXX_EXTENSIONS": false
+                "CMAKE_CXX_EXTENSIONS": false,
+                "CMAKE_FIND_ROOT_PATH_MODE_PACKAGE": "BOTH",
+                "CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY": "ON",
+                "CMAKE_FIND_USE_CMAKE_SYSTEM_PATH": "ON",
+                "CMAKE_PREFIX_PATH": "",
+                "VCPKG_INSTALL_OPTIONS": "--clean-after-build",
+                "XCB_XEVIE": "OFF",
+                "XCB_XPRINT": "OFF"
             },
             "warnings": {
                 "uninitialized": true,

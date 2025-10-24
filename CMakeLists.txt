@@ -58,7 +58,7 @@ else()
     message(STATUS "SCCache NOT found.")
 endif()
 
-project(OreStudio VERSION 0.0.2 LANGUAGES CXX
+project(OreStudio VERSION 0.0.3 LANGUAGES CXX
     DESCRIPTION "UI and other utilities for the Open Source Risk Engine (ORE).")
 
 # threads
@@ -90,10 +90,7 @@ find_package(libpqxx CONFIG REQUIRED)
 find_package(PostgreSQL REQUIRED)
 
 # Qt
-# find_package(Qt6Core REQUIRED)
-# find_package(Qt6Gui REQUIRED)
-# find_package(Qt6Widgets REQUIRED)
-# find_package(Qt6Sql REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent)
 
 # Reflect CPP
 find_package(pugixml CONFIG REQUIRED)

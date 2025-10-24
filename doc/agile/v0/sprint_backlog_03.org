@@ -1,0 +1,943 @@
+:PROPERTIES:
+:ID: D35D43C9-46BF-9A94-F03B-A3B706020498
+:END:
+#+title: Sprint Backlog 03
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED
+#+tags: { code(c) infra(i) analysis(n) agile(a) }
+#+startup: inlineimages
+
+* Sprint Mission
+
+- update UI layer to use new socket code.
+- finish login related functionality.
+
+* Stories
+
+** Active
+
+#+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
+#+TBLNAME: today_summary
+#+CAPTION: Clock summary at [2025-10-24 Fri 17:19], for Friday, October 24, 2025.
+|      | <75>                          |        |      |      |       |
+| Tags | Headline                      | Time   |      |      |     % |
+|------+-------------------------------+--------+------+------+-------|
+|      | *Total time*                  | *5:22* |      |      | 100.0 |
+|------+-------------------------------+--------+------+------+-------|
+|      | Stories                       | 5:22   |      |      | 100.0 |
+|      | Active                        |        | 5:22 |      | 100.0 |
+| code | Add support for feature flags |        |      | 1:15 |  23.3 |
+| code | Enable qt gui                 |        |      | 4:07 |  76.7 |
+#+end:
+
+#+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
+#+TBLNAME: sprint_summary
+#+CAPTION: Clock summary at [2025-10-24 Fri 17:19]
+|       | <75>                                        |         |       |      |       |
+| Tags  | Headline                                    | Time    |       |      |     % |
+|-------+---------------------------------------------+---------+-------+------+-------|
+|       | *Total time*                                | *10:02* |       |      | 100.0 |
+|-------+---------------------------------------------+---------+-------+------+-------|
+|       | Stories                                     | 10:02   |       |      | 100.0 |
+|       | Active                                      |         | 10:02 |      | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       | 0:35 |   5.8 |
+| code  | Investigate leaks from valgrind             |         |       | 0:46 |   7.6 |
+| code  | Add locking up logic                        |         |       | 1:28 |  14.6 |
+| code  | Add support for feature flags               |         |       | 1:25 |  14.1 |
+| code  | Implement authentication bootstrap workflow |         |       | 0:25 |   4.2 |
+| code  | Enable qt gui                               |         |       | 4:10 |  41.5 |
+| code  | Add workspace as a container                |         |       | 1:13 |  12.1 |
+#+end:
+
+*** STARTED Sprint and product backlog refinement                     :agile:
+    :LOGBOOK:
+    CLOCK: [2025-10-23 Thu 09:10]--[2025-10-23 Thu 09:45] =>  0:35
+    :END:
+
+Updates to sprint and product backlog.
+
+#+begin_src emacs-lisp :exports none
+;; agenda
+(org-agenda-file-to-front)
+#+end_src
+
+#+name: stories-chart
+#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_03_stories.png :width 1200 :height 650
+library(conflicted)
+library(grid)
+library(tidyverse)
+library(tibble)
+
+# Remove unnecessary rows.
+clean_sprint_summary <- tail(sprint_summary, -4)
+names <- unlist(clean_sprint_summary[2])
+values <- as.numeric(unlist(clean_sprint_summary[6]))
+
+# Create a data frame.
+df <- data.frame(
+  cost = values,
+  stories = factor(names, levels = names[order(values, decreasing = FALSE)]),
+  y = seq(length(names)) * 0.9
+)
+
+# Setup the colors
+blue <- "#076fa2"
+
+p <- ggplot(df) +
+  aes(x = cost, y = stories) +
+  geom_col(fill = blue, width = 0.6) +
+  ggtitle("Sprint 1: Resourcing per Story") +
+  xlab("Resourcing (%)") + ylab("Stories") +
+  theme(text = element_text(size = 15))
+
+print(p)
+#+end_src
+
+#+RESULTS: stories-chart
+[[file:sprint_backlog_03_stories.png]]
+
+#+name: tags-chart
+#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_03_tags.png :width 600 :height 400
+library(conflicted)
+library(grid)
+library(tidyverse)
+library(tibble)
+
+# Remove unnecessary rows.
+clean_sprint_summary <- tail(sprint_summary, -4)
+names <- unlist(clean_sprint_summary[1])
+values <- as.numeric(unlist(clean_sprint_summary[6]))
+
+# Create a data frame.
+df <- data.frame(
+  cost = values,
+  tags = names,
+  y = seq(length(names)) * 0.9
+)
+# factor(names, levels = names[order(values, decreasing = FALSE)])
+
+df2 <- setNames(aggregate(df$cost, by = list(df$tags), FUN = sum),  c("cost", "tags"))
+# Setup the colors
+blue <- "#076fa2"
+
+p <- ggplot(df2) +
+  aes(x = cost, y = tags) +
+  geom_col(fill = blue, width = 0.6) +
+  ggtitle("Sprint 1: Resourcing per Tag") +
+  xlab("Resourcing (%)") + ylab("Story types") +
+  theme(text = element_text(size = 15))
+
+print(p)
+#+end_src
+
+#+RESULTS: tags-chart
+[[file:sprint_backlog_03_tags.png]]
+
+*** STARTED Investigate leaks from valgrind                            :code:
+    :LOGBOOK:
+    CLOCK: [2025-10-23 Thu 09:46]--[2025-10-23 Thu 10:32] =>  0:46
+    :END:
+
+We have a number of new leaks in valgrind, check if they are real leaks or
+require suppressions.
+
+Leak 1:
+
+#+begin_src valgrind-leak
+<b>MPK</b> ==46924== 32 bytes in 1 blocks are still reachable in loss record 1 of 12
+==46924==    at 0x4846828: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==46924==    by 0x75A94B: CRYPTO_malloc (mem.c:212)
+==46924==    by 0x75A9AE: CRYPTO_zalloc (mem.c:224)
+==46924==    by 0x975D85: ossl_sa_new (sparse_array.c:60)
+==46924==    by 0x76E804: ossl_sa_CTX_TABLE_ENTRY_new (threads_common.c:110)
+==46924==    by 0x76EB87: CRYPTO_THREAD_set_local_ex (threads_common.c:379)
+==46924==    by 0x718766: ossl_err_get_state_int (err.c:678)
+==46924==    by 0x719855: ERR_set_mark (err_mark.c:19)
+==46924==    by 0x6BBE13: CONF_modules_load_file_ex (conf_mod.c:198)
+==46924==    by 0x90DED3: ossl_config_int (conf_sap.c:70)
+==46924==    by 0x759087: ossl_init_config (init.c:282)
+==46924==    by 0x759069: ossl_init_config_ossl_ (init.c:280)
+==46924==    by 0x4C9CED2: __pthread_once_slow (pthread_once.c:116)
+==46924==    by 0x76F93D: CRYPTO_THREAD_run_once (threads_pthread.c:975)
+==46924==    by 0x75983D: OPENSSL_init_crypto (init.c:634)
+==46924==    by 0x942821: ossl_engine_table_select (eng_table.c:209)
+==46924==    by 0x942D2F: ENGINE_get_default_RAND (tb_rand.c:61)
+==46924==    by 0x782C1F: RAND_get_rand_method (rand_lib.c:290)
+==46924==    by 0x7831AA: RAND_bytes_ex (rand_lib.c:466)
+==46924==    by 0x78336D: RAND_bytes (rand_lib.c:501)
+==46924==    by 0x287012: ores::accounts::security::password_manager::create_password_hash(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (projects/ores.accounts/security/password_manager.cpp:128)
+==46924==    by 0x228EF7: security_password_manager_tests::verify_password_hash::test_method() (projects/ores.accounts.tests/security_password_manager_tests.cpp:39)
+==46924==    by 0x228832: security_password_manager_tests::verify_password_hash_invoker() (projects/ores.accounts.tests/security_password_manager_tests.cpp:35)
+==46924==    by 0x20BF7B: boost::detail::function::void_function_invoker<void (*)(), void>::invoke(boost::detail::function::function_buffer&) (function_template.hpp:59)
+==46924==    by 0x2E5DA2: boost::function_n<void>::operator()() const (function_template.hpp:789)
+==46924==    by 0x369D38: boost::detail::forward::operator()() (execution_monitor.ipp:1416)
+==46924==    by 0x36B0D7: boost::detail::function::function_obj_invoker<boost::detail::forward, int>::invoke(boost::detail::function::function_buffer&) (function_template.hpp:79)
+==46924==    by 0x29AF78: boost::function_n<int>::operator()() const (function_template.hpp:789)
+==46924==    by 0x29A83C: boost::detail::translator_holder<boost::exception, void (*)(boost::exception const&)>::operator()(boost::function<int ()> const&) (execution_monitor.hpp:448)
+==46924==    by 0x36A3B0: int boost::detail::do_invoke<boost::shared_ptr<boost::detail::translator_holder_base>, boost::function<int ()> >(boost::shared_ptr<boost::detail::translator_holder_base> const&, boost::function<int ()> const&) (execution_monitor.ipp:329)
+==46924==    by 0x368638: boost::execution_monitor::catch_signals(boost::function<int ()> const&) (execution_monitor.ipp:931)
+==46924==    by 0x3687E6: boost::execution_monitor::execute(boost::function<int ()> const&) (execution_monitor.ipp:1329)
+==46924==    by 0x36971F: boost::execution_monitor::vexecute(boost::function<void ()> const&) (execution_monitor.ipp:1425)
+==46924==    by 0x3216EC: boost::unit_test::unit_test_monitor_t::execute_and_translate(boost::function<void ()> const&, unsigned long) (unit_test_monitor.ipp:49)
+==46924==    by 0x2E4691: boost::unit_test::framework::state::execute_test_tree(unsigned long, unsigned long, boost::unit_test::framework::state::random_generator_helper const*) (framework.ipp:815)
+==46924==    by 0x2E3B3D: boost::unit_test::framework::state::execute_test_tree(unsigned long, unsigned long, boost::unit_test::framework::state::random_generator_helper const*) (framework.ipp:740)
+==46924==    by 0x2E3B3D: boost::unit_test::framework::state::execute_test_tree(unsigned long, unsigned long, boost::unit_test::framework::state::random_generator_helper const*) (framework.ipp:740)
+==46924==    by 0x2DD37B: boost::unit_test::framework::run(unsigned long, bool) (framework.ipp:1722)
+==46924==    by 0x31F63D: boost::unit_test::unit_test_main(boost::unit_test::test_suite* (*)(int, char**), int, char**) (unit_test_main.ipp:250)
+==46924==    by 0x31F9E1: main (unit_test_main.ipp:306)
+==46924==
+#+end_src
+
+All leaks are related to OpenSSL. Let's see if gemini's fix helps.
+
+
+*** COMPLETED Add locking up logic                                     :code:
+    :LOGBOOK:
+    CLOCK: [2025-10-23 Thu 15:06]--[2025-10-23 Thu 16:00] =>  0:54
+    CLOCK: [2025-10-23 Thu 10:34]--[2025-10-23 Thu 11:08] =>  0:34
+    :END:
+
+Incorrect password N times should lock up the account.
+
+Notes:
+
+- need to make bools ints a gain as we can't update them.
+
+Links:
+
+- [[https://github.com/getml/sqlgen/issues/74][#74: Updating boolean data causes an error]]
+
+*** STARTED Add support for feature flags                              :code:
+    :LOGBOOK:
+    CLOCK: [2025-10-24 Fri 01:25]--[2025-10-24 Fri 01:34] =>  0:09
+    CLOCK: [2025-10-24 Fri 00:43]--[2025-10-24 Fri 01:24] =>  0:41
+    CLOCK: [2025-10-23 Thu 23:50]--[2025-10-24 Fri 00:25] =>  0:35
+    :END:
+
+We need a way to know if we are in bootstrap mode or not. Implement a generic
+mechanism for feature flags.
+
+Example chrome flag:
+
+#+begin_quote
+Temporarily unexpire M139 flags.
+
+Temporarily unexpire flags that expired as of M139. These flags will be removed
+soon. – Mac, Windows, Linux, ChromeOS, Android
+
+#temporary-unexpire-flags-m139
+#+end_quote
+
+Components:
+
+- name: human readable
+- description
+- id
+
+*** STARTED Implement authentication bootstrap workflow                :code:
+    :LOGBOOK:
+    CLOCK: [2025-10-23 Thu 17:30]--[2025-10-23 Thu 17:55] =>  0:25
+    :END:
+
+Notes:
+
+- when there are no accounts setup, the repl should say to the user that it
+  needs to create an admin account.
+- first account must be admin.
+- once there is an account we need to make sure the user is logged in before we
+  process most message types.
+
+Mongo message:
+
+#+begin_src logview
+2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] ** WARNING: Access control is not enabled for the database.
+2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] **          Read and write access to data and configuration is unrestricted.
+#+end_src
+
+Requirements:
+
+#+begin_src markdown
+# Authentication Bootstrapping Requirements
+
+## R1: Initial System State (Bootstrap Mode)
+
+The system **MUST** start in a special **"Bootstrap Mode"** where the only
+permitted action is the creation of the initial Administrator account.
+
+## R2: Access Control in Bootstrap Mode
+
+While the system is in Bootstrap Mode:
+
+- **R2.1: Allowed Endpoint:** The service **MUST** only expose and accept
+  requests for a single endpoint: `POST /api/v1/accounts/create-admin` (or
+  equivalent).
+- **R2.2: Local-Only Restriction:** All requests to the allowed endpoint
+  ,**MUST** originate from a **trusted local interface** (e.g., `127.0.0.1` or
+  the server's designated internal IP range). Requests from any external/public
+  IP address **MUST** be rejected.
+- **R2.3: General Endpoint Rejection:** All other API endpoints (e.g., login,
+  user creation, data access) **MUST** immediately return a $\mathbf{403}$
+  ,**Forbidden** or $\mathbf{401}$ **Unauthorized** status, along with a clear
+  message indicating the system is in setup mode.
+
+## R3: Initial Admin Account Creation
+
+The first account created through the allowed endpoint **MUST** adhere to the
+following:
+
+- **R3.1: Mandatory Admin Role:** The account **MUST** be assigned the highest
+  level of **Administrator privileges** (`is_admin: true`).
+- **R3.2: Strong Password Policy:** The request **MUST** be validated against a
+  strong password policy (e.g., minimum 12 characters, requiring a mix of case,
+  numbers, and symbols). Failure to meet this standard **MUST** result in a
+  $\mathbf{400}$ **Bad Request** error.
+- **R3.3: One-Time Execution:** The administrator creation process **MUST** only
+  be allowed to succeed **exactly once**.
+
+## R4: System State Transition
+
+Upon successful creation of the first Administrator account (R3):
+
+- **R4.1: State Change:** The system **MUST** immediately and atomically
+  transition from **"Bootstrap Mode"** to **"Secure Mode"**. This state change
+  ,**MUST** be persisted.
+- **R4.2: Bootstrap Endpoint Deactivation:** The `POST
+  /api/v1/accounts/create-admin` endpoint **MUST** be permanently disabled. Any
+  subsequent request to this endpoint **MUST** return a $\mathbf{403}$
+  ,**Forbidden** error.
+
+## R5: Secure Mode Operation
+
+Once the system is in **"Secure Mode"**:
+
+- **R5.1: General Access Control:** All operational API endpoints **MUST** now
+  enforce **full authentication and authorization**.
+- **R5.2: Mandatory Login:** All users, including the newly created
+  Administrator, **MUST** successfully complete a login process to obtain a
+  valid session token before accessing any resource.
+- **R5.3: Standard Account Creation:** The standard non-admin account creation
+  endpoint (`POST /api/v1/accounts/create`) **MUST** become available, subject
+  to any configured access controls (e.g., only open to logged-in Admins, or
+  fully public).
+#+end_src
+
+
+Links:
+
+- [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
+
+*** STARTED Enable qt gui                                              :code:
+    :LOGBOOK:
+    CLOCK: [2025-10-24 Fri 17:12]--[2025-10-24 Fri 17:19] =>  0:07
+    CLOCK: [2025-10-24 Fri 13:39]--[2025-10-24 Fri 14:10] =>  0:31
+    CLOCK: [2025-10-24 Fri 12:17]--[2025-10-24 Fri 13:26] =>  1:09
+    CLOCK: [2025-10-24 Fri 12:02]--[2025-10-24 Fri 12:17] =>  0:15
+    CLOCK: [2025-10-24 Fri 11:44]--[2025-10-24 Fri 11:58] =>  0:14
+    CLOCK: [2025-10-24 Fri 10:21]--[2025-10-24 Fri 10:59] =>  0:38
+    CLOCK: [2025-10-24 Fri 09:21]--[2025-10-24 Fri 10:20] =>  0:59
+    CLOCK: [2025-10-24 Fri 00:28]--[2025-10-24 Fri 00:42] =>  0:14
+    CLOCK: [2025-10-23 Thu 17:56]--[2025-10-23 Thu 17:59] =>  0:03
+    :END:
+
+Due to problems building we disabled qt. Enable it again as we are close to
+working on it.
+
+Notes:
+
+- remove SQL dependency to see if the build works.
+
+*** CLI Importing needs to read from database                          :code:
+
+After we do the import into the database, we need to read the currencies again
+to get the valid from/to.
+
+*** Investigate build warning for qtbase                              :infra:
+
+At present we are getting:
+
+#+begin_src
+Building qtbase[brotli,concurrent,core,dbus,dnslookup,doubleconversion,egl,fontconfig,freetype,gui,harfbuzz,icu,jpeg,network,opengl,openssl,pcre2,png,sql,sql-psql,sql-sqlite,testlib,thread,widgets,xcb,xcb-xlib,xkb,xkbcommon-x11,xlib,xrender,zstd]:x64-linux@6.8.3#5...
+CMake Warning at ports/qtbase/portfile.cmake:49 (message):
+  qtbase currently requires packages from the system package manager.  They
+  can be installed on Ubuntu systems via sudo apt-get install '^libxcb.*-dev'
+  libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev
+  libxkbcommon-x11-dev libegl1-mesa-dev.
+#+end_src
+
+According to grok:
+
+#+begin_quote
+The CMake warning from ports/qtbase/portfile.cmake indicates that the qtbase
+package in vcpkg requires additional system dependencies (like libxcb and
+others) to be installed on your system, specifically for Ubuntu. This warning
+appears because vcpkg detects that these dependencies are not satisfied. To
+remove the warning, you need to install the required system packages or suppress
+the warning if you’re sure the dependencies are met or not needed.
+#+end_quote
+
+We seem to be installing all of the required libraries on our script. We may
+need to:
+
+#+begin_src bash
+export VCPKG_DISABLE_SYSTEM_PACKAGE_CHECK=1
+#+end_src
+
+*** Fix gemini cli action                                              :code:
+
+The action to review PRs using gemini is failing.
+
+*** Tidy-up database code                                              :code:
+
+- add helpers to utility to ensure success, execute query, etc.
+- add helpers for max timestamp, timestamp.
+
+*** Split console recipes by entity                                    :code:
+
+At present we have one very long file, but this is not scalable. We could split
+out:
+
+- general args (help, info, etc)
+- by entity
+
+Notes:
+
+- Rename console to CLI.
+- reduce output, only first few entries are needed.
+- add a toc.
+
+*** Merge client into console                                          :code:
+
+We don't really need a client, we can add this functionality to console.
+
+Notes:
+
+- rename console to cli.
+- add a mode in console called =client=.
+- add port, etc as configuration variables.
+- add the location of cert as configuration variables.
+- read variables from environment.
+
+*** Add support for JWT                                                :code:
+
+Links:
+
+- [[https://iniakunhuda.medium.com/building-secure-jwt-authentication-in-go-with-postgresql-94b6724f9b75][Building Secure JWT Authentication in Go with PostgreSQL]]
+- [[https://github.com/Thalhammer/jwt-cpp][GH jwt-cpp]]
+
+*** Read up on ECS                                                 :analysis:
+
+Links:
+
+- [[https://en.wikipedia.org/wiki/Entity_component_system][wikipedia: Entity component system]]
+- [[https://github.com/skypjack/entt][GH entt]]: "EnTT is a header-only, tiny and easy to use library for game
+  programming and much more written in modern C++."
+
+*** Consider adding otel support                                       :code:
+
+Links:
+
+- [[https://github.com/destrex271/postgresexporter][GH postgresexporter]]: "Unofficial Postgres Exporter for OTEL"
+- [[https://opentelemetry-cpp.readthedocs.io/en/latest/otel_docs/classopentelemetry_1_1sdk_1_1trace_1_1SpanExporter.html][SpanExporter]]: create your own exporter.
+
+*** Add chat support                                                   :code:
+
+Links:
+
+- [[https://github.com/communi/libcommuni][GH libcommuni]]: "A cross-platform IRC framework written with Qt."
+- [[https://github.com/inspircd/inspircd/tree/insp4][GH insp4]]: "InspIRCd is a modular C++ Internet Relay Chat (IRC) server for
+  UNIX-like and Windows systems."
+- https://www.inspircd.org/
+
+*** Add account support                                                :code:
+
+Links:
+
+- [[https://www.azerothcore.org/wiki/creating-accounts][azeroth: Creating Accounts]]
+- [[https://www.azerothcore.org/wiki/account][azeroth: account]]
+- [[https://www.mongodb.com/docs/manual/reference/built-in-roles/#std-label-built-in-roles][mongo: Built-In Roles]]
+
+*** Add session support                                                :code:
+
+Users must be able to login and logout.
+
+*** Consider exposing end points via HTTP                              :code:
+
+Having a binary protocol is helpful for performance but it may make life easier
+to expose some functionality via HTTP.
+
+Links:
+
+- [[https://github.com/dfleury2/beauty][GH: beauty]]: "Beauty is a layer above Boost.Beast which provide facilities to
+  create Http server or client. Beauty allows the creation of synchronous or
+  asynchronous server and client, and adds some signals and timer management
+  based on Boost.Asio"
+
+*** Consider using getML to integrate ML                               :code:
+
+Links:
+
+- [[https://github.com/getml/getml-community][GH: getml]]: "getML is a tool for automating feature engineering on relational
+  data and time series. It includes a specifically customized database Engine
+  for this very purpose."
+- [[https://getml.com/latest/user_guide/quick_start/][user guide quick start]]
+
+*** Configure postgres with async IO                                   :code:
+
+Links:
+
+- [[https://neon.com/postgresql/postgresql-18/asynchronous-io][PostgreSQL 18 Asynchronous I/O]]
+
+*** Consider using sqls for LSP                                        :code:
+
+We are presently testing postgrestools. If that does not work well, we should
+consider sqls.
+
+Links:
+
+- [[https://www.reddit.com/r/emacs/comments/ijbvwv/eglot_sqls_sql_client/][eglot + sqls = SQL client?]]
+
+*** Add workspace as a container                                       :code:
+    :LOGBOOK:
+    CLOCK: [2025-02-13 Thu 22:18]--[2025-02-13 Thu 22:35] =>  0:17
+    CLOCK: [2025-02-13 Thu 21:21]--[2025-02-13 Thu 22:17] =>  0:56
+    :END:
+
+Core needs to have a container for all of the data stored within a context.
+
+*** Add portfolio support                                              :code:
+
+Links:
+
+- [[https://leonardqmarcq.com/posts/modeling-hierarchical-tree-data][Modeling Hierarchical Tree Data in PostgreSQL]]
+
+*** Convert plantuml diagrams to org-babel                              :doc:
+
+It may be easier to integrate diagrams with roam if they are org-mode documents.
+Experiment with babel for this.
+
+*** Setup code quality actions                                        :infra:
+
+We added a test password to the repo on purpose to see if it was going to be
+detected by the github actions:
+
+#+begin_src c++
+    std::string connection_string("postgresql://ores:ores@localhost:5433/oresdb");
+#+end_src
+
+It wasn't. We need to figure out which actions need to be setup for this. Add
+any other actions we may be missing.
+
+The build seems to be failing:
+
+#+begin_src sh
+-- SCCache NOT found.
+ CMake Error at /usr/local/share/cmake-3.30/Modules/CMakeDetermineSystem.cmake:152 (message):
+   Could not find toolchain file:
+   /home/runner/work/OreStudio/OreStudio/vcpkg/scripts/buildsystems/vcpkg.cmake
+ Call Stack (most recent call first):
+ CMakeLists.txt:61 (project)
+
+
+ CMake Error: CMake was unable to find a build program corresponding to "Unix Makefiles".  CMAKE_MAKE_PROGRAM is not set.  You probably need to select a different build tool.
+ CMake Error: CMAKE_CXX_COMPILER not set, after EnableLanguage
+ -- Configuring incomplete, errors occurred!
+ ~/work/OreStudio/OreStudio ~/work/OreStudio/OreStudio
+ ~/work/OreStudio/OreStudio
+ cpp/autobuilder: No supported build command succeeded.
+ cpp/autobuilder: autobuild summary.
+ Error: We were unable to automatically build your code. Please replace the call to the autobuild action with your custom build steps. Encountered a fatal error while running "/opt/hostedtoolcache/CodeQL/2.18.0/x64/codeql/cpp/tools/autobuild.sh". Exit code was 1 and last log line was: cpp/autobuilder: autobuild summary. See the logs for more details.
+#+end_src
+
+This may be due to a missing sub-module for vcpkg.
+
+*** Add a message queue                                                :code:
+
+Links:
+
+- [[https://www.oliverlambson.com/pgmq][Use what you already have: Building a message queue on Postgres]]
+
+*** Add support for =windows-msvc-clang-cl=                           :infra:
+
+We need to setup a build for MSVC clang.
+
+*** Implement database connectivity                                    :code:
+
+We have hard coded database configuration. Implement this properly both for
+console and UI.
+
+*** Starting UI from file manager does not work                       :infra:
+
+At present we can't start the Qt UI because the file manager thinks its a video.
+Maybe we need a desktop file.
+
+Example desktop file:
+
+#+begin_src conf
+[Desktop Entry]
+Comment=
+Terminal=true
+Name=fixvideo
+Exec=/home/user/fixvideo.sh %f
+Type=Application
+Icon=/usr/share/icons/gnome/48x48/apps/gnome-settings-theme.png
+Encoding=UTF-8
+Hidden=false
+NoDisplay=false
+Categories=AudioVideo;Player;Recorder;
+MimeType=video/dv;v
+#+end_src
+
+Source: [[https://emacs.stackexchange.com/questions/58037/is-there-a-standard-mode-for-ini-files][Is there a standard mode for .ini files?]]
+
+Tasks:
+
+- create a desktop file for the application.
+- add an icon.
+
+*** Consider adding the update copyrights action from quantlib        :infra:
+
+We should remove copyrights from each file and instead have it only at the
+top-level to make maintenance easier.
+
+See [[https://github.com/OpenSourceRisk/QuantLib/blob/master/.github/workflows/copyrights.yml][=copyrights.yml=]] in QuantLib repo.
+
+*** Consider adding clang-tidy build                                  :infra:
+
+As per QuantLib build: [[https://github.com/OpenSourceRisk/QuantLib/blob/master/.github/workflows/tidy.yml][=tidy.yml=]].
+
+*** Consider adding test times build                                  :infra:
+
+As per QuantLib build: [[https://github.com/OpenSourceRisk/QuantLib/blob/master/.github/workflows/test-times.yml][=test-times.yml=]].
+
+*** Consider adding sanitizer build                                   :infra:
+
+As per QuantLib build: [[https://github.com/OpenSourceRisk/QuantLib/blob/master/.github/workflows/sanitizer.yml][=sanitizer.yml=]].
+
+*** Use string views for static strings                               :infra:
+
+We are creating =std::strings= where we don't need them, use string views
+instead.
+
+This is not trivial, when we tried a lot of things were borked.
+
+*** Create HTTP end point for currencies                              :infra:
+
+Add a basic HTTP server using boost beast. Then we just need a couple of verbs:
+
+- GET: return all currencies in database.
+- POST: add one or more currencies.
+
+*** Fix site links to main page                                         :doc:
+
+At present we renamed readme to index in the HTML export. Do a symlink or a copy
+of this file to fix links.
+
+*** Add discord support to app                                        :infra:
+
+Links:
+
+- [[https://github.com/RealTimeChris/DiscordCoreAPI][DiscordCoreAPI]]
+
+*** Recipes do not show variables in org-babel                        :infra:
+
+At present when we look at a recipe in the site, we cannot tell what the
+environment variables are:
+
+#+begin_src sh
+./ores.console import ${log_args} --currency-configuration ${currency_config_dir}/currencies.xml
+#+END_SRC
+
+It would be nice if =log_args= etc showed up in the recipe.
+
+Links:
+
+- [[https://kitchingroup.cheme.cmu.edu/blog/2019/02/12/Using-results-from-one-code-block-in-another-org-mode/][Using results from one code block in another org-mode]]
+
+*** Install Windows package on Windows machine                        :infra:
+
+We need to install and run the windows package and make sure it works. Check
+console and GUI start.
+
+*** Install OSX package on OSX machine                                :infra:
+
+We need to install and run the windows package and make sure it works. Check
+console and GUI start.
+
+*** Add packaging support for images                                  :infra:
+
+At present we are not adding images to packages.
+
+*** Create a staging directory                                        :infra:
+
+At present the binaries are scattered around the build directory. We should take
+the same approach as Dogen and create clean directories for this.
+
+*** Create an icon for the application                                :infra:
+
+We copied the Dogen icon to get us going. We should really grab our own logo.
+
+*** Add JSON parsing support for currency                              :code:
+
+We need to have the ability to read and write currencies from JSON.
+
+*** Add postgres support for currency                                  :code:
+
+We need to have the ability to read and write currencies from a postgres
+database.
+
+*** Work through all types required for Example 1                      :code:
+
+We want to be able to visualise all the data types needed in order to be able to
+run the most basic example of ORE. For each of these types, create a stories.
+
+The files are as follows. First, there are the files in the =Input= directory:
+
+- [[https://github.com/OpenSourceRisk/Engine/tree/master/Examples/Example_1/Input][Example 1 Inputs]]
+
+Specifically:
+
+- =currencies.xml=
+- =netting.xml=
+- =ore.xml=
+- =ore_swaption.xml=
+- =plot.gp=
+- =portfolio.xml=
+- =portfolio_swap.xml=
+- =portfolio_swap_20151023.xml=
+- =portfolio_swaption.xml=
+- =portfolio_swaption_20151023.xml=
+- =simulation.xml=
+
+In addition, we need all of the common inputs under:
+
+- [[https://github.com/OpenSourceRisk/Engine/tree/master/Examples/Input][Examples - Common Inputs]]
+
+These are:
+
+- =calendaradjustment.xml=
+- =conventions.xml=
+- =currencies.xml=
+- =curveconfig.xml=
+- =fixings_20160205.txt=
+- =market_20160205.txt=
+- =market_20160205_flat.txt=
+- =pricingengine.xml=
+- =todaysmarket.xml=
+
+Finally, we need support for the outputs. We can grab these from the expected
+outputs:
+
+- [[https://github.com/OpenSourceRisk/Engine/tree/master/Examples/Example_1/ExpectedOutput][Example 1 Expected Outputs]]
+
+These are:
+
+- =colva_nettingset_CPTY_A.csv=
+- =curves.csv=
+- =exposure_nettingset_CPTY_A.csv=
+- =exposure_trade_Swap_20y.csv=
+- =flows.csv=
+- =log_progress.json=
+- =netcube.csv=
+- =npv.csv=
+- =swaption_npv.csv=
+- =xva.csv=
+
+*** Consider adding support for A/B testing                            :code:
+
+At present feature flags are global. However, we may want to enable a feature
+for a subset of the population. Analysis:
+
+#+begin_src markdown
+To support **gradual rollout (ramping)** of features—e.g., enabling a feature for 10% of users, then 50%, then 100%—you need to extend your feature flag system beyond a simple boolean toggle. The current temporal table design (`feature_flags` with validity periods) is great for time-based control, but **not sufficient for user-based targeting**.
+
+Here’s a practical, scalable approach that integrates well with your C++23/Qt/PostgreSQL stack:
+
+---
+
+### 🎯 Goal
+Enable a feature **conditionally** based on:
+- User identity (e.g., user ID, tenant ID, or client ID)
+- A **rollout percentage** (e.g., 10%)
+- Optional: user attributes (role, region, etc.)
+
+---
+
+### ✅ Step 1: Enhance the Feature Flag Schema
+
+Add **rollout strategy metadata** to your `feature_flags` table:
+
+```sql
+ALTER TABLE oresdb.feature_flags
+ADD COLUMN rollout_percentage INTEGER CHECK (rollout_percentage BETWEEN 0 AND 100) DEFAULT 100,
+ADD COLUMN targeting_criteria JSONB; -- optional, for advanced rules
+```
+
+Now each flag version can specify:
+- `rollout_percentage = 10` → enable for ~10% of users
+- `targeting_criteria = '{"role": "beta_tester"}'` → (future extensibility)
+
+> Keep your temporal primary key and exclusion constraint — they still apply.
+
+---
+
+### ✅ Step 2: Determine a Stable User Identifier
+
+Your client must provide a **consistent, hashable ID** per user or session, such as:
+- User ID (if authenticated)
+- Device ID / client UUID (if anonymous)
+- Tenant ID (for multi-tenant apps)
+
+This ID must be **stable** across sessions so the same user doesn’t see the feature flicker on/off.
+
+> 💡 In your Qt client, generate or retrieve this ID at startup and pass it to the feature flag service.
+
+---
+
+### ✅ Step 3: Implement Consistent Hash-Based Sampling in C++
+
+Use a **deterministic hash** to map user IDs into a 0–99 bucket:
+
+```cpp
+#include <functional>
+#include <string>
+
+bool should_enable_for_user(std::string_view feature_name,
+                            std::string_view user_id,
+                            int rollout_percentage) {
+    if (rollout_percentage <= 0) return false;
+    if (rollout_percentage >= 100) return true;
+
+    // Combine feature name + user ID to avoid correlation across features
+    std::string key = std::string(feature_name) + ":" + std::string(user_id);
+
+    // Use a stable hash (e.g., std::hash, but note: not guaranteed consistent across runs)
+    // For production, prefer a consistent hash like FNV-1a or CityHash
+    auto hash = std::hash<std::string>{}(key);
+    int bucket = static_cast<int>(hash % 100);
+    return bucket < rollout_percentage;
+}
+```
+
+> ⚠️ **Warning**: `std::hash` is **not guaranteed to be stable across program runs or platforms**.
+> For reliable rollout, use a **stable hashing algorithm** like **FNV-1a**, **MurmurHash3**, or **xxHash**.
+
+Example with a simple FNV-1a (C++23-friendly):
+
+```cpp
+constexpr uint32_t fnv1a_32(std::string_view s) {
+    uint32_t hash = 2166136261u; // FNV offset basis
+    for (char c : s) {
+        hash ^= static_cast<uint8_t>(c);
+        hash *= 16777619u; // FNV prime
+    }
+    return hash;
+}
+
+bool should_enable_for_user(std::string_view feature_name,
+                            std::string_view user_id,
+                            int rollout_percentage) {
+    if (rollout_percentage <= 0) return false;
+    if (rollout_percentage >= 100) return true;
+
+    std::string key{feature_name};
+    key += ':';
+    key += user_id;
+
+    uint32_t hash = fnv1a_32(key);
+    return (hash % 100) < static_cast<uint32_t>(rollout_percentage);
+}
+```
+
+This ensures:
+- Same user → same decision
+- Uniform distribution across users
+- Independent per-feature rollout
+
+---
+
+### ✅ Step 4: Update Your Feature Flag Service
+
+Modify your C++ `FeatureFlagService`:
+
+```cpp
+class FeatureFlagService {
+public:
+    // Returns true if the feature is enabled AND user qualifies
+    bool is_enabled_for_user(Feature f, std::string_view user_id) const;
+
+private:
+    struct FlagConfig {
+        bool enabled;
+        int rollout_percentage; // 0–100
+        // add targeting_criteria later if needed
+    };
+    std::unordered_map<Feature, FlagConfig> cache_;
+};
+```
+
+Implementation:
+
+```cpp
+bool FeatureFlagService::is_enabled_for_user(Feature f, std::string_view user_id) const {
+    auto it = cache_.find(f);
+    if (it == cache_.end() || !it->second.enabled) {
+        return false;
+    }
+    return should_enable_for_user(to_string(f), user_id, it->second.rollout_percentage);
+}
+```
+
+---
+
+### ✅ Step 5: Integrate in Qt UI
+
+```cpp
+QString userId = getCurrentUserId(); // from auth, settings, etc.
+
+if (featureFlagService.is_enabled_for_user(Feature::ExperimentalUI, userId.toStdString())) {
+    ui->experimentalPanel->show();
+}
+```
+
+---
+
+### ✅ Optional: Advanced Targeting (Future-Proofing)
+
+Use the `targeting_criteria JSONB` column to store rules like:
+```json
+{
+  "min_version": "2.1.0",
+  "regions": ["EU", "NA"],
+  "roles": ["admin", "beta"]
+}
+```
+
+Then evaluate these in C++ (or push filtering to DB with JSONB queries if you fetch per-user flags).
+
+But for **simple ramp-up**, percentage-based hashing is sufficient and efficient.
+
+---
+
+### ✅ Operational Benefits
+
+- **No client-side config changes** needed to ramp from 10% → 50% → 100% — just update the DB.
+- **Auditability**: Every rollout change is versioned in your temporal table.
+- **Safety**: You can instantly roll back by setting `rollout_percentage = 0`.
+
+---
+
+### Summary
+
+| Component           | Change |
+|---------------------|--------|
+| **Database**        | Add `rollout_percentage INT` to `feature_flags` |
+| **C++ Service**     | Add `is_enabled_for_user(feature, user_id)` |
+| **Hashing**         | Use stable hash (e.g., FNV-1a) over `feature:user_id` |
+| **Qt UI**           | Pass user ID to flag checks |
+
+This gives you **safe, gradual, observable rollouts** while keeping your architecture clean and performant.
+#+end_src
+
+*** Footer
+
+| Previous: [[id:154212FF-BB02-8D84-1E33-9338B458380A][Version Zero]] |

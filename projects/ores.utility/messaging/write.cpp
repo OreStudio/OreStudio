@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <expected>
 #include <cstring>
 #include "ores.utility/messaging/write.hpp"
 

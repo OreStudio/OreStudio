@@ -23,8 +23,10 @@
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/signal_set.hpp>
+#include <openssl/crypto.h>
 #include "ores.comms/server.hpp"
 #include "ores.utility/log/logger.hpp"
+#include "ores.utility/version/version.hpp"
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
 #include "ores.utility/repository/context_factory.hpp"
 #include "ores.service/config/parser.hpp"
@@ -60,7 +62,8 @@ boost::asio::awaitable<int> async_main(int argc, char** argv, boost::asio::io_co
         if (cfg.logging.has_value())
             slm.initialise(cfg.logging.value());
 
-        BOOST_LOG_SEV(lg, info) << "Starting ORES Service";
+        BOOST_LOG_SEV(lg, info) << "Starting ORE Studio Service v"
+                                << ORES_VERSION;
         BOOST_LOG_SEV(lg, debug) << "Configuration: " << cfg;
 
         // Configure server from parsed options
@@ -134,5 +137,6 @@ int main(int argc, char** argv) {
         boost::asio::detached);
 
     io_ctx.run();
+    OPENSSL_cleanup();
     return result;
 }

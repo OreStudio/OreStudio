@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,41 +17,44 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_MAIN_TAB_HPP
-#define ORES_QT_MAIN_TAB_HPP
+#ifndef ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_HPP
+#define ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <QTabWidget>
-#include <memory>
-#include "ores.comms/client.hpp"
+#include <string>
+#include <iosfwd>
 
-namespace ores::qt {
+namespace ores::accounts::domain {
 
-class MainTabWidget : public QTabWidget {
-    Q_OBJECT
-
-public:
-    explicit MainTabWidget(QWidget* parent = nullptr);
+/**
+ * @brief Represents a feature flag in the domain layer.
+ */
+struct feature_flags final {
+    /**
+     * @brief Name of the feature flag, serves as the unique identifier.
+     */
+    std::string name;
 
     /**
-     * @brief Set the client for server communication.
+     * @brief Flag indicating whether the feature is enabled or disabled.
      */
-    void set_client(std::shared_ptr<comms::client> client) { client_ = std::move(client); }
+    bool enabled;
 
-public slots:
-    void openCurrencyTabPage();
-    void closeTab(const int& index);
+    /**
+     * @brief Description of what the feature flag controls.
+     */
+    std::string description;
 
-protected:
-    void paintEvent(QPaintEvent* e ) override;
-
-private:
-    int currenciesIndex_;
-    std::shared_ptr<comms::client> client_;
+    /**
+     * @brief Username of the user who last modified this feature flag.
+     */
+    std::string modified_by;
 };
+
+std::ostream& operator<<(std::ostream& s, const feature_flags& v);
 
 }
 

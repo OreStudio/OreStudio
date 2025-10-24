@@ -19,7 +19,6 @@
  */
 #include <format>
 #include <ostream>
-#include <cstdint>
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
 #include <magic_enum/magic_enum.hpp>

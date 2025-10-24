@@ -55,13 +55,15 @@ domain::login_info login_info_mapper::map(const login_info_entity& v) {
     BOOST_LOG_SEV(lg, debug) << "Mapping db entity: " << v;
 
     domain::login_info r;
-    r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id.value());
-    r.last_ip = boost::asio::ip::make_address(v.last_ip);
-    r.last_attempt_ip = boost::asio::ip::make_address(v.last_attempt_ip);
-    r.failed_logins = v.failed_logins;
-    r.locked = v.locked;
+    using boost::uuids::uuid;
+    using namespace boost::asio;
+    r.account_id = boost::lexical_cast<uuid>(v.account_id.value());
+    r.last_ip = ip::make_address(v.last_ip);
+    r.last_attempt_ip = ip::make_address(v.last_attempt_ip);
+    r.failed_logins = v .failed_logins;
+    r.locked = v.locked != 0 ? true : false;
     r.last_login = timestamp_to_timepoint(v.last_login);
-    r.online = v.online;
+    r.online = v.online != 0 ? true : false;
 
     BOOST_LOG_SEV(lg, debug) << "Mapped db entity. Result: " << r;
     return r;
@@ -75,7 +77,7 @@ login_info_entity login_info_mapper::map(const domain::login_info& v) {
     r.last_ip = v.last_ip.to_string();
     r.last_attempt_ip = v.last_attempt_ip.to_string();
     r.failed_logins = v.failed_logins;
-    r.locked = v.locked;
+    r.locked = v.locked ;
     r.last_login = timepoint_to_timestamp(v.last_login);
     r.online = v.online;
 

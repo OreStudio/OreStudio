@@ -33,7 +33,7 @@ void MainTabWidget::openCurrencyTabPage() {
     if (currenciesIndex_ != -1) {
         setCurrentIndex(currenciesIndex_);
     } else {
-        currenciesIndex_ = addTab(new CurrencyTabPage(), "Currencies");
+        currenciesIndex_ = addTab(new CurrencyTabPage(client_), "Currencies");
     }
 }
 

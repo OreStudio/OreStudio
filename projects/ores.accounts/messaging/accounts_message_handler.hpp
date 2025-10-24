@@ -39,6 +39,7 @@ namespace ores::accounts::messaging {
  * - create_account_request: Creates a new account
  * - list_accounts_request: Retrieves all accounts from the repository
  * - login_request: Authenticates a user and updates login tracking
+ * - unlock_account_request: Unlocks a locked account
  */
 class accounts_message_handler final : public comms::protocol::message_handler {
 public:
@@ -85,6 +86,13 @@ private:
                                        comms::protocol::error_code>>
     handle_login_request(std::span<const std::uint8_t> payload,
         const std::string& remote_address);
+
+    /**
+     * @brief Handle unlock_account_request message.
+     */
+  boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
+                                       comms::protocol::error_code>>
+    handle_unlock_account_request(std::span<const std::uint8_t> payload);
 
     utility::repository::context ctx_;
     repository::account_repository account_repo_;

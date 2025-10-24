@@ -17,70 +17,50 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <algorithm>
 #include "ores.utility/log/logger.hpp"
-#include "ores.risk/repository/currency_mapper.hpp"
+#include "ores.accounts/repository/feature_flags_mapper.hpp"
 
 namespace {
 
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.risk.repository.currency_mapper"));
+auto lg(logger_factory("ores.accounts.repository.feature_flags_mapper"));
 
 }
 
-namespace ores::risk::repository {
+namespace ores::accounts::repository {
 
-domain::currency currency_mapper::map(const currency_entity& v) {
+domain::feature_flags feature_flags_mapper::map(const feature_flags_entity& v) {
     BOOST_LOG_SEV(lg, debug) << "Mapping db entity: " << v;
 
-    domain::currency r;
-    r.iso_code = v.iso_code.value();
-    r.name = v.name;
-    r.numeric_code = v.numeric_code;
-    r.symbol = v.symbol;
-    r.fraction_symbol = v.fraction_symbol;
-    r.fractions_per_unit = v.fractions_per_unit;
-    r.rounding_type = v.rounding_type;
-    r.rounding_precision = v.rounding_precision;
-    r.format = v.format;
-    r.currency_type = v.currency_type;
+    domain::feature_flags r;
+    r.name = v.name.value();
+    r.enabled = v.enabled != 0 ? true : false;
+    r.description = v.description;
     r.modified_by = v.modified_by;
-    r.valid_from = v.valid_from.has_value() ? v.valid_from->str() : "";
-    r.valid_to = v.valid_to.has_value() ? v.valid_from->str() : "";
 
     BOOST_LOG_SEV(lg, debug) << "Mapped db entity. Result: " << r;
     return r;
 }
-currency_entity currency_mapper::map(const domain::currency& v) {
+
+feature_flags_entity feature_flags_mapper::map(const domain::feature_flags& v) {
     BOOST_LOG_SEV(lg, debug) << "Mapping domain entity: " << v;
 
-    currency_entity r;
-    r.iso_code = v.iso_code;
+    feature_flags_entity r;
     r.name = v.name;
-    r.numeric_code = v.numeric_code;
-    r.symbol = v.symbol;
-    r.fraction_symbol = v.fraction_symbol;
-    r.fractions_per_unit = v.fractions_per_unit;
-    r.rounding_type = v.rounding_type;
-    r.rounding_precision = v.rounding_precision;
-    r.format = v.format;
-    r.currency_type = v.currency_type;
+    r.enabled = v.enabled;
+    r.description = v.description;
     r.modified_by = v.modified_by;
-
-    if (!v.valid_from.empty())
-        r.valid_from = v.valid_from;
-
-    if (!v.valid_to.empty())
-        r.valid_to = v.valid_to;
 
     BOOST_LOG_SEV(lg, debug) << "Mapped domain entity. Result: " << r;
     return r;
 }
 
-std::vector<domain::currency>
-currency_mapper::map(const std::vector<currency_entity>& v) {
+std::vector<domain::feature_flags>
+feature_flags_mapper::map(const std::vector<feature_flags_entity>& v) {
     BOOST_LOG_SEV(lg, debug) << "Mapping db entities. Total: " << v.size();
 
-    std::vector<domain::currency> r;
+    std::vector<domain::feature_flags> r;
     r.reserve(v.size());
     std::ranges::transform(v, std::back_inserter(r),
         [](const auto& ve) { return map(ve); });
@@ -89,11 +69,11 @@ currency_mapper::map(const std::vector<currency_entity>& v) {
     return r;
 }
 
-std::vector<currency_entity>
-currency_mapper::map(const std::vector<domain::currency>& v) {
+std::vector<feature_flags_entity>
+feature_flags_mapper::map(const std::vector<domain::feature_flags>& v) {
     BOOST_LOG_SEV(lg, debug) << "Mapping domain entities. Count: " << v.size();
 
-    std::vector<currency_entity> r;
+    std::vector<feature_flags_entity> r;
     r.reserve(v.size());
     std::ranges::transform(v, std::back_inserter(r),
         [](const auto& ve) { return map(ve); });

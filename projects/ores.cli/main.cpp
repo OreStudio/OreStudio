@@ -22,6 +22,7 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/detached.hpp>
+#include <openssl/crypto.h>
 #include "ores.cli/app/host.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
@@ -68,5 +69,6 @@ int main(int argc, char** argv) {
         boost::asio::detached);
 
     io_ctx.run();
+    OPENSSL_cleanup();
     return result;
 }

@@ -51,6 +51,8 @@ accounts_message_handler::handle_message(comms::protocol::message_type type,
         co_return co_await handle_list_accounts_request(payload);
     case comms::protocol::message_type::login_request:
         co_return co_await handle_login_request(payload, remote_address);
+    case comms::protocol::message_type::unlock_account_request:
+        co_return co_await handle_unlock_account_request(payload);
     default:
         BOOST_LOG_SEV(lg, error) << "Unknown accounts message type "
                                   << std::hex << static_cast<std::uint16_t>(type);
@@ -171,6 +173,47 @@ accounts_message_handler::handle_login_request(std::span<const std::uint8_t> pay
             .account_id = boost::uuids::nil_uuid(),
             .username = "",
             .is_admin = false
+        };
+        co_return response.serialize();
+    }
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
+accounts_message_handler::handle_unlock_account_request(std::span<const std::uint8_t> payload) {
+    BOOST_LOG_SEV(lg, debug) << "Processing unlock_account_request";
+
+    // Deserialize request
+    auto request_result = unlock_account_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg, error) << "Failed to deserialize unlock_account_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg, debug) << "Request: " << request;
+
+    try {
+        // Attempt to unlock the account
+        service::account_service s(account_repo_, login_info_repo_);
+        s.unlock_account(ctx_, request.account_id);
+
+        BOOST_LOG_SEV(lg, info) << "Successfully unlocked account: "
+                                << boost::uuids::to_string(request.account_id);
+
+        // Create successful response
+        unlock_account_response response{
+            .success = true,
+            .error_message = ""
+        };
+        co_return response.serialize();
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg, warn) << "Failed to unlock account: " << e.what();
+
+        // Create failed response
+        unlock_account_response response{
+            .success = false,
+            .error_message = e.what()
         };
         co_return response.serialize();
     }

@@ -25,18 +25,20 @@ add_executable(ores.qt
     MainWindow.cpp
     MainWindow.ui
     SplashScreen.cpp
-    CurrencyModel.cpp
+    ClientCurrencyModel.cpp
     MainTabWidget.cpp
     CurrencyTabPage.cpp
+    LoginDialog.cpp
 )
 
 target_link_libraries(ores.qt PRIVATE
     ores.risk.lib
+    ores.comms.lib
+    ores.accounts.lib
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
-    Qt6::Sql
-    Qt6::SqlPrivate
+    Qt6::Concurrent
 )
 
 # file(COPY assets DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")

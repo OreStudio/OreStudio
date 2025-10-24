@@ -104,6 +104,18 @@ public:
     domain::account login(context ctx, const std::string& username,
         const std::string& password, const boost::asio::ip::address& ip_address);
 
+    /**
+     * @brief Unlocks an account that has been locked due to failed login attempts.
+     *
+     * This method resets the account's locked status and clears the failed login counter,
+     * allowing the user to attempt to login again.
+     *
+     * @param ctx Repository context for database operations
+     * @param account_id The ID of the account to unlock
+     * @throws std::invalid_argument If account does not exist
+     */
+    void unlock_account(context ctx, const boost::uuids::uuid& account_id);
+
 private:
     repository::account_repository account_repo_;
     repository::login_info_repository login_info_repo_;

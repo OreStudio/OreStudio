@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,40 +17,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_MAIN_TAB_HPP
-#define ORES_QT_MAIN_TAB_HPP
+#ifndef ORES_ACCOUNTS_REPOSITORY_FEATURE_FLAGS_MAPPER_HPP
+#define ORES_ACCOUNTS_REPOSITORY_FEATURE_FLAGS_MAPPER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <QTabWidget>
-#include <memory>
-#include "ores.comms/client.hpp"
+#include <vector>
+#include "ores.accounts/domain/feature_flags.hpp"
+#include "ores.accounts/repository/feature_flags_entity.hpp"
 
-namespace ores::qt {
+namespace ores::accounts::repository {
 
-class MainTabWidget : public QTabWidget {
-    Q_OBJECT
-
+/**
+ * @brief Maps feature flags domain model entities to data storage layer and vice-versa.
+ */
+class feature_flags_mapper {
 public:
-    explicit MainTabWidget(QWidget* parent = nullptr);
+    static domain::feature_flags map(const feature_flags_entity& v);
+    static feature_flags_entity map(const domain::feature_flags& v);
 
-    /**
-     * @brief Set the client for server communication.
-     */
-    void set_client(std::shared_ptr<comms::client> client) { client_ = std::move(client); }
-
-public slots:
-    void openCurrencyTabPage();
-    void closeTab(const int& index);
-
-protected:
-    void paintEvent(QPaintEvent* e ) override;
-
-private:
-    int currenciesIndex_;
-    std::shared_ptr<comms::client> client_;
+    static std::vector<domain::feature_flags>
+    map(const std::vector<feature_flags_entity>& v);
+    static std::vector<feature_flags_entity>
+    map(const std::vector<domain::feature_flags>& v);
 };
 
 }

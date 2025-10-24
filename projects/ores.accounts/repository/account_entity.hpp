@@ -44,7 +44,7 @@ struct account_entity {
     std::string password_salt;
     std::string totp_secret;
     std::string email;
-    bool is_admin;
+    int is_admin;
     std::string modified_by;
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,23 +17,35 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_CURRENCY_MODEL_HPP
-#define ORES_QT_CURRENCY_MODEL_HPP
+#ifndef ORES_ACCOUNTS_REPOSITORY_FEATURE_FLAGS_ENTITY_HPP
+#define ORES_ACCOUNTS_REPOSITORY_FEATURE_FLAGS_ENTITY_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <QtSql/QSqlRelationalTableModel>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
 
-namespace ores::qt {
+namespace ores::accounts::repository {
 
-class CurrencyModel : public QSqlRelationalTableModel
-{
-public:
-    CurrencyModel(QObject* parent = nullptr,
-        const QSqlDatabase &db = QSqlDatabase());
+/**
+ * @brief Represents a feature flag in the database.
+ */
+struct feature_flags_entity {
+    constexpr static const char* schema = "oresdb";
+    constexpr static const char* tablename = "feature_flags";
+
+    sqlgen::PrimaryKey<std::string> name;
+    int enabled;
+    std::string description;
+    std::string modified_by;
+    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
+    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";
 };
+
+std::ostream& operator<<(std::ostream& s, const feature_flags_entity& v);
 
 }
 

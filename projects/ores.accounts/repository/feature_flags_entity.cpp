@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,42 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_MAIN_TAB_HPP
-#define ORES_QT_MAIN_TAB_HPP
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.accounts/repository/feature_flags_entity.hpp"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
+namespace ores::accounts::repository {
 
-#include <QTabWidget>
-#include <memory>
-#include "ores.comms/client.hpp"
-
-namespace ores::qt {
-
-class MainTabWidget : public QTabWidget {
-    Q_OBJECT
-
-public:
-    explicit MainTabWidget(QWidget* parent = nullptr);
-
-    /**
-     * @brief Set the client for server communication.
-     */
-    void set_client(std::shared_ptr<comms::client> client) { client_ = std::move(client); }
-
-public slots:
-    void openCurrencyTabPage();
-    void closeTab(const int& index);
-
-protected:
-    void paintEvent(QPaintEvent* e ) override;
-
-private:
-    int currenciesIndex_;
-    std::shared_ptr<comms::client> client_;
-};
-
+std::ostream& operator<<(std::ostream& s, const feature_flags_entity& v) {
+    rfl::json::write(v, s);
+    return(s);
 }
 
-#endif
+}

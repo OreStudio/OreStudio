@@ -214,6 +214,55 @@ struct login_response final {
 
 std::ostream& operator<<(std::ostream& s, const login_response& v);
 
+/**
+ * @brief Request to unlock a locked account.
+ */
+struct unlock_account_request final {
+    boost::uuids::uuid account_id;
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 16 bytes: account_id (UUID)
+     */
+    std::vector<std::uint8_t> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<unlock_account_request, comms::protocol::error_code>
+    deserialize(std::span<const std::uint8_t> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const unlock_account_request& v);
+
+/**
+ * @brief Response indicating whether unlock operation succeeded.
+ */
+struct unlock_account_response final {
+    bool success;
+    std::string error_message;
+
+    /**
+     * @brief Serialize response to bytes.
+     *
+     * Format:
+     * - 1 byte: success (boolean)
+     * - 2 bytes: error_message length
+     * - N bytes: error_message (UTF-8)
+     */
+    std::vector<std::uint8_t> serialize() const;
+
+    /**
+     * @brief Deserialize response from bytes.
+     */
+    static std::expected<unlock_account_response, comms::protocol::error_code>
+    deserialize(std::span<const std::uint8_t> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const unlock_account_response& v);
+
 }
 
 #endif

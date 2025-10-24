@@ -26,6 +26,11 @@
 
 #include <QMainWindow>
 #include <QtSql/QSqlDatabase>
+#include <memory>
+#include <thread>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/executor_work_guard.hpp>
+#include "ores.comms/client.hpp"
 #include "ores.qt/MainTabWidget.hpp"
 #include "ui_MainWindow.h"
 
@@ -42,11 +47,24 @@ class MainWindow : public QMainWindow {
 
 public:
     explicit MainWindow(QWidget* parent = nullptr);
+    ~MainWindow();
+
+    /**
+     * @brief Get the connected client instance.
+     * @return Shared pointer to the client, or nullptr if not connected.
+     */
+    std::shared_ptr<comms::client> get_client() const { return client_; }
 
 private:
     Ui::MainWindow* ui_;
     MainTabWidget* mainTab_;
-    QSqlDatabase database_;
+    QSqlDatabase database_;  // TODO: Remove after migration
+
+    // Client infrastructure
+    std::unique_ptr<boost::asio::io_context> io_context_;
+    std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> work_guard_;
+    std::unique_ptr<std::thread> io_thread_;
+    std::shared_ptr<comms::client> client_;
 };
 
 }

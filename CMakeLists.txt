@@ -94,6 +94,7 @@ find_package(Qt6Core REQUIRED)
 find_package(Qt6Gui REQUIRED)
 find_package(Qt6Widgets REQUIRED)
 find_package(Qt6Sql REQUIRED)
+find_package(Qt6Concurrent REQUIRED)
 
 # Reflect CPP
 find_package(pugixml CONFIG REQUIRED)

@@ -39,9 +39,9 @@ struct feature_flags final {
     std::string name;
 
     /**
-     * @brief Flag indicating whether the feature is enabled (1) or disabled (0).
+     * @brief Flag indicating whether the feature is enabled or disabled.
      */
-    int enabled;
+    bool enabled;
 
     /**
      * @brief Description of what the feature flag controls.

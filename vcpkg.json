@@ -4,15 +4,7 @@
     "description": "GUI for Open Source Risk Engine (ORE)",
     "version-string": "0.0.2",
     "dependencies": [
-        {
-            "name": "qtbase",
-            "default-features": false,
-            "features": [
-                "gui",
-                "xcb",
-                "widgets",
-                "concurrent" ]
-        },
+        "qtbase",
         "openssl",
         "libpqxx",
         "libbson",

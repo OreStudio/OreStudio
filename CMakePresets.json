@@ -17,7 +17,11 @@
                 "CMAKE_EXPORT_COMPILE_COMMANDS": true,
                 "CMAKE_CXX_STANDARD": "23",
                 "CMAKE_CXX_STANDARD_REQUIRED": true,
-                "CMAKE_CXX_EXTENSIONS": false
+                "CMAKE_CXX_EXTENSIONS": false,
+                "QT_NO_PRIVATE_MODULE_WARNING": true,
+                "VCPKG_INSTALL_OPTIONS": "--clean-after-build",
+                "XCB_XEVIE": "OFF",
+                "XCB_XPRINT": "OFF"
             },
             "warnings": {
                 "uninitialized": true,

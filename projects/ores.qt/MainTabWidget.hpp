@@ -25,6 +25,8 @@
 #endif
 
 #include <QTabWidget>
+#include <memory>
+#include "ores.comms/client.hpp"
 
 namespace ores::qt {
 
@@ -33,6 +35,11 @@ class MainTabWidget : public QTabWidget {
 
 public:
     explicit MainTabWidget(QWidget* parent = nullptr);
+
+    /**
+     * @brief Set the client for server communication.
+     */
+    void set_client(std::shared_ptr<comms::client> client) { client_ = std::move(client); }
 
 public slots:
     void openCurrencyTabPage();
@@ -43,6 +50,7 @@ protected:
 
 private:
     int currenciesIndex_;
+    std::shared_ptr<comms::client> client_;
 };
 
 }

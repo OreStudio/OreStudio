@@ -27,7 +27,10 @@
 #include <QWidget>
 #include <QTableView>
 #include <QVBoxLayout>
-#include "ores.qt/CurrencyModel.hpp"
+#include <QLabel>
+#include <memory>
+#include "ores.comms/client.hpp"
+#include "ores.qt/ClientCurrencyModel.hpp"
 
 namespace ores::qt {
 
@@ -35,12 +38,17 @@ class CurrencyTabPage : public QWidget {
     Q_OBJECT
 
 public:
-    explicit CurrencyTabPage(QWidget* parent = nullptr);
+    explicit CurrencyTabPage(std::shared_ptr<comms::client> client, QWidget* parent = nullptr);
+
+private slots:
+    void on_data_loaded();
+    void on_load_error(const QString& error_message);
 
 private:
     QVBoxLayout* verticalLayout_;
     QTableView* currencyTableView_;
-    CurrencyModel currencyModel_;
+    QLabel* statusLabel_;
+    client_currency_model* currencyModel_;
 };
 
 }

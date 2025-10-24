@@ -22,13 +22,23 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QTableView>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QMessageBox>
 #include "ores.qt/CurrencyTabPage.hpp"
 
 namespace ores::qt {
 
-CurrencyTabPage::CurrencyTabPage(QWidget* parent) : QWidget(parent) {
+CurrencyTabPage::CurrencyTabPage(std::shared_ptr<comms::client> client, QWidget* parent)
+    : QWidget(parent),
+      currencyModel_(new client_currency_model(std::move(client), this)) {
 
     verticalLayout_ = new QVBoxLayout(this);
+
+    // Add status label at the top
+    statusLabel_ = new QLabel("Loading currencies...", this);
+    statusLabel_->setStyleSheet("QLabel { padding: 5px; color: #666; font-style: italic; }");
+    verticalLayout_->addWidget(statusLabel_);
+
+    // Add table view
     currencyTableView_ = new QTableView(this);
     verticalLayout_->addWidget(currencyTableView_);
 
@@ -39,14 +49,35 @@ CurrencyTabPage::CurrencyTabPage(QWidget* parent) : QWidget(parent) {
     currencyTableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     currencyTableView_->resizeRowsToContents();
 
-    currencyModel_.select();
-    currencyTableView_->setModel(&currencyModel_);
+    // Set the model
+    currencyTableView_->setModel(currencyModel_);
 
-
+    // Configure headers
     QHeaderView* verticalHeader(currencyTableView_->verticalHeader());
     QHeaderView* horizontalHeader(currencyTableView_->horizontalHeader());
     verticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
     horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    // Connect signals
+    connect(currencyModel_, &client_currency_model::data_loaded,
+            this, &CurrencyTabPage::on_data_loaded);
+    connect(currencyModel_, &client_currency_model::load_error,
+            this, &CurrencyTabPage::on_load_error);
+
+    // Trigger data loading
+    currencyModel_->refresh();
+}
+
+void CurrencyTabPage::on_data_loaded() {
+    statusLabel_->setText(QString("Loaded %1 currencies").arg(currencyModel_->rowCount()));
+    statusLabel_->setStyleSheet("QLabel { padding: 5px; color: #0a0; }");
+}
+
+void CurrencyTabPage::on_load_error(const QString& error_message) {
+    statusLabel_->setText("Error loading currencies");
+    statusLabel_->setStyleSheet("QLabel { padding: 5px; color: #c00; }");
+
+    QMessageBox::critical(this, "Load Error", error_message);
 }
 
 }

@@ -60,6 +60,8 @@ MainWindow::MainWindow(QWidget* parent) :
 
         if (client_ && client_->is_connected()) {
             BOOST_LOG_SEV(lg, info) << "Successfully connected to server and authenticated.";
+            // Pass client to main tab widget for use by tab pages
+            mainTab_->set_client(client_);
         } else {
             BOOST_LOG_SEV(lg, error) << "Client is not properly connected after login.";
             QMessageBox::critical(this, "Connection Error",

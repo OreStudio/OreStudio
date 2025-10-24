@@ -39,4 +39,4 @@ sudo apt-get install \
      xorg-dev \
      libltdl-dev
 
-apt-get clean sudo apt-get autoremove -y
+sudo apt-get clean sudo apt-get autoremove -y

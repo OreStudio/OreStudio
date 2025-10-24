@@ -18,36 +18,35 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-10-24 Fri 01:24], for Friday, October 24, 2025.
-|      | <75>                                        |        |      |      |       |
-| Tags | Headline                                    | Time   |      |      |     % |
-|------+---------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                | *1:20* |      |      | 100.0 |
-|------+---------------------------------------------+--------+------+------+-------|
-|      | Stories                                     | 1:20   |      |      | 100.0 |
-|      | Active                                      |        | 1:20 |      | 100.0 |
-| code | Add support for feature flags               |        |      | 0:25 |  31.2 |
-| code | Implement authentication bootstrap workflow |        |      | 0:41 |  51.2 |
-| code | Enable qt gui                               |        |      | 0:14 |  17.5 |
+#+CAPTION: Clock summary at [2025-10-24 Fri 17:19], for Friday, October 24, 2025.
+|      | <75>                          |        |      |      |       |
+| Tags | Headline                      | Time   |      |      |     % |
+|------+-------------------------------+--------+------+------+-------|
+|      | *Total time*                  | *5:22* |      |      | 100.0 |
+|------+-------------------------------+--------+------+------+-------|
+|      | Stories                       | 5:22   |      |      | 100.0 |
+|      | Active                        |        | 5:22 |      | 100.0 |
+| code | Add support for feature flags |        |      | 1:15 |  23.3 |
+| code | Enable qt gui                 |        |      | 4:07 |  76.7 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-10-24 Fri 01:24]
-|       | <75>                                        |        |      |      |       |
-| Tags  | Headline                                    | Time   |      |      |     % |
-|-------+---------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                | *6:00* |      |      | 100.0 |
-|-------+---------------------------------------------+--------+------+------+-------|
-|       | Stories                                     | 6:00   |      |      | 100.0 |
-|       | Active                                      |        | 6:00 |      | 100.0 |
-| agile | Sprint and product backlog refinement       |        |      | 0:35 |   9.7 |
-| code  | Investigate leaks from valgrind             |        |      | 0:46 |  12.8 |
-| code  | Add locking up logic                        |        |      | 1:28 |  24.4 |
-| code  | Add support for feature flags               |        |      | 0:35 |   9.7 |
-| code  | Implement authentication bootstrap workflow |        |      | 1:06 |  18.3 |
-| code  | Enable qt gui                               |        |      | 0:17 |   4.7 |
-| code  | Add workspace as a container                |        |      | 1:13 |  20.3 |
+#+CAPTION: Clock summary at [2025-10-24 Fri 17:19]
+|       | <75>                                        |         |       |      |       |
+| Tags  | Headline                                    | Time    |       |      |     % |
+|-------+---------------------------------------------+---------+-------+------+-------|
+|       | *Total time*                                | *10:02* |       |      | 100.0 |
+|-------+---------------------------------------------+---------+-------+------+-------|
+|       | Stories                                     | 10:02   |       |      | 100.0 |
+|       | Active                                      |         | 10:02 |      | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       | 0:35 |   5.8 |
+| code  | Investigate leaks from valgrind             |         |       | 0:46 |   7.6 |
+| code  | Add locking up logic                        |         |       | 1:28 |  14.6 |
+| code  | Add support for feature flags               |         |       | 1:25 |  14.1 |
+| code  | Implement authentication bootstrap workflow |         |       | 0:25 |   4.2 |
+| code  | Enable qt gui                               |         |       | 4:10 |  41.5 |
+| code  | Add workspace as a container                |         |       | 1:13 |  12.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -210,15 +209,33 @@ Links:
 
 *** STARTED Add support for feature flags                              :code:
     :LOGBOOK:
+    CLOCK: [2025-10-24 Fri 01:25]--[2025-10-24 Fri 01:34] =>  0:09
+    CLOCK: [2025-10-24 Fri 00:43]--[2025-10-24 Fri 01:24] =>  0:41
     CLOCK: [2025-10-23 Thu 23:50]--[2025-10-24 Fri 00:25] =>  0:35
     :END:
 
 We need a way to know if we are in bootstrap mode or not. Implement a generic
 mechanism for feature flags.
 
+Example chrome flag:
+
+#+begin_quote
+Temporarily unexpire M139 flags.
+
+Temporarily unexpire flags that expired as of M139. These flags will be removed
+soon. – Mac, Windows, Linux, ChromeOS, Android
+
+#temporary-unexpire-flags-m139
+#+end_quote
+
+Components:
+
+- name: human readable
+- description
+- id
+
 *** STARTED Implement authentication bootstrap workflow                :code:
     :LOGBOOK:
-    CLOCK: [2025-10-24 Fri 00:43]--[2025-10-24 Fri 01:24] =>  0:41
     CLOCK: [2025-10-23 Thu 17:30]--[2025-10-23 Thu 17:55] =>  0:25
     :END:
 
@@ -311,12 +328,28 @@ Links:
 
 *** STARTED Enable qt gui                                              :code:
     :LOGBOOK:
+    CLOCK: [2025-10-24 Fri 17:12]--[2025-10-24 Fri 17:19] =>  0:07
+    CLOCK: [2025-10-24 Fri 13:39]--[2025-10-24 Fri 14:10] =>  0:31
+    CLOCK: [2025-10-24 Fri 12:17]--[2025-10-24 Fri 13:26] =>  1:09
+    CLOCK: [2025-10-24 Fri 12:02]--[2025-10-24 Fri 12:17] =>  0:15
+    CLOCK: [2025-10-24 Fri 11:44]--[2025-10-24 Fri 11:58] =>  0:14
+    CLOCK: [2025-10-24 Fri 10:21]--[2025-10-24 Fri 10:59] =>  0:38
+    CLOCK: [2025-10-24 Fri 09:21]--[2025-10-24 Fri 10:20] =>  0:59
     CLOCK: [2025-10-24 Fri 00:28]--[2025-10-24 Fri 00:42] =>  0:14
     CLOCK: [2025-10-23 Thu 17:56]--[2025-10-23 Thu 17:59] =>  0:03
     :END:
 
 Due to problems building we disabled qt. Enable it again as we are close to
 working on it.
+
+Notes:
+
+- remove SQL dependency to see if the build works.
+
+*** CLI Importing needs to read from database                          :code:
+
+After we do the import into the database, we need to read the currencies again
+to get the valid from/to.
 
 *** Investigate build warning for qtbase                              :infra:
 

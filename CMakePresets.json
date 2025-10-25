@@ -429,8 +429,8 @@
     "packagePresets": [
         {
             "name": "linux-gcc-release",
-            "packageName": "VisualOre",
-            "packageVersion": "0.0.01",
+            "packageName": "OreStudio",
+            "packageVersion": "0.0.2",
             "displayName": "Distribute Release",
             "configurePreset": "linux-gcc-release",
             "generators": [ "DEB" ],
@@ -438,8 +438,8 @@
         },
         {
             "name": "linux-clang-release",
-            "packageName": "VisualOre",
-            "packageVersion": "0.0.01",
+            "packageName": "OreStudio",
+            "packageVersion": "0.0.2",
             "displayName": "Distribute Release",
             "configurePreset": "linux-clang-release",
             "generators": [ "DEB" ],

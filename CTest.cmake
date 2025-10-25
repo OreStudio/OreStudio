@@ -270,6 +270,11 @@ endif()
 # Setup the preset for configuration.
 set(cmake_args ${cmake_args} "--preset ${preset}")
 
+if(${operative_system} STREQUAL "linux")
+    message(STATUS "Changing triplet to x64-linux-dynamic")
+    set(cmake_args ${cmake_args} "-DVCPKG_TARGET_TRIPLET=x64-linux-dynamic")
+endif()
+
 message(STATUS "CMake args: ${cmake_args}")
 ctest_configure(OPTIONS "${cmake_args}" RETURN_VALUE configure_result)
 if(configure_result)

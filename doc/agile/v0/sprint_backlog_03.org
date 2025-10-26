@@ -18,34 +18,35 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-10-25 Sat 23:43], for Saturday, October 25, 2025.
-|      | <75>          |        |      |      |       |
-| Tags | Headline      | Time   |      |      |     % |
-|------+---------------+--------+------+------+-------|
-|      | *Total time*  | *3:11* |      |      | 100.0 |
-|------+---------------+--------+------+------+-------|
-|      | Stories       | 3:11   |      |      | 100.0 |
-|      | Active        |        | 3:11 |      | 100.0 |
-| code | Enable qt gui |        |      | 3:11 | 100.0 |
+#+CAPTION: Clock summary at [2025-10-26 Sun 19:21], for Sunday, October 26, 2025.
+|      | <75>                          |        |      |      |       |
+| Tags | Headline                      | Time   |      |      |     % |
+|------+-------------------------------+--------+------+------+-------|
+|      | *Total time*                  | *1:37* |      |      | 100.0 |
+|------+-------------------------------+--------+------+------+-------|
+|      | Stories                       | 1:37   |      |      | 100.0 |
+|      | Active                        |        | 1:37 |      | 100.0 |
+| code | Build using dynamic libraries |        |      | 1:37 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-10-25 Sat 23:43]
+#+CAPTION: Clock summary at [2025-10-26 Sun 19:21]
 |       | <75>                                        |         |       |      |       |
 | Tags  | Headline                                    | Time    |       |      |     % |
 |-------+---------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                | *13:13* |       |      | 100.0 |
+|       | *Total time*                                | *15:06* |       |      | 100.0 |
 |-------+---------------------------------------------+---------+-------+------+-------|
-|       | Stories                                     | 13:13   |       |      | 100.0 |
-|       | Active                                      |         | 13:13 |      | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       | 0:35 |   4.4 |
-| code  | Investigate leaks from valgrind             |         |       | 0:46 |   5.8 |
-| code  | Add locking up logic                        |         |       | 1:28 |  11.1 |
-| code  | Add support for feature flags               |         |       | 1:25 |  10.7 |
-| code  | Implement authentication bootstrap workflow |         |       | 0:25 |   3.2 |
-| code  | Enable qt gui                               |         |       | 7:21 |  55.6 |
-| code  | Add workspace as a container                |         |       | 1:13 |   9.2 |
+|       | Stories                                     | 15:06   |       |      | 100.0 |
+|       | Active                                      |         | 15:06 |      | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       | 0:35 |   3.9 |
+| code  | Investigate leaks from valgrind             |         |       | 0:46 |   5.1 |
+| code  | Add locking up logic                        |         |       | 1:28 |   9.7 |
+| code  | Add support for feature flags               |         |       | 1:25 |   9.4 |
+| code  | Implement authentication bootstrap workflow |         |       | 0:25 |   2.8 |
+| code  | Build using dynamic libraries               |         |       | 5:04 |  33.6 |
+| code  | Enable qt gui                               |         |       | 4:10 |  27.6 |
+| code  | Add workspace as a container                |         |       | 1:13 |   8.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -327,6 +328,7 @@ Links:
 
 *** STARTED Build using dynamic libraries                              :code:
     :LOGBOOK:
+    CLOCK: [2025-10-26 Sun 18:45]--[2025-10-26 Sun 19:18] =>  0:33
     CLOCK: [2025-10-26 Sun 00:18]--[2025-10-26 Sun 01:04] =>  0:46
     CLOCK: [2025-10-25 Sat 23:44]--[2025-10-26 Sun 00:18] =>  0:34
     CLOCK: [2025-10-25 Sat 21:10]--[2025-10-25 Sat 23:43] =>  2:33

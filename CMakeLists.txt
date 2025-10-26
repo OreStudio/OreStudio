@@ -33,7 +33,7 @@ enable_testing()
 #
 # add our own modules
 #
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build/cmake/modules)
 include(AddBoostTests)
 
 #
@@ -62,18 +62,22 @@ endif()
 project(OreStudio VERSION 0.0.3 LANGUAGES CXX
     DESCRIPTION "UI and other utilities for the Open Source Risk Engine (ORE).")
 
-# threads
+# Threads
 find_package(Threads REQUIRED)
 
-# boost.
+# Boost
 set(Boost_USE_MULTITHREADED ON)
-# In CMakeLists.txt
+macro(get_win_hex outvar)
+    string(REGEX MATCH "^([0-9]+)\\.([0-9]+)" ${outvar} ${CMAKE_SYSTEM_VERSION})
+    math(EXPR ${outvar} "(${CMAKE_MATCH_1} << 8) + ${CMAKE_MATCH_2}" OUTPUT_FORMAT HEXADECIMAL)
+endmacro()
+
 if(WIN32)
-    add_compile_definitions(BOOST_USE_WINAPI_VERSION=0x0602)
+    get_win_hex(winver)
+    add_compile_definitions(_WIN32_WINNT=${winver})
+    add_compile_definitions(BOOST_USE_WINAPI_VERSION=${winver})
 endif()
 
-# Note: it is possible to build with older versions of boost, but
-# these require patches.
 find_package(Boost 1.88 REQUIRED COMPONENTS
     log
     crc

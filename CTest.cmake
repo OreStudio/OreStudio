@@ -272,7 +272,6 @@ set(cmake_args ${cmake_args} "--preset ${preset}")
 
 if(${operative_system} STREQUAL "linux")
     message(STATUS "Using dynamic libraries and distro Qt.")
-    set(cmake_args ${cmake_args} "-DVCPKG_TARGET_TRIPLET=x64-linux-dynamic")
     set(cmake_args ${cmake_args} "-DBUILD_SHARED_LIBS=ON")
     set(cmake_args ${cmake_args} "-DVCPKG_OVERLAY_PORTS=${CTEST_SOURCE_DIRECTORY}/build/cmake/overlays/")
 endif()

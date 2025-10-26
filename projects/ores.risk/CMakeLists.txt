@@ -29,7 +29,7 @@ add_library(${lib_target_name} ${lib_files})
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}
-    PROPERTIES VERSION ${DOGEN_VERSION} SOVERSION ${DOGEN_VERSION_MAJOR})
+    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/
@@ -37,16 +37,13 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PRIVATE
-        ores.utility.lib
-        libpqxx::pqxx
-        Boost::boost
-        Boost::program_options
         sqlgen::sqlgen
         pugixml::pugixml
+        Boost::boost
+        ores.utility.lib
     PUBLIC
-        ores.comms.lib
         reflectcpp::reflectcpp
-        PostgreSQL::PostgreSQL
+        ores.comms.lib
     )
 
 install(TARGETS ${lib_target_name}

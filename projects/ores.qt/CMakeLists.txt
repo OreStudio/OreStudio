@@ -35,6 +35,7 @@ target_link_libraries(ores.qt PRIVATE
     ores.risk.lib
     ores.comms.lib
     ores.accounts.lib
+    ores.utility.lib
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

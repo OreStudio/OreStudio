@@ -29,10 +29,11 @@
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
 #include "ores.utility/repository/context_factory.hpp"
-#include "ores.service/config/parser.hpp"
-#include "ores.service/config/parser_exception.hpp"
 #include "ores.risk/messaging/registration.hpp"
 #include "ores.accounts/messaging/registration.hpp"
+
+#include "ores.service/config/parser.hpp"
+#include "ores.service/config/parser_exception.hpp"
 
 namespace {
 

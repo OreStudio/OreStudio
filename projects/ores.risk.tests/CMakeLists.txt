@@ -37,11 +37,12 @@ target_include_directories(${tests_binary_name}
     PRIVATE ${CMAKE_SOURCE_DIR}/projects/${name}/include
     PRIVATE ${CMAKE_SOURCE_DIR}/projects/)
 
-target_link_libraries(${tests_target_name} PRIVATE
-    ${lib_target_name}
-    ores.utility.lib
-    Boost::unit_test_framework
-    ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        Boost::unit_test_framework
+        ${CMAKE_THREAD_LIBS_INIT})
 
 set(command $<TARGET_FILE:${tests_binary_name}> ${boost_test_parameters})
 

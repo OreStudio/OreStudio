@@ -32,17 +32,22 @@ add_library(${lib_target_name} ${lib_files})
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}
-    PROPERTIES VERSION ${ORES_VERSION} SOVERSION ${ORES_VERSION_MAJOR})
+    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name}
     PUBLIC ${CMAKE_SOURCE_DIR}/projects/
     PRIVATE ${stage_inc_dir}/) # generated header files
 
-target_link_libraries(${lib_target_name} PRIVATE
-    Boost::boost
-    Boost::date_time
-    Boost::exception
-    Boost::log)
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        OpenSSL::SSL
+        Boost::log
+        sqlgen::sqlgen
+    PRIVATE
+        Boost::boost
+        Boost::date_time
+        Boost::exception
+        Boost::unit_test_framework)
 
 install(TARGETS ${lib_target_name}
     ARCHIVE DESTINATION lib

@@ -40,6 +40,7 @@ include(AddBoostTests)
 # options
 #
 option(WITH_PROFILING "Generate profiling information for code coverage." OFF)
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
 #
 # c++ standard.
@@ -74,28 +75,22 @@ endif()
 # Note: it is possible to build with older versions of boost, but
 # these require patches.
 find_package(Boost 1.88 REQUIRED COMPONENTS
-    date_time
-    exception
-    filesystem
     log
     crc
+    exception
     program_options
     unit_test_framework)
 
 # OpenSSL
 find_package(OpenSSL REQUIRED)
 
-# Postgres
-find_package(libpqxx CONFIG REQUIRED)
-find_package(PostgreSQL REQUIRED)
-
 # Qt
+set(QT_NO_PRIVATE_MODULE_WARNING ON)
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent)
 
 # Reflect CPP
 find_package(pugixml CONFIG REQUIRED)
 find_package(reflectcpp CONFIG REQUIRED)
-
 
 # SQLGen
 find_package(sqlgen REQUIRED)

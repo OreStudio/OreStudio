@@ -37,6 +37,7 @@ sudo apt-get install \
      mesa-common-dev \
      pkg-config \
      xorg-dev \
-     libltdl-dev
+     libltdl-dev \
+     qt6-base-dev # Use Qt from the distro
 
 sudo apt-get clean sudo apt-get autoremove -y

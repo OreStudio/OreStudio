@@ -30,16 +30,45 @@ message(STATUS "CMake Version: ${CMAKE_VERSION}")
 # ctest support
 enable_testing()
 
+project(OreStudio VERSION 0.0.3 LANGUAGES CXX
+    DESCRIPTION "UI and other utilities for the Open Source Risk Engine (ORE).")
+
+# use, i.e. don't skip the full RPATH for the build tree
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+
+# when building, don't use the install RPATH already, but later on when
+# installing.
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+
+if(UNIX)
+    #
+    # Note sure why, but this cannot be within the packaging configuration.
+    #
+    set(CMAKE_INSTALL_PREFIX "/opt/OreStudio/${CMAKE_PROJECT_VERSION}")
+    set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/OreStudio/${CMAKE_PROJECT_VERSION}")
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
+    # add the automatically determined parts of the RPATH
+    # which point to directories outside the build tree to the install RPATH
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+    # the RPATH to be used when installing, but only if it's not a system directory
+    list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+    if("${isSystemDir}" STREQUAL "-1")
+        set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+    endif()
+endif()
 #
 # add our own modules
 #
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build/cmake/modules)
 include(AddBoostTests)
 
 #
 # options
 #
 option(WITH_PROFILING "Generate profiling information for code coverage." OFF)
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
 #
 # c++ standard.
@@ -58,44 +87,39 @@ else()
     message(STATUS "SCCache NOT found.")
 endif()
 
-project(OreStudio VERSION 0.0.3 LANGUAGES CXX
-    DESCRIPTION "UI and other utilities for the Open Source Risk Engine (ORE).")
-
-# threads
+# Threads
 find_package(Threads REQUIRED)
 
-# boost.
+# Boost
 set(Boost_USE_MULTITHREADED ON)
-# In CMakeLists.txt
+macro(get_win_hex outvar)
+    string(REGEX MATCH "^([0-9]+)\\.([0-9]+)" ${outvar} ${CMAKE_SYSTEM_VERSION})
+    math(EXPR ${outvar} "(${CMAKE_MATCH_1} << 8) + ${CMAKE_MATCH_2}" OUTPUT_FORMAT HEXADECIMAL)
+endmacro()
+
 if(WIN32)
-    add_compile_definitions(BOOST_USE_WINAPI_VERSION=0x0602)
+    get_win_hex(winver)
+    add_compile_definitions(_WIN32_WINNT=${winver})
+    add_compile_definitions(BOOST_USE_WINAPI_VERSION=${winver})
 endif()
 
-# Note: it is possible to build with older versions of boost, but
-# these require patches.
 find_package(Boost 1.88 REQUIRED COMPONENTS
-    date_time
-    exception
-    filesystem
     log
     crc
+    exception
     program_options
     unit_test_framework)
 
 # OpenSSL
 find_package(OpenSSL REQUIRED)
 
-# Postgres
-find_package(libpqxx CONFIG REQUIRED)
-find_package(PostgreSQL REQUIRED)
-
 # Qt
+set(QT_NO_PRIVATE_MODULE_WARNING ON)
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent)
 
 # Reflect CPP
 find_package(pugixml CONFIG REQUIRED)
 find_package(reflectcpp CONFIG REQUIRED)
-
 
 # SQLGen
 find_package(sqlgen REQUIRED)

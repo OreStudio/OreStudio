@@ -26,7 +26,6 @@ file(GLOB_RECURSE files RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 add_executable(${tests_target_name} ${files})
-
 set_target_properties(${tests_target_name}
     PROPERTIES OUTPUT_NAME ${tests_binary_name})
 
@@ -34,13 +33,12 @@ target_include_directories(${tests_binary_name}
     PRIVATE ${CMAKE_SOURCE_DIR}/projects/${name}/include
     PRIVATE ${CMAKE_SOURCE_DIR}/projects/)
 
-target_link_libraries(${tests_target_name} PRIVATE
-    ${lib_target_name}
-    ores.utility.lib
-    Boost::unit_test_framework
-    reflectcpp::reflectcpp
-
-    ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        Boost::unit_test_framework
+        ${CMAKE_THREAD_LIBS_INIT})
 
 set(command $<TARGET_FILE:${tests_binary_name}> ${boost_test_parameters})
 
@@ -53,5 +51,3 @@ add_custom_target(run_${tests_target_name}
 add_dependencies(run_all_tests run_${tests_target_name})
 
 add_boost_tests(${tests_binary_name} ${files})
-
-install(TARGETS ${tests_target_name} RUNTIME DESTINATION bin COMPONENT tests)

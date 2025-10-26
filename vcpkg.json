@@ -6,8 +6,6 @@
     "dependencies": [
         "qtbase",
         "openssl",
-        "libpqxx",
-        "libbson",
         {
             "name": "reflectcpp",
             "features": [ "xml", "bson" ]

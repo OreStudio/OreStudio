@@ -29,24 +29,7 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "OreStudio - GUI for ORE.")
 set(CPACK_PACKAGE_CONTACT "https://github.com/OreStudio/OreStudio")
 set(CPACK_PACKAGE_VENDOR "OreStudio")
 
-# note that ${public_headers} should be in quotes
-# set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${public_headers}")
 
-# set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "d")
-
-# install the target and create export-set
-# install(
-#     TARGETS ${PROJECT_NAME}
-#     EXPORT "${PROJECT_NAME}Targets"
-#     COMPONENT ${PROJECT_NAME} # must be here, not any line lower
-#     # these get default values from GNUInstallDirs, no need to set them
-#     #RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} # bin
-#     #LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # lib
-#     #ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} # lib
-#     # except for public headers, as we want them to be inside a library folder
-#     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME} # include/SomeProject
-#     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} # include
-# )
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY ${CPACK_PACKAGE_NAME})
 set(CPACK_OUTPUT_FILE_PREFIX "${CMAKE_BINARY_DIR}/packages")
@@ -57,50 +40,12 @@ set(CPACK_INSTALL_DEFAULT_DIRECTORY_PERMISSIONS
     GROUP_READ GROUP_EXECUTE
     WORLD_READ WORLD_EXECUTE)
 
-
-# set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/some")#/${CMAKE_PROJECT_VERSION}")
 set(CPACK_PACKAGE_CONTACT "marco.craveiro@gmail.com")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Marco Craveiro <${CPACK_PACKAGE_CONTACT}>")
-
-# optionally, you can add various meta information to the components defined in INSTALLs
-# cpack_add_component(some-application
-#     DISPLAY_NAME "Some application"
-#     DESCRIPTION "${CPACK_PACKAGE_DESCRIPTION_SUMMARY}"
-#     #GROUP group1
-# )
-# cpack_add_component(SomeLibrary
-#     DISPLAY_NAME "Some library"
-#     DESCRIPTION "${CPACK_PACKAGE_DESCRIPTION_SUMMARY}"
-#     #GROUP group1
-# )
-# cpack_add_component(AnotherLibrary
-#     DISPLAY_NAME "Another library"
-#     DESCRIPTION "${CPACK_PACKAGE_DESCRIPTION_SUMMARY}"
-#     #GROUP group2
-# )
-# you can also put them into groups
-#cpack_add_component_group(group1)
-#cpack_add_component_group(group2)
-
-# can be also set as -DCPACK_COMPONENTS_ALL="AnotherLibrary"
-#set(CPACK_COMPONENTS_ALL "AnotherLibrary")
-message(STATUS "Components to pack: ${CPACK_COMPONENTS_ALL}")
-
-# if(NOT DEFINED CPACK_SYSTEM_NAME)
-#     set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
-# endif()
 
 #
 # Component configuration
 #
-set(components applications)
-set(CPACK_COMPONENTS_ALL ${components})
-
-set(CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "VisualOre")
-set(CPACK_COMPONENT_APPLICATIONS_DESCRIPTION "OreStudio - GUI for ORE.")
-set(CPACK_COMPONENT_APPLICATIONS_GROUP "Runtime")
-set(CPACK_COMPONENTS_IGNORE_GROUPS TRUE)
-set(CPACK_ARCHIVE_COMPONENT_INSTALL TRUE)
 set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/readme.org")
 
 # This is for WiX so that it does not complain about unsupported extension

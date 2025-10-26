@@ -31,7 +31,7 @@ add_library(${lib_target_name} ${lib_files})
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}
-    PROPERTIES VERSION ${DOGEN_VERSION} SOVERSION ${DOGEN_VERSION_MAJOR})
+    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name}
     PUBLIC ${CMAKE_SOURCE_DIR}/projects/
@@ -40,18 +40,19 @@ target_include_directories(${lib_target_name}
 find_package(cli CONFIG REQUIRED)
 
 target_link_libraries(${lib_target_name}
-    PRIVATE
+    PUBLIC
+        ores.utility.lib
         Boost::boost
-        Boost::program_options
-        magic_enum::magic_enum
+    PRIVATE
+        ores.accounts.lib
+        ores.risk.lib
         ores.comms.lib
+        magic_enum::magic_enum
+        sqlgen::sqlgen
         cli::cli
-    )
+        Boost::program_options)
 
-install(TARGETS ${lib_target_name}
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    COMPONENT libraries)
+install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 
 set(exe_binary_name ${name})
 set(exe_target_name ${name}.exe)
@@ -66,16 +67,10 @@ set_target_properties(${exe_target_name} PROPERTIES
 target_include_directories(${exe_target_name}
     PRIVATE ${CMAKE_SOURCE_DIR}/projects)
 
-target_link_libraries(${exe_target_name} PRIVATE
-    ${lib_target_name}
-    ores.risk.lib
-    ores.accounts.lib
-    ores.utility.lib
-    ores.comms.lib
-    Boost::boost
-    Boost::date_time
-    Boost::program_options
-    ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${exe_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ${CMAKE_THREAD_LIBS_INIT})
 
-install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin
-    COMPONENT applications)
+set(X_VCPKG_APPLOCAL_DEPS_INSTALL 1)
+install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)

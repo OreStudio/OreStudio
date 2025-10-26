@@ -26,7 +26,6 @@
 
 #include <iosfwd>
 #include <string>
-#include <rfl.hpp>
 #include "ores.utility/repository/context.hpp"
 
 namespace ores::utility::repository {

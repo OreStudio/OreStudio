@@ -1,4 +1,4 @@
-#!/bin/bash
+# -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
 #
 # Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
 #
@@ -15,29 +15,4 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-sudo apt-get install \
-     autoconf \
-     autoconf-archive \
-     automake \
-     fontconfig \
-     freeglut3-dev \
-     libegl1 \
-     libltdl-dev \
-     libtool \
-     '^libxcb.*-dev' \
-     libx11-xcb-dev \
-     libglu1-mesa-dev \
-     libxrender-dev \
-     libxi-dev \
-     libxkbcommon-dev \
-     libxkbcommon-x11-dev \
-     libegl1-mesa-dev \
-     libxcursor-dev  \
-     libxinerama-dev  \
-     mesa-common-dev \
-     pkg-config \
-     xorg-dev \
-     libltdl-dev \
-     qt6-base-dev # Use Qt from the distro
-
-sudo apt-get clean sudo apt-get autoremove -y
+set(VCPKG_POLICY_EMPTY_PACKAGE enabled)

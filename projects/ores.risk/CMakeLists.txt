@@ -46,7 +46,4 @@ target_link_libraries(${lib_target_name}
         ores.comms.lib
     )
 
-install(TARGETS ${lib_target_name}
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    COMPONENT libraries)
+install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

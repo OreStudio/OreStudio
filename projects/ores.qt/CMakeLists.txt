@@ -52,5 +52,5 @@ add_custom_target(run_ores_qt
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/projects/ores.qt
     COMMAND ./ores.qt)
 
-install(TARGETS ores.qt RUNTIME DESTINATION bin
-    COMPONENT applications)
+set(X_VCPKG_APPLOCAL_DEPS_INSTALL 1)
+install(TARGETS ores.qt RUNTIME DESTINATION bin)

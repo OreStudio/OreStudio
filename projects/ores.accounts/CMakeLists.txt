@@ -29,7 +29,7 @@ add_library(${lib_target_name} ${lib_files})
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}
-    PROPERTIES VERSION ${ORESTUDIO_VERSION} SOVERSION ${ORESTUDIO_VERSION_MAJOR})
+    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/
@@ -44,7 +44,4 @@ target_link_libraries(${lib_target_name}
         Boost::boost
     )
 
-install(TARGETS ${lib_target_name}
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    COMPONENT libraries)
+install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

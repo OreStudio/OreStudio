@@ -51,10 +51,7 @@ target_link_libraries(${lib_target_name}
         Boost::boost
         Boost::program_options)
 
-install(TARGETS ${lib_target_name}
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    COMPONENT libraries)
+install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 
 set(exe_binary_name ${name})
 set(exe_target_name ${name}.exe)
@@ -74,5 +71,5 @@ target_link_libraries(${exe_target_name}
         ${lib_target_name}
         ${CMAKE_THREAD_LIBS_INIT})
 
-install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin
-    COMPONENT applications)
+set(X_VCPKG_APPLOCAL_DEPS_INSTALL 1)
+install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)

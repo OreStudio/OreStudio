@@ -29,7 +29,6 @@ file(GLOB_RECURSE files RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 add_executable(${tests_target_name} ${files})
-
 set_target_properties(${tests_target_name}
     PROPERTIES OUTPUT_NAME ${tests_binary_name})
 
@@ -55,5 +54,3 @@ add_custom_target(run_${tests_target_name}
 add_dependencies(run_all_tests run_${tests_target_name})
 
 add_boost_tests(${tests_binary_name} ${files})
-
-install(TARGETS ${tests_target_name} RUNTIME DESTINATION bin COMPONENT tests)

@@ -30,6 +30,34 @@ message(STATUS "CMake Version: ${CMAKE_VERSION}")
 # ctest support
 enable_testing()
 
+project(OreStudio VERSION 0.0.3 LANGUAGES CXX
+    DESCRIPTION "UI and other utilities for the Open Source Risk Engine (ORE).")
+
+# use, i.e. don't skip the full RPATH for the build tree
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+
+# when building, don't use the install RPATH already, but later on when
+# installing.
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+
+if(UNIX)
+    #
+    # Note sure why, but this cannot be within the packaging configuration.
+    #
+    set(CMAKE_INSTALL_PREFIX "/opt/OreStudio/${CMAKE_PROJECT_VERSION}")
+    set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/OreStudio/${CMAKE_PROJECT_VERSION}")
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
+    # add the automatically determined parts of the RPATH
+    # which point to directories outside the build tree to the install RPATH
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+    # the RPATH to be used when installing, but only if it's not a system directory
+    list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+    if("${isSystemDir}" STREQUAL "-1")
+        set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+    endif()
+endif()
 #
 # add our own modules
 #
@@ -58,9 +86,6 @@ if (CCACHE_PROGRAM)
 else()
     message(STATUS "SCCache NOT found.")
 endif()
-
-project(OreStudio VERSION 0.0.3 LANGUAGES CXX
-    DESCRIPTION "UI and other utilities for the Open Source Risk Engine (ORE).")
 
 # Threads
 find_package(Threads REQUIRED)

@@ -18,39 +18,42 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-10-26 Sun 19:21], for Sunday, October 26, 2025.
-|      | <75>                          |        |      |      |       |
-| Tags | Headline                      | Time   |      |      |     % |
-|------+-------------------------------+--------+------+------+-------|
-|      | *Total time*                  | *1:37* |      |      | 100.0 |
-|------+-------------------------------+--------+------+------+-------|
-|      | Stories                       | 1:37   |      |      | 100.0 |
-|      | Active                        |        | 1:37 |      | 100.0 |
-| code | Build using dynamic libraries |        |      | 1:37 | 100.0 |
+#+CAPTION: Clock summary at [2025-10-26 Sun 23:12], for Sunday, October 26, 2025.
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *4:06* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 4:06   |      |      | 100.0 |
+|       | Active                                |        | 4:06 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:06 |   2.4 |
+| code  | Build using dynamic libraries         |        |      | 3:57 |  96.3 |
+| code  | Enable qt gui                         |        |      | 0:03 |   1.2 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-10-26 Sun 19:21]
+#+CAPTION: Clock summary at [2025-10-26 Sun 23:12]
 |       | <75>                                        |         |       |      |       |
 | Tags  | Headline                                    | Time    |       |      |     % |
 |-------+---------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                | *15:06* |       |      | 100.0 |
+|       | *Total time*                                | *17:35* |       |      | 100.0 |
 |-------+---------------------------------------------+---------+-------+------+-------|
-|       | Stories                                     | 15:06   |       |      | 100.0 |
-|       | Active                                      |         | 15:06 |      | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       | 0:35 |   3.9 |
-| code  | Investigate leaks from valgrind             |         |       | 0:46 |   5.1 |
-| code  | Add locking up logic                        |         |       | 1:28 |   9.7 |
-| code  | Add support for feature flags               |         |       | 1:25 |   9.4 |
-| code  | Implement authentication bootstrap workflow |         |       | 0:25 |   2.8 |
-| code  | Build using dynamic libraries               |         |       | 5:04 |  33.6 |
-| code  | Enable qt gui                               |         |       | 4:10 |  27.6 |
-| code  | Add workspace as a container                |         |       | 1:13 |   8.1 |
+|       | Stories                                     | 17:35   |       |      | 100.0 |
+|       | Active                                      |         | 17:35 |      | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       | 0:41 |   3.9 |
+| code  | Investigate leaks from valgrind             |         |       | 0:46 |   4.4 |
+| code  | Add locking up logic                        |         |       | 1:28 |   8.3 |
+| code  | Build using dynamic libraries               |         |       | 7:24 |  42.1 |
+| code  | Enable qt gui                               |         |       | 4:13 |  24.0 |
+| code  | Add support for feature flags               |         |       | 1:25 |   8.1 |
+| code  | Implement authentication bootstrap workflow |         |       | 0:25 |   2.4 |
+| code  | Add workspace as a container                |         |       | 1:13 |   6.9 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-10-26 Sun 19:49]--[2025-10-26 Sun 19:55] =>  0:06
     CLOCK: [2025-10-23 Thu 09:10]--[2025-10-23 Thu 09:45] =>  0:35
     :END:
 
@@ -207,6 +210,98 @@ Links:
 
 - [[https://github.com/getml/sqlgen/issues/74][#74: Updating boolean data causes an error]]
 
+*** COMPLETED Merge client into console                                :code:
+
+We don't really need a client, we can add this functionality to console.
+
+Notes:
+
+- rename console to cli.
+- add a mode in console called =client=.
+- add port, etc as configuration variables.
+- add the location of cert as configuration variables.
+- read variables from environment.
+
+*** COMPLETED Add account support                                      :code:
+
+Links:
+
+- [[https://www.azerothcore.org/wiki/creating-accounts][azeroth: Creating Accounts]]
+- [[https://www.azerothcore.org/wiki/account][azeroth: account]]
+- [[https://www.mongodb.com/docs/manual/reference/built-in-roles/#std-label-built-in-roles][mongo: Built-In Roles]]
+
+*** COMPLETED Add session support                                      :code:
+
+Users must be able to login and logout.
+
+*** CANCELLED Convert plantuml diagrams to org-babel                    :doc:
+
+*Rationale*: We are now using LLMs to generate the diagrams.
+
+It may be easier to integrate diagrams with roam if they are org-mode documents.
+Experiment with babel for this.
+
+*** COMPLETED Add support for =windows-msvc-clang-cl=                 :infra:
+
+We need to setup a build for MSVC clang.
+
+*** COMPLETED Build using dynamic libraries                            :code:
+    :LOGBOOK:
+    CLOCK: [2025-10-26 Sun 22:03]--[2025-10-26 Sun 22:48] =>  0:45
+    CLOCK: [2025-10-26 Sun 19:55]--[2025-10-26 Sun 21:30] =>  1:35
+    CLOCK: [2025-10-26 Sun 18:45]--[2025-10-26 Sun 19:18] =>  0:33
+    CLOCK: [2025-10-26 Sun 00:18]--[2025-10-26 Sun 01:04] =>  0:46
+    CLOCK: [2025-10-25 Sat 23:44]--[2025-10-26 Sun 00:18] =>  0:34
+    CLOCK: [2025-10-25 Sat 21:10]--[2025-10-25 Sat 23:43] =>  2:33
+    CLOCK: [2025-10-25 Sat 00:35]--[2025-10-25 Sat 01:13] =>  0:38
+    :END:
+
+This should help with disk space.
+
+Notes:
+
+- try to build using triplet =x64-linux-dynamic=. Actually this builds all of
+  the vcpkg dependencies as shared objects. This is problematic because we do
+  not know how to package them proper under Linux. It's easier to statically
+  link them for now and build only our own SO's. If we ever want to do this
+  again, the incantation is:
+
+: ZIC=1 cmake --build --target package --preset linux-clang-debug -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic -DBUILD_SHARED_LIBS=ON
+
+- we use the distro supplied Qt because building it from vcpkg uses too much
+  disk space. For that we use overlays. It works fine without overlays too, but
+  only for local machine.
+
+: -DVCPKG_OVERLAY_PORTS=/home/marco/Development/OreStudio/OreStudio.local1/build/cmake/overlays/
+
+Links:
+
+- [[https://learn.microsoft.com/en-us/vcpkg/concepts/overlay-ports][Overlay ports]]
+- [[https://devblogs.microsoft.com/cppblog/using-system-package-manager-dependencies-with-vcpkg/#using-curl-and-openssl-from-the-system-package-manager][Using curl and OpenSSL from the system package manager]]
+
+*** STARTED Enable qt gui                                              :code:
+    :LOGBOOK:
+    CLOCK: [2025-10-26 Sun 22:49]--[2025-10-26 Sun 22:52] =>  0:03
+    CLOCK: [2025-10-24 Fri 17:12]--[2025-10-24 Fri 17:19] =>  0:07
+    CLOCK: [2025-10-24 Fri 13:39]--[2025-10-24 Fri 14:10] =>  0:31
+    CLOCK: [2025-10-24 Fri 12:17]--[2025-10-24 Fri 13:26] =>  1:09
+    CLOCK: [2025-10-24 Fri 12:02]--[2025-10-24 Fri 12:17] =>  0:15
+    CLOCK: [2025-10-24 Fri 11:44]--[2025-10-24 Fri 11:58] =>  0:14
+    CLOCK: [2025-10-24 Fri 10:21]--[2025-10-24 Fri 10:59] =>  0:38
+    CLOCK: [2025-10-24 Fri 09:21]--[2025-10-24 Fri 10:20] =>  0:59
+    CLOCK: [2025-10-24 Fri 00:28]--[2025-10-24 Fri 00:42] =>  0:14
+    CLOCK: [2025-10-23 Thu 17:56]--[2025-10-23 Thu 17:59] =>  0:03
+    :END:
+
+Due to problems building we disabled qt. Enable it again as we are close to
+working on it.
+
+Notes:
+
+- remove SQL dependency to see if the build works. Still not enough disk space.
+  Will try to build as dynamic libraries - see separate story. This was not
+  sufficient. In the end, we used distro-supplied Qt.
+
 *** STARTED Add support for feature flags                              :code:
     :LOGBOOK:
     CLOCK: [2025-10-24 Fri 01:25]--[2025-10-24 Fri 01:34] =>  0:09
@@ -326,40 +421,16 @@ Links:
 
 - [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
 
-*** STARTED Build using dynamic libraries                              :code:
-    :LOGBOOK:
-    CLOCK: [2025-10-26 Sun 18:45]--[2025-10-26 Sun 19:18] =>  0:33
-    CLOCK: [2025-10-26 Sun 00:18]--[2025-10-26 Sun 01:04] =>  0:46
-    CLOCK: [2025-10-25 Sat 23:44]--[2025-10-26 Sun 00:18] =>  0:34
-    CLOCK: [2025-10-25 Sat 21:10]--[2025-10-25 Sat 23:43] =>  2:33
-    CLOCK: [2025-10-25 Sat 00:35]--[2025-10-25 Sat 01:13] =>  0:38
-    :END:
+*** Copy across icons and other assets to package                      :code:
 
-This should help with disk space.
+At present when we start the UI from the package we get:
 
-Notes:
+: /opt/OreStudio/0.0.3/bin/ores.qt
+: qt.svg: Cannot open file '/home/marco/money-pound-box-line.svg', because: No such file or directory
+: qt.svg: Cannot open file '/home/marco/money-pound-box-line.svg', because: No such file or directory
 
-- try to build using triplet =x64-linux-dynamic=.
-
-*** STARTED Enable qt gui                                              :code:
-    :LOGBOOK:
-    CLOCK: [2025-10-24 Fri 17:12]--[2025-10-24 Fri 17:19] =>  0:07
-    CLOCK: [2025-10-24 Fri 13:39]--[2025-10-24 Fri 14:10] =>  0:31
-    CLOCK: [2025-10-24 Fri 12:17]--[2025-10-24 Fri 13:26] =>  1:09
-    CLOCK: [2025-10-24 Fri 12:02]--[2025-10-24 Fri 12:17] =>  0:15
-    CLOCK: [2025-10-24 Fri 11:44]--[2025-10-24 Fri 11:58] =>  0:14
-    CLOCK: [2025-10-24 Fri 10:21]--[2025-10-24 Fri 10:59] =>  0:38
-    CLOCK: [2025-10-24 Fri 09:21]--[2025-10-24 Fri 10:20] =>  0:59
-    CLOCK: [2025-10-24 Fri 00:28]--[2025-10-24 Fri 00:42] =>  0:14
-    CLOCK: [2025-10-23 Thu 17:56]--[2025-10-23 Thu 17:59] =>  0:03
-    :END:
-
-Due to problems building we disabled qt. Enable it again as we are close to
-working on it.
-
-Notes:
-
-- remove SQL dependency to see if the build works.
+We need to put the assets under a suitable directory in opt and try to open them
+from there.
 
 *** CLI Importing needs to read from database                          :code:
 
@@ -420,19 +491,9 @@ Notes:
 - reduce output, only first few entries are needed.
 - add a toc.
 
-*** Merge client into console                                          :code:
-
-We don't really need a client, we can add this functionality to console.
-
-Notes:
-
-- rename console to cli.
-- add a mode in console called =client=.
-- add port, etc as configuration variables.
-- add the location of cert as configuration variables.
-- read variables from environment.
-
 *** Add support for JWT                                                :code:
+
+When we add support for HTTP/REST, we need to ensure it uses JWT.
 
 Links:
 
@@ -462,18 +523,6 @@ Links:
 - [[https://github.com/inspircd/inspircd/tree/insp4][GH insp4]]: "InspIRCd is a modular C++ Internet Relay Chat (IRC) server for
   UNIX-like and Windows systems."
 - https://www.inspircd.org/
-
-*** Add account support                                                :code:
-
-Links:
-
-- [[https://www.azerothcore.org/wiki/creating-accounts][azeroth: Creating Accounts]]
-- [[https://www.azerothcore.org/wiki/account][azeroth: account]]
-- [[https://www.mongodb.com/docs/manual/reference/built-in-roles/#std-label-built-in-roles][mongo: Built-In Roles]]
-
-*** Add session support                                                :code:
-
-Users must be able to login and logout.
 
 *** Consider exposing end points via HTTP                              :code:
 
@@ -519,16 +568,14 @@ Links:
 
 Core needs to have a container for all of the data stored within a context.
 
+Actually, according to Data Priented Principles, we may not need it. This may be
+a UI concept but not a code concept.
+
 *** Add portfolio support                                              :code:
 
 Links:
 
 - [[https://leonardqmarcq.com/posts/modeling-hierarchical-tree-data][Modeling Hierarchical Tree Data in PostgreSQL]]
-
-*** Convert plantuml diagrams to org-babel                              :doc:
-
-It may be easier to integrate diagrams with roam if they are org-mode documents.
-Experiment with babel for this.
 
 *** Setup code quality actions                                        :infra:
 
@@ -570,10 +617,6 @@ This may be due to a missing sub-module for vcpkg.
 Links:
 
 - [[https://www.oliverlambson.com/pgmq][Use what you already have: Building a message queue on Postgres]]
-
-*** Add support for =windows-msvc-clang-cl=                           :infra:
-
-We need to setup a build for MSVC clang.
 
 *** Implement database connectivity                                    :code:
 

@@ -37,11 +37,11 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PRIVATE
-        ores.utility.lib
         reflectcpp::reflectcpp
         OpenSSL::Crypto
         OpenSSL::SSL
         Boost::boost
+        ores.utility.lib
     )
 
 install(TARGETS ${lib_target_name}

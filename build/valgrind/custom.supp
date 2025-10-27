@@ -110,3 +110,38 @@
    fun:_ZN5boost10shared_ptrINS_6detail16thread_data_baseEE5resetIS2_EEvPT_
    ...
 }
+
+{
+   Boost test 1
+   Memcheck:Free
+   fun:_ZdlPvm
+   fun:_ZNSt15__new_allocatorIcE10deallocateEPcm
+   fun:deallocate
+   fun:deallocate
+   fun:_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE10_M_destroyEm
+   fun:_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE10_M_disposeEv
+   fun:_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEED1Ev
+   fun:__cxa_finalize
+   obj:/home/runner/work/OreStudio/OreStudio/build/output/linux-gcc-debug/projects/ores.utility/libores.utility.so.0.0.3
+   fun:_dl_call_fini
+   fun:_dl_fini
+   fun:__run_exit_handlers
+   fun:exit
+   fun:(below main)
+}
+{
+      Boost test 2
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:_Znwm
+   fun:_ZNSt15__new_allocatorIcE8allocateEmPKv
+   fun:allocate
+   fun:allocate
+   fun:_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE11_S_allocateERS3_m
+   fun:_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_createERmm
+   fun:_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructIPKcEEvT_S8_St20forward_iterator_tag
+   fun:_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1IS3_EEPKcRKS3_
+   fun:_Z41__static_initialization_and_destruction_0v
+   fun:_GLOBAL__sub_I_unit_test_parameters.cpp
+   ...
+}

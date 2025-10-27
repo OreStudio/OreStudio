@@ -25,17 +25,30 @@
 #endif
 
 #include <string>
-#include <charconv>
+#include "ores.utility/log/make_logger.hpp"
 
 namespace ores::utility::string {
 
 /**
- * @brief Converts a string into an integer.
- *
- * @param s string to convert.
- * @param base numeric base to use.
+ * @brief Type conversion utilities.
  */
-int convert_to_int(std::string s, int base = 10);
+class converter {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger("ores.comms.connection");
+        return instance;
+    }
+
+public:
+    /**
+     * @brief Converts a string into an integer.
+     *
+     * @param s string to convert.
+     * @param base numeric base to use.
+     */
+    static int string_to_int(std::string s, int base = 10);
+};
 
 }
 

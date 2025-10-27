@@ -18,17 +18,11 @@
  *
  */
 #include <rfl/json.hpp>
-#include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context_factory.hpp"
 
-namespace {
+namespace ores::utility::repository {
 
 using namespace ores::utility::log;
-auto lg(make_logger("ores.utility.repository.context_factory"));
-
-}
-
-namespace ores::utility::repository {
 
 std::ostream&
 operator<<(std::ostream& s, const context_factory::configuration& v) {
@@ -37,7 +31,7 @@ operator<<(std::ostream& s, const context_factory::configuration& v) {
 }
 
 context context_factory::make_context(const configuration& cfg) {
-    BOOST_LOG_SEV(lg, debug) << "Creating context. Configuration: " << cfg;
+    BOOST_LOG_SEV(lg(), debug) << "Creating context. Configuration: " << cfg;
 
     const auto credentials = sqlgen::postgres::Credentials {
         .user = cfg.user,
@@ -56,7 +50,7 @@ context context_factory::make_context(const configuration& cfg) {
     context r(make_connection_pool<context::connection_type>(
             pool_config, credentials));
 
-    BOOST_LOG_SEV(lg, debug) << "Finished creating context.";
+    BOOST_LOG_SEV(lg(), debug) << "Finished creating context.";
     return r;
 }
 

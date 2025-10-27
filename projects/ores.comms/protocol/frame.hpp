@@ -26,11 +26,12 @@
 #include <iosfwd>
 #include <cstdint>
 #include <expected>
+#include "ores.utility/log/logger.hpp"
 #include "ores.comms/protocol/message_types.hpp"
 
 namespace ores::comms::protocol {
 
-constexpr size_t MAX_PAYLOAD_SIZE = 1'000'000; // Example limit
+constexpr size_t MAX_PAYLOAD_SIZE = 1'000'000;
 
 /**
  * @brief Frame header structure for the ORES protocol.
@@ -65,6 +66,13 @@ struct frame_header final {
  * @brief Complete frame with header and payload.
  */
 class frame final {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static logger instance = logger_factory("ores.comms.protocol.frame");
+        return instance;
+    }
+
 public:
     frame();
     frame(message_type type, std::uint32_t sequence, std::vector<std::uint8_t> payload);

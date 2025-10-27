@@ -21,16 +21,10 @@
 #include <boost/asio/read.hpp>
 #include <boost/asio/write.hpp>
 #include <boost/asio/use_awaitable.hpp>
-#include "ores.utility/log/logger.hpp"
-
-namespace {
-
-using namespace ores::utility::log;
-auto lg(logger_factory("ores.comms.connection"));
-
-}
 
 namespace ores::comms {
+
+using namespace ores::utility::log;
 
 connection::connection(ssl_socket socket) : socket_(std::move(socket)) {}
 
@@ -47,7 +41,7 @@ boost::asio::awaitable<void> connection::ssl_handshake_client() {
 boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
 connection::read_frame() {
     try {
-        BOOST_LOG_SEV(lg, debug) << "Waiting to read the next frame.";
+        BOOST_LOG_SEV(lg(), debug) << "Waiting to read the next frame.";
 
         // Read the fixed 32-byte header first
         std::vector<std::uint8_t> buffer(protocol::frame_header::size);
@@ -56,7 +50,7 @@ connection::read_frame() {
             boost::asio::buffer(buffer),
             boost::asio::use_awaitable);
 
-        BOOST_LOG_SEV(lg, debug) << "Read header of size: "
+        BOOST_LOG_SEV(lg(), debug) << "Read header of size: "
                                  << protocol::frame_header::size;
 
         // Deserialize and validate the header.
@@ -64,13 +58,13 @@ connection::read_frame() {
         auto header_result = protocol::frame::deserialize_header(
             std::span<const std::uint8_t>(buffer));
         if (!header_result) {
-            BOOST_LOG_SEV(lg, error) << "Failed to deserialize header, error: "
+            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize header, error: "
                                      << static_cast<int>(header_result.error());
             co_return std::unexpected(header_result.error());
         }
 
         const auto& header = *header_result;
-        BOOST_LOG_SEV(lg, debug) << "Header payload size: "
+        BOOST_LOG_SEV(lg(), debug) << "Header payload size: "
                                  << header.payload_size;
 
         // Read payload if any.
@@ -81,29 +75,29 @@ connection::read_frame() {
                     header.payload_size),
                 boost::asio::use_awaitable);
 
-            BOOST_LOG_SEV(lg, debug) << "Read payload of size: " << header.payload_size;
+            BOOST_LOG_SEV(lg(), debug) << "Read payload of size: " << header.payload_size;
         }
 
         // Deserialize the complete frame (validates CRC)
         auto frame_result = protocol::frame::deserialize(header,
             std::span<const std::uint8_t>(buffer));
         if (!frame_result) {
-            BOOST_LOG_SEV(lg, error) << "Failed to deserialize frame, error: "
+            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize frame, error: "
                                      << static_cast<int>(frame_result.error());
             co_return std::unexpected(frame_result.error());
         }
 
-        BOOST_LOG_SEV(lg, debug) << "Successfully deserialized frame, type: "
+        BOOST_LOG_SEV(lg(), debug) << "Successfully deserialized frame, type: "
                                  << static_cast<int>(frame_result->header().type)
                                  << " total size: " << buffer.size();
         co_return frame_result;
 
     } catch (const boost::system::system_error& e) {
-        BOOST_LOG_SEV(lg, error) << "Network error in read_frame: "
+        BOOST_LOG_SEV(lg(), error) << "Network error in read_frame: "
                                  << e.what();
         co_return std::unexpected(protocol::error_code::network_error);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg, error) << "Unexpected error in read_frame: "
+        BOOST_LOG_SEV(lg(), error) << "Unexpected error in read_frame: "
                                  << e.what();
         co_return std::unexpected(protocol::error_code::invalid_message_type);
     }
@@ -112,14 +106,14 @@ connection::read_frame() {
 boost::asio::awaitable<void>
 connection::write_frame(const protocol::frame& frame) {
     auto data = frame.serialize();
-    BOOST_LOG_SEV(lg, debug) << "Writing frame of size " << data.size()
+    BOOST_LOG_SEV(lg(), debug) << "Writing frame of size " << data.size()
                              << " type: " << static_cast<int>(frame.header().type)
                              << " sequence: " << frame.header().sequence;
     co_await boost::asio::async_write(
         socket_,
         boost::asio::buffer(data),
         boost::asio::use_awaitable);
-    BOOST_LOG_SEV(lg, debug) << "Successfully wrote frame";
+    BOOST_LOG_SEV(lg(), debug) << "Successfully wrote frame";
 }
 
 bool connection::is_open() const {
@@ -139,7 +133,7 @@ std::string connection::remote_address() const {
         return endpoint.address().to_string() + ":" + std::to_string(endpoint.port());
     } catch (const std::exception& e) {
         std::string msg(std::format("Error: {}", e.what()));
-        BOOST_LOG_SEV(lg, error) << msg;
+        BOOST_LOG_SEV(lg(), error) << msg;
         return msg;
     }
 }

@@ -28,6 +28,7 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
+#include "ores.utility/log/logger.hpp"
 #include "ores.comms/protocol/message_dispatcher.hpp"
 #include "ores.comms/protocol/message_handler.hpp"
 
@@ -53,6 +54,13 @@ struct server_config final {
  * Accepts SSL connections, performs handshake, and manages client sessions.
  */
 class server final {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static logger instance = logger_factory("ores.comms.server");
+        return instance;
+    }
+
 public:
     /**
      * @brief Construct server with configuration.

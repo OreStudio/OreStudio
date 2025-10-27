@@ -24,6 +24,7 @@
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/awaitable.hpp>
 #include "ores.comms/protocol/frame.hpp"
+#include "ores.utility/log/logger.hpp"
 
 namespace ores::comms {
 
@@ -33,6 +34,13 @@ namespace ores::comms {
  * Provides async read/write operations for protocol frames over SSL/TLS.
  */
 class connection final {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static logger instance = logger_factory("ores.comms.connection");
+        return instance;
+    }
+
 public:
     using ssl_socket = boost::asio::ssl::stream<boost::asio::ip::tcp::socket>;
 

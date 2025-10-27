@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <mutex>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include <boost/asio/connect.hpp>
@@ -25,19 +26,14 @@
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/asio/use_future.hpp>
 #include <boost/asio/this_coro.hpp>
-#include <mutex>
+#include <boost/log/sources/record_ostream.hpp>
 #include "ores.comms/client.hpp"
+#include "ores.utility/log/severity_level.hpp"
 #include "ores.comms/protocol/handshake.hpp"
-#include "ores.utility/log/logger.hpp"
-
-namespace {
-
-using namespace ores::utility::log;
-auto lg(logger_factory("ores.comms.client"));
-
-}
 
 namespace ores::comms {
+
+using namespace ores::utility::log;
 
 std::ostream& operator<<(std::ostream& s, const client_options& v) {
     rfl::json::write(v, s);
@@ -50,7 +46,7 @@ client::client(client_options config)
       executor_(io_ctx_->get_executor()),
       ssl_ctx_(boost::asio::ssl::context::tlsv13_client),
       sequence_number_(0), connected_(false) {
-    BOOST_LOG_SEV(lg, info) << "Client options: " << config_;
+    BOOST_LOG_SEV(lg(), info) << "Client options: " << config_;
     setup_ssl_context();
 }
 
@@ -58,7 +54,7 @@ client::client(client_options config, boost::asio::any_io_executor executor)
     : config_(std::move(config)), executor_(std::move(executor)),
       ssl_ctx_(boost::asio::ssl::context::tlsv13_client),
       sequence_number_(0), connected_(false) {
-    BOOST_LOG_SEV(lg, info) << "Client options: " << config_;
+    BOOST_LOG_SEV(lg(), info) << "Client options: " << config_;
     setup_ssl_context();
 }
 
@@ -70,12 +66,12 @@ void client::setup_ssl_context() {
         ssl_ctx_.set_verify_mode(boost::asio::ssl::verify_none);
     }
 
-    BOOST_LOG_SEV(lg, info) << "SSL context configured for client";
+    BOOST_LOG_SEV(lg(), info) << "SSL context configured for client";
 }
 
 boost::asio::awaitable<bool> client::connect() {
     try {
-        BOOST_LOG_SEV(lg, info) << "Connecting to " << config_.host << ":" << config_.port;
+        BOOST_LOG_SEV(lg(), info) << "Connecting to " << config_.host << ":" << config_.port;
 
         // Get the executor from the current coroutine context
         auto exec = co_await boost::asio::this_coro::executor;
@@ -91,7 +87,7 @@ boost::asio::awaitable<bool> client::connect() {
         boost::asio::ip::tcp::socket socket(exec);
         co_await boost::asio::async_connect(socket, endpoints, boost::asio::use_awaitable);
 
-        BOOST_LOG_SEV(lg, info) << "TCP connection established.";
+        BOOST_LOG_SEV(lg(), info) << "TCP connection established.";
 
         // Create SSL socket
         conn_ = std::make_unique<connection>(
@@ -99,12 +95,12 @@ boost::asio::awaitable<bool> client::connect() {
 
         // Perform SSL handshake
         co_await conn_->ssl_handshake_client();
-        BOOST_LOG_SEV(lg, info) << "SSL handshake complete.";
+        BOOST_LOG_SEV(lg(), info) << "SSL handshake complete.";
 
         // Perform protocol handshake
         bool handshake_ok = co_await perform_handshake();
         if (!handshake_ok) {
-            BOOST_LOG_SEV(lg, error) << "Protocol handshake failed.";
+            BOOST_LOG_SEV(lg(), error) << "Protocol handshake failed.";
             disconnect();
             co_return false;
         }
@@ -113,11 +109,11 @@ boost::asio::awaitable<bool> client::connect() {
             std::lock_guard guard{state_mutex_};
             connected_ = true;
         }
-        BOOST_LOG_SEV(lg, info) << "Successfully connected to server.";
+        BOOST_LOG_SEV(lg(), info) << "Successfully connected to server.";
         co_return true;
 
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg, error) << "Connection error: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Connection error: " << e.what();
         disconnect();
         co_return false;
     }
@@ -133,9 +129,9 @@ boost::asio::awaitable<bool> client::perform_handshake() {
             }(),
             config_.client_identifier);
 
-        BOOST_LOG_SEV(lg, debug) << "About to send handshake request frame.";
+        BOOST_LOG_SEV(lg(), debug) << "About to send handshake request frame.";
         co_await conn_->write_frame(request_frame);
-        BOOST_LOG_SEV(lg, info) << "Sent handshake request. Client: "
+        BOOST_LOG_SEV(lg(), info) << "Sent handshake request. Client: "
                                 << config_.client_identifier
                                 << " Version: "
                                 << protocol::PROTOCOL_VERSION_MAJOR
@@ -143,10 +139,10 @@ boost::asio::awaitable<bool> client::perform_handshake() {
                                 << protocol::PROTOCOL_VERSION_MINOR;
 
         // Read handshake response
-        BOOST_LOG_SEV(lg, debug) << "About to read handshake response frame";
+        BOOST_LOG_SEV(lg(), debug) << "About to read handshake response frame";
         auto response_frame_result = co_await conn_->read_frame();
         if (!response_frame_result) {
-            BOOST_LOG_SEV(lg, error) << "Failed to read handshake response. "
+            BOOST_LOG_SEV(lg(), error) << "Failed to read handshake response. "
                                      << " Error code: "
                                      << static_cast<int>(response_frame_result.error());
             co_return false;
@@ -156,7 +152,7 @@ boost::asio::awaitable<bool> client::perform_handshake() {
 
         // Verify message type
         if (response_frame.header().type != protocol::message_type::handshake_response) {
-            BOOST_LOG_SEV(lg, error) << "Expected handshake response, got message type: "
+            BOOST_LOG_SEV(lg(), error) << "Expected handshake response, got message type: "
                                      << static_cast<int>(response_frame.header().type);
             co_return false;
         }
@@ -164,12 +160,12 @@ boost::asio::awaitable<bool> client::perform_handshake() {
         // Deserialize response
         auto response_result = protocol::handshake_response::deserialize(response_frame.payload());
         if (!response_result) {
-            BOOST_LOG_SEV(lg, error) << "Failed to deserialize handshake response";
+            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize handshake response";
             co_return false;
         }
 
         const auto& response = *response_result;
-        BOOST_LOG_SEV(lg, info) << "Received handshake response (server: "
+        BOOST_LOG_SEV(lg(), info) << "Received handshake response (server: "
                                 << response.server_identifier << " version: "
                                 << response.server_version_major
                                 << "." << response.server_version_minor
@@ -178,12 +174,12 @@ boost::asio::awaitable<bool> client::perform_handshake() {
 
         // Check compatibility
         if (!response.version_compatible) {
-            BOOST_LOG_SEV(lg, error) << "Version incompatible with server";
+            BOOST_LOG_SEV(lg(), error) << "Version incompatible with server";
             co_return false;
         }
 
         if (response.status != protocol::error_code::none) {
-            BOOST_LOG_SEV(lg, error) << "Server reported error: " << static_cast<int>(response.status);
+            BOOST_LOG_SEV(lg(), error) << "Server reported error: " << static_cast<int>(response.status);
             co_return false;
         }
 
@@ -195,15 +191,15 @@ boost::asio::awaitable<bool> client::perform_handshake() {
             }(),
             protocol::error_code::none);
 
-        BOOST_LOG_SEV(lg, debug) << "About to send handshake acknowledgment frame";
+        BOOST_LOG_SEV(lg(), debug) << "About to send handshake acknowledgment frame";
         co_await conn_->write_frame(ack_frame);
-        BOOST_LOG_SEV(lg, info) << "Sent handshake acknowledgment";
+        BOOST_LOG_SEV(lg(), info) << "Sent handshake acknowledgment";
 
-        BOOST_LOG_SEV(lg, debug) << "Client handshake completed successfully";
+        BOOST_LOG_SEV(lg(), debug) << "Client handshake completed successfully";
         co_return true;
 
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg, error) << "Handshake exception: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Handshake exception: " << e.what();
         co_return false;
     }
 }
@@ -217,7 +213,7 @@ void client::disconnect() {
         }
         connected_ = false;
     }
-    BOOST_LOG_SEV(lg, info) << "Disconnected from server";
+    BOOST_LOG_SEV(lg(), info) << "Disconnected from server";
 }
 
 bool client::is_connected() const {
@@ -227,12 +223,12 @@ bool client::is_connected() const {
 
 boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
 client::send_request(protocol::frame request_frame) {
-    BOOST_LOG_SEV(lg, debug) << "Sending request.";
+    BOOST_LOG_SEV(lg(), debug) << "Sending request.";
     if (!is_connected()) {
-        BOOST_LOG_SEV(lg, error) << "Cannot send request: not connected";
+        BOOST_LOG_SEV(lg(), error) << "Cannot send request: not connected";
         co_return std::unexpected(protocol::error_code::network_error);
     }
-    BOOST_LOG_SEV(lg, debug) << "Currently connected.";
+    BOOST_LOG_SEV(lg(), debug) << "Currently connected.";
 
     try {
         // Update sequence number in the frame
@@ -244,7 +240,7 @@ client::send_request(protocol::frame request_frame) {
             }(),
             std::vector<std::uint8_t>(request_frame.payload()));
 
-        BOOST_LOG_SEV(lg, debug) << "Sending request frame, type: "
+        BOOST_LOG_SEV(lg(), debug) << "Sending request frame, type: "
                                  << std::hex << static_cast<std::uint16_t>(request_frame.header().type);
 
         // Send request
@@ -253,44 +249,44 @@ client::send_request(protocol::frame request_frame) {
         // Read response
         auto response_result = co_await conn_->read_frame();
         if (!response_result) {
-            BOOST_LOG_SEV(lg, error) << "Failed to read response frame, error: "
+            BOOST_LOG_SEV(lg(), error) << "Failed to read response frame, error: "
                                      << static_cast<int>(response_result.error());
             co_return std::unexpected(response_result.error());
         }
 
-        BOOST_LOG_SEV(lg, debug) << "Received response frame, type: "
+        BOOST_LOG_SEV(lg(), debug) << "Received response frame, type: "
                                  << std::hex << static_cast<std::uint16_t>(response_result->header().type);
 
         co_return *response_result;
 
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg, error) << "Request exception: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Request exception: " << e.what();
         co_return std::unexpected(protocol::error_code::network_error);
     }
 }
 
 bool client::connect_sync() {
-    BOOST_LOG_SEV(lg, debug) << "connect_sync: starting";
+    BOOST_LOG_SEV(lg(), debug) << "connect_sync: starting";
 
     auto task = [this]() -> boost::asio::awaitable<bool> {
-        BOOST_LOG_SEV(lg, debug) << "connect_sync: task started";
+        BOOST_LOG_SEV(lg(), debug) << "connect_sync: task started";
         bool result = co_await connect();
-        BOOST_LOG_SEV(lg, debug) << "connect_sync: task completed, result=" << result;
+        BOOST_LOG_SEV(lg(), debug) << "connect_sync: task completed, result=" << result;
         co_return result;
     };
 
-    BOOST_LOG_SEV(lg, debug) << "connect_sync: spawning task with use_future";
+    BOOST_LOG_SEV(lg(), debug) << "connect_sync: spawning task with use_future";
     auto future = boost::asio::co_spawn(executor_, task(), boost::asio::use_future);
 
     if (io_ctx_) {
-        BOOST_LOG_SEV(lg, debug) << "connect_sync: running io_context";
+        BOOST_LOG_SEV(lg(), debug) << "connect_sync: running io_context";
         io_ctx_->run();
         io_ctx_->restart();
     }
 
-    BOOST_LOG_SEV(lg, debug) << "connect_sync: getting result from future";
+    BOOST_LOG_SEV(lg(), debug) << "connect_sync: getting result from future";
     bool result = future.get();
-    BOOST_LOG_SEV(lg, debug) << "connect_sync: returning " << result;
+    BOOST_LOG_SEV(lg(), debug) << "connect_sync: returning " << result;
     return result;
 }
 

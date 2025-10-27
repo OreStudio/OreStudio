@@ -23,13 +23,8 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.comms/protocol/frame.hpp"
-#include "ores.utility/log/logger.hpp"
-
 
 namespace {
-
-using namespace ores::utility::log;
-auto lg(logger_factory("ores.comms.protocol.frame"));
 
 std::uint32_t host_to_network_32(std::uint32_t val) {
     if constexpr (std::endian::native == std::endian::little)
@@ -43,8 +38,13 @@ std::uint16_t host_to_network_16(std::uint16_t val) {
     return val;
 }
 
-std::uint32_t network_to_host_32(std::uint32_t val) { return host_to_network_32(val); }
-std::uint16_t network_to_host_16(std::uint16_t val) { return host_to_network_16(val); }
+std::uint32_t network_to_host_32(std::uint32_t val) {
+    return host_to_network_32(val);
+}
+
+std::uint16_t network_to_host_16(std::uint16_t val) {
+    return host_to_network_16(val);
+}
 
 bool is_valid_message_type(std::uint16_t type) {
     using ores::comms::protocol::message_type;
@@ -55,6 +55,8 @@ bool is_valid_message_type(std::uint16_t type) {
 }
 
 namespace ores::comms::protocol {
+
+using namespace ores::utility::log;
 
 frame::frame() : header_{}, payload_{} {
     header_.magic = PROTOCOL_MAGIC;
@@ -68,7 +70,8 @@ frame::frame() : header_{}, payload_{} {
     header_.reserved2.fill(0);
 }
 
-frame::frame(message_type type, std::uint32_t sequence, std::vector<std::uint8_t> payload)
+frame::frame(message_type type,
+    std::uint32_t sequence, std::vector<std::uint8_t> payload)
     : header_{}, payload_(std::move(payload)) {
     header_.magic = PROTOCOL_MAGIC;
     header_.version_major = PROTOCOL_VERSION_MAJOR;
@@ -83,7 +86,8 @@ frame::frame(message_type type, std::uint32_t sequence, std::vector<std::uint8_t
 
 void frame::serialize_header(frame_header header, std::span<std::uint8_t> buffer) const {
     if (buffer.size() < frame_header::size) {
-        BOOST_LOG_SEV(lg, error) << "Buffer too small for header: " << buffer.size();
+        BOOST_LOG_SEV(lg(), error) << "Buffer too small for header: "
+                                   << buffer.size();
         throw std::runtime_error("Invalid buffer size");
     }
 
@@ -107,7 +111,8 @@ void frame::serialize_header(frame_header header, std::span<std::uint8_t> buffer
     write32(header.payload_size);
     write32(header.sequence);
     write32(header.crc);
-    std::memcpy(buffer.data() + offset, header.reserved2.data(), header.reserved2.size());
+    std::memcpy(buffer.data() + offset, header.reserved2.data(),
+        header.reserved2.size());
 }
 
 std::uint32_t frame::calculate_crc() const {
@@ -141,16 +146,19 @@ std::vector<std::uint8_t> frame::serialize() const {
         std::memcpy(result.data() + frame_header::size, payload_.data(), payload_.size());
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Serialised frame, type: " << static_cast<int>(header_with_crc.type)
-                             << ", size: " << result.size();
+    BOOST_LOG_SEV(lg(), debug) << "Serialised frame, type: " << static_cast<int>(header_with_crc.type)
+                               << ", size: " << result.size();
     return result;
 }
 
-std::expected<frame_header, error_code> frame::deserialize_header(std::span<const std::uint8_t> data) {
-    BOOST_LOG_SEV(lg, debug) << "Deserializing frame header from data of size: " << data.size();
+std::expected<frame_header, error_code>
+frame::deserialize_header(std::span<const std::uint8_t> data) {
+    BOOST_LOG_SEV(lg(), debug) << "Deserializing frame header from data of size: "
+                               << data.size();
 
     if (data.size() < frame_header::size) {
-        BOOST_LOG_SEV(lg, error) << "Data too short for header: " << data.size();
+        BOOST_LOG_SEV(lg(), error) << "Data too short for header: "
+                                   << data.size();
         return std::unexpected(error_code::invalid_message_type);
     }
 
@@ -174,7 +182,7 @@ std::expected<frame_header, error_code> frame::deserialize_header(std::span<cons
     header.version_minor = read16();
     std::uint16_t raw_type = read16();
     if (!is_valid_message_type(raw_type)) {
-        BOOST_LOG_SEV(lg, error) << "Invalid message type: " << raw_type;
+        BOOST_LOG_SEV(lg(), error) << "Invalid message type: " << raw_type;
         return std::unexpected(error_code::invalid_message_type);
     }
     header.type = static_cast<message_type>(raw_type);
@@ -188,38 +196,43 @@ std::expected<frame_header, error_code> frame::deserialize_header(std::span<cons
 
     // Validate header fields (but not CRC yet, as we don't have the payload)
     if (header.magic != PROTOCOL_MAGIC) {
-        BOOST_LOG_SEV(lg, error) << "Invalid magic number: " << header.magic;
+        BOOST_LOG_SEV(lg(), error) << "Invalid magic number: " << header.magic;
         return std::unexpected(error_code::invalid_message_type);
     }
     if (header.version_major != PROTOCOL_VERSION_MAJOR) {
-        BOOST_LOG_SEV(lg, error) << "Invalid major version: " << header.version_major;
+        BOOST_LOG_SEV(lg(), error) << "Invalid major version: "
+                                   << header.version_major;
         return std::unexpected(error_code::version_mismatch);
     }
     if (header.reserved1 != 0) {
-        BOOST_LOG_SEV(lg, error) << "Invalid reserved1 field";
+        BOOST_LOG_SEV(lg(), error) << "Invalid reserved1 field";
         return std::unexpected(error_code::invalid_message_type);
     }
-    if (std::ranges::any_of(header.reserved2, [](std::uint8_t v) { return v != 0; })) {
-        BOOST_LOG_SEV(lg, error) << "Invalid reserved2 field";
+    if (std::ranges::any_of(header.reserved2,
+            [](std::uint8_t v) { return v != 0; })) {
+        BOOST_LOG_SEV(lg(), error) << "Invalid reserved2 field";
         return std::unexpected(error_code::invalid_message_type);
     }
     if (header.payload_size > MAX_PAYLOAD_SIZE) {
-        BOOST_LOG_SEV(lg, error) << "Payload size too large: " << header.payload_size;
+        BOOST_LOG_SEV(lg(), error) << "Payload size too large: "
+                                   << header.payload_size;
         return std::unexpected(error_code::payload_too_large);
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Deserialized frame header: " << header;
+    BOOST_LOG_SEV(lg(), debug) << "Deserialised frame header: " << header;
     return header;
 }
 
-std::expected<frame, error_code> frame::deserialize(const frame_header& header, std::span<const std::uint8_t> data) {
-    BOOST_LOG_SEV(lg, debug) << "Deserializing frame with payload. Total data size: " << data.size();
+std::expected<frame, error_code> frame::
+deserialize(const frame_header& header, std::span<const std::uint8_t> data) {
+    BOOST_LOG_SEV(lg(), debug) << "Deserializing frame with payload. Total data size: "
+                               << data.size();
 
     // Check we have enough data for the complete frame
     const auto expected_size = frame_header::size + header.payload_size;
     if (data.size() < expected_size) {
-        BOOST_LOG_SEV(lg, error) << "Insufficient data for complete frame. Got: "
-                                 << data.size() << " Expected: " << expected_size;
+        BOOST_LOG_SEV(lg(), error) << "Insufficient data for complete frame. Got: "
+                                   << data.size() << " Expected: " << expected_size;
         return std::unexpected(error_code::invalid_message_type);
     }
 
@@ -234,42 +247,43 @@ std::expected<frame, error_code> frame::deserialize(const frame_header& header, 
     // Validate CRC
     std::uint32_t calculated_crc = f.calculate_crc();
     if (header.crc != calculated_crc) {
-        BOOST_LOG_SEV(lg, error) << "CRC validation failed. Expected: " << header.crc
-                                 << " Calculated: " << calculated_crc;
+        BOOST_LOG_SEV(lg(), error) << "CRC validation failed. Expected: " << header.crc
+                                   << " Calculated: " << calculated_crc;
         return std::unexpected(error_code::crc_validation_failed);
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Successfully deserialized frame, type: "
-                             << static_cast<int>(f.header_.type);
+    BOOST_LOG_SEV(lg(), debug) << "Successfully deserialized frame, type: "
+                               << static_cast<int>(f.header_.type);
     return f;
 }
 
 std::expected<void, error_code> frame::validate() const {
     // Check magic number
     if (header_.magic != PROTOCOL_MAGIC) {
-        BOOST_LOG_SEV(lg, warn) << "Invalid protocol magic: " << header_.magic;
+        BOOST_LOG_SEV(lg(), warn) << "Invalid protocol magic: "
+                                  << header_.magic;
         return std::unexpected(error_code::invalid_message_type);
     }
 
     // Check version compatibility (major version must match)
     if (header_.version_major != PROTOCOL_VERSION_MAJOR) {
-        BOOST_LOG_SEV(lg, warn) << "Invalid major version: "
-                                << header_.version_major;
+        BOOST_LOG_SEV(lg(), warn) << "Invalid major version: "
+                                  << header_.version_major;
         return std::unexpected(error_code::version_mismatch);
     }
 
     // Check payload size
     if (header_.payload_size != payload_.size()) {
-        BOOST_LOG_SEV(lg, warn) << "Payload size does not match message. Expected: "
-                                << header_.payload_size
-                                << " but got: " << payload_.size();
+        BOOST_LOG_SEV(lg(), warn) << "Payload size does not match message. Expected: "
+                                  << header_.payload_size
+                                  << " but got: " << payload_.size();
         return std::unexpected(error_code::invalid_message_type);
     }
 
     if (header_.payload_size > MAX_PAYLOAD_SIZE) {
-        BOOST_LOG_SEV(lg, warn) << "Payload size too large. Size: "
-                                << header_.payload_size
-                                << " Maximum: " << MAX_PAYLOAD_SIZE;
+        BOOST_LOG_SEV(lg(), warn) << "Payload size too large. Size: "
+                                  << header_.payload_size
+                                  << " Maximum: " << MAX_PAYLOAD_SIZE;
         return std::unexpected(error_code::invalid_message_type);
     }
 

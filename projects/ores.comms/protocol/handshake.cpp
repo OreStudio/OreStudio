@@ -23,7 +23,6 @@
 
 namespace ores::comms::protocol {
 
-// handshake_request implementation
 std::vector<std::uint8_t>
 handshake_request::serialize(handshake_request v) {
     auto bson_data = rfl::bson::write(v);
@@ -44,7 +43,6 @@ handshake_request::deserialize(std::span<const std::uint8_t> data) {
     return result.value();
 }
 
-// handshake_response implementation
 std::vector<std::uint8_t>
 handshake_response::serialize(handshake_response v) {
     auto bson_data = rfl::bson::write(v);
@@ -54,7 +52,8 @@ handshake_response::serialize(handshake_response v) {
     };
 }
 
-std::expected<handshake_response, error_code> handshake_response::deserialize(std::span<const std::uint8_t> data) {
+std::expected<handshake_response, error_code> handshake_response::
+deserialize(std::span<const std::uint8_t> data) {
     auto result = rfl::bson::read<handshake_response>(data.data(), data.size());
 
     if (!result) {
@@ -64,7 +63,6 @@ std::expected<handshake_response, error_code> handshake_response::deserialize(st
     return result.value();
 }
 
-// handshake_ack implementation
 std::vector<std::uint8_t>
 handshake_ack::serialize(handshake_ack v) {
     auto bson_data = rfl::bson::write(v);
@@ -74,7 +72,8 @@ handshake_ack::serialize(handshake_ack v) {
     };
 }
 
-std::expected<handshake_ack, error_code> handshake_ack::deserialize(std::span<const std::uint8_t> data) {
+std::expected<handshake_ack, error_code> handshake_ack::
+deserialize(std::span<const std::uint8_t> data) {
     auto result = rfl::bson::read<handshake_ack>(data.data(), data.size());
 
     if (!result) {

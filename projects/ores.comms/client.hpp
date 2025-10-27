@@ -23,11 +23,13 @@
 #include <mutex>
 #include <memory>
 #include <string>
+#include <iostream>
 #include <cstdint>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_context.hpp>
+#include "ores.utility/log/logger.hpp"
 #include "ores.comms/connection.hpp"
 
 namespace ores::comms {
@@ -65,6 +67,13 @@ std::ostream& operator<<(std::ostream& s, const client_options& v);
  * Connects to server via SSL, performs handshake, and manages communication.
  */
 class client final {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static logger instance = logger_factory("ores.comms.client");
+        return instance;
+    }
+
 public:
     /**
      * @brief Construct client with configuration.

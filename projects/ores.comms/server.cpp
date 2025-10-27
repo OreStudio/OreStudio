@@ -19,7 +19,6 @@
  */
 #include "ores.comms/server.hpp"
 #include "ores.comms/session.hpp"
-#include "ores.utility/log/logger.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/use_awaitable.hpp>
@@ -27,14 +26,9 @@
 #include <boost/asio/this_coro.hpp>
 #include <chrono>
 
-namespace {
+namespace ores::comms {
 
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.comms.server"));
-
-}
-
-namespace ores::comms {
 
 server::server(server_config config)
     : config_(std::move(config)),
@@ -60,14 +54,14 @@ void server::setup_ssl_context() {
     ssl_ctx_.use_certificate_chain_file(config_.certificate_file);
     ssl_ctx_.use_private_key_file(config_.private_key_file, ssl::context::pem);
 
-    BOOST_LOG_SEV(lg, info) << "SSL context configured with certificate: "
+    BOOST_LOG_SEV(lg(), info) << "SSL context configured with certificate: "
                              << config_.certificate_file;
 }
 
 boost::asio::awaitable<void> server::run(boost::asio::io_context& io_context) {
-    BOOST_LOG_SEV(lg, info) << "ORES Server starting on port " << config_.port
+    BOOST_LOG_SEV(lg(), info) << "ORES Server starting on port " << config_.port
                              << " (identifier: " << config_.server_identifier << ")";
-    BOOST_LOG_SEV(lg, info) << "Protocol version: "
+    BOOST_LOG_SEV(lg(), info) << "Protocol version: "
                              << protocol::PROTOCOL_VERSION_MAJOR << "."
                              << protocol::PROTOCOL_VERSION_MINOR;
 
@@ -79,13 +73,13 @@ boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_con
         co_await boost::asio::this_coro::executor,
         tcp::endpoint(tcp::v4(), config_.port));
 
-    BOOST_LOG_SEV(lg, info) << "Server listening on port " << config_.port;
+    BOOST_LOG_SEV(lg(), info) << "Server listening on port " << config_.port;
 
     while (true) {
         try {
             // Wait if we've reached max connections
             while (active_connections_.load() >= config_.max_connections) {
-                BOOST_LOG_SEV(lg, info) << "Max connections (" << config_.max_connections
+                BOOST_LOG_SEV(lg(), info) << "Max connections (" << config_.max_connections
                                          << ") reached, waiting...";
                 boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
                 timer.expires_after(std::chrono::milliseconds(100));
@@ -94,7 +88,7 @@ boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_con
 
             // Accept new connection
             tcp::socket socket = co_await acceptor.async_accept(boost::asio::use_awaitable);
-            BOOST_LOG_SEV(lg, info) << "Accepted connection from "
+            BOOST_LOG_SEV(lg(), info) << "Accepted connection from "
                                      << socket.remote_endpoint().address().to_string()
                                      << ":" << socket.remote_endpoint().port();
 
@@ -114,7 +108,7 @@ boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_con
                 [sess, this]() -> boost::asio::awaitable<void> {
                     co_await sess->run();
                     --active_connections_;
-                    BOOST_LOG_SEV(lg, debug) << "Session completed, active connections: "
+                    BOOST_LOG_SEV(lg(), debug) << "Session completed, active connections: "
                                               << active_connections_.load();
                 },
                 boost::asio::detached);
@@ -122,12 +116,12 @@ boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_con
         } catch (const boost::system::system_error& e) {
             // Check if operation was cancelled (shutdown signal)
             if (e.code() == boost::asio::error::operation_aborted) {
-                BOOST_LOG_SEV(lg, info) << "Server shutting down...";
+                BOOST_LOG_SEV(lg(), info) << "Server shutting down...";
                 break;
             }
-            BOOST_LOG_SEV(lg, error) << "Accept loop error: " << e.what();
+            BOOST_LOG_SEV(lg(), error) << "Accept loop error: " << e.what();
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg, error) << "Accept loop error: " << e.what();
+            BOOST_LOG_SEV(lg(), error) << "Accept loop error: " << e.what();
         }
     }
 }

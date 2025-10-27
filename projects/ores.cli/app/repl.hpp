@@ -28,6 +28,7 @@
 #include <thread>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
+#include "ores.utility/log/logger.hpp"
 #include "ores.comms/client.hpp"
 
 namespace cli {
@@ -44,6 +45,13 @@ namespace ores::cli::app {
  * including commands for connection management and data retrieval.
  */
 class repl final {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static logger instance = logger_factory("ores.cli.app.repl");
+        return instance;
+    }
+
 public:
     /**
      * @brief Construct a REPL instance.

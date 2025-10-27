@@ -27,10 +27,11 @@
 #include <vector>
 #include <filesystem>
 #include <boost/asio/awaitable.hpp>
+#include "ores.utility/log/logger.hpp"
+#include "ores.utility/repository/context.hpp"
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
 #include "ores.cli/config/export_options.hpp"
-#include "ores.utility/repository/context.hpp"
 
 namespace ores::cli::app {
 
@@ -38,6 +39,13 @@ namespace ores::cli::app {
  * @brief Entry point for the ores command line application.
  */
 class application final {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static logger instance = logger_factory("ores.cli.application");
+        return instance;
+    }
+
 public:
     application();
     application(const application&) = delete;

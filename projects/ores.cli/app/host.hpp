@@ -28,6 +28,7 @@
 #include <string>
 #include <exception>
 #include <boost/asio/awaitable.hpp>
+#include "ores.utility/log/logger.hpp"
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
 
 namespace ores::cli::app {
@@ -36,6 +37,13 @@ namespace ores::cli::app {
  * @brief Hosts the console application.
  */
 class host {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static logger instance = logger_factory("ores.cli.app.host");
+        return instance;
+    }
+
 public:
     /**
      * @brief Reports exceptions to the log and console.

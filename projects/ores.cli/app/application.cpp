@@ -24,7 +24,6 @@
 #include <sqlgen/postgres.hpp>
 #include <magic_enum/magic_enum.hpp>
 #include "ores.cli/config/export_options.hpp"
-#include "ores.utility/log/logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp"
 #include "ores.utility/repository/context_factory.hpp"
 #include "ores.risk/orexml/importer.hpp"
@@ -34,17 +33,11 @@
 #include "ores.cli/app/application.hpp"
 #include "ores.cli/app/repl.hpp"
 
-namespace {
-
-using namespace ores::utility::log;
-auto lg(logger_factory("ores.cli.application"));
-
-}
-
 namespace ores::cli::app {
 
 using risk::orexml::importer;
 using risk::orexml::exporter;
+using namespace ores::utility::log;
 using ores::risk::domain::currency;
 using risk::repository::currency_repository;
 using connection = sqlgen::Result<rfl::Ref<sqlgen::postgres::Connection>>;
@@ -66,13 +59,13 @@ utility::repository::context application::make_context() {
 }
 
 application::application() : context_(make_context()) {
-    BOOST_LOG_SEV(lg, debug) << "Creating application.";
+    BOOST_LOG_SEV(lg(), debug) << "Creating application.";
 }
 
 void application::
 import_currencies(const std::vector<std::filesystem::path> files) const {
     for (const auto& f : files) {
-        BOOST_LOG_SEV(lg, debug) << "Processing file: " << f;
+        BOOST_LOG_SEV(lg(), debug) << "Processing file: " << f;
         auto ccys(importer::import_currency_config(f));
         currency_repository rp;
         rp.write(context_, ccys);
@@ -83,7 +76,7 @@ import_currencies(const std::vector<std::filesystem::path> files) const {
 void application::
 import_data(const std::optional<config::import_options>& ocfg) const {
     if (!ocfg.has_value()) {
-        BOOST_LOG_SEV(lg, debug) << "No importing configuration found.";
+        BOOST_LOG_SEV(lg(), debug) << "No importing configuration found.";
         return;
     }
 
@@ -101,24 +94,24 @@ import_data(const std::optional<config::import_options>& ocfg) const {
 
 void application::
 export_currencies(const config::export_options& cfg) const {
-    BOOST_LOG_SEV(lg, debug) << "Exporting currency configurations.";
+    BOOST_LOG_SEV(lg(), debug) << "Exporting currency configurations.";
     risk::repository::currency_repository rp;
 
     const auto reader([&]() {
         if (cfg.all_versions) {
-            BOOST_LOG_SEV(lg, debug) << "Reading all versions for currencies.";
+            BOOST_LOG_SEV(lg(), debug) << "Reading all versions for currencies.";
             if (cfg.key.empty())
                 return rp.read_all(context_);
             else
                 return rp.read_all(context_, cfg.key);
         } else if (cfg.as_of.empty()) {
-            BOOST_LOG_SEV(lg, debug) << "Reading latest currencies.";
+            BOOST_LOG_SEV(lg(), debug) << "Reading latest currencies.";
             if (cfg.key.empty())
                 return rp.read_latest(context_);
             else
                 return rp.read_latest(context_, cfg.key);
         }
-        BOOST_LOG_SEV(lg, debug) << "Reading currencies as of: " << cfg.as_of;
+        BOOST_LOG_SEV(lg(), debug) << "Reading currencies as of: " << cfg.as_of;
         if (cfg.key.empty())
             return rp.read_at_timepoint(context_, cfg.as_of);
         else
@@ -137,7 +130,7 @@ export_currencies(const config::export_options& cfg) const {
 void application::
 export_data(const std::optional<config::export_options>& ocfg) const {
     if (!ocfg.has_value()) {
-        BOOST_LOG_SEV(lg, debug) << "No dumping configuration found.";
+        BOOST_LOG_SEV(lg(), debug) << "No dumping configuration found.";
         return;
     }
 
@@ -156,21 +149,21 @@ export_data(const std::optional<config::export_options>& ocfg) const {
 
 boost::asio::awaitable<void>
 application::run_client() const {
-    BOOST_LOG_SEV(lg, info) << "Starting client REPL";
+    BOOST_LOG_SEV(lg(), info) << "Starting client REPL";
 
     try {
         repl client_repl;
         client_repl.run();
-        BOOST_LOG_SEV(lg, info) << "Client REPL session ended";
+        BOOST_LOG_SEV(lg(), info) << "Client REPL session ended";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg, error) << "Client REPL error: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Client REPL error: " << e.what();
     }
 
     co_return;
 }
 
 boost::asio::awaitable<void> application::run(const config::options& cfg) const {
-    BOOST_LOG_SEV(lg, info) << "Started application.";
+    BOOST_LOG_SEV(lg(), info) << "Started application.";
 
     import_data(cfg.importing);
     export_data(cfg.exporting);
@@ -178,7 +171,7 @@ boost::asio::awaitable<void> application::run(const config::options& cfg) const 
     if (cfg.client)
         co_await run_client();
 
-    BOOST_LOG_SEV(lg, info) << "Finished application.";
+    BOOST_LOG_SEV(lg(), info) << "Finished application.";
 }
 
 }

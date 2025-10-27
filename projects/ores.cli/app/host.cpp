@@ -21,24 +21,14 @@
 #include <ostream>
 #include <iostream>
 #include <boost/exception/diagnostic_information.hpp>
-#include "ores.utility/log/logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.cli/app/application.hpp"
 #include "ores.cli/config/parser.hpp"
 #include "ores.cli/app/host.hpp"
 
-namespace {
-
-using namespace ores::utility::log;
-auto lg(logger_factory("ores.cli.host"));
-
-const std::string error_prefix("Error: ");
-const std::string activity_failure("Failed to execute command.");
-
-}
-
 namespace ores::cli::app {
 
+using namespace ores::utility::log;
 using ores::cli::config::parser;
 using ores::utility::log::scoped_lifecycle_manager;
 
@@ -47,8 +37,8 @@ void host::report_exception(const bool can_log, const std::exception& e) {
      * Dump to the console first. Here we just want to make our output as
      * humanly readable as possible.
      */
-    std::cerr << error_prefix << e.what() << std::endl;
-    std::cerr << activity_failure << std::endl;
+    std::cerr << "Error: " << e.what() << std::endl;
+    std::cerr << "Failed to execute command." << std::endl;
 
     if (!can_log)
         return;
@@ -65,8 +55,8 @@ void host::report_exception(const bool can_log, const std::exception& e) {
         return;
 
     using boost::diagnostic_information;
-    BOOST_LOG_SEV(lg, error) << error_prefix << diagnostic_information(*be);
-    BOOST_LOG_SEV(lg, error) << activity_failure;
+    BOOST_LOG_SEV(lg(), error) << "Error: " << diagnostic_information(*be);
+    BOOST_LOG_SEV(lg(), error) << "Failed to execute command.";
 }
 
 boost::asio::awaitable<int> host::execute(const std::vector<std::string>& args,
@@ -97,8 +87,8 @@ boost::asio::awaitable<int> host::execute(const std::vector<std::string>& args,
     /*
      * Log the configuration and command line arguments.
      */
-    BOOST_LOG_SEV(lg, info) << "Command line arguments: " << args;
-    BOOST_LOG_SEV(lg, debug) << "Configuration: " << cfg;
+    BOOST_LOG_SEV(lg(), info) << "Command line arguments: " << args;
+    BOOST_LOG_SEV(lg(), debug) << "Configuration: " << cfg;
 
     /*
      * Execute the application.

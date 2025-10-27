@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_MESSAGING_REGISTRATION_HPP
-#define ORES_ACCOUNTS_MESSAGING_REGISTRATION_HPP
+#ifndef ORES_ACCOUNTS_MESSAGING_REGISTRAR_HPP
+#define ORES_ACCOUNTS_MESSAGING_REGISTRAR_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -43,7 +43,8 @@ class registrar {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static logger instance = logger_factory("ores.accounts.messaging.registrar");
+        static logger instance = logger_factory(
+            "ores.accounts.messaging.registrar");
         return instance;
     }
 

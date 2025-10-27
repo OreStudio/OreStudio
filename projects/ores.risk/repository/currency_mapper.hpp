@@ -24,6 +24,7 @@
 #pragma once
 #endif
 
+#include "ores.utility/log/logger.hpp"
 #include "ores.risk/domain/currency.hpp"
 #include "ores.risk/repository/currency_entity.hpp"
 
@@ -33,6 +34,14 @@ namespace ores::risk::repository {
  * @brief Maps domain model entities to data storage layer and vice-versa.
  */
 class currency_mapper {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static logger instance = logger_factory(
+            "ores.risk.repository.currency_mapper");
+        return instance;
+    }
+
 public:
     static domain::currency map(const currency_entity& v);
     static currency_entity map(const domain::currency& v);

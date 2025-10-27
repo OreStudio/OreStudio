@@ -26,15 +26,12 @@ namespace ores::risk::messaging {
 
 using namespace ores::utility::messaging;
 
-// get_currencies_request implementation
 std::vector<std::uint8_t> get_currencies_request::serialize() const {
-    // Empty payload - no parameters
     return {};
 }
 
 std::expected<get_currencies_request, comms::protocol::error_code>
 get_currencies_request::deserialize(std::span<const std::uint8_t> data) {
-    // Empty payload expected
     if (!data.empty()) {
         return std::unexpected(comms::protocol::error_code::payload_too_large);
     }

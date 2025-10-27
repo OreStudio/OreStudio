@@ -17,20 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/log/logger.hpp"
 #include "ores.risk/orexml/currency_mapper.hpp"
-
-namespace {
-
-using namespace ores::utility::log;
-auto lg(logger_factory("ores.risk.orexml.currency_mapper"));
-
-}
 
 namespace ores::risk::orexml {
 
+using namespace ores::utility::log;
+
 domain::currency currency_mapper::map(const CurrencyElement& v) {
-    BOOST_LOG_SEV(lg, debug) << "Mapping ORE XML entity: " << v;
+    BOOST_LOG_SEV(lg(), debug) << "Mapping ORE XML entity: " << v;
 
     domain::currency r;
     r.iso_code = v.ISOCode;
@@ -44,12 +38,12 @@ domain::currency currency_mapper::map(const CurrencyElement& v) {
     r.format = v.Format;
     r.currency_type = v.CurrencyType ? *v.CurrencyType : "";
 
-    BOOST_LOG_SEV(lg, debug) << "Mapped db entity. Result: " << r;
+    BOOST_LOG_SEV(lg(), debug) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 CurrencyElement currency_mapper::map(const domain::currency& v) {
-    BOOST_LOG_SEV(lg, debug) << "Mapping domain entity: " << v;
+    BOOST_LOG_SEV(lg(), debug) << "Mapping domain entity: " << v;
 
     CurrencyElement r;
     r.ISOCode = v.iso_code;
@@ -63,30 +57,30 @@ CurrencyElement currency_mapper::map(const domain::currency& v) {
     r.Format = v.format;
     r.CurrencyType = v.currency_type;
 
-    BOOST_LOG_SEV(lg, debug) << "Mapped domain entity. Result: " << r;
+    BOOST_LOG_SEV(lg(), debug) << "Mapped domain entity. Result: " << r;
     return r;
 }
 
 std::vector<domain::currency> currency_mapper::map(const CurrencyConfig& v) {
-    BOOST_LOG_SEV(lg, debug) << "Mapping ORE XML entities. Total: "
+    BOOST_LOG_SEV(lg(), debug) << "Mapping ORE XML entities. Total: "
                              << v.Currency.size();
 
     std::vector<domain::currency> r;
     r.reserve(v.Currency.size());
     std::ranges::transform(v.Currency, std::back_inserter(r),
         [](const auto& ve) { return map(ve); });
-    BOOST_LOG_SEV(lg, debug) << "Mapped domain entities.";
+    BOOST_LOG_SEV(lg(), debug) << "Mapped domain entities.";
     return r;
 }
 
 CurrencyConfig currency_mapper::map(const std::vector<domain::currency>& v) {
-    BOOST_LOG_SEV(lg, debug) << "Mapping domain entities. Total: " << v.size();
+    BOOST_LOG_SEV(lg(), debug) << "Mapping domain entities. Total: " << v.size();
 
     CurrencyConfig r;
     r.Currency.reserve(v.size());
     std::ranges::transform(v, std::back_inserter(r.Currency),
         [](const auto& ve) { return map(ve); });
-    BOOST_LOG_SEV(lg, debug) << "Mapped domain entities.";
+    BOOST_LOG_SEV(lg(), debug) << "Mapped domain entities.";
     return r;
 }
 

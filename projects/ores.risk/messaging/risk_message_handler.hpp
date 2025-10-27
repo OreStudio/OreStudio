@@ -21,6 +21,7 @@
 #define ORES_RISK_MESSAGING_RISK_MESSAGE_HANDLER_HPP
 
 #include "ores.comms/protocol/message_handler.hpp"
+#include "ores.utility/log/logger.hpp"
 #include "ores.utility/repository/context.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
 
@@ -34,6 +35,14 @@ namespace ores::risk::messaging {
  * - get_currencies_request: Retrieves all currencies from the repository
  */
 class risk_message_handler final : public comms::protocol::message_handler {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static logger instance = logger_factory(
+            "ores.risk.messaging.risk_message_handler");
+        return instance;
+    }
+
 public:
     /**
      * @brief Construct a risk message handler.

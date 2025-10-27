@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 #include <sqlgen/postgres.hpp>
+#include "ores.utility/log/logger.hpp"
 #include "ores.utility/repository/context.hpp"
 #include "ores.risk/domain/currency.hpp"
 
@@ -36,6 +37,19 @@ namespace ores::risk::repository {
  * @brief Reads and writes currencies off of data storage.
  */
 class currency_repository {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static logger instance = logger_factory(
+            "ores.risk.repository.currency_repository");
+        return instance;
+    }
+
+    const std::string max_timestamp = "9999-12-31 23:59:59";
+
+    void ensure_success(const auto result);
+    auto make_timestamp(const std::string& s);
+
 public:
     using context = ores::utility::repository::context;
 

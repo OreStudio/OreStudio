@@ -28,7 +28,6 @@
 #include <boost/asio/this_coro.hpp>
 #include <boost/log/sources/record_ostream.hpp>
 #include "ores.comms/client.hpp"
-#include "ores.utility/log/severity_level.hpp"
 #include "ores.comms/protocol/handshake.hpp"
 
 namespace ores::comms {
@@ -71,7 +70,8 @@ void client::setup_ssl_context() {
 
 boost::asio::awaitable<bool> client::connect() {
     try {
-        BOOST_LOG_SEV(lg(), info) << "Connecting to " << config_.host << ":" << config_.port;
+        BOOST_LOG_SEV(lg(), info) << "Connecting to " << config_.host
+                                  << ":" << config_.port;
 
         // Get the executor from the current coroutine context
         auto exec = co_await boost::asio::this_coro::executor;
@@ -132,19 +132,19 @@ boost::asio::awaitable<bool> client::perform_handshake() {
         BOOST_LOG_SEV(lg(), debug) << "About to send handshake request frame.";
         co_await conn_->write_frame(request_frame);
         BOOST_LOG_SEV(lg(), info) << "Sent handshake request. Client: "
-                                << config_.client_identifier
-                                << " Version: "
-                                << protocol::PROTOCOL_VERSION_MAJOR
-                                << "."
-                                << protocol::PROTOCOL_VERSION_MINOR;
+                                  << config_.client_identifier
+                                  << " Version: "
+                                  << protocol::PROTOCOL_VERSION_MAJOR
+                                  << "."
+                                  << protocol::PROTOCOL_VERSION_MINOR;
 
         // Read handshake response
         BOOST_LOG_SEV(lg(), debug) << "About to read handshake response frame";
         auto response_frame_result = co_await conn_->read_frame();
         if (!response_frame_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to read handshake response. "
-                                     << " Error code: "
-                                     << static_cast<int>(response_frame_result.error());
+                                       << " Error code: "
+                                       << static_cast<int>(response_frame_result.error());
             co_return false;
         }
 
@@ -153,7 +153,7 @@ boost::asio::awaitable<bool> client::perform_handshake() {
         // Verify message type
         if (response_frame.header().type != protocol::message_type::handshake_response) {
             BOOST_LOG_SEV(lg(), error) << "Expected handshake response, got message type: "
-                                     << static_cast<int>(response_frame.header().type);
+                                       << static_cast<int>(response_frame.header().type);
             co_return false;
         }
 
@@ -166,11 +166,11 @@ boost::asio::awaitable<bool> client::perform_handshake() {
 
         const auto& response = *response_result;
         BOOST_LOG_SEV(lg(), info) << "Received handshake response (server: "
-                                << response.server_identifier << " version: "
-                                << response.server_version_major
-                                << "." << response.server_version_minor
-                                << ". Compatible: "
-                                << response.version_compatible;
+                                  << response.server_identifier << " version: "
+                                  << response.server_version_major
+                                  << "." << response.server_version_minor
+                                  << ". Compatible: "
+                                  << response.version_compatible;
 
         // Check compatibility
         if (!response.version_compatible) {
@@ -179,7 +179,8 @@ boost::asio::awaitable<bool> client::perform_handshake() {
         }
 
         if (response.status != protocol::error_code::none) {
-            BOOST_LOG_SEV(lg(), error) << "Server reported error: " << static_cast<int>(response.status);
+            BOOST_LOG_SEV(lg(), error) << "Server reported error: "
+                                       << static_cast<int>(response.status);
             co_return false;
         }
 
@@ -241,7 +242,7 @@ client::send_request(protocol::frame request_frame) {
             std::vector<std::uint8_t>(request_frame.payload()));
 
         BOOST_LOG_SEV(lg(), debug) << "Sending request frame, type: "
-                                 << std::hex << static_cast<std::uint16_t>(request_frame.header().type);
+                                   << std::hex << static_cast<std::uint16_t>(request_frame.header().type);
 
         // Send request
         co_await conn_->write_frame(request_frame);
@@ -250,12 +251,12 @@ client::send_request(protocol::frame request_frame) {
         auto response_result = co_await conn_->read_frame();
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to read response frame, error: "
-                                     << static_cast<int>(response_result.error());
+                                       << static_cast<int>(response_result.error());
             co_return std::unexpected(response_result.error());
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Received response frame, type: "
-                                 << std::hex << static_cast<std::uint16_t>(response_result->header().type);
+                                   << std::hex << static_cast<std::uint16_t>(response_result->header().type);
 
         co_return *response_result;
 

@@ -30,7 +30,6 @@ namespace ores::accounts::messaging {
 
 using namespace ores::utility::messaging;
 
-// create_account_request implementation
 std::vector<std::uint8_t> create_account_request::serialize() const {
     std::vector<std::uint8_t> buffer;
     write_string(buffer, username);
@@ -202,7 +201,6 @@ std::ostream& operator<<(std::ostream& s, const list_accounts_response& v)
     return(s);
 }
 
-// login_request implementation
 std::vector<std::uint8_t> login_request::serialize() const {
     std::vector<std::uint8_t> buffer;
     write_string(buffer, username);
@@ -231,7 +229,6 @@ std::ostream& operator<<(std::ostream& s, const login_request& v)
     return(s);
 }
 
-// login_response implementation
 std::vector<std::uint8_t> login_response::serialize() const {
     std::vector<std::uint8_t> buffer;
     write_bool(buffer, success);
@@ -275,7 +272,6 @@ std::ostream& operator<<(std::ostream& s, const login_response& v)
     return(s);
 }
 
-// unlock_account_request implementation
 std::vector<std::uint8_t> unlock_account_request::serialize() const {
     std::vector<std::uint8_t> buffer;
     write_uuid(buffer, account_id);
@@ -299,7 +295,6 @@ std::ostream& operator<<(std::ostream& s, const unlock_account_request& v)
     return(s);
 }
 
-// unlock_account_response implementation
 std::vector<std::uint8_t> unlock_account_response::serialize() const {
     std::vector<std::uint8_t> buffer;
     write_bool(buffer, success);

@@ -18,31 +18,23 @@
  *
  */
 #include <memory>
-#include "ores.accounts/messaging/registration.hpp"
+#include "ores.accounts/messaging/registrar.hpp"
 #include "ores.accounts/messaging/accounts_message_handler.hpp"
-#include "ores.utility/log/logger.hpp"
-
-namespace {
-
-using namespace ores::utility::log;
-auto lg(logger_factory("ores.accounts.messaging.registration"));
-
-}
 
 namespace ores::accounts::messaging {
 
-void register_accounts_handlers(comms::server& server,
-    utility::repository::context ctx) {
-    BOOST_LOG_SEV(lg, info) << "Registering accounts subsystem message handlers";
+using namespace ores::utility::log;
 
-    // Create handler for accounts subsystem
+void registrar::
+register_handlers(comms::server& server, utility::repository::context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Registering message handlers.";
+
     auto handler = std::make_shared<accounts_message_handler>(std::move(ctx));
 
-    // Register for accounts message type range
     comms::protocol::message_type_range accounts_range{.min=0x2000, .max=0x2FFF};
     server.register_handler(accounts_range, std::move(handler));
 
-    BOOST_LOG_SEV(lg, info) << "Accounts subsystem message handlers registered successfully";
+    BOOST_LOG_SEV(lg(), debug) << "Message handlers registered successfully.";
 }
 
 }

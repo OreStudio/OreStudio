@@ -18,20 +18,14 @@
  *
  */
 #include <algorithm>
-#include "ores.utility/log/logger.hpp"
 #include "ores.accounts/repository/feature_flags_mapper.hpp"
-
-namespace {
-
-using namespace ores::utility::log;
-auto lg(logger_factory("ores.accounts.repository.feature_flags_mapper"));
-
-}
 
 namespace ores::accounts::repository {
 
+using namespace ores::utility::log;
+
 domain::feature_flags feature_flags_mapper::map(const feature_flags_entity& v) {
-    BOOST_LOG_SEV(lg, debug) << "Mapping db entity: " << v;
+    BOOST_LOG_SEV(lg(), debug) << "Mapping db entity: " << v;
 
     domain::feature_flags r;
     r.name = v.name.value();
@@ -39,12 +33,12 @@ domain::feature_flags feature_flags_mapper::map(const feature_flags_entity& v) {
     r.description = v.description;
     r.modified_by = v.modified_by;
 
-    BOOST_LOG_SEV(lg, debug) << "Mapped db entity. Result: " << r;
+    BOOST_LOG_SEV(lg(), debug) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 feature_flags_entity feature_flags_mapper::map(const domain::feature_flags& v) {
-    BOOST_LOG_SEV(lg, debug) << "Mapping domain entity: " << v;
+    BOOST_LOG_SEV(lg(), debug) << "Mapping domain entity: " << v;
 
     feature_flags_entity r;
     r.name = v.name;
@@ -52,32 +46,32 @@ feature_flags_entity feature_flags_mapper::map(const domain::feature_flags& v) {
     r.description = v.description;
     r.modified_by = v.modified_by;
 
-    BOOST_LOG_SEV(lg, debug) << "Mapped domain entity. Result: " << r;
+    BOOST_LOG_SEV(lg(), debug) << "Mapped domain entity. Result: " << r;
     return r;
 }
 
 std::vector<domain::feature_flags>
 feature_flags_mapper::map(const std::vector<feature_flags_entity>& v) {
-    BOOST_LOG_SEV(lg, debug) << "Mapping db entities. Total: " << v.size();
+    BOOST_LOG_SEV(lg(), debug) << "Mapping db entities. Total: " << v.size();
 
     std::vector<domain::feature_flags> r;
     r.reserve(v.size());
     std::ranges::transform(v, std::back_inserter(r),
         [](const auto& ve) { return map(ve); });
 
-    BOOST_LOG_SEV(lg, debug) << "Mapped db entities.";
+    BOOST_LOG_SEV(lg(), debug) << "Mapped db entities.";
     return r;
 }
 
 std::vector<feature_flags_entity>
 feature_flags_mapper::map(const std::vector<domain::feature_flags>& v) {
-    BOOST_LOG_SEV(lg, debug) << "Mapping domain entities. Count: " << v.size();
+    BOOST_LOG_SEV(lg(), debug) << "Mapping domain entities. Count: " << v.size();
 
     std::vector<feature_flags_entity> r;
     r.reserve(v.size());
     std::ranges::transform(v, std::back_inserter(r),
         [](const auto& ve) { return map(ve); });
-    BOOST_LOG_SEV(lg, debug) << "Mapped domain entities.";
+    BOOST_LOG_SEV(lg(), debug) << "Mapped domain entities.";
     return r;
 }
 

@@ -25,6 +25,7 @@
 #endif
 
 #include "ores.comms/server.hpp"
+#include "ores.utility/log/logger.hpp"
 #include "ores.utility/repository/context.hpp"
 
 namespace ores::accounts::messaging {
@@ -38,8 +39,18 @@ namespace ores::accounts::messaging {
  * @param server The server to register handlers with
  * @param ctx Database context for repository access
  */
-void register_accounts_handlers(comms::server& server,
-    utility::repository::context ctx);
+class registrar {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static logger instance = logger_factory("ores.accounts.messaging.registrar");
+        return instance;
+    }
+
+public:
+    static void register_handlers(comms::server& server,
+        utility::repository::context ctx);
+};
 
 }
 

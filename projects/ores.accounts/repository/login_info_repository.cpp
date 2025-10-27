@@ -21,45 +21,38 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/asio/ip/address.hpp>
-#include "ores.utility/log/logger.hpp"
 #include "ores.utility/repository/repository_exception.hpp"
 #include "ores.accounts/repository/login_info_mapper.hpp"
 #include "ores.accounts/repository/login_info_entity.hpp"
 #include "ores.accounts/repository/login_info_repository.hpp"
 
-namespace {
+namespace ores::accounts::repository {
 
+using namespace sqlgen;
+using namespace sqlgen::literals;
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.accounts.repository.login_info_repository"));
 using ores::utility::repository::repository_exception;
 
-void ensure_success(const auto result) {
+void login_info_repository::ensure_success(const auto result) {
     if (!result) {
-        BOOST_LOG_SEV(lg, severity_level::error) << result.error().what();
+        BOOST_LOG_SEV(lg(), severity_level::error) << result.error().what();
         BOOST_THROW_EXCEPTION(
             repository_exception(std::format("Repository error: {}",
                     result.error().what())));
     }
 }
 
-}
-
-namespace ores::accounts::repository {
-
-using namespace sqlgen;
-using namespace sqlgen::literals;
-
 std::string login_info_repository::sql() {
     const auto query = create_table<login_info_entity> | if_not_exists;
     const auto sql = postgres::to_sql(query);
 
-    BOOST_LOG_SEV(lg, debug) << sql;
+    BOOST_LOG_SEV(lg(), debug) << sql;
     return sql;
 }
 
 void login_info_repository::
 write(context ctx, const std::vector<domain::login_info>& login_infos) {
-    BOOST_LOG_SEV(lg, debug) << "Writing login_info to database. Count: "
+    BOOST_LOG_SEV(lg(), debug) << "Writing login_info to database. Count: "
                              << login_infos.size();
 
     const auto r = session(ctx.connection_pool())
@@ -68,12 +61,12 @@ write(context ctx, const std::vector<domain::login_info>& login_infos) {
         .and_then(commit);
     ensure_success(r);
 
-    BOOST_LOG_SEV(lg, debug) << "Finished writing login_info to database.";
+    BOOST_LOG_SEV(lg(), debug) << "Finished writing login_info to database.";
 }
 
 void login_info_repository::
 update(context ctx, const domain::login_info& login_info) {
-    BOOST_LOG_SEV(lg, debug) << "Updating login_info for account: "
+    BOOST_LOG_SEV(lg(), debug) << "Updating login_info for account: "
                              << boost::uuids::to_string(login_info.account_id);
 
     auto entity = login_info_mapper::map(login_info);
@@ -92,24 +85,24 @@ update(context ctx, const domain::login_info& login_info) {
         .and_then(commit);
     ensure_success(r);
 
-    BOOST_LOG_SEV(lg, debug) << "Finished updating login_info.";
+    BOOST_LOG_SEV(lg(), debug) << "Finished updating login_info.";
 }
 
 std::vector<domain::login_info> login_info_repository::read(context ctx) {
-    BOOST_LOG_SEV(lg, debug) << "Reading all login_info.";
+    BOOST_LOG_SEV(lg(), debug) << "Reading all login_info.";
 
     const auto query = sqlgen::read<std::vector<login_info_entity>>;
 
     const auto r = session(ctx.connection_pool())
         .and_then(query);
     ensure_success(r);
-    BOOST_LOG_SEV(lg, debug) << "Read all login_info. Total: " << r->size();
+    BOOST_LOG_SEV(lg(), debug) << "Read all login_info. Total: " << r->size();
     return login_info_mapper::map(*r);
 }
 
 std::vector<domain::login_info>
 login_info_repository::read(context ctx, const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg, debug) << "Reading login_info for account: " << account_id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading login_info for account: " << account_id;
 
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
     const auto query = sqlgen::read<std::vector<login_info_entity>> |
@@ -117,7 +110,7 @@ login_info_repository::read(context ctx, const boost::uuids::uuid& account_id) {
 
     const auto r = session(ctx.connection_pool()).and_then(query);
     ensure_success(r);
-    BOOST_LOG_SEV(lg, debug) << "Read login_info. Total: " << r->size();
+    BOOST_LOG_SEV(lg(), debug) << "Read login_info. Total: " << r->size();
     return login_info_mapper::map(*r);
 }
 

@@ -28,6 +28,7 @@
 #include <vector>
 #include <boost/uuid/uuid.hpp>
 #include <sqlgen/postgres.hpp>
+#include "ores.utility/log/logger.hpp"
 #include "ores.utility/repository/context.hpp"
 #include "ores.accounts/domain/login_info.hpp"
 
@@ -37,6 +38,16 @@ namespace ores::accounts::repository {
  * @brief Reads and writes login tracking information off of data storage.
  */
 class login_info_repository {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static logger instance = logger_factory(
+            "ores.accounts.repository.login_info_repository");
+        return instance;
+    }
+
+    static void ensure_success(const auto result);
+
 public:
     using context = ores::utility::repository::context;
 

@@ -25,6 +25,7 @@
 #endif
 
 #include <vector>
+#include "ores.utility/log/logger.hpp"
 #include "ores.accounts/domain/feature_flags.hpp"
 #include "ores.accounts/repository/feature_flags_entity.hpp"
 
@@ -34,6 +35,14 @@ namespace ores::accounts::repository {
  * @brief Maps feature flags domain model entities to data storage layer and vice-versa.
  */
 class feature_flags_mapper {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static logger instance = logger_factory(
+            "ores.accounts.repository.feature_flags_mapper");
+        return instance;
+    }
+
 public:
     static domain::feature_flags map(const feature_flags_entity& v);
     static feature_flags_entity map(const domain::feature_flags& v);

@@ -19,15 +19,13 @@
  */
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
-#include "ores.utility/log/logger.hpp"
 #include "ores.accounts/repository/login_info_mapper.hpp"
 
-namespace {
+namespace ores::accounts::repository {
 
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.accounts.repository.login_info_mapper"));
 
-std::chrono::system_clock::time_point
+std::chrono::system_clock::time_point login_info_mapper::
 timestamp_to_timepoint(const sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">& ts) {
     const auto str = ts.str();
     std::tm tm = {};
@@ -36,23 +34,20 @@ timestamp_to_timepoint(const sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">& ts) {
     return std::chrono::system_clock::from_time_t(std::mktime(&tm));
 }
 
-sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
+sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> login_info_mapper::
 timepoint_to_timestamp(const std::chrono::system_clock::time_point& tp) {
     const auto s = std::format("{:%Y-%m-%d %H:%M:%S}", tp);
     const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(s);
     if (!r) {
-        BOOST_LOG_SEV(lg, error) << "Error converting timepoint to timestamp";
+        BOOST_LOG_SEV(lg(), error) << "Error converting timepoint to timestamp";
         return {};
     }
     return r.value();
 }
 
-}
-
-namespace ores::accounts::repository {
 
 domain::login_info login_info_mapper::map(const login_info_entity& v) {
-    BOOST_LOG_SEV(lg, debug) << "Mapping db entity: " << v;
+    BOOST_LOG_SEV(lg(), debug) << "Mapping db entity: " << v;
 
     domain::login_info r;
     using boost::uuids::uuid;
@@ -65,12 +60,12 @@ domain::login_info login_info_mapper::map(const login_info_entity& v) {
     r.last_login = timestamp_to_timepoint(v.last_login);
     r.online = v.online != 0 ? true : false;
 
-    BOOST_LOG_SEV(lg, debug) << "Mapped db entity. Result: " << r;
+    BOOST_LOG_SEV(lg(), debug) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 login_info_entity login_info_mapper::map(const domain::login_info& v) {
-    BOOST_LOG_SEV(lg, debug) << "Mapping domain entity: " << v;
+    BOOST_LOG_SEV(lg(), debug) << "Mapping domain entity: " << v;
 
     login_info_entity r;
     r.account_id = boost::lexical_cast<std::string>(v.account_id);
@@ -81,32 +76,32 @@ login_info_entity login_info_mapper::map(const domain::login_info& v) {
     r.last_login = timepoint_to_timestamp(v.last_login);
     r.online = v.online;
 
-    BOOST_LOG_SEV(lg, debug) << "Mapped domain entity. Result: " << r;
+    BOOST_LOG_SEV(lg(), debug) << "Mapped domain entity. Result: " << r;
     return r;
 }
 
 std::vector<domain::login_info>
 login_info_mapper::map(const std::vector<login_info_entity>& v) {
-    BOOST_LOG_SEV(lg, debug) << "Mapping db entities. Total: " << v.size();
+    BOOST_LOG_SEV(lg(), debug) << "Mapping db entities. Total: " << v.size();
 
     std::vector<domain::login_info> r;
     r.reserve(v.size());
     std::ranges::transform(v, std::back_inserter(r),
         [](const auto& ve) { return map(ve); });
 
-    BOOST_LOG_SEV(lg, debug) << "Mapped db entities.";
+    BOOST_LOG_SEV(lg(), debug) << "Mapped db entities.";
     return r;
 }
 
 std::vector<login_info_entity>
 login_info_mapper::map(const std::vector<domain::login_info>& v) {
-    BOOST_LOG_SEV(lg, debug) << "Mapping domain entities. Count: " << v.size();
+    BOOST_LOG_SEV(lg(), debug) << "Mapping domain entities. Count: " << v.size();
 
     std::vector<login_info_entity> r;
     r.reserve(v.size());
     std::ranges::transform(v, std::back_inserter(r),
         [](const auto& ve) { return map(ve); });
-    BOOST_LOG_SEV(lg, debug) << "Mapped domain entities.";
+    BOOST_LOG_SEV(lg(), debug) << "Mapped domain entities.";
     return r;
 }
 

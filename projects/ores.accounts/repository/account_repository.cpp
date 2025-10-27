@@ -20,32 +20,31 @@
 #include <format>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
-#include "ores.utility/log/logger.hpp"
 #include "ores.utility/repository/repository_exception.hpp"
 #include "ores.accounts/repository/account_mapper.hpp"
 #include "ores.accounts/repository/account_entity.hpp"
 #include "ores.accounts/repository/account_repository.hpp"
 
-namespace {
+namespace ores::accounts::repository {
 
+using namespace sqlgen;
+using namespace sqlgen::literals;
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.accounts.repository.account_repository"));
-const std::string max_timestamp("9999-12-31 23:59:59");
 using ores::utility::repository::repository_exception;
 
-void ensure_success(const auto result) {
+void account_repository::ensure_success(const auto result) {
     if (!result) {
-        BOOST_LOG_SEV(lg, severity_level::error) << result.error().what();
+        BOOST_LOG_SEV(lg(), severity_level::error) << result.error().what();
         BOOST_THROW_EXCEPTION(
             repository_exception(std::format("Repository error: {}",
                     result.error().what())));
     }
 }
 
-auto make_timestamp(const std::string& s) {
+auto account_repository::make_timestamp(const std::string& s) {
     const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(s);
     if (!r) {
-        BOOST_LOG_SEV(lg, error) << "Error converting timestamp: '" << s
+        BOOST_LOG_SEV(lg(), error) << "Error converting timestamp: '" << s
                                  << "'. Error: " << r.error().what();
         BOOST_THROW_EXCEPTION(
             repository_exception(
@@ -54,24 +53,17 @@ auto make_timestamp(const std::string& s) {
     return r;
 }
 
-}
-
-namespace ores::accounts::repository {
-
-using namespace sqlgen;
-using namespace sqlgen::literals;
-
 std::string account_repository::sql() {
     const auto query = create_table<account_entity> | if_not_exists;
     const auto sql = postgres::to_sql(query);
 
-    BOOST_LOG_SEV(lg, debug) << sql;
+    BOOST_LOG_SEV(lg(), debug) << sql;
     return sql;
 }
 
 void account_repository::
 write(context ctx, const std::vector<domain::account>& accounts) {
-    BOOST_LOG_SEV(lg, debug) << "Writing accounts to database. Count: "
+    BOOST_LOG_SEV(lg(), debug) << "Writing accounts to database. Count: "
                              << accounts.size();
 
     const auto r = session(ctx.connection_pool())
@@ -80,11 +72,11 @@ write(context ctx, const std::vector<domain::account>& accounts) {
         .and_then(commit);
     ensure_success(r);
 
-    BOOST_LOG_SEV(lg, debug) << "Finished writing accounts to database.";
+    BOOST_LOG_SEV(lg(), debug) << "Finished writing accounts to database.";
 }
 
 std::vector<domain::account> account_repository::read_latest(context ctx) {
-    BOOST_LOG_SEV(lg, debug) << "Reading latest accounts.";
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts.";
 
     static auto max(make_timestamp(max_timestamp));
     const auto query = sqlgen::read<std::vector<account_entity>> |
@@ -94,13 +86,13 @@ std::vector<domain::account> account_repository::read_latest(context ctx) {
     const auto r = session(ctx.connection_pool())
         .and_then(query);
     ensure_success(r);
-    BOOST_LOG_SEV(lg, debug) << "Read latest accounts. Total: " << r->size();
+    BOOST_LOG_SEV(lg(), debug) << "Read latest accounts. Total: " << r->size();
     return account_mapper::map(*r);
 }
 
 std::vector<domain::account>
 account_repository::read_latest(context ctx, const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg, debug) << "Reading latest accounts. ID: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts. ID: " << id;
 
     static auto max(make_timestamp(max_timestamp));
     const auto id_str = boost::lexical_cast<std::string>(id);
@@ -110,7 +102,7 @@ account_repository::read_latest(context ctx, const boost::uuids::uuid& id) {
 
     const auto r = session(ctx.connection_pool()).and_then(query);
     ensure_success(r);
-    BOOST_LOG_SEV(lg, debug) << "Read latest accounts. Total: " << r->size();
+    BOOST_LOG_SEV(lg(), debug) << "Read latest accounts. Total: " << r->size();
     return account_mapper::map(*r);
 }
 
@@ -121,7 +113,7 @@ std::vector<domain::account> account_repository::read_all(context ctx) {
     const auto r = session(ctx.connection_pool())
         .and_then(query);
     ensure_success(r);
-    BOOST_LOG_SEV(lg, debug) << "Read all accounts. Total: " << r->size();
+    BOOST_LOG_SEV(lg(), debug) << "Read all accounts. Total: " << r->size();
     return account_mapper::map(*r);
 }
 
@@ -134,13 +126,13 @@ account_repository::read_all(context ctx, const boost::uuids::uuid& id) {
 
     const auto r = session(ctx.connection_pool()).and_then(query);
     ensure_success(r);
-    BOOST_LOG_SEV(lg, debug) << "Read all accounts. Total: " << r->size();
+    BOOST_LOG_SEV(lg(), debug) << "Read all accounts. Total: " << r->size();
     return account_mapper::map(*r);
 }
 
 std::vector<domain::account>
 account_repository::read_latest_by_username(context ctx, const std::string& username) {
-    BOOST_LOG_SEV(lg, debug) << "Reading latest account by username: " << username;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest account by username: " << username;
 
     static auto max(make_timestamp(max_timestamp));
     const auto query = sqlgen::read<std::vector<account_entity>> |
@@ -148,11 +140,11 @@ account_repository::read_latest_by_username(context ctx, const std::string& user
         order_by("valid_from"_c.desc());
 
     const auto sql = postgres::to_sql(query);
-    BOOST_LOG_SEV(lg, debug) << "Query: " << sql;
+    BOOST_LOG_SEV(lg(), debug) << "Query: " << sql;
 
     const auto r = session(ctx.connection_pool()).and_then(query);
     ensure_success(r);
-    BOOST_LOG_SEV(lg, debug) << "Read latest account by username. Total: " << r->size();
+    BOOST_LOG_SEV(lg(), debug) << "Read latest account by username. Total: " << r->size();
     return account_mapper::map(*r);
 }
 

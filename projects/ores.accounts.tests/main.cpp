@@ -22,15 +22,5 @@
 #include <openssl/crypto.h>
 #include "ores.utility/test/fixture.hpp"
 
-namespace {
-
-struct OpenSSLFixture {
-    ~OpenSSLFixture() {
-        OPENSSL_cleanup();
-    }
-};
-}
-
 using namespace ores::utility::test;
 BOOST_GLOBAL_FIXTURE(exception_fixture);
-BOOST_GLOBAL_FIXTURE(OpenSSLFixture);

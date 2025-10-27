@@ -25,7 +25,7 @@
 #endif
 
 #include <boost/asio/awaitable.hpp>
-#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.service/config/options.hpp"
 
 namespace ores::service::app {
@@ -37,7 +37,7 @@ class application final {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static logger instance = logger_factory("ores.cli.application");
+        static auto instance = make_logger("ores.cli.application");
         return instance;
     }
 

@@ -33,7 +33,7 @@ importer::import_currency_config(const std::filesystem::path& path) {
     BOOST_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();
 
     using namespace ores::utility::filesystem;
-    const std::string c(read_file_content(path));
+    const std::string c(file::read_content(path));
     BOOST_LOG_SEV(lg(), trace) << "File content: " << c;
 
     CurrencyConfig ccy_cfg = CurrencyConfig::from_xml(c);

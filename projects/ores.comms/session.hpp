@@ -23,7 +23,7 @@
 #include <memory>
 #include <string>
 #include "ores.comms/connection.hpp"
-#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/protocol/message_dispatcher.hpp"
 
 namespace ores::comms {
@@ -38,7 +38,7 @@ class session final {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static logger instance = logger_factory("ores.comms.session");
+        static auto instance = make_logger("ores.comms.session");
         return instance;
     }
 

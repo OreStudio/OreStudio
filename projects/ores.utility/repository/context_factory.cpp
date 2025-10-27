@@ -18,13 +18,13 @@
  *
  */
 #include <rfl/json.hpp>
-#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context_factory.hpp"
 
 namespace {
 
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.utility.repository.context_factory"));
+auto lg(make_logger("ores.utility.repository.context_factory"));
 
 }
 

@@ -27,7 +27,7 @@
 #include <QTabWidget>
 #include <memory>
 #include "ores.comms/client.hpp"
-#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/make_logger.hpp"
 
 namespace ores::qt {
 
@@ -37,7 +37,7 @@ class MainTabWidget : public QTabWidget {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static logger instance = logger_factory("ores.qt.main_tab_widget");
+        static auto instance = make_logger("ores.qt.main_tab_widget");
         return instance;
     }
 

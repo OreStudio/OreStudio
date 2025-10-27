@@ -49,7 +49,7 @@ class LoginDialog : public QDialog {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static logger instance = logger_factory("ores.comms.login_dialog");
+        static auto instance = make_logger("ores.comms.login_dialog");
         return instance;
     }
 

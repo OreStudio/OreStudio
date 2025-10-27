@@ -29,7 +29,7 @@
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_context.hpp>
-#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/connection.hpp"
 
 namespace ores::comms {
@@ -70,7 +70,7 @@ class client final {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static logger instance = logger_factory("ores.comms.client");
+        static auto instance = make_logger("ores.comms.client");
         return instance;
     }
 

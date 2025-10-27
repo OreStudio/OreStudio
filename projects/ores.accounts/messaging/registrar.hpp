@@ -25,7 +25,7 @@
 #endif
 
 #include "ores.comms/server.hpp"
-#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
 
 namespace ores::accounts::messaging {
@@ -43,7 +43,7 @@ class registrar {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static logger instance = logger_factory(
+        static auto instance = make_logger(
             "ores.accounts.messaging.registrar");
         return instance;
     }

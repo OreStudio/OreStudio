@@ -27,7 +27,7 @@
 
 #include <vector>
 #include <filesystem>
-#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.risk/domain/currency.hpp"
 
 namespace ores::risk::orexml {
@@ -39,7 +39,7 @@ class importer {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static logger instance = logger_factory(
+        static auto instance = make_logger(
             "ores.risk.orexml.importer");
         return instance;
     }

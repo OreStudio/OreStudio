@@ -28,7 +28,7 @@
 #include <string>
 #include <exception>
 #include <boost/asio/awaitable.hpp>
-#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
 
 namespace ores::cli::app {
@@ -40,7 +40,7 @@ class host {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static logger instance = logger_factory("ores.cli.app.host");
+        static auto instance = make_logger("ores.cli.app.host");
         return instance;
     }
 

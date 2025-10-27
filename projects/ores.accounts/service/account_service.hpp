@@ -31,7 +31,7 @@
 #include "ores.accounts/repository/account_repository.hpp"
 #include "ores.accounts/repository/login_info_repository.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
-#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/make_logger.hpp"
 
 namespace ores::accounts::service {
 
@@ -42,7 +42,7 @@ class account_service {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static logger instance = logger_factory(
+        static auto instance = make_logger(
             "ores.accounts.service.account_service");
         return instance;
     }

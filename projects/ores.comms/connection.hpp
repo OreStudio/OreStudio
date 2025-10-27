@@ -24,7 +24,7 @@
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/awaitable.hpp>
 #include "ores.comms/protocol/frame.hpp"
-#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/make_logger.hpp"
 
 namespace ores::comms {
 
@@ -37,7 +37,7 @@ class connection final {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static logger instance = logger_factory("ores.comms.connection");
+        static auto instance = make_logger("ores.comms.connection");
         return instance;
     }
 

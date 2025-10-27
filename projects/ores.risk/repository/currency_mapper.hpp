@@ -24,7 +24,7 @@
 #pragma once
 #endif
 
-#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.risk/domain/currency.hpp"
 #include "ores.risk/repository/currency_entity.hpp"
 
@@ -37,7 +37,7 @@ class currency_mapper {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static logger instance = logger_factory(
+        static auto instance = make_logger(
             "ores.risk.repository.currency_mapper");
         return instance;
     }

@@ -27,7 +27,7 @@
 #include <QThread>
 #include <QSplashScreen>
 #include <QApplication>
-#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/make_logger.hpp"
 
 namespace ores::qt {
 
@@ -36,7 +36,7 @@ class SplashScreen : public QSplashScreen
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static logger instance = logger_factory("ores.qt.splash_screen");
+        static auto instance = make_logger("ores.qt.splash_screen");
         return instance;
     }
 

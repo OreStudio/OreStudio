@@ -18,14 +18,14 @@
  *
  */
 #include <charconv>
-#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/string/conversion_error.hpp"
 #include "ores.utility/string/converter.hpp"
 
 namespace {
 
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.utility.string.converter"));
+auto lg(make_logger("ores.utility.string.converter"));
 
 const std::string invalid_argument("Invalid argument: ");
 const std::string out_of_range("Out of range: ");

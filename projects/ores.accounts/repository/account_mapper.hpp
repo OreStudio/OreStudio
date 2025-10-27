@@ -26,7 +26,7 @@
 
 #include "ores.accounts/domain/account.hpp"
 #include "ores.accounts/repository/account_entity.hpp"
-#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/make_logger.hpp"
 
 namespace ores::accounts::repository {
 
@@ -37,8 +37,8 @@ class account_mapper {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static logger instance =
-            logger_factory("ores.accounts.repository.account_mapper");
+        static auto instance =
+            make_logger("ores.accounts.repository.account_mapper");
         return instance;
     }
 public:

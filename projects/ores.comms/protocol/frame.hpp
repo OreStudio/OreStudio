@@ -26,7 +26,7 @@
 #include <iosfwd>
 #include <cstdint>
 #include <expected>
-#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/protocol/message_types.hpp"
 
 namespace ores::comms::protocol {
@@ -69,7 +69,7 @@ class frame final {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static logger instance = logger_factory("ores.comms.protocol.frame");
+        static auto instance = make_logger("ores.comms.protocol.frame");
         return instance;
     }
 

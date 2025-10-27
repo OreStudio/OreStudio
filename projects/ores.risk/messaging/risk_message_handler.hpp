@@ -21,7 +21,7 @@
 #define ORES_RISK_MESSAGING_RISK_MESSAGE_HANDLER_HPP
 
 #include "ores.comms/protocol/message_handler.hpp"
-#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
 
@@ -38,7 +38,7 @@ class risk_message_handler final : public comms::protocol::message_handler {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static logger instance = logger_factory(
+        static auto instance = make_logger(
             "ores.risk.messaging.risk_message_handler");
         return instance;
     }

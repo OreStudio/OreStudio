@@ -84,8 +84,8 @@ BOOST_AUTO_TEST_CASE(read_currency_config_from_currencies_xml) {
     const auto file = std::filesystem::path(test_data_dir + "currencies.xml");
     BOOST_LOG_SEV(lg, debug) << "Input file: " << file;
 
-    using ores::utility::filesystem::read_file_content;
-    const std::string content = read_file_content(file);
+    using ores::utility::filesystem::file;
+    const std::string content = file::read_content(file);
     BOOST_LOG_SEV(lg, debug) << "Content: " << content;
 
     const auto ccy_cfg = CurrencyConfig::from_xml(content);
@@ -129,8 +129,8 @@ BOOST_AUTO_TEST_CASE(read_currency_config_from_currencies_01_xml) {
         std::filesystem::path(test_data_dir + "currencies_01.xml");
     BOOST_LOG_SEV(lg, debug) << "Input file: " << file;
 
-    using ores::utility::filesystem::read_file_content;
-    const std::string content = read_file_content(file);
+    using ores::utility::filesystem::file;
+    const std::string content = file::read_content(file);
     BOOST_LOG_SEV(lg, debug) << "Content: " << content;
 
     const auto ccy_cfg = CurrencyConfig::from_xml(content);
@@ -162,8 +162,8 @@ BOOST_AUTO_TEST_CASE(read_currency_config_from_currencies_41_xml) {
         std::filesystem::path(test_data_dir + "currencies_41.xml");
     BOOST_LOG_SEV(lg, debug) << "Input file: " << file;
 
-    using ores::utility::filesystem::read_file_content;
-    const std::string content = read_file_content(file);
+    using ores::utility::filesystem::file;
+    const std::string content = file::read_content(file);
     BOOST_LOG_SEV(lg, debug) << "Content: " << content;
 
     const auto ccy_cfg = CurrencyConfig::from_xml(content);
@@ -180,8 +180,8 @@ BOOST_AUTO_TEST_CASE(read_currency_config_from_currencies_42_xml) {
         std::filesystem::path(test_data_dir + "currencies_42.xml");
     BOOST_LOG_SEV(lg, debug) << "Input file: " << file;
 
-    using ores::utility::filesystem::read_file_content;
-    const std::string content = read_file_content(file);
+    using ores::utility::filesystem::file;
+    const std::string content = file::read_content(file);
     BOOST_LOG_SEV(lg, debug) << "Content: " << content;
 
     const auto ccy_cfg = CurrencyConfig::from_xml(content);
@@ -198,8 +198,8 @@ BOOST_AUTO_TEST_CASE(read_currency_config_from_currencies_62_xml) {
         std::filesystem::path(test_data_dir + "currencies_62.xml");
     BOOST_LOG_SEV(lg, debug) << "Input file: " << file;
 
-    using ores::utility::filesystem::read_file_content;
-    const std::string content = read_file_content(file);
+    using ores::utility::filesystem::file;
+    const std::string content = file::read_content(file);
     BOOST_LOG_SEV(lg, debug) << "Content: " << content;
 
     const auto ccy_cfg = CurrencyConfig::from_xml(content);
@@ -216,8 +216,8 @@ BOOST_AUTO_TEST_CASE(read_currency_config_from_currencies_API_xml) {
         std::filesystem::path(test_data_dir + "currencies_API.xml");
     BOOST_LOG_SEV(lg, debug) << "Input file: " << file;
 
-    using ores::utility::filesystem::read_file_content;
-    const std::string content = read_file_content(file);
+    using ores::utility::filesystem::file;
+    const std::string content = file::read_content(file);
     BOOST_LOG_SEV(lg, debug) << "Content: " << content;
 
     const auto ccy_cfg = CurrencyConfig::from_xml(content);

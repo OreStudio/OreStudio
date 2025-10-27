@@ -31,7 +31,7 @@
 #include <boost/asio/executor_work_guard.hpp>
 #include "ores.comms/client.hpp"
 #include "ores.qt/MainTabWidget.hpp"
-#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/make_logger.hpp"
 #include "ui_MainWindow.h"
 
 namespace Ui {
@@ -48,7 +48,7 @@ class MainWindow : public QMainWindow {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static logger instance = logger_factory("ores.qt.main_window");
+        static auto instance = make_logger("ores.qt.main_window");
         return instance;
     }
 

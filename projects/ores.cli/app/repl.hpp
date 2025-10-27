@@ -28,7 +28,7 @@
 #include <thread>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
-#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/client.hpp"
 
 namespace cli {
@@ -48,7 +48,7 @@ class repl final {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static logger instance = logger_factory("ores.cli.app.repl");
+        static auto instance = make_logger("ores.cli.app.repl");
         return instance;
     }
 

@@ -28,7 +28,7 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
-#include "ores.utility/log/logger.hpp"
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/protocol/message_dispatcher.hpp"
 #include "ores.comms/protocol/message_handler.hpp"
 
@@ -57,7 +57,7 @@ class server final {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static logger instance = logger_factory("ores.comms.server");
+        static auto instance = make_logger("ores.comms.server");
         return instance;
     }
 

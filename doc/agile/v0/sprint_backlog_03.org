@@ -18,42 +18,44 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-10-27 Mon 09:26], for Monday, October 27, 2025.
-|      | <75>                      |        |      |      |       |
-| Tags | Headline                  | Time   |      |      |     % |
-|------+---------------------------+--------+------+------+-------|
-|      | *Total time*              | *0:09* |      |      | 100.0 |
-|------+---------------------------+--------+------+------+-------|
-|      | Stories                   | 0:09   |      |      | 100.0 |
-|      | Active                    |        | 0:09 |      | 100.0 |
-| code | Fix broken windows builds |        |      | 0:09 | 100.0 |
+#+CAPTION: Clock summary at [2025-10-27 Mon 09:53], for Monday, October 27, 2025.
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *0:39* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 0:39   |      |      | 100.0 |
+|       | Active                                |        | 0:39 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:30 |  76.9 |
+| code  | Fix broken windows builds             |        |      | 0:09 |  23.1 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-10-27 Mon 09:26]
+#+CAPTION: Clock summary at [2025-10-27 Mon 09:53]
 |       | <75>                                        |         |       |      |       |
 | Tags  | Headline                                    | Time    |       |      |     % |
 |-------+---------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                | *26:36* |       |      | 100.0 |
+|       | *Total time*                                | *27:06* |       |      | 100.0 |
 |-------+---------------------------------------------+---------+-------+------+-------|
-|       | Stories                                     | 26:36   |       |      | 100.0 |
-|       | Active                                      |         | 26:36 |      | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       | 0:41 |   2.6 |
-| code  | Add locking up logic                        |         |       | 1:28 |   5.5 |
-| code  | Build using dynamic libraries               |         |       | 7:24 |  27.8 |
-| code  | Enable qt gui                               |         |       | 4:13 |  15.9 |
-| code  | Add locking up logic                        |         |       | 1:28 |   5.5 |
-| code  | Build using dynamic libraries               |         |       | 7:24 |  27.8 |
-| code  | Investigate leaks from valgrind             |         |       | 0:46 |   2.9 |
-| code  | Add support for feature flags               |         |       | 1:25 |   5.3 |
-| code  | Implement authentication bootstrap workflow |         |       | 0:25 |   1.6 |
+|       | Stories                                     | 27:06   |       |      | 100.0 |
+|       | Active                                      |         | 27:06 |      | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       | 1:11 |   4.4 |
+| code  | Add locking up logic                        |         |       | 1:28 |   5.4 |
+| code  | Build using dynamic libraries               |         |       | 7:24 |  27.3 |
+| code  | Enable qt gui                               |         |       | 4:13 |  15.6 |
+| code  | Add locking up logic                        |         |       | 1:28 |   5.4 |
+| code  | Build using dynamic libraries               |         |       | 7:24 |  27.3 |
+| code  | Investigate leaks from valgrind             |         |       | 0:46 |   2.8 |
+| code  | Add support for feature flags               |         |       | 1:25 |   5.2 |
+| code  | Implement authentication bootstrap workflow |         |       | 0:25 |   1.5 |
 | code  | Fix broken windows builds                   |         |       | 0:09 |   0.6 |
-| code  | Add workspace as a container                |         |       | 1:13 |   4.6 |
+| code  | Add workspace as a container                |         |       | 1:13 |   4.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-10-27 Mon 09:23]--[2025-10-27 Mon 09:53] =>  0:30
     CLOCK: [2025-10-26 Sun 19:49]--[2025-10-26 Sun 19:55] =>  0:06
     CLOCK: [2025-10-23 Thu 09:10]--[2025-10-23 Thu 09:45] =>  0:35
     :END:
@@ -515,6 +517,128 @@ Links:
     :END:
 
 Windows builds are failing on tests.
+
+*** Create shared object interfaces                                    :code:
+
+At present we are building shared objects / DLLs for the ores components, but we
+did not bother defining proper interfaces, exporting symbols etc. This causes
+problems on windows:
+
+#+begin_src sh
+LINK : fatal error LNK1104: cannot open file 'projects\ores.utility\ores.utility.lib'
+#+end_src
+
+This is happening because we are not exporting explicitly any symbols. To fix
+this we did a hack:
+
+#+begin_src cmake
+if(WIN32 AND MSVC)
+    # Export all symbols on windows for now. Bit of a hack.
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+#+end_src
+
+The right solution for this is to annotate all the public types of each SO
+correctly, exporting symbols for all platforms:
+
+Deep seek analysis:
+
+#+begin_src markdown
+Yes, Boost provides a cross-platform wrapper for exporting symbols using the
+`BOOST_SYMBOL_EXPORT` macro from the **Boost.DLL** library. This macro abstracts
+away the compiler-specific keywords required for different platforms.
+
+### 🗂️ Boost's Cross-Platform Symbol Exporting
+
+To export a symbol, you use the `BOOST_SYMBOL_EXPORT` macro in your code. Under
+the hood, it expands to the correct compiler-specific attribute:
+
+- On **Windows** with MSVC, it becomes `__declspec(dllexport)`
+- On **macOS** and **Linux** with GCC/Clang, it becomes `__attribute__((visibility("default")))`
+
+Here is a basic example of how to use it to export a global variable:
+
+```cpp
+#include <boost/config.hpp> // For BOOST_SYMBOL_EXPORT
+
+class my_plugin_api {
+    // Your interface definition
+};
+
+namespace my_namespace {
+    class my_plugin_sum : public my_plugin_api {
+        // Implementation
+    };
+
+    // Export the 'plugin' variable
+    extern "C" BOOST_SYMBOL_EXPORT my_plugin_sum plugin;
+    my_plugin_sum plugin;
+}
+```
+,*Note: The `extern "C"` is used here to prevent C++ name mangling, making the symbol name
+predictable for tools that use C linkage. This is often crucial for a library's public API.*
+
+For exporting factory functions, Boost offers the `BOOST_DLL_ALIAS` macro, which
+is often more convenient:
+
+```cpp
+#include <boost/dll/alias.hpp> // For BOOST_DLL_ALIAS
+
+namespace my_namespace {
+    class my_plugin_aggregator : public my_plugin_api {
+        // Implementation
+    };
+
+    // Factory function
+    boost::shared_ptr<my_plugin_api> create() {
+        return boost::shared_ptr<my_plugin_aggregator>(new my_plugin_aggregator());
+    }
+
+    // Export the factory function with the alias "create_plugin"
+    BOOST_DLL_ALIAS(my_namespace::create, create_plugin)
+}
+```
+
+### 💡 A Complementary Approach: Controlling Visibility
+
+While Boost's macro solves the declaration problem, for finer control and to
+minimize your shared library's public API, combine it with compiler flags that
+hide all symbols by default.
+
+- **On Linux and other ELF platforms**, use the `-fvisibility=hidden` flag. You
+  can then use a **linker version script** to explicitly list the symbols you
+  want to export.
+- **On macOS**, use the `-fvisibility=hidden` flag and an **exported symbols
+  list** with `-exported_symbols_list` during linking.
+- **On Windows**, symbol visibility is typically controlled explicitly via
+  `__declspec(dllexport)` or a module definition (.def) file, which
+  `BOOST_SYMBOL_EXPORT` already handles.
+
+Setting default visibility to hidden helps create a cleaner, more efficient
+library by reducing its footprint, improving load times, and avoiding potential
+symbol conflicts.
+
+### 🔧 Summary
+
+For a complete cross-platform solution:
+
+1. **Use Boost.DLL macros**: Incorporate `BOOST_SYMBOL_EXPORT` or
+   `BOOST_DLL_ALIAS` in your code to handle platform-specific export keywords.
+2. **Hide symbols by default**: Compile your shared library with
+   `-fvisibility=hidden` on Linux and macOS. This works in conjunction with the
+   Boost macros.
+3. **Use version scripts (optional)**: For maximum control on ELF platforms
+   (Linux) or via an exported symbols list on macOS, use these linker features
+   to define a precise public API.
+
+I hope this helps you build your cross-platform shared library! If you have more
+questions about using the Boost.DLL library for loading these symbols at
+runtime, feel free to ask.
+#+end_src
+
+Links:
+
+- [[https://stackoverflow.com/questions/76338106/cmake-how-to-produce-both-dll-and-lib-as-ouputs][SO: "CMAKE" - how to produce both ".dll" and ".lib" as ouputs]]
 
 *** Copy across icons and other assets to package                      :code:
 

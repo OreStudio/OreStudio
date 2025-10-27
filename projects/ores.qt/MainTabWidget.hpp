@@ -27,11 +27,19 @@
 #include <QTabWidget>
 #include <memory>
 #include "ores.comms/client.hpp"
+#include "ores.utility/log/logger.hpp"
 
 namespace ores::qt {
 
 class MainTabWidget : public QTabWidget {
     Q_OBJECT
+
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static logger instance = logger_factory("ores.qt.main_tab_widget");
+        return instance;
+    }
 
 public:
     explicit MainTabWidget(QWidget* parent = nullptr);
@@ -39,7 +47,9 @@ public:
     /**
      * @brief Set the client for server communication.
      */
-    void set_client(std::shared_ptr<comms::client> client) { client_ = std::move(client); }
+    void setClient(std::shared_ptr<comms::client> client) {
+        client_ = std::move(client);
+    }
 
 public slots:
     void openCurrencyTabPage();

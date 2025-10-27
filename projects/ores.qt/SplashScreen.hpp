@@ -27,11 +27,19 @@
 #include <QThread>
 #include <QSplashScreen>
 #include <QApplication>
+#include "ores.utility/log/logger.hpp"
 
 namespace ores::qt {
 
 class SplashScreen : public QSplashScreen
 {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static logger instance = logger_factory("ores.qt.splash_screen");
+        return instance;
+    }
+
 public:
     explicit SplashScreen(const QPixmap& pixmap  = QPixmap());
     void paintEvent(QPaintEvent* e) override;

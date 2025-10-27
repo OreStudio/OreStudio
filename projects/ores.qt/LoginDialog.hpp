@@ -17,22 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_LOGIN_DIALOG_HPP
-#define ORES_QT_LOGIN_DIALOG_HPP
+#ifndef ORES_QT_LOGINDIALOG_HPP
+#define ORES_QT_LOGINDIALOG_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <QDialog>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QLabel>
-#include <QSpinBox>
 #include <memory>
 #include <thread>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
+#include <QLabel>
+#include <QDialog>
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QPushButton>
 #include "ores.comms/client.hpp"
 
 namespace ores::qt {
@@ -43,24 +43,31 @@ namespace ores::qt {
  * Presents a login form with username, password, server host, and port fields.
  * Handles async connection to the ores.comms server and performs login.
  */
-class login_dialog : public QDialog {
+class LoginDialog : public QDialog {
     Q_OBJECT
 
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static logger instance = logger_factory("ores.comms.login_dialog");
+        return instance;
+    }
+
 public:
-    explicit login_dialog(QWidget* parent = nullptr);
-    ~login_dialog();
+    explicit LoginDialog(QWidget* parent = nullptr);
+    ~LoginDialog() override;
 
     /**
      * @brief Get the connected client instance.
      * @return Shared pointer to the connected client, or nullptr if login failed.
      */
-    std::shared_ptr<comms::client> get_client() const { return client_; }
+    std::shared_ptr<comms::client> getClient() const { return client_; }
 
     /**
      * @brief Get the IO context for async operations.
      * @return Unique pointer to the IO context.
      */
-    std::unique_ptr<boost::asio::io_context> take_io_context() {
+    std::unique_ptr<boost::asio::io_context> takeIOContext() {
         return std::move(io_context_);
     }
 
@@ -68,7 +75,7 @@ public:
      * @brief Get the IO thread for async operations.
      * @return Unique pointer to the IO thread.
      */
-    std::unique_ptr<std::thread> take_io_thread() {
+    std::unique_ptr<std::thread> takeIOThread() {
         return std::move(io_thread_);
     }
 
@@ -76,23 +83,25 @@ public:
      * @brief Get the work guard for the IO context.
      * @return Unique pointer to the work guard.
      */
-    std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> take_work_guard() {
+    std::unique_ptr<boost::asio::executor_work_guard<
+        boost::asio::io_context::executor_type>>
+    takeWorkGuard() {
         return std::move(work_guard_);
     }
 
 private slots:
-    void on_login_clicked();
-    void on_connection_result(bool success, const QString& error_message);
-    void on_login_result(bool success, const QString& error_message);
+    void onLoginClicked();
+    void onConnectionResult(bool success, const QString& error_message);
+    void onLoginResult(bool success, const QString& error_message);
 
 signals:
-    void connection_completed(bool success, const QString& error_message);
-    void login_completed(bool success, const QString& error_message);
+    void connectionCompleted(bool success, const QString& error_message);
+    void loginCompleted(bool success, const QString& error_message);
 
 private:
-    void setup_ui();
-    void enable_form(bool enabled);
-    void perform_login(const std::string& username, const std::string& password);
+    void setupUI();
+    void enableForm(bool enabled);
+    void performLogin(const std::string& username, const std::string& password);
 
 private:
     // UI components
@@ -106,7 +115,8 @@ private:
 
     // Client infrastructure
     std::unique_ptr<boost::asio::io_context> io_context_;
-    std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> work_guard_;
+    std::unique_ptr<boost::asio::executor_work_guard<
+        boost::asio::io_context::executor_type>> work_guard_;
     std::unique_ptr<std::thread> io_thread_;
     std::shared_ptr<comms::client> client_;
 };

@@ -32,7 +32,7 @@ auto lg(logger_factory("main"));
 
 ores::utility::log::logging_options createLoggingConfiguration() {
     ores::utility::log::logging_options r;
-    r.filename = "ores.cli.log";
+    r.filename = "ores.qt.log";
     r.output_to_console = false;
     r.output_directory = "log";
     r.severity = "debug";

@@ -27,9 +27,10 @@
 
 namespace ores::qt {
 
-CurrencyTabPage::CurrencyTabPage(std::shared_ptr<comms::client> client, QWidget* parent)
+CurrencyTabPage::
+CurrencyTabPage(std::shared_ptr<comms::client> client, QWidget* parent)
     : QWidget(parent),
-      currencyModel_(new client_currency_model(std::move(client), this)) {
+      currencyModel_(new ClientCurrencyModel(std::move(client), this)) {
 
     verticalLayout_ = new QVBoxLayout(this);
 
@@ -59,21 +60,22 @@ CurrencyTabPage::CurrencyTabPage(std::shared_ptr<comms::client> client, QWidget*
     horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     // Connect signals
-    connect(currencyModel_, &client_currency_model::data_loaded,
-            this, &CurrencyTabPage::on_data_loaded);
-    connect(currencyModel_, &client_currency_model::load_error,
-            this, &CurrencyTabPage::on_load_error);
+    connect(currencyModel_, &ClientCurrencyModel::dataLoaded,
+            this, &CurrencyTabPage::onDataLoaded);
+    connect(currencyModel_, &ClientCurrencyModel::loadError,
+            this, &CurrencyTabPage::onLoadError);
 
     // Trigger data loading
     currencyModel_->refresh();
 }
 
-void CurrencyTabPage::on_data_loaded() {
-    statusLabel_->setText(QString("Loaded %1 currencies").arg(currencyModel_->rowCount()));
+void CurrencyTabPage::onDataLoaded() {
+    statusLabel_->setText(QString("Loaded %1 currencies")
+                              .arg(currencyModel_->rowCount()));
     statusLabel_->setStyleSheet("QLabel { padding: 5px; color: #0a0; }");
 }
 
-void CurrencyTabPage::on_load_error(const QString& error_message) {
+void CurrencyTabPage::onLoadError(const QString& error_message) {
     statusLabel_->setText("Error loading currencies");
     statusLabel_->setStyleSheet("QLabel { padding: 5px; color: #c00; }");
 

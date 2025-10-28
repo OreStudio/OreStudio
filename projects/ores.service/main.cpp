@@ -24,97 +24,36 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <openssl/crypto.h>
-#include "ores.comms/server.hpp"
-#include "ores.utility/log/logger.hpp"
-#include "ores.utility/version/version.hpp"
-#include "ores.utility/log/scoped_lifecycle_manager.hpp"
-#include "ores.utility/repository/context_factory.hpp"
-#include "ores.risk/messaging/registration.hpp"
-#include "ores.accounts/messaging/registration.hpp"
-
-#include "ores.service/config/parser.hpp"
+#include "ores.service/app/host.hpp"
 #include "ores.service/config/parser_exception.hpp"
 
 namespace {
 
-using namespace ores::utility::log;
-auto lg(logger_factory("ores.service"));
-const std::string force_terminate("Service was forced to terminate.");
+const std::string force_terminate("Application was forced to terminate.");
 
-boost::asio::awaitable<int> async_main(int argc, char** argv, boost::asio::io_context& io_ctx) {
-    using ores::utility::log::scoped_lifecycle_manager;
-    using ores::service::config::parser;
+boost::asio::awaitable<int>
+async_main(int argc, char** argv, boost::asio::io_context& io_ctx) {
+    using ores::service::app::host;
     using ores::service::config::parser_exception;
+    using ores::utility::log::scoped_lifecycle_manager;
 
     scoped_lifecycle_manager slm;
     try {
-        // Parse command line arguments
         const auto args(std::vector<std::string>(argv + 1, argv + argc));
-        parser p;
-        const auto ocfg(p.parse(args, std::cout, std::cerr));
-
-        // If no configuration returned, exit (help or version was displayed)
-        if (!ocfg.has_value())
-            co_return EXIT_SUCCESS;
-
-        const auto& cfg(*ocfg);
-
-        // Initialize logging if configured
-        if (cfg.logging.has_value())
-            slm.initialise(cfg.logging.value());
-
-        BOOST_LOG_SEV(lg, info) << "Starting ORE Studio Service v"
-                                << ORES_VERSION;
-        BOOST_LOG_SEV(lg, debug) << "Configuration: " << cfg;
-
-        // Configure server from parsed options
-        ores::comms::server_config server_cfg;
-        server_cfg.port = cfg.server.port;
-        server_cfg.max_connections = cfg.server.max_connections;
-        server_cfg.certificate_file = cfg.server.certificate_file;
-        server_cfg.private_key_file = cfg.server.private_key_file;
-        server_cfg.server_identifier = cfg.server.server_identifier;
-
-        // Create database context
-        // TODO: Add database configuration to service options
-        using ores::utility::repository::context_factory;
-        context_factory::configuration db_cfg{
-            .user = "ores",
-            .password = "ahV6aehuij6eingohsiajaiT0",
-            .host = "localhost",
-            .database = "oresdb",
-            .port = 5434,
-            .pool_size = 4,
-            .num_attempts = 10,
-            .wait_time_in_seconds = 1
-        };
-        auto ctx = context_factory::make_context(db_cfg);
-
-        // Create server and register message handlers
-        ores::comms::server srv(server_cfg);
-        ores::risk::messaging::register_risk_handlers(srv, ctx);
-        ores::accounts::messaging::register_accounts_handlers(srv, ctx);
-
-        // Run server
-        co_await srv.run(io_ctx);
-
-        BOOST_LOG_SEV(lg, info) << "ORES Service stopped normally";
-
+        co_return co_await host::execute(args, slm, io_ctx);
     } catch (const parser_exception& /*e*/) {
-        // Parser has already reported errors to console
+        /*
+         * Reporting of these types of errors to the console has
+         * already been handled by the parser itself.
+         */
         co_return EXIT_FAILURE;
     } catch (const std::exception& e) {
-        if (slm.is_initialised())
-            BOOST_LOG_SEV(lg, error) << "Server error: " << e.what();
-        else
-            std::cerr << "Server error: " << e.what() << std::endl;
+        host::report_exception(slm.is_initialised(), e);
         co_return EXIT_FAILURE;
     } catch (...) {
         std::cerr << force_terminate << std::endl;
         co_return EXIT_FAILURE;
     }
-
-    co_return EXIT_SUCCESS;
 }
 
 }
@@ -122,20 +61,10 @@ boost::asio::awaitable<int> async_main(int argc, char** argv, boost::asio::io_co
 int main(int argc, char** argv) {
     boost::asio::io_context io_ctx;
 
-    // Setup signal handling for graceful shutdown
-    boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
-    signals.async_wait([&](auto, auto) {
-        BOOST_LOG_SEV(lg, info) << "Shutdown signal received, stopping server...";
-        io_ctx.stop();
-    });
-
     int result = EXIT_FAILURE;
-    boost::asio::co_spawn(
-        io_ctx,
-        [&]() -> boost::asio::awaitable<void> {
+    boost::asio::co_spawn(io_ctx, [&]() -> boost::asio::awaitable<void> {
             result = co_await async_main(argc, argv, io_ctx);
-        },
-        boost::asio::detached);
+        }, boost::asio::detached);
 
     io_ctx.run();
     OPENSSL_cleanup();

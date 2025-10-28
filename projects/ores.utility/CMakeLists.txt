@@ -46,7 +46,6 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         Boost::boost
         Boost::date_time
-        Boost::exception
-        Boost::unit_test_framework)
+        Boost::exception)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

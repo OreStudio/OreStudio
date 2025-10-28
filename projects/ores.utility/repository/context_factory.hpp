@@ -26,6 +26,7 @@
 
 #include <iosfwd>
 #include <string>
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
 
 namespace ores::utility::repository {
@@ -34,6 +35,14 @@ namespace ores::utility::repository {
  * @brief Generates a new repository context.
  */
 class context_factory {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger(
+            "ores.utility.repository.context_factory");
+        return instance;
+    }
+
 public:
     struct configuration {
         /// Database user name.

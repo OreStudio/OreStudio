@@ -25,6 +25,7 @@
 #endif
 
 #include "ores.utility/repository/context.hpp"
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/protocol/message_handler.hpp"
 #include "ores.accounts/repository/login_info_repository.hpp"
 #include "ores.accounts/repository/account_repository.hpp"
@@ -42,6 +43,14 @@ namespace ores::accounts::messaging {
  * - unlock_account_request: Unlocks a locked account
  */
 class accounts_message_handler final : public comms::protocol::message_handler {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger(
+            "ores.accounts.messaging.accounts_message_handler");
+        return instance;
+    }
+
 public:
     /**
      * @brief Construct an accounts message handler.

@@ -113,23 +113,14 @@ elseif(UNIX)
     set(CPACK_GENERATOR "DEB")
     set(CPACK_STRIP_FILES "")
     set(CPACK_SOURCE_STRIP_FILES "")
-
-    # package name for deb. If set, then instead of some-application-0.9.2-Linux.deb
-    # you'll get some-application_0.9.2_amd64.deb (note the underscores too)
     set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
-    # that is if you want every group to have its own package,
-    # although the same will happen if this is not set (so it defaults to ONE_PER_GROUP)
-    # and CPACK_DEB_COMPONENT_INSTALL is set to YES
-    set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)#ONE_PER_GROUP)
-    # without this you won't be able to pack only specified component
+    set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
     set(CPACK_DEB_COMPONENT_INSTALL YES)
-    # list dependencies
     set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS YES)
 
     set(CPACK_DEB_PACKAGE_DEBUG "1")
     set(CPACK_DEB_COMPONENT_INSTALL ON)
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Marco Craveiro")
-    # set(CPACK_SOURCE_GENERATOR "TGZ")
     set(CPACK_DEBIAN_PACKAGE_PRIORITY "extra")
     set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
     set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "")

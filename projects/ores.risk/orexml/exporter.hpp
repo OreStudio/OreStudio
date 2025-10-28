@@ -26,6 +26,7 @@
 #endif
 
 #include <vector>
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.risk/domain/currency.hpp"
 
 namespace ores::risk::orexml {
@@ -34,9 +35,17 @@ namespace ores::risk::orexml {
  * @brief Exports domain objects from their ORE XML representation.
  */
 class exporter {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger(
+            "ores.risk.orexml.exporter");
+        return instance;
+    }
+
 public:
-  static std::string
-  export_currency_config(const std::vector<domain::currency>& v);
+    static std::string
+    export_currency_config(const std::vector<domain::currency>& v);
 };
 
 }

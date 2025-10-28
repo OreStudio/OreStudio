@@ -23,6 +23,8 @@
 
 namespace ores::qt {
 
+using namespace ores::utility::log;
+
 MainTabWidget::MainTabWidget(QWidget* parent)
     : QTabWidget(parent), currenciesIndex_(-1) {
     setTabsClosable(true);
@@ -30,6 +32,8 @@ MainTabWidget::MainTabWidget(QWidget* parent)
 }
 
 void MainTabWidget::openCurrencyTabPage() {
+    BOOST_LOG_SEV(lg(), debug) << "Open currency tab page called.";
+
     if (currenciesIndex_ != -1) {
         setCurrentIndex(currenciesIndex_);
     } else {
@@ -37,8 +41,8 @@ void MainTabWidget::openCurrencyTabPage() {
     }
 }
 
-void MainTabWidget::closeTab(const int& index)
-{
+void MainTabWidget::closeTab(const int& index) {
+    BOOST_LOG_SEV(lg(), debug) << "Close tab called.";
     if (index == -1) {
         return;
     }

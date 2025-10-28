@@ -24,11 +24,12 @@
 #pragma once
 #endif
 
-#include <QAbstractTableModel>
-#include <QFutureWatcher>
 #include <memory>
 #include <vector>
+#include <QFutureWatcher>
+#include <QAbstractTableModel>
 #include "ores.comms/client.hpp"
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.risk/domain/currency.hpp"
 
 namespace ores::qt {
@@ -36,23 +37,31 @@ namespace ores::qt {
 /**
  * @brief Model for displaying currencies fetched from the server via client.
  *
- * This model extends QAbstractTableModel and fetches currency data asynchronously
- * using the ores.comms client instead of direct database access.
+ * This model extends QAbstractTableModel and fetches currency data
+ * asynchronously using the ores.comms client instead of direct database access.
  */
-class client_currency_model : public QAbstractTableModel {
+class ClientCurrencyModel : public QAbstractTableModel {
     Q_OBJECT
 
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger(
+            "ores.qt.client_currency_model");
+        return instance;
+    }
+
 public:
-    explicit client_currency_model(std::shared_ptr<comms::client> client,
+    explicit ClientCurrencyModel(std::shared_ptr<comms::client> client,
                                    QObject* parent = nullptr);
-    ~client_currency_model() override = default;
+    ~ClientCurrencyModel() override = default;
 
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     QVariant headerData(int section, Qt::Orientation orientation,
-                       int role = Qt::DisplayRole) const override;
+        int role = Qt::DisplayRole) const override;
 
     /**
      * @brief Refresh currency data from server asynchronously.
@@ -66,15 +75,15 @@ signals:
     /**
      * @brief Emitted when data has been successfully loaded.
      */
-    void data_loaded();
+    void dataLoaded();
 
     /**
      * @brief Emitted when an error occurs during data loading.
      */
-    void load_error(const QString& error_message);
+    void loadError(const QString& error_message);
 
 private slots:
-    void on_currencies_loaded();
+    void onCurrenciesLoaded();
 
 private:
     std::shared_ptr<comms::client> client_;

@@ -24,6 +24,11 @@
 #pragma once
 #endif
 
+#include <iostream>
+#include <boost/exception/info.hpp>
+#include <boost/test/unit_test_monitor.hpp>
+#include <boost/exception/diagnostic_information.hpp>
+
 namespace ores::utility::test {
 
 /**
@@ -31,7 +36,15 @@ namespace ores::utility::test {
  * information.
  */
 struct exception_fixture {
-    exception_fixture();
+    inline exception_fixture() {
+        using boost::exception;
+        using boost::unit_test::unit_test_monitor;
+        unit_test_monitor.register_exception_translator<exception>(
+            [](const boost::exception& e) {
+            std::cerr << std::endl << boost::diagnostic_information(e);
+            throw std::runtime_error("Error during test");
+        });
+    }
 };
 
 }

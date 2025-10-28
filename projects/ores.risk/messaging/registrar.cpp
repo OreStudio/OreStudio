@@ -17,32 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <memory>
-#include "ores.accounts/messaging/registration.hpp"
-#include "ores.accounts/messaging/accounts_message_handler.hpp"
-#include "ores.utility/log/logger.hpp"
+#include "ores.risk/messaging/registrar.hpp"
+#include "ores.risk/messaging/risk_message_handler.hpp"
 
-namespace {
+namespace ores::risk::messaging {
 
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.accounts.messaging.registration"));
 
-}
-
-namespace ores::accounts::messaging {
-
-void register_accounts_handlers(comms::server& server,
+void registrar::register_handlers(comms::server& server,
     utility::repository::context ctx) {
-    BOOST_LOG_SEV(lg, info) << "Registering accounts subsystem message handlers";
+    BOOST_LOG_SEV(lg(), info) << "Registering risk subsystem message handlers.";
 
-    // Create handler for accounts subsystem
-    auto handler = std::make_shared<accounts_message_handler>(std::move(ctx));
+    auto handler = std::make_shared<risk_message_handler>(std::move(ctx));
+    comms::protocol::message_type_range risk_range{.min=0x1000, .max=0x1FFF};
+    server.register_handler(risk_range, std::move(handler));
 
-    // Register for accounts message type range
-    comms::protocol::message_type_range accounts_range{.min=0x2000, .max=0x2FFF};
-    server.register_handler(accounts_range, std::move(handler));
-
-    BOOST_LOG_SEV(lg, info) << "Accounts subsystem message handlers registered successfully";
+    BOOST_LOG_SEV(lg(), info) << "Risk subsystem message handlers registered successfully.";
 }
 
 }

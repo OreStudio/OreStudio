@@ -17,25 +17,41 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_LOG_LOGGER_HPP
-#define ORES_UTILITY_LOG_LOGGER_HPP
+#ifndef ORES_ACCOUNTS_MESSAGING_REGISTRAR_HPP
+#define ORES_ACCOUNTS_MESSAGING_REGISTRAR_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <string>
-#include <boost/log/sources/record_ostream.hpp>
-#include <boost/log/sources/severity_channel_logger.hpp>
-#include "ores.utility/log/severity_level.hpp"
+#include "ores.comms/server.hpp"
+#include "ores.utility/log/make_logger.hpp"
+#include "ores.utility/repository/context.hpp"
 
-namespace ores::utility::log {
+namespace ores::accounts::messaging {
 
-using logger = boost::log::sources::severity_channel_logger<
-    severity_level, std::string
-    >;
+/**
+ * @brief Register accounts subsystem message handlers with the server.
+ *
+ * Registers handlers for all accounts subsystem messages (0x2000-0x2FFF).
+ * Must be called before server.run().
+ *
+ * @param server The server to register handlers with
+ * @param ctx Database context for repository access
+ */
+class registrar {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger(
+            "ores.accounts.messaging.registrar");
+        return instance;
+    }
 
-auto logger_factory(std::string component_name) -> logger;
+public:
+    static void register_handlers(comms::server& server,
+        utility::repository::context ctx);
+};
 
 }
 

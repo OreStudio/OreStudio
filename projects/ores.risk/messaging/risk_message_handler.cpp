@@ -19,59 +19,58 @@
  */
 #include "ores.risk/messaging/risk_message_handler.hpp"
 #include "ores.risk/messaging/protocol.hpp"
-#include "ores.utility/log/logger.hpp"
-
-namespace {
-
-using namespace ores::utility::log;
-auto lg(logger_factory("ores.risk.messaging.risk_message_handler"));
-
-}
 
 namespace ores::risk::messaging {
+
+using namespace ores::utility::log;
 
 risk_message_handler::risk_message_handler(utility::repository::context ctx)
     : ctx_(std::move(ctx)) {}
 
-boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
+boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
+                                     comms::protocol::error_code>>
 risk_message_handler::handle_message(comms::protocol::message_type type,
     std::span<const std::uint8_t> payload, const std::string& remote_address) {
 
-    BOOST_LOG_SEV(lg, debug) << "Handling risk message type "
-                              << std::hex << static_cast<std::uint16_t>(type);
+    BOOST_LOG_SEV(lg(), debug) << "Handling risk message type "
+                               << std::hex << static_cast<std::uint16_t>(type);
 
     switch (type) {
     case comms::protocol::message_type::get_currencies_request:
         co_return co_await handle_get_currencies_request(payload);
     default:
-        BOOST_LOG_SEV(lg, error) << "Unknown risk message type "
-                                  << std::hex << static_cast<std::uint16_t>(type);
+        BOOST_LOG_SEV(lg(), error) << "Unknown risk message type " << std::hex
+                                   << static_cast<std::uint16_t>(type);
         co_return std::unexpected(comms::protocol::error_code::invalid_message_type);
     }
 }
 
-boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
-risk_message_handler::handle_get_currencies_request(std::span<const std::uint8_t> payload) {
-    BOOST_LOG_SEV(lg, debug) << "Processing get_currencies_request";
+boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
+                                     comms::protocol::error_code>>
+risk_message_handler::
+handle_get_currencies_request(std::span<const std::uint8_t> payload) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_currencies_request.";
 
     // Deserialize request
     auto request_result = get_currencies_request::deserialize(payload);
     if (!request_result) {
-        BOOST_LOG_SEV(lg, error) << "Failed to deserialize get_currencies_request";
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_currencies_request";
         co_return std::unexpected(request_result.error());
     }
 
     try {
         // Retrieve currencies from repository
         auto currencies = currency_repo_.read_latest(ctx_);
-        BOOST_LOG_SEV(lg, info) << "Retrieved " << currencies.size() << " currencies";
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << currencies.size()
+                                  << " currencies";
 
         // Create and serialize response
         get_currencies_response response{std::move(currencies)};
         co_return response.serialize();
 
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg, error) << "Exception while retrieving currencies: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Exception while retrieving currencies: "
+                                   << e.what();
         co_return std::unexpected(comms::protocol::error_code::network_error);
     }
 }

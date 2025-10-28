@@ -30,6 +30,7 @@
 #include <QLabel>
 #include <memory>
 #include "ores.comms/client.hpp"
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.qt/ClientCurrencyModel.hpp"
 
 namespace ores::qt {
@@ -37,18 +38,26 @@ namespace ores::qt {
 class CurrencyTabPage : public QWidget {
     Q_OBJECT
 
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger("ores.qt.currency_tab_page");
+        return instance;
+    }
+
 public:
-    explicit CurrencyTabPage(std::shared_ptr<comms::client> client, QWidget* parent = nullptr);
+  explicit CurrencyTabPage(std::shared_ptr<comms::client> client,
+                           QWidget* parent = nullptr);
 
 private slots:
-    void on_data_loaded();
-    void on_load_error(const QString& error_message);
+    void onDataLoaded();
+    void onLoadError(const QString& error_message);
 
 private:
     QVBoxLayout* verticalLayout_;
     QTableView* currencyTableView_;
     QLabel* statusLabel_;
-    client_currency_model* currencyModel_;
+    ClientCurrencyModel* currencyModel_;
 };
 
 }

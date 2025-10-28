@@ -21,32 +21,31 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include "ores.utility/log/logger.hpp"
 #include "ores.utility/repository/repository_exception.hpp"
 #include "ores.risk/repository/currency_mapper.hpp"
 #include "ores.risk/repository/currency_entity.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
 
-namespace {
+namespace ores::risk::repository {
 
+using namespace sqlgen;
+using namespace sqlgen::literals;
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.risk.repository.currency_repository"));
-const std::string max_timestamp("9999-12-31 23:59:59");
 using ores::utility::repository::repository_exception;
 
-void ensure_success(const auto result) {
+void currency_repository::ensure_success(const auto result) {
     if (!result) {
-        BOOST_LOG_SEV(lg, severity_level::error) << result.error().what();
+        BOOST_LOG_SEV(lg(), error) << result.error().what();
         BOOST_THROW_EXCEPTION(
             repository_exception(std::format("Repository error: {}",
                     result.error().what())));
     }
 }
 
-auto make_timestamp(const std::string& s) {
+auto currency_repository::make_timestamp(const std::string& s) {
     const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(s);
     if (!r) {
-        BOOST_LOG_SEV(lg, error) << "Error converting timestamp: '" << s
+        BOOST_LOG_SEV(lg(), error) << "Error converting timestamp: '" << s
                                  << "'. Error: " << r.error().what();
         BOOST_THROW_EXCEPTION(
             repository_exception(
@@ -55,24 +54,17 @@ auto make_timestamp(const std::string& s) {
     return r;
 }
 
-}
-
-namespace ores::risk::repository {
-
-using namespace sqlgen;
-using namespace sqlgen::literals;
-
 std::string currency_repository::sql() {
     const auto query = create_table<currency_entity> | if_not_exists;
     const auto sql = postgres::to_sql(query);
 
-    BOOST_LOG_SEV(lg, debug) << sql;
+    BOOST_LOG_SEV(lg(), debug) << sql;
     return sql;
 }
 
 void currency_repository::
 write(context ctx, const std::vector<domain::currency>& currencies) {
-    BOOST_LOG_SEV(lg, debug) << "Writing currencies to database. Count: "
+    BOOST_LOG_SEV(lg(), debug) << "Writing currencies to database. Count: "
                              << currencies.size();
 
     const auto r = session(ctx.connection_pool())
@@ -81,11 +73,11 @@ write(context ctx, const std::vector<domain::currency>& currencies) {
         .and_then(commit);
     ensure_success(r);
 
-    BOOST_LOG_SEV(lg, debug) << "Finished writing currencies to database.";
+    BOOST_LOG_SEV(lg(), debug) << "Finished writing currencies to database.";
 }
 
 std::vector<domain::currency> currency_repository::read_latest(context ctx) {
-    BOOST_LOG_SEV(lg, debug) << "Reading latest currencies.";
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest currencies.";
 
     static auto max(make_timestamp(max_timestamp));
     const auto query = sqlgen::read<std::vector<currency_entity>> |
@@ -93,18 +85,18 @@ std::vector<domain::currency> currency_repository::read_latest(context ctx) {
         order_by("valid_from"_c.desc());
 
     const auto sql = postgres::to_sql(query);
-    BOOST_LOG_SEV(lg, debug) << "Query: " << sql;
+    BOOST_LOG_SEV(lg(), debug) << "Query: " << sql;
 
     const auto r = session(ctx.connection_pool())
         .and_then(query);
     ensure_success(r);
-    BOOST_LOG_SEV(lg, debug) << "Read latest currencies. Total: " << r->size();
+    BOOST_LOG_SEV(lg(), debug) << "Read latest currencies. Total: " << r->size();
     return currency_mapper::map(*r);
 }
 
 std::vector<domain::currency>
 currency_repository::read_latest(context ctx, const std::string& iso_code) {
-    BOOST_LOG_SEV(lg, debug) << "Reading latest currencies. ISO code: "
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest currencies. ISO code: "
                              << iso_code;
 
     static auto max(make_timestamp(max_timestamp));
@@ -114,13 +106,13 @@ currency_repository::read_latest(context ctx, const std::string& iso_code) {
 
     const auto r = session(ctx.connection_pool()).and_then(query);
     ensure_success(r);
-    BOOST_LOG_SEV(lg, debug) << "Read latest currencies. Total: " << r->size();
+    BOOST_LOG_SEV(lg(), debug) << "Read latest currencies. Total: " << r->size();
     return currency_mapper::map(*r);
 }
 
 std::vector<domain::currency>
 currency_repository::read_at_timepoint(context ctx, const std::string& as_of) {
-    BOOST_LOG_SEV(lg, debug) << "Reading currencies at timepoint: " << as_of;
+    BOOST_LOG_SEV(lg(), debug) << "Reading currencies at timepoint: " << as_of;
 
     const auto ts = make_timestamp(as_of);
     const auto query = sqlgen::read<std::vector<currency_entity>> |
@@ -128,7 +120,7 @@ currency_repository::read_at_timepoint(context ctx, const std::string& as_of) {
 
     const auto r = session(ctx.connection_pool()).and_then(query);
     ensure_success(r);
-    BOOST_LOG_SEV(lg, debug) << "Read latest currencies. Total: " << r->size();
+    BOOST_LOG_SEV(lg(), debug) << "Read latest currencies. Total: " << r->size();
     return currency_mapper::map(*r);
 }
 
@@ -144,7 +136,7 @@ currency_repository::read_at_timepoint(context ctx, const std::string& as_of,
     const auto r = session(ctx.connection_pool())
         .and_then(query);
     ensure_success(r);
-    BOOST_LOG_SEV(lg, debug) << "Read latest currencies. Total: " << r->size();
+    BOOST_LOG_SEV(lg(), debug) << "Read latest currencies. Total: " << r->size();
     return currency_mapper::map(*r);
 }
 
@@ -155,7 +147,7 @@ std::vector<domain::currency> currency_repository::read_all(context ctx) {
     const auto r = session(ctx.connection_pool())
         .and_then(query);
     ensure_success(r);
-    BOOST_LOG_SEV(lg, debug) << "Read latest currencies. Total: " << r->size();
+    BOOST_LOG_SEV(lg(), debug) << "Read latest currencies. Total: " << r->size();
     return currency_mapper::map(*r);
 }
 
@@ -167,7 +159,7 @@ currency_repository::read_all(context ctx, const std::string& iso_code) {
 
     const auto r = session(ctx.connection_pool()).and_then(query);
     ensure_success(r);
-    BOOST_LOG_SEV(lg, debug) << "Read latest currencies. Total: " << r->size();
+    BOOST_LOG_SEV(lg(), debug) << "Read latest currencies. Total: " << r->size();
     return currency_mapper::map(*r);
 }
 

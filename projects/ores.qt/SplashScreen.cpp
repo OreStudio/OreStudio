@@ -21,10 +21,13 @@
 
 namespace ores::qt {
 
+using namespace ores::utility::log;
+
 SplashScreen::SplashScreen(const QPixmap& pixmap)
     : QSplashScreen(pixmap) {}
 
 void SplashScreen::paintEvent(QPaintEvent* e) {
+    BOOST_LOG_SEV(lg(), info) << "Painting the splash screen.";
     QSplashScreen::paintEvent(e);
     painted_ = true;
 }

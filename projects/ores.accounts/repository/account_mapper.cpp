@@ -19,20 +19,14 @@
  */
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
-#include "ores.utility/log/logger.hpp"
 #include "ores.accounts/repository/account_mapper.hpp"
-
-namespace {
-
-using namespace ores::utility::log;
-auto lg(logger_factory("ores.accounts.repository.account_mapper"));
-
-}
 
 namespace ores::accounts::repository {
 
+using namespace ores::utility::log;
+
 domain::account account_mapper::map(const account_entity& v) {
-    BOOST_LOG_SEV(lg, debug) << "Mapping db entity: " << v;
+    BOOST_LOG_SEV(lg(), debug) << "Mapping db entity: " << v;
 
     domain::account r;
     r.version = v.version;
@@ -45,12 +39,12 @@ domain::account account_mapper::map(const account_entity& v) {
     r.email = v.email;
     r.is_admin = v.is_admin != 0 ? true : false;
 
-    BOOST_LOG_SEV(lg, debug) << "Mapped db entity. Result: " << r;
+    BOOST_LOG_SEV(lg(), debug) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 account_entity account_mapper::map(const domain::account& v) {
-    BOOST_LOG_SEV(lg, debug) << "Mapping domain entity: " << v;
+    BOOST_LOG_SEV(lg(), debug) << "Mapping domain entity: " << v;
 
     account_entity r;
     r.id = boost::lexical_cast<std::string>(v.id);
@@ -63,32 +57,32 @@ account_entity account_mapper::map(const domain::account& v) {
     r.is_admin = v.is_admin;
     r.modified_by = v.modified_by;
 
-    BOOST_LOG_SEV(lg, debug) << "Mapped domain entity. Result: " << r;
+    BOOST_LOG_SEV(lg(), debug) << "Mapped domain entity. Result: " << r;
     return r;
 }
 
 std::vector<domain::account>
 account_mapper::map(const std::vector<account_entity>& v) {
-    BOOST_LOG_SEV(lg, debug) << "Mapping db entities. Total: " << v.size();
+    BOOST_LOG_SEV(lg(), debug) << "Mapping db entities. Total: " << v.size();
 
     std::vector<domain::account> r;
     r.reserve(v.size());
     std::ranges::transform(v, std::back_inserter(r),
         [](const auto& ve) { return map(ve); });
 
-    BOOST_LOG_SEV(lg, debug) << "Mapped db entities.";
+    BOOST_LOG_SEV(lg(), debug) << "Mapped db entities.";
     return r;
 }
 
 std::vector<account_entity>
 account_mapper::map(const std::vector<domain::account>& v) {
-    BOOST_LOG_SEV(lg, debug) << "Mapping domain entities. Count: " << v.size();
+    BOOST_LOG_SEV(lg(), debug) << "Mapping domain entities. Count: " << v.size();
 
     std::vector<account_entity> r;
     r.reserve(v.size());
     std::ranges::transform(v, std::back_inserter(r),
         [](const auto& ve) { return map(ve); });
-    BOOST_LOG_SEV(lg, debug) << "Mapped domain entities.";
+    BOOST_LOG_SEV(lg(), debug) << "Mapped domain entities.";
     return r;
 }
 

@@ -23,14 +23,6 @@
 #include "ores.utility/log/logging_exception.hpp"
 #include "ores.utility/log/logging_options_validator.hpp"
 
-namespace {
-
-const std::string no_logging("Must log to file and/or console");
-const std::string unexpected_dir(
-    "Output directory supplied without a file name.");
-
-}
-
 namespace ores::utility::log {
 
 void logging_options_validator::validate(const logging_options& cfg) {
@@ -38,15 +30,20 @@ void logging_options_validator::validate(const logging_options& cfg) {
      * We must have at least one form of logging, file or console.
      */
     const bool output_to_file(!cfg.filename.empty());
-    if (!cfg.output_to_console && !output_to_file)
+    if (!cfg.output_to_console && !output_to_file) {
+        const std::string no_logging("Must log to file and/or console");
         BOOST_THROW_EXCEPTION(logging_exception(no_logging));
+    }
 
     /*
      * If the filename was not supplied, we do not expect the output directory
      * to have been supplied either, as its only applicable to file logging.
      */
-    if (cfg.filename.empty() && !cfg.output_directory.empty())
+    if (cfg.filename.empty() && !cfg.output_directory.empty()) {
+        const std::string unexpected_dir(
+            "Output directory supplied without a file name.");
         BOOST_THROW_EXCEPTION(logging_exception(unexpected_dir));
+    }
 
     /*
      * Attempt to convert severity. Function throws if invalid.

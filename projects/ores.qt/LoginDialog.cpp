@@ -30,7 +30,9 @@
 
 namespace ores::qt {
 
-login_dialog::login_dialog(QWidget* parent)
+using namespace ores::utility::log;
+
+LoginDialog::LoginDialog(QWidget* parent)
     : QDialog(parent),
       username_edit_(new QLineEdit(this)),
       password_edit_(new QLineEdit(this)),
@@ -40,18 +42,18 @@ login_dialog::login_dialog(QWidget* parent)
       cancel_button_(new QPushButton("Cancel", this)),
       status_label_(new QLabel(this)) {
 
-    setup_ui();
+    setupUI();
 
     // Connect signals
-    connect(login_button_, &QPushButton::clicked, this, &login_dialog::on_login_clicked);
+    connect(login_button_, &QPushButton::clicked, this, &LoginDialog::onLoginClicked);
     connect(cancel_button_, &QPushButton::clicked, this, &QDialog::reject);
-    connect(this, &login_dialog::connection_completed,
-            this, &login_dialog::on_connection_result);
-    connect(this, &login_dialog::login_completed,
-            this, &login_dialog::on_login_result);
+    connect(this, &LoginDialog::connectionCompleted,
+            this, &LoginDialog::onConnectionResult);
+    connect(this, &LoginDialog::loginCompleted,
+            this, &LoginDialog::onLoginResult);
 }
 
-login_dialog::~login_dialog() {
+LoginDialog::~LoginDialog() {
     // Reset work guard to allow IO context to finish
     work_guard_.reset();
 
@@ -63,7 +65,9 @@ login_dialog::~login_dialog() {
     }
 }
 
-void login_dialog::setup_ui() {
+void LoginDialog::setupUI() {
+    BOOST_LOG_SEV(lg(), info) << "Setting up UI.";
+
     setWindowTitle("Login to ORE Studio");
     setModal(true);
     setMinimumWidth(400);
@@ -111,7 +115,9 @@ void login_dialog::setup_ui() {
     login_button_->setDefault(true);
 }
 
-void login_dialog::enable_form(bool enabled) {
+void LoginDialog::enableForm(bool enabled) {
+    BOOST_LOG_SEV(lg(), info) << "Enable form: " << enabled;
+
     username_edit_->setEnabled(enabled);
     password_edit_->setEnabled(enabled);
     host_edit_->setEnabled(enabled);
@@ -119,7 +125,9 @@ void login_dialog::enable_form(bool enabled) {
     login_button_->setEnabled(enabled);
 }
 
-void login_dialog::on_login_clicked() {
+void LoginDialog::onLoginClicked() {
+    BOOST_LOG_SEV(lg(), info) << "On login was clicked.";
+
     const auto username = username_edit_->text().trimmed();
     const auto password = password_edit_->text();
     const auto host = host_edit_->text().trimmed();
@@ -145,12 +153,13 @@ void login_dialog::on_login_clicked() {
     }
 
     // Disable form during connection
-    enable_form(false);
+    enableForm(false);
     status_label_->setText("Connecting to server...");
 
     // Create IO context and work guard to keep it alive
     io_context_ = std::make_unique<boost::asio::io_context>();
-    work_guard_ = std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
+    work_guard_ = std::make_unique<boost::asio::executor_work_guard<
+        boost::asio::io_context::executor_type>>(
         boost::asio::make_work_guard(*io_context_)
     );
 
@@ -170,16 +179,17 @@ void login_dialog::on_login_clicked() {
 
     // Perform connection asynchronously using QtConcurrent
     auto* watcher = new QFutureWatcher<bool>(this);
-    connect(watcher, &QFutureWatcher<bool>::finished, [this, watcher, username, password]() {
+    connect(watcher, &QFutureWatcher<bool>::finished,
+        [this, watcher, username, password]() {
         const bool connected = watcher->result();
         watcher->deleteLater();
 
         if (connected) {
-            emit connection_completed(true, QString());
+            emit connectionCompleted(true, QString());
             // Proceed to login
-            perform_login(username.toStdString(), password.toStdString());
+            performLogin(username.toStdString(), password.toStdString());
         } else {
-            emit connection_completed(false, "Failed to connect to server");
+            emit connectionCompleted(false, "Failed to connect to server");
         }
     });
 
@@ -190,7 +200,10 @@ void login_dialog::on_login_clicked() {
     watcher->setFuture(future);
 }
 
-void login_dialog::perform_login(const std::string& username, const std::string& password) {
+void LoginDialog::
+performLogin(const std::string& username, const std::string& password) {
+    BOOST_LOG_SEV(lg(), info) << "Performing login.";
+
     status_label_->setText("Authenticating...");
 
     // Perform login asynchronously
@@ -199,7 +212,7 @@ void login_dialog::perform_login(const std::string& username, const std::string&
             [this, watcher]() {
         const auto [success, error_msg] = watcher->result();
         watcher->deleteLater();
-        emit login_completed(success, error_msg);
+        emit loginCompleted(success, error_msg);
     });
 
     QFuture<std::pair<bool, QString>> future = QtConcurrent::run(
@@ -217,23 +230,29 @@ void login_dialog::perform_login(const std::string& username, const std::string&
                 std::move(payload)
             );
 
-            // Send request
-            auto response_result = client_->send_request_sync(std::move(request_frame));
+            BOOST_LOG_SEV(lg(), info) << "Sending login request for: "
+                                      << username;
+            auto response_result = client_->send_request_sync(
+                std::move(request_frame));
 
             if (!response_result) {
+                BOOST_LOG_SEV(lg(), info) << "Error sending login request.";
                 return {false, QString("Network error: failed to send login request")};
             }
 
             // Deserialize response
+            BOOST_LOG_SEV(lg(), info) << "Received login response.";
             auto response = accounts::messaging::login_response::deserialize(
                 response_result->payload()
             );
 
             if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to parse login response.";
                 return {false, QString("Protocol error: failed to parse login response")};
             }
 
             if (!response->success) {
+                BOOST_LOG_SEV(lg(), error) << response->error_message;
                 return {false, QString::fromStdString(response->error_message)};
             }
 
@@ -244,9 +263,12 @@ void login_dialog::perform_login(const std::string& username, const std::string&
     watcher->setFuture(future);
 }
 
-void login_dialog::on_connection_result(bool success, const QString& error_message) {
+void LoginDialog::onConnectionResult(bool success, const QString& error_message) {
+    BOOST_LOG_SEV(lg(), debug) << "On connection result called.";
     if (!success) {
-        enable_form(true);
+        BOOST_LOG_SEV(lg(), warn) << "Connection was not successful.";
+
+        enableForm(true);
         status_label_->setText("");
         status_label_->setStyleSheet("QLabel { color: #c00; }");
 
@@ -264,16 +286,23 @@ void login_dialog::on_connection_result(bool success, const QString& error_messa
         io_thread_.reset();
         io_context_.reset();
         client_.reset();
+    } else {
+        BOOST_LOG_SEV(lg(), debug) << "Connection was successful.";
     }
 }
 
-void login_dialog::on_login_result(bool success, const QString& error_message) {
+void LoginDialog::onLoginResult(bool success, const QString& error_message) {
+    BOOST_LOG_SEV(lg(), debug) << "On login result called.";
     if (success) {
+        BOOST_LOG_SEV(lg(), debug) << "Login was successful.";
         status_label_->setText("Login successful!");
         status_label_->setStyleSheet("QLabel { color: #0a0; }");
         accept();  // Close dialog with success
     } else {
-        enable_form(true);
+        BOOST_LOG_SEV(lg(), warn) << "Login failed: "
+                                  << error_message.toStdString();
+
+        enableForm(true);
         status_label_->setText("");
 
         QMessageBox::critical(this, "Login Failed",

@@ -24,12 +24,10 @@
 #pragma once
 #endif
 
-#include "ores.utility/log/logger.hpp" // IWYU pragma: keep.
+#include "ores.utility/log/make_logger.hpp" // IWYU pragma: keep.
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
 
 namespace ores::utility::test {
-
-void log_if_test_has_failed();
 
 ores::utility::log::scoped_lifecycle_manager
 scoped_lifecycle_manager_factory(std::string test_module,
@@ -64,8 +62,7 @@ scoped_lifecycle_manager_factory(std::string test_module,
     auto sl(ores::utility::test::scoped_lifecycle_manager_factory(     \
             test_module, test_suite, function_name));                  \
     using namespace ores::utility::log;                                \
-    ores::utility::log::logger lg(                                     \
-        ores::utility::log::logger_factory(test_suite));
+    auto lg(make_logger(test_suite));
 
 
 #ifdef SETUP_TEST_LOG_SOURCE_DEBUG
@@ -76,7 +73,6 @@ scoped_lifecycle_manager_factory(std::string test_module,
     auto sl(ores::utility::test::scoped_lifecycle_manager_factory(    \
             test_module, test_suite, function_name, true));           \
     using namespace ores::utility::log;                               \
-    ores::utility::log::logger lg(                                    \
-        ores::utility::log::logger_factory(test_suite));
+    auto lg(make_logger(test_suite));
 
 #endif

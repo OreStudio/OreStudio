@@ -18,39 +18,33 @@
  *
  */
 #include <charconv>
-#include "ores.utility/log/logger.hpp"
 #include "ores.utility/string/conversion_error.hpp"
 #include "ores.utility/string/converter.hpp"
 
-namespace {
-
-using namespace ores::utility::log;
-auto lg(logger_factory("ores.utility.string.converter"));
-
-const std::string invalid_argument("Invalid argument: ");
-const std::string out_of_range("Out of range: ");
-const std::string other_conversion_error("Unspecified conversion error: ");
-
-}
-
 namespace ores::utility::string {
 
-int convert_to_int(std::string s, int base) {
-    BOOST_LOG_SEV(lg, debug) << "Converting to int: " << s;
+using namespace ores::utility::log;
+
+int converter::string_to_int(std::string s, int base) {
+    BOOST_LOG_SEV(lg(), debug) << "Converting to int: " << s;
     int r;
     auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), r, base);
 
+    const std::string invalid_argument("Invalid argument: ");
+    const std::string out_of_range("Out of range: ");
+    const std::string other_conversion_error("Unspecified conversion error: ");
+
      if (ec == std::errc()) {
-        BOOST_LOG_SEV(lg, debug) << "Converted successfully: " << r;
+        BOOST_LOG_SEV(lg(), debug) << "Converted successfully: " << r;
         return r;
-    } else if (ec == std::errc::invalid_argument) {
-        BOOST_LOG_SEV(lg, error) << invalid_argument << s;
+     } else if (ec == std::errc::invalid_argument) {
+        BOOST_LOG_SEV(lg(), error) << invalid_argument << s;
         BOOST_THROW_EXCEPTION(conversion_error(invalid_argument + s));
     } else if (ec == std::errc::result_out_of_range) {
-        BOOST_LOG_SEV(lg, error) << invalid_argument << s;
+        BOOST_LOG_SEV(lg(), error) << invalid_argument << s;
         BOOST_THROW_EXCEPTION(conversion_error(out_of_range + s));
      } else {
-         BOOST_LOG_SEV(lg, error) << other_conversion_error << s;
+         BOOST_LOG_SEV(lg(), error) << other_conversion_error << s;
          BOOST_THROW_EXCEPTION(conversion_error(other_conversion_error + s));
      }
 }

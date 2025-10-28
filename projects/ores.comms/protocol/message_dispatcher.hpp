@@ -24,6 +24,7 @@
 #include <memory>
 #include <expected>
 #include <boost/asio/awaitable.hpp>
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/protocol/frame.hpp"
 #include "ores.comms/protocol/message_handler.hpp"
 
@@ -41,6 +42,14 @@ namespace ores::comms::protocol {
  * during initialization before concurrent access begins.
  */
 class message_dispatcher final {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger(
+            "ores.comms.protocol.message_dispatcher");
+        return instance;
+    }
+
 public:
     message_dispatcher();
 

@@ -22,14 +22,14 @@
 #include <iostream>
 #include <boost/exception/diagnostic_information.hpp>
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.cli/app/application.hpp"
-#include "ores.cli/config/parser.hpp"
-#include "ores.cli/app/host.hpp"
+#include "ores.service/app/application.hpp"
+#include "ores.service/config/parser.hpp"
+#include "ores.service/app/host.hpp"
 
-namespace ores::cli::app {
+namespace ores::service::app {
 
 using namespace ores::utility::log;
-using ores::cli::config::parser;
+using ores::service::config::parser;
 using ores::utility::log::scoped_lifecycle_manager;
 
 void host::report_exception(const bool can_log, const std::exception& e) {
@@ -59,8 +59,9 @@ void host::report_exception(const bool can_log, const std::exception& e) {
     BOOST_LOG_SEV(lg(), error) << "Failed to execute command.";
 }
 
-boost::asio::awaitable<int> host::execute(const std::vector<std::string>& args,
-    scoped_lifecycle_manager& slm) {
+boost::asio::awaitable<int>
+host::execute(const std::vector<std::string>& args,
+    scoped_lifecycle_manager& slm, boost::asio::io_context& io_ctx) {
 
     /*
      * Create the configuration from command line options.
@@ -93,8 +94,8 @@ boost::asio::awaitable<int> host::execute(const std::vector<std::string>& args,
     /*
      * Execute the application.
      */
-    ores::cli::app::application app;
-    co_await app.run(cfg);
+    ores::service::app::application app;
+    co_await app.run(io_ctx, cfg);
     co_return EXIT_SUCCESS;
 }
 

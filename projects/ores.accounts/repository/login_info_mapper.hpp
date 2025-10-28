@@ -25,6 +25,7 @@
 #endif
 
 #include <vector>
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.accounts/domain/login_info.hpp"
 #include "ores.accounts/repository/login_info_entity.hpp"
 
@@ -34,6 +35,20 @@ namespace ores::accounts::repository {
  * @brief Maps domain model entities to data storage layer and vice-versa.
  */
 class login_info_mapper {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger(
+            "ores.accounts.repository.login_info_mapper");
+        return instance;
+    }
+
+    static std::chrono::system_clock::time_point
+    timestamp_to_timepoint(const sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">& ts);
+
+    static sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
+    timepoint_to_timestamp(const std::chrono::system_clock::time_point& tp);
+
 public:
     static domain::login_info map(const login_info_entity& v);
     static login_info_entity map(const domain::login_info& v);

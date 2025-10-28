@@ -17,10 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_RISK_MESSAGING_REGISTRATION_HPP
-#define ORES_RISK_MESSAGING_REGISTRATION_HPP
+#ifndef ORES_RISK_MESSAGING_REGISTRAR_HPP
+#define ORES_RISK_MESSAGING_REGISTRAR_HPP
 
 #include "ores.comms/server.hpp"
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
 
 namespace ores::risk::messaging {
@@ -34,8 +35,19 @@ namespace ores::risk::messaging {
  * @param server The server to register handlers with
  * @param ctx Database context for repository access
  */
-void register_risk_handlers(comms::server& server,
-    utility::repository::context ctx);
+class registrar {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger(
+            "ores.risk.messaging.registrar");
+        return instance;
+    }
+
+public:
+    static void register_handlers(comms::server& server,
+        utility::repository::context ctx);
+};
 
 }
 

@@ -20,19 +20,15 @@
 #include "ores.utility/log/severity_level.hpp"
 #include "ores.utility/exception/invalid_enum_value.hpp"
 
-namespace {
-
-const std::string trace_level("trace");
-const std::string debug_level("debug");
-const std::string info_level("info");
-const std::string warn_level("warn");
-const std::string error_level("error");
-
-}
-
 namespace ores::utility::log {
 
 severity_level to_severity_level(const std::string& s) {
+    static const std::string trace_level("trace");
+    static const std::string debug_level("debug");
+    static const std::string info_level("info");
+    static const std::string warn_level("warn");
+    static const std::string error_level("error");
+
     if (s == trace_level)
         return severity_level::trace;
     if (s == debug_level)

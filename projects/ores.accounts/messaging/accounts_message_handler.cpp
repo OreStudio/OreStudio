@@ -22,16 +22,10 @@
 #include "ores.accounts/service/account_service.hpp"
 #include "ores.accounts/messaging/accounts_message_handler.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
-#include "ores.utility/log/logger.hpp"
-
-namespace {
-
-using namespace ores::utility::log;
-auto lg(logger_factory("ores.accounts.messaging.accounts_message_handler"));
-
-}
 
 namespace ores::accounts::messaging {
+
+using namespace ores::utility::log;
 
 accounts_message_handler::accounts_message_handler(utility::repository::context ctx)
     : ctx_(std::move(ctx)) {}
@@ -41,7 +35,7 @@ boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
 accounts_message_handler::handle_message(comms::protocol::message_type type,
     std::span<const std::uint8_t> payload, const std::string& remote_address) {
 
-    BOOST_LOG_SEV(lg, debug) << "Handling accounts message type "
+    BOOST_LOG_SEV(lg(), debug) << "Handling accounts message type "
                               << std::hex << static_cast<std::uint16_t>(type);
 
     switch (type) {
@@ -54,7 +48,7 @@ accounts_message_handler::handle_message(comms::protocol::message_type type,
     case comms::protocol::message_type::unlock_account_request:
         co_return co_await handle_unlock_account_request(payload);
     default:
-        BOOST_LOG_SEV(lg, error) << "Unknown accounts message type "
+        BOOST_LOG_SEV(lg(), error) << "Unknown accounts message type "
                                   << std::hex << static_cast<std::uint16_t>(type);
         co_return std::unexpected(comms::protocol::error_code::invalid_message_type);
     }
@@ -64,16 +58,16 @@ boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
                                      comms::protocol::error_code>>
 accounts_message_handler::
 handle_create_account_request(std::span<const std::uint8_t> payload) {
-    BOOST_LOG_SEV(lg, debug) << "Processing create_account_request";
+    BOOST_LOG_SEV(lg(), debug) << "Processing create_account_request";
 
     auto request_result = create_account_request::deserialize(payload);
     if (!request_result) {
-        BOOST_LOG_SEV(lg, error) << "Failed to deserialize create_account_request";
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize create_account_request";
         co_return std::unexpected(request_result.error());
     }
 
     const auto& request = *request_result;
-    BOOST_LOG_SEV(lg, debug) << "Request: " << request;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
     try {
         service::account_service s(account_repo_, login_info_repo_);
@@ -81,40 +75,40 @@ handle_create_account_request(std::span<const std::uint8_t> payload) {
                                                    request.password, request.modified_by,
             request.is_admin);
 
-        BOOST_LOG_SEV(lg, info) << "Created account with ID: " << account.id
+        BOOST_LOG_SEV(lg(), info) << "Created account with ID: " << account.id
                                  << " for username: " << account.username;
 
         create_account_response response{account.id};
         co_return response.serialize();
 
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg, error) << "Exception while creating account: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Exception while creating account: " << e.what();
         co_return std::unexpected(comms::protocol::error_code::network_error);
     }
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
 accounts_message_handler::handle_list_accounts_request(std::span<const std::uint8_t> payload) {
-    BOOST_LOG_SEV(lg, debug) << "Processing list_accounts_request";
+    BOOST_LOG_SEV(lg(), debug) << "Processing list_accounts_request";
 
     // Deserialize request
     auto request_result = list_accounts_request::deserialize(payload);
     if (!request_result) {
-        BOOST_LOG_SEV(lg, error) << "Failed to deserialize list_accounts_request";
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize list_accounts_request";
         co_return std::unexpected(request_result.error());
     }
 
     try {
         // Retrieve accounts from repository
         auto accounts = account_repo_.read_latest(ctx_);
-        BOOST_LOG_SEV(lg, info) << "Retrieved " << accounts.size() << " accounts";
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << accounts.size() << " accounts";
 
         // Create and serialize response
         list_accounts_response response{std::move(accounts)};
         co_return response.serialize();
 
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg, error) << "Exception while retrieving accounts: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Exception while retrieving accounts: " << e.what();
         co_return std::unexpected(comms::protocol::error_code::network_error);
     }
 }
@@ -122,17 +116,17 @@ accounts_message_handler::handle_list_accounts_request(std::span<const std::uint
 boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
 accounts_message_handler::handle_login_request(std::span<const std::uint8_t> payload,
     const std::string& remote_address) {
-    BOOST_LOG_SEV(lg, debug) << "Processing login_request from " << remote_address;
+    BOOST_LOG_SEV(lg(), debug) << "Processing login_request from " << remote_address;
 
     // Deserialize request
     auto request_result = login_request::deserialize(payload);
     if (!request_result) {
-        BOOST_LOG_SEV(lg, error) << "Failed to deserialize login_request";
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize login_request";
         co_return std::unexpected(request_result.error());
     }
 
     const auto& request = *request_result;
-    BOOST_LOG_SEV(lg, debug) << "Request: " << request;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
     try {
         // Extract IP address from remote_address (format is "IP:port")
@@ -149,7 +143,7 @@ accounts_message_handler::handle_login_request(std::span<const std::uint8_t> pay
         domain::account account = s.login(ctx_, request.username,
             request.password, ip_address);
 
-        BOOST_LOG_SEV(lg, info) << "Successful login for username: "
+        BOOST_LOG_SEV(lg(), info) << "Successful login for username: "
                                 << account.username
                                  << " from IP: " << ip_address;
 
@@ -164,7 +158,7 @@ accounts_message_handler::handle_login_request(std::span<const std::uint8_t> pay
         co_return response.serialize();
 
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg, warn) << "Login failed: " << e.what();
+        BOOST_LOG_SEV(lg(), warn) << "Login failed: " << e.what();
 
         // Create failed response
         login_response response{
@@ -180,24 +174,24 @@ accounts_message_handler::handle_login_request(std::span<const std::uint8_t> pay
 
 boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
 accounts_message_handler::handle_unlock_account_request(std::span<const std::uint8_t> payload) {
-    BOOST_LOG_SEV(lg, debug) << "Processing unlock_account_request";
+    BOOST_LOG_SEV(lg(), debug) << "Processing unlock_account_request";
 
     // Deserialize request
     auto request_result = unlock_account_request::deserialize(payload);
     if (!request_result) {
-        BOOST_LOG_SEV(lg, error) << "Failed to deserialize unlock_account_request";
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize unlock_account_request";
         co_return std::unexpected(request_result.error());
     }
 
     const auto& request = *request_result;
-    BOOST_LOG_SEV(lg, debug) << "Request: " << request;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
     try {
         // Attempt to unlock the account
         service::account_service s(account_repo_, login_info_repo_);
         s.unlock_account(ctx_, request.account_id);
 
-        BOOST_LOG_SEV(lg, info) << "Successfully unlocked account: "
+        BOOST_LOG_SEV(lg(), info) << "Successfully unlocked account: "
                                 << boost::uuids::to_string(request.account_id);
 
         // Create successful response
@@ -208,7 +202,7 @@ accounts_message_handler::handle_unlock_account_request(std::span<const std::uin
         co_return response.serialize();
 
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg, warn) << "Failed to unlock account: " << e.what();
+        BOOST_LOG_SEV(lg(), warn) << "Failed to unlock account: " << e.what();
 
         // Create failed response
         unlock_account_response response{

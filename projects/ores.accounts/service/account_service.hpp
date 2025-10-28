@@ -27,10 +27,11 @@
 
 #include <string>
 #include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include "ores.accounts/domain/account.hpp"
 #include "ores.accounts/repository/account_repository.hpp"
 #include "ores.accounts/repository/login_info_repository.hpp"
+#include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include "ores.utility/log/make_logger.hpp"
 
 namespace ores::accounts::service {
 
@@ -38,6 +39,16 @@ namespace ores::accounts::service {
  * @brief Service for managing user accounts including creation, listing, and deletion.
  */
 class account_service {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger(
+            "ores.accounts.service.account_service");
+        return instance;
+    }
+
+    static void throw_if_empty(const std::string& name, const std::string& value);
+
 public:
     using context = ores::utility::repository::context;
 

@@ -61,12 +61,9 @@ int main(int argc, char** argv) {
     boost::asio::io_context io_ctx;
 
     int result = EXIT_FAILURE;
-    boost::asio::co_spawn(
-        io_ctx,
-        [&]() -> boost::asio::awaitable<void> {
+    boost::asio::co_spawn(io_ctx, [&]() -> boost::asio::awaitable<void> {
             result = co_await async_main(argc, argv);
-        },
-        boost::asio::detached);
+        }, boost::asio::detached);
 
     io_ctx.run();
     OPENSSL_cleanup();

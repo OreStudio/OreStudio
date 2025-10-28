@@ -26,6 +26,8 @@
 #endif
 
 #include <string>
+#include "ores.utility/log/make_logger.hpp"
+
 
 namespace ores::accounts::security {
 
@@ -38,6 +40,31 @@ namespace ores::accounts::security {
  * strong security through configurable CPU/memory cost parameters.
  */
 class password_manager {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger(
+            "ores.accounts.security.password_manager");
+        return instance;
+    }
+
+    /**
+     * @brief Helper to Base64 encode.
+     */
+    static std::string base64_encode(const std::vector<unsigned char>& data);
+
+    /**
+     * @brief Helper to Base64 decode
+     */
+    static std::vector<unsigned char> base64_decode(const std::string& encoded);
+
+    // scrypt parameters - OWASP recommendations
+    static constexpr std::uint64_t DEFAULT_N = 1 << 14; /// CPU/memory cost
+    static constexpr std::uint32_t DEFAULT_r = 8;       /// Block size
+    static constexpr std::uint32_t DEFAULT_p = 1;       /// Parallelization
+    static constexpr std::size_t SALT_LEN = 16;
+    static constexpr std::size_t HASH_LEN = 64;
+
 public:
     /**
      * @brief Creates a password hash from the given password.

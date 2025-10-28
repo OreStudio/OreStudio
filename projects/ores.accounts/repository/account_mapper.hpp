@@ -26,6 +26,7 @@
 
 #include "ores.accounts/domain/account.hpp"
 #include "ores.accounts/repository/account_entity.hpp"
+#include "ores.utility/log/make_logger.hpp"
 
 namespace ores::accounts::repository {
 
@@ -33,6 +34,13 @@ namespace ores::accounts::repository {
  * @brief Maps domain model entities to data storage layer and vice-versa.
  */
 class account_mapper {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance =
+            make_logger("ores.accounts.repository.account_mapper");
+        return instance;
+    }
 public:
     static domain::account map(const account_entity& v);
     static account_entity map(const domain::account& v);

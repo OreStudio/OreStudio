@@ -17,33 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/log/logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.risk/orexml/CurrencyConfig.hpp"
 #include "ores.risk/orexml/currency_mapper.hpp"
 #include "ores.risk/orexml/exporter.hpp"
 
-namespace {
-
-using namespace ores::utility::log;
-auto lg(logger_factory("ores.xml.exporter"));
-
-}
-
 namespace ores::risk::orexml {
 
 using domain::currency;
+using namespace ores::utility::log;
 
 std::string
 exporter::export_currency_config(const std::vector<currency>& v) {
-    BOOST_LOG_SEV(lg, debug) << "Started import. Total: " << v.size();
-    BOOST_LOG_SEV(lg, trace) << "Currencies: " << v;
+    BOOST_LOG_SEV(lg(), debug) << "Started import. Total: " << v.size();
+    BOOST_LOG_SEV(lg(), trace) << "Currencies: " << v;
 
     const auto mapped = currency_mapper::map(v);
     std::string r = CurrencyConfig::to_xml(mapped);
-    BOOST_LOG_SEV(lg, trace) << "XML: " << v;
+    BOOST_LOG_SEV(lg(), trace) << "XML: " << v;
 
-    BOOST_LOG_SEV(lg, debug) << "Finished importing. Result: " << r;
+    BOOST_LOG_SEV(lg(), debug) << "Finished importing. Result: " << r;
     return r;
 }
 

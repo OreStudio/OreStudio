@@ -17,32 +17,39 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <memory>
-#include "ores.risk/messaging/registration.hpp"
-#include "ores.risk/messaging/risk_message_handler.hpp"
-#include "ores.utility/log/logger.hpp"
+#ifndef ORES_SERVICE_APP_APPLICATION_HPP
+#define ORES_SERVICE_APP_APPLICATION_HPP
 
-namespace {
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
 
-using namespace ores::utility::log;
-auto lg(logger_factory("ores.risk.messaging.registration"));
+#include <boost/asio/awaitable.hpp>
+#include "ores.utility/log/make_logger.hpp"
+#include "ores.service/config/options.hpp"
+
+namespace ores::service::app {
+
+/**
+ * @brief Entry point for the ores command line application.
+ */
+class application final {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger("ores.cli.application");
+        return instance;
+    }
+
+public:
+    application();
+    application(const application&) = delete;
+    application& operator=(const application&) = delete;
+
+    boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
+        const config::options& cfg) const;
+};
 
 }
 
-namespace ores::risk::messaging {
-
-void register_risk_handlers(comms::server& server,
-    utility::repository::context ctx) {
-    BOOST_LOG_SEV(lg, info) << "Registering risk subsystem message handlers";
-
-    // Create handler for risk subsystem
-    auto handler = std::make_shared<risk_message_handler>(std::move(ctx));
-
-    // Register for risk message type range
-    comms::protocol::message_type_range risk_range{.min=0x1000, .max=0x1FFF};
-    server.register_handler(risk_range, std::move(handler));
-
-    BOOST_LOG_SEV(lg, info) << "Risk subsystem message handlers registered successfully";
-}
-
-}
+#endif

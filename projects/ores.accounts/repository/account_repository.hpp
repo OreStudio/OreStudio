@@ -28,6 +28,7 @@
 #include <vector>
 #include <boost/uuid/uuid.hpp>
 #include <sqlgen/postgres.hpp>
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
 #include "ores.accounts/domain/account.hpp"
 
@@ -37,6 +38,18 @@ namespace ores::accounts::repository {
  * @brief Reads and writes accounts off of data storage.
  */
 class account_repository {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger(
+            "ores.accounts.repository.account_repository");
+        return instance;
+    }
+
+    void ensure_success(const auto result);
+    auto make_timestamp(const std::string& s);
+    const std::string max_timestamp = "9999-12-31 23:59:59";
+
 public:
     using context = ores::utility::repository::context;
 

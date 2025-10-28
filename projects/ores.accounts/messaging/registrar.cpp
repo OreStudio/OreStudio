@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,29 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <iostream>
-#include <boost/exception/info.hpp>
-#include <boost/test/unit_test_monitor.hpp>
-#include <boost/exception/diagnostic_information.hpp>
-#include "ores.utility/test/fixture.hpp"
+#include <memory>
+#include "ores.accounts/messaging/registrar.hpp"
+#include "ores.accounts/messaging/accounts_message_handler.hpp"
 
-namespace  {
+namespace ores::accounts::messaging {
 
-const std::string error_msg("Error during test");
+using namespace ores::utility::log;
 
-inline void translate(const boost::exception& e) {
-    std::cerr << std::endl << boost::diagnostic_information(e);
-    throw std::runtime_error(error_msg);
-}
+void registrar::
+register_handlers(comms::server& server, utility::repository::context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Registering message handlers.";
 
-}
+    auto handler = std::make_shared<accounts_message_handler>(std::move(ctx));
 
-namespace ores::utility::test {
+    comms::protocol::message_type_range accounts_range{.min=0x2000, .max=0x2FFF};
+    server.register_handler(accounts_range, std::move(handler));
 
-exception_fixture::exception_fixture() {
-    using boost::exception;
-    using boost::unit_test::unit_test_monitor;
-    unit_test_monitor.register_exception_translator<exception>(&translate);
+    BOOST_LOG_SEV(lg(), debug) << "Message handlers registered successfully.";
 }
 
 }

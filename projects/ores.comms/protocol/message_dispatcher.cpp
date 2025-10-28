@@ -18,23 +18,17 @@
  *
  */
 #include "ores.comms/protocol/message_dispatcher.hpp"
-#include "ores.utility/log/logger.hpp"
-
-namespace {
-
-using namespace ores::utility::log;
-auto lg(logger_factory("ores.comms.protocol.message_dispatcher"));
-
-}
 
 namespace ores::comms::protocol {
+
+using namespace ores::utility::log;
 
 message_dispatcher::message_dispatcher() = default;
 
 void message_dispatcher::register_handler(message_type_range range,
     std::shared_ptr<message_handler> handler) {
-    BOOST_LOG_SEV(lg, debug) << "Registering handler for message type range ["
-                              << std::hex << range.min << ", " << range.max << "]";
+    BOOST_LOG_SEV(lg(), debug) << "Registering handler for message type range ["
+                               << std::hex << range.min << ", " << range.max << "]";
     handlers_[range] = std::move(handler);
 }
 
@@ -42,14 +36,14 @@ boost::asio::awaitable<std::expected<frame, error_code>>
 message_dispatcher::dispatch(const frame& request_frame, std::uint32_t sequence,
     const std::string& remote_address) {
     const auto msg_type = request_frame.header().type;
-    BOOST_LOG_SEV(lg, debug) << "Dispatching message type "
-                              << std::hex << static_cast<std::uint16_t>(msg_type);
+    BOOST_LOG_SEV(lg(), debug) << "Dispatching message type "
+                               << std::hex << static_cast<std::uint16_t>(msg_type);
 
     // Find the appropriate handler
     auto* handler = find_handler(msg_type);
     if (!handler) {
-        BOOST_LOG_SEV(lg, error) << "No handler registered for message type "
-                                  << std::hex << static_cast<std::uint16_t>(msg_type);
+        BOOST_LOG_SEV(lg(), error) << "No handler registered for message type "
+                                   << std::hex << static_cast<std::uint16_t>(msg_type);
         co_return std::unexpected(error_code::invalid_message_type);
     }
 
@@ -57,9 +51,9 @@ message_dispatcher::dispatch(const frame& request_frame, std::uint32_t sequence,
     auto result = co_await handler->handle_message(msg_type, request_frame.payload(),
         remote_address);
     if (!result) {
-        BOOST_LOG_SEV(lg, error) << "Handler failed for message type "
-                                  << std::hex << static_cast<std::uint16_t>(msg_type)
-                                  << ", error: " << static_cast<int>(result.error());
+        BOOST_LOG_SEV(lg(), error) << "Handler failed for message type "
+                                   << std::hex << static_cast<std::uint16_t>(msg_type)
+                                   << ", error: " << static_cast<int>(result.error());
         co_return std::unexpected(result.error());
     }
 
@@ -67,8 +61,8 @@ message_dispatcher::dispatch(const frame& request_frame, std::uint32_t sequence,
     auto response_type = get_response_type(msg_type);
     frame response_frame(response_type, sequence, std::move(*result));
 
-    BOOST_LOG_SEV(lg, debug) << "Successfully dispatched message, response type "
-                              << std::hex << static_cast<std::uint16_t>(response_type);
+    BOOST_LOG_SEV(lg(), debug) << "Successfully dispatched message, response type "
+                               << std::hex << static_cast<std::uint16_t>(response_type);
 
     co_return response_frame;
 }

@@ -17,35 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/log/logger.hpp"
 #include "ores.utility/filesystem/file.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.risk/orexml/CurrencyConfig.hpp"
 #include "ores.risk/orexml/currency_mapper.hpp"
 #include "ores.risk/orexml/importer.hpp"
 
-namespace {
-
-using namespace ores::utility::log;
-auto lg(logger_factory("ores.xml.importer"));
-
-}
-
 namespace ores::risk::orexml {
 
 using domain::currency;
+using namespace ores::utility::log;
 
 std::vector<currency>
 importer::import_currency_config(const std::filesystem::path& path) {
-    BOOST_LOG_SEV(lg, debug) << "Started import: " << path.generic_string();
+    BOOST_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();
 
     using namespace ores::utility::filesystem;
-    const std::string c(read_file_content(path));
-    BOOST_LOG_SEV(lg, trace) << "File content: " << c;
+    const std::string c(file::read_content(path));
+    BOOST_LOG_SEV(lg(), trace) << "File content: " << c;
 
     CurrencyConfig ccy_cfg = CurrencyConfig::from_xml(c);
     const auto r = currency_mapper::map(ccy_cfg);
-    BOOST_LOG_SEV(lg, debug) << "Finished importing. Result: " << r;
+    BOOST_LOG_SEV(lg(), debug) << "Finished importing. Result: " << r;
 
     return r;
 }

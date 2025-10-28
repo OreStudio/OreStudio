@@ -25,35 +25,38 @@
 
 namespace ores::qt {
 
-client_currency_model::client_currency_model(std::shared_ptr<comms::client> client,
-                                           QObject* parent)
-    : QAbstractTableModel(parent),
-      client_(std::move(client)),
-      watcher_(new QFutureWatcher<std::pair<bool, std::vector<risk::domain::currency>>>(this)) {
+using namespace ores::utility::log;
 
-    connect(watcher_, &QFutureWatcher<std::pair<bool, std::vector<risk::domain::currency>>>::finished,
-            this, &client_currency_model::on_currencies_loaded);
+ClientCurrencyModel::
+ClientCurrencyModel(std::shared_ptr<comms::client> client, QObject* parent)
+    : QAbstractTableModel(parent), client_(std::move(client)),
+      watcher_(new QFutureWatcher < std::pair < bool,
+      std::vector<risk::domain::currency>>>(this)) {
+
+    connect(watcher_, &QFutureWatcher < std::pair < bool,
+        std::vector<risk::domain::currency>>>::finished,
+            this, &ClientCurrencyModel::onCurrenciesLoaded);
 }
 
-int client_currency_model::rowCount(const QModelIndex& parent) const {
+int ClientCurrencyModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
     return static_cast<int>(currencies_.size());
 }
 
-int client_currency_model::columnCount(const QModelIndex& parent) const {
+int ClientCurrencyModel::columnCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
     return 10;  // Match the original model's column count
 }
 
-QVariant client_currency_model::data(const QModelIndex& index, int role) const {
+QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid() || role != Qt::DisplayRole)
-        return QVariant();
+        return {};
 
     const auto row = static_cast<std::size_t>(index.row());
     if (row >= currencies_.size())
-        return QVariant();
+        return {};
 
     const auto& currency = currencies_[row];
 
@@ -68,14 +71,14 @@ QVariant client_currency_model::data(const QModelIndex& index, int role) const {
     case 7: return currency.rounding_precision;
     case 8: return QString::fromStdString(currency.format);
     case 9: return QString::fromStdString(currency.currency_type);
-    default: return QVariant();
+    default: return {};
     }
 }
 
-QVariant client_currency_model::headerData(int section, Qt::Orientation orientation,
-                                          int role) const {
+QVariant ClientCurrencyModel::
+headerData(int section, Qt::Orientation orientation, int role) const {
     if (role != Qt::DisplayRole)
-        return QVariant();
+        return {};
 
     if (orientation == Qt::Horizontal) {
         switch (section) {
@@ -89,18 +92,20 @@ QVariant client_currency_model::headerData(int section, Qt::Orientation orientat
         case 7: return tr("Rounding precision");
         case 8: return tr("Format");
         case 9: return tr("Currency Type");
-        default: return QVariant();
+        default: return {};
         }
     }
 
-    return QVariant();
+    return {};
 }
 
-void client_currency_model::refresh() {
+void ClientCurrencyModel::refresh() {
+    BOOST_LOG_SEV(lg(), info) << "Calling refresh.";
     // Perform request asynchronously using QtConcurrent
     QFuture<std::pair<bool, std::vector<risk::domain::currency>>> future =
         QtConcurrent::run([this]() -> std::pair<bool, std::vector<risk::domain::currency>> {
-            // Create get_currencies request
+           BOOST_LOG_SEV(lg(), info) << "Making a currencies request.";
+
             risk::messaging::get_currencies_request request;
             auto payload = request.serialize();
 
@@ -117,7 +122,7 @@ void client_currency_model::refresh() {
                 return {false, {}};
             }
 
-            // Deserialize response
+            BOOST_LOG_SEV(lg(), info) << "Received a currencies resposne.";
             auto response = risk::messaging::get_currencies_response::deserialize(
                 response_result->payload()
             );
@@ -132,18 +137,18 @@ void client_currency_model::refresh() {
     watcher_->setFuture(future);
 }
 
-void client_currency_model::on_currencies_loaded() {
+void ClientCurrencyModel::onCurrenciesLoaded() {
+    BOOST_LOG_SEV(lg(), info) << "On currencies loaded event";
     auto [success, currencies] = watcher_->result();
 
     if (success) {
-        // Update model data
         beginResetModel();
         currencies_ = std::move(currencies);
         endResetModel();
 
-        emit data_loaded();
+        emit dataLoaded();
     } else {
-        emit load_error(tr("Failed to load currencies from server"));
+        emit loadError(tr("Failed to load currencies from server"));
     }
 }
 

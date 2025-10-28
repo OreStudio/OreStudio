@@ -24,21 +24,17 @@
 #include <QTimer>
 #include <QApplication>
 #include "ui_MainWindow.h"
-#include "ores.utility/log/logger.hpp"
 #include "ores.qt/MainWindow.hpp"
 #include "ores.qt/LoginDialog.hpp"
 
-namespace {
+namespace ores::qt {
 
 using namespace ores::utility::log;
-auto lg(logger_factory("ores.qt.main_window"));
-
-}
-
-namespace ores::qt {
 
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent), ui_(new Ui::MainWindow), mainTab_(new MainTabWidget()) {
+
+    BOOST_LOG_SEV(lg(), info) << "Creating the main window.";
     ui_->setupUi(this);
     ui_->horizontalLayout_3->addWidget(mainTab_);
 
@@ -47,34 +43,33 @@ MainWindow::MainWindow(QWidget* parent) :
     });
 
     // Show login dialog and establish client connection
-    login_dialog dialog(this);
+    LoginDialog dialog(this);
     const int result = dialog.exec();
 
     if (result == QDialog::Accepted) {
         // Transfer ownership of client infrastructure from dialog
-        client_ = dialog.get_client();
-        io_context_ = dialog.take_io_context();
-        work_guard_ = dialog.take_work_guard();
-        io_thread_ = dialog.take_io_thread();
+        client_ = dialog.getClient();
+        io_context_ = dialog.takeIOContext();
+        work_guard_ = dialog.takeWorkGuard();
+        io_thread_ = dialog.takeIOThread();
 
         if (client_ && client_->is_connected()) {
-            BOOST_LOG_SEV(lg, info) << "Successfully connected to server and authenticated.";
+            BOOST_LOG_SEV(lg(), info) << "Successfully connected to server and authenticated.";
             // Pass client to main tab widget for use by tab pages
-            mainTab_->set_client(client_);
+            mainTab_->setClient(client_);
         } else {
-            BOOST_LOG_SEV(lg, error) << "Client is not properly connected after login.";
+            BOOST_LOG_SEV(lg(), error) << "Client is not properly connected after login.";
             QMessageBox::critical(this, "Connection Error",
                 "Failed to establish server connection. The application may not function correctly.");
         }
     } else {
         // User cancelled login - exit application
-        BOOST_LOG_SEV(lg, info) << "Login cancelled by user.";
+        BOOST_LOG_SEV(lg(), info) << "Login cancelled by user.";
         QMessageBox::information(this, "Login Cancelled",
             "Login is required to use ORE Studio. The application will now exit.");
         QTimer::singleShot(0, qApp, &QApplication::quit);
         return;
     }
-
 }
 
 MainWindow::~MainWindow() {
@@ -95,7 +90,7 @@ MainWindow::~MainWindow() {
         io_thread_->join();
     }
 
-    BOOST_LOG_SEV(lg, info) << "MainWindow destroyed, client disconnected.";
+    BOOST_LOG_SEV(lg(), info) << "MainWindow destroyed, client disconnected.";
 }
 
 }

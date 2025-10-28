@@ -18,41 +18,44 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-10-26 Sun 23:12], for Sunday, October 26, 2025.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *4:06* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 4:06   |      |      | 100.0 |
-|       | Active                                |        | 4:06 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:06 |   2.4 |
-| code  | Build using dynamic libraries         |        |      | 3:57 |  96.3 |
-| code  | Enable qt gui                         |        |      | 0:03 |   1.2 |
+#+CAPTION: Clock summary at [2025-10-28 Tue 00:45], for Tuesday, October 28, 2025.
+|      | <75>                                                   |        |      |      |       |
+| Tags | Headline                                               | Time   |      |      |     % |
+|------+--------------------------------------------------------+--------+------+------+-------|
+|      | *Total time*                                           | *0:45* |      |      | 100.0 |
+|------+--------------------------------------------------------+--------+------+------+-------|
+|      | Stories                                                | 0:45   |      |      | 100.0 |
+|      | Active                                                 |        | 0:45 |      | 100.0 |
+| code | Implement logging according to correct boost.log usage |        |      | 0:45 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-10-26 Sun 23:12]
-|       | <75>                                        |         |       |      |       |
-| Tags  | Headline                                    | Time    |       |      |     % |
-|-------+---------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                | *17:35* |       |      | 100.0 |
-|-------+---------------------------------------------+---------+-------+------+-------|
-|       | Stories                                     | 17:35   |       |      | 100.0 |
-|       | Active                                      |         | 17:35 |      | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       | 0:41 |   3.9 |
-| code  | Investigate leaks from valgrind             |         |       | 0:46 |   4.4 |
-| code  | Add locking up logic                        |         |       | 1:28 |   8.3 |
-| code  | Build using dynamic libraries               |         |       | 7:24 |  42.1 |
-| code  | Enable qt gui                               |         |       | 4:13 |  24.0 |
-| code  | Add support for feature flags               |         |       | 1:25 |   8.1 |
-| code  | Implement authentication bootstrap workflow |         |       | 0:25 |   2.4 |
-| code  | Add workspace as a container                |         |       | 1:13 |   6.9 |
+#+CAPTION: Clock summary at [2025-10-28 Tue 00:45]
+|       | <75>                                                   |         |       |      |       |
+| Tags  | Headline                                               | Time    |       |      |     % |
+|-------+--------------------------------------------------------+---------+-------+------+-------|
+|       | *Total time*                                           | *35:08* |       |      | 100.0 |
+|-------+--------------------------------------------------------+---------+-------+------+-------|
+|       | Stories                                                | 35:08   |       |      | 100.0 |
+|       | Active                                                 |         | 35:08 |      | 100.0 |
+| agile | Sprint and product backlog refinement                  |         |       | 1:11 |   3.4 |
+| code  | Add locking up logic                                   |         |       | 1:28 |   4.2 |
+| code  | Build using dynamic libraries                          |         |       | 7:24 |  21.1 |
+| code  | Enable qt gui                                          |         |       | 4:13 |  12.0 |
+| code  | Add locking up logic                                   |         |       | 1:28 |   4.2 |
+| code  | Build using dynamic libraries                          |         |       | 7:24 |  21.1 |
+| code  | Implement logging according to correct boost.log usage |         |       | 8:02 |  22.9 |
+| code  | Investigate leaks from valgrind                        |         |       | 0:46 |   2.2 |
+| code  | Add support for feature flags                          |         |       | 1:25 |   4.0 |
+| code  | Implement authentication bootstrap workflow            |         |       | 0:25 |   1.2 |
+| code  | Fix broken windows builds                              |         |       | 0:09 |   0.4 |
+| code  | Add workspace as a container                           |         |       | 1:13 |   3.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-10-27 Mon 09:23]--[2025-10-27 Mon 09:53] =>  0:30
     CLOCK: [2025-10-26 Sun 19:49]--[2025-10-26 Sun 19:55] =>  0:06
     CLOCK: [2025-10-23 Thu 09:10]--[2025-10-23 Thu 09:45] =>  0:35
     :END:
@@ -136,63 +139,115 @@ print(p)
 #+RESULTS: tags-chart
 [[file:sprint_backlog_03_tags.png]]
 
-*** STARTED Investigate leaks from valgrind                            :code:
+*** COMPLETED Add locking up logic                                     :code:
     :LOGBOOK:
-    CLOCK: [2025-10-23 Thu 09:46]--[2025-10-23 Thu 10:32] =>  0:46
+    CLOCK: [2025-10-23 Thu 15:06]--[2025-10-23 Thu 16:00] =>  0:54
+    CLOCK: [2025-10-23 Thu 10:34]--[2025-10-23 Thu 11:08] =>  0:34
     :END:
 
-We have a number of new leaks in valgrind, check if they are real leaks or
-require suppressions.
+Incorrect password N times should lock up the account.
 
-Leak 1:
+Notes:
 
-#+begin_src valgrind-leak
-<b>MPK</b> ==46924== 32 bytes in 1 blocks are still reachable in loss record 1 of 12
-==46924==    at 0x4846828: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
-==46924==    by 0x75A94B: CRYPTO_malloc (mem.c:212)
-==46924==    by 0x75A9AE: CRYPTO_zalloc (mem.c:224)
-==46924==    by 0x975D85: ossl_sa_new (sparse_array.c:60)
-==46924==    by 0x76E804: ossl_sa_CTX_TABLE_ENTRY_new (threads_common.c:110)
-==46924==    by 0x76EB87: CRYPTO_THREAD_set_local_ex (threads_common.c:379)
-==46924==    by 0x718766: ossl_err_get_state_int (err.c:678)
-==46924==    by 0x719855: ERR_set_mark (err_mark.c:19)
-==46924==    by 0x6BBE13: CONF_modules_load_file_ex (conf_mod.c:198)
-==46924==    by 0x90DED3: ossl_config_int (conf_sap.c:70)
-==46924==    by 0x759087: ossl_init_config (init.c:282)
-==46924==    by 0x759069: ossl_init_config_ossl_ (init.c:280)
-==46924==    by 0x4C9CED2: __pthread_once_slow (pthread_once.c:116)
-==46924==    by 0x76F93D: CRYPTO_THREAD_run_once (threads_pthread.c:975)
-==46924==    by 0x75983D: OPENSSL_init_crypto (init.c:634)
-==46924==    by 0x942821: ossl_engine_table_select (eng_table.c:209)
-==46924==    by 0x942D2F: ENGINE_get_default_RAND (tb_rand.c:61)
-==46924==    by 0x782C1F: RAND_get_rand_method (rand_lib.c:290)
-==46924==    by 0x7831AA: RAND_bytes_ex (rand_lib.c:466)
-==46924==    by 0x78336D: RAND_bytes (rand_lib.c:501)
-==46924==    by 0x287012: ores::accounts::security::password_manager::create_password_hash(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (projects/ores.accounts/security/password_manager.cpp:128)
-==46924==    by 0x228EF7: security_password_manager_tests::verify_password_hash::test_method() (projects/ores.accounts.tests/security_password_manager_tests.cpp:39)
-==46924==    by 0x228832: security_password_manager_tests::verify_password_hash_invoker() (projects/ores.accounts.tests/security_password_manager_tests.cpp:35)
-==46924==    by 0x20BF7B: boost::detail::function::void_function_invoker<void (*)(), void>::invoke(boost::detail::function::function_buffer&) (function_template.hpp:59)
-==46924==    by 0x2E5DA2: boost::function_n<void>::operator()() const (function_template.hpp:789)
-==46924==    by 0x369D38: boost::detail::forward::operator()() (execution_monitor.ipp:1416)
-==46924==    by 0x36B0D7: boost::detail::function::function_obj_invoker<boost::detail::forward, int>::invoke(boost::detail::function::function_buffer&) (function_template.hpp:79)
-==46924==    by 0x29AF78: boost::function_n<int>::operator()() const (function_template.hpp:789)
-==46924==    by 0x29A83C: boost::detail::translator_holder<boost::exception, void (*)(boost::exception const&)>::operator()(boost::function<int ()> const&) (execution_monitor.hpp:448)
-==46924==    by 0x36A3B0: int boost::detail::do_invoke<boost::shared_ptr<boost::detail::translator_holder_base>, boost::function<int ()> >(boost::shared_ptr<boost::detail::translator_holder_base> const&, boost::function<int ()> const&) (execution_monitor.ipp:329)
-==46924==    by 0x368638: boost::execution_monitor::catch_signals(boost::function<int ()> const&) (execution_monitor.ipp:931)
-==46924==    by 0x3687E6: boost::execution_monitor::execute(boost::function<int ()> const&) (execution_monitor.ipp:1329)
-==46924==    by 0x36971F: boost::execution_monitor::vexecute(boost::function<void ()> const&) (execution_monitor.ipp:1425)
-==46924==    by 0x3216EC: boost::unit_test::unit_test_monitor_t::execute_and_translate(boost::function<void ()> const&, unsigned long) (unit_test_monitor.ipp:49)
-==46924==    by 0x2E4691: boost::unit_test::framework::state::execute_test_tree(unsigned long, unsigned long, boost::unit_test::framework::state::random_generator_helper const*) (framework.ipp:815)
-==46924==    by 0x2E3B3D: boost::unit_test::framework::state::execute_test_tree(unsigned long, unsigned long, boost::unit_test::framework::state::random_generator_helper const*) (framework.ipp:740)
-==46924==    by 0x2E3B3D: boost::unit_test::framework::state::execute_test_tree(unsigned long, unsigned long, boost::unit_test::framework::state::random_generator_helper const*) (framework.ipp:740)
-==46924==    by 0x2DD37B: boost::unit_test::framework::run(unsigned long, bool) (framework.ipp:1722)
-==46924==    by 0x31F63D: boost::unit_test::unit_test_main(boost::unit_test::test_suite* (*)(int, char**), int, char**) (unit_test_main.ipp:250)
-==46924==    by 0x31F9E1: main (unit_test_main.ipp:306)
-==46924==
-#+end_src
+- need to make bools ints a gain as we can't update them.
 
-All leaks are related to OpenSSL. Let's see if gemini's fix helps.
+Links:
 
+- [[https://github.com/getml/sqlgen/issues/74][#74: Updating boolean data causes an error]]
+
+*** COMPLETED Merge client into console                                :code:
+
+We don't really need a client, we can add this functionality to console.
+
+Notes:
+
+- rename console to cli.
+- add a mode in console called =client=.
+- add port, etc as configuration variables.
+- add the location of cert as configuration variables.
+- read variables from environment.
+
+*** COMPLETED Add account support                                      :code:
+
+Links:
+
+- [[https://www.azerothcore.org/wiki/creating-accounts][azeroth: Creating Accounts]]
+- [[https://www.azerothcore.org/wiki/account][azeroth: account]]
+- [[https://www.mongodb.com/docs/manual/reference/built-in-roles/#std-label-built-in-roles][mongo: Built-In Roles]]
+
+*** COMPLETED Add session support                                      :code:
+
+Users must be able to login and logout.
+
+*** CANCELLED Convert plantuml diagrams to org-babel                    :doc:
+
+*Rationale*: We are now using LLMs to generate the diagrams.
+
+It may be easier to integrate diagrams with roam if they are org-mode documents.
+Experiment with babel for this.
+
+*** COMPLETED Add support for =windows-msvc-clang-cl=                 :infra:
+
+We need to setup a build for MSVC clang.
+
+*** COMPLETED Build using dynamic libraries                            :code:
+    :LOGBOOK:
+    CLOCK: [2025-10-26 Sun 22:03]--[2025-10-26 Sun 22:48] =>  0:45
+    CLOCK: [2025-10-26 Sun 19:55]--[2025-10-26 Sun 21:30] =>  1:35
+    CLOCK: [2025-10-26 Sun 18:45]--[2025-10-26 Sun 19:18] =>  0:33
+    CLOCK: [2025-10-26 Sun 00:18]--[2025-10-26 Sun 01:04] =>  0:46
+    CLOCK: [2025-10-25 Sat 23:44]--[2025-10-26 Sun 00:18] =>  0:34
+    CLOCK: [2025-10-25 Sat 21:10]--[2025-10-25 Sat 23:43] =>  2:33
+    CLOCK: [2025-10-25 Sat 00:35]--[2025-10-25 Sat 01:13] =>  0:38
+    :END:
+
+This should help with disk space.
+
+Notes:
+
+- try to build using triplet =x64-linux-dynamic=. Actually this builds all of
+  the vcpkg dependencies as shared objects. This is problematic because we do
+  not know how to package them proper under Linux. It's easier to statically
+  link them for now and build only our own SO's. If we ever want to do this
+  again, the incantation is:
+
+: ZIC=1 cmake --build --target package --preset linux-clang-debug -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic -DBUILD_SHARED_LIBS=ON
+
+- we use the distro supplied Qt because building it from vcpkg uses too much
+  disk space. For that we use overlays. It works fine without overlays too, but
+  only for local machine.
+
+: -DVCPKG_OVERLAY_PORTS=/home/marco/Development/OreStudio/OreStudio.local1/build/cmake/overlays/
+
+Links:
+
+- [[https://learn.microsoft.com/en-us/vcpkg/concepts/overlay-ports][Overlay ports]]
+- [[https://devblogs.microsoft.com/cppblog/using-system-package-manager-dependencies-with-vcpkg/#using-curl-and-openssl-from-the-system-package-manager][Using curl and OpenSSL from the system package manager]]
+- [[https://duerrenberger.dev/blog/2021/08/04/understanding-rpath-with-cmake/][Understanding RPATH (With CMake)]]
+- [[https://batuhankoc.medium.com/use-cmake-to-create-and-use-dynamic-libraries-5f6498417b3c][Use CMake to Create and Use Dynamic Libraries]]
+
+*** COMPLETED Enable qt gui                                            :code:
+    :LOGBOOK:
+    CLOCK: [2025-10-26 Sun 22:49]--[2025-10-26 Sun 22:52] =>  0:03
+    CLOCK: [2025-10-24 Fri 17:12]--[2025-10-24 Fri 17:19] =>  0:07
+    CLOCK: [2025-10-24 Fri 13:39]--[2025-10-24 Fri 14:10] =>  0:31
+    CLOCK: [2025-10-24 Fri 12:17]--[2025-10-24 Fri 13:26] =>  1:09
+    CLOCK: [2025-10-24 Fri 12:02]--[2025-10-24 Fri 12:17] =>  0:15
+    CLOCK: [2025-10-24 Fri 11:44]--[2025-10-24 Fri 11:58] =>  0:14
+    CLOCK: [2025-10-24 Fri 10:21]--[2025-10-24 Fri 10:59] =>  0:38
+    CLOCK: [2025-10-24 Fri 09:21]--[2025-10-24 Fri 10:20] =>  0:59
+    CLOCK: [2025-10-24 Fri 00:28]--[2025-10-24 Fri 00:42] =>  0:14
+    CLOCK: [2025-10-23 Thu 17:56]--[2025-10-23 Thu 17:59] =>  0:03
+    :END:
+
+Due to problems building we disabled qt. Enable it again as we are close to
+working on it.
+
+Notes:
+
+- remove SQL dependency to see if the build works. Still not enough disk space.
+  Will try to build as dynamic libraries - see separate story. This was not
+  sufficient. In the end, we used distro-supplied Qt.
 
 *** COMPLETED Add locking up logic                                     :code:
     :LOGBOOK:
@@ -279,28 +334,78 @@ Links:
 - [[https://learn.microsoft.com/en-us/vcpkg/concepts/overlay-ports][Overlay ports]]
 - [[https://devblogs.microsoft.com/cppblog/using-system-package-manager-dependencies-with-vcpkg/#using-curl-and-openssl-from-the-system-package-manager][Using curl and OpenSSL from the system package manager]]
 
-*** STARTED Enable qt gui                                              :code:
+*** COMPLETED Implement logging according to correct boost.log usage   :code:
     :LOGBOOK:
-    CLOCK: [2025-10-26 Sun 22:49]--[2025-10-26 Sun 22:52] =>  0:03
-    CLOCK: [2025-10-24 Fri 17:12]--[2025-10-24 Fri 17:19] =>  0:07
-    CLOCK: [2025-10-24 Fri 13:39]--[2025-10-24 Fri 14:10] =>  0:31
-    CLOCK: [2025-10-24 Fri 12:17]--[2025-10-24 Fri 13:26] =>  1:09
-    CLOCK: [2025-10-24 Fri 12:02]--[2025-10-24 Fri 12:17] =>  0:15
-    CLOCK: [2025-10-24 Fri 11:44]--[2025-10-24 Fri 11:58] =>  0:14
-    CLOCK: [2025-10-24 Fri 10:21]--[2025-10-24 Fri 10:59] =>  0:38
-    CLOCK: [2025-10-24 Fri 09:21]--[2025-10-24 Fri 10:20] =>  0:59
-    CLOCK: [2025-10-24 Fri 00:28]--[2025-10-24 Fri 00:42] =>  0:14
-    CLOCK: [2025-10-23 Thu 17:56]--[2025-10-23 Thu 17:59] =>  0:03
+    CLOCK: [2025-10-27 Mon 23:13]--[2025-10-28 Tue 00:45] =>  1:32
+    CLOCK: [2025-10-27 Mon 21:50]--[2025-10-27 Mon 23:12] =>  1:22
+    CLOCK: [2025-10-27 Mon 15:46]--[2025-10-27 Mon 18:02] =>  2:16
+    CLOCK: [2025-10-27 Mon 14:59]--[2025-10-27 Mon 15:04] =>  0:05
+    CLOCK: [2025-10-27 Mon 14:30]--[2025-10-27 Mon 14:58] =>  0:28
+    CLOCK: [2025-10-27 Mon 12:23]--[2025-10-27 Mon 13:50] =>  1:27
+    CLOCK: [2025-10-27 Mon 11:30]--[2025-10-27 Mon 12:22] =>  0:52
     :END:
 
-Due to problems building we disabled qt. Enable it again as we are close to
-working on it.
+It seems our use of local statics for loggers is causing issues with memory
+allocation. Maybe it isn't but it is one possible reason why valgrind traces are
+so noisy. Try to implement class-level logging according to idiomatic boost.log
+uses.
 
-Notes:
+*** STARTED Investigate leaks from valgrind                            :code:
+    :LOGBOOK:
+    CLOCK: [2025-10-23 Thu 09:46]--[2025-10-23 Thu 10:32] =>  0:46
+    :END:
 
-- remove SQL dependency to see if the build works. Still not enough disk space.
-  Will try to build as dynamic libraries - see separate story. This was not
-  sufficient. In the end, we used distro-supplied Qt.
+We have a number of new leaks in valgrind, check if they are real leaks or
+require suppressions.
+
+Leak 1:
+
+#+begin_src valgrind-leak
+<b>MPK</b> ==46924== 32 bytes in 1 blocks are still reachable in loss record 1 of 12
+==46924==    at 0x4846828: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==46924==    by 0x75A94B: CRYPTO_malloc (mem.c:212)
+==46924==    by 0x75A9AE: CRYPTO_zalloc (mem.c:224)
+==46924==    by 0x975D85: ossl_sa_new (sparse_array.c:60)
+==46924==    by 0x76E804: ossl_sa_CTX_TABLE_ENTRY_new (threads_common.c:110)
+==46924==    by 0x76EB87: CRYPTO_THREAD_set_local_ex (threads_common.c:379)
+==46924==    by 0x718766: ossl_err_get_state_int (err.c:678)
+==46924==    by 0x719855: ERR_set_mark (err_mark.c:19)
+==46924==    by 0x6BBE13: CONF_modules_load_file_ex (conf_mod.c:198)
+==46924==    by 0x90DED3: ossl_config_int (conf_sap.c:70)
+==46924==    by 0x759087: ossl_init_config (init.c:282)
+==46924==    by 0x759069: ossl_init_config_ossl_ (init.c:280)
+==46924==    by 0x4C9CED2: __pthread_once_slow (pthread_once.c:116)
+==46924==    by 0x76F93D: CRYPTO_THREAD_run_once (threads_pthread.c:975)
+==46924==    by 0x75983D: OPENSSL_init_crypto (init.c:634)
+==46924==    by 0x942821: ossl_engine_table_select (eng_table.c:209)
+==46924==    by 0x942D2F: ENGINE_get_default_RAND (tb_rand.c:61)
+==46924==    by 0x782C1F: RAND_get_rand_method (rand_lib.c:290)
+==46924==    by 0x7831AA: RAND_bytes_ex (rand_lib.c:466)
+==46924==    by 0x78336D: RAND_bytes (rand_lib.c:501)
+==46924==    by 0x287012: ores::accounts::security::password_manager::create_password_hash(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (projects/ores.accounts/security/password_manager.cpp:128)
+==46924==    by 0x228EF7: security_password_manager_tests::verify_password_hash::test_method() (projects/ores.accounts.tests/security_password_manager_tests.cpp:39)
+==46924==    by 0x228832: security_password_manager_tests::verify_password_hash_invoker() (projects/ores.accounts.tests/security_password_manager_tests.cpp:35)
+==46924==    by 0x20BF7B: boost::detail::function::void_function_invoker<void (*)(), void>::invoke(boost::detail::function::function_buffer&) (function_template.hpp:59)
+==46924==    by 0x2E5DA2: boost::function_n<void>::operator()() const (function_template.hpp:789)
+==46924==    by 0x369D38: boost::detail::forward::operator()() (execution_monitor.ipp:1416)
+==46924==    by 0x36B0D7: boost::detail::function::function_obj_invoker<boost::detail::forward, int>::invoke(boost::detail::function::function_buffer&) (function_template.hpp:79)
+==46924==    by 0x29AF78: boost::function_n<int>::operator()() const (function_template.hpp:789)
+==46924==    by 0x29A83C: boost::detail::translator_holder<boost::exception, void (*)(boost::exception const&)>::operator()(boost::function<int ()> const&) (execution_monitor.hpp:448)
+==46924==    by 0x36A3B0: int boost::detail::do_invoke<boost::shared_ptr<boost::detail::translator_holder_base>, boost::function<int ()> >(boost::shared_ptr<boost::detail::translator_holder_base> const&, boost::function<int ()> const&) (execution_monitor.ipp:329)
+==46924==    by 0x368638: boost::execution_monitor::catch_signals(boost::function<int ()> const&) (execution_monitor.ipp:931)
+==46924==    by 0x3687E6: boost::execution_monitor::execute(boost::function<int ()> const&) (execution_monitor.ipp:1329)
+==46924==    by 0x36971F: boost::execution_monitor::vexecute(boost::function<void ()> const&) (execution_monitor.ipp:1425)
+==46924==    by 0x3216EC: boost::unit_test::unit_test_monitor_t::execute_and_translate(boost::function<void ()> const&, unsigned long) (unit_test_monitor.ipp:49)
+==46924==    by 0x2E4691: boost::unit_test::framework::state::execute_test_tree(unsigned long, unsigned long, boost::unit_test::framework::state::random_generator_helper const*) (framework.ipp:815)
+==46924==    by 0x2E3B3D: boost::unit_test::framework::state::execute_test_tree(unsigned long, unsigned long, boost::unit_test::framework::state::random_generator_helper const*) (framework.ipp:740)
+==46924==    by 0x2E3B3D: boost::unit_test::framework::state::execute_test_tree(unsigned long, unsigned long, boost::unit_test::framework::state::random_generator_helper const*) (framework.ipp:740)
+==46924==    by 0x2DD37B: boost::unit_test::framework::run(unsigned long, bool) (framework.ipp:1722)
+==46924==    by 0x31F63D: boost::unit_test::unit_test_main(boost::unit_test::test_suite* (*)(int, char**), int, char**) (unit_test_main.ipp:250)
+==46924==    by 0x31F9E1: main (unit_test_main.ipp:306)
+==46924==
+#+end_src
+
+All leaks are related to OpenSSL. Let's see if gemini's fix helps.
 
 *** STARTED Add support for feature flags                              :code:
     :LOGBOOK:
@@ -421,9 +526,159 @@ Links:
 
 - [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
 
+<<<<<<< HEAD
+*** STARTED Fix broken windows builds                                  :code:
+    :LOGBOOK:
+    CLOCK: [2025-10-27 Mon 09:13]--[2025-10-27 Mon 09:22] =>  0:09
+    :END:
+
+Windows builds are failing on tests.
+
+*** Fix broken Linux and OSX tests                                     :code:
+
+At present a number of tests are failing on the github agents:
+
+#+begin_src sh
+Running 1 test case...
+
+,*** No errors detected
+double free or corruption (out)
+Subprocess aborted
+#+end_src
+
+They all work correctly on the local machine.
+
+
+*** Create shared object interfaces                                    :code:
+
+At present we are building shared objects / DLLs for the ores components, but we
+did not bother defining proper interfaces, exporting symbols etc. This causes
+problems on windows:
+
+#+begin_src sh
+LINK : fatal error LNK1104: cannot open file 'projects\ores.utility\ores.utility.lib'
+#+end_src
+
+This is happening because we are not exporting explicitly any symbols. To fix
+this we did a hack:
+
+#+begin_src cmake
+if(WIN32 AND MSVC)
+    # Export all symbols on windows for now. Bit of a hack.
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+#+end_src
+
+The right solution for this is to annotate all the public types of each SO
+correctly, exporting symbols for all platforms:
+
+Deep seek analysis:
+
+#+begin_src markdown
+Yes, Boost provides a cross-platform wrapper for exporting symbols using the
+`BOOST_SYMBOL_EXPORT` macro from the **Boost.DLL** library. This macro abstracts
+away the compiler-specific keywords required for different platforms.
+
+### 🗂️ Boost's Cross-Platform Symbol Exporting
+
+To export a symbol, you use the `BOOST_SYMBOL_EXPORT` macro in your code. Under
+the hood, it expands to the correct compiler-specific attribute:
+
+- On **Windows** with MSVC, it becomes `__declspec(dllexport)`
+- On **macOS** and **Linux** with GCC/Clang, it becomes `__attribute__((visibility("default")))`
+
+Here is a basic example of how to use it to export a global variable:
+
+```cpp
+#include <boost/config.hpp> // For BOOST_SYMBOL_EXPORT
+
+class my_plugin_api {
+    // Your interface definition
+};
+
+namespace my_namespace {
+    class my_plugin_sum : public my_plugin_api {
+        // Implementation
+    };
+
+    // Export the 'plugin' variable
+    extern "C" BOOST_SYMBOL_EXPORT my_plugin_sum plugin;
+    my_plugin_sum plugin;
+}
+```
+,*Note: The `extern "C"` is used here to prevent C++ name mangling, making the symbol name
+predictable for tools that use C linkage. This is often crucial for a library's public API.*
+
+For exporting factory functions, Boost offers the `BOOST_DLL_ALIAS` macro, which
+is often more convenient:
+
+```cpp
+#include <boost/dll/alias.hpp> // For BOOST_DLL_ALIAS
+
+namespace my_namespace {
+    class my_plugin_aggregator : public my_plugin_api {
+        // Implementation
+    };
+
+    // Factory function
+    boost::shared_ptr<my_plugin_api> create() {
+        return boost::shared_ptr<my_plugin_aggregator>(new my_plugin_aggregator());
+    }
+
+    // Export the factory function with the alias "create_plugin"
+    BOOST_DLL_ALIAS(my_namespace::create, create_plugin)
+}
+```
+
+### 💡 A Complementary Approach: Controlling Visibility
+
+While Boost's macro solves the declaration problem, for finer control and to
+minimize your shared library's public API, combine it with compiler flags that
+hide all symbols by default.
+
+- **On Linux and other ELF platforms**, use the `-fvisibility=hidden` flag. You
+  can then use a **linker version script** to explicitly list the symbols you
+  want to export.
+- **On macOS**, use the `-fvisibility=hidden` flag and an **exported symbols
+  list** with `-exported_symbols_list` during linking.
+- **On Windows**, symbol visibility is typically controlled explicitly via
+  `__declspec(dllexport)` or a module definition (.def) file, which
+  `BOOST_SYMBOL_EXPORT` already handles.
+
+Setting default visibility to hidden helps create a cleaner, more efficient
+library by reducing its footprint, improving load times, and avoiding potential
+symbol conflicts.
+
+### 🔧 Summary
+
+For a complete cross-platform solution:
+
+1. **Use Boost.DLL macros**: Incorporate `BOOST_SYMBOL_EXPORT` or
+   `BOOST_DLL_ALIAS` in your code to handle platform-specific export keywords.
+2. **Hide symbols by default**: Compile your shared library with
+   `-fvisibility=hidden` on Linux and macOS. This works in conjunction with the
+   Boost macros.
+3. **Use version scripts (optional)**: For maximum control on ELF platforms
+   (Linux) or via an exported symbols list on macOS, use these linker features
+   to define a precise public API.
+
+I hope this helps you build your cross-platform shared library! If you have more
+questions about using the Boost.DLL library for loading these symbols at
+runtime, feel free to ask.
+#+end_src
+
+Links:
+
+- [[https://stackoverflow.com/questions/76338106/cmake-how-to-produce-both-dll-and-lib-as-ouputs][SO: "CMAKE" - how to produce both ".dll" and ".lib" as ouputs]]
+
 *** Copy across icons and other assets to package                      :code:
 
 At present when we start the UI from the package we get:
+
+*** Copy across icons and other assets to package                      :code:
+
+Due to problems building we disabled qt. Enable it again as we are close to
+working on it.
 
 : /opt/OreStudio/0.0.3/bin/ores.qt
 : qt.svg: Cannot open file '/home/marco/money-pound-box-line.svg', because: No such file or directory

@@ -27,6 +27,7 @@
 
 #include <vector>
 #include <filesystem>
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.risk/domain/currency.hpp"
 
 namespace ores::risk::orexml {
@@ -35,6 +36,14 @@ namespace ores::risk::orexml {
  * @brief Imports domain objects from their ORE XML representation.
  */
 class importer {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger(
+            "ores.risk.orexml.importer");
+        return instance;
+    }
+
 public:
     static std::vector<domain::currency>
     import_currency_config(const std::filesystem::path& path);

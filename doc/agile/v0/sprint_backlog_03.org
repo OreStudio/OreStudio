@@ -18,43 +18,43 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-10-28 Tue 15:39], for Tuesday, October 28, 2025.
+#+CAPTION: Clock summary at [2025-10-28 Tue 18:21], for Tuesday, October 28, 2025.
 |      | <75>                                                   |        |      |      |       |
 | Tags | Headline                                               | Time   |      |      |     % |
 |------+--------------------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                           | *1:29* |      |      | 100.0 |
+|      | *Total time*                                           | *2:20* |      |      | 100.0 |
 |------+--------------------------------------------------------+--------+------+------+-------|
-|      | Stories                                                | 1:29   |      |      | 100.0 |
-|      | Active                                                 |        | 1:29 |      | 100.0 |
-| code | Implement logging according to correct boost.log usage |        |      | 0:45 |  50.6 |
-| code | Fix broken Linux and OSX tests                         |        |      | 0:10 |  11.2 |
-| code | Investigate leaks from valgrind                        |        |      | 0:05 |   5.6 |
-| code | Fix broken windows builds                              |        |      | 0:29 |  32.6 |
+|      | Stories                                                | 2:20   |      |      | 100.0 |
+|      | Active                                                 |        | 2:20 |      | 100.0 |
+| code | Implement logging according to correct boost.log usage |        |      | 0:45 |  32.1 |
+| code | Fix broken Linux and OSX tests                         |        |      | 0:10 |   7.1 |
+| code | Investigate leaks from valgrind                        |        |      | 0:05 |   3.6 |
+| code | Fix broken windows builds                              |        |      | 1:20 |  57.1 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-10-28 Tue 15:39]
+#+CAPTION: Clock summary at [2025-10-28 Tue 18:22]
 |       | <75>                                                   |         |       |      |       |
 | Tags  | Headline                                               | Time    |       |      |     % |
 |-------+--------------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                           | *35:52* |       |      | 100.0 |
+|       | *Total time*                                           | *36:43* |       |      | 100.0 |
 |-------+--------------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                                | 35:52   |       |      | 100.0 |
-|       | Active                                                 |         | 35:52 |      | 100.0 |
-| agile | Sprint and product backlog refinement                  |         |       | 1:11 |   3.3 |
-| code  | Add locking up logic                                   |         |       | 1:28 |   4.1 |
-| code  | Build using dynamic libraries                          |         |       | 7:24 |  20.6 |
-| code  | Enable qt gui                                          |         |       | 4:13 |  11.8 |
-| code  | Add locking up logic                                   |         |       | 1:28 |   4.1 |
-| code  | Build using dynamic libraries                          |         |       | 7:24 |  20.6 |
-| code  | Implement logging according to correct boost.log usage |         |       | 8:02 |  22.4 |
+|       | Stories                                                | 36:43   |       |      | 100.0 |
+|       | Active                                                 |         | 36:43 |      | 100.0 |
+| agile | Sprint and product backlog refinement                  |         |       | 1:11 |   3.2 |
+| code  | Add locking up logic                                   |         |       | 1:28 |   4.0 |
+| code  | Build using dynamic libraries                          |         |       | 7:24 |  20.2 |
+| code  | Enable qt gui                                          |         |       | 4:13 |  11.5 |
+| code  | Add locking up logic                                   |         |       | 1:28 |   4.0 |
+| code  | Build using dynamic libraries                          |         |       | 7:24 |  20.2 |
+| code  | Implement logging according to correct boost.log usage |         |       | 8:02 |  21.9 |
 | code  | Fix broken Linux and OSX tests                         |         |       | 0:10 |   0.5 |
-| code  | Investigate leaks from valgrind                        |         |       | 0:51 |   2.4 |
+| code  | Investigate leaks from valgrind                        |         |       | 0:51 |   2.3 |
 | code  | Add support for feature flags                          |         |       | 1:25 |   3.9 |
-| code  | Implement authentication bootstrap workflow            |         |       | 0:25 |   1.2 |
-| code  | Fix broken windows builds                              |         |       | 0:38 |   1.8 |
-| code  | Add workspace as a container                           |         |       | 1:13 |   3.4 |
+| code  | Implement authentication bootstrap workflow            |         |       | 0:25 |   1.1 |
+| code  | Fix broken windows builds                              |         |       | 1:29 |   4.0 |
+| code  | Add workspace as a container                           |         |       | 1:13 |   3.3 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -552,11 +552,48 @@ Links:
 <<<<<<< HEAD
 *** STARTED Fix broken windows builds                                  :code:
     :LOGBOOK:
+    CLOCK: [2025-10-28 Tue 17:30]--[2025-10-28 Tue 18:21] =>  0:51
     CLOCK: [2025-10-28 Tue 15:10]--[2025-10-28 Tue 15:39] =>  0:29
     CLOCK: [2025-10-27 Mon 09:13]--[2025-10-27 Mon 09:22] =>  0:09
     :END:
 
 Windows builds are failing on tests.
+
+The issue is missing DLLs:
+
+#+begin_src sh
+4: Test command: D:\a\_temp\-165898502\cmake-4.1.2-windows-x86_64\bin\cmake.exe "-E" "chdir" "D:/a/OreStudio/OreStudio/build/output/windows-msvc-debug/projects/ores.cli.tests/" "D:/a/OreStudio/OreStudio/build/output/windows-msvc-debug/projects/ores.cli.tests//ores.cli.tests" "--run_test=parser_tests/test_export_help" "--log_level=error"
+4: Working Directory: D:/a/OreStudio/OreStudio/build/output/windows-msvc-debug/projects/ores.cli.tests
+2: Exit code 0xc0000135
+2:
+1: Exit code 0xc0000135
+1:
+3: Exit code 0xc0000135
+3:
+ 1/41 Test  #1: ores.cli.tests/parser_tests/test_help_option ...................................................***Failed    0.05 sec
+Exit code 0xc0000135
+#+end_src
+
+This means we are missing DLLs:
+
+#+begin_quote
+//
+// MessageId: STATUS_DLL_NOT_FOUND
+//
+// MessageText:
+//
+// The program can't start because %hs is missing from your computer.
+// Try reinstalling the program to fix this problem.
+//
+#define STATUS_DLL_NOT_FOUND             ((NTSTATUS)0xC0000135L)    // winnt
+#+end_quote
+
+We need to tell cmake/vcpkg to copy the DLLs on windows.
+
+Links:
+
+- [[https://stackoverflow.com/questions/11432940/what-does-error-code-0xc0000135-or-1073741515-exit-code-mean-when-starting-a][What does Error-code 0xc0000135 (or -1073741515 Exit-code) mean when starting
+  a Windows app?]]
 
 *** Create shared object interfaces                                    :code:
 

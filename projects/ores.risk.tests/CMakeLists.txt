@@ -16,7 +16,7 @@
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/test_data"
-    DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/")
+    DESTINATION "${ORES_PUBLISH_DIRECTORY}/")
 
 set(name "ores.risk")
 set(lib_target_name ${name}.lib)

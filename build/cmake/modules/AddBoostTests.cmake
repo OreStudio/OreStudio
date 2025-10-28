@@ -53,7 +53,7 @@ macro(add_boost_tests test_module)
                 if (${test_name} IN_LIST boost_tests_ignore)
                     message(STATUS "Ignoring test: ${test_name}")
                 else()
-                    set(output_dir ${PROJECT_BINARY_DIR}/projects/${test_module}/)
+                    set(output_dir ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/)
                     add_test(${test_module}/${test_suite}/${test_name}
                         ${CMAKE_COMMAND} -E chdir ${output_dir}
                         ${output_dir}/${test_module} --run_test=${test_suite}/${test_name}

@@ -42,7 +42,18 @@ target_link_libraries(ores.qt PRIVATE
     Qt6::Concurrent
 )
 
-# file(COPY assets DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+file(GLOB ORES_QT_ASSETS "*.png")
+foreach(in_file IN LISTS ORES_QT_ASSETS)
+    get_filename_component(out_file ${in_file} NAME)
+    file(COPY_FILE ${in_file} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${out_file})
+endforeach()
+
+file(GLOB ORES_QT_ASSETS "*.svg")
+foreach(in_file IN LISTS ORES_QT_ASSETS)
+    get_filename_component(out_file ${in_file} NAME)
+    file(COPY_FILE ${in_file} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${out_file})
+endforeach()
+
 
 target_include_directories(ores.qt
     PRIVATE ${CMAKE_SOURCE_DIR}/projects)

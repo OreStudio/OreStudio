@@ -33,6 +33,12 @@ enable_testing()
 project(OreStudio VERSION 0.0.3 LANGUAGES CXX
     DESCRIPTION "UI and other utilities for the Open Source Risk Engine (ORE).")
 
+# Copy all binaries into the publish directory.
+set(ORES_PUBLISH_DIRECTORY ${CMAKE_BINARY_DIR}/publish)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${ORES_PUBLISH_DIRECTORY}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ORES_PUBLISH_DIRECTORY}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORES_PUBLISH_DIRECTORY}/bin)
+
 # use, i.e. don't skip the full RPATH for the build tree
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 
@@ -40,7 +46,7 @@ set(CMAKE_SKIP_BUILD_RPATH FALSE)
 # installing.
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
-if(WIN32 AND MSVC)
+if(WIN32 AND (MSVC OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
     # Export all symbols on windows for now. Bit of a hack.
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()

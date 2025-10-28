@@ -31,10 +31,11 @@ using namespace ores::utility::log;
 auto lg(make_logger("main"));
 
 ores::utility::log::logging_options createLoggingConfiguration() {
+    // FIXME: read this from command line
     ores::utility::log::logging_options r;
     r.filename = "ores.qt.log";
     r.output_to_console = false;
-    r.output_directory = "log";
+    r.output_directory = "../log";
     r.severity = "debug";
     return r;
 }

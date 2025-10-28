@@ -18,39 +18,39 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-10-27 Mon 09:53], for Monday, October 27, 2025.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *0:39* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 0:39   |      |      | 100.0 |
-|       | Active                                |        | 0:39 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:30 |  76.9 |
-| code  | Fix broken windows builds             |        |      | 0:09 |  23.1 |
+#+CAPTION: Clock summary at [2025-10-28 Tue 00:45], for Tuesday, October 28, 2025.
+|      | <75>                                                   |        |      |      |       |
+| Tags | Headline                                               | Time   |      |      |     % |
+|------+--------------------------------------------------------+--------+------+------+-------|
+|      | *Total time*                                           | *0:45* |      |      | 100.0 |
+|------+--------------------------------------------------------+--------+------+------+-------|
+|      | Stories                                                | 0:45   |      |      | 100.0 |
+|      | Active                                                 |        | 0:45 |      | 100.0 |
+| code | Implement logging according to correct boost.log usage |        |      | 0:45 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-10-27 Mon 09:53]
-|       | <75>                                        |         |       |      |       |
-| Tags  | Headline                                    | Time    |       |      |     % |
-|-------+---------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                | *27:06* |       |      | 100.0 |
-|-------+---------------------------------------------+---------+-------+------+-------|
-|       | Stories                                     | 27:06   |       |      | 100.0 |
-|       | Active                                      |         | 27:06 |      | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       | 1:11 |   4.4 |
-| code  | Add locking up logic                        |         |       | 1:28 |   5.4 |
-| code  | Build using dynamic libraries               |         |       | 7:24 |  27.3 |
-| code  | Enable qt gui                               |         |       | 4:13 |  15.6 |
-| code  | Add locking up logic                        |         |       | 1:28 |   5.4 |
-| code  | Build using dynamic libraries               |         |       | 7:24 |  27.3 |
-| code  | Investigate leaks from valgrind             |         |       | 0:46 |   2.8 |
-| code  | Add support for feature flags               |         |       | 1:25 |   5.2 |
-| code  | Implement authentication bootstrap workflow |         |       | 0:25 |   1.5 |
-| code  | Fix broken windows builds                   |         |       | 0:09 |   0.6 |
-| code  | Add workspace as a container                |         |       | 1:13 |   4.5 |
+#+CAPTION: Clock summary at [2025-10-28 Tue 00:45]
+|       | <75>                                                   |         |       |      |       |
+| Tags  | Headline                                               | Time    |       |      |     % |
+|-------+--------------------------------------------------------+---------+-------+------+-------|
+|       | *Total time*                                           | *35:08* |       |      | 100.0 |
+|-------+--------------------------------------------------------+---------+-------+------+-------|
+|       | Stories                                                | 35:08   |       |      | 100.0 |
+|       | Active                                                 |         | 35:08 |      | 100.0 |
+| agile | Sprint and product backlog refinement                  |         |       | 1:11 |   3.4 |
+| code  | Add locking up logic                                   |         |       | 1:28 |   4.2 |
+| code  | Build using dynamic libraries                          |         |       | 7:24 |  21.1 |
+| code  | Enable qt gui                                          |         |       | 4:13 |  12.0 |
+| code  | Add locking up logic                                   |         |       | 1:28 |   4.2 |
+| code  | Build using dynamic libraries                          |         |       | 7:24 |  21.1 |
+| code  | Implement logging according to correct boost.log usage |         |       | 8:02 |  22.9 |
+| code  | Investigate leaks from valgrind                        |         |       | 0:46 |   2.2 |
+| code  | Add support for feature flags                          |         |       | 1:25 |   4.0 |
+| code  | Implement authentication bootstrap workflow            |         |       | 0:25 |   1.2 |
+| code  | Fix broken windows builds                              |         |       | 0:09 |   0.4 |
+| code  | Add workspace as a container                           |         |       | 1:13 |   3.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -334,6 +334,22 @@ Links:
 - [[https://learn.microsoft.com/en-us/vcpkg/concepts/overlay-ports][Overlay ports]]
 - [[https://devblogs.microsoft.com/cppblog/using-system-package-manager-dependencies-with-vcpkg/#using-curl-and-openssl-from-the-system-package-manager][Using curl and OpenSSL from the system package manager]]
 
+*** COMPLETED Implement logging according to correct boost.log usage   :code:
+    :LOGBOOK:
+    CLOCK: [2025-10-27 Mon 23:13]--[2025-10-28 Tue 00:45] =>  1:32
+    CLOCK: [2025-10-27 Mon 21:50]--[2025-10-27 Mon 23:12] =>  1:22
+    CLOCK: [2025-10-27 Mon 15:46]--[2025-10-27 Mon 18:02] =>  2:16
+    CLOCK: [2025-10-27 Mon 14:59]--[2025-10-27 Mon 15:04] =>  0:05
+    CLOCK: [2025-10-27 Mon 14:30]--[2025-10-27 Mon 14:58] =>  0:28
+    CLOCK: [2025-10-27 Mon 12:23]--[2025-10-27 Mon 13:50] =>  1:27
+    CLOCK: [2025-10-27 Mon 11:30]--[2025-10-27 Mon 12:22] =>  0:52
+    :END:
+
+It seems our use of local statics for loggers is causing issues with memory
+allocation. Maybe it isn't but it is one possible reason why valgrind traces are
+so noisy. Try to implement class-level logging according to idiomatic boost.log
+uses.
+
 *** STARTED Investigate leaks from valgrind                            :code:
     :LOGBOOK:
     CLOCK: [2025-10-23 Thu 09:46]--[2025-10-23 Thu 10:32] =>  0:46
@@ -517,6 +533,21 @@ Links:
     :END:
 
 Windows builds are failing on tests.
+
+*** Fix broken Linux and OSX tests                                     :code:
+
+At present a number of tests are failing on the github agents:
+
+#+begin_src sh
+Running 1 test case...
+
+,*** No errors detected
+double free or corruption (out)
+Subprocess aborted
+#+end_src
+
+They all work correctly on the local machine.
+
 
 *** Create shared object interfaces                                    :code:
 

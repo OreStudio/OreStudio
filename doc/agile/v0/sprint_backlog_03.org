@@ -715,7 +715,7 @@ runtime, feel free to ask.
 
 Links:
 
-- [[https://stackoverflow.com/questions/76338106/cmake-how-to-produce-both-dll-and-lib-as-ouputs][SO: "CMAKE" - how to produce both ".dll" and ".lib" as ouputs]]
+- [[https://stackoverflow.com/questions/76338106/cmake-how-to-produce-both-dll-and-lib-as-outputs][SO: "CMAKE" - how to produce both ".dll" and ".lib" as outputs]]
 
 *** Copy across icons and other assets to package                      :code:
 

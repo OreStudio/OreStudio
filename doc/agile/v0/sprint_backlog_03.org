@@ -372,6 +372,20 @@ Subprocess aborted
 They all work correctly on the local machine.
 
 
+*** STARTED Fix misspell that causes build to break                    :code:
+    :LOGBOOK:
+    CLOCK: [2025-10-28 Tue 18:22]--[2025-10-28 Tue 18:34] =>  0:12
+    :END:
+
+For some reason when we have a typo on URLs in org-mode files, it causes
+misspell fixer to break. To test locally:
+
+#+begin_src sh
+misspell-fixer -svn .
+#+end_src
+
+
+
 *** STARTED Investigate leaks from valgrind                            :code:
     :LOGBOOK:
     CLOCK: [2025-10-28 Tue 00:46]--[2025-10-28 Tue 00:51] =>  0:05

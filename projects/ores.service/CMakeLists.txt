@@ -16,7 +16,7 @@
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/generate_certs.sh"
-    "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}" COPYONLY)
+    "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/generate_certs.sh" COPYONLY)
 
 set(name "ores.service")
 set(lib_binary_name ${name})

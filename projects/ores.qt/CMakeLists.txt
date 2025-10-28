@@ -45,13 +45,13 @@ target_link_libraries(ores.qt PRIVATE
 file(GLOB ORES_QT_ASSETS "*.png")
 foreach(in_file IN LISTS ORES_QT_ASSETS)
     get_filename_component(out_file ${in_file} NAME)
-    file(COPY_FILE ${in_file} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+    file(COPY_FILE ${in_file} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${out_file})
 endforeach()
 
 file(GLOB ORES_QT_ASSETS "*.svg")
 foreach(in_file IN LISTS ORES_QT_ASSETS)
     get_filename_component(out_file ${in_file} NAME)
-    file(COPY_FILE ${in_file} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+    file(COPY_FILE ${in_file} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${out_file})
 endforeach()
 
 

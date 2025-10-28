@@ -49,10 +49,6 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 if(WIN32 AND (MSVC OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
     # Export all symbols on windows for now. Bit of a hack.
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-
-    # Put all DLLs and executables in the same directory on Windows so tests can
-    # find the DLLs they depend on.
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 endif()
 
 if(UNIX)

@@ -18,43 +18,45 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-10-28 Tue 18:21], for Tuesday, October 28, 2025.
+#+CAPTION: Clock summary at [2025-10-28 Tue 23:07], for Tuesday, October 28, 2025.
 |      | <75>                                                   |        |      |      |       |
 | Tags | Headline                                               | Time   |      |      |     % |
 |------+--------------------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                           | *2:20* |      |      | 100.0 |
+|      | *Total time*                                           | *3:38* |      |      | 100.0 |
 |------+--------------------------------------------------------+--------+------+------+-------|
-|      | Stories                                                | 2:20   |      |      | 100.0 |
-|      | Active                                                 |        | 2:20 |      | 100.0 |
-| code | Implement logging according to correct boost.log usage |        |      | 0:45 |  32.1 |
-| code | Fix broken Linux and OSX tests                         |        |      | 0:10 |   7.1 |
-| code | Investigate leaks from valgrind                        |        |      | 0:05 |   3.6 |
-| code | Fix broken windows builds                              |        |      | 1:20 |  57.1 |
+|      | Stories                                                | 3:38   |      |      | 100.0 |
+|      | Active                                                 |        | 3:38 |      | 100.0 |
+| code | Implement logging according to correct boost.log usage |        |      | 0:45 |  20.6 |
+| code | Fix broken Linux and OSX tests                         |        |      | 0:10 |   4.6 |
+| code | Fix misspell that causes build to break                |        |      | 0:12 |   5.5 |
+| code | Investigate leaks from valgrind                        |        |      | 0:05 |   2.3 |
+| code | Fix broken windows builds                              |        |      | 2:26 |  67.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-10-28 Tue 18:22]
+#+CAPTION: Clock summary at [2025-10-28 Tue 23:07]
 |       | <75>                                                   |         |       |      |       |
 | Tags  | Headline                                               | Time    |       |      |     % |
 |-------+--------------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                           | *36:43* |       |      | 100.0 |
+|       | *Total time*                                           | *38:01* |       |      | 100.0 |
 |-------+--------------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                                | 36:43   |       |      | 100.0 |
-|       | Active                                                 |         | 36:43 |      | 100.0 |
-| agile | Sprint and product backlog refinement                  |         |       | 1:11 |   3.2 |
-| code  | Add locking up logic                                   |         |       | 1:28 |   4.0 |
-| code  | Build using dynamic libraries                          |         |       | 7:24 |  20.2 |
-| code  | Enable qt gui                                          |         |       | 4:13 |  11.5 |
-| code  | Add locking up logic                                   |         |       | 1:28 |   4.0 |
-| code  | Build using dynamic libraries                          |         |       | 7:24 |  20.2 |
-| code  | Implement logging according to correct boost.log usage |         |       | 8:02 |  21.9 |
-| code  | Fix broken Linux and OSX tests                         |         |       | 0:10 |   0.5 |
-| code  | Investigate leaks from valgrind                        |         |       | 0:51 |   2.3 |
-| code  | Add support for feature flags                          |         |       | 1:25 |   3.9 |
+|       | Stories                                                | 38:01   |       |      | 100.0 |
+|       | Active                                                 |         | 38:01 |      | 100.0 |
+| agile | Sprint and product backlog refinement                  |         |       | 1:11 |   3.1 |
+| code  | Add locking up logic                                   |         |       | 1:28 |   3.9 |
+| code  | Build using dynamic libraries                          |         |       | 7:24 |  19.5 |
+| code  | Enable qt gui                                          |         |       | 4:13 |  11.1 |
+| code  | Add locking up logic                                   |         |       | 1:28 |   3.9 |
+| code  | Build using dynamic libraries                          |         |       | 7:24 |  19.5 |
+| code  | Implement logging according to correct boost.log usage |         |       | 8:02 |  21.1 |
+| code  | Fix broken Linux and OSX tests                         |         |       | 0:10 |   0.4 |
+| code  | Fix misspell that causes build to break                |         |       | 0:12 |   0.5 |
+| code  | Investigate leaks from valgrind                        |         |       | 0:51 |   2.2 |
+| code  | Add support for feature flags                          |         |       | 1:25 |   3.7 |
 | code  | Implement authentication bootstrap workflow            |         |       | 0:25 |   1.1 |
-| code  | Fix broken windows builds                              |         |       | 1:29 |   4.0 |
-| code  | Add workspace as a container                           |         |       | 1:13 |   3.3 |
+| code  | Fix broken windows builds                              |         |       | 2:35 |   6.8 |
+| code  | Add workspace as a container                           |         |       | 1:13 |   3.2 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -566,6 +568,7 @@ Links:
 <<<<<<< HEAD
 *** STARTED Fix broken windows builds                                  :code:
     :LOGBOOK:
+    CLOCK: [2025-10-28 Tue 22:00]--[2025-10-28 Tue 23:06] =>  1:06
     CLOCK: [2025-10-28 Tue 17:30]--[2025-10-28 Tue 18:21] =>  0:51
     CLOCK: [2025-10-28 Tue 15:10]--[2025-10-28 Tue 15:39] =>  0:29
     CLOCK: [2025-10-27 Mon 09:13]--[2025-10-27 Mon 09:22] =>  0:09

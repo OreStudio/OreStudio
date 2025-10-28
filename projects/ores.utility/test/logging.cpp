@@ -47,7 +47,7 @@ scoped_lifecycle_manager_factory(std::string test_module,
     }
 
     std::ostringstream s;
-    s << "log/" << test_module << "/" << test_suite << "/" << function_name;
+    s << "../log/" << test_module << "/" << test_suite << "/" << function_name;
     logging_options cfg;
     cfg.filename = s.str();
     cfg.severity = "trace";

@@ -19,11 +19,7 @@
  */
 #include <sstream>
 #include <optional>
-#include <boost/test/unit_test.hpp>
-#include <boost/test/results_collector.hpp>
-#include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/log/logging_options.hpp"
-#include "ores.utility/log/severity_level.hpp"
 #include "ores.utility/test/logging.hpp"
 
 namespace {
@@ -34,21 +30,10 @@ namespace {
  * it back afterwards.
  */
 const bool logging_enabled_globally(false);
-const std::string severity("trace");
 
 }
 
 namespace ores::utility::test {
-
-void log_if_test_has_failed() {
-    using namespace ores::utility::log;
-    auto lg(make_logger("ores.utility.test"));
-
-    namespace ut = boost::unit_test;
-    auto test_id(ut::framework::current_test_case().p_id);
-    if (!ut::results_collector.results(test_id).passed())
-        BOOST_LOG_SEV(lg, error) << "test failed.";
-}
 
 ores::utility::log::scoped_lifecycle_manager
 scoped_lifecycle_manager_factory(std::string test_module,
@@ -65,7 +50,7 @@ scoped_lifecycle_manager_factory(std::string test_module,
     s << "log/" << test_module << "/" << test_suite << "/" << function_name;
     logging_options cfg;
     cfg.filename = s.str();
-    cfg.severity = severity;
+    cfg.severity = "trace";
     cfg.output_to_console = log_to_console;
     return {cfg };
 }

@@ -30,17 +30,6 @@
 #include "ores.utility/log/logging_options_validator.hpp"
 #include "ores.utility/log/lifecycle_manager.hpp"
 
-namespace {
-
-const std::string extension(".log");
-const std::string channel_attr("Channel");
-const std::string severity_attr("Severity");
-const std::string time_stamp_attr("TimeStamp");
-const std::string record_format("%1% [%2%] [%3%] %4%");
-const std::string time_stamp_format("%Y-%m-%d %H:%M:%S.%f");
-
-}
-
 namespace ores::utility::log {
 
 using namespace boost::log;
@@ -48,6 +37,7 @@ using namespace boost::log;
 void lifecycle_manager::create_file_backend(
     std::filesystem::path path, const severity_level severity) {
 
+    const std::string extension(".log");
     if (path.extension() != extension)
         path += extension;
 
@@ -61,9 +51,14 @@ void lifecycle_manager::create_file_backend(
     using sink_type = sinks::synchronous_sink<sinks::text_file_backend>;
     auto sink(boost::make_shared<sink_type>(backend));
 
+    const std::string severity_attr("Severity");
     sink->set_filter(
         expressions::attr<severity_level>(severity_attr) >= severity);
 
+    const std::string channel_attr("Channel");
+    const std::string time_stamp_attr("TimeStamp");
+    const std::string record_format("%1% [%2%] [%3%] %4%");
+    const std::string time_stamp_format("%Y-%m-%d %H:%M:%S.%f");
     sink->set_formatter(expressions::format(record_format)
         % expressions::format_date_time<boost::posix_time::ptime>(
             time_stamp_attr, time_stamp_format)
@@ -82,9 +77,14 @@ void lifecycle_manager::create_console_backend(const severity_level severity) {
     using sink_type = sinks::synchronous_sink<sinks::text_ostream_backend>;
     auto sink(boost::make_shared<sink_type>(backend));
 
+    const std::string severity_attr("Severity");
     sink->set_filter(
         expressions::attr<severity_level>(severity_attr) >= severity);
 
+    const std::string channel_attr("Channel");
+    const std::string time_stamp_attr("TimeStamp");
+    const std::string time_stamp_format("%Y-%m-%d %H:%M:%S.%f");
+    const std::string record_format("%1% [%2%] [%3%] %4%");
     sink->set_formatter(expressions::format(record_format)
         % expressions::format_date_time<boost::posix_time::ptime>(
             time_stamp_attr, time_stamp_format)
@@ -130,6 +130,7 @@ initialise(std::optional<logging_options> ocfg) {
     /*
      * Finally, add the timestamp attributes.
      */
+    const std::string time_stamp_attr("TimeStamp");
     core.add_global_attribute(time_stamp_attr,
         boost::log::attributes::local_clock());
 }

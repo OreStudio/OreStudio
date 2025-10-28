@@ -29,8 +29,6 @@
 
 namespace ores::utility::test {
 
-void log_if_test_has_failed();
-
 ores::utility::log::scoped_lifecycle_manager
 scoped_lifecycle_manager_factory(std::string test_module,
     std::string test_suite,

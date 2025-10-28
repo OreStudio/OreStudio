@@ -27,11 +27,11 @@
 (autoload 'prodigy-define-service "prodigy")
 (defvar prodigy-services)
 
-(defun ores/path-to-output ()
+(defun ores/path-to-publish ()
   "Return the path to the qt user interface directory."
   (let* ((pr (project-current t))
          (root (project-root pr))
-         (path (concat root "build/output")))
+         (path (concat root "build/output/linux-clang-debug/publish")))
     path))
 
 (setq prodigy-services nil)
@@ -42,34 +42,34 @@
 
 (prodigy-define-service
   :name "ORE Studio QT - Debug"
-  :cwd (concat (ores/path-to-output) "/linux-clang-debug/projects/ores.qt")
-  :command (concat (ores/path-to-output) "/linux-clang-debug/projects/ores.qt/ores.qt")
+  :cwd (concat (ores/path-to-publish) "/bin")
+  :command (concat (ores/path-to-publish) "/bin/ores.qt")
   :tags '(ores ui debug)
   :stop-signal 'sigkill
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
   :name "ORE Studio QT - Release"
-  :cwd (concat (ores/path-to-output) "/linux-clang-debug/projects/ores.qt")
-  :command (concat (ores/path-to-output) "/linux-clang-release/projects/ores.qt/ores.qt")
+  :cwd (concat (ores/path-to-publish) "/bin")
+  :command (concat (ores/path-to-publish) "/bin/ores.qt")
   :tags '(ores ui release)
   :stop-signal 'sigkill
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
   :name "ORE Studio Service - Debug"
-  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "log")
-  :cwd (concat (ores/path-to-output) "/linux-clang-debug/projects/ores.service")
-  :command (concat (ores/path-to-output) "/linux-clang-debug/projects/ores.service/ores.service")
+  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")
+  :cwd (concat (ores/path-to-publish) "/bin")
+  :command (concat (ores/path-to-publish) "/bin/ores.service")
   :tags '(ores debug)
   :stop-signal 'sigkill
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
   :name "ORE Studio Service - Release"
-  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "log")
-  :cwd (concat (ores/path-to-output) "/linux-clang-debug/projects/ores.service")
-  :command (concat (ores/path-to-output) "/linux-clang-release/projects/ores.service/ores.service")
+  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")
+  :cwd (concat (ores/path-to-publish) "/bin")
+  :command (concat (ores/path-to-publish) "/bin/ores.service")
   :tags '(ores release)
   :stop-signal 'sigkill
   :kill-process-buffer-on-stop t)

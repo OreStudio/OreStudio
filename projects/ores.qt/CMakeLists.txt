@@ -42,7 +42,8 @@ target_link_libraries(ores.qt PRIVATE
     Qt6::Concurrent
 )
 
-# file(COPY assets DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+file(GLOB ORES_QT_ASSETS "*.png")
+file(COPY ${ORES_QT_ASSETS} DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}//")
 
 target_include_directories(ores.qt
     PRIVATE ${CMAKE_SOURCE_DIR}/projects)

@@ -12,8 +12,8 @@ Demonstrates all of the functionality available on the command line tool
   :PROPERTIES:
   :header-args: :exports both
   :header-args+: :results raw
-  :header-args+: :dir ../../build/output/linux-clang-debug/projects/ores.cli/
-  :header-args+: :var data_dir="../ores.risk.tests/test_data/currencies/"
+  :header-args+: :dir ../../build/output/linux-clang-debug/publish/bin/
+  :header-args+: :var data_dir="../../../../../projects/ores.risk.tests/test_data/currencies/"
   :END:
 
 ** General
@@ -58,6 +58,7 @@ Commands:
 
    import         Imports data into the system.
    export         Exports data from the system.
+   client         Launch interactive REPL to connect to ores.service.
 
 For command specific options, type <command> --help.
 #+end_src
@@ -112,7 +113,7 @@ Export:
 
 #+RESULTS:
 #+begin_src text
-OreStudio v0.0.2
+OreStudio v0.0.3
 Copyright (C) 2025 Marco Craveiro.
 License GPLv3: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
@@ -123,7 +124,7 @@ IMPORTANT: build details are NOT for security purposes.
 
 ** Importing
    :PROPERTIES:
-   :header-args+: :var log_args="--log-enabled --log-level trace --log-directory log"
+   :header-args+: :var log_args="--log-enabled --log-level trace --log-directory ../log"
    :header-args+: :wrap src json
    :END:
 
@@ -2811,7 +2812,7 @@ IMPORTANT: build details are NOT for security purposes.
 
 ** Exporting
    :PROPERTIES:
-   :header-args+: :var log_args="--log-enabled --log-level trace --log-directory log"
+   :header-args+: :var log_args="--log-enabled --log-level trace --log-directory ../log"
    :END:
 
 *** XML Exporting
@@ -8105,32 +8106,24 @@ Sliced as there are too many.
 
 ** Client
    :PROPERTIES:
-   :header-args+: :var log_args="--log-enabled --log-level trace --log-directory log"
+   :header-args+: :var log_args="--log-enabled --log-level trace --log-directory ../log"
    :END:
 
 *** Basic connect
 
 #+begin_src sh
-./ores.cli ${log_args} client --command handshake
+./ores.cli ${log_args} client <<EOF
+connect localhost 55555 test
+exit
 #+END_SRC
 
 #+RESULTS:
-./ores.cli --log-enabled --log-level trace --log-directory log client --command handshake
-ORE Studio is a User Interface for Open Source Risk Engine (ORE).
-CLI provides a command line version of the interface.
-ORE Studio is created by the ORE Studio project.
-Displaying options specific to the 'client' command.
-For global options, type --help.
+ORE Studio Client REPL v0.0.3
+Type 'help' for available commands, 'exit' to quit
 
-Client:
-  --command arg         Client command to execute. Available: handshake.
-                        Defaults to handshake.
-  --host arg            Host to connect to. Defaults to localhost.
-  --port arg            Port to connect to. Defaults to 55555.
-  --identifier arg      Client identifier for handshake. Defaults to
-                        ores-cli-client.
-  --verify-certificate  Verify server SSL certificate.
-
+ores-client> ores-client> Bye!
+✓ Connected
+ores-client>
 
 | Previous: [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] |
 

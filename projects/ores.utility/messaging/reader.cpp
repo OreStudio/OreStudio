@@ -18,39 +18,12 @@
  *
  */
 #include <expected>
-#include <cstring>
-#include "ores.utility/messaging/write.hpp"
+#include "ores.utility/messaging/reader.hpp"
 
 namespace ores::utility::messaging {
 
-void write_uint16(std::vector<std::uint8_t>& buffer, std::uint16_t value) {
-    buffer.push_back(static_cast<std::uint8_t>(value >> 8));
-    buffer.push_back(static_cast<std::uint8_t>(value & 0xFF));
-}
-
-void write_uint32(std::vector<std::uint8_t>& buffer, std::uint32_t value) {
-    buffer.push_back(static_cast<std::uint8_t>(value >> 24));
-    buffer.push_back(static_cast<std::uint8_t>((value >> 16) & 0xFF));
-    buffer.push_back(static_cast<std::uint8_t>((value >> 8) & 0xFF));
-    buffer.push_back(static_cast<std::uint8_t>(value & 0xFF));
-}
-
-void write_string(std::vector<std::uint8_t>& buffer, const std::string& str) {
-    auto len = static_cast<std::uint16_t>(std::min(str.size(), size_t(65535)));
-    write_uint16(buffer, len);
-    buffer.insert(buffer.end(), str.begin(), str.begin() + len);
-}
-
-void write_uuid(std::vector<std::uint8_t>& buffer, const boost::uuids::uuid& uuid) {
-    buffer.insert(buffer.end(), uuid.begin(), uuid.end());
-}
-
-void write_bool(std::vector<std::uint8_t>& buffer, bool value) {
-    buffer.push_back(value ? 1 : 0);
-}
-
 std::expected<std::uint16_t, comms::protocol::error_code>
-read_uint16(std::span<const std::uint8_t>& data) {
+reader::read_uint16(std::span<const std::uint8_t>& data) {
     if (data.size() < 2) {
         return std::unexpected(comms::protocol::error_code::payload_too_large);
     }
@@ -61,7 +34,7 @@ read_uint16(std::span<const std::uint8_t>& data) {
 }
 
 std::expected<std::uint32_t, comms::protocol::error_code>
-read_uint32(std::span<const std::uint8_t>& data) {
+reader::read_uint32(std::span<const std::uint8_t>& data) {
     if (data.size() < 4) {
         return std::unexpected(comms::protocol::error_code::payload_too_large);
     }
@@ -74,7 +47,7 @@ read_uint32(std::span<const std::uint8_t>& data) {
 }
 
 std::expected<std::string, comms::protocol::error_code>
-read_string(std::span<const std::uint8_t>& data) {
+reader::read_string(std::span<const std::uint8_t>& data) {
     auto len_result = read_uint16(data);
     if (!len_result) {
         return std::unexpected(len_result.error());
@@ -89,7 +62,7 @@ read_string(std::span<const std::uint8_t>& data) {
 }
 
 std::expected<boost::uuids::uuid, comms::protocol::error_code>
-read_uuid(std::span<const std::uint8_t>& data) {
+reader::read_uuid(std::span<const std::uint8_t>& data) {
     if (data.size() < 16) {
         return std::unexpected(comms::protocol::error_code::payload_too_large);
     }
@@ -100,7 +73,7 @@ read_uuid(std::span<const std::uint8_t>& data) {
 }
 
 std::expected<bool, comms::protocol::error_code>
-read_bool(std::span<const std::uint8_t>& data) {
+reader::read_bool(std::span<const std::uint8_t>& data) {
     if (data.size() < 1) {
         return std::unexpected(comms::protocol::error_code::payload_too_large);
     }

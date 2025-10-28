@@ -23,7 +23,8 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.utility/messaging/write.hpp"
+#include "ores.utility/messaging/reader.hpp"
+#include "ores.utility/messaging/writer.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
 
 namespace ores::accounts::messaging {
@@ -32,12 +33,12 @@ using namespace ores::utility::messaging;
 
 std::vector<std::uint8_t> create_account_request::serialize() const {
     std::vector<std::uint8_t> buffer;
-    write_string(buffer, username);
-    write_string(buffer, password);
-    write_string(buffer, totp_secret);
-    write_string(buffer, email);
-    write_string(buffer, modified_by);
-    write_bool(buffer, is_admin);
+    writer::write_string(buffer, username);
+    writer::write_string(buffer, password);
+    writer::write_string(buffer, totp_secret);
+    writer::write_string(buffer, email);
+    writer::write_string(buffer, modified_by);
+    writer::write_bool(buffer, is_admin);
     return buffer;
 }
 
@@ -45,23 +46,23 @@ std::expected<create_account_request, comms::protocol::error_code>
 create_account_request::deserialize(std::span<const std::uint8_t> data) {
     create_account_request request;
 
-    auto username_result = read_string(data);
+    auto username_result = reader::read_string(data);
     if (!username_result) return std::unexpected(username_result.error());
     request.username = *username_result;
 
-    auto password_result = read_string(data);
+    auto password_result = reader::read_string(data);
     if (!password_result) return std::unexpected(password_result.error());
     request.password = *password_result;
 
-    auto totp_secret_result = read_string(data);
+    auto totp_secret_result = reader::read_string(data);
     if (!totp_secret_result) return std::unexpected(totp_secret_result.error());
     request.totp_secret = *totp_secret_result;
 
-    auto email_result = read_string(data);
+    auto email_result = reader::read_string(data);
     if (!email_result) return std::unexpected(email_result.error());
     request.email = *email_result;
 
-    auto is_admin_result = read_bool(data);
+    auto is_admin_result = reader::read_bool(data);
     if (!is_admin_result) return std::unexpected(is_admin_result.error());
     request.is_admin = *is_admin_result;
 
@@ -76,7 +77,7 @@ std::ostream& operator<<(std::ostream& s, const create_account_request& v)
 
 std::vector<std::uint8_t> create_account_response::serialize() const {
     std::vector<std::uint8_t> buffer;
-    write_uuid(buffer, account_id);
+    writer::write_uuid(buffer, account_id);
     return buffer;
 }
 
@@ -84,7 +85,7 @@ std::expected<create_account_response, comms::protocol::error_code>
 create_account_response::deserialize(std::span<const std::uint8_t> data) {
     create_account_response response;
 
-    auto account_id_result = read_uuid(data);
+    auto account_id_result = reader::read_uuid(data);
     if (!account_id_result) return std::unexpected(account_id_result.error());
     response.account_id = *account_id_result;
 
@@ -120,19 +121,19 @@ std::vector<std::uint8_t> list_accounts_response::serialize() const {
     std::vector<std::uint8_t> buffer;
 
     // Write account count
-    write_uint32(buffer, static_cast<std::uint32_t>(accounts.size()));
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(accounts.size()));
 
     // Write each account
     for (const auto& account : accounts) {
-        write_uint32(buffer, static_cast<std::uint32_t>(account.version));
-        write_string(buffer, account.modified_by);
-        write_uuid(buffer, account.id);
-        write_string(buffer, account.username);
-        write_string(buffer, account.password_hash);
-        write_string(buffer, account.password_salt);
-        write_string(buffer, account.totp_secret);
-        write_string(buffer, account.email);
-        write_bool(buffer, account.is_admin);
+        writer::write_uint32(buffer, static_cast<std::uint32_t>(account.version));
+        writer::write_string(buffer, account.modified_by);
+        writer::write_uuid(buffer, account.id);
+        writer::write_string(buffer, account.username);
+        writer::write_string(buffer, account.password_hash);
+        writer::write_string(buffer, account.password_salt);
+        writer::write_string(buffer, account.totp_secret);
+        writer::write_string(buffer, account.email);
+        writer::write_bool(buffer, account.is_admin);
     }
 
     return buffer;
@@ -143,7 +144,7 @@ list_accounts_response::deserialize(std::span<const std::uint8_t> data) {
     list_accounts_response response;
 
     // Read account count
-    auto count_result = read_uint32(data);
+    auto count_result = reader::read_uint32(data);
     if (!count_result) {
         return std::unexpected(count_result.error());
     }
@@ -154,39 +155,39 @@ list_accounts_response::deserialize(std::span<const std::uint8_t> data) {
     for (std::uint32_t i = 0; i < count; ++i) {
         domain::account account;
 
-        auto version_result = read_uint32(data);
+        auto version_result = reader::read_uint32(data);
         if (!version_result) return std::unexpected(version_result.error());
         account.version = static_cast<int>(*version_result);
 
-        auto modified_by_result = read_string(data);
+        auto modified_by_result = reader::read_string(data);
         if (!modified_by_result) return std::unexpected(modified_by_result.error());
         account.modified_by = *modified_by_result;
 
-        auto id_result = read_uuid(data);
+        auto id_result = reader::read_uuid(data);
         if (!id_result) return std::unexpected(id_result.error());
         account.id = *id_result;
 
-        auto username_result = read_string(data);
+        auto username_result = reader::read_string(data);
         if (!username_result) return std::unexpected(username_result.error());
         account.username = *username_result;
 
-        auto password_hash_result = read_string(data);
+        auto password_hash_result = reader::read_string(data);
         if (!password_hash_result) return std::unexpected(password_hash_result.error());
         account.password_hash = *password_hash_result;
 
-        auto password_salt_result = read_string(data);
+        auto password_salt_result = reader::read_string(data);
         if (!password_salt_result) return std::unexpected(password_salt_result.error());
         account.password_salt = *password_salt_result;
 
-        auto totp_secret_result = read_string(data);
+        auto totp_secret_result = reader::read_string(data);
         if (!totp_secret_result) return std::unexpected(totp_secret_result.error());
         account.totp_secret = *totp_secret_result;
 
-        auto email_result = read_string(data);
+        auto email_result = reader::read_string(data);
         if (!email_result) return std::unexpected(email_result.error());
         account.email = *email_result;
 
-        auto is_admin_result = read_bool(data);
+        auto is_admin_result = reader::read_bool(data);
         if (!is_admin_result) return std::unexpected(is_admin_result.error());
         account.is_admin = *is_admin_result;
 
@@ -203,8 +204,8 @@ std::ostream& operator<<(std::ostream& s, const list_accounts_response& v)
 
 std::vector<std::uint8_t> login_request::serialize() const {
     std::vector<std::uint8_t> buffer;
-    write_string(buffer, username);
-    write_string(buffer, password);
+    writer::write_string(buffer, username);
+    writer::write_string(buffer, password);
     return buffer;
 }
 
@@ -212,11 +213,11 @@ std::expected<login_request, comms::protocol::error_code>
 login_request::deserialize(std::span<const std::uint8_t> data) {
     login_request request;
 
-    auto username_result = read_string(data);
+    auto username_result = reader::read_string(data);
     if (!username_result) return std::unexpected(username_result.error());
     request.username = *username_result;
 
-    auto password_result = read_string(data);
+    auto password_result = reader::read_string(data);
     if (!password_result) return std::unexpected(password_result.error());
     request.password = *password_result;
 
@@ -231,11 +232,11 @@ std::ostream& operator<<(std::ostream& s, const login_request& v)
 
 std::vector<std::uint8_t> login_response::serialize() const {
     std::vector<std::uint8_t> buffer;
-    write_bool(buffer, success);
-    write_string(buffer, error_message);
-    write_uuid(buffer, account_id);
-    write_string(buffer, username);
-    write_bool(buffer, is_admin);
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, error_message);
+    writer::write_uuid(buffer, account_id);
+    writer::write_string(buffer, username);
+    writer::write_bool(buffer, is_admin);
     return buffer;
 }
 
@@ -243,23 +244,23 @@ std::expected<login_response, comms::protocol::error_code>
 login_response::deserialize(std::span<const std::uint8_t> data) {
     login_response response;
 
-    auto success_result = read_bool(data);
+    auto success_result = reader::read_bool(data);
     if (!success_result) return std::unexpected(success_result.error());
     response.success = *success_result;
 
-    auto error_message_result = read_string(data);
+    auto error_message_result = reader::read_string(data);
     if (!error_message_result) return std::unexpected(error_message_result.error());
     response.error_message = *error_message_result;
 
-    auto account_id_result = read_uuid(data);
+    auto account_id_result = reader::read_uuid(data);
     if (!account_id_result) return std::unexpected(account_id_result.error());
     response.account_id = *account_id_result;
 
-    auto username_result = read_string(data);
+    auto username_result = reader::read_string(data);
     if (!username_result) return std::unexpected(username_result.error());
     response.username = *username_result;
 
-    auto is_admin_result = read_bool(data);
+    auto is_admin_result = reader::read_bool(data);
     if (!is_admin_result) return std::unexpected(is_admin_result.error());
     response.is_admin = *is_admin_result;
 
@@ -274,7 +275,7 @@ std::ostream& operator<<(std::ostream& s, const login_response& v)
 
 std::vector<std::uint8_t> unlock_account_request::serialize() const {
     std::vector<std::uint8_t> buffer;
-    write_uuid(buffer, account_id);
+    writer::write_uuid(buffer, account_id);
     return buffer;
 }
 
@@ -282,7 +283,7 @@ std::expected<unlock_account_request, comms::protocol::error_code>
 unlock_account_request::deserialize(std::span<const std::uint8_t> data) {
     unlock_account_request request;
 
-    auto account_id_result = read_uuid(data);
+    auto account_id_result = reader::read_uuid(data);
     if (!account_id_result) return std::unexpected(account_id_result.error());
     request.account_id = *account_id_result;
 
@@ -297,8 +298,8 @@ std::ostream& operator<<(std::ostream& s, const unlock_account_request& v)
 
 std::vector<std::uint8_t> unlock_account_response::serialize() const {
     std::vector<std::uint8_t> buffer;
-    write_bool(buffer, success);
-    write_string(buffer, error_message);
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, error_message);
     return buffer;
 }
 
@@ -306,11 +307,11 @@ std::expected<unlock_account_response, comms::protocol::error_code>
 unlock_account_response::deserialize(std::span<const std::uint8_t> data) {
     unlock_account_response response;
 
-    auto success_result = read_bool(data);
+    auto success_result = reader::read_bool(data);
     if (!success_result) return std::unexpected(success_result.error());
     response.success = *success_result;
 
-    auto error_message_result = read_string(data);
+    auto error_message_result = reader::read_string(data);
     if (!error_message_result) return std::unexpected(error_message_result.error());
     response.error_message = *error_message_result;
 

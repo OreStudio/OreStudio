@@ -43,6 +43,7 @@ using risk::repository::currency_repository;
 using connection = sqlgen::Result<rfl::Ref<sqlgen::postgres::Connection>>;
 
 utility::repository::context application::make_context() {
+    // FIXME: should be command line parameters.
     using utility::repository::context_factory;
     context_factory::configuration cfg {
         .user = "ores",

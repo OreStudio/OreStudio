@@ -44,8 +44,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     server_cfg.private_key_file = cfg.server.private_key_file;
     server_cfg.server_identifier = cfg.server.server_identifier;
 
-    // Create database context
-    // TODO: Add database configuration to service options
+    // FIXME: should be command line parameters.
     using ores::utility::repository::context_factory;
         context_factory::configuration db_cfg{
             .user = "ores",

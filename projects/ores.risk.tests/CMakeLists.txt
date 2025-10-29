@@ -48,7 +48,7 @@ set(command $<TARGET_FILE:${tests_binary_name}> ${boost_test_parameters})
 add_custom_target(run_${tests_target_name}
     COMMENT "Running ${tests_target_name}" VERBATIM
     COMMAND ${command}
-    WORKING_DIRECTORY ${stage_bin_dir}
+    WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     DEPENDS ${tests_target_name})
 
 add_dependencies(run_all_tests run_${tests_target_name})

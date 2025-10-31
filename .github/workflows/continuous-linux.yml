@@ -74,8 +74,8 @@ jobs:
         with:
           username: ores
           password: ahV6aehuij6eingohsiajaiT0
-          database: test
-          port: oresdb
+          database: oresdb
+          port: 5432
           postgres-version: "18"
         id: postgres
 

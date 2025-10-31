@@ -100,7 +100,7 @@ jobs:
 
       - name: Setup DB Scripts
         run: |
-          psql ${{ steps.postgres.outputs.connection-uri }} -i Src/sql/create_database.sql
+          psql ${{ steps.postgres.outputs.connection-uri }} -f Src/sql/create_database.sql
 
       - name: Get latest CMake
         uses: lukka/get-cmake@v4.1.2

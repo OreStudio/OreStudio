@@ -56,6 +56,20 @@ jobs:
           key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
           max-size: 1000M
 
+      - name: Setup postgres
+        uses: ikalnytskyi/action-setup-postgres@v8
+        with:
+          username: ores
+          password: ahV6aehuij6eingohsiajaiT0
+          database: test
+          port: oresdb
+          postgres-version: "18"
+        id: postgres
+
+      - name: Setup DB Scripts
+        run: |
+          psql ${{ steps.postgres.outputs.connection-uri }} -i Src/sql/create_database.sql
+
       - name: get-cmake
         uses: lukka/get-cmake@v4.1.2
 

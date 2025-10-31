@@ -138,6 +138,9 @@ find_package(sqlgen REQUIRED)
 # Magic enum
 find_package(magic_enum CONFIG REQUIRED)
 
+# Faker C++
+find_package(faker-cxx REQUIRED)
+
 # site (for ctest)
 site_name(VORE_SITE)
 

@@ -18,45 +18,42 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-10-28 Tue 23:07], for Tuesday, October 28, 2025.
-|      | <75>                                                   |        |      |      |       |
-| Tags | Headline                                               | Time   |      |      |     % |
-|------+--------------------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                           | *3:38* |      |      | 100.0 |
-|------+--------------------------------------------------------+--------+------+------+-------|
-|      | Stories                                                | 3:38   |      |      | 100.0 |
-|      | Active                                                 |        | 3:38 |      | 100.0 |
-| code | Implement logging according to correct boost.log usage |        |      | 0:45 |  20.6 |
-| code | Fix broken Linux and OSX tests                         |        |      | 0:10 |   4.6 |
-| code | Fix misspell that causes build to break                |        |      | 0:12 |   5.5 |
-| code | Investigate leaks from valgrind                        |        |      | 0:05 |   2.3 |
-| code | Fix broken windows builds                              |        |      | 2:26 |  67.0 |
+#+CAPTION: Clock summary at [2025-10-31 Fri 22:15], for Friday, October 31, 2025.
+|      | <75>                                      |        |      |      |       |
+| Tags | Headline                                  | Time   |      |      |     % |
+|------+-------------------------------------------+--------+------+------+-------|
+|      | *Total time*                              | *2:06* |      |      | 100.0 |
+|------+-------------------------------------------+--------+------+------+-------|
+|      | Stories                                   | 2:06   |      |      | 100.0 |
+|      | Active                                    |        | 2:06 |      | 100.0 |
+| code | Consider adding a postgres database to CI |        |      | 2:06 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-10-28 Tue 23:07]
+#+CAPTION: Clock summary at [2025-10-31 Fri 22:16]
 |       | <75>                                                   |         |       |      |       |
 | Tags  | Headline                                               | Time    |       |      |     % |
 |-------+--------------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                           | *38:01* |       |      | 100.0 |
+|       | *Total time*                                           | *47:05* |       |      | 100.0 |
 |-------+--------------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                                | 38:01   |       |      | 100.0 |
-|       | Active                                                 |         | 38:01 |      | 100.0 |
-| agile | Sprint and product backlog refinement                  |         |       | 1:11 |   3.1 |
-| code  | Add locking up logic                                   |         |       | 1:28 |   3.9 |
-| code  | Build using dynamic libraries                          |         |       | 7:24 |  19.5 |
-| code  | Enable qt gui                                          |         |       | 4:13 |  11.1 |
-| code  | Add locking up logic                                   |         |       | 1:28 |   3.9 |
-| code  | Build using dynamic libraries                          |         |       | 7:24 |  19.5 |
-| code  | Implement logging according to correct boost.log usage |         |       | 8:02 |  21.1 |
+|       | Stories                                                | 47:05   |       |      | 100.0 |
+|       | Active                                                 |         | 47:05 |      | 100.0 |
+| agile | Sprint and product backlog refinement                  |         |       | 1:24 |   3.0 |
+| code  | Add locking up logic                                   |         |       | 1:28 |   3.1 |
+| code  | Build using dynamic libraries                          |         |       | 7:24 |  15.7 |
+| code  | Enable qt gui                                          |         |       | 4:13 |   9.0 |
+| code  | Add locking up logic                                   |         |       | 1:28 |   3.1 |
+| code  | Build using dynamic libraries                          |         |       | 7:24 |  15.7 |
+| code  | Implement logging according to correct boost.log usage |         |       | 8:02 |  17.1 |
 | code  | Fix broken Linux and OSX tests                         |         |       | 0:10 |   0.4 |
-| code  | Fix misspell that causes build to break                |         |       | 0:12 |   0.5 |
-| code  | Investigate leaks from valgrind                        |         |       | 0:51 |   2.2 |
-| code  | Add support for feature flags                          |         |       | 1:25 |   3.7 |
-| code  | Implement authentication bootstrap workflow            |         |       | 0:25 |   1.1 |
-| code  | Fix broken windows builds                              |         |       | 2:35 |   6.8 |
-| code  | Add workspace as a container                           |         |       | 1:13 |   3.2 |
+| code  | Fix broken windows builds                              |         |       | 2:35 |   5.5 |
+| code  | Investigate leaks from valgrind                        |         |       | 0:51 |   1.8 |
+| code  | Fix misspell that causes build to break                |         |       | 0:12 |   0.4 |
+| code  | Add support for feature flags                          |         |       | 1:25 |   3.0 |
+| code  | Implement authentication bootstrap workflow            |         |       | 0:25 |   0.9 |
+| code  | Consider adding a postgres database to CI              |         |       | 8:51 |  18.8 |
+| code  | Add workspace as a container                           |         |       | 1:13 |   2.6 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -645,7 +642,28 @@ Links:
 
 - [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
 
-<<<<<<< HEAD
+*** STARTED Consider adding a postgres database to CI                  :code:
+    :LOGBOOK:
+    CLOCK: [2025-10-31 Fri 21:35]--[2025-10-31 Fri 22:10] =>  0:35
+    CLOCK: [2025-10-31 Fri 20:15]--[2025-10-31 Fri 21:13] =>  0:58
+    CLOCK: [2025-10-31 Fri 18:31]--[2025-10-31 Fri 19:04] =>  0:33
+    CLOCK: [2025-10-29 Wed 13:34]--[2025-10-29 Wed 20:19] =>  6:45
+    :END:
+
+We could easily add a database and have basic tests which exercise the
+repository. They would also test the SQL for creating tables, etc.
+
+- we can generate a test database as part of the tests. It could be populated
+  using [[https://github.com/cieslarmichal/faker-cxx][faker-cxx]].
+
+Notes:
+
+- updated postgres to standard ports.
+
+Links:
+
+- [[https://github.com/marketplace/actions/setup-postgresql-for-linux-macos-windows][Setup PostgreSQL for Linux/macOS/Windows]]
+
 *** Log file for Qt application is non-standard                        :code:
 
 At present we need to manually create the log directory for the gui to fix this
@@ -793,21 +811,6 @@ At present when you start the gui you get:
 
 We need to put the assets under a suitable directory in opt and try to open them
 from there.
-
-*** Consider adding a postgres database to CI                          :code:
-    :LOGBOOK:
-    CLOCK: [2025-10-29 Wed 13:34]--[2025-10-29 Wed 20:19] =>  6:45
-    :END:
-
-We could easily add a database and have basic tests which exercise the
-repository. They would also test the SQL for creating tables, etc.
-
-- we can generate a test database as part of the tests. It could be populated
-  using [[https://github.com/cieslarmichal/faker-cxx][faker-cxx]].
-
-Links:
-
-- [[https://github.com/marketplace/actions/setup-postgresql-for-linux-macos-windows][Setup PostgreSQL for Linux/macOS/Windows]]
 
 *** Update timestamps to use timezone                                  :code:
 

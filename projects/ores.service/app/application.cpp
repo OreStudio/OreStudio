@@ -51,7 +51,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             .password = "ahV6aehuij6eingohsiajaiT0",
             .host = "localhost",
             .database = "oresdb",
-            .port = 5434,
+            .port = 5432,
             .pool_size = 4,
             .num_attempts = 10,
             .wait_time_in_seconds = 1

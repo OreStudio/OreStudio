@@ -19,7 +19,7 @@
  */
 #include <boost/test/unit_test.hpp>
 #include <boost/uuid/uuid_generators.hpp>
-#include "ores.utility/test/logging.hpp"
+#include "ores.utility/test/logging_fixture.hpp"
 #include "ores.accounts/domain/account.hpp"
 
 namespace {
@@ -30,12 +30,12 @@ const std::string test_suite("domain_account_tests");
 }
 
 using ores::accounts::domain::account;
+using namespace ores::utility::log;
 
 BOOST_AUTO_TEST_SUITE(domain_account_tests)
 
-BOOST_AUTO_TEST_CASE(create_account_with_valid_fields) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("create_account_with_valid_fields");
-
+LOGGING_FIXTURE(create_account_with_valid_fields);
+BOOST_FIXTURE_TEST_CASE(create_account_with_valid_fields, create_account_with_valid_fields_fixture) {
     account acc;
     acc.version = 1;
     acc.modified_by = "admin";
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(create_account_with_valid_fields) {
     acc.email = "john.doe@example.com";
     acc.is_admin = false;
 
-    BOOST_LOG_SEV(lg, debug) << "Created account: " << acc;
+    BOOST_LOG_SEV(lg(), debug) << "Created account: " << acc;
 
     BOOST_CHECK_EQUAL(acc.version, 1);
     BOOST_CHECK_EQUAL(acc.modified_by, "admin");
@@ -59,9 +59,8 @@ BOOST_AUTO_TEST_CASE(create_account_with_valid_fields) {
     BOOST_CHECK_EQUAL(acc.is_admin, false);
 }
 
-BOOST_AUTO_TEST_CASE(create_admin_account) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("create_admin_account");
-
+LOGGING_FIXTURE(create_admin_account);
+BOOST_FIXTURE_TEST_CASE(create_admin_account, create_admin_account_fixture) {
     account admin_acc;
     admin_acc.version = 1;
     admin_acc.modified_by = "system";
@@ -73,7 +72,7 @@ BOOST_AUTO_TEST_CASE(create_admin_account) {
     admin_acc.email = "admin@example.com";
     admin_acc.is_admin = true;
 
-    BOOST_LOG_SEV(lg, debug) << "Created admin account: " << admin_acc;
+    BOOST_LOG_SEV(lg(), debug) << "Created admin account: " << admin_acc;
 
     BOOST_CHECK_EQUAL(admin_acc.version, 1);
     BOOST_CHECK_EQUAL(admin_acc.modified_by, "system");
@@ -82,9 +81,8 @@ BOOST_AUTO_TEST_CASE(create_admin_account) {
     BOOST_CHECK_EQUAL(admin_acc.email, "admin@example.com");
 }
 
-BOOST_AUTO_TEST_CASE(account_with_specific_uuid) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("account_with_specific_uuid");
-
+LOGGING_FIXTURE(account_with_specific_uuid);
+BOOST_FIXTURE_TEST_CASE(account_with_specific_uuid, account_with_specific_uuid_fixture) {
     boost::uuids::string_generator uuid_gen;
     const auto specific_id = uuid_gen("550e8400-e29b-41d4-a716-446655440000");
 
@@ -99,15 +97,14 @@ BOOST_AUTO_TEST_CASE(account_with_specific_uuid) {
     acc.email = "test@example.com";
     acc.is_admin = false;
 
-    BOOST_LOG_SEV(lg, debug) << "Account with specific UUID: " << acc;
+    BOOST_LOG_SEV(lg(), debug) << "Account with specific UUID: " << acc;
 
     BOOST_CHECK_EQUAL(acc.version, 2);
     BOOST_CHECK_EQUAL(acc.username, "test.user");
 }
 
-BOOST_AUTO_TEST_CASE(account_serialization_to_json) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("account_serialization_to_json");
-
+LOGGING_FIXTURE(account_serialization_to_json);
+BOOST_FIXTURE_TEST_CASE(account_serialization_to_json, account_serialization_to_json_fixture) {
     account acc;
     acc.version = 3;
     acc.modified_by = "developer";
@@ -119,13 +116,13 @@ BOOST_AUTO_TEST_CASE(account_serialization_to_json) {
     acc.email = "serialize@test.com";
     acc.is_admin = true;
 
-    BOOST_LOG_SEV(lg, debug) << "Account before serialization: " << acc;
+    BOOST_LOG_SEV(lg(), debug) << "Account before serialization: " << acc;
 
     std::ostringstream oss;
     oss << acc;
     const std::string json_output = oss.str();
 
-    BOOST_LOG_SEV(lg, debug) << "Serialized JSON: " << json_output;
+    BOOST_LOG_SEV(lg(), debug) << "Serialized JSON: " << json_output;
 
     BOOST_CHECK(!json_output.empty());
     BOOST_CHECK(json_output.find("serialization.test") != std::string::npos);

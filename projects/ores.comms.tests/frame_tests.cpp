@@ -22,7 +22,7 @@
 #include <cstdint>
 #include <boost/test/unit_test.hpp>
 #include <boost/algorithm/string/predicate.hpp>
-#include "ores.utility/test/logging.hpp"
+#include "ores.utility/test/logging_fixture.hpp"
 #include "ores.utility/streaming/std_optional.hpp" // IWYU pragma: keep
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep
 #include "ores.comms/protocol/frame.hpp"
@@ -50,8 +50,8 @@ deserialize_frame(std::span<const std::uint8_t> data) {
 
 BOOST_AUTO_TEST_SUITE(frame_tests)
 
-BOOST_AUTO_TEST_CASE(test_frame_serialization) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("test_frame_serialization")
+LOGGING_FIXTURE(test_frame_serialization);
+BOOST_FIXTURE_TEST_CASE(test_frame_serialization, test_frame_serialization_fixture) {
 
     // Create a frame with some test data
     std::vector<std::uint8_t> payload = {0x01, 0x02, 0x03, 0x04};
@@ -89,8 +89,8 @@ BOOST_AUTO_TEST_CASE(test_frame_serialization) {
     );
 }
 
-BOOST_AUTO_TEST_CASE(test_frame_serialization_empty_payload) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("test_frame_serialization_empty_payload")
+LOGGING_FIXTURE(test_frame_serialization_empty_payload);
+BOOST_FIXTURE_TEST_CASE(test_frame_serialization_empty_payload, test_frame_serialization_empty_payload_fixture) {
 
     // Create a frame with empty payload
     std::vector<std::uint8_t> empty_payload = {};
@@ -124,8 +124,8 @@ BOOST_AUTO_TEST_CASE(test_frame_serialization_empty_payload) {
     BOOST_CHECK_EQUAL(deserialized_frame.payload().size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(test_frame_serialization_large_payload) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("test_frame_serialization_large_payload")
+LOGGING_FIXTURE(test_frame_serialization_large_payload);
+BOOST_FIXTURE_TEST_CASE(test_frame_serialization_large_payload, test_frame_serialization_large_payload_fixture) {
 
     // Create a frame with a larger payload
     std::vector<std::uint8_t> large_payload(1000);
@@ -166,8 +166,8 @@ BOOST_AUTO_TEST_CASE(test_frame_serialization_large_payload) {
     );
 }
 
-BOOST_AUTO_TEST_CASE(test_frame_deserialization_invalid_data) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("test_frame_deserialization_invalid_data")
+LOGGING_FIXTURE(test_frame_deserialization_invalid_data);
+BOOST_FIXTURE_TEST_CASE(test_frame_deserialization_invalid_data, test_frame_deserialization_invalid_data_fixture) {
 
     // Try to deserialize invalid data (too short)
     std::vector<std::uint8_t> invalid_data = {0x01, 0x02};
@@ -182,8 +182,8 @@ BOOST_AUTO_TEST_CASE(test_frame_deserialization_invalid_data) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(test_frame_deserialization_corrupted_data) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("test_frame_deserialization_corrupted_data")
+LOGGING_FIXTURE(test_frame_deserialization_corrupted_data);
+BOOST_FIXTURE_TEST_CASE(test_frame_deserialization_corrupted_data, test_frame_deserialization_corrupted_data_fixture) {
 
     // Create a valid frame and serialize it
     std::vector<std::uint8_t> payload = {0x01, 0x02, 0x03, 0x04};
@@ -211,8 +211,8 @@ BOOST_AUTO_TEST_CASE(test_frame_deserialization_corrupted_data) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(test_frame_roundtrip_multiple_message_types) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("test_frame_roundtrip_multiple_message_types")
+LOGGING_FIXTURE(test_frame_roundtrip_multiple_message_types);
+BOOST_FIXTURE_TEST_CASE(test_frame_roundtrip_multiple_message_types, test_frame_roundtrip_multiple_message_types_fixture) {
 
     // Test serialization/deserialization with different message types
     std::vector<std::uint8_t> payload = {0xDE, 0xAD, 0xBE, 0xEF};

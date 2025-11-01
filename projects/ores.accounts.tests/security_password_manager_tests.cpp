@@ -19,7 +19,7 @@
  */
 #include <boost/test/unit_test.hpp>
 #include "ores.accounts/security/password_manager.hpp"
-#include "ores.utility/test/logging.hpp"
+#include "ores.utility/test/logging_fixture.hpp"
 
 namespace {
 
@@ -32,9 +32,8 @@ using ores::accounts::security::password_manager;
 
 BOOST_AUTO_TEST_SUITE(security_password_manager_tests)
 
-BOOST_AUTO_TEST_CASE(verify_password_hash) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("verify_password_hash");
-
+LOGGING_FIXTURE(verify_password_hash);
+BOOST_FIXTURE_TEST_CASE(verify_password_hash, verify_password_hash_fixture) {
     const std::string password = "correct_password";
     const std::string hash = password_manager::create_password_hash(password);
 
@@ -42,9 +41,8 @@ BOOST_AUTO_TEST_CASE(verify_password_hash) {
     BOOST_CHECK(password_manager::verify_password_hash(password, hash));
 }
 
-BOOST_AUTO_TEST_CASE(verify_password_hash_with_wrong_password) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("verify_password_hash_with_wrong_password");
-
+LOGGING_FIXTURE(verify_password_hash_with_wrong_password);
+BOOST_FIXTURE_TEST_CASE(verify_password_hash_with_wrong_password, verify_password_hash_with_wrong_password_fixture) {
     const std::string password = "correct_password";
     const std::string wrong_password = "wrong_password";
     const std::string hash = password_manager::create_password_hash(password);
@@ -53,9 +51,8 @@ BOOST_AUTO_TEST_CASE(verify_password_hash_with_wrong_password) {
     BOOST_CHECK(!password_manager::verify_password_hash(wrong_password, hash));
 }
 
-BOOST_AUTO_TEST_CASE(hash_is_not_deterministic) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("hash_is_not_deterministic");
-
+LOGGING_FIXTURE(hash_is_not_deterministic);
+BOOST_FIXTURE_TEST_CASE(hash_is_not_deterministic, hash_is_not_deterministic_fixture) {
     const std::string password = "a_simple_password";
     const std::string hash1 = password_manager::create_password_hash(password);
     const std::string hash2 = password_manager::create_password_hash(password);
@@ -65,9 +62,8 @@ BOOST_AUTO_TEST_CASE(hash_is_not_deterministic) {
     BOOST_CHECK_NE(hash1, hash2);
 }
 
-BOOST_AUTO_TEST_CASE(invalid_hash_format_fails_verification) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("invalid_hash_format_fails_verification");
-
+LOGGING_FIXTURE(invalid_hash_format_fails_verification);
+BOOST_FIXTURE_TEST_CASE(invalid_hash_format_fails_verification, invalid_hash_format_fails_verification_fixture) {
     const std::string password = "any_password";
     const std::string malformed_hash = "this_is_not_a_valid_hash_format";
 

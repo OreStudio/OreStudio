@@ -21,7 +21,7 @@
 #include <sstream>
 #include <boost/test/unit_test.hpp>
 #include <boost/algorithm/string/predicate.hpp>
-#include "ores.utility/test/logging.hpp"
+#include "ores.utility/test/logging_fixture.hpp"
 #include "ores.utility/streaming/std_optional.hpp" // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.cli/config/parser.hpp"
@@ -36,23 +36,25 @@ const std::string test_suite("parser_tests");
 
 }
 
+using namespace ores::utility::log;
 using ores::cli::config::parser;
 using ores::cli::config::entity;
 using ores::cli::config::format;
 using ores::cli::config::parser_exception;
 
+
 BOOST_AUTO_TEST_SUITE(parser_tests)
 
-BOOST_AUTO_TEST_CASE(test_help_option) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("test_help_option")
+LOGGING_FIXTURE(test_help_option);
+BOOST_FIXTURE_TEST_CASE(test_help_option, test_help_option_fixture) {
     parser p;
     std::ostringstream info, error;
 
     std::vector<std::string> args = {"--help"};
-    BOOST_LOG_SEV(lg, debug) << "Command line arguments: " << args;
+    BOOST_LOG_SEV(lg(), debug) << "Command line arguments: " << args;
 
     auto result = p.parse(args, info, error);
-    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg(), debug) << "Result: " << result;
 
     BOOST_CHECK(!result.has_value());
     BOOST_CHECK(!info.str().empty());
@@ -62,16 +64,16 @@ BOOST_AUTO_TEST_CASE(test_help_option) {
     BOOST_CHECK(info.str().find("export") != std::string::npos);
 }
 
-BOOST_AUTO_TEST_CASE(test_version_option) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("test_version_option");
+LOGGING_FIXTURE(test_version_option);
+BOOST_FIXTURE_TEST_CASE(test_version_option, test_version_option_fixture) {
     parser p;
     std::ostringstream info, error;
 
     std::vector<std::string> args = {"--version"};
-    BOOST_LOG_SEV(lg, debug) << "Command line arguments: " << args;
+    BOOST_LOG_SEV(lg(), debug) << "Command line arguments: " << args;
 
     auto result = p.parse(args, info, error);
-    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg(), debug) << "Result: " << result;
 
     BOOST_CHECK(!result.has_value());
     BOOST_CHECK(!info.str().empty());
@@ -79,16 +81,16 @@ BOOST_AUTO_TEST_CASE(test_version_option) {
     BOOST_CHECK(info.str().find("Copyright") != std::string::npos);
 }
 
-BOOST_AUTO_TEST_CASE(test_import_help) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("test_import_help");
+LOGGING_FIXTURE(test_import_help);
+BOOST_FIXTURE_TEST_CASE(test_import_help, test_import_help_fixture) {
     parser p;
     std::ostringstream info, error;
 
     std::vector<std::string> args = {"import", "--help"};
-    BOOST_LOG_SEV(lg, debug) << "Command line arguments: " << args;
+    BOOST_LOG_SEV(lg(), debug) << "Command line arguments: " << args;
 
     auto result = p.parse(args, info, error);
-    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg(), debug) << "Result: " << result;
 
     BOOST_CHECK(!result.has_value());
     BOOST_CHECK(!info.str().empty());
@@ -97,16 +99,16 @@ BOOST_AUTO_TEST_CASE(test_import_help) {
     BOOST_CHECK(info.str().find("--target") != std::string::npos);
 }
 
-BOOST_AUTO_TEST_CASE(test_export_help) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("test_export_help");
+LOGGING_FIXTURE(test_export_help);
+BOOST_FIXTURE_TEST_CASE(test_export_help, test_export_help_fixture) {
     parser p;
     std::ostringstream info, error;
 
     std::vector<std::string> args = {"export", "--help"};
-    BOOST_LOG_SEV(lg, debug) << "Command line arguments: " << args;
+    BOOST_LOG_SEV(lg(), debug) << "Command line arguments: " << args;
 
     auto result = p.parse(args, info, error);
-    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg(), debug) << "Result: " << result;
 
     BOOST_CHECK(!result.has_value());
     BOOST_CHECK(!info.str().empty());
@@ -118,8 +120,8 @@ BOOST_AUTO_TEST_CASE(test_export_help) {
     BOOST_CHECK(info.str().find("--format") != std::string::npos);
 }
 
-BOOST_AUTO_TEST_CASE(test_logging_options) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("test_logging_options");
+LOGGING_FIXTURE(test_logging_options);
+BOOST_FIXTURE_TEST_CASE(test_logging_options, test_logging_options_fixture) {
     parser p;
     std::ostringstream info, error;
 
@@ -132,10 +134,10 @@ BOOST_AUTO_TEST_CASE(test_logging_options) {
         "--entity", "currencies",
         "--target", "test.xml"
     };
-    BOOST_LOG_SEV(lg, debug) << "Command line arguments: " << args;
+    BOOST_LOG_SEV(lg(), debug) << "Command line arguments: " << args;
 
     auto result = p.parse(args, info, error);
-    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg(), debug) << "Result: " << result;
 
     BOOST_REQUIRE(result.has_value());
     BOOST_REQUIRE(result->logging.has_value());
@@ -144,8 +146,8 @@ BOOST_AUTO_TEST_CASE(test_logging_options) {
     BOOST_CHECK(result->logging->output_to_console);
 }
 
-BOOST_AUTO_TEST_CASE(test_import_basic) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("test_import_basic");
+LOGGING_FIXTURE(test_import_basic);
+BOOST_FIXTURE_TEST_CASE(test_import_basic, test_import_basic_fixture) {
     parser p;
     std::ostringstream info, error;
 
@@ -154,10 +156,10 @@ BOOST_AUTO_TEST_CASE(test_import_basic) {
         "--entity", "currencies",
         "--target", "test_file.xml"
     };
-    BOOST_LOG_SEV(lg, debug) << "Command line arguments: " << args;
+    BOOST_LOG_SEV(lg(), debug) << "Command line arguments: " << args;
 
     auto result = p.parse(args, info, error);
-    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg(), debug) << "Result: " << result;
 
     BOOST_REQUIRE(result.has_value());
     BOOST_REQUIRE(result->importing.has_value());
@@ -166,8 +168,8 @@ BOOST_AUTO_TEST_CASE(test_import_basic) {
     BOOST_CHECK_EQUAL(result->importing->targets[0].filename().string(), "test_file.xml");
 }
 
-BOOST_AUTO_TEST_CASE(test_import_multiple_targets) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("test_import_multiple_targets");
+LOGGING_FIXTURE(test_import_multiple_targets);
+BOOST_FIXTURE_TEST_CASE(test_import_multiple_targets, test_import_multiple_targets_fixture) {
     parser p;
     std::ostringstream info, error;
 
@@ -178,10 +180,10 @@ BOOST_AUTO_TEST_CASE(test_import_multiple_targets) {
         "--target", "file2.xml",
         "--target", "file3.xml"
     };
-    BOOST_LOG_SEV(lg, debug) << "Command line arguments: " << args;
+    BOOST_LOG_SEV(lg(), debug) << "Command line arguments: " << args;
 
     auto result = p.parse(args, info, error);
-    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg(), debug) << "Result: " << result;
 
     BOOST_REQUIRE(result.has_value());
     BOOST_REQUIRE(result->importing.has_value());
@@ -192,8 +194,8 @@ BOOST_AUTO_TEST_CASE(test_import_multiple_targets) {
     BOOST_CHECK_EQUAL(result->importing->targets[2].filename().string(), "file3.xml");
 }
 
-BOOST_AUTO_TEST_CASE(test_export_basic) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("test_export_basic");
+LOGGING_FIXTURE(test_export_basic);
+BOOST_FIXTURE_TEST_CASE(test_export_basic, test_export_basic_fixture) {
     parser p;
     std::ostringstream info, error;
 
@@ -201,10 +203,10 @@ BOOST_AUTO_TEST_CASE(test_export_basic) {
         "export",
         "--entity", "currencies"
     };
-    BOOST_LOG_SEV(lg, debug) << "Command line arguments: " << args;
+    BOOST_LOG_SEV(lg(), debug) << "Command line arguments: " << args;
 
     auto result = p.parse(args, info, error);
-    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg(), debug) << "Result: " << result;
 
     BOOST_REQUIRE(result.has_value());
     BOOST_REQUIRE(result->exporting.has_value());
@@ -215,8 +217,8 @@ BOOST_AUTO_TEST_CASE(test_export_basic) {
     BOOST_CHECK(result->exporting->target_format == format::json);
 }
 
-BOOST_AUTO_TEST_CASE(test_export_full_options) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("test_export_full_options");
+LOGGING_FIXTURE(test_export_full_options);
+BOOST_FIXTURE_TEST_CASE(test_export_full_options, test_export_full_options_fixture) {
     parser p;
     std::ostringstream info, error;
 
@@ -228,10 +230,10 @@ BOOST_AUTO_TEST_CASE(test_export_full_options) {
         "--all-versions",
         "--format", "xml"
     };
-    BOOST_LOG_SEV(lg, debug) << "Command line arguments: " << args;
+    BOOST_LOG_SEV(lg(), debug) << "Command line arguments: " << args;
 
     auto result = p.parse(args, info, error);
-    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg(), debug) << "Result: " << result;
 
     BOOST_REQUIRE(result.has_value());
     BOOST_REQUIRE(result->exporting.has_value());
@@ -242,38 +244,38 @@ BOOST_AUTO_TEST_CASE(test_export_full_options) {
     BOOST_CHECK(result->exporting->target_format == format::xml);
 }
 
-BOOST_AUTO_TEST_CASE(test_invalid_command) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("test_invalid_command");
+LOGGING_FIXTURE(test_invalid_command);
+BOOST_FIXTURE_TEST_CASE(test_invalid_command, test_invalid_command_fixture) {
     parser p;
     std::ostringstream info, error;
 
     std::vector<std::string> args = {"invalid_command"};
-    BOOST_LOG_SEV(lg, debug) << "Command line arguments: " << args;
+    BOOST_LOG_SEV(lg(), debug) << "Command line arguments: " << args;
     BOOST_CHECK_THROW(p.parse(args, info, error), parser_exception);
 }
 
-BOOST_AUTO_TEST_CASE(test_missing_required_import_args) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("test_missing_required_import_args");
+LOGGING_FIXTURE(test_missing_required_import_args);
+BOOST_FIXTURE_TEST_CASE(test_missing_required_import_args, test_missing_required_import_args_fixture) {
     parser p;
     std::ostringstream info, error;
 
     std::vector<std::string> args = {"import"};
-    BOOST_LOG_SEV(lg, debug) << "Command line arguments: " << args;
+    BOOST_LOG_SEV(lg(), debug) << "Command line arguments: " << args;
     BOOST_CHECK_THROW(p.parse(args, info, error), parser_exception);
 }
 
-BOOST_AUTO_TEST_CASE(test_missing_required_export_args) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("test_missing_required_export_args");
+LOGGING_FIXTURE(test_missing_required_export_args);
+BOOST_FIXTURE_TEST_CASE(test_missing_required_export_args, test_missing_required_export_args_fixture) {
     parser p;
     std::ostringstream info, error;
 
     std::vector<std::string> args = {"export"};
-    BOOST_LOG_SEV(lg, debug) << "Command line arguments: " << args;
+    BOOST_LOG_SEV(lg(), debug) << "Command line arguments: " << args;
     BOOST_CHECK_THROW(p.parse(args, info, error), parser_exception);
 }
 
-BOOST_AUTO_TEST_CASE(test_import_with_logging) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("test_import_with_logging");
+LOGGING_FIXTURE(test_import_with_logging);
+BOOST_FIXTURE_TEST_CASE(test_import_with_logging, test_import_with_logging_fixture) {
     parser p;
     std::ostringstream info, error;
 
@@ -284,10 +286,10 @@ BOOST_AUTO_TEST_CASE(test_import_with_logging) {
         "--entity", "currencies",
         "--target", "test.xml"
     };
-    BOOST_LOG_SEV(lg, debug) << "Command line arguments: " << args;
+    BOOST_LOG_SEV(lg(), debug) << "Command line arguments: " << args;
 
     auto result = p.parse(args, info, error);
-    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg(), debug) << "Result: " << result;
 
     BOOST_REQUIRE(result.has_value());
     BOOST_REQUIRE(result->logging.has_value());
@@ -296,8 +298,8 @@ BOOST_AUTO_TEST_CASE(test_import_with_logging) {
     BOOST_CHECK(result->importing->target_entity == entity::currencies);
 }
 
-BOOST_AUTO_TEST_CASE(test_export_with_logging) {
-    SETUP_TEST_LOG_SOURCE_DEBUG("test_export_with_logging");
+LOGGING_FIXTURE(test_export_with_logging);
+BOOST_FIXTURE_TEST_CASE(test_export_with_logging, test_export_with_logging_fixture) {
     parser p;
     std::ostringstream info, error;
 
@@ -308,10 +310,10 @@ BOOST_AUTO_TEST_CASE(test_export_with_logging) {
         "--entity", "currencies",
         "--format", "json"
     };
-    BOOST_LOG_SEV(lg, debug) << "Command line arguments: " << args;
+    BOOST_LOG_SEV(lg(), debug) << "Command line arguments: " << args;
 
     auto result = p.parse(args, info, error);
-    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg(), debug) << "Result: " << result;
 
     BOOST_REQUIRE(result.has_value());
     BOOST_REQUIRE(result->logging.has_value());

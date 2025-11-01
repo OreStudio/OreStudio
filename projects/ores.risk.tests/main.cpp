@@ -18,7 +18,9 @@
  *
  */
 #include <catch2/catch_session.hpp>
+#include "ores.utility/test/catch2_logging_listener.hpp"
 
 int main(int argc, char* argv[]) {
+    ores::utility::test::detail::set_test_module_name("ores.risk.tests");
     return Catch::Session().run(argc, argv);
 }

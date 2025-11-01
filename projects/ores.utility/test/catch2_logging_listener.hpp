@@ -51,6 +51,16 @@ struct test_logging_context {
 
 inline thread_local test_logging_context current_test_context;
 
+// Global variable to store the test module name, set from main function
+inline std::string test_module_name = "ores.tests"; // default fallback
+
+/**
+ * @brief Sets the test module name from the main function
+ */
+inline void set_test_module_name(const std::string& module_name) {
+    test_module_name = module_name;
+}
+
 /**
  * @brief Extracts the first tag from a Catch2 test case as the suite name.
  *
@@ -76,11 +86,7 @@ inline std::string extract_suite_name(const Catch::TestCaseInfo& testInfo) {
  * Assumes the binary follows the pattern "ores.*.tests"
  */
 inline std::string extract_module_name() {
-    // For now, return a default. In a real implementation, you might want to:
-    // 1. Parse argv[0] from main
-    // 2. Use a macro defined at compile time
-    // 3. Pass it via a global variable
-    return "ores.tests";
+    return detail::test_module_name;
 }
 
 } // namespace detail

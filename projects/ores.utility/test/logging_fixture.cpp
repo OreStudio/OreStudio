@@ -29,7 +29,6 @@ logging_fixture_base::logging_fixture_base(const std::string& module,
     : sl_(scoped_lifecycle_manager_factory(module, suite, function_name,
                                            enable_debug))
     , lg_(ores::utility::log::make_logger(suite)) {
-    BOOST_TEST_CHECKPOINT(function_name);
 }
 
 }

@@ -73,7 +73,6 @@ endif()
 # add our own modules
 #
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build/cmake/modules)
-include(AddBoostTests)
 include(AddCatch2Tests)
 
 #
@@ -119,8 +118,7 @@ find_package(Boost 1.88 REQUIRED COMPONENTS
     log
     crc
     exception
-    program_options
-    unit_test_framework)
+    program_options)
 
 # OpenSSL
 find_package(OpenSSL REQUIRED)

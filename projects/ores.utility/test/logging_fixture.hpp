@@ -25,7 +25,6 @@
 #endif
 
 #include <string>
-#include <boost/test/unit_test.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
 

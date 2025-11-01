@@ -18,13 +18,6 @@
  *
  */
 #include <catch2/catch_session.hpp>
-#include <boost/test/unit_test.hpp>
-
-// Stub for Boost.Test to satisfy ores.utility.lib dependencies
-// This won't be called since we use Catch2's main
-boost::unit_test::test_suite* init_unit_test_suite(int, char**) {
-    return nullptr;
-}
 
 int main(int argc, char* argv[]) {
     return Catch::Session().run(argc, argv);

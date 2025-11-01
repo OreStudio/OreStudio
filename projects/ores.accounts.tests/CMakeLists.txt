@@ -42,7 +42,6 @@ target_link_libraries(${tests_target_name}
         ${lib_target_name}
         ores.utility.lib
         Catch2::Catch2
-        Boost::unit_test_framework
         faker-cxx::faker-cxx
         ${CMAKE_THREAD_LIBS_INIT})
 

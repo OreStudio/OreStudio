@@ -74,6 +74,7 @@ endif()
 #
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build/cmake/modules)
 include(AddBoostTests)
+include(AddCatch2Tests)
 
 #
 # options
@@ -140,6 +141,9 @@ find_package(magic_enum CONFIG REQUIRED)
 
 # Faker C++
 find_package(faker-cxx REQUIRED)
+
+# Catch2
+find_package(Catch2 3 REQUIRED)
 
 # site (for ctest)
 site_name(VORE_SITE)

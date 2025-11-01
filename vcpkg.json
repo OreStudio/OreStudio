@@ -25,6 +25,7 @@
         "boost-uuid",
         "boost-crc",
         "cli",
-        "faker-cxx"
+        "faker-cxx",
+        "catch2"
     ]
 }

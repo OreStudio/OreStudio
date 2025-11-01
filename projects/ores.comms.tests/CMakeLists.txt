@@ -51,3 +51,31 @@ add_custom_target(run_${tests_target_name}
 add_dependencies(run_all_tests run_${tests_target_name})
 
 add_boost_tests(${tests_binary_name} ${files})
+
+# Catch2 proof-of-concept test
+set(catch2_poc_target_name ${name}.catch2.poc)
+set(catch2_poc_binary_name ${name}.catch2.poc)
+set(catch2_poc_files catch2_poc_test.cpp)
+
+add_executable(${catch2_poc_target_name} ${catch2_poc_files})
+set_target_properties(${catch2_poc_target_name}
+    PROPERTIES OUTPUT_NAME ${catch2_poc_binary_name})
+
+target_include_directories(${catch2_poc_target_name}
+    PRIVATE ${CMAKE_SOURCE_DIR}/projects/${name}/include
+    PRIVATE ${CMAKE_SOURCE_DIR}/projects/)
+
+target_link_libraries(${catch2_poc_target_name}
+    PRIVATE
+        Catch2::Catch2WithMain
+        ${CMAKE_THREAD_LIBS_INIT})
+
+add_custom_target(run_${catch2_poc_target_name}
+    COMMENT "Running ${catch2_poc_target_name}" VERBATIM
+    COMMAND $<TARGET_FILE:${catch2_poc_binary_name}>
+    WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+    DEPENDS ${catch2_poc_target_name})
+
+add_dependencies(run_all_tests run_${catch2_poc_target_name})
+
+add_catch2_tests(${catch2_poc_target_name})

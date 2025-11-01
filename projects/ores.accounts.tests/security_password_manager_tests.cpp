@@ -17,57 +17,41 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <boost/test/unit_test.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include "ores.accounts/security/password_manager.hpp"
-#include "ores.utility/test/logging_fixture.hpp"
-
-namespace {
-
-const std::string test_module("ores.accounts.tests");
-const std::string test_suite("security_password_manager_tests");
-
-}
 
 using ores::accounts::security::password_manager;
 
-BOOST_AUTO_TEST_SUITE(security_password_manager_tests)
-
-LOGGING_FIXTURE(verify_password_hash);
-BOOST_FIXTURE_TEST_CASE(verify_password_hash, verify_password_hash_fixture) {
+TEST_CASE("verify_password_hash", "[security_password_manager_tests]") {
     const std::string password = "correct_password";
     const std::string hash = password_manager::create_password_hash(password);
 
-    BOOST_CHECK(!hash.empty());
-    BOOST_CHECK(password_manager::verify_password_hash(password, hash));
+    CHECK(!hash.empty());
+    CHECK(password_manager::verify_password_hash(password, hash));
 }
 
-LOGGING_FIXTURE(verify_password_hash_with_wrong_password);
-BOOST_FIXTURE_TEST_CASE(verify_password_hash_with_wrong_password, verify_password_hash_with_wrong_password_fixture) {
+TEST_CASE("verify_password_hash_with_wrong_password", "[security_password_manager_tests]") {
     const std::string password = "correct_password";
     const std::string wrong_password = "wrong_password";
     const std::string hash = password_manager::create_password_hash(password);
 
-    BOOST_CHECK(!hash.empty());
-    BOOST_CHECK(!password_manager::verify_password_hash(wrong_password, hash));
+    CHECK(!hash.empty());
+    CHECK(!password_manager::verify_password_hash(wrong_password, hash));
 }
 
-LOGGING_FIXTURE(hash_is_not_deterministic);
-BOOST_FIXTURE_TEST_CASE(hash_is_not_deterministic, hash_is_not_deterministic_fixture) {
+TEST_CASE("hash_is_not_deterministic", "[security_password_manager_tests]") {
     const std::string password = "a_simple_password";
     const std::string hash1 = password_manager::create_password_hash(password);
     const std::string hash2 = password_manager::create_password_hash(password);
 
-    BOOST_CHECK(!hash1.empty());
-    BOOST_CHECK(!hash2.empty());
-    BOOST_CHECK_NE(hash1, hash2);
+    CHECK(!hash1.empty());
+    CHECK(!hash2.empty());
+    CHECK(hash1 != hash2);
 }
 
-LOGGING_FIXTURE(invalid_hash_format_fails_verification);
-BOOST_FIXTURE_TEST_CASE(invalid_hash_format_fails_verification, invalid_hash_format_fails_verification_fixture) {
+TEST_CASE("invalid_hash_format_fails_verification", "[security_password_manager_tests]") {
     const std::string password = "any_password";
     const std::string malformed_hash = "this_is_not_a_valid_hash_format";
 
-    BOOST_CHECK(!password_manager::verify_password_hash(password, malformed_hash));
+    CHECK(!password_manager::verify_password_hash(password, malformed_hash));
 }
-
-BOOST_AUTO_TEST_SUITE_END()

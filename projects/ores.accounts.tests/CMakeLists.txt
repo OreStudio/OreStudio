@@ -20,10 +20,13 @@ set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files "")
-file(GLOB_RECURSE files RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+# Catch2 test files
+set(files main.cpp
+    domain_account_tests.cpp
+    domain_logins_tests.cpp
+    security_password_manager_tests.cpp
+    repository_account_repository_tests.cpp
+    repository_helper.cpp)
 
 add_executable(${tests_target_name} ${files})
 
@@ -35,21 +38,20 @@ target_include_directories(${tests_binary_name}
     PRIVATE ${CMAKE_SOURCE_DIR}/projects/)
 
 target_link_libraries(${tests_target_name}
-    PUBLIC
+    PRIVATE
         ${lib_target_name}
         ores.utility.lib
+        Catch2::Catch2
         Boost::unit_test_framework
         faker-cxx::faker-cxx
         ${CMAKE_THREAD_LIBS_INIT})
 
-set(command $<TARGET_FILE:${tests_binary_name}> ${boost_test_parameters})
-
 add_custom_target(run_${tests_target_name}
     COMMENT "Running ${tests_target_name}" VERBATIM
-    COMMAND ${command}
+    COMMAND $<TARGET_FILE:${tests_binary_name}>
     WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     DEPENDS ${tests_target_name})
 
 add_dependencies(run_all_tests run_${tests_target_name})
 
-add_boost_tests(${tests_binary_name} ${files})
+add_catch2_tests(${tests_target_name})

@@ -46,20 +46,13 @@ context repository_helper::make_context() {
         .wait_time_in_seconds = 1
     };
 
-    try {
-        context ctx = context_factory::make_context(db_cfg);
-        BOOST_LOG_SEV(lg(), info) << "Database context created successfully";
-        return ctx;
+    context ctx = context_factory::make_context(db_cfg);
+    BOOST_LOG_SEV(lg(), info) << "Database context created successfully";
+    return ctx;
 
-        // Ensure table exists
-        accounts::repository::account_repository repo;
-        const auto sql = repo.sql();
-        BOOST_LOG_SEV(lg(), debug) << "Table SQL: " << sql;
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to create database context: "
-                                   << e.what();
-        throw;
-    }
+    accounts::repository::account_repository repo;
+    const auto sql = repo.sql();
+    BOOST_LOG_SEV(lg(), debug) << "Table SQL: " << sql;
 }
 
 accounts::domain::account repository_helper::

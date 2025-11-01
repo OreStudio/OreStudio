@@ -20,10 +20,8 @@ set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files "")
-file(GLOB_RECURSE files RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+# Catch2 test files
+set(files catch2_main.cpp frame_tests_catch2.cpp)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}
@@ -37,45 +35,16 @@ target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
         ores.utility.lib
+        Catch2::Catch2
         Boost::unit_test_framework
         ${CMAKE_THREAD_LIBS_INIT})
 
-set(command $<TARGET_FILE:${tests_binary_name}> ${boost_test_parameters})
-
 add_custom_target(run_${tests_target_name}
     COMMENT "Running ${tests_target_name}" VERBATIM
-    COMMAND ${command}
+    COMMAND $<TARGET_FILE:${tests_binary_name}>
     WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     DEPENDS ${tests_target_name})
 
 add_dependencies(run_all_tests run_${tests_target_name})
 
-add_boost_tests(${tests_binary_name} ${files})
-
-# Catch2 proof-of-concept test
-set(catch2_poc_target_name ${name}.catch2.poc)
-set(catch2_poc_binary_name ${name}.catch2.poc)
-set(catch2_poc_files catch2_poc_test.cpp)
-
-add_executable(${catch2_poc_target_name} ${catch2_poc_files})
-set_target_properties(${catch2_poc_target_name}
-    PROPERTIES OUTPUT_NAME ${catch2_poc_binary_name})
-
-target_include_directories(${catch2_poc_target_name}
-    PRIVATE ${CMAKE_SOURCE_DIR}/projects/${name}/include
-    PRIVATE ${CMAKE_SOURCE_DIR}/projects/)
-
-target_link_libraries(${catch2_poc_target_name}
-    PRIVATE
-        Catch2::Catch2WithMain
-        ${CMAKE_THREAD_LIBS_INIT})
-
-add_custom_target(run_${catch2_poc_target_name}
-    COMMENT "Running ${catch2_poc_target_name}" VERBATIM
-    COMMAND $<TARGET_FILE:${catch2_poc_binary_name}>
-    WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-    DEPENDS ${catch2_poc_target_name})
-
-add_dependencies(run_all_tests run_${catch2_poc_target_name})
-
-add_catch2_tests(${catch2_poc_target_name})
+add_catch2_tests(${tests_target_name})

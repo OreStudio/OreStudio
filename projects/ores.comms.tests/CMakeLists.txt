@@ -46,4 +46,5 @@ add_custom_target(run_${tests_target_name}
 
 add_dependencies(run_all_tests run_${tests_target_name})
 
-add_catch2_tests(${tests_target_name})
+catch_discover_tests(${tests_target_name}
+    WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})

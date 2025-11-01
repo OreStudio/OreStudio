@@ -20,13 +20,10 @@ set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-# Catch2 test files
-set(files main.cpp
-    domain_account_tests.cpp
-    domain_logins_tests.cpp
-    security_password_manager_tests.cpp
-    repository_account_repository_tests.cpp
-    repository_helper.cpp)
+set(files "")
+file(GLOB_RECURSE files RELATIVE
+    "${CMAKE_CURRENT_SOURCE_DIR}/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 add_executable(${tests_target_name} ${files})
 
@@ -53,4 +50,5 @@ add_custom_target(run_${tests_target_name}
 
 add_dependencies(run_all_tests run_${tests_target_name})
 
-add_catch2_tests(${tests_target_name})
+catch_discover_tests(${tests_target_name}
+    WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})

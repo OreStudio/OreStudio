@@ -73,7 +73,6 @@ endif()
 # add our own modules
 #
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build/cmake/modules)
-include(AddCatch2Tests)
 
 #
 # options
@@ -142,6 +141,7 @@ find_package(faker-cxx REQUIRED)
 
 # Catch2
 find_package(Catch2 3 REQUIRED)
+include(Catch)
 
 # site (for ctest)
 site_name(VORE_SITE)

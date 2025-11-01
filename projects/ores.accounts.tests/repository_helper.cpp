@@ -48,11 +48,11 @@ context repository_helper::make_context() {
 
     context ctx = context_factory::make_context(db_cfg);
     BOOST_LOG_SEV(lg(), info) << "Database context created successfully";
-    return ctx;
 
     accounts::repository::account_repository repo;
     const auto sql = repo.sql();
     BOOST_LOG_SEV(lg(), debug) << "Table SQL: " << sql;
+    return ctx;
 }
 
 accounts::domain::account repository_helper::

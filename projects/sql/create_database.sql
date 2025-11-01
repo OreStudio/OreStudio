@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-\i accounts_create.sql
-\i currencies_create.sql
-\i feature_flags_create.sql
-\i login_info_create.sql
+\ir ./accounts_create.sql
+\ir ./currencies_create.sql
+\ir ./feature_flags_create.sql
+\ir ./login_info_create.sql

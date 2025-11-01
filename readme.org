@@ -7,8 +7,6 @@
 #+export_file_name: index
 #+startup: inlineimages
 
-* ORE Studio
-
 [[./assets/images/ore-studio-banner.png]]
 
 #+html: <a href="https://github.com/OreStudio/OreStudio/blob/main/LICENSE"><img alt="Licence" src="https://img.shields.io/badge/License-GPLv3-blue.svg"/></a>
@@ -41,7 +39,7 @@
 #+html: <a href="https://github.com/OreStudio/OreStudio/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/OreStudio/OreStudio/total.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/releases"><img alt="Releases" src="https://img.shields.io/github/release/OreStudio/OreStudio.svg"/></a>
 
-** In a nutshell
+* In a nutshell
 
 ORE Studio is a graphical wrapper around [[https://www.opensourcerisk.org/][Acadia's]] [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine (ORE)]],
 which itself builds atop of [[https://github.com/lballabio/QuantLib][QuantLib]]. Please note that this open source project
@@ -90,12 +88,12 @@ pricing engines.
 
 The remainder of this document describes our approach in greater detail.
 
-** Links
+* Links
 
 - [[https://github.com/OreStudio/OreStudio][GitHub]]: Most project interaction for developers occurs via GitHub.
 - [[https://orestudio.github.io/OreStudio/][Website]]: Statically generated website with project documentation.
 
-** Project Overview
+* Project Overview
 
 The objective of this project is to create a simple User Interface for ORE, /for
 didactic purposes/. Significantly, our intent is *not* to create a professional
@@ -111,7 +109,7 @@ With this in mind, our strategy is two-fold:
 
 The next section explains how we intend to go on about it.
 
-*** Approach
+** Approach
 
 To attain our goals we have decided to remove as many infrastructural moving
 parts as possible from the engineering stack. Most financial systems involve a
@@ -153,7 +151,7 @@ down and makes development tiresome. This complexity leads to shallow domains.
 Radical Simplicity makes development fast and joyful again.
 #+end_quote
 
-**** Technology
+*** Technology
 
 The implementation language of choice is [[https://isocpp.org/][C++]], for somewhat arbitrary reasons.
 After many years of software engineering with it --- both [[https://github.com/MASD-Project/dogen][academically]] as well
@@ -164,7 +162,7 @@ been a suitable alternative, particularly given its popularity with [[https://en
 Quant Devs. However, in the interest of simplicity, we'll stick to just the
 /one/ language (other than [[https://en.wikipedia.org/wiki/SQL][SQL]] for the database, or course).
 
-**** About the Author
+*** About the Author
 
 I am the single maintainer of ORE Studio and thus its [[https://en.wikipedia.org/wiki/Benevolent_dictator_for_life][BFDL]]. If you want to know
 more about me, do have a peek at [[https://mcraveiro.github.io/][my personal website]] --- the [[https://mcraveiro.github.io/about.html][about section]] in
@@ -172,7 +170,7 @@ particular. As with most open source projects, [[https://github.com/OreStudio/Or
 in the spirit of what has been described thus far. And you can always reach out
 to our [[https://discord.gg/gcrYsjW3pd][discord channel]] for a chat.
 
-** Project Documentation
+* Project Documentation
 
 All documentation for this project is kept within [[https://git-scm.com/][git]], right next to its source
 code. It uses [[https://www.gnu.org/software/emacs/][Emacs]] and [[https://orgmode.org/][org-mode]] to [[https://github.com/OreStudio/OreStudio/actions/workflows/build-site.yml][automatically generate]] its [[https://orestudio.github.io/OreStudio/][website]], in a
@@ -205,7 +203,7 @@ to use the project for research, a [[https://www.earthdata.nasa.gov/engage/doi-p
 do our first release. Once sufficient functionality has been implemented to
 justify the effort, we'll write a Technical Report describing the tool.
 
-** Binary Packages
+* Binary Packages
 
 Binary packages are available for each release in [[https://github.com/OreStudio/OreStudio/releases][GitHub]], with the links shown
 at the end of each release note. The binaries cover [[https://www.debian.org/][Debian Linux]] (though they
@@ -229,7 +227,7 @@ Notes:
 
 Where =${VERSION}= is your ORE Studio version, such as =0.0.1=.
 
-** Building From Source
+* Building From Source
 
 In order to build ORE Studio you will need a modern [[https://en.wikipedia.org/wiki/C%2B%2B][C++]] [[https://en.wikipedia.org/wiki/Toolchain][toolchain]]. On Linux and
 OSX, you'll need a recent compiler with [[https://en.wikipedia.org/wiki/C%2B%2B20][C++ 20]] support, such as [[https://www.gnu.org/software/gcc/gcc-13][GCC 13]] or [[https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html][Clang
@@ -320,7 +318,7 @@ Note: if you bump into posgres errors, do:
 ZIC=zic cmake --preset linux-clang-debug
 #+end_src
 
-** Updating vcpkg
+* Updating vcpkg
 
 Occasionally we need to pull latest vcpkg from the remote. To do so:
 

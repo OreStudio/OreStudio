@@ -20,6 +20,15 @@ cmake_minimum_required(VERSION 3.29 FATAL_ERROR)
 #
 # vcpkg
 #
+# Always include common overlays
+set(ORES_OVERLAYS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build/cmake/overlays")
+set(VCPKG_OVERLAY_PORTS "${ORES_OVERLAYS_DIR}/common")
+
+# Add Linux-specific overlays
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+    list(APPEND VCPKG_OVERLAY_PORTS "${ORES_OVERLAYS_DIR}/linux")
+endif()
+
 set(CMAKE_TOOLCHAIN_FILE
     ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
     CACHE STRING "Vcpkg toolchain file")
@@ -73,7 +82,6 @@ endif()
 # add our own modules
 #
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build/cmake/modules)
-include(AddBoostTests)
 
 #
 # options
@@ -118,8 +126,7 @@ find_package(Boost 1.88 REQUIRED COMPONENTS
     log
     crc
     exception
-    program_options
-    unit_test_framework)
+    program_options)
 
 # OpenSSL
 find_package(OpenSSL REQUIRED)
@@ -137,6 +144,13 @@ find_package(sqlgen REQUIRED)
 
 # Magic enum
 find_package(magic_enum CONFIG REQUIRED)
+
+# Faker C++
+find_package(faker-cxx REQUIRED)
+
+# Catch2
+find_package(Catch2 3 REQUIRED)
+include(Catch)
 
 # site (for ctest)
 site_name(VORE_SITE)

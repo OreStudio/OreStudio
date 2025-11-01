@@ -50,7 +50,7 @@ utility::repository::context application::make_context() {
         .password = "ahV6aehuij6eingohsiajaiT0",
         .host = "localhost",
         .database = "oresdb",
-        .port = 5434,
+        .port = 5432,
         .pool_size = 4,
         .num_attempts = 10,
         .wait_time_in_seconds = 1

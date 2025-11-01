@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2012-2015 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,10 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#define BOOST_TEST_MODULE ores.accounts.test
-#include <boost/test/unit_test.hpp>
 #include <openssl/crypto.h>
-#include "ores.utility/test/fixture.hpp"
+#include <boost/scope_exit.hpp>
+#include <catch2/catch_session.hpp>
+#include "ores.utility/test/catch2_logging_listener.hpp"
 
-using namespace ores::utility::test;
-BOOST_GLOBAL_FIXTURE(exception_fixture);
+int main(int argc, char* argv[]) {
+    BOOST_SCOPE_EXIT(void) {
+        OPENSSL_cleanup();
+    } BOOST_SCOPE_EXIT_END
+    ores::utility::test::detail::set_test_module_name("ores.accounts.tests");
+    return Catch::Session().run(argc, argv);
+}

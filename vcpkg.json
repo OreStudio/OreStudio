@@ -21,9 +21,10 @@
         "boost-log",
         "boost-filesystem",
         "boost-program-options",
-        "boost-test",
         "boost-uuid",
         "boost-crc",
-        "cli"
+        "cli",
+        "faker-cxx",
+        "catch2"
     ]
 }

@@ -15,6 +15,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+sudo apt-get update
 sudo apt-get install \
      autoconf \
      autoconf-archive \
@@ -39,5 +40,33 @@ sudo apt-get install \
      xorg-dev \
      libltdl-dev \
      qt6-base-dev # Use Qt from the distro
+
+# Do it twice to hopefully fix intermittent issues with mirrors.
+sudo apt-get update
+sudo apt-get install \
+     autoconf \
+     autoconf-archive \
+     automake \
+     fontconfig \
+     freeglut3-dev \
+     libegl1 \
+     libltdl-dev \
+     libtool \
+     '^libxcb.*-dev' \
+     libx11-xcb-dev \
+     libglu1-mesa-dev \
+     libxrender-dev \
+     libxi-dev \
+     libxkbcommon-dev \
+     libxkbcommon-x11-dev \
+     libegl1-mesa-dev \
+     libxcursor-dev  \
+     libxinerama-dev  \
+     mesa-common-dev \
+     pkg-config \
+     xorg-dev \
+     libltdl-dev \
+     qt6-base-dev # Use Qt from the distro
+
 
 sudo apt-get clean sudo apt-get autoremove -y

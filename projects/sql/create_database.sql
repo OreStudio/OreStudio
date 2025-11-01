@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,10 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <catch2/catch_session.hpp>
-#include "ores.utility/test/catch2_logging_listener.hpp"
-
-int main(int argc, char* argv[]) {
-    ores::utility::test::detail::set_test_module_name("ores.comms.tests");
-    return Catch::Session().run(argc, argv);
-}
+\ir ./accounts_create.sql
+\ir ./currencies_create.sql
+\ir ./feature_flags_create.sql
+\ir ./login_info_create.sql

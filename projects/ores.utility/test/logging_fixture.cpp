@@ -17,10 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <catch2/catch_session.hpp>
-#include "ores.utility/test/catch2_logging_listener.hpp"
+#include "ores.utility/test/logging_fixture.hpp"
+#include "ores.utility/test/logging.hpp"
 
-int main(int argc, char* argv[]) {
-    ores::utility::test::detail::set_test_module_name("ores.comms.tests");
-    return Catch::Session().run(argc, argv);
+namespace ores::utility::test {
+
+logging_fixture_base::logging_fixture_base(const std::string& module,
+                                          const std::string& suite,
+                                          const std::string& function_name,
+                                          bool enable_debug)
+    : sl_(scoped_lifecycle_manager_factory(module, suite, function_name,
+                                           enable_debug))
+    , lg_(ores::utility::log::make_logger(suite)) {
+}
+
 }

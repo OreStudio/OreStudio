@@ -73,7 +73,6 @@ endif()
 # add our own modules
 #
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build/cmake/modules)
-include(AddBoostTests)
 
 #
 # options
@@ -118,8 +117,7 @@ find_package(Boost 1.88 REQUIRED COMPONENTS
     log
     crc
     exception
-    program_options
-    unit_test_framework)
+    program_options)
 
 # OpenSSL
 find_package(OpenSSL REQUIRED)
@@ -137,6 +135,13 @@ find_package(sqlgen REQUIRED)
 
 # Magic enum
 find_package(magic_enum CONFIG REQUIRED)
+
+# Faker C++
+find_package(faker-cxx REQUIRED)
+
+# Catch2
+find_package(Catch2 3 REQUIRED)
+include(Catch)
 
 # site (for ctest)
 site_name(VORE_SITE)

@@ -88,6 +88,20 @@ jobs:
       - name: Install dev packages
         run: ./build/scripts/install_debian_packages.sh
 
+      - name: Setup postgres
+        uses: ikalnytskyi/action-setup-postgres@v8
+        with:
+          username: ores
+          password: ahV6aehuij6eingohsiajaiT0
+          database: oresdb
+          port: 5432
+          postgres-version: "18"
+        id: postgres
+
+      - name: Setup DB Scripts
+        run: |
+          psql ${{ steps.postgres.outputs.connection-uri }} -f ./projects/sql/create_database.sql
+
       - name: Get latest CMake
         uses: lukka/get-cmake@v4.1.2
 

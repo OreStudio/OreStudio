@@ -28,8 +28,7 @@
 namespace ores::service::app {
 using namespace ores::utility::log;
 
-application::application() {
-}
+application::application() = default;
 
 boost::asio::awaitable<void> application::
 run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
@@ -46,28 +45,27 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
 
     // FIXME: should be command line parameters.
     using ores::utility::repository::context_factory;
-        context_factory::configuration db_cfg{
-            .user = "ores",
-            .password = "ahV6aehuij6eingohsiajaiT0",
-            .host = "localhost",
-            .database = "oresdb",
-            .port = 5434,
-            .pool_size = 4,
-            .num_attempts = 10,
-            .wait_time_in_seconds = 1
-        };
-        auto ctx = context_factory::make_context(db_cfg);
+    context_factory::configuration db_cfg{
+        .user = "ores",
+        .password = "ahV6aehuij6eingohsiajaiT0",
+        .host = "localhost",
+        .database = "oresdb",
+        .port = 5432,
+        .pool_size = 4,
+        .num_attempts = 10,
+        .wait_time_in_seconds = 1
+    };
+    auto ctx = context_factory::make_context(db_cfg);
 
-        // Create server and register message handlers
-        ores::comms::server srv(server_cfg);
-        ores::risk::messaging::registrar::register_handlers(srv, ctx);
-        ores::accounts::messaging::registrar::register_handlers(srv, ctx);
+    // Create server and register message handlers
+    ores::comms::server srv(server_cfg);
+    ores::risk::messaging::registrar::register_handlers(srv, ctx);
+    ores::accounts::messaging::registrar::register_handlers(srv, ctx);
 
-        // Run server
-        co_await srv.run(io_ctx);
+    // Run server
+    co_await srv.run(io_ctx);
 
-        BOOST_LOG_SEV(lg(), info) << "ORES Service stopped normally";
-
+    BOOST_LOG_SEV(lg(), info) << "ORES Service stopped normally";
 }
 
 }

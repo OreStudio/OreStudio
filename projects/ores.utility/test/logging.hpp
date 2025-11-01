@@ -42,7 +42,6 @@ scoped_lifecycle_manager_factory(std::string test_module,
 #undef SETUP_TEST_LOG
 #endif
 #define SETUP_TEST_LOG(function_name)                                   \
-    BOOST_TEST_CHECKPOINT(function_name);                               \
     auto sl(ores::utility::test::scoped_lifecycle_manager_factory(      \
             test_module, test_suite, function_name));
 
@@ -50,7 +49,6 @@ scoped_lifecycle_manager_factory(std::string test_module,
 #undef SETUP_TEST_LOG_DEBUG
 #endif
 #define SETUP_TEST_LOG_DEBUG(function_name)                            \
-    BOOST_TEST_CHECKPOINT(function_name);                              \
     auto sl(ores::utility::test::scoped_lifecycle_manager_factory(     \
             test_module, test_suite, function_name, true));
 
@@ -58,7 +56,6 @@ scoped_lifecycle_manager_factory(std::string test_module,
 #undef SETUP_TEST_LOG_SOURCE
 #endif
 #define SETUP_TEST_LOG_SOURCE(function_name)                           \
-    BOOST_TEST_CHECKPOINT(function_name);                              \
     auto sl(ores::utility::test::scoped_lifecycle_manager_factory(     \
             test_module, test_suite, function_name));                  \
     using namespace ores::utility::log;                                \
@@ -69,7 +66,6 @@ scoped_lifecycle_manager_factory(std::string test_module,
 #undef SETUP_TEST_LOG_SOURCE_DEBUG
 #endif
 #define SETUP_TEST_LOG_SOURCE_DEBUG(function_name)                    \
-    BOOST_TEST_CHECKPOINT(function_name);                             \
     auto sl(ores::utility::test::scoped_lifecycle_manager_factory(    \
             test_module, test_suite, function_name, true));           \
     using namespace ores::utility::log;                               \

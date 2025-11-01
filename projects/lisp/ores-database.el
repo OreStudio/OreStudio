@@ -34,7 +34,7 @@
                               "ores"
                               ":" (auth-source-pick-first-password :host "localhost")
                               "@localhost"
-                              ":5434"
+                              ":5432"
                               "/oresdb"
                               ))))
 (provide 'ores-database)

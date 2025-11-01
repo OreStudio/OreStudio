@@ -45,6 +45,7 @@ public:
     accounts::domain::account
     create_test_account(const std::string& username, bool is_admin = false);
     utility::repository::context& get_context() { return context_; }
+    void cleanup_database();
 
 private:
     utility::repository::context context_;

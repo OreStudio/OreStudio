@@ -37,7 +37,14 @@ using ores::accounts::domain::account;
 using ores::accounts::repository::account_repository;
 using ores::accounts::tests::repository_helper;
 
-BOOST_AUTO_TEST_SUITE(repository_account_repository_tests)
+struct database_cleanup_fixture {
+    database_cleanup_fixture() {
+        repository_helper helper;
+        helper.cleanup_database();
+    }
+};
+
+BOOST_FIXTURE_TEST_SUITE(repository_account_repository_tests, database_cleanup_fixture)
 
 BOOST_AUTO_TEST_CASE(write_single_account) {
     SETUP_TEST_LOG_SOURCE_DEBUG("write_single_account");

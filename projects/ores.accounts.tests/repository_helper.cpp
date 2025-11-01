@@ -61,13 +61,32 @@ create_test_account(const std::string& username, bool is_admin) {
     acc.version = 1;
     acc.modified_by = faker::internet::username();
     acc.id = boost::uuids::random_generator()();
-    acc.username = faker::internet::username();
+    acc.username = username;
     acc.password_hash = faker::crypto::sha256();
     acc.password_salt = faker::crypto::sha256();
     acc.totp_secret = "TOTP_SECRET_" + username;
-    acc.email = faker::internet::email();
+    acc.email = username + "@test.com";
     acc.is_admin = is_admin;
     return acc;
+}
+
+void repository_helper::cleanup_database() {
+    BOOST_LOG_SEV(lg(), info) << "Cleaning up test database";
+
+    const auto truncate_sql = "TRUNCATE TABLE oresdb.accounts";
+    const auto execute_truncate = [&](auto&& session) {
+        return session->execute(truncate_sql);
+    };
+
+    const auto r = sqlgen::session(context_.connection_pool())
+        .and_then(execute_truncate);
+
+    if (!r) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Failed to cleanup database: " << r.error().what();
+    } else {
+        BOOST_LOG_SEV(lg(), info) << "Successfully cleaned up test database";
+    }
 }
 
 }

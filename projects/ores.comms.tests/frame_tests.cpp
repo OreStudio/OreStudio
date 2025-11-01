@@ -20,18 +20,14 @@
 #include <span>
 #include <vector>
 #include <cstdint>
-#include <boost/test/unit_test.hpp>
-#include <boost/algorithm/string/predicate.hpp>
-#include "ores.utility/test/logging_fixture.hpp"
+#include <algorithm>
+#include <catch2/catch_test_macros.hpp>
 #include "ores.utility/streaming/std_optional.hpp" // IWYU pragma: keep
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep
 #include "ores.comms/protocol/frame.hpp"
 #include "ores.comms/protocol/message_types.hpp"
 
 namespace {
-
-const std::string test_module("ores.comms.tests");
-const std::string test_suite("frame_tests");
 
 // Helper function to deserialize a complete frame (header + payload)
 std::expected<ores::comms::protocol::frame, ores::comms::protocol::error_code>
@@ -48,11 +44,7 @@ deserialize_frame(std::span<const std::uint8_t> data) {
 
 }
 
-BOOST_AUTO_TEST_SUITE(frame_tests)
-
-LOGGING_FIXTURE(test_frame_serialization);
-BOOST_FIXTURE_TEST_CASE(test_frame_serialization, test_frame_serialization_fixture) {
-
+TEST_CASE("test_frame_serialization", "[frame_tests]") {
     // Create a frame with some test data
     std::vector<std::uint8_t> payload = {0x01, 0x02, 0x03, 0x04};
     ores::comms::protocol::frame frame(
@@ -65,33 +57,29 @@ BOOST_FIXTURE_TEST_CASE(test_frame_serialization, test_frame_serialization_fixtu
     auto serialized = frame.serialize();
 
     // Verify that we got some data
-    BOOST_REQUIRE(!serialized.empty());
+    REQUIRE(!serialized.empty());
 
     // Deserialize it back
     auto deserialized_result = deserialize_frame(
         std::span<const std::uint8_t>(serialized.data(), serialized.size())
     );
 
-    BOOST_REQUIRE(deserialized_result.has_value());
+    REQUIRE(deserialized_result.has_value());
 
     auto deserialized_frame = deserialized_result.value();
 
     // Verify that the deserialized frame matches the original
-    // Compare underlying integer values to avoid Boost.Test printing issues
-    BOOST_CHECK_EQUAL(static_cast<std::underlying_type_t<ores::comms::protocol::message_type>>(frame.header().type),
+    // Compare underlying integer values to avoid printing issues
+    CHECK(static_cast<std::underlying_type_t<ores::comms::protocol::message_type>>(frame.header().type) ==
         static_cast<std::underlying_type_t<ores::comms::protocol::message_type>>(deserialized_frame.header().type));
-    BOOST_CHECK_EQUAL(frame.header().sequence, deserialized_frame.header().sequence);
-    BOOST_CHECK_EQUAL(frame.header().payload_size, deserialized_frame.header().payload_size);
-    BOOST_CHECK_EQUAL(frame.payload().size(), deserialized_frame.payload().size());
-    BOOST_CHECK_EQUAL_COLLECTIONS(
-        frame.payload().begin(), frame.payload().end(),
-        deserialized_frame.payload().begin(), deserialized_frame.payload().end()
-    );
+    CHECK(frame.header().sequence == deserialized_frame.header().sequence);
+    CHECK(frame.header().payload_size == deserialized_frame.header().payload_size);
+    CHECK(frame.payload().size() == deserialized_frame.payload().size());
+    CHECK(std::equal(frame.payload().begin(), frame.payload().end(),
+                     deserialized_frame.payload().begin(), deserialized_frame.payload().end()));
 }
 
-LOGGING_FIXTURE(test_frame_serialization_empty_payload);
-BOOST_FIXTURE_TEST_CASE(test_frame_serialization_empty_payload, test_frame_serialization_empty_payload_fixture) {
-
+TEST_CASE("test_frame_serialization_empty_payload", "[frame_tests]") {
     // Create a frame with empty payload
     std::vector<std::uint8_t> empty_payload = {};
     ores::comms::protocol::frame frame(
@@ -104,29 +92,27 @@ BOOST_FIXTURE_TEST_CASE(test_frame_serialization_empty_payload, test_frame_seria
     auto serialized = frame.serialize();
 
     // Verify that we got some data (at least the header)
-    BOOST_REQUIRE(!serialized.empty());
+    REQUIRE(!serialized.empty());
 
     // Deserialize it back
     auto deserialized_result = deserialize_frame(
         std::span<const std::uint8_t>(serialized.data(), serialized.size())
     );
 
-    BOOST_REQUIRE(deserialized_result.has_value());
+    REQUIRE(deserialized_result.has_value());
 
     auto deserialized_frame = deserialized_result.value();
 
     // Verify that the deserialized frame matches the original
-    BOOST_CHECK_EQUAL(static_cast<std::underlying_type_t<ores::comms::protocol::message_type>>(frame.header().type),
+    CHECK(static_cast<std::underlying_type_t<ores::comms::protocol::message_type>>(frame.header().type) ==
         static_cast<std::underlying_type_t<ores::comms::protocol::message_type>>(deserialized_frame.header().type));
-    BOOST_CHECK_EQUAL(frame.header().sequence, deserialized_frame.header().sequence);
-    BOOST_CHECK_EQUAL(frame.header().payload_size, deserialized_frame.header().payload_size);
-    BOOST_CHECK_EQUAL(frame.payload().size(), deserialized_frame.payload().size());
-    BOOST_CHECK_EQUAL(deserialized_frame.payload().size(), 0);
+    CHECK(frame.header().sequence == deserialized_frame.header().sequence);
+    CHECK(frame.header().payload_size == deserialized_frame.header().payload_size);
+    CHECK(frame.payload().size() == deserialized_frame.payload().size());
+    CHECK(deserialized_frame.payload().size() == 0);
 }
 
-LOGGING_FIXTURE(test_frame_serialization_large_payload);
-BOOST_FIXTURE_TEST_CASE(test_frame_serialization_large_payload, test_frame_serialization_large_payload_fixture) {
-
+TEST_CASE("test_frame_serialization_large_payload", "[frame_tests]") {
     // Create a frame with a larger payload
     std::vector<std::uint8_t> large_payload(1000);
     for (size_t i = 0; i < large_payload.size(); ++i) {
@@ -143,32 +129,28 @@ BOOST_FIXTURE_TEST_CASE(test_frame_serialization_large_payload, test_frame_seria
     auto serialized = frame.serialize();
 
     // Verify that we got some data
-    BOOST_REQUIRE(!serialized.empty());
+    REQUIRE(!serialized.empty());
 
     // Deserialize it back
     auto deserialized_result = deserialize_frame(
         std::span<const std::uint8_t>(serialized.data(), serialized.size())
     );
 
-    BOOST_REQUIRE(deserialized_result.has_value());
+    REQUIRE(deserialized_result.has_value());
 
     auto deserialized_frame = deserialized_result.value();
 
     // Verify that the deserialized frame matches the original
-    BOOST_CHECK_EQUAL(static_cast<std::underlying_type_t<ores::comms::protocol::message_type>>(frame.header().type),
+    CHECK(static_cast<std::underlying_type_t<ores::comms::protocol::message_type>>(frame.header().type) ==
         static_cast<std::underlying_type_t<ores::comms::protocol::message_type>>(deserialized_frame.header().type));
-    BOOST_CHECK_EQUAL(frame.header().sequence, deserialized_frame.header().sequence);
-    BOOST_CHECK_EQUAL(frame.header().payload_size, deserialized_frame.header().payload_size);
-    BOOST_CHECK_EQUAL(frame.payload().size(), deserialized_frame.payload().size());
-    BOOST_CHECK_EQUAL_COLLECTIONS(
-        frame.payload().begin(), frame.payload().end(),
-        deserialized_frame.payload().begin(), deserialized_frame.payload().end()
-    );
+    CHECK(frame.header().sequence == deserialized_frame.header().sequence);
+    CHECK(frame.header().payload_size == deserialized_frame.header().payload_size);
+    CHECK(frame.payload().size() == deserialized_frame.payload().size());
+    CHECK(std::equal(frame.payload().begin(), frame.payload().end(),
+                     deserialized_frame.payload().begin(), deserialized_frame.payload().end()));
 }
 
-LOGGING_FIXTURE(test_frame_deserialization_invalid_data);
-BOOST_FIXTURE_TEST_CASE(test_frame_deserialization_invalid_data, test_frame_deserialization_invalid_data_fixture) {
-
+TEST_CASE("test_frame_deserialization_invalid_data", "[frame_tests]") {
     // Try to deserialize invalid data (too short)
     std::vector<std::uint8_t> invalid_data = {0x01, 0x02};
     auto result = deserialize_frame(
@@ -176,15 +158,13 @@ BOOST_FIXTURE_TEST_CASE(test_frame_deserialization_invalid_data, test_frame_dese
     );
 
     // Should fail with an error
-    BOOST_CHECK(!result.has_value());
+    CHECK(!result.has_value());
     if (!result.has_value()) {
-        BOOST_CHECK(result.error() == ores::comms::protocol::error_code::invalid_message_type);
+        CHECK(result.error() == ores::comms::protocol::error_code::invalid_message_type);
     }
 }
 
-LOGGING_FIXTURE(test_frame_deserialization_corrupted_data);
-BOOST_FIXTURE_TEST_CASE(test_frame_deserialization_corrupted_data, test_frame_deserialization_corrupted_data_fixture) {
-
+TEST_CASE("test_frame_deserialization_corrupted_data", "[frame_tests]") {
     // Create a valid frame and serialize it
     std::vector<std::uint8_t> payload = {0x01, 0x02, 0x03, 0x04};
     ores::comms::protocol::frame frame(
@@ -204,16 +184,14 @@ BOOST_FIXTURE_TEST_CASE(test_frame_deserialization_corrupted_data, test_frame_de
         );
 
         // Should fail with an error
-        BOOST_CHECK(!result.has_value());
+        CHECK(!result.has_value());
         if (!result.has_value()) {
-            BOOST_CHECK(result.error() == ores::comms::protocol::error_code::invalid_message_type);
+            CHECK(result.error() == ores::comms::protocol::error_code::invalid_message_type);
         }
     }
 }
 
-LOGGING_FIXTURE(test_frame_roundtrip_multiple_message_types);
-BOOST_FIXTURE_TEST_CASE(test_frame_roundtrip_multiple_message_types, test_frame_roundtrip_multiple_message_types_fixture) {
-
+TEST_CASE("test_frame_roundtrip_multiple_message_types", "[frame_tests]") {
     // Test serialization/deserialization with different message types
     std::vector<std::uint8_t> payload = {0xDE, 0xAD, 0xBE, 0xEF};
 
@@ -229,27 +207,23 @@ BOOST_FIXTURE_TEST_CASE(test_frame_roundtrip_multiple_message_types, test_frame_
 
         // Serialize
         auto serialized = original_frame.serialize();
-        BOOST_REQUIRE(!serialized.empty());
+        REQUIRE(!serialized.empty());
 
         // Deserialize
         auto deserialized_result = deserialize_frame(
             std::span<const std::uint8_t>(serialized.data(), serialized.size())
         );
 
-        BOOST_REQUIRE(deserialized_result.has_value());
+        REQUIRE(deserialized_result.has_value());
 
         auto deserialized_frame = deserialized_result.value();
 
         // Verify the roundtrip worked correctly
-        BOOST_CHECK_EQUAL(static_cast<std::underlying_type_t<ores::comms::protocol::message_type>>(original_frame.header().type),
+        CHECK(static_cast<std::underlying_type_t<ores::comms::protocol::message_type>>(original_frame.header().type) ==
             static_cast<std::underlying_type_t<ores::comms::protocol::message_type>>(deserialized_frame.header().type));
-        BOOST_CHECK_EQUAL(original_frame.header().sequence, deserialized_frame.header().sequence);
-        BOOST_CHECK_EQUAL(original_frame.header().payload_size, deserialized_frame.header().payload_size);
-        BOOST_CHECK_EQUAL_COLLECTIONS(
-            original_frame.payload().begin(), original_frame.payload().end(),
-            deserialized_frame.payload().begin(), deserialized_frame.payload().end()
-        );
+        CHECK(original_frame.header().sequence == deserialized_frame.header().sequence);
+        CHECK(original_frame.header().payload_size == deserialized_frame.header().payload_size);
+        CHECK(std::equal(original_frame.payload().begin(), original_frame.payload().end(),
+                         deserialized_frame.payload().begin(), deserialized_frame.payload().end()));
     }
 }
-
-BOOST_AUTO_TEST_SUITE_END()

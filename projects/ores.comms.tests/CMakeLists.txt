@@ -21,7 +21,7 @@ set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
 # Catch2 test files
-set(files catch2_main.cpp frame_tests_catch2.cpp)
+set(files main.cpp frame_tests.cpp)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

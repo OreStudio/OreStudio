@@ -17,10 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <openssl/crypto.h>
+#include <boost/scope_exit.hpp>
 #include <catch2/catch_session.hpp>
 #include "ores.utility/test/catch2_logging_listener.hpp"
 
 int main(int argc, char* argv[]) {
+    BOOST_SCOPE_EXIT(void) {
+        OPENSSL_cleanup();
+    } BOOST_SCOPE_EXIT_END
     ores::utility::test::detail::set_test_module_name("ores.accounts.tests");
     return Catch::Session().run(argc, argv);
 }

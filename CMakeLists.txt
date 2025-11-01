@@ -20,6 +20,15 @@ cmake_minimum_required(VERSION 3.29 FATAL_ERROR)
 #
 # vcpkg
 #
+# Always include common overlays
+set(ORES_OVERLAYS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build/cmake/overlays")
+set(VCPKG_OVERLAY_PORTS "${ORES_OVERLAYS_DIR}/common")
+
+# Add Linux-specific overlays
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+    list(APPEND VCPKG_OVERLAY_PORTS "${ORES_OVERLAYS_DIR}/linux")
+endif()
+
 set(CMAKE_TOOLCHAIN_FILE
     ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
     CACHE STRING "Vcpkg toolchain file")

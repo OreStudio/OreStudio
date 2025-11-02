@@ -12,8 +12,8 @@ Demonstrates all of the functionality available on the command line tool
   :PROPERTIES:
   :header-args: :exports both
   :header-args+: :results raw
-  :header-args+: :dir ../../build/output/linux-clang-debug/publish/bin/
-  :header-args+: :var data_dir="../../../../../projects/ores.risk.tests/test_data/currencies/"
+  :header-args+: :dir ../../build/output/linux-clang-debug/publish/bin
+  :header-args+: :var data_dir="../../../../../projects/ores.risk.tests/test_data/currencies"
   :END:
 
 ** General
@@ -124,6 +124,8 @@ IMPORTANT: build details are NOT for security purposes.
 
 ** Importing
    :PROPERTIES:
+   :header-args+: :var ORES_DB_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "ores")
+   :header-args+: :var db_args="--db-user ores --db-host localhost --db-port 5432 --db-database oresdb"
    :header-args+: :var log_args="--log-enabled --log-level trace --log-directory ../log"
    :header-args+: :wrap src json
    :END:
@@ -131,7 +133,8 @@ IMPORTANT: build details are NOT for security purposes.
 *** Currencies
 
 #+begin_src sh
-./ores.cli import ${log_args} --entity currencies --target ${data_dir}/currencies_API.xml | jq .
+export ORES_DB_PASSWORD
+./ores.cli import ${log_args} ${db_args} --entity currencies --target ${data_dir}/currencies_API.xml | jq .
 #+END_SRC
 
 #+RESULTS:
@@ -2812,6 +2815,8 @@ IMPORTANT: build details are NOT for security purposes.
 
 ** Exporting
    :PROPERTIES:
+   :header-args+: :var ORES_DB_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "ores")
+   :header-args+: :var db_args="--db-user ores --db-host localhost --db-port 5432 --db-database oresdb"
    :header-args+: :var log_args="--log-enabled --log-level trace --log-directory ../log"
    :END:
 
@@ -2826,7 +2831,8 @@ IMPORTANT: build details are NOT for security purposes.
 ***** Export latest
 
 #+begin_src sh
-./ores.cli export ${log_args} ${format_args} --entity currencies | xmllint --format -
+export ORES_DB_PASSWORD
+./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies | xmllint --format -
 #+END_SRC
 
 #+RESULTS:
@@ -4975,7 +4981,8 @@ IMPORTANT: build details are NOT for security purposes.
 ***** Export latest by iso code
 
 #+begin_src sh
-./ores.cli export ${log_args} ${format_args} --entity currencies --key 'AOA' | xmllint --format -
+export ORES_DB_PASSWORD
+./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies --key 'AOA' | xmllint --format -
 #+END_SRC
 
 #+RESULTS:
@@ -5002,67 +5009,34 @@ IMPORTANT: build details are NOT for security purposes.
 Sliced as there are too many.
 
 #+begin_src sh
-./ores.cli export ${log_args} ${format_args} --entity currencies --as-of "2025-09-29 00:06:09" | xmllint --format - | head -n 50
+export ORES_DB_PASSWORD
+./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies --as-of "2025-09-29 00:06:09" | xmllint --format - | head -n 50
 #+END_SRC
 
 #+RESULTS:
 #+begin_src xml
 <?xml version="1.0" encoding="UTF-8"?>
-<CurrencyConfig>
-  <Currency>
-    <Name>United Arab Emirates dirham</Name>
-    <ISOCode>AED</ISOCode>
-    <NumericCode>784</NumericCode>
-    <Symbol/>
-    <FractionSymbol/>
-    <FractionsPerUnit>100</FractionsPerUnit>
-    <RoundingType>Closest</RoundingType>
-    <RoundingPrecision>2</RoundingPrecision>
-    <Format/>
-    <CurrencyType/>
-  </Currency>
-  <Currency>
-    <Name>Afghan afghani</Name>
-    <ISOCode>AFN</ISOCode>
-    <NumericCode>971</NumericCode>
-    <Symbol/>
-    <FractionSymbol/>
-    <FractionsPerUnit>100</FractionsPerUnit>
-    <RoundingType>Closest</RoundingType>
-    <RoundingPrecision>2</RoundingPrecision>
-    <Format/>
-    <CurrencyType/>
-  </Currency>
-  <Currency>
-    <Name>Albanian lek</Name>
-    <ISOCode>ALL</ISOCode>
-    <NumericCode>8</NumericCode>
-    <Symbol/>
-    <FractionSymbol/>
-    <FractionsPerUnit>100</FractionsPerUnit>
-    <RoundingType>Closest</RoundingType>
-    <RoundingPrecision>2</RoundingPrecision>
-    <Format/>
-    <CurrencyType/>
-  </Currency>
-  <Currency>
-    <Name>Armenian dram</Name>
-    <ISOCode>AMD</ISOCode>
-    <NumericCode>51</NumericCode>
-    <Symbol/>
-    <FractionSymbol/>
-    <FractionsPerUnit>100</FractionsPerUnit>
-    <RoundingType>Closest</RoundingType>
-    <RoundingPrecision>2</RoundingPrecision>
-    <Format/>
-    <CurrencyType/>
-  </Currency>
+<CurrencyConfig/>
 #+end_src
 
 ***** Export at time point by iso code
 
 #+begin_src sh
-./ores.cli export ${log_args} ${format_args} --entity currencies --as-of "2025-09-29 00:08:06" --key 'AOA' | xmllint --format -
+export ORES_DB_PASSWORD
+./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies --as-of "2025-09-29 00:08:06" --key 'AOA' | xmllint --format -
+#+END_SRC
+
+#+RESULTS:
+#+begin_src xml
+<?xml version="1.0" encoding="UTF-8"?>
+<CurrencyConfig/>
+#+end_src
+
+***** Export all by iso code
+
+#+begin_src sh
+export ORES_DB_PASSWORD
+./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies --key 'AOA' --all-versions | xmllint --format -
 #+END_SRC
 
 #+RESULTS:
@@ -5081,19 +5055,18 @@ Sliced as there are too many.
     <Format/>
     <CurrencyType/>
   </Currency>
-</CurrencyConfig>
-#+end_src
-
-***** Export all by iso code
-
-#+begin_src sh
-./ores.cli export ${log_args} ${format_args} --entity currencies --key 'AOA' --all-versions | xmllint --format -
-#+END_SRC
-
-#+RESULTS:
-#+begin_src xml
-<?xml version="1.0" encoding="UTF-8"?>
-<CurrencyConfig>
+  <Currency>
+    <Name>Angolan kwanza</Name>
+    <ISOCode>AOA</ISOCode>
+    <NumericCode>973</NumericCode>
+    <Symbol/>
+    <FractionSymbol/>
+    <FractionsPerUnit>100</FractionsPerUnit>
+    <RoundingType>Closest</RoundingType>
+    <RoundingPrecision>2</RoundingPrecision>
+    <Format/>
+    <CurrencyType/>
+  </Currency>
   <Currency>
     <Name>Angolan kwanza</Name>
     <ISOCode>AOA</ISOCode>
@@ -5128,7 +5101,8 @@ Sliced as there are too many.
 Sliced as there are too many.
 
 #+begin_src sh
-./ores.cli export ${log_args} ${format_args} --entity currencies --all-versions | xmllint --format - | head -n 50
+export ORES_DB_PASSWORD
+./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies --all-versions | xmllint --format - | head -n 50
 #+END_SRC
 
 #+RESULTS:
@@ -5136,9 +5110,9 @@ Sliced as there are too many.
 <?xml version="1.0" encoding="UTF-8"?>
 <CurrencyConfig>
   <Currency>
-    <Name>Danish krone</Name>
-    <ISOCode>DKK</ISOCode>
-    <NumericCode>208</NumericCode>
+    <Name>Mozambican metical</Name>
+    <ISOCode>MZN</ISOCode>
+    <NumericCode>943</NumericCode>
     <Symbol/>
     <FractionSymbol/>
     <FractionsPerUnit>100</FractionsPerUnit>
@@ -5148,9 +5122,9 @@ Sliced as there are too many.
     <CurrencyType/>
   </Currency>
   <Currency>
-    <Name>Lebanese pound</Name>
-    <ISOCode>LBP</ISOCode>
-    <NumericCode>422</NumericCode>
+    <Name>Malaysian ringgit</Name>
+    <ISOCode>MYR</ISOCode>
+    <NumericCode>458</NumericCode>
     <Symbol/>
     <FractionSymbol/>
     <FractionsPerUnit>100</FractionsPerUnit>
@@ -5160,9 +5134,9 @@ Sliced as there are too many.
     <CurrencyType/>
   </Currency>
   <Currency>
-    <Name>Bhutanese ngultrum</Name>
-    <ISOCode>BTN</ISOCode>
-    <NumericCode>64</NumericCode>
+    <Name>Mexican Unidad de Inversion (UDI) (funds code)</Name>
+    <ISOCode>MXV</ISOCode>
+    <NumericCode>979</NumericCode>
     <Symbol/>
     <FractionSymbol/>
     <FractionsPerUnit>100</FractionsPerUnit>
@@ -5172,9 +5146,9 @@ Sliced as there are too many.
     <CurrencyType/>
   </Currency>
   <Currency>
-    <Name>Sri Lankan rupee</Name>
-    <ISOCode>LKR</ISOCode>
-    <NumericCode>144</NumericCode>
+    <Name>Mexican peso</Name>
+    <ISOCode>MXN</ISOCode>
+    <NumericCode>484</NumericCode>
     <Symbol/>
     <FractionSymbol/>
     <FractionsPerUnit>100</FractionsPerUnit>
@@ -5196,7 +5170,8 @@ Sliced as there are too many.
 ***** Export latest
 
 #+begin_src sh
-./ores.cli export ${log_args} ${format_args} --entity currencies | jq .
+export ORES_DB_PASSWORD
+./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies | jq .
 #+END_SRC
 
 #+RESULTS:
@@ -5214,8 +5189,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "AFN",
@@ -5229,8 +5204,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "ALL",
@@ -5244,8 +5219,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "AMD",
@@ -5259,8 +5234,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "ANG",
@@ -5274,8 +5249,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "AOA",
@@ -5289,8 +5264,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "ARS",
@@ -5304,8 +5279,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "AUD",
@@ -5319,8 +5294,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "AWG",
@@ -5334,8 +5309,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "AZN",
@@ -5349,8 +5324,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "BAM",
@@ -5364,8 +5339,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "BBD",
@@ -5379,8 +5354,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "BDT",
@@ -5394,8 +5369,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "BGN",
@@ -5409,8 +5384,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "BHD",
@@ -5424,8 +5399,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "BIF",
@@ -5439,8 +5414,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "BMD",
@@ -5454,8 +5429,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "BND",
@@ -5469,8 +5444,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "BOB",
@@ -5484,8 +5459,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "BOV",
@@ -5499,8 +5474,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "BRL",
@@ -5514,8 +5489,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "BSD",
@@ -5529,8 +5504,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "BTN",
@@ -5544,8 +5519,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "BWP",
@@ -5559,8 +5534,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "BYN",
@@ -5574,8 +5549,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "BZD",
@@ -5589,8 +5564,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "CAD",
@@ -5604,8 +5579,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "CDF",
@@ -5619,8 +5594,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "CHE",
@@ -5634,8 +5609,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "CHF",
@@ -5649,8 +5624,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "CHW",
@@ -5664,8 +5639,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "CLF",
@@ -5679,8 +5654,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "CLP",
@@ -5694,8 +5669,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "CNH",
@@ -5709,8 +5684,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "CNT",
@@ -5724,8 +5699,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "CNY",
@@ -5739,8 +5714,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "COP",
@@ -5754,8 +5729,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "COU",
@@ -5769,8 +5744,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "CRC",
@@ -5784,8 +5759,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "CUC",
@@ -5799,8 +5774,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "CUP",
@@ -5814,8 +5789,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "CVE",
@@ -5829,8 +5804,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "CZK",
@@ -5844,8 +5819,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "DJF",
@@ -5859,8 +5834,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "DKK",
@@ -5874,8 +5849,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "DOP",
@@ -5889,8 +5864,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "DZD",
@@ -5904,8 +5879,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "EGP",
@@ -5919,8 +5894,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "ERN",
@@ -5934,8 +5909,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "ETB",
@@ -5949,8 +5924,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "EUR",
@@ -5964,8 +5939,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "FJD",
@@ -5979,8 +5954,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "FKP",
@@ -5994,8 +5969,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "GBP",
@@ -6009,8 +5984,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "GEL",
@@ -6024,8 +5999,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "GGP",
@@ -6039,8 +6014,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "GHS",
@@ -6054,8 +6029,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "GIP",
@@ -6069,8 +6044,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "GMD",
@@ -6084,8 +6059,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "GNF",
@@ -6099,8 +6074,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "GTQ",
@@ -6114,8 +6089,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "GYD",
@@ -6129,8 +6104,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "HKD",
@@ -6144,8 +6119,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "HNL",
@@ -6159,8 +6134,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "HRK",
@@ -6174,8 +6149,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "HTG",
@@ -6189,8 +6164,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "HUF",
@@ -6204,8 +6179,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "IDR",
@@ -6219,8 +6194,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "ILS",
@@ -6234,8 +6209,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "IMP",
@@ -6249,8 +6224,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "INR",
@@ -6264,8 +6239,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "IQD",
@@ -6279,8 +6254,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "IRR",
@@ -6294,8 +6269,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "ISK",
@@ -6309,8 +6284,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "JEP",
@@ -6324,8 +6299,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "JMD",
@@ -6339,8 +6314,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "JOD",
@@ -6354,8 +6329,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "JPY",
@@ -6369,8 +6344,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "KES",
@@ -6384,8 +6359,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "KGS",
@@ -6399,8 +6374,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "KHR",
@@ -6414,8 +6389,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "KID",
@@ -6429,8 +6404,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "KMF",
@@ -6444,8 +6419,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "KPW",
@@ -6459,8 +6434,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "KRW",
@@ -6474,8 +6449,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "KWD",
@@ -6489,8 +6464,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "KYD",
@@ -6504,8 +6479,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "KZT",
@@ -6519,8 +6494,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "LAK",
@@ -6534,8 +6509,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "LBP",
@@ -6549,8 +6524,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "LKR",
@@ -6564,8 +6539,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "LRD",
@@ -6579,8 +6554,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "LSL",
@@ -6594,8 +6569,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "LYD",
@@ -6609,8 +6584,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "MAD",
@@ -6624,8 +6599,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "MDL",
@@ -6639,8 +6614,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "MGA",
@@ -6654,8 +6629,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "MKD",
@@ -6669,8 +6644,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "MMK",
@@ -6684,8 +6659,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "MNT",
@@ -6699,8 +6674,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "MOP",
@@ -6714,8 +6689,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "MRU",
@@ -6729,8 +6704,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "MUR",
@@ -6744,8 +6719,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "MVR",
@@ -6759,8 +6734,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "MWK",
@@ -6774,8 +6749,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "MXN",
@@ -6789,8 +6764,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "MXV",
@@ -6804,8 +6779,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "MYR",
@@ -6819,8 +6794,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "MZN",
@@ -6834,8 +6809,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "NAD",
@@ -6849,8 +6824,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "NGN",
@@ -6864,8 +6839,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "NIO",
@@ -6879,8 +6854,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "NOK",
@@ -6894,8 +6869,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "NPR",
@@ -6909,8 +6884,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "NZD",
@@ -6924,8 +6899,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "OMR",
@@ -6939,8 +6914,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "PAB",
@@ -6954,8 +6929,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "PEN",
@@ -6969,8 +6944,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "PGK",
@@ -6984,8 +6959,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "PHP",
@@ -6999,8 +6974,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "PKR",
@@ -7014,8 +6989,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "PLN",
@@ -7029,8 +7004,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "PYG",
@@ -7044,8 +7019,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "QAR",
@@ -7059,8 +7034,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "RON",
@@ -7074,8 +7049,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "RSD",
@@ -7089,8 +7064,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "RUB",
@@ -7104,8 +7079,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "RWF",
@@ -7119,8 +7094,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "SAR",
@@ -7134,8 +7109,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "SBD",
@@ -7149,8 +7124,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "SCR",
@@ -7164,8 +7139,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "SDG",
@@ -7179,8 +7154,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "SEK",
@@ -7194,8 +7169,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "SGD",
@@ -7209,8 +7184,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "SHP",
@@ -7224,8 +7199,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "SLL",
@@ -7239,8 +7214,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "SOS",
@@ -7254,8 +7229,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "SRD",
@@ -7269,8 +7244,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "SSP",
@@ -7284,8 +7259,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "STN",
@@ -7299,8 +7274,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "SVC",
@@ -7314,8 +7289,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "SYP",
@@ -7329,8 +7304,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "SZL",
@@ -7344,8 +7319,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "THB",
@@ -7359,8 +7334,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "TJS",
@@ -7374,8 +7349,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "TMT",
@@ -7389,8 +7364,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "TND",
@@ -7404,8 +7379,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "TOP",
@@ -7419,8 +7394,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "TRY",
@@ -7434,8 +7409,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "TTD",
@@ -7449,8 +7424,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "TWD",
@@ -7464,8 +7439,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "TZS",
@@ -7479,8 +7454,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "UAH",
@@ -7494,8 +7469,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "UGX",
@@ -7509,8 +7484,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "USD",
@@ -7524,8 +7499,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "USN",
@@ -7539,8 +7514,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "UYI",
@@ -7554,8 +7529,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "UYU",
@@ -7569,8 +7544,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "UYW",
@@ -7584,8 +7559,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "UZS",
@@ -7599,8 +7574,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "VES",
@@ -7614,8 +7589,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "VND",
@@ -7629,8 +7604,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "VUV",
@@ -7644,8 +7619,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "WST",
@@ -7659,8 +7634,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "XAF",
@@ -7674,8 +7649,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "XAG",
@@ -7689,8 +7664,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "XAU",
@@ -7704,8 +7679,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "XCD",
@@ -7719,8 +7694,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "XOF",
@@ -7734,8 +7709,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "XPD",
@@ -7749,8 +7724,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "XPF",
@@ -7764,8 +7739,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "XPT",
@@ -7779,8 +7754,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "XSU",
@@ -7794,8 +7769,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "XUA",
@@ -7809,8 +7784,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "YER",
@@ -7824,8 +7799,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "ZAR",
@@ -7839,8 +7814,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "ZMW",
@@ -7854,8 +7829,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "ZWL",
@@ -7869,8 +7844,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   }
 ]
 #+end_src
@@ -7878,7 +7853,8 @@ Sliced as there are too many.
 ***** Export latest by iso code
 
 #+begin_src sh
-./ores.cli export ${log_args} ${format_args} --entity currencies --key 'AOA' | jq .
+export ORES_DB_PASSWORD
+./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies --key 'AOA' | jq .
 #+END_SRC
 
 #+RESULTS:
@@ -7896,8 +7872,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   }
 ]
 #+end_src
@@ -7907,91 +7883,32 @@ Sliced as there are too many.
 Sliced as there are too many.
 
 #+begin_src sh
-./ores.cli export ${log_args} ${format_args} --entity currencies --as-of "2025-09-29 00:06:09" | jq .[:3]
+export ORES_DB_PASSWORD
+./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies --as-of "2025-09-29 00:06:09" | jq .[:3]
 #+END_SRC
 
 #+RESULTS:
 #+begin_src json
-[
-  {
-    "iso_code": "AED",
-    "name": "United Arab Emirates dirham",
-    "numeric_code": "784",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-09-29 00:06:08",
-    "valid_to": "2025-09-29 00:09:22"
-  },
-  {
-    "iso_code": "AFN",
-    "name": "Afghan afghani",
-    "numeric_code": "971",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-09-29 00:06:08",
-    "valid_to": "2025-09-29 00:09:22"
-  },
-  {
-    "iso_code": "ALL",
-    "name": "Albanian lek",
-    "numeric_code": "8",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-09-29 00:06:08",
-    "valid_to": "2025-09-29 00:09:22"
-  }
-]
+[]
 #+end_src
 
 ***** Export at time point by iso code
 
 #+begin_src sh
-./ores.cli export ${log_args} ${format_args} --entity currencies --as-of "2025-09-29 00:08:06" --key 'AOA' | jq .
+export ORES_DB_PASSWORD
+./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies --as-of "2025-09-29 00:08:06" --key 'AOA' | jq .
 #+END_SRC
 
 #+RESULTS:
 #+begin_src json
-[
-  {
-    "iso_code": "AOA",
-    "name": "Angolan kwanza",
-    "numeric_code": "973",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-09-29 00:06:08",
-    "valid_to": "2025-09-29 00:09:22"
-  }
-]
+[]
 #+end_src
 
 ***** Export all by iso code
 
 #+begin_src sh
-./ores.cli export ${log_args} ${format_args} --entity currencies --key 'AOA' --all-versions | jq .
+export ORES_DB_PASSWORD
+./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies --key 'AOA' --all-versions | jq .
 #+END_SRC
 
 #+RESULTS:
@@ -8009,8 +7926,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
     "iso_code": "AOA",
@@ -8024,8 +7941,38 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:06:08",
-    "valid_to": "2025-09-29 00:09:22"
+    "valid_from": "2025-11-02 22:18:06",
+    "valid_to": "2025-11-02 22:18:06"
+  },
+  {
+    "iso_code": "AOA",
+    "name": "Angolan kwanza",
+    "numeric_code": "973",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "ores",
+    "valid_from": "2025-11-02 22:17:57",
+    "valid_to": "2025-11-02 22:17:57"
+  },
+  {
+    "iso_code": "AOA",
+    "name": "Angolan kwanza",
+    "numeric_code": "973",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "ores",
+    "valid_from": "2025-11-02 21:32:44",
+    "valid_to": "2025-11-02 21:32:44"
   }
 ]
 #+end_src
@@ -8035,16 +7982,17 @@ Sliced as there are too many.
 Sliced as there are too many.
 
 #+begin_src sh
-./ores.cli export ${log_args} ${format_args} --entity currencies --all-versions | jq .[:4]
+export ORES_DB_PASSWORD
+./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies --all-versions | jq .[:4]
 #+END_SRC
 
 #+RESULTS:
 #+begin_src json
 [
   {
-    "iso_code": "DKK",
-    "name": "Danish krone",
-    "numeric_code": "208",
+    "iso_code": "MZN",
+    "name": "Mozambican metical",
+    "numeric_code": "943",
     "symbol": "",
     "fraction_symbol": "",
     "fractions_per_unit": 100,
@@ -8053,13 +8001,13 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
-    "iso_code": "LBP",
-    "name": "Lebanese pound",
-    "numeric_code": "422",
+    "iso_code": "MYR",
+    "name": "Malaysian ringgit",
+    "numeric_code": "458",
     "symbol": "",
     "fraction_symbol": "",
     "fractions_per_unit": 100,
@@ -8068,13 +8016,13 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
-    "iso_code": "BTN",
-    "name": "Bhutanese ngultrum",
-    "numeric_code": "64",
+    "iso_code": "MXV",
+    "name": "Mexican Unidad de Inversion (UDI) (funds code)",
+    "numeric_code": "979",
     "symbol": "",
     "fraction_symbol": "",
     "fractions_per_unit": 100,
@@ -8083,13 +8031,13 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   },
   {
-    "iso_code": "LKR",
-    "name": "Sri Lankan rupee",
-    "numeric_code": "144",
+    "iso_code": "MXN",
+    "name": "Mexican peso",
+    "numeric_code": "484",
     "symbol": "",
     "fraction_symbol": "",
     "fractions_per_unit": 100,
@@ -8098,8 +8046,8 @@ Sliced as there are too many.
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-09-29 00:09:22",
-    "valid_to": "9999-12-31 23:59:59"
+    "valid_from": "2025-11-02 22:18:13",
+    "valid_to": "2025-11-02 22:18:13"
   }
 ]
 #+end_src

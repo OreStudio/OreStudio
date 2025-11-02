@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <array>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "faker-cxx/faker.h" // IWYU pragma: keep.
@@ -64,10 +65,12 @@ TEST_CASE("create_currency_with_faker", "[domain_currency_tests]") {
     auto lg(make_logger(test_suite));
 
     currency ccy;
-    ccy.iso_code = std::string(faker::finance::currencyCode());
-    ccy.name = std::string(faker::finance::currencyName());
+    auto fakerCcy = faker::finance::currency();
+
+    ccy.iso_code = fakerCcy.code;
+    ccy.name = fakerCcy.name;
+    ccy.symbol = fakerCcy.symbol;
     ccy.numeric_code = std::to_string(faker::number::integer(1, 999));
-    ccy.symbol = std::string(faker::finance::currencySymbol());
     ccy.fraction_symbol = "";
     ccy.fractions_per_unit = faker::number::integer(1, 10000);
     ccy.rounding_type = "Closest";
@@ -94,10 +97,13 @@ TEST_CASE("create_multiple_random_currencies", "[domain_currency_tests]") {
 
     for (int i = 0; i < 5; ++i) {
         currency ccy;
-        ccy.iso_code = std::string(faker::finance::currencyCode());
-        ccy.name = std::string(faker::finance::currencyName());
+
+        auto fakerCcy = faker::finance::currency();
+        ccy.iso_code = fakerCcy.code;
+        ccy.name = fakerCcy.name;
+        ccy.symbol = fakerCcy.symbol;
+
         ccy.numeric_code = std::to_string(faker::number::integer(1, 999));
-        ccy.symbol = std::string(faker::finance::currencySymbol());
         ccy.fraction_symbol = "";
         ccy.fractions_per_unit = faker::number::integer(1, 10000);
         ccy.rounding_type = "Closest";
@@ -199,19 +205,20 @@ TEST_CASE("create_currencies_with_different_symbols", "[domain_currency_tests]")
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    std::vector<std::pair<std::string, std::string>> currency_symbols = {
-        {"USD", "$"},
-        {"EUR", "€"},
-        {"GBP", "£"},
-        {"JPY", "¥"},
-        {"CNY", "¥"},
-        {"INR", "₹"}
+    using Currency = std::tuple<std::string, std::string, std::string>;
+    const std::array<Currency, 6> currencies = {
+        Currency{"USD", "$",   "United States Dollar"},
+        Currency{"EUR", "EUR", "Euro"},
+        Currency{"GBP", "GBP", "British Pound Sterling"},
+        Currency{"JPY", "JPY", "Japanese Yen"},
+        Currency{"CNY", "CNY", "Chinese Yuan"},
+        Currency{"INR", "INR", "Indian Rupee"}
     };
 
-    for (const auto& [code, symbol] : currency_symbols) {
+    for (const auto& [code, symbol, name] : currencies) {
         currency ccy;
         ccy.iso_code = code;
-        ccy.name = std::string(faker::finance::currencyName());
+        ccy.name = name;
         ccy.numeric_code = std::to_string(faker::number::integer(1, 999));
         ccy.symbol = symbol;
         ccy.fraction_symbol = "";

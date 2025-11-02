@@ -28,11 +28,22 @@
 #include "ores.cli/app/application.hpp"
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
+#include "ores.cli/config/database_options.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
 
 namespace {
 
 std::string test_suite("ores.cli.tests");
+
+ores::cli::config::database_options make_test_database_options() {
+    return ores::cli::config::database_options {
+        .user = "ores",
+        .password = "ahV6aehuij6eingohsiajaiT0",
+        .host = "localhost",
+        .database = "oresdb",
+        .port = 5432
+    };
+}
 
 ores::utility::repository::context make_test_context() {
     using ores::utility::repository::context_factory;
@@ -95,9 +106,10 @@ TEST_CASE("import_currencies_from_test_file", "[app_application_import_tests]") 
 
     config::options opts;
     opts.importing = import_cfg;
+    opts.database = make_test_database_options();
 
     std::ostringstream os;
-    app::application app(os);
+    app::application app(os, opts.database);
 
     boost::asio::io_context io_context;
     bool test_completed = false;
@@ -165,9 +177,10 @@ TEST_CASE("import_currencies_from_multiple_files", "[app_application_import_test
 
     config::options opts;
     opts.importing = import_cfg;
+    opts.database = make_test_database_options();
 
     std::ostringstream os;
-    app::application app(os);
+    app::application app(os, opts.database);
 
     boost::asio::io_context io_context;
     bool test_completed = false;
@@ -210,9 +223,10 @@ TEST_CASE("import_and_query_specific_currency", "[app_application_import_tests]"
 
     config::options opts;
     opts.importing = import_cfg;
+    opts.database = make_test_database_options();
 
     std::ostringstream os;
-    app::application app(os);
+    app::application app(os, opts.database);
 
     boost::asio::io_context io_context;
     bool test_completed = false;
@@ -271,9 +285,10 @@ TEST_CASE("import_currencies_with_empty_database", "[app_application_import_test
 
     config::options opts;
     opts.importing = import_cfg;
+    opts.database = make_test_database_options();
 
     std::ostringstream os;
-    app::application app(os);
+    app::application app(os, opts.database);
 
     boost::asio::io_context io_context;
     bool test_completed = false;
@@ -312,9 +327,10 @@ TEST_CASE("import_currencies_verify_all_fields", "[app_application_import_tests]
 
     config::options opts;
     opts.importing = import_cfg;
+    opts.database = make_test_database_options();
 
     std::ostringstream os;
-    app::application app(os);
+    app::application app(os, opts.database);
 
     boost::asio::io_context io_context;
     bool test_completed = false;
@@ -372,9 +388,10 @@ TEST_CASE("import_currencies_from_api_test_file", "[app_application_import_tests
 
     config::options opts;
     opts.importing = import_cfg;
+    opts.database = make_test_database_options();
 
     std::ostringstream os;
-    app::application app(os);
+    app::application app(os, opts.database);
 
     boost::asio::io_context io_context;
     bool test_completed = false;

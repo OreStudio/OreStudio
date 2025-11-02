@@ -25,6 +25,7 @@
 #endif
 
 #include <vector>
+#include <ostream>
 #include <filesystem>
 #include <boost/asio/awaitable.hpp>
 #include "ores.utility/log/make_logger.hpp"
@@ -47,7 +48,7 @@ private:
     }
 
 public:
-    application();
+    explicit application(std::ostream& output_stream);
     application(const application&) = delete;
     application& operator=(const application&) = delete;
 
@@ -71,6 +72,7 @@ public:
 
 private:
     utility::repository::context context_;
+    std::ostream& output_stream_;
 };
 
 }

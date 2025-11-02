@@ -18,7 +18,6 @@
  * MA 02110-1301, USA.
  *
  */
-#include <iostream>
 #include <optional>
 #include <boost/throw_exception.hpp>
 #include <sqlgen/postgres.hpp>
@@ -59,7 +58,8 @@ utility::repository::context application::make_context() {
     return context_factory::make_context(cfg);
 }
 
-application::application() : context_(make_context()) {
+application::application(std::ostream& output_stream)
+    : output_stream_(output_stream), context_(make_context()) {
     BOOST_LOG_SEV(lg(), debug) << "Creating application.";
 }
 
@@ -70,7 +70,7 @@ import_currencies(const std::vector<std::filesystem::path> files) const {
         auto ccys(importer::import_currency_config(f));
         currency_repository rp;
         rp.write(context_, ccys);
-        std::cout << ccys << std::endl;
+        output_stream_ << ccys << std::endl;
     }
 }
 
@@ -122,9 +122,9 @@ export_currencies(const config::export_options& cfg) const {
     const std::vector<currency> ccys(reader());
     if (cfg.target_format == config::format::xml) {
         std::string ccy_cfgs = exporter::export_currency_config(ccys);
-        std::cout << ccy_cfgs << std::endl;
+        output_stream_ << ccy_cfgs << std::endl;
     } else if (cfg.target_format == config::format::json) {
-        std::cout << ccys << std::endl;
+        output_stream_ << ccys << std::endl;
     }
 }
 

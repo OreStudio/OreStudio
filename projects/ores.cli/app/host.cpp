@@ -93,7 +93,7 @@ boost::asio::awaitable<int> host::execute(const std::vector<std::string>& args,
     /*
      * Execute the application.
      */
-    ores::cli::app::application app;
+    ores::cli::app::application app(std::cout);
     co_await app.run(cfg);
     co_return EXIT_SUCCESS;
 }

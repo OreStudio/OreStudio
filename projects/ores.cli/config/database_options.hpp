@@ -17,50 +17,46 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_HPP
-#define ORES_CLI_CONFIG_HPP
+#ifndef ORES_CLI_CONFIG_DATABASE_OPTIONS_HPP
+#define ORES_CLI_CONFIG_DATABASE_OPTIONS_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
 #include <iosfwd>
-#include <optional>
-#include "ores.utility/log/logging_options.hpp"
-#include "ores.cli/config/import_options.hpp"
-#include "ores.cli/config/export_options.hpp"
-#include "ores.cli/config/database_options.hpp"
+#include <string>
+#include <rfl.hpp>
 
 namespace ores::cli::config {
 
 /**
- * @brief All of the configuration options required by the command line
- * application.
+ * @brief Configuration for database connection.
  */
-struct options final {
+struct database_options final {
     /**
-     * @brief Configuration options related to logging, if any.
+     * @brief Database user name.
      */
-    std::optional<ores::utility::log::logging_options> logging;
+    std::string user;
     /**
-     * @brief Configuration related to importing of data, if any.
+     * @brief Password for the user.
      */
-    std::optional<import_options> importing;
+    rfl::Skip<std::string> password;
     /**
-     * @brief Configuration related to exporting of data, if any.
+     * @brief Host to connect to.
      */
-    std::optional<export_options> exporting;
+    std::string host = "localhost";
     /**
-     * @brief Database connection configuration, if any.
+     * @brief Database to connect to.
      */
-    std::optional<database_options> database;
+    std::string database;
     /**
-     * @brief Whether to run the client REPL.
+     * @brief Port the database is listening on.
      */
-    bool client = false;
+    int port = 5432;
 };
 
-std::ostream& operator<<(std::ostream& s, const options& v);
+std::ostream& operator<<(std::ostream& s, const database_options& v);
 
 }
 

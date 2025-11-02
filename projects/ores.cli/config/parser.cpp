@@ -18,6 +18,7 @@
  *
  */
 #include <format>
+#include <ranges>
 #include <ostream>
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
@@ -472,6 +473,26 @@ std::optional<database_options> read_database_options(const variables_map& vm) {
     return r;
 }
 
+/**
+ * @brief Maps environment variable names to program option names
+ */
+std::string name_mapper(const std::string& env_var) {
+    constexpr std::string_view prefix = "ORES_";
+    if (!env_var.starts_with(prefix)) {
+        return {};
+    }
+
+    auto env_body = env_var | std::views::drop(prefix.size());
+    std::string option_name;
+
+    std::ranges::transform(env_body, std::back_inserter(option_name),
+        [](unsigned char c) -> char {
+            if (c == '_') return '-';
+            return std::tolower(c);
+        });
+
+    return option_name;
+}
 
 /**
  * @brief Contains the processing logic for when the user supplies a command in
@@ -496,37 +517,42 @@ handle_command(const std::string& command_name, const bool has_help,
      */
     options r;
     using boost::program_options::command_line_parser;
+    using boost::program_options::parse_environment;
     const auto db_desc(make_database_options_description());
+    const auto logging_desc(make_top_level_visible_options_description());
 
     if (command_name == import_command_name) {
         auto d(make_import_options_description());
-        d.add(db_desc);
+        d.add(db_desc).add(logging_desc);
         if (has_help) {
             print_help_command(import_command_name, d, info);
             return {};
         }
 
         store(command_line_parser(o).options(d).run(), vm);
+        store(parse_environment(d, name_mapper), vm);
         r.importing = read_import_options(vm);
     } else if (command_name == export_command_name) {
         auto d(make_export_options_description());
-        d.add(db_desc);
+        d.add(db_desc).add(logging_desc);
         if (has_help) {
             print_help_command(export_command_name, d, info);
             return {};
         }
 
         store(command_line_parser(o).options(d).run(), vm);
+        store(parse_environment(d, name_mapper), vm);
         r.exporting = read_export_options(vm);
     } else if (command_name == client_command_name) {
         auto d(make_client_options_description());
-        d.add(db_desc);
+        d.add(db_desc).add(logging_desc);
         if (has_help) {
             print_help_command(client_command_name, d, info);
             return {};
         }
 
         store(command_line_parser(o).options(d).run(), vm);
+        store(parse_environment(d, name_mapper), vm);
         r.client = true;
     }
 
@@ -537,23 +563,6 @@ handle_command(const std::string& command_name, const bool has_help,
      */
     r.logging = read_logging_configuration(vm);
     return r;
-}
-
-/**
- * @brief Maps environment variable names to option names for boost program options.
- */
-std::string environment_mapper(const std::string& env_name) {
-    if (env_name == "ORES_DB_USER")
-        return database_user_arg;
-    if (env_name == "ORES_DB_PASSWORD")
-        return database_password_arg;
-    if (env_name == "ORES_DB_HOST")
-        return database_host_arg;
-    if (env_name == "ORES_DB_DATABASE")
-        return database_database_arg;
-    if (env_name == "ORES_DB_PORT")
-        return database_port_arg;
-    return "";
 }
 
 /**
@@ -582,12 +591,8 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
         allow_unregistered().
         run();
 
-    using boost::program_options::parse_environment;
-    const auto env_po = parse_environment(all, environment_mapper);
-
     variables_map vm;
     boost::program_options::store(po, vm);
-    boost::program_options::store(env_po, vm);
     const bool has_command(vm.count(command_arg) != 0);
     const bool has_version(vm.count(version_arg) != 0);
     const bool has_help(vm.count(help_arg) != 0);

@@ -40,7 +40,7 @@ public:
      * @param name Name of the environment variable.
      * @return The value if found, empty optional otherwise.
      */
-    static std::optional<std::string> get(const std::string& name);
+    static std::optional<std::string> get_value(const std::string& name);
 
     /**
      * @brief Gets an environment variable value with a default.
@@ -49,7 +49,7 @@ public:
      * @param default_value Default value if not found.
      * @return The value if found, default_value otherwise.
      */
-    static std::string get_or(const std::string& name,
+    static std::string get_value_or_default(const std::string& name,
         const std::string& default_value);
 
     /**
@@ -59,7 +59,8 @@ public:
      * @param default_value Default value if not found or not parseable.
      * @return The value if found and parseable, default_value otherwise.
      */
-    static int get_int_or(const std::string& name, int default_value);
+    static int get_int_value_or_default(const std::string& name,
+        int default_value);
 };
 
 }

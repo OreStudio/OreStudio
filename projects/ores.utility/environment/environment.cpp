@@ -23,21 +23,23 @@
 
 namespace ores::utility::environment {
 
-std::optional<std::string> environment::get(const std::string& name) {
+std::optional<std::string>
+environment::get_value(const std::string& name) {
     const char* value = std::getenv(name.c_str());
     if (value == nullptr)
         return {};
     return std::string(value);
 }
 
-std::string environment::get_or(const std::string& name,
+std::string environment::get_value_or_default(const std::string& name,
     const std::string& default_value) {
-    auto value = get(name);
+    auto value = get_value(name);
     return value.value_or(default_value);
 }
 
-int environment::get_int_or(const std::string& name, int default_value) {
-    auto value = get(name);
+int environment::
+get_int_value_or_default(const std::string& name, int default_value) {
+    auto value = get_value(name);
     if (!value.has_value())
         return default_value;
 

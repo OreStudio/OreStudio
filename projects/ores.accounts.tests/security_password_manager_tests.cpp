@@ -18,31 +18,60 @@
  *
  */
 #include <catch2/catch_test_macros.hpp>
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.accounts/security/password_manager.hpp"
+
+namespace {
+
+std::string test_suite("ores.accounts.tests.");
+
+}
 
 using ores::accounts::security::password_manager;
 
 TEST_CASE("verify_password_hash", "[security_password_manager_tests]") {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
     const std::string password = "correct_password";
+    BOOST_LOG_SEV(lg, info) << "Password: " << password;
+
     const std::string hash = password_manager::create_password_hash(password);
+    BOOST_LOG_SEV(lg, info) << "Hash: " << hash;
 
     CHECK(!hash.empty());
     CHECK(password_manager::verify_password_hash(password, hash));
 }
 
 TEST_CASE("verify_password_hash_with_wrong_password", "[security_password_manager_tests]") {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
     const std::string password = "correct_password";
+    BOOST_LOG_SEV(lg, info) << "Password: " << password;
+
     const std::string wrong_password = "wrong_password";
+    BOOST_LOG_SEV(lg, info) << "Wrong password: " << wrong_password;
+
     const std::string hash = password_manager::create_password_hash(password);
+    BOOST_LOG_SEV(lg, info) << "Hash: " << hash;
 
     CHECK(!hash.empty());
     CHECK(!password_manager::verify_password_hash(wrong_password, hash));
 }
 
 TEST_CASE("hash_is_not_deterministic", "[security_password_manager_tests]") {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
     const std::string password = "a_simple_password";
+    BOOST_LOG_SEV(lg, info) << "Password: " << password;
+
     const std::string hash1 = password_manager::create_password_hash(password);
+    BOOST_LOG_SEV(lg, info) << "Hash 1: " << hash1;
+
     const std::string hash2 = password_manager::create_password_hash(password);
+    BOOST_LOG_SEV(lg, info) << "Hash 2: " << hash2;
 
     CHECK(!hash1.empty());
     CHECK(!hash2.empty());
@@ -50,8 +79,14 @@ TEST_CASE("hash_is_not_deterministic", "[security_password_manager_tests]") {
 }
 
 TEST_CASE("invalid_hash_format_fails_verification", "[security_password_manager_tests]") {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
     const std::string password = "any_password";
+    BOOST_LOG_SEV(lg, info) << "Password: " << password;
+
     const std::string malformed_hash = "this_is_not_a_valid_hash_format";
+    BOOST_LOG_SEV(lg, info) << "Malformed hash: " << malformed_hash;
 
     CHECK(!password_manager::verify_password_hash(password, malformed_hash));
 }

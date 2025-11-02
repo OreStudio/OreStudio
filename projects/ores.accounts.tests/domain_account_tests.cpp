@@ -19,11 +19,22 @@
  */
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include "ores.utility/log/make_logger.hpp"
+#include "faker-cxx/faker.h" // IWYU pragma: keep.
 #include "ores.accounts/domain/account.hpp"
+
+namespace {
+
+std::string test_suite("ores.accounts.tests.");
+
+}
 
 using ores::accounts::domain::account;
 
 TEST_CASE("create_account_with_valid_fields", "[domain_account_tests]") {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
     account acc;
     acc.version = 1;
     acc.modified_by = "admin";
@@ -34,6 +45,7 @@ TEST_CASE("create_account_with_valid_fields", "[domain_account_tests]") {
     acc.totp_secret = "JBSWY3DPEHPK3PXP";
     acc.email = "john.doe@example.com";
     acc.is_admin = false;
+    BOOST_LOG_SEV(lg, info) << "Account: " << acc;
 
     CHECK(acc.version == 1);
     CHECK(acc.modified_by == "admin");
@@ -46,6 +58,9 @@ TEST_CASE("create_account_with_valid_fields", "[domain_account_tests]") {
 }
 
 TEST_CASE("create_admin_account", "[domain_account_tests]") {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
     account admin_acc;
     admin_acc.version = 1;
     admin_acc.modified_by = "system";
@@ -56,6 +71,7 @@ TEST_CASE("create_admin_account", "[domain_account_tests]") {
     admin_acc.totp_secret = "ADMIN_TOTP_SECRET";
     admin_acc.email = "admin@example.com";
     admin_acc.is_admin = true;
+    BOOST_LOG_SEV(lg, info) << "Account: " << admin_acc;
 
     CHECK(admin_acc.version == 1);
     CHECK(admin_acc.modified_by == "system");
@@ -65,6 +81,9 @@ TEST_CASE("create_admin_account", "[domain_account_tests]") {
 }
 
 TEST_CASE("account_with_specific_uuid", "[domain_account_tests]") {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
     boost::uuids::string_generator uuid_gen;
     const auto specific_id = uuid_gen("550e8400-e29b-41d4-a716-446655440000");
 
@@ -78,12 +97,16 @@ TEST_CASE("account_with_specific_uuid", "[domain_account_tests]") {
     acc.totp_secret = "";
     acc.email = "test@example.com";
     acc.is_admin = false;
+    BOOST_LOG_SEV(lg, info) << "Account: " << acc;
 
     CHECK(acc.version == 2);
     CHECK(acc.username == "test.user");
 }
 
 TEST_CASE("account_serialization_to_json", "[domain_account_tests]") {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
     account acc;
     acc.version = 3;
     acc.modified_by = "developer";
@@ -94,6 +117,7 @@ TEST_CASE("account_serialization_to_json", "[domain_account_tests]") {
     acc.totp_secret = "TOTP789";
     acc.email = "serialize@test.com";
     acc.is_admin = true;
+    BOOST_LOG_SEV(lg, info) << "Account: " << acc;
 
     std::ostringstream oss;
     oss << acc;
@@ -102,4 +126,55 @@ TEST_CASE("account_serialization_to_json", "[domain_account_tests]") {
     CHECK(!json_output.empty());
     CHECK(json_output.find("serialization.test") != std::string::npos);
     CHECK(json_output.find("serialize@test.com") != std::string::npos);
+}
+
+TEST_CASE("create_account_with_faker", "[domain_account_tests]") {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
+    account acc;
+    acc.version = faker::number::integer(1, 10);
+    acc.modified_by = std::string(faker::internet::username());
+    acc.id = boost::uuids::random_generator()();
+    acc.username = std::string(faker::internet::username());
+    acc.password_hash = faker::number::hexadecimal(64);
+    acc.password_salt = faker::number::hexadecimal(32);
+    acc.totp_secret = faker::string::alphanumeric(16);
+    acc.email = std::string(faker::internet::email());
+    acc.is_admin = faker::datatype::boolean();
+
+    BOOST_LOG_SEV(lg, info) << "Account: " << acc;
+
+    CHECK(acc.version >= 1);
+    CHECK(acc.version <= 10);
+    CHECK(!acc.modified_by.empty());
+    CHECK(!acc.username.empty());
+    CHECK(acc.password_hash.length() == 66);
+    CHECK(acc.password_salt.length() == 34);
+    CHECK(acc.totp_secret.length() == 16);
+    CHECK(!acc.email.empty());
+}
+
+TEST_CASE("create_multiple_random_accounts", "[domain_account_tests]") {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
+    for (int i = 0; i < 3; ++i) {
+        account acc;
+        acc.version = faker::number::integer(1, 100);
+        acc.modified_by = std::string(faker::person::firstName()) + " " +
+            std::string(faker::person::lastName());
+        acc.id = boost::uuids::random_generator()();
+        acc.username = std::string(faker::internet::username());
+        acc.password_hash = std::string(faker::crypto::sha256());
+        acc.password_salt = std::string(faker::crypto::sha256());
+        acc.totp_secret = faker::string::alphanumeric(20);
+        acc.email = std::string(faker::internet::email());
+        acc.is_admin = faker::datatype::boolean();
+        BOOST_LOG_SEV(lg, info) << "Account " << i << ":" <<  acc;
+
+        CHECK(acc.version >= 1);
+        CHECK(!acc.username.empty());
+        CHECK(!acc.email.empty());
+    }
 }

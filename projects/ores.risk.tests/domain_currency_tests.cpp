@@ -206,21 +206,23 @@ TEST_CASE("create_currencies_with_different_symbols", "[domain_currency_tests]")
     auto lg(make_logger(test_suite));
 
     using Currency = std::tuple<std::string, std::string, std::string>;
-    const std::array<Currency, 6> currencies = {
-        Currency{"USD", "$",   "United States Dollar"},
-        Currency{"EUR", "EUR", "Euro"},
-        Currency{"GBP", "GBP", "British Pound Sterling"},
-        Currency{"JPY", "JPY", "Japanese Yen"},
-        Currency{"CNY", "CNY", "Chinese Yuan"},
-        Currency{"INR", "INR", "Indian Rupee"}
+    const std::array<Currency, 7> currencies = {
+        Currency{"USD", "$", "United States Dollar"},
+        Currency{"EUR", "€", "Euro"},
+        Currency{"GBP", "£", "British Pound Sterling"},
+        Currency{"JPY", "¥", "Japanese Yen"},
+        Currency{"INR", "₹", "Indian Rupee"},
+        Currency{"BTC", "₿", "Bitcoin"},
+        Currency{"RUB", "₽", "Russian Rubble"}
     };
 
     for (const auto& [code, symbol, name] : currencies) {
         currency ccy;
         ccy.iso_code = code;
         ccy.name = name;
-        ccy.numeric_code = std::to_string(faker::number::integer(1, 999));
         ccy.symbol = symbol;
+
+        ccy.numeric_code = std::to_string(faker::number::integer(1, 999));
         ccy.fraction_symbol = "";
         ccy.fractions_per_unit = 100;
         ccy.rounding_type = "Closest";

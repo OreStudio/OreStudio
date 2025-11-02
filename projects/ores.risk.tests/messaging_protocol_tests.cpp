@@ -99,10 +99,12 @@ TEST_CASE("get_currencies_response_serialize_deserialize", "[messaging_protocol_
     // Add a few currencies
     for (int i = 0; i < 3; ++i) {
         currency ccy;
-        ccy.iso_code = std::string(faker::finance::currencyCode());
-        ccy.name = std::string(faker::finance::currencyName());
+        auto fakerCcy = faker::finance::currency();
+        ccy.iso_code = fakerCcy.code;
+        ccy.name = fakerCcy.name;
+        ccy.symbol = fakerCcy.symbol;
+
         ccy.numeric_code = std::to_string(faker::number::integer(1, 999));
-        ccy.symbol = std::string(faker::finance::currencySymbol());
         ccy.fraction_symbol = "";
         ccy.fractions_per_unit = faker::number::integer(1, 10000);
         ccy.rounding_type = "Closest";
@@ -156,10 +158,12 @@ TEST_CASE("get_currencies_response_with_multiple_currencies", "[messaging_protoc
 
     for (const auto& iso : iso_codes) {
         currency ccy;
-        ccy.iso_code = iso;
-        ccy.name = std::string(faker::finance::currencyName());
+        auto fakerCcy = faker::finance::currency();
+        ccy.iso_code = fakerCcy.code;
+        ccy.name = fakerCcy.name;
+        ccy.symbol = fakerCcy.symbol;
+
         ccy.numeric_code = std::to_string(faker::number::integer(1, 999));
-        ccy.symbol = std::string(faker::finance::currencySymbol());
         ccy.fraction_symbol = "";
         ccy.fractions_per_unit = 100;
         ccy.rounding_type = "Closest";
@@ -194,10 +198,12 @@ TEST_CASE("get_currencies_response_large_dataset", "[messaging_protocol_tests]")
     const int count = 50;
     for (int i = 0; i < count; ++i) {
         currency ccy;
-        ccy.iso_code = std::string(faker::finance::currencyCode());
-        ccy.name = std::string(faker::finance::currencyName());
+        auto fakerCcy = faker::finance::currency();
+        ccy.iso_code = fakerCcy.code;
+        ccy.name = fakerCcy.name;
+        ccy.symbol = fakerCcy.symbol;
+
         ccy.numeric_code = std::to_string(faker::number::integer(1, 999));
-        ccy.symbol = std::string(faker::finance::currencySymbol());
         ccy.fraction_symbol = "";
         ccy.fractions_per_unit = faker::number::integer(1, 10000);
         ccy.rounding_type = "Closest";
@@ -234,22 +240,24 @@ TEST_CASE("get_currencies_response_with_special_characters", "[messaging_protoco
 
     get_currencies_response resp;
 
-    // Add currencies with special Unicode symbols
-    std::vector<std::pair<std::string, std::string>> currency_data = {
-        {"EUR", "€"},
-        {"GBP", "£"},
-        {"JPY", "¥"},
-        {"INR", "₹"},
-        {"BTC", "₿"},
-        {"RUB", "₽"}
+    using Currency = std::tuple<std::string, std::string, std::string>;
+    const std::array<Currency, 7> currencies = {
+        Currency{"USD", "$", "United States Dollar"},
+        Currency{"EUR", "€", "Euro"},
+        Currency{"GBP", "£", "British Pound Sterling"},
+        Currency{"JPY", "¥", "Japanese Yen"},
+        Currency{"INR", "₹", "Indian Rupee"},
+        Currency{"BTC", "₿", "Bitcoin"},
+        Currency{"RUB", "₽", "Russian Rubble"}
     };
 
-    for (const auto& [iso, symbol] : currency_data) {
+    for (const auto& [code, symbol, name] : currencies) {
         currency ccy;
-        ccy.iso_code = iso;
-        ccy.name = std::string(faker::finance::currencyName());
-        ccy.numeric_code = std::to_string(faker::number::integer(1, 999));
+        ccy.iso_code = code;
+        ccy.name = name;
         ccy.symbol = symbol;
+
+        ccy.numeric_code = std::to_string(faker::number::integer(1, 999));
         ccy.fraction_symbol = "";
         ccy.fractions_per_unit = 100;
         ccy.rounding_type = "Closest";
@@ -270,6 +278,8 @@ TEST_CASE("get_currencies_response_with_special_characters", "[messaging_protoco
 
     REQUIRE(result.has_value());
     const auto& deserialized = result.value();
+    BOOST_LOG_SEV(lg, debug) << "Deserialized: " << deserialized;
+
 
     for (size_t i = 0; i < resp.currencies.size(); ++i) {
         BOOST_LOG_SEV(lg, debug) << "Currency: " << resp.currencies[i].iso_code

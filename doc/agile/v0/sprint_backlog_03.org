@@ -18,41 +18,42 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-01 Sat 23:35], for Saturday, November 01, 2025.
-|      | <75>                                      |        |      |      |       |
-| Tags | Headline                                  | Time   |      |      |     % |
-|------+-------------------------------------------+--------+------+------+-------|
-|      | *Total time*                              | *5:22* |      |      | 100.0 |
-|------+-------------------------------------------+--------+------+------+-------|
-|      | Stories                                   | 5:22   |      |      | 100.0 |
-|      | Active                                    |        | 5:22 |      | 100.0 |
-| code | Consider adding a postgres database to CI |        |      | 5:22 | 100.0 |
+#+CAPTION: Clock summary at [2025-11-02 Sun 10:42], for Sunday, November 02, 2025.
+|      | <75>                  |        |      |      |       |
+| Tags | Headline              | Time   |      |      |     % |
+|------+-----------------------+--------+------+------+-------|
+|      | *Total time*          | *1:22* |      |      | 100.0 |
+|------+-----------------------+--------+------+------+-------|
+|      | Stories               | 1:22   |      |      | 100.0 |
+|      | Active                |        | 1:22 |      | 100.0 |
+| code | Improve code coverage |        |      | 1:22 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-01 Sat 23:35]
+#+CAPTION: Clock summary at [2025-11-02 Sun 10:42]
 |       | <75>                                                   |         |       |       |       |
 | Tags  | Headline                                               | Time    |       |       |     % |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                           | *52:27* |       |       | 100.0 |
+|       | *Total time*                                           | *53:49* |       |       | 100.0 |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                | 52:27   |       |       | 100.0 |
-|       | Active                                                 |         | 52:27 |       | 100.0 |
-| agile | Sprint and product backlog refinement                  |         |       |  1:24 |   2.7 |
-| code  | Add locking up logic                                   |         |       |  1:28 |   2.8 |
-| code  | Build using dynamic libraries                          |         |       |  7:24 |  14.1 |
-| code  | Enable qt gui                                          |         |       |  4:13 |   8.0 |
-| code  | Add locking up logic                                   |         |       |  1:28 |   2.8 |
-| code  | Build using dynamic libraries                          |         |       |  7:24 |  14.1 |
-| code  | Implement logging according to correct boost.log usage |         |       |  8:02 |  15.3 |
+|       | Stories                                                | 53:49   |       |       | 100.0 |
+|       | Active                                                 |         | 53:49 |       | 100.0 |
+| agile | Sprint and product backlog refinement                  |         |       |  1:24 |   2.6 |
+| code  | Add locking up logic                                   |         |       |  1:28 |   2.7 |
+| code  | Build using dynamic libraries                          |         |       |  7:24 |  13.8 |
+| code  | Enable qt gui                                          |         |       |  4:13 |   7.8 |
+| code  | Add locking up logic                                   |         |       |  1:28 |   2.7 |
+| code  | Build using dynamic libraries                          |         |       |  7:24 |  13.8 |
+| code  | Implement logging according to correct boost.log usage |         |       |  8:02 |  14.9 |
 | code  | Fix broken Linux and OSX tests                         |         |       |  0:10 |   0.3 |
-| code  | Fix broken windows builds                              |         |       |  2:35 |   4.9 |
+| code  | Fix broken windows builds                              |         |       |  2:35 |   4.8 |
 | code  | Investigate leaks from valgrind                        |         |       |  0:51 |   1.6 |
-| code  | Consider adding a postgres database to CI              |         |       | 14:13 |  27.1 |
+| code  | Consider adding a postgres database to CI              |         |       | 14:13 |  26.4 |
 | code  | Fix misspell that causes build to break                |         |       |  0:12 |   0.4 |
-| code  | Add support for feature flags                          |         |       |  1:25 |   2.7 |
+| code  | Add support for feature flags                          |         |       |  1:25 |   2.6 |
 | code  | Implement authentication bootstrap workflow            |         |       |  0:25 |   0.8 |
+| code  | Improve code coverage                                  |         |       |  1:22 |   2.5 |
 | code  | Add workspace as a container                           |         |       |  1:13 |   2.3 |
 #+end:
 
@@ -665,6 +666,67 @@ Once the system is in **"Secure Mode"**:
 Links:
 
 - [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
+
+*** STARTED Improve code coverage                                      :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-02 Sun 09:35]--[2025-11-02 Sun 10:42] =>  1:07
+    CLOCK: [2025-11-02 Sun 08:50]--[2025-11-02 Sun 09:05] =>  0:15
+    :END:
+
+We need to get code coverage green before we start to add more features.
+
+*** Investigate valgrind leak on sqlgen                                :code:
+
+Is this a real leak:
+
+#+begin_src valgrind-leak
+==2599359==
+==2599359== HEAP SUMMARY:
+==2599359==     in use at exit: 11,421 bytes in 78 blocks
+==2599359==   total heap usage: 403,744 allocs, 403,666 frees, 161,473,513 bytes allocated
+==2599359==
+==2599359== 1,944 bytes in 9 blocks are definitely lost in loss record 20 of 21
+==2599359==    at 0x4F2B818: malloc (vg_replace_malloc.c:446)
+==2599359==    by 0x5AE29FF: PQmakeEmptyPGresult (fe-exec.c:161)
+==2599359==    by 0x5AEA9F2: pqParseInput3 (fe-protocol3.c:264)
+==2599359==    by 0x5AE5853: parseInput (fe-exec.c:1997)
+==2599359==    by 0x5AE5975: PQgetResult (fe-exec.c:2083)
+==2599359==    by 0x5AE5FB7: PQexecFinish (fe-exec.c:2388)
+==2599359==    by 0x5AE5D98: PQprepare (fe-exec.c:2275)
+==2599359==    by 0x5A7F688: sqlgen::postgres::Connection::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Connection.cpp:44)
+==2599359==    by 0x525189F: sqlgen::Session<sqlgen::postgres::Connection>::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Session.hpp:50)
+==2599359==    by 0x523F4FF: sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> >::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Transaction.hpp:61)
+==2599359==    by 0x523EE20: rfl::Result<rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > > sqlgen::insert_impl<__gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, bool) requires is_connection<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > (insert.hpp:46)
+==2599359==    by 0x523EB55: auto sqlgen::insert_impl<std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> >, rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > const&, bool) (insert.hpp:69)
+==2599359==
+==2599359== 3,672 bytes in 17 blocks are definitely lost in loss record 21 of 21
+==2599359==    at 0x4F2B818: malloc (vg_replace_malloc.c:446)
+==2599359==    by 0x5AE29FF: PQmakeEmptyPGresult (fe-exec.c:161)
+==2599359==    by 0x5AEA78E: pqParseInput3 (fe-protocol3.c:200)
+==2599359==    by 0x5AE5853: parseInput (fe-exec.c:1997)
+==2599359==    by 0x5AE5975: PQgetResult (fe-exec.c:2083)
+==2599359==    by 0x5AE5FB7: PQexecFinish (fe-exec.c:2388)
+==2599359==    by 0x5AE5E15: PQexecPrepared (fe-exec.c:2298)
+==2599359==    by 0x5A7FB5B: sqlgen::postgres::Connection::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Connection.cpp:72)
+==2599359==    by 0x525189F: sqlgen::Session<sqlgen::postgres::Connection>::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Session.hpp:50)
+==2599359==    by 0x523F4FF: sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> >::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Transaction.hpp:61)
+==2599359==    by 0x523EE20: rfl::Result<rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > > sqlgen::insert_impl<__gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, bool) requires is_connection<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > (insert.hpp:46)
+==2599359==    by 0x523EB55: auto sqlgen::insert_impl<std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> >, rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > const&, bool) (insert.hpp:69)
+==2599359==
+==2599359== LEAK SUMMARY:
+==2599359==    definitely lost: 5,616 bytes in 26 blocks
+==2599359==    indirectly lost: 0 bytes in 0 blocks
+==2599359==      possibly lost: 0 bytes in 0 blocks
+==2599359==    still reachable: 5,805 bytes in 52 blocks
+==2599359==         suppressed: 0 bytes in 0 blocks
+==2599359== Reachable blocks (those to which a pointer was found) are not shown.
+==2599359== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==2599359==
+==2599359== For lists of detected and suppressed errors, rerun with: -s
+==2599359== ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 0 from 0)
+#+end_src
+
+
 
 *** Log file for Qt application is non-standard                        :code:
 

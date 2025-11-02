@@ -18,43 +18,43 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-02 Sun 10:42], for Sunday, November 02, 2025.
+#+CAPTION: Clock summary at [2025-11-02 Sun 12:19], for Sunday, November 02, 2025.
 |      | <75>                  |        |      |      |       |
 | Tags | Headline              | Time   |      |      |     % |
 |------+-----------------------+--------+------+------+-------|
-|      | *Total time*          | *1:22* |      |      | 100.0 |
+|      | *Total time*          | *2:31* |      |      | 100.0 |
 |------+-----------------------+--------+------+------+-------|
-|      | Stories               | 1:22   |      |      | 100.0 |
-|      | Active                |        | 1:22 |      | 100.0 |
-| code | Improve code coverage |        |      | 1:22 | 100.0 |
+|      | Stories               | 2:31   |      |      | 100.0 |
+|      | Active                |        | 2:31 |      | 100.0 |
+| code | Improve code coverage |        |      | 2:31 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-02 Sun 10:42]
+#+CAPTION: Clock summary at [2025-11-02 Sun 12:19]
 |       | <75>                                                   |         |       |       |       |
 | Tags  | Headline                                               | Time    |       |       |     % |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                           | *53:49* |       |       | 100.0 |
+|       | *Total time*                                           | *54:58* |       |       | 100.0 |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                | 53:49   |       |       | 100.0 |
-|       | Active                                                 |         | 53:49 |       | 100.0 |
-| agile | Sprint and product backlog refinement                  |         |       |  1:24 |   2.6 |
+|       | Stories                                                | 54:58   |       |       | 100.0 |
+|       | Active                                                 |         | 54:58 |       | 100.0 |
+| agile | Sprint and product backlog refinement                  |         |       |  1:24 |   2.5 |
 | code  | Add locking up logic                                   |         |       |  1:28 |   2.7 |
-| code  | Build using dynamic libraries                          |         |       |  7:24 |  13.8 |
-| code  | Enable qt gui                                          |         |       |  4:13 |   7.8 |
+| code  | Build using dynamic libraries                          |         |       |  7:24 |  13.5 |
+| code  | Enable qt gui                                          |         |       |  4:13 |   7.7 |
 | code  | Add locking up logic                                   |         |       |  1:28 |   2.7 |
-| code  | Build using dynamic libraries                          |         |       |  7:24 |  13.8 |
-| code  | Implement logging according to correct boost.log usage |         |       |  8:02 |  14.9 |
+| code  | Build using dynamic libraries                          |         |       |  7:24 |  13.5 |
+| code  | Implement logging according to correct boost.log usage |         |       |  8:02 |  14.6 |
 | code  | Fix broken Linux and OSX tests                         |         |       |  0:10 |   0.3 |
-| code  | Fix broken windows builds                              |         |       |  2:35 |   4.8 |
-| code  | Investigate leaks from valgrind                        |         |       |  0:51 |   1.6 |
-| code  | Consider adding a postgres database to CI              |         |       | 14:13 |  26.4 |
+| code  | Fix broken windows builds                              |         |       |  2:35 |   4.7 |
+| code  | Investigate leaks from valgrind                        |         |       |  0:51 |   1.5 |
+| code  | Consider adding a postgres database to CI              |         |       | 14:13 |  25.9 |
 | code  | Fix misspell that causes build to break                |         |       |  0:12 |   0.4 |
 | code  | Add support for feature flags                          |         |       |  1:25 |   2.6 |
 | code  | Implement authentication bootstrap workflow            |         |       |  0:25 |   0.8 |
-| code  | Improve code coverage                                  |         |       |  1:22 |   2.5 |
-| code  | Add workspace as a container                           |         |       |  1:13 |   2.3 |
+| code  | Improve code coverage                                  |         |       |  2:31 |   4.6 |
+| code  | Add workspace as a container                           |         |       |  1:13 |   2.2 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -669,6 +669,8 @@ Links:
 
 *** STARTED Improve code coverage                                      :code:
     :LOGBOOK:
+    CLOCK: [2025-11-02 Sun 11:02]--[2025-11-02 Sun 12:01] =>  0:59
+    CLOCK: [2025-11-02 Sun 10:52]--[2025-11-02 Sun 11:02] =>  0:10
     CLOCK: [2025-11-02 Sun 09:35]--[2025-11-02 Sun 10:42] =>  1:07
     CLOCK: [2025-11-02 Sun 08:50]--[2025-11-02 Sun 09:05] =>  0:15
     :END:

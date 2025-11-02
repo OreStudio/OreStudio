@@ -26,6 +26,7 @@
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/log/severity_level.hpp"
 #include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/database_options.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 #include "ores.cli/config/parser.hpp"
 
@@ -67,6 +68,12 @@ const std::string logging_log_level_info("info");
 const std::string logging_log_level_warn("warn");
 const std::string logging_log_level_error("error");
 
+const std::string database_user_arg("db-user");
+const std::string database_password_arg("db-password");
+const std::string database_host_arg("db-host");
+const std::string database_database_arg("db-database");
+const std::string database_port_arg("db-port");
+
 using boost::program_options::value;
 using boost::program_options::variables_map;
 using boost::program_options::parsed_options;
@@ -79,6 +86,7 @@ using ores::cli::config::format;
 using ores::cli::config::options;
 using ores::cli::config::import_options;
 using ores::cli::config::export_options;
+using ores::cli::config::database_options;
 using ores::cli::config::parser_exception;
 
 /**
@@ -171,6 +179,31 @@ options_description make_export_options_description() {
 options_description make_client_options_description() {
     options_description r("Client");
     // No options needed - connection details are provided in REPL
+    return r;
+}
+
+/**
+ * @brief Creates the options related to database configuration.
+ */
+options_description make_database_options_description() {
+    options_description r("Database");
+    r.add_options()
+        ("db-user",
+            value<std::string>(),
+            "Database user name.")
+        ("db-password",
+            value<std::string>(),
+            "Database password. Can also be provided via ORES_DB_PASSWORD environment variable.")
+        ("db-host",
+            value<std::string>()->default_value("localhost"),
+            "Database host. Defaults to localhost.")
+        ("db-database",
+            value<std::string>(),
+            "Database name.")
+        ("db-port",
+            value<int>()->default_value(5432),
+            "Database port. Defaults to 5432.");
+
     return r;
 }
 
@@ -404,6 +437,41 @@ export_options read_export_options(const variables_map& vm) {
     return r;
 }
 
+/**
+ * @brief Reads the database configuration from the variables map.
+ */
+std::optional<database_options> read_database_options(const variables_map& vm) {
+    const bool has_user(vm.count(database_user_arg) != 0);
+    const bool has_password(vm.count(database_password_arg) != 0);
+    const bool has_database(vm.count(database_database_arg) != 0);
+
+    if (!has_user && !has_password && !has_database)
+        return {};
+
+    database_options r;
+
+    if (has_user)
+        r.user = vm[database_user_arg].as<std::string>();
+    else
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply database user."));
+
+    if (has_password)
+        r.password = vm[database_password_arg].as<std::string>();
+    else
+        BOOST_THROW_EXCEPTION(parser_exception(
+            "Must supply database password via --db-password or ORES_DB_PASSWORD environment variable."));
+
+    if (has_database)
+        r.database = vm[database_database_arg].as<std::string>();
+    else
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply database name."));
+
+    r.host = vm[database_host_arg].as<std::string>();
+    r.port = vm[database_port_arg].as<int>();
+
+    return r;
+}
+
 
 /**
  * @brief Contains the processing logic for when the user supplies a command in
@@ -428,8 +496,11 @@ handle_command(const std::string& command_name, const bool has_help,
      */
     options r;
     using boost::program_options::command_line_parser;
+    const auto db_desc(make_database_options_description());
+
     if (command_name == import_command_name) {
-        const auto d(make_import_options_description());
+        auto d(make_import_options_description());
+        d.add(db_desc);
         if (has_help) {
             print_help_command(import_command_name, d, info);
             return {};
@@ -438,7 +509,8 @@ handle_command(const std::string& command_name, const bool has_help,
         store(command_line_parser(o).options(d).run(), vm);
         r.importing = read_import_options(vm);
     } else if (command_name == export_command_name) {
-        const auto d(make_export_options_description());
+        auto d(make_export_options_description());
+        d.add(db_desc);
         if (has_help) {
             print_help_command(export_command_name, d, info);
             return {};
@@ -447,7 +519,8 @@ handle_command(const std::string& command_name, const bool has_help,
         store(command_line_parser(o).options(d).run(), vm);
         r.exporting = read_export_options(vm);
     } else if (command_name == client_command_name) {
-        const auto d(make_client_options_description());
+        auto d(make_client_options_description());
+        d.add(db_desc);
         if (has_help) {
             print_help_command(client_command_name, d, info);
             return {};
@@ -457,11 +530,30 @@ handle_command(const std::string& command_name, const bool has_help,
         r.client = true;
     }
 
+    r.database = read_database_options(vm);
+
     /*
      * Now process the common options.
      */
     r.logging = read_logging_configuration(vm);
     return r;
+}
+
+/**
+ * @brief Maps environment variable names to option names for boost program options.
+ */
+std::string environment_mapper(const std::string& env_name) {
+    if (env_name == "ORES_DB_USER")
+        return database_user_arg;
+    if (env_name == "ORES_DB_PASSWORD")
+        return database_password_arg;
+    if (env_name == "ORES_DB_HOST")
+        return database_host_arg;
+    if (env_name == "ORES_DB_DATABASE")
+        return database_database_arg;
+    if (env_name == "ORES_DB_PORT")
+        return database_port_arg;
+    return "";
 }
 
 /**
@@ -490,8 +582,12 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
         allow_unregistered().
         run();
 
+    using boost::program_options::parse_environment;
+    const auto env_po = parse_environment(all, environment_mapper);
+
     variables_map vm;
     boost::program_options::store(po, vm);
+    boost::program_options::store(env_po, vm);
     const bool has_command(vm.count(command_arg) != 0);
     const bool has_version(vm.count(version_arg) != 0);
     const bool has_help(vm.count(help_arg) != 0);

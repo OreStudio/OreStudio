@@ -20,6 +20,7 @@
 #include <vector>
 #include <sstream>
 #include <catch2/catch_test_macros.hpp>
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/streaming/std_optional.hpp" // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.cli/config/parser.hpp"
@@ -27,18 +28,31 @@
 #include "ores.cli/config/format.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 
+namespace {
+
+std::string test_suite("ores.cli.tests");
+
+}
+
 using ores::cli::config::parser;
 using ores::cli::config::entity;
 using ores::cli::config::format;
 using ores::cli::config::parser_exception;
 
 TEST_CASE("test_help_option", "[parser_tests]") {
+    using namespace ores::utility::log;
+    auto lg = make_logger(test_suite);
+
     parser p;
     std::ostringstream info, error;
 
     std::vector<std::string> args = {"--help"};
+    BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
+    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg, debug) << "Info: " << info.str();
+    BOOST_LOG_SEV(lg, debug) << "Error: " << error.str();
 
     CHECK(!result.has_value());
     CHECK(!info.str().empty());
@@ -49,12 +63,19 @@ TEST_CASE("test_help_option", "[parser_tests]") {
 }
 
 TEST_CASE("test_version_option", "[parser_tests]") {
+    using namespace ores::utility::log;
+    auto lg = make_logger(test_suite);
+
     parser p;
     std::ostringstream info, error;
 
     std::vector<std::string> args = {"--version"};
+    BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
+    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg, debug) << "Info: " << info.str();
+    BOOST_LOG_SEV(lg, debug) << "Error: " << error.str();
 
     CHECK(!result.has_value());
     CHECK(!info.str().empty());
@@ -63,12 +84,19 @@ TEST_CASE("test_version_option", "[parser_tests]") {
 }
 
 TEST_CASE("test_import_help", "[parser_tests]") {
+    using namespace ores::utility::log;
+    auto lg = make_logger(test_suite);
+
     parser p;
     std::ostringstream info, error;
 
     std::vector<std::string> args = {"import", "--help"};
+    BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
+    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg, debug) << "Info: " << info.str();
+    BOOST_LOG_SEV(lg, debug) << "Error: " << error.str();
 
     CHECK(!result.has_value());
     CHECK(!info.str().empty());
@@ -78,12 +106,19 @@ TEST_CASE("test_import_help", "[parser_tests]") {
 }
 
 TEST_CASE("test_export_help", "[parser_tests]") {
+    using namespace ores::utility::log;
+    auto lg = make_logger(test_suite);
+
     parser p;
     std::ostringstream info, error;
 
     std::vector<std::string> args = {"export", "--help"};
+    BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
+    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg, debug) << "Info: " << info.str();
+    BOOST_LOG_SEV(lg, debug) << "Error: " << error.str();
 
     CHECK(!result.has_value());
     CHECK(!info.str().empty());
@@ -96,6 +131,9 @@ TEST_CASE("test_export_help", "[parser_tests]") {
 }
 
 TEST_CASE("test_logging_options", "[parser_tests]") {
+    using namespace ores::utility::log;
+    auto lg = make_logger(test_suite);
+
     parser p;
     std::ostringstream info, error;
 
@@ -108,8 +146,12 @@ TEST_CASE("test_logging_options", "[parser_tests]") {
         "--entity", "currencies",
         "--target", "test.xml"
     };
+    BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
+    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg, debug) << "Info: " << info.str();
+    BOOST_LOG_SEV(lg, debug) << "Error: " << error.str();
 
     REQUIRE(result.has_value());
     REQUIRE(result->logging.has_value());
@@ -119,6 +161,9 @@ TEST_CASE("test_logging_options", "[parser_tests]") {
 }
 
 TEST_CASE("test_import_basic", "[parser_tests]") {
+    using namespace ores::utility::log;
+    auto lg = make_logger(test_suite);
+
     parser p;
     std::ostringstream info, error;
 
@@ -127,8 +172,12 @@ TEST_CASE("test_import_basic", "[parser_tests]") {
         "--entity", "currencies",
         "--target", "test_file.xml"
     };
+    BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
+    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg, debug) << "Info: " << info.str();
+    BOOST_LOG_SEV(lg, debug) << "Error: " << error.str();
 
     REQUIRE(result.has_value());
     REQUIRE(result->importing.has_value());
@@ -138,6 +187,9 @@ TEST_CASE("test_import_basic", "[parser_tests]") {
 }
 
 TEST_CASE("test_import_multiple_targets", "[parser_tests]") {
+    using namespace ores::utility::log;
+    auto lg = make_logger(test_suite);
+
     parser p;
     std::ostringstream info, error;
 
@@ -148,8 +200,12 @@ TEST_CASE("test_import_multiple_targets", "[parser_tests]") {
         "--target", "file2.xml",
         "--target", "file3.xml"
     };
+    BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
+    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg, debug) << "Info: " << info.str();
+    BOOST_LOG_SEV(lg, debug) << "Error: " << error.str();
 
     REQUIRE(result.has_value());
     REQUIRE(result->importing.has_value());
@@ -161,6 +217,9 @@ TEST_CASE("test_import_multiple_targets", "[parser_tests]") {
 }
 
 TEST_CASE("test_export_basic", "[parser_tests]") {
+    using namespace ores::utility::log;
+    auto lg = make_logger(test_suite);
+
     parser p;
     std::ostringstream info, error;
 
@@ -168,8 +227,12 @@ TEST_CASE("test_export_basic", "[parser_tests]") {
         "export",
         "--entity", "currencies"
     };
+    BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
+    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg, debug) << "Info: " << info.str();
+    BOOST_LOG_SEV(lg, debug) << "Error: " << error.str();
 
     REQUIRE(result.has_value());
     REQUIRE(result->exporting.has_value());
@@ -181,6 +244,9 @@ TEST_CASE("test_export_basic", "[parser_tests]") {
 }
 
 TEST_CASE("test_export_full_options", "[parser_tests]") {
+    using namespace ores::utility::log;
+    auto lg = make_logger(test_suite);
+
     parser p;
     std::ostringstream info, error;
 
@@ -192,8 +258,12 @@ TEST_CASE("test_export_full_options", "[parser_tests]") {
         "--all-versions",
         "--format", "xml"
     };
+    BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
+    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg, debug) << "Info: " << info.str();
+    BOOST_LOG_SEV(lg, debug) << "Error: " << error.str();
 
     REQUIRE(result.has_value());
     REQUIRE(result->exporting.has_value());
@@ -205,30 +275,48 @@ TEST_CASE("test_export_full_options", "[parser_tests]") {
 }
 
 TEST_CASE("test_invalid_command", "[parser_tests]") {
+    using namespace ores::utility::log;
+    auto lg = make_logger(test_suite);
+
     parser p;
     std::ostringstream info, error;
 
     std::vector<std::string> args = {"invalid_command"};
+    BOOST_LOG_SEV(lg, debug) << "Args: " << args;
+    BOOST_LOG_SEV(lg, debug) << "Info: " << info.str();
+    BOOST_LOG_SEV(lg, debug) << "Error: " << error.str();
+
     CHECK_THROWS_AS(p.parse(args, info, error), parser_exception);
 }
 
 TEST_CASE("test_missing_required_import_args", "[parser_tests]") {
+    using namespace ores::utility::log;
+    auto lg = make_logger(test_suite);
+
     parser p;
     std::ostringstream info, error;
 
     std::vector<std::string> args = {"import"};
+    BOOST_LOG_SEV(lg, debug) << "Args: " << args;
     CHECK_THROWS_AS(p.parse(args, info, error), parser_exception);
 }
 
 TEST_CASE("test_missing_required_export_args", "[parser_tests]") {
+    using namespace ores::utility::log;
+    auto lg = make_logger(test_suite);
+
     parser p;
     std::ostringstream info, error;
 
     std::vector<std::string> args = {"export"};
+    BOOST_LOG_SEV(lg, debug) << "Args: " << args;
     CHECK_THROWS_AS(p.parse(args, info, error), parser_exception);
 }
 
 TEST_CASE("test_import_with_logging", "[parser_tests]") {
+    using namespace ores::utility::log;
+    auto lg = make_logger(test_suite);
+
     parser p;
     std::ostringstream info, error;
 
@@ -239,8 +327,12 @@ TEST_CASE("test_import_with_logging", "[parser_tests]") {
         "--entity", "currencies",
         "--target", "test.xml"
     };
+    BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
+    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg, debug) << "Info: " << info.str();
+    BOOST_LOG_SEV(lg, debug) << "Error: " << error.str();
 
     REQUIRE(result.has_value());
     REQUIRE(result->logging.has_value());
@@ -250,6 +342,9 @@ TEST_CASE("test_import_with_logging", "[parser_tests]") {
 }
 
 TEST_CASE("test_export_with_logging", "[parser_tests]") {
+    using namespace ores::utility::log;
+    auto lg = make_logger(test_suite);
+
     parser p;
     std::ostringstream info, error;
 
@@ -260,8 +355,12 @@ TEST_CASE("test_export_with_logging", "[parser_tests]") {
         "--entity", "currencies",
         "--format", "json"
     };
+    BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
+    BOOST_LOG_SEV(lg, debug) << "Result: " << result;
+    BOOST_LOG_SEV(lg, debug) << "Info: " << info.str();
+    BOOST_LOG_SEV(lg, debug) << "Error: " << error.str();
 
     REQUIRE(result.has_value());
     REQUIRE(result->logging.has_value());

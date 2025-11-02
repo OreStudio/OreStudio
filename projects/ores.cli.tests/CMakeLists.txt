@@ -36,6 +36,7 @@ target_include_directories(${tests_binary_name}
 target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
+        ores.risk.lib
         ores.utility.lib
         Catch2::Catch2
         ${CMAKE_THREAD_LIBS_INIT})

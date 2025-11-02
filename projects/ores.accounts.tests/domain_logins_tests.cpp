@@ -20,89 +20,117 @@
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/asio/ip/address.hpp>
+#include "ores.utility/log/make_logger.hpp"
+#include "faker-cxx/faker.h" // IWYU pragma: keep.
 #include "ores.accounts/domain/login_info.hpp"
+
+namespace {
+
+std::string test_suite("ores.accounts.tests");
+
+}
 
 using ores::accounts::domain::login_info;
 
 TEST_CASE("create_login_info_with_ipv4_addresses", "[domain_login_info_tests]") {
-    login_info login_info;
-    login_info.account_id = boost::uuids::random_generator()();
-    login_info.last_ip = boost::asio::ip::make_address("192.168.1.100");
-    login_info.last_attempt_ip = boost::asio::ip::make_address("192.168.1.101");
-    login_info.failed_logins = 0;
-    login_info.locked = false;
-    login_info.last_login = std::chrono::system_clock::now();
-    login_info.online = true;
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
 
-    CHECK(login_info.failed_logins == 0);
-    CHECK(login_info.locked == false);
-    CHECK(login_info.online == true);
-    CHECK(login_info.last_ip.to_string() == "192.168.1.100");
-    CHECK(login_info.last_attempt_ip.to_string() == "192.168.1.101");
+    login_info li;
+    li.account_id = boost::uuids::random_generator()();
+    li.last_ip = boost::asio::ip::make_address("192.168.1.100");
+    li.last_attempt_ip = boost::asio::ip::make_address("192.168.1.101");
+    li.failed_logins = 0;
+    li.locked = false;
+    li.last_login = std::chrono::system_clock::now();
+    li.online = true;
+    BOOST_LOG_SEV(lg, info) << "Login info: " << li;
+
+    CHECK(li.failed_logins == 0);
+    CHECK(li.locked == false);
+    CHECK(li.online == true);
+    CHECK(li.last_ip.to_string() == "192.168.1.100");
+    CHECK(li.last_attempt_ip.to_string() == "192.168.1.101");
 }
 
 TEST_CASE("create_login_info_with_ipv6_addresses", "[domain_login_info_tests]") {
-    login_info login_info;
-    login_info.account_id = boost::uuids::random_generator()();
-    login_info.last_ip = boost::asio::ip::make_address("2001:0db8:85a3:0000:0000:8a2e:0370:7334");
-    login_info.last_attempt_ip = boost::asio::ip::make_address("::1");
-    login_info.failed_logins = 0;
-    login_info.locked = false;
-    login_info.last_login = std::chrono::system_clock::now();
-    login_info.online = false;
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
 
-    CHECK(login_info.failed_logins == 0);
-    CHECK(login_info.locked == false);
-    CHECK(login_info.online == false);
-    CHECK(login_info.last_attempt_ip.to_string() == "::1");
+    login_info li;
+    li.account_id = boost::uuids::random_generator()();
+    li.last_ip = boost::asio::ip::make_address("2001:0db8:85a3:0000:0000:8a2e:0370:7334");
+    li.last_attempt_ip = boost::asio::ip::make_address("::1");
+    li.failed_logins = 0;
+    li.locked = false;
+    li.last_login = std::chrono::system_clock::now();
+    li.online = false;
+    BOOST_LOG_SEV(lg, info) << "Login info: " << li;
+
+    CHECK(li.failed_logins == 0);
+    CHECK(li.locked == false);
+    CHECK(li.online == false);
+    CHECK(li.last_attempt_ip.to_string() == "::1");
 }
 
 TEST_CASE("create_locked_account_login_info", "[domain_login_info_tests]") {
-    login_info login_info;
-    login_info.account_id = boost::uuids::random_generator()();
-    login_info.last_ip = boost::asio::ip::make_address("10.0.0.50");
-    login_info.last_attempt_ip = boost::asio::ip::make_address("203.0.113.42");
-    login_info.failed_logins = 5;
-    login_info.locked = true;
-    login_info.last_login = std::chrono::system_clock::now() - std::chrono::hours(24);
-    login_info.online = false;
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
 
-    CHECK(login_info.failed_logins == 5);
-    CHECK(login_info.locked == true);
-    CHECK(login_info.online == false);
-    CHECK(login_info.last_attempt_ip.to_string() == "203.0.113.42");
+    login_info li;
+    li.account_id = boost::uuids::random_generator()();
+    li.last_ip = boost::asio::ip::make_address("10.0.0.50");
+    li.last_attempt_ip = boost::asio::ip::make_address("203.0.113.42");
+    li.failed_logins = 5;
+    li.locked = true;
+    li.last_login = std::chrono::system_clock::now() - std::chrono::hours(24);
+    li.online = false;
+    BOOST_LOG_SEV(lg, info) << "Login info: " << li;
+
+    CHECK(li.failed_logins == 5);
+    CHECK(li.locked == true);
+    CHECK(li.online == false);
+    CHECK(li.last_attempt_ip.to_string() == "203.0.113.42");
 }
 
 TEST_CASE("login_info_with_failed_attempts", "[domain_login_info_tests]") {
-    login_info login_info;
-    login_info.account_id = boost::uuids::random_generator()();
-    login_info.last_ip = boost::asio::ip::make_address("172.16.0.1");
-    login_info.last_attempt_ip = boost::asio::ip::make_address("172.16.0.1");
-    login_info.failed_logins = 3;
-    login_info.locked = false;
-    login_info.last_login = std::chrono::system_clock::now() - std::chrono::minutes(30);
-    login_info.online = false;
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
 
-    CHECK(login_info.failed_logins == 3);
-    CHECK(login_info.locked == false);
-    CHECK(login_info.last_ip.to_string() == "172.16.0.1");
+    login_info li;
+    li.account_id = boost::uuids::random_generator()();
+    li.last_ip = boost::asio::ip::make_address("172.16.0.1");
+    li.last_attempt_ip = boost::asio::ip::make_address("172.16.0.1");
+    li.failed_logins = 3;
+    li.locked = false;
+    li.last_login = std::chrono::system_clock::now() - std::chrono::minutes(30);
+    li.online = false;
+    BOOST_LOG_SEV(lg, info) << "Login info: " << li;
+
+    CHECK(li.failed_logins == 3);
+    CHECK(li.locked == false);
+    CHECK(li.last_ip.to_string() == "172.16.0.1");
 }
 
 TEST_CASE("login_info_serialization_to_json", "[domain_login_info_tests]") {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
     boost::uuids::string_generator uuid_gen;
     const auto account_uuid = uuid_gen("123e4567-e89b-12d3-a456-426614174000");
 
-    login_info login_info;
-    login_info.account_id = account_uuid;
-    login_info.last_ip = boost::asio::ip::make_address("198.51.100.42");
-    login_info.last_attempt_ip = boost::asio::ip::make_address("198.51.100.43");
-    login_info.failed_logins = 1;
-    login_info.locked = false;
-    login_info.last_login = std::chrono::system_clock::now();
-    login_info.online = true;
+    login_info li;
+    li.account_id = account_uuid;
+    li.last_ip = boost::asio::ip::make_address("198.51.100.42");
+    li.last_attempt_ip = boost::asio::ip::make_address("198.51.100.43");
+    li.failed_logins = 1;
+    li.locked = false;
+    li.last_login = std::chrono::system_clock::now();
+    li.online = true;
+    BOOST_LOG_SEV(lg, info) << "Login info: " << li;
 
     std::ostringstream oss;
-    oss << login_info;
+    oss << li;
     const std::string json_output = oss.str();
 
     CHECK(!json_output.empty());
@@ -111,17 +139,71 @@ TEST_CASE("login_info_serialization_to_json", "[domain_login_info_tests]") {
 }
 
 TEST_CASE("login_info_with_different_ip_versions", "[domain_login_info_tests]") {
-    login_info login_info;
-    login_info.account_id = boost::uuids::random_generator()();
-    login_info.last_ip = boost::asio::ip::make_address("192.0.2.1");
-    login_info.last_attempt_ip = boost::asio::ip::make_address("2001:db8::1");
-    login_info.failed_logins = 0;
-    login_info.locked = false;
-    login_info.last_login = std::chrono::system_clock::now();
-    login_info.online = true;
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
 
-    CHECK(login_info.last_ip.is_v4());
-    CHECK(login_info.last_attempt_ip.is_v6());
-    CHECK(login_info.last_ip.to_string() == "192.0.2.1");
-    CHECK(login_info.last_attempt_ip.to_string() == "2001:db8::1");
+    login_info li;
+    li.account_id = boost::uuids::random_generator()();
+    li.last_ip = boost::asio::ip::make_address("192.0.2.1");
+    li.last_attempt_ip = boost::asio::ip::make_address("2001:db8::1");
+    li.failed_logins = 0;
+    li.locked = false;
+    li.last_login = std::chrono::system_clock::now();
+    li.online = true;
+    BOOST_LOG_SEV(lg, info) << "Login info: " << li;
+
+    CHECK(li.last_ip.is_v4());
+    CHECK(li.last_attempt_ip.is_v6());
+    CHECK(li.last_ip.to_string() == "192.0.2.1");
+    CHECK(li.last_attempt_ip.to_string() == "2001:db8::1");
+}
+
+TEST_CASE("create_login_info_with_faker", "[domain_login_info_tests]") {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
+    login_info li;
+    li.account_id = boost::uuids::random_generator()();
+    li.last_ip = boost::asio::ip::make_address(faker::internet::ipv4());
+    li.last_attempt_ip = boost::asio::ip::make_address(faker::internet::ipv4());
+    li.failed_logins = faker::number::integer(0, 10);
+    li.locked = faker::datatype::boolean();
+    li.last_login = std::chrono::system_clock::now() -
+        std::chrono::hours(faker::number::integer(0, 168));
+    li.online = faker::datatype::boolean();
+    BOOST_LOG_SEV(lg, info) << "Login info: " << li;
+
+    CHECK(li.failed_logins >= 0);
+    CHECK(li.failed_logins <= 10);
+}
+
+TEST_CASE("create_multiple_random_login_infos", "[domain_login_info_tests]") {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
+    for (int i = 0; i < 3; ++i) {
+        login_info li;
+        li.account_id = boost::uuids::random_generator()();
+
+        const bool use_ipv6 = faker::datatype::boolean();
+        if (use_ipv6) {
+            li.last_ip = boost::asio::ip::make_address(faker::internet::ipv6());
+            li.last_attempt_ip = boost::asio::ip::make_address(faker::internet::ipv6());
+        } else {
+            li.last_ip = boost::asio::ip::make_address(faker::internet::ipv4());
+            li.last_attempt_ip = boost::asio::ip::make_address(faker::internet::ipv4());
+        }
+
+        li.failed_logins = faker::number::integer(0, 5);
+        li.locked = li.failed_logins >= 3;
+        li.last_login = std::chrono::system_clock::now() -
+            std::chrono::minutes(faker::number::integer(0, 1440));
+        li.online = faker::datatype::boolean();
+        BOOST_LOG_SEV(lg, info) << "Login info " << i << ":" << li;
+
+        CHECK(li.failed_logins >= 0);
+        if (li.locked) {
+            CHECK(li.failed_logins >= 3);
+        }
+    }
 }

@@ -25,6 +25,8 @@
 #endif
 
 #include <vector>
+#include <ostream>
+#include <optional>
 #include <filesystem>
 #include <boost/asio/awaitable.hpp>
 #include "ores.utility/log/make_logger.hpp"
@@ -32,6 +34,7 @@
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
 #include "ores.cli/config/export_options.hpp"
+#include "ores.cli/config/database_options.hpp"
 
 namespace ores::cli::app {
 
@@ -47,12 +50,14 @@ private:
     }
 
 public:
-    application();
+    explicit application(std::ostream& output_stream,
+        const std::optional<config::database_options>& db_opts);
     application(const application&) = delete;
     application& operator=(const application&) = delete;
 
 private:
-    static utility::repository::context make_context();
+    static utility::repository::context
+    make_context(const std::optional<config::database_options>& db_opts);
     void import_currencies(const std::vector<std::filesystem::path> files) const;
     void import_data(const std::optional<config::import_options>& ocfg) const;
 
@@ -71,6 +76,7 @@ public:
 
 private:
     utility::repository::context context_;
+    std::ostream& output_stream_;
 };
 
 }

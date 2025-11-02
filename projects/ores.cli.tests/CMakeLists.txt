@@ -36,17 +36,18 @@ target_include_directories(${tests_binary_name}
 target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
+        ores.risk.lib
         ores.utility.lib
         Catch2::Catch2
         ${CMAKE_THREAD_LIBS_INIT})
 
-add_custom_target(run_${tests_target_name}
-    COMMENT "Running ${tests_target_name}" VERBATIM
+add_custom_target(test_${tests_target_name}
+    COMMENT "Testing ${tests_target_name}" VERBATIM
     COMMAND $<TARGET_FILE:${tests_binary_name}>
     WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     DEPENDS ${tests_target_name})
 
-add_dependencies(run_all_tests run_${tests_target_name})
+add_dependencies(run_all_tests test_${tests_target_name})
 
 catch_discover_tests(${tests_target_name}
     WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})

@@ -19,11 +19,13 @@
  */
 #include <filesystem>
 #include <catch2/catch_test_macros.hpp>
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/filesystem/file.hpp"
 #include "ores.risk/orexml/CurrencyConfig.hpp"
 
 namespace {
 
+std::string test_suite("ores.risk.tests.");
 const std::string test_data_dir = "../test_data/currencies/";
 
 }
@@ -31,6 +33,9 @@ const std::string test_data_dir = "../test_data/currencies/";
 using ores::risk::orexml::CurrencyConfig;
 
 TEST_CASE("read_currency_config_from_simple_xml", "[orexml_currency_config_tests]") {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
     const std::string simple_xml = R"(
 <CurrencyConfig>
   <Currency>
@@ -48,12 +53,16 @@ TEST_CASE("read_currency_config_from_simple_xml", "[orexml_currency_config_tests
 </CurrencyConfig>
 )";
 
+    BOOST_LOG_SEV(lg, debug) << "Parsing simple XML string";
     const auto ccy_cfg = CurrencyConfig::from_xml(simple_xml);
 
     REQUIRE(!ccy_cfg.Currency.empty());
     REQUIRE(ccy_cfg.Currency.size() == 1);
+    BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
 
     const auto& first = ccy_cfg.Currency.front();
+    BOOST_LOG_SEV(lg, debug) << "Currency: " << first.ISOCode << " - " << first.Name;
+
     CHECK(first.Name == "United Arab Emirates dirham");
     CHECK(first.ISOCode == "AED");
     CHECK(first.NumericCode == "784");
@@ -66,16 +75,23 @@ TEST_CASE("read_currency_config_from_simple_xml", "[orexml_currency_config_tests
 }
 
 TEST_CASE("read_currency_config_from_currencies_xml", "[orexml_currency_config_tests]") {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
     const auto f = std::filesystem::path(test_data_dir + "currencies.xml");
+    BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
 
     using ores::utility::filesystem::file;
     const std::string content = file::read_content(f);
 
+    BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
     const auto ccy_cfg = CurrencyConfig::from_xml(content);
     REQUIRE(!ccy_cfg.Currency.empty());
     REQUIRE(ccy_cfg.Currency.size() == 179);
+    BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
 
     const auto& first = ccy_cfg.Currency.front();
+    BOOST_LOG_SEV(lg, debug) << "First currency: " << first.ISOCode << " - " << first.Name;
 
     CHECK(first.Name == "United Arab Emirates dirham");
     CHECK(first.ISOCode == "AED");
@@ -88,6 +104,7 @@ TEST_CASE("read_currency_config_from_currencies_xml", "[orexml_currency_config_t
     CHECK(first.CurrencyType.value() == "Major");
 
     const auto& last = ccy_cfg.Currency.back();
+    BOOST_LOG_SEV(lg, debug) << "Last currency: " << last.ISOCode << " - " << last.Name;
 
     CHECK(last.Name == "Bitcoin");
     CHECK(last.ISOCode == "BTC");
@@ -101,17 +118,24 @@ TEST_CASE("read_currency_config_from_currencies_xml", "[orexml_currency_config_t
 }
 
 TEST_CASE("read_currency_config_from_currencies_01_xml", "[orexml_currency_config_tests]") {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
     const auto f =
         std::filesystem::path(test_data_dir + "currencies_01.xml");
+    BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
 
     using ores::utility::filesystem::file;
     const std::string content = file::read_content(f);
 
+    BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
     const auto ccy_cfg = CurrencyConfig::from_xml(content);
     REQUIRE(!ccy_cfg.Currency.empty());
     REQUIRE(ccy_cfg.Currency.size() == 2);
+    BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
 
     const auto& first = ccy_cfg.Currency.front();
+    BOOST_LOG_SEV(lg, debug) << "Currency: " << first.ISOCode << " - " << first.Name;
 
     CHECK(first.Name == "Papua New Guinean kina");
     CHECK(first.ISOCode == "PGK");
@@ -127,49 +151,73 @@ TEST_CASE("read_currency_config_from_currencies_01_xml", "[orexml_currency_confi
 }
 
 TEST_CASE("read_currency_config_from_currencies_41_xml", "[orexml_currency_config_tests]") {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
     const auto f =
         std::filesystem::path(test_data_dir + "currencies_41.xml");
+    BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
 
     using ores::utility::filesystem::file;
     const std::string content = file::read_content(f);
 
+    BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
     const auto ccy_cfg = CurrencyConfig::from_xml(content);
     REQUIRE(!ccy_cfg.Currency.empty());
     REQUIRE(ccy_cfg.Currency.size() == 2);
+    BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
 }
 
 TEST_CASE("read_currency_config_from_currencies_42_xml", "[orexml_currency_config_tests]") {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
     const auto f =
         std::filesystem::path(test_data_dir + "currencies_42.xml");
+    BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
 
     using ores::utility::filesystem::file;
     const std::string content = file::read_content(f);
 
+    BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
     const auto ccy_cfg = CurrencyConfig::from_xml(content);
     REQUIRE(!ccy_cfg.Currency.empty());
     REQUIRE(ccy_cfg.Currency.size() == 2);
+    BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
 }
 
 TEST_CASE("read_currency_config_from_currencies_62_xml", "[orexml_currency_config_tests]") {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
     const auto f =
         std::filesystem::path(test_data_dir + "currencies_62.xml");
+    BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
 
     using ores::utility::filesystem::file;
     const std::string content = file::read_content(f);
 
+    BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
     const auto ccy_cfg = CurrencyConfig::from_xml(content);
     REQUIRE(!ccy_cfg.Currency.empty());
     REQUIRE(ccy_cfg.Currency.size() == 2);
+    BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
 }
 
 TEST_CASE("read_currency_config_from_currencies_API_xml", "[orexml_currency_config_tests]") {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
     const auto f =
         std::filesystem::path(test_data_dir + "currencies_API.xml");
+    BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
 
     using ores::utility::filesystem::file;
     const std::string content = file::read_content(f);
 
+    BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
     const auto ccy_cfg = CurrencyConfig::from_xml(content);
     REQUIRE(!ccy_cfg.Currency.empty());
     REQUIRE(ccy_cfg.Currency.size() == 178);
+    BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
 }

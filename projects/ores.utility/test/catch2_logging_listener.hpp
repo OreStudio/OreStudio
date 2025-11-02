@@ -34,7 +34,6 @@
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/log/scoped_lifecycle_manager.hpp"
 #include "ores.utility/log/logging_options.hpp"
-#include "ores.utility/test/logging.hpp"
 
 namespace ores::utility::test {
 
@@ -89,7 +88,7 @@ inline std::string extract_module_name() {
     return detail::test_module_name;
 }
 
-} // namespace detail
+}
 
 /**
  * @brief Catch2 event listener that sets up logging for each test case.
@@ -160,7 +159,7 @@ inline auto& logger() {
     return detail::current_test_context.logger.value();
 }
 
-} // namespace ores::utility::test
+}
 
 // Automatically register the listener
 CATCH_REGISTER_LISTENER(ores::utility::test::catch2_logging_listener)

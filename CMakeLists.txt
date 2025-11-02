@@ -125,7 +125,9 @@ endif()
 find_package(Boost 1.88 REQUIRED COMPONENTS
     log
     crc
+    uuid
     exception
+    scope_exit
     program_options)
 
 # OpenSSL

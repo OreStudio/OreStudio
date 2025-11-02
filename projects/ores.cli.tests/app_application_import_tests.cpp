@@ -32,7 +32,7 @@
 
 namespace {
 
-std::string test_suite("ores.cli.tests.");
+std::string test_suite("ores.cli.tests");
 
 ores::utility::repository::context make_test_context() {
     using ores::utility::repository::context_factory;

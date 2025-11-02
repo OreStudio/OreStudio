@@ -27,7 +27,7 @@
 
 namespace {
 
-std::string test_suite("ores.accounts.tests.");
+std::string test_suite("ores.accounts.tests");
 
 }
 

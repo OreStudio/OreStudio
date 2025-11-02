@@ -18,43 +18,43 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-02 Sun 12:37], for Sunday, November 02, 2025.
+#+CAPTION: Clock summary at [2025-11-02 Sun 20:35], for Sunday, November 02, 2025.
 |      | <75>                  |        |      |      |       |
 | Tags | Headline              | Time   |      |      |     % |
 |------+-----------------------+--------+------+------+-------|
-|      | *Total time*          | *3:06* |      |      | 100.0 |
+|      | *Total time*          | *4:15* |      |      | 100.0 |
 |------+-----------------------+--------+------+------+-------|
-|      | Stories               | 3:06   |      |      | 100.0 |
-|      | Active                |        | 3:06 |      | 100.0 |
-| code | Improve code coverage |        |      | 3:06 | 100.0 |
+|      | Stories               | 4:15   |      |      | 100.0 |
+|      | Active                |        | 4:15 |      | 100.0 |
+| code | Improve code coverage |        |      | 4:15 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-02 Sun 12:37]
+#+CAPTION: Clock summary at [2025-11-02 Sun 20:35]
 |       | <75>                                                   |         |       |       |       |
 | Tags  | Headline                                               | Time    |       |       |     % |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                           | *55:33* |       |       | 100.0 |
+|       | *Total time*                                           | *56:42* |       |       | 100.0 |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                | 55:33   |       |       | 100.0 |
-|       | Active                                                 |         | 55:33 |       | 100.0 |
+|       | Stories                                                | 56:42   |       |       | 100.0 |
+|       | Active                                                 |         | 56:42 |       | 100.0 |
 | agile | Sprint and product backlog refinement                  |         |       |  1:24 |   2.5 |
 | code  | Add locking up logic                                   |         |       |  1:28 |   2.6 |
-| code  | Build using dynamic libraries                          |         |       |  7:24 |  13.3 |
-| code  | Enable qt gui                                          |         |       |  4:13 |   7.6 |
+| code  | Build using dynamic libraries                          |         |       |  7:24 |  13.1 |
+| code  | Enable qt gui                                          |         |       |  4:13 |   7.4 |
 | code  | Add locking up logic                                   |         |       |  1:28 |   2.6 |
-| code  | Build using dynamic libraries                          |         |       |  7:24 |  13.3 |
-| code  | Implement logging according to correct boost.log usage |         |       |  8:02 |  14.5 |
+| code  | Build using dynamic libraries                          |         |       |  7:24 |  13.1 |
+| code  | Implement logging according to correct boost.log usage |         |       |  8:02 |  14.2 |
 | code  | Fix broken Linux and OSX tests                         |         |       |  0:10 |   0.3 |
-| code  | Fix broken windows builds                              |         |       |  2:35 |   4.7 |
+| code  | Fix broken windows builds                              |         |       |  2:35 |   4.6 |
 | code  | Investigate leaks from valgrind                        |         |       |  0:51 |   1.5 |
-| code  | Consider adding a postgres database to CI              |         |       | 14:13 |  25.6 |
+| code  | Consider adding a postgres database to CI              |         |       | 14:13 |  25.1 |
 | code  | Fix misspell that causes build to break                |         |       |  0:12 |   0.4 |
-| code  | Add support for feature flags                          |         |       |  1:25 |   2.6 |
-| code  | Implement authentication bootstrap workflow            |         |       |  0:25 |   0.8 |
-| code  | Improve code coverage                                  |         |       |  3:06 |   5.6 |
-| code  | Add workspace as a container                           |         |       |  1:13 |   2.2 |
+| code  | Improve code coverage                                  |         |       |  4:15 |   7.5 |
+| code  | Add support for feature flags                          |         |       |  1:25 |   2.5 |
+| code  | Implement authentication bootstrap workflow            |         |       |  0:25 |   0.7 |
+| code  | Add workspace as a container                           |         |       |  1:13 |   2.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -548,6 +548,19 @@ misspell fixer to break. To test locally:
 misspell-fixer -svn .
 #+end_src
 
+*** COMPLETED Improve code coverage                                    :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-02 Sun 19:21]--[2025-11-02 Sun 20:12] =>  0:51
+    CLOCK: [2025-11-02 Sun 18:47]--[2025-11-02 Sun 19:05] =>  0:18
+    CLOCK: [2025-11-02 Sun 12:02]--[2025-11-02 Sun 12:37] =>  0:35
+    CLOCK: [2025-11-02 Sun 11:02]--[2025-11-02 Sun 12:01] =>  0:59
+    CLOCK: [2025-11-02 Sun 10:52]--[2025-11-02 Sun 11:02] =>  0:10
+    CLOCK: [2025-11-02 Sun 09:35]--[2025-11-02 Sun 10:42] =>  1:07
+    CLOCK: [2025-11-02 Sun 08:50]--[2025-11-02 Sun 09:05] =>  0:15
+    :END:
+
+We need to get code coverage green before we start to add more features.
+
 *** STARTED Add support for feature flags                              :code:
     :LOGBOOK:
     CLOCK: [2025-10-24 Fri 01:25]--[2025-10-24 Fri 01:34] =>  0:09
@@ -666,17 +679,6 @@ Once the system is in **"Secure Mode"**:
 Links:
 
 - [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
-
-*** STARTED Improve code coverage                                      :code:
-    :LOGBOOK:
-    CLOCK: [2025-11-02 Sun 12:02]--[2025-11-02 Sun 12:37] =>  0:35
-    CLOCK: [2025-11-02 Sun 11:02]--[2025-11-02 Sun 12:01] =>  0:59
-    CLOCK: [2025-11-02 Sun 10:52]--[2025-11-02 Sun 11:02] =>  0:10
-    CLOCK: [2025-11-02 Sun 09:35]--[2025-11-02 Sun 10:42] =>  1:07
-    CLOCK: [2025-11-02 Sun 08:50]--[2025-11-02 Sun 09:05] =>  0:15
-    :END:
-
-We need to get code coverage green before we start to add more features.
 
 *** Separate test database usage from application                      :code:
 

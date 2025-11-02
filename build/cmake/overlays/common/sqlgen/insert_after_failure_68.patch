@@ -1,5 +1,5 @@
---- sqlgen-0.3.0/include/sqlgen/internal/random.hpp 2025-10-22 16:21:09.527684431 +0100
-+++ sqlgen-0.3.0/include/sqlgen/internal/random.hpp 2025-10-22 16:20:59.935751189 +0100
+--- sqlgen-0.3.0/include/sqlgen/internal/random.hpp	2025-10-22 16:21:09.527684431 +0100
++++ sqlgen-0.3.0/include/sqlgen/internal/random.hpp	2025-10-22 16:20:59.935751189 +0100
 @@ -0,0 +1,13 @@
 +   #include <random>
 +   #include <string>
@@ -14,8 +14,8 @@
 +  }
 +
 +  }  // namespace sqlgen::internal
---- sqlgen-0.3.0/src/sqlgen/postgres/Connection.cpp 2025-10-22 16:21:09.527684431 +0100
-+++ sqlgen-0.3.0/src/sqlgen/postgres/Connection.cpp 2025-10-22 16:20:59.935751189 +0100
+--- sqlgen-0.3.0/src/sqlgen/postgres/Connection.cpp	2025-10-22 16:21:09.527684431 +0100
++++ sqlgen-0.3.0/src/sqlgen/postgres/Connection.cpp	2025-10-22 16:20:59.935751189 +0100
 @@ -6,6 +6,7 @@
  #include <stdexcept>
 
@@ -91,5 +91,3 @@
  }
 
  rfl::Result<Ref<Connection>> Connection::make(
-
-Diff finished.  Thu Oct 23 00:28:31 2025

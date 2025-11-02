@@ -1,5 +1,5 @@
---- sqlgen-0.3.0/include/sqlgen/parsing/Parser_default.hpp 2025-10-22 16:21:09.527684431 +0100
-+++ sqlgen-0.3.0/include/sqlgen/parsing/Parser_default.hpp 2025-10-22 16:20:59.935751189 +0100
+--- sqlgen-0.3.0/include/sqlgen/parsing/Parser_default.hpp	2025-10-22 16:21:09.527684431 +0100
++++ sqlgen-0.3.0/include/sqlgen/parsing/Parser_default.hpp	2025-10-22 16:20:59.935751189 +0100
 @@ -32,16 +32,28 @@
           try {
             if constexpr (std::is_floating_point_v<Type>) {

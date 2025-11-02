@@ -41,15 +41,22 @@ using ores::risk::domain::currency;
 using risk::repository::currency_repository;
 using connection = sqlgen::Result<rfl::Ref<sqlgen::postgres::Connection>>;
 
-utility::repository::context application::make_context() {
-    // FIXME: should be command line parameters.
+utility::repository::context application::make_context(
+    const std::optional<config::database_options>& db_opts) {
     using utility::repository::context_factory;
+
+    if (!db_opts.has_value()) {
+        BOOST_THROW_EXCEPTION(
+            application_exception("Database configuration is required."));
+    }
+
+    const auto& db(db_opts.value());
     context_factory::configuration cfg {
-        .user = "ores",
-        .password = "ahV6aehuij6eingohsiajaiT0",
-        .host = "localhost",
-        .database = "oresdb",
-        .port = 5432,
+        .user = db.user,
+        .password = db.password,
+        .host = db.host,
+        .database = db.database,
+        .port = db.port,
         .pool_size = 4,
         .num_attempts = 10,
         .wait_time_in_seconds = 1
@@ -58,8 +65,9 @@ utility::repository::context application::make_context() {
     return context_factory::make_context(cfg);
 }
 
-application::application(std::ostream& output_stream)
-    : output_stream_(output_stream), context_(make_context()) {
+application::application(std::ostream& output_stream,
+    const std::optional<config::database_options>& db_opts)
+    : output_stream_(output_stream), context_(make_context(db_opts)) {
     BOOST_LOG_SEV(lg(), debug) << "Creating application.";
 }
 

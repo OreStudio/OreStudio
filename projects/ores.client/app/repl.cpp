@@ -24,14 +24,14 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <cli/cli.h>
 #include <cli/clifilesession.h>
-#include "ores.cli/app/repl.hpp"
+#include "ores.client/app/repl.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/streaming/std_vector.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
 
-namespace ores::cli::app {
+namespace ores::client::app {
 
 using namespace ores::utility::log;
 

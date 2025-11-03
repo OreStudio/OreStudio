@@ -25,6 +25,7 @@
 #include <boost/asio/io_context.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context_factory.hpp"
+#include "ores.utility/environment/environment.hpp"
 #include "ores.cli/app/application.hpp"
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
@@ -33,26 +34,29 @@
 
 namespace {
 
-std::string test_suite("ores.cli.tests");
+const std::string test_suite("ores.cli.tests");
+const std::string prefix("TEST_ORES_DB_"); // avoid clashing with real vars
 
 ores::cli::config::database_options make_test_database_options() {
+    using ores::utility::environment::environment;
     return ores::cli::config::database_options {
-        .user = "ores",
-        .password = "ahV6aehuij6eingohsiajaiT0",
-        .host = "localhost",
-        .database = "oresdb",
-        .port = 5432
+        .user = environment::get_value_or_default(prefix + "USER", "ores"),
+        .password = environment::get_value_or_default(prefix + "PASSWORD", ""),
+        .host = environment::get_value_or_default(prefix + "HOST", "localhost"),
+        .database = environment::get_value_or_default(prefix + "DATABASE", "oresdb"),
+        .port = environment::get_int_value_or_default(prefix + "PORT", 5432)
     };
 }
 
 ores::utility::repository::context make_test_context() {
     using ores::utility::repository::context_factory;
+    using ores::utility::environment::environment;
     context_factory::configuration cfg {
-        .user = "ores",
-        .password = "ahV6aehuij6eingohsiajaiT0",
-        .host = "localhost",
-        .database = "oresdb",
-        .port = 5432,
+        .user = environment::get_value_or_default(prefix + "USER", "ores"),
+        .password = environment::get_value_or_default(prefix + "PASSWORD", ""),
+        .host = environment::get_value_or_default(prefix + "HOST", "localhost"),
+        .database = environment::get_value_or_default(prefix + "DATABASE", "oresdb"),
+        .port = environment::get_int_value_or_default(prefix + "PORT", 5432),
         .pool_size = 4,
         .num_attempts = 10,
         .wait_time_in_seconds = 1
@@ -107,6 +111,7 @@ TEST_CASE("import_currencies_from_test_file", "[app_application_import_tests]") 
     config::options opts;
     opts.importing = import_cfg;
     opts.database = make_test_database_options();
+    BOOST_LOG_SEV(lg, debug) << "Options: " << opts;
 
     std::ostringstream os;
     app::application app(os, opts.database);
@@ -178,6 +183,7 @@ TEST_CASE("import_currencies_from_multiple_files", "[app_application_import_test
     config::options opts;
     opts.importing = import_cfg;
     opts.database = make_test_database_options();
+    BOOST_LOG_SEV(lg, debug) << "Options: " << opts;
 
     std::ostringstream os;
     app::application app(os, opts.database);
@@ -224,6 +230,7 @@ TEST_CASE("import_and_query_specific_currency", "[app_application_import_tests]"
     config::options opts;
     opts.importing = import_cfg;
     opts.database = make_test_database_options();
+    BOOST_LOG_SEV(lg, debug) << "Options: " << opts;
 
     std::ostringstream os;
     app::application app(os, opts.database);
@@ -286,6 +293,7 @@ TEST_CASE("import_currencies_with_empty_database", "[app_application_import_test
     config::options opts;
     opts.importing = import_cfg;
     opts.database = make_test_database_options();
+    BOOST_LOG_SEV(lg, debug) << "Options: " << opts;
 
     std::ostringstream os;
     app::application app(os, opts.database);
@@ -328,6 +336,7 @@ TEST_CASE("import_currencies_verify_all_fields", "[app_application_import_tests]
     config::options opts;
     opts.importing = import_cfg;
     opts.database = make_test_database_options();
+    BOOST_LOG_SEV(lg, debug) << "Options: " << opts;
 
     std::ostringstream os;
     app::application app(os, opts.database);
@@ -389,6 +398,7 @@ TEST_CASE("import_currencies_from_api_test_file", "[app_application_import_tests
     config::options opts;
     opts.importing = import_cfg;
     opts.database = make_test_database_options();
+    BOOST_LOG_SEV(lg, debug) << "Options: " << opts;
 
     std::ostringstream os;
     app::application app(os, opts.database);

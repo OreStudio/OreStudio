@@ -24,8 +24,7 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/repository/context_factory.hpp"
-#include "ores.utility/environment/environment.hpp"
+#include "ores.utility/test/database_fixture.hpp"
 #include "ores.cli/app/application.hpp"
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
@@ -35,56 +34,26 @@
 namespace {
 
 const std::string test_suite("ores.cli.tests");
-const std::string prefix("TEST_ORES_DB_"); // avoid clashing with real vars
 
-ores::cli::config::database_options make_test_database_options() {
-    using ores::utility::environment::environment;
-    return ores::cli::config::database_options {
-        .user = environment::get_value_or_default(prefix + "USER", "ores"),
-        .password = environment::get_value_or_default(prefix + "PASSWORD", ""),
-        .host = environment::get_value_or_default(prefix + "HOST", "localhost"),
-        .database = environment::get_value_or_default(prefix + "DATABASE", "oresdb"),
-        .port = environment::get_int_value_or_default(prefix + "PORT", 5432)
-    };
-}
+class test_helper : public ores::utility::test::database_fixture {
+public:
+    test_helper() = default;
 
-ores::utility::repository::context make_test_context() {
-    using ores::utility::repository::context_factory;
-    using ores::utility::environment::environment;
-    context_factory::configuration cfg {
-        .user = environment::get_value_or_default(prefix + "USER", "ores"),
-        .password = environment::get_value_or_default(prefix + "PASSWORD", ""),
-        .host = environment::get_value_or_default(prefix + "HOST", "localhost"),
-        .database = environment::get_value_or_default(prefix + "DATABASE", "oresdb"),
-        .port = environment::get_int_value_or_default(prefix + "PORT", 5432),
-        .pool_size = 4,
-        .num_attempts = 10,
-        .wait_time_in_seconds = 1
-    };
-    return context_factory::make_context(cfg);
-}
-
-void cleanup_currencies(ores::utility::repository::context& ctx) {
-    using namespace ores::utility::log;
-    auto lg = make_logger(test_suite);
-
-    BOOST_LOG_SEV(lg, debug) << "Cleaning up currency test data";
-
-    const auto truncate_sql = "TRUNCATE TABLE oresdb.currencies";
-    const auto execute_truncate = [&](auto&& session) {
-        return session->execute(truncate_sql);
-    };
-
-    const auto r = sqlgen::session(ctx.connection_pool())
-        .and_then(execute_truncate);
-
-    if (!r) {
-        BOOST_LOG_SEV(lg, warn)
-            << "Failed to cleanup currencies: " << r.error().what();
-    } else {
-        BOOST_LOG_SEV(lg, info) << "Successfully cleaned up currencies";
+    ores::cli::config::database_options get_cli_database_options() {
+        const auto opts = make_database_options();
+        return ores::cli::config::database_options {
+            .user = opts.user,
+            .password = opts.password,
+            .host = opts.host,
+            .database = opts.database,
+            .port = opts.port
+        };
     }
-}
+
+    void cleanup_currencies() {
+        truncate_table("oresdb.currencies");
+    }
+};
 
 }
 
@@ -95,8 +64,8 @@ TEST_CASE("import_currencies_from_test_file", "[app_application_import_tests]") 
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    auto ctx = make_test_context();
-    cleanup_currencies(ctx);
+    test_helper helper;
+    helper.cleanup_currencies();
 
     const std::filesystem::path test_data_file = "../test_data/currencies/currencies_01.xml";
 
@@ -110,7 +79,7 @@ TEST_CASE("import_currencies_from_test_file", "[app_application_import_tests]") 
 
     config::options opts;
     opts.importing = import_cfg;
-    opts.database = make_test_database_options();
+    opts.database = helper.get_cli_database_options();
     BOOST_LOG_SEV(lg, debug) << "Options: " << opts;
 
     std::ostringstream os;
@@ -123,7 +92,7 @@ TEST_CASE("import_currencies_from_test_file", "[app_application_import_tests]") 
         co_await app.run(opts);
 
         risk::repository::currency_repository repo;
-        auto read_currencies = repo.read_latest(ctx);
+        auto read_currencies = repo.read_latest(helper.get_context());
 
         BOOST_LOG_SEV(lg, debug) << "Read " << read_currencies.size()
                                  << " currencies from database";
@@ -166,8 +135,8 @@ TEST_CASE("import_currencies_from_multiple_files", "[app_application_import_test
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    auto ctx = make_test_context();
-    cleanup_currencies(ctx);
+    test_helper helper;
+    helper.cleanup_currencies();
 
     const std::vector<std::filesystem::path> test_files = {
         "../test_data/currencies/currencies_01.xml",
@@ -182,7 +151,7 @@ TEST_CASE("import_currencies_from_multiple_files", "[app_application_import_test
 
     config::options opts;
     opts.importing = import_cfg;
-    opts.database = make_test_database_options();
+    opts.database = helper.get_cli_database_options();
     BOOST_LOG_SEV(lg, debug) << "Options: " << opts;
 
     std::ostringstream os;
@@ -195,7 +164,7 @@ TEST_CASE("import_currencies_from_multiple_files", "[app_application_import_test
         co_await app.run(opts);
 
         risk::repository::currency_repository repo;
-        auto read_currencies = repo.read_latest(ctx);
+        auto read_currencies = repo.read_latest(helper.get_context());
 
         BOOST_LOG_SEV(lg, debug) << "Total currencies in database: "
                                  << read_currencies.size();
@@ -216,8 +185,8 @@ TEST_CASE("import_and_query_specific_currency", "[app_application_import_tests]"
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    auto ctx = make_test_context();
-    cleanup_currencies(ctx);
+    test_helper helper;
+    helper.cleanup_currencies();
 
     const std::filesystem::path test_data_file = "../test_data/currencies/currencies_01.xml";
 
@@ -229,7 +198,7 @@ TEST_CASE("import_and_query_specific_currency", "[app_application_import_tests]"
 
     config::options opts;
     opts.importing = import_cfg;
-    opts.database = make_test_database_options();
+    opts.database = helper.get_cli_database_options();
     BOOST_LOG_SEV(lg, debug) << "Options: " << opts;
 
     std::ostringstream os;
@@ -245,7 +214,7 @@ TEST_CASE("import_and_query_specific_currency", "[app_application_import_tests]"
         BOOST_LOG_SEV(lg, debug) << "Querying for currency: " << target_iso;
 
         risk::repository::currency_repository repo;
-        auto pgk_currencies = repo.read_latest(ctx, target_iso);
+        auto pgk_currencies = repo.read_latest(helper.get_context(), target_iso);
 
         BOOST_LOG_SEV(lg, debug) << "Found " << pgk_currencies.size()
                                  << " currencies with ISO code " << target_iso;
@@ -271,13 +240,13 @@ TEST_CASE("import_currencies_with_empty_database", "[app_application_import_test
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    auto ctx = make_test_context();
-    cleanup_currencies(ctx);
+    test_helper helper;
+    helper.cleanup_currencies();
 
     BOOST_LOG_SEV(lg, info) << "Verifying empty database";
 
     risk::repository::currency_repository repo;
-    auto initial_currencies = repo.read_latest(ctx);
+    auto initial_currencies = repo.read_latest(helper.get_context());
 
     BOOST_LOG_SEV(lg, debug) << "Initial currency count: "
                              << initial_currencies.size();
@@ -292,7 +261,7 @@ TEST_CASE("import_currencies_with_empty_database", "[app_application_import_test
 
     config::options opts;
     opts.importing = import_cfg;
-    opts.database = make_test_database_options();
+    opts.database = helper.get_cli_database_options();
     BOOST_LOG_SEV(lg, debug) << "Options: " << opts;
 
     std::ostringstream os;
@@ -304,7 +273,7 @@ TEST_CASE("import_currencies_with_empty_database", "[app_application_import_test
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         co_await app.run(opts);
 
-        auto after_import = repo.read_latest(ctx);
+        auto after_import = repo.read_latest(helper.get_context());
 
         BOOST_LOG_SEV(lg, debug) << "After import currency count: "
                                  << after_import.size();
@@ -322,8 +291,8 @@ TEST_CASE("import_currencies_verify_all_fields", "[app_application_import_tests]
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    auto ctx = make_test_context();
-    cleanup_currencies(ctx);
+    test_helper helper;
+    helper.cleanup_currencies();
 
     const std::filesystem::path test_data_file = "../test_data/currencies/currencies_01.xml";
 
@@ -335,7 +304,7 @@ TEST_CASE("import_currencies_verify_all_fields", "[app_application_import_tests]
 
     config::options opts;
     opts.importing = import_cfg;
-    opts.database = make_test_database_options();
+    opts.database = helper.get_cli_database_options();
     BOOST_LOG_SEV(lg, debug) << "Options: " << opts;
 
     std::ostringstream os;
@@ -349,7 +318,7 @@ TEST_CASE("import_currencies_verify_all_fields", "[app_application_import_tests]
         BOOST_LOG_SEV(lg, debug) << "Console output: " << os.str();
 
         risk::repository::currency_repository repo;
-        auto pgk_currencies = repo.read_latest(ctx, "PGK");
+        auto pgk_currencies = repo.read_latest(helper.get_context(), "PGK");
         REQUIRE(!pgk_currencies.empty());
 
         const auto& pgk = pgk_currencies[0];
@@ -379,8 +348,8 @@ TEST_CASE("import_currencies_from_api_test_file", "[app_application_import_tests
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    auto ctx = make_test_context();
-    cleanup_currencies(ctx);
+    test_helper helper;
+    helper.cleanup_currencies();
 
     const std::filesystem::path test_data_file = "../test_data/currencies/currencies_API.xml";
 
@@ -397,7 +366,7 @@ TEST_CASE("import_currencies_from_api_test_file", "[app_application_import_tests
 
     config::options opts;
     opts.importing = import_cfg;
-    opts.database = make_test_database_options();
+    opts.database = helper.get_cli_database_options();
     BOOST_LOG_SEV(lg, debug) << "Options: " << opts;
 
     std::ostringstream os;
@@ -411,7 +380,7 @@ TEST_CASE("import_currencies_from_api_test_file", "[app_application_import_tests
         BOOST_LOG_SEV(lg, debug) << "Console output: " << os.str();
 
         risk::repository::currency_repository repo;
-        auto read_currencies = repo.read_latest(ctx);
+        auto read_currencies = repo.read_latest(helper.get_context());
 
         BOOST_LOG_SEV(lg, debug) << "Verified " << read_currencies.size()
                                  << " currencies in database";

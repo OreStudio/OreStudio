@@ -64,8 +64,6 @@ private:
     void export_currencies(const config::export_options& cfg) const;
     void export_data(const std::optional<config::export_options>& ocfg) const;
 
-    boost::asio::awaitable<void> run_client() const;
-
 public:
     /**
      * @brief Executes the application.

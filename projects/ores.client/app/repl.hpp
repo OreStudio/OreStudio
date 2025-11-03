@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_APP_REPL_HPP
-#define ORES_CLI_APP_REPL_HPP
+#ifndef ORES_CLIENT_APP_REPL_HPP
+#define ORES_CLIENT_APP_REPL_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -36,7 +36,7 @@ class Cli;
 class Menu;
 }
 
-namespace ores::cli::app {
+namespace ores::client::app {
 
 /**
  * @brief Interactive REPL (Read-Eval-Print Loop) for the ORE Studio client.
@@ -48,7 +48,7 @@ class repl final {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.cli.app.repl");
+        static auto instance = make_logger("ores.client.app.repl");
         return instance;
     }
 

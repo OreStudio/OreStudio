@@ -24,31 +24,19 @@
 #pragma once
 #endif
 
-#include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/repository/context.hpp"
+#include "ores.utility/test/database_fixture.hpp"
 #include "ores.accounts/domain/account.hpp"
 
 namespace ores::accounts::tests {
 
-class repository_helper {
-private:
-    static auto& lg() {
-        using namespace ores::utility::log;
-        static auto instance = make_logger(
-            "ores.accounts.tests.repository_helper");
-        return instance;
-    }
-
+class repository_helper : public utility::test::database_fixture {
 public:
-    repository_helper();
-    static utility::repository::context make_context();
+    repository_helper() = default;
+
     accounts::domain::account
     create_test_account(const std::string& username, bool is_admin = false);
-    utility::repository::context& get_context() { return context_; }
-    void cleanup_database();
 
-private:
-    utility::repository::context context_;
+    void cleanup_database();
 };
 
 }

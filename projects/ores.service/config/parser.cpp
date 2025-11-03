@@ -18,11 +18,13 @@
  *
  */
 #include <format>
+#include <ranges>
 #include <ostream>
 #include <cstdint>
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
 #include "ores.service/config/parser_exception.hpp"
+#include "ores.service/config/database_options.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/log/severity_level.hpp"
 #include "ores.service/config/parser.hpp"
@@ -50,6 +52,12 @@ const std::string server_certificate_arg("certificate");
 const std::string server_private_key_arg("private-key");
 const std::string server_identifier_arg("identifier");
 
+const std::string database_user_arg("db-user");
+const std::string database_password_arg("db-password");
+const std::string database_host_arg("db-host");
+const std::string database_database_arg("db-database");
+const std::string database_port_arg("db-port");
+
 using boost::program_options::value;
 using boost::program_options::variables_map;
 using boost::program_options::parsed_options;
@@ -58,6 +66,7 @@ using boost::program_options::options_description;
 using ores::utility::log::logging_options;
 using ores::service::config::options;
 using ores::service::config::server_options;
+using ores::service::config::database_options;
 using ores::service::config::parser_exception;
 
 /**
@@ -95,8 +104,26 @@ options_description make_options_description() {
         ("identifier,i", value<std::string>(),
             "Server identifier for handshake. Defaults to 'ores-service-v1'.");
 
+    options_description dod("Database");
+    dod.add_options()
+        ("db-user",
+            value<std::string>(),
+            "Database user name.")
+        ("db-password",
+            value<std::string>(),
+            "Database password. Can also be provided via ORES_DB_PASSWORD environment variable.")
+        ("db-host",
+            value<std::string>()->default_value("localhost"),
+            "Database host. Defaults to localhost.")
+        ("db-database",
+            value<std::string>(),
+            "Database name.")
+        ("db-port",
+            value<int>()->default_value(5432),
+            "Database port. Defaults to 5432.");
+
     options_description r;
-    r.add(god).add(lod).add(sod);
+    r.add(god).add(lod).add(sod).add(dod);
     return r;
 }
 
@@ -202,6 +229,62 @@ server_options read_server_configuration(const variables_map& vm) {
 }
 
 /**
+ * @brief Reads the database configuration from the variables map.
+ */
+std::optional<database_options> read_database_options(const variables_map& vm) {
+    const bool has_user(vm.count(database_user_arg) != 0);
+    const bool has_password(vm.count(database_password_arg) != 0);
+    const bool has_database(vm.count(database_database_arg) != 0);
+
+    if (!has_user && !has_password && !has_database)
+        return {};
+
+    database_options r;
+
+    if (has_user)
+        r.user = vm[database_user_arg].as<std::string>();
+    else
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply database user."));
+
+    if (has_password)
+        r.password = vm[database_password_arg].as<std::string>();
+    else
+        BOOST_THROW_EXCEPTION(parser_exception(
+            "Must supply database password via --db-password or ORES_DB_PASSWORD environment variable."));
+
+    if (has_database)
+        r.database = vm[database_database_arg].as<std::string>();
+    else
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply database name."));
+
+    r.host = vm[database_host_arg].as<std::string>();
+    r.port = vm[database_port_arg].as<int>();
+
+    return r;
+}
+
+/**
+ * @brief Maps environment variable names to program option names
+ */
+std::string name_mapper(const std::string& env_var) {
+    constexpr std::string_view prefix = "ORES_";
+    if (!env_var.starts_with(prefix)) {
+        return {};
+    }
+
+    auto env_body = env_var | std::views::drop(prefix.size());
+    std::string option_name;
+
+    std::ranges::transform(env_body, std::back_inserter(option_name),
+        [](unsigned char c) -> char {
+            if (c == '_') return '-';
+            return std::tolower(c);
+        });
+
+    return option_name;
+}
+
+/**
  * @brief Parses the arguments supplied in the command line and converts them
  * into a configuration object.
  */
@@ -213,6 +296,8 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     boost::program_options::store(
         boost::program_options::command_line_parser(arguments).
         options(od).run(), vm);
+    boost::program_options::store(
+        boost::program_options::parse_environment(od, name_mapper), vm);
 
     const bool has_version(vm.count(version_arg) != 0);
     const bool has_help(vm.count(help_arg) != 0);
@@ -232,6 +317,7 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     options r;
     r.logging = read_logging_configuration(vm);
     r.server = read_server_configuration(vm);
+    r.database = read_database_options(vm);
     return r;
 }
 

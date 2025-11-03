@@ -17,40 +17,40 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SERVICE_CONFIG_OPTIONS_HPP
-#define ORES_SERVICE_CONFIG_OPTIONS_HPP
+#ifndef ORES_CLIENT_APP_APPLICATION_HPP
+#define ORES_CLIENT_APP_APPLICATION_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <iosfwd>
-#include <optional>
-#include "ores.utility/log/logging_options.hpp"
-#include "ores.service/config/server_options.hpp"
-#include "ores.service/config/database_options.hpp"
+#include "ores.utility/log/make_logger.hpp"
 
-namespace ores::service::config {
+namespace ores::client::app {
 
 /**
- * @brief All of the configuration options required by the service.
+ * @brief Entry point for the ores client application.
  */
-struct options final {
-    /**
-     * @brief Configuration options related to logging, if any.
-     */
-    std::optional<ores::utility::log::logging_options> logging;
-    /**
-     * @brief Configuration related to server operations.
-     */
-    server_options server;
-    /**
-     * @brief Configuration related to database operations.
-     */
-    std::optional<database_options> database;
-};
+class application final {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger("ores.client.application");
+        return instance;
+    }
 
-std::ostream& operator<<(std::ostream& s, const options& v);
+public:
+    application() = default;
+    application(const application&) = delete;
+    application& operator=(const application&) = delete;
+
+    /**
+     * @brief Executes the application.
+     *
+     * Starts the REPL and blocks until the user exits.
+     */
+    void run() const;
+};
 
 }
 

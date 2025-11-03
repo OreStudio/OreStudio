@@ -17,46 +17,36 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_HPP
-#define ORES_CLI_CONFIG_HPP
+#ifndef ORES_CLIENT_CONFIG_PARSER_HPP
+#define ORES_CLIENT_CONFIG_PARSER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
 #include <iosfwd>
+#include <vector>
+#include <string>
 #include <optional>
-#include "ores.utility/log/logging_options.hpp"
-#include "ores.cli/config/import_options.hpp"
-#include "ores.cli/config/export_options.hpp"
-#include "ores.cli/config/database_options.hpp"
+#include "ores.client/config/options.hpp"
 
-namespace ores::cli::config {
+namespace ores::client::config {
 
 /**
- * @brief All of the configuration options required by the command line
- * application.
+ * @brief Command-line parser implementation using boost program options.
+ *
+ * Note on logging: we are NOT logging any of the exceptions to the log in this
+ * class. This is by design. The logger is only initialised after the options
+ * have been parsed; were we to log prior to this, we would dump all the
+ * messages into the console. The output is very confusing for users that are
+ * accustomed to normal command line applications.
  */
-struct options final {
-    /**
-     * @brief Configuration options related to logging, if any.
-     */
-    std::optional<ores::utility::log::logging_options> logging;
-    /**
-     * @brief Configuration related to importing of data, if any.
-     */
-    std::optional<import_options> importing;
-    /**
-     * @brief Configuration related to exporting of data, if any.
-     */
-    std::optional<export_options> exporting;
-    /**
-     * @brief Database connection configuration, if any.
-     */
-    std::optional<database_options> database;
+class parser final {
+public:
+    std::optional<options>
+    parse(const std::vector<std::string>& arguments, std::ostream& info,
+        std::ostream& error) const;
 };
-
-std::ostream& operator<<(std::ostream& s, const options& v);
 
 }
 

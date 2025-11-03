@@ -22,38 +22,10 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "faker-cxx/faker.h"
-#include "ores.accounts/repository/account_repository.hpp"
-#include "ores.utility/repository/context_factory.hpp"
 
 namespace ores::accounts::tests {
 
-using namespace ores::utility::log;
 using accounts::domain::account;
-using utility::repository::context;
-using utility::repository::context_factory;
-
-repository_helper::repository_helper() : context_(make_context()) {}
-
-context repository_helper::make_context() {
-    context_factory::configuration db_cfg{
-        .user = "ores",
-        .password = "ahV6aehuij6eingohsiajaiT0",
-        .host = "localhost",
-        .database = "oresdb",
-        .port = 5432,
-        .pool_size = 4,
-        .num_attempts = 10,
-        .wait_time_in_seconds = 1
-    };
-
-    context ctx = context_factory::make_context(db_cfg);
-    BOOST_LOG_SEV(lg(), info) << "Database context created successfully";
-
-    accounts::repository::account_repository repo;
-    const auto sql = repo.sql();
-    BOOST_LOG_SEV(lg(), debug) << "Table SQL: " << sql;
-    return ctx;
-}
 
 accounts::domain::account repository_helper::
 create_test_account(const std::string& username, bool is_admin) {
@@ -71,22 +43,7 @@ create_test_account(const std::string& username, bool is_admin) {
 }
 
 void repository_helper::cleanup_database() {
-    BOOST_LOG_SEV(lg(), info) << "Cleaning up test database";
-
-    const auto truncate_sql = "TRUNCATE TABLE oresdb.accounts";
-    const auto execute_truncate = [&](auto&& session) {
-        return session->execute(truncate_sql);
-    };
-
-    const auto r = sqlgen::session(context_.connection_pool())
-        .and_then(execute_truncate);
-
-    if (!r) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Failed to cleanup database: " << r.error().what();
-    } else {
-        BOOST_LOG_SEV(lg(), info) << "Successfully cleaned up test database";
-    }
+    truncate_table("oresdb.accounts");
 }
 
 }

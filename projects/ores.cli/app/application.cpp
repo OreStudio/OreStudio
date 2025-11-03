@@ -30,7 +30,6 @@
 #include "ores.risk/repository/currency_repository.hpp"
 #include "ores.cli/app/application_exception.hpp"
 #include "ores.cli/app/application.hpp"
-#include "ores.cli/app/repl.hpp"
 
 namespace ores::cli::app {
 
@@ -155,32 +154,14 @@ export_data(const std::optional<config::export_options>& ocfg) const {
     }
 }
 
-
-boost::asio::awaitable<void>
-application::run_client() const {
-    BOOST_LOG_SEV(lg(), info) << "Starting client REPL";
-
-    try {
-        repl client_repl;
-        client_repl.run();
-        BOOST_LOG_SEV(lg(), info) << "Client REPL session ended";
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Client REPL error: " << e.what();
-    }
-
-    co_return;
-}
-
 boost::asio::awaitable<void> application::run(const config::options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Started application.";
 
     import_data(cfg.importing);
     export_data(cfg.exporting);
 
-    if (cfg.client)
-        co_await run_client();
-
     BOOST_LOG_SEV(lg(), info) << "Finished application.";
+    co_return;
 }
 
 }

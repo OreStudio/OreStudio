@@ -19,39 +19,11 @@
  */
 #include "ores.risk.tests/repository_helper.hpp"
 
-#include "faker-cxx/faker.h"
-#include "ores.risk/repository/currency_repository.hpp"
-#include "ores.utility/repository/context_factory.hpp"
+#include "faker-cxx/faker.h" // IWYU pragma: keep.
 
 namespace ores::risk::tests {
 
-using namespace ores::utility::log;
 using risk::domain::currency;
-using utility::repository::context;
-using utility::repository::context_factory;
-
-repository_helper::repository_helper() : context_(make_context()) {}
-
-context repository_helper::make_context() {
-    context_factory::configuration db_cfg{
-        .user = "ores",
-        .password = "ahV6aehuij6eingohsiajaiT0",
-        .host = "localhost",
-        .database = "oresdb",
-        .port = 5432,
-        .pool_size = 4,
-        .num_attempts = 10,
-        .wait_time_in_seconds = 1
-    };
-
-    context ctx = context_factory::make_context(db_cfg);
-    BOOST_LOG_SEV(lg(), info) << "Database context created successfully";
-
-    risk::repository::currency_repository repo;
-    const auto sql = repo.sql();
-    BOOST_LOG_SEV(lg(), debug) << "Table SQL: " << sql;
-    return ctx;
-}
 
 risk::domain::currency repository_helper::
 create_test_currency(const std::string& iso_code) {
@@ -73,22 +45,7 @@ create_test_currency(const std::string& iso_code) {
 }
 
 void repository_helper::cleanup_database() {
-    BOOST_LOG_SEV(lg(), info) << "Cleaning up test database";
-
-    const auto truncate_sql = "TRUNCATE TABLE oresdb.currencies";
-    const auto execute_truncate = [&](auto&& session) {
-        return session->execute(truncate_sql);
-    };
-
-    const auto r = sqlgen::session(context_.connection_pool())
-        .and_then(execute_truncate);
-
-    if (!r) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Failed to cleanup database: " << r.error().what();
-    } else {
-        BOOST_LOG_SEV(lg(), info) << "Successfully cleaned up test database";
-    }
+    truncate_table("oresdb.currencies");
 }
 
 }

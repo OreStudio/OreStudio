@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_HPP
-#define ORES_CLI_CONFIG_HPP
+#ifndef ORES_CLIENT_CONFIG_OPTIONS_HPP
+#define ORES_CLIENT_CONFIG_OPTIONS_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -27,33 +27,17 @@
 #include <iosfwd>
 #include <optional>
 #include "ores.utility/log/logging_options.hpp"
-#include "ores.cli/config/import_options.hpp"
-#include "ores.cli/config/export_options.hpp"
-#include "ores.cli/config/database_options.hpp"
 
-namespace ores::cli::config {
+namespace ores::client::config {
 
 /**
- * @brief All of the configuration options required by the command line
- * application.
+ * @brief All of the configuration options required by the client.
  */
 struct options final {
     /**
      * @brief Configuration options related to logging, if any.
      */
     std::optional<ores::utility::log::logging_options> logging;
-    /**
-     * @brief Configuration related to importing of data, if any.
-     */
-    std::optional<import_options> importing;
-    /**
-     * @brief Configuration related to exporting of data, if any.
-     */
-    std::optional<export_options> exporting;
-    /**
-     * @brief Database connection configuration, if any.
-     */
-    std::optional<database_options> database;
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

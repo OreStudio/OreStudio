@@ -17,28 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_RISK_TESTS_REPOSITORY_HELPER_HPP
-#define ORES_RISK_TESTS_REPOSITORY_HELPER_HPP
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.client/config/options.hpp"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
+namespace ores::client::config {
 
-#include "ores.utility/test/database_fixture.hpp"
-#include "ores.risk/domain/currency.hpp"
-
-namespace ores::risk::tests {
-
-class repository_helper : public utility::test::database_fixture {
-public:
-    repository_helper() = default;
-
-    risk::domain::currency
-    create_test_currency(const std::string& iso_code);
-
-    void cleanup_database();
-};
-
+std::ostream& operator<<(std::ostream& s, const options& v) {
+    rfl::json::write(v, s);
+    return s;
 }
 
-#endif
+}

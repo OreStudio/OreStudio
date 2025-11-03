@@ -52,9 +52,6 @@ const std::string export_key_arg("key");
 const std::string export_all_versions_arg("all-versions");
 const std::string export_format_arg("format");
 
-const std::string client_command_name("client");
-const std::string client_command_desc("Launch interactive REPL to connect to ores.service.");
-
 const std::string help_arg("help");
 const std::string version_arg("version");
 const std::string command_arg("command");
@@ -214,8 +211,7 @@ options_description make_database_options_description() {
 void validate_command_name(const std::string& command_name) {
     const bool is_valid_command_name(
         command_name == import_command_name ||
-        command_name == export_command_name ||
-        command_name == client_command_name);
+        command_name == export_command_name);
 
     if (!is_valid_command_name)
     {
@@ -257,7 +253,6 @@ void print_help(const options_description& od, std::ostream& info) {
 
     lambda(import_command_name, import_command_desc);
     lambda(export_command_name, export_command_desc);
-    lambda(client_command_name, client_command_desc);
 
     info << std::endl << "For command specific options, type <command> --help."
          << std::endl;
@@ -543,17 +538,6 @@ handle_command(const std::string& command_name, const bool has_help,
         store(command_line_parser(o).options(d).run(), vm);
         store(parse_environment(d, name_mapper), vm);
         r.exporting = read_export_options(vm);
-    } else if (command_name == client_command_name) {
-        auto d(make_client_options_description());
-        d.add(db_desc).add(logging_desc);
-        if (has_help) {
-            print_help_command(client_command_name, d, info);
-            return {};
-        }
-
-        store(command_line_parser(o).options(d).run(), vm);
-        store(parse_environment(d, name_mapper), vm);
-        r.client = true;
     }
 
     r.database = read_database_options(vm);

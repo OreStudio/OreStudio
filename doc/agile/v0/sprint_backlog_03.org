@@ -18,47 +18,45 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-02 Sun 22:45], for Sunday, November 02, 2025.
-|      | <75>                                           |        |      |      |       |
-| Tags | Headline                                       | Time   |      |      |     % |
-|------+------------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                   | *6:21* |      |      | 100.0 |
-|------+------------------------------------------------+--------+------+------+-------|
-|      | Stories                                        | 6:21   |      |      | 100.0 |
-|      | Active                                         |        | 6:21 |      | 100.0 |
-| code | Improve code coverage                          |        |      | 4:15 |  66.9 |
-| code | Patches for sqlgen are not applying on windows |        |      | 0:20 |   5.2 |
-| code | Separate test database usage from application  |        |      | 1:46 |  27.8 |
+#+CAPTION: Clock summary at [2025-11-03 Mon 23:27], for Monday, November 03, 2025.
+|      | <75>                                          |        |      |      |       |
+| Tags | Headline                                      | Time   |      |      |     % |
+|------+-----------------------------------------------+--------+------+------+-------|
+|      | *Total time*                                  | *1:34* |      |      | 100.0 |
+|------+-----------------------------------------------+--------+------+------+-------|
+|      | Stories                                       | 1:34   |      |      | 100.0 |
+|      | Active                                        |        | 1:34 |      | 100.0 |
+| code | Separate test database usage from application |        |      | 1:34 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-02 Sun 22:45]
+#+CAPTION: Clock summary at [2025-11-03 Mon 23:27]
 |       | <75>                                                   |         |       |       |       |
 | Tags  | Headline                                               | Time    |       |       |     % |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                           | *58:48* |       |       | 100.0 |
+|       | *Total time*                                           | *60:22* |       |       | 100.0 |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                | 58:48   |       |       | 100.0 |
-|       | Active                                                 |         | 58:48 |       | 100.0 |
-| agile | Sprint and product backlog refinement                  |         |       |  1:24 |   2.4 |
-| code  | Add locking up logic                                   |         |       |  1:28 |   2.5 |
-| code  | Build using dynamic libraries                          |         |       |  7:24 |  12.6 |
-| code  | Enable qt gui                                          |         |       |  4:13 |   7.2 |
-| code  | Add locking up logic                                   |         |       |  1:28 |   2.5 |
-| code  | Build using dynamic libraries                          |         |       |  7:24 |  12.6 |
-| code  | Implement logging according to correct boost.log usage |         |       |  8:02 |  13.7 |
+|       | Stories                                                | 60:22   |       |       | 100.0 |
+|       | Active                                                 |         | 60:22 |       | 100.0 |
+| agile | Sprint and product backlog refinement                  |         |       |  1:24 |   2.3 |
+| code  | Add locking up logic                                   |         |       |  1:28 |   2.4 |
+| code  | Build using dynamic libraries                          |         |       |  7:24 |  12.3 |
+| code  | Enable qt gui                                          |         |       |  4:13 |   7.0 |
+| code  | Add locking up logic                                   |         |       |  1:28 |   2.4 |
+| code  | Build using dynamic libraries                          |         |       |  7:24 |  12.3 |
+| code  | Implement logging according to correct boost.log usage |         |       |  8:02 |  13.3 |
 | code  | Fix broken Linux and OSX tests                         |         |       |  0:10 |   0.3 |
-| code  | Fix broken windows builds                              |         |       |  2:35 |   4.4 |
+| code  | Fix broken windows builds                              |         |       |  2:35 |   4.3 |
 | code  | Investigate leaks from valgrind                        |         |       |  0:51 |   1.4 |
-| code  | Consider adding a postgres database to CI              |         |       | 14:13 |  24.2 |
+| code  | Consider adding a postgres database to CI              |         |       | 14:13 |  23.6 |
 | code  | Fix misspell that causes build to break                |         |       |  0:12 |   0.3 |
-| code  | Improve code coverage                                  |         |       |  4:15 |   7.2 |
-| code  | Add support for feature flags                          |         |       |  1:25 |   2.4 |
+| code  | Improve code coverage                                  |         |       |  4:15 |   7.0 |
+| code  | Add support for feature flags                          |         |       |  1:25 |   2.3 |
 | code  | Implement authentication bootstrap workflow            |         |       |  0:25 |   0.7 |
 | code  | Patches for sqlgen are not applying on windows         |         |       |  0:20 |   0.6 |
-| code  | Separate test database usage from application          |         |       |  1:46 |   3.0 |
-| code  | Add workspace as a container                           |         |       |  1:13 |   2.1 |
+| code  | Separate test database usage from application          |         |       |  3:20 |   5.5 |
+| code  | Add workspace as a container                           |         |       |  1:13 |   2.0 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -711,6 +709,7 @@ Call Stack (most recent call first):
 
 *** STARTED Separate test database usage from application              :code:
     :LOGBOOK:
+    CLOCK: [2025-11-03 Mon 21:52]--[2025-11-03 Mon 23:26] =>  1:34
     CLOCK: [2025-11-02 Sun 21:12]--[2025-11-02 Sun 22:44] =>  1:32
     CLOCK: [2025-11-02 Sun 20:36]--[2025-11-02 Sun 20:50] =>  0:14
     :END:

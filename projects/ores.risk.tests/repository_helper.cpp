@@ -19,7 +19,7 @@
  */
 #include "ores.risk.tests/repository_helper.hpp"
 
-#include "faker-cxx/faker.h"
+#include "faker-cxx/faker.h" // IWYU pragma: keep.
 
 namespace ores::risk::tests {
 

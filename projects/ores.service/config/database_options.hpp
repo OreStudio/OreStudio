@@ -17,40 +17,46 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SERVICE_CONFIG_OPTIONS_HPP
-#define ORES_SERVICE_CONFIG_OPTIONS_HPP
+#ifndef ORES_SERVICE_CONFIG_DATABASE_OPTIONS_HPP
+#define ORES_SERVICE_CONFIG_DATABASE_OPTIONS_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
 #include <iosfwd>
-#include <optional>
-#include "ores.utility/log/logging_options.hpp"
-#include "ores.service/config/server_options.hpp"
-#include "ores.service/config/database_options.hpp"
+#include <string>
+#include <rfl.hpp>
 
 namespace ores::service::config {
 
 /**
- * @brief All of the configuration options required by the service.
+ * @brief Configuration for database connection.
  */
-struct options final {
+struct database_options final {
     /**
-     * @brief Configuration options related to logging, if any.
+     * @brief Database user name.
      */
-    std::optional<ores::utility::log::logging_options> logging;
+    std::string user;
     /**
-     * @brief Configuration related to server operations.
+     * @brief Password for the user.
      */
-    server_options server;
+    rfl::Skip<std::string> password;
     /**
-     * @brief Configuration related to database operations.
+     * @brief Host to connect to.
      */
-    std::optional<database_options> database;
+    std::string host = "localhost";
+    /**
+     * @brief Database to connect to.
+     */
+    std::string database;
+    /**
+     * @brief Port the database is listening on.
+     */
+    int port = 5432;
 };
 
-std::ostream& operator<<(std::ostream& s, const options& v);
+std::ostream& operator<<(std::ostream& s, const database_options& v);
 
 }
 

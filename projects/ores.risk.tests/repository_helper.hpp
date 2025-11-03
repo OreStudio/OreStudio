@@ -24,31 +24,19 @@
 #pragma once
 #endif
 
-#include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/repository/context.hpp"
+#include "ores.utility/test/database_fixture.hpp"
 #include "ores.risk/domain/currency.hpp"
 
 namespace ores::risk::tests {
 
-class repository_helper {
-private:
-    static auto& lg() {
-        using namespace ores::utility::log;
-        static auto instance = make_logger(
-            "ores.risk.tests.repository_helper");
-        return instance;
-    }
-
+class repository_helper : public utility::test::database_fixture {
 public:
-    repository_helper();
-    static utility::repository::context make_context();
+    repository_helper() = default;
+
     risk::domain::currency
     create_test_currency(const std::string& iso_code);
-    utility::repository::context& get_context() { return context_; }
-    void cleanup_database();
 
-private:
-    utility::repository::context context_;
+    void cleanup_database();
 };
 
 }

@@ -29,9 +29,9 @@ using utility::repository::context_factory;
 
 database_fixture::database_fixture() : context_(make_context()) {}
 
-database_fixture::database_options database_fixture::make_database_options() {
+database::database_options database_fixture::make_database_options() {
     // TEST prefix to avoid clashing with real vars.
-    return database_options {
+    return database::database_options {
         .user = environment::environment::get_value_or_default(
             "TEST_ORES_DB_USER", "ores"),
         .password = environment::environment::get_value_or_default(

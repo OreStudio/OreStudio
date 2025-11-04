@@ -27,6 +27,7 @@
 #include <string>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
+#include "ores.utility/database/database_options.hpp"
 
 namespace ores::utility::test {
 
@@ -49,23 +50,12 @@ private:
     }
 
 public:
-    /**
-     * @brief Database configuration options.
-     */
-    struct database_options {
-        std::string user;
-        std::string password;
-        std::string host;
-        std::string database;
-        int port;
-    };
-
     database_fixture();
 
     /**
      * @brief Creates database options from environment variables.
      */
-    static database_options make_database_options();
+    static database::database_options make_database_options();
 
     /**
      * @brief Creates a database context from environment variables.

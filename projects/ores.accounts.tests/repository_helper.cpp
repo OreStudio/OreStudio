@@ -21,7 +21,7 @@
 
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "faker-cxx/faker.h"
+#include "faker-cxx/faker.h" // IWYU pragma: keep.
 
 namespace ores::accounts::tests {
 

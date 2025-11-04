@@ -440,8 +440,10 @@ std::optional<database_options> read_database_options(const variables_map& vm) {
     const bool has_user(vm.count(database_user_arg) != 0);
     const bool has_password(vm.count(database_password_arg) != 0);
     const bool has_database(vm.count(database_database_arg) != 0);
+    const bool has_host(vm.count(database_host_arg) != 0);
+    const bool has_port(vm.count(database_port_arg) != 0);
 
-    if (!has_user && !has_password && !has_database)
+    if (!has_user && !has_password && !has_database && !has_host && !has_port)
         return {};
 
     database_options r;
@@ -449,7 +451,7 @@ std::optional<database_options> read_database_options(const variables_map& vm) {
     if (has_user)
         r.user = vm[database_user_arg].as<std::string>();
     else
-        BOOST_THROW_EXCEPTION(parser_exception("Must supply database user."));
+        r.user = "ores";
 
     if (has_password)
         r.password = vm[database_password_arg].as<std::string>();
@@ -460,10 +462,17 @@ std::optional<database_options> read_database_options(const variables_map& vm) {
     if (has_database)
         r.database = vm[database_database_arg].as<std::string>();
     else
-        BOOST_THROW_EXCEPTION(parser_exception("Must supply database name."));
+        r.database = "oresdb";
 
-    r.host = vm[database_host_arg].as<std::string>();
-    r.port = vm[database_port_arg].as<int>();
+    if (has_host)
+        r.host = vm[database_host_arg].as<std::string>();
+    else
+        r.host = "localhost";
+
+    if (has_port)
+        r.port = vm[database_port_arg].as<int>();
+    else
+        r.port = 5432;
 
     return r;
 }

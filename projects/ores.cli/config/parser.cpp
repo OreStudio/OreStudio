@@ -24,7 +24,7 @@
 #include <magic_enum/magic_enum.hpp>
 #include "ores.cli/config/format.hpp"
 #include "ores.utility/version/version.hpp"
-#include "ores.utility/log/severity_level.hpp"
+#include "ores.utility/log/logging_configuration.hpp"
 #include "ores.utility/database/database_configuration.hpp"
 #include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/parser_exception.hpp"
@@ -55,16 +55,6 @@ const std::string help_arg("help");
 const std::string version_arg("version");
 const std::string command_arg("command");
 
-const std::string logging_log_enabled_arg("log-enabled");
-const std::string logging_log_to_console_arg("log-to-console");
-const std::string logging_log_level_arg("log-level");
-const std::string logging_log_dir_arg("log-directory");
-const std::string logging_log_level_trace("trace");
-const std::string logging_log_level_debug("debug");
-const std::string logging_log_level_info("info");
-const std::string logging_log_level_warn("warn");
-const std::string logging_log_level_error("error");
-
 using boost::program_options::value;
 using boost::program_options::variables_map;
 using boost::program_options::parsed_options;
@@ -84,6 +74,8 @@ using ores::cli::config::parser_exception;
  * end users.
  */
 options_description make_top_level_visible_options_description() {
+    using ores::utility::log::logging_configuration;
+
     options_description god("General");
     god.add_options()
         ("help,h", "Display usage and exit.")
@@ -92,16 +84,7 @@ options_description make_top_level_visible_options_description() {
     options_description r;
     r.add(god);
 
-    options_description lod("Logging");
-    lod.add_options()
-        ("log-enabled,e", "Generate a log file.")
-        ("log-level,l", value<std::string>(),
-            "What level to use for logging. Valid values: trace, debug, info, "
-            "warn, error. Defaults to info.")
-        ("log-to-console",
-            "Output logging to the console, as well as to file.")
-        ("log-directory", value<std::string>(),
-            "Where to place the log files.");
+    const auto lod(logging_configuration::make_options_description());
     r.add(lod);
     return r;
 }
@@ -289,45 +272,6 @@ handle_no_command(const bool has_version, const bool has_help,
     return {};
 }
 
-/**
- * @brief Reads the logging configuration from the variables map.
-*/
-std::optional<logging_options>
-read_logging_configuration(const variables_map& vm) {
-    const auto enabled(vm.count(logging_log_enabled_arg) != 0);
-    if (!enabled)
-        return {};
-
-    logging_options r;
-    r.filename = "ores.cli.log";
-    r.output_to_console = vm.count(logging_log_to_console_arg) != 0;
-
-    const bool log_dir_set(vm.count(logging_log_dir_arg) != 0);
-    if (!log_dir_set) {
-        r.output_directory = "log";
-    }
-    else {
-        const auto log_dir(vm[logging_log_dir_arg].as<std::string>());
-        r.output_directory = log_dir;
-    }
-
-    const bool log_level_set(vm.count(logging_log_level_arg) != 0);
-    if (!log_level_set) {
-        r.severity = logging_log_level_info;
-        return r;
-    }
-
-    const auto s(vm[logging_log_level_arg].as<std::string>());
-    try {
-        using ores::utility::log::to_severity_level;
-        to_severity_level(s);
-        r.severity = s;
-    } catch(const std::exception&) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-                std::format("Log level is invalid: {}!", s)));
-    }
-    return r;
-}
 
 /**
  * @brief Reads entity from the variables map.
@@ -461,7 +405,8 @@ handle_command(const std::string& command_name, const bool has_help,
     /*
      * Now process the common options.
      */
-    r.logging = read_logging_configuration(vm);
+    using ores::utility::log::logging_configuration;
+    r.logging = logging_configuration::read_options(vm, "ores.cli.log", "log");
     return r;
 }
 

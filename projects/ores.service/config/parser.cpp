@@ -17,14 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <format>
 #include <ostream>
 #include <cstdint>
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
 #include "ores.service/config/parser_exception.hpp"
 #include "ores.utility/version/version.hpp"
-#include "ores.utility/log/severity_level.hpp"
+#include "ores.utility/log/logging_configuration.hpp"
 #include "ores.utility/database/database_configuration.hpp"
 #include "ores.service/config/parser.hpp"
 
@@ -38,13 +37,6 @@ const std::string usage_error_msg("Usage error: ");
 const std::string help_arg("help");
 const std::string version_arg("version");
 
-const std::string logging_log_enabled_arg("log-enabled");
-const std::string logging_log_to_console_arg("log-to-console");
-const std::string logging_log_level_arg("log-level");
-const std::string logging_log_dir_arg("log-directory");
-const std::string logging_log_filename_arg("log-filename");
-const std::string logging_log_level_info("info");
-
 const std::string server_port_arg("port");
 const std::string server_max_connections_arg("max-connections");
 const std::string server_certificate_arg("certificate");
@@ -56,7 +48,6 @@ using boost::program_options::variables_map;
 using boost::program_options::parsed_options;
 using boost::program_options::options_description;
 
-using ores::utility::log::logging_options;
 using ores::service::config::options;
 using ores::service::config::server_options;
 using ores::service::config::parser_exception;
@@ -66,24 +57,14 @@ using ores::service::config::parser_exception;
  */
 options_description make_options_description() {
     using ores::utility::database::database_configuration;
+    using ores::utility::log::logging_configuration;
 
     options_description god("General");
     god.add_options()
         ("help,h", "Display usage and exit.")
         ("version,v", "Output version information and exit.");
 
-    options_description lod("Logging");
-    lod.add_options()
-        ("log-enabled,e", "Generate a log file.")
-        ("log-level,l", value<std::string>(),
-            "What level to use for logging. Valid values: trace, debug, info, "
-            "warn, error. Defaults to info.")
-        ("log-to-console",
-            "Output logging to the console, as well as to file.")
-        ("log-directory", value<std::string>(),
-            "Where to place the log files. Defaults to 'log'.")
-        ("log-filename", value<std::string>(),
-            "Name of the log file. Defaults to 'ores.service.log'.");
+    const auto lod(logging_configuration::make_options_description(true));
 
     options_description sod("Server");
     sod.add_options()
@@ -135,51 +116,6 @@ void version(std::ostream& info) {
         info << "IMPORTANT: build details are NOT for security purposes."
              << std::endl;
     }
-}
-
-/**
- * @brief Reads the logging configuration from the variables map.
- */
-std::optional<logging_options>
-read_logging_configuration(const variables_map& vm) {
-    const auto enabled(vm.count(logging_log_enabled_arg) != 0);
-    if (!enabled)
-        return {};
-
-    logging_options r;
-
-    // Set log filename
-    if (vm.count(logging_log_filename_arg) != 0) {
-        r.filename = vm[logging_log_filename_arg].as<std::string>();
-    } else {
-        r.filename = "ores.service.log";
-    }
-
-    r.output_to_console = vm.count(logging_log_to_console_arg) != 0;
-
-    // Set log directory
-    if (vm.count(logging_log_dir_arg) != 0) {
-        r.output_directory = vm[logging_log_dir_arg].as<std::string>();
-    } else {
-        r.output_directory = "log";
-    }
-
-    // Set log level
-    if (vm.count(logging_log_level_arg) != 0) {
-        const auto s(vm[logging_log_level_arg].as<std::string>());
-        try {
-            using ores::utility::log::to_severity_level;
-            to_severity_level(s);
-            r.severity = s;
-        } catch(const std::exception&) {
-            BOOST_THROW_EXCEPTION(parser_exception(
-                    std::format("Log level is invalid: {}!", s)));
-        }
-    } else {
-        r.severity = logging_log_level_info;
-    }
-
-    return r;
 }
 
 /**
@@ -240,8 +176,10 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     }
 
     // Parse configuration
+    using ores::utility::log::logging_configuration;
+
     options r;
-    r.logging = read_logging_configuration(vm);
+    r.logging = logging_configuration::read_options(vm, "ores.service.log", "log");
     r.server = read_server_configuration(vm);
     r.database = database_configuration::read_options(vm);
     return r;

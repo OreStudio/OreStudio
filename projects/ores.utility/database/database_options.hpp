@@ -17,16 +17,47 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ostream>
+#ifndef ORES_UTILITY_DATABASE_DATABASE_OPTIONS_HPP
+#define ORES_UTILITY_DATABASE_DATABASE_OPTIONS_HPP
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
+
+#include <iosfwd>
+#include <string>
 #include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.cli/config/database_options.hpp"
 
-namespace ores::cli::config {
+namespace ores::utility::database {
 
-std::ostream& operator<<(std::ostream& s, const database_options& v) {
-    rfl::json::write(v, s);
-    return(s);
+/**
+ * @brief Configuration for database connection.
+ */
+struct database_options final {
+    /**
+     * @brief Database user name.
+     */
+    std::string user;
+    /**
+     * @brief Password for the user.
+     */
+    rfl::Skip<std::string> password;
+    /**
+     * @brief Host to connect to.
+     */
+    std::string host = "localhost";
+    /**
+     * @brief Database to connect to.
+     */
+    std::string database;
+    /**
+     * @brief Port the database is listening on.
+     */
+    int port = 5432;
+};
+
+std::ostream& operator<<(std::ostream& s, const database_options& v);
+
 }
 
-}
+#endif

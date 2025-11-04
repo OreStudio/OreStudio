@@ -17,16 +17,35 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.service/config/database_options.hpp"
+#ifndef ORES_UTILITY_DATABASE_DATABASE_EXCEPTION_HPP
+#define ORES_UTILITY_DATABASE_DATABASE_EXCEPTION_HPP
 
-namespace ores::service::config {
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
 
-std::ostream& operator<<(std::ostream& s, const database_options& v) {
-    rfl::json::write(v, s);
-    return(s);
+#include <string>
+#include <boost/exception/info.hpp>
+
+namespace ores::utility::database {
+
+/**
+ * @brief A fatal error has occurred with database configuration.
+ */
+class database_exception : public virtual std::exception,
+                           public virtual boost::exception {
+public:
+    explicit database_exception(std::string_view message = "")
+        : message_(message) {}
+
+    [[nodiscard]] const char* what() const noexcept override {
+        return message_.c_str();
+    }
+
+private:
+    std::string message_;
+};
+
 }
 
-}
+#endif

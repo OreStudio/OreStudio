@@ -25,10 +25,10 @@
 #include <boost/asio/io_context.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/test/database_fixture.hpp"
+#include "ores.utility/database/database_options.hpp"
 #include "ores.cli/app/application.hpp"
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
-#include "ores.cli/config/database_options.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
 
 namespace {
@@ -39,9 +39,9 @@ class test_helper : public ores::utility::test::database_fixture {
 public:
     test_helper() = default;
 
-    ores::cli::config::database_options get_cli_database_options() {
+    ores::utility::database::database_options get_cli_database_options() {
         const auto opts = make_database_options();
-        return ores::cli::config::database_options {
+        return ores::utility::database::database_options {
             .user = opts.user,
             .password = opts.password,
             .host = opts.host,

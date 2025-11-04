@@ -27,9 +27,9 @@
 #include <iosfwd>
 #include <optional>
 #include "ores.utility/log/logging_options.hpp"
+#include "ores.utility/database/database_options.hpp"
 #include "ores.cli/config/import_options.hpp"
 #include "ores.cli/config/export_options.hpp"
-#include "ores.cli/config/database_options.hpp"
 
 namespace ores::cli::config {
 
@@ -53,7 +53,7 @@ struct options final {
     /**
      * @brief Database connection configuration, if any.
      */
-    std::optional<database_options> database;
+    std::optional<ores::utility::database::database_options> database;
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

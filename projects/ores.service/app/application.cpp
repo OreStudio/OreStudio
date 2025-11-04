@@ -31,7 +31,7 @@ namespace ores::service::app {
 using namespace ores::utility::log;
 
 utility::repository::context application::make_context(
-    const std::optional<config::database_options>& db_opts) {
+    const std::optional<utility::database::database_options>& db_opts) {
     using utility::repository::context_factory;
 
     if (!db_opts.has_value()) {

@@ -42,6 +42,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         OpenSSL::SSL
         Boost::log
+        Boost::program_options
         sqlgen::sqlgen
     PRIVATE
         Boost::boost

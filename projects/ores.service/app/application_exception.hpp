@@ -17,45 +17,33 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SERVICE_APP_APPLICATION_HPP
-#define ORES_SERVICE_APP_APPLICATION_HPP
+#ifndef ORES_SERVICE_APP_APPLICATION_EXCEPTION_HPP
+#define ORES_SERVICE_APP_APPLICATION_EXCEPTION_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <optional>
-#include <boost/asio/awaitable.hpp>
-#include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/repository/context.hpp"
-#include "ores.service/config/options.hpp"
-#include "ores.service/config/database_options.hpp"
+#include <string>
+#include <boost/exception/info.hpp>
 
 namespace ores::service::app {
 
 /**
- * @brief Entry point for the ores command line application.
+ * @brief A fatal error has occurred whilst the application was running.
  */
-class application final {
-private:
-    static auto& lg() {
-        using namespace ores::utility::log;
-        static auto instance = make_logger("ores.cli.application");
-        return instance;
+class application_exception : public virtual std::exception,
+                              public virtual boost::exception {
+public:
+    explicit application_exception(std::string_view message = "")
+        : message_(message) {}
+
+    [[nodiscard]] const char* what() const noexcept override {
+        return message_.c_str();
     }
 
-public:
-    application();
-    application(const application&) = delete;
-    application& operator=(const application&) = delete;
-
 private:
-    static utility::repository::context
-    make_context(const std::optional<config::database_options>& db_opts);
-
-public:
-    boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
-        const config::options& cfg) const;
+    std::string message_;
 };
 
 }

@@ -18,15 +18,41 @@
  * MA 02110-1301, USA.
  *
  */
+#include <boost/throw_exception.hpp>
 #include "ores.risk/messaging/registrar.hpp"
 #include "ores.accounts/messaging/registrar.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/repository/context_factory.hpp"
 #include "ores.comms/server.hpp"
 #include "ores.service/app/application.hpp"
+#include "ores.service/app/application_exception.hpp"
 
 namespace ores::service::app {
 using namespace ores::utility::log;
+
+utility::repository::context application::make_context(
+    const std::optional<config::database_options>& db_opts) {
+    using utility::repository::context_factory;
+
+    if (!db_opts.has_value()) {
+        BOOST_THROW_EXCEPTION(
+            application_exception("Database configuration is required."));
+    }
+
+    const auto& db(db_opts.value());
+    context_factory::configuration cfg {
+        .user = db.user,
+        .password = db.password,
+        .host = db.host,
+        .database = db.database,
+        .port = db.port,
+        .pool_size = 4,
+        .num_attempts = 10,
+        .wait_time_in_seconds = 1
+    };
+
+    return context_factory::make_context(cfg);
+}
 
 application::application() = default;
 
@@ -43,19 +69,8 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     server_cfg.private_key_file = cfg.server.private_key_file;
     server_cfg.server_identifier = cfg.server.server_identifier;
 
-    // FIXME: should be command line parameters.
-    using ores::utility::repository::context_factory;
-    context_factory::configuration db_cfg{
-        .user = "ores",
-        .password = "ahV6aehuij6eingohsiajaiT0",
-        .host = "localhost",
-        .database = "oresdb",
-        .port = 5432,
-        .pool_size = 4,
-        .num_attempts = 10,
-        .wait_time_in_seconds = 1
-    };
-    auto ctx = context_factory::make_context(db_cfg);
+    // Create database context from configuration
+    auto ctx = make_context(cfg.database);
 
     // Create server and register message handlers
     ores::comms::server srv(server_cfg);

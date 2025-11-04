@@ -18,45 +18,48 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-03 Mon 23:27], for Monday, November 03, 2025.
-|      | <75>                                          |        |      |      |       |
-| Tags | Headline                                      | Time   |      |      |     % |
-|------+-----------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                  | *1:34* |      |      | 100.0 |
-|------+-----------------------------------------------+--------+------+------+-------|
-|      | Stories                                       | 1:34   |      |      | 100.0 |
-|      | Active                                        |        | 1:34 |      | 100.0 |
-| code | Separate test database usage from application |        |      | 1:34 | 100.0 |
+#+CAPTION: Clock summary at [2025-11-04 Tue 22:49], for Tuesday, November 04, 2025.
+|       | <75>                                               |        |      |      |       |
+| Tags  | Headline                                           | Time   |      |      |     % |
+|-------+----------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                       | *4:53* |      |      | 100.0 |
+|-------+----------------------------------------------------+--------+------+------+-------|
+|       | Stories                                            | 4:53   |      |      | 100.0 |
+|       | Active                                             |        | 4:53 |      | 100.0 |
+| infra | vcpkg cannot apply patch on windowws               |        |      | 1:19 |  27.0 |
+| code  | Add command line arguments for database to service |        |      | 3:34 |  73.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-03 Mon 23:27]
+#+CAPTION: Clock summary at [2025-11-04 Tue 22:49]
 |       | <75>                                                   |         |       |       |       |
 | Tags  | Headline                                               | Time    |       |       |     % |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                           | *60:22* |       |       | 100.0 |
+|       | *Total time*                                           | *64:08* |       |       | 100.0 |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                | 60:22   |       |       | 100.0 |
-|       | Active                                                 |         | 60:22 |       | 100.0 |
-| agile | Sprint and product backlog refinement                  |         |       |  1:24 |   2.3 |
-| code  | Add locking up logic                                   |         |       |  1:28 |   2.4 |
-| code  | Build using dynamic libraries                          |         |       |  7:24 |  12.3 |
-| code  | Enable qt gui                                          |         |       |  4:13 |   7.0 |
-| code  | Add locking up logic                                   |         |       |  1:28 |   2.4 |
-| code  | Build using dynamic libraries                          |         |       |  7:24 |  12.3 |
-| code  | Implement logging according to correct boost.log usage |         |       |  8:02 |  13.3 |
+|       | Stories                                                | 64:08   |       |       | 100.0 |
+|       | Active                                                 |         | 64:08 |       | 100.0 |
+| agile | Sprint and product backlog refinement                  |         |       |  1:24 |   2.2 |
+| code  | Add locking up logic                                   |         |       |  1:28 |   2.3 |
+| code  | Build using dynamic libraries                          |         |       |  7:24 |  11.5 |
+| code  | Enable qt gui                                          |         |       |  4:13 |   6.6 |
+| code  | Add locking up logic                                   |         |       |  1:28 |   2.3 |
+| code  | Build using dynamic libraries                          |         |       |  7:24 |  11.5 |
+| code  | Implement logging according to correct boost.log usage |         |       |  8:02 |  12.5 |
 | code  | Fix broken Linux and OSX tests                         |         |       |  0:10 |   0.3 |
-| code  | Fix broken windows builds                              |         |       |  2:35 |   4.3 |
-| code  | Investigate leaks from valgrind                        |         |       |  0:51 |   1.4 |
-| code  | Consider adding a postgres database to CI              |         |       | 14:13 |  23.6 |
+| code  | Fix broken windows builds                              |         |       |  2:35 |   4.0 |
+| code  | Investigate leaks from valgrind                        |         |       |  0:51 |   1.3 |
+| code  | Consider adding a postgres database to CI              |         |       | 14:13 |  22.2 |
 | code  | Fix misspell that causes build to break                |         |       |  0:12 |   0.3 |
-| code  | Improve code coverage                                  |         |       |  4:15 |   7.0 |
-| code  | Add support for feature flags                          |         |       |  1:25 |   2.3 |
-| code  | Implement authentication bootstrap workflow            |         |       |  0:25 |   0.7 |
-| code  | Patches for sqlgen are not applying on windows         |         |       |  0:20 |   0.6 |
-| code  | Separate test database usage from application          |         |       |  3:20 |   5.5 |
-| code  | Add workspace as a container                           |         |       |  1:13 |   2.0 |
+| code  | Improve code coverage                                  |         |       |  4:15 |   6.6 |
+| code  | Add support for feature flags                          |         |       |  1:25 |   2.2 |
+| code  | Implement authentication bootstrap workflow            |         |       |  0:25 |   0.6 |
+| code  | Patches for sqlgen are not applying on windows         |         |       |  0:20 |   0.5 |
+| infra | vcpkg cannot apply patch on windowws                   |         |       |  1:19 |   2.1 |
+| code  | Add command line arguments for database to service     |         |       |  3:34 |   5.6 |
+| code  | Separate test database usage from application          |         |       |  2:13 |   3.5 |
+| code  | Add workspace as a container                           |         |       |  1:13 |   1.9 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -707,9 +710,67 @@ Call Stack (most recent call first):
 #+end_src
 
 
+*** STARTED vcpkg cannot apply patch on windowws                      :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-04 Tue 15:51]--[2025-11-04 Tue 16:36] =>  0:45
+    CLOCK: [2025-11-04 Tue 09:43]--[2025-11-04 Tue 10:17] =>  0:34
+    :END:
+
+Error:
+
+#+begin_src sh
+Successfully downloaded getml-sqlgen-v0.3.0.tar.gz
+-- Extracting source D:/a/OreStudio/OreStudio/vcpkg/downloads/getml-sqlgen-v0.3.0.tar.gz
+-- Applying patch sqlgen-schema-fix.patch
+Error(s) when configuring the project
+-- Applying patch boolean_data_fix_69.patch
+CMake Error at D:/a/OreStudio/OreStudio/CTest.cmake:279 (message):
+Error:   Failed to configure
+
+
+-- Applying patch insert_after_failure_68.patch
+CMake Error at scripts/cmake/z_vcpkg_apply_patches.cmake:34 (message):
+Error:   Applying patch failed: error: corrupt patch at line 21
+
+Call Stack (most recent call first):
+  scripts/cmake/vcpkg_extract_source_archive.cmake:147 (z_vcpkg_apply_patches)
+  scripts/cmake/vcpkg_extract_source_archive_ex.cmake:8 (vcpkg_extract_source_archive)
+  scripts/cmake/vcpkg_from_github.cmake:127 (vcpkg_extract_source_archive_ex)
+  D:/a/OreStudio/OreStudio/build/cmake/overlays/common/sqlgen/portfile.cmake:1 (vcpkg_from_github)
+  scripts/ports.cmake:206 (include)
+
+
+error: building sqlgen:x64-windows failed with: BUILD_FAILED
+#+end_src
+
+Nothing obviously wrong with the patches. We need to build it locally on windows
+and see if we can reproduce the issue.
+
+The problem may be related to line endings. Trying to use git attributes to
+force patch files to be binary.
+
+*** STARTED Add command line arguments for database to service         :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-04 Tue 22:40]--[2025-11-04 Tue 22:49] =>  0:09
+    CLOCK: [2025-11-04 Tue 18:46]--[2025-11-04 Tue 19:00] =>  0:14
+    CLOCK: [2025-11-04 Tue 17:30]--[2025-11-04 Tue 18:46] =>  1:16
+    CLOCK: [2025-11-04 Tue 16:37]--[2025-11-04 Tue 17:00] =>  0:23
+    CLOCK: [2025-11-04 Tue 15:20]--[2025-11-04 Tue 15:50] =>  0:30
+    CLOCK: [2025-11-04 Tue 11:02]--[2025-11-04 Tue 11:43] =>  0:41
+    CLOCK: [2025-11-04 Tue 10:19]--[2025-11-04 Tue 10:40] =>  0:21
+    :END:
+
+At present we have hard-coded database credentials. Make these command line
+args. Update prodigy.
+
+Notes:
+
+- we are using the defaults incorrectly. Set them as part of the options
+  descriptions setup and remove manual handling code.
+
 *** STARTED Separate test database usage from application              :code:
     :LOGBOOK:
-    CLOCK: [2025-11-03 Mon 21:52]--[2025-11-03 Mon 23:26] =>  1:34
+    CLOCK: [2025-11-03 Mon 21:52]--[2025-11-03 Mon 22:19] =>  0:27
     CLOCK: [2025-11-02 Sun 21:12]--[2025-11-02 Sun 22:44] =>  1:32
     CLOCK: [2025-11-02 Sun 20:36]--[2025-11-02 Sun 20:50] =>  0:14
     :END:
@@ -720,6 +781,11 @@ isolate them.
 
 Notes:
 
+- retest all of the import and export commands: "Note: The import command has a
+  boost::bad_any_cast error that appears to be a pre-existing issue unrelated to
+  the client removal work, as export works correctly with the same database
+  setup."
+- update recipes with separate client org-mode file.
 - we can't call the env vars for the program options the same name as the env
   vars used for the tests because we are trampling over the tests. We could call
   them =TEST_ORES= or some other prefix.

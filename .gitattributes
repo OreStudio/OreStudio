@@ -1,0 +1,3 @@
+# -*- mode: sh; tab-width: 4; indent-tabs-mode: nil -*-
+*.path binary diff
+*.diff binary diff

@@ -51,9 +51,9 @@ struct options final {
      */
     std::optional<export_options> exporting;
     /**
-     * @brief Database connection configuration, if any.
+     * @brief Database connection configuration.
      */
-    std::optional<ores::utility::database::database_options> database;
+    ores::utility::database::database_options database;
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

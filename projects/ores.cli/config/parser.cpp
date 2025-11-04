@@ -18,7 +18,6 @@
  *
  */
 #include <format>
-#include <ranges>
 #include <ostream>
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
@@ -26,7 +25,6 @@
 #include "ores.cli/config/format.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/log/severity_level.hpp"
-#include "ores.utility/database/database_options.hpp"
 #include "ores.utility/database/database_configuration.hpp"
 #include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/parser_exception.hpp"
@@ -74,7 +72,6 @@ using boost::program_options::options_description;
 using boost::program_options::positional_options_description;
 
 using ores::utility::log::logging_options;
-using ores::utility::database::database_options;
 using ores::cli::config::entity;
 using ores::cli::config::format;
 using ores::cli::config::options;

@@ -18,7 +18,6 @@
  *
  */
 #include <format>
-#include <ranges>
 #include <ostream>
 #include <cstdint>
 #include <boost/program_options.hpp>
@@ -26,7 +25,6 @@
 #include "ores.service/config/parser_exception.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/log/severity_level.hpp"
-#include "ores.utility/database/database_options.hpp"
 #include "ores.utility/database/database_configuration.hpp"
 #include "ores.service/config/parser.hpp"
 
@@ -59,7 +57,6 @@ using boost::program_options::parsed_options;
 using boost::program_options::options_description;
 
 using ores::utility::log::logging_options;
-using ores::utility::database::database_options;
 using ores::service::config::options;
 using ores::service::config::server_options;
 using ores::service::config::parser_exception;

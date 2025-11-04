@@ -47,7 +47,7 @@ struct options final {
     /**
      * @brief Configuration related to database operations.
      */
-    std::optional<ores::utility::database::database_options> database;
+    ores::utility::database::database_options database;
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

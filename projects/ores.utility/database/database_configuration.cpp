@@ -20,7 +20,6 @@
 #include <ranges>
 #include <algorithm>
 #include <boost/throw_exception.hpp>
-#include "ores.utility/database/database_exception.hpp"
 #include "ores.utility/database/database_configuration.hpp"
 
 namespace ores::utility::database {
@@ -43,64 +42,33 @@ database_configuration::make_options_description() {
     options_description r("Database");
     r.add_options()
         ("db-user",
-            value<std::string>(),
+            value<std::string>()->default_value("ores"),
             "Database user name.")
         ("db-password",
-            value<std::string>(),
+            value<std::string>()->default_value(""),
             "Database password. Can also be provided via ORES_DB_PASSWORD environment variable.")
         ("db-host",
             value<std::string>()->default_value("localhost"),
-            "Database host. Defaults to localhost.")
+            "Database host.")
         ("db-database",
-            value<std::string>(),
+            value<std::string>()->default_value("oresdb"),
             "Database name.")
         ("db-port",
             value<int>()->default_value(5432),
-            "Database port. Defaults to 5432.");
+            "Database port.");
 
     return r;
 }
 
-std::optional<database_options>
-database_configuration::read_options(
+database_options database_configuration::read_options(
     const boost::program_options::variables_map& vm) {
-    const bool has_user(vm.count(database_user_arg) != 0);
-    const bool has_password(vm.count(database_password_arg) != 0);
-    const bool has_database(vm.count(database_database_arg) != 0);
-    const bool has_host(vm.count(database_host_arg) != 0);
-    const bool has_port(vm.count(database_port_arg) != 0);
-
-    if (!has_user && !has_password && !has_database && !has_host && !has_port)
-        return {};
-
     database_options r;
 
-    if (has_user)
-        r.user = vm[database_user_arg].as<std::string>();
-    else
-        r.user = "ores";
-
-    if (has_password)
-        r.password = vm[database_password_arg].as<std::string>();
-    else
-        BOOST_THROW_EXCEPTION(database_exception(
-            "Must supply database password via --db-password or ORES_DB_PASSWORD environment variable."));
-
-    if (has_database)
-        r.database = vm[database_database_arg].as<std::string>();
-    else
-        r.database = "oresdb";
-
-    if (has_host)
-        r.host = vm[database_host_arg].as<std::string>();
-    else
-        r.host = "localhost";
-
-    if (has_port)
-        r.port = vm[database_port_arg].as<int>();
-    else
-        r.port = 5432;
-
+    r.user = vm[database_user_arg].as<std::string>();
+    r.password = vm[database_password_arg].as<std::string>();
+    r.database = vm[database_database_arg].as<std::string>();
+    r.host = vm[database_host_arg].as<std::string>();
+    r.port = vm[database_port_arg].as<int>();
     return r;
 }
 

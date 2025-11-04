@@ -25,7 +25,6 @@
 #endif
 
 #include <string>
-#include <optional>
 #include <functional>
 #include <boost/program_options.hpp>
 #include "ores.utility/database/database_options.hpp"
@@ -64,7 +63,7 @@ public:
      * @return database_options if any database configuration was provided,
      * std::nullopt otherwise.
      */
-    static std::optional<database_options>
+    static database_options
     read_options(const boost::program_options::variables_map& vm);
 
     /**

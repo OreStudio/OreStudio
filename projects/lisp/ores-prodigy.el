@@ -23,6 +23,7 @@
 ;;
 ;;; Code:
 (require 'project)
+
 (autoload 'prodigy-define-tag "prodigy")
 (autoload 'prodigy-define-service "prodigy")
 (defvar prodigy-services)
@@ -34,11 +35,23 @@
          (path (concat root "build/output/linux-clang-debug/publish")))
     path))
 
+(defun ores/setup-environment ()
+  (let ((pwd (auth-source-pick-first-password
+              :host "localhost"
+              :user "ores")))
+    (list (cons "ORES_DB_PASSWORD" pwd))))
+
+(defvar ores/service-environment (ores/setup-environment)
+  "Environment to run services in.")
+
 (setq prodigy-services nil)
 (prodigy-define-tag :name 'ores)
 (prodigy-define-tag :name 'ui)
 (prodigy-define-tag :name 'debug)
 (prodigy-define-tag :name 'release)
+(prodigy-define-tag
+  :name 'dev-service
+  :env (ores/setup-environment))
 
 (prodigy-define-service
   :name "ORE Studio QT - Debug"
@@ -63,6 +76,7 @@
   :command (concat (ores/path-to-publish) "/bin/ores.service")
   :tags '(ores debug)
   :stop-signal 'sigkill
+  :env '(("ORES_DB_PASSWORD" "ahV6aehuij6eingohsiajaiT0"))
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
@@ -70,7 +84,7 @@
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")
   :cwd (concat (ores/path-to-publish) "/bin")
   :command (concat (ores/path-to-publish) "/bin/ores.service")
-  :tags '(ores release)
+  :tags '(ores release dev-service)
   :stop-signal 'sigkill
   :kill-process-buffer-on-stop t)
 

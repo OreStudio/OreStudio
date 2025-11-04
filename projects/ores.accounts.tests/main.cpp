@@ -22,6 +22,8 @@
 #include <catch2/catch_session.hpp>
 #include "ores.utility/test/catch2_logging_listener.hpp"
 
+CATCH_REGISTER_LISTENER(ores::utility::test::catch2_logging_listener)
+
 int main(int argc, char* argv[]) {
     BOOST_SCOPE_EXIT(void) {
         OPENSSL_cleanup();

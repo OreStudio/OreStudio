@@ -19,8 +19,10 @@
  */
 #include <catch2/catch_session.hpp>
 #include "ores.utility/test/catch2_logging_listener.hpp"
+#include "ores.utility/test/database_lifecycle_listener.hpp"
 
 CATCH_REGISTER_LISTENER(ores::utility::test::catch2_logging_listener)
+CATCH_REGISTER_LISTENER(ores::utility::test::database_lifecycle_listener)
 
 int main(int argc, char* argv[]) {
     ores::utility::test::detail::set_test_module_name("ores.risk.tests");

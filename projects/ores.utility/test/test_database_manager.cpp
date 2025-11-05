@@ -115,7 +115,7 @@ void test_database_manager::create_test_database(const std::string& db_name) {
 
     } catch (const std::exception& e) {
         const auto error_msg = "Exception while creating test database " +
-                             db_name + ": " + e.what();
+            db_name + ": " + e.what();
         BOOST_LOG_SEV(lg(), error) << error_msg;
         throw std::runtime_error(error_msg);
     }

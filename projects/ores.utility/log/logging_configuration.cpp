@@ -37,71 +37,44 @@ const std::string logging_log_level_info("info");
 }
 
 boost::program_options::options_description
-logging_configuration::make_options_description(bool include_filename_option) {
+logging_configuration::make_options_description(const std::string& log_file) {
     using boost::program_options::value;
     using boost::program_options::options_description;
 
     options_description r("Logging");
     r.add_options()
         ("log-enabled,e", "Generate a log file.")
-        ("log-level,l", value<std::string>(),
+        ("log-level,l", value<std::string>()->default_value("info"),
             "What level to use for logging. Valid values: trace, debug, info, "
-            "warn, error. Defaults to info.")
+            "warn, error.")
         ("log-to-console",
             "Output logging to the console, as well as to file.")
-        ("log-directory", value<std::string>(),
-            "Where to place the log files.");
-
-    if (include_filename_option) {
-        r.add_options()
-            ("log-filename", value<std::string>(),
+        ("log-directory", value<std::string>()->default_value("log"),
+            "Where to place the log files.")
+        ("log-filename", value<std::string>()->default_value(log_file),
                 "Name of the log file.");
-    }
 
     return r;
 }
 
-std::optional<logging_options>
-logging_configuration::read_options(
-    const boost::program_options::variables_map& vm,
-    const std::string& default_filename,
-    const std::string& default_directory) {
+std::optional<logging_options> logging_configuration::
+read_options(const boost::program_options::variables_map& vm) {
 
     const bool enabled(vm.count(logging_log_enabled_arg) != 0);
     if (!enabled)
         return {};
 
     logging_options r;
-
-    // Set filename
-    if (vm.count(logging_log_filename_arg) != 0) {
-        r.filename = vm[logging_log_filename_arg].as<std::string>();
-    } else {
-        r.filename = default_filename;
-    }
-
-    // Set console output
+    r.filename = vm[logging_log_filename_arg].as<std::string>();
     r.output_to_console = vm.count(logging_log_to_console_arg) != 0;
-
-    // Set directory
-    if (vm.count(logging_log_dir_arg) != 0) {
-        r.output_directory = vm[logging_log_dir_arg].as<std::string>();
-    } else {
-        r.output_directory = default_directory;
-    }
-
-    // Set log level
-    if (vm.count(logging_log_level_arg) != 0) {
-        const auto s(vm[logging_log_level_arg].as<std::string>());
-        try {
-            to_severity_level(s);
-            r.severity = s;
-        } catch(const std::exception&) {
-            BOOST_THROW_EXCEPTION(logging_exception(
-                    std::format("Log level is invalid: {}!", s)));
-        }
-    } else {
-        r.severity = logging_log_level_info;
+    r.output_directory = vm[logging_log_dir_arg].as<std::string>();
+    const auto s(vm[logging_log_level_arg].as<std::string>());
+    try {
+        to_severity_level(s);
+        r.severity = s;
+    } catch(const std::exception&) {
+        BOOST_THROW_EXCEPTION(logging_exception(
+                std::format("Log level is invalid: {}!", s)));
     }
 
     return r;

@@ -45,11 +45,11 @@ public:
      * @brief Creates the boost::program_options description for logging CLI
      * arguments.
      *
-     * @param include_filename_option If true, includes --log-filename option
+     * @param log_file name of the file to log to by default.
      * @return options_description for logging configuration.
      */
     static boost::program_options::options_description
-    make_options_description(bool include_filename_option = false);
+    make_options_description(const std::string& log_file);
 
     /**
      * @brief Reads logging options from parsed variables map.
@@ -62,9 +62,7 @@ public:
      * @return logging_options if logging was enabled, std::nullopt otherwise.
      */
     static std::optional<logging_options>
-    read_options(const boost::program_options::variables_map& vm,
-                 const std::string& default_filename = "",
-                 const std::string& default_directory = "log");
+    read_options(const boost::program_options::variables_map& vm);
 };
 
 }

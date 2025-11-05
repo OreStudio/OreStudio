@@ -64,20 +64,21 @@ options_description make_options_description() {
         ("help,h", "Display usage and exit.")
         ("version,v", "Output version information and exit.");
 
-    const auto lod(logging_configuration::make_options_description(true));
+    const auto lod(logging_configuration::make_options_description(
+            "ores.service.log"));
 
     options_description sod("Server");
     sod.add_options()
-        ("port,p", value<std::uint16_t>(),
-            "Port to listen on. Defaults to 55555.")
-        ("max-connections,m", value<std::uint32_t>(),
+        ("port,p", value<std::uint16_t>()->default_value(55555),
+            "Port to listen on.")
+        ("max-connections,m", value<std::uint32_t>()->default_value(10),
             "Maximum number of concurrent connections. Defaults to 10.")
-        ("certificate,c", value<std::string>(),
-            "Path to SSL certificate file. Defaults to 'server.crt'.")
-        ("private-key,k", value<std::string>(),
+        ("certificate,c", value<std::string>()->default_value("server.crt"),
+            "Path to SSL certificate file.")
+        ("private-key,k", value<std::string>()->default_value("server.key"),
             "Path to SSL private key file. Defaults to 'server.key'.")
-        ("identifier,i", value<std::string>(),
-            "Server identifier for handshake. Defaults to 'ores-service-v1'.");
+        ("identifier,i", value<std::string>()->default_value("ores-service-v1"),
+            "Server identifier for handshake.");
 
     const auto dod(database_configuration::make_options_description());
 
@@ -92,7 +93,7 @@ options_description make_options_description() {
 void print_help(const options_description& od, std::ostream& info) {
     info << "ORES Service is the backend server for OreStudio."
          << std::endl
-         << "It provides network communication capabilities for the Open Source Risk Engine (ORE)."
+         << "Provides network communication capabilities for OreStudio)."
          << std::endl << std::endl
          << "Usage: ores.service [options]"
          << std::endl << std::endl
@@ -124,20 +125,11 @@ void version(std::ostream& info) {
 server_options read_server_configuration(const variables_map& vm) {
     server_options r;
 
-    if (vm.count(server_port_arg) != 0)
-        r.port = vm[server_port_arg].as<std::uint16_t>();
-
-    if (vm.count(server_max_connections_arg) != 0)
-        r.max_connections = vm[server_max_connections_arg].as<std::uint32_t>();
-
-    if (vm.count(server_certificate_arg) != 0)
-        r.certificate_file = vm[server_certificate_arg].as<std::string>();
-
-    if (vm.count(server_private_key_arg) != 0)
-        r.private_key_file = vm[server_private_key_arg].as<std::string>();
-
-    if (vm.count(server_identifier_arg) != 0)
-        r.server_identifier = vm[server_identifier_arg].as<std::string>();
+    r.port = vm[server_port_arg].as<std::uint16_t>();
+    r.max_connections = vm[server_max_connections_arg].as<std::uint32_t>();
+    r.certificate_file = vm[server_certificate_arg].as<std::string>();
+    r.private_key_file = vm[server_private_key_arg].as<std::string>();
+    r.server_identifier = vm[server_identifier_arg].as<std::string>();
 
     return r;
 }
@@ -179,7 +171,7 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     using ores::utility::log::logging_configuration;
 
     options r;
-    r.logging = logging_configuration::read_options(vm, "ores.service.log", "log");
+    r.logging = logging_configuration::read_options(vm);
     r.server = read_server_configuration(vm);
     r.database = database_configuration::read_options(vm);
     return r;

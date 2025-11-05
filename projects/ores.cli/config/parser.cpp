@@ -61,7 +61,6 @@ using boost::program_options::parsed_options;
 using boost::program_options::options_description;
 using boost::program_options::positional_options_description;
 
-using ores::utility::log::logging_options;
 using ores::cli::config::entity;
 using ores::cli::config::format;
 using ores::cli::config::options;
@@ -84,7 +83,7 @@ options_description make_top_level_visible_options_description() {
     options_description r;
     r.add(god);
 
-    const auto lod(logging_configuration::make_options_description());
+    const auto lod(logging_configuration::make_options_description("ores.cli.log"));
     r.add(lod);
     return r;
 }
@@ -406,7 +405,7 @@ handle_command(const std::string& command_name, const bool has_help,
      * Now process the common options.
      */
     using ores::utility::log::logging_configuration;
-    r.logging = logging_configuration::read_options(vm, "ores.cli.log", "log");
+    r.logging = logging_configuration::read_options(vm);
     return r;
 }
 

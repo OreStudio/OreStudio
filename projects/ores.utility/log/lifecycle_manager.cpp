@@ -34,7 +34,8 @@ namespace ores::utility::log {
 
 using namespace boost::log;
 
-void lifecycle_manager::create_file_backend(
+boost::shared_ptr<lifecycle_manager::file_sink_type>
+lifecycle_manager::make_file_sink(
     std::filesystem::path path, const severity_level severity) {
 
     const std::string extension(".log");
@@ -48,9 +49,7 @@ void lifecycle_manager::create_file_backend(
             sinks::file::rotation_at_time_point(12, 0, 0)));
     backend->auto_flush(true);
 
-    using sink_type = sinks::synchronous_sink<sinks::text_file_backend>;
-    auto sink(boost::make_shared<sink_type>(backend));
-
+    auto sink = boost::make_shared<file_sink_type>(backend);
     const std::string severity_attr("Severity");
     sink->set_filter(
         expressions::attr<severity_level>(severity_attr) >= severity);
@@ -65,11 +64,11 @@ void lifecycle_manager::create_file_backend(
         % expressions::attr<severity_level>(severity_attr)
         % expressions::attr<std::string>(channel_attr)
         % expressions::smessage);
-
-    boost::log::core::get()->add_sink(sink);
+    return sink;
 }
 
-void lifecycle_manager::create_console_backend(const severity_level severity) {
+boost::shared_ptr<lifecycle_manager::console_sink_type>
+lifecycle_manager::make_console_sink(const severity_level severity) {
     boost::shared_ptr<std::ostream> os(&std::cout, boost::null_deleter());
     auto backend(boost::make_shared<sinks::text_ostream_backend>());
     backend->add_stream(os);
@@ -92,11 +91,10 @@ void lifecycle_manager::create_console_backend(const severity_level severity) {
         % expressions::attr<std::string>(channel_attr)
         % expressions::smessage);
 
-    boost::log::core::get()->add_sink(sink);
+    return sink;
 }
 
-lifecycle_manager::lifecycle_manager(std::optional<logging_options> ocfg)
-    : enabled_(false) {
+lifecycle_manager::lifecycle_manager(std::optional<logging_options> ocfg) {
     /*
      * If no configuration is supplied, logging is to be disabled.
      */
@@ -109,7 +107,6 @@ lifecycle_manager::lifecycle_manager(std::optional<logging_options> ocfg)
     /*
      * A configuration was supplied. Ensure it is valid.
      */
-    enabled_ = true;
     const auto& cfg(*ocfg);
     logging_options_validator::validate(cfg);
     core.set_logging_enabled(true);
@@ -120,12 +117,15 @@ lifecycle_manager::lifecycle_manager(std::optional<logging_options> ocfg)
      * that at least one is enabled - that is the validator's job.
      */
     const auto sl(to_severity_level(cfg.severity));
-    if (cfg.output_to_console)
-        create_console_backend(sl);
+    if (cfg.output_to_console) {
+        console_sink_ = make_console_sink(sl);
+        boost::log::core::get()->add_sink(console_sink_);
+    }
 
     if (!cfg.filename.empty()) {
         const auto path(cfg.output_directory / cfg.filename);
-        create_file_backend(path, sl);
+        file_sink_ = make_file_sink(path, sl);
+        boost::log::core::get()->add_sink(file_sink_);
     }
 
     /*
@@ -138,7 +138,11 @@ lifecycle_manager::lifecycle_manager(std::optional<logging_options> ocfg)
 
 lifecycle_manager::~lifecycle_manager() {
     auto core(boost::log::core::get());
-    core->remove_all_sinks();
+    if (file_sink_)
+        core->remove_sink(file_sink_);
+
+    if (console_sink_)
+        core->remove_sink(console_sink_);
 }
 
 }

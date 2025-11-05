@@ -70,7 +70,7 @@ public:
      *
      * @param cfg Application configuration.
      */
-    boost::asio::awaitable<void> run(const config::options& cfg) const;
+    void run(const config::options& cfg) const;
 
 private:
     utility::repository::context context_;

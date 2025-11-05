@@ -28,7 +28,7 @@
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include <catch2/reporters/catch_reporter_registrars.hpp>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/log/scoped_lifecycle_manager.hpp"
+#include "ores.utility/log/lifecycle_manager.hpp"
 #include "ores.utility/log/logging_options.hpp"
 
 namespace {
@@ -37,7 +37,7 @@ namespace {
  * @brief Thread-local storage for the current test logger and lifecycle manager.
  */
 struct test_logging_context {
-    std::unique_ptr<ores::utility::log::scoped_lifecycle_manager> lifecycle_manager;
+    std::unique_ptr<ores::utility::log::lifecycle_manager> lifecycle_manager;
     std::optional<boost::log::sources::severity_channel_logger_mt<
         ores::utility::log::severity_level, std::string>> logger;
 };
@@ -125,7 +125,7 @@ void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
 
     // Initialize logging lifecycle manager with options
     current_test_context.lifecycle_manager =
-        std::make_unique<ores::utility::log::scoped_lifecycle_manager>(
+        std::make_unique<ores::utility::log::lifecycle_manager>(
             std::optional<ores::utility::log::logging_options>{cfg});
 
     // Create logger for this test

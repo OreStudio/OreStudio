@@ -95,8 +95,8 @@ void lifecycle_manager::create_console_backend(const severity_level severity) {
     boost::log::core::get()->add_sink(sink);
 }
 
-void lifecycle_manager::
-initialise(std::optional<logging_options> ocfg) {
+lifecycle_manager::lifecycle_manager(std::optional<logging_options> ocfg)
+    : enabled_(false) {
     /*
      * If no configuration is supplied, logging is to be disabled.
      */
@@ -109,6 +109,7 @@ initialise(std::optional<logging_options> ocfg) {
     /*
      * A configuration was supplied. Ensure it is valid.
      */
+    enabled_ = true;
     const auto& cfg(*ocfg);
     logging_options_validator::validate(cfg);
     core.set_logging_enabled(true);
@@ -135,7 +136,7 @@ initialise(std::optional<logging_options> ocfg) {
         boost::log::attributes::local_clock());
 }
 
-void lifecycle_manager::shutdown() {
+lifecycle_manager::~lifecycle_manager() {
     auto core(boost::log::core::get());
     core->remove_all_sinks();
 }

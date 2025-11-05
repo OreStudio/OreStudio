@@ -21,7 +21,7 @@
 #include <QApplication>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/log/logging_options.hpp"
-#include "ores.utility/log/scoped_lifecycle_manager.hpp"
+#include "ores.utility/log/lifecycle_manager.hpp"
 #include "ores.qt/MainWindow.hpp"
 #include "ores.qt/SplashScreen.hpp"
 
@@ -45,8 +45,7 @@ ores::utility::log::logging_options createLoggingConfiguration() {
 int main(int argc, char *argv[])
 {
     auto cfg(createLoggingConfiguration());
-    ores::utility::log::scoped_lifecycle_manager slm;
-    slm.initialise(cfg);
+    ores::utility::log::lifecycle_manager lm(cfg);
 
     BOOST_LOG_SEV(lg, info) << "Started UI.";
 

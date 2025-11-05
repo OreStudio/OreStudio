@@ -56,10 +56,10 @@ public:
     using Catch::EventListenerBase::EventListenerBase;
 
     void testRunStarting(Catch::TestRunInfo const& testRunInfo) override;
-    void testCaseStarting(Catch::TestCaseInfo const& testInfo) override;
-    void assertionEnded(Catch::AssertionStats const& assertionStats) override;
-    void testCaseEnded(Catch::TestCaseStats const& testCaseStats) override;
     void testRunEnded(Catch::TestRunStats const& testRunStats) override;
+    void testCaseStarting(Catch::TestCaseInfo const& testInfo) override;
+    void testCaseEnded(Catch::TestCaseStats const& testCaseStats) override;
+    void assertionEnded(Catch::AssertionStats const& assertionStats) override;
     void sectionStarting(Catch::SectionInfo const& sectionInfo) override;
     void sectionEnded(Catch::SectionStats const& sectionStats) override;
 };

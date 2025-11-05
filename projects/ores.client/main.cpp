@@ -18,62 +18,34 @@
  *
  */
 #include <iostream>
-#include <vector>
 #include <openssl/crypto.h>
-#include "ores.client/config/parser.hpp"
+#include <boost/scope_exit.hpp>
 #include "ores.client/config/parser_exception.hpp"
-#include "ores.client/app/application.hpp"
-#include "ores.utility/log/scoped_lifecycle_manager.hpp"
+#include "ores.client/app/host.hpp"
 
-namespace {
+int main(int argc, char** argv) {
+    BOOST_SCOPE_EXIT(void) {
+        OPENSSL_cleanup();
+    } BOOST_SCOPE_EXIT_END;
 
-const std::string force_terminate("Application was forced to terminate.");
-
-int run(int argc, char** argv) {
-    using ores::client::config::parser;
-    using ores::client::config::parser_exception;
-    using ores::client::app::application;
-    using ores::utility::log::scoped_lifecycle_manager;
-
-    scoped_lifecycle_manager slm;
+    using namespace ores::client;
     try {
         const auto args(std::vector<std::string>(argv + 1, argv + argc));
-        parser p;
-        const auto o(p.parse(args, std::cout, std::cerr));
 
-        if (!o)
-            return EXIT_SUCCESS;
-
-        slm.initialise(o->logging);
-
-        application app;
-        app.run();
-        return EXIT_SUCCESS;
-    } catch (const parser_exception& /*e*/) {
+        return app::host::execute(args, std::cout, std::cerr);
+    } catch (const config::parser_exception& /*e*/) {
         /*
          * Reporting of these types of errors to the console has
          * already been handled by the parser itself.
          */
         return EXIT_FAILURE;
     } catch (const std::exception& e) {
-        if (slm.is_initialised()) {
-            using namespace ores::utility::log;
-            auto lg(make_logger("main"));
-            BOOST_LOG_SEV(lg, error) << "Unexpected error: " << e.what();
-        } else {
-            std::cerr << "Unexpected error: " << e.what() << std::endl;
-        }
+        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << "Failed to execute command." << std::endl;
         return EXIT_FAILURE;
     } catch (...) {
-        std::cerr << force_terminate << std::endl;
+        std::cerr << "Application was forced to terminate." << std::endl;
         return EXIT_FAILURE;
     }
-}
-
-}
-
-int main(int argc, char** argv) {
-    const int result = run(argc, argv);
-    OPENSSL_cleanup();
-    return result;
+    return EXIT_FAILURE; // keep GCC happy.
 }

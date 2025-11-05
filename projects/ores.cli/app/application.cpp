@@ -155,14 +155,14 @@ export_data(const std::optional<config::export_options>& ocfg) const {
     }
 }
 
-boost::asio::awaitable<void> application::run(const config::options& cfg) const {
+void application::run(const config::options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Started application.";
 
     import_data(cfg.importing);
     export_data(cfg.exporting);
 
     BOOST_LOG_SEV(lg(), info) << "Finished application.";
-    co_return;
+    return;
 }
 
 }

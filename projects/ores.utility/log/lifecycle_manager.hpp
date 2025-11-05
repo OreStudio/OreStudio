@@ -34,11 +34,8 @@ namespace ores::utility::log {
 /**
  * @brief Manages the starting and stopping of logging for an application.
  */
-class lifecycle_manager {
+class lifecycle_manager final {
 public:
-    lifecycle_manager() = delete;
-    lifecycle_manager(const lifecycle_manager&) = delete;
-    ~lifecycle_manager() = delete;
     lifecycle_manager(lifecycle_manager&&) = delete;
     lifecycle_manager& operator=(const lifecycle_manager&) = delete;
 
@@ -48,15 +45,16 @@ private:
      *
      * @note path is non-const by ref by design.
      */
-    static void create_file_backend(std::filesystem::path path,
+    void create_file_backend(std::filesystem::path path,
         severity_level severity);
 
     /**
      * @brief Creates a boost log console backend.
      */
-    static void create_console_backend(severity_level severity);
+    void create_console_backend(severity_level severity);
 
 public:
+
     /**
      * @brief Initialise logging for the entire application.
      *
@@ -64,14 +62,23 @@ public:
      *
      * @note Must be done in a thread-safe context.
      */
-    static void initialise(std::optional<logging_options> ocfg);
+    explicit lifecycle_manager(std::optional<logging_options> ocfg);
 
     /**
      * @brief Shutdown logging for the entire application.
      *
      * Should be done in a thread-safe context.
      */
-    static void shutdown();
+    ~lifecycle_manager();
+
+    /**
+     * @brief Returns true if the logging system has been initialised
+     * at least once.
+     */
+    bool enabled() const { return enabled_; }
+
+private:
+    bool enabled_;
 };
 
 }

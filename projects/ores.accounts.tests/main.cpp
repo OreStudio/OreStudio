@@ -20,6 +20,7 @@
 #include <openssl/crypto.h>
 #include <boost/scope_exit.hpp>
 #include <catch2/catch_session.hpp>
+#include <catch2/reporters/catch_reporter_registrars.hpp>
 #include "ores.testing/logging_listener.hpp"
 #include "ores.testing/database_lifecycle_listener.hpp"
 
@@ -31,6 +32,6 @@ int main(int argc, char* argv[]) {
         OPENSSL_cleanup();
     } BOOST_SCOPE_EXIT_END
 
-    ores::testing::detail::set_test_module_name("ores.accounts.tests");
+    ores::testing::logging_listener::set_test_module_name("ores.accounts.tests");
     return Catch::Session().run(argc, argv);
 }

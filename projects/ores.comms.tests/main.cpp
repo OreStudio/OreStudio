@@ -18,11 +18,12 @@
  *
  */
 #include <catch2/catch_session.hpp>
+#include <catch2/reporters/catch_reporter_registrars.hpp>
 #include "ores.testing/logging_listener.hpp"
 
 CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
 
 int main(int argc, char* argv[]) {
-    ores::testing::detail::set_test_module_name("ores.comms.tests");
+    ores::testing::logging_listener::set_test_module_name("ores.comms.tests");
     return Catch::Session().run(argc, argv);
 }

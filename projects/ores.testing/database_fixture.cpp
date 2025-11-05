@@ -17,21 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/test/database_fixture.hpp"
+#include "ores.testing/database_fixture.hpp"
 #include "ores.utility/environment/environment.hpp"
 #include "ores.utility/repository/context_factory.hpp"
 
-namespace ores::utility::test {
+namespace ores::testing {
 
+using namespace utility::environment;
 using namespace ores::utility::log;
 using utility::repository::context;
 using utility::repository::context_factory;
 
 database_fixture::database_fixture() : context_(make_context()) {}
 
-database_fixture::database_options database_fixture::make_database_options() {
+utility::database::database_options database_fixture::make_database_options() {
     // TEST prefix to avoid clashing with real vars.
-    return database_options {
+    return utility::database::database_options {
         .user = environment::environment::get_value_or_default(
             "TEST_ORES_DB_USER", "ores"),
         .password = environment::environment::get_value_or_default(

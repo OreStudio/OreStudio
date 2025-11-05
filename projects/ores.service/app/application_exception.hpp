@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,32 +17,35 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/log/lifecycle_manager.hpp"
-#include "ores.utility/log/scoped_lifecycle_manager.hpp"
+#ifndef ORES_SERVICE_APP_APPLICATION_EXCEPTION_HPP
+#define ORES_SERVICE_APP_APPLICATION_EXCEPTION_HPP
 
-namespace ores::utility::log {
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
 
-scoped_lifecycle_manager::scoped_lifecycle_manager()
-    : is_initialised_(false) {}
+#include <string>
+#include <boost/exception/info.hpp>
 
-scoped_lifecycle_manager::
-scoped_lifecycle_manager(const std::optional<logging_options>& ocfg) {
-    initialise(ocfg);
+namespace ores::service::app {
+
+/**
+ * @brief A fatal error has occurred whilst the application was running.
+ */
+class application_exception : public virtual std::exception,
+                              public virtual boost::exception {
+public:
+    explicit application_exception(std::string_view message = "")
+        : message_(message) {}
+
+    [[nodiscard]] const char* what() const noexcept override {
+        return message_.c_str();
+    }
+
+private:
+    std::string message_;
+};
+
 }
 
-scoped_lifecycle_manager::~scoped_lifecycle_manager() {
-    if (is_initialised_)
-        lifecycle_manager::shutdown();
-}
-
-void scoped_lifecycle_manager::
-initialise(const std::optional<logging_options>& ocfg) {
-    is_initialised_ = true;
-    lifecycle_manager::initialise(ocfg);
-}
-
-bool scoped_lifecycle_manager::is_initialised() const {
-    return is_initialised_;
-}
-
-}
+#endif

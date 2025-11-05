@@ -40,6 +40,7 @@ target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
         ores.utility.lib
+        ores.testing.lib
         Catch2::Catch2
         faker-cxx::faker-cxx
         ${CMAKE_THREAD_LIBS_INIT})

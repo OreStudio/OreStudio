@@ -26,15 +26,14 @@
 
 #include <vector>
 #include <string>
-#include <exception>
+#include <ostream>
 #include <boost/asio/awaitable.hpp>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/log/scoped_lifecycle_manager.hpp"
 
 namespace ores::service::app {
 
 /**
- * @brief Hosts the console application.
+ * @brief Provides hosting services to the application.
  */
 class host {
 private:
@@ -46,15 +45,10 @@ private:
 
 public:
     /**
-     * @brief Reports exceptions to the log and console.
-     */
-    static void report_exception(const bool can_log, const std::exception& e);
-
-    /**
      * @brief Executes the console workflow.
      */
     static boost::asio::awaitable<int> execute(const std::vector<std::string>& args,
-        ores::utility::log::scoped_lifecycle_manager& slm,
+        std::ostream& stdout, std::ostream& stderr,
         boost::asio::io_context& io_ctx);
 };
 

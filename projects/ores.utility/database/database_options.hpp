@@ -17,18 +17,47 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/test/logging_fixture.hpp"
-#include "ores.utility/test/logging.hpp"
+#ifndef ORES_UTILITY_DATABASE_DATABASE_OPTIONS_HPP
+#define ORES_UTILITY_DATABASE_DATABASE_OPTIONS_HPP
 
-namespace ores::utility::test {
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
 
-logging_fixture_base::logging_fixture_base(const std::string& module,
-                                          const std::string& suite,
-                                          const std::string& function_name,
-                                          bool enable_debug)
-    : sl_(scoped_lifecycle_manager_factory(module, suite, function_name,
-                                           enable_debug))
-    , lg_(ores::utility::log::make_logger(suite)) {
+#include <iosfwd>
+#include <string>
+#include <rfl.hpp>
+
+namespace ores::utility::database {
+
+/**
+ * @brief Configuration for database connection.
+ */
+struct database_options final {
+    /**
+     * @brief Database user name.
+     */
+    std::string user;
+    /**
+     * @brief Password for the user.
+     */
+    rfl::Skip<std::string> password;
+    /**
+     * @brief Host to connect to.
+     */
+    std::string host = "localhost";
+    /**
+     * @brief Database to connect to.
+     */
+    std::string database;
+    /**
+     * @brief Port the database is listening on.
+     */
+    int port = 5432;
+};
+
+std::ostream& operator<<(std::ostream& s, const database_options& v);
+
 }
 
-}
+#endif

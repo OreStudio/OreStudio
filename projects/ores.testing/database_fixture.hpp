@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_TEST_DATABASE_FIXTURE_HPP
-#define ORES_UTILITY_TEST_DATABASE_FIXTURE_HPP
+#ifndef ORES_TESTING_DATABASE_FIXTURE_HPP
+#define ORES_TESTING_DATABASE_FIXTURE_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -27,8 +27,9 @@
 #include <string>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
+#include "ores.utility/database/database_options.hpp"
 
-namespace ores::utility::test {
+namespace ores::testing {
 
 /**
  * @brief Provides database setup and cleanup utilities for tests.
@@ -49,28 +50,17 @@ private:
     }
 
 public:
-    /**
-     * @brief Database configuration options.
-     */
-    struct database_options {
-        std::string user;
-        std::string password;
-        std::string host;
-        std::string database;
-        int port;
-    };
-
     database_fixture();
 
     /**
      * @brief Creates database options from environment variables.
      */
-    static database_options make_database_options();
+    static utility::database::database_options make_database_options();
 
     /**
      * @brief Creates a database context from environment variables.
      */
-    static repository::context make_context();
+    static utility::repository::context make_context();
 
     /**
      * @brief Truncates the specified table.
@@ -82,10 +72,10 @@ public:
     /**
      * @brief Gets the database context.
      */
-    repository::context& get_context() { return context_; }
+    utility::repository::context& get_context() { return context_; }
 
 private:
-    repository::context context_;
+    utility::repository::context context_;
 };
 
 }

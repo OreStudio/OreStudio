@@ -31,10 +31,10 @@
 #include <boost/asio/awaitable.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
+#include "ores.utility/database/database_options.hpp"
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
 #include "ores.cli/config/export_options.hpp"
-#include "ores.cli/config/database_options.hpp"
 
 namespace ores::cli::app {
 
@@ -51,13 +51,13 @@ private:
 
 public:
     explicit application(std::ostream& output_stream,
-        const std::optional<config::database_options>& db_opts);
+        const std::optional<utility::database::database_options>& db_opts);
     application(const application&) = delete;
     application& operator=(const application&) = delete;
 
 private:
     static utility::repository::context
-    make_context(const std::optional<config::database_options>& db_opts);
+    make_context(const std::optional<utility::database::database_options>& db_opts);
     void import_currencies(const std::vector<std::filesystem::path> files) const;
     void import_data(const std::optional<config::import_options>& ocfg) const;
 
@@ -70,7 +70,7 @@ public:
      *
      * @param cfg Application configuration.
      */
-    boost::asio::awaitable<void> run(const config::options& cfg) const;
+    void run(const config::options& cfg) const;
 
 private:
     utility::repository::context context_;

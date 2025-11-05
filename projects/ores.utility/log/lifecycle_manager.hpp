@@ -26,6 +26,8 @@
 
 #include <optional>
 #include <filesystem>
+#include <boost/shared_ptr.hpp>
+#include <boost/log/sinks.hpp>
 #include "ores.utility/log/severity_level.hpp"
 #include "ores.utility/log/logging_options.hpp"
 
@@ -33,30 +35,40 @@ namespace ores::utility::log {
 
 /**
  * @brief Manages the starting and stopping of logging for an application.
+ *
+ * Note: this class uses boost shared_ptr due to legacy reasons (boost log does
+ * not support std::shared_ptr).
  */
-class lifecycle_manager {
+class lifecycle_manager final {
+private:
+    using file_sink_type = boost::log::sinks::synchronous_sink<
+        boost::log::sinks::text_file_backend>;
+    using console_sink_type = boost::log::sinks::synchronous_sink<
+        boost::log::sinks::text_ostream_backend>;
+
 public:
     lifecycle_manager() = delete;
-    lifecycle_manager(const lifecycle_manager&) = delete;
-    ~lifecycle_manager() = delete;
     lifecycle_manager(lifecycle_manager&&) = delete;
     lifecycle_manager& operator=(const lifecycle_manager&) = delete;
 
 private:
     /**
-     * @brief Creates a boost log file backend.
+     * @brief Creates a boost log file sink.
      *
      * @note path is non-const by ref by design.
      */
-    static void create_file_backend(std::filesystem::path path,
-        severity_level severity);
+  static boost::shared_ptr<file_sink_type>
+  make_file_sink(std::filesystem::path path, severity_level severity,
+      std::string tag);
 
     /**
-     * @brief Creates a boost log console backend.
+     * @brief Creates a boost log console sink.
      */
-    static void create_console_backend(severity_level severity);
+    static boost::shared_ptr<console_sink_type> make_console_sink(
+        severity_level severity, std::string tag);
 
 public:
+
     /**
      * @brief Initialise logging for the entire application.
      *
@@ -64,14 +76,18 @@ public:
      *
      * @note Must be done in a thread-safe context.
      */
-    static void initialise(std::optional<logging_options> ocfg);
+    explicit lifecycle_manager(std::optional<logging_options> ocfg);
 
     /**
      * @brief Shutdown logging for the entire application.
      *
      * Should be done in a thread-safe context.
      */
-    static void shutdown();
+    ~lifecycle_manager();
+
+private:
+    boost::shared_ptr<file_sink_type> file_sink_;
+    boost::shared_ptr<console_sink_type> console_sink_;
 };
 
 }

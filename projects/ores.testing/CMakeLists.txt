@@ -15,41 +15,36 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.accounts")
+set(name "ores.testing")
+set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
-set(tests_binary_name ${name}.tests)
-set(tests_target_name ${name}.tests)
 
 set(files "")
 file(GLOB_RECURSE files RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
-add_executable(${tests_target_name} ${files})
+set(lib_files ${files})
+add_library(${lib_target_name} ${lib_files})
+set_target_properties(${lib_target_name} PROPERTIES
+    OUTPUT_NAME ${lib_binary_name})
+set_target_properties(${lib_target_name}
+    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
-set_target_properties(${tests_target_name}
-    PROPERTIES OUTPUT_NAME ${tests_binary_name})
+target_include_directories(${lib_target_name}
+    PUBLIC ${CMAKE_SOURCE_DIR}/projects/
+    PRIVATE ${stage_inc_dir}/) # generated header files
 
-target_include_directories(${tests_binary_name}
-    PRIVATE ${CMAKE_SOURCE_DIR}/projects/${name}/include
-    PRIVATE ${CMAKE_SOURCE_DIR}/projects/)
-
-target_link_libraries(${tests_target_name}
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        OpenSSL::SSL
+        Boost::log
+        Boost::program_options
+        sqlgen::sqlgen
     PRIVATE
-        ${lib_target_name}
-        ores.utility.lib
-        ores.testing.lib
+        Boost::boost
+        Boost::exception
         Catch2::Catch2
-        faker-cxx::faker-cxx
-        ${CMAKE_THREAD_LIBS_INIT})
+    )
 
-add_custom_target(test_${tests_target_name}
-    COMMENT "Testing ${tests_target_name}" VERBATIM
-    COMMAND $<TARGET_FILE:${tests_binary_name}>
-    WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-    DEPENDS ${tests_target_name})
-
-add_dependencies(run_all_tests test_${tests_target_name})
-
-catch_discover_tests(${tests_target_name}
-    WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

@@ -38,6 +38,7 @@ target_link_libraries(${tests_target_name}
         ${lib_target_name}
         ores.risk.lib
         ores.utility.lib
+        ores.testing.lib
         Catch2::Catch2
         ${CMAKE_THREAD_LIBS_INIT})
 

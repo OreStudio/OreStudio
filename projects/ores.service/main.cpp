@@ -29,18 +29,14 @@
 
 namespace {
 
-const std::string force_terminate("Application was forced to terminate.");
-
 boost::asio::awaitable<int>
 async_main(int argc, char** argv, boost::asio::io_context& io_ctx) {
     using ores::service::app::host;
     using ores::service::config::parser_exception;
-    using ores::utility::log::scoped_lifecycle_manager;
 
-    scoped_lifecycle_manager slm;
     try {
         const auto args(std::vector<std::string>(argv + 1, argv + argc));
-        co_return co_await host::execute(args, slm, io_ctx);
+        co_return co_await host::execute(args, std::cout, std::cerr, io_ctx);
     } catch (const parser_exception& /*e*/) {
         /*
          * Reporting of these types of errors to the console has
@@ -48,10 +44,11 @@ async_main(int argc, char** argv, boost::asio::io_context& io_ctx) {
          */
         co_return EXIT_FAILURE;
     } catch (const std::exception& e) {
-        host::report_exception(slm.is_initialised(), e);
+        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << "Failed to execute command." << std::endl;
         co_return EXIT_FAILURE;
     } catch (...) {
-        std::cerr << force_terminate << std::endl;
+        std::cerr << "Application was forced to terminate." << std::endl;
         co_return EXIT_FAILURE;
     }
 }
@@ -67,6 +64,7 @@ int main(int argc, char** argv) {
         }, boost::asio::detached);
 
     io_ctx.run();
+
     OPENSSL_cleanup();
     return result;
 }

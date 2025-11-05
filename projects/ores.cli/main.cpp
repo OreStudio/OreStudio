@@ -18,54 +18,35 @@
  *
  */
 #include <iostream>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/co_spawn.hpp>
-#include <boost/asio/awaitable.hpp>
-#include <boost/asio/detached.hpp>
+#include <boost/scope_exit.hpp>
 #include <openssl/crypto.h>
 #include "ores.cli/app/host.hpp"
 #include "ores.cli/config/parser_exception.hpp"
-#include "ores.utility/log/scoped_lifecycle_manager.hpp"
 
-namespace {
+int main(int argc, char** argv) {
+    BOOST_SCOPE_EXIT(void) {
+        OPENSSL_cleanup();
+    } BOOST_SCOPE_EXIT_END;
 
-const std::string force_terminate("Application was forced to terminate.");
-
-boost::asio::awaitable<int> async_main(int argc, char** argv) {
     using ores::cli::app::host;
     using ores::cli::config::parser_exception;
-    using ores::utility::log::scoped_lifecycle_manager;
 
-    scoped_lifecycle_manager slm;
     try {
         const auto args(std::vector<std::string>(argv + 1, argv + argc));
-        co_return co_await host::execute(args, slm);
+        return host::execute(args, std::cout, std::cerr);
     } catch (const parser_exception& /*e*/) {
         /*
          * Reporting of these types of errors to the console has
          * already been handled by the parser itself.
          */
-        co_return EXIT_FAILURE;
+        return EXIT_FAILURE;
     } catch (const std::exception& e) {
-        host::report_exception(slm.is_initialised(), e);
-        co_return EXIT_FAILURE;
+        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << "Failed to execute command." << std::endl;
+        return EXIT_FAILURE;
     } catch (...) {
-        std::cerr << force_terminate << std::endl;
-        co_return EXIT_FAILURE;
+        std::cerr << "Application was forced to terminate." << std::endl;
+        return EXIT_FAILURE;
     }
-}
-
-}
-
-int main(int argc, char** argv) {
-    boost::asio::io_context io_ctx;
-
-    int result = EXIT_FAILURE;
-    boost::asio::co_spawn(io_ctx, [&]() -> boost::asio::awaitable<void> {
-            result = co_await async_main(argc, argv);
-        }, boost::asio::detached);
-
-    io_ctx.run();
-    OPENSSL_cleanup();
-    return result;
+    return EXIT_FAILURE; // keep GCC happy.
 }

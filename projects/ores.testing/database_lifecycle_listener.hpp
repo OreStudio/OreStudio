@@ -17,46 +17,42 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SERVICE_CONFIG_DATABASE_OPTIONS_HPP
-#define ORES_SERVICE_CONFIG_DATABASE_OPTIONS_HPP
+#ifndef ORES_TESTING_DATABASE_LIFECYCLE_LISTENER_HPP
+#define ORES_TESTING_DATABASE_LIFECYCLE_LISTENER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <iosfwd>
 #include <string>
-#include <rfl.hpp>
+#include <catch2/reporters/catch_reporter_event_listener.hpp>
 
-namespace ores::service::config {
+namespace ores::testing {
 
 /**
- * @brief Configuration for database connection.
+ * @brief Catch2 listener that manages database lifecycle for tests.
+ *
+ * This listener creates a unique test database when tests start running and
+ * cleans it up when tests complete. It only creates databases when tests are
+ * actually executed, not during test discovery.
  */
-struct database_options final {
-    /**
-     * @brief Database user name.
-     */
-    std::string user;
-    /**
-     * @brief Password for the user.
-     */
-    rfl::Skip<std::string> password;
-    /**
-     * @brief Host to connect to.
-     */
-    std::string host = "localhost";
-    /**
-     * @brief Database to connect to.
-     */
-    std::string database;
-    /**
-     * @brief Port the database is listening on.
-     */
-    int port = 5432;
-};
+class database_lifecycle_listener : public Catch::EventListenerBase {
+public:
+    using Catch::EventListenerBase::EventListenerBase;
 
-std::ostream& operator<<(std::ostream& s, const database_options& v);
+    /**
+     * @brief Called when test run starts - creates the test database.
+     */
+    void testRunStarting(Catch::TestRunInfo const& testRunInfo) override;
+
+    /**
+     * @brief Called when test run ends - drops the test database.
+     */
+    void testRunEnded(Catch::TestRunStats const& testRunStats) override;
+
+private:
+    std::string test_db_name_;
+};
 
 }
 

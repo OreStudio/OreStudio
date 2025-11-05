@@ -17,22 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.cli/app/host.hpp"
-
 #include <cstdlib>
-#include <ostream>
-#include <iostream>
 #include <boost/exception/diagnostic_information.hpp>
 #include "ores.utility/log/lifecycle_manager.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.cli/app/application.hpp"
-#include "ores.cli/config/parser.hpp"
+#include "ores.client/app/application.hpp"
+#include "ores.client/config/parser.hpp"
+#include "ores.client/app/host.hpp"
 
-
-namespace ores::cli::app {
+namespace ores::client::app {
 
 using namespace ores::utility::log;
-using ores::cli::config::parser;
+using ores::client::config::parser;
 using ores::utility::log::lifecycle_manager;
 
 int host::execute(const std::vector<std::string>& args,
@@ -65,9 +61,12 @@ int host::execute(const std::vector<std::string>& args,
     BOOST_LOG_SEV(lg(), info) << "Command line arguments: " << args;
     BOOST_LOG_SEV(lg(), debug) << "Configuration: " << cfg;
 
+    /*
+     * Execute the application.
+     */
     try {
-        ores::cli::app::application app(stdout, cfg.database);
-        app.run(cfg);
+        ores::client::app::application app;
+        app.run();
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {
         /*

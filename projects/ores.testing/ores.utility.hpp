@@ -17,16 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.service/config/database_options.hpp"
+#ifndef ORES_UTILITY_ORES_UTILITY_HPP
+#define ORES_UTILITY_ORES_UTILITY_HPP
 
-namespace ores::service::config {
+/**
+ * @brief Miscellaneous classes that do not fit elsewhere.
+ */
+namespace ores::utility {}
 
-std::ostream& operator<<(std::ostream& s, const database_options& v) {
-    rfl::json::write(v, s);
-    return(s);
-}
-
-}
+#endif

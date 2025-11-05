@@ -17,16 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <format>
-#include <ranges>
 #include <ostream>
 #include <cstdint>
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
 #include "ores.service/config/parser_exception.hpp"
-#include "ores.service/config/database_options.hpp"
 #include "ores.utility/version/version.hpp"
-#include "ores.utility/log/severity_level.hpp"
+#include "ores.utility/log/logging_configuration.hpp"
+#include "ores.utility/database/database_configuration.hpp"
 #include "ores.service/config/parser.hpp"
 
 namespace {
@@ -39,88 +37,50 @@ const std::string usage_error_msg("Usage error: ");
 const std::string help_arg("help");
 const std::string version_arg("version");
 
-const std::string logging_log_enabled_arg("log-enabled");
-const std::string logging_log_to_console_arg("log-to-console");
-const std::string logging_log_level_arg("log-level");
-const std::string logging_log_dir_arg("log-directory");
-const std::string logging_log_filename_arg("log-filename");
-const std::string logging_log_level_info("info");
-
 const std::string server_port_arg("port");
 const std::string server_max_connections_arg("max-connections");
 const std::string server_certificate_arg("certificate");
 const std::string server_private_key_arg("private-key");
 const std::string server_identifier_arg("identifier");
 
-const std::string database_user_arg("db-user");
-const std::string database_password_arg("db-password");
-const std::string database_host_arg("db-host");
-const std::string database_database_arg("db-database");
-const std::string database_port_arg("db-port");
-
 using boost::program_options::value;
 using boost::program_options::variables_map;
 using boost::program_options::parsed_options;
 using boost::program_options::options_description;
 
-using ores::utility::log::logging_options;
 using ores::service::config::options;
 using ores::service::config::server_options;
-using ores::service::config::database_options;
 using ores::service::config::parser_exception;
 
 /**
  * @brief Creates the option descriptions.
  */
 options_description make_options_description() {
+    using ores::utility::database::database_configuration;
+    using ores::utility::log::logging_configuration;
+
     options_description god("General");
     god.add_options()
         ("help,h", "Display usage and exit.")
         ("version,v", "Output version information and exit.");
 
-    options_description lod("Logging");
-    lod.add_options()
-        ("log-enabled,e", "Generate a log file.")
-        ("log-level,l", value<std::string>(),
-            "What level to use for logging. Valid values: trace, debug, info, "
-            "warn, error. Defaults to info.")
-        ("log-to-console",
-            "Output logging to the console, as well as to file.")
-        ("log-directory", value<std::string>(),
-            "Where to place the log files. Defaults to 'log'.")
-        ("log-filename", value<std::string>(),
-            "Name of the log file. Defaults to 'ores.service.log'.");
+    const auto lod(logging_configuration::make_options_description(
+            "ores.service.log"));
 
     options_description sod("Server");
     sod.add_options()
-        ("port,p", value<std::uint16_t>(),
-            "Port to listen on. Defaults to 55555.")
-        ("max-connections,m", value<std::uint32_t>(),
+        ("port,p", value<std::uint16_t>()->default_value(55555),
+            "Port to listen on.")
+        ("max-connections,m", value<std::uint32_t>()->default_value(10),
             "Maximum number of concurrent connections. Defaults to 10.")
-        ("certificate,c", value<std::string>(),
-            "Path to SSL certificate file. Defaults to 'server.crt'.")
-        ("private-key,k", value<std::string>(),
+        ("certificate,c", value<std::string>()->default_value("server.crt"),
+            "Path to SSL certificate file.")
+        ("private-key,k", value<std::string>()->default_value("server.key"),
             "Path to SSL private key file. Defaults to 'server.key'.")
-        ("identifier,i", value<std::string>(),
-            "Server identifier for handshake. Defaults to 'ores-service-v1'.");
+        ("identifier,i", value<std::string>()->default_value("ores-service-v1"),
+            "Server identifier for handshake.");
 
-    options_description dod("Database");
-    dod.add_options()
-        ("db-user",
-            value<std::string>(),
-            "Database user name.")
-        ("db-password",
-            value<std::string>(),
-            "Database password. Can also be provided via ORES_DB_PASSWORD environment variable.")
-        ("db-host",
-            value<std::string>()->default_value("localhost"),
-            "Database host. Defaults to localhost.")
-        ("db-database",
-            value<std::string>(),
-            "Database name.")
-        ("db-port",
-            value<int>()->default_value(5432),
-            "Database port. Defaults to 5432.");
+    const auto dod(database_configuration::make_options_description());
 
     options_description r;
     r.add(god).add(lod).add(sod).add(dod);
@@ -133,7 +93,7 @@ options_description make_options_description() {
 void print_help(const options_description& od, std::ostream& info) {
     info << "ORES Service is the backend server for OreStudio."
          << std::endl
-         << "It provides network communication capabilities for the Open Source Risk Engine (ORE)."
+         << "Provides network communication capabilities for OreStudio)."
          << std::endl << std::endl
          << "Usage: ores.service [options]"
          << std::endl << std::endl
@@ -160,129 +120,20 @@ void version(std::ostream& info) {
 }
 
 /**
- * @brief Reads the logging configuration from the variables map.
- */
-std::optional<logging_options>
-read_logging_configuration(const variables_map& vm) {
-    const auto enabled(vm.count(logging_log_enabled_arg) != 0);
-    if (!enabled)
-        return {};
-
-    logging_options r;
-
-    // Set log filename
-    if (vm.count(logging_log_filename_arg) != 0) {
-        r.filename = vm[logging_log_filename_arg].as<std::string>();
-    } else {
-        r.filename = "ores.service.log";
-    }
-
-    r.output_to_console = vm.count(logging_log_to_console_arg) != 0;
-
-    // Set log directory
-    if (vm.count(logging_log_dir_arg) != 0) {
-        r.output_directory = vm[logging_log_dir_arg].as<std::string>();
-    } else {
-        r.output_directory = "log";
-    }
-
-    // Set log level
-    if (vm.count(logging_log_level_arg) != 0) {
-        const auto s(vm[logging_log_level_arg].as<std::string>());
-        try {
-            using ores::utility::log::to_severity_level;
-            to_severity_level(s);
-            r.severity = s;
-        } catch(const std::exception&) {
-            BOOST_THROW_EXCEPTION(parser_exception(
-                    std::format("Log level is invalid: {}!", s)));
-        }
-    } else {
-        r.severity = logging_log_level_info;
-    }
-
-    return r;
-}
-
-/**
  * @brief Reads the server configuration from the variables map.
  */
 server_options read_server_configuration(const variables_map& vm) {
     server_options r;
 
-    if (vm.count(server_port_arg) != 0)
-        r.port = vm[server_port_arg].as<std::uint16_t>();
-
-    if (vm.count(server_max_connections_arg) != 0)
-        r.max_connections = vm[server_max_connections_arg].as<std::uint32_t>();
-
-    if (vm.count(server_certificate_arg) != 0)
-        r.certificate_file = vm[server_certificate_arg].as<std::string>();
-
-    if (vm.count(server_private_key_arg) != 0)
-        r.private_key_file = vm[server_private_key_arg].as<std::string>();
-
-    if (vm.count(server_identifier_arg) != 0)
-        r.server_identifier = vm[server_identifier_arg].as<std::string>();
+    r.port = vm[server_port_arg].as<std::uint16_t>();
+    r.max_connections = vm[server_max_connections_arg].as<std::uint32_t>();
+    r.certificate_file = vm[server_certificate_arg].as<std::string>();
+    r.private_key_file = vm[server_private_key_arg].as<std::string>();
+    r.server_identifier = vm[server_identifier_arg].as<std::string>();
 
     return r;
 }
 
-/**
- * @brief Reads the database configuration from the variables map.
- */
-std::optional<database_options> read_database_options(const variables_map& vm) {
-    const bool has_user(vm.count(database_user_arg) != 0);
-    const bool has_password(vm.count(database_password_arg) != 0);
-    const bool has_database(vm.count(database_database_arg) != 0);
-
-    if (!has_user && !has_password && !has_database)
-        return {};
-
-    database_options r;
-
-    if (has_user)
-        r.user = vm[database_user_arg].as<std::string>();
-    else
-        BOOST_THROW_EXCEPTION(parser_exception("Must supply database user."));
-
-    if (has_password)
-        r.password = vm[database_password_arg].as<std::string>();
-    else
-        BOOST_THROW_EXCEPTION(parser_exception(
-            "Must supply database password via --db-password or ORES_DB_PASSWORD environment variable."));
-
-    if (has_database)
-        r.database = vm[database_database_arg].as<std::string>();
-    else
-        BOOST_THROW_EXCEPTION(parser_exception("Must supply database name."));
-
-    r.host = vm[database_host_arg].as<std::string>();
-    r.port = vm[database_port_arg].as<int>();
-
-    return r;
-}
-
-/**
- * @brief Maps environment variable names to program option names
- */
-std::string name_mapper(const std::string& env_var) {
-    constexpr std::string_view prefix = "ORES_";
-    if (!env_var.starts_with(prefix)) {
-        return {};
-    }
-
-    auto env_body = env_var | std::views::drop(prefix.size());
-    std::string option_name;
-
-    std::ranges::transform(env_body, std::back_inserter(option_name),
-        [](unsigned char c) -> char {
-            if (c == '_') return '-';
-            return std::tolower(c);
-        });
-
-    return option_name;
-}
 
 /**
  * @brief Parses the arguments supplied in the command line and converts them
@@ -290,7 +141,10 @@ std::string name_mapper(const std::string& env_var) {
  */
 std::optional<options>
 parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
+    using ores::utility::database::database_configuration;
+
     const auto od(make_options_description());
+    const auto name_mapper(database_configuration::make_environment_mapper());
 
     variables_map vm;
     boost::program_options::store(
@@ -314,10 +168,12 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     }
 
     // Parse configuration
+    using ores::utility::log::logging_configuration;
+
     options r;
-    r.logging = read_logging_configuration(vm);
+    r.logging = logging_configuration::read_options(vm);
     r.server = read_server_configuration(vm);
-    r.database = read_database_options(vm);
+    r.database = database_configuration::read_options(vm);
     return r;
 }
 

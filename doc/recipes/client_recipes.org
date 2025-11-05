@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 2E53EE1A-6856-6904-7FEB-AC95C6722A63
+:END:
+#+title: Client Recipes
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+
+Demonstrates all of the functionality available on the command line tool
+=ores.client=.
+
+* Recipes
+  :PROPERTIES:
+  :header-args: :exports both
+  :header-args+: :results raw
+  :header-args+: :dir ../../build/output/linux-clang-debug/publish/bin
+  :END:
+
+
+** Client
+   :PROPERTIES:
+   :header-args+: :var log_args="--log-enabled --log-level trace --log-directory ../log"
+   :END:
+
+*** Basic connect
+
+#+begin_src sh
+./ores.client ${log_args} client <<EOF
+connect localhost 55555 test
+exit
+#+END_SRC
+
+#+RESULTS:
+ORE Studio Client REPL v0.0.3
+Type 'help' for available commands, 'exit' to quit
+
+ores-client> ores-client> Bye!
+✓ Connected
+ores-client>
+
+*** Create account
+
+#+begin_src sh
+./ores.client ${log_args} client <<EOF
+connect localhost 55555 test
+exit
+#+END_SRC
+
+
+* Footer
+
+| Previous: [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] |
+
+# Local Variables:
+# eval: (whitespace-mode -1)
+# End:

@@ -1,12 +1,12 @@
 :PROPERTIES:
 :ID: 60086B77-B674-0B34-10AB-BF8AF3F8D75E
 :END:
-#+title: Console Recipes
+#+title: CLI Recipes
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 
 Demonstrates all of the functionality available on the command line tool
-=ores.console=.
+=ores.cli=.
 
 * Recipes
   :PROPERTIES:
@@ -8052,26 +8052,7 @@ export ORES_DB_PASSWORD
 ]
 #+end_src
 
-** Client
-   :PROPERTIES:
-   :header-args+: :var log_args="--log-enabled --log-level trace --log-directory ../log"
-   :END:
-
-*** Basic connect
-
-#+begin_src sh
-./ores.cli ${log_args} client <<EOF
-connect localhost 55555 test
-exit
-#+END_SRC
-
-#+RESULTS:
-ORE Studio Client REPL v0.0.3
-Type 'help' for available commands, 'exit' to quit
-
-ores-client> ores-client> Bye!
-✓ Connected
-ores-client>
+* Footer
 
 | Previous: [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] |
 

@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#define _CRT_SECURE_NO_WARNINGS // Avoid getenv warnings
+
 #include <cstdlib>
 #include "ores.utility/string/converter.hpp"
 #include "ores.utility/environment/environment.hpp"

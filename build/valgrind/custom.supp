@@ -108,3 +108,277 @@
    fun:_ZN5boost10shared_ptrINS_6detail16thread_data_baseEE5resetIS2_EEvPT_
    ...
 }
+{
+   OpenSSL 1
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:ossl_sa_new
+   fun:ossl_sa_CTX_TABLE_ENTRY_new
+   fun:CRYPTO_THREAD_set_local_ex
+   fun:ossl_err_get_state_int
+   fun:ERR_set_mark
+   fun:CONF_modules_load_file_ex
+   fun:ossl_config_int
+   fun:ossl_init_config
+   fun:ossl_init_config_ossl_
+   fun:__pthread_once_slow
+   fun:CRYPTO_THREAD_run_once
+   fun:OPENSSL_init_crypto
+   fun:ossl_engine_table_select
+   fun:ENGINE_get_default_RAND
+   fun:RAND_get_rand_method
+   fun:RAND_bytes_ex
+   fun:RAND_bytes
+   ...
+}
+{
+   OpenSSL 2
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:ossl_sa_new
+   fun:ossl_sa_CTX_TABLE_ENTRY_new
+   fun:CRYPTO_THREAD_set_local_ex
+   fun:ossl_rcu_read_lock
+   fun:module_find
+   fun:module_run
+   fun:CONF_modules_load
+   fun:CONF_modules_load_file_ex
+   fun:ossl_config_int
+   fun:ossl_init_config
+   fun:ossl_init_config_ossl_
+   fun:__pthread_once_slow
+   fun:CRYPTO_THREAD_run_once
+   fun:OPENSSL_init_crypto
+   fun:ossl_engine_table_select
+   fun:ENGINE_get_default_RAND
+   fun:RAND_get_rand_method
+   fun:RAND_bytes_ex
+   fun:RAND_bytes
+   ...
+}
+{
+   OpenSSL 3
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:ossl_sa_new
+   fun:ossl_sa_CTX_TABLE_ENTRY_new
+   fun:CRYPTO_THREAD_set_local_ex
+   fun:rand_get0_public
+   fun:RAND_bytes_ex
+   fun:RAND_bytes
+   ...
+}
+{
+   OpenSSL 4
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:ossl_sa_new
+   fun:ossl_sa_CTX_TABLE_ENTRY_new
+   fun:CRYPTO_THREAD_set_local_ex
+   fun:rand_delete_thread_state
+   fun:init_thread_stop
+   fun:OPENSSL_thread_stop
+   fun:OPENSSL_cleanup
+   fun:_ZZ4mainEN19boost_se_guard_t_2613boost_se_bodyEv
+   fun:_ZZ4mainEN19boost_se_guard_t_26D1Ev
+   fun:main
+}
+{
+   OpenSSL 5
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:CRYPTO_calloc
+   fun:CRYPTO_THREAD_set_local_ex
+   fun:ossl_err_get_state_int
+   fun:ERR_set_mark
+   fun:CONF_modules_load_file_ex
+   fun:ossl_config_int
+   fun:ossl_init_config
+   fun:ossl_init_config_ossl_
+   fun:__pthread_once_slow
+   fun:CRYPTO_THREAD_run_once
+   fun:OPENSSL_init_crypto
+   fun:ossl_engine_table_select
+   fun:ENGINE_get_default_RAND
+   fun:RAND_get_rand_method
+   fun:RAND_bytes_ex
+   fun:RAND_bytes
+   ...
+}
+{
+   OpenSSL 6
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:CRYPTO_calloc
+   fun:alloc_node
+   fun:ossl_sa_set
+   fun:ossl_sa_CTX_TABLE_ENTRY_set
+   fun:CRYPTO_THREAD_set_local_ex
+   fun:ossl_err_get_state_int
+   fun:ERR_set_mark
+   fun:CONF_modules_load_file_ex
+   fun:ossl_config_int
+   fun:ossl_init_config
+   fun:ossl_init_config_ossl_
+   fun:__pthread_once_slow
+   fun:CRYPTO_THREAD_run_once
+   fun:OPENSSL_init_crypto
+   fun:ossl_engine_table_select
+   fun:ENGINE_get_default_RAND
+   fun:RAND_get_rand_method
+   fun:RAND_bytes_ex
+   fun:RAND_bytes
+   ...
+}
+{
+   OpenSSL 7
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:CRYPTO_calloc
+   fun:alloc_node
+   fun:ossl_sa_set
+   fun:ossl_sa_CTX_TABLE_ENTRY_set
+   fun:CRYPTO_THREAD_set_local_ex
+   fun:ossl_rcu_read_lock
+   fun:module_find
+   fun:module_run
+   fun:CONF_modules_load
+   fun:CONF_modules_load_file_ex
+   fun:ossl_config_int
+   fun:ossl_init_config
+   fun:ossl_init_config_ossl_
+   fun:__pthread_once_slow
+   fun:CRYPTO_THREAD_run_once
+   fun:OPENSSL_init_crypto
+   fun:ossl_engine_table_select
+   fun:ENGINE_get_default_RAND
+   fun:RAND_get_rand_method
+   fun:RAND_bytes_ex
+   fun:RAND_bytes
+   ...
+}
+{
+   OpenSSL 8
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:CRYPTO_calloc
+   fun:alloc_node
+   fun:ossl_sa_set
+   fun:ossl_sa_CTX_TABLE_ENTRY_set
+   fun:CRYPTO_THREAD_set_local_ex
+   fun:rand_get0_public
+   fun:RAND_bytes_ex
+   fun:RAND_bytes
+   ...
+}
+{
+   OpenSSL 9
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:CRYPTO_calloc
+   fun:alloc_node
+   fun:ossl_sa_set
+   fun:ossl_sa_CTX_TABLE_ENTRY_set
+   fun:CRYPTO_THREAD_set_local_ex
+   fun:rand_delete_thread_state
+   fun:init_thread_stop
+   fun:OPENSSL_thread_stop
+   fun:OPENSSL_cleanup
+   fun:_ZZ4mainEN19boost_se_guard_t_2613boost_se_bodyEv
+   fun:_ZZ4mainEN19boost_se_guard_t_26D1Ev
+   fun:main
+}
+{
+   OpenSSL 10
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:CRYPTO_calloc
+   fun:alloc_node
+   fun:ossl_sa_set
+   fun:ossl_sa_CTX_TABLE_ENTRY_set
+   fun:CRYPTO_THREAD_set_local_ex
+   fun:ossl_rcu_read_lock
+   fun:module_find
+   fun:module_run
+   fun:CONF_modules_load
+   fun:CONF_modules_load_file_ex
+   fun:ossl_config_int
+   fun:ossl_init_config
+   fun:ossl_init_config_ossl_
+   fun:__pthread_once_slow
+   fun:CRYPTO_THREAD_run_once
+   fun:OPENSSL_init_crypto
+   fun:ossl_engine_table_select
+   fun:ENGINE_get_default_RAND
+   fun:RAND_get_rand_method
+   fun:RAND_bytes_ex
+   fun:RAND_bytes
+   ...
+}
+{
+   OpenSSL 11
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:CRYPTO_calloc
+   fun:alloc_node
+   fun:ossl_sa_set
+   fun:ossl_sa_CTX_TABLE_ENTRY_set
+   fun:CRYPTO_THREAD_set_local_ex
+   fun:rand_get0_public
+   fun:RAND_bytes_ex
+   fun:RAND_bytes
+   ...
+}
+{
+   OpenSSL 12
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:CRYPTO_calloc
+   fun:alloc_node
+   fun:ossl_sa_set
+   fun:ossl_sa_CTX_TABLE_ENTRY_set
+   fun:CRYPTO_THREAD_set_local_ex
+   fun:rand_delete_thread_state
+   fun:init_thread_stop
+   fun:OPENSSL_thread_stop
+   fun:OPENSSL_cleanup
+   fun:_ZZ4mainEN19boost_se_guard_t_2613boost_se_bodyEv
+   fun:_ZZ4mainEN19boost_se_guard_t_26D1Ev
+   fun:main
+}

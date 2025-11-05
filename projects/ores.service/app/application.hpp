@@ -24,8 +24,11 @@
 #pragma once
 #endif
 
+#include <optional>
 #include <boost/asio/awaitable.hpp>
 #include "ores.utility/log/make_logger.hpp"
+#include "ores.utility/repository/context.hpp"
+#include "ores.utility/database/database_options.hpp"
 #include "ores.service/config/options.hpp"
 
 namespace ores::service::app {
@@ -46,6 +49,11 @@ public:
     application(const application&) = delete;
     application& operator=(const application&) = delete;
 
+private:
+    static utility::repository::context
+    make_context(const std::optional<utility::database::database_options>& db_opts);
+
+public:
     boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
         const config::options& cfg) const;
 };

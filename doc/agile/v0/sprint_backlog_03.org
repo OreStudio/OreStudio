@@ -18,49 +18,59 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-03 Mon 23:27], for Monday, November 03, 2025.
-|      | <75>                                          |        |      |      |       |
-| Tags | Headline                                      | Time   |      |      |     % |
-|------+-----------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                  | *1:34* |      |      | 100.0 |
-|------+-----------------------------------------------+--------+------+------+-------|
-|      | Stories                                       | 1:34   |      |      | 100.0 |
-|      | Active                                        |        | 1:34 |      | 100.0 |
-| code | Separate test database usage from application |        |      | 1:34 | 100.0 |
+#+CAPTION: Clock summary at [2025-11-05 Wed 23:45], for Wednesday, November 05, 2025.
+|       | <75>                                          |        |      |      |       |
+| Tags  | Headline                                      | Time   |      |      |     % |
+|-------+-----------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                  | *6:55* |      |      | 100.0 |
+|-------+-----------------------------------------------+--------+------+------+-------|
+|       | Stories                                       | 6:55   |      |      | 100.0 |
+|       | Active                                        |        | 6:55 |      | 100.0 |
+| agile | Sprint and product backlog refinement         |        |      | 0:06 |   1.4 |
+| infra | vcpkg cannot apply patch on windowws          |        |      | 0:07 |   1.7 |
+| code  | Update prodigy to use tags                    |        |      | 0:26 |   6.3 |
+| code  | Resolve all of the OpenSSL leaks in valgrind  |        |      | 0:15 |   3.6 |
+| code  | Separate test database usage from application |        |      | 1:20 |  19.3 |
+| code  | Split test code from utility                  |        |      | 4:41 |  67.7 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-03 Mon 23:27]
+#+CAPTION: Clock summary at [2025-11-05 Wed 23:45]
 |       | <75>                                                   |         |       |       |       |
 | Tags  | Headline                                               | Time    |       |       |     % |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                           | *60:22* |       |       | 100.0 |
+|       | *Total time*                                           | *71:03* |       |       | 100.0 |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                | 60:22   |       |       | 100.0 |
-|       | Active                                                 |         | 60:22 |       | 100.0 |
-| agile | Sprint and product backlog refinement                  |         |       |  1:24 |   2.3 |
-| code  | Add locking up logic                                   |         |       |  1:28 |   2.4 |
-| code  | Build using dynamic libraries                          |         |       |  7:24 |  12.3 |
-| code  | Enable qt gui                                          |         |       |  4:13 |   7.0 |
-| code  | Add locking up logic                                   |         |       |  1:28 |   2.4 |
-| code  | Build using dynamic libraries                          |         |       |  7:24 |  12.3 |
-| code  | Implement logging according to correct boost.log usage |         |       |  8:02 |  13.3 |
-| code  | Fix broken Linux and OSX tests                         |         |       |  0:10 |   0.3 |
-| code  | Fix broken windows builds                              |         |       |  2:35 |   4.3 |
-| code  | Investigate leaks from valgrind                        |         |       |  0:51 |   1.4 |
-| code  | Consider adding a postgres database to CI              |         |       | 14:13 |  23.6 |
+|       | Stories                                                | 71:03   |       |       | 100.0 |
+|       | Active                                                 |         | 71:03 |       | 100.0 |
+| agile | Sprint and product backlog refinement                  |         |       |  1:30 |   2.1 |
+| code  | Add locking up logic                                   |         |       |  1:28 |   2.1 |
+| code  | Build using dynamic libraries                          |         |       |  7:24 |  10.4 |
+| code  | Enable qt gui                                          |         |       |  4:13 |   5.9 |
+| code  | Add locking up logic                                   |         |       |  1:28 |   2.1 |
+| code  | Build using dynamic libraries                          |         |       |  7:24 |  10.4 |
+| code  | Implement logging according to correct boost.log usage |         |       |  8:02 |  11.3 |
+| code  | Fix broken Linux and OSX tests                         |         |       |  0:10 |   0.2 |
+| code  | Fix broken windows builds                              |         |       |  2:35 |   3.6 |
+| code  | Investigate leaks from valgrind                        |         |       |  0:51 |   1.2 |
+| code  | Consider adding a postgres database to CI              |         |       | 14:13 |  20.0 |
 | code  | Fix misspell that causes build to break                |         |       |  0:12 |   0.3 |
-| code  | Improve code coverage                                  |         |       |  4:15 |   7.0 |
-| code  | Add support for feature flags                          |         |       |  1:25 |   2.3 |
-| code  | Implement authentication bootstrap workflow            |         |       |  0:25 |   0.7 |
-| code  | Patches for sqlgen are not applying on windows         |         |       |  0:20 |   0.6 |
-| code  | Separate test database usage from application          |         |       |  3:20 |   5.5 |
-| code  | Add workspace as a container                           |         |       |  1:13 |   2.0 |
+| code  | Improve code coverage                                  |         |       |  4:15 |   6.0 |
+| infra | vcpkg cannot apply patch on windowws                   |         |       |  1:46 |   2.5 |
+| code  | Update prodigy to use tags                             |         |       |  0:26 |   0.6 |
+| code  | Add command line arguments for database to service     |         |       |  3:34 |   5.0 |
+| code  | Resolve all of the OpenSSL leaks in valgrind           |         |       |  0:15 |   0.4 |
+| code  | Separate test database usage from application          |         |       |  3:33 |   5.0 |
+| code  | Split test code from utility                           |         |       |  4:41 |   6.6 |
+| code  | Add support for feature flags                          |         |       |  1:25 |   2.0 |
+| code  | Implement authentication bootstrap workflow            |         |       |  0:25 |   0.6 |
+| code  | Add workspace as a container                           |         |       |  1:13 |   1.7 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-11-05 Wed 13:56]--[2025-11-05 Wed 14:02] =>  0:06
     CLOCK: [2025-10-28 Tue 23:40]--[2025-10-28 Tue 23:53] =>  0:13
     CLOCK: [2025-10-27 Mon 09:23]--[2025-10-27 Mon 09:53] =>  0:30
     CLOCK: [2025-10-26 Sun 19:49]--[2025-10-26 Sun 19:55] =>  0:06
@@ -192,10 +202,6 @@ Users must be able to login and logout.
 
 It may be easier to integrate diagrams with roam if they are org-mode documents.
 Experiment with babel for this.
-
-*** COMPLETED Add support for =windows-msvc-clang-cl=                 :infra:
-
-We need to setup a build for MSVC clang.
 
 *** COMPLETED Build using dynamic libraries                            :code:
     :LOGBOOK:
@@ -563,6 +569,143 @@ misspell-fixer -svn .
 
 We need to get code coverage green before we start to add more features.
 
+*** COMPLETED vcpkg cannot apply patch on windowws                    :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-05 Wed 13:21]--[2025-11-05 Wed 13:28] =>  0:07
+    CLOCK: [2025-11-04 Tue 15:51]--[2025-11-04 Tue 16:36] =>  0:45
+    CLOCK: [2025-11-04 Tue 09:43]--[2025-11-04 Tue 10:17] =>  0:34
+    CLOCK: [2025-11-02 Sun 20:51]--[2025-11-02 Sun 21:11] =>  0:20
+    :END:
+
+Error:
+
+#+begin_src sh
+Successfully downloaded getml-sqlgen-v0.3.0.tar.gz
+-- Extracting source D:/a/OreStudio/OreStudio/vcpkg/downloads/getml-sqlgen-v0.3.0.tar.gz
+-- Applying patch sqlgen-schema-fix.patch
+Error(s) when configuring the project
+-- Applying patch boolean_data_fix_69.patch
+CMake Error at D:/a/OreStudio/OreStudio/CTest.cmake:279 (message):
+Error:   Failed to configure
+
+
+-- Applying patch insert_after_failure_68.patch
+CMake Error at scripts/cmake/z_vcpkg_apply_patches.cmake:34 (message):
+Error:   Applying patch failed: error: corrupt patch at line 21
+
+Call Stack (most recent call first):
+  scripts/cmake/vcpkg_extract_source_archive.cmake:147 (z_vcpkg_apply_patches)
+  scripts/cmake/vcpkg_extract_source_archive_ex.cmake:8 (vcpkg_extract_source_archive)
+  scripts/cmake/vcpkg_from_github.cmake:127 (vcpkg_extract_source_archive_ex)
+  D:/a/OreStudio/OreStudio/build/cmake/overlays/common/sqlgen/portfile.cmake:1 (vcpkg_from_github)
+  scripts/ports.cmake:206 (include)
+
+
+error: building sqlgen:x64-windows failed with: BUILD_FAILED
+#+end_src
+
+Nothing obviously wrong with the patches. We need to build it locally on windows
+and see if we can reproduce the issue.
+
+The problem may be related to line endings. Trying to use git attributes to
+force patch files to be binary.
+
+Merged:
+
+*Patches for sqlgen are not applying on windows*
+
+Windows builds are failing with patch errors:
+
+#+begin_src sh
+Successfully downloaded getml-sqlgen-v0.3.0.tar.gz
+-- Extracting source D:/a/OreStudio/OreStudio/vcpkg/downloads/getml-sqlgen-v0.3.0.tar.gz
+-- Applying patch sqlgen-schema-fix.patch
+-- Applying patch boolean_data_fix_69.patch
+-- Applying patch insert_after_failure_68.patch
+CMake Error at scripts/cmake/z_vcpkg_apply_patches.cmake:34 (message):
+Error:   Applying patch failed: error: corrupt patch at line 21
+
+Call Stack (most recent call first):
+  scripts/cmake/vcpkg_extract_source_archive.cmake:147 (z_vcpkg_apply_patches)
+  scripts/cmake/vcpkg_extract_source_archive_ex.cmake:8 (vcpkg_extract_source_archive)
+  scripts/cmake/vcpkg_from_github.cmake:127 (vcpkg_extract_source_archive_ex)
+  D:/a/OreStudio/OreStudio/build/cmake/overlays/common/sqlgen/portfile.cmake:1 (vcpkg_from_github)
+  scripts/ports.cmake:206 (include)
+#+end_src
+
+*** COMPLETED Update prodigy to use tags                               :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-05 Wed 13:29]--[2025-11-05 Wed 13:55] =>  0:26
+    :END:
+
+At present we hard-coded the credentials in prodigy. We need to set them up from
+auth and use a tag.
+
+*** COMPLETED Add command line arguments for database to service       :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-04 Tue 22:40]--[2025-11-04 Tue 22:49] =>  0:09
+    CLOCK: [2025-11-04 Tue 18:46]--[2025-11-04 Tue 19:00] =>  0:14
+    CLOCK: [2025-11-04 Tue 17:30]--[2025-11-04 Tue 18:46] =>  1:16
+    CLOCK: [2025-11-04 Tue 16:37]--[2025-11-04 Tue 17:00] =>  0:23
+    CLOCK: [2025-11-04 Tue 15:20]--[2025-11-04 Tue 15:50] =>  0:30
+    CLOCK: [2025-11-04 Tue 11:02]--[2025-11-04 Tue 11:43] =>  0:41
+    CLOCK: [2025-11-04 Tue 10:19]--[2025-11-04 Tue 10:40] =>  0:21
+    :END:
+
+At present we have hard-coded database credentials. Make these command line
+args. Update prodigy.
+
+Notes:
+
+- we are using the defaults incorrectly. Set them as part of the options
+  descriptions setup and remove manual handling code.
+
+*** BLOCKED Resolve all of the OpenSSL leaks in valgrind               :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-05 Wed 14:52]--[2025-11-05 Wed 15:07] =>  0:15
+    :END:
+
+We are freeing up open SSL memory and still have leaks. For now just apply the
+suppression suggestions and deal with this later.
+
+*** COMPLETED Separate test database usage from application            :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-05 Wed 17:20]--[2025-11-05 Wed 18:40] =>  1:20
+    CLOCK: [2025-11-03 Mon 21:52]--[2025-11-03 Mon 22:19] =>  0:27
+    CLOCK: [2025-11-02 Sun 21:12]--[2025-11-02 Sun 22:44] =>  1:32
+    CLOCK: [2025-11-02 Sun 20:36]--[2025-11-02 Sun 20:50] =>  0:14
+    :END:
+
+At present tests are trampling over the application, deleting accounts,
+currencies, etc. They are also trampling over each other. We need a way to
+isolate them.
+
+Notes:
+
+- retest all of the import and export commands: "Note: The import command has a
+  boost::bad_any_cast error that appears to be a pre-existing issue unrelated to
+  the client removal work, as export works correctly with the same database
+  setup."
+- update recipes with separate client org-mode file.
+- we can't call the env vars for the program options the same name as the env
+  vars used for the tests because we are trampling over the tests. We could call
+  them =TEST_ORES= or some other prefix.
+
+*** COMPLETED Split test code from utility                             :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-05 Wed 20:07]--[2025-11-05 Wed 23:44] =>  3:37
+    CLOCK: [2025-11-05 Wed 18:41]--[2025-11-05 Wed 19:45] =>  1:04
+    :END:
+
+At present utility is linking with Catch2 because it has helpers for tests. We
+need to create a library just for testing so that only tests link to it.
+However, we cannot call it =ores.utility.tests= as that would be confusing. maybe it
+can be called =ores.testing=.
+
+Notes:
+
+- remove io_context from cli.
+
 *** STARTED Add support for feature flags                              :code:
     :LOGBOOK:
     CLOCK: [2025-10-24 Fri 01:25]--[2025-10-24 Fri 01:34] =>  0:09
@@ -677,52 +820,20 @@ Once the system is in **"Secure Mode"**:
   fully public).
 #+end_src
 
-
 Links:
 
 - [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
 
-*** STARTED Patches for sqlgen are not applying on windows             :code:
-    :LOGBOOK:
-    CLOCK: [2025-11-02 Sun 20:51]--[2025-11-02 Sun 21:11] =>  0:20
-    :END:
+*** Consider adding log command line options to qt                     :code:
 
-Windows builds are failing with patch errors:
+At present we have hard-coded logging options. However, maybe users should be
+able to change the logging settings from the UI rather than having to restart
+the app and supply command line options.
 
-#+begin_src sh
-Successfully downloaded getml-sqlgen-v0.3.0.tar.gz
--- Extracting source D:/a/OreStudio/OreStudio/vcpkg/downloads/getml-sqlgen-v0.3.0.tar.gz
--- Applying patch sqlgen-schema-fix.patch
--- Applying patch boolean_data_fix_69.patch
--- Applying patch insert_after_failure_68.patch
-CMake Error at scripts/cmake/z_vcpkg_apply_patches.cmake:34 (message):
-Error:   Applying patch failed: error: corrupt patch at line 21
+*** Add connect command line argument                                  :code:
 
-Call Stack (most recent call first):
-  scripts/cmake/vcpkg_extract_source_archive.cmake:147 (z_vcpkg_apply_patches)
-  scripts/cmake/vcpkg_extract_source_archive_ex.cmake:8 (vcpkg_extract_source_archive)
-  scripts/cmake/vcpkg_from_github.cmake:127 (vcpkg_extract_source_archive_ex)
-  D:/a/OreStudio/OreStudio/build/cmake/overlays/common/sqlgen/portfile.cmake:1 (vcpkg_from_github)
-  scripts/ports.cmake:206 (include)
-#+end_src
-
-
-*** STARTED Separate test database usage from application              :code:
-    :LOGBOOK:
-    CLOCK: [2025-11-03 Mon 21:52]--[2025-11-03 Mon 23:26] =>  1:34
-    CLOCK: [2025-11-02 Sun 21:12]--[2025-11-02 Sun 22:44] =>  1:32
-    CLOCK: [2025-11-02 Sun 20:36]--[2025-11-02 Sun 20:50] =>  0:14
-    :END:
-
-At present tests are trampling over the application, deleting accounts,
-currencies, etc. They are also trampling over each other. We need a way to
-isolate them.
-
-Notes:
-
-- we can't call the env vars for the program options the same name as the env
-  vars used for the tests because we are trampling over the tests. We could call
-  them =TEST_ORES= or some other prefix.
+To avoid leaking secrets it should be possible to supply a =--connect= in the
+client. We still need a connect in case we want to reconnect.
 
 *** Investigate valgrind leak on sqlgen                                :code:
 

@@ -20,9 +20,9 @@
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.cli/config/database_options.hpp"
+#include "ores.utility/database/database_options.hpp"
 
-namespace ores::cli::config {
+namespace ores::utility::database {
 
 std::ostream& operator<<(std::ostream& s, const database_options& v) {
     rfl::json::write(v, s);

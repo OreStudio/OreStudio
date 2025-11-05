@@ -50,6 +50,11 @@ struct logging_options final {
      * @brief Directory in which to place the output.
      */
     std::filesystem::path output_directory;
+    /**
+     * @brief Tag to filter the logging. If supplied, only messages with this
+     * tag will be logged.
+     */
+    std::string tag;
 };
 
 std::ostream& operator<<(std::ostream& s, const logging_options& v);

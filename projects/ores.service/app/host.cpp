@@ -18,9 +18,8 @@
  *
  */
 #include <cstdlib>
-#include <ostream>
-#include <iostream>
 #include <boost/exception/diagnostic_information.hpp>
+#include "ores.utility/log/lifecycle_manager.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.service/app/application.hpp"
 #include "ores.service/config/parser.hpp"
@@ -30,44 +29,15 @@ namespace ores::service::app {
 
 using namespace ores::utility::log;
 using ores::service::config::parser;
-using ores::utility::log::scoped_lifecycle_manager;
+using ores::utility::log::lifecycle_manager;
 
-void host::report_exception(const bool can_log, const std::exception& e) {
-    /*
-     * Dump to the console first. Here we just want to make our output as
-     * humanly readable as possible.
-     */
-    std::cerr << "Error: " << e.what() << std::endl;
-    std::cerr << "Failed to execute command." << std::endl;
-
-    if (!can_log)
-        return;
-
-    /*
-     * Now we can try to dump useful, but less user-friendly information by
-     * interrogating the exception. Note that we must catch by std::exception
-     * and cast the boost exception; if we were to catch boost exception, we
-     * would not have access to the what() method and thus could not provide the
-     * exception message to the console.
-     */
-    const auto *const be(dynamic_cast<const boost::exception* const>(&e));
-    if (be == nullptr)
-        return;
-
-    using boost::diagnostic_information;
-    BOOST_LOG_SEV(lg(), error) << "Error: " << diagnostic_information(*be);
-    BOOST_LOG_SEV(lg(), error) << "Failed to execute command.";
-}
-
-boost::asio::awaitable<int>
-host::execute(const std::vector<std::string>& args,
-    scoped_lifecycle_manager& slm, boost::asio::io_context& io_ctx) {
-
+boost::asio::awaitable<int> host::execute(const std::vector<std::string>& args,
+    std::ostream& stdout, std::ostream& stderr, boost::asio::io_context& io_ctx) {
     /*
      * Create the configuration from command line options.
      */
     parser p;
-    const auto ocfg(p.parse(args, std::cout, std::cerr));
+    const auto ocfg(p.parse(args, stdout, stderr));
 
     /*
      * If we have no configuration, then there is nothing to do. This can only
@@ -83,7 +53,7 @@ host::execute(const std::vector<std::string>& args,
      * logging subsystem.
      */
     const auto& cfg(*ocfg);
-    slm.initialise(cfg.logging);
+    lifecycle_manager lm(cfg.logging);
 
     /*
      * Log the configuration and command line arguments.
@@ -94,9 +64,27 @@ host::execute(const std::vector<std::string>& args,
     /*
      * Execute the application.
      */
-    ores::service::app::application app;
-    co_await app.run(io_ctx, cfg);
-    co_return EXIT_SUCCESS;
+    try {
+        ores::service::app::application app;
+        co_await app.run(io_ctx, cfg);
+        co_return EXIT_SUCCESS;
+    } catch (const std::exception& e) {
+        /*
+         * Try to dump useful, but less user-friendly information by
+         * interrogating the exception. Note that we must catch by
+         * std::exception and cast the boost exception; if we were to catch
+         * boost exception, we would not have access to the what() method and
+         * thus could not provide the exception message to the console.
+         */
+        const auto *const be(dynamic_cast<const boost::exception* const>(&e));
+        if (be == nullptr)
+            throw;
+
+        using boost::diagnostic_information;
+        BOOST_LOG_SEV(lg(), error) << "Error: " << diagnostic_information(*be);
+        BOOST_LOG_SEV(lg(), error) << "Failed to execute command.";
+        throw;
+    }
 }
 
 }

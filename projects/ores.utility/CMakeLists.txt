@@ -42,10 +42,11 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         OpenSSL::SSL
         Boost::log
+        Boost::program_options
         sqlgen::sqlgen
     PRIVATE
         Boost::boost
-        Boost::date_time
-        Boost::exception)
+        Boost::exception
+    )
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

@@ -25,6 +25,7 @@
 #include "ores.cli/config/export_options.hpp"
 #include "ores.utility/streaming/std_vector.hpp"
 #include "ores.utility/repository/context_factory.hpp"
+#include "ores.utility/database/database_options.hpp"
 #include "ores.risk/orexml/importer.hpp"
 #include "ores.risk/orexml/exporter.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
@@ -41,7 +42,7 @@ using risk::repository::currency_repository;
 using connection = sqlgen::Result<rfl::Ref<sqlgen::postgres::Connection>>;
 
 utility::repository::context application::make_context(
-    const std::optional<config::database_options>& db_opts) {
+    const std::optional<utility::database::database_options>& db_opts) {
     using utility::repository::context_factory;
 
     if (!db_opts.has_value()) {
@@ -65,7 +66,7 @@ utility::repository::context application::make_context(
 }
 
 application::application(std::ostream& output_stream,
-    const std::optional<config::database_options>& db_opts)
+    const std::optional<utility::database::database_options>& db_opts)
     : output_stream_(output_stream), context_(make_context(db_opts)) {
     BOOST_LOG_SEV(lg(), debug) << "Creating application.";
 }
@@ -154,14 +155,14 @@ export_data(const std::optional<config::export_options>& ocfg) const {
     }
 }
 
-boost::asio::awaitable<void> application::run(const config::options& cfg) const {
+void application::run(const config::options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Started application.";
 
     import_data(cfg.importing);
     export_data(cfg.exporting);
 
     BOOST_LOG_SEV(lg(), info) << "Finished application.";
-    co_return;
+    return;
 }
 
 }

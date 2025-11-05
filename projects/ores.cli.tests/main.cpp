@@ -18,9 +18,14 @@
  *
  */
 #include <catch2/catch_session.hpp>
-#include "ores.utility/test/catch2_logging_listener.hpp"
+#include <catch2/reporters/catch_reporter_registrars.hpp>
+#include "ores.testing/logging_listener.hpp"
+#include "ores.testing/database_lifecycle_listener.hpp"
+
+CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
+CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
 
 int main(int argc, char* argv[]) {
-    ores::utility::test::detail::set_test_module_name("ores.cli.tests");
+    ores::testing::logging_listener::set_test_module_name("ores.cli.tests");
     return Catch::Session().run(argc, argv);
 }

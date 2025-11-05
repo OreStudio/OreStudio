@@ -39,7 +39,9 @@
   (let ((pwd (auth-source-pick-first-password
               :host "localhost"
               :user "ores")))
-    (list (cons "ORES_DB_PASSWORD" pwd))))
+    (list (list "ORES_DB_PASSWORD" pwd))))
+
+
 
 (defvar ores/service-environment (ores/setup-environment)
   "Environment to run services in.")
@@ -74,9 +76,8 @@
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")
   :cwd (concat (ores/path-to-publish) "/bin")
   :command (concat (ores/path-to-publish) "/bin/ores.service")
-  :tags '(ores debug)
+  :tags '(ores debug dev-service)
   :stop-signal 'sigkill
-  :env '(("ORES_DB_PASSWORD" "ahV6aehuij6eingohsiajaiT0"))
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service

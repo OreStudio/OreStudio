@@ -48,34 +48,6 @@ thread_local test_logging_context current_test_context;
 std::string test_module_name = "ores.tests"; // default fallback
 
 /**
- * @brief Extracts the first tag from a Catch2 test case as the suite name.
- *
- * If no tags are present, returns "default_suite".
- */
-std::string extract_suite_name(const Catch::TestCaseInfo& testInfo) {
-    const auto& tags = testInfo.tags;
-    if (!tags.empty()) {
-        // Tags in Catch2 are stored with brackets, e.g., "[suite_name]"
-        std::string first_tag = static_cast<std::string>(tags[0].original);
-        // Remove brackets
-        if (first_tag.size() >= 2 && first_tag.front() == '[' && first_tag.back() == ']') {
-            return first_tag.substr(1, first_tag.size() - 2);
-        }
-        return first_tag;
-    }
-    return "default_suite";
-}
-
-/**
- * @brief Extracts the module name from the test binary name.
- *
- * Assumes the binary follows the pattern "ores.*.tests"
- */
-inline std::string extract_module_name() {
-    return test_module_name;
-}
-
-/**
  * @brief Returns the logger for the current test case.
  *
  * This function provides access to the thread-local logger set up by the
@@ -97,17 +69,38 @@ inline auto& logger() {
 
 namespace ores::testing {
 
-/**
- * @brief Sets the test module name from the main function
- */
+std::string logging_listener::
+extract_suite_name(const Catch::TestCaseInfo& testInfo) {
+    const auto& tags = testInfo.tags;
+    if (!tags.empty()) {
+        // Tags in Catch2 are stored with brackets, e.g., "[suite_name]"
+        std::string first_tag = static_cast<std::string>(tags[0].original);
+        // Remove brackets
+        if (first_tag.size() >= 2 && first_tag.front() == '[' && first_tag.back() == ']') {
+            return first_tag.substr(1, first_tag.size() - 2);
+        }
+        return first_tag;
+    }
+    return "default_suite";
+}
+
+std::string logging_listener::extract_module_name() {
+    return test_module_name;
+}
+
 void logging_listener::set_test_module_name(const std::string& module_name) {
     test_module_name = module_name;
 }
 
 void logging_listener::
-    testRunStarting(Catch::TestRunInfo const& testRunInfo) {
+testRunStarting(Catch::TestRunInfo const& testRunInfo) {
     // This is called once at the start of the test run, but we don't
     // have a logger yet, so we'll skip logging here
+}
+
+void logging_listener::testRunEnded(Catch::TestRunStats const& testRunStats) {
+    // This is called once at the end of the test run, but logger is already
+    // cleaned up, so we'll skip logging here
 }
 
 void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
@@ -147,47 +140,6 @@ void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
     }
 }
 
-void logging_listener::sectionStarting(Catch::SectionInfo const& sectionInfo) {
-    if (!current_test_context.logger.has_value()) return;
-
-    using ores::utility::log::severity_level;
-    BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::debug)
-        << "Section starting: " << sectionInfo.name;
-}
-
-void logging_listener::sectionEnded(Catch::SectionStats const& sectionStats) {
-    if (!current_test_context.logger.has_value()) return;
-
-    using ores::utility::log::severity_level;
-    BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::debug)
-        << "Section ended: " << sectionStats.sectionInfo.name
-        << " (assertions: " << sectionStats.assertions.total() << ")";
-}
-
-void logging_listener::assertionEnded(Catch::AssertionStats const& assertionStats) {
-    if (!current_test_context.logger.has_value()) return;
-
-    using ores::utility::log::severity_level;
-    const auto& result = assertionStats.assertionResult;
-
-    if (result.isOk()) {
-        BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::trace)
-            << "Assertion passed: " << result.getExpression();
-    } else {
-        BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::error)
-            << "Assertion failed: " << result.getExpression()
-            << " at " << result.getSourceInfo().file << ":" << result.getSourceInfo().line;
-        if (result.hasMessage()) {
-            BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::error)
-                << "  Message: " << result.getMessage();
-        }
-        if (result.hasExpandedExpression()) {
-            BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::error)
-                << "  Expanded: " << result.getExpandedExpression();
-        }
-    }
-}
-
 void logging_listener::testCaseEnded(Catch::TestCaseStats const& testCaseStats) {
     if (!current_test_context.logger.has_value()) return;
 
@@ -218,9 +170,46 @@ void logging_listener::testCaseEnded(Catch::TestCaseStats const& testCaseStats) 
     current_test_context.lifecycle_manager.reset();
 }
 
-void logging_listener::testRunEnded(Catch::TestRunStats const& testRunStats) {
-    // This is called once at the end of the test run, but logger is already
-    // cleaned up, so we'll skip logging here
+void logging_listener::assertionEnded(Catch::AssertionStats const& assertionStats) {
+    if (!current_test_context.logger.has_value()) return;
+
+    using ores::utility::log::severity_level;
+    const auto& result = assertionStats.assertionResult;
+
+    if (result.isOk()) {
+        BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::trace)
+            << "Assertion passed: " << result.getExpression();
+    } else {
+        BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::error)
+            << "Assertion failed: " << result.getExpression()
+            << " at " << result.getSourceInfo().file << ":" << result.getSourceInfo().line;
+        if (result.hasMessage()) {
+            BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::error)
+                << "  Message: " << result.getMessage();
+        }
+        if (result.hasExpandedExpression()) {
+            BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::error)
+                << "  Expanded: " << result.getExpandedExpression();
+        }
+    }
 }
+
+void logging_listener::sectionStarting(Catch::SectionInfo const& sectionInfo) {
+    if (!current_test_context.logger.has_value()) return;
+
+    using ores::utility::log::severity_level;
+    BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::debug)
+        << "Section starting: " << sectionInfo.name;
+}
+
+void logging_listener::sectionEnded(Catch::SectionStats const& sectionStats) {
+    if (!current_test_context.logger.has_value()) return;
+
+    using ores::utility::log::severity_level;
+    BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::debug)
+        << "Section ended: " << sectionStats.sectionInfo.name
+        << " (assertions: " << sectionStats.assertions.total() << ")";
+}
+
 
 }

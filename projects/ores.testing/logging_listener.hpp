@@ -50,7 +50,24 @@ namespace ores::testing {
  */
 class logging_listener : public Catch::EventListenerBase {
 public:
+    /**
+     * @brief Sets the test module name from the main function
+     */
     static void set_test_module_name(const std::string& module_name);
+
+    /**
+     * @brief Extracts the first tag from a Catch2 test case as the suite name.
+     *
+     * If no tags are present, returns "default_suite".
+     */
+    std::string extract_suite_name(const Catch::TestCaseInfo& testInfo);
+
+    /**
+     * @brief Extracts the module name from the test binary name.
+     *
+     * Assumes the binary follows the pattern "ores.*.tests"
+     */
+    std::string extract_module_name();
 
 public:
     using Catch::EventListenerBase::EventListenerBase;

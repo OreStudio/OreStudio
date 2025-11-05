@@ -18,10 +18,25 @@
  *
  */
 
--- Drop existing main database if it exists
--- DROP DATABASE IF EXISTS oresdb;
+-- Drop template database if it exists
+drop database if exists oresdb_template;
 
--- Create main database from template
--- This provides a fast way to get a fully-configured database
--- with all schemas, tables, functions, and extensions
-create database oresdb with template = oresdb_template;
+-- Create template database with clean template0 as base
+create database oresdb_template with template = template0;
+
+-- Grant permissions to ores user
+grant all privileges on database oresdb_template to ores;
+
+-- Connect to template database to create schema
+\c oresdb_template
+
+-- Run all schema creation scripts
+\ir ./accounts_create.sql
+\ir ./currencies_create.sql
+\ir ./feature_flags_create.sql
+\ir ./login_info_create.sql
+
+-- Mark database as template to prevent accidental direct connections
+-- NOTE: This requires superuser privileges, so it's commented out
+-- The database will still work as a template without this
+-- update pg_database set datistemplate = true where datname = 'oresdb_template';

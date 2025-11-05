@@ -46,7 +46,8 @@ target_link_libraries(${lib_target_name}
         sqlgen::sqlgen
     PRIVATE
         Boost::boost
-        Boost::date_time
-        Boost::exception)
+        Boost::exception
+        Catch2::Catch2
+    )
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

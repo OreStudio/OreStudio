@@ -51,7 +51,7 @@
 -- report on how long the query took.
 \timing
 
--- set the kitanda schema on the search path
+-- set the ores schema on the search path
 set SEARCH_PATH to "ores", "$user", "public";
 
 -- do not auto-commit

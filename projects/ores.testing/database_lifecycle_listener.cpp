@@ -17,9 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.testing/test_database_manager.hpp"
 #include "ores.testing/database_lifecycle_listener.hpp"
+
+#include <boost/log/attributes/scoped_attribute.hpp>
 #include "ores.utility/log/make_logger.hpp"
+#include "ores.testing/test_database_manager.hpp"
 
 namespace ores::testing {
 
@@ -28,14 +30,17 @@ using namespace ores::utility::log;
 namespace {
 
 auto& lg() {
-    static auto instance = make_logger("ores.utility.test.database_lifecycle_listener");
+    static auto instance = make_logger(
+        "ores.utility.test.database_lifecycle_listener");
     return instance;
 }
 
 }
 
-void database_lifecycle_listener::testRunStarting(
-    Catch::TestRunInfo const& /*testRunInfo*/) {
+void database_lifecycle_listener::
+testRunStarting(Catch::TestRunInfo const& /*testRunInfo*/) {
+    BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
+
     BOOST_LOG_SEV(lg(), debug) << "Test run starting, creating test database";
 
     // Generate unique test database name for this process
@@ -52,7 +57,9 @@ void database_lifecycle_listener::testRunStarting(
 
 void database_lifecycle_listener::testRunEnded(
     Catch::TestRunStats const& /*testRunStats*/) {
-    BOOST_LOG_SEV(lg(), debug) << "Test run ended, dropping test database: " << test_db_name_;
+    BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
+    BOOST_LOG_SEV(lg(), debug) << "Test run ended, dropping test database: "
+                               << test_db_name_;
 
     if (!test_db_name_.empty()) {
         test_database_manager::drop_test_database(test_db_name_);

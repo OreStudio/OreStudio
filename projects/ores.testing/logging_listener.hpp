@@ -26,6 +26,7 @@
 
 #include <catch2/catch_test_case_info.hpp>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
+#include "ores.utility/log/lifecycle_manager.hpp"
 
 namespace ores::testing {
 
@@ -79,6 +80,9 @@ public:
     void assertionEnded(Catch::AssertionStats const& assertionStats) override;
     void sectionStarting(Catch::SectionInfo const& sectionInfo) override;
     void sectionEnded(Catch::SectionStats const& sectionStats) override;
+
+private:
+    std::shared_ptr<utility::log::lifecycle_manager> lifecycle_manager_;
 };
 
 }

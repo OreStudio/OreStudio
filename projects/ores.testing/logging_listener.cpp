@@ -19,6 +19,7 @@
  */
 #include "ores.testing/logging_listener.hpp"
 
+#include <iostream>
 #include <memory>
 #include <string>
 #include <sstream>
@@ -92,10 +93,22 @@ void logging_listener::set_test_module_name(const std::string& module_name) {
     test_module_name = module_name;
 }
 
-void logging_listener::
-testRunStarting(Catch::TestRunInfo const& testRunInfo) {
-    // This is called once at the start of the test run, but we don't
-    // have a logger yet, so we'll skip logging here
+void logging_listener::testRunStarting(Catch::TestRunInfo const& /*testRunInfo*/) {
+    const std::string module = extract_module_name();
+
+    // Build logging options for test suite level logging
+    std::filesystem::path log_dir = std::filesystem::path("..") / "log" / module;
+
+    ores::utility::log::logging_options cfg;
+    cfg.output_directory = log_dir;
+    cfg.filename = module;
+    cfg.severity = "trace";
+    cfg.output_to_console = false;
+    cfg.tag = "TestSuite";
+
+    // Initialize logging lifecycle manager with options
+    lifecycle_manager_ = std::make_shared<utility::log::lifecycle_manager>(
+        std::optional<ores::utility::log::logging_options>{cfg});
 }
 
 void logging_listener::testRunEnded(Catch::TestRunStats const& testRunStats) {

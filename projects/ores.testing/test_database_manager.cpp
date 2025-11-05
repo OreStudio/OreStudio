@@ -22,6 +22,7 @@
 #include <random>
 #include <sstream>
 #include <stdexcept>
+#include <boost/log/attributes/scoped_attribute.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/environment/environment.hpp"
 #include "ores.utility/repository/context_factory.hpp"
@@ -71,6 +72,8 @@ context make_admin_context() {
 }
 
 std::string test_database_manager::generate_test_database_name() {
+    BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
+
     // Use process ID for uniqueness across parallel processes
     const auto pid = getpid();
 
@@ -90,6 +93,8 @@ std::string test_database_manager::generate_test_database_name() {
 }
 
 void test_database_manager::create_test_database(const std::string& db_name) {
+    BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
+
     BOOST_LOG_SEV(lg(), info) << "Creating test database: " << db_name;
 
     try {
@@ -124,6 +129,8 @@ void test_database_manager::create_test_database(const std::string& db_name) {
 }
 
 void test_database_manager::drop_test_database(const std::string& db_name) {
+    BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
+
     BOOST_LOG_SEV(lg(), info) << "Dropping test database: " << db_name;
 
     try {

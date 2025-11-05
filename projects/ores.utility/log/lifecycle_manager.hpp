@@ -47,6 +47,7 @@ private:
         boost::log::sinks::text_ostream_backend>;
 
 public:
+    lifecycle_manager() = delete;
     lifecycle_manager(lifecycle_manager&&) = delete;
     lifecycle_manager& operator=(const lifecycle_manager&) = delete;
 
@@ -56,14 +57,15 @@ private:
      *
      * @note path is non-const by ref by design.
      */
-    static boost::shared_ptr<file_sink_type> make_file_sink(
-        std::filesystem::path path, severity_level severity);
+  static boost::shared_ptr<file_sink_type>
+  make_file_sink(std::filesystem::path path, severity_level severity,
+      std::string tag);
 
     /**
      * @brief Creates a boost log console sink.
      */
     static boost::shared_ptr<console_sink_type> make_console_sink(
-        severity_level severity);
+        severity_level severity, std::string tag);
 
 public:
 

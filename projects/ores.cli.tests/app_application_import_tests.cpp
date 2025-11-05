@@ -24,7 +24,7 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/test/database_fixture.hpp"
+#include "ores.testing/database_fixture.hpp"
 #include "ores.cli/app/application.hpp"
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
@@ -34,7 +34,7 @@ namespace {
 
 const std::string test_suite("ores.cli.tests");
 
-class test_helper : public ores::utility::test::database_fixture {
+class test_helper : public ores::testing::database_fixture {
 public:
     test_helper() = default;
 

@@ -24,12 +24,12 @@
 #pragma once
 #endif
 
-#include "ores.utility/test/database_fixture.hpp"
+#include "ores.testing/database_fixture.hpp"
 #include "ores.risk/domain/currency.hpp"
 
 namespace ores::risk::tests {
 
-class repository_helper : public utility::test::database_fixture {
+class repository_helper : public testing::database_fixture {
 public:
     repository_helper() = default;
 

@@ -47,7 +47,6 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         Boost::boost
         Boost::exception
-        Catch2::Catch2
     )
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

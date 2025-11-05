@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TESTING_CATCH2_LOGGING_LISTENER_HPP
-#define ORES_TESTING_CATCH2_LOGGING_LISTENER_HPP
+#ifndef ORES_TESTING_LOGGING_LISTENER_HPP
+#define ORES_TESTING_LOGGING_LISTENER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -110,7 +110,7 @@ inline std::string extract_module_name() {
  *       BOOST_LOG_SEV(logger(), info) << "Test message";
  *   }
  */
-class catch2_logging_listener : public Catch::EventListenerBase {
+class logging_listener : public Catch::EventListenerBase {
 public:
     using Catch::EventListenerBase::EventListenerBase;
 
@@ -237,7 +237,7 @@ public:
  * @brief Returns the logger for the current test case.
  *
  * This function provides access to the thread-local logger set up by the
- * catch2_logging_listener. It should be called from within a test case.
+ * logging_listener. It should be called from within a test case.
  *
  * @return Reference to the current test's logger
  * @throws std::runtime_error if called outside of a test case context
@@ -246,7 +246,7 @@ inline auto& logger() {
     if (!detail::current_test_context.logger.has_value()) {
         throw std::runtime_error(
             "logger() called outside of test case context. "
-            "Ensure catch2_logging_listener.hpp is included in your test file.");
+            "Ensure logging_listener.hpp is included in your test file.");
     }
     return detail::current_test_context.logger.value();
 }
@@ -254,6 +254,6 @@ inline auto& logger() {
 }
 
 // Note: The listener must be registered in each test's main.cpp file using:
-// CATCH_REGISTER_LISTENER(ores::utility::test::catch2_logging_listener)
+// CATCH_REGISTER_LISTENER(ores::utility::test::logging_listener)
 
 #endif

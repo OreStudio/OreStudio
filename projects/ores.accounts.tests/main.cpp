@@ -20,10 +20,10 @@
 #include <openssl/crypto.h>
 #include <boost/scope_exit.hpp>
 #include <catch2/catch_session.hpp>
-#include "ores.testing/catch2_logging_listener.hpp"
+#include "ores.testing/logging_listener.hpp"
 #include "ores.testing/database_lifecycle_listener.hpp"
 
-CATCH_REGISTER_LISTENER(ores::testing::catch2_logging_listener)
+CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
 CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
 
 int main(int argc, char* argv[]) {

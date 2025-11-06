@@ -25,17 +25,12 @@
 #endif
 
 #include "ores.testing/database_fixture.hpp"
-#include "ores.accounts/domain/account.hpp"
 
 namespace ores::accounts::tests {
 
 class repository_helper : public testing::database_fixture {
 public:
     repository_helper() = default;
-
-    accounts::domain::account
-    create_test_account(const std::string& username, bool is_admin = false);
-
     void cleanup_database();
 };
 

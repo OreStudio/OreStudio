@@ -25,23 +25,6 @@
 
 namespace ores::accounts::tests {
 
-using accounts::domain::account;
-
-accounts::domain::account repository_helper::
-create_test_account(const std::string& username, bool is_admin) {
-    account acc;
-    acc.version = 1;
-    acc.modified_by = faker::internet::username();
-    acc.id = boost::uuids::random_generator()();
-    acc.username = username;
-    acc.password_hash = faker::crypto::sha256();
-    acc.password_salt = faker::crypto::sha256();
-    acc.totp_secret = "TOTP_SECRET_" + username;
-    acc.email = username + "@test.com";
-    acc.is_admin = is_admin;
-    return acc;
-}
-
 void repository_helper::cleanup_database() {
     truncate_table("oresdb.accounts");
 }

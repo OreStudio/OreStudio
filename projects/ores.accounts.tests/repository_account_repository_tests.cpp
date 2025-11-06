@@ -24,6 +24,7 @@
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.accounts/domain/account.hpp"
+#include "ores.accounts/generators/account_generator.hpp"
 #include "ores.accounts/repository/account_repository.hpp"
 #include "ores.accounts.tests/repository_helper.hpp"
 
@@ -34,8 +35,9 @@ std::string test_suite("ores.accounts.tests");
 }
 
 using ores::accounts::domain::account;
-using ores::accounts::repository::account_repository;
 using ores::accounts::tests::repository_helper;
+using ores::accounts::repository::account_repository;
+using ores::accounts::generators::generate_fake_accounts;
 
 TEST_CASE("write_single_account", "[repository_account_repository_tests]") {
     using namespace ores::utility::log;
@@ -45,10 +47,11 @@ TEST_CASE("write_single_account", "[repository_account_repository_tests]") {
     helper.cleanup_database();
 
     account_repository repo;
-    auto acc = helper.create_test_account("test.write.single");
-    std::vector<account> accounts = {acc};
-    BOOST_LOG_SEV(lg, debug) << "Accounts: " << accounts;
+    auto accounts =
+        (generate_fake_accounts() | std::views::take(1)) |
+        std::ranges::to<std::vector>();
 
+    BOOST_LOG_SEV(lg, debug) << "Accounts: " << accounts;
     CHECK_NOTHROW(repo.write(helper.get_context(), accounts));
 }
 
@@ -60,11 +63,9 @@ TEST_CASE("write_multiple_accounts", "[repository_account_repository_tests]") {
     helper.cleanup_database();
 
     account_repository repo;
-    std::vector<account> accounts;
-    for (int i = 0; i < 5; ++i) {
-        const auto username = "test.write.multi." + std::to_string(i);
-        accounts.push_back(helper.create_test_account(username, i % 2 == 0));
-    }
+    auto accounts =
+        (generate_fake_accounts() | std::views::take(5)) |
+        std::ranges::to<std::vector>();
     BOOST_LOG_SEV(lg, debug) << "Accounts: " << accounts;
 
     CHECK_NOTHROW(repo.write(helper.get_context(), accounts));
@@ -78,11 +79,9 @@ TEST_CASE("read_latest_accounts", "[repository_account_repository_tests]") {
     helper.cleanup_database();
 
     account_repository repo;
-    std::vector<account> written_accounts;
-    for (int i = 0; i < 3; ++i) {
-        const auto username = "test.read.latest." + std::to_string(i);
-        written_accounts.push_back(helper.create_test_account(username));
-    }
+    auto written_accounts =
+        (generate_fake_accounts() | std::views::take(3)) |
+        std::ranges::to<std::vector>();
     BOOST_LOG_SEV(lg, debug) << "Written accounts: " << written_accounts;
 
     repo.write(helper.get_context(), written_accounts);
@@ -102,23 +101,23 @@ TEST_CASE("read_latest_account_by_id", "[repository_account_repository_tests]") 
     helper.cleanup_database();
 
     account_repository repo;
+    auto accounts =
+        (generate_fake_accounts() | std::views::take(5)) |
+        std::ranges::to<std::vector>();
 
-    auto acc = helper.create_test_account("test.read.by.id");
-    const auto test_id = acc.id;
-
-    std::vector<account> accounts = {acc};
+    const auto target = accounts.front();
     BOOST_LOG_SEV(lg, debug) << "Write accounts: " << accounts;
-
     repo.write(helper.get_context(), accounts);
 
-    auto read_accounts = repo.read_latest(helper.get_context(), test_id);
+    BOOST_LOG_SEV(lg, debug) << "target account: " << target;
+
+    auto read_accounts = repo.read_latest(helper.get_context(), target.id);
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
-
     REQUIRE(read_accounts.size() == 1);
-    CHECK(read_accounts[0].id == test_id);
-    CHECK(read_accounts[0].username == "test.read.by.id");
-    CHECK(read_accounts[0].email == "test.read.by.id@test.com");
+    CHECK(read_accounts[0].id == target.id);
+    CHECK(read_accounts[0].username == target.username);
+    CHECK(read_accounts[0].email == target.email);
 }
 
 TEST_CASE("read_all_accounts", "[repository_account_repository_tests]") {
@@ -129,13 +128,10 @@ TEST_CASE("read_all_accounts", "[repository_account_repository_tests]") {
     helper.cleanup_database();
 
     account_repository repo;
-
-    std::vector<account> written_accounts;
-    for (int i = 0; i < 3; ++i) {
-        const auto username = "test.read.all." + std::to_string(i);
-        written_accounts.push_back(helper.create_test_account(username));
-    }
-    BOOST_LOG_SEV(lg, debug) << "Written accounts: " << written_accounts;
+    auto written_accounts =
+        (generate_fake_accounts() | std::views::take(5)) |
+        std::ranges::to<std::vector>();
+    BOOST_LOG_SEV(lg, debug) << "Generated accounts: " << written_accounts;
 
     repo.write(helper.get_context(), written_accounts);
 
@@ -156,7 +152,7 @@ TEST_CASE("read_all_accounts_by_id", "[repository_account_repository_tests]") {
     account_repository repo;
 
     // Write multiple versions of the same account
-    auto acc1 = helper.create_test_account("test.versions");
+    auto acc1 = *generate_fake_accounts().begin();
     const auto test_id = acc1.id;
     acc1.version = 1;
     BOOST_LOG_SEV(lg, debug) << "Account 1: " << acc1;
@@ -194,22 +190,24 @@ TEST_CASE("read_latest_by_username", "[repository_account_repository_tests]") {
     helper.cleanup_database();
 
     account_repository repo;
+    auto accounts =
+        (generate_fake_accounts() | std::views::take(5)) |
+        std::ranges::to<std::vector>();
+    BOOST_LOG_SEV(lg, debug) << "Generated accounts: " << accounts;
 
-    // Write account with specific username
-    const std::string test_username = "test.read.by.username";
-    auto acc = helper.create_test_account(test_username);
-    BOOST_LOG_SEV(lg, debug) << "Account: " << acc;
+    repo.write(helper.get_context(), accounts);
 
-    repo.write(helper.get_context(), {acc});
+    auto acc = accounts.front();
+    BOOST_LOG_SEV(lg, debug) << "Target account: " << acc;
 
     // Read by username
     auto read_accounts = repo.read_latest_by_username(
-        helper.get_context(), test_username);
+        helper.get_context(), acc.username);
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     REQUIRE(read_accounts.size() == 1);
-    CHECK(read_accounts[0].username == test_username);
-    CHECK(read_accounts[0].email == test_username + "@test.com");
+    CHECK(read_accounts[0].username == acc.username);
+    CHECK(read_accounts[0].email == acc.email);
 }
 
 TEST_CASE("read_nonexistent_account_by_id", "[repository_account_repository_tests]") {
@@ -225,7 +223,8 @@ TEST_CASE("read_nonexistent_account_by_id", "[repository_account_repository_test
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
-    auto read_accounts = repo.read_latest(helper.get_context(), nonexistent_id);
+    auto read_accounts =
+        repo.read_latest(helper.get_context(), nonexistent_id);
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     CHECK(read_accounts.size() == 0);
@@ -260,11 +259,11 @@ TEST_CASE("write_and_read_admin_account", "[repository_account_repository_tests]
     account_repository repo;
 
     // Create admin account
-    auto admin_acc = helper.create_test_account("test.admin.user", true);
+    auto admin_acc = *generate_fake_accounts().begin();
+    admin_acc.is_admin = true;
     BOOST_LOG_SEV(lg, debug) << "Admin account: " << admin_acc;
 
     const auto admin_id = admin_acc.id;
-
     repo.write(helper.get_context(), {admin_acc});
 
     // Read back and verify admin flag
@@ -273,5 +272,5 @@ TEST_CASE("write_and_read_admin_account", "[repository_account_repository_tests]
 
     REQUIRE(read_accounts.size() == 1);
     CHECK(read_accounts[0].is_admin == true);
-    CHECK(read_accounts[0].username == "test.admin.user");
+    CHECK(read_accounts[0].username == admin_acc.username);
 }

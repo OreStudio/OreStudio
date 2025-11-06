@@ -18,50 +18,58 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-06 Thu 00:26], for Thursday, November 06, 2025.
-|      | <75>                                   |        |      |      |       |
-| Tags | Headline                               | Time   |      |      |     % |
-|------+----------------------------------------+--------+------+------+-------|
-|      | *Total time*                           | *0:16* |      |      | 100.0 |
-|------+----------------------------------------+--------+------+------+-------|
-|      | Stories                                | 0:16   |      |      | 100.0 |
-|      | Active                                 |        | 0:16 |      | 100.0 |
-| code | Add tests at test suite level to ctest |        |      | 0:13 |  81.2 |
-| code | Add connect command line argument      |        |      | 0:03 |  18.8 |
+#+CAPTION: Clock summary at [2025-11-06 Thu 17:51], for Thursday, November 06, 2025.
+|       | <75>                                         |        |      |      |       |
+| Tags  | Headline                                     | Time   |      |      |     % |
+|-------+----------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                 | *8:05* |      |      | 100.0 |
+|-------+----------------------------------------------+--------+------+------+-------|
+|       | Stories                                      | 8:05   |      |      | 100.0 |
+|       | Active                                       |        | 8:05 |      | 100.0 |
+| agile | Sprint and product backlog refinement        |        |      | 0:16 |   3.3 |
+| code  | Add tests at test suite level to ctest       |        |      | 0:13 |   2.7 |
+| code  | Cli tests are failing on github              |        |      | 0:58 |  12.0 |
+| code  | Add generators for test data generation      |        |      | 5:48 |  71.8 |
+| code  | CTest shows only one test per test suite     |        |      | 0:26 |   5.4 |
+| code  | Resolve all of the OpenSSL leaks in valgrind |        |      | 0:21 |   4.3 |
+| code  | Add connect command line argument            |        |      | 0:03 |   0.6 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-06 Thu 00:26]
+#+CAPTION: Clock summary at [2025-11-06 Thu 17:51]
 |       | <75>                                                   |         |       |       |       |
 | Tags  | Headline                                               | Time    |       |       |     % |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                           | *62:35* |       |       | 100.0 |
+|       | *Total time*                                           | *70:24* |       |       | 100.0 |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                | 62:35   |       |       | 100.0 |
-|       | Active                                                 |         | 62:35 |       | 100.0 |
-| agile | Sprint and product backlog refinement                  |         |       |  1:30 |   2.4 |
-| code  | Add locking up logic                                   |         |       |  1:28 |   2.3 |
-| code  | Build using dynamic libraries                          |         |       |  7:24 |  11.8 |
-| code  | Enable qt gui                                          |         |       |  4:13 |   6.7 |
-| code  | Implement logging according to correct boost.log usage |         |       |  8:02 |  12.8 |
-| code  | Fix broken Linux and OSX tests                         |         |       |  0:10 |   0.3 |
-| code  | Fix broken windows builds                              |         |       |  2:35 |   4.1 |
-| code  | Investigate leaks from valgrind                        |         |       |  0:51 |   1.4 |
-| code  | Consider adding a postgres database to CI              |         |       | 14:13 |  22.7 |
+|       | Stories                                                | 70:24   |       |       | 100.0 |
+|       | Active                                                 |         | 70:24 |       | 100.0 |
+| agile | Sprint and product backlog refinement                  |         |       |  1:46 |   2.5 |
+| code  | Add locking up logic                                   |         |       |  1:28 |   2.1 |
+| code  | Build using dynamic libraries                          |         |       |  7:24 |  10.5 |
+| code  | Enable qt gui                                          |         |       |  4:13 |   6.0 |
+| code  | Implement logging according to correct boost.log usage |         |       |  8:02 |  11.4 |
+| code  | Fix broken Linux and OSX tests                         |         |       |  0:10 |   0.2 |
+| code  | Fix broken windows builds                              |         |       |  2:35 |   3.7 |
+| code  | Investigate leaks from valgrind                        |         |       |  0:51 |   1.2 |
+| code  | Consider adding a postgres database to CI              |         |       | 14:13 |  20.2 |
 | code  | Fix misspell that causes build to break                |         |       |  0:12 |   0.3 |
-| code  | Improve code coverage                                  |         |       |  4:15 |   6.8 |
-| infra | vcpkg cannot apply patch on windowws                   |         |       |  1:46 |   2.8 |
-| code  | Update prodigy to use tags                             |         |       |  0:26 |   0.7 |
-| code  | Add command line arguments for database to service     |         |       |  3:34 |   5.7 |
-| code  | Resolve all of the OpenSSL leaks in valgrind           |         |       |  0:15 |   0.4 |
-| code  | Separate test database usage from application          |         |       |  3:33 |   5.7 |
-| code  | Split test code from utility                           |         |       |  4:41 |   7.5 |
+| code  | Improve code coverage                                  |         |       |  4:15 |   6.0 |
+| infra | vcpkg cannot apply patch on windowws                   |         |       |  1:46 |   2.5 |
+| code  | Update prodigy to use tags                             |         |       |  0:26 |   0.6 |
+| code  | Add command line arguments for database to service     |         |       |  3:34 |   5.1 |
+| code  | Separate test database usage from application          |         |       |  3:33 |   5.0 |
+| code  | Split test code from utility                           |         |       |  4:41 |   6.7 |
 | code  | Add tests at test suite level to ctest                 |         |       |  0:13 |   0.3 |
-| code  | Add support for feature flags                          |         |       |  1:25 |   2.3 |
-| code  | Implement authentication bootstrap workflow            |         |       |  0:25 |   0.7 |
+| code  | Cli tests are failing on github                        |         |       |  0:58 |   1.4 |
+| code  | Add generators for test data generation                |         |       |  5:48 |   8.2 |
+| code  | CTest shows only one test per test suite               |         |       |  0:26 |   0.6 |
+| code  | Resolve all of the OpenSSL leaks in valgrind           |         |       |  0:36 |   0.9 |
+| code  | Add support for feature flags                          |         |       |  1:25 |   2.0 |
+| code  | Implement authentication bootstrap workflow            |         |       |  0:25 |   0.6 |
 | code  | Add connect command line argument                      |         |       |  0:11 |   0.3 |
-| code  | Add workspace as a container                           |         |       |  1:13 |   1.9 |
+| code  | Add workspace as a container                           |         |       |  1:13 |   1.7 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -607,14 +615,6 @@ Notes:
 - we are using the defaults incorrectly. Set them as part of the options
   descriptions setup and remove manual handling code.
 
-*** BLOCKED Resolve all of the OpenSSL leaks in valgrind               :code:
-    :LOGBOOK:
-    CLOCK: [2025-11-05 Wed 14:52]--[2025-11-05 Wed 15:07] =>  0:15
-    :END:
-
-We are freeing up open SSL memory and still have leaks. For now just apply the
-suppression suggestions and deal with this later.
-
 *** COMPLETED Separate test database usage from application            :code:
     :LOGBOOK:
     CLOCK: [2025-11-05 Wed 17:20]--[2025-11-05 Wed 18:40] =>  1:20
@@ -661,6 +661,56 @@ Notes:
 At present we are adding one test at a time to CTest. Now that we have database
 isolation, this makes the tests very slow. We need to be able to run the entire
 test suite in one go.
+
+*** COMPLETED Cli tests are failing on github                          :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-06 Thu 11:15]--[2025-11-06 Thu 12:00] =>  0:45
+    CLOCK: [2025-11-06 Thu 10:51]--[2025-11-06 Thu 10:57] =>  0:06
+    CLOCK: [2025-11-06 Thu 10:37]--[2025-11-06 Thu 10:44] =>  0:07
+    :END:
+
+Notes:
+
+- not clear why the tests are failing. Dump test results XML to console for
+  analysis.
+
+*** COMPLETED Add generators for test data generation                  :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-06 Thu 13:54]--[2025-11-06 Thu 17:50] =>  3:56
+    CLOCK: [2025-11-06 Thu 12:01]--[2025-11-06 Thu 13:53] =>  1:52
+    :END:
+
+At present our test data is very synthetic. We now have faker, make it a bit
+more realistic.
+
+Notes:
+
+- rename fake to synthetic.
+
+*** BLOCKED CTest shows only one test per test suite                   :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-06 Thu 09:21]--[2025-11-06 Thu 09:47] =>  0:26
+    :END:
+
+We need to be able to see individual tests and the reasons for their failures.
+
+Notes:
+
+- raised an issue with CMake.
+
+Links:
+
+- [[https://gitlab.kitware.com/cmake/cmake/-/issues/27363][#27363: CTest: Uploading generated JUnit XML from the test harness]]
+- [[https://public.kitware.com/pipermail/cdash/2015-February/001544.html][[Cdash] How to send a JUnit result file to CDash server with CTest?]]
+
+*** BLOCKED Resolve all of the OpenSSL leaks in valgrind               :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-06 Thu 09:48]--[2025-11-06 Thu 10:09] =>  0:21
+    CLOCK: [2025-11-05 Wed 14:52]--[2025-11-05 Wed 15:07] =>  0:15
+    :END:
+
+We are freeing up open SSL memory and still have leaks. For now just apply the
+suppression suggestions and deal with this later.
 
 *** STARTED Add support for feature flags                              :code:
     :LOGBOOK:
@@ -787,6 +837,12 @@ Links:
 
 To avoid leaking secrets it should be possible to supply a =--connect= in the
 client. We still need a connect in case we want to reconnect.
+
+*** Add write one to repository                                        :code:
+
+We should follow the mongo patterns and have a write one and write many
+repository methods. At present we have to create a vector just to write a single
+entity.
 
 *** Remove postgres passwords from github workflows                    :code:
 

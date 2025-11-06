@@ -48,7 +48,7 @@ private:
      * @brief Executes the console workflow.
      */
     static int execute(const std::vector<std::string>& args,
-        std::ostream& stdout, std::ostream& stderr);
+        std::ostream& std_output, std::ostream& error_output);
 };
 
 }

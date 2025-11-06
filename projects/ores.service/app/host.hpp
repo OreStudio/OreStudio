@@ -48,7 +48,7 @@ public:
      * @brief Executes the console workflow.
      */
     static boost::asio::awaitable<int> execute(const std::vector<std::string>& args,
-        std::ostream& stdout, std::ostream& stderr,
+        std::ostream& std_output, std::ostream& error_output,
         boost::asio::io_context& io_ctx);
 };
 

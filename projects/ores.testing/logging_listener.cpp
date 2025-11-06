@@ -19,7 +19,6 @@
  */
 #include "ores.testing/logging_listener.hpp"
 
-#include <iostream>
 #include <memory>
 #include <string>
 #include <sstream>

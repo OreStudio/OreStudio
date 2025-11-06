@@ -21,7 +21,7 @@
 #include <filesystem>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.testing/database_fixture.hpp"
+#include "ores.testing/database_helper.hpp"
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.cli/app/application.hpp"
 #include "ores.cli/config/options.hpp"
@@ -31,15 +31,7 @@
 namespace {
 
 const std::string test_suite("ores.cli.tests");
-
-class test_helper : public ores::testing::database_fixture {
-public:
-    test_helper() = default;
-
-    void cleanup_currencies() {
-        truncate_table("oresdb.currencies");
-    }
-};
+const std::string database_table("oresdb.currencies");
 
 }
 
@@ -50,8 +42,8 @@ TEST_CASE("import_currencies_from_test_file", "[app_application_import_tests]") 
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    test_helper helper;
-    helper.cleanup_currencies();
+    ores::testing::database_helper h;
+    h.truncate_table(database_table);
 
     const std::filesystem::path test_data_file = "../test_data/currencies/currencies_01.xml";
 
@@ -76,7 +68,7 @@ TEST_CASE("import_currencies_from_test_file", "[app_application_import_tests]") 
     app.run(opts);
 
     risk::repository::currency_repository repo;
-    auto read_currencies = repo.read_latest(helper.get_context());
+    auto read_currencies = repo.read_latest(h.get_context());
 
     BOOST_LOG_SEV(lg, debug) << "Read " << read_currencies.size()
                              << " currencies from database";
@@ -114,8 +106,8 @@ TEST_CASE("import_currencies_from_multiple_files", "[app_application_import_test
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    test_helper helper;
-    helper.cleanup_currencies();
+    ores::testing::database_helper h;
+    h.truncate_table(database_table);
 
     const std::vector<std::filesystem::path> test_files = {
         "../test_data/currencies/currencies_01.xml",
@@ -141,7 +133,7 @@ TEST_CASE("import_currencies_from_multiple_files", "[app_application_import_test
     app.run(opts);
 
     risk::repository::currency_repository repo;
-    auto read_currencies = repo.read_latest(helper.get_context());
+    auto read_currencies = repo.read_latest(h.get_context());
 
     BOOST_LOG_SEV(lg, debug) << "Total currencies in database: "
                              << read_currencies.size();
@@ -157,8 +149,8 @@ TEST_CASE("import_and_query_specific_currency", "[app_application_import_tests]"
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    test_helper helper;
-    helper.cleanup_currencies();
+    ores::testing::database_helper h;
+    h.truncate_table(database_table);
 
     const std::filesystem::path test_data_file = "../test_data/currencies/currencies_01.xml";
 
@@ -184,7 +176,7 @@ TEST_CASE("import_and_query_specific_currency", "[app_application_import_tests]"
     BOOST_LOG_SEV(lg, debug) << "Querying for currency: " << target_iso;
 
     risk::repository::currency_repository repo;
-    auto pgk_currencies = repo.read_latest(helper.get_context(), target_iso);
+    auto pgk_currencies = repo.read_latest(h.get_context(), target_iso);
 
     BOOST_LOG_SEV(lg, debug) << "Found " << pgk_currencies.size()
                              << " currencies with ISO code " << target_iso;
@@ -205,13 +197,13 @@ TEST_CASE("import_currencies_with_empty_database", "[app_application_import_test
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    test_helper helper;
-    helper.cleanup_currencies();
+    ores::testing::database_helper h;
+    h.truncate_table(database_table);
 
     BOOST_LOG_SEV(lg, info) << "Verifying empty database";
 
     risk::repository::currency_repository repo;
-    auto initial_currencies = repo.read_latest(helper.get_context());
+    auto initial_currencies = repo.read_latest(h.get_context());
 
     BOOST_LOG_SEV(lg, debug) << "Initial currency count: "
                              << initial_currencies.size();
@@ -236,7 +228,7 @@ TEST_CASE("import_currencies_with_empty_database", "[app_application_import_test
 
     app.run(opts);
 
-    auto after_import = repo.read_latest(helper.get_context());
+    auto after_import = repo.read_latest(h.get_context());
 
     BOOST_LOG_SEV(lg, debug) << "After import currency count: "
                              << after_import.size();
@@ -249,8 +241,8 @@ TEST_CASE("import_currencies_verify_all_fields", "[app_application_import_tests]
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    test_helper helper;
-    helper.cleanup_currencies();
+    ores::testing::database_helper h;
+    h.truncate_table(database_table);
 
     const std::filesystem::path test_data_file = "../test_data/currencies/currencies_01.xml";
 
@@ -274,7 +266,7 @@ TEST_CASE("import_currencies_verify_all_fields", "[app_application_import_tests]
     BOOST_LOG_SEV(lg, debug) << "Console output: " << os.str();
 
     risk::repository::currency_repository repo;
-    auto pgk_currencies = repo.read_latest(helper.get_context(), "PGK");
+    auto pgk_currencies = repo.read_latest(h.get_context(), "PGK");
     REQUIRE(!pgk_currencies.empty());
 
     const auto& pgk = pgk_currencies[0];
@@ -299,8 +291,8 @@ TEST_CASE("import_currencies_from_api_test_file", "[app_application_import_tests
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    test_helper helper;
-    helper.cleanup_currencies();
+    ores::testing::database_helper h;
+    h.truncate_table(database_table);
 
     const std::filesystem::path test_data_file = "../test_data/currencies/currencies_API.xml";
 
@@ -329,7 +321,7 @@ TEST_CASE("import_currencies_from_api_test_file", "[app_application_import_tests
     BOOST_LOG_SEV(lg, debug) << "Console output: " << os.str();
 
     risk::repository::currency_repository repo;
-    auto read_currencies = repo.read_latest(helper.get_context());
+    auto read_currencies = repo.read_latest(h.get_context());
 
     BOOST_LOG_SEV(lg, debug) << "Verified " << read_currencies.size()
                              << " currencies in database";

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.testing/database_fixture.hpp"
+#include "ores.testing/database_helper.hpp"
 
 #include "ores.testing/test_database_manager.hpp"
 
@@ -26,10 +26,10 @@ namespace ores::testing {
 using namespace ores::utility::log;
 using ores::testing::test_database_manager;
 
-database_fixture::database_fixture()
+database_helper::database_helper()
     : context_(test_database_manager::make_context()) {}
 
-void database_fixture::truncate_table(const std::string& table_name) {
+void database_helper::truncate_table(const std::string& table_name) {
     BOOST_LOG_SEV(lg(), info) << "Truncating table: " << table_name;
 
     const auto truncate_sql = "TRUNCATE TABLE " + table_name;

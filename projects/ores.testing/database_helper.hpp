@@ -17,26 +17,47 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_RISK_TESTS_REPOSITORY_HELPER_HPP
-#define ORES_RISK_TESTS_REPOSITORY_HELPER_HPP
+#ifndef ORES_TESTING_DATABASE_FIXTURE_HPP
+#define ORES_TESTING_DATABASE_FIXTURE_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include "ores.testing/database_fixture.hpp"
-#include "ores.risk/domain/currency.hpp"
+#include <string>
+#include "ores.utility/log/make_logger.hpp"
+#include "ores.utility/repository/context.hpp"
 
-namespace ores::risk::tests {
+namespace ores::testing {
 
-class repository_helper : public testing::database_fixture {
+/**
+ * @brief Provides database setup and cleanup utilities for tests.
+ */
+class database_helper {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger("ores.utility.test.database_fixture");
+        return instance;
+    }
+
 public:
-    repository_helper() = default;
+    database_helper();
 
-    risk::domain::currency
-    create_test_currency(const std::string& iso_code);
+    /**
+     * @brief Truncates the specified table.
+     *
+     * @param table_name Fully qualified table name (e.g., "oresdb.accounts")
+     */
+    void truncate_table(const std::string& table_name);
 
-    void cleanup_database();
+    /**
+     * @brief Gets the database context.
+     */
+    utility::repository::context& get_context() { return context_; }
+
+private:
+    utility::repository::context context_;
 };
 
 }

@@ -22,38 +22,53 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include "ores.testing/database_helper.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "faker-cxx/faker.h" // IWYU pragma: keep.
+#include "ores.accounts/generators/account_generator.hpp"
 #include "ores.accounts/messaging/accounts_message_handler.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
-#include "ores.accounts.tests/repository_helper.hpp"
+
+using namespace ores::accounts;
+using namespace ores::accounts::messaging;
 
 namespace {
 
-std::string test_suite("ores.accounts.tests");
+const std::string test_suite("ores.accounts.tests");
+const std::string database_table("oresdb.accounts");
+
+create_account_request to_create_account_request(const domain::account& a) {
+    create_account_request r;
+    r.username = a.username;
+    r.password = faker::internet::password();
+    r.totp_secret = a.totp_secret;
+    r.email = a.email;
+    r.modified_by = a.modified_by;
+    r.is_admin = a.is_admin;
+    return r;
+}
 
 }
 
-using namespace ores;
-using namespace ores::accounts::messaging;
-using namespace ores::accounts::tests;
+using namespace ores::utility::log;
+using ores::comms::protocol::message_type;
+using ores::comms::protocol::error_code;
+using ores::testing::database_helper;
+using ores::accounts::generators::generate_fake_accounts;
 
-TEST_CASE("handle_create_account_request_with_valid_data", "[messaging_accounts_message_handler_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("handle_single_create_account_request",
+    "[messaging_accounts_message_handler_tests]") {
     auto lg(make_logger(test_suite));
 
-    repository_helper helper;
-    helper.cleanup_database();
+    database_helper h;
+    h.truncate_table(database_table);
 
-    accounts_message_handler handler(helper.get_context());
+    accounts_message_handler handler(h.get_context());
 
-    create_account_request req;
-    req.username = std::string(faker::internet::username());
-    req.password = std::string(faker::internet::password());
-    req.totp_secret = "";
-    req.email = std::string(faker::internet::email());
-    req.modified_by = "admin";
-    req.is_admin = false;
+    const auto account = *generate_fake_accounts().begin();
+    BOOST_LOG_SEV(lg, info) << "Original account: " << account;
+
+    create_account_request req(to_create_account_request(account));
     BOOST_LOG_SEV(lg, info) << "Request: " << req;
 
     const auto payload = req.serialize();
@@ -63,7 +78,7 @@ TEST_CASE("handle_create_account_request_with_valid_data", "[messaging_accounts_
 
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
-            comms::protocol::message_type::create_account_request,
+            message_type::create_account_request,
             payload, "127.0.0.1:12345");
 
         REQUIRE(result.has_value());
@@ -80,24 +95,23 @@ TEST_CASE("handle_create_account_request_with_valid_data", "[messaging_accounts_
     REQUIRE(test_completed);
 }
 
-TEST_CASE("handle_create_account_request_with_faker", "[messaging_accounts_message_handler_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("handle_many_create_account_requests",
+    "[messaging_accounts_message_handler_tests]") {
     auto lg(make_logger(test_suite));
 
-    repository_helper helper;
-    helper.cleanup_database();
+    database_helper h;
+    h.truncate_table(database_table);
 
-    accounts_message_handler handler(helper.get_context());
+    accounts_message_handler handler(h.get_context());
+    auto accounts =
+        (generate_fake_accounts() | std::views::take(5)) |
+        std::ranges::to<std::vector>();
 
-    for (int i = 0; i < 3; ++i) {
-        create_account_request req;
-        req.username = std::string(faker::internet::username()) + std::to_string(i);
-        req.password = std::string(faker::internet::password());
-        req.totp_secret = "";
-        req.email = std::string(faker::internet::email());
-        req.modified_by = std::string(faker::person::firstName());
-        req.is_admin = faker::datatype::boolean();
-        BOOST_LOG_SEV(lg, info) << "Request " << i << ": " << req;
+    for (const auto& acc : accounts) {
+        BOOST_LOG_SEV(lg, info) << "Original account: " << acc;
+
+        create_account_request req(to_create_account_request(acc));
+        BOOST_LOG_SEV(lg, info) << "Request: " << req;
 
         const auto payload = req.serialize();
 
@@ -106,14 +120,15 @@ TEST_CASE("handle_create_account_request_with_faker", "[messaging_accounts_messa
 
         boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
             auto result = co_await handler.handle_message(
-                comms::protocol::message_type::create_account_request,
+                message_type::create_account_request,
                 payload, "127.0.0.1:12345");
 
             REQUIRE(result.has_value());
-            const auto response_result = create_account_response::deserialize(result.value());
+            const auto response_result =
+                create_account_response::deserialize(result.value());
             REQUIRE(response_result.has_value());
             const auto& response = response_result.value();
-            BOOST_LOG_SEV(lg, info) << "Response " << i << ": " << response;
+            BOOST_LOG_SEV(lg, info) << "Response " << ": " << response;
 
             CHECK(!response.account_id.is_nil());
             test_completed = true;
@@ -124,14 +139,14 @@ TEST_CASE("handle_create_account_request_with_faker", "[messaging_accounts_messa
     }
 }
 
-TEST_CASE("handle_list_accounts_request_empty", "[messaging_accounts_message_handler_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("handle_list_accounts_request_empty",
+    "[messaging_accounts_message_handler_tests]") {
+
     auto lg(make_logger(test_suite));
 
-    repository_helper helper;
-    helper.cleanup_database();
-
-    accounts_message_handler handler(helper.get_context());
+    database_helper h;
+    h.truncate_table(database_table);
+    accounts_message_handler handler(h.get_context());
 
     list_accounts_request req;
     BOOST_LOG_SEV(lg, info) << "Request: " << req;
@@ -143,7 +158,7 @@ TEST_CASE("handle_list_accounts_request_empty", "[messaging_accounts_message_han
 
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
-            comms::protocol::message_type::list_accounts_request,
+            message_type::list_accounts_request,
             payload, "127.0.0.1:12345");
 
         REQUIRE(result.has_value());
@@ -160,32 +175,31 @@ TEST_CASE("handle_list_accounts_request_empty", "[messaging_accounts_message_han
     REQUIRE(test_completed);
 }
 
-TEST_CASE("handle_list_accounts_request_with_accounts", "[messaging_accounts_message_handler_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("handle_list_accounts_request_with_accounts",
+    "[messaging_accounts_message_handler_tests]") {
     auto lg(make_logger(test_suite));
 
-    repository_helper helper;
-    helper.cleanup_database();
+    database_helper h;
+    h.truncate_table(database_table);
 
-    accounts_message_handler handler(helper.get_context());
+    accounts_message_handler handler(h.get_context());
 
-    // Create some test accounts first
-    const int account_count = 3;
-    for (int i = 0; i < account_count; ++i) {
-        create_account_request create_req;
-        create_req.username = "user" + std::to_string(i);
-        create_req.password = std::string(faker::internet::password());
-        create_req.totp_secret = "";
-        create_req.email = "user" + std::to_string(i) + "@test.com";
-        create_req.modified_by = "admin";
-        create_req.is_admin = (i == 0);
+    const int account_count = 5;
+    auto accounts =
+        (generate_fake_accounts() | std::views::take(account_count)) |
+        std::ranges::to<std::vector>();
 
+    for (const auto& acc : accounts) {
+        BOOST_LOG_SEV(lg, info) << "Original account: " << acc;
+
+        create_account_request create_req(to_create_account_request(acc));
+        BOOST_LOG_SEV(lg, info) << "Create request: " << create_req;
         const auto create_payload = create_req.serialize();
 
         boost::asio::io_context create_io_context;
         boost::asio::co_spawn(create_io_context, [&]() -> boost::asio::awaitable<void> {
             auto result = co_await handler.handle_message(
-                comms::protocol::message_type::create_account_request,
+                message_type::create_account_request,
                 create_payload, "127.0.0.1:12345");
             REQUIRE(result.has_value());
         }, boost::asio::detached);
@@ -203,7 +217,7 @@ TEST_CASE("handle_list_accounts_request_with_accounts", "[messaging_accounts_mes
 
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
-            comms::protocol::message_type::list_accounts_request,
+            message_type::list_accounts_request,
             payload, "127.0.0.1:12345");
 
         REQUIRE(result.has_value());
@@ -220,33 +234,28 @@ TEST_CASE("handle_list_accounts_request_with_accounts", "[messaging_accounts_mes
     REQUIRE(test_completed);
 }
 
-TEST_CASE("handle_login_request_with_valid_credentials", "[messaging_accounts_message_handler_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("handle_login_request_with_valid_credentials",
+    "[messaging_accounts_message_handler_tests]") {
     auto lg(make_logger(test_suite));
 
-    repository_helper helper;
-    helper.cleanup_database();
+    database_helper h;
+    h.truncate_table(database_table);
 
-    accounts_message_handler handler(helper.get_context());
+    accounts_message_handler handler(h.get_context());
 
     // Create an account first
-    const std::string username = std::string(faker::internet::username());
-    const std::string password = "test_password123";
+    const auto account = *generate_fake_accounts().begin();
+    BOOST_LOG_SEV(lg, info) << "Original account: " << account;
 
-    create_account_request create_req;
-    create_req.username = username;
-    create_req.password = password;
-    create_req.totp_secret = "";
-    create_req.email = std::string(faker::internet::email());
-    create_req.modified_by = "admin";
-    create_req.is_admin = false;
+    create_account_request create_req(to_create_account_request(account));
+    BOOST_LOG_SEV(lg, info) << "Request: " << create_req;
 
     const auto create_payload = create_req.serialize();
 
     boost::asio::io_context create_io_context;
     boost::asio::co_spawn(create_io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
-            comms::protocol::message_type::create_account_request,
+            message_type::create_account_request,
             create_payload, "127.0.0.1:12345");
         REQUIRE(result.has_value());
     }, boost::asio::detached);
@@ -254,8 +263,8 @@ TEST_CASE("handle_login_request_with_valid_credentials", "[messaging_accounts_me
 
     // Now attempt login
     login_request login_req;
-    login_req.username = username;
-    login_req.password = password;
+    login_req.username = create_req.username;
+    login_req.password = create_req.password;
     BOOST_LOG_SEV(lg, info) << "Request: " << login_req;
 
     const auto login_payload = login_req.serialize();
@@ -265,7 +274,7 @@ TEST_CASE("handle_login_request_with_valid_credentials", "[messaging_accounts_me
 
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
-            comms::protocol::message_type::login_request,
+            message_type::login_request,
             login_payload, "192.168.1.100:54321");
 
         REQUIRE(result.has_value());
@@ -276,7 +285,7 @@ TEST_CASE("handle_login_request_with_valid_credentials", "[messaging_accounts_me
 
         CHECK(response.success == true);
         CHECK(response.error_message.empty());
-        CHECK(response.username == username);
+        CHECK(response.username == create_req.username);
         CHECK(!response.account_id.is_nil());
         test_completed = true;
     }, boost::asio::detached);
@@ -285,33 +294,29 @@ TEST_CASE("handle_login_request_with_valid_credentials", "[messaging_accounts_me
     REQUIRE(test_completed);
 }
 
-TEST_CASE("handle_login_request_with_invalid_credentials", "[messaging_accounts_message_handler_tests]") {
+TEST_CASE("handle_login_request_with_invalid_credentials",
+    "[messaging_accounts_message_handler_tests]") {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    repository_helper helper;
-    helper.cleanup_database();
+    database_helper h;
+    h.truncate_table(database_table);
 
-    accounts_message_handler handler(helper.get_context());
+    accounts_message_handler handler(h.get_context());
 
     // Create an account first
-    const std::string username = std::string(faker::internet::username());
-    const std::string password = "correct_password";
+    const auto account = *generate_fake_accounts().begin();
+    BOOST_LOG_SEV(lg, info) << "Original account: " << account;
 
-    create_account_request create_req;
-    create_req.username = username;
-    create_req.password = password;
-    create_req.totp_secret = "";
-    create_req.email = std::string(faker::internet::email());
-    create_req.modified_by = "admin";
-    create_req.is_admin = false;
+    create_account_request create_req(to_create_account_request(account));
+    BOOST_LOG_SEV(lg, info) << "Request: " << create_req;
 
     const auto create_payload = create_req.serialize();
 
     boost::asio::io_context create_io_context;
     boost::asio::co_spawn(create_io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
-            comms::protocol::message_type::create_account_request,
+            message_type::create_account_request,
             create_payload, "127.0.0.1:12345");
         REQUIRE(result.has_value());
     }, boost::asio::detached);
@@ -319,7 +324,7 @@ TEST_CASE("handle_login_request_with_invalid_credentials", "[messaging_accounts_
 
     // Attempt login with wrong password
     login_request login_req;
-    login_req.username = username;
+    login_req.username = create_req.username;
     login_req.password = "wrong_password";
     BOOST_LOG_SEV(lg, info) << "Request: " << login_req;
 
@@ -330,7 +335,7 @@ TEST_CASE("handle_login_request_with_invalid_credentials", "[messaging_accounts_
 
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
-            comms::protocol::message_type::login_request,
+            message_type::login_request,
             login_payload, "192.168.1.100:54321");
 
         REQUIRE(result.has_value());
@@ -348,26 +353,22 @@ TEST_CASE("handle_login_request_with_invalid_credentials", "[messaging_accounts_
     REQUIRE(test_completed);
 }
 
-TEST_CASE("handle_unlock_account_request", "[messaging_accounts_message_handler_tests]") {
+TEST_CASE("handle_unlock_account_request",
+    "[messaging_accounts_message_handler_tests]") {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    repository_helper helper;
-    helper.cleanup_database();
+    database_helper h;
+    h.truncate_table(database_table);
 
-    accounts_message_handler handler(helper.get_context());
+    accounts_message_handler handler(h.get_context());
 
     // Create an account first
-    const std::string username = std::string(faker::internet::username());
-    const std::string password = "test_password";
+    const auto account = *generate_fake_accounts().begin();
+    BOOST_LOG_SEV(lg, info) << "Original account: " << account;
 
-    create_account_request create_req;
-    create_req.username = username;
-    create_req.password = password;
-    create_req.totp_secret = "";
-    create_req.email = std::string(faker::internet::email());
-    create_req.modified_by = "admin";
-    create_req.is_admin = false;
+    create_account_request create_req(to_create_account_request(account));
+    BOOST_LOG_SEV(lg, info) << "Request: " << create_req;
 
     const auto create_payload = create_req.serialize();
 
@@ -376,7 +377,7 @@ TEST_CASE("handle_unlock_account_request", "[messaging_accounts_message_handler_
     boost::asio::io_context create_io_context;
     boost::asio::co_spawn(create_io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
-            comms::protocol::message_type::create_account_request,
+            message_type::create_account_request,
             create_payload, "127.0.0.1:12345");
         REQUIRE(result.has_value());
 
@@ -398,7 +399,7 @@ TEST_CASE("handle_unlock_account_request", "[messaging_accounts_message_handler_
 
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
-            comms::protocol::message_type::unlock_account_request,
+            message_type::unlock_account_request,
             unlock_payload, "127.0.0.1:12345");
 
         REQUIRE(result.has_value());
@@ -416,12 +417,13 @@ TEST_CASE("handle_unlock_account_request", "[messaging_accounts_message_handler_
     REQUIRE(test_completed);
 }
 
-TEST_CASE("handle_invalid_message_type", "[messaging_accounts_message_handler_tests]") {
+TEST_CASE("handle_invalid_message_type",
+    "[messaging_accounts_message_handler_tests]") {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    repository_helper helper;
-    accounts_message_handler handler(helper.get_context());
+    database_helper h;
+    accounts_message_handler handler(h.get_context());
 
     std::vector<std::uint8_t> empty_payload;
 
@@ -430,11 +432,11 @@ TEST_CASE("handle_invalid_message_type", "[messaging_accounts_message_handler_te
 
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
-            static_cast<comms::protocol::message_type>(0xFFFF),
+            static_cast<message_type>(0xFFFF),
             empty_payload, "127.0.0.1:12345");
 
         CHECK(!result.has_value());
-        CHECK(result.error() == comms::protocol::error_code::invalid_message_type);
+        CHECK(result.error() == error_code::invalid_message_type);
         test_completed = true;
     }, boost::asio::detached);
 

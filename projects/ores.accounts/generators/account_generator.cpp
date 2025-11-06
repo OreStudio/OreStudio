@@ -61,7 +61,6 @@ std::string generate_totp_secret(size_t num_bytes = 20) {
 
 namespace ores::accounts::generators {
 
-
 domain::account generate_fake_account() {
     domain::account r;
     r.version = 1;

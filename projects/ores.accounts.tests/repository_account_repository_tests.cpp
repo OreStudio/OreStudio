@@ -18,24 +18,25 @@
  *
  */
 #include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.accounts/domain/account.hpp"
 #include "ores.accounts/generators/account_generator.hpp"
 #include "ores.accounts/repository/account_repository.hpp"
-#include "ores.accounts.tests/repository_helper.hpp"
+#include "ores.testing/database_helper.hpp"
 
 namespace {
 
 std::string test_suite("ores.accounts.tests");
+std::string database_table("oresdb.accounts");
 
 }
 
+using ores::testing::database_helper;
 using ores::accounts::domain::account;
-using ores::accounts::tests::repository_helper;
 using ores::accounts::repository::account_repository;
 using ores::accounts::generators::generate_fake_accounts;
 
@@ -43,8 +44,8 @@ TEST_CASE("write_single_account", "[repository_account_repository_tests]") {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    repository_helper helper;
-    helper.cleanup_database();
+    database_helper h;
+    h.truncate_table(database_table);
 
     account_repository repo;
     auto accounts =
@@ -52,15 +53,15 @@ TEST_CASE("write_single_account", "[repository_account_repository_tests]") {
         std::ranges::to<std::vector>();
 
     BOOST_LOG_SEV(lg, debug) << "Accounts: " << accounts;
-    CHECK_NOTHROW(repo.write(helper.get_context(), accounts));
+    CHECK_NOTHROW(repo.write(h.get_context(), accounts));
 }
 
 TEST_CASE("write_multiple_accounts", "[repository_account_repository_tests]") {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    repository_helper helper;
-    helper.cleanup_database();
+    database_helper h;
+    h.truncate_table(database_table);
 
     account_repository repo;
     auto accounts =
@@ -68,15 +69,15 @@ TEST_CASE("write_multiple_accounts", "[repository_account_repository_tests]") {
         std::ranges::to<std::vector>();
     BOOST_LOG_SEV(lg, debug) << "Accounts: " << accounts;
 
-    CHECK_NOTHROW(repo.write(helper.get_context(), accounts));
+    CHECK_NOTHROW(repo.write(h.get_context(), accounts));
 }
 
 TEST_CASE("read_latest_accounts", "[repository_account_repository_tests]") {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    repository_helper helper;
-    helper.cleanup_database();
+    database_helper h;
+    h.truncate_table(database_table);
 
     account_repository repo;
     auto written_accounts =
@@ -84,9 +85,9 @@ TEST_CASE("read_latest_accounts", "[repository_account_repository_tests]") {
         std::ranges::to<std::vector>();
     BOOST_LOG_SEV(lg, debug) << "Written accounts: " << written_accounts;
 
-    repo.write(helper.get_context(), written_accounts);
+    repo.write(h.get_context(), written_accounts);
 
-    auto read_accounts = repo.read_latest(helper.get_context());
+    auto read_accounts = repo.read_latest(h.get_context());
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     CHECK(!read_accounts.empty());
@@ -97,8 +98,8 @@ TEST_CASE("read_latest_account_by_id", "[repository_account_repository_tests]") 
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    repository_helper helper;
-    helper.cleanup_database();
+    database_helper h;
+    h.truncate_table(database_table);
 
     account_repository repo;
     auto accounts =
@@ -107,11 +108,11 @@ TEST_CASE("read_latest_account_by_id", "[repository_account_repository_tests]") 
 
     const auto target = accounts.front();
     BOOST_LOG_SEV(lg, debug) << "Write accounts: " << accounts;
-    repo.write(helper.get_context(), accounts);
+    repo.write(h.get_context(), accounts);
 
     BOOST_LOG_SEV(lg, debug) << "target account: " << target;
 
-    auto read_accounts = repo.read_latest(helper.get_context(), target.id);
+    auto read_accounts = repo.read_latest(h.get_context(), target.id);
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     REQUIRE(read_accounts.size() == 1);
@@ -124,8 +125,8 @@ TEST_CASE("read_all_accounts", "[repository_account_repository_tests]") {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    repository_helper helper;
-    helper.cleanup_database();
+    database_helper h;
+    h.truncate_table(database_table);
 
     account_repository repo;
     auto written_accounts =
@@ -133,9 +134,9 @@ TEST_CASE("read_all_accounts", "[repository_account_repository_tests]") {
         std::ranges::to<std::vector>();
     BOOST_LOG_SEV(lg, debug) << "Generated accounts: " << written_accounts;
 
-    repo.write(helper.get_context(), written_accounts);
+    repo.write(h.get_context(), written_accounts);
 
-    auto read_accounts = repo.read_all(helper.get_context());
+    auto read_accounts = repo.read_all(h.get_context());
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     CHECK(!read_accounts.empty());
@@ -146,8 +147,8 @@ TEST_CASE("read_all_accounts_by_id", "[repository_account_repository_tests]") {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    repository_helper helper;
-    helper.cleanup_database();
+    database_helper h;
+    h.truncate_table(database_table);
 
     account_repository repo;
 
@@ -162,11 +163,11 @@ TEST_CASE("read_all_accounts_by_id", "[repository_account_repository_tests]") {
     acc2.email = "test.versions.v2@test.com";
     BOOST_LOG_SEV(lg, debug) << "Account 2: " << acc2;
 
-    repo.write(helper.get_context(), {acc1});
-    repo.write(helper.get_context(), {acc2});
+    repo.write(h.get_context(), {acc1});
+    repo.write(h.get_context(), {acc2});
 
     // Read all versions
-    auto read_accounts = repo.read_all(helper.get_context(), test_id);
+    auto read_accounts = repo.read_all(h.get_context(), test_id);
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     CHECK(read_accounts.size() >= 2);
@@ -186,8 +187,8 @@ TEST_CASE("read_latest_by_username", "[repository_account_repository_tests]") {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    repository_helper helper;
-    helper.cleanup_database();
+    database_helper h;
+    h.truncate_table(database_table);
 
     account_repository repo;
     auto accounts =
@@ -195,14 +196,14 @@ TEST_CASE("read_latest_by_username", "[repository_account_repository_tests]") {
         std::ranges::to<std::vector>();
     BOOST_LOG_SEV(lg, debug) << "Generated accounts: " << accounts;
 
-    repo.write(helper.get_context(), accounts);
+    repo.write(h.get_context(), accounts);
 
     auto acc = accounts.front();
     BOOST_LOG_SEV(lg, debug) << "Target account: " << acc;
 
     // Read by username
     auto read_accounts = repo.read_latest_by_username(
-        helper.get_context(), acc.username);
+        h.get_context(), acc.username);
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     REQUIRE(read_accounts.size() == 1);
@@ -214,8 +215,8 @@ TEST_CASE("read_nonexistent_account_by_id", "[repository_account_repository_test
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    repository_helper helper;
-    helper.cleanup_database();
+    database_helper h;
+    h.truncate_table(database_table);
 
     account_repository repo;
 
@@ -224,7 +225,7 @@ TEST_CASE("read_nonexistent_account_by_id", "[repository_account_repository_test
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
     auto read_accounts =
-        repo.read_latest(helper.get_context(), nonexistent_id);
+        repo.read_latest(h.get_context(), nonexistent_id);
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     CHECK(read_accounts.size() == 0);
@@ -234,8 +235,8 @@ TEST_CASE("read_nonexistent_username", "[repository_account_repository_tests]") 
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    repository_helper helper;
-    helper.cleanup_database();
+    database_helper h;
+    h.truncate_table(database_table);
 
     account_repository repo;
 
@@ -243,7 +244,7 @@ TEST_CASE("read_nonexistent_username", "[repository_account_repository_tests]") 
     BOOST_LOG_SEV(lg, debug) << "Non-existent username: " << nonexistent_username;
 
     auto read_accounts = repo.read_latest_by_username(
-        helper.get_context(), nonexistent_username);
+        h.get_context(), nonexistent_username);
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     CHECK(read_accounts.size() == 0);
@@ -253,8 +254,8 @@ TEST_CASE("write_and_read_admin_account", "[repository_account_repository_tests]
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    repository_helper helper;
-    helper.cleanup_database();
+    database_helper h;
+    h.truncate_table(database_table);
 
     account_repository repo;
 
@@ -264,10 +265,10 @@ TEST_CASE("write_and_read_admin_account", "[repository_account_repository_tests]
     BOOST_LOG_SEV(lg, debug) << "Admin account: " << admin_acc;
 
     const auto admin_id = admin_acc.id;
-    repo.write(helper.get_context(), {admin_acc});
+    repo.write(h.get_context(), {admin_acc});
 
     // Read back and verify admin flag
-    auto read_accounts = repo.read_latest(helper.get_context(), admin_id);
+    auto read_accounts = repo.read_latest(h.get_context(), admin_id);
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     REQUIRE(read_accounts.size() == 1);

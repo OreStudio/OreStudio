@@ -17,22 +17,41 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_TESTS_REPOSITORY_HELPER_HPP
-#define ORES_ACCOUNTS_TESTS_REPOSITORY_HELPER_HPP
+#ifndef ORES_RISK_DOMAIN_CURRENCY_GENERATORHPP
+#define ORES_RISK_DOMAIN_CURRENCY_GENERATORHPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include "ores.testing/database_fixture.hpp"
+#include <generator>
+#include "faker-cxx/faker.h" // IWYU pragma: keep.
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include "ores.risk/domain/currency.hpp"
 
-namespace ores::accounts::tests {
+namespace ores::risk::generators {
 
-class repository_helper : public testing::database_fixture {
-public:
-    repository_helper() = default;
-    void cleanup_database();
-};
+/**
+ * @brief Generates a fake currency.
+ */
+domain::currency generate_fake_currency();
+
+/**
+ * @brief Generates a fake currency from the unicode set.
+ */
+std::vector<domain::currency> generate_fake_unicode_currencies();
+
+/**
+ * @brief Generates N fake currencies, up to limit.
+ */
+inline std::generator<domain::currency>
+generate_fake_currencies(std::size_t limit = 10000) {
+    std::size_t i = 0;
+    while (i++ < limit)
+        co_yield generate_fake_currency();
+}
 
 }
 

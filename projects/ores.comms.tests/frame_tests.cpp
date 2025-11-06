@@ -27,10 +27,12 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep
 #include "ores.comms/protocol/frame.hpp"
 #include "ores.comms/protocol/message_types.hpp"
+#include <boost/asio/prefer.hpp>
 
 namespace {
 
-std::string test_suite("ores.comms.tests");
+const std::string test_suite("ores.comms.tests");
+const std::string tags("[frame_tests]");
 
 int message_type_as_int(ores::comms::protocol::message_type mt) {
     return static_cast<std::underlying_type_t<ores::comms::protocol::message_type>>(mt);
@@ -51,14 +53,16 @@ deserialize_frame(std::span<const std::uint8_t> data) {
 
 }
 
-TEST_CASE("test_frame_serialization", "[frame_tests]") {
-    using namespace ores::utility::log;
+using namespace ores::utility::log;
+using ores::comms::protocol::message_type;
+
+TEST_CASE("test_frame_serialization", tags) {
     auto lg(make_logger(test_suite));
 
     // Create a frame with some test data
     std::vector<std::uint8_t> payload = {0x01, 0x02, 0x03, 0x04};
     ores::comms::protocol::frame frame(
-        ores::comms::protocol::message_type::handshake_request,
+        message_type::handshake_request,
         123, // sequence number
         payload
     );
@@ -101,14 +105,13 @@ TEST_CASE("test_frame_serialization", "[frame_tests]") {
     BOOST_LOG_SEV(lg, debug) << "Frame serialization roundtrip successful";
 }
 
-TEST_CASE("test_frame_serialization_empty_payload", "[frame_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("test_frame_serialization_empty_payload", tags) {
     auto lg(make_logger(test_suite));
 
     // Create a frame with empty payload
     std::vector<std::uint8_t> empty_payload = {};
     ores::comms::protocol::frame frame(
-        ores::comms::protocol::message_type::handshake_response,
+        message_type::handshake_response,
         456, // sequence number
         empty_payload
     );
@@ -143,8 +146,7 @@ TEST_CASE("test_frame_serialization_empty_payload", "[frame_tests]") {
     CHECK(deserialized_frame.payload().size() == 0);
 }
 
-TEST_CASE("test_frame_serialization_large_payload", "[frame_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("test_frame_serialization_large_payload", tags) {
     auto lg(make_logger(test_suite));
 
     // Create a frame with a larger payload
@@ -156,7 +158,7 @@ TEST_CASE("test_frame_serialization_large_payload", "[frame_tests]") {
     BOOST_LOG_SEV(lg, debug) << "Created large payload of size: " << large_payload.size();
 
     ores::comms::protocol::frame frame(
-        ores::comms::protocol::message_type::handshake_ack,
+        message_type::handshake_ack,
         789, // sequence number
         large_payload
     );
@@ -195,8 +197,7 @@ TEST_CASE("test_frame_serialization_large_payload", "[frame_tests]") {
     BOOST_LOG_SEV(lg, debug) << "Large frame roundtrip successful";
 }
 
-TEST_CASE("test_frame_deserialization_invalid_data", "[frame_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("test_frame_deserialization_invalid_data", tags) {
     auto lg(make_logger(test_suite));
 
     // Try to deserialize invalid data (too short)
@@ -217,14 +218,13 @@ TEST_CASE("test_frame_deserialization_invalid_data", "[frame_tests]") {
     }
 }
 
-TEST_CASE("test_frame_deserialization_corrupted_data", "[frame_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("test_frame_deserialization_corrupted_data", tags) {
     auto lg(make_logger(test_suite));
 
     // Create a valid frame and serialize it
     std::vector<std::uint8_t> payload = {0x01, 0x02, 0x03, 0x04};
     ores::comms::protocol::frame frame(
-        ores::comms::protocol::message_type::handshake_request,
+        message_type::handshake_request,
         101, // sequence number
         payload
     );
@@ -254,18 +254,17 @@ TEST_CASE("test_frame_deserialization_corrupted_data", "[frame_tests]") {
     }
 }
 
-TEST_CASE("test_frame_roundtrip_multiple_message_types", "[frame_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("test_frame_roundtrip_multiple_message_types", tags) {
     auto lg(make_logger(test_suite));
 
     // Test serialization/deserialization with different message types
     std::vector<std::uint8_t> payload = {0xDE, 0xAD, 0xBE, 0xEF};
 
-    std::vector<ores::comms::protocol::message_type> message_types = {
-        ores::comms::protocol::message_type::handshake_request,
-        ores::comms::protocol::message_type::handshake_response,
-        ores::comms::protocol::message_type::handshake_ack,
-        ores::comms::protocol::message_type::error_response
+    std::vector<message_type> message_types = {
+        message_type::handshake_request,
+        message_type::handshake_response,
+        message_type::handshake_ack,
+        message_type::error_response
     };
 
     BOOST_LOG_SEV(lg, debug) << "Testing roundtrip for " << message_types.size()

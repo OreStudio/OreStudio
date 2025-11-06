@@ -26,14 +26,15 @@
 
 namespace {
 
-std::string test_suite("ores.accounts.tests");
+const std::string test_suite("ores.accounts.tests");
+const std::string tags("[domain_login_info_tests]");
 
 }
 
 using ores::accounts::domain::login_info;
+using namespace ores::utility::log;
 
-TEST_CASE("create_login_info_with_ipv4_addresses", "[domain_login_info_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_login_info_with_ipv4_addresses", tags) {
     auto lg(make_logger(test_suite));
 
     login_info li;
@@ -53,8 +54,7 @@ TEST_CASE("create_login_info_with_ipv4_addresses", "[domain_login_info_tests]") 
     CHECK(li.last_attempt_ip.to_string() == "192.168.1.101");
 }
 
-TEST_CASE("create_login_info_with_ipv6_addresses", "[domain_login_info_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_login_info_with_ipv6_addresses", tags) {
     auto lg(make_logger(test_suite));
 
     login_info li;
@@ -73,8 +73,7 @@ TEST_CASE("create_login_info_with_ipv6_addresses", "[domain_login_info_tests]") 
     CHECK(li.last_attempt_ip.to_string() == "::1");
 }
 
-TEST_CASE("create_locked_account_login_info", "[domain_login_info_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_locked_account_login_info", tags) {
     auto lg(make_logger(test_suite));
 
     login_info li;
@@ -93,8 +92,7 @@ TEST_CASE("create_locked_account_login_info", "[domain_login_info_tests]") {
     CHECK(li.last_attempt_ip.to_string() == "203.0.113.42");
 }
 
-TEST_CASE("login_info_with_failed_attempts", "[domain_login_info_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("login_info_with_failed_attempts", tags) {
     auto lg(make_logger(test_suite));
 
     login_info li;
@@ -112,8 +110,7 @@ TEST_CASE("login_info_with_failed_attempts", "[domain_login_info_tests]") {
     CHECK(li.last_ip.to_string() == "172.16.0.1");
 }
 
-TEST_CASE("login_info_serialization_to_json", "[domain_login_info_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("login_info_serialization_to_json", tags) {
     auto lg(make_logger(test_suite));
 
     boost::uuids::string_generator uuid_gen;
@@ -138,8 +135,7 @@ TEST_CASE("login_info_serialization_to_json", "[domain_login_info_tests]") {
     CHECK(json_output.find("198.51.100.42") != std::string::npos);
 }
 
-TEST_CASE("login_info_with_different_ip_versions", "[domain_login_info_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("login_info_with_different_ip_versions", tags) {
     auto lg(make_logger(test_suite));
 
     login_info li;
@@ -158,8 +154,7 @@ TEST_CASE("login_info_with_different_ip_versions", "[domain_login_info_tests]") 
     CHECK(li.last_attempt_ip.to_string() == "2001:db8::1");
 }
 
-TEST_CASE("create_login_info_with_faker", "[domain_login_info_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_login_info_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
     login_info li;
@@ -177,8 +172,7 @@ TEST_CASE("create_login_info_with_faker", "[domain_login_info_tests]") {
     CHECK(li.failed_logins <= 10);
 }
 
-TEST_CASE("create_multiple_random_login_infos", "[domain_login_info_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_multiple_random_login_infos", tags) {
     auto lg(make_logger(test_suite));
 
     for (int i = 0; i < 3; ++i) {

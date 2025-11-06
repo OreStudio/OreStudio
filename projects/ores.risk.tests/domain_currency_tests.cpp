@@ -25,14 +25,15 @@
 
 namespace {
 
-std::string test_suite("ores.risk.tests.");
+const std::string test_suite("ores.risk.tests.");
+const std::string tags("[domain_currency_tests]");
 
 }
 
 using ores::risk::domain::currency;
+using namespace ores::utility::log;
 
-TEST_CASE("create_currency_with_valid_fields", "[domain_currency_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_currency_with_valid_fields", tags) {
     auto lg(make_logger(test_suite));
 
     currency ccy;
@@ -60,8 +61,7 @@ TEST_CASE("create_currency_with_valid_fields", "[domain_currency_tests]") {
     CHECK(ccy.rounding_precision == 2);
 }
 
-TEST_CASE("create_currency_with_faker", "[domain_currency_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_currency_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
     currency ccy;
@@ -91,8 +91,7 @@ TEST_CASE("create_currency_with_faker", "[domain_currency_tests]") {
     CHECK(ccy.rounding_precision >= 0);
 }
 
-TEST_CASE("create_multiple_random_currencies", "[domain_currency_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_multiple_random_currencies", tags) {
     auto lg(make_logger(test_suite));
 
     for (int i = 0; i < 5; ++i) {
@@ -123,8 +122,7 @@ TEST_CASE("create_multiple_random_currencies", "[domain_currency_tests]") {
     }
 }
 
-TEST_CASE("create_currency_with_high_precision", "[domain_currency_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_currency_with_high_precision", tags) {
     auto lg(make_logger(test_suite));
 
     currency ccy;
@@ -149,8 +147,7 @@ TEST_CASE("create_currency_with_high_precision", "[domain_currency_tests]") {
     CHECK(ccy.rounding_precision == 8);
 }
 
-TEST_CASE("create_currency_with_no_fractions", "[domain_currency_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_currency_with_no_fractions", tags) {
     auto lg(make_logger(test_suite));
 
     currency ccy;
@@ -175,8 +172,7 @@ TEST_CASE("create_currency_with_no_fractions", "[domain_currency_tests]") {
     CHECK(ccy.rounding_precision == 0);
 }
 
-TEST_CASE("create_currency_with_three_decimal_places", "[domain_currency_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_currency_with_three_decimal_places", tags) {
     auto lg(make_logger(test_suite));
 
     currency ccy;
@@ -201,8 +197,7 @@ TEST_CASE("create_currency_with_three_decimal_places", "[domain_currency_tests]"
     CHECK(ccy.rounding_precision == 3);
 }
 
-TEST_CASE("create_currencies_with_different_symbols", "[domain_currency_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_currencies_with_different_symbols", tags) {
     auto lg(make_logger(test_suite));
 
     using Currency = std::tuple<std::string, std::string, std::string>;

@@ -36,11 +36,11 @@ const std::string tags("[service_account_service_tests]");
 }
 
 using namespace ores::accounts;
+using namespace ores::utility::log;
 using ores::testing::database_helper;
 using namespace ores::accounts::generators;
 
 TEST_CASE("create_account_with_valid_data", tags) {
-    using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -70,7 +70,6 @@ TEST_CASE("create_account_with_valid_data", tags) {
 }
 
 TEST_CASE("create_account_with_admin_flag", tags) {
-    using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -99,7 +98,6 @@ TEST_CASE("create_account_with_admin_flag", tags) {
 }
 
 TEST_CASE("create_multiple_accounts", tags) {
-    using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -131,7 +129,6 @@ TEST_CASE("create_multiple_accounts", tags) {
 }
 
 TEST_CASE("create_account_with_empty_username_throws", tags) {
-    using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -155,7 +152,6 @@ TEST_CASE("create_account_with_empty_username_throws", tags) {
 }
 
 TEST_CASE("create_account_with_empty_email_throws", tags) {
-    using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -179,7 +175,6 @@ TEST_CASE("create_account_with_empty_email_throws", tags) {
 }
 
 TEST_CASE("create_account_with_empty_password_throws", tags) {
-    using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -203,7 +198,6 @@ TEST_CASE("create_account_with_empty_password_throws", tags) {
 }
 
 TEST_CASE("list_accounts_returns_empty_for_no_accounts", tags) {
-    using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -224,7 +218,6 @@ TEST_CASE("list_accounts_returns_empty_for_no_accounts", tags) {
 
 TEST_CASE("list_accounts_returns_created_accounts",
     tags) {
-    using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -262,7 +255,6 @@ TEST_CASE("list_accounts_returns_created_accounts",
 }
 
 TEST_CASE("login_with_valid_credentials", tags) {
-    using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -298,7 +290,6 @@ TEST_CASE("login_with_valid_credentials", tags) {
 }
 
 TEST_CASE("login_with_invalid_password_throws", tags) {
-    using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -327,7 +318,6 @@ TEST_CASE("login_with_invalid_password_throws", tags) {
 }
 
 TEST_CASE("login_with_nonexistent_username_throws", tags) {
-    using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -346,7 +336,6 @@ TEST_CASE("login_with_nonexistent_username_throws", tags) {
 }
 
 TEST_CASE("login_with_empty_username_throws", tags) {
-    using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -366,7 +355,6 @@ TEST_CASE("login_with_empty_username_throws", tags) {
 }
 
 TEST_CASE("login_with_empty_password_throws", tags) {
-    using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -387,7 +375,6 @@ TEST_CASE("login_with_empty_password_throws", tags) {
 
 TEST_CASE("account_locks_after_multiple_failed_logins",
     tags) {
-    using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -434,7 +421,6 @@ TEST_CASE("account_locks_after_multiple_failed_logins",
 }
 
 TEST_CASE("unlock_account_successful", tags) {
-    using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -481,7 +467,6 @@ TEST_CASE("unlock_account_successful", tags) {
 }
 
 TEST_CASE("unlock_nonexistent_account_throws", tags) {
-    using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -502,7 +487,6 @@ TEST_CASE("unlock_nonexistent_account_throws", tags) {
 
 TEST_CASE("delete_nonexistent_account_throws",
     tags) {
-    using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -522,7 +506,6 @@ TEST_CASE("delete_nonexistent_account_throws",
 }
 
 TEST_CASE("login_with_different_ip_addresses", tags) {
-    using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
     database_helper h;

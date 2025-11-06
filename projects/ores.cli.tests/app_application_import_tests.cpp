@@ -32,14 +32,15 @@ namespace {
 
 const std::string test_suite("ores.cli.tests");
 const std::string database_table("oresdb.currencies");
+const std::string tags("[app_application_import_tests]");
 
 }
 
 using namespace ores;
 using namespace ores::cli;
+using namespace ores::utility::log;
 
-TEST_CASE("import_currencies_from_test_file", "[app_application_import_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("import_currencies_from_test_file", tags) {
     auto lg(make_logger(test_suite));
 
     ores::testing::database_helper h;
@@ -102,8 +103,7 @@ TEST_CASE("import_currencies_from_test_file", "[app_application_import_tests]") 
     CHECK(found_sos);
 }
 
-TEST_CASE("import_currencies_from_multiple_files", "[app_application_import_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("import_currencies_from_multiple_files", tags) {
     auto lg(make_logger(test_suite));
 
     ores::testing::database_helper h;
@@ -145,8 +145,7 @@ TEST_CASE("import_currencies_from_multiple_files", "[app_application_import_test
     CHECK(read_currencies.size() >= 2);
 }
 
-TEST_CASE("import_and_query_specific_currency", "[app_application_import_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("import_and_query_specific_currency", tags) {
     auto lg(make_logger(test_suite));
 
     ores::testing::database_helper h;
@@ -193,8 +192,7 @@ TEST_CASE("import_and_query_specific_currency", "[app_application_import_tests]"
     CHECK(pgk.symbol == "K");
 }
 
-TEST_CASE("import_currencies_with_empty_database", "[app_application_import_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("import_currencies_with_empty_database", tags) {
     auto lg(make_logger(test_suite));
 
     ores::testing::database_helper h;
@@ -237,8 +235,7 @@ TEST_CASE("import_currencies_with_empty_database", "[app_application_import_test
     CHECK(after_import.size() == 2);
 }
 
-TEST_CASE("import_currencies_verify_all_fields", "[app_application_import_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("import_currencies_verify_all_fields", tags) {
     auto lg(make_logger(test_suite));
 
     ores::testing::database_helper h;
@@ -287,8 +284,7 @@ TEST_CASE("import_currencies_verify_all_fields", "[app_application_import_tests]
     CHECK(pgk.rounding_precision == 2);
 }
 
-TEST_CASE("import_currencies_from_api_test_file", "[app_application_import_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("import_currencies_from_api_test_file", tags) {
     auto lg(make_logger(test_suite));
 
     ores::testing::database_helper h;

@@ -37,6 +37,7 @@ target_include_directories(${lib_target_name}
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.utility.lib
         OpenSSL::SSL
         Boost::log
         Boost::program_options

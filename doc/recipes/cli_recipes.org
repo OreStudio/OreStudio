@@ -124,7 +124,7 @@ IMPORTANT: build details are NOT for security purposes.
 
 ** Importing
    :PROPERTIES:
-   :header-args+: :var ORES_DB_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "ores")
+   :header-args+: :var ORES_CLI_DB_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "ores")
    :header-args+: :var db_args="--db-user ores --db-host localhost --db-port 5432 --db-database oresdb"
    :header-args+: :var log_args="--log-enabled --log-level trace --log-directory ../log"
    :header-args+: :wrap src json
@@ -133,7 +133,7 @@ IMPORTANT: build details are NOT for security purposes.
 *** Currencies
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli import ${log_args} ${db_args} --entity currencies --target ${data_dir}/currencies_API.xml | jq .
 #+END_SRC
 
@@ -2815,7 +2815,7 @@ export ORES_DB_PASSWORD
 
 ** Exporting
    :PROPERTIES:
-   :header-args+: :var ORES_DB_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "ores")
+   :header-args+: :var ORES_CLI_DB_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "ores")
    :header-args+: :var db_args="--db-user ores --db-host localhost --db-port 5432 --db-database oresdb"
    :header-args+: :var log_args="--log-enabled --log-level trace --log-directory ../log"
    :END:
@@ -2831,7 +2831,7 @@ export ORES_DB_PASSWORD
 ***** Export latest
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies | xmllint --format -
 #+END_SRC
 
@@ -2839,6 +2839,18 @@ export ORES_DB_PASSWORD
 #+begin_src xml
 <?xml version="1.0" encoding="UTF-8"?>
 <CurrencyConfig>
+  <Currency>
+    <Name>Zimbabwean dollar</Name>
+    <ISOCode>ZWL</ISOCode>
+    <NumericCode>932</NumericCode>
+    <Symbol/>
+    <FractionSymbol/>
+    <FractionsPerUnit>100</FractionsPerUnit>
+    <RoundingType>Closest</RoundingType>
+    <RoundingPrecision>2</RoundingPrecision>
+    <Format/>
+    <CurrencyType/>
+  </Currency>
   <Currency>
     <Name>United Arab Emirates dirham</Name>
     <ISOCode>AED</ISOCode>
@@ -4964,16 +4976,16 @@ export ORES_DB_PASSWORD
     <CurrencyType/>
   </Currency>
   <Currency>
-    <Name>Zimbabwean dollar</Name>
-    <ISOCode>ZWL</ISOCode>
-    <NumericCode>932</NumericCode>
-    <Symbol/>
-    <FractionSymbol/>
-    <FractionsPerUnit>100</FractionsPerUnit>
+    <Name>Bitcoin</Name>
+    <ISOCode>BTC</ISOCode>
+    <NumericCode>0</NumericCode>
+    <Symbol>₿</Symbol>
+    <FractionSymbol>sat</FractionSymbol>
+    <FractionsPerUnit>100000000</FractionsPerUnit>
     <RoundingType>Closest</RoundingType>
-    <RoundingPrecision>2</RoundingPrecision>
-    <Format/>
-    <CurrencyType/>
+    <RoundingPrecision>8</RoundingPrecision>
+    <Format>%3% %1$.8f</Format>
+    <CurrencyType>Cryptocurrency</CurrencyType>
   </Currency>
 </CurrencyConfig>
 #+end_src
@@ -4981,7 +4993,7 @@ export ORES_DB_PASSWORD
 ***** Export latest by iso code
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies --key 'AOA' | xmllint --format -
 #+END_SRC
 
@@ -5009,7 +5021,7 @@ export ORES_DB_PASSWORD
 Sliced as there are too many.
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies --as-of "2025-09-29 00:06:09" | xmllint --format - | head -n 50
 #+END_SRC
 
@@ -5022,7 +5034,7 @@ export ORES_DB_PASSWORD
 ***** Export at time point by iso code
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies --as-of "2025-09-29 00:08:06" --key 'AOA' | xmllint --format -
 #+END_SRC
 
@@ -5035,7 +5047,7 @@ export ORES_DB_PASSWORD
 ***** Export all by iso code
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies --key 'AOA' --all-versions | xmllint --format -
 #+END_SRC
 
@@ -5101,7 +5113,7 @@ export ORES_DB_PASSWORD
 Sliced as there are too many.
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies --all-versions | xmllint --format - | head -n 50
 #+END_SRC
 
@@ -5170,7 +5182,7 @@ export ORES_DB_PASSWORD
 ***** Export latest
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies | jq .
 #+END_SRC
 
@@ -7853,7 +7865,7 @@ export ORES_DB_PASSWORD
 ***** Export latest by iso code
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies --key 'AOA' | jq .
 #+END_SRC
 
@@ -7883,7 +7895,7 @@ export ORES_DB_PASSWORD
 Sliced as there are too many.
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies --as-of "2025-09-29 00:06:09" | jq .[:3]
 #+END_SRC
 
@@ -7895,7 +7907,7 @@ export ORES_DB_PASSWORD
 ***** Export at time point by iso code
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies --as-of "2025-09-29 00:08:06" --key 'AOA' | jq .
 #+END_SRC
 
@@ -7907,7 +7919,7 @@ export ORES_DB_PASSWORD
 ***** Export all by iso code
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies --key 'AOA' --all-versions | jq .
 #+END_SRC
 
@@ -7982,7 +7994,7 @@ export ORES_DB_PASSWORD
 Sliced as there are too many.
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli export ${log_args} ${db_args} ${format_args} --entity currencies --all-versions | jq .[:4]
 #+END_SRC
 

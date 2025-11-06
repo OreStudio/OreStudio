@@ -18,62 +18,62 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-06 Thu 17:51], for Thursday, November 06, 2025.
-|       | <75>                                         |        |      |      |       |
-| Tags  | Headline                                     | Time   |      |      |     % |
-|-------+----------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                 | *8:05* |      |      | 100.0 |
-|-------+----------------------------------------------+--------+------+------+-------|
-|       | Stories                                      | 8:05   |      |      | 100.0 |
-|       | Active                                       |        | 8:05 |      | 100.0 |
-| agile | Sprint and product backlog refinement        |        |      | 0:16 |   3.3 |
-| code  | Add tests at test suite level to ctest       |        |      | 0:13 |   2.7 |
-| code  | Cli tests are failing on github              |        |      | 0:58 |  12.0 |
-| code  | Add generators for test data generation      |        |      | 5:48 |  71.8 |
-| code  | CTest shows only one test per test suite     |        |      | 0:26 |   5.4 |
-| code  | Resolve all of the OpenSSL leaks in valgrind |        |      | 0:21 |   4.3 |
-| code  | Add connect command line argument            |        |      | 0:03 |   0.6 |
+#+CAPTION: Clock summary at [2025-11-06 Thu 23:13], for Thursday, November 06, 2025.
+|       | <75>                                         |         |       |      |       |
+| Tags  | Headline                                     | Time    |       |      |     % |
+|-------+----------------------------------------------+---------+-------+------+-------|
+|       | *Total time*                                 | *10:01* |       |      | 100.0 |
+|-------+----------------------------------------------+---------+-------+------+-------|
+|       | Stories                                      | 10:01   |       |      | 100.0 |
+|       | Active                                       |         | 10:01 |      | 100.0 |
+| agile | Sprint and product backlog refinement        |         |       | 0:20 |   3.3 |
+| code  | Add tests at test suite level to ctest       |         |       | 0:13 |   2.2 |
+| code  | Cli tests are failing on github              |         |       | 0:58 |   9.7 |
+| code  | Add generators for test data generation      |         |       | 7:40 |  76.5 |
+| code  | CTest shows only one test per test suite     |         |       | 0:26 |   4.3 |
+| code  | Resolve all of the OpenSSL leaks in valgrind |         |       | 0:21 |   3.5 |
+| code  | Add connect command line argument            |         |       | 0:03 |   0.5 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-06 Thu 17:51]
+#+CAPTION: Clock summary at [2025-11-06 Thu 23:13]
 |       | <75>                                                   |         |       |       |       |
 | Tags  | Headline                                               | Time    |       |       |     % |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                           | *70:24* |       |       | 100.0 |
+|       | *Total time*                                           | *71:07* |       |       | 100.0 |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                | 70:24   |       |       | 100.0 |
-|       | Active                                                 |         | 70:24 |       | 100.0 |
-| agile | Sprint and product backlog refinement                  |         |       |  1:46 |   2.5 |
+|       | Stories                                                | 71:07   |       |       | 100.0 |
+|       | Active                                                 |         | 71:07 |       | 100.0 |
+| agile | Sprint and product backlog refinement                  |         |       |  1:50 |   2.6 |
 | code  | Add locking up logic                                   |         |       |  1:28 |   2.1 |
-| code  | Build using dynamic libraries                          |         |       |  7:24 |  10.5 |
-| code  | Enable qt gui                                          |         |       |  4:13 |   6.0 |
-| code  | Implement logging according to correct boost.log usage |         |       |  8:02 |  11.4 |
+| code  | Build using dynamic libraries                          |         |       |  7:24 |  10.4 |
+| code  | Enable qt gui                                          |         |       |  4:13 |   5.9 |
+| code  | Implement logging according to correct boost.log usage |         |       |  8:02 |  11.3 |
 | code  | Fix broken Linux and OSX tests                         |         |       |  0:10 |   0.2 |
-| code  | Fix broken windows builds                              |         |       |  2:35 |   3.7 |
+| code  | Fix broken windows builds                              |         |       |  2:35 |   3.6 |
 | code  | Investigate leaks from valgrind                        |         |       |  0:51 |   1.2 |
-| code  | Consider adding a postgres database to CI              |         |       | 14:13 |  20.2 |
+| code  | Consider adding a postgres database to CI              |         |       | 14:13 |  20.0 |
 | code  | Fix misspell that causes build to break                |         |       |  0:12 |   0.3 |
 | code  | Improve code coverage                                  |         |       |  4:15 |   6.0 |
 | infra | vcpkg cannot apply patch on windowws                   |         |       |  1:46 |   2.5 |
 | code  | Update prodigy to use tags                             |         |       |  0:26 |   0.6 |
-| code  | Add command line arguments for database to service     |         |       |  3:34 |   5.1 |
+| code  | Add command line arguments for database to service     |         |       |  3:34 |   5.0 |
 | code  | Separate test database usage from application          |         |       |  3:33 |   5.0 |
-| code  | Split test code from utility                           |         |       |  4:41 |   6.7 |
+| code  | Split test code from utility                           |         |       |  4:41 |   6.6 |
 | code  | Add tests at test suite level to ctest                 |         |       |  0:13 |   0.3 |
 | code  | Cli tests are failing on github                        |         |       |  0:58 |   1.4 |
-| code  | Add generators for test data generation                |         |       |  5:48 |   8.2 |
+| code  | Add generators for test data generation                |         |       |  7:40 |  10.8 |
 | code  | CTest shows only one test per test suite               |         |       |  0:26 |   0.6 |
-| code  | Resolve all of the OpenSSL leaks in valgrind           |         |       |  0:36 |   0.9 |
+| code  | Resolve all of the OpenSSL leaks in valgrind           |         |       |  0:36 |   0.8 |
 | code  | Add support for feature flags                          |         |       |  1:25 |   2.0 |
 | code  | Implement authentication bootstrap workflow            |         |       |  0:25 |   0.6 |
 | code  | Add connect command line argument                      |         |       |  0:11 |   0.3 |
-| code  | Add workspace as a container                           |         |       |  1:13 |   1.7 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-11-06 Thu 23:10]--[2025-11-06 Thu 23:14] =>  0:04
     CLOCK: [2025-11-06 Thu 00:18]--[2025-11-06 Thu 00:34] =>  0:16
     CLOCK: [2025-11-05 Wed 13:56]--[2025-11-05 Wed 14:02] =>  0:06
     CLOCK: [2025-10-28 Tue 23:40]--[2025-10-28 Tue 23:53] =>  0:13
@@ -676,6 +676,8 @@ Notes:
 
 *** COMPLETED Add generators for test data generation                  :code:
     :LOGBOOK:
+    CLOCK: [2025-11-06 Thu 21:33]--[2025-11-06 Thu 23:09] =>  1:36
+    CLOCK: [2025-11-06 Thu 20:51]--[2025-11-06 Thu 21:07] =>  0:16
     CLOCK: [2025-11-06 Thu 13:54]--[2025-11-06 Thu 17:50] =>  3:56
     CLOCK: [2025-11-06 Thu 12:01]--[2025-11-06 Thu 13:53] =>  1:52
     :END:
@@ -686,6 +688,24 @@ more realistic.
 Notes:
 
 - rename fake to synthetic.
+
+*** COMPLETED Add write one to repository                              :code:
+
+We should follow the mongo patterns and have a write one and write many
+repository methods. At present we have to create a vector just to write a single
+entity.
+
+*** COMPLETED Add postgres support for currency                        :code:
+
+We need to have the ability to read and write currencies from a postgres
+database.
+
+*** COMPLETED Create a staging directory                              :infra:
+
+*Rationale*: we called it publish.
+
+At present the binaries are scattered around the build directory. We should take
+the same approach as Dogen and create clean directories for this.
 
 *** BLOCKED CTest shows only one test per test suite                   :code:
     :LOGBOOK:
@@ -838,12 +858,6 @@ Links:
 To avoid leaking secrets it should be possible to supply a =--connect= in the
 client. We still need a connect in case we want to reconnect.
 
-*** Add write one to repository                                        :code:
-
-We should follow the mongo patterns and have a write one and write many
-repository methods. At present we have to create a vector just to write a single
-entity.
-
 *** Remove postgres passwords from github workflows                    :code:
 
 As a quick hack we added the dev passwords to the workflows. We should really
@@ -915,701 +929,6 @@ Is this a real leak:
 #+end_src
 
 
-
-*** Log file for Qt application is non-standard                        :code:
-
-At present we need to manually create the log directory for the gui to fix this
-error:
-
-#+begin_quote
-[marco@lovelace bin]$ ./ores.qt
-terminate called after throwing an instance of 'boost::filesystem::filesystem_error'
-  what():  boost::filesystem::create_directories: Permission denied [system:13]: "/opt/OreStudio/0.0.3/bin/../log", "/opt/OreStudio/0.0.3/bin/../log"
-Aborted                    ./ores.qt
-#+end_quote
-
-We should really output the log file in a standard location such as /var/log or
-something.
-
-*** Create shared object interfaces                                    :code:
-
-At present we are building shared objects / DLLs for the ores components, but we
-did not bother defining proper interfaces, exporting symbols etc. This causes
-problems on windows:
-
-#+begin_src sh
-LINK : fatal error LNK1104: cannot open file 'projects\ores.utility\ores.utility.lib'
-#+end_src
-
-This is happening because we are not exporting explicitly any symbols. To fix
-this we did a hack:
-
-#+begin_src cmake
-if(WIN32 AND MSVC)
-    # Export all symbols on windows for now. Bit of a hack.
-    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-endif()
-#+end_src
-
-The right solution for this is to annotate all the public types of each SO
-correctly, exporting symbols for all platforms:
-
-Deep seek analysis:
-
-#+begin_src markdown
-Yes, Boost provides a cross-platform wrapper for exporting symbols using the
-`BOOST_SYMBOL_EXPORT` macro from the **Boost.DLL** library. This macro abstracts
-away the compiler-specific keywords required for different platforms.
-
-### 🗂️ Boost's Cross-Platform Symbol Exporting
-
-To export a symbol, you use the `BOOST_SYMBOL_EXPORT` macro in your code. Under
-the hood, it expands to the correct compiler-specific attribute:
-
-- On **Windows** with MSVC, it becomes `__declspec(dllexport)`
-- On **macOS** and **Linux** with GCC/Clang, it becomes `__attribute__((visibility("default")))`
-
-Here is a basic example of how to use it to export a global variable:
-
-```cpp
-#include <boost/config.hpp> // For BOOST_SYMBOL_EXPORT
-
-class my_plugin_api {
-    // Your interface definition
-};
-
-namespace my_namespace {
-    class my_plugin_sum : public my_plugin_api {
-        // Implementation
-    };
-
-    // Export the 'plugin' variable
-    extern "C" BOOST_SYMBOL_EXPORT my_plugin_sum plugin;
-    my_plugin_sum plugin;
-}
-```
-,*Note: The `extern "C"` is used here to prevent C++ name mangling, making the symbol name
-predictable for tools that use C linkage. This is often crucial for a library's public API.*
-
-For exporting factory functions, Boost offers the `BOOST_DLL_ALIAS` macro, which
-is often more convenient:
-
-```cpp
-#include <boost/dll/alias.hpp> // For BOOST_DLL_ALIAS
-
-namespace my_namespace {
-    class my_plugin_aggregator : public my_plugin_api {
-        // Implementation
-    };
-
-    // Factory function
-    boost::shared_ptr<my_plugin_api> create() {
-        return boost::shared_ptr<my_plugin_aggregator>(new my_plugin_aggregator());
-    }
-
-    // Export the factory function with the alias "create_plugin"
-    BOOST_DLL_ALIAS(my_namespace::create, create_plugin)
-}
-```
-
-### 💡 A Complementary Approach: Controlling Visibility
-
-While Boost's macro solves the declaration problem, for finer control and to
-minimize your shared library's public API, combine it with compiler flags that
-hide all symbols by default.
-
-- **On Linux and other ELF platforms**, use the `-fvisibility=hidden` flag. You
-  can then use a **linker version script** to explicitly list the symbols you
-  want to export.
-- **On macOS**, use the `-fvisibility=hidden` flag and an **exported symbols
-  list** with `-exported_symbols_list` during linking.
-- **On Windows**, symbol visibility is typically controlled explicitly via
-  `__declspec(dllexport)` or a module definition (.def) file, which
-  `BOOST_SYMBOL_EXPORT` already handles.
-
-Setting default visibility to hidden helps create a cleaner, more efficient
-library by reducing its footprint, improving load times, and avoiding potential
-symbol conflicts.
-
-### 🔧 Summary
-
-For a complete cross-platform solution:
-
-1. **Use Boost.DLL macros**: Incorporate `BOOST_SYMBOL_EXPORT` or
-   `BOOST_DLL_ALIAS` in your code to handle platform-specific export keywords.
-2. **Hide symbols by default**: Compile your shared library with
-   `-fvisibility=hidden` on Linux and macOS. This works in conjunction with the
-   Boost macros.
-3. **Use version scripts (optional)**: For maximum control on ELF platforms
-   (Linux) or via an exported symbols list on macOS, use these linker features
-   to define a precise public API.
-
-I hope this helps you build your cross-platform shared library! If you have more
-questions about using the Boost.DLL library for loading these symbols at
-runtime, feel free to ask.
-#+end_src
-
-Links:
-
-- [[https://stackoverflow.com/questions/76338106/cmake-how-to-produce-both-dll-and-lib-as-outputs][SO: "CMAKE" - how to produce both ".dll" and ".lib" as outputs]]
-
-*** Copy across icons and other assets to package                      :code:
-
-At present when you start the gui you get:
-
-: /opt/OreStudio/0.0.3/bin/ores.qt
-: qt.svg: Cannot open file '/home/marco/money-pound-box-line.svg', because: No such file or directory
-: qt.svg: Cannot open file '/home/marco/money-pound-box-line.svg', because: No such file or directory
-
-We need to put the assets under a suitable directory in opt and try to open them
-from there.
-
-*** Update timestamps to use timezone                                  :code:
-
-Links:
-
-- [[https://justatheory.com/2012/04/postgres-use-timestamptz/][Always Use TIMESTAMP WITH TIME ZONE]]
-
-*** Add more account commands                                          :code:
-
-See the azeroth account commands for inspiration.
-
-Links:
-
-- [[https://www.azerothcore.org/wiki/gm-commands][GM Commands]]
-
-*** CLI Importing needs to read from database                          :code:
-
-After we do the import into the database, we need to read the currencies again
-to get the valid from/to.
-
-*** Fix gemini cli action                                              :code:
-
-The action to review PRs using gemini is failing.
-
-*** Tidy-up database code                                              :code:
-
-- add helpers to utility to ensure success, execute query, etc.
-- add helpers for max timestamp, timestamp.
-
-*** Split console recipes by entity                                    :code:
-
-At present we have one very long file, but this is not scalable. We could split
-out:
-
-- general args (help, info, etc)
-- by entity
-
-Notes:
-
-- Rename console to CLI.
-- reduce output, only first few entries are needed.
-- add a toc.
-
-*** Add support for JWT                                                :code:
-
-When we add support for HTTP/REST, we need to ensure it uses JWT.
-
-Links:
-
-- [[https://iniakunhuda.medium.com/building-secure-jwt-authentication-in-go-with-postgresql-94b6724f9b75][Building Secure JWT Authentication in Go with PostgreSQL]]
-- [[https://github.com/Thalhammer/jwt-cpp][GH jwt-cpp]]
-
-*** Read up on ECS                                                 :analysis:
-
-Links:
-
-- [[https://en.wikipedia.org/wiki/Entity_component_system][wikipedia: Entity component system]]
-- [[https://github.com/skypjack/entt][GH entt]]: "EnTT is a header-only, tiny and easy to use library for game
-  programming and much more written in modern C++."
-
-*** Consider adding otel support                                       :code:
-
-Links:
-
-- [[https://github.com/destrex271/postgresexporter][GH postgresexporter]]: "Unofficial Postgres Exporter for OTEL"
-- [[https://opentelemetry-cpp.readthedocs.io/en/latest/otel_docs/classopentelemetry_1_1sdk_1_1trace_1_1SpanExporter.html][SpanExporter]]: create your own exporter.
-
-*** Add chat support                                                   :code:
-
-Links:
-
-- [[https://github.com/communi/libcommuni][GH libcommuni]]: "A cross-platform IRC framework written with Qt."
-- [[https://github.com/inspircd/inspircd/tree/insp4][GH insp4]]: "InspIRCd is a modular C++ Internet Relay Chat (IRC) server for
-  UNIX-like and Windows systems."
-- https://www.inspircd.org/
-
-*** Consider exposing end points via HTTP                              :code:
-
-Having a binary protocol is helpful for performance but it may make life easier
-to expose some functionality via HTTP.
-
-Links:
-
-- [[https://github.com/dfleury2/beauty][GH: beauty]]: "Beauty is a layer above Boost.Beast which provide facilities to
-  create Http server or client. Beauty allows the creation of synchronous or
-  asynchronous server and client, and adds some signals and timer management
-  based on Boost.Asio"
-
-*** Consider using getML to integrate ML                               :code:
-
-Links:
-
-- [[https://github.com/getml/getml-community][GH: getml]]: "getML is a tool for automating feature engineering on relational
-  data and time series. It includes a specifically customized database Engine
-  for this very purpose."
-- [[https://getml.com/latest/user_guide/quick_start/][user guide quick start]]
-
-*** Configure postgres with async IO                                   :code:
-
-Links:
-
-- [[https://neon.com/postgresql/postgresql-18/asynchronous-io][PostgreSQL 18 Asynchronous I/O]]
-
-*** Consider using sqls for LSP                                        :code:
-
-We are presently testing postgrestools. If that does not work well, we should
-consider sqls.
-
-Links:
-
-- [[https://www.reddit.com/r/emacs/comments/ijbvwv/eglot_sqls_sql_client/][eglot + sqls = SQL client?]]
-
-*** Add workspace as a container                                       :code:
-    :LOGBOOK:
-    CLOCK: [2025-02-13 Thu 22:18]--[2025-02-13 Thu 22:35] =>  0:17
-    CLOCK: [2025-02-13 Thu 21:21]--[2025-02-13 Thu 22:17] =>  0:56
-    :END:
-
-Core needs to have a container for all of the data stored within a context.
-
-Actually, according to Data Priented Principles, we may not need it. This may be
-a UI concept but not a code concept.
-
-*** Add portfolio support                                              :code:
-
-Links:
-
-- [[https://leonardqmarcq.com/posts/modeling-hierarchical-tree-data][Modeling Hierarchical Tree Data in PostgreSQL]]
-
-*** Setup code quality actions                                        :infra:
-
-We added a test password to the repo on purpose to see if it was going to be
-detected by the github actions:
-
-#+begin_src c++
-    std::string connection_string("postgresql://ores:ores@localhost:5433/oresdb");
-#+end_src
-
-It wasn't. We need to figure out which actions need to be setup for this. Add
-any other actions we may be missing.
-
-The build seems to be failing:
-
-#+begin_src sh
--- SCCache NOT found.
- CMake Error at /usr/local/share/cmake-3.30/Modules/CMakeDetermineSystem.cmake:152 (message):
-   Could not find toolchain file:
-   /home/runner/work/OreStudio/OreStudio/vcpkg/scripts/buildsystems/vcpkg.cmake
- Call Stack (most recent call first):
- CMakeLists.txt:61 (project)
-
-
- CMake Error: CMake was unable to find a build program corresponding to "Unix Makefiles".  CMAKE_MAKE_PROGRAM is not set.  You probably need to select a different build tool.
- CMake Error: CMAKE_CXX_COMPILER not set, after EnableLanguage
- -- Configuring incomplete, errors occurred!
- ~/work/OreStudio/OreStudio ~/work/OreStudio/OreStudio
- ~/work/OreStudio/OreStudio
- cpp/autobuilder: No supported build command succeeded.
- cpp/autobuilder: autobuild summary.
- Error: We were unable to automatically build your code. Please replace the call to the autobuild action with your custom build steps. Encountered a fatal error while running "/opt/hostedtoolcache/CodeQL/2.18.0/x64/codeql/cpp/tools/autobuild.sh". Exit code was 1 and last log line was: cpp/autobuilder: autobuild summary. See the logs for more details.
-#+end_src
-
-This may be due to a missing sub-module for vcpkg.
-
-*** Add a message queue                                                :code:
-
-Links:
-
-- [[https://www.oliverlambson.com/pgmq][Use what you already have: Building a message queue on Postgres]]
-
-*** Implement database connectivity                                    :code:
-
-We have hard coded database configuration. Implement this properly both for
-console and UI.
-
-*** Starting UI from file manager does not work                       :infra:
-
-At present we can't start the Qt UI because the file manager thinks its a video.
-Maybe we need a desktop file.
-
-Example desktop file:
-
-#+begin_src conf
-[Desktop Entry]
-Comment=
-Terminal=true
-Name=fixvideo
-Exec=/home/user/fixvideo.sh %f
-Type=Application
-Icon=/usr/share/icons/gnome/48x48/apps/gnome-settings-theme.png
-Encoding=UTF-8
-Hidden=false
-NoDisplay=false
-Categories=AudioVideo;Player;Recorder;
-MimeType=video/dv;v
-#+end_src
-
-Source: [[https://emacs.stackexchange.com/questions/58037/is-there-a-standard-mode-for-ini-files][Is there a standard mode for .ini files?]]
-
-Tasks:
-
-- create a desktop file for the application.
-- add an icon.
-
-*** Consider adding the update copyrights action from quantlib        :infra:
-
-We should remove copyrights from each file and instead have it only at the
-top-level to make maintenance easier.
-
-See [[https://github.com/OpenSourceRisk/QuantLib/blob/master/.github/workflows/copyrights.yml][=copyrights.yml=]] in QuantLib repo.
-
-*** Consider adding clang-tidy build                                  :infra:
-
-As per QuantLib build: [[https://github.com/OpenSourceRisk/QuantLib/blob/master/.github/workflows/tidy.yml][=tidy.yml=]].
-
-*** Consider adding test times build                                  :infra:
-
-As per QuantLib build: [[https://github.com/OpenSourceRisk/QuantLib/blob/master/.github/workflows/test-times.yml][=test-times.yml=]].
-
-*** Consider adding sanitizer build                                   :infra:
-
-As per QuantLib build: [[https://github.com/OpenSourceRisk/QuantLib/blob/master/.github/workflows/sanitizer.yml][=sanitizer.yml=]].
-
-*** Use string views for static strings                               :infra:
-
-We are creating =std::strings= where we don't need them, use string views
-instead.
-
-This is not trivial, when we tried a lot of things were borked.
-
-*** Create HTTP end point for currencies                              :infra:
-
-Add a basic HTTP server using boost beast. Then we just need a couple of verbs:
-
-- GET: return all currencies in database.
-- POST: add one or more currencies.
-
-*** Fix site links to main page                                         :doc:
-
-At present we renamed readme to index in the HTML export. Do a symlink or a copy
-of this file to fix links.
-
-*** Add discord support to app                                        :infra:
-
-Links:
-
-- [[https://github.com/RealTimeChris/DiscordCoreAPI][DiscordCoreAPI]]
-
-*** Recipes do not show variables in org-babel                        :infra:
-
-At present when we look at a recipe in the site, we cannot tell what the
-environment variables are:
-
-#+begin_src sh
-./ores.console import ${log_args} --currency-configuration ${currency_config_dir}/currencies.xml
-#+END_SRC
-
-It would be nice if =log_args= etc showed up in the recipe.
-
-Links:
-
-- [[https://kitchingroup.cheme.cmu.edu/blog/2019/02/12/Using-results-from-one-code-block-in-another-org-mode/][Using results from one code block in another org-mode]]
-
-*** Install Windows package on Windows machine                        :infra:
-
-We need to install and run the windows package and make sure it works. Check
-console and GUI start.
-
-*** Install OSX package on OSX machine                                :infra:
-
-We need to install and run the windows package and make sure it works. Check
-console and GUI start.
-
-*** Add packaging support for images                                  :infra:
-
-At present we are not adding images to packages.
-
-*** Create a staging directory                                        :infra:
-
-At present the binaries are scattered around the build directory. We should take
-the same approach as Dogen and create clean directories for this.
-
-*** Create an icon for the application                                :infra:
-
-We copied the Dogen icon to get us going. We should really grab our own logo.
-
-*** Add JSON parsing support for currency                              :code:
-
-We need to have the ability to read and write currencies from JSON.
-
-*** Add postgres support for currency                                  :code:
-
-We need to have the ability to read and write currencies from a postgres
-database.
-
-*** Work through all types required for Example 1                      :code:
-
-We want to be able to visualise all the data types needed in order to be able to
-run the most basic example of ORE. For each of these types, create a stories.
-
-The files are as follows. First, there are the files in the =Input= directory:
-
-- [[https://github.com/OpenSourceRisk/Engine/tree/master/Examples/Example_1/Input][Example 1 Inputs]]
-
-Specifically:
-
-- =currencies.xml=
-- =netting.xml=
-- =ore.xml=
-- =ore_swaption.xml=
-- =plot.gp=
-- =portfolio.xml=
-- =portfolio_swap.xml=
-- =portfolio_swap_20151023.xml=
-- =portfolio_swaption.xml=
-- =portfolio_swaption_20151023.xml=
-- =simulation.xml=
-
-In addition, we need all of the common inputs under:
-
-- [[https://github.com/OpenSourceRisk/Engine/tree/master/Examples/Input][Examples - Common Inputs]]
-
-These are:
-
-- =calendaradjustment.xml=
-- =conventions.xml=
-- =currencies.xml=
-- =curveconfig.xml=
-- =fixings_20160205.txt=
-- =market_20160205.txt=
-- =market_20160205_flat.txt=
-- =pricingengine.xml=
-- =todaysmarket.xml=
-
-Finally, we need support for the outputs. We can grab these from the expected
-outputs:
-
-- [[https://github.com/OpenSourceRisk/Engine/tree/master/Examples/Example_1/ExpectedOutput][Example 1 Expected Outputs]]
-
-These are:
-
-- =colva_nettingset_CPTY_A.csv=
-- =curves.csv=
-- =exposure_nettingset_CPTY_A.csv=
-- =exposure_trade_Swap_20y.csv=
-- =flows.csv=
-- =log_progress.json=
-- =netcube.csv=
-- =npv.csv=
-- =swaption_npv.csv=
-- =xva.csv=
-
-*** Consider adding support for A/B testing                            :code:
-
-At present feature flags are global. However, we may want to enable a feature
-for a subset of the population. Analysis:
-
-#+begin_src markdown
-To support **gradual rollout (ramping)** of features—e.g., enabling a feature for 10% of users, then 50%, then 100%—you need to extend your feature flag system beyond a simple boolean toggle. The current temporal table design (`feature_flags` with validity periods) is great for time-based control, but **not sufficient for user-based targeting**.
-
-Here’s a practical, scalable approach that integrates well with your C++23/Qt/PostgreSQL stack:
-
----
-
-### 🎯 Goal
-Enable a feature **conditionally** based on:
-- User identity (e.g., user ID, tenant ID, or client ID)
-- A **rollout percentage** (e.g., 10%)
-- Optional: user attributes (role, region, etc.)
-
----
-
-### ✅ Step 1: Enhance the Feature Flag Schema
-
-Add **rollout strategy metadata** to your `feature_flags` table:
-
-```sql
-ALTER TABLE oresdb.feature_flags
-ADD COLUMN rollout_percentage INTEGER CHECK (rollout_percentage BETWEEN 0 AND 100) DEFAULT 100,
-ADD COLUMN targeting_criteria JSONB; -- optional, for advanced rules
-```
-
-Now each flag version can specify:
-- `rollout_percentage = 10` → enable for ~10% of users
-- `targeting_criteria = '{"role": "beta_tester"}'` → (future extensibility)
-
-> Keep your temporal primary key and exclusion constraint — they still apply.
-
----
-
-### ✅ Step 2: Determine a Stable User Identifier
-
-Your client must provide a **consistent, hashable ID** per user or session, such as:
-- User ID (if authenticated)
-- Device ID / client UUID (if anonymous)
-- Tenant ID (for multi-tenant apps)
-
-This ID must be **stable** across sessions so the same user doesn’t see the feature flicker on/off.
-
-> 💡 In your Qt client, generate or retrieve this ID at startup and pass it to the feature flag service.
-
----
-
-### ✅ Step 3: Implement Consistent Hash-Based Sampling in C++
-
-Use a **deterministic hash** to map user IDs into a 0–99 bucket:
-
-```cpp
-#include <functional>
-#include <string>
-
-bool should_enable_for_user(std::string_view feature_name,
-                            std::string_view user_id,
-                            int rollout_percentage) {
-    if (rollout_percentage <= 0) return false;
-    if (rollout_percentage >= 100) return true;
-
-    // Combine feature name + user ID to avoid correlation across features
-    std::string key = std::string(feature_name) + ":" + std::string(user_id);
-
-    // Use a stable hash (e.g., std::hash, but note: not guaranteed consistent across runs)
-    // For production, prefer a consistent hash like FNV-1a or CityHash
-    auto hash = std::hash<std::string>{}(key);
-    int bucket = static_cast<int>(hash % 100);
-    return bucket < rollout_percentage;
-}
-```
-
-> ⚠️ **Warning**: `std::hash` is **not guaranteed to be stable across program runs or platforms**.
-> For reliable rollout, use a **stable hashing algorithm** like **FNV-1a**, **MurmurHash3**, or **xxHash**.
-
-Example with a simple FNV-1a (C++23-friendly):
-
-```cpp
-constexpr uint32_t fnv1a_32(std::string_view s) {
-    uint32_t hash = 2166136261u; // FNV offset basis
-    for (char c : s) {
-        hash ^= static_cast<uint8_t>(c);
-        hash *= 16777619u; // FNV prime
-    }
-    return hash;
-}
-
-bool should_enable_for_user(std::string_view feature_name,
-                            std::string_view user_id,
-                            int rollout_percentage) {
-    if (rollout_percentage <= 0) return false;
-    if (rollout_percentage >= 100) return true;
-
-    std::string key{feature_name};
-    key += ':';
-    key += user_id;
-
-    uint32_t hash = fnv1a_32(key);
-    return (hash % 100) < static_cast<uint32_t>(rollout_percentage);
-}
-```
-
-This ensures:
-- Same user → same decision
-- Uniform distribution across users
-- Independent per-feature rollout
-
----
-
-### ✅ Step 4: Update Your Feature Flag Service
-
-Modify your C++ `FeatureFlagService`:
-
-```cpp
-class FeatureFlagService {
-public:
-    // Returns true if the feature is enabled AND user qualifies
-    bool is_enabled_for_user(Feature f, std::string_view user_id) const;
-
-private:
-    struct FlagConfig {
-        bool enabled;
-        int rollout_percentage; // 0–100
-        // add targeting_criteria later if needed
-    };
-    std::unordered_map<Feature, FlagConfig> cache_;
-};
-```
-
-Implementation:
-
-```cpp
-bool FeatureFlagService::is_enabled_for_user(Feature f, std::string_view user_id) const {
-    auto it = cache_.find(f);
-    if (it == cache_.end() || !it->second.enabled) {
-        return false;
-    }
-    return should_enable_for_user(to_string(f), user_id, it->second.rollout_percentage);
-}
-```
-
----
-
-### ✅ Step 5: Integrate in Qt UI
-
-```cpp
-QString userId = getCurrentUserId(); // from auth, settings, etc.
-
-if (featureFlagService.is_enabled_for_user(Feature::ExperimentalUI, userId.toStdString())) {
-    ui->experimentalPanel->show();
-}
-```
-
----
-
-### ✅ Optional: Advanced Targeting (Future-Proofing)
-
-Use the `targeting_criteria JSONB` column to store rules like:
-```json
-{
-  "min_version": "2.1.0",
-  "regions": ["EU", "NA"],
-  "roles": ["admin", "beta"]
-}
-```
-
-Then evaluate these in C++ (or push filtering to DB with JSONB queries if you fetch per-user flags).
-
-But for **simple ramp-up**, percentage-based hashing is sufficient and efficient.
-
----
-
-### ✅ Operational Benefits
-
-- **No client-side config changes** needed to ramp from 10% → 50% → 100% — just update the DB.
-- **Auditability**: Every rollout change is versioned in your temporal table.
-- **Safety**: You can instantly roll back by setting `rollout_percentage = 0`.
-
----
-
-### Summary
-
-| Component           | Change |
-|---------------------|--------|
-| **Database**        | Add `rollout_percentage INT` to `feature_flags` |
-| **C++ Service**     | Add `is_enabled_for_user(feature, user_id)` |
-| **Hashing**         | Use stable hash (e.g., FNV-1a) over `feature:user_id` |
-| **Qt UI**           | Pass user ID to flag checks |
-
-This gives you **safe, gradual, observable rollouts** while keeping your architecture clean and performant.
-#+end_src
 
 *** Footer
 

@@ -95,6 +95,10 @@ jobs:
           export cmake_args="build_group=Continuous,preset=${preset}"
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
+      - name: Dump test details
+        run: |
+           cat ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/publish/bin/test-results-*.xml
+
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v5.0.0
         with:

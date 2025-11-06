@@ -47,5 +47,14 @@ add_custom_target(test_${tests_target_name}
 
 add_dependencies(run_all_tests test_${tests_target_name})
 
-catch_discover_tests(${tests_target_name}
+add_test(NAME ${tests_target_name}
+    COMMAND ${tests_binary_name} --reporter xml -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml
     WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+set_tests_properties(${tests_target_name} PROPERTIES
+    PROCESSORS 1
+    ENVIRONMENT ""
+    ATTACHED_FILES_ON_FAIL "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml"
+)
+
+set_property(TEST ${tests_target_name} PROPERTY USES_XML_OUTPUT ON)

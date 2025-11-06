@@ -66,6 +66,7 @@
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-11-06 Thu 00:18]--[2025-11-06 Thu 00:34] =>  0:16
     CLOCK: [2025-11-05 Wed 13:56]--[2025-11-05 Wed 14:02] =>  0:06
     CLOCK: [2025-10-28 Tue 23:40]--[2025-10-28 Tue 23:53] =>  0:13
     CLOCK: [2025-10-27 Mon 09:23]--[2025-10-27 Mon 09:53] =>  0:30
@@ -786,6 +787,19 @@ Links:
 
 To avoid leaking secrets it should be possible to supply a =--connect= in the
 client. We still need a connect in case we want to reconnect.
+
+*** Remove postgres passwords from github workflows                    :code:
+
+As a quick hack we added the dev passwords to the workflows. We should really
+generate these on the fly and supply them to the tests.
+
+*** Allow supplying the postgres connection URI                        :code:
+
+At present we are supplying all of the components for the connection. It may be
+easier to allow the entire URI:
+
+- connection-uri: The connection URI to connect to PostgreSQL. Example:
+  =postgresql://postgres:postgres@localhost/postgres=.
 
 *** Consider adding log command line options to qt                     :code:
 

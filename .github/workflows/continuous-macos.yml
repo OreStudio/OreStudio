@@ -90,7 +90,7 @@ jobs:
           export ORES_BUILD_COMMIT="${GITHUB_SHA}"
           export ORES_BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
           export ORES_BUILD_TIMESTAMP=`date "+%Y/%m/%d %H:%M:%S"`
-          export TEST_ORES_DB_PASSWORD=ahV6aehuij6eingohsiajaiT0
+          export ORES_TEST_DB_PASSWORD=ahV6aehuij6eingohsiajaiT0
           export preset=${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
           export cmake_args="build_group=Continuous,preset=${preset}"
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"

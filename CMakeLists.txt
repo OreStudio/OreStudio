@@ -152,7 +152,6 @@ find_package(faker-cxx REQUIRED)
 
 # Catch2
 find_package(Catch2 3 REQUIRED)
-include(Catch)
 
 # site (for ctest)
 site_name(VORE_SITE)

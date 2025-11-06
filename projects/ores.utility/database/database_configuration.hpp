@@ -24,8 +24,6 @@
 #pragma once
 #endif
 
-#include <string>
-#include <functional>
 #include <boost/program_options.hpp>
 #include "ores.utility/database/database_options.hpp"
 
@@ -65,17 +63,6 @@ public:
      */
     static database_options
     read_options(const boost::program_options::variables_map& vm);
-
-    /**
-     * @brief Creates an environment variable name mapping function.
-     *
-     * Maps environment variables with ORES_ prefix to command-line option
-     * names. For example: ORES_DB_PASSWORD -> db-password
-     *
-     * @return Function that maps environment variable names to option names.
-     */
-    static std::function<std::string(const std::string&)>
-    make_environment_mapper();
 };
 
 }

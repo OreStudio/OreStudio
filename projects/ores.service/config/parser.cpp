@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.service/config/parser.hpp"
+
 #include <ostream>
 #include <cstdint>
 #include <boost/program_options.hpp>
@@ -25,8 +27,7 @@
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/log/logging_configuration.hpp"
 #include "ores.utility/database/database_configuration.hpp"
-#include "ores.service/config/parser.hpp"
-
+#include "ores.utility/program_options/environment_mapper_factory.hpp"
 namespace {
 
 const std::string more_information("Try --help' for more information.");
@@ -144,7 +145,8 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     using ores::utility::database::database_configuration;
 
     const auto od(make_options_description());
-    const auto name_mapper(database_configuration::make_environment_mapper());
+    using ores::utility::program_options::environment_mapper_factory;
+    const auto name_mapper(environment_mapper_factory::make_mapper("SERVICE"));
 
     variables_map vm;
     boost::program_options::store(

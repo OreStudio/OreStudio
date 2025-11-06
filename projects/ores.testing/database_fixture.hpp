@@ -27,7 +27,6 @@
 #include <string>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
-#include "ores.utility/database/database_options.hpp"
 
 namespace ores::testing {
 
@@ -51,11 +50,6 @@ private:
 
 public:
     database_fixture();
-
-    /**
-     * @brief Creates database options from environment variables.
-     */
-    static utility::database::database_options make_database_options();
 
     /**
      * @brief Creates a database context from environment variables.

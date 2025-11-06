@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/log/make_logger.hpp"
@@ -237,7 +238,7 @@ TEST_CASE("write_and_read_currency_with_unicode_symbols", "[repository_currency_
     CHECK(read_currencies.size() >= currency_data.size());
 
     for (const auto& [iso, expected_symbol] : currency_data) {
-        auto it = std::find_if(read_currencies.begin(), read_currencies.end(),
+        auto it = std::ranges::find_if(read_currencies,
             [&iso](const currency& c) { return c.iso_code == iso; });
 
         REQUIRE(it != read_currencies.end());

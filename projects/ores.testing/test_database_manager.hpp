@@ -25,6 +25,9 @@
 #endif
 
 #include <string>
+#include "ores.utility/log/make_logger.hpp"
+#include "ores.utility/repository/context.hpp"
+#include "ores.utility/database/database_options.hpp"
 
 namespace ores::testing {
 
@@ -39,7 +42,26 @@ namespace ores::testing {
  * must be pre-configured with the full schema.
  */
 class test_database_manager {
+private:
+    static auto& lg() {
+        static auto instance = ores::utility::log::make_logger(
+            "ores.testing.test_database_manager");
+        return instance;
+    }
+
+    /**
+     * @brief Creates a database context connected to the postgres database.
+     *
+     * This is needed for admin operations like CREATE/DROP DATABASE.
+     */
+    static utility::repository::context make_admin_context();
+
 public:
+    /**
+     * @brief Creates database options from environment variables.
+     */
+    static utility::database::database_options make_database_options();
+
     /**
      * @brief Generates a unique database name for this test process.
      *

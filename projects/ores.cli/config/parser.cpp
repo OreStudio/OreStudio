@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.cli/config/parser.hpp"
+
 #include <format>
 #include <ostream>
 #include <boost/program_options.hpp>
@@ -26,9 +28,9 @@
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/log/logging_configuration.hpp"
 #include "ores.utility/database/database_configuration.hpp"
+#include "ores.utility/program_options/environment_mapper_factory.hpp"
 #include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/parser_exception.hpp"
-#include "ores.cli/config/parser.hpp"
 
 namespace {
 
@@ -373,7 +375,8 @@ handle_command(const std::string& command_name, const bool has_help,
 
     const auto db_desc(database_configuration::make_options_description());
     const auto logging_desc(make_top_level_visible_options_description());
-    const auto name_mapper(database_configuration::make_environment_mapper());
+    using ores::utility::program_options::environment_mapper_factory;
+    const auto name_mapper(environment_mapper_factory::make_mapper("CLI"));
 
     if (command_name == import_command_name) {
         auto d(make_import_options_description());

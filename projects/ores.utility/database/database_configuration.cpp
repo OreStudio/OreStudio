@@ -17,10 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ranges>
-#include <algorithm>
-#include <boost/throw_exception.hpp>
 #include "ores.utility/database/database_configuration.hpp"
+
+#include <boost/throw_exception.hpp>
 
 namespace ores::utility::database {
 
@@ -70,27 +69,6 @@ database_options database_configuration::read_options(
     r.host = vm[database_host_arg].as<std::string>();
     r.port = vm[database_port_arg].as<int>();
     return r;
-}
-
-std::function<std::string(const std::string&)>
-database_configuration::make_environment_mapper() {
-    return [](const std::string& env_var) -> std::string {
-        constexpr std::string_view prefix = "ORES_";
-        if (!env_var.starts_with(prefix)) {
-            return {};
-        }
-
-        auto env_body = env_var | std::views::drop(prefix.size());
-        std::string option_name;
-
-        std::ranges::transform(env_body, std::back_inserter(option_name),
-            [](unsigned char c) -> char {
-                if (c == '_') return '-';
-                return std::tolower(c);
-            });
-
-        return option_name;
-    };
 }
 
 }

@@ -18,36 +18,20 @@
  *
  */
 #include "ores.testing/database_fixture.hpp"
-#include "ores.utility/environment/environment.hpp"
+#include "ores.testing/test_database_manager.hpp"
 #include "ores.utility/repository/context_factory.hpp"
 
 namespace ores::testing {
 
-using namespace utility::environment;
 using namespace ores::utility::log;
 using utility::repository::context;
 using utility::repository::context_factory;
 
 database_fixture::database_fixture() : context_(make_context()) {}
 
-utility::database::database_options database_fixture::make_database_options() {
-    // TEST prefix to avoid clashing with real vars.
-    return utility::database::database_options {
-        .user = environment::environment::get_value_or_default(
-            "TEST_ORES_DB_USER", "ores"),
-        .password = environment::environment::get_value_or_default(
-            "TEST_ORES_DB_PASSWORD", ""),
-        .host = environment::environment::get_value_or_default(
-            "TEST_ORES_DB_HOST", "localhost"),
-        .database = environment::environment::get_value_or_default(
-            "TEST_ORES_DB_DATABASE", "oresdb"),
-        .port = environment::environment::get_int_value_or_default(
-            "TEST_ORES_DB_PORT", 5432)
-    };
-}
-
 context database_fixture::make_context() {
-    const auto opts = make_database_options();
+    using testing::test_database_manager;
+    const auto opts = test_database_manager::make_database_options();
     context_factory::configuration db_cfg{
         .user = opts.user,
         .password = opts.password,

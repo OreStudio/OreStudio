@@ -19,6 +19,7 @@
  */
 #include <vector>
 #include <sstream>
+#include <boost/program_options.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/streaming/std_optional.hpp" // IWYU pragma: keep.

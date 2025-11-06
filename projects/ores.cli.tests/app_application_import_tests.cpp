@@ -22,6 +22,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.testing/database_fixture.hpp"
+#include "ores.testing/test_database_manager.hpp"
 #include "ores.cli/app/application.hpp"
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
@@ -34,10 +35,6 @@ const std::string test_suite("ores.cli.tests");
 class test_helper : public ores::testing::database_fixture {
 public:
     test_helper() = default;
-
-    auto get_cli_database_options() {
-        return make_database_options();
-    }
 
     void cleanup_currencies() {
         truncate_table("oresdb.currencies");
@@ -68,7 +65,9 @@ TEST_CASE("import_currencies_from_test_file", "[app_application_import_tests]") 
 
     config::options opts;
     opts.importing = import_cfg;
-    opts.database = helper.get_cli_database_options();
+
+    using testing::test_database_manager;
+    opts.database = test_database_manager::make_database_options();
     BOOST_LOG_SEV(lg, debug) << "Options: " << opts;
 
     std::ostringstream os;
@@ -131,7 +130,9 @@ TEST_CASE("import_currencies_from_multiple_files", "[app_application_import_test
 
     config::options opts;
     opts.importing = import_cfg;
-    opts.database = helper.get_cli_database_options();
+
+    using testing::test_database_manager;
+    opts.database = test_database_manager::make_database_options();
     BOOST_LOG_SEV(lg, debug) << "Options: " << opts;
 
     std::ostringstream os;
@@ -169,7 +170,9 @@ TEST_CASE("import_and_query_specific_currency", "[app_application_import_tests]"
 
     config::options opts;
     opts.importing = import_cfg;
-    opts.database = helper.get_cli_database_options();
+
+    using testing::test_database_manager;
+    opts.database = test_database_manager::make_database_options();
     BOOST_LOG_SEV(lg, debug) << "Options: " << opts;
 
     std::ostringstream os;
@@ -223,7 +226,9 @@ TEST_CASE("import_currencies_with_empty_database", "[app_application_import_test
 
     config::options opts;
     opts.importing = import_cfg;
-    opts.database = helper.get_cli_database_options();
+
+    using testing::test_database_manager;
+    opts.database = test_database_manager::make_database_options();
     BOOST_LOG_SEV(lg, debug) << "Options: " << opts;
 
     std::ostringstream os;
@@ -257,7 +262,9 @@ TEST_CASE("import_currencies_verify_all_fields", "[app_application_import_tests]
 
     config::options opts;
     opts.importing = import_cfg;
-    opts.database = helper.get_cli_database_options();
+
+    using testing::test_database_manager;
+    opts.database = test_database_manager::make_database_options();
     BOOST_LOG_SEV(lg, debug) << "Options: " << opts;
 
     std::ostringstream os;
@@ -310,7 +317,9 @@ TEST_CASE("import_currencies_from_api_test_file", "[app_application_import_tests
 
     config::options opts;
     opts.importing = import_cfg;
-    opts.database = helper.get_cli_database_options();
+
+    using testing::test_database_manager;
+    opts.database = test_database_manager::make_database_options();
     BOOST_LOG_SEV(lg, debug) << "Options: " << opts;
 
     std::ostringstream os;

@@ -867,6 +867,14 @@ Links:
 To avoid leaking secrets it should be possible to supply a =--connect= in the
 client. We still need a connect in case we want to reconnect.
 
+*** STARTED Ignore warnings on windows and osx                         :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-06 Thu 23:28]--[2025-11-06 Thu 23:43] =>  0:15
+    :END:
+
+At present we have a number of spurious warnings on both windows and OSX. Try to
+see if we can get CDash to ignore them
+
 *** Remove postgres passwords from github workflows                    :code:
 
 As a quick hack we added the dev passwords to the workflows. We should really

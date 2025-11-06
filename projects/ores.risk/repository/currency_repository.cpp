@@ -63,6 +63,20 @@ std::string currency_repository::sql() {
 }
 
 void currency_repository::
+write(context ctx, const domain::currency& currency) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing currency to database: "
+                               << currency;
+
+    const auto r = session(ctx.connection_pool())
+        .and_then(begin_transaction)
+        .and_then(insert(currency_mapper::map(currency)))
+        .and_then(commit);
+    ensure_success(r);
+
+    BOOST_LOG_SEV(lg(), debug) << "Finished writing currency to database.";
+}
+
+void currency_repository::
 write(context ctx, const std::vector<domain::currency>& currencies) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currencies to database. Count: "
                              << currencies.size();
@@ -75,6 +89,7 @@ write(context ctx, const std::vector<domain::currency>& currencies) {
 
     BOOST_LOG_SEV(lg(), debug) << "Finished writing currencies to database.";
 }
+
 
 std::vector<domain::currency> currency_repository::read_latest(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currencies.";

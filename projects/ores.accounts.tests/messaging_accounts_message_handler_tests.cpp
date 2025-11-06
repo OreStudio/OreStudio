@@ -36,6 +36,7 @@ namespace {
 
 const std::string test_suite("ores.accounts.tests");
 const std::string database_table("oresdb.accounts");
+const std::string tags("[messaging_accounts_message_handler_tests]");
 
 create_account_request to_create_account_request(const domain::account& a) {
     create_account_request r;
@@ -51,13 +52,13 @@ create_account_request to_create_account_request(const domain::account& a) {
 }
 
 using namespace ores::utility::log;
+using namespace ores::accounts::generators;
+
 using ores::comms::protocol::message_type;
 using ores::comms::protocol::error_code;
 using ores::testing::database_helper;
-using ores::accounts::generators::generate_fake_accounts;
 
-TEST_CASE("handle_single_create_account_request",
-    "[messaging_accounts_message_handler_tests]") {
+TEST_CASE("handle_single_create_account_request", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -65,7 +66,7 @@ TEST_CASE("handle_single_create_account_request",
 
     accounts_message_handler handler(h.get_context());
 
-    const auto account = *generate_fake_accounts().begin();
+    const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
 
     create_account_request req(to_create_account_request(account));
@@ -95,17 +96,14 @@ TEST_CASE("handle_single_create_account_request",
     REQUIRE(test_completed);
 }
 
-TEST_CASE("handle_many_create_account_requests",
-    "[messaging_accounts_message_handler_tests]") {
+TEST_CASE("handle_many_create_account_requests", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
     h.truncate_table(database_table);
 
     accounts_message_handler handler(h.get_context());
-    auto accounts =
-        (generate_fake_accounts() | std::views::take(5)) |
-        std::ranges::to<std::vector>();
+    auto accounts = generate_synthetic_accounts(5);
 
     for (const auto& acc : accounts) {
         BOOST_LOG_SEV(lg, info) << "Original account: " << acc;
@@ -139,9 +137,7 @@ TEST_CASE("handle_many_create_account_requests",
     }
 }
 
-TEST_CASE("handle_list_accounts_request_empty",
-    "[messaging_accounts_message_handler_tests]") {
-
+TEST_CASE("handle_list_accounts_request_empty", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -175,8 +171,7 @@ TEST_CASE("handle_list_accounts_request_empty",
     REQUIRE(test_completed);
 }
 
-TEST_CASE("handle_list_accounts_request_with_accounts",
-    "[messaging_accounts_message_handler_tests]") {
+TEST_CASE("handle_list_accounts_request_with_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -185,9 +180,7 @@ TEST_CASE("handle_list_accounts_request_with_accounts",
     accounts_message_handler handler(h.get_context());
 
     const int account_count = 5;
-    auto accounts =
-        (generate_fake_accounts() | std::views::take(account_count)) |
-        std::ranges::to<std::vector>();
+    auto accounts = generate_synthetic_accounts(account_count);
 
     for (const auto& acc : accounts) {
         BOOST_LOG_SEV(lg, info) << "Original account: " << acc;
@@ -234,8 +227,7 @@ TEST_CASE("handle_list_accounts_request_with_accounts",
     REQUIRE(test_completed);
 }
 
-TEST_CASE("handle_login_request_with_valid_credentials",
-    "[messaging_accounts_message_handler_tests]") {
+TEST_CASE("handle_login_request_with_valid_credentials", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -244,7 +236,7 @@ TEST_CASE("handle_login_request_with_valid_credentials",
     accounts_message_handler handler(h.get_context());
 
     // Create an account first
-    const auto account = *generate_fake_accounts().begin();
+    const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
 
     create_account_request create_req(to_create_account_request(account));
@@ -294,8 +286,7 @@ TEST_CASE("handle_login_request_with_valid_credentials",
     REQUIRE(test_completed);
 }
 
-TEST_CASE("handle_login_request_with_invalid_credentials",
-    "[messaging_accounts_message_handler_tests]") {
+TEST_CASE("handle_login_request_with_invalid_credentials", tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -305,7 +296,7 @@ TEST_CASE("handle_login_request_with_invalid_credentials",
     accounts_message_handler handler(h.get_context());
 
     // Create an account first
-    const auto account = *generate_fake_accounts().begin();
+    const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
 
     create_account_request create_req(to_create_account_request(account));
@@ -353,8 +344,7 @@ TEST_CASE("handle_login_request_with_invalid_credentials",
     REQUIRE(test_completed);
 }
 
-TEST_CASE("handle_unlock_account_request",
-    "[messaging_accounts_message_handler_tests]") {
+TEST_CASE("handle_unlock_account_request", tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -364,7 +354,7 @@ TEST_CASE("handle_unlock_account_request",
     accounts_message_handler handler(h.get_context());
 
     // Create an account first
-    const auto account = *generate_fake_accounts().begin();
+    const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
 
     create_account_request create_req(to_create_account_request(account));
@@ -417,8 +407,7 @@ TEST_CASE("handle_unlock_account_request",
     REQUIRE(test_completed);
 }
 
-TEST_CASE("handle_invalid_message_type",
-    "[messaging_accounts_message_handler_tests]") {
+TEST_CASE("handle_invalid_message_type", tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 

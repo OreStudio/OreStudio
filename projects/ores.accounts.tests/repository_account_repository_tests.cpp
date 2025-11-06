@@ -30,59 +30,54 @@
 
 namespace {
 
-std::string test_suite("ores.accounts.tests");
-std::string database_table("oresdb.accounts");
+const std::string test_suite("ores.accounts.tests");
+const std::string database_table("oresdb.accounts");
+const std::string tags("[repository_account_repository_tests]");
 
 }
+
+using namespace ores::utility::log;
+using namespace ores::accounts::generators;
 
 using ores::testing::database_helper;
 using ores::accounts::domain::account;
 using ores::accounts::repository::account_repository;
-using ores::accounts::generators::generate_fake_accounts;
 
-TEST_CASE("write_single_account", "[repository_account_repository_tests]") {
-    using namespace ores::utility::log;
+
+TEST_CASE("write_single_account", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
     h.truncate_table(database_table);
 
     account_repository repo;
-    auto accounts =
-        (generate_fake_accounts() | std::views::take(1)) |
-        std::ranges::to<std::vector>();
+    auto account = generate_synthetic_account();
 
-    BOOST_LOG_SEV(lg, debug) << "Accounts: " << accounts;
-    CHECK_NOTHROW(repo.write(h.get_context(), accounts));
+    BOOST_LOG_SEV(lg, debug) << "Account: " << account;
+    CHECK_NOTHROW(repo.write(h.get_context(), account));
 }
 
-TEST_CASE("write_multiple_accounts", "[repository_account_repository_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("write_multiple_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
     h.truncate_table(database_table);
 
     account_repository repo;
-    auto accounts =
-        (generate_fake_accounts() | std::views::take(5)) |
-        std::ranges::to<std::vector>();
+    auto accounts = generate_synthetic_accounts(5);
     BOOST_LOG_SEV(lg, debug) << "Accounts: " << accounts;
 
     CHECK_NOTHROW(repo.write(h.get_context(), accounts));
 }
 
-TEST_CASE("read_latest_accounts", "[repository_account_repository_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("read_latest_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
     h.truncate_table(database_table);
 
     account_repository repo;
-    auto written_accounts =
-        (generate_fake_accounts() | std::views::take(3)) |
-        std::ranges::to<std::vector>();
+    auto written_accounts = generate_synthetic_accounts(3);
     BOOST_LOG_SEV(lg, debug) << "Written accounts: " << written_accounts;
 
     repo.write(h.get_context(), written_accounts);
@@ -94,17 +89,14 @@ TEST_CASE("read_latest_accounts", "[repository_account_repository_tests]") {
     CHECK(read_accounts.size() >= written_accounts.size());
 }
 
-TEST_CASE("read_latest_account_by_id", "[repository_account_repository_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("read_latest_account_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
     h.truncate_table(database_table);
 
     account_repository repo;
-    auto accounts =
-        (generate_fake_accounts() | std::views::take(5)) |
-        std::ranges::to<std::vector>();
+    auto accounts = generate_synthetic_accounts(5);
 
     const auto target = accounts.front();
     BOOST_LOG_SEV(lg, debug) << "Write accounts: " << accounts;
@@ -121,17 +113,14 @@ TEST_CASE("read_latest_account_by_id", "[repository_account_repository_tests]") 
     CHECK(read_accounts[0].email == target.email);
 }
 
-TEST_CASE("read_all_accounts", "[repository_account_repository_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("read_all_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
     h.truncate_table(database_table);
 
     account_repository repo;
-    auto written_accounts =
-        (generate_fake_accounts() | std::views::take(5)) |
-        std::ranges::to<std::vector>();
+    auto written_accounts = generate_synthetic_accounts(5);
     BOOST_LOG_SEV(lg, debug) << "Generated accounts: " << written_accounts;
 
     repo.write(h.get_context(), written_accounts);
@@ -143,8 +132,7 @@ TEST_CASE("read_all_accounts", "[repository_account_repository_tests]") {
     CHECK(read_accounts.size() >= written_accounts.size());
 }
 
-TEST_CASE("read_all_accounts_by_id", "[repository_account_repository_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("read_all_accounts_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -153,7 +141,7 @@ TEST_CASE("read_all_accounts_by_id", "[repository_account_repository_tests]") {
     account_repository repo;
 
     // Write multiple versions of the same account
-    auto acc1 = *generate_fake_accounts().begin();
+    auto acc1 = generate_synthetic_account();
     const auto test_id = acc1.id;
     acc1.version = 1;
     BOOST_LOG_SEV(lg, debug) << "Account 1: " << acc1;
@@ -183,17 +171,14 @@ TEST_CASE("read_all_accounts_by_id", "[repository_account_repository_tests]") {
     CHECK(found_v2);
 }
 
-TEST_CASE("read_latest_by_username", "[repository_account_repository_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("read_latest_by_username", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
     h.truncate_table(database_table);
 
     account_repository repo;
-    auto accounts =
-        (generate_fake_accounts() | std::views::take(5)) |
-        std::ranges::to<std::vector>();
+    auto accounts = generate_synthetic_accounts(5);
     BOOST_LOG_SEV(lg, debug) << "Generated accounts: " << accounts;
 
     repo.write(h.get_context(), accounts);
@@ -211,8 +196,7 @@ TEST_CASE("read_latest_by_username", "[repository_account_repository_tests]") {
     CHECK(read_accounts[0].email == acc.email);
 }
 
-TEST_CASE("read_nonexistent_account_by_id", "[repository_account_repository_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("read_nonexistent_account_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -231,8 +215,7 @@ TEST_CASE("read_nonexistent_account_by_id", "[repository_account_repository_test
     CHECK(read_accounts.size() == 0);
 }
 
-TEST_CASE("read_nonexistent_username", "[repository_account_repository_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("read_nonexistent_username", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -250,8 +233,7 @@ TEST_CASE("read_nonexistent_username", "[repository_account_repository_tests]") 
     CHECK(read_accounts.size() == 0);
 }
 
-TEST_CASE("write_and_read_admin_account", "[repository_account_repository_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("write_and_read_admin_account", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -260,7 +242,7 @@ TEST_CASE("write_and_read_admin_account", "[repository_account_repository_tests]
     account_repository repo;
 
     // Create admin account
-    auto admin_acc = *generate_fake_accounts().begin();
+    auto admin_acc = generate_synthetic_account();
     admin_acc.is_admin = true;
     BOOST_LOG_SEV(lg, debug) << "Admin account: " << admin_acc;
 

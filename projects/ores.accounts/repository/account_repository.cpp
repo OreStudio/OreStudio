@@ -62,6 +62,19 @@ std::string account_repository::sql() {
 }
 
 void account_repository::
+write(context ctx, const domain::account& account) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing account to database: " << account;
+
+    const auto r = session(ctx.connection_pool())
+        .and_then(begin_transaction)
+        .and_then(insert(account_mapper::map(account)))
+        .and_then(commit);
+    ensure_success(r);
+
+    BOOST_LOG_SEV(lg(), debug) << "Finished writing account to database.";
+}
+
+void account_repository::
 write(context ctx, const std::vector<domain::account>& accounts) {
     BOOST_LOG_SEV(lg(), debug) << "Writing accounts to database. Count: "
                              << accounts.size();

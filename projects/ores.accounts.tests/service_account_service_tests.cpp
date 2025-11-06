@@ -31,14 +31,15 @@ namespace {
 
 const std::string test_suite("ores.accounts.tests");
 const std::string database_table("oresdb.accounts");
+const std::string tags("[service_account_service_tests]");
 
 }
 
 using namespace ores::accounts;
 using ores::testing::database_helper;
-using ores::accounts::generators::generate_fake_accounts;
+using namespace ores::accounts::generators;
 
-TEST_CASE("create_account_with_valid_data", "[service_account_service_tests]") {
+TEST_CASE("create_account_with_valid_data", tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -49,7 +50,7 @@ TEST_CASE("create_account_with_valid_data", "[service_account_service_tests]") {
     repository::login_info_repository login_info_repo;
     service::account_service svc(account_repo, login_info_repo);
 
-    auto original = *generate_fake_accounts().begin();
+    auto original = generate_synthetic_account();
     const std::string username = original.username;
     const std::string email = original.email;
     const std::string password = faker::internet::password();
@@ -68,7 +69,7 @@ TEST_CASE("create_account_with_valid_data", "[service_account_service_tests]") {
     CHECK(account.is_admin == false);
 }
 
-TEST_CASE("create_account_with_admin_flag", "[service_account_service_tests]") {
+TEST_CASE("create_account_with_admin_flag", tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -79,7 +80,7 @@ TEST_CASE("create_account_with_admin_flag", "[service_account_service_tests]") {
     repository::login_info_repository login_info_repo;
     service::account_service svc(account_repo, login_info_repo);
 
-    auto original = *generate_fake_accounts().begin();
+    auto original = generate_synthetic_account();
     const std::string username = original.username;
     const std::string email = original.email;
     const std::string password = faker::internet::password();
@@ -97,7 +98,7 @@ TEST_CASE("create_account_with_admin_flag", "[service_account_service_tests]") {
     CHECK(account.is_admin == true);
 }
 
-TEST_CASE("create_multiple_accounts", "[service_account_service_tests]") {
+TEST_CASE("create_multiple_accounts", tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -109,7 +110,7 @@ TEST_CASE("create_multiple_accounts", "[service_account_service_tests]") {
     service::account_service svc(account_repo, login_info_repo);
 
     for (int i = 0; i < 5; ++i) {
-        auto original = *generate_fake_accounts().begin();
+        auto original = generate_synthetic_account();
         const std::string username = original.username;
         const std::string email = original.email;
         const std::string password = faker::internet::password();
@@ -129,7 +130,7 @@ TEST_CASE("create_multiple_accounts", "[service_account_service_tests]") {
     }
 }
 
-TEST_CASE("create_account_with_empty_username_throws", "[service_account_service_tests]") {
+TEST_CASE("create_account_with_empty_username_throws", tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -142,7 +143,7 @@ TEST_CASE("create_account_with_empty_username_throws", "[service_account_service
 
     BOOST_LOG_SEV(lg, info) << "Attempting to create account with empty username";
 
-    auto original = *generate_fake_accounts().begin();
+    auto original = generate_synthetic_account();
     const std::string username;
     const std::string email = original.email;
     const std::string password = faker::internet::password();
@@ -153,7 +154,7 @@ TEST_CASE("create_account_with_empty_username_throws", "[service_account_service
         password, modified_by, false), std::invalid_argument);
 }
 
-TEST_CASE("create_account_with_empty_email_throws", "[service_account_service_tests]") {
+TEST_CASE("create_account_with_empty_email_throws", tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -164,7 +165,7 @@ TEST_CASE("create_account_with_empty_email_throws", "[service_account_service_te
     repository::login_info_repository login_info_repo;
     service::account_service svc(account_repo, login_info_repo);
 
-    auto original = *generate_fake_accounts().begin();
+    auto original = generate_synthetic_account();
     const std::string username = original.username;
     const std::string email;
     const std::string password = faker::internet::password();
@@ -177,7 +178,7 @@ TEST_CASE("create_account_with_empty_email_throws", "[service_account_service_te
         password, modified_by, false), std::invalid_argument);
 }
 
-TEST_CASE("create_account_with_empty_password_throws", "[service_account_service_tests]") {
+TEST_CASE("create_account_with_empty_password_throws", tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -188,7 +189,7 @@ TEST_CASE("create_account_with_empty_password_throws", "[service_account_service
     repository::login_info_repository login_info_repo;
     service::account_service svc(account_repo, login_info_repo);
 
-    auto original = *generate_fake_accounts().begin();
+    auto original = generate_synthetic_account();
     const std::string username = original.username;
     const std::string email = original.email;
     const std::string password;
@@ -201,7 +202,7 @@ TEST_CASE("create_account_with_empty_password_throws", "[service_account_service
         password, modified_by, false), std::invalid_argument);
 }
 
-TEST_CASE("list_accounts_returns_empty_for_no_accounts", "[service_account_service_tests]") {
+TEST_CASE("list_accounts_returns_empty_for_no_accounts", tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -222,7 +223,7 @@ TEST_CASE("list_accounts_returns_empty_for_no_accounts", "[service_account_servi
 }
 
 TEST_CASE("list_accounts_returns_created_accounts",
-    "[service_account_service_tests]") {
+    tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -233,10 +234,8 @@ TEST_CASE("list_accounts_returns_created_accounts",
     repository::login_info_repository login_info_repo;
     service::account_service svc(account_repo, login_info_repo);
 
-    const int account_count = 3;
-    auto written_accounts =
-        (generate_fake_accounts() | std::views::take(account_count)) |
-        std::ranges::to<std::vector>();
+    const int expected_count = 3;
+    auto written_accounts = generate_synthetic_accounts(expected_count);
 
     for (const auto& acc : written_accounts) {
         const std::string username = acc.username;
@@ -259,10 +258,10 @@ TEST_CASE("list_accounts_returns_created_accounts",
         BOOST_LOG_SEV(lg, info) << "Account: " << acc;
     }
 
-    CHECK(accounts.size() == account_count);
+    CHECK(accounts.size() == expected_count);
 }
 
-TEST_CASE("login_with_valid_credentials", "[service_account_service_tests]") {
+TEST_CASE("login_with_valid_credentials", tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -273,7 +272,7 @@ TEST_CASE("login_with_valid_credentials", "[service_account_service_tests]") {
     repository::login_info_repository login_info_repo;
     service::account_service svc(account_repo, login_info_repo);
 
-    auto original = *generate_fake_accounts().begin();
+    auto original = generate_synthetic_account();
     const std::string username = original.username;
     const std::string email = original.email;
     const std::string password = faker::internet::password();
@@ -298,7 +297,7 @@ TEST_CASE("login_with_valid_credentials", "[service_account_service_tests]") {
     CHECK(logged_in_account.id == created_account.id);
 }
 
-TEST_CASE("login_with_invalid_password_throws", "[service_account_service_tests]") {
+TEST_CASE("login_with_invalid_password_throws", tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -309,7 +308,7 @@ TEST_CASE("login_with_invalid_password_throws", "[service_account_service_tests]
     repository::login_info_repository login_info_repo;
     service::account_service svc(account_repo, login_info_repo);
 
-    auto original = *generate_fake_accounts().begin();
+    auto original = generate_synthetic_account();
     const std::string username = original.username;
     const std::string email = original.email;
     const std::string password = faker::internet::password();
@@ -327,7 +326,7 @@ TEST_CASE("login_with_invalid_password_throws", "[service_account_service_tests]
         std::runtime_error);
 }
 
-TEST_CASE("login_with_nonexistent_username_throws", "[service_account_service_tests]") {
+TEST_CASE("login_with_nonexistent_username_throws", tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -346,7 +345,7 @@ TEST_CASE("login_with_nonexistent_username_throws", "[service_account_service_te
         std::runtime_error);
 }
 
-TEST_CASE("login_with_empty_username_throws", "[service_account_service_tests]") {
+TEST_CASE("login_with_empty_username_throws", tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -366,7 +365,7 @@ TEST_CASE("login_with_empty_username_throws", "[service_account_service_tests]")
         std::invalid_argument);
 }
 
-TEST_CASE("login_with_empty_password_throws", "[service_account_service_tests]") {
+TEST_CASE("login_with_empty_password_throws", tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -379,7 +378,7 @@ TEST_CASE("login_with_empty_password_throws", "[service_account_service_tests]")
 
     BOOST_LOG_SEV(lg, info) << "Attempting login with empty password";
 
-    auto original = *generate_fake_accounts().begin();
+    auto original = generate_synthetic_account();
     const std::string username = std::string(faker::internet::username());
     const auto ip = boost::asio::ip::make_address(faker::internet::ipv4());
     CHECK_THROWS_AS(svc.login(h.get_context(), username, "", ip),
@@ -387,7 +386,7 @@ TEST_CASE("login_with_empty_password_throws", "[service_account_service_tests]")
 }
 
 TEST_CASE("account_locks_after_multiple_failed_logins",
-    "[service_account_service_tests]") {
+    tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -398,7 +397,7 @@ TEST_CASE("account_locks_after_multiple_failed_logins",
     repository::login_info_repository login_info_repo;
     service::account_service svc(account_repo, login_info_repo);
 
-    auto original = *generate_fake_accounts().begin();
+    auto original = generate_synthetic_account();
     const std::string username = original.username;
     const std::string email = original.email;
     const std::string password = faker::internet::password();
@@ -434,7 +433,7 @@ TEST_CASE("account_locks_after_multiple_failed_logins",
     }
 }
 
-TEST_CASE("unlock_account_successful", "[service_account_service_tests]") {
+TEST_CASE("unlock_account_successful", tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -445,7 +444,7 @@ TEST_CASE("unlock_account_successful", "[service_account_service_tests]") {
     repository::login_info_repository login_info_repo;
     service::account_service svc(account_repo, login_info_repo);
 
-    auto original = *generate_fake_accounts().begin();
+    auto original = generate_synthetic_account();
     const std::string username = original.username;
     const std::string email = original.email;
     const std::string password = faker::internet::password();
@@ -481,7 +480,7 @@ TEST_CASE("unlock_account_successful", "[service_account_service_tests]") {
     CHECK(logged_in_account.username == username);
 }
 
-TEST_CASE("unlock_nonexistent_account_throws", "[service_account_service_tests]") {
+TEST_CASE("unlock_nonexistent_account_throws", tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -502,7 +501,7 @@ TEST_CASE("unlock_nonexistent_account_throws", "[service_account_service_tests]"
 }
 
 TEST_CASE("delete_nonexistent_account_throws",
-    "[service_account_service_tests]") {
+    tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -522,7 +521,7 @@ TEST_CASE("delete_nonexistent_account_throws",
         std::invalid_argument);
 }
 
-TEST_CASE("login_with_different_ip_addresses", "[service_account_service_tests]") {
+TEST_CASE("login_with_different_ip_addresses", tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -533,7 +532,7 @@ TEST_CASE("login_with_different_ip_addresses", "[service_account_service_tests]"
     repository::login_info_repository login_info_repo;
     service::account_service svc(account_repo, login_info_repo);
 
-    auto original = *generate_fake_accounts().begin();
+    auto original = generate_synthetic_account();
     const std::string username = original.username;
     const std::string email = original.email;
     const std::string password = faker::internet::password();

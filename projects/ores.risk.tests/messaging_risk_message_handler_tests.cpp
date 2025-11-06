@@ -34,33 +34,18 @@ namespace {
 
 const std::string test_suite("ores.risk.tests");
 const std::string database_table("oresdb.currencies");
-
-template<std::ranges::input_range R, typename KeyFn>
-auto unique_by(R&& range, KeyFn&& key_fn) {
-    std::vector<std::ranges::range_value_t<R>> result;
-    std::unordered_set<std::decay_t<
-        std::invoke_result_t<KeyFn&, std::ranges::range_reference_t<R>>>> seen;
-
-    for (auto&& elem : range) {
-        auto key = key_fn(elem);
-        if (seen.insert(std::move(key)).second) {
-            result.push_back(std::forward<decltype(elem)>(elem));
-        }
-    }
-    return result;
-}
+const std::string tags("[messaging_risk_message_handler_tests]");
 
 }
 
 using namespace ores;
+using namespace ores::utility::log;
 using ores::risk::domain::currency;
 using namespace ores::risk::messaging;
 using namespace ores::risk::generators;
 using ores::testing::database_helper;
 
-TEST_CASE("handle_get_currencies_request_empty",
-    "[messaging_risk_message_handler_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("handle_get_currencies_request_empty", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -95,15 +80,13 @@ TEST_CASE("handle_get_currencies_request_empty",
     REQUIRE(test_completed);
 }
 
-TEST_CASE("handle_get_currencies_request_with_single_currency",
-    "[messaging_risk_message_handler_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("handle_get_currencies_request_with_single_currency", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
     h.truncate_table(database_table);
 
-    auto ccy = *generate_fake_currencies().begin();
+    auto ccy = generate_synthetic_currency();
     risk::repository::currency_repository repo;
     repo.write(h.get_context(), {ccy});
     BOOST_LOG_SEV(lg, debug) << "Created test currency: " << ccy;
@@ -138,9 +121,7 @@ TEST_CASE("handle_get_currencies_request_with_single_currency",
     REQUIRE(test_completed);
 }
 
-TEST_CASE("handle_get_currencies_request_with_multiple_currencies",
-    "[messaging_risk_message_handler_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("handle_get_currencies_request_with_multiple_currencies", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -149,10 +130,7 @@ TEST_CASE("handle_get_currencies_request_with_multiple_currencies",
     // Create multiple test currencies
     risk::repository::currency_repository repo;
 
-    auto currencies = unique_by(
-        generate_fake_currencies() | std::views::take(5),
-        [](const ores::risk::domain::currency& c) {
-        return c.iso_code; });
+    auto currencies = generate_unique_synthetic_currencies(5);
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
     repo.write(h.get_context(), currencies);
 
@@ -192,9 +170,7 @@ TEST_CASE("handle_get_currencies_request_with_multiple_currencies",
     REQUIRE(test_completed);
 }
 
-TEST_CASE("handle_get_currencies_request_with_faker",
-    "[messaging_risk_message_handler_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("handle_get_currencies_request_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -202,9 +178,7 @@ TEST_CASE("handle_get_currencies_request_with_faker",
 
     // Create random currencies
     const int currency_count = 10;
-    auto currencies =
-        (generate_fake_currencies() | std::views::take(currency_count)) |
-        std::ranges::to<std::vector>();
+    auto currencies = generate_unique_synthetic_currencies(currency_count);
 
     risk::repository::currency_repository repo;
     repo.write(h.get_context(), currencies);
@@ -229,7 +203,7 @@ TEST_CASE("handle_get_currencies_request_with_faker",
         REQUIRE(response_result.has_value());
         const auto& response = response_result.value();
         BOOST_LOG_SEV(lg, debug) << "Response with " << response.currencies.size()
-                                << " currencies";
+                                 << " currencies";
 
         CHECK(response.currencies.size() == currency_count);
         test_completed = true;
@@ -239,9 +213,7 @@ TEST_CASE("handle_get_currencies_request_with_faker",
     REQUIRE(test_completed);
 }
 
-TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip",
-    "[messaging_risk_message_handler_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -313,9 +285,7 @@ TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip",
     REQUIRE(test_completed);
 }
 
-TEST_CASE("handle_get_currencies_request_with_unicode_symbols",
-    "[messaging_risk_message_handler_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("handle_get_currencies_request_with_unicode_symbols", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -324,6 +294,7 @@ TEST_CASE("handle_get_currencies_request_with_unicode_symbols",
     // Create currencies with special Unicode symbols
     std::vector<std::pair<std::string, std::string>> currency_data = {
         {"EUR", "€"},
+        {"USD", "$"},
         {"GBP", "£"},
         {"JPY", "¥"},
         {"INR", "₹"},
@@ -331,18 +302,12 @@ TEST_CASE("handle_get_currencies_request_with_unicode_symbols",
         {"RUB", "₽"}
     };
 
-    auto currencies =
-        (generate_fake_currencies() | std::views::take(currency_data.size())) |
-                      std::ranges::to<std::vector>();
-    BOOST_LOG_SEV(lg, debug) << "Original currencies: " << currencies;
+    auto currencies = generate_synthetic_unicode_currencies();
+    BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
 
-    for (int i = 0; i < currency_data.size(); ++i) {
-        currencies[i].iso_code = currency_data[i].first;
-        currencies[i].symbol = currency_data[i].second;
-    }
-    BOOST_LOG_SEV(lg, debug) << "Updated currencies: " << currencies;
     risk::repository::currency_repository repo;
     repo.write(h.get_context(), currencies);
+    BOOST_LOG_SEV(lg, debug) << "Currencies written to db.";
 
     risk_message_handler handler(h.get_context());
 
@@ -379,8 +344,7 @@ TEST_CASE("handle_get_currencies_request_with_unicode_symbols",
 }
 
 TEST_CASE("handle_invalid_message_type",
-    "[messaging_risk_message_handler_tests]") {
-    using namespace ores::utility::log;
+    tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;

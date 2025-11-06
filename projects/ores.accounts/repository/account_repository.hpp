@@ -62,7 +62,10 @@ public:
      * @brief Writes accounts to database. Expects the account set to have
      * unique IDs.
      */
+    /**@{*/
+    void write(context ctx, const domain::account& account);
     void write(context ctx, const std::vector<domain::account>& accounts);
+    /**@}*/
 
     /**
      * @brief Reads latest accounts, possibly filtered by ID.

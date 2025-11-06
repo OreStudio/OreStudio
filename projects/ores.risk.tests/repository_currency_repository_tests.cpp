@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ranges>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -46,16 +45,14 @@ using namespace ores::utility::log;
 TEST_CASE("write_single_currency", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
+    ores::testing::database_helper h;
     h.truncate_table(database_table);
 
-    auto currencies =
-        (generate_fake_currencies() | std::views::take(1)) |
-        std::ranges::to<std::vector>();
-    BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
+    auto currency = generate_synthetic_currency();
+    BOOST_LOG_SEV(lg, debug) << "Currency: " << currency;
 
     currency_repository repo;
-    CHECK_NOTHROW(repo.write(h.get_context(), currencies));
+    CHECK_NOTHROW(repo.write(h.get_context(), currency));
 }
 
 TEST_CASE("write_multiple_currencies", tags) {
@@ -64,9 +61,7 @@ TEST_CASE("write_multiple_currencies", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    auto currencies =
-        (generate_fake_currencies() | std::views::take(1)) |
-        std::ranges::to<std::vector>();
+    auto currencies = generate_unique_synthetic_currencies(3);
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
 
     currency_repository repo;
@@ -79,9 +74,7 @@ TEST_CASE("read_latest_currencies", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    auto written_currencies =
-        (generate_fake_currencies() | std::views::take(3)) |
-        std::ranges::to<std::vector>();
+    auto written_currencies = generate_unique_synthetic_currencies(3);
     BOOST_LOG_SEV(lg, debug) << "Written currencies: " << written_currencies;
 
     currency_repository repo;
@@ -100,20 +93,22 @@ TEST_CASE("read_latest_currency_by_iso_code", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    auto currencies =
-        (generate_fake_currencies() | std::views::take(1)) |
-        std::ranges::to<std::vector>();
-    BOOST_LOG_SEV(lg, debug) << "Write currencies: " << currencies;
+    auto currency = generate_synthetic_currency();
+    const auto original_name = currency.name;
+    BOOST_LOG_SEV(lg, debug) << "Currency: " << currency;
 
     currency_repository repo;
-    repo.write(h.get_context(), currencies);
+    repo.write(h.get_context(), currency);
 
-    auto ccy = currencies.front();
-    auto read_currencies = repo.read_latest(h.get_context(), ccy.iso_code);
+    currency.name = original_name + " v2";
+    repo.write(h.get_context(), currency);
+
+    auto read_currencies = repo.read_latest(h.get_context(), currency.iso_code);
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
     REQUIRE(read_currencies.size() == 1);
-    CHECK(read_currencies[0].iso_code == ccy.iso_code);
+    CHECK(read_currencies[0].iso_code == currency.iso_code);
+    CHECK(read_currencies[0].name == original_name + " v2");
 }
 
 TEST_CASE("read_all_currencies", tags) {
@@ -122,9 +117,7 @@ TEST_CASE("read_all_currencies", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    auto written_currencies =
-        (generate_fake_currencies() | std::views::take(3)) |
-        std::ranges::to<std::vector>();
+    auto written_currencies = generate_unique_synthetic_currencies(3);
     BOOST_LOG_SEV(lg, debug) << "Written currencies: " << written_currencies;
 
     currency_repository repo;
@@ -146,7 +139,7 @@ TEST_CASE("read_all_currencies_multiple_versions", tags) {
     currency_repository repo;
 
     // Write multiple versions of the same currency
-    auto ccy1 = *generate_fake_currencies().begin();
+    auto ccy1 = generate_synthetic_currency();
     const auto test_iso_code = ccy1.iso_code;
     const auto test_name = ccy1.name;
 
@@ -203,9 +196,11 @@ TEST_CASE("write_and_read_currency_with_unicode_symbols", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
+    auto currencies = generate_synthetic_unicode_currencies();
+    BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
+
     currency_repository repo;
-    auto currencies =
-        generate_fake_unicode_currencies();
+    repo.write(h.get_context(), currencies);
 
     std::vector<std::pair<std::string, std::string>> currency_data = {
         {"EUR", "€"},
@@ -215,11 +210,7 @@ TEST_CASE("write_and_read_currency_with_unicode_symbols", tags) {
         {"BTC", "₿"},
         {"RUB", "₽"}
     };
-
     BOOST_LOG_SEV(lg, debug) << "Currency data: " << currency_data;
-    BOOST_LOG_SEV(lg, debug) << "Currencies with unicode: " << currencies;
-
-    repo.write(h.get_context(), currencies);
 
     // Read back and verify symbols
     auto read_currencies = repo.read_latest(h.get_context());
@@ -245,7 +236,7 @@ TEST_CASE("write_and_read_currency_with_no_fractions", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    const auto currencies = generate_fake_unicode_currencies();
+    const auto currencies = generate_synthetic_unicode_currencies();
     const auto& jpy = *
         std::ranges::find_if(currencies, [](const auto& c) {
             return c.iso_code == "JPY";

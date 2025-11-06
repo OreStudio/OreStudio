@@ -22,6 +22,7 @@
 #include <chrono>
 #include <format>
 #include <random>
+#include <unordered_set>
 #include "faker-cxx/faker.h" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -33,13 +34,13 @@ namespace {
 std::string fake_datetime_string() {
     // Define range: e.g., years 1970 to 2038 (avoid 9999 unless needed)
     using namespace std::chrono;
-    static thread_local std::mt19937 rng{std::random_device{}()};
+    static thread_local std::mt19937_64 rng{std::random_device{}()};
 
     // Unix time range: 0 = 1970-01-01, max ~2106 for 32-bit, but we use 64-bit
     const auto min_time = sys_days{year{1970}/1/1}.time_since_epoch();
     const auto max_time = sys_days{year{2038}/12/31}.time_since_epoch() + 24h - 1s;
 
-    std::uniform_int_distribution dist(
+    std::uniform_int_distribution<std::int64_t> dist(
         min_time.count(),
         max_time.count()
     );
@@ -54,7 +55,7 @@ std::string fake_datetime_string() {
 
 namespace ores::risk::generators {
 
-domain::currency generate_fake_currency() {
+domain::currency generate_synthetic_currency() {
     domain::currency r;
 
     auto fakerCurrency = faker::finance::currency();
@@ -75,7 +76,7 @@ domain::currency generate_fake_currency() {
     return r;
 }
 
-std::vector<domain::currency> generate_fake_unicode_currencies() {
+std::vector<domain::currency> generate_synthetic_unicode_currencies() {
     std::vector<domain::currency> r;
     r.push_back({
         .iso_code = "USD",
@@ -187,6 +188,33 @@ std::vector<domain::currency> generate_fake_unicode_currencies() {
         .valid_from = fake_datetime_string(),
         .valid_to = "9999-12-31 23:59:59"
     });
+    return r;
+}
+
+std::vector<domain::currency>
+generate_synthetic_currencies(std::size_t n) {
+    std::vector<domain::currency> r;
+    r.reserve(n);
+    while (r.size() < n)
+        r.push_back(generate_synthetic_currency());
+
+    return r;
+}
+
+std::vector<domain::currency>
+generate_unique_synthetic_currencies(std::size_t n) {
+    std::unordered_set<std::string> seen;
+    seen.reserve(n);
+
+    std::vector<domain::currency> r;
+    r.reserve(n);
+
+    while (r.size() < n) {
+        auto currency = generate_synthetic_currency();
+        bool not_seen = seen.insert(currency.iso_code).second;
+        if (not_seen)
+            r.push_back(std::move(currency));
+    }
     return r;
 }
 

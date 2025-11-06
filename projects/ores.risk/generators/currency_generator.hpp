@@ -24,7 +24,7 @@
 #pragma once
 #endif
 
-#include <generator>
+#include <vector>
 #include "faker-cxx/faker.h" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -34,24 +34,30 @@
 namespace ores::risk::generators {
 
 /**
- * @brief Generates a fake currency.
+ * @brief Generates a synthetic currency.
  */
-domain::currency generate_fake_currency();
+domain::currency generate_synthetic_currency();
 
 /**
- * @brief Generates a fake currency from the unicode set.
+ * @brief Generates a synthetic currency from the unicode set.
  */
-std::vector<domain::currency> generate_fake_unicode_currencies();
+std::vector<domain::currency> generate_synthetic_unicode_currencies();
 
 /**
- * @brief Generates N fake currencies, up to limit.
+ * @brief Generates N synthetic currencies. May contain duplicates.
+ *
+ * @note c++ 23 generators are not supported on all compilers.
  */
-inline std::generator<domain::currency>
-generate_fake_currencies(std::size_t limit = 10000) {
-    std::size_t i = 0;
-    while (i++ < limit)
-        co_yield generate_fake_currency();
-}
+std::vector<domain::currency>
+generate_synthetic_currencies(std::size_t n);
+
+/**
+ * @brief Generates N synthetic currencies. Does not contain duplicates.
+ *
+ * @note c++ 23 generators are not supported on all compilers.
+ */
+std::vector<domain::currency>
+generate_unique_synthetic_currencies(std::size_t n);
 
 }
 

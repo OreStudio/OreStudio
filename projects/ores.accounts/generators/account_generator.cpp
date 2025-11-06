@@ -51,7 +51,6 @@ std::string base32_encode(const std::vector<uint8_t>& data) {
 std::string generate_totp_secret(size_t num_bytes = 20) {
     std::vector<uint8_t> bytes(num_bytes);
     for (auto& b : bytes) {
-        // faker::Number::integer<uint8_t>() works, but simpler:
         b = static_cast<uint8_t>(faker::number::integer(0, 255));
     }
     return base32_encode(bytes);
@@ -61,7 +60,7 @@ std::string generate_totp_secret(size_t num_bytes = 20) {
 
 namespace ores::accounts::generators {
 
-domain::account generate_fake_account() {
+domain::account generate_synthetic_account() {
     domain::account r;
     r.version = 1;
     r.modified_by = faker::internet::username();
@@ -79,6 +78,15 @@ domain::account generate_fake_account() {
     r.totp_secret = generate_totp_secret();
 
     r.is_admin = false;
+    return r;
+}
+
+std::vector<domain::account>
+generate_synthetic_accounts(std::size_t n) {
+    std::vector<domain::account> r;
+    r.reserve(n);
+    while (r.size() < n)
+        r.push_back(generate_synthetic_account());
     return r;
 }
 

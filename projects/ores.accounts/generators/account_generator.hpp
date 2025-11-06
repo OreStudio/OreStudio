@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_DOMAIN_ACCOUNT_GENERATORHPP
-#define ORES_ACCOUNTS_DOMAIN_ACCOUNT_GENERATORHPP
+#ifndef ORES_ACCOUNTS_DOMAIN_ACCOUNT_GENERATOR_HPP
+#define ORES_ACCOUNTS_DOMAIN_ACCOUNT_GENERATOR_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <generator>
+#include <vector>
 #include "faker-cxx/faker.h" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -34,19 +34,17 @@
 namespace ores::accounts::generators {
 
 /**
- * @brief Generates a fake account.
+ * @brief Generates a synthetic account.
  */
-domain::account generate_fake_account();
+domain::account generate_synthetic_account();
 
 /**
- * @brief Generates N fake accounts, up to limit.
+ * @brief Generates N synthetic accounts.
+ *
+ * @note c++ 23 generators are not supported on all compilers.
  */
-inline std::generator<domain::account>
-generate_fake_accounts(std::size_t limit = 10000) {
-    std::size_t i = 0;
-    while (i++ < limit)
-        co_yield generate_fake_account();
-}
+std::vector<domain::account>
+generate_synthetic_accounts(std::size_t n);
 
 }
 

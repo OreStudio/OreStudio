@@ -18,7 +18,7 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-06 Thu 00:18], for Thursday, November 06, 2025.
+#+CAPTION: Clock summary at [2025-11-06 Thu 00:26], for Thursday, November 06, 2025.
 |      | <75>                                   |        |      |      |       |
 | Tags | Headline                               | Time   |      |      |     % |
 |------+----------------------------------------+--------+------+------+-------|
@@ -32,38 +32,36 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-06 Thu 00:18]
+#+CAPTION: Clock summary at [2025-11-06 Thu 00:26]
 |       | <75>                                                   |         |       |       |       |
 | Tags  | Headline                                               | Time    |       |       |     % |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                           | *71:27* |       |       | 100.0 |
+|       | *Total time*                                           | *62:35* |       |       | 100.0 |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                | 71:27   |       |       | 100.0 |
-|       | Active                                                 |         | 71:27 |       | 100.0 |
-| agile | Sprint and product backlog refinement                  |         |       |  1:30 |   2.1 |
-| code  | Add locking up logic                                   |         |       |  1:28 |   2.1 |
-| code  | Build using dynamic libraries                          |         |       |  7:24 |  10.4 |
-| code  | Enable qt gui                                          |         |       |  4:13 |   5.9 |
-| code  | Add locking up logic                                   |         |       |  1:28 |   2.1 |
-| code  | Build using dynamic libraries                          |         |       |  7:24 |  10.4 |
-| code  | Implement logging according to correct boost.log usage |         |       |  8:02 |  11.2 |
-| code  | Fix broken Linux and OSX tests                         |         |       |  0:10 |   0.2 |
-| code  | Fix broken windows builds                              |         |       |  2:35 |   3.6 |
-| code  | Investigate leaks from valgrind                        |         |       |  0:51 |   1.2 |
-| code  | Consider adding a postgres database to CI              |         |       | 14:13 |  19.9 |
+|       | Stories                                                | 62:35   |       |       | 100.0 |
+|       | Active                                                 |         | 62:35 |       | 100.0 |
+| agile | Sprint and product backlog refinement                  |         |       |  1:30 |   2.4 |
+| code  | Add locking up logic                                   |         |       |  1:28 |   2.3 |
+| code  | Build using dynamic libraries                          |         |       |  7:24 |  11.8 |
+| code  | Enable qt gui                                          |         |       |  4:13 |   6.7 |
+| code  | Implement logging according to correct boost.log usage |         |       |  8:02 |  12.8 |
+| code  | Fix broken Linux and OSX tests                         |         |       |  0:10 |   0.3 |
+| code  | Fix broken windows builds                              |         |       |  2:35 |   4.1 |
+| code  | Investigate leaks from valgrind                        |         |       |  0:51 |   1.4 |
+| code  | Consider adding a postgres database to CI              |         |       | 14:13 |  22.7 |
 | code  | Fix misspell that causes build to break                |         |       |  0:12 |   0.3 |
-| code  | Improve code coverage                                  |         |       |  4:15 |   5.9 |
-| infra | vcpkg cannot apply patch on windowws                   |         |       |  1:46 |   2.5 |
-| code  | Update prodigy to use tags                             |         |       |  0:26 |   0.6 |
-| code  | Add command line arguments for database to service     |         |       |  3:34 |   5.0 |
-| code  | Resolve all of the OpenSSL leaks in valgrind           |         |       |  0:15 |   0.3 |
-| code  | Separate test database usage from application          |         |       |  3:33 |   5.0 |
-| code  | Split test code from utility                           |         |       |  4:41 |   6.6 |
+| code  | Improve code coverage                                  |         |       |  4:15 |   6.8 |
+| infra | vcpkg cannot apply patch on windowws                   |         |       |  1:46 |   2.8 |
+| code  | Update prodigy to use tags                             |         |       |  0:26 |   0.7 |
+| code  | Add command line arguments for database to service     |         |       |  3:34 |   5.7 |
+| code  | Resolve all of the OpenSSL leaks in valgrind           |         |       |  0:15 |   0.4 |
+| code  | Separate test database usage from application          |         |       |  3:33 |   5.7 |
+| code  | Split test code from utility                           |         |       |  4:41 |   7.5 |
 | code  | Add tests at test suite level to ctest                 |         |       |  0:13 |   0.3 |
-| code  | Add support for feature flags                          |         |       |  1:25 |   2.0 |
-| code  | Implement authentication bootstrap workflow            |         |       |  0:25 |   0.6 |
+| code  | Add support for feature flags                          |         |       |  1:25 |   2.3 |
+| code  | Implement authentication bootstrap workflow            |         |       |  0:25 |   0.7 |
 | code  | Add connect command line argument                      |         |       |  0:11 |   0.3 |
-| code  | Add workspace as a container                           |         |       |  1:13 |   1.7 |
+| code  | Add workspace as a container                           |         |       |  1:13 |   1.9 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -260,22 +258,6 @@ Notes:
   Will try to build as dynamic libraries - see separate story. This was not
   sufficient. In the end, we used distro-supplied Qt.
 
-*** COMPLETED Add locking up logic                                     :code:
-    :LOGBOOK:
-    CLOCK: [2025-10-23 Thu 15:06]--[2025-10-23 Thu 16:00] =>  0:54
-    CLOCK: [2025-10-23 Thu 10:34]--[2025-10-23 Thu 11:08] =>  0:34
-    :END:
-
-Incorrect password N times should lock up the account.
-
-Notes:
-
-- need to make bools ints a gain as we can't update them.
-
-Links:
-
-- [[https://github.com/getml/sqlgen/issues/74][#74: Updating boolean data causes an error]]
-
 *** COMPLETED Merge client into console                                :code:
 
 We don't really need a client, we can add this functionality to console.
@@ -310,40 +292,6 @@ Experiment with babel for this.
 *** COMPLETED Add support for =windows-msvc-clang-cl=                 :infra:
 
 We need to setup a build for MSVC clang.
-
-*** COMPLETED Build using dynamic libraries                            :code:
-    :LOGBOOK:
-    CLOCK: [2025-10-26 Sun 22:03]--[2025-10-26 Sun 22:48] =>  0:45
-    CLOCK: [2025-10-26 Sun 19:55]--[2025-10-26 Sun 21:30] =>  1:35
-    CLOCK: [2025-10-26 Sun 18:45]--[2025-10-26 Sun 19:18] =>  0:33
-    CLOCK: [2025-10-26 Sun 00:18]--[2025-10-26 Sun 01:04] =>  0:46
-    CLOCK: [2025-10-25 Sat 23:44]--[2025-10-26 Sun 00:18] =>  0:34
-    CLOCK: [2025-10-25 Sat 21:10]--[2025-10-25 Sat 23:43] =>  2:33
-    CLOCK: [2025-10-25 Sat 00:35]--[2025-10-25 Sat 01:13] =>  0:38
-    :END:
-
-This should help with disk space.
-
-Notes:
-
-- try to build using triplet =x64-linux-dynamic=. Actually this builds all of
-  the vcpkg dependencies as shared objects. This is problematic because we do
-  not know how to package them proper under Linux. It's easier to statically
-  link them for now and build only our own SO's. If we ever want to do this
-  again, the incantation is:
-
-: ZIC=1 cmake --build --target package --preset linux-clang-debug -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic -DBUILD_SHARED_LIBS=ON
-
-- we use the distro supplied Qt because building it from vcpkg uses too much
-  disk space. For that we use overlays. It works fine without overlays too, but
-  only for local machine.
-
-: -DVCPKG_OVERLAY_PORTS=/home/marco/Development/OreStudio/OreStudio.local1/build/cmake/overlays/
-
-Links:
-
-- [[https://learn.microsoft.com/en-us/vcpkg/concepts/overlay-ports][Overlay ports]]
-- [[https://devblogs.microsoft.com/cppblog/using-system-package-manager-dependencies-with-vcpkg/#using-curl-and-openssl-from-the-system-package-manager][Using curl and OpenSSL from the system package manager]]
 
 *** COMPLETED Implement logging according to correct boost.log usage   :code:
     :LOGBOOK:

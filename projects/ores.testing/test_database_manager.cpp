@@ -47,18 +47,37 @@ using utility::repository::context_factory;
 using utility::environment::environment;
 
 context test_database_manager::make_admin_context() {
+    const auto opts = make_database_options();
     context_factory::configuration db_cfg{
-        .user = environment::get_value_or_default(prefix + "USER", "ores"),
-        .password = environment::get_value_or_default(prefix + "PASSWORD", ""),
-        .host = environment::get_value_or_default(prefix + "HOST", "localhost"),
+        .user = opts.user,
+        .password = opts.password,
+        .host = opts.host,
         .database = "postgres",  // Connect to admin database
-        .port = environment::get_int_value_or_default(prefix + "PORT", 5432),
+        .port = opts.port,
         .pool_size = 1,
         .num_attempts = 10,
         .wait_time_in_seconds = 1
     };
 
     return context_factory::make_context(db_cfg);
+}
+
+context test_database_manager::make_context() {
+    const auto opts = make_database_options();
+    context_factory::configuration db_cfg{
+        .user = opts.user,
+        .password = opts.password,
+        .host = opts.host,
+        .database = opts.database,
+        .port = opts.port,
+        .pool_size = 4,
+        .num_attempts = 10,
+        .wait_time_in_seconds = 1
+    };
+
+    context ctx = context_factory::make_context(db_cfg);
+    BOOST_LOG_SEV(lg(), info) << "Database context created successfully";
+    return ctx;
 }
 
 utility::database::database_options test_database_manager::make_database_options() {

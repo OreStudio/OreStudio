@@ -56,7 +56,12 @@ private:
      */
     static utility::repository::context make_admin_context();
 
-public:
+  public:
+    /**
+     * @brief Creates a database context from environment variables.
+     */
+    static utility::repository::context make_context();
+
     /**
      * @brief Creates database options from environment variables.
      */

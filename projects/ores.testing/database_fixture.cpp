@@ -18,35 +18,16 @@
  *
  */
 #include "ores.testing/database_fixture.hpp"
+
 #include "ores.testing/test_database_manager.hpp"
-#include "ores.utility/repository/context_factory.hpp"
 
 namespace ores::testing {
 
 using namespace ores::utility::log;
-using utility::repository::context;
-using utility::repository::context_factory;
+using ores::testing::test_database_manager;
 
-database_fixture::database_fixture() : context_(make_context()) {}
-
-context database_fixture::make_context() {
-    using testing::test_database_manager;
-    const auto opts = test_database_manager::make_database_options();
-    context_factory::configuration db_cfg{
-        .user = opts.user,
-        .password = opts.password,
-        .host = opts.host,
-        .database = opts.database,
-        .port = opts.port,
-        .pool_size = 4,
-        .num_attempts = 10,
-        .wait_time_in_seconds = 1
-    };
-
-    context ctx = context_factory::make_context(db_cfg);
-    BOOST_LOG_SEV(lg(), info) << "Database context created successfully";
-    return ctx;
-}
+database_fixture::database_fixture()
+    : context_(test_database_manager::make_context()) {}
 
 void database_fixture::truncate_table(const std::string& table_name) {
     BOOST_LOG_SEV(lg(), info) << "Truncating table: " << table_name;

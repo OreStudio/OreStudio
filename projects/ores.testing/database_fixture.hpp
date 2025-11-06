@@ -32,13 +32,6 @@ namespace ores::testing {
 
 /**
  * @brief Provides database setup and cleanup utilities for tests.
- *
- * This class uses environment variables to configure the database connection:
- * - ORES_DB_USER: Database user name (default: "ores")
- * - ORES_DB_PASSWORD: Database password (default: "")
- * - ORES_DB_HOST: Database host (default: "localhost")
- * - ORES_DB_DATABASE: Database name (default: "oresdb")
- * - ORES_DB_PORT: Database port (default: 5432)
  */
 class database_fixture {
 private:
@@ -50,11 +43,6 @@ private:
 
 public:
     database_fixture();
-
-    /**
-     * @brief Creates a database context from environment variables.
-     */
-    static utility::repository::context make_context();
 
     /**
      * @brief Truncates the specified table.

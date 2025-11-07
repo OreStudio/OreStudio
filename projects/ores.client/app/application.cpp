@@ -25,11 +25,17 @@ namespace ores::client::app {
 
 using namespace ores::utility::log;
 
+application::application(std::optional<config::connection_options> connection_config,
+                         std::optional<config::login_options> login_config)
+    : connection_config_(std::move(connection_config)),
+      login_config_(std::move(login_config)) {
+}
+
 void application::run() const {
     BOOST_LOG_SEV(lg(), info) << "Starting client REPL";
 
     try {
-        repl client_repl;
+        repl client_repl(connection_config_, login_config_);
         client_repl.run();
         BOOST_LOG_SEV(lg(), info) << "Client REPL session ended";
     } catch (const std::exception& e) {

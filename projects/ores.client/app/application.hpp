@@ -24,7 +24,9 @@
 #pragma once
 #endif
 
+#include <optional>
 #include "ores.utility/log/make_logger.hpp"
+#include "ores.client/config/options.hpp"
 
 namespace ores::client::app {
 
@@ -40,7 +42,12 @@ private:
     }
 
 public:
-    application() = default;
+    /**
+     * @brief Construct application with configuration.
+     */
+    explicit application(std::optional<config::connection_options> connection_config = std::nullopt,
+                         std::optional<config::login_options> login_config = std::nullopt);
+
     application(const application&) = delete;
     application& operator=(const application&) = delete;
 
@@ -50,6 +57,11 @@ public:
      * Starts the REPL and blocks until the user exits.
      */
     void run() const;
+
+private:
+    std::optional<config::connection_options> connection_config_;
+    std::optional<config::login_options> login_config_;
+
 };
 
 }

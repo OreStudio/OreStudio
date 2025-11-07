@@ -62,7 +62,10 @@ public:
      * @brief Writes currencies to database. Expects the currency set to have
      * unique ISO codes.
      */
+    /**@{*/
+    void write(context ctx, const domain::currency& currencies);
     void write(context ctx, const std::vector<domain::currency>& currencies);
+    /**@}*/
 
     /**
      * @brief Reads latest currencies, possibly filtered by ISO code.

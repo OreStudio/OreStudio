@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <condition_variable>
 #include <iostream>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
@@ -35,8 +36,11 @@ namespace ores::client::app {
 
 using namespace ores::utility::log;
 
-repl::repl()
-    : config_{
+repl::repl(std::optional<config::connection_options> connection_config,
+           std::optional<config::login_options> login_config)
+    : connection_config_(std::move(connection_config)),
+    login_config_(std::move(login_config)),
+    config_{
         .host = "localhost",
         .port = 55555,
         .client_identifier = "ores-client",
@@ -50,7 +54,7 @@ repl::repl()
     work_guard_ = std::make_unique<executor_work_guard<any_io_executor>>(
         io_ctx_->get_executor());
 
-    BOOST_LOG_SEV(lg(), info) << "REPL created with default configuration.";
+    BOOST_LOG_SEV(lg(), info) << "REPL created with configuration.";
 }
 
 repl::~repl() {
@@ -59,8 +63,53 @@ repl::~repl() {
 
 void repl::run() {
     start_io_thread();
-    display_welcome();
 
+    if (connection_config_) {
+        // Perform auto-connect if connection options are provided
+        auto executor = io_ctx_->get_executor();
+        bool connected = false;
+        std::mutex mtx;
+        std::condition_variable cv;
+        bool done = false;
+
+        // Launch the auto-connect coroutine
+        boost::asio::co_spawn(executor,
+            [this, &connected, &mtx, &cv, &done]() -> boost::asio::awaitable<void> {
+                connected = co_await auto_connect();
+                {
+                    std::lock_guard<std::mutex> lock(mtx);
+                    done = true;
+                }
+                cv.notify_one();
+            },
+            boost::asio::detached);
+
+        // Wait for the auto-connect to complete
+        std::unique_lock<std::mutex> lock(mtx);
+        cv.wait(lock, [&done] { return done; });
+
+        // If connected and login config is provided, perform auto-login
+        if (connected && login_config_) {
+            done = false; // Reset for next operation
+
+            // Launch the auto-login coroutine
+            boost::asio::co_spawn(executor,
+                [this, &mtx, &cv, &done]() -> boost::asio::awaitable<void> {
+                    co_await auto_login();
+                    {
+                        std::lock_guard<std::mutex> lock(mtx);
+                        done = true;
+                    }
+                    cv.notify_one();
+                },
+                boost::asio::detached);
+
+            // Wait for the auto-login to complete
+            cv.wait(lock, [&done] { return done; });
+        }
+    }
+
+    display_welcome();
     auto cli_instance = setup_menus();
     ::cli::CliFileSession session(*cli_instance, std::cin, std::cout);
     session.Start();
@@ -317,6 +366,122 @@ boost::asio::awaitable<void> repl::process_get_currencies(std::ostream& out) {
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Get currencies exception: " << e.what();
         out << "✗ Error: " << e.what() << std::endl;
+    }
+}
+
+boost::asio::awaitable<bool> repl::auto_connect() {
+    try {
+        // Set up connection using the provided configuration
+        if (connection_config_) {
+            config_.host = connection_config_->host;
+            config_.port = connection_config_->port;
+            config_.client_identifier = connection_config_->client_identifier;
+        } else {
+            // Use default values if no connection config provided
+            config_.host = "localhost";
+            config_.port = 55555;
+            config_.client_identifier = "ores-client";
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Auto-connecting to " << config_.host << ":"
+                                << config_.port << " (identifier: "
+                                << config_.client_identifier << ")";
+
+        if (client_ && client_->is_connected()) {
+            BOOST_LOG_SEV(lg(), info) << "Disconnecting existing connection";
+            client_->disconnect();
+        }
+
+        client_ = std::make_shared<comms::client>(config_);
+
+        bool connected = co_await client_->connect();
+
+        if (connected) {
+            BOOST_LOG_SEV(lg(), info) << "Successfully auto-connected";
+            std::cout << "✓ Auto-connected to " << config_.host << ":" << config_.port << std::endl;
+            co_return true;
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Auto-connect failed";
+            std::cout << "✗ Auto-connect failed" << std::endl;
+            co_return false;
+        }
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Auto-connect exception: " << e.what();
+        std::cout << "✗ Auto-connect error: " << e.what() << std::endl;
+        co_return false;
+    }
+}
+
+boost::asio::awaitable<bool> repl::auto_login() {
+    try {
+        if (!login_config_) {
+            co_return false;
+        }
+
+        if (!client_ || !client_->is_connected()) {
+            BOOST_LOG_SEV(lg(), warn) << "Not connected to server. Cannot auto-login.";
+            std::cout << "✗ Not connected to server. Cannot auto-login." << std::endl;
+            co_return false;
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "Creating auto-login request for user: " << login_config_->username;
+
+        accounts::messaging::login_request request{
+            .username = login_config_->username,
+            .password = login_config_->password
+        };
+
+        auto request_payload = request.serialize();
+
+        comms::protocol::frame request_frame(
+            comms::protocol::message_type::login_request,
+            0,
+            std::move(request_payload));
+
+        BOOST_LOG_SEV(lg(), debug) << "Sending auto-login request frame";
+
+        auto response_result =
+            co_await client_->send_request(std::move(request_frame));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Auto-login request failed with error code: "
+                                      << static_cast<int>(response_result.error());
+            std::cout << "✗ Auto-login request failed" << std::endl;
+            co_return false;
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "Deserializing auto-login response";
+
+        auto response = accounts::messaging::login_response::deserialize(
+            response_result->payload());
+
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize auto-login response: "
+                                      << static_cast<int>(response.error());
+            std::cout << "✗ Failed to parse auto-login response" << std::endl;
+            co_return false;
+        }
+
+        if (response->success) {
+            BOOST_LOG_SEV(lg(), info) << "Auto-login successful for user: " << response->username
+                                    << " (ID: " << response->account_id << ")";
+
+            std::cout << "✓ Auto-login successful!" << std::endl;
+            std::cout << "  Username: " << response->username << std::endl;
+            std::cout << "  Account ID: " << response->account_id << std::endl;
+            std::cout << "  Admin: " << (response->is_admin ? "Yes" : "No") << std::endl;
+            co_return true;
+        } else {
+            BOOST_LOG_SEV(lg(), warn) << "Auto-login failed: " << response->error_message;
+            std::cout << "✗ Auto-login failed: " << response->error_message << std::endl;
+            co_return false;
+        }
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Auto-login exception: " << e.what();
+        std::cout << "✗ Auto-login error: " << e.what() << std::endl;
+        co_return false;
     }
 }
 

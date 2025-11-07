@@ -17,33 +17,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.accounts.tests/repository_helper.hpp"
+#include "ores.utility/program_options/environment_mapper_factory.hpp"
 
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "faker-cxx/faker.h" // IWYU pragma: keep.
+#include <ranges>
+#include <algorithm>
 
-namespace ores::accounts::tests {
+namespace ores::utility::program_options {
 
-using accounts::domain::account;
+std::function<std::string(const std::string&)>
+environment_mapper_factory::make_mapper(const std::string app_name) {
+    return [app_name](const std::string& env_var) -> std::string {
+        const std::string prefix = "ORES_" + app_name + "_";
+        if (!env_var.starts_with(prefix))
+            return {};
 
-accounts::domain::account repository_helper::
-create_test_account(const std::string& username, bool is_admin) {
-    account acc;
-    acc.version = 1;
-    acc.modified_by = faker::internet::username();
-    acc.id = boost::uuids::random_generator()();
-    acc.username = username;
-    acc.password_hash = faker::crypto::sha256();
-    acc.password_salt = faker::crypto::sha256();
-    acc.totp_secret = "TOTP_SECRET_" + username;
-    acc.email = username + "@test.com";
-    acc.is_admin = is_admin;
-    return acc;
-}
+        auto env_body = env_var | std::views::drop(prefix.size());
+        std::string option_name;
 
-void repository_helper::cleanup_database() {
-    truncate_table("oresdb.accounts");
+        std::ranges::transform(env_body, std::back_inserter(option_name),
+            [](unsigned char c) -> char {
+                if (c == '_') return '-';
+                return std::tolower(c);
+            });
+
+        return option_name;
+    };
 }
 
 }

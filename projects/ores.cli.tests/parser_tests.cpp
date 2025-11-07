@@ -19,6 +19,7 @@
  */
 #include <vector>
 #include <sstream>
+#include <boost/program_options.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/streaming/std_optional.hpp" // IWYU pragma: keep.
@@ -30,17 +31,18 @@
 
 namespace {
 
-std::string test_suite("ores.cli.tests");
+const std::string test_suite("ores.cli.tests");
+const std::string tags("[parser_tests]");
 
 }
 
+using namespace ores::utility::log;
 using ores::cli::config::parser;
 using ores::cli::config::entity;
 using ores::cli::config::format;
 using ores::cli::config::parser_exception;
 
-TEST_CASE("test_help_option", "[parser_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("test_help_option", tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
@@ -62,8 +64,7 @@ TEST_CASE("test_help_option", "[parser_tests]") {
     CHECK(info.str().find("export") != std::string::npos);
 }
 
-TEST_CASE("test_version_option", "[parser_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("test_version_option", tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
@@ -83,8 +84,7 @@ TEST_CASE("test_version_option", "[parser_tests]") {
     CHECK(info.str().find("Copyright") != std::string::npos);
 }
 
-TEST_CASE("test_import_help", "[parser_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("test_import_help", tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
@@ -105,8 +105,7 @@ TEST_CASE("test_import_help", "[parser_tests]") {
     CHECK(info.str().find("--target") != std::string::npos);
 }
 
-TEST_CASE("test_export_help", "[parser_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("test_export_help", tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
@@ -130,8 +129,7 @@ TEST_CASE("test_export_help", "[parser_tests]") {
     CHECK(info.str().find("--format") != std::string::npos);
 }
 
-TEST_CASE("test_logging_options", "[parser_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("test_logging_options", tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
@@ -160,8 +158,7 @@ TEST_CASE("test_logging_options", "[parser_tests]") {
     CHECK(result->logging->output_to_console);
 }
 
-TEST_CASE("test_import_basic", "[parser_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("test_import_basic", tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
@@ -186,8 +183,7 @@ TEST_CASE("test_import_basic", "[parser_tests]") {
     CHECK(result->importing->targets[0].filename().string() == "test_file.xml");
 }
 
-TEST_CASE("test_import_multiple_targets", "[parser_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("test_import_multiple_targets", tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
@@ -216,8 +212,7 @@ TEST_CASE("test_import_multiple_targets", "[parser_tests]") {
     CHECK(result->importing->targets[2].filename().string() == "file3.xml");
 }
 
-TEST_CASE("test_export_basic", "[parser_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("test_export_basic", tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
@@ -243,8 +238,7 @@ TEST_CASE("test_export_basic", "[parser_tests]") {
     CHECK(result->exporting->target_format == format::json);
 }
 
-TEST_CASE("test_export_full_options", "[parser_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("test_export_full_options", tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
@@ -274,8 +268,7 @@ TEST_CASE("test_export_full_options", "[parser_tests]") {
     CHECK(result->exporting->target_format == format::xml);
 }
 
-TEST_CASE("test_invalid_command", "[parser_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("test_invalid_command", tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
@@ -289,8 +282,7 @@ TEST_CASE("test_invalid_command", "[parser_tests]") {
     CHECK_THROWS_AS(p.parse(args, info, error), parser_exception);
 }
 
-TEST_CASE("test_missing_required_import_args", "[parser_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("test_missing_required_import_args", tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
@@ -301,8 +293,7 @@ TEST_CASE("test_missing_required_import_args", "[parser_tests]") {
     CHECK_THROWS_AS(p.parse(args, info, error), parser_exception);
 }
 
-TEST_CASE("test_missing_required_export_args", "[parser_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("test_missing_required_export_args", tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
@@ -313,8 +304,7 @@ TEST_CASE("test_missing_required_export_args", "[parser_tests]") {
     CHECK_THROWS_AS(p.parse(args, info, error), parser_exception);
 }
 
-TEST_CASE("test_import_with_logging", "[parser_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("test_import_with_logging", tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
@@ -341,8 +331,7 @@ TEST_CASE("test_import_with_logging", "[parser_tests]") {
     CHECK(result->importing->target_entity == entity::currencies);
 }
 
-TEST_CASE("test_export_with_logging", "[parser_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("test_export_with_logging", tags) {
     auto lg = make_logger(test_suite);
 
     parser p;

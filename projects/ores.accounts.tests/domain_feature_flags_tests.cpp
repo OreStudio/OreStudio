@@ -24,14 +24,15 @@
 
 namespace {
 
-std::string test_suite("ores.accounts.tests");
+const std::string test_suite("ores.accounts.tests");
+const std::string tags("[domain_feature_flags_tests]");
 
 }
 
 using ores::accounts::domain::feature_flags;
+using namespace ores::utility::log;
 
-TEST_CASE("create_feature_flag_with_valid_fields", "[domain_feature_flags_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_feature_flag_with_valid_fields", tags) {
     auto lg(make_logger(test_suite));
 
     feature_flags flag;
@@ -47,8 +48,7 @@ TEST_CASE("create_feature_flag_with_valid_fields", "[domain_feature_flags_tests]
     CHECK(flag.modified_by == "admin");
 }
 
-TEST_CASE("create_disabled_feature_flag", "[domain_feature_flags_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_disabled_feature_flag", tags) {
     auto lg(make_logger(test_suite));
 
     feature_flags flag;
@@ -64,8 +64,7 @@ TEST_CASE("create_disabled_feature_flag", "[domain_feature_flags_tests]") {
     CHECK(flag.modified_by == "developer");
 }
 
-TEST_CASE("feature_flag_serialization_to_json", "[domain_feature_flags_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("feature_flag_serialization_to_json", tags) {
     auto lg(make_logger(test_suite));
 
     feature_flags flag;
@@ -84,8 +83,7 @@ TEST_CASE("feature_flag_serialization_to_json", "[domain_feature_flags_tests]") 
     CHECK(json_output.find("sysadmin") != std::string::npos);
 }
 
-TEST_CASE("create_feature_flag_with_faker", "[domain_feature_flags_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_feature_flag_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
     feature_flags flag;
@@ -101,8 +99,7 @@ TEST_CASE("create_feature_flag_with_faker", "[domain_feature_flags_tests]") {
     CHECK(!flag.modified_by.empty());
 }
 
-TEST_CASE("create_multiple_random_feature_flags", "[domain_feature_flags_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_multiple_random_feature_flags", tags) {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::string> feature_prefixes = {
@@ -134,8 +131,7 @@ TEST_CASE("create_multiple_random_feature_flags", "[domain_feature_flags_tests]"
     }
 }
 
-TEST_CASE("create_system_feature_flags", "[domain_feature_flags_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_system_feature_flags", tags) {
     auto lg(make_logger(test_suite));
 
     feature_flags flag;

@@ -32,12 +32,12 @@ using ores::client::config::parser;
 using ores::utility::log::lifecycle_manager;
 
 int host::execute(const std::vector<std::string>& args,
-    std::ostream& stdout, std::ostream& stderr) {
+    std::ostream& std_output, std::ostream& error_output) {
     /*
      * Create the configuration from command line options.
      */
     parser p;
-    const auto ocfg(p.parse(args, stdout, stderr));
+    const auto ocfg(p.parse(args, std_output, error_output));
 
     /*
      * If we have no configuration, then there is nothing to do. This can only
@@ -65,7 +65,7 @@ int host::execute(const std::vector<std::string>& args,
      * Execute the application.
      */
     try {
-        ores::client::app::application app;
+        ores::client::app::application app(cfg.connection, cfg.login);
         app.run();
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {

@@ -23,14 +23,15 @@
 
 namespace {
 
-std::string test_suite("ores.accounts.tests");
+const std::string test_suite("ores.accounts.tests");
+const std::string tags("[security_password_manager_tests]");
 
 }
 
 using ores::accounts::security::password_manager;
+using namespace ores::utility::log;
 
-TEST_CASE("verify_password_hash", "[security_password_manager_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("verify_password_hash", tags) {
     auto lg(make_logger(test_suite));
 
     const std::string password = "correct_password";
@@ -43,8 +44,7 @@ TEST_CASE("verify_password_hash", "[security_password_manager_tests]") {
     CHECK(password_manager::verify_password_hash(password, hash));
 }
 
-TEST_CASE("verify_password_hash_with_wrong_password", "[security_password_manager_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("verify_password_hash_with_wrong_password", tags) {
     auto lg(make_logger(test_suite));
 
     const std::string password = "correct_password";
@@ -60,8 +60,7 @@ TEST_CASE("verify_password_hash_with_wrong_password", "[security_password_manage
     CHECK(!password_manager::verify_password_hash(wrong_password, hash));
 }
 
-TEST_CASE("hash_is_not_deterministic", "[security_password_manager_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("hash_is_not_deterministic", tags) {
     auto lg(make_logger(test_suite));
 
     const std::string password = "a_simple_password";
@@ -78,8 +77,7 @@ TEST_CASE("hash_is_not_deterministic", "[security_password_manager_tests]") {
     CHECK(hash1 != hash2);
 }
 
-TEST_CASE("invalid_hash_format_fails_verification", "[security_password_manager_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("invalid_hash_format_fails_verification", tags) {
     auto lg(make_logger(test_suite));
 
     const std::string password = "any_password";

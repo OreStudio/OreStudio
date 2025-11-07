@@ -25,15 +25,16 @@
 
 namespace {
 
-std::string test_suite("ores.accounts.tests");
+const std::string test_suite("ores.accounts.tests");
+const std::string tags("[messaging_protocol_tests]");
 
 }
 
 using namespace ores::accounts::messaging;
 using ores::accounts::domain::account;
+using namespace ores::utility::log;
 
-TEST_CASE("create_account_request_with_valid_fields", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_account_request_with_valid_fields", tags) {
     auto lg(make_logger(test_suite));
 
     create_account_request req;
@@ -53,8 +54,7 @@ TEST_CASE("create_account_request_with_valid_fields", "[messaging_protocol_tests
     CHECK(req.is_admin == false);
 }
 
-TEST_CASE("create_account_request_with_faker", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_account_request_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
     create_account_request req;
@@ -73,8 +73,7 @@ TEST_CASE("create_account_request_with_faker", "[messaging_protocol_tests]") {
     CHECK(!req.modified_by.empty());
 }
 
-TEST_CASE("create_account_request_serialize_deserialize", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_account_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     create_account_request original;
@@ -99,8 +98,7 @@ TEST_CASE("create_account_request_serialize_deserialize", "[messaging_protocol_t
     CHECK(deserialized.email == original.email);
 }
 
-TEST_CASE("create_account_response_with_valid_uuid", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_account_response_with_valid_uuid", tags) {
     auto lg(make_logger(test_suite));
 
     create_account_response resp;
@@ -110,8 +108,7 @@ TEST_CASE("create_account_response_with_valid_uuid", "[messaging_protocol_tests]
     CHECK(!resp.account_id.is_nil());
 }
 
-TEST_CASE("create_account_response_serialize_deserialize", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_account_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     create_account_response original;
@@ -128,8 +125,7 @@ TEST_CASE("create_account_response_serialize_deserialize", "[messaging_protocol_
     CHECK(deserialized.account_id == original.account_id);
 }
 
-TEST_CASE("list_accounts_request_serialize_deserialize", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("list_accounts_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     list_accounts_request original;
@@ -143,8 +139,7 @@ TEST_CASE("list_accounts_request_serialize_deserialize", "[messaging_protocol_te
     BOOST_LOG_SEV(lg, info) << "Deserialized: " << deserialized;
 }
 
-TEST_CASE("list_accounts_response_with_faker", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("list_accounts_response_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
     list_accounts_response resp;
@@ -167,8 +162,7 @@ TEST_CASE("list_accounts_response_with_faker", "[messaging_protocol_tests]") {
     CHECK(resp.accounts.size() == 3);
 }
 
-TEST_CASE("list_accounts_response_serialize_deserialize", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("list_accounts_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     list_accounts_response original;
@@ -204,8 +198,7 @@ TEST_CASE("list_accounts_response_serialize_deserialize", "[messaging_protocol_t
     }
 }
 
-TEST_CASE("login_request_with_valid_credentials", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("login_request_with_valid_credentials", tags) {
     auto lg(make_logger(test_suite));
 
     login_request req;
@@ -217,8 +210,7 @@ TEST_CASE("login_request_with_valid_credentials", "[messaging_protocol_tests]") 
     CHECK(req.password == "test_password");
 }
 
-TEST_CASE("login_request_with_faker", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("login_request_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
     login_request req;
@@ -230,8 +222,7 @@ TEST_CASE("login_request_with_faker", "[messaging_protocol_tests]") {
     CHECK(!req.password.empty());
 }
 
-TEST_CASE("login_request_serialize_deserialize", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("login_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     login_request original;
@@ -250,8 +241,7 @@ TEST_CASE("login_request_serialize_deserialize", "[messaging_protocol_tests]") {
     CHECK(deserialized.password == original.password);
 }
 
-TEST_CASE("login_response_success", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("login_response_success", tags) {
     auto lg(make_logger(test_suite));
 
     login_response resp;
@@ -268,8 +258,7 @@ TEST_CASE("login_response_success", "[messaging_protocol_tests]") {
     CHECK(!resp.username.empty());
 }
 
-TEST_CASE("login_response_failure", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("login_response_failure", tags) {
     auto lg(make_logger(test_suite));
 
     login_response resp;
@@ -286,8 +275,7 @@ TEST_CASE("login_response_failure", "[messaging_protocol_tests]") {
     CHECK(resp.username.empty());
 }
 
-TEST_CASE("login_response_serialize_deserialize", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("login_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     login_response original;
@@ -312,8 +300,7 @@ TEST_CASE("login_response_serialize_deserialize", "[messaging_protocol_tests]") 
     CHECK(deserialized.is_admin == original.is_admin);
 }
 
-TEST_CASE("unlock_account_request_with_valid_uuid", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("unlock_account_request_with_valid_uuid", tags) {
     auto lg(make_logger(test_suite));
 
     unlock_account_request req;
@@ -323,8 +310,7 @@ TEST_CASE("unlock_account_request_with_valid_uuid", "[messaging_protocol_tests]"
     CHECK(!req.account_id.is_nil());
 }
 
-TEST_CASE("unlock_account_request_serialize_deserialize", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("unlock_account_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     unlock_account_request original;
@@ -341,8 +327,7 @@ TEST_CASE("unlock_account_request_serialize_deserialize", "[messaging_protocol_t
     CHECK(deserialized.account_id == original.account_id);
 }
 
-TEST_CASE("unlock_account_response_success", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("unlock_account_response_success", tags) {
     auto lg(make_logger(test_suite));
 
     unlock_account_response resp;
@@ -354,8 +339,7 @@ TEST_CASE("unlock_account_response_success", "[messaging_protocol_tests]") {
     CHECK(resp.error_message.empty());
 }
 
-TEST_CASE("unlock_account_response_failure", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("unlock_account_response_failure", tags) {
     auto lg(make_logger(test_suite));
 
     unlock_account_response resp;
@@ -367,8 +351,7 @@ TEST_CASE("unlock_account_response_failure", "[messaging_protocol_tests]") {
     CHECK(resp.error_message == "Account not found");
 }
 
-TEST_CASE("unlock_account_response_serialize_deserialize", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("unlock_account_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     unlock_account_response original;
@@ -387,8 +370,7 @@ TEST_CASE("unlock_account_response_serialize_deserialize", "[messaging_protocol_
     CHECK(deserialized.error_message == original.error_message);
 }
 
-TEST_CASE("create_multiple_random_login_requests", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_multiple_random_login_requests", tags) {
     auto lg(make_logger(test_suite));
 
     for (int i = 0; i < 3; ++i) {
@@ -402,8 +384,7 @@ TEST_CASE("create_multiple_random_login_requests", "[messaging_protocol_tests]")
     }
 }
 
-TEST_CASE("create_multiple_random_create_account_requests", "[messaging_protocol_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_multiple_random_create_account_requests", tags) {
     auto lg(make_logger(test_suite));
 
     for (int i = 0; i < 3; ++i) {

@@ -25,15 +25,16 @@
 
 namespace {
 
-std::string test_suite("ores.risk.tests.");
+const std::string test_suite("ores.risk.tests.");
 const std::string test_data_dir = "../test_data/currencies/";
+const std::string tags("[orexml_currency_config_tests]");
 
 }
 
 using ores::risk::orexml::CurrencyConfig;
+using namespace ores::utility::log;
 
-TEST_CASE("read_currency_config_from_simple_xml", "[orexml_currency_config_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("read_currency_config_from_simple_xml", tags) {
     auto lg(make_logger(test_suite));
 
     const std::string simple_xml = R"(
@@ -74,8 +75,7 @@ TEST_CASE("read_currency_config_from_simple_xml", "[orexml_currency_config_tests
     CHECK(first.CurrencyType.value() == "Major");
 }
 
-TEST_CASE("read_currency_config_from_currencies_xml", "[orexml_currency_config_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("read_currency_config_from_currencies_xml", tags) {
     auto lg(make_logger(test_suite));
 
     const auto f = std::filesystem::path(test_data_dir + "currencies.xml");
@@ -117,8 +117,7 @@ TEST_CASE("read_currency_config_from_currencies_xml", "[orexml_currency_config_t
     CHECK(last.CurrencyType.value() == "Crypto");
 }
 
-TEST_CASE("read_currency_config_from_currencies_01_xml", "[orexml_currency_config_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("read_currency_config_from_currencies_01_xml", tags) {
     auto lg(make_logger(test_suite));
 
     const auto f =
@@ -150,8 +149,7 @@ TEST_CASE("read_currency_config_from_currencies_01_xml", "[orexml_currency_confi
     REQUIRE(!first.CurrencyType);
 }
 
-TEST_CASE("read_currency_config_from_currencies_41_xml", "[orexml_currency_config_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("read_currency_config_from_currencies_41_xml", tags) {
     auto lg(make_logger(test_suite));
 
     const auto f =
@@ -168,8 +166,7 @@ TEST_CASE("read_currency_config_from_currencies_41_xml", "[orexml_currency_confi
     BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
 }
 
-TEST_CASE("read_currency_config_from_currencies_42_xml", "[orexml_currency_config_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("read_currency_config_from_currencies_42_xml", tags) {
     auto lg(make_logger(test_suite));
 
     const auto f =
@@ -186,8 +183,7 @@ TEST_CASE("read_currency_config_from_currencies_42_xml", "[orexml_currency_confi
     BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
 }
 
-TEST_CASE("read_currency_config_from_currencies_62_xml", "[orexml_currency_config_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("read_currency_config_from_currencies_62_xml", tags) {
     auto lg(make_logger(test_suite));
 
     const auto f =
@@ -204,8 +200,7 @@ TEST_CASE("read_currency_config_from_currencies_62_xml", "[orexml_currency_confi
     BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
 }
 
-TEST_CASE("read_currency_config_from_currencies_API_xml", "[orexml_currency_config_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("read_currency_config_from_currencies_API_xml", tags) {
     auto lg(make_logger(test_suite));
 
     const auto f =

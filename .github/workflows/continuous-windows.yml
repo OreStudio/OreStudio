@@ -99,10 +99,14 @@ jobs:
           $env:ORES_BUILD_COMMIT="$env:GITHUB_SHA"
           $env:ORES_BUILD_NUMBER="$env:GITHUB_RUN_NUMBER"
           $env:ORES_BUILD_TIMESTAMP=Get-Date -format "yyyy/MM/dd HH:mm:ss"
-          export TEST_ORES_DB_PASSWORD=ahV6aehuij6eingohsiajaiT0
+          $env:ORES_TEST_DB_PASSWORD="ahV6aehuij6eingohsiajaiT0"
           $preset="${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}"
           $cmake_args="build_group=Continuous,preset=$preset"
           ctest -VV --preset $preset --script "CTest.cmake,$cmake_args"
+
+      - name: Dump test details
+        run: |
+           Get-Content ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/publish/bin/test-results-*.xml
 
       - name: Upload artifact
         uses: actions/upload-artifact@v5.0.0

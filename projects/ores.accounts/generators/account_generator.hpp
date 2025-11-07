@@ -17,35 +17,35 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.risk.tests/repository_helper.hpp"
+#ifndef ORES_ACCOUNTS_DOMAIN_ACCOUNT_GENERATOR_HPP
+#define ORES_ACCOUNTS_DOMAIN_ACCOUNT_GENERATOR_HPP
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
+
+#include <vector>
 #include "faker-cxx/faker.h" // IWYU pragma: keep.
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include "ores.accounts/domain/account.hpp"
 
-namespace ores::risk::tests {
+namespace ores::accounts::generators {
 
-using risk::domain::currency;
+/**
+ * @brief Generates a synthetic account.
+ */
+domain::account generate_synthetic_account();
 
-risk::domain::currency repository_helper::
-create_test_currency(const std::string& iso_code) {
-    currency ccy;
-    ccy.iso_code = iso_code;
-    ccy.name = std::string(faker::finance::currencyName());
-    ccy.numeric_code = std::to_string(faker::number::integer(1, 999));
-    ccy.symbol = std::string(faker::finance::currencySymbol());
-    ccy.fraction_symbol = "";
-    ccy.fractions_per_unit = 100;
-    ccy.rounding_type = "Closest";
-    ccy.rounding_precision = 2;
-    ccy.format = "%3% %1$.2f";
-    ccy.currency_type = "Fiat";
-    ccy.modified_by = std::string(faker::internet::username());
-    ccy.valid_from = "";
-    ccy.valid_to = "";
-    return ccy;
-}
-
-void repository_helper::cleanup_database() {
-    truncate_table("oresdb.currencies");
-}
+/**
+ * @brief Generates N synthetic accounts.
+ *
+ * @note c++ 23 generators are not supported on all compilers.
+ */
+std::vector<domain::account>
+generate_synthetic_accounts(std::size_t n);
 
 }
+
+#endif

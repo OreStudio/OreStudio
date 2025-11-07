@@ -41,6 +41,7 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         sqlgen::sqlgen
         reflectcpp::reflectcpp
+        faker-cxx::faker-cxx # for generators
         Boost::boost
     )
 

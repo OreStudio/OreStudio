@@ -31,13 +31,14 @@ using namespace ores::utility::log;
 using ores::service::config::parser;
 using ores::utility::log::lifecycle_manager;
 
-boost::asio::awaitable<int> host::execute(const std::vector<std::string>& args,
-    std::ostream& stdout, std::ostream& stderr, boost::asio::io_context& io_ctx) {
+boost::asio::awaitable<int>
+host::execute(const std::vector<std::string>& args, std::ostream& std_output,
+    std::ostream& error_output, boost::asio::io_context& io_ctx) {
     /*
      * Create the configuration from command line options.
      */
     parser p;
-    const auto ocfg(p.parse(args, stdout, stderr));
+    const auto ocfg(p.parse(args, std_output, error_output));
 
     /*
      * If we have no configuration, then there is nothing to do. This can only

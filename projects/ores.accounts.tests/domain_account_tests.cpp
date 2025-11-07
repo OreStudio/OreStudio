@@ -25,14 +25,15 @@
 
 namespace {
 
-std::string test_suite("ores.accounts.tests");
+const std::string test_suite("ores.accounts.tests");
+const std::string tags("[domain_account_tests]");
 
 }
 
 using ores::accounts::domain::account;
+using namespace ores::utility::log;
 
-TEST_CASE("create_account_with_valid_fields", "[domain_account_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_account_with_valid_fields", tags) {
     auto lg(make_logger(test_suite));
 
     account acc;
@@ -57,8 +58,7 @@ TEST_CASE("create_account_with_valid_fields", "[domain_account_tests]") {
     CHECK(acc.is_admin == false);
 }
 
-TEST_CASE("create_admin_account", "[domain_account_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_admin_account", tags) {
     auto lg(make_logger(test_suite));
 
     account admin_acc;
@@ -80,8 +80,7 @@ TEST_CASE("create_admin_account", "[domain_account_tests]") {
     CHECK(admin_acc.email == "admin@example.com");
 }
 
-TEST_CASE("account_with_specific_uuid", "[domain_account_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("account_with_specific_uuid", tags) {
     auto lg(make_logger(test_suite));
 
     boost::uuids::string_generator uuid_gen;
@@ -103,8 +102,7 @@ TEST_CASE("account_with_specific_uuid", "[domain_account_tests]") {
     CHECK(acc.username == "test.user");
 }
 
-TEST_CASE("account_serialization_to_json", "[domain_account_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("account_serialization_to_json", tags) {
     auto lg(make_logger(test_suite));
 
     account acc;
@@ -128,8 +126,7 @@ TEST_CASE("account_serialization_to_json", "[domain_account_tests]") {
     CHECK(json_output.find("serialize@test.com") != std::string::npos);
 }
 
-TEST_CASE("create_account_with_faker", "[domain_account_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_account_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
     account acc;
@@ -155,8 +152,7 @@ TEST_CASE("create_account_with_faker", "[domain_account_tests]") {
     CHECK(!acc.email.empty());
 }
 
-TEST_CASE("create_multiple_random_accounts", "[domain_account_tests]") {
-    using namespace ores::utility::log;
+TEST_CASE("create_multiple_random_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     for (int i = 0; i < 3; ++i) {

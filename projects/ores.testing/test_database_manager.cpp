@@ -23,7 +23,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <boost/log/attributes/scoped_attribute.hpp>
-#include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/environment/environment.hpp"
 #include "ores.utility/repository/context_factory.hpp"
 
@@ -34,6 +33,12 @@
 #include <unistd.h>
 #endif
 
+namespace {
+
+const std::string prefix = "ORES_TEST_DB_";
+
+}
+
 namespace ores::testing {
 
 using namespace ores::utility::log;
@@ -41,26 +46,14 @@ using utility::repository::context;
 using utility::repository::context_factory;
 using utility::environment::environment;
 
-namespace {
-
-auto& lg() {
-    static auto instance = make_logger(
-        "ores.utility.test.test_database_manager");
-    return instance;
-}
-
-/**
- * @brief Creates a database context connected to the postgres database.
- *
- * This is needed for admin operations like CREATE/DROP DATABASE.
- */
-context make_admin_context() {
+context test_database_manager::make_admin_context() {
+    const auto opts = make_database_options();
     context_factory::configuration db_cfg{
-        .user = environment::get_value_or_default("TEST_ORES_DB_USER", "ores"),
-        .password = environment::get_value_or_default("TEST_ORES_DB_PASSWORD", ""),
-        .host = environment::get_value_or_default("TEST_ORES_DB_HOST", "localhost"),
+        .user = opts.user,
+        .password = opts.password,
+        .host = opts.host,
         .database = "postgres",  // Connect to admin database
-        .port = environment::get_int_value_or_default("TEST_ORES_DB_PORT", 5432),
+        .port = opts.port,
         .pool_size = 1,
         .num_attempts = 10,
         .wait_time_in_seconds = 1
@@ -69,6 +62,37 @@ context make_admin_context() {
     return context_factory::make_context(db_cfg);
 }
 
+context test_database_manager::make_context() {
+    const auto opts = make_database_options();
+    context_factory::configuration db_cfg{
+        .user = opts.user,
+        .password = opts.password,
+        .host = opts.host,
+        .database = opts.database,
+        .port = opts.port,
+        .pool_size = 4,
+        .num_attempts = 10,
+        .wait_time_in_seconds = 1
+    };
+
+    context ctx = context_factory::make_context(db_cfg);
+    BOOST_LOG_SEV(lg(), info) << "Database context created successfully";
+    return ctx;
+}
+
+utility::database::database_options test_database_manager::make_database_options() {
+    return utility::database::database_options {
+        .user = environment::environment::get_value_or_default(
+            prefix + "USER", "ores"),
+        .password = environment::environment::get_value_or_default(
+            prefix + "PASSWORD", ""),
+        .host = environment::environment::get_value_or_default(
+            prefix + "HOST", "localhost"),
+        .database = environment::environment::get_value_or_default(
+            prefix + "DATABASE", "oresdb"),
+        .port = environment::environment::get_int_value_or_default(
+            prefix + "PORT", 5432)
+    };
 }
 
 std::string test_database_manager::generate_test_database_name() {
@@ -149,9 +173,8 @@ void test_database_manager::drop_test_database(const std::string& db_name) {
             .and_then(execute_terminate);
 
         if (!result) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Failed to terminate connections for " << db_name
-                << ": " << result.error().what();
+            BOOST_LOG_SEV(lg(), warn) << "Failed to terminate connections for "
+                                      << db_name << ": " << result.error().what();
             // Continue with drop even if terminate fails
         }
 
@@ -166,9 +189,8 @@ void test_database_manager::drop_test_database(const std::string& db_name) {
             .and_then(execute_drop);
 
         if (!result) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Failed to drop test database " << db_name
-                << ": " << result.error().what();
+            BOOST_LOG_SEV(lg(), warn) << "Failed to drop test database "
+                                      << db_name << ": " << result.error().what();
         } else {
             BOOST_LOG_SEV(lg(), info)
                 << "Successfully dropped test database: " << db_name;
@@ -183,13 +205,15 @@ void test_database_manager::drop_test_database(const std::string& db_name) {
 }
 
 void test_database_manager::set_test_database_env(const std::string& db_name) {
-    BOOST_LOG_SEV(lg(), info)
-        << "Setting TEST_ORES_DB_DATABASE environment variable to: " << db_name;
+    const std::string variable = prefix + "DATABASE";
+    BOOST_LOG_SEV(lg(), info) << "Setting " << variable
+                              << "DATABASE environment variable to: "
+                              << db_name;
 
 #ifdef _WIN32
-    _putenv_s("TEST_ORES_DB_DATABASE", db_name.c_str());
+    _putenv_s(variable.c_str(), db_name.c_str());
 #else
-    setenv("TEST_ORES_DB_DATABASE", db_name.c_str(), 1);
+    setenv(variable.c_str(), db_name.c_str(), 1);
 #endif
 
     BOOST_LOG_SEV(lg(), info) << "Environment variable set successfully";

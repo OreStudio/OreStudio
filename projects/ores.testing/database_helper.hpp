@@ -27,21 +27,13 @@
 #include <string>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
-#include "ores.utility/database/database_options.hpp"
 
 namespace ores::testing {
 
 /**
  * @brief Provides database setup and cleanup utilities for tests.
- *
- * This class uses environment variables to configure the database connection:
- * - ORES_DB_USER: Database user name (default: "ores")
- * - ORES_DB_PASSWORD: Database password (default: "")
- * - ORES_DB_HOST: Database host (default: "localhost")
- * - ORES_DB_DATABASE: Database name (default: "oresdb")
- * - ORES_DB_PORT: Database port (default: 5432)
  */
-class database_fixture {
+class database_helper {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
@@ -50,17 +42,7 @@ private:
     }
 
 public:
-    database_fixture();
-
-    /**
-     * @brief Creates database options from environment variables.
-     */
-    static utility::database::database_options make_database_options();
-
-    /**
-     * @brief Creates a database context from environment variables.
-     */
-    static utility::repository::context make_context();
+    database_helper();
 
     /**
      * @brief Truncates the specified table.

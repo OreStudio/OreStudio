@@ -17,26 +17,37 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_TESTS_REPOSITORY_HELPER_HPP
-#define ORES_ACCOUNTS_TESTS_REPOSITORY_HELPER_HPP
+#ifndef ORES_UTILITY_PROGRAM_OPTIONS_ENVIRONMENT_MAPPER_HPP
+#define ORES_UTILITY_PROGRAM_OPTIONS_ENVIRONMENT_MAPPER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include "ores.testing/database_fixture.hpp"
-#include "ores.accounts/domain/account.hpp"
+#include <string>
+#include <functional>
 
-namespace ores::accounts::tests {
+namespace ores::utility::program_options {
 
-class repository_helper : public testing::database_fixture {
+/**
+ * @brief Makes environment mappers for program options.
+ *
+ * @note Logging is not available during configuration.
+ */
+class environment_mapper_factory {
 public:
-    repository_helper() = default;
-
-    accounts::domain::account
-    create_test_account(const std::string& username, bool is_admin = false);
-
-    void cleanup_database();
+    /**
+     * @brief Creates an environment variable name mapping function.
+     *
+     * Maps environment variables with ORES_ prefix to command-line option
+     * names. For example: ORES_DB_PASSWORD -> db-password
+     *
+     * @param app_name name of the app, in capitals, e.g. CLI.
+     *
+     * @return Function that maps environment variable names to option names.
+     */
+    static std::function<std::string(const std::string&)>
+    make_mapper(const std::string app_name);
 };
 
 }

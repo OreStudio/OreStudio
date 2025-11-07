@@ -18,7 +18,7 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-07 Fri 00:16], for Friday, November 07, 2025.
+#+CAPTION: Clock summary at [2025-11-07 Fri 07:55], for Friday, November 07, 2025.
 |      | <75>                              |        |      |      |       |
 | Tags | Headline                          | Time   |      |      |     % |
 |------+-----------------------------------+--------+------+------+-------|
@@ -31,7 +31,7 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-07 Fri 00:16]
+#+CAPTION: Clock summary at [2025-11-07 Fri 07:55]
 |       | <75>                                                   |         |       |       |       |
 | Tags  | Headline                                               | Time    |       |       |     % |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
@@ -735,7 +735,7 @@ Links:
 We are freeing up open SSL memory and still have leaks. For now just apply the
 suppression suggestions and deal with this later.
 
-*** STARTED Add support for feature flags                              :code:
+*** POSTPONED Add support for feature flags                            :code:
     :LOGBOOK:
     CLOCK: [2025-10-24 Fri 01:25]--[2025-10-24 Fri 01:34] =>  0:09
     CLOCK: [2025-10-24 Fri 00:43]--[2025-10-24 Fri 01:24] =>  0:41
@@ -762,7 +762,7 @@ Components:
 - description
 - id
 
-*** STARTED Implement authentication bootstrap workflow                :code:
+*** POSTPONED Implement authentication bootstrap workflow              :code:
     :LOGBOOK:
     CLOCK: [2025-10-23 Thu 17:30]--[2025-10-23 Thu 17:55] =>  0:25
     :END:
@@ -853,7 +853,7 @@ Links:
 
 - [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
 
-*** STARTED Add connect command line argument                          :code:
+*** CANCELLED Add connect command line argument                        :code:
     :LOGBOOK:
     CLOCK: [2025-11-07 Fri 00:04]--[2025-11-07 Fri 00:15] =>  0:11
     CLOCK: [2025-11-05 Wed 23:52]--[2025-11-06 Thu 00:03] =>  0:11
@@ -867,85 +867,13 @@ Notes:
 - clean up parser in client, not using common logging.
 - add environment mapping to client.
 
-*** STARTED Ignore warnings on windows and osx                         :code:
+*** CANCELLED Ignore warnings on windows and osx                       :code:
     :LOGBOOK:
     CLOCK: [2025-11-06 Thu 23:28]--[2025-11-06 Thu 23:43] =>  0:15
     :END:
 
 At present we have a number of spurious warnings on both windows and OSX. Try to
-see if we can get CDash to ignore them
-
-*** Remove postgres passwords from github workflows                    :code:
-
-As a quick hack we added the dev passwords to the workflows. We should really
-generate these on the fly and supply them to the tests.
-
-*** Allow supplying the postgres connection URI                        :code:
-
-At present we are supplying all of the components for the connection. It may be
-easier to allow the entire URI:
-
-- connection-uri: The connection URI to connect to PostgreSQL. Example:
-  =postgresql://postgres:postgres@localhost/postgres=.
-
-*** Consider adding log command line options to qt                     :code:
-
-At present we have hard-coded logging options. However, maybe users should be
-able to change the logging settings from the UI rather than having to restart
-the app and supply command line options.
-
-*** Investigate valgrind leak on sqlgen                                :code:
-
-Is this a real leak:
-
-#+begin_src valgrind-leak
-==2599359==
-==2599359== HEAP SUMMARY:
-==2599359==     in use at exit: 11,421 bytes in 78 blocks
-==2599359==   total heap usage: 403,744 allocs, 403,666 frees, 161,473,513 bytes allocated
-==2599359==
-==2599359== 1,944 bytes in 9 blocks are definitely lost in loss record 20 of 21
-==2599359==    at 0x4F2B818: malloc (vg_replace_malloc.c:446)
-==2599359==    by 0x5AE29FF: PQmakeEmptyPGresult (fe-exec.c:161)
-==2599359==    by 0x5AEA9F2: pqParseInput3 (fe-protocol3.c:264)
-==2599359==    by 0x5AE5853: parseInput (fe-exec.c:1997)
-==2599359==    by 0x5AE5975: PQgetResult (fe-exec.c:2083)
-==2599359==    by 0x5AE5FB7: PQexecFinish (fe-exec.c:2388)
-==2599359==    by 0x5AE5D98: PQprepare (fe-exec.c:2275)
-==2599359==    by 0x5A7F688: sqlgen::postgres::Connection::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Connection.cpp:44)
-==2599359==    by 0x525189F: sqlgen::Session<sqlgen::postgres::Connection>::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Session.hpp:50)
-==2599359==    by 0x523F4FF: sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> >::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Transaction.hpp:61)
-==2599359==    by 0x523EE20: rfl::Result<rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > > sqlgen::insert_impl<__gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, bool) requires is_connection<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > (insert.hpp:46)
-==2599359==    by 0x523EB55: auto sqlgen::insert_impl<std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> >, rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > const&, bool) (insert.hpp:69)
-==2599359==
-==2599359== 3,672 bytes in 17 blocks are definitely lost in loss record 21 of 21
-==2599359==    at 0x4F2B818: malloc (vg_replace_malloc.c:446)
-==2599359==    by 0x5AE29FF: PQmakeEmptyPGresult (fe-exec.c:161)
-==2599359==    by 0x5AEA78E: pqParseInput3 (fe-protocol3.c:200)
-==2599359==    by 0x5AE5853: parseInput (fe-exec.c:1997)
-==2599359==    by 0x5AE5975: PQgetResult (fe-exec.c:2083)
-==2599359==    by 0x5AE5FB7: PQexecFinish (fe-exec.c:2388)
-==2599359==    by 0x5AE5E15: PQexecPrepared (fe-exec.c:2298)
-==2599359==    by 0x5A7FB5B: sqlgen::postgres::Connection::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Connection.cpp:72)
-==2599359==    by 0x525189F: sqlgen::Session<sqlgen::postgres::Connection>::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Session.hpp:50)
-==2599359==    by 0x523F4FF: sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> >::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Transaction.hpp:61)
-==2599359==    by 0x523EE20: rfl::Result<rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > > sqlgen::insert_impl<__gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, bool) requires is_connection<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > (insert.hpp:46)
-==2599359==    by 0x523EB55: auto sqlgen::insert_impl<std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> >, rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > const&, bool) (insert.hpp:69)
-==2599359==
-==2599359== LEAK SUMMARY:
-==2599359==    definitely lost: 5,616 bytes in 26 blocks
-==2599359==    indirectly lost: 0 bytes in 0 blocks
-==2599359==      possibly lost: 0 bytes in 0 blocks
-==2599359==    still reachable: 5,805 bytes in 52 blocks
-==2599359==         suppressed: 0 bytes in 0 blocks
-==2599359== Reachable blocks (those to which a pointer was found) are not shown.
-==2599359== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==2599359==
-==2599359== For lists of detected and suppressed errors, rerun with: -s
-==2599359== ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 0 from 0)
-#+end_src
-
-
+see if we can get CDash to ignore them.
 
 *** Footer
 

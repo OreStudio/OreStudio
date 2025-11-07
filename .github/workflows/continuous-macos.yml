@@ -22,13 +22,12 @@ env:
 
 on:  # yamllint disable-line rule:truthy
   push:
-    branches:
-      - main
-    tags:
-      - '*'
+    branches: [main]
+    tags: ['*']
   pull_request:
-    branches:
-      - main
+    branches: [main]
+  paths-ignore:
+    - 'docs/**'
 
 jobs:
   build:

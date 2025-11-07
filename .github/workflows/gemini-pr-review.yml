@@ -17,22 +17,24 @@
 ---
 name: 'Gemini Pull Request Review'
 
-on:  # yamllint disable-line rule:truthy
-  pull_request:
-    types:
-      - 'opened'
-  pull_request_review_comment:
-    types:
-      - 'created'
-  pull_request_review:
-    types:
-      - 'submitted'
-  workflow_dispatch:
-    inputs:
-      pr_number:
-        description: 'PR number to review'
-        required: true
-        type: 'number'
+# disabled for now.
+on: workflow_dispatch  # yamllint disable-line rule:truthy
+# on:  # yamllint disable-line rule:truthy
+#   pull_request:
+#     types:
+#       - 'opened'
+#   pull_request_review_comment:
+#     types:
+#       - 'created'
+#   pull_request_review:
+#     types:
+#       - 'submitted'
+#   workflow_dispatch:
+#     inputs:
+#       pr_number:
+#         description: 'PR number to review'
+#         required: true
+#         type: 'number'
 
 concurrency:
   group: '${{ github.workflow }}-${{ github.head_ref || github.ref }}'

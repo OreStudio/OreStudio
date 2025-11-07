@@ -44,8 +44,8 @@ void MdiAreaWithBackground::setBackgroundLogo(const QString& imagePath) {
 void MdiAreaWithBackground::paintEvent(QPaintEvent* event) {
     QMdiArea::paintEvent(event);
 
-    // Only draw logo when no windows are open
-    if (subWindowList().isEmpty() && !backgroundLogo_.isNull()) {
+    // Draw logo as background
+    if (!backgroundLogo_.isNull()) {
         QPainter painter(viewport());
         painter.setRenderHint(QPainter::SmoothPixmapTransform);
 

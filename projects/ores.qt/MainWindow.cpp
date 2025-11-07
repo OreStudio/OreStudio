@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget* parent) :
 
     // Set up MDI area
     ui_->horizontalLayout_3->addWidget(mdiArea_);
-    mdiArea_->setBackgroundLogo("ore-studio-logo-black.png");
+    mdiArea_->setBackgroundLogo("ore-studio-background.png");
 
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this, &MainWindow::onLoginTriggered);

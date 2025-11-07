@@ -51,7 +51,7 @@ To be done on the last Sunday of the sprint.
 
 ** Open new sprint
 
-1. Open new sprint, updating CMake version, README, GitHub (packages. Build all
+1. Open new sprint, updating CMake version, README, GitHub (packages). Build all
    and run tests. This should all be in one commit.
 2. Create a demo. Publish it on youtube.
 3. Write up release notes, publish them in github.

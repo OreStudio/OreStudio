@@ -1,0 +1,347 @@
+:PROPERTIES:
+:ID: 5A85BDB5-E915-3A44-04AB-771ACE91992B
+:END:
+#+title: Sprint Backlog 04
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED
+#+tags: { code(c) infra(i) analysis(n) agile(a) }
+#+startup: inlineimages
+
+* Sprint Mission
+
+- implement bootstrap mode.
+- add system navigator and login.
+
+
+* Stories
+
+** Active
+
+#+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
+#+TBLNAME: today_summary
+#+CAPTION: Clock summary at [2025-11-07 Fri 09:04], for Friday, November 07, 2025.
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *0:14* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 0:14   |      |      | 100.0 |
+|       | Active                                |        | 0:14 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:14 | 100.0 |
+#+end:
+
+#+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
+#+TBLNAME: sprint_summary
+#+CAPTION: Clock summary at [2025-11-07 Fri 09:04]
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *0:14* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 0:14   |      |      | 100.0 |
+|       | Active                                |        | 0:14 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:14 | 100.0 |
+#+end:
+
+*** STARTED Sprint and product backlog refinement                     :agile:
+    :LOGBOOK:
+    CLOCK: [2025-11-07 Fri 08:50]--[2025-11-07 Fri 09:04] =>  0:14
+    :END:
+
+Updates to sprint and product backlog.
+
+#+begin_src emacs-lisp :exports none
+;; agenda
+(org-agenda-file-to-front)
+#+end_src
+
+#+name: stories-chart
+#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_04_stories.png :width 1200 :height 650
+library(conflicted)
+library(grid)
+library(tidyverse)
+library(tibble)
+
+# Remove unnecessary rows.
+clean_sprint_summary <- tail(sprint_summary, -4)
+names <- unlist(clean_sprint_summary[2])
+values <- as.numeric(unlist(clean_sprint_summary[6]))
+
+# Create a data frame.
+df <- data.frame(
+  cost = values,
+  stories = factor(names, levels = names[order(values, decreasing = FALSE)]),
+  y = seq(length(names)) * 0.9
+)
+
+# Setup the colors
+blue <- "#076fa2"
+
+p <- ggplot(df) +
+  aes(x = cost, y = stories) +
+  geom_col(fill = blue, width = 0.6) +
+  ggtitle("Sprint 1: Resourcing per Story") +
+  xlab("Resourcing (%)") + ylab("Stories") +
+  theme(text = element_text(size = 15))
+
+print(p)
+#+end_src
+
+#+RESULTS: stories-chart
+[[file:sprint_backlog_03_stories.png]]
+
+#+name: tags-chart
+#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_04_tags.png :width 600 :height 400
+library(conflicted)
+library(grid)
+library(tidyverse)
+library(tibble)
+
+# Remove unnecessary rows.
+clean_sprint_summary <- tail(sprint_summary, -4)
+names <- unlist(clean_sprint_summary[1])
+values <- as.numeric(unlist(clean_sprint_summary[6]))
+
+# Create a data frame.
+df <- data.frame(
+  cost = values,
+  tags = names,
+  y = seq(length(names)) * 0.9
+)
+# factor(names, levels = names[order(values, decreasing = FALSE)])
+
+df2 <- setNames(aggregate(df$cost, by = list(df$tags), FUN = sum),  c("cost", "tags"))
+# Setup the colors
+blue <- "#076fa2"
+
+p <- ggplot(df2) +
+  aes(x = cost, y = tags) +
+  geom_col(fill = blue, width = 0.6) +
+  ggtitle("Sprint 1: Resourcing per Tag") +
+  xlab("Resourcing (%)") + ylab("Story types") +
+  theme(text = element_text(size = 15))
+
+print(p)
+#+end_src
+
+#+RESULTS: tags-chart
+[[file:sprint_backlog_03_tags.png]]
+
+*** COMPLETED CTest shows only one test per test suite                 :code:
+
+We need to be able to see individual tests and the reasons for their failures.
+
+Notes:
+
+- raised an issue with CMake.
+
+Links:
+
+- [[https://gitlab.kitware.com/cmake/cmake/-/issues/27363][#27363: CTest: Uploading generated JUnit XML from the test harness]]
+- [[https://public.kitware.com/pipermail/cdash/2015-February/001544.html][[Cdash] How to send a JUnit result file to CDash server with CTest?]]
+
+*** Resolve all of the OpenSSL leaks in valgrind                       :code:
+
+We are freeing up open SSL memory and still have leaks. For now just apply the
+suppression suggestions and deal with this later.
+
+*** Add support for feature flags                                      :code:
+
+We need a way to know if we are in bootstrap mode or not. Implement a generic
+mechanism for feature flags.
+
+Example chrome flag:
+
+#+begin_quote
+Temporarily unexpire M139 flags.
+
+Temporarily unexpire flags that expired as of M139. These flags will be removed
+soon. – Mac, Windows, Linux, ChromeOS, Android
+
+#temporary-unexpire-flags-m139
+#+end_quote
+
+Components:
+
+- name: human readable
+- description
+- id
+
+*** Implement authentication bootstrap workflow                        :code:
+
+Notes:
+
+- when there are no accounts setup, the repl should say to the user that it
+  needs to create an admin account.
+- first account must be admin.
+- once there is an account we need to make sure the user is logged in before we
+  process most message types.
+
+Mongo message:
+
+#+begin_src logview
+2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] ** WARNING: Access control is not enabled for the database.
+2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] **          Read and write access to data and configuration is unrestricted.
+#+end_src
+
+Requirements:
+
+#+begin_src markdown
+# Authentication Bootstrapping Requirements
+
+## R1: Initial System State (Bootstrap Mode)
+
+The system **MUST** start in a special **"Bootstrap Mode"** where the only
+permitted action is the creation of the initial Administrator account.
+
+## R2: Access Control in Bootstrap Mode
+
+While the system is in Bootstrap Mode:
+
+- **R2.1: Allowed Endpoint:** The service **MUST** only expose and accept
+  requests for a single endpoint: `POST /api/v1/accounts/create-admin` (or
+  equivalent).
+- **R2.2: Local-Only Restriction:** All requests to the allowed endpoint
+  ,**MUST** originate from a **trusted local interface** (e.g., `127.0.0.1` or
+  the server's designated internal IP range). Requests from any external/public
+  IP address **MUST** be rejected.
+- **R2.3: General Endpoint Rejection:** All other API endpoints (e.g., login,
+  user creation, data access) **MUST** immediately return a $\mathbf{403}$
+  ,**Forbidden** or $\mathbf{401}$ **Unauthorized** status, along with a clear
+  message indicating the system is in setup mode.
+
+## R3: Initial Admin Account Creation
+
+The first account created through the allowed endpoint **MUST** adhere to the
+following:
+
+- **R3.1: Mandatory Admin Role:** The account **MUST** be assigned the highest
+  level of **Administrator privileges** (`is_admin: true`).
+- **R3.2: Strong Password Policy:** The request **MUST** be validated against a
+  strong password policy (e.g., minimum 12 characters, requiring a mix of case,
+  numbers, and symbols). Failure to meet this standard **MUST** result in a
+  $\mathbf{400}$ **Bad Request** error.
+- **R3.3: One-Time Execution:** The administrator creation process **MUST** only
+  be allowed to succeed **exactly once**.
+
+## R4: System State Transition
+
+Upon successful creation of the first Administrator account (R3):
+
+- **R4.1: State Change:** The system **MUST** immediately and atomically
+  transition from **"Bootstrap Mode"** to **"Secure Mode"**. This state change
+  ,**MUST** be persisted.
+- **R4.2: Bootstrap Endpoint Deactivation:** The `POST
+  /api/v1/accounts/create-admin` endpoint **MUST** be permanently disabled. Any
+  subsequent request to this endpoint **MUST** return a $\mathbf{403}$
+  ,**Forbidden** error.
+
+## R5: Secure Mode Operation
+
+Once the system is in **"Secure Mode"**:
+
+- **R5.1: General Access Control:** All operational API endpoints **MUST** now
+  enforce **full authentication and authorization**.
+- **R5.2: Mandatory Login:** All users, including the newly created
+  Administrator, **MUST** successfully complete a login process to obtain a
+  valid session token before accessing any resource.
+- **R5.3: Standard Account Creation:** The standard non-admin account creation
+  endpoint (`POST /api/v1/accounts/create`) **MUST** become available, subject
+  to any configured access controls (e.g., only open to logged-in Admins, or
+  fully public).
+#+end_src
+
+Links:
+
+- [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
+
+*** Add connect command line argument                                  :code:
+
+To avoid leaking secrets it should be possible to supply a =--connect= in the
+client. We still need a connect in case we want to reconnect.
+
+Notes:
+
+- clean up parser in client, not using common logging.
+- add environment mapping to client.
+
+*** Ignore warnings on windows and osx                                 :code:
+
+At present we have a number of spurious warnings on both windows and OSX. Try to
+see if we can get CDash to ignore them
+
+*** Remove postgres passwords from github workflows                    :code:
+
+As a quick hack we added the dev passwords to the workflows. We should really
+generate these on the fly and supply them to the tests.
+
+*** Allow supplying the postgres connection URI                        :code:
+
+At present we are supplying all of the components for the connection. It may be
+easier to allow the entire URI:
+
+- connection-uri: The connection URI to connect to PostgreSQL. Example:
+  =postgresql://postgres:postgres@localhost/postgres=.
+
+*** Consider adding log command line options to qt                     :code:
+
+At present we have hard-coded logging options. However, maybe users should be
+able to change the logging settings from the UI rather than having to restart
+the app and supply command line options.
+
+*** Investigate valgrind leak on sqlgen                                :code:
+
+Is this a real leak:
+
+#+begin_src valgrind-leak
+==2599359==
+==2599359== HEAP SUMMARY:
+==2599359==     in use at exit: 11,421 bytes in 78 blocks
+==2599359==   total heap usage: 403,744 allocs, 403,666 frees, 161,473,513 bytes allocated
+==2599359==
+==2599359== 1,944 bytes in 9 blocks are definitely lost in loss record 20 of 21
+==2599359==    at 0x4F2B818: malloc (vg_replace_malloc.c:446)
+==2599359==    by 0x5AE29FF: PQmakeEmptyPGresult (fe-exec.c:161)
+==2599359==    by 0x5AEA9F2: pqParseInput3 (fe-protocol3.c:264)
+==2599359==    by 0x5AE5853: parseInput (fe-exec.c:1997)
+==2599359==    by 0x5AE5975: PQgetResult (fe-exec.c:2083)
+==2599359==    by 0x5AE5FB7: PQexecFinish (fe-exec.c:2388)
+==2599359==    by 0x5AE5D98: PQprepare (fe-exec.c:2275)
+==2599359==    by 0x5A7F688: sqlgen::postgres::Connection::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Connection.cpp:44)
+==2599359==    by 0x525189F: sqlgen::Session<sqlgen::postgres::Connection>::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Session.hpp:50)
+==2599359==    by 0x523F4FF: sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> >::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Transaction.hpp:61)
+==2599359==    by 0x523EE20: rfl::Result<rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > > sqlgen::insert_impl<__gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, bool) requires is_connection<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > (insert.hpp:46)
+==2599359==    by 0x523EB55: auto sqlgen::insert_impl<std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> >, rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > const&, bool) (insert.hpp:69)
+==2599359==
+==2599359== 3,672 bytes in 17 blocks are definitely lost in loss record 21 of 21
+==2599359==    at 0x4F2B818: malloc (vg_replace_malloc.c:446)
+==2599359==    by 0x5AE29FF: PQmakeEmptyPGresult (fe-exec.c:161)
+==2599359==    by 0x5AEA78E: pqParseInput3 (fe-protocol3.c:200)
+==2599359==    by 0x5AE5853: parseInput (fe-exec.c:1997)
+==2599359==    by 0x5AE5975: PQgetResult (fe-exec.c:2083)
+==2599359==    by 0x5AE5FB7: PQexecFinish (fe-exec.c:2388)
+==2599359==    by 0x5AE5E15: PQexecPrepared (fe-exec.c:2298)
+==2599359==    by 0x5A7FB5B: sqlgen::postgres::Connection::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Connection.cpp:72)
+==2599359==    by 0x525189F: sqlgen::Session<sqlgen::postgres::Connection>::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Session.hpp:50)
+==2599359==    by 0x523F4FF: sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> >::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Transaction.hpp:61)
+==2599359==    by 0x523EE20: rfl::Result<rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > > sqlgen::insert_impl<__gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, bool) requires is_connection<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > (insert.hpp:46)
+==2599359==    by 0x523EB55: auto sqlgen::insert_impl<std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> >, rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > const&, bool) (insert.hpp:69)
+==2599359==
+==2599359== LEAK SUMMARY:
+==2599359==    definitely lost: 5,616 bytes in 26 blocks
+==2599359==    indirectly lost: 0 bytes in 0 blocks
+==2599359==      possibly lost: 0 bytes in 0 blocks
+==2599359==    still reachable: 5,805 bytes in 52 blocks
+==2599359==         suppressed: 0 bytes in 0 blocks
+==2599359== Reachable blocks (those to which a pointer was found) are not shown.
+==2599359== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==2599359==
+==2599359== For lists of detected and suppressed errors, rerun with: -s
+==2599359== ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 0 from 0)
+#+end_src
+
+
+
+*** Footer
+
+| Previous: [[id:154212FF-BB02-8D84-1E33-9338B458380A][Version Zero]] |

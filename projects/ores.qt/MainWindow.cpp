@@ -64,7 +64,7 @@ MainWindow::MainWindow(QWidget* parent) :
         auto* subWindow = mdiArea_->addSubWindow(currencyWidget);
         subWindow->setWindowTitle("Currencies");
         subWindow->setWindowIcon(QIcon("money-pound-box-line.png"));
-        subWindow->show();
+        subWindow->showMaximized();
     });
 
     // Initially disable data-related actions until logged in

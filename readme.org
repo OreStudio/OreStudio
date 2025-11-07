@@ -35,7 +35,7 @@
 #+html: <a href="https://github.com/OreStudio/OreStudio/actions/workflows/continuous-windows.yml"><img alt="Continuous Windows" src="https://github.com/OreStudio/OreStudio/actions/workflows/continuous-windows.yml/badge.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/actions/workflows/continuous-macos.yml"><img alt="Continuous MacOS.yml" src="https://github.com/OreStudio/OreStudio/actions/workflows/continuous-macos.yml/badge.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/actions/workflows/nightly-linux.yml"><img alt="Nightly Linux" src="https://github.com/OreStudio/OreStudio/actions/workflows/nightly-linux.yml/badge.svg"/></a>
-#+html: <a href="https://github.com/OreStudio/OreStudio/commits/main"><img alt="Commits" src= "https://img.shields.io/github/commits-since/OreStudio/OreStudio/v0.0.2.svg"/></a>
+#+html: <a href="https://github.com/OreStudio/OreStudio/commits/main"><img alt="Commits" src= "https://img.shields.io/github/commits-since/OreStudio/OreStudio/v0.0.3.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/OreStudio/OreStudio/total.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/releases"><img alt="Releases" src="https://img.shields.io/github/release/OreStudio/OreStudio.svg"/></a>
 
@@ -225,7 +225,7 @@ Notes:
 /Volumes/OreStudio-${VERSION}-Darwin/orestudio.app/Contents/Resources/bin
 #+end_src
 
-Where =${VERSION}= is your ORE Studio version, such as =0.0.1=.
+Where =${VERSION}= is your ORE Studio version, such as =0.0.3=.
 
 * Building From Source
 

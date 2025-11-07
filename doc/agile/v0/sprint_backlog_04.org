@@ -19,32 +19,33 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-07 Fri 09:04], for Friday, November 07, 2025.
+#+CAPTION: Clock summary at [2025-11-07 Fri 09:14], for Friday, November 07, 2025.
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *0:14* |      |      | 100.0 |
+|       | *Total time*                          | *0:22* |      |      | 100.0 |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 0:14   |      |      | 100.0 |
-|       | Active                                |        | 0:14 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:14 | 100.0 |
+|       | Stories                               | 0:22   |      |      | 100.0 |
+|       | Active                                |        | 0:22 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:22 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-07 Fri 09:04]
+#+CAPTION: Clock summary at [2025-11-07 Fri 09:14]
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *0:14* |      |      | 100.0 |
+|       | *Total time*                          | *0:22* |      |      | 100.0 |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 0:14   |      |      | 100.0 |
-|       | Active                                |        | 0:14 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:14 | 100.0 |
+|       | Stories                               | 0:22   |      |      | 100.0 |
+|       | Active                                |        | 0:22 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:22 | 100.0 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-11-07 Fri 09:05]--[2025-11-07 Fri 09:13] =>  0:08
     CLOCK: [2025-11-07 Fri 08:50]--[2025-11-07 Fri 09:04] =>  0:14
     :END:
 
@@ -88,7 +89,7 @@ print(p)
 #+end_src
 
 #+RESULTS: stories-chart
-[[file:sprint_backlog_03_stories.png]]
+[[file:sprint_backlog_04_stories.png]]
 
 #+name: tags-chart
 #+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_04_tags.png :width 600 :height 400
@@ -125,7 +126,7 @@ print(p)
 #+end_src
 
 #+RESULTS: tags-chart
-[[file:sprint_backlog_03_tags.png]]
+[[file:sprint_backlog_04_tags.png]]
 
 *** COMPLETED CTest shows only one test per test suite                 :code:
 

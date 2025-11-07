@@ -11,7 +11,7 @@
 
 - implement bootstrap mode.
 - add system navigator and login.
-
+- add crud for accounts and currency.
 
 * Stories
 
@@ -19,34 +19,39 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-07 Fri 09:24], for Friday, November 07, 2025.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *0:32* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 0:32   |      |      | 100.0 |
-|       | Active                                |        | 0:32 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:22 |  68.8 |
-| code  | Clean up client parser                |        |      | 0:10 |  31.2 |
+#+CAPTION: Clock summary at [2025-11-07 Fri 11:55], for Friday, November 07, 2025.
+|       | <75>                                       |        |      |      |       |
+| Tags  | Headline                                   | Time   |      |      |     % |
+|-------+--------------------------------------------+--------+------+------+-------|
+|       | *Total time*                               | *1:49* |      |      | 100.0 |
+|-------+--------------------------------------------+--------+------+------+-------|
+|       | Stories                                    | 1:49   |      |      | 100.0 |
+|       | Active                                     |        | 1:49 |      | 100.0 |
+| agile | Sprint and product backlog refinement      |        |      | 0:34 |  31.2 |
+| code  | Clean up client parser                     |        |      | 0:10 |   9.2 |
+| infra | Install Windows package on Windows machine |        |      | 0:32 |  29.4 |
+| code  | Ignore warnings on windows and osx         |        |      | 0:33 |  30.3 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-07 Fri 09:24]
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *0:32* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 0:32   |      |      | 100.0 |
-|       | Active                                |        | 0:32 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:22 |  68.8 |
-| code  | Clean up client parser                |        |      | 0:10 |  31.2 |
+#+CAPTION: Clock summary at [2025-11-07 Fri 11:55]
+|       | <75>                                       |        |      |      |       |
+| Tags  | Headline                                   | Time   |      |      |     % |
+|-------+--------------------------------------------+--------+------+------+-------|
+|       | *Total time*                               | *1:49* |      |      | 100.0 |
+|-------+--------------------------------------------+--------+------+------+-------|
+|       | Stories                                    | 1:49   |      |      | 100.0 |
+|       | Active                                     |        | 1:49 |      | 100.0 |
+| agile | Sprint and product backlog refinement      |        |      | 0:34 |  31.2 |
+| code  | Clean up client parser                     |        |      | 0:10 |   9.2 |
+| infra | Install Windows package on Windows machine |        |      | 0:32 |  29.4 |
+| code  | Ignore warnings on windows and osx         |        |      | 0:33 |  30.3 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-11-07 Fri 10:35]--[2025-11-07 Fri 10:47] =>  0:12
     CLOCK: [2025-11-07 Fri 09:05]--[2025-11-07 Fri 09:13] =>  0:08
     CLOCK: [2025-11-07 Fri 08:50]--[2025-11-07 Fri 09:04] =>  0:14
     :END:
@@ -149,6 +154,155 @@ Links:
     :END:
 
 It should use common infrastructure and read variables from the environment.
+
+*** STARTED Install Windows package on Windows machine                :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-07 Fri 11:33]--[2025-11-07 Fri 11:55] =>  0:22
+    CLOCK: [2025-11-07 Fri 10:48]--[2025-11-07 Fri 10:58] =>  0:10
+    :END:
+
+We need to install and run the windows package and make sure it works. Check
+console and GUI start. Also, check we can connect against local service and
+against remove service.
+
+Notes:
+
+- application fails to start because QT6 DLLs are not in bin folder. It is also
+  missing libssl.
+
+Links:
+
+- [[https://stackoverflow.com/questions/68579934/how-to-copy-targets-all-runtime-dependencies-after-build-process-in-cmake][How to copy target's all runtime dependencies after build process in CMake?]]
+- [[https://stackoverflow.com/questions/78723493/cmake-install-rules][CMake install rules]]
+
+*** STARTED Ignore warnings on windows and osx                         :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-07 Fri 10:59]--[2025-11-07 Fri 11:32] =>  0:33
+    :END:
+
+At present we have a number of spurious warnings on both windows and OSX. Try to
+see if we can get CDash to ignore them.
+
+Working on Kitware ticket:
+
+```markdown
+Hi CMakers,
+
+As always, many thanks for an amazing piece of software. My objective is to ignore a few pesky warnings I am getting on both Windows and OSX, but I haven't quite figured out how to do this. I'll start by describing the warnings, and then what I have tried so far.
+
+## Warnings I want to ignore
+
+For OSX:
+
+```
+CMake Warning at scripts/cmake/z_vcpkg_fixup_rpath_macho.cmake:194 (message):
+  Couldn't adjust RPATH of
+  '/Users/runner/work/OreStudio/OreStudio/vcpkg/packages/libpq_arm64-osx/tools/libpq/bin/pg_config':
+  error:
+  /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/install_name_tool:
+  changing install names or rpaths can't be redone for:
+  /Users/runner/work/OreStudio/OreStudio/vcpkg/packages/libpq_arm64-osx/tools/libpq/bin/pg_config
+  (for architecture arm64) because larger updated load commands do not fit
+  (the program must be relinked, and you may need to use -headerpad or
+  -headerpad_max_install_names)
+
+Call Stack (most recent call first):
+  scripts/ports.cmake:219 (z_vcpkg_fixup_macho_rpath_in_dir)
+```
+
+For Windows:
+
+```
+CMake Warning at scripts/cmake/vcpkg_buildpath_length_warning.cmake:4 (message):
+  boost-system's buildsystem uses very long paths and may fail on your
+  system.
+
+  We recommend moving vcpkg to a short path such as 'C:\src\vcpkg' or using
+  the subst command.
+Call Stack (most recent call first):
+  ports/boost-system/portfile.cmake:3 (vcpkg_buildpath_length_warning)
+  scripts/ports.cmake:206 (include)
+```
+
+And
+
+```
+CMake Warning at scripts/cmake/vcpkg_copy_pdbs.cmake:44 (message):
+  Could not find a matching pdb file for:
+
+      D:/a/OreStudio/OreStudio/vcpkg/packages/icu_x64-windows/bin/icudt74.dll
+      D:/a/OreStudio/OreStudio/vcpkg/packages/icu_x64-windows/debug/bin/icudtd74.dll
+
+Call Stack (most recent call first):
+  ports/icu/portfile.cmake:140 (vcpkg_copy_pdbs)
+  scripts/ports.cmake:206 (include)
+```
+
+## Attempts at ignoring
+
+I have copied ideas from these files [1, 2], resulting in the present state of my ```CTestCustom.cmake``` [3]:
+
+```cmake
+set(CTEST_CUSTOM_WARNING_EXCEPTION
+    ${CTEST_CUSTOM_WARNING_EXCEPTION}
+    # RPath in OSX
+    ".*CMake Warning.*z_vcpkg_fixup_rpath_macho\.cmake.*"
+    # boost-system's buildsystem uses very long paths
+    ".*CMake Warning.*vcpkg_buildpath_length_warning\.cmake.*"
+    # could not find a matching pdb file
+    ".*CMake Warning.*vcpkg_copy_pdbs.cmake.*"
+)
+```
+
+My main CTest.cmake [4] then includes the ```CTestCustom.cmake```:
+
+```cmake
+# Read custom files
+ctest_read_custom_files(${CTEST_SOURCE_DIRECTORY})
+```
+
+It is the entry point for the builds in github [5]
+
+I tried the regexes to see if there was some spacing or other characters which are not matching. Here is evidence of the regexes matching using a online site [6]:
+
+```
+.*CMake Warning.*z_vcpkg_fixup_rpath_macho\.cmake.*
+```
+
+![image](/uploads/56077692dcd439ecfa5e23c1212c2ee1/image.png)
+
+.*CMake Warning.*vcpkg_buildpath_length_warning\.cmake.*
+
+![image](/uploads/f382825e14858873a70d94a68ceddece/image.png)
+
+.*CMake Warning.*vcpkg_copy_pdbs.cmake.*
+
+![image](/uploads/5971150a10e5c7d337c2ecc1aafb9928/image.png)
+
+However, I still see the warnings in CDash:
+
+![image](/uploads/e6a7db5dd3cc4fbae13baf7d07c0502b/image.png)
+
+# Links
+
+[1] [AliRoot CTestCustom.cmake](https://github.com/alisw/AliRoot/blob/master/CTestCustom.cmake)
+[2] [Slicer CTestCustom.cmake.in](https://github.com/Slicer/Slicer/blob/main/CMake/CTestCustom.cmake.in)
+[3] [OreStudio CTestCustom.cmake](https://github.com/OreStudio/OreStudio/blob/main/CTestCustom.cmake)
+[4] [CTest.cmake#L170](https://github.com/OreStudio/OreStudio/blob/main/CTest.cmake#L170)
+[5] [continuous-linux.yml#L111](https://github.com/OreStudio/OreStudio/blob/main/.github/workflows/continuous-linux.yml#L111)
+[6] [regex101](https://regex101.com/)
+```
+
+*** Add SC script on windows to install ores.service                   :code:
+
+We should package a trivial batch file that sets up the service on windows. We
+should also consider adding a simple script to setup the service on Linux.
+Ideally it should be done via the packaging step.
+
+*** Package SQL scripts                                                :code:
+
+We need to initialise the database on installation. The package should contain
+all of the necessary SQL as well as a script to do it.
 
 *** Resolve all of the OpenSSL leaks in valgrind                       :code:
 
@@ -274,11 +428,6 @@ Notes:
 
 - clean up parser in client, not using common logging.
 - add environment mapping to client.
-
-*** Ignore warnings on windows and osx                                 :code:
-
-At present we have a number of spurious warnings on both windows and OSX. Try to
-see if we can get CDash to ignore them
 
 *** Remove postgres passwords from github workflows                    :code:
 

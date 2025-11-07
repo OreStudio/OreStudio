@@ -64,7 +64,7 @@ To be done on the last Sunday of the sprint.
 
 Stories we may get two in the next two or three sprints.
 
-*** Log file for Qt application is non-standard                        :code:
+*** Log file location for Qt application is non-standard on Linux      :code:
 
 At present we need to manually create the log directory for the gui to fix this
 error:
@@ -473,11 +473,6 @@ It would be nice if =log_args= etc showed up in the recipe.
 Links:
 
 - [[https://kitchingroup.cheme.cmu.edu/blog/2019/02/12/Using-results-from-one-code-block-in-another-org-mode/][Using results from one code block in another org-mode]]
-
-*** Install Windows package on Windows machine                        :infra:
-
-We need to install and run the windows package and make sure it works. Check
-console and GUI start.
 
 *** Install OSX package on OSX machine                                :infra:
 

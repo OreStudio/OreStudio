@@ -24,9 +24,11 @@
 #include <QTimer>
 #include <QApplication>
 #include <QScreen>
+#include <QMdiSubWindow>
 #include "ui_MainWindow.h"
 #include "ores.qt/MainWindow.hpp"
 #include "ores.qt/LoginDialog.hpp"
+#include "ores.qt/CurrencyMdiWindow.hpp"
 
 namespace ores::qt {
 
@@ -45,9 +47,24 @@ MainWindow::MainWindow(QWidget* parent) :
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this, &MainWindow::onLoginTriggered);
 
-    // Currencies action will be updated in later increment
+    // Currencies action creates MDI window with currency table
     connect(ui_->CurrenciesAction, &QAction::triggered, this, [=, this]() {
-        BOOST_LOG_SEV(lg(), debug) << "Currencies action triggered (not yet implemented)";
+        using ores::utility::log::warn;
+        using ores::utility::log::info;
+
+        if (!client_ || !client_->is_connected()) {
+            BOOST_LOG_SEV(lg(), warn) << "Currencies action triggered but not connected";
+            QMessageBox::warning(this, "Not Connected",
+                "Please login first to view currencies.");
+            return;
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Creating currencies MDI window";
+        auto* currencyWidget = new CurrencyMdiWindow(client_, this);
+        auto* subWindow = mdiArea_->addSubWindow(currencyWidget);
+        subWindow->setWindowTitle("Currencies");
+        subWindow->setWindowIcon(QIcon("money-pound-box-line.png"));
+        subWindow->show();
     });
 
     // Initially disable data-related actions until logged in

@@ -17,61 +17,41 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_MAIN_WINDOW_HPP
-#define ORES_QT_MAIN_WINDOW_HPP
+#ifndef ORES_QT_MDI_AREA_WITH_BACKGROUND_HPP
+#define ORES_QT_MDI_AREA_WITH_BACKGROUND_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <QMainWindow>
-#include <memory>
-#include <thread>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/executor_work_guard.hpp>
-#include "ores.comms/client.hpp"
-#include "ores.qt/MdiAreaWithBackground.hpp"
+#include <QMdiArea>
+#include <QPixmap>
 #include "ores.utility/log/make_logger.hpp"
-#include "ui_MainWindow.h"
-
-namespace Ui {
-
-class MainWindow;
-
-}
 
 namespace ores::qt {
 
-class MainWindow : public QMainWindow {
+/**
+ * @brief Custom QMdiArea that displays a background logo when no windows are open.
+ */
+class MdiAreaWithBackground : public QMdiArea {
     Q_OBJECT
 
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.qt.main_window");
+        static auto instance = make_logger("ores.qt.mdi_area_with_background");
         return instance;
     }
 
 public:
-    explicit MainWindow(QWidget* parent = nullptr);
-    ~MainWindow() override;
+    explicit MdiAreaWithBackground(QWidget* parent = nullptr);
+    void setBackgroundLogo(const QString& imagePath);
 
-    /**
-     * @brief Get the connected client instance.
-     * @return Shared pointer to the client, or nullptr if not connected.
-     */
-    std::shared_ptr<comms::client> getClient() const { return client_; }
+protected:
+    void paintEvent(QPaintEvent* event) override;
 
 private:
-    Ui::MainWindow* ui_;
-    MdiAreaWithBackground* mdiArea_;
-
-    // Client infrastructure
-    std::unique_ptr<boost::asio::io_context> io_context_;
-    std::unique_ptr<boost::asio::executor_work_guard<
-        boost::asio::io_context::executor_type>> work_guard_;
-    std::unique_ptr<std::thread> io_thread_;
-    std::shared_ptr<comms::client> client_;
+    QPixmap backgroundLogo_;
 };
 
 }

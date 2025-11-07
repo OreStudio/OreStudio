@@ -23,6 +23,7 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QApplication>
+#include <QScreen>
 #include "ui_MainWindow.h"
 #include "ores.qt/MainWindow.hpp"
 #include "ores.qt/LoginDialog.hpp"
@@ -32,15 +33,31 @@ namespace ores::qt {
 using namespace ores::utility::log;
 
 MainWindow::MainWindow(QWidget* parent) :
-    QMainWindow(parent), ui_(new Ui::MainWindow), mainTab_(new MainTabWidget()) {
+    QMainWindow(parent), ui_(new Ui::MainWindow), mdiArea_(new MdiAreaWithBackground()) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating the main window.";
     ui_->setupUi(this);
-    ui_->horizontalLayout_3->addWidget(mainTab_);
 
-    connect(ui_->CurrenciesAction, &QAction::triggered, mainTab_, [=, this]() {
-        mainTab_->openCurrencyTabPage();
+    // Set up MDI area
+    ui_->horizontalLayout_3->addWidget(mdiArea_);
+    mdiArea_->setBackgroundLogo("ore-studio-logo-black.png");
+
+    // Currencies action will be updated in later increment
+    connect(ui_->CurrenciesAction, &QAction::triggered, this, [=, this]() {
+        BOOST_LOG_SEV(lg(), debug) << "Currencies action triggered (not yet implemented)";
     });
+
+    // Set window size and center on screen
+    resize(1400, 900);
+
+    // Center window on screen
+    if (auto* screen = QApplication::primaryScreen()) {
+        const QRect screenGeometry = screen->geometry();
+        const int x = (screenGeometry.width() - width()) / 2;
+        const int y = (screenGeometry.height() - height()) / 2;
+        move(x, y);
+        BOOST_LOG_SEV(lg(), debug) << "Window centered at (" << x << ", " << y << ")";
+    }
 
     // Login dialog removed - will be triggered from menu
     BOOST_LOG_SEV(lg(), info) << "Main window created without forced login.";

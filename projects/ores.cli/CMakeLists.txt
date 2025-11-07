@@ -72,5 +72,8 @@ target_link_libraries(${exe_target_name}
         ${lib_target_name}
         ${CMAKE_THREAD_LIBS_INIT})
 
-set(X_VCPKG_APPLOCAL_DEPS_INSTALL 1)
 install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)
+install(CODE [[
+  include(BundleUtilities)
+  fixup_bundle("${CMAKE_INSTALL_PREFIX}/MyApp.app" "" "")
+]] COMPONENT Runtime)

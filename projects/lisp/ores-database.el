@@ -37,5 +37,15 @@
                               ":5432"
                               "/oresdb"
                               ))))
+(add-to-list 'sql-connection-alist
+      '("ores-isaac-db" (sql-product 'postgres)
+        (sql-database (concat "postgresql://"
+                              "ores"
+                              ":" (auth-source-pick-first-password :host "192.168.1.22")
+                              "@192.168.1.22"
+                              ":5432"
+                              "/oresdb"
+                              ))))
+
 (provide 'ores-database)
 ;;; ores-database.el ends here

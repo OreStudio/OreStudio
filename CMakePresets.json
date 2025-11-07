@@ -22,7 +22,8 @@
                 "CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY": "ON",
                 "CMAKE_FIND_USE_CMAKE_SYSTEM_PATH": "ON",
                 "CMAKE_PREFIX_PATH": "",
-                "VCPKG_INSTALL_OPTIONS": "--clean-after-build"
+                "VCPKG_INSTALL_OPTIONS": "--clean-after-build",
+                "X_VCPKG_APPLOCAL_DEPS_INSTALL": true
             },
             "warnings": {
                 "uninitialized": true,

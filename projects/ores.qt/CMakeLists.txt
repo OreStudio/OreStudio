@@ -64,7 +64,19 @@ add_custom_target(run_ores_qt
     COMMAND ./ores.qt)
 
 install(TARGETS ores.qt RUNTIME DESTINATION bin)
-install(CODE [[
-  include(BundleUtilities)
-  fixup_bundle("${CMAKE_INSTALL_PREFIX}/OreStudio.app" "" "")
-]] COMPONENT Runtime)
+if(APPLE)
+    install(CODE "
+        # make sure the bundle is already on disk
+        set(BU_CHMOD_BUNDLE_ITEMS TRUE)
+        include(BundleUtilities)
+
+        # full path to the real executable inside the bundle
+        set(app_exe \"\${CMAKE_INSTALL_PREFIX}/OreStudio.app/Contents/MacOS/OreStudio\")
+
+        # directory where 3rd-party libraries will be copied
+        set(libs_dir \"\${CMAKE_INSTALL_PREFIX}/OreStudio.app/Contents/Frameworks\")
+
+        # discover all prerequisites and copy/fix them
+        fixup_bundle(\"\${app_exe}\" \"\" \"\${libs_dir}\")
+    " COMPONENT Runtime)
+endif()

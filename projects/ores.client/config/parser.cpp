@@ -42,11 +42,19 @@ const std::string logging_log_level_arg("log-level");
 const std::string logging_log_dir_arg("log-directory");
 const std::string logging_log_level_info("info");
 
+const std::string connect_host_arg("connect-host");
+const std::string connect_port_arg("connect-port");
+const std::string connect_identifier_arg("connect-identifier");
+const std::string login_username_arg("login-username");
+const std::string login_password_arg("login-password");
+
 using boost::program_options::value;
 using boost::program_options::variables_map;
 using boost::program_options::options_description;
 
 using ores::utility::log::logging_options;
+using ores::client::config::connection_options;
+using ores::client::config::login_options;
 using ores::client::config::options;
 using ores::client::config::parser_exception;
 
@@ -70,8 +78,24 @@ options_description make_options_description() {
         ("log-directory", value<std::string>(),
             "Where to place the log files. Defaults to 'log'.");
 
+    options_description cod("Connection");
+    cod.add_options()
+        (connect_host_arg.c_str(), value<std::string>(),
+            "Host to connect to (e.g., localhost)")
+        (connect_port_arg.c_str(), value<std::string>(),
+            "Port to connect to (e.g., 55555)")
+        (connect_identifier_arg.c_str(), value<std::string>(),
+            "Client identifier to use when connecting");
+
+    options_description lod2("Login");
+    lod2.add_options()
+        (login_username_arg.c_str(), value<std::string>(),
+            "Username for authentication")
+        (login_password_arg.c_str(), value<std::string>(),
+            "Password for authentication");
+
     options_description r;
-    r.add(god).add(lod);
+    r.add(god).add(lod).add(cod).add(lod2);
     return r;
 }
 
@@ -148,6 +172,61 @@ read_logging_configuration(const variables_map& vm) {
 }
 
 /**
+ * @brief Reads the connection configuration from the variables map.
+ */
+std::optional<connection_options>
+read_connection_configuration(const variables_map& vm) {
+    // Check if any connection options are provided
+    const bool has_host = vm.count(connect_host_arg) != 0;
+    const bool has_port = vm.count(connect_port_arg) != 0;
+    const bool has_identifier = vm.count(connect_identifier_arg) != 0;
+
+    if (!has_host && !has_port && !has_identifier)
+        return {};
+
+    connection_options r;
+    r.host = has_host ? vm[connect_host_arg].as<std::string>() : "localhost";
+    r.port = has_port ? static_cast<std::uint16_t>(std::stoi(vm[connect_port_arg].as<std::string>())) : 55555;
+    r.client_identifier = has_identifier ? vm[connect_identifier_arg].as<std::string>() : "ores-client";
+
+    if (r.port < 1 || r.port > 65535) {
+        BOOST_THROW_EXCEPTION(parser_exception(
+                std::format("Port number {} is out of valid range (1-65535)!", r.port)));
+    }
+
+    return r;
+}
+
+/**
+ * @brief Reads the login configuration from the variables map.
+ */
+std::optional<login_options>
+read_login_configuration(const variables_map& vm) {
+    // Check if both username and password are provided
+    const bool has_username = vm.count(login_username_arg) != 0;
+    const bool has_password = vm.count(login_password_arg) != 0;
+
+    if (!has_username && !has_password)
+        return {};
+
+    if (has_username != has_password) {
+        if (!has_username) {
+            BOOST_THROW_EXCEPTION(parser_exception(
+                    "Login password provided but username is missing!"));
+        } else {
+            BOOST_THROW_EXCEPTION(parser_exception(
+                    "Login username provided but password is missing!"));
+        }
+    }
+
+    login_options r;
+    r.username = vm[login_username_arg].as<std::string>();
+    r.password = vm[login_password_arg].as<std::string>();
+
+    return r;
+}
+
+/**
  * @brief Parses the arguments supplied in the command line and converts them
  * into a configuration object.
  */
@@ -177,6 +256,8 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     // Parse configuration
     options r;
     r.logging = read_logging_configuration(vm);
+    r.connection = read_connection_configuration(vm);
+    r.login = read_login_configuration(vm);
     return r;
 }
 

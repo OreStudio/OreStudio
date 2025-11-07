@@ -65,7 +65,7 @@ int host::execute(const std::vector<std::string>& args,
      * Execute the application.
      */
     try {
-        ores::client::app::application app;
+        ores::client::app::application app(cfg.connection, cfg.login);
         app.run();
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {

@@ -26,10 +26,12 @@
 
 #include <memory>
 #include <thread>
+#include <optional>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/client.hpp"
+#include "ores.client/config/options.hpp"
 
 namespace cli {
 class Cli;
@@ -54,9 +56,13 @@ private:
 
 public:
     /**
-     * @brief Construct a REPL instance.
+     * @brief Construct a REPL instance with configuration.
+     *
+     * @param connection_config Optional connection configuration for auto-connect
+     * @param login_config Optional login configuration for auto-login
      */
-    repl();
+    repl(std::optional<config::connection_options> connection_config = std::nullopt,
+         std::optional<config::login_options> login_config = std::nullopt);
 
     /**
      * @brief Destructor - ensures clean shutdown.
@@ -188,6 +194,20 @@ private:
     process_unlock_account(std::ostream& out, std::string account_id_str);
 
     /**
+     * @brief Attempt to connect automatically if connection options are provided.
+     *
+     * Performs connection automatically based on provided configuration.
+     */
+    boost::asio::awaitable<bool> auto_connect();
+
+    /**
+     * @brief Attempt to login automatically if login options are provided.
+     *
+     * Performs login automatically based on provided configuration after connecting.
+     */
+    boost::asio::awaitable<bool> auto_login();
+
+    /**
      * @brief Start the I/O context thread.
      *
      * Launches a background thread to handle async operations.
@@ -206,6 +226,8 @@ private:
      */
     void display_welcome() const;
 
+    std::optional<config::connection_options> connection_config_;
+    std::optional<config::login_options> login_config_;
     comms::client_options config_;
     std::shared_ptr<comms::client> client_;
     std::unique_ptr<boost::asio::io_context> io_ctx_;

@@ -58,21 +58,14 @@ handle_get_currencies_request(std::span<const std::uint8_t> payload) {
         co_return std::unexpected(request_result.error());
     }
 
-    try {
-        // Retrieve currencies from repository
-        auto currencies = currency_repo_.read_latest(ctx_);
-        BOOST_LOG_SEV(lg(), info) << "Retrieved " << currencies.size()
-                                  << " currencies";
+    // Retrieve currencies from repository
+    auto currencies = currency_repo_.read_latest(ctx_);
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << currencies.size()
+                              << " currencies";
 
-        // Create and serialize response
-        get_currencies_response response{std::move(currencies)};
-        co_return response.serialize();
-
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Exception while retrieving currencies: "
-                                   << e.what();
-        co_return std::unexpected(comms::protocol::error_code::network_error);
-    }
+    // Create and serialize response
+    get_currencies_response response{std::move(currencies)};
+    co_return response.serialize();
 }
 
 }

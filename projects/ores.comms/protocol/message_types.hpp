@@ -63,6 +63,11 @@ enum class error_code {
     handshake_failed = 0x0005,
     payload_too_large = 0x0006,
     network_error = 0x0007,
+    handler_error = 0x0008,
+    database_error = 0x0009,
+    authentication_failed = 0x000A,
+    authorization_failed = 0x000B,
+    invalid_request = 0x000C,
     last_value
 };
 

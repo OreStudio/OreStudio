@@ -181,17 +181,59 @@ boost::asio::awaitable<void> session::process_messages() {
 
             // Dispatch to appropriate handler
             auto remote_addr = conn_->remote_address();
-            auto response_result = co_await dispatcher_->dispatch(request_frame,
-                ++sequence_number_, remote_addr);
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Message dispatch failed: "
-                                          << static_cast<int>(response_result.error());
-                // Optionally send error response frame here
-                co_return;
+            protocol::frame response_frame{protocol::message_type::error_response, 0, {}};
+
+            try {
+                auto response_result = co_await dispatcher_->dispatch(request_frame,
+                    ++sequence_number_, remote_addr);
+
+                if (!response_result) {
+                    auto err = response_result.error();
+                    BOOST_LOG_SEV(lg(), error) << "Message dispatch failed: "
+                                              << static_cast<int>(err);
+
+                    // Create error response with appropriate message
+                    std::string error_msg;
+                    switch (err) {
+                        case protocol::error_code::invalid_message_type:
+                            error_msg = "Invalid or unsupported message type";
+                            break;
+                        case protocol::error_code::handler_error:
+                            error_msg = "Request handler encountered an error";
+                            break;
+                        case protocol::error_code::database_error:
+                            error_msg = "Database operation failed";
+                            break;
+                        case protocol::error_code::authentication_failed:
+                            error_msg = "Authentication failed";
+                            break;
+                        case protocol::error_code::authorization_failed:
+                            error_msg = "Authorization failed";
+                            break;
+                        case protocol::error_code::invalid_request:
+                            error_msg = "Invalid request parameters";
+                            break;
+                        default:
+                            error_msg = "An error occurred processing your request";
+                            break;
+                    }
+
+                    response_frame = protocol::create_error_response_frame(
+                        sequence_number_, err, error_msg);
+                    BOOST_LOG_SEV(lg(), debug) << "Sending error response: " << error_msg;
+                } else {
+                    response_frame = *response_result;
+                }
+            } catch (const std::exception& e) {
+                // Handler threw an exception - send detailed error to client
+                BOOST_LOG_SEV(lg(), error) << "Exception in message handler: " << e.what();
+                response_frame = protocol::create_error_response_frame(
+                    sequence_number_, protocol::error_code::database_error, e.what());
+                BOOST_LOG_SEV(lg(), debug) << "Sending error response with exception details";
             }
 
             // Send response back to client
-            co_await conn_->write_frame(*response_result);
+            co_await conn_->write_frame(response_frame);
             BOOST_LOG_SEV(lg(), debug) << "Sent response for message type "
                                       << std::hex << static_cast<std::uint16_t>(request_frame.header().type);
         }

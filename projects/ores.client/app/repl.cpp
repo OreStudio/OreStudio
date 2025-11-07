@@ -28,6 +28,7 @@
 #include "ores.client/app/repl.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/streaming/std_vector.hpp"
+#include "ores.comms/protocol/handshake.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
@@ -346,6 +347,21 @@ boost::asio::awaitable<void> repl::process_get_currencies(std::ostream& out) {
             co_return;
         }
 
+        // Check if server returned an error response
+        if (response_result->header().type == comms::protocol::message_type::error_response) {
+            auto err_resp = comms::protocol::error_response::deserialize(
+                response_result->payload());
+            if (err_resp) {
+                BOOST_LOG_SEV(lg(), error) << "Server returned error: "
+                                          << err_resp->message;
+                out << "✗ Error: " << err_resp->message << "\nores-client> " << std::flush;
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize error response";
+                out << "✗ Server error (could not parse error message)\nores-client> " << std::flush;
+            }
+            co_return;
+        }
+
         BOOST_LOG_SEV(lg(), debug) << "Deserializing response";
 
         auto response = risk::messaging::get_currencies_response::deserialize(
@@ -557,6 +573,21 @@ repl::process_create_account(std::ostream& out, std::string username,
             co_return;
         }
 
+        // Check if server returned an error response
+        if (response_result->header().type == comms::protocol::message_type::error_response) {
+            auto err_resp = comms::protocol::error_response::deserialize(
+                response_result->payload());
+            if (err_resp) {
+                BOOST_LOG_SEV(lg(), error) << "Server returned error: "
+                                          << err_resp->message;
+                out << "✗ Error: " << err_resp->message << "\nores-client> " << std::flush;
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize error response";
+                out << "✗ Server error (could not parse error message)\nores-client> " << std::flush;
+            }
+            co_return;
+        }
+
         BOOST_LOG_SEV(lg(), debug) << "Deserializing response";
 
         auto response = accounts::messaging::create_account_response::deserialize(
@@ -602,6 +633,21 @@ boost::asio::awaitable<void> repl::process_list_accounts(std::ostream& out) {
             BOOST_LOG_SEV(lg(), error) << "Request failed with error code: "
                                       << static_cast<int>(response_result.error());
             out << "✗ Request failed\nores-client> " << std::flush;
+            co_return;
+        }
+
+        // Check if server returned an error response
+        if (response_result->header().type == comms::protocol::message_type::error_response) {
+            auto err_resp = comms::protocol::error_response::deserialize(
+                response_result->payload());
+            if (err_resp) {
+                BOOST_LOG_SEV(lg(), error) << "Server returned error: "
+                                          << err_resp->message;
+                out << "✗ Error: " << err_resp->message << "\nores-client> " << std::flush;
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize error response";
+                out << "✗ Server error (could not parse error message)\nores-client> " << std::flush;
+            }
             co_return;
         }
 

@@ -62,6 +62,12 @@ public:
      */
     std::shared_ptr<comms::client> getClient() const { return client_; }
 
+private slots:
+    void onLoginTriggered();
+
+private:
+    void updateMenuState();
+
 private:
     Ui::MainWindow* ui_;
     MdiAreaWithBackground* mdiArea_;

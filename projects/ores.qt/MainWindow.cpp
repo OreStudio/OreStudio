@@ -42,10 +42,16 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->horizontalLayout_3->addWidget(mdiArea_);
     mdiArea_->setBackgroundLogo("ore-studio-logo-black.png");
 
+    // Connect menu actions
+    connect(ui_->ActionConnect, &QAction::triggered, this, &MainWindow::onLoginTriggered);
+
     // Currencies action will be updated in later increment
     connect(ui_->CurrenciesAction, &QAction::triggered, this, [=, this]() {
         BOOST_LOG_SEV(lg(), debug) << "Currencies action triggered (not yet implemented)";
     });
+
+    // Initially disable data-related actions until logged in
+    updateMenuState();
 
     // Set window size and center on screen
     resize(1400, 900);
@@ -82,6 +88,50 @@ MainWindow::~MainWindow() {
     }
 
     BOOST_LOG_SEV(lg(), info) << "MainWindow destroyed, client disconnected.";
+}
+
+void MainWindow::onLoginTriggered() {
+    BOOST_LOG_SEV(lg(), info) << "Login action triggered";
+
+    LoginDialog dialog(this);
+    const int result = dialog.exec();
+
+    if (result == QDialog::Accepted) {
+        // Transfer ownership of client infrastructure from dialog
+        client_ = dialog.getClient();
+        io_context_ = dialog.takeIOContext();
+        work_guard_ = dialog.takeWorkGuard();
+        io_thread_ = dialog.takeIOThread();
+
+        if (client_ && client_->is_connected()) {
+            BOOST_LOG_SEV(lg(), info) << "Successfully connected to server and authenticated.";
+            updateMenuState();
+            QMessageBox::information(this, "Login Successful",
+                "Successfully connected and logged in to the server.");
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Client is not properly connected after login.";
+            QMessageBox::critical(this, "Connection Error",
+                "Failed to establish server connection.");
+        }
+    } else {
+        BOOST_LOG_SEV(lg(), info) << "Login cancelled by user.";
+    }
+}
+
+void MainWindow::updateMenuState() {
+    const bool isConnected = client_ && client_->is_connected();
+
+    // Enable/disable menu actions based on connection state
+    ui_->CurrenciesAction->setEnabled(isConnected);
+
+    // Update connect action text
+    if (isConnected) {
+        ui_->ActionConnect->setText("&Disconnect");
+    } else {
+        ui_->ActionConnect->setText("&Connect");
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Menu state updated. Connected: " << isConnected;
 }
 
 }

@@ -19,34 +19,40 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-07 Fri 11:55], for Friday, November 07, 2025.
-|       | <75>                                       |        |      |      |       |
-| Tags  | Headline                                   | Time   |      |      |     % |
-|-------+--------------------------------------------+--------+------+------+-------|
-|       | *Total time*                               | *1:49* |      |      | 100.0 |
-|-------+--------------------------------------------+--------+------+------+-------|
-|       | Stories                                    | 1:49   |      |      | 100.0 |
-|       | Active                                     |        | 1:49 |      | 100.0 |
-| agile | Sprint and product backlog refinement      |        |      | 0:34 |  31.2 |
-| code  | Clean up client parser                     |        |      | 0:10 |   9.2 |
-| infra | Install Windows package on Windows machine |        |      | 0:32 |  29.4 |
-| code  | Ignore warnings on windows and osx         |        |      | 0:33 |  30.3 |
+#+CAPTION: Clock summary at [2025-11-07 Fri 18:57], for Friday, November 07, 2025.
+|       | <75>                                                   |        |      |      |       |
+| Tags  | Headline                                               | Time   |      |      |     % |
+|-------+--------------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                           | *7:06* |      |      | 100.0 |
+|-------+--------------------------------------------------------+--------+------+------+-------|
+|       | Stories                                                | 7:06   |      |      | 100.0 |
+|       | Active                                                 |        | 7:06 |      | 100.0 |
+| agile | Sprint and product backlog refinement                  |        |      | 0:34 |   8.0 |
+| code  | Clean up client parser                                 |        |      | 0:10 |   2.3 |
+| code  | Add connect command line argument                      |        |      | 1:19 |  18.5 |
+| infra | Install Windows package on Windows machine             |        |      | 2:09 |  30.3 |
+| code  | Ignore warnings on windows and osx                     |        |      | 0:33 |   7.7 |
+| code  | Ensure applications work under OSX using github images |        |      | 0:14 |   3.3 |
+| infra | Create a splash screen and gray background             |        |      | 2:07 |  29.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-07 Fri 11:55]
-|       | <75>                                       |        |      |      |       |
-| Tags  | Headline                                   | Time   |      |      |     % |
-|-------+--------------------------------------------+--------+------+------+-------|
-|       | *Total time*                               | *1:49* |      |      | 100.0 |
-|-------+--------------------------------------------+--------+------+------+-------|
-|       | Stories                                    | 1:49   |      |      | 100.0 |
-|       | Active                                     |        | 1:49 |      | 100.0 |
-| agile | Sprint and product backlog refinement      |        |      | 0:34 |  31.2 |
-| code  | Clean up client parser                     |        |      | 0:10 |   9.2 |
-| infra | Install Windows package on Windows machine |        |      | 0:32 |  29.4 |
-| code  | Ignore warnings on windows and osx         |        |      | 0:33 |  30.3 |
+#+CAPTION: Clock summary at [2025-11-07 Fri 18:58]
+|       | <75>                                                   |        |      |      |       |
+| Tags  | Headline                                               | Time   |      |      |     % |
+|-------+--------------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                           | *7:06* |      |      | 100.0 |
+|-------+--------------------------------------------------------+--------+------+------+-------|
+|       | Stories                                                | 7:06   |      |      | 100.0 |
+|       | Active                                                 |        | 7:06 |      | 100.0 |
+| agile | Sprint and product backlog refinement                  |        |      | 0:34 |   8.0 |
+| code  | Clean up client parser                                 |        |      | 0:10 |   2.3 |
+| code  | Add connect command line argument                      |        |      | 1:19 |  18.5 |
+| infra | Install Windows package on Windows machine             |        |      | 2:09 |  30.3 |
+| code  | Ignore warnings on windows and osx                     |        |      | 0:33 |   7.7 |
+| code  | Ensure applications work under OSX using github images |        |      | 0:14 |   3.3 |
+| infra | Create a splash screen and gray background             |        |      | 2:07 |  29.8 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -155,8 +161,26 @@ Links:
 
 It should use common infrastructure and read variables from the environment.
 
-*** STARTED Install Windows package on Windows machine                :infra:
+*** COMPLETED Add connect command line argument                        :code:
     :LOGBOOK:
+    CLOCK: [2025-11-07 Fri 11:56]--[2025-11-07 Fri 13:15] =>  1:19
+    :END:
+
+To avoid leaking secrets it should be possible to supply a =--connect= in the
+client. We still need a connect in case we want to reconnect.
+
+Notes:
+
+- clean up parser in client, not using common logging.
+- add environment mapping to client.
+
+Links:
+
+- [[https://github.com/daniele77/cli/issues/250][#250: Basic Scripting with Cli]]
+
+*** COMPLETED Install Windows package on Windows machine              :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-07 Fri 14:51]--[2025-11-07 Fri 16:28] =>  1:37
     CLOCK: [2025-11-07 Fri 11:33]--[2025-11-07 Fri 11:55] =>  0:22
     CLOCK: [2025-11-07 Fri 10:48]--[2025-11-07 Fri 10:58] =>  0:10
     :END:
@@ -168,14 +192,38 @@ against remove service.
 Notes:
 
 - application fails to start because QT6 DLLs are not in bin folder. It is also
-  missing libssl.
+  missing libssl. Adding vcpkg to presets copied a lot of the DLLs:
+
+#+begin_src json
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "default",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "binaryDir": "build",
+      "cacheVariables": {
+        "X_VCPKG_APPLOCAL_DEPS_INSTALL": true
+      }
+    }
+  ]
+}
+#+end_src
+
+- services are now running and connecting to postgres. Managed to connect from
+  Linux to Windows and log in. However, Qt UI won't start due to missing DLLs.
+  Installed Qt from online downloader, need to figure out what is missing. Open
+  a separate story to handle Qt issues.
 
 Links:
 
+- [[https://github.com/microsoft/vcpkg/issues/43066][#43066: X_VCPKG_APPLOCAL_DEPS_INSTALL requires dumpbin to be on PATH for windows]]
 - [[https://stackoverflow.com/questions/68579934/how-to-copy-targets-all-runtime-dependencies-after-build-process-in-cmake][How to copy target's all runtime dependencies after build process in CMake?]]
 - [[https://stackoverflow.com/questions/78723493/cmake-install-rules][CMake install rules]]
 
-*** STARTED Ignore warnings on windows and osx                         :code:
+*** BLOCKED Ignore warnings on windows and osx                         :code:
     :LOGBOOK:
     CLOCK: [2025-11-07 Fri 10:59]--[2025-11-07 Fri 11:32] =>  0:33
     :END:
@@ -183,115 +231,72 @@ Links:
 At present we have a number of spurious warnings on both windows and OSX. Try to
 see if we can get CDash to ignore them.
 
-Working on Kitware ticket:
+Notes:
 
-```markdown
-Hi CMakers,
+- Raised a Kitware ticket.
 
-As always, many thanks for an amazing piece of software. My objective is to ignore a few pesky warnings I am getting on both Windows and OSX, but I haven't quite figured out how to do this. I'll start by describing the warnings, and then what I have tried so far.
+Links:
 
-## Warnings I want to ignore
+- [[https://gitlab.kitware.com/cmake/cmake/-/issues/27367][CTest: Using regexes to filter warnings for CDash]]
+- [[https://stackoverflow.com/questions/26458652/ctest-custom-warning-exception][SO: ctest custom warning exception]]
 
-For OSX:
+*** BLOCKED Ensure applications work under OSX using github images     :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-07 Fri 16:29]--[2025-11-07 Fri 16:43] =>  0:14
+    :END:
 
-```
-CMake Warning at scripts/cmake/z_vcpkg_fixup_rpath_macho.cmake:194 (message):
-  Couldn't adjust RPATH of
-  '/Users/runner/work/OreStudio/OreStudio/vcpkg/packages/libpq_arm64-osx/tools/libpq/bin/pg_config':
-  error:
-  /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/install_name_tool:
-  changing install names or rpaths can't be redone for:
-  /Users/runner/work/OreStudio/OreStudio/vcpkg/packages/libpq_arm64-osx/tools/libpq/bin/pg_config
-  (for architecture arm64) because larger updated load commands do not fit
-  (the program must be relinked, and you may need to use -headerpad or
-  -headerpad_max_install_names)
+We need to install the DMG and run the app.
 
-Call Stack (most recent call first):
-  scripts/ports.cmake:219 (z_vcpkg_fixup_macho_rpath_in_dir)
-```
+We think the package does not have all of the dependencies, but this did not
+work:
 
-For Windows:
+#+begin_src cmake
+if(APPLE)
+    install(CODE "
+        # make sure the bundle is already on disk
+        set(BU_CHMOD_BUNDLE_ITEMS TRUE)
+        include(BundleUtilities)
 
-```
-CMake Warning at scripts/cmake/vcpkg_buildpath_length_warning.cmake:4 (message):
-  boost-system's buildsystem uses very long paths and may fail on your
-  system.
+        # full path to the real executable inside the bundle
+        set(app_exe \"\${CMAKE_INSTALL_PREFIX}/OreStudio.app/Contents/MacOS/OreStudio\")
 
-  We recommend moving vcpkg to a short path such as 'C:\src\vcpkg' or using
-  the subst command.
-Call Stack (most recent call first):
-  ports/boost-system/portfile.cmake:3 (vcpkg_buildpath_length_warning)
-  scripts/ports.cmake:206 (include)
-```
+        # directory where 3rd-party libraries will be copied
+        set(libs_dir \"\${CMAKE_INSTALL_PREFIX}/OreStudio.app/Contents/Frameworks\")
 
-And
+        # discover all prerequisites and copy/fix them
+        fixup_bundle(\"\${app_exe}\" \"\" \"\${libs_dir}\")
+    " COMPONENT Runtime)
+endif()
+#+end_src
 
-```
-CMake Warning at scripts/cmake/vcpkg_copy_pdbs.cmake:44 (message):
-  Could not find a matching pdb file for:
+We should ask someone with an OSX machine to test this.
 
-      D:/a/OreStudio/OreStudio/vcpkg/packages/icu_x64-windows/bin/icudt74.dll
-      D:/a/OreStudio/OreStudio/vcpkg/packages/icu_x64-windows/debug/bin/icudtd74.dll
+Links:
 
-Call Stack (most recent call first):
-  ports/icu/portfile.cmake:140 (vcpkg_copy_pdbs)
-  scripts/ports.cmake:206 (include)
-```
+- [[https://stackoverflow.com/questions/17974439/cant-use-fixup-bundle-to-create-a-portable-bundle-with-qt][SO: Can't use fixup_bundle() to create a portable bundle with Qt]]
 
-## Attempts at ignoring
+*** COMPLETED Create a splash screen and gray background              :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-07 Fri 17:54]--[2025-11-07 Fri 18:57] =>  1:03
+    CLOCK: [2025-11-07 Fri 16:49]--[2025-11-07 Fri 17:53] =>  1:04
+    :END:
 
-I have copied ideas from these files [1, 2], resulting in the present state of my ```CTestCustom.cmake``` [3]:
+We need to replace the basic splash with something that looks slightly better.
+We also need some kind of background for the initial screen when nothing is
+selected, a bit like visual studio code.
 
-```cmake
-set(CTEST_CUSTOM_WARNING_EXCEPTION
-    ${CTEST_CUSTOM_WARNING_EXCEPTION}
-    # RPath in OSX
-    ".*CMake Warning.*z_vcpkg_fixup_rpath_macho\.cmake.*"
-    # boost-system's buildsystem uses very long paths
-    ".*CMake Warning.*vcpkg_buildpath_length_warning\.cmake.*"
-    # could not find a matching pdb file
-    ".*CMake Warning.*vcpkg_copy_pdbs.cmake.*"
-)
-```
+*** Setup Qt properly on Windows                                       :code:
 
-My main CTest.cmake [4] then includes the ```CTestCustom.cmake```:
+Seems like our package is still missing Qt DLLs. Use the windows tool to
+determine what is missing. Consider installing Qt in the build machine via the
+built packages.
 
-```cmake
-# Read custom files
-ctest_read_custom_files(${CTEST_SOURCE_DIRECTORY})
-```
+*** Server must check database connectivity on startup                 :code:
 
-It is the entry point for the builds in github [5]
-
-I tried the regexes to see if there was some spacing or other characters which are not matching. Here is evidence of the regexes matching using a online site [6]:
-
-```
-.*CMake Warning.*z_vcpkg_fixup_rpath_macho\.cmake.*
-```
-
-![image](/uploads/56077692dcd439ecfa5e23c1212c2ee1/image.png)
-
-.*CMake Warning.*vcpkg_buildpath_length_warning\.cmake.*
-
-![image](/uploads/f382825e14858873a70d94a68ceddece/image.png)
-
-.*CMake Warning.*vcpkg_copy_pdbs.cmake.*
-
-![image](/uploads/5971150a10e5c7d337c2ecc1aafb9928/image.png)
-
-However, I still see the warnings in CDash:
-
-![image](/uploads/e6a7db5dd3cc4fbae13baf7d07c0502b/image.png)
-
-# Links
-
-[1] [AliRoot CTestCustom.cmake](https://github.com/alisw/AliRoot/blob/master/CTestCustom.cmake)
-[2] [Slicer CTestCustom.cmake.in](https://github.com/Slicer/Slicer/blob/main/CMake/CTestCustom.cmake.in)
-[3] [OreStudio CTestCustom.cmake](https://github.com/OreStudio/OreStudio/blob/main/CTestCustom.cmake)
-[4] [CTest.cmake#L170](https://github.com/OreStudio/OreStudio/blob/main/CTest.cmake#L170)
-[5] [continuous-linux.yml#L111](https://github.com/OreStudio/OreStudio/blob/main/.github/workflows/continuous-linux.yml#L111)
-[6] [regex101](https://regex101.com/)
-```
+At present the server only checks connectivity to database when a user requests
+an operation. We need some kind of initial polling which puts the server in a
+mode replying to all clients: "database not available". While this is happening,
+it should keep polling the database and checking the connectivity.
 
 *** Add SC script on windows to install ores.service                   :code:
 
@@ -418,16 +423,6 @@ Once the system is in **"Secure Mode"**:
 Links:
 
 - [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
-
-*** Add connect command line argument                                  :code:
-
-To avoid leaking secrets it should be possible to supply a =--connect= in the
-client. We still need a connect in case we want to reconnect.
-
-Notes:
-
-- clean up parser in client, not using common logging.
-- add environment mapping to client.
 
 *** Remove postgres passwords from github workflows                    :code:
 

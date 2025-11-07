@@ -18,59 +18,53 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-06 Thu 23:27], for Thursday, November 06, 2025.
-|       | <75>                                         |         |       |      |       |
-| Tags  | Headline                                     | Time    |       |      |     % |
-|-------+----------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                 | *10:13* |       |      | 100.0 |
-|-------+----------------------------------------------+---------+-------+------+-------|
-|       | Stories                                      | 10:13   |       |      | 100.0 |
-|       | Active                                       |         | 10:13 |      | 100.0 |
-| agile | Sprint and product backlog refinement        |         |       | 0:20 |   3.3 |
-| code  | Add tests at test suite level to ctest       |         |       | 0:13 |   2.1 |
-| code  | Cli tests are failing on github              |         |       | 0:58 |   9.5 |
-| code  | Add generators for test data generation      |         |       | 7:40 |  75.0 |
-| code  | Tidy-up tests after refactor                 |         |       | 0:12 |   2.0 |
-| code  | CTest shows only one test per test suite     |         |       | 0:26 |   4.2 |
-| code  | Resolve all of the OpenSSL leaks in valgrind |         |       | 0:21 |   3.4 |
-| code  | Add connect command line argument            |         |       | 0:03 |   0.5 |
+#+CAPTION: Clock summary at [2025-11-07 Fri 00:16], for Friday, November 07, 2025.
+|      | <75>                              |        |      |      |       |
+| Tags | Headline                          | Time   |      |      |     % |
+|------+-----------------------------------+--------+------+------+-------|
+|      | *Total time*                      | *0:11* |      |      | 100.0 |
+|------+-----------------------------------+--------+------+------+-------|
+|      | Stories                           | 0:11   |      |      | 100.0 |
+|      | Active                            |        | 0:11 |      | 100.0 |
+| code | Add connect command line argument |        |      | 0:11 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-06 Thu 23:27]
+#+CAPTION: Clock summary at [2025-11-07 Fri 00:16]
 |       | <75>                                                   |         |       |       |       |
 | Tags  | Headline                                               | Time    |       |       |     % |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                           | *71:19* |       |       | 100.0 |
+|       | *Total time*                                           | *71:45* |       |       | 100.0 |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                | 71:19   |       |       | 100.0 |
-|       | Active                                                 |         | 71:19 |       | 100.0 |
+|       | Stories                                                | 71:45   |       |       | 100.0 |
+|       | Active                                                 |         | 71:45 |       | 100.0 |
 | agile | Sprint and product backlog refinement                  |         |       |  1:50 |   2.6 |
-| code  | Add locking up logic                                   |         |       |  1:28 |   2.1 |
-| code  | Build using dynamic libraries                          |         |       |  7:24 |  10.4 |
+| code  | Add locking up logic                                   |         |       |  1:28 |   2.0 |
+| code  | Build using dynamic libraries                          |         |       |  7:24 |  10.3 |
 | code  | Enable qt gui                                          |         |       |  4:13 |   5.9 |
-| code  | Implement logging according to correct boost.log usage |         |       |  8:02 |  11.3 |
+| code  | Implement logging according to correct boost.log usage |         |       |  8:02 |  11.2 |
 | code  | Fix broken Linux and OSX tests                         |         |       |  0:10 |   0.2 |
 | code  | Fix broken windows builds                              |         |       |  2:35 |   3.6 |
 | code  | Investigate leaks from valgrind                        |         |       |  0:51 |   1.2 |
-| code  | Consider adding a postgres database to CI              |         |       | 14:13 |  19.9 |
+| code  | Consider adding a postgres database to CI              |         |       | 14:13 |  19.8 |
 | code  | Fix misspell that causes build to break                |         |       |  0:12 |   0.3 |
-| code  | Improve code coverage                                  |         |       |  4:15 |   6.0 |
+| code  | Improve code coverage                                  |         |       |  4:15 |   5.9 |
 | infra | vcpkg cannot apply patch on windowws                   |         |       |  1:46 |   2.5 |
 | code  | Update prodigy to use tags                             |         |       |  0:26 |   0.6 |
 | code  | Add command line arguments for database to service     |         |       |  3:34 |   5.0 |
-| code  | Separate test database usage from application          |         |       |  3:33 |   5.0 |
-| code  | Split test code from utility                           |         |       |  4:41 |   6.6 |
+| code  | Separate test database usage from application          |         |       |  3:33 |   4.9 |
+| code  | Split test code from utility                           |         |       |  4:41 |   6.5 |
 | code  | Add tests at test suite level to ctest                 |         |       |  0:13 |   0.3 |
-| code  | Cli tests are failing on github                        |         |       |  0:58 |   1.4 |
-| code  | Add generators for test data generation                |         |       |  7:40 |  10.8 |
+| code  | Cli tests are failing on github                        |         |       |  0:58 |   1.3 |
+| code  | Add generators for test data generation                |         |       |  7:40 |  10.7 |
 | code  | Tidy-up tests after refactor                           |         |       |  0:12 |   0.3 |
 | code  | CTest shows only one test per test suite               |         |       |  0:26 |   0.6 |
 | code  | Resolve all of the OpenSSL leaks in valgrind           |         |       |  0:36 |   0.8 |
 | code  | Add support for feature flags                          |         |       |  1:25 |   2.0 |
 | code  | Implement authentication bootstrap workflow            |         |       |  0:25 |   0.6 |
-| code  | Add connect command line argument                      |         |       |  0:11 |   0.3 |
+| code  | Add connect command line argument                      |         |       |  0:22 |   0.5 |
+| code  | Ignore warnings on windows and osx                     |         |       |  0:15 |   0.3 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -861,11 +855,17 @@ Links:
 
 *** STARTED Add connect command line argument                          :code:
     :LOGBOOK:
+    CLOCK: [2025-11-07 Fri 00:04]--[2025-11-07 Fri 00:15] =>  0:11
     CLOCK: [2025-11-05 Wed 23:52]--[2025-11-06 Thu 00:03] =>  0:11
     :END:
 
 To avoid leaking secrets it should be possible to supply a =--connect= in the
 client. We still need a connect in case we want to reconnect.
+
+Notes:
+
+- clean up parser in client, not using common logging.
+- add environment mapping to client.
 
 *** STARTED Ignore warnings on windows and osx                         :code:
     :LOGBOOK:

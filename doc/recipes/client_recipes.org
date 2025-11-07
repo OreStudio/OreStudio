@@ -37,6 +37,30 @@ ores-client> ores-client> Bye!
 ✓ Connected
 ores-client>
 
+*** Auto connect
+   :PROPERTIES:
+   :header-args+: :var ORES_CLIENT_LOGIN_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "ores")
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :header-args+: :var login_args="--login-username xxx "
+   :END:
+
+#+begin_src sh
+./ores.client ${log_args} ${connect_args} client <<EOF
+exit
+#+END_SRC
+
+#+RESULTS:
+✓ Auto-connected to localhost:55555
+ORE Studio Client REPL v0.0.3
+Type 'help' for available commands, 'exit' to quit
+
+ores-client> Bye!
+ORE Studio Client REPL v0.0.3
+Type 'help' for available commands, 'exit' to quit
+
+ores-client> Bye!
+
+
 *** Create account
 
 #+begin_src sh

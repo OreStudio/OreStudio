@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <QPainter>
+#include <QLinearGradient>
 #include "ores.qt/SplashScreen.hpp"
 
 namespace ores::qt {
@@ -24,11 +26,57 @@ namespace ores::qt {
 using namespace ores::utility::log;
 
 SplashScreen::SplashScreen(const QPixmap& pixmap)
-    : QSplashScreen(pixmap) {}
+    : QSplashScreen(pixmap) {
+    progressTimer_ = new QTimer(this);
+    connect(progressTimer_, &QTimer::timeout, this, &SplashScreen::updateProgress);
+}
+
+void SplashScreen::setProgressDuration(int milliseconds) {
+    totalDuration_ = milliseconds;
+    elapsedTime_ = 0;
+    progress_ = 0;
+
+    progressTimer_->start(updateInterval_);
+    BOOST_LOG_SEV(lg(), debug) << "Progress bar configured for " << milliseconds << "ms";
+}
+
+void SplashScreen::updateProgress() {
+    elapsedTime_ += updateInterval_;
+
+    // Calculate progress as percentage of total duration
+    progress_ = (elapsedTime_ * 100) / totalDuration_;
+
+    if (progress_ >= 100) {
+        progress_ = 100;
+        progressTimer_->stop();
+    }
+    repaint();
+}
 
 void SplashScreen::paintEvent(QPaintEvent* e) {
-    BOOST_LOG_SEV(lg(), info) << "Painting the splash screen.";
     QSplashScreen::paintEvent(e);
+
+    // Draw progress bar at the bottom
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    const int barHeight = 4;
+    const int barY = height() - barHeight - 10;  // 10px from bottom
+    const int barX = 20;  // 20px from left
+    const int barWidth = width() - 40;  // 20px margin on each side
+
+    // Draw background of progress bar (light gray, semi-transparent)
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(QColor(200, 200, 200, 100));
+    painter.drawRoundedRect(barX, barY, barWidth, barHeight, 2, 2);
+
+    // Draw progress (white)
+    if (progress_ > 0) {
+        const int progressWidth = (barWidth * progress_) / 100;
+        painter.setBrush(QColor(255, 255, 255, 220));  // White with slight transparency
+        painter.drawRoundedRect(barX, barY, progressWidth, barHeight, 2, 2);
+    }
+
     painted_ = true;
 }
 

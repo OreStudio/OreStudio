@@ -42,6 +42,7 @@ target_link_libraries(ores.qt PRIVATE
     Qt6::Concurrent
 )
 
+# Copy icon assets from ores.qt project directory
 file(GLOB ORES_QT_ASSETS "*.png")
 foreach(in_file IN LISTS ORES_QT_ASSETS)
     get_filename_component(out_file ${in_file} NAME)
@@ -54,13 +55,19 @@ foreach(in_file IN LISTS ORES_QT_ASSETS)
     file(COPY_FILE ${in_file} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${out_file})
 endforeach()
 
+# Copy main assets from assets/images directory
+file(GLOB ORES_MAIN_ASSETS "${CMAKE_SOURCE_DIR}/assets/images/*.png")
+foreach(in_file IN LISTS ORES_MAIN_ASSETS)
+    get_filename_component(out_file ${in_file} NAME)
+    file(COPY_FILE ${in_file} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${out_file})
+endforeach()
 
 target_include_directories(ores.qt
     PRIVATE ${CMAKE_SOURCE_DIR}/projects)
 
 add_custom_target(run_ores_qt
     COMMENT "Running ores.qt" VERBATIM
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/projects/ores.qt
-    COMMAND ./ores.qt)
+    WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+    COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ores.qt)
 
 install(TARGETS ores.qt RUNTIME DESTINATION bin)

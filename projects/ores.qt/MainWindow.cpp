@@ -42,34 +42,8 @@ MainWindow::MainWindow(QWidget* parent) :
         mainTab_->openCurrencyTabPage();
     });
 
-    // Show login dialog and establish client connection
-    LoginDialog dialog(this);
-    const int result = dialog.exec();
-
-    if (result == QDialog::Accepted) {
-        // Transfer ownership of client infrastructure from dialog
-        client_ = dialog.getClient();
-        io_context_ = dialog.takeIOContext();
-        work_guard_ = dialog.takeWorkGuard();
-        io_thread_ = dialog.takeIOThread();
-
-        if (client_ && client_->is_connected()) {
-            BOOST_LOG_SEV(lg(), info) << "Successfully connected to server and authenticated.";
-            // Pass client to main tab widget for use by tab pages
-            mainTab_->setClient(client_);
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Client is not properly connected after login.";
-            QMessageBox::critical(this, "Connection Error",
-                "Failed to establish server connection. The application may not function correctly.");
-        }
-    } else {
-        // User cancelled login - exit application
-        BOOST_LOG_SEV(lg(), info) << "Login cancelled by user.";
-        QMessageBox::information(this, "Login Cancelled",
-            "Login is required to use ORE Studio. The application will now exit.");
-        QTimer::singleShot(0, qApp, &QApplication::quit);
-        return;
-    }
+    // Login dialog removed - will be triggered from menu
+    BOOST_LOG_SEV(lg(), info) << "Main window created without forced login.";
 }
 
 MainWindow::~MainWindow() {

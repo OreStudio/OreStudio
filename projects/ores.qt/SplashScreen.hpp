@@ -27,12 +27,15 @@
 #include <QThread>
 #include <QSplashScreen>
 #include <QApplication>
+#include <QTimer>
 #include "ores.utility/log/make_logger.hpp"
 
 namespace ores::qt {
 
 class SplashScreen : public QSplashScreen
 {
+    Q_OBJECT
+
 private:
     static auto& lg() {
         using namespace ores::utility::log;
@@ -44,9 +47,18 @@ public:
     explicit SplashScreen(const QPixmap& pixmap  = QPixmap());
     void paintEvent(QPaintEvent* e) override;
     void ensureFirstPaint() const;
+    void setProgressDuration(int milliseconds);
+
+private slots:
+    void updateProgress();
 
 private:
     bool painted_ = false;
+    int progress_ = 0;
+    QTimer* progressTimer_ = nullptr;
+    int totalDuration_ = 0;
+    int elapsedTime_ = 0;
+    int updateInterval_ = 50;
 };
 
 }

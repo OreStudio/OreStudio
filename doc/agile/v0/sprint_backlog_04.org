@@ -19,28 +19,30 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-07 Fri 09:14], for Friday, November 07, 2025.
+#+CAPTION: Clock summary at [2025-11-07 Fri 09:24], for Friday, November 07, 2025.
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *0:22* |      |      | 100.0 |
+|       | *Total time*                          | *0:32* |      |      | 100.0 |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 0:22   |      |      | 100.0 |
-|       | Active                                |        | 0:22 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:22 | 100.0 |
+|       | Stories                               | 0:32   |      |      | 100.0 |
+|       | Active                                |        | 0:32 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:22 |  68.8 |
+| code  | Clean up client parser                |        |      | 0:10 |  31.2 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-07 Fri 09:14]
+#+CAPTION: Clock summary at [2025-11-07 Fri 09:24]
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *0:22* |      |      | 100.0 |
+|       | *Total time*                          | *0:32* |      |      | 100.0 |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 0:22   |      |      | 100.0 |
-|       | Active                                |        | 0:22 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:22 | 100.0 |
+|       | Stories                               | 0:32   |      |      | 100.0 |
+|       | Active                                |        | 0:32 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:22 |  68.8 |
+| code  | Clean up client parser                |        |      | 0:10 |  31.2 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -140,6 +142,13 @@ Links:
 
 - [[https://gitlab.kitware.com/cmake/cmake/-/issues/27363][#27363: CTest: Uploading generated JUnit XML from the test harness]]
 - [[https://public.kitware.com/pipermail/cdash/2015-February/001544.html][[Cdash] How to send a JUnit result file to CDash server with CTest?]]
+
+*** COMPLETED Clean up client parser                                   :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-07 Fri 09:14]--[2025-11-07 Fri 09:24] =>  0:10
+    :END:
+
+It should use common infrastructure and read variables from the environment.
 
 *** Resolve all of the OpenSSL leaks in valgrind                       :code:
 

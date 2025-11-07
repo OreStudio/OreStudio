@@ -23,7 +23,8 @@
 #include <boost/throw_exception.hpp>
 #include "ores.client/config/parser_exception.hpp"
 #include "ores.utility/version/version.hpp"
-#include "ores.utility/log/severity_level.hpp"
+#include "ores.utility/log/logging_configuration.hpp"
+#include "ores.utility/program_options/environment_mapper_factory.hpp"
 #include "ores.client/config/parser.hpp"
 
 namespace {
@@ -35,12 +36,6 @@ const std::string usage_error_msg("Usage error: ");
 
 const std::string help_arg("help");
 const std::string version_arg("version");
-
-const std::string logging_log_enabled_arg("log-enabled");
-const std::string logging_log_to_console_arg("log-to-console");
-const std::string logging_log_level_arg("log-level");
-const std::string logging_log_dir_arg("log-directory");
-const std::string logging_log_level_info("info");
 
 const std::string connect_host_arg("connect-host");
 const std::string connect_port_arg("connect-port");
@@ -62,21 +57,15 @@ using ores::client::config::parser_exception;
  * @brief Creates the option descriptions.
  */
 options_description make_options_description() {
+    using ores::utility::log::logging_configuration;
+
     options_description god("General");
     god.add_options()
         ("help,h", "Display usage and exit.")
         ("version,v", "Output version information and exit.");
 
-    options_description lod("Logging");
-    lod.add_options()
-        ("log-enabled,e", "Generate a log file.")
-        ("log-level,l", value<std::string>(),
-            "What level to use for logging. Valid values: trace, debug, info, "
-            "warn, error. Defaults to info.")
-        ("log-to-console",
-            "Output logging to the console, as well as to file.")
-        ("log-directory", value<std::string>(),
-            "Where to place the log files. Defaults to 'log'.");
+    const auto lod(logging_configuration::make_options_description(
+            "ores.client.log"));
 
     options_description cod("Connection");
     cod.add_options()
@@ -129,46 +118,6 @@ void version(std::ostream& info) {
         info << "IMPORTANT: build details are NOT for security purposes."
              << std::endl;
     }
-}
-
-/**
- * @brief Reads the logging configuration from the variables map.
- */
-std::optional<logging_options>
-read_logging_configuration(const variables_map& vm) {
-    const auto enabled(vm.count(logging_log_enabled_arg) != 0);
-    if (!enabled)
-        return {};
-
-    logging_options r;
-    r.filename = "ores.client.log";
-    r.output_to_console = vm.count(logging_log_to_console_arg) != 0;
-
-    const bool log_dir_set(vm.count(logging_log_dir_arg) != 0);
-    if (!log_dir_set) {
-        r.output_directory = "log";
-    }
-    else {
-        const auto log_dir(vm[logging_log_dir_arg].as<std::string>());
-        r.output_directory = log_dir;
-    }
-
-    const bool log_level_set(vm.count(logging_log_level_arg) != 0);
-    if (!log_level_set) {
-        r.severity = logging_log_level_info;
-        return r;
-    }
-
-    const auto s(vm[logging_log_level_arg].as<std::string>());
-    try {
-        using ores::utility::log::to_severity_level;
-        to_severity_level(s);
-        r.severity = s;
-    } catch(const std::exception&) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-                std::format("Log level is invalid: {}!", s)));
-    }
-    return r;
 }
 
 /**
@@ -232,12 +181,18 @@ read_login_configuration(const variables_map& vm) {
  */
 std::optional<options>
 parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
+    using ores::utility::log::logging_configuration;
+    using ores::utility::program_options::environment_mapper_factory;
+
     const auto od(make_options_description());
+    const auto name_mapper(environment_mapper_factory::make_mapper("CLIENT"));
 
     variables_map vm;
     boost::program_options::store(
         boost::program_options::command_line_parser(arguments).
         options(od).run(), vm);
+    boost::program_options::store(
+        boost::program_options::parse_environment(od, name_mapper), vm);
 
     const bool has_version(vm.count(version_arg) != 0);
     const bool has_help(vm.count(help_arg) != 0);
@@ -255,7 +210,7 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
 
     // Parse configuration
     options r;
-    r.logging = read_logging_configuration(vm);
+    r.logging = logging_configuration::read_options(vm);
     r.connection = read_connection_configuration(vm);
     r.login = read_login_configuration(vm);
     return r;

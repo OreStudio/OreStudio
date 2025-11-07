@@ -72,19 +72,3 @@ target_link_libraries(${exe_target_name}
         ${CMAKE_THREAD_LIBS_INIT})
 
 install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)
-if(APPLE)
-    install(CODE "
-        # make sure the bundle is already on disk
-        set(BU_CHMOD_BUNDLE_ITEMS TRUE)
-        include(BundleUtilities)
-
-        # full path to the real executable inside the bundle
-        set(app_exe \"\${CMAKE_INSTALL_PREFIX}/OreStudio.app/Contents/MacOS/OreStudio\")
-
-        # directory where 3rd-party libraries will be copied
-        set(libs_dir \"\${CMAKE_INSTALL_PREFIX}/OreStudio.app/Contents/Frameworks\")
-
-        # discover all prerequisites and copy/fix them
-        fixup_bundle(\"\${app_exe}\" \"\" \"\${libs_dir}\")
-    " COMPONENT Runtime)
-endif()

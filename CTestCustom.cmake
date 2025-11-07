@@ -33,15 +33,13 @@ set(CTEST_CUSTOM_MAXIMUM_FAILED_TEST_OUTPUT_SIZE 0)
 
 # warning execptions
 set(CTEST_CUSTOM_WARNING_EXCEPTION
-  ${CTEST_CUSTOM_WARNING_EXCEPTION}
-  # boost-system's buildsystem uses very long paths
-  ".*CMake Warning.*vcpkg_buildpath_length_warning.cmake.*"
-  # could not find a matching pdb file
-  ".*CMake Warning.*vcpkg_copy_pdbs.cmake.*"
-  # icu currently requires the following programs
-  ".*CMake Warning.*ports/icu/portfile.cmake.*"
-  # qtbase currently requires packages
-  ".*CMake Warning.*ports/qtbase/portfile.cmake.*"
+    ${CTEST_CUSTOM_WARNING_EXCEPTION}
+    # RPath in OSX
+    ".*CMake Warning.*z_vcpkg_fixup_rpath_macho\.cmake.*"
+    # boost-system's buildsystem uses very long paths
+    ".*CMake Warning.*vcpkg_buildpath_length_warning\.cmake.*"
+    # could not find a matching pdb file
+    ".*CMake Warning.*vcpkg_copy_pdbs.cmake.*"
 )
 
 # warning addons

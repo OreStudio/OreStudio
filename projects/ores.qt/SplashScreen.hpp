@@ -48,6 +48,10 @@ public:
     void paintEvent(QPaintEvent* e) override;
     void ensureFirstPaint() const;
     void setProgressDuration(int milliseconds);
+    void setMessage(const QString& message);
+
+signals:
+    void progressFinished(); // New signal to notify when progress is done
 
 private slots:
     void updateProgress();
@@ -59,6 +63,7 @@ private:
     int totalDuration_ = 0;
     int elapsedTime_ = 0;
     int updateInterval_ = 50;
+    QString messageText_;
 };
 
 }

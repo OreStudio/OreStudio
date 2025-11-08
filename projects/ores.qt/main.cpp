@@ -23,6 +23,7 @@
 #include <QTextStream>
 #include <QTimer>
 #include "ores.utility/log/make_logger.hpp"
+#include "ores.utility/version/version.hpp"
 #include "ores.utility/log/logging_options.hpp"
 #include "ores.utility/log/lifecycle_manager.hpp"
 #include "ores.qt/MainWindow.hpp"
@@ -70,7 +71,9 @@ int main(int argc, char *argv[]) {
     splash.show();
 
     // Start progress bar animation
-    const int splashDuration = 1000; // in milliseconds
+    const int splashDuration = 2000; // in milliseconds
+    QString buildInfo = QString("v") + ORES_VERSION + " " + ORES_BUILD_INFO;
+    splash.setMessage(buildInfo);
     splash.setProgressDuration(splashDuration);
 
     ores::qt::MainWindow mainWindow;

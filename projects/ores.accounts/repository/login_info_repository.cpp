@@ -67,7 +67,7 @@ write(context ctx, const std::vector<domain::login_info>& login_infos) {
 void login_info_repository::
 update(context ctx, const domain::login_info& login_info) {
     BOOST_LOG_SEV(lg(), debug) << "Updating login_info for account: "
-                             << boost::uuids::to_string(login_info.account_id);
+                               << boost::uuids::to_string(login_info.account_id);
 
     auto entity = login_info_mapper::map(login_info);
     const auto query = sqlgen::update<login_info_entity>(

@@ -68,7 +68,9 @@ exporter::export_currency_config(const std::vector<currency>& v) {
     std::ostringstream oss;
 
     // Add CSV header following RFC 4180
-    oss << "iso_code,name,numeric_code,symbol,fraction_symbol,fractions_per_unit,rounding_type,rounding_precision,format,currency_type,modified_by,valid_from,valid_to\n";
+    oss << "iso_code,name,numeric_code,symbol,fraction_symbol,"
+        << "fractions_per_unit,rounding_type,rounding_precision,"
+        << "format,currency_type,modified_by,valid_from,valid_to\n";
 
     // Add data rows
     for (const auto& curr : v) {
@@ -88,9 +90,12 @@ exporter::export_currency_config(const std::vector<currency>& v) {
     }
 
     std::string result = oss.str();
-    BOOST_LOG_SEV(lg(), trace) << "CSV: " << result.substr(0, std::min(result.size(), static_cast<size_t>(200))) << "...";
+    auto max_bytes(std::min<std::size_t>(result.size(), 200));
+    BOOST_LOG_SEV(lg(), trace) << "CSV: " << result.substr(0, max_bytes)
+                               << "...";
 
-    BOOST_LOG_SEV(lg(), debug) << "Finished CSV export. Result length: " << result.length();
+    BOOST_LOG_SEV(lg(), debug) << "Finished CSV export. Result length: "
+                               << result.length();
     return result;
 }
 

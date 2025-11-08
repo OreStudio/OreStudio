@@ -1,0 +1,102 @@
+/*
+ * OreStudio - Trading Style
+ */
+
+QWidget {
+    background-color: #1A1A1A;
+    color: #F0F0F0;
+    font-family: "Fira Code";
+    font-size: 10pt;
+}
+
+QTableView {
+    /* Base style for the data area */
+    background-color: #1A1A1A; /* Primary Background */
+    gridline-color: #333333; /* Faint row separators */
+    color: #F0F0F0;
+    border: 1px solid #007ACC; /* Subtle border using accent color */
+    selection-background-color: #007ACC; /* Accent Color for selection */
+    selection-color: white;
+}
+
+QTableView::item:hover {
+    background-color: #191919; /* Slightly darker on hover */
+}
+
+QHeaderView::section {
+    /* Style for Column Headers */
+    background-color: #282828; /* Slightly lighter shade for headers */
+    color: #FFFFFF;
+    border: none;
+    padding: 6px;
+    font-size: 9pt;
+    font-weight: normal;
+}
+
+QLineEdit {
+    /* Style for input fields (e.g., in the side panel or search) */
+    background-color: #1A1A1A;
+    border: 1px solid #444444;
+    color: #F0F0F0;
+    padding: 5px;
+}
+
+/* General purpose buttons */
+QPushButton {
+    background-color: transparent;
+    border: 1px solid #444444;
+    color: #F0F0F0;
+    padding: 8px 12px;
+}
+
+QPushButton:hover {
+    background-color: #2A2A2A;
+    border: 1px solid #007ACC;
+}
+
+/* Toolbar specific styles */
+QToolBar#toolBar {
+    background-color: #1A1A1A;
+    border: none; /* Revert from diagnostic red border */
+    padding: 2px;
+    qproperty-toolButtonStyle: ToolButtonTextUnderIcon;
+}
+
+QToolBar#toolBar QToolButton {
+    background-color: transparent; /* Revert from diagnostic green background */
+    border: none;
+    color: #F0F0F0;
+    padding: 4px;
+    font-size: 6pt; /* Set to desired font size */
+}
+
+QToolButton:hover {
+    background-color: #2A2A2A;
+    border: 1px solid #007ACC;
+}
+
+QToolButton:disabled {
+    background-color: transparent;
+}
+
+QMenuBar {
+    background-color: #282828;
+    color: #F0F0F0;
+}
+
+QMenuBar::item {
+    background-color: transparent;
+}
+
+QMenuBar::item:selected {
+    background-color: #007ACC;
+}
+
+QMenu {
+    background-color: #282828;
+    border: 1px solid #444444;
+}
+
+QMenu::item:selected {
+    background-color: #007ACC;
+}

@@ -21,6 +21,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 add_executable(ores.qt
+    resources.qrc
     main.cpp
     MainWindow.cpp
     MainWindow.ui
@@ -33,6 +34,10 @@ add_executable(ores.qt
     MainTabWidget.cpp
     CurrencyTabPage.cpp
     LoginDialog.cpp
+    CurrencyItemDelegate.cpp
+    CurrencyDetailPanel.ui
+    CurrencyDetailPanel.cpp
+    MessageBoxHelper.cpp
 )
 
 target_link_libraries(ores.qt PRIVATE

@@ -60,7 +60,13 @@
    </attribute>
    <addaction name="ActionConnect"/>
    <addaction name="ActionDisconnect"/>
+   <addaction name="separator"/>
    <addaction name="CurrenciesAction"/>
+   <addaction name="separator"/>
+   <addaction name="ActionSave"/>
+   <addaction name="separator"/>
+   <addaction name="ActionEdit"/>
+   <addaction name="ActionDelete"/>
   </widget>
   <action name="ExitAction">
    <property name="text">
@@ -94,6 +100,60 @@
     <string>&amp;Disconnect</string>
    </property>
   </action>
+  <action name="ActionEdit">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>ic_fluent_edit_20_filled.svg</normaloff>ic_fluent_edit_20_filled.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Edit</string>
+   </property>
+   <property name="toolTip">
+    <string>Edit selected item</string>
+   </property>
+  </action>
+  <action name="ActionDelete">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>ic_fluent_delete_20_filled.svg</normaloff>ic_fluent_delete_20_filled.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Delete</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete selected item</string>
+   </property>
+  </action>
+  <action name="ActionSave">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>ic_fluent_save_20_filled.svg</normaloff>ic_fluent_save_20_filled.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+   <property name="toolTip">
+    <string>Save changes</string>
+   </property>
+  </action>
+  <widget class="QDockWidget" name="currencyDetailDockWidget">
+   <property name="windowTitle">
+    <string>Currency Details</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number> <!-- Qt::RightDockWidgetArea -->
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents"/>
+  </widget>
  </widget>
  <resources/>
  <connections/>

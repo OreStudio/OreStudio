@@ -49,9 +49,16 @@ void SplashScreen::updateProgress() {
     if (progress_ >= 100) {
         progress_ = 100;
         progressTimer_->stop();
+        emit progressFinished();
     }
     repaint();
 }
+
+void SplashScreen::setMessage(const QString& message) {
+    messageText_ = message;
+    repaint();
+}
+
 
 void SplashScreen::paintEvent(QPaintEvent* e) {
     QSplashScreen::paintEvent(e);
@@ -75,6 +82,32 @@ void SplashScreen::paintEvent(QPaintEvent* e) {
         const int progressWidth = (barWidth * progress_) / 100;
         painter.setBrush(QColor(255, 255, 255, 220));  // White with slight transparency
         painter.drawRoundedRect(barX, barY, progressWidth, barHeight, 2, 2);
+    }
+
+    if (!messageText_.isEmpty()) {
+        // Save the current painter state to restore it later
+        painter.save();
+
+        // Set the font to a small, sans-serif font
+        QFont font("Sans Serif", 6);
+        painter.setFont(font);
+
+        // Set the text color to white
+        painter.setPen(Qt::white);
+
+        // Calculate the position to center the text horizontally
+        QFontMetrics fm(font);
+        int textWidth = fm.horizontalAdvance(messageText_);
+         int textX = barX;
+
+        // Position the text a few pixels above the progress bar
+        int textY = barY - fm.descent() - 5; // 5px padding above the bar
+
+        // Draw the text
+        painter.drawText(textX, textY, messageText_);
+
+        // Restore the painter's original state (font, pen, etc.)
+        painter.restore();
     }
 
     painted_ = true;

@@ -17,10 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <QTimer>
 #include <QApplication>
+#include <QFile>
 #include <QIcon>
+#include <QTextStream>
+#include <QTimer>
 #include "ores.utility/log/make_logger.hpp"
+#include "ores.utility/version/version.hpp"
 #include "ores.utility/log/logging_options.hpp"
 #include "ores.utility/log/lifecycle_manager.hpp"
 #include "ores.qt/MainWindow.hpp"
@@ -41,16 +44,25 @@ ores::utility::log::logging_options createLoggingConfiguration() {
     return r;
 }
 
-}
+} // namespace
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     auto cfg(createLoggingConfiguration());
     ores::utility::log::lifecycle_manager lm(cfg);
 
     BOOST_LOG_SEV(lg, info) << "Started UI.";
 
     QApplication app(argc, argv);
+
+    // Load the stylesheet
+    QFile file(":/resources/TradingStyle.qss");
+    if (file.open(QFile::ReadOnly | QFile::Text)) {
+        QTextStream stream(&file);
+        app.setStyleSheet(stream.readAll());
+        file.close();
+    } else {
+        BOOST_LOG_SEV(lg, warn) << "Could not load stylesheet.";
+    }
 
     // Set application icon
     app.setWindowIcon(QIcon("modern-icon.png"));
@@ -59,7 +71,9 @@ int main(int argc, char *argv[])
     splash.show();
 
     // Start progress bar animation
-    const int splashDuration = 3000;  // 3 seconds
+    const int splashDuration = 2000; // in milliseconds
+    QString buildInfo = QString("v") + ORES_VERSION + " " + ORES_BUILD_INFO;
+    splash.setMessage(buildInfo);
     splash.setProgressDuration(splashDuration);
 
     ores::qt::MainWindow mainWindow;

@@ -52,14 +52,24 @@ public:
     explicit CurrencyMdiWindow(std::shared_ptr<comms::client> client,
                                QWidget* parent = nullptr);
 
+    ClientCurrencyModel* currencyModel() const { return currencyModel_; } // New getter for the model
+
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
+    void selectionChanged(int selection_count);
+    void showCurrencyDetails(const risk::domain::currency& currency); // New signal
+    void currencyDeleted(const QString& iso_code); // Emitted when currency is deleted
+
+public slots:
+    void editSelected();
+    void deleteSelected();
 
 private slots:
     void onDataLoaded();
     void onLoadError(const QString& error_message);
     void onRowDoubleClicked(const QModelIndex& index);
+    void onSelectionChanged();
 
 private:
     QVBoxLayout* verticalLayout_;

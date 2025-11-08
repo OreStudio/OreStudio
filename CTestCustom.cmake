@@ -31,15 +31,14 @@ set(CTEST_CUSTOM_MAXIMUM_NUMBER_OF_ERRORS "50")
 set(CTEST_CUSTOM_MAXIMUM_PASSED_TEST_OUTPUT_SIZE 0)
 set(CTEST_CUSTOM_MAXIMUM_FAILED_TEST_OUTPUT_SIZE 0)
 
-# warning execptions
-set(CTEST_CUSTOM_WARNING_EXCEPTION
-    ${CTEST_CUSTOM_WARNING_EXCEPTION}
+# warning exceptions
+list(APPEND CTEST_CUSTOM_WARNING_EXCEPTION
     # RPath in OSX
-    ".*CMake Warning.*z_vcpkg_fixup_rpath_macho\.cmake.*"
+    ".*CMake Warning.*z_vcpkg_fixup_rpath_macho\\\\.cmake.*"
     # boost-system's buildsystem uses very long paths
-    ".*CMake Warning.*vcpkg_buildpath_length_warning\.cmake.*"
+    ".*CMake Warning.*vcpkg_buildpath_length_warning\\\\.cmake.*"
     # could not find a matching pdb file
-    ".*CMake Warning.*vcpkg_copy_pdbs.cmake.*"
+    ".*CMake Warning.*vcpkg_copy_pdbs\\\\.cmake.*"
 )
 
 # warning addons

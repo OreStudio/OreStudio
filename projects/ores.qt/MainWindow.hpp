@@ -25,12 +25,15 @@
 #endif
 
 #include <QMainWindow>
+#include <QLabel>
 #include <memory>
 #include <thread>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
 #include "ores.comms/client.hpp"
 #include "ores.qt/MdiAreaWithBackground.hpp"
+#include "ores.qt/CurrencyDetailPanel.hpp" // Include the header for CurrencyDetailPanel
+#include "ores.risk/domain/currency.hpp" // Include for risk::domain::currency
 #include "ores.utility/log/make_logger.hpp"
 #include "ui_MainWindow.h"
 
@@ -41,6 +44,8 @@ class MainWindow;
 }
 
 namespace ores::qt {
+
+class CurrencyMdiWindow;  // Forward declaration
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -65,14 +70,29 @@ public:
 private slots:
     void onLoginTriggered();
     void onDisconnectTriggered();
+    void onSubWindowActivated(QMdiSubWindow* window);
+    void onActiveWindowSelectionChanged(int selection_count);
+    void onEditTriggered();
+    void onDeleteTriggered();
+    void onShowCurrencyDetails(const risk::domain::currency& currency); // New slot
+    void onCurrencyDeleted(const QString& iso_code); // Handle currency deletion
 
 private:
     void updateMenuState();
+    void updateCrudActionState();
     QIcon createRecoloredIcon(const QString& svgPath, const QColor& color);
 
 private:
     Ui::MainWindow* ui_;
     MdiAreaWithBackground* mdiArea_;
+    CurrencyMdiWindow* activeCurrencyWindow_;
+    int selectionCount_;
+    CurrencyDetailPanel* currencyDetailPanel_; // New member variable
+    QLabel* connectionStatusIconLabel_; // Status bar icon label
+    QString displayedCurrencyIsoCode_; // Track currently displayed currency
+
+    QIcon connectedIcon_;    // Icon for connected status
+    QIcon disconnectedIcon_; // Icon for disconnected status
 
     // Client infrastructure
     std::unique_ptr<boost::asio::io_context> io_context_;

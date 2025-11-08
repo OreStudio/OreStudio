@@ -17,14 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <vector>
 #include <QtCore/QVariant>
+#include <QtCore/QTimer>
+#include <QtConcurrent>
+#include <QFutureWatcher>
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QTableView>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QMessageBox>
 #include "ores.qt/CurrencyMdiWindow.hpp"
-#include "ores.qt/CurrencyEditDialog.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+// #include "ores.qt/CurrencyEditDialog.hpp" // Removed
+#include "ores.qt/CurrencyItemDelegate.hpp" // Include the new delegate header
+#include "ores.risk/messaging/protocol.hpp"
+#include "ores.comms/protocol/frame.hpp"
 
 namespace ores::qt {
 
@@ -45,12 +52,15 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
 
     currencyTableView_->setObjectName("currencyTableView");
     currencyTableView_->setAlternatingRowColors(true);
-    currencyTableView_->setSelectionMode(QAbstractItemView::SingleSelection);
+    currencyTableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     currencyTableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     currencyTableView_->resizeRowsToContents();
 
     // Set the model
     currencyTableView_->setModel(currencyModel_);
+
+    // Set the custom item delegate
+    currencyTableView_->setItemDelegate(new CurrencyItemDelegate(this));
 
     // Configure headers
     QHeaderView* verticalHeader(currencyTableView_->verticalHeader());
@@ -65,6 +75,8 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
             this, &CurrencyMdiWindow::onLoadError);
     connect(currencyTableView_, &QTableView::doubleClicked,
             this, &CurrencyMdiWindow::onRowDoubleClicked);
+    connect(currencyTableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, &CurrencyMdiWindow::onSelectionChanged);
 
     // Emit initial loading status
     emit statusChanged("Loading currencies...");
@@ -86,7 +98,7 @@ void CurrencyMdiWindow::onLoadError(const QString& error_message) {
     BOOST_LOG_SEV(lg(), error) << "Error loading currencies: "
                               << error_message.toStdString();
 
-    QMessageBox::critical(this, "Load Error", error_message);
+    MessageBoxHelper::critical(this, "Load Error", error_message);
 }
 
 void CurrencyMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
@@ -101,36 +113,174 @@ void CurrencyMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Opening edit dialog for currency: "
+    BOOST_LOG_SEV(lg(), info) << "Emitting showCurrencyDetails for currency: "
                              << currency->iso_code;
+    emit showCurrencyDetails(*currency);
+}
 
-    // Create non-modal edit dialog
-    auto* editDialog = new CurrencyEditDialog(*currency, client_, this);
+void CurrencyMdiWindow::onSelectionChanged() {
+    const int selection_count = currencyTableView_->selectionModel()->selectedRows().count();
+    emit selectionChanged(selection_count);
+}
 
-    // Connect signals to refresh data when currency is updated
-    connect(editDialog, &CurrencyEditDialog::currencyUpdated,
-            this, [this]() {
-        BOOST_LOG_SEV(lg(), info) << "Currency updated, refreshing table";
-        currencyModel_->refresh();
+void CurrencyMdiWindow::editSelected() {
+    const auto selected = currencyTableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Edit requested but no row selected";
+        return;
+    }
+
+    // Use the first selected row (single selection mode)
+    onRowDoubleClicked(selected.first());
+}
+
+void CurrencyMdiWindow::deleteSelected() {
+    const auto selected = currencyTableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Delete requested but no row selected";
+        return;
+    }
+
+    // Collect all selected currencies
+    std::vector<std::string> iso_codes;
+    for (const auto& index : selected) {
+        const auto* currency = currencyModel_->getCurrency(index.row());
+        if (currency) {
+            iso_codes.push_back(currency->iso_code);
+        }
+    }
+
+    if (iso_codes.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "No valid currencies to delete";
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Delete request for " << iso_codes.size() << " currencies";
+
+    // Confirm deletion
+    QString confirmMessage;
+    if (iso_codes.size() == 1) {
+        const auto* currency = currencyModel_->getCurrency(selected.first().row());
+        confirmMessage = QString("Are you sure you want to delete currency '%1' (%2)?")
+            .arg(QString::fromStdString(currency->name))
+            .arg(QString::fromStdString(currency->iso_code));
+    } else {
+        confirmMessage = QString("Are you sure you want to delete %1 currencies?")
+            .arg(iso_codes.size());
+    }
+
+    auto reply = MessageBoxHelper::question(this, "Delete Currency",
+        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes) {
+        BOOST_LOG_SEV(lg(), info) << "Delete cancelled by user";
+        return;
+    }
+
+    // Send delete requests asynchronously
+    using DeleteResult = std::vector<std::pair<std::string, std::pair<bool, std::string>>>;
+    QFuture<DeleteResult> future = QtConcurrent::run([this, iso_codes]() -> DeleteResult {
+        DeleteResult results;
+
+        for (const auto& iso_code : iso_codes) {
+            BOOST_LOG_SEV(lg(), info) << "Sending delete_currency_request for: " << iso_code;
+
+            risk::messaging::delete_currency_request request{iso_code};
+            auto payload = request.serialize();
+
+            comms::protocol::frame request_frame(
+                comms::protocol::message_type::delete_currency_request,
+                0,
+                std::move(payload)
+            );
+
+            // Send request synchronously (on background thread)
+            auto response_result = client_->send_request_sync(std::move(request_frame));
+
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send delete request for: " << iso_code;
+                results.push_back({iso_code, {false, "Failed to communicate with server"}});
+                continue;
+            }
+
+            BOOST_LOG_SEV(lg(), info) << "Received delete_currency_response for: " << iso_code;
+            auto response = risk::messaging::delete_currency_response::deserialize(
+                response_result->payload()
+            );
+
+            if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response for: " << iso_code;
+                results.push_back({iso_code, {false, "Invalid server response"}});
+                continue;
+            }
+
+            results.push_back({iso_code, {response->success, response->message}});
+        }
+
+        return results;
     });
 
-    connect(editDialog, &CurrencyEditDialog::currencyDeleted,
-            this, [this](const QString& iso_code) {
-        BOOST_LOG_SEV(lg(), info) << "Currency deleted: "
-                                 << iso_code.toStdString();
+    // Use a watcher to handle the results
+    auto* watcher = new QFutureWatcher<DeleteResult>(this);
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
+            this, [this, watcher]() {
+        auto results = watcher->result();
+        watcher->deleteLater();
+
+        int success_count = 0;
+        int failure_count = 0;
+        QString first_error;
+
+        for (const auto& [iso_code, result] : results) {
+            auto [success, message] = result;
+
+            if (success) {
+                BOOST_LOG_SEV(lg(), info) << "Currency deleted successfully: " << iso_code;
+                success_count++;
+
+                // Emit deletion signal for each successful deletion
+                emit currencyDeleted(QString::fromStdString(iso_code));
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Currency deletion failed: " << iso_code
+                                           << " - " << message;
+                failure_count++;
+
+                if (first_error.isEmpty()) {
+                    first_error = QString::fromStdString(message);
+                }
+            }
+        }
+
+        // Refresh the table once after all deletions
         currencyModel_->refresh();
+
+        // Show summary status message
+        if (failure_count == 0) {
+            QString msg = success_count == 1
+                ? "Successfully deleted 1 currency"
+                : QString("Successfully deleted %1 currencies").arg(success_count);
+            emit statusChanged(msg);
+        } else if (success_count == 0) {
+            QString msg = QString("Failed to delete %1 %2: %3")
+                .arg(failure_count)
+                .arg(failure_count == 1 ? "currency" : "currencies")
+                .arg(first_error);
+            emit errorOccurred(msg);
+            MessageBoxHelper::critical(this, "Delete Failed", msg);
+        } else {
+            QString msg = QString("Deleted %1 %2, failed to delete %3 %4")
+                .arg(success_count)
+                .arg(success_count == 1 ? "currency" : "currencies")
+                .arg(failure_count)
+                .arg(failure_count == 1 ? "currency" : "currencies");
+            emit statusChanged(msg);
+            MessageBoxHelper::warning(this, "Partial Success", msg);
+        }
     });
 
-    // Forward status messages to main window status bar
-    connect(editDialog, &CurrencyEditDialog::statusMessage,
-            this, &CurrencyMdiWindow::statusChanged);
-
-    connect(editDialog, &CurrencyEditDialog::errorMessage,
-            this, &CurrencyMdiWindow::errorOccurred);
-
-    // Show dialog non-modally
-    editDialog->setAttribute(Qt::WA_DeleteOnClose);
-    editDialog->show();
+    watcher->setFuture(future);
 }
 
 }
+
+

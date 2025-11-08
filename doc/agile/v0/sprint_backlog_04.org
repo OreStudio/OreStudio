@@ -19,41 +19,45 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-08 Sat 01:26], for Saturday, November 08, 2025.
-|      | <75>                         |        |      |      |       |
-| Tags | Headline                     | Time   |      |      |     % |
-|------+------------------------------+--------+------+------+-------|
-|      | *Total time*                 | *1:25* |      |      | 100.0 |
-|------+------------------------------+--------+------+------+-------|
-|      | Stories                      | 1:25   |      |      | 100.0 |
-|      | Active                       |        | 1:25 |      | 100.0 |
-| code | Use fluent icons             |        |      | 0:27 |  31.8 |
-| code | Add currency editing support |        |      | 0:58 |  68.2 |
+#+CAPTION: Clock summary at [2025-11-08 Sat 10:11], for Saturday, November 08, 2025.
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *2:48* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 2:48   |      |      | 100.0 |
+|       | Active                                |        | 2:48 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:09 |   5.4 |
+| code  | Use fluent icons                      |        |      | 0:27 |  16.1 |
+| code  | Add currency editing support          |        |      | 0:58 |  34.5 |
+| code  | Make UI/UX look more professional     |        |      | 1:14 |  44.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-08 Sat 01:26]
-|       | <75>                                                   |        |      |      |       |
-| Tags  | Headline                                               | Time   |      |      |     % |
-|-------+--------------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                           | *9:00* |      |      | 100.0 |
-|-------+--------------------------------------------------------+--------+------+------+-------|
-|       | Stories                                                | 9:00   |      |      | 100.0 |
-|       | Active                                                 |        | 9:00 |      | 100.0 |
-| agile | Sprint and product backlog refinement                  |        |      | 0:34 |   6.3 |
-| code  | Clean up client parser                                 |        |      | 0:10 |   1.9 |
-| code  | Add connect command line argument                      |        |      | 1:19 |  14.6 |
-| infra | Install Windows package on Windows machine             |        |      | 2:09 |  23.9 |
-| code  | Ignore warnings on windows and osx                     |        |      | 0:33 |   6.1 |
-| code  | Ensure applications work under OSX using github images |        |      | 0:14 |   2.6 |
-| infra | Create a splash screen and gray background             |        |      | 2:26 |  27.0 |
-| code  | Use fluent icons                                       |        |      | 0:37 |   6.9 |
-| code  | Add currency editing support                           |        |      | 0:58 |  10.7 |
+#+CAPTION: Clock summary at [2025-11-08 Sat 10:11]
+|       | <75>                                                   |         |       |      |       |
+| Tags  | Headline                                               | Time    |       |      |     % |
+|-------+--------------------------------------------------------+---------+-------+------+-------|
+|       | *Total time*                                           | *10:23* |       |      | 100.0 |
+|-------+--------------------------------------------------------+---------+-------+------+-------|
+|       | Stories                                                | 10:23   |       |      | 100.0 |
+|       | Active                                                 |         | 10:23 |      | 100.0 |
+| agile | Sprint and product backlog refinement                  |         |       | 0:43 |   6.9 |
+| code  | Clean up client parser                                 |         |       | 0:10 |   1.6 |
+| code  | Add connect command line argument                      |         |       | 1:19 |  12.7 |
+| infra | Install Windows package on Windows machine             |         |       | 2:09 |  20.7 |
+| code  | Ignore warnings on windows and osx                     |         |       | 0:33 |   5.3 |
+| code  | Ensure applications work under OSX using github images |         |       | 0:14 |   2.2 |
+| infra | Create a splash screen and gray background             |         |       | 2:26 |  23.4 |
+| code  | Use fluent icons                                       |         |       | 0:37 |   5.9 |
+| code  | Add currency editing support                           |         |       | 0:58 |   9.3 |
+| code  | Make UI/UX look more professional                      |         |       | 1:14 |  11.9 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-11-08 Sat 01:27]--[2025-11-08 Sat 01:36] =>  0:09
     CLOCK: [2025-11-07 Fri 10:35]--[2025-11-07 Fri 10:47] =>  0:12
     CLOCK: [2025-11-07 Fri 09:05]--[2025-11-07 Fri 09:13] =>  0:08
     CLOCK: [2025-11-07 Fri 08:50]--[2025-11-07 Fri 09:04] =>  0:14
@@ -294,17 +298,35 @@ These seem to be a bit better than the current icons we have:
 
 *** STARTED Add currency editing support                               :code:
     :LOGBOOK:
+    CLOCK: [2025-11-08 Sat 19:30]--[2025-11-08 Sat 21:17] =>  1:47
     CLOCK: [2025-11-08 Sat 00:28]--[2025-11-08 Sat 01:26] =>  0:58
     :END:
 
 We need to be able to open up individual currencies and edit them. We also need
 to be able to select multiple currencies and delete them.
 
-*** Add about to menu                                                  :code:
+Notes:
 
-We need an about describing the project.
+- add toolbar for crud operations. Not clear how we know what they apply to.
+  Ideally you select multiple currencies and then press delete.
+- separate the connection part of the toolbar from ref data and from crud.
+- add a version string to the splash screen.
+- valid to in edit dialog is still equal to valid from.
+- create a history dialog showing the history of changes including modified by.
 
-*** Improve UI/UX                                                      :code:
+*** STARTED Add export functionality for currencies                    :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-08 Sat 21:59]--[2025-11-08 Sat 22:05] =>  0:06
+    CLOCK: [2025-11-08 Sat 21:18]--[2025-11-08 Sat 21:59] =>  0:41
+   :END:
+
+We need to be able to export to ORE XML and to CSV.
+
+*** STARTED Make UI/UX look more professional                          :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-08 Sat 10:11]--[2025-11-08 Sat 20:04] =>  9:53
+    CLOCK: [2025-11-08 Sat 08:57]--[2025-11-08 Sat 10:11] =>  1:14
+    :END:
 
 Analysis from Gemini:
 
@@ -463,6 +485,29 @@ QPushButton:hover {
 }
 ```
 #+end_src
+
+*** Add flags for currencies                                           :code:
+
+Add flags for the currencies. Need database support. Display them in the
+currencies dialog.
+
+*** Light system theme results in mix of dark and light                :code:
+
+We need to ensure we can have both light and dark themes and they work
+consistently.
+
+*** Add about to menu                                                  :code:
+
+We need an about describing the project.
+
+*** Update readme with UI screenshots                                  :code:
+
+Now that we have a basic UI up and running, add it to docs.
+
+*** Add country support                                                :code:
+
+We will probably need country support at some point. We should link the country
+to the currencies, where applicable.
 
 *** Repl needs synchronous socket operations                           :code:
 

@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ui_CurrencyEditDialog.h"
 #include "ores.qt/CurrencyEditDialog.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.comms/protocol/frame.hpp"
 
@@ -153,7 +153,7 @@ void CurrencyEditDialog::onSaveClicked() {
                              << original_.iso_code;
 
     if (!validateFields()) {
-        QMessageBox::warning(this, "Validation Error",
+        MessageBoxHelper::warning(this, "Validation Error",
             "Please correct the highlighted fields before saving.");
         return;
     }
@@ -235,7 +235,7 @@ void CurrencyEditDialog::onSaveClicked() {
             emit errorMessage(QString("Failed to update currency: %1")
                 .arg(QString::fromStdString(message)));
 
-            QMessageBox::critical(this, "Update Failed",
+            MessageBoxHelper::critical(this, "Update Failed",
                 QString::fromStdString(message));
 
             // Re-enable save button
@@ -251,7 +251,7 @@ void CurrencyEditDialog::onDeleteClicked() {
                              << original_.iso_code;
 
     // Confirm deletion
-    auto reply = QMessageBox::question(this, "Delete Currency",
+    auto reply = MessageBoxHelper::question(this, "Delete Currency",
         QString("Are you sure you want to delete currency '%1' (%2)?")
             .arg(QString::fromStdString(original_.name))
             .arg(QString::fromStdString(original_.iso_code)),
@@ -326,7 +326,7 @@ void CurrencyEditDialog::onDeleteClicked() {
             emit errorMessage(QString("Failed to delete currency: %1")
                 .arg(QString::fromStdString(message)));
 
-            QMessageBox::critical(this, "Delete Failed",
+            MessageBoxHelper::critical(this, "Delete Failed",
                 QString::fromStdString(message));
 
             // Re-enable delete button

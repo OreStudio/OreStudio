@@ -57,7 +57,7 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void selectionChanged(bool has_selection);
+    void selectionChanged(int selection_count);
     void showCurrencyDetails(const risk::domain::currency& currency); // New signal
     void currencyDeleted(const QString& iso_code); // Emitted when currency is deleted
 

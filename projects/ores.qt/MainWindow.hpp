@@ -71,7 +71,7 @@ private slots:
     void onLoginTriggered();
     void onDisconnectTriggered();
     void onSubWindowActivated(QMdiSubWindow* window);
-    void onActiveWindowSelectionChanged(bool has_selection);
+    void onActiveWindowSelectionChanged(int selection_count);
     void onEditTriggered();
     void onDeleteTriggered();
     void onShowCurrencyDetails(const risk::domain::currency& currency); // New slot
@@ -86,7 +86,7 @@ private:
     Ui::MainWindow* ui_;
     MdiAreaWithBackground* mdiArea_;
     CurrencyMdiWindow* activeCurrencyWindow_;
-    bool hasSelection_;
+    int selectionCount_;
     CurrencyDetailPanel* currencyDetailPanel_; // New member variable
     QLabel* connectionStatusIconLabel_; // Status bar icon label
     QString displayedCurrencyIsoCode_; // Track currently displayed currency

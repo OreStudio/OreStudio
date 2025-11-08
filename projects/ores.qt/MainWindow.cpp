@@ -43,7 +43,7 @@ using namespace ores::utility::log;
 
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent), ui_(new Ui::MainWindow), mdiArea_(new MdiAreaWithBackground()),
-    activeCurrencyWindow_(nullptr), hasSelection_(false), currencyDetailPanel_(nullptr) { // Initialize currencyDetailPanel_
+    activeCurrencyWindow_(nullptr), selectionCount_(0), currencyDetailPanel_(nullptr) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating the main window.";
     ui_->setupUi(this);
@@ -351,7 +351,7 @@ void MainWindow::onSubWindowActivated(QMdiSubWindow* window) {
         disconnect(activeCurrencyWindow_, &CurrencyMdiWindow::selectionChanged,
                    this, &MainWindow::onActiveWindowSelectionChanged);
         activeCurrencyWindow_ = nullptr;
-        hasSelection_ = false;
+        selectionCount_ = 0;
     }
 
     // Check if the new active window is a CurrencyMdiWindow
@@ -373,19 +373,18 @@ void MainWindow::onSubWindowActivated(QMdiSubWindow* window) {
     updateCrudActionState();
 }
 
-void MainWindow::onActiveWindowSelectionChanged(bool has_selection) {
-    hasSelection_ = has_selection;
+void MainWindow::onActiveWindowSelectionChanged(int selection_count) {
+    selectionCount_ = selection_count;
     updateCrudActionState();
 }
 
 void MainWindow::updateCrudActionState() {
-    // Enable CRUD actions only if:
-    // 1. There's an active currency window
-    // 2. That window has a selection
-    const bool enable = activeCurrencyWindow_ != nullptr && hasSelection_;
+    // Enable Edit only for single selection
+    // Enable Delete for one or more selections
+    const bool hasActiveWindow = activeCurrencyWindow_ != nullptr;
 
-    ui_->ActionEdit->setEnabled(enable);
-    ui_->ActionDelete->setEnabled(enable);
+    ui_->ActionEdit->setEnabled(hasActiveWindow && selectionCount_ == 1);
+    ui_->ActionDelete->setEnabled(hasActiveWindow && selectionCount_ >= 1);
 }
 
 void MainWindow::onEditTriggered() {

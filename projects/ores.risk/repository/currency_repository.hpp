@@ -96,6 +96,22 @@ public:
     std::vector<domain::currency>
     read_all(context ctx, const std::string& iso_code);
     /**@}*/
+
+    /**
+     * @brief Updates a currency by creating a new temporal record.
+     *
+     * This closes the current record (sets valid_to to now) and creates
+     * a new record with the updated values (valid_from = now).
+     */
+    void update(context ctx, const domain::currency& currency);
+
+    /**
+     * @brief Deletes a currency by closing its temporal validity.
+     *
+     * Sets the valid_to timestamp to now, effectively "deleting" the currency
+     * from the current point in time onwards while preserving history.
+     */
+    void remove(context ctx, const std::string& iso_code);
 };
 
 }

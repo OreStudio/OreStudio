@@ -67,19 +67,12 @@ before insert on "oresdb"."currencies"
 for each row
 execute function update_currencies();
 
-create or replace function delete_currencies()
-returns trigger as $$
-begin
-    update "oresdb"."currencies"
-    set valid_to = current_timestamp
-    where iso_code = old.iso_code
-    and valid_to = '9999-12-31 23:59:59'::timestamptz;
-
-    return null;  -- Cancel the actual delete to preserve history
-end;
-$$ language plpgsql;
-
-create or replace trigger delete_currencies_trigger
-before delete on "oresdb"."currencies"
-for each row
-execute function delete_currencies();
+-- Use a RULE instead of a trigger to avoid tuple modification conflicts
+-- Rules rewrite the query before execution, so there's no conflict with the DELETE
+create or replace rule delete_currencies_rule as
+on delete to "oresdb"."currencies"
+do instead
+  update "oresdb"."currencies"
+  set valid_to = current_timestamp
+  where iso_code = old.iso_code
+  and valid_to = '9999-12-31 23:59:59'::timestamptz;

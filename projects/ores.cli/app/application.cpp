@@ -28,14 +28,16 @@
 #include "ores.utility/database/database_options.hpp"
 #include "ores.risk/orexml/importer.hpp"
 #include "ores.risk/orexml/exporter.hpp"
+#include "ores.risk/csv/exporter.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
 #include "ores.cli/app/application_exception.hpp"
 #include "ores.cli/app/application.hpp"
 
 namespace ores::cli::app {
 
-using risk::orexml::importer;
-using risk::orexml::exporter;
+using ore_importer = risk::orexml::importer;
+using ore_exporter = risk::orexml::exporter;
+using csv_exporter = risk::csv::exporter;
 using namespace ores::utility::log;
 using ores::risk::domain::currency;
 using risk::repository::currency_repository;
@@ -75,7 +77,7 @@ void application::
 import_currencies(const std::vector<std::filesystem::path> files) const {
     for (const auto& f : files) {
         BOOST_LOG_SEV(lg(), debug) << "Processing file: " << f;
-        auto ccys(importer::import_currency_config(f));
+        auto ccys(ore_importer::import_currency_config(f));
         currency_repository rp;
         rp.write(context_, ccys);
         output_stream_ << ccys << std::endl;
@@ -129,10 +131,13 @@ export_currencies(const config::export_options& cfg) const {
 
     const std::vector<currency> ccys(reader());
     if (cfg.target_format == config::format::xml) {
-        std::string ccy_cfgs = exporter::export_currency_config(ccys);
+        std::string ccy_cfgs = ore_exporter::export_currency_config(ccys);
         output_stream_ << ccy_cfgs << std::endl;
     } else if (cfg.target_format == config::format::json) {
         output_stream_ << ccys << std::endl;
+    } else if (cfg.target_format == config::format::csv) {
+        std::string ccy_cfgs = csv_exporter::export_currency_config(ccys);
+        output_stream_ << ccy_cfgs << std::endl;
     }
 }
 

@@ -31,7 +31,8 @@ namespace ores::cli::config {
  */
 enum class format {
     json,
-    xml
+    xml,
+    csv
 };
 
 }

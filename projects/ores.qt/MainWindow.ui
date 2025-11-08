@@ -60,6 +60,7 @@
    </attribute>
    <addaction name="ActionConnect"/>
    <addaction name="ActionDisconnect"/>
+   <addaction name="separator"/>
    <addaction name="CurrenciesAction"/>
   </widget>
   <action name="ExitAction">

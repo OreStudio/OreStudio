@@ -30,6 +30,7 @@
 #include <QImage>
 #include <QFile>
 #include <QFont>
+#include <QIcon>
 #include "ui_MainWindow.h"
 #include "ores.qt/MainWindow.hpp"
 #include "ores.qt/LoginDialog.hpp"
@@ -44,6 +45,9 @@ MainWindow::MainWindow(QWidget* parent) :
 
     BOOST_LOG_SEV(lg(), info) << "Creating the main window.";
     ui_->setupUi(this);
+
+    // Set application icon
+    setWindowIcon(QIcon("modern-icon.png"));
 
     // Set up MDI area
     ui_->horizontalLayout_3->addWidget(mdiArea_);
@@ -158,8 +162,7 @@ void MainWindow::onLoginTriggered() {
         if (client_ && client_->is_connected()) {
             BOOST_LOG_SEV(lg(), info) << "Successfully connected to server and authenticated.";
             updateMenuState();
-            QMessageBox::information(this, "Login Successful",
-                "Successfully connected and logged in to the server.");
+            ui_->statusbar->showMessage("Successfully connected and logged in to the server.");
         } else {
             BOOST_LOG_SEV(lg(), error) << "Client is not properly connected after login.";
             QMessageBox::critical(this, "Connection Error",
@@ -209,8 +212,7 @@ void MainWindow::onDisconnectTriggered() {
         updateMenuState();
 
         BOOST_LOG_SEV(lg(), info) << "Disconnected from server";
-        QMessageBox::information(this, "Disconnected",
-            "Successfully disconnected from the server.");
+        ui_->statusbar->showMessage("Successfully disconnected from the server.");
     }
 }
 

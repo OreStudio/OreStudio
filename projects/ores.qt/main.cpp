@@ -19,6 +19,7 @@
  */
 #include <QTimer>
 #include <QApplication>
+#include <QIcon>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/log/logging_options.hpp"
 #include "ores.utility/log/lifecycle_manager.hpp"
@@ -50,6 +51,10 @@ int main(int argc, char *argv[])
     BOOST_LOG_SEV(lg, info) << "Started UI.";
 
     QApplication app(argc, argv);
+
+    // Set application icon
+    app.setWindowIcon(QIcon("modern-icon.png"));
+
     ores::qt::SplashScreen splash(QPixmap("splash-screen.png"));
     splash.show();
 

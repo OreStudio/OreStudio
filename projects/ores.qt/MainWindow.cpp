@@ -36,6 +36,7 @@
 #include "ores.qt/CurrencyMdiWindow.hpp"
 #include "ores.qt/CurrencyDetailPanel.hpp" // Include the header for CurrencyDetailPanel
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/AboutDialog.hpp"
 
 namespace ores::qt {
 
@@ -117,12 +118,15 @@ MainWindow::MainWindow(QWidget* parent) :
         "ic_fluent_document_table_20_regular.svg", iconColor));
     ui_->ActionExportXML->setIcon(createRecoloredIcon(
         "ic_fluent_document_code_16_regular.svg", iconColor));
+    ui_->ActionAbout->setIcon(createRecoloredIcon(
+        "ic_fluent_star_20_regular.svg", iconColor));
 
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this, &MainWindow::onLoginTriggered);
     connect(ui_->ActionDisconnect, &QAction::triggered, this, &MainWindow::onDisconnectTriggered);
     connect(ui_->ActionExportCSV, &QAction::triggered, this, &MainWindow::onExportCSVTriggered);
     connect(ui_->ActionExportXML, &QAction::triggered, this, &MainWindow::onExportXMLTriggered);
+    connect(ui_->ActionAbout, &QAction::triggered, this, &MainWindow::onAboutTriggered);
 
     // Connect CRUD actions
     connect(ui_->ActionSave, &QAction::triggered, this, [this]() {
@@ -449,9 +453,14 @@ void MainWindow::onExportXMLTriggered() {
     if (activeCurrencyWindow_) {
         activeCurrencyWindow_->exportToXML();
     } else {
-        MessageBoxHelper::warning(this, "No Active Window", 
+        MessageBoxHelper::warning(this, "No Active Window",
                 "Please open the currencies window first to export data.");
     }
+}
+
+void MainWindow::onAboutTriggered() {
+    AboutDialog dialog(this);
+    dialog.exec();
 }
 
 }

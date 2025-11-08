@@ -52,10 +52,13 @@ public:
     explicit CurrencyMdiWindow(std::shared_ptr<comms::client> client,
                                QWidget* parent = nullptr);
 
+    ClientCurrencyModel* currencyModel() const { return currencyModel_; } // New getter for the model
+
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
     void selectionChanged(bool has_selection);
+    void showCurrencyDetails(const risk::domain::currency& currency); // New signal
 
 public slots:
     void editSelected();

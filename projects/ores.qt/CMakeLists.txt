@@ -35,6 +35,8 @@ add_executable(ores.qt
     CurrencyTabPage.cpp
     LoginDialog.cpp
     CurrencyItemDelegate.cpp
+    CurrencyDetailPanel.ui
+    CurrencyDetailPanel.cpp
 )
 
 target_link_libraries(ores.qt PRIVATE

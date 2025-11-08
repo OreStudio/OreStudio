@@ -19,6 +19,10 @@ QTableView {
     selection-color: white;
 }
 
+QTableView::item:hover {
+    background-color: #191919; /* Slightly darker on hover */
+}
+
 QHeaderView::section {
     /* Style for Column Headers */
     background-color: #282828; /* Slightly lighter shade for headers */

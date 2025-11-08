@@ -35,6 +35,7 @@
 #include "ores.qt/MainWindow.hpp"
 #include "ores.qt/LoginDialog.hpp"
 #include "ores.qt/CurrencyMdiWindow.hpp"
+#include "ores.qt/CurrencyDetailPanel.hpp" // Include the header for CurrencyDetailPanel
 
 namespace ores::qt {
 
@@ -42,10 +43,40 @@ using namespace ores::utility::log;
 
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent), ui_(new Ui::MainWindow), mdiArea_(new MdiAreaWithBackground()),
-    activeCurrencyWindow_(nullptr), hasSelection_(false) {
+    activeCurrencyWindow_(nullptr), hasSelection_(false), currencyDetailPanel_(nullptr) { // Initialize currencyDetailPanel_
 
     BOOST_LOG_SEV(lg(), info) << "Creating the main window.";
     ui_->setupUi(this);
+
+    // Set up CurrencyDetailPanel in the dock widget
+    currencyDetailPanel_ = new CurrencyDetailPanel(this); // No client in constructor
+    ui_->currencyDetailDockWidget->setWidget(currencyDetailPanel_);
+    ui_->currencyDetailDockWidget->setVisible(false); // Initially hidden
+
+    // Connect signals from CurrencyDetailPanel to MainWindow
+    connect(currencyDetailPanel_, &CurrencyDetailPanel::currencyUpdated,
+            this, [this]() {
+        if (activeCurrencyWindow_) {
+            activeCurrencyWindow_->currencyModel()->refresh();
+        }
+        ui_->statusbar->showMessage("Currency updated successfully.");
+    });
+    connect(currencyDetailPanel_, &CurrencyDetailPanel::currencyDeleted,
+            this, [this](const QString& iso_code) {
+        if (activeCurrencyWindow_) {
+            activeCurrencyWindow_->currencyModel()->refresh();
+        }
+        ui_->statusbar->showMessage(QString("Currency '%1' deleted.").arg(iso_code));
+        ui_->currencyDetailDockWidget->setVisible(false); // Hide panel after deletion
+    });
+    connect(currencyDetailPanel_, &CurrencyDetailPanel::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(currencyDetailPanel_, &CurrencyDetailPanel::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
 
     // Set application icon
     setWindowIcon(QIcon("modern-icon.png"));
@@ -54,8 +85,12 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->horizontalLayout_3->addWidget(mdiArea_);
     mdiArea_->setBackgroundLogo("ore-studio-background.png");
 
+    // Initialize connection status icons
+    const QColor iconColor(220, 220, 220); // Light gray for dark theme
+    connectedIcon_ = createRecoloredIcon("ic_fluent_plug_connected_20_filled.svg", iconColor);
+    disconnectedIcon_ = createRecoloredIcon("ic_fluent_plug_disconnected_20_filled.svg", iconColor);
+
     // Apply recolored icons for dark theme visibility (light gray color)
-    const QColor iconColor(220, 220, 220);
     ui_->ActionConnect->setIcon(createRecoloredIcon(
         "ic_fluent_plug_connected_20_filled.svg", iconColor));
     ui_->ActionDisconnect->setIcon(createRecoloredIcon(
@@ -164,6 +199,11 @@ void MainWindow::onLoginTriggered() {
         work_guard_ = dialog.takeWorkGuard();
         io_thread_ = dialog.takeIOThread();
 
+        // Set client for the detail panel
+        if (currencyDetailPanel_) {
+            currencyDetailPanel_->setClient(client_);
+        }
+
         if (client_ && client_->is_connected()) {
             BOOST_LOG_SEV(lg(), info) << "Successfully connected to server and authenticated.";
             updateMenuState();
@@ -187,6 +227,13 @@ void MainWindow::updateMenuState() {
     // Enable/disable connect and disconnect actions
     ui_->ActionConnect->setEnabled(!isConnected);
     ui_->ActionDisconnect->setEnabled(isConnected);
+
+    // Update connection status icon in status bar
+    if (isConnected) {
+        ui_->connectionStatusIconLabel->setPixmap(connectedIcon_.pixmap(16, 16)); // Use 16x16 for status bar
+    } else {
+        ui_->connectionStatusIconLabel->setPixmap(disconnectedIcon_.pixmap(16, 16));
+    }
 
     BOOST_LOG_SEV(lg(), debug) << "Menu state updated. Connected: " << isConnected;
 }
@@ -213,6 +260,13 @@ void MainWindow::onDisconnectTriggered() {
         client_.reset();
         io_thread_.reset();
         io_context_.reset();
+
+        // Clear client from detail panel
+        if (currencyDetailPanel_) {
+            currencyDetailPanel_->setClient(nullptr);
+            currencyDetailPanel_->clearPanel();
+            ui_->currencyDetailDockWidget->setVisible(false);
+        }
 
         updateMenuState();
 
@@ -275,6 +329,9 @@ void MainWindow::onSubWindowActivated(QMdiSubWindow* window) {
             // Connect to selection changes
             connect(activeCurrencyWindow_, &CurrencyMdiWindow::selectionChanged,
                     this, &MainWindow::onActiveWindowSelectionChanged);
+            // Connect to show currency details signal
+            connect(activeCurrencyWindow_, &CurrencyMdiWindow::showCurrencyDetails,
+                    this, &MainWindow::onShowCurrencyDetails);
         }
     }
 
@@ -308,6 +365,14 @@ void MainWindow::onDeleteTriggered() {
     if (activeCurrencyWindow_) {
         BOOST_LOG_SEV(lg(), info) << "Delete action triggered, delegating to active window";
         activeCurrencyWindow_->deleteSelected();
+    }
+}
+
+void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
+    if (currencyDetailPanel_) {
+        currencyDetailPanel_->setCurrency(currency);
+        ui_->currencyDetailDockWidget->setVisible(true);
+        ui_->currencyDetailDockWidget->raise(); // Bring to front
     }
 }
 

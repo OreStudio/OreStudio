@@ -31,6 +31,8 @@
 #include <boost/asio/executor_work_guard.hpp>
 #include "ores.comms/client.hpp"
 #include "ores.qt/MdiAreaWithBackground.hpp"
+#include "ores.qt/CurrencyDetailPanel.hpp" // Include the header for CurrencyDetailPanel
+#include "ores.risk/domain/currency.hpp" // Include for risk::domain::currency
 #include "ores.utility/log/make_logger.hpp"
 #include "ui_MainWindow.h"
 
@@ -71,6 +73,7 @@ private slots:
     void onActiveWindowSelectionChanged(bool has_selection);
     void onEditTriggered();
     void onDeleteTriggered();
+    void onShowCurrencyDetails(const risk::domain::currency& currency); // New slot
 
 private:
     void updateMenuState();
@@ -82,6 +85,10 @@ private:
     MdiAreaWithBackground* mdiArea_;
     CurrencyMdiWindow* activeCurrencyWindow_;
     bool hasSelection_;
+    CurrencyDetailPanel* currencyDetailPanel_; // New member variable
+
+    QIcon connectedIcon_;    // Icon for connected status
+    QIcon disconnectedIcon_; // Icon for disconnected status
 
     // Client infrastructure
     std::unique_ptr<boost::asio::io_context> io_context_;

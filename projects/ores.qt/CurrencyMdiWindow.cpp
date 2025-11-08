@@ -27,7 +27,7 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
 #include "ores.qt/CurrencyMdiWindow.hpp"
-#include "ores.qt/CurrencyEditDialog.hpp"
+// #include "ores.qt/CurrencyEditDialog.hpp" // Removed
 #include "ores.qt/CurrencyItemDelegate.hpp" // Include the new delegate header
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.comms/protocol/frame.hpp"
@@ -112,36 +112,9 @@ void CurrencyMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Opening edit dialog for currency: "
+    BOOST_LOG_SEV(lg(), info) << "Emitting showCurrencyDetails for currency: "
                              << currency->iso_code;
-
-    // Create non-modal edit dialog
-    auto* editDialog = new CurrencyEditDialog(*currency, client_, this);
-
-    // Connect signals to refresh data when currency is updated
-    connect(editDialog, &CurrencyEditDialog::currencyUpdated,
-            this, [this]() {
-        BOOST_LOG_SEV(lg(), info) << "Currency updated, refreshing table";
-        currencyModel_->refresh();
-    });
-
-    connect(editDialog, &CurrencyEditDialog::currencyDeleted,
-            this, [this](const QString& iso_code) {
-        BOOST_LOG_SEV(lg(), info) << "Currency deleted: "
-                                 << iso_code.toStdString();
-        currencyModel_->refresh();
-    });
-
-    // Forward status messages to main window status bar
-    connect(editDialog, &CurrencyEditDialog::statusMessage,
-            this, &CurrencyMdiWindow::statusChanged);
-
-    connect(editDialog, &CurrencyEditDialog::errorMessage,
-            this, &CurrencyMdiWindow::errorOccurred);
-
-    // Show dialog non-modally
-    editDialog->setAttribute(Qt::WA_DeleteOnClose);
-    editDialog->show();
+    emit showCurrencyDetails(*currency);
 }
 
 void CurrencyMdiWindow::onSelectionChanged() {

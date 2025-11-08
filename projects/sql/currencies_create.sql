@@ -66,3 +66,20 @@ create or replace trigger  update_currencies_trigger
 before insert on "oresdb"."currencies"
 for each row
 execute function update_currencies();
+
+create or replace function delete_currencies()
+returns trigger as $$
+begin
+    update "oresdb"."currencies"
+    set valid_to = current_timestamp
+    where iso_code = old.iso_code
+    and valid_to = '9999-12-31 23:59:59'::timestamptz;
+
+    return null;  -- Cancel the actual delete to preserve history
+end;
+$$ language plpgsql;
+
+create or replace trigger delete_currencies_trigger
+before delete on "oresdb"."currencies"
+for each row
+execute function delete_currencies();

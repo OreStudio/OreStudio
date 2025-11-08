@@ -17,24 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_FORMAT_HPP
-#define ORES_CLI_CONFIG_FORMAT_HPP
+#include "ores.risk/csv/currency_mapper.hpp"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
+namespace ores::risk::csv {
 
-namespace ores::cli::config {
+using domain::currency;
+using namespace ores::utility::log;
 
-/**
- * @brief List of available formats.
- */
-enum class format {
-    json,
-    xml,
-    csv
-};
-
+std::vector<currency>
+currency_mapper::map(const std::vector<currency>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Started mapping. Total: " << v.size();
+    
+    // For CSV, we simply return the currencies as-is since they're already
+    // in the right format for CSV output. This follows the same pattern
+    // as the ORE XML mapper but with minimal transformation.
+    BOOST_LOG_SEV(lg(), debug) << "Finished mapping.";
+    return v;
 }
 
-#endif
+}

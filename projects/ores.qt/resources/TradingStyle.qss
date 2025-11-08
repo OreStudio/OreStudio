@@ -51,18 +51,19 @@ QPushButton:hover {
 }
 
 /* Toolbar specific styles */
-QToolBar {
+QToolBar#toolBar {
     background-color: #1A1A1A;
-    border: none;
+    border: none; /* Revert from diagnostic red border */
     padding: 2px;
+    qproperty-toolButtonStyle: ToolButtonTextUnderIcon;
 }
 
-QToolButton {
-    background-color: transparent;
+QToolBar#toolBar QToolButton {
+    background-color: transparent; /* Revert from diagnostic green background */
     border: none;
     color: #F0F0F0;
     padding: 4px;
-    font-size: 9pt; /* Font for toolbar button text */
+    font-size: 6pt; /* Set to desired font size */
 }
 
 QToolButton:hover {

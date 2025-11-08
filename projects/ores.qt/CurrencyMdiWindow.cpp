@@ -28,6 +28,7 @@
 #include <QtWidgets/QMessageBox>
 #include "ores.qt/CurrencyMdiWindow.hpp"
 #include "ores.qt/CurrencyEditDialog.hpp"
+#include "ores.qt/CurrencyItemDelegate.hpp" // Include the new delegate header
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.comms/protocol/frame.hpp"
 
@@ -56,6 +57,9 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
 
     // Set the model
     currencyTableView_->setModel(currencyModel_);
+
+    // Set the custom item delegate
+    currencyTableView_->setItemDelegate(new CurrencyItemDelegate(this));
 
     // Configure headers
     QHeaderView* verticalHeader(currencyTableView_->verticalHeader());

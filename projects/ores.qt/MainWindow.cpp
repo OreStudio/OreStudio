@@ -54,14 +54,6 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->horizontalLayout_3->addWidget(mdiArea_);
     mdiArea_->setBackgroundLogo("ore-studio-background.png");
 
-    // Configure toolbar to show text under icons
-    ui_->toolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-
-    // Set smaller font for toolbar text
-    QFont toolbarFont = ui_->toolBar->font();
-    toolbarFont.setPointSize(7);
-    ui_->toolBar->setFont(toolbarFont);
-
     // Apply recolored icons for dark theme visibility (light gray color)
     const QColor iconColor(220, 220, 220);
     ui_->ActionConnect->setIcon(createRecoloredIcon(

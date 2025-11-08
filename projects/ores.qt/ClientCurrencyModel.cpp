@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/ClientCurrencyModel.hpp"
+#include <algorithm>
 #include <QtConcurrent>
 #include "ores.comms/protocol/frame.hpp"
 #include "ores.comms/protocol/message_types.hpp"
@@ -142,6 +143,12 @@ void ClientCurrencyModel::onCurrenciesLoaded() {
     auto [success, currencies] = watcher_->result();
 
     if (success) {
+        // Sort currencies alphabetically by name
+        std::sort(currencies.begin(), currencies.end(),
+                  [](const risk::domain::currency& a, const risk::domain::currency& b) {
+                      return a.name < b.name;
+                  });
+
         beginResetModel();
         currencies_ = std::move(currencies);
         endResetModel();

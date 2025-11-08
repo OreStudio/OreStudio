@@ -216,6 +216,9 @@ void CurrencyMdiWindow::deleteSelected() {
             emit statusChanged(QString("Successfully deleted currency: %1")
                 .arg(QString::fromStdString(iso_code)));
 
+            // Emit deletion signal
+            emit currencyDeleted(QString::fromStdString(iso_code));
+
             // Refresh the table to show updated data
             currencyModel_->refresh();
         } else {

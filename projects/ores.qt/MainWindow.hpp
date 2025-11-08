@@ -75,6 +75,7 @@ private slots:
     void onEditTriggered();
     void onDeleteTriggered();
     void onShowCurrencyDetails(const risk::domain::currency& currency); // New slot
+    void onCurrencyDeleted(const QString& iso_code); // Handle currency deletion
 
 private:
     void updateMenuState();
@@ -88,6 +89,7 @@ private:
     bool hasSelection_;
     CurrencyDetailPanel* currencyDetailPanel_; // New member variable
     QLabel* connectionStatusIconLabel_; // Status bar icon label
+    QString displayedCurrencyIsoCode_; // Track currently displayed currency
 
     QIcon connectedIcon_;    // Icon for connected status
     QIcon disconnectedIcon_; // Icon for disconnected status

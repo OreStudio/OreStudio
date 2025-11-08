@@ -67,7 +67,7 @@ MainWindow::MainWindow(QWidget* parent) :
             activeCurrencyWindow_->currencyModel()->refresh();
         }
         ui_->statusbar->showMessage(QString("Currency '%1' deleted.").arg(iso_code));
-        ui_->currencyDetailDockWidget->setVisible(false); // Hide panel after deletion
+        onCurrencyDeleted(iso_code); // Clear panel if it's displaying the deleted currency
     });
     connect(currencyDetailPanel_, &CurrencyDetailPanel::statusMessage,
             this, [this](const QString& message) {
@@ -155,6 +155,8 @@ MainWindow::MainWindow(QWidget* parent) :
                 this, [this](const QString& error_message) {
             ui_->statusbar->showMessage("Error loading currencies: " + error_message);
         });
+        connect(currencyWidget, &CurrencyMdiWindow::currencyDeleted,
+                this, &MainWindow::onCurrencyDeleted);
 
         auto* subWindow = mdiArea_->addSubWindow(currencyWidget);
         subWindow->setWindowTitle("Currencies");
@@ -283,6 +285,7 @@ void MainWindow::onDisconnectTriggered() {
             currencyDetailPanel_->setClient(nullptr);
             currencyDetailPanel_->clearPanel();
             ui_->currencyDetailDockWidget->setVisible(false);
+            displayedCurrencyIsoCode_.clear();
         }
 
         updateMenuState();
@@ -401,9 +404,23 @@ void MainWindow::onDeleteTriggered() {
 
 void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
     if (currencyDetailPanel_) {
+        displayedCurrencyIsoCode_ = QString::fromStdString(currency.iso_code);
         currencyDetailPanel_->setCurrency(currency);
         ui_->currencyDetailDockWidget->setVisible(true);
         ui_->currencyDetailDockWidget->raise(); // Bring to front
+    }
+}
+
+void MainWindow::onCurrencyDeleted(const QString& iso_code) {
+    // If the deleted currency is currently displayed in the panel, clear and hide it
+    if (displayedCurrencyIsoCode_ == iso_code) {
+        BOOST_LOG_SEV(lg(), info) << "Clearing panel because displayed currency was deleted: "
+                                 << iso_code.toStdString();
+        if (currencyDetailPanel_) {
+            currencyDetailPanel_->clearPanel();
+            ui_->currencyDetailDockWidget->setVisible(false);
+        }
+        displayedCurrencyIsoCode_.clear();
     }
 }
 

@@ -64,9 +64,11 @@ public:
 
 private slots:
     void onLoginTriggered();
+    void onDisconnectTriggered();
 
 private:
     void updateMenuState();
+    QIcon createRecoloredIcon(const QString& svgPath, const QColor& color);
 
 private:
     Ui::MainWindow* ui_;

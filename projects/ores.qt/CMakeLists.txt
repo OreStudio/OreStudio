@@ -44,21 +44,15 @@ target_link_libraries(ores.qt PRIVATE
     Qt6::Concurrent
 )
 
-# Copy icon assets from ores.qt project directory
-file(GLOB ORES_QT_ASSETS "*.png")
-foreach(in_file IN LISTS ORES_QT_ASSETS)
-    get_filename_component(out_file ${in_file} NAME)
-    file(COPY_FILE ${in_file} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${out_file})
-endforeach()
-
-file(GLOB ORES_QT_ASSETS "*.svg")
-foreach(in_file IN LISTS ORES_QT_ASSETS)
+# Copy main assets from assets/images directory
+file(GLOB ORES_MAIN_ASSETS "${CMAKE_SOURCE_DIR}/assets/images/*.png")
+foreach(in_file IN LISTS ORES_MAIN_ASSETS)
     get_filename_component(out_file ${in_file} NAME)
     file(COPY_FILE ${in_file} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${out_file})
 endforeach()
 
 # Copy main assets from assets/images directory
-file(GLOB ORES_MAIN_ASSETS "${CMAKE_SOURCE_DIR}/assets/images/*.png")
+file(GLOB ORES_MAIN_ASSETS "${CMAKE_SOURCE_DIR}/assets/images/*.svg")
 foreach(in_file IN LISTS ORES_MAIN_ASSETS)
     get_filename_component(out_file ${in_file} NAME)
     file(COPY_FILE ${in_file} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${out_file})

@@ -25,6 +25,11 @@
 #include <QApplication>
 #include <QScreen>
 #include <QMdiSubWindow>
+#include <QPainter>
+#include <QPixmap>
+#include <QImage>
+#include <QFile>
+#include <QFont>
 #include "ui_MainWindow.h"
 #include "ores.qt/MainWindow.hpp"
 #include "ores.qt/LoginDialog.hpp"
@@ -44,8 +49,26 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->horizontalLayout_3->addWidget(mdiArea_);
     mdiArea_->setBackgroundLogo("ore-studio-background.png");
 
+    // Configure toolbar to show text under icons
+    ui_->toolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+
+    // Set smaller font for toolbar text
+    QFont toolbarFont = ui_->toolBar->font();
+    toolbarFont.setPointSize(7);
+    ui_->toolBar->setFont(toolbarFont);
+
+    // Apply recolored icons for dark theme visibility (light gray color)
+    const QColor iconColor(220, 220, 220);
+    ui_->ActionConnect->setIcon(createRecoloredIcon(
+        "ic_fluent_plug_connected_20_filled.svg", iconColor));
+    ui_->ActionDisconnect->setIcon(createRecoloredIcon(
+        "ic_fluent_plug_disconnected_20_filled.svg", iconColor));
+    ui_->CurrenciesAction->setIcon(createRecoloredIcon(
+        "ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
+
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this, &MainWindow::onLoginTriggered);
+    connect(ui_->ActionDisconnect, &QAction::triggered, this, &MainWindow::onDisconnectTriggered);
 
     // Currencies action creates MDI window with currency table
     connect(ui_->CurrenciesAction, &QAction::triggered, this, [=, this]() {
@@ -63,7 +86,8 @@ MainWindow::MainWindow(QWidget* parent) :
         auto* currencyWidget = new CurrencyMdiWindow(client_, this);
         auto* subWindow = mdiArea_->addSubWindow(currencyWidget);
         subWindow->setWindowTitle("Currencies");
-        subWindow->setWindowIcon(QIcon("money-pound-box-line.png"));
+        subWindow->setWindowIcon(createRecoloredIcon(
+            "ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
         subWindow->showMaximized();
     });
 
@@ -141,14 +165,78 @@ void MainWindow::updateMenuState() {
     // Enable/disable menu actions based on connection state
     ui_->CurrenciesAction->setEnabled(isConnected);
 
-    // Update connect action text
-    if (isConnected) {
-        ui_->ActionConnect->setText("&Disconnect");
-    } else {
-        ui_->ActionConnect->setText("&Connect");
-    }
+    // Enable/disable connect and disconnect actions
+    ui_->ActionConnect->setEnabled(!isConnected);
+    ui_->ActionDisconnect->setEnabled(isConnected);
 
     BOOST_LOG_SEV(lg(), debug) << "Menu state updated. Connected: " << isConnected;
+}
+
+void MainWindow::onDisconnectTriggered() {
+    BOOST_LOG_SEV(lg(), info) << "Disconnect action triggered";
+
+    if (client_ && client_->is_connected()) {
+        client_->disconnect();
+
+        // Reset work guard to allow IO context to finish
+        work_guard_.reset();
+
+        // Stop IO context and join thread
+        if (io_context_) {
+            io_context_->stop();
+        }
+
+        if (io_thread_ && io_thread_->joinable()) {
+            io_thread_->join();
+        }
+
+        // Clear client infrastructure
+        client_.reset();
+        io_thread_.reset();
+        io_context_.reset();
+
+        updateMenuState();
+
+        BOOST_LOG_SEV(lg(), info) << "Disconnected from server";
+        QMessageBox::information(this, "Disconnected",
+            "Successfully disconnected from the server.");
+    }
+}
+
+QIcon MainWindow::createRecoloredIcon(const QString& svgPath, const QColor& color) {
+    // Qt6 can load SVG files directly into QIcon
+    QIcon originalIcon(svgPath);
+    if (originalIcon.isNull()) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to load SVG: " << svgPath.toStdString();
+        return QIcon();
+    }
+
+    // Create recolored icon at multiple sizes
+    QIcon recoloredIcon;
+    for (int size : {16, 20, 24, 32, 48, 64}) {
+        // Get pixmap from original icon
+        QPixmap pixmap = originalIcon.pixmap(size, size);
+
+        // Create a new image for the recolored version
+        QImage image = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+
+        // Apply color to all pixels while preserving alpha
+        for (int y = 0; y < image.height(); ++y) {
+            for (int x = 0; x < image.width(); ++x) {
+                QColor pixelColor = image.pixelColor(x, y);
+                if (pixelColor.alpha() > 0) {
+                    pixelColor.setRed(color.red());
+                    pixelColor.setGreen(color.green());
+                    pixelColor.setBlue(color.blue());
+                    image.setPixelColor(x, y, pixelColor);
+                }
+            }
+        }
+
+        recoloredIcon.addPixmap(QPixmap::fromImage(image));
+    }
+
+    return recoloredIcon;
 }
 
 }

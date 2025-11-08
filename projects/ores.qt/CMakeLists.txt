@@ -38,6 +38,8 @@ add_executable(ores.qt
     CurrencyDetailPanel.ui
     CurrencyDetailPanel.cpp
     MessageBoxHelper.cpp
+    AboutDialog.cpp
+    AboutDialog.ui
 )
 
 target_link_libraries(ores.qt PRIVATE

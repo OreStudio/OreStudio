@@ -67,7 +67,6 @@
    <addaction name="separator"/>
    <addaction name="ActionEdit"/>
    <addaction name="ActionDelete"/>
-   <addaction name="separator"/>
    <addaction name="ActionExportCSV"/>
    <addaction name="ActionExportXML"/>
   </widget>
@@ -154,7 +153,7 @@
      <normaloff>ic_fluent_document_table_20_regular.svg</normaloff>ic_fluent_document_table_20_regular.svg</iconset>
    </property>
    <property name="text">
-    <string>&amp;Export to CSV</string>
+    <string>&amp;To CSV</string>
    </property>
    <property name="toolTip">
     <string>Export currencies to CSV</string>
@@ -166,7 +165,7 @@
      <normaloff>ic_fluent_document_code_16_regular.svg</normaloff>ic_fluent_document_code_16_regular.svg</iconset>
    </property>
    <property name="text">
-    <string>Export to ORE &amp;XML</string>
+    <string>To ORE&amp;XML</string>
    </property>
    <property name="toolTip">
     <string>Export currencies to ORE XML</string>

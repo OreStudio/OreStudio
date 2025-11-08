@@ -26,12 +26,18 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QTableView>
 #include <QtWidgets/QApplication>
+#include <QFileDialog>
+#include <QDesktopServices>
+#include <QUrl>
+#include <QMessageBox>
 #include "ores.qt/CurrencyMdiWindow.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 // #include "ores.qt/CurrencyEditDialog.hpp" // Removed
 #include "ores.qt/CurrencyItemDelegate.hpp" // Include the new delegate header
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.comms/protocol/frame.hpp"
+#include "ores.risk/csv/exporter.hpp"
+#include "ores.risk/orexml/exporter.hpp"
 
 namespace ores::qt {
 
@@ -279,6 +285,100 @@ void CurrencyMdiWindow::deleteSelected() {
     });
 
     watcher->setFuture(future);
+}
+
+void CurrencyMdiWindow::exportToCSV() {
+    if (currencyModel_->rowCount() == 0) {
+        QMessageBox::information(this, "No Data", "There are no currencies to export.");
+        return;
+    }
+
+    // Get a copy of the current currencies from the model
+    auto currencies = currencyModel_->getCurrencies();
+
+    QString fileName = QFileDialog::getSaveFileName(this,
+        "Export to CSV", 
+        "currencies.csv",
+        "CSV Files (*.csv);;All Files (*)");
+
+    if (fileName.isEmpty()) {
+        return; // User cancelled
+    }
+
+    try {
+        // Export using the existing CSV exporter
+        std::string csvData = risk::csv::exporter::export_currency_config(currencies);
+
+        // Write the data to the file
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to open file for writing: " << fileName.toStdString();
+            MessageBoxHelper::critical(this, "File Error", 
+                QString("Could not open file for writing: %1").arg(fileName));
+            return;
+        }
+
+        file.write(csvData.c_str(), csvData.length());
+        file.close();
+
+        // Open the file in the default application
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
+
+        emit statusChanged(QString("Successfully exported currencies to %1").arg(fileName));
+        BOOST_LOG_SEV(lg(), info) << "Successfully exported currencies to CSV: " << fileName.toStdString();
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Error exporting to CSV: " << e.what();
+        MessageBoxHelper::critical(this, "Export Error", 
+            QString("Error during CSV export: %1").arg(e.what()));
+    }
+}
+
+void CurrencyMdiWindow::exportToXML() {
+    if (currencyModel_->rowCount() == 0) {
+        QMessageBox::information(this, "No Data", "There are no currencies to export.");
+        return;
+    }
+
+    // Get a copy of the current currencies from the model
+    auto currencies = currencyModel_->getCurrencies();
+
+    QString fileName = QFileDialog::getSaveFileName(this,
+        "Export to ORE XML", 
+        "currencies.xml",
+        "XML Files (*.xml);;All Files (*)");
+
+    if (fileName.isEmpty()) {
+        return; // User cancelled
+    }
+
+    try {
+        // Export using the existing ORE XML exporter
+        std::string xmlData = risk::orexml::exporter::export_currency_config(currencies);
+
+        // Write the data to the file
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to open file for writing: " << fileName.toStdString();
+            MessageBoxHelper::critical(this, "File Error", 
+                QString("Could not open file for writing: %1").arg(fileName));
+            return;
+        }
+
+        file.write(xmlData.c_str(), xmlData.length());
+        file.close();
+
+        // Open the file in the default application
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
+
+        emit statusChanged(QString("Successfully exported currencies to %1").arg(fileName));
+        BOOST_LOG_SEV(lg(), info) << "Successfully exported currencies to XML: " << fileName.toStdString();
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Error exporting to XML: " << e.what();
+        MessageBoxHelper::critical(this, "Export Error", 
+            QString("Error during XML export: %1").arg(e.what()));
+    }
 }
 
 }

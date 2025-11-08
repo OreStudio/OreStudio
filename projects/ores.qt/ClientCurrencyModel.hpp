@@ -79,6 +79,13 @@ public:
      */
     const risk::domain::currency* getCurrency(int row) const;
 
+    /**
+     * @brief Get all currencies.
+     *
+     * @return A vector containing all current currencies.
+     */
+    std::vector<risk::domain::currency> getCurrencies() const;
+
 signals:
     /**
      * @brief Emitted when data has been successfully loaded.

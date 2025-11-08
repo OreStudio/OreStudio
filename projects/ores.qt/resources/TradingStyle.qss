@@ -37,16 +37,35 @@ QLineEdit {
     padding: 5px;
 }
 
+/* General purpose buttons */
 QPushButton {
-    /* Flat button style for toolbar */
     background-color: transparent;
-    border: none;
+    border: 1px solid #444444;
     color: #F0F0F0;
     padding: 8px 12px;
 }
 
 QPushButton:hover {
-    /* Hover effect */
+    background-color: #2A2A2A;
+    border: 1px solid #007ACC;
+}
+
+/* Toolbar specific styles */
+QToolBar {
+    background-color: #1A1A1A;
+    border: none;
+    padding: 2px;
+}
+
+QToolButton {
+    background-color: transparent;
+    border: none;
+    color: #F0F0F0;
+    padding: 4px;
+    font-size: 9pt; /* Font for toolbar button text */
+}
+
+QToolButton:hover {
     background-color: #2A2A2A;
     border: 1px solid #007ACC;
 }

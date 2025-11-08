@@ -55,11 +55,17 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
+    void selectionChanged(bool has_selection);
+
+public slots:
+    void editSelected();
+    void deleteSelected();
 
 private slots:
     void onDataLoaded();
     void onLoadError(const QString& error_message);
     void onRowDoubleClicked(const QModelIndex& index);
+    void onSelectionChanged();
 
 private:
     QVBoxLayout* verticalLayout_;

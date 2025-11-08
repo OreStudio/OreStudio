@@ -41,7 +41,8 @@ namespace ores::qt {
 using namespace ores::utility::log;
 
 MainWindow::MainWindow(QWidget* parent) :
-    QMainWindow(parent), ui_(new Ui::MainWindow), mdiArea_(new MdiAreaWithBackground()) {
+    QMainWindow(parent), ui_(new Ui::MainWindow), mdiArea_(new MdiAreaWithBackground()),
+    activeCurrencyWindow_(nullptr), hasSelection_(false) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating the main window.";
     ui_->setupUi(this);
@@ -69,10 +70,22 @@ MainWindow::MainWindow(QWidget* parent) :
         "ic_fluent_plug_disconnected_20_filled.svg", iconColor));
     ui_->CurrenciesAction->setIcon(createRecoloredIcon(
         "ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
+    ui_->ActionEdit->setIcon(createRecoloredIcon(
+        "ic_fluent_edit_20_filled.svg", iconColor));
+    ui_->ActionDelete->setIcon(createRecoloredIcon(
+        "ic_fluent_delete_20_filled.svg", iconColor));
 
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this, &MainWindow::onLoginTriggered);
     connect(ui_->ActionDisconnect, &QAction::triggered, this, &MainWindow::onDisconnectTriggered);
+
+    // Connect CRUD actions
+    connect(ui_->ActionEdit, &QAction::triggered, this, &MainWindow::onEditTriggered);
+    connect(ui_->ActionDelete, &QAction::triggered, this, &MainWindow::onDeleteTriggered);
+
+    // Connect to MDI area window activation to manage context-aware actions
+    connect(mdiArea_, &QMdiArea::subWindowActivated,
+            this, &MainWindow::onSubWindowActivated);
 
     // Currencies action creates MDI window with currency table
     connect(ui_->CurrenciesAction, &QAction::triggered, this, [=, this]() {
@@ -250,6 +263,60 @@ QIcon MainWindow::createRecoloredIcon(const QString& svgPath, const QColor& colo
     }
 
     return recoloredIcon;
+}
+
+void MainWindow::onSubWindowActivated(QMdiSubWindow* window) {
+    // Disconnect from previous active window if any
+    if (activeCurrencyWindow_) {
+        disconnect(activeCurrencyWindow_, &CurrencyMdiWindow::selectionChanged,
+                   this, &MainWindow::onActiveWindowSelectionChanged);
+        activeCurrencyWindow_ = nullptr;
+        hasSelection_ = false;
+    }
+
+    // Check if the new active window is a CurrencyMdiWindow
+    if (window) {
+        auto* currencyWindow = qobject_cast<CurrencyMdiWindow*>(window->widget());
+        if (currencyWindow) {
+            activeCurrencyWindow_ = currencyWindow;
+
+            // Connect to selection changes
+            connect(activeCurrencyWindow_, &CurrencyMdiWindow::selectionChanged,
+                    this, &MainWindow::onActiveWindowSelectionChanged);
+        }
+    }
+
+    // Update CRUD action states
+    updateCrudActionState();
+}
+
+void MainWindow::onActiveWindowSelectionChanged(bool has_selection) {
+    hasSelection_ = has_selection;
+    updateCrudActionState();
+}
+
+void MainWindow::updateCrudActionState() {
+    // Enable CRUD actions only if:
+    // 1. There's an active currency window
+    // 2. That window has a selection
+    const bool enable = activeCurrencyWindow_ != nullptr && hasSelection_;
+
+    ui_->ActionEdit->setEnabled(enable);
+    ui_->ActionDelete->setEnabled(enable);
+}
+
+void MainWindow::onEditTriggered() {
+    if (activeCurrencyWindow_) {
+        BOOST_LOG_SEV(lg(), info) << "Edit action triggered, delegating to active window";
+        activeCurrencyWindow_->editSelected();
+    }
+}
+
+void MainWindow::onDeleteTriggered() {
+    if (activeCurrencyWindow_) {
+        BOOST_LOG_SEV(lg(), info) << "Delete action triggered, delegating to active window";
+        activeCurrencyWindow_->deleteSelected();
+    }
 }
 
 }

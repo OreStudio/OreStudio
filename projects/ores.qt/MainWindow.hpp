@@ -42,6 +42,8 @@ class MainWindow;
 
 namespace ores::qt {
 
+class CurrencyMdiWindow;  // Forward declaration
+
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
@@ -65,14 +67,21 @@ public:
 private slots:
     void onLoginTriggered();
     void onDisconnectTriggered();
+    void onSubWindowActivated(QMdiSubWindow* window);
+    void onActiveWindowSelectionChanged(bool has_selection);
+    void onEditTriggered();
+    void onDeleteTriggered();
 
 private:
     void updateMenuState();
+    void updateCrudActionState();
     QIcon createRecoloredIcon(const QString& svgPath, const QColor& color);
 
 private:
     Ui::MainWindow* ui_;
     MdiAreaWithBackground* mdiArea_;
+    CurrencyMdiWindow* activeCurrencyWindow_;
+    bool hasSelection_;
 
     // Client infrastructure
     std::unique_ptr<boost::asio::io_context> io_context_;

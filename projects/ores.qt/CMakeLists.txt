@@ -21,6 +21,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 add_executable(ores.qt
+    resources.qrc
     main.cpp
     MainWindow.cpp
     MainWindow.ui

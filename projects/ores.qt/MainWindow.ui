@@ -62,6 +62,9 @@
    <addaction name="ActionDisconnect"/>
    <addaction name="separator"/>
    <addaction name="CurrenciesAction"/>
+   <addaction name="separator"/>
+   <addaction name="ActionEdit"/>
+   <addaction name="ActionDelete"/>
   </widget>
   <action name="ExitAction">
    <property name="text">
@@ -93,6 +96,36 @@
    </property>
    <property name="text">
     <string>&amp;Disconnect</string>
+   </property>
+  </action>
+  <action name="ActionEdit">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>ic_fluent_edit_20_filled.svg</normaloff>ic_fluent_edit_20_filled.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Edit</string>
+   </property>
+   <property name="toolTip">
+    <string>Edit selected item</string>
+   </property>
+  </action>
+  <action name="ActionDelete">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>ic_fluent_delete_20_filled.svg</normaloff>ic_fluent_delete_20_filled.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Delete</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete selected item</string>
    </property>
   </action>
  </widget>

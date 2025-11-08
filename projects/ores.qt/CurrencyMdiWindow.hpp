@@ -64,6 +64,8 @@ signals:
 public slots:
     void editSelected();
     void deleteSelected();
+    void exportToCSV();
+    void exportToXML();
 
 private slots:
     void onDataLoaded();

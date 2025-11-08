@@ -166,4 +166,8 @@ const risk::domain::currency* ClientCurrencyModel::getCurrency(int row) const {
     return &currencies_[row];
 }
 
+std::vector<risk::domain::currency> ClientCurrencyModel::getCurrencies() const {
+    return currencies_;
+}
+
 }

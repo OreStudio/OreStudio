@@ -36,6 +36,7 @@
 #include "ores.qt/CurrencyMdiWindow.hpp"
 #include "ores.qt/CurrencyDetailPanel.hpp" // Include the header for CurrencyDetailPanel
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/AboutDialog.hpp"
 
 namespace ores::qt {
 
@@ -113,10 +114,19 @@ MainWindow::MainWindow(QWidget* parent) :
         "ic_fluent_edit_20_filled.svg", iconColor));
     ui_->ActionDelete->setIcon(createRecoloredIcon(
         "ic_fluent_delete_20_filled.svg", iconColor));
+    ui_->ActionExportCSV->setIcon(createRecoloredIcon(
+        "ic_fluent_document_table_20_regular.svg", iconColor));
+    ui_->ActionExportXML->setIcon(createRecoloredIcon(
+        "ic_fluent_document_code_16_regular.svg", iconColor));
+    ui_->ActionAbout->setIcon(createRecoloredIcon(
+        "ic_fluent_star_20_regular.svg", iconColor));
 
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this, &MainWindow::onLoginTriggered);
     connect(ui_->ActionDisconnect, &QAction::triggered, this, &MainWindow::onDisconnectTriggered);
+    connect(ui_->ActionExportCSV, &QAction::triggered, this, &MainWindow::onExportCSVTriggered);
+    connect(ui_->ActionExportXML, &QAction::triggered, this, &MainWindow::onExportXMLTriggered);
+    connect(ui_->ActionAbout, &QAction::triggered, this, &MainWindow::onAboutTriggered);
 
     // Connect CRUD actions
     connect(ui_->ActionSave, &QAction::triggered, this, [this]() {
@@ -167,6 +177,8 @@ MainWindow::MainWindow(QWidget* parent) :
 
     // Initially disable data-related actions until logged in
     updateMenuState();
+    // Also disable export buttons initially since no currency window is active
+    updateCrudActionState();
 
     // Set window size and center on screen
     resize(1400, 900);
@@ -350,6 +362,8 @@ void MainWindow::onSubWindowActivated(QMdiSubWindow* window) {
     if (activeCurrencyWindow_) {
         disconnect(activeCurrencyWindow_, &CurrencyMdiWindow::selectionChanged,
                    this, &MainWindow::onActiveWindowSelectionChanged);
+        disconnect(activeCurrencyWindow_, &CurrencyMdiWindow::showCurrencyDetails,
+                   this, &MainWindow::onShowCurrencyDetails);
         activeCurrencyWindow_ = nullptr;
         selectionCount_ = 0;
     }
@@ -381,10 +395,13 @@ void MainWindow::onActiveWindowSelectionChanged(int selection_count) {
 void MainWindow::updateCrudActionState() {
     // Enable Edit only for single selection
     // Enable Delete for one or more selections
+    // Enable Export buttons only when there's an active currency window
     const bool hasActiveWindow = activeCurrencyWindow_ != nullptr;
 
     ui_->ActionEdit->setEnabled(hasActiveWindow && selectionCount_ == 1);
     ui_->ActionDelete->setEnabled(hasActiveWindow && selectionCount_ >= 1);
+    ui_->ActionExportCSV->setEnabled(hasActiveWindow);
+    ui_->ActionExportXML->setEnabled(hasActiveWindow);
 }
 
 void MainWindow::onEditTriggered() {
@@ -421,6 +438,29 @@ void MainWindow::onCurrencyDeleted(const QString& iso_code) {
         }
         displayedCurrencyIsoCode_.clear();
     }
+}
+
+void MainWindow::onExportCSVTriggered() {
+    if (activeCurrencyWindow_) {
+        activeCurrencyWindow_->exportToCSV();
+    } else {
+        MessageBoxHelper::warning(this, "No Active Window",
+                "Please open the currencies window first to export data.");
+    }
+}
+
+void MainWindow::onExportXMLTriggered() {
+    if (activeCurrencyWindow_) {
+        activeCurrencyWindow_->exportToXML();
+    } else {
+        MessageBoxHelper::warning(this, "No Active Window",
+                "Please open the currencies window first to export data.");
+    }
+}
+
+void MainWindow::onAboutTriggered() {
+    AboutDialog dialog(this);
+    dialog.exec();
 }
 
 }

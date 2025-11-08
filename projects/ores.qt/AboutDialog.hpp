@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2024-2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,34 +18,48 @@
  * MA 02110-1301, USA.
  *
  */
-#ifndef ORES_RISK_CSV_CURRENCY_MAPPER_HPP
-#define ORES_RISK_CSV_CURRENCY_MAPPER_HPP
+#ifndef ORES_QT_ABOUT_DIALOG_HPP
+#define ORES_QT_ABOUT_DIALOG_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <vector>
+#include <QDialog>
+#include <memory>
+#include "ui_AboutDialog.h"
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.risk/domain/currency.hpp"
 
-namespace ores::risk::csv {
+namespace Ui {
+
+class AboutDialog;
+
+}
+
+namespace ores::qt {
 
 /**
- * @brief Maps domain currency objects to structures suitable for CSV export.
+ * @brief About dialog showing application version and build information.
  */
-class currency_mapper {
+class AboutDialog : public QDialog {
+    Q_OBJECT
+
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger(
-            "ores.risk.csv.currency_mapper");
+        static auto instance = make_logger("ores.qt.about_dialog");
         return instance;
     }
 
 public:
-    static std::vector<domain::currency>
-    map(const std::vector<domain::currency>& v);
+    explicit AboutDialog(QWidget* parent = nullptr);
+    ~AboutDialog();
+
+private:
+    void setupVersionInfo();
+
+private:
+    std::unique_ptr<Ui::AboutDialog> ui_;
 };
 
 }

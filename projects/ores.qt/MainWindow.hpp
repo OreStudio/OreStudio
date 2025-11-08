@@ -74,8 +74,11 @@ private slots:
     void onActiveWindowSelectionChanged(int selection_count);
     void onEditTriggered();
     void onDeleteTriggered();
+    void onExportCSVTriggered(); // New export to CSV slot
+    void onExportXMLTriggered(); // New export to XML slot
     void onShowCurrencyDetails(const risk::domain::currency& currency); // New slot
     void onCurrencyDeleted(const QString& iso_code); // Handle currency deletion
+    void onAboutTriggered(); // New about dialog slot
 
 private:
     void updateMenuState();

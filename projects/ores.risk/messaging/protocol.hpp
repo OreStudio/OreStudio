@@ -100,6 +100,88 @@ struct get_currencies_response final {
 
 std::ostream& operator<<(std::ostream& s, const get_currencies_response& v);
 
+/**
+ * @brief Request to update a currency.
+ */
+struct update_currency_request final {
+    domain::currency currency;
+
+    /**
+     * @brief Serialize request to bytes.
+     */
+    std::vector<std::uint8_t> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<update_currency_request, comms::protocol::error_code>
+    deserialize(std::span<const std::uint8_t> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const update_currency_request& v);
+
+/**
+ * @brief Response confirming currency update.
+ */
+struct update_currency_response final {
+    bool success;
+    std::string message;
+
+    /**
+     * @brief Serialize response to bytes.
+     */
+    std::vector<std::uint8_t> serialize() const;
+
+    /**
+     * @brief Deserialize response from bytes.
+     */
+    static std::expected<update_currency_response, comms::protocol::error_code>
+    deserialize(std::span<const std::uint8_t> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const update_currency_response& v);
+
+/**
+ * @brief Request to delete a currency.
+ */
+struct delete_currency_request final {
+    std::string iso_code;
+
+    /**
+     * @brief Serialize request to bytes.
+     */
+    std::vector<std::uint8_t> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<delete_currency_request, comms::protocol::error_code>
+    deserialize(std::span<const std::uint8_t> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const delete_currency_request& v);
+
+/**
+ * @brief Response confirming currency deletion.
+ */
+struct delete_currency_response final {
+    bool success;
+    std::string message;
+
+    /**
+     * @brief Serialize response to bytes.
+     */
+    std::vector<std::uint8_t> serialize() const;
+
+    /**
+     * @brief Deserialize response from bytes.
+     */
+    static std::expected<delete_currency_response, comms::protocol::error_code>
+    deserialize(std::span<const std::uint8_t> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const delete_currency_response& v);
+
 }
 
 #endif

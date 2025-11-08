@@ -40,6 +40,10 @@ enum class message_type {
     // Risk subsystem messages (0x1000 - 0x1FFF)
     get_currencies_request = 0x1001,
     get_currencies_response = 0x1002,
+    update_currency_request = 0x1003,
+    update_currency_response = 0x1004,
+    delete_currency_request = 0x1005,
+    delete_currency_response = 0x1006,
 
     // Accounts subsystem messages (0x2000 - 0x2FFF)
     create_account_request = 0x2001,

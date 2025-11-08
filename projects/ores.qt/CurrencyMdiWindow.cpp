@@ -37,11 +37,6 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
 
     verticalLayout_ = new QVBoxLayout(this);
 
-    // Add status label at the top
-    statusLabel_ = new QLabel("Loading currencies...", this);
-    statusLabel_->setStyleSheet("QLabel { padding: 5px; color: #666; font-style: italic; }");
-    verticalLayout_->addWidget(statusLabel_);
-
     // Add table view
     currencyTableView_ = new QTableView(this);
     verticalLayout_->addWidget(currencyTableView_);
@@ -67,21 +62,23 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
     connect(currencyModel_, &ClientCurrencyModel::loadError,
             this, &CurrencyMdiWindow::onLoadError);
 
+    // Emit initial loading status
+    emit statusChanged("Loading currencies...");
+
     // Trigger data loading
     currencyModel_->refresh();
 }
 
 void CurrencyMdiWindow::onDataLoaded() {
-    statusLabel_->setText(QString("Loaded %1 currencies")
-                              .arg(currencyModel_->rowCount()));
-    statusLabel_->setStyleSheet("QLabel { padding: 5px; color: #0a0; }");
+    const QString message = QString("Loaded %1 currencies")
+                              .arg(currencyModel_->rowCount());
+    emit statusChanged(message);
     BOOST_LOG_SEV(lg(), info) << "Currency data loaded successfully: "
                              << currencyModel_->rowCount() << " currencies";
 }
 
 void CurrencyMdiWindow::onLoadError(const QString& error_message) {
-    statusLabel_->setText("Error loading currencies");
-    statusLabel_->setStyleSheet("QLabel { padding: 5px; color: #c00; }");
+    emit errorOccurred(error_message);
     BOOST_LOG_SEV(lg(), error) << "Error loading currencies: "
                               << error_message.toStdString();
 

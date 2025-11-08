@@ -84,6 +84,17 @@ MainWindow::MainWindow(QWidget* parent) :
 
         BOOST_LOG_SEV(lg(), info) << "Creating currencies MDI window";
         auto* currencyWidget = new CurrencyMdiWindow(client_, this);
+
+        // Connect status signals to status bar
+        connect(currencyWidget, &CurrencyMdiWindow::statusChanged,
+                this, [this](const QString& message) {
+            ui_->statusbar->showMessage(message);
+        });
+        connect(currencyWidget, &CurrencyMdiWindow::errorOccurred,
+                this, [this](const QString& error_message) {
+            ui_->statusbar->showMessage("Error loading currencies: " + error_message);
+        });
+
         auto* subWindow = mdiArea_->addSubWindow(currencyWidget);
         subWindow->setWindowTitle("Currencies");
         subWindow->setWindowIcon(createRecoloredIcon(

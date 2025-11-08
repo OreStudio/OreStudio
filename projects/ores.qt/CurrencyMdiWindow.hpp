@@ -52,6 +52,10 @@ public:
     explicit CurrencyMdiWindow(std::shared_ptr<comms::client> client,
                                QWidget* parent = nullptr);
 
+signals:
+    void statusChanged(const QString& message);
+    void errorOccurred(const QString& error_message);
+
 private slots:
     void onDataLoaded();
     void onLoadError(const QString& error_message);
@@ -59,7 +63,6 @@ private slots:
 private:
     QVBoxLayout* verticalLayout_;
     QTableView* currencyTableView_;
-    QLabel* statusLabel_;
     ClientCurrencyModel* currencyModel_;
 };
 

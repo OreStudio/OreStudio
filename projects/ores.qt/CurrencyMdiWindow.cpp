@@ -121,6 +121,13 @@ void CurrencyMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
         currencyModel_->refresh();
     });
 
+    // Forward status messages to main window status bar
+    connect(editDialog, &CurrencyEditDialog::statusMessage,
+            this, &CurrencyMdiWindow::statusChanged);
+
+    connect(editDialog, &CurrencyEditDialog::errorMessage,
+            this, &CurrencyMdiWindow::errorOccurred);
+
     // Show dialog non-modally
     editDialog->setAttribute(Qt::WA_DeleteOnClose);
     editDialog->show();

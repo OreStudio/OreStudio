@@ -18,8 +18,12 @@
  *
  */
 #include <QMessageBox>
+#include <QtConcurrent>
+#include <QFutureWatcher>
 #include "ui_CurrencyEditDialog.h"
 #include "ores.qt/CurrencyEditDialog.hpp"
+#include "ores.risk/messaging/protocol.hpp"
+#include "ores.comms/protocol/frame.hpp"
 
 namespace ores::qt {
 
@@ -154,7 +158,7 @@ void CurrencyEditDialog::onSaveClicked() {
         return;
     }
 
-    // Create updated currency object
+    // Create updated currency object with values from the form
     currency updated = original_;
     updated.name = ui_->nameEdit->text().toStdString();
     updated.numeric_code = ui_->numericCodeEdit->text().toStdString();
@@ -166,22 +170,80 @@ void CurrencyEditDialog::onSaveClicked() {
     updated.format = ui_->formatEdit->text().toStdString();
     updated.currency_type = ui_->currencyTypeEdit->text().toStdString();
 
-    // TODO: Send update request to server via client
-    // For now, just emit signal and close
-    BOOST_LOG_SEV(lg(), warn) << "Currency update not yet implemented - "
-                             << "server protocol message needed";
+    // Disable save button during request
+    ui_->saveButton->setEnabled(false);
 
-    QMessageBox::information(this, "Save",
-        "Currency update functionality will be implemented once the "
-        "update_currency protocol message is available.");
+    // Send update request asynchronously
+    QFuture<std::pair<bool, std::string>> future =
+        QtConcurrent::run([this, updated]() -> std::pair<bool, std::string> {
+            BOOST_LOG_SEV(lg(), info) << "Sending update_currency_request for: "
+                                      << updated.iso_code;
 
-    // Emit signal that currency was updated
-    emit currencyUpdated();
+            risk::messaging::update_currency_request request{updated};
+            auto payload = request.serialize();
 
-    // Update original with new values
-    original_ = updated;
-    has_changes_ = false;
-    updateSaveButtonState();
+            comms::protocol::frame request_frame(
+                comms::protocol::message_type::update_currency_request,
+                0,
+                std::move(payload)
+            );
+
+            // Send request synchronously (on background thread)
+            auto response_result = client_->send_request_sync(std::move(request_frame));
+
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send update request";
+                return {false, "Failed to communicate with server"};
+            }
+
+            BOOST_LOG_SEV(lg(), info) << "Received update_currency_response";
+            auto response = risk::messaging::update_currency_response::deserialize(
+                response_result->payload()
+            );
+
+            if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+                return {false, "Invalid server response"};
+            }
+
+            return {response->success, response->message};
+        });
+
+    // Use a watcher to handle the result
+    auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(this);
+    connect(watcher, &QFutureWatcher<std::pair<bool, std::string>>::finished,
+            this, [this, watcher, updated]() {
+        auto [success, message] = watcher->result();
+        watcher->deleteLater();
+
+        if (success) {
+            BOOST_LOG_SEV(lg(), info) << "Currency updated successfully";
+
+            // Emit status message
+            emit statusMessage(QString("Successfully updated currency: %1")
+                .arg(QString::fromStdString(updated.iso_code)));
+
+            // Emit signal that currency was updated
+            emit currencyUpdated();
+
+            // Close dialog
+            close();
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Currency update failed: " << message;
+
+            // Emit error message
+            emit errorMessage(QString("Failed to update currency: %1")
+                .arg(QString::fromStdString(message)));
+
+            QMessageBox::critical(this, "Update Failed",
+                QString::fromStdString(message));
+
+            // Re-enable save button
+            ui_->saveButton->setEnabled(true);
+        }
+    });
+
+    watcher->setFuture(future);
 }
 
 void CurrencyEditDialog::onDeleteClicked() {
@@ -195,21 +257,84 @@ void CurrencyEditDialog::onDeleteClicked() {
             .arg(QString::fromStdString(original_.iso_code)),
         QMessageBox::Yes | QMessageBox::No);
 
-    if (reply == QMessageBox::Yes) {
-        // TODO: Send delete request to server via client
-        BOOST_LOG_SEV(lg(), warn) << "Currency deletion not yet implemented - "
-                                 << "server protocol message needed";
-
-        QMessageBox::information(this, "Delete",
-            "Currency deletion functionality will be implemented once the "
-            "delete_currency protocol message is available.");
-
-        // Emit signal that currency was deleted
-        emit currencyDeleted(QString::fromStdString(original_.iso_code));
-
-        // Close dialog
-        close();
+    if (reply != QMessageBox::Yes) {
+        return;
     }
+
+    // Disable delete button during request
+    ui_->deleteButton->setEnabled(false);
+
+    // Send delete request asynchronously
+    QFuture<std::pair<bool, std::string>> future =
+        QtConcurrent::run([this]() -> std::pair<bool, std::string> {
+            BOOST_LOG_SEV(lg(), info) << "Sending delete_currency_request for: "
+                                      << original_.iso_code;
+
+            risk::messaging::delete_currency_request request{original_.iso_code};
+            auto payload = request.serialize();
+
+            comms::protocol::frame request_frame(
+                comms::protocol::message_type::delete_currency_request,
+                0,
+                std::move(payload)
+            );
+
+            // Send request synchronously (on background thread)
+            auto response_result = client_->send_request_sync(std::move(request_frame));
+
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send delete request";
+                return {false, "Failed to communicate with server"};
+            }
+
+            BOOST_LOG_SEV(lg(), info) << "Received delete_currency_response";
+            auto response = risk::messaging::delete_currency_response::deserialize(
+                response_result->payload()
+            );
+
+            if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+                return {false, "Invalid server response"};
+            }
+
+            return {response->success, response->message};
+        });
+
+    // Use a watcher to handle the result
+    auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(this);
+    connect(watcher, &QFutureWatcher<std::pair<bool, std::string>>::finished,
+            this, [this, watcher]() {
+        auto [success, message] = watcher->result();
+        watcher->deleteLater();
+
+        if (success) {
+            BOOST_LOG_SEV(lg(), info) << "Currency deleted successfully";
+
+            // Emit status message
+            emit statusMessage(QString("Successfully deleted currency: %1")
+                .arg(QString::fromStdString(original_.iso_code)));
+
+            // Emit signal that currency was deleted
+            emit currencyDeleted(QString::fromStdString(original_.iso_code));
+
+            // Close dialog
+            close();
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Currency deletion failed: " << message;
+
+            // Emit error message
+            emit errorMessage(QString("Failed to delete currency: %1")
+                .arg(QString::fromStdString(message)));
+
+            QMessageBox::critical(this, "Delete Failed",
+                QString::fromStdString(message));
+
+            // Re-enable delete button
+            ui_->deleteButton->setEnabled(true);
+        }
+    });
+
+    watcher->setFuture(future);
 }
 
 void CurrencyEditDialog::onResetClicked() {

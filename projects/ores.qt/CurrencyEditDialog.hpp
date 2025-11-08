@@ -58,6 +58,8 @@ public:
 signals:
     void currencyUpdated();
     void currencyDeleted(const QString& iso_code);
+    void statusMessage(const QString& message);
+    void errorMessage(const QString& message);
 
 private slots:
     void onSaveClicked();

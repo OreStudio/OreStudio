@@ -19,40 +19,44 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-08 Sat 10:11], for Saturday, November 08, 2025.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *2:48* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 2:48   |      |      | 100.0 |
-|       | Active                                |        | 2:48 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:09 |   5.4 |
-| code  | Use fluent icons                      |        |      | 0:27 |  16.1 |
-| code  | Add currency editing support          |        |      | 0:58 |  34.5 |
-| code  | Make UI/UX look more professional     |        |      | 1:14 |  44.0 |
+#+CAPTION: Clock summary at [2025-11-08 Sat 23:46], for Saturday, November 08, 2025.
+|       | <75>                                    |         |       |       |       |
+| Tags  | Headline                                | Time    |       |       |     % |
+|-------+-----------------------------------------+---------+-------+-------+-------|
+|       | *Total time*                            | *16:53* |       |       | 100.0 |
+|-------+-----------------------------------------+---------+-------+-------+-------|
+|       | Stories                                 | 16:53   |       |       | 100.0 |
+|       | Active                                  |         | 16:53 |       | 100.0 |
+| agile | Sprint and product backlog refinement   |         |       |  0:09 |   0.9 |
+| code  | Use fluent icons                        |         |       |  0:27 |   2.7 |
+| code  | Add export functionality for currencies |         |       |  1:30 |   8.9 |
+| code  | Add currency editing support            |         |       |  2:45 |  16.3 |
+| code  | Make UI/UX look more professional       |         |       | 11:07 |  65.8 |
+| code  | Add about to menu                       |         |       |  0:55 |   5.4 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-08 Sat 10:11]
-|       | <75>                                                   |         |       |      |       |
-| Tags  | Headline                                               | Time    |       |      |     % |
-|-------+--------------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                           | *10:23* |       |      | 100.0 |
-|-------+--------------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                                | 10:23   |       |      | 100.0 |
-|       | Active                                                 |         | 10:23 |      | 100.0 |
-| agile | Sprint and product backlog refinement                  |         |       | 0:43 |   6.9 |
-| code  | Clean up client parser                                 |         |       | 0:10 |   1.6 |
-| code  | Add connect command line argument                      |         |       | 1:19 |  12.7 |
-| infra | Install Windows package on Windows machine             |         |       | 2:09 |  20.7 |
-| code  | Ignore warnings on windows and osx                     |         |       | 0:33 |   5.3 |
-| code  | Ensure applications work under OSX using github images |         |       | 0:14 |   2.2 |
-| infra | Create a splash screen and gray background             |         |       | 2:26 |  23.4 |
-| code  | Use fluent icons                                       |         |       | 0:37 |   5.9 |
-| code  | Add currency editing support                           |         |       | 0:58 |   9.3 |
-| code  | Make UI/UX look more professional                      |         |       | 1:14 |  11.9 |
+#+CAPTION: Clock summary at [2025-11-08 Sat 23:46]
+|       | <75>                                                   |         |       |       |       |
+| Tags  | Headline                                               | Time    |       |       |     % |
+|-------+--------------------------------------------------------+---------+-------+-------+-------|
+|       | *Total time*                                           | *24:28* |       |       | 100.0 |
+|-------+--------------------------------------------------------+---------+-------+-------+-------|
+|       | Stories                                                | 24:28   |       |       | 100.0 |
+|       | Active                                                 |         | 24:28 |       | 100.0 |
+| agile | Sprint and product backlog refinement                  |         |       |  0:43 |   2.9 |
+| code  | Clean up client parser                                 |         |       |  0:10 |   0.7 |
+| code  | Add connect command line argument                      |         |       |  1:19 |   5.4 |
+| infra | Install Windows package on Windows machine             |         |       |  2:09 |   8.8 |
+| code  | Ignore warnings on windows and osx                     |         |       |  0:33 |   2.2 |
+| code  | Ensure applications work under OSX using github images |         |       |  0:14 |   1.0 |
+| infra | Create a splash screen and gray background             |         |       |  2:26 |   9.9 |
+| code  | Use fluent icons                                       |         |       |  0:37 |   2.5 |
+| code  | Add export functionality for currencies                |         |       |  1:30 |   6.1 |
+| code  | Add currency editing support                           |         |       |  2:45 |  11.2 |
+| code  | Make UI/UX look more professional                      |         |       | 11:07 |  45.4 |
+| code  | Add about to menu                                      |         |       |  0:55 |   3.7 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -296,7 +300,17 @@ These seem to be a bit better than the current icons we have:
 
 - [[https://github.com/microsoft/fluentui-system-icons/tree/main][fluentui-system-icons]]
 
-*** STARTED Add currency editing support                               :code:
+*** COMPLETED Add export functionality for currencies                  :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-08 Sat 22:34]--[2025-11-08 Sat 22:50] =>  0:16
+    CLOCK: [2025-11-08 Sat 22:06]--[2025-11-08 Sat 22:33] =>  0:27
+    CLOCK: [2025-11-08 Sat 21:59]--[2025-11-08 Sat 22:05] =>  0:06
+    CLOCK: [2025-11-08 Sat 21:18]--[2025-11-08 Sat 21:59] =>  0:41
+   :END:
+
+We need to be able to export to ORE XML and to CSV.
+
+*** COMPLETED Add currency editing support                             :code:
     :LOGBOOK:
     CLOCK: [2025-11-08 Sat 19:30]--[2025-11-08 Sat 21:17] =>  1:47
     CLOCK: [2025-11-08 Sat 00:28]--[2025-11-08 Sat 01:26] =>  0:58
@@ -311,16 +325,6 @@ Notes:
   Ideally you select multiple currencies and then press delete.
 - separate the connection part of the toolbar from ref data and from crud.
 - add a version string to the splash screen.
-- valid to in edit dialog is still equal to valid from.
-- create a history dialog showing the history of changes including modified by.
-
-*** STARTED Add export functionality for currencies                    :code:
-    :LOGBOOK:
-    CLOCK: [2025-11-08 Sat 21:59]--[2025-11-08 Sat 22:05] =>  0:06
-    CLOCK: [2025-11-08 Sat 21:18]--[2025-11-08 Sat 21:59] =>  0:41
-   :END:
-
-We need to be able to export to ORE XML and to CSV.
 
 *** STARTED Make UI/UX look more professional                          :code:
     :LOGBOOK:
@@ -486,6 +490,31 @@ QPushButton:hover {
 ```
 #+end_src
 
+*** STARTED Add about to menu                                          :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-08 Sat 22:51]--[2025-11-08 Sat 23:46] =>  0:55
+    :END:
+
+We need an about describing the project.
+
+*** Add multi selection support to currencies                          :code:
+
+Users should be able to select multiple currencies and delete them.
+
+*** Allow in place editing of currencies                               :code:
+
+For expediency users should be able to edit multiple currencies and save them in
+one go directly in the grid.
+
+*** Create a history dialog for currencies                             :code:
+
+Users should be able to see a list of all the changes to a given currency.
+
+Notes:
+
+- valid to in edit dialog is still equal to valid from.
+- create a history dialog showing the history of changes including modified by.
+
 *** Add flags for currencies                                           :code:
 
 Add flags for the currencies. Need database support. Display them in the
@@ -495,10 +524,6 @@ currencies dialog.
 
 We need to ensure we can have both light and dark themes and they work
 consistently.
-
-*** Add about to menu                                                  :code:
-
-We need an about describing the project.
 
 *** Update readme with UI screenshots                                  :code:
 

@@ -173,6 +173,8 @@ MainWindow::MainWindow(QWidget* parent) :
 
     // Initially disable data-related actions until logged in
     updateMenuState();
+    // Also disable export buttons initially since no currency window is active
+    updateCrudActionState();
 
     // Set window size and center on screen
     resize(1400, 900);
@@ -356,6 +358,8 @@ void MainWindow::onSubWindowActivated(QMdiSubWindow* window) {
     if (activeCurrencyWindow_) {
         disconnect(activeCurrencyWindow_, &CurrencyMdiWindow::selectionChanged,
                    this, &MainWindow::onActiveWindowSelectionChanged);
+        disconnect(activeCurrencyWindow_, &CurrencyMdiWindow::showCurrencyDetails,
+                   this, &MainWindow::onShowCurrencyDetails);
         activeCurrencyWindow_ = nullptr;
         selectionCount_ = 0;
     }
@@ -387,10 +391,13 @@ void MainWindow::onActiveWindowSelectionChanged(int selection_count) {
 void MainWindow::updateCrudActionState() {
     // Enable Edit only for single selection
     // Enable Delete for one or more selections
+    // Enable Export buttons only when there's an active currency window
     const bool hasActiveWindow = activeCurrencyWindow_ != nullptr;
 
     ui_->ActionEdit->setEnabled(hasActiveWindow && selectionCount_ == 1);
     ui_->ActionDelete->setEnabled(hasActiveWindow && selectionCount_ >= 1);
+    ui_->ActionExportCSV->setEnabled(hasActiveWindow);
+    ui_->ActionExportXML->setEnabled(hasActiveWindow);
 }
 
 void MainWindow::onEditTriggered() {

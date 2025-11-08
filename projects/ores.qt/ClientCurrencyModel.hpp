@@ -71,6 +71,14 @@ public:
      */
     void refresh();
 
+    /**
+     * @brief Get currency at the specified row.
+     *
+     * @param row The row index.
+     * @return The currency object, or nullptr if row is invalid.
+     */
+    const risk::domain::currency* getCurrency(int row) const;
+
 signals:
     /**
      * @brief Emitted when data has been successfully loaded.

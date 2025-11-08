@@ -24,6 +24,7 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
 #include "ores.qt/CurrencyMdiWindow.hpp"
+#include "ores.qt/CurrencyEditDialog.hpp"
 
 namespace ores::qt {
 
@@ -31,7 +32,8 @@ using namespace ores::utility::log;
 
 CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWidget* parent)
     : QWidget(parent),
-      currencyModel_(new ClientCurrencyModel(std::move(client), this)) {
+      currencyModel_(new ClientCurrencyModel(client, this)),
+      client_(std::move(client)) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating currency MDI window";
 
@@ -61,6 +63,8 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
             this, &CurrencyMdiWindow::onDataLoaded);
     connect(currencyModel_, &ClientCurrencyModel::loadError,
             this, &CurrencyMdiWindow::onLoadError);
+    connect(currencyTableView_, &QTableView::doubleClicked,
+            this, &CurrencyMdiWindow::onRowDoubleClicked);
 
     // Emit initial loading status
     emit statusChanged("Loading currencies...");
@@ -83,6 +87,43 @@ void CurrencyMdiWindow::onLoadError(const QString& error_message) {
                               << error_message.toStdString();
 
     QMessageBox::critical(this, "Load Error", error_message);
+}
+
+void CurrencyMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
+    if (!index.isValid()) {
+        return;
+    }
+
+    const auto* currency = currencyModel_->getCurrency(index.row());
+    if (!currency) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get currency for row: "
+                                 << index.row();
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Opening edit dialog for currency: "
+                             << currency->iso_code;
+
+    // Create non-modal edit dialog
+    auto* editDialog = new CurrencyEditDialog(*currency, client_, this);
+
+    // Connect signals to refresh data when currency is updated
+    connect(editDialog, &CurrencyEditDialog::currencyUpdated,
+            this, [this]() {
+        BOOST_LOG_SEV(lg(), info) << "Currency updated, refreshing table";
+        currencyModel_->refresh();
+    });
+
+    connect(editDialog, &CurrencyEditDialog::currencyDeleted,
+            this, [this](const QString& iso_code) {
+        BOOST_LOG_SEV(lg(), info) << "Currency deleted: "
+                                 << iso_code.toStdString();
+        currencyModel_->refresh();
+    });
+
+    // Show dialog non-modally
+    editDialog->setAttribute(Qt::WA_DeleteOnClose);
+    editDialog->show();
 }
 
 }

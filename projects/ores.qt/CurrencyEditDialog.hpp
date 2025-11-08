@@ -17,55 +17,66 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_CURRENCY_MDI_WINDOW_HPP
-#define ORES_QT_CURRENCY_MDI_WINDOW_HPP
+#ifndef ORES_QT_CURRENCY_EDIT_DIALOG_HPP
+#define ORES_QT_CURRENCY_EDIT_DIALOG_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <QWidget>
-#include <QTableView>
-#include <QVBoxLayout>
-#include <QLabel>
+#include <QDialog>
 #include <memory>
 #include "ores.comms/client.hpp"
+#include "ores.risk/domain/currency.hpp"
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.qt/ClientCurrencyModel.hpp"
+
+namespace Ui {
+class CurrencyEditDialog;
+}
 
 namespace ores::qt {
 
 /**
- * @brief MDI window for displaying currencies.
+ * @brief Dialog for editing currency details.
  */
-class CurrencyMdiWindow : public QWidget {
+class CurrencyEditDialog : public QDialog {
     Q_OBJECT
 
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.qt.currency_mdi_window");
+        static auto instance = make_logger("ores.qt.currency_edit_dialog");
         return instance;
     }
 
 public:
-    explicit CurrencyMdiWindow(std::shared_ptr<comms::client> client,
-                               QWidget* parent = nullptr);
+    explicit CurrencyEditDialog(const ores::risk::domain::currency& currency,
+                                std::shared_ptr<comms::client> client,
+                                QWidget* parent = nullptr);
+    ~CurrencyEditDialog() override;
 
 signals:
-    void statusChanged(const QString& message);
-    void errorOccurred(const QString& error_message);
+    void currencyUpdated();
+    void currencyDeleted(const QString& iso_code);
 
 private slots:
-    void onDataLoaded();
-    void onLoadError(const QString& error_message);
-    void onRowDoubleClicked(const QModelIndex& index);
+    void onSaveClicked();
+    void onDeleteClicked();
+    void onResetClicked();
+    void onFieldChanged();
 
 private:
-    QVBoxLayout* verticalLayout_;
-    QTableView* currencyTableView_;
-    ClientCurrencyModel* currencyModel_;
+    void populateFields();
+    void resetFields();
+    bool validateFields();
+    void updateSaveButtonState();
+    bool hasChanges() const;
+
+private:
+    Ui::CurrencyEditDialog* ui_;
+    ores::risk::domain::currency original_;
     std::shared_ptr<comms::client> client_;
+    bool has_changes_;
 };
 
 }

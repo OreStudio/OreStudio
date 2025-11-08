@@ -40,7 +40,7 @@
    </widget>
    <widget class="QMenu" name="menuRefereceData">
     <property name="title">
-     <string>&amp;Reference Data</string>
+     <string>&amp;Ref Data</string>
     </property>
     <addaction name="CurrenciesAction"/>
    </widget>

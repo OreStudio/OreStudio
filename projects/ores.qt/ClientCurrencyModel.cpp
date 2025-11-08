@@ -152,4 +152,11 @@ void ClientCurrencyModel::onCurrenciesLoaded() {
     }
 }
 
+const risk::domain::currency* ClientCurrencyModel::getCurrency(int row) const {
+    if (row < 0 || row >= static_cast<int>(currencies_.size())) {
+        return nullptr;
+    }
+    return &currencies_[row];
+}
+
 }

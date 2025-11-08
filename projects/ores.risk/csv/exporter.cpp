@@ -21,42 +21,44 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#include <iomanip>
-#include <rapidcsv.h>
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.risk/csv/currency_mapper.hpp"
 #include "ores.risk/csv/exporter.hpp"
 
-namespace ores::risk::csv {
-
-using domain::currency;
-using namespace ores::utility::log;
+namespace {
 
 // Properly escape CSV fields according to RFC 4180 with more robust implementation
 std::string escape_csv_field(const std::string& field) {
     // Check if field contains special characters that need escaping
-    bool needs_quoting = field.empty() || 
-                         field.find(',') != std::string::npos || 
-                         field.find('"') != std::string::npos || 
-                         field.find('\n') != std::string::npos || 
+    bool needs_quoting = field.empty() ||
+                         field.find(',') != std::string::npos ||
+                         field.find('"') != std::string::npos ||
+                         field.find('\n') != std::string::npos ||
                          field.find('\r') != std::string::npos;
-    
+
     std::string result = field;
-    
+
     // Escape double quotes by doubling them (RFC 4180 section 2)
     size_t pos = 0;
     while ((pos = result.find('"', pos)) != std::string::npos) {
         result.replace(pos, 1, "\"\"");
         pos += 2;  // Move past the replacement
     }
-    
+
     // Add quotes if needed (RFC 4180 section 2)
     if (needs_quoting) {
         result = "\"" + result + "\"";
     }
-    
+
     return result;
 }
+
+}
+
+namespace ores::risk::csv {
+
+using domain::currency;
+using namespace ores::utility::log;
+
 
 std::string
 exporter::export_currency_config(const std::vector<currency>& v) {
@@ -64,10 +66,10 @@ exporter::export_currency_config(const std::vector<currency>& v) {
     BOOST_LOG_SEV(lg(), trace) << "Currencies: " << v;
 
     std::ostringstream oss;
-    
+
     // Add CSV header following RFC 4180
     oss << "iso_code,name,numeric_code,symbol,fraction_symbol,fractions_per_unit,rounding_type,rounding_precision,format,currency_type,modified_by,valid_from,valid_to\n";
-    
+
     // Add data rows
     for (const auto& curr : v) {
         oss << escape_csv_field(curr.iso_code) << ","

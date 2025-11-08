@@ -38,6 +38,10 @@ risk_message_handler::handle_message(comms::protocol::message_type type,
     switch (type) {
     case comms::protocol::message_type::get_currencies_request:
         co_return co_await handle_get_currencies_request(payload);
+    case comms::protocol::message_type::update_currency_request:
+        co_return co_await handle_update_currency_request(payload);
+    case comms::protocol::message_type::delete_currency_request:
+        co_return co_await handle_delete_currency_request(payload);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown risk message type " << std::hex
                                    << static_cast<std::uint16_t>(type);
@@ -65,6 +69,74 @@ handle_get_currencies_request(std::span<const std::uint8_t> payload) {
 
     // Create and serialize response
     get_currencies_response response{std::move(currencies)};
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
+                                     comms::protocol::error_code>>
+risk_message_handler::
+handle_update_currency_request(std::span<const std::uint8_t> payload) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing update_currency_request.";
+
+    // Deserialize request
+    auto request_result = update_currency_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize update_currency_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Updating currency: " << request.currency.iso_code;
+
+    update_currency_response response;
+    try {
+        // Update currency in repository
+        currency_repo_.update(ctx_, request.currency);
+        response.success = true;
+        response.message = "Currency updated successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully updated currency: "
+                                  << request.currency.iso_code;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to update currency: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error updating currency "
+                                   << request.currency.iso_code << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
+                                     comms::protocol::error_code>>
+risk_message_handler::
+handle_delete_currency_request(std::span<const std::uint8_t> payload) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_currency_request.";
+
+    // Deserialize request
+    auto request_result = delete_currency_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_currency_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Deleting currency: " << request.iso_code;
+
+    delete_currency_response response;
+    try {
+        // Remove currency from repository
+        currency_repo_.remove(ctx_, request.iso_code);
+        response.success = true;
+        response.message = "Currency deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully deleted currency: "
+                                  << request.iso_code;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete currency: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error deleting currency "
+                                   << request.iso_code << ": " << e.what();
+    }
+
     co_return response.serialize();
 }
 

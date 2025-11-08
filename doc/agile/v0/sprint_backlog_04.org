@@ -298,6 +298,7 @@ These seem to be a bit better than the current icons we have:
 
 *** STARTED Add currency editing support                               :code:
     :LOGBOOK:
+    CLOCK: [2025-11-08 Sat 19:30]--[2025-11-08 Sat 21:17] =>  1:47
     CLOCK: [2025-11-08 Sat 00:28]--[2025-11-08 Sat 01:26] =>  0:58
     :END:
 
@@ -312,12 +313,18 @@ Notes:
 - add a version string to the splash screen.
 - valid to in edit dialog is still equal to valid from.
 - create a history dialog showing the history of changes including modified by.
-- add flags for the currencies. Need database support. Display them in the
-  currencies dialog.
+
+*** STARTED Add export functionality for currencies                    :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-08 Sat 21:59]--[2025-11-08 Sat 22:05] =>  0:06
+    CLOCK: [2025-11-08 Sat 21:18]--[2025-11-08 Sat 21:59] =>  0:41
+   :END:
+
+We need to be able to export to ORE XML and to CSV.
 
 *** STARTED Make UI/UX look more professional                          :code:
     :LOGBOOK:
-    CLOCK: [2025-11-08 Sat 10:11]
+    CLOCK: [2025-11-08 Sat 10:11]--[2025-11-08 Sat 20:04] =>  9:53
     CLOCK: [2025-11-08 Sat 08:57]--[2025-11-08 Sat 10:11] =>  1:14
     :END:
 
@@ -478,6 +485,16 @@ QPushButton:hover {
 }
 ```
 #+end_src
+
+*** Add flags for currencies                                           :code:
+
+Add flags for the currencies. Need database support. Display them in the
+currencies dialog.
+
+*** Light system theme results in mix of dark and light                :code:
+
+We need to ensure we can have both light and dark themes and they work
+consistently.
 
 *** Add about to menu                                                  :code:
 

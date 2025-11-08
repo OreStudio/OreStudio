@@ -77,9 +77,19 @@ MainWindow::MainWindow(QWidget* parent) :
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
+    connect(currencyDetailPanel_, &CurrencyDetailPanel::isDirtyChanged,
+            this, [this](bool isDirty) {
+        ui_->ActionSave->setEnabled(isDirty);
+    });
 
     // Set application icon
     setWindowIcon(QIcon("modern-icon.png"));
+
+    // Create and configure status bar connection icon label
+    connectionStatusIconLabel_ = new QLabel(this);
+    connectionStatusIconLabel_->setFixedWidth(20);
+    connectionStatusIconLabel_->setAlignment(Qt::AlignCenter);
+    ui_->statusbar->addPermanentWidget(connectionStatusIconLabel_);
 
     // Set up MDI area
     ui_->horizontalLayout_3->addWidget(mdiArea_);
@@ -97,6 +107,8 @@ MainWindow::MainWindow(QWidget* parent) :
         "ic_fluent_plug_disconnected_20_filled.svg", iconColor));
     ui_->CurrenciesAction->setIcon(createRecoloredIcon(
         "ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
+    ui_->ActionSave->setIcon(createRecoloredIcon(
+        "ic_fluent_save_20_filled.svg", iconColor));
     ui_->ActionEdit->setIcon(createRecoloredIcon(
         "ic_fluent_edit_20_filled.svg", iconColor));
     ui_->ActionDelete->setIcon(createRecoloredIcon(
@@ -107,6 +119,11 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->ActionDisconnect, &QAction::triggered, this, &MainWindow::onDisconnectTriggered);
 
     // Connect CRUD actions
+    connect(ui_->ActionSave, &QAction::triggered, this, [this]() {
+        if (currencyDetailPanel_) {
+            currencyDetailPanel_->save();
+        }
+    });
     connect(ui_->ActionEdit, &QAction::triggered, this, &MainWindow::onEditTriggered);
     connect(ui_->ActionDelete, &QAction::triggered, this, &MainWindow::onDeleteTriggered);
 
@@ -230,9 +247,9 @@ void MainWindow::updateMenuState() {
 
     // Update connection status icon in status bar
     if (isConnected) {
-        ui_->connectionStatusIconLabel->setPixmap(connectedIcon_.pixmap(16, 16)); // Use 16x16 for status bar
+        connectionStatusIconLabel_->setPixmap(connectedIcon_.pixmap(16, 16)); // Use 16x16 for status bar
     } else {
-        ui_->connectionStatusIconLabel->setPixmap(disconnectedIcon_.pixmap(16, 16));
+        connectionStatusIconLabel_->setPixmap(disconnectedIcon_.pixmap(16, 16));
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Menu state updated. Connected: " << isConnected;
@@ -285,27 +302,41 @@ QIcon MainWindow::createRecoloredIcon(const QString& svgPath, const QColor& colo
 
     // Create recolored icon at multiple sizes
     QIcon recoloredIcon;
+    const QColor disabledColor(50, 50, 50); // Dark gray for disabled state
+
     for (int size : {16, 20, 24, 32, 48, 64}) {
         // Get pixmap from original icon
         QPixmap pixmap = originalIcon.pixmap(size, size);
 
-        // Create a new image for the recolored version
-        QImage image = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
-
-        // Apply color to all pixels while preserving alpha
-        for (int y = 0; y < image.height(); ++y) {
-            for (int x = 0; x < image.width(); ++x) {
-                QColor pixelColor = image.pixelColor(x, y);
+        // Create normal state image
+        QImage normalImage = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+        for (int y = 0; y < normalImage.height(); ++y) {
+            for (int x = 0; x < normalImage.width(); ++x) {
+                QColor pixelColor = normalImage.pixelColor(x, y);
                 if (pixelColor.alpha() > 0) {
                     pixelColor.setRed(color.red());
                     pixelColor.setGreen(color.green());
                     pixelColor.setBlue(color.blue());
-                    image.setPixelColor(x, y, pixelColor);
+                    normalImage.setPixelColor(x, y, pixelColor);
                 }
             }
         }
+        recoloredIcon.addPixmap(QPixmap::fromImage(normalImage), QIcon::Normal);
 
-        recoloredIcon.addPixmap(QPixmap::fromImage(image));
+        // Create disabled state image
+        QImage disabledImage = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+        for (int y = 0; y < disabledImage.height(); ++y) {
+            for (int x = 0; x < disabledImage.width(); ++x) {
+                QColor pixelColor = disabledImage.pixelColor(x, y);
+                if (pixelColor.alpha() > 0) {
+                    pixelColor.setRed(disabledColor.red());
+                    pixelColor.setGreen(disabledColor.green());
+                    pixelColor.setBlue(disabledColor.blue());
+                    disabledImage.setPixelColor(x, y, pixelColor);
+                }
+            }
+        }
+        recoloredIcon.addPixmap(QPixmap::fromImage(disabledImage), QIcon::Disabled);
     }
 
     return recoloredIcon;

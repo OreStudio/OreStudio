@@ -47,12 +47,14 @@ public:
     void setCurrency(const risk::domain::currency& currency);
     risk::domain::currency getCurrency() const;
     void clearPanel();
+    void save();
 
 signals:
     void currencyUpdated();
     void currencyDeleted(const QString& iso_code);
     void statusMessage(const QString& message);
     void errorMessage(const QString& message);
+    void isDirtyChanged(bool isDirty);
 
 private slots:
     void onSaveClicked();

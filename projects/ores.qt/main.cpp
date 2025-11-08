@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
     splash.show();
 
     // Start progress bar animation
-    const int splashDuration = 3000; // 3 seconds
+    const int splashDuration = 1000; // in milliseconds
     splash.setProgressDuration(splashDuration);
 
     ores::qt::MainWindow mainWindow;

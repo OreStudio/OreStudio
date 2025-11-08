@@ -25,6 +25,7 @@
 #endif
 
 #include <QMainWindow>
+#include <QLabel>
 #include <memory>
 #include <thread>
 #include <boost/asio/io_context.hpp>
@@ -86,6 +87,7 @@ private:
     CurrencyMdiWindow* activeCurrencyWindow_;
     bool hasSelection_;
     CurrencyDetailPanel* currencyDetailPanel_; // New member variable
+    QLabel* connectionStatusIconLabel_; // Status bar icon label
 
     QIcon connectedIcon_;    // Icon for connected status
     QIcon disconnectedIcon_; // Icon for disconnected status

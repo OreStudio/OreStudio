@@ -78,6 +78,7 @@ void CurrencyDetailPanel::setCurrency(const risk::domain::currency& currency) {
     ui_->validToEdit->setText(QString::fromStdString(currency.valid_to));
 
     isDirty_ = false;
+    emit isDirtyChanged(false);
     updateSaveResetButtonState();
 }
 
@@ -111,7 +112,12 @@ void CurrencyDetailPanel::clearPanel() {
     ui_->validToEdit->clear();
 
     isDirty_ = false;
+    emit isDirtyChanged(false);
     updateSaveResetButtonState();
+}
+
+void CurrencyDetailPanel::save() {
+    onSaveClicked();
 }
 
 void CurrencyDetailPanel::onSaveClicked() {
@@ -176,6 +182,7 @@ void CurrencyDetailPanel::onSaveClicked() {
             emit statusMessage(QString("Successfully updated currency: %1")
                 .arg(QString::fromStdString(currentCurrency_.iso_code)));
             isDirty_ = false;
+            emit isDirtyChanged(false);
             updateSaveResetButtonState();
             emit currencyUpdated(); // Notify parent to refresh table
         } else {
@@ -285,6 +292,7 @@ void CurrencyDetailPanel::onDeleteClicked() {
 
 void CurrencyDetailPanel::onFieldChanged() {
     isDirty_ = true;
+    emit isDirtyChanged(true);
     updateSaveResetButtonState();
 }
 

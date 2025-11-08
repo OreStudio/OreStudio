@@ -47,13 +47,7 @@
    <addaction name="menuFile"/>
    <addaction name="menuRefereceData"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar">
-   <widget class="QLabel" name="connectionStatusIconLabel">
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
-  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
     <string>toolBar</string>
@@ -68,6 +62,8 @@
    <addaction name="ActionDisconnect"/>
    <addaction name="separator"/>
    <addaction name="CurrenciesAction"/>
+   <addaction name="separator"/>
+   <addaction name="ActionSave"/>
    <addaction name="separator"/>
    <addaction name="ActionEdit"/>
    <addaction name="ActionDelete"/>
@@ -132,6 +128,21 @@
    </property>
    <property name="toolTip">
     <string>Delete selected item</string>
+   </property>
+  </action>
+  <action name="ActionSave">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>ic_fluent_save_20_filled.svg</normaloff>ic_fluent_save_20_filled.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+   <property name="toolTip">
+    <string>Save changes</string>
    </property>
   </action>
   <widget class="QDockWidget" name="currencyDetailDockWidget">

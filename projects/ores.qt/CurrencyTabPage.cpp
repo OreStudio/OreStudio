@@ -22,8 +22,8 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QTableView>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QMessageBox>
 #include "ores.qt/CurrencyTabPage.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 
 namespace ores::qt {
 
@@ -79,7 +79,7 @@ void CurrencyTabPage::onLoadError(const QString& error_message) {
     statusLabel_->setText("Error loading currencies");
     statusLabel_->setStyleSheet("QLabel { padding: 5px; color: #c00; }");
 
-    QMessageBox::critical(this, "Load Error", error_message);
+    MessageBoxHelper::critical(this, "Load Error", error_message);
 }
 
 }

@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ui_CurrencyDetailPanel.h"
 #include "ores.qt/CurrencyDetailPanel.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.comms/protocol/frame.hpp"
 
@@ -189,7 +189,7 @@ void CurrencyDetailPanel::onSaveClicked() {
             BOOST_LOG_SEV(lg(), error) << "Currency update failed: " << message;
             emit errorMessage(QString("Failed to update currency: %1")
                 .arg(QString::fromStdString(message)));
-            QMessageBox::critical(this, "Update Failed",
+            MessageBoxHelper::critical(this, "Update Failed",
                 QString::fromStdString(message));
         }
     });
@@ -212,7 +212,7 @@ void CurrencyDetailPanel::onDeleteClicked() {
     BOOST_LOG_SEV(lg(), info) << "Delete request for currency: " << currentCurrency_.iso_code;
 
     // Confirm deletion
-    auto reply = QMessageBox::question(this, "Delete Currency",
+    auto reply = MessageBoxHelper::question(this, "Delete Currency",
         QString("Are you sure you want to delete currency '%1' (%2)?")
             .arg(QString::fromStdString(currentCurrency_.name))
             .arg(QString::fromStdString(currentCurrency_.iso_code)),
@@ -282,7 +282,7 @@ void CurrencyDetailPanel::onDeleteClicked() {
             BOOST_LOG_SEV(lg(), error) << "Currency deletion failed: " << message;
             emit errorMessage(QString("Failed to delete currency: %1")
                 .arg(QString::fromStdString(message)));
-            QMessageBox::critical(this, "Delete Failed",
+            MessageBoxHelper::critical(this, "Delete Failed",
                 QString::fromStdString(message));
         }
     });

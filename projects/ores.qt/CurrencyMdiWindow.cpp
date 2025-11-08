@@ -25,8 +25,8 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QTableView>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QMessageBox>
 #include "ores.qt/CurrencyMdiWindow.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 // #include "ores.qt/CurrencyEditDialog.hpp" // Removed
 #include "ores.qt/CurrencyItemDelegate.hpp" // Include the new delegate header
 #include "ores.risk/messaging/protocol.hpp"
@@ -97,7 +97,7 @@ void CurrencyMdiWindow::onLoadError(const QString& error_message) {
     BOOST_LOG_SEV(lg(), error) << "Error loading currencies: "
                               << error_message.toStdString();
 
-    QMessageBox::critical(this, "Load Error", error_message);
+    MessageBoxHelper::critical(this, "Load Error", error_message);
 }
 
 void CurrencyMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
@@ -152,7 +152,7 @@ void CurrencyMdiWindow::deleteSelected() {
                              << currency->iso_code;
 
     // Confirm deletion
-    auto reply = QMessageBox::question(this, "Delete Currency",
+    auto reply = MessageBoxHelper::question(this, "Delete Currency",
         QString("Are you sure you want to delete currency '%1' (%2)?")
             .arg(QString::fromStdString(currency->name))
             .arg(QString::fromStdString(currency->iso_code)),
@@ -225,7 +225,7 @@ void CurrencyMdiWindow::deleteSelected() {
             emit errorOccurred(QString("Failed to delete currency: %1")
                 .arg(QString::fromStdString(message)));
 
-            QMessageBox::critical(this, "Delete Failed",
+            MessageBoxHelper::critical(this, "Delete Failed",
                 QString::fromStdString(message));
         }
     });

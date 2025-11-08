@@ -18,10 +18,10 @@
  *
  */
 #include "ores.qt/LoginDialog.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
-#include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.comms/protocol/frame.hpp"
@@ -135,19 +135,19 @@ void LoginDialog::onLoginClicked() {
 
     // Validate input
     if (username.isEmpty()) {
-        QMessageBox::warning(this, "Invalid Input", "Please enter a username.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please enter a username.");
         username_edit_->setFocus();
         return;
     }
 
     if (password.isEmpty()) {
-        QMessageBox::warning(this, "Invalid Input", "Please enter a password.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please enter a password.");
         password_edit_->setFocus();
         return;
     }
 
     if (host.isEmpty()) {
-        QMessageBox::warning(this, "Invalid Input", "Please enter a server host.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please enter a server host.");
         host_edit_->setFocus();
         return;
     }
@@ -272,7 +272,7 @@ void LoginDialog::onConnectionResult(bool success, const QString& error_message)
         status_label_->setText("");
         status_label_->setStyleSheet("QLabel { color: #c00; }");
 
-        QMessageBox::critical(this, "Connection Failed",
+        MessageBoxHelper::critical(this, "Connection Failed",
             QString("Failed to connect to server: %1").arg(error_message));
 
         // Clean up on failure
@@ -305,7 +305,7 @@ void LoginDialog::onLoginResult(bool success, const QString& error_message) {
         enableForm(true);
         status_label_->setText("");
 
-        QMessageBox::critical(this, "Login Failed",
+        MessageBoxHelper::critical(this, "Login Failed",
             QString("Authentication failed: %1").arg(error_message));
 
         // Clean up on failure

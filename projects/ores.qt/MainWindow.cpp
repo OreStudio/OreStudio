@@ -20,7 +20,6 @@
 
 #include <QDebug>
 #include <QTableView>
-#include <QMessageBox>
 #include <QTimer>
 #include <QApplication>
 #include <QScreen>
@@ -36,6 +35,7 @@
 #include "ores.qt/LoginDialog.hpp"
 #include "ores.qt/CurrencyMdiWindow.hpp"
 #include "ores.qt/CurrencyDetailPanel.hpp" // Include the header for CurrencyDetailPanel
+#include "ores.qt/MessageBoxHelper.hpp"
 
 namespace ores::qt {
 
@@ -138,7 +138,7 @@ MainWindow::MainWindow(QWidget* parent) :
 
         if (!client_ || !client_->is_connected()) {
             BOOST_LOG_SEV(lg(), warn) << "Currencies action triggered but not connected";
-            QMessageBox::warning(this, "Not Connected",
+            MessageBoxHelper::warning(this, "Not Connected",
                 "Please login first to view currencies.");
             return;
         }
@@ -227,7 +227,7 @@ void MainWindow::onLoginTriggered() {
             ui_->statusbar->showMessage("Successfully connected and logged in to the server.");
         } else {
             BOOST_LOG_SEV(lg(), error) << "Client is not properly connected after login.";
-            QMessageBox::critical(this, "Connection Error",
+            MessageBoxHelper::critical(this, "Connection Error",
                 "Failed to establish server connection.");
         }
     } else {

@@ -1,0 +1,74 @@
+/*
+ * OreStudio - Trading Style
+ */
+
+QWidget {
+    background-color: #1A1A1A;
+    color: #F0F0F0;
+    font-family: "Fira Code";
+    font-size: 10pt;
+}
+
+QTableView {
+    /* Base style for the data area */
+    background-color: #1A1A1A; /* Primary Background */
+    gridline-color: #333333; /* Faint row separators */
+    color: #F0F0F0;
+    border: 1px solid #007ACC; /* Subtle border using accent color */
+    selection-background-color: #007ACC; /* Accent Color for selection */
+    selection-color: white;
+}
+
+QHeaderView::section {
+    /* Style for Column Headers */
+    background-color: #282828; /* Slightly lighter shade for headers */
+    color: #FFFFFF;
+    border: none;
+    padding: 6px;
+    font-size: 11pt;
+    font-weight: bold;
+}
+
+QLineEdit {
+    /* Style for input fields (e.g., in the side panel or search) */
+    background-color: #1A1A1A;
+    border: 1px solid #444444;
+    color: #F0F0F0;
+    padding: 5px;
+}
+
+QPushButton {
+    /* Flat button style for toolbar */
+    background-color: transparent;
+    border: none;
+    color: #F0F0F0;
+    padding: 8px 12px;
+}
+
+QPushButton:hover {
+    /* Hover effect */
+    background-color: #2A2A2A;
+    border: 1px solid #007ACC;
+}
+
+QMenuBar {
+    background-color: #282828;
+    color: #F0F0F0;
+}
+
+QMenuBar::item {
+    background-color: transparent;
+}
+
+QMenuBar::item:selected {
+    background-color: #007ACC;
+}
+
+QMenu {
+    background-color: #282828;
+    border: 1px solid #444444;
+}
+
+QMenu::item:selected {
+    background-color: #007ACC;
+}

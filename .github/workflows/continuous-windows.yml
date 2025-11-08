@@ -22,12 +22,17 @@ env:
 
 on:  # yamllint disable-line rule:truthy
   push:
-    branches: [main]
-    tags: ['*']
+    branches:
+      - main
+    paths-ignore:
+      - 'docs/**'
+    tags:
+      - '*'
   pull_request:
-    branches: [main]
-  paths-ignore:
-    - 'docs/**'
+    branches:
+      - main
+    paths-ignore:
+      - 'docs/**'
 
 jobs:
   build:
@@ -111,4 +116,4 @@ jobs:
         uses: actions/upload-artifact@v5.0.0
         with:
           name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
-          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/packages/OreStudio-0.0.4-win64.msi
+          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/packages/OreStudio-0.0.4-win64.*

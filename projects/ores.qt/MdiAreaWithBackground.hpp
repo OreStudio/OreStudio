@@ -17,48 +17,41 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_SPLASHSCREEN_HPP
-#define ORES_QT_SPLASHSCREEN_HPP
+#ifndef ORES_QT_MDI_AREA_WITH_BACKGROUND_HPP
+#define ORES_QT_MDI_AREA_WITH_BACKGROUND_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <QThread>
-#include <QSplashScreen>
-#include <QApplication>
-#include <QTimer>
+#include <QMdiArea>
+#include <QPixmap>
 #include "ores.utility/log/make_logger.hpp"
 
 namespace ores::qt {
 
-class SplashScreen : public QSplashScreen
-{
+/**
+ * @brief Custom QMdiArea that displays a background logo when no windows are open.
+ */
+class MdiAreaWithBackground : public QMdiArea {
     Q_OBJECT
 
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.qt.splash_screen");
+        static auto instance = make_logger("ores.qt.mdi_area_with_background");
         return instance;
     }
 
 public:
-    explicit SplashScreen(const QPixmap& pixmap  = QPixmap());
-    void paintEvent(QPaintEvent* e) override;
-    void ensureFirstPaint() const;
-    void setProgressDuration(int milliseconds);
+    explicit MdiAreaWithBackground(QWidget* parent = nullptr);
+    void setBackgroundLogo(const QString& imagePath);
 
-private slots:
-    void updateProgress();
+protected:
+    void paintEvent(QPaintEvent* event) override;
 
 private:
-    bool painted_ = false;
-    int progress_ = 0;
-    QTimer* progressTimer_ = nullptr;
-    int totalDuration_ = 0;
-    int elapsedTime_ = 0;
-    int updateInterval_ = 50;
+    QPixmap backgroundLogo_;
 };
 
 }

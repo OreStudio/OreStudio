@@ -151,5 +151,184 @@ std::ostream& operator<<(std::ostream& s, const get_currencies_response& v)
     return(s);
 }
 
+// Helper function to serialize a single currency
+namespace {
+void serialize_currency(std::vector<std::uint8_t>& buffer, const domain::currency& currency) {
+    writer::write_string(buffer, currency.iso_code);
+    writer::write_string(buffer, currency.name);
+    writer::write_string(buffer, currency.numeric_code);
+    writer::write_string(buffer, currency.symbol);
+    writer::write_string(buffer, currency.fraction_symbol);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(currency.fractions_per_unit));
+    writer::write_string(buffer, currency.rounding_type);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(currency.rounding_precision));
+    writer::write_string(buffer, currency.format);
+    writer::write_string(buffer, currency.currency_type);
+    writer::write_string(buffer, currency.modified_by);
+    writer::write_string(buffer, currency.valid_from);
+    writer::write_string(buffer, currency.valid_to);
+}
+
+std::expected<domain::currency, comms::protocol::error_code>
+deserialize_currency(std::span<const std::uint8_t>& data) {
+    domain::currency currency;
+
+    auto iso_code = reader::read_string(data);
+    if (!iso_code) return std::unexpected(iso_code.error());
+    currency.iso_code = *iso_code;
+
+    auto name = reader::read_string(data);
+    if (!name) return std::unexpected(name.error());
+    currency.name = *name;
+
+    auto numeric_code = reader::read_string(data);
+    if (!numeric_code) return std::unexpected(numeric_code.error());
+    currency.numeric_code = *numeric_code;
+
+    auto symbol = reader::read_string(data);
+    if (!symbol) return std::unexpected(symbol.error());
+    currency.symbol = *symbol;
+
+    auto fraction_symbol = reader::read_string(data);
+    if (!fraction_symbol) return std::unexpected(fraction_symbol.error());
+    currency.fraction_symbol = *fraction_symbol;
+
+    auto fractions_per_unit = reader::read_uint32(data);
+    if (!fractions_per_unit) return std::unexpected(fractions_per_unit.error());
+    currency.fractions_per_unit = static_cast<int>(*fractions_per_unit);
+
+    auto rounding_type = reader::read_string(data);
+    if (!rounding_type) return std::unexpected(rounding_type.error());
+    currency.rounding_type = *rounding_type;
+
+    auto rounding_precision = reader::read_uint32(data);
+    if (!rounding_precision) return std::unexpected(rounding_precision.error());
+    currency.rounding_precision = static_cast<int>(*rounding_precision);
+
+    auto format = reader::read_string(data);
+    if (!format) return std::unexpected(format.error());
+    currency.format = *format;
+
+    auto currency_type = reader::read_string(data);
+    if (!currency_type) return std::unexpected(currency_type.error());
+    currency.currency_type = *currency_type;
+
+    auto modified_by = reader::read_string(data);
+    if (!modified_by) return std::unexpected(modified_by.error());
+    currency.modified_by = *modified_by;
+
+    auto valid_from = reader::read_string(data);
+    if (!valid_from) return std::unexpected(valid_from.error());
+    currency.valid_from = *valid_from;
+
+    auto valid_to = reader::read_string(data);
+    if (!valid_to) return std::unexpected(valid_to.error());
+    currency.valid_to = *valid_to;
+
+    return currency;
+}
+}
+
+std::vector<std::uint8_t> update_currency_request::serialize() const {
+    std::vector<std::uint8_t> buffer;
+    serialize_currency(buffer, currency);
+    return buffer;
+}
+
+std::expected<update_currency_request, comms::protocol::error_code>
+update_currency_request::deserialize(std::span<const std::uint8_t> data) {
+    auto currency_result = deserialize_currency(data);
+    if (!currency_result) {
+        return std::unexpected(currency_result.error());
+    }
+    return update_currency_request{*currency_result};
+}
+
+std::ostream& operator<<(std::ostream& s, const update_currency_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::uint8_t> update_currency_response::serialize() const {
+    std::vector<std::uint8_t> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    return buffer;
+}
+
+std::expected<update_currency_response, comms::protocol::error_code>
+update_currency_response::deserialize(std::span<const std::uint8_t> data) {
+    update_currency_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) {
+        return std::unexpected(success_result.error());
+    }
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) {
+        return std::unexpected(message_result.error());
+    }
+    response.message = *message_result;
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const update_currency_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::uint8_t> delete_currency_request::serialize() const {
+    std::vector<std::uint8_t> buffer;
+    writer::write_string(buffer, iso_code);
+    return buffer;
+}
+
+std::expected<delete_currency_request, comms::protocol::error_code>
+delete_currency_request::deserialize(std::span<const std::uint8_t> data) {
+    auto iso_code_result = reader::read_string(data);
+    if (!iso_code_result) {
+        return std::unexpected(iso_code_result.error());
+    }
+    return delete_currency_request{*iso_code_result};
+}
+
+std::ostream& operator<<(std::ostream& s, const delete_currency_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::uint8_t> delete_currency_response::serialize() const {
+    std::vector<std::uint8_t> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    return buffer;
+}
+
+std::expected<delete_currency_response, comms::protocol::error_code>
+delete_currency_response::deserialize(std::span<const std::uint8_t> data) {
+    delete_currency_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) {
+        return std::unexpected(success_result.error());
+    }
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) {
+        return std::unexpected(message_result.error());
+    }
+    response.message = *message_result;
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const delete_currency_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
 
 }

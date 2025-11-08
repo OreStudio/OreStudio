@@ -11,7 +11,7 @@
 
 - implement bootstrap mode.
 - add system navigator and login.
-
+- add crud for accounts and currency.
 
 * Stories
 
@@ -19,32 +19,43 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-07 Fri 09:04], for Friday, November 07, 2025.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *0:14* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 0:14   |      |      | 100.0 |
-|       | Active                                |        | 0:14 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:14 | 100.0 |
+#+CAPTION: Clock summary at [2025-11-08 Sat 01:26], for Saturday, November 08, 2025.
+|      | <75>                         |        |      |      |       |
+| Tags | Headline                     | Time   |      |      |     % |
+|------+------------------------------+--------+------+------+-------|
+|      | *Total time*                 | *1:25* |      |      | 100.0 |
+|------+------------------------------+--------+------+------+-------|
+|      | Stories                      | 1:25   |      |      | 100.0 |
+|      | Active                       |        | 1:25 |      | 100.0 |
+| code | Use fluent icons             |        |      | 0:27 |  31.8 |
+| code | Add currency editing support |        |      | 0:58 |  68.2 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-07 Fri 09:04]
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *0:14* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 0:14   |      |      | 100.0 |
-|       | Active                                |        | 0:14 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:14 | 100.0 |
+#+CAPTION: Clock summary at [2025-11-08 Sat 01:26]
+|       | <75>                                                   |        |      |      |       |
+| Tags  | Headline                                               | Time   |      |      |     % |
+|-------+--------------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                           | *9:00* |      |      | 100.0 |
+|-------+--------------------------------------------------------+--------+------+------+-------|
+|       | Stories                                                | 9:00   |      |      | 100.0 |
+|       | Active                                                 |        | 9:00 |      | 100.0 |
+| agile | Sprint and product backlog refinement                  |        |      | 0:34 |   6.3 |
+| code  | Clean up client parser                                 |        |      | 0:10 |   1.9 |
+| code  | Add connect command line argument                      |        |      | 1:19 |  14.6 |
+| infra | Install Windows package on Windows machine             |        |      | 2:09 |  23.9 |
+| code  | Ignore warnings on windows and osx                     |        |      | 0:33 |   6.1 |
+| code  | Ensure applications work under OSX using github images |        |      | 0:14 |   2.6 |
+| infra | Create a splash screen and gray background             |        |      | 2:26 |  27.0 |
+| code  | Use fluent icons                                       |        |      | 0:37 |   6.9 |
+| code  | Add currency editing support                           |        |      | 0:58 |  10.7 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-11-07 Fri 10:35]--[2025-11-07 Fri 10:47] =>  0:12
+    CLOCK: [2025-11-07 Fri 09:05]--[2025-11-07 Fri 09:13] =>  0:08
     CLOCK: [2025-11-07 Fri 08:50]--[2025-11-07 Fri 09:04] =>  0:14
     :END:
 
@@ -88,7 +99,7 @@ print(p)
 #+end_src
 
 #+RESULTS: stories-chart
-[[file:sprint_backlog_03_stories.png]]
+[[file:sprint_backlog_04_stories.png]]
 
 #+name: tags-chart
 #+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_04_tags.png :width 600 :height 400
@@ -125,7 +136,7 @@ print(p)
 #+end_src
 
 #+RESULTS: tags-chart
-[[file:sprint_backlog_03_tags.png]]
+[[file:sprint_backlog_04_tags.png]]
 
 *** COMPLETED CTest shows only one test per test suite                 :code:
 
@@ -139,6 +150,351 @@ Links:
 
 - [[https://gitlab.kitware.com/cmake/cmake/-/issues/27363][#27363: CTest: Uploading generated JUnit XML from the test harness]]
 - [[https://public.kitware.com/pipermail/cdash/2015-February/001544.html][[Cdash] How to send a JUnit result file to CDash server with CTest?]]
+
+*** COMPLETED Clean up client parser                                   :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-07 Fri 09:14]--[2025-11-07 Fri 09:24] =>  0:10
+    :END:
+
+It should use common infrastructure and read variables from the environment.
+
+*** COMPLETED Add connect command line argument                        :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-07 Fri 11:56]--[2025-11-07 Fri 13:15] =>  1:19
+    :END:
+
+To avoid leaking secrets it should be possible to supply a =--connect= in the
+client. We still need a connect in case we want to reconnect.
+
+Notes:
+
+- clean up parser in client, not using common logging.
+- add environment mapping to client.
+
+Links:
+
+- [[https://github.com/daniele77/cli/issues/250][#250: Basic Scripting with Cli]]
+
+*** COMPLETED Install Windows package on Windows machine              :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-07 Fri 14:51]--[2025-11-07 Fri 16:28] =>  1:37
+    CLOCK: [2025-11-07 Fri 11:33]--[2025-11-07 Fri 11:55] =>  0:22
+    CLOCK: [2025-11-07 Fri 10:48]--[2025-11-07 Fri 10:58] =>  0:10
+    :END:
+
+We need to install and run the windows package and make sure it works. Check
+console and GUI start. Also, check we can connect against local service and
+against remove service.
+
+Notes:
+
+- application fails to start because QT6 DLLs are not in bin folder. It is also
+  missing libssl. Adding vcpkg to presets copied a lot of the DLLs:
+
+#+begin_src json
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "default",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "binaryDir": "build",
+      "cacheVariables": {
+        "X_VCPKG_APPLOCAL_DEPS_INSTALL": true
+      }
+    }
+  ]
+}
+#+end_src
+
+- services are now running and connecting to postgres. Managed to connect from
+  Linux to Windows and log in. However, Qt UI won't start due to missing DLLs.
+  Installed Qt from online downloader, need to figure out what is missing. Open
+  a separate story to handle Qt issues.
+
+Links:
+
+- [[https://github.com/microsoft/vcpkg/issues/43066][#43066: X_VCPKG_APPLOCAL_DEPS_INSTALL requires dumpbin to be on PATH for windows]]
+- [[https://stackoverflow.com/questions/68579934/how-to-copy-targets-all-runtime-dependencies-after-build-process-in-cmake][How to copy target's all runtime dependencies after build process in CMake?]]
+- [[https://stackoverflow.com/questions/78723493/cmake-install-rules][CMake install rules]]
+
+*** BLOCKED Ignore warnings on windows and osx                         :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-07 Fri 10:59]--[2025-11-07 Fri 11:32] =>  0:33
+    :END:
+
+At present we have a number of spurious warnings on both windows and OSX. Try to
+see if we can get CDash to ignore them.
+
+Notes:
+
+- Raised a Kitware ticket.
+
+Links:
+
+- [[https://gitlab.kitware.com/cmake/cmake/-/issues/27367][CTest: Using regexes to filter warnings for CDash]]
+- [[https://stackoverflow.com/questions/26458652/ctest-custom-warning-exception][SO: ctest custom warning exception]]
+
+*** BLOCKED Ensure applications work under OSX using github images     :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-07 Fri 16:29]--[2025-11-07 Fri 16:43] =>  0:14
+    :END:
+
+We need to install the DMG and run the app.
+
+We think the package does not have all of the dependencies, but this did not
+work:
+
+#+begin_src cmake
+if(APPLE)
+    install(CODE "
+        # make sure the bundle is already on disk
+        set(BU_CHMOD_BUNDLE_ITEMS TRUE)
+        include(BundleUtilities)
+
+        # full path to the real executable inside the bundle
+        set(app_exe \"\${CMAKE_INSTALL_PREFIX}/OreStudio.app/Contents/MacOS/OreStudio\")
+
+        # directory where 3rd-party libraries will be copied
+        set(libs_dir \"\${CMAKE_INSTALL_PREFIX}/OreStudio.app/Contents/Frameworks\")
+
+        # discover all prerequisites and copy/fix them
+        fixup_bundle(\"\${app_exe}\" \"\" \"\${libs_dir}\")
+    " COMPONENT Runtime)
+endif()
+#+end_src
+
+We should ask someone with an OSX machine to test this.
+
+Links:
+
+- [[https://stackoverflow.com/questions/17974439/cant-use-fixup-bundle-to-create-a-portable-bundle-with-qt][SO: Can't use fixup_bundle() to create a portable bundle with Qt]]
+
+*** COMPLETED Create a splash screen and gray background              :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-07 Fri 23:30]--[2025-11-07 Fri 23:49] =>  0:19
+    CLOCK: [2025-11-07 Fri 17:54]--[2025-11-07 Fri 18:57] =>  1:03
+    CLOCK: [2025-11-07 Fri 16:49]--[2025-11-07 Fri 17:53] =>  1:04
+    :END:
+
+We need to replace the basic splash with something that looks slightly better.
+We also need some kind of background for the initial screen when nothing is
+selected, a bit like visual studio code.
+
+*** COMPLETED Use fluent icons                                         :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-07 Fri 23:50]--[2025-11-08 Sat 00:27] =>  0:37
+    :END:
+
+These seem to be a bit better than the current icons we have:
+
+- [[https://github.com/microsoft/fluentui-system-icons/tree/main][fluentui-system-icons]]
+
+*** STARTED Add currency editing support                               :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-08 Sat 00:28]--[2025-11-08 Sat 01:26] =>  0:58
+    :END:
+
+We need to be able to open up individual currencies and edit them. We also need
+to be able to select multiple currencies and delete them.
+
+*** Add about to menu                                                  :code:
+
+We need an about describing the project.
+
+*** Improve UI/UX                                                      :code:
+
+Analysis from Gemini:
+
+#+begin_src markdown
+To make your Qt application look like an advanced trading system—even for a
+simple CRUD operation screen—requires moving beyond basic desktop application
+styles toward the dense, high-contrast, data-rich aesthetic of platforms like
+Bloomberg or professional broker terminals.
+
+The current look (a dark table with simple data rows) is a great foundation.
+Here are targeted suggestions for your Qt UI to elevate it to a professional,
+advanced trading system aesthetic:
+
+## I. Color and Contrast (The Dark Theme)
+
+Your current dark gray background is good, but trading systems use specific
+contrast to highlight data significance.
+
+1.  **Define a Palette:** Adopt a limited, functional color palette:
+
+      ,* **Primary Background:** A very dark, near-black charcoal (`#1A1A1A` or
+        `#1E1E1E`). This is the foundation.
+      ,* **Foreground/Text:** Clean white or light gray (`#F0F0F0`).
+      ,* **Accent Color (Neutral):** A subdued corporate blue/cyan (`#007ACC` or
+        a subtle green/gold from your branding) for selected rows, borders, and
+        input focus.
+      ,* **Data Status Colors:**
+          ,* **Positive (Gains):** Bright, high-contrast green (`#00C853`).
+          ,* **Negative (Losses):** High-contrast red (`#FF3333`).
+          ,* *(While CRUD isn't about gains/losses, you can use these colors for
+            status, like 'Active' vs. 'Inactive' currencies).*
+
+2.  **Subtle Depth:** Avoid flat black. Use a slightly lighter shade of gray
+    (`#2A2A2A`) for embedded panels, sidebars, and control areas to create
+    visual segmentation, giving the impression of modularity.
+
+## II. Typography and Data Presentation
+
+Trading UIs prioritize density and scannability.
+
+1.  **Monospace Font:** For the currency codes and numerical columns, switch to
+    a clear, legible **monospace font** (like Consolas, Fira Code, or a custom
+    font in Qt). Monospace fonts ensure that all numbers align perfectly in
+    columns, which is essential for rapid data comparison.
+2.  **Font Sizing:** Use a small, consistent font size (e.g., 10pt or 11pt) to
+    fit more data on screen. Use bolding sparingly, primarily for the Currency
+    Code (e.g., USD, EUR).
+3.  **Visual Alignment:**
+      ,* **Text Columns** (Currency Name): Left-aligned.
+      ,* **Code Columns** (ISO Code, Symbol): Center-aligned.
+      ,* **Numerical Columns** (Rounding, Precision): Right-aligned. **This is
+        critical** for financial UIs, as it allows users to compare magnitude
+        instantly.
+
+## III. Advanced Table View Enhancements (QTableView/QTableWidget)
+
+Since the core of this screen is a table, focus on making the table look
+high-tech.
+
+1.  **Header Styling:**
+
+      ,* Make column headers slightly stand out with a subtle dark gradient or a
+        distinct, slightly brighter background color (e.g., `#282828`).
+      ,* Ensure the header font is crisp (perhaps slightly bolder than the row
+        data).
+      ,* Add tiny, clear **sort indicators** to show the current sort direction.
+
+2.  **Row Selection:**
+
+      ,* The selected row should use your accent color (e.g., a thin blue left
+        border or a light blue background fill) with white or light gray text
+        for high visibility.
+      ,* Introduce **subtle, faint horizontal rules** (1px in a color like
+        `#333333`) to separate rows, which aids readability in dense tables.
+
+3.  **Interactive Elements (Hover):** Implement a very subtle change on row
+    hover (e.g., the background darkens by 5%) to indicate interactivity, even
+    if clicking doesn't change the view.
+
+## IV. UI Layout and Modularity
+
+Advanced UIs are rarely monolithic; they are built from modular panels.
+
+1.  **Toolbar (Top):** Create a clean, dedicated toolbar area at the top for
+    your CRUD operations (`Add`, `Edit`, `Delete`) and your system icons
+    (Connection, Reference Data).
+
+      ,* Use the Fluent UI System Icons you researched (`globe-32-regular`,
+        `money-32-regular`).
+      ,* Buttons should be flat, high-contrast text or icons only. On hover, they
+        should reveal a subtle gray background or a thin accent border.
+
+2.  **Side Panel (Right or Left):** Instead of a simple dialog for *editing*,
+    use a dedicated side panel that slides out or appears next to the table when
+    a row is selected.
+
+      ,* This panel would house the detail view for the selected currency. This
+        makes the UI feel like a single workspace rather than navigating modal
+        windows.
+      ,* Give this panel a slightly different background shade (`#2A2A2A`).
+
+3.  **Status Bar (Bottom):** Add a sleek, minimal status bar at the bottom. This
+    is where you would place your connection status icon (using your proposed
+    `globe-32-regular` or `plug-connected-32-regular` icon). It reinforces the
+    "system is live" feel.
+
+## V. Qt-Specific Implementation via Stylesheets
+
+In Qt, you achieve this professional look primarily through **QSS (Qt Style
+Sheets)**. You will be targeting specific widgets (like `QTableView`,
+`QPushButton`, `QLineEdit`) with CSS-like rules.
+
+```css
+/* Example QSS Snippets for the Trading Look */
+
+QTableView {
+    /* Base style for the data area */
+    background-color: #1A1A1A; /* Primary Background */
+    gridline-color: #333333; /* Faint row separators */
+    color: #F0F0F0;
+    border: 1px solid #007ACC; /* Subtle border using accent color */
+    selection-background-color: #007ACC; /* Accent Color for selection */
+    selection-color: white;
+}
+
+QHeaderView::section {
+    /* Style for Column Headers */
+    background-color: #282828; /* Slightly lighter shade for headers */
+    color: #FFFFFF;
+    border: none;
+    padding: 6px;
+    font-size: 11pt;
+    font-weight: bold;
+}
+
+QLineEdit {
+    /* Style for input fields (e.g., in the side panel or search) */
+    background-color: #1A1A1A;
+    border: 1px solid #444444;
+    color: #F0F0F0;
+    padding: 5px;
+}
+
+QPushButton {
+    /* Flat button style for toolbar */
+    background-color: transparent;
+    border: none;
+    color: #F0F0F0;
+    padding: 8px 12px;
+}
+
+QPushButton:hover {
+    /* Hover effect */
+    background-color: #2A2A2A;
+    border: 1px solid #007ACC;
+}
+```
+#+end_src
+
+*** Repl needs synchronous socket operations                           :code:
+
+At present the operations on sockets are async. This is a problem with the repl
+because we issue commands out of order. For example this causes scripting to
+fail.
+
+- [[https://github.com/daniele77/cli/discussions/251][#251: Basic Scripting with Cli]]
+
+*** Setup Qt properly on Windows                                       :code:
+
+Seems like our package is still missing Qt DLLs. Use the windows tool to
+determine what is missing. Consider installing Qt in the build machine via the
+built packages.
+
+*** Server must check database connectivity on startup                 :code:
+
+At present the server only checks connectivity to database when a user requests
+an operation. We need some kind of initial polling which puts the server in a
+mode replying to all clients: "database not available". While this is happening,
+it should keep polling the database and checking the connectivity.
+
+*** Add SC script on windows to install ores.service                   :code:
+
+We should package a trivial batch file that sets up the service on windows. We
+should also consider adding a simple script to setup the service on Linux.
+Ideally it should be done via the packaging step.
+
+*** Package SQL scripts                                                :code:
+
+We need to initialise the database on installation. The package should contain
+all of the necessary SQL as well as a script to do it.
 
 *** Resolve all of the OpenSSL leaks in valgrind                       :code:
 
@@ -254,21 +610,6 @@ Once the system is in **"Secure Mode"**:
 Links:
 
 - [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
-
-*** Add connect command line argument                                  :code:
-
-To avoid leaking secrets it should be possible to supply a =--connect= in the
-client. We still need a connect in case we want to reconnect.
-
-Notes:
-
-- clean up parser in client, not using common logging.
-- add environment mapping to client.
-
-*** Ignore warnings on windows and osx                                 :code:
-
-At present we have a number of spurious warnings on both windows and OSX. Try to
-see if we can get CDash to ignore them
 
 *** Remove postgres passwords from github workflows                    :code:
 

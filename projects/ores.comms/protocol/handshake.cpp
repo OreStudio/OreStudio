@@ -83,6 +83,26 @@ deserialize(std::span<const std::uint8_t> data) {
     return result.value();
 }
 
+std::vector<std::uint8_t>
+error_response::serialize(error_response v) {
+    auto bson_data = rfl::bson::write(v);
+    return {
+        reinterpret_cast<const std::uint8_t*>(bson_data.data()),
+        reinterpret_cast<const std::uint8_t*>(bson_data.data()) + bson_data.size()
+    };
+}
+
+std::expected<error_response, error_code> error_response::
+deserialize(std::span<const std::uint8_t> data) {
+    auto result = rfl::bson::read<error_response>(data.data(), data.size());
+
+    if (!result) {
+        return std::unexpected(error_code::invalid_message_type);
+    }
+
+    return result.value();
+}
+
 // Frame creation functions
 frame create_handshake_request_frame(
     std::uint32_t sequence,
@@ -121,6 +141,19 @@ frame create_handshake_ack_frame(
     handshake_ack ack{status};
 
     return { message_type::handshake_ack, sequence, ack.serialize(ack) };
+}
+
+frame create_error_response_frame(
+    std::uint32_t sequence,
+    error_code code,
+    const std::string& message) {
+
+    error_response err{
+        .code = code,
+        .message = message
+    };
+
+    return { message_type::error_response, sequence, err.serialize(err) };
 }
 
 }

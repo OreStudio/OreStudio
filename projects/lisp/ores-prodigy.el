@@ -39,9 +39,7 @@
   (let ((pwd (auth-source-pick-first-password
               :host "localhost"
               :user "ores")))
-    (list (list "ORES_DB_PASSWORD" pwd))))
-
-
+    (list (list "ORES_SERVICE_DB_PASSWORD" pwd))))
 
 (defvar ores/service-environment (ores/setup-environment)
   "Environment to run services in.")

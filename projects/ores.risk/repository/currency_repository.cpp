@@ -178,4 +178,39 @@ currency_repository::read_all(context ctx, const std::string& iso_code) {
     return currency_mapper::map(*r);
 }
 
+void currency_repository::update(context ctx, const domain::currency& currency) {
+    BOOST_LOG_SEV(lg(), debug) << "Updating currency in database: "
+                               << currency.iso_code;
+
+    // Simply insert the new record - the database trigger will:
+    // 1. Close the existing record (set valid_to = current_timestamp)
+    // 2. Set valid_from = current_timestamp on the new record
+    // 3. Set valid_to = '9999-12-31 23:59:59' on the new record
+    // 4. Set modified_by = current_user
+    const auto r = session(ctx.connection_pool())
+        .and_then(begin_transaction)
+        .and_then(insert(currency_mapper::map(currency)))
+        .and_then(commit);
+    ensure_success(r);
+
+    BOOST_LOG_SEV(lg(), debug) << "Finished updating currency in database.";
+}
+
+void currency_repository::remove(context ctx, const std::string& iso_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing currency from database: " << iso_code;
+
+    // Delete the currency - the database trigger will close the temporal record
+    // instead of actually deleting it (sets valid_to = current_timestamp)
+    const auto query = sqlgen::delete_from<currency_entity> |
+        where("iso_code"_c == iso_code);
+
+    const auto r = session(ctx.connection_pool())
+        .and_then(begin_transaction)
+        .and_then(query)
+        .and_then(commit);
+    ensure_success(r);
+
+    BOOST_LOG_SEV(lg(), debug) << "Finished removing currency from database.";
+}
+
 }

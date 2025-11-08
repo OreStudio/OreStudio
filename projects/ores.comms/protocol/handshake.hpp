@@ -87,6 +87,24 @@ struct handshake_ack final {
 };
 
 /**
+ * @brief Error response message sent when request processing fails.
+ */
+struct error_response final {
+    error_code code;
+    std::string message;
+
+    /**
+     * @brief Serialize to frame payload.
+     */
+    static std::vector<std::uint8_t> serialize(error_response v);
+
+    /**
+     * @brief Deserialize from frame payload.
+     */
+    static std::expected<error_response, error_code> deserialize(std::span<const std::uint8_t> data);
+};
+
+/**
  * @brief Create a handshake request frame.
  */
 frame create_handshake_request_frame(
@@ -108,6 +126,14 @@ frame create_handshake_response_frame(
 frame create_handshake_ack_frame(
     std::uint32_t sequence,
     error_code status = error_code::none);
+
+/**
+ * @brief Create an error response frame.
+ */
+frame create_error_response_frame(
+    std::uint32_t sequence,
+    error_code code,
+    const std::string& message);
 
 }
 

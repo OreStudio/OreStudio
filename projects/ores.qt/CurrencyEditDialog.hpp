@@ -17,69 +17,68 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_MAIN_WINDOW_HPP
-#define ORES_QT_MAIN_WINDOW_HPP
+#ifndef ORES_QT_CURRENCY_EDIT_DIALOG_HPP
+#define ORES_QT_CURRENCY_EDIT_DIALOG_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <QMainWindow>
+#include <QDialog>
 #include <memory>
-#include <thread>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/executor_work_guard.hpp>
 #include "ores.comms/client.hpp"
-#include "ores.qt/MdiAreaWithBackground.hpp"
+#include "ores.risk/domain/currency.hpp"
 #include "ores.utility/log/make_logger.hpp"
-#include "ui_MainWindow.h"
 
 namespace Ui {
-
-class MainWindow;
-
+class CurrencyEditDialog;
 }
 
 namespace ores::qt {
 
-class MainWindow : public QMainWindow {
+/**
+ * @brief Dialog for editing currency details.
+ */
+class CurrencyEditDialog : public QDialog {
     Q_OBJECT
 
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.qt.main_window");
+        static auto instance = make_logger("ores.qt.currency_edit_dialog");
         return instance;
     }
 
 public:
-    explicit MainWindow(QWidget* parent = nullptr);
-    ~MainWindow() override;
+    explicit CurrencyEditDialog(const ores::risk::domain::currency& currency,
+                                std::shared_ptr<comms::client> client,
+                                QWidget* parent = nullptr);
+    ~CurrencyEditDialog() override;
 
-    /**
-     * @brief Get the connected client instance.
-     * @return Shared pointer to the client, or nullptr if not connected.
-     */
-    std::shared_ptr<comms::client> getClient() const { return client_; }
+signals:
+    void currencyUpdated();
+    void currencyDeleted(const QString& iso_code);
+    void statusMessage(const QString& message);
+    void errorMessage(const QString& message);
 
 private slots:
-    void onLoginTriggered();
-    void onDisconnectTriggered();
+    void onSaveClicked();
+    void onDeleteClicked();
+    void onResetClicked();
+    void onFieldChanged();
 
 private:
-    void updateMenuState();
-    QIcon createRecoloredIcon(const QString& svgPath, const QColor& color);
+    void populateFields();
+    void resetFields();
+    bool validateFields();
+    void updateSaveButtonState();
+    bool hasChanges() const;
 
 private:
-    Ui::MainWindow* ui_;
-    MdiAreaWithBackground* mdiArea_;
-
-    // Client infrastructure
-    std::unique_ptr<boost::asio::io_context> io_context_;
-    std::unique_ptr<boost::asio::executor_work_guard<
-        boost::asio::io_context::executor_type>> work_guard_;
-    std::unique_ptr<std::thread> io_thread_;
+    Ui::CurrencyEditDialog* ui_;
+    ores::risk::domain::currency original_;
     std::shared_ptr<comms::client> client_;
+    bool has_changes_;
 };
 
 }

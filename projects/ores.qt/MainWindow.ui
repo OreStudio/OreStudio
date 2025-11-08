@@ -16,18 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,3">
-      <item>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <widget class="QTreeView" name="treeView"/>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_3"/>
-      </item>
-     </layout>
+     <layout class="QHBoxLayout" name="horizontalLayout_3"/>
     </item>
    </layout>
   </widget>
@@ -46,11 +35,12 @@
     </property>
     <addaction name="separator"/>
     <addaction name="ActionConnect"/>
+    <addaction name="ActionDisconnect"/>
     <addaction name="ExitAction"/>
    </widget>
    <widget class="QMenu" name="menuRefereceData">
     <property name="title">
-     <string>&amp;Reference Data</string>
+     <string>&amp;Ref Data</string>
     </property>
     <addaction name="CurrenciesAction"/>
    </widget>
@@ -69,6 +59,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="ActionConnect"/>
+   <addaction name="ActionDisconnect"/>
    <addaction name="CurrenciesAction"/>
   </widget>
   <action name="ExitAction">
@@ -79,8 +70,7 @@
   <action name="CurrenciesAction">
    <property name="icon">
     <iconset>
-     <normaloff>money-pound-box-line.png</normaloff>
-     <normalon>money-pound-box-line.svg</normalon>money-pound-box-line.png</iconset>
+     <normaloff>ic_fluent_currency_dollar_euro_20_filled.svg</normaloff>ic_fluent_currency_dollar_euro_20_filled.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Currencies</string>
@@ -89,11 +79,19 @@
   <action name="ActionConnect">
    <property name="icon">
     <iconset>
-     <normaloff>database-2-line.png</normaloff>
-     <normalon>money-pound-box-line.svg</normalon>database-2-line.png</iconset>
+     <normaloff>ic_fluent_plug_disconnected_20_filled.svg</normaloff>ic_fluent_plug_disconnected_20_filled.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Connect</string>
+   </property>
+  </action>
+  <action name="ActionDisconnect">
+   <property name="icon">
+    <iconset>
+     <normaloff>ic_fluent_plug_connected_20_filled.svg</normaloff>ic_fluent_plug_connected_20_filled.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Disconnect</string>
    </property>
   </action>
  </widget>

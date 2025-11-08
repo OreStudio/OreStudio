@@ -17,68 +17,54 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_MAIN_WINDOW_HPP
-#define ORES_QT_MAIN_WINDOW_HPP
+#ifndef ORES_QT_CURRENCY_MDI_WINDOW_HPP
+#define ORES_QT_CURRENCY_MDI_WINDOW_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <QMainWindow>
+#include <QWidget>
+#include <QTableView>
+#include <QVBoxLayout>
+#include <QLabel>
 #include <memory>
-#include <thread>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/executor_work_guard.hpp>
 #include "ores.comms/client.hpp"
-#include "ores.qt/MdiAreaWithBackground.hpp"
 #include "ores.utility/log/make_logger.hpp"
-#include "ui_MainWindow.h"
-
-namespace Ui {
-
-class MainWindow;
-
-}
+#include "ores.qt/ClientCurrencyModel.hpp"
 
 namespace ores::qt {
 
-class MainWindow : public QMainWindow {
+/**
+ * @brief MDI window for displaying currencies.
+ */
+class CurrencyMdiWindow : public QWidget {
     Q_OBJECT
 
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.qt.main_window");
+        static auto instance = make_logger("ores.qt.currency_mdi_window");
         return instance;
     }
 
 public:
-    explicit MainWindow(QWidget* parent = nullptr);
-    ~MainWindow() override;
+    explicit CurrencyMdiWindow(std::shared_ptr<comms::client> client,
+                               QWidget* parent = nullptr);
 
-    /**
-     * @brief Get the connected client instance.
-     * @return Shared pointer to the client, or nullptr if not connected.
-     */
-    std::shared_ptr<comms::client> getClient() const { return client_; }
+signals:
+    void statusChanged(const QString& message);
+    void errorOccurred(const QString& error_message);
 
 private slots:
-    void onLoginTriggered();
-    void onDisconnectTriggered();
+    void onDataLoaded();
+    void onLoadError(const QString& error_message);
+    void onRowDoubleClicked(const QModelIndex& index);
 
 private:
-    void updateMenuState();
-    QIcon createRecoloredIcon(const QString& svgPath, const QColor& color);
-
-private:
-    Ui::MainWindow* ui_;
-    MdiAreaWithBackground* mdiArea_;
-
-    // Client infrastructure
-    std::unique_ptr<boost::asio::io_context> io_context_;
-    std::unique_ptr<boost::asio::executor_work_guard<
-        boost::asio::io_context::executor_type>> work_guard_;
-    std::unique_ptr<std::thread> io_thread_;
+    QVBoxLayout* verticalLayout_;
+    QTableView* currencyTableView_;
+    ClientCurrencyModel* currencyModel_;
     std::shared_ptr<comms::client> client_;
 };
 

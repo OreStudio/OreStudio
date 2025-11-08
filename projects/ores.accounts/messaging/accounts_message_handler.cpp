@@ -69,22 +69,16 @@ handle_create_account_request(std::span<const std::uint8_t> payload) {
     const auto& request = *request_result;
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
-    try {
-        service::account_service s(account_repo_, login_info_repo_);
-        domain::account account = s.create_account(ctx_, request.username, request.email,
-                                                   request.password, request.modified_by,
-            request.is_admin);
+    service::account_service s(account_repo_, login_info_repo_);
+    domain::account account = s.create_account(ctx_, request.username, request.email,
+                                               request.password, request.modified_by,
+        request.is_admin);
 
-        BOOST_LOG_SEV(lg(), info) << "Created account with ID: " << account.id
-                                 << " for username: " << account.username;
+    BOOST_LOG_SEV(lg(), info) << "Created account with ID: " << account.id
+                             << " for username: " << account.username;
 
-        create_account_response response{account.id};
-        co_return response.serialize();
-
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Exception while creating account: " << e.what();
-        co_return std::unexpected(comms::protocol::error_code::network_error);
-    }
+    create_account_response response{account.id};
+    co_return response.serialize();
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
@@ -98,19 +92,13 @@ accounts_message_handler::handle_list_accounts_request(std::span<const std::uint
         co_return std::unexpected(request_result.error());
     }
 
-    try {
-        // Retrieve accounts from repository
-        auto accounts = account_repo_.read_latest(ctx_);
-        BOOST_LOG_SEV(lg(), info) << "Retrieved " << accounts.size() << " accounts";
+    // Retrieve accounts from repository
+    auto accounts = account_repo_.read_latest(ctx_);
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << accounts.size() << " accounts";
 
-        // Create and serialize response
-        list_accounts_response response{std::move(accounts)};
-        co_return response.serialize();
-
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Exception while retrieving accounts: " << e.what();
-        co_return std::unexpected(comms::protocol::error_code::network_error);
-    }
+    // Create and serialize response
+    list_accounts_response response{std::move(accounts)};
+    co_return response.serialize();
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>

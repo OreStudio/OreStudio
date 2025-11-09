@@ -25,6 +25,8 @@
 #endif
 
 #include <QWidget>
+#include <QToolBar>
+#include <QAction>
 #include <memory>
 #include "ores.risk/domain/currency.hpp"
 #include "ores.comms/client.hpp"
@@ -65,12 +67,17 @@ private slots:
     void onFieldChanged();
 
 private:
+    QIcon createRecoloredIcon(const QString& svgPath, const QColor& color);
+
     std::unique_ptr<Ui::CurrencyDetailPanel> ui_;
     std::shared_ptr<comms::client> client_;
     risk::domain::currency currentCurrency_;
     bool isDirty_;
     bool is_add_mode_;
     std::string username_;
+    QToolBar* toolBar_;
+    QAction* saveAction_;
+    QAction* deleteAction_;
 
     void updateSaveResetButtonState();
     static constexpr const char* max_timestamp = "9999-12-31 23:59:59";

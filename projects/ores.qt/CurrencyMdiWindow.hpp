@@ -82,6 +82,8 @@ private slots:
     void onSelectionChanged();
 
 private:
+    QIcon createRecoloredIcon(const QString& svgPath, const QColor& color);
+
     QVBoxLayout* verticalLayout_;
     QToolBar* toolBar_;
     QTableView* currencyTableView_;

@@ -58,17 +58,6 @@
     </property>
     <addaction name="ActionAbout"/>
    </widget>
-   <widget class="QMenu" name="menuActions">
-    <property name="title">
-     <string>&amp;Actions</string>
-    </property>
-    <addaction name="ActionReload"/>
-    <addaction name="separator"/>
-    <addaction name="ActionAdd"/>
-    <addaction name="ActionEdit"/>
-    <addaction name="ActionDelete"/>
-    <addaction name="ActionHistory"/>
-   </widget>
    <widget class="QMenu" name="menuExport">
     <property name="title">
      <string>&amp;Export</string>
@@ -78,7 +67,6 @@
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuRefereceData"/>
-   <addaction name="menuActions"/>
    <addaction name="menuExport"/>
    <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>

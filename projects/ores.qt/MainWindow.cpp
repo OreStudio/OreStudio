@@ -112,16 +112,6 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->ActionExportCSV, &QAction::triggered, this, &MainWindow::onExportCSVTriggered);
     connect(ui_->ActionExportXML, &QAction::triggered, this, &MainWindow::onExportXMLTriggered);
     connect(ui_->ActionAbout, &QAction::triggered, this, &MainWindow::onAboutTriggered);
-    connect(ui_->ActionReload, &QAction::triggered, this, [this]() {
-        if (activeCurrencyWindow_) {
-            activeCurrencyWindow_->currencyModel()->refresh();
-        } else if (currencyListWindow_) {
-            auto* currencyWidget = qobject_cast<CurrencyMdiWindow*>(currencyListWindow_->widget());
-            if (currencyWidget) {
-                currencyWidget->reload();
-            }
-        }
-    });
 
     // Connect Window menu actions
     connect(ui_->ActionDetachAll, &QAction::triggered, this, &MainWindow::onDetachAllTriggered);

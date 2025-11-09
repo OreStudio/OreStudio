@@ -19,6 +19,12 @@
  */
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <QVBoxLayout>
+#include <QToolBar>
+#include <QIcon>
+#include <QPixmap>
+#include <QImage>
+#include <QPainter>
 #include "ui_CurrencyDetailPanel.h"
 #include "ores.qt/CurrencyDetailPanel.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -36,9 +42,69 @@ namespace {
     }
 }
 
+QIcon CurrencyDetailPanel::createRecoloredIcon(const QString& svgPath, const QColor& color) {
+    QIcon originalIcon(svgPath);
+    if (originalIcon.isNull()) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to load icon: " << svgPath.toStdString();
+        return QIcon();
+    }
+
+    QIcon coloredIcon;
+    for (int size : {16, 20, 24, 32, 48, 64}) {
+        QPixmap pixmap = originalIcon.pixmap(size, size);
+        QImage image = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+
+        for (int y = 0; y < image.height(); ++y) {
+            for (int x = 0; x < image.width(); ++x) {
+                QColor pixelColor = image.pixelColor(x, y);
+                if (pixelColor.alpha() > 0) {
+                    pixelColor.setRed(color.red());
+                    pixelColor.setGreen(color.green());
+                    pixelColor.setBlue(color.blue());
+                    image.setPixelColor(x, y, pixelColor);
+                }
+            }
+        }
+
+        coloredIcon.addPixmap(QPixmap::fromImage(image));
+    }
+
+    return coloredIcon;
+}
+
 CurrencyDetailPanel::CurrencyDetailPanel(QWidget* parent)
     : QWidget(parent), ui_(new Ui::CurrencyDetailPanel), isDirty_(false), is_add_mode_(false) { // Removed client from constructor, initialized client_ to nullptr implicitly
     ui_->setupUi(this);
+
+    // Create toolbar
+    toolBar_ = new QToolBar(this);
+    toolBar_->setMovable(false);
+    toolBar_->setFloatable(false);
+    toolBar_->setIconSize(QSize(20, 20));
+
+    // Define icon color (light gray for dark theme)
+    const QColor iconColor(220, 220, 220);
+
+    // Create Save action
+    saveAction_ = new QAction("Save", this);
+    saveAction_->setIcon(createRecoloredIcon("ic_fluent_save_20_filled.svg", iconColor));
+    saveAction_->setToolTip("Save changes");
+    connect(saveAction_, &QAction::triggered, this, &CurrencyDetailPanel::onSaveClicked);
+    toolBar_->addAction(saveAction_);
+
+    // Create Delete action
+    deleteAction_ = new QAction("Delete", this);
+    deleteAction_->setIcon(createRecoloredIcon("ic_fluent_delete_20_regular.svg", iconColor));
+    deleteAction_->setToolTip("Delete currency");
+    connect(deleteAction_, &QAction::triggered, this, &CurrencyDetailPanel::onDeleteClicked);
+    toolBar_->addAction(deleteAction_);
+
+    // Add toolbar to the panel's layout
+    // Get the main layout from the UI
+    auto* mainLayout = qobject_cast<QVBoxLayout*>(layout());
+    if (mainLayout) {
+        mainLayout->insertWidget(0, toolBar_);
+    }
 
     // Connect signals for editable fields to detect changes
     connect(ui_->isoCodeEdit, &QLineEdit::textChanged, this, &CurrencyDetailPanel::onFieldChanged);
@@ -348,11 +414,15 @@ void CurrencyDetailPanel::onFieldChanged() {
 }
 
 void CurrencyDetailPanel::updateSaveResetButtonState() {
-    // The save and reset buttons are now handled by the main window's actions
-    // or by the panel itself if it were to have its own buttons.
-    // For now, we just manage the 'dirty' state.
-    // The main window will enable/disable its 'Save' and 'Reset' actions
-    // based on this panel's dirty state.
+    // Enable Save button only when there are unsaved changes
+    if (saveAction_) {
+        saveAction_->setEnabled(isDirty_);
+    }
+
+    // Enable Delete button only when not in add mode (i.e., editing existing currency)
+    if (deleteAction_) {
+        deleteAction_->setEnabled(!is_add_mode_);
+    }
 }
 
 } // namespace ores::qt

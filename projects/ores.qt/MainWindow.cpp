@@ -43,11 +43,14 @@ namespace ores::qt {
 using namespace ores::utility::log;
 
 MainWindow::MainWindow(QWidget* parent) :
-    QMainWindow(parent), ui_(new Ui::MainWindow), mdiArea_(new MdiAreaWithBackground()),
+    QMainWindow(parent), ui_(new Ui::MainWindow), mdiArea_(nullptr),
     activeCurrencyWindow_(nullptr), selectionCount_(0), currencyDetailPanel_(nullptr) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating the main window.";
     ui_->setupUi(this);
+
+    // Create MDI area with proper parent
+    mdiArea_ = new MdiAreaWithBackground(this);
 
     // Set up CurrencyDetailPanel in the dock widget
     currencyDetailPanel_ = new CurrencyDetailPanel(this); // No client in constructor
@@ -94,6 +97,14 @@ MainWindow::MainWindow(QWidget* parent) :
 
     // Set up MDI area
     ui_->horizontalLayout_3->addWidget(mdiArea_);
+
+    // Ensure viewport is initialized by accessing it
+    if (mdiArea_->viewport()) {
+        BOOST_LOG_SEV(lg(), debug) << "MDI area viewport initialized successfully";
+    } else {
+        BOOST_LOG_SEV(lg(), error) << "MDI area viewport is null!";
+    }
+
     mdiArea_->setBackgroundLogo("ore-studio-background.png");
 
     // Initialize connection status icons

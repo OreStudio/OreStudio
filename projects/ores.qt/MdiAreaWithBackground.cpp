@@ -27,6 +27,13 @@ using namespace ores::utility::log;
 MdiAreaWithBackground::MdiAreaWithBackground(QWidget* parent)
     : QMdiArea(parent) {
     BOOST_LOG_SEV(lg(), debug) << "Creating MDI area with background";
+
+    // Explicitly ensure viewport exists
+    if (viewport()) {
+        BOOST_LOG_SEV(lg(), debug) << "Viewport exists in constructor";
+    } else {
+        BOOST_LOG_SEV(lg(), error) << "Viewport is null in constructor!";
+    }
 }
 
 void MdiAreaWithBackground::setBackgroundLogo(const QString& imagePath) {
@@ -38,7 +45,12 @@ void MdiAreaWithBackground::setBackgroundLogo(const QString& imagePath) {
         BOOST_LOG_SEV(lg(), info) << "Background logo loaded: "
                                  << imagePath.toStdString();
     }
-    viewport()->update();
+
+    if (auto* vp = viewport()) {
+        vp->update();
+    } else {
+        BOOST_LOG_SEV(lg(), error) << "Viewport is null in setBackgroundLogo!";
+    }
 }
 
 void MdiAreaWithBackground::paintEvent(QPaintEvent* event) {

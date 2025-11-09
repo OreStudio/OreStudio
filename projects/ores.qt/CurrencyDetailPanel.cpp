@@ -80,7 +80,6 @@ CurrencyDetailPanel::CurrencyDetailPanel(QWidget* parent)
     toolBar_ = new QToolBar(this);
     toolBar_->setMovable(false);
     toolBar_->setFloatable(false);
-    toolBar_->setIconSize(QSize(20, 20));
 
     // Define icon color (light gray for dark theme)
     const QColor iconColor(220, 220, 220);
@@ -280,11 +279,6 @@ void CurrencyDetailPanel::onSaveClicked() {
         if (success) {
             BOOST_LOG_SEV(lg(), info) << "Currency saved successfully";
 
-            // Show success message
-            MessageBoxHelper::information(this, "Save Successful",
-                QString("Currency '%1' saved successfully.")
-                .arg(QString::fromStdString(currency.iso_code)));
-
             emit statusMessage(QString("Successfully saved currency: %1")
                 .arg(QString::fromStdString(currency.iso_code)));
 
@@ -301,6 +295,12 @@ void CurrencyDetailPanel::onSaveClicked() {
             } else {
                 currentCurrency_ = currency; // Update with modified currency
                 emit currencyUpdated();
+            }
+
+            // Close the parent window (MDI subwindow)
+            QWidget* parentWindow = window();
+            if (parentWindow && parentWindow != this) {
+                parentWindow->close();
             }
         } else {
             BOOST_LOG_SEV(lg(), error) << "Currency save failed: " << message;

@@ -49,10 +49,17 @@ CurrencyHistoryDialog::CurrencyHistoryDialog(const QString& iso_code,
         onVersionSelected(currentRow);
     });
 
-    // Set up version table headers
-    ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
-    ui_->versionListWidget->setColumnWidth(0, 80);  // Version column
-    ui_->versionListWidget->setColumnWidth(1, 200); // Modified At column
+    // Apply same styling as currencies table
+    ui_->versionListWidget->setAlternatingRowColors(true);
+    ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui_->versionListWidget->resizeRowsToContents();
+
+    // Configure version table headers (same as currencies table)
+    QHeaderView* versionVerticalHeader = ui_->versionListWidget->verticalHeader();
+    QHeaderView* versionHorizontalHeader = ui_->versionListWidget->horizontalHeader();
+    versionVerticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+    versionHorizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     // Set up changes table headers
     ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
@@ -216,12 +223,6 @@ void CurrencyHistoryDialog::displayChangesTab(int version_index) {
         auto* fieldItem = new QTableWidgetItem(field);
         auto* oldItem = new QTableWidgetItem(old_val);
         auto* newItem = new QTableWidgetItem(new_val);
-
-        // Highlight changed rows with a subtle color
-        QColor highlight(255, 255, 230); // Very light yellow, almost white
-        fieldItem->setBackground(highlight);
-        oldItem->setBackground(highlight);
-        newItem->setBackground(highlight);
 
         ui_->changesTableWidget->setItem(i, 0, fieldItem);
         ui_->changesTableWidget->setItem(i, 1, oldItem);

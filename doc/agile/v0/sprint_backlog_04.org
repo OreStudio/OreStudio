@@ -19,41 +19,49 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-09 Sun 02:21], for Sunday, November 09, 2025.
-|      | <75>                                   |        |      |      |       |
-| Tags | Headline                               | Time   |      |      |     % |
-|------+----------------------------------------+--------+------+------+-------|
-|      | *Total time*                           | *1:34* |      |      | 100.0 |
-|------+----------------------------------------+--------+------+------+-------|
-|      | Stories                                | 1:34   |      |      | 100.0 |
-|      | Active                                 |        | 1:34 |      | 100.0 |
-| code | Add about to menu                      |        |      | 0:07 |   7.4 |
-| code | Create a history dialog for currencies |        |      | 1:27 |  92.6 |
+#+CAPTION: Clock summary at [2025-11-09 Sun 13:29], for Sunday, November 09, 2025.
+|      | <75>                                          |        |      |      |       |
+| Tags | Headline                                      | Time   |      |      |     % |
+|------+-----------------------------------------------+--------+------+------+-------|
+|      | *Total time*                                  | *5:07* |      |      | 100.0 |
+|------+-----------------------------------------------+--------+------+------+-------|
+|      | Stories                                       | 5:07   |      |      | 100.0 |
+|      | Active                                        |        | 5:07 |      | 100.0 |
+| code | Add about to menu                             |        |      | 0:07 |   2.3 |
+| code | Create a history dialog for currencies        |        |      | 1:27 |  28.3 |
+| code | Allow MDI windows outside main window         |        |      | 1:35 |  30.9 |
+| code | Add edit menu and export menu                 |        |      | 0:34 |  11.1 |
+| code | Current issues with package install in debian |        |      | 0:26 |   8.5 |
+| code | Implement adding new currencies               |        |      | 0:58 |  18.9 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-09 Sun 02:21]
+#+CAPTION: Clock summary at [2025-11-09 Sun 13:29]
 |       | <75>                                                   |         |       |       |       |
 | Tags  | Headline                                               | Time    |       |       |     % |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                           | *26:02* |       |       | 100.0 |
+|       | *Total time*                                           | *29:35* |       |       | 100.0 |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                | 26:02   |       |       | 100.0 |
-|       | Active                                                 |         | 26:02 |       | 100.0 |
-| agile | Sprint and product backlog refinement                  |         |       |  0:43 |   2.8 |
+|       | Stories                                                | 29:35   |       |       | 100.0 |
+|       | Active                                                 |         | 29:35 |       | 100.0 |
+| agile | Sprint and product backlog refinement                  |         |       |  0:43 |   2.4 |
 | code  | Clean up client parser                                 |         |       |  0:10 |   0.6 |
-| code  | Add connect command line argument                      |         |       |  1:19 |   5.1 |
-| infra | Install Windows package on Windows machine             |         |       |  2:09 |   8.3 |
-| code  | Ignore warnings on windows and osx                     |         |       |  0:33 |   2.1 |
-| code  | Ensure applications work under OSX using github images |         |       |  0:14 |   0.9 |
-| infra | Create a splash screen and gray background             |         |       |  2:26 |   9.3 |
-| code  | Use fluent icons                                       |         |       |  0:37 |   2.4 |
-| code  | Add export functionality for currencies                |         |       |  1:30 |   5.8 |
-| code  | Add currency editing support                           |         |       |  2:45 |  10.6 |
-| code  | Add about to menu                                      |         |       |  1:02 |   4.0 |
-| code  | Create a history dialog for currencies                 |         |       |  1:27 |   5.6 |
-| code  | Make UI/UX look more professional                      |         |       | 11:07 |  42.7 |
+| code  | Add connect command line argument                      |         |       |  1:19 |   4.5 |
+| infra | Install Windows package on Windows machine             |         |       |  2:09 |   7.3 |
+| code  | Ignore warnings on windows and osx                     |         |       |  0:33 |   1.9 |
+| code  | Ensure applications work under OSX using github images |         |       |  0:14 |   0.8 |
+| infra | Create a splash screen and gray background             |         |       |  2:26 |   8.2 |
+| code  | Use fluent icons                                       |         |       |  0:37 |   2.1 |
+| code  | Add export functionality for currencies                |         |       |  1:30 |   5.1 |
+| code  | Add currency editing support                           |         |       |  2:45 |   9.3 |
+| code  | Add about to menu                                      |         |       |  1:02 |   3.5 |
+| code  | Create a history dialog for currencies                 |         |       |  1:27 |   4.9 |
+| code  | Allow MDI windows outside main window                  |         |       |  1:35 |   5.4 |
+| code  | Add edit menu and export menu                          |         |       |  0:34 |   1.9 |
+| code  | Make UI/UX look more professional                      |         |       | 11:07 |  37.6 |
+| code  | Current issues with package install in debian          |         |       |  0:26 |   1.5 |
+| code  | Implement adding new currencies                        |         |       |  0:58 |   3.3 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -344,6 +352,39 @@ Notes:
 - valid to in edit dialog is still equal to valid from.
 - create a history dialog showing the history of changes including modified by.
 
+*** COMPLETED Currency details is always on top                        :code:
+
+It should work like any other MDI window.
+
+*** COMPLETED Do not auto maximise windows                             :code:
+
+Every time we select currencies or history the new window is maximised. If there
+is a previous window we should just reuse it. In addition if we ask for history
+of the same currency twice, it should reuse the existing window.
+
+*** COMPLETED Allow MDI windows outside main window                    :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-09 Sun 10:20]--[2025-11-09 Sun 11:55] =>  1:35
+    :END:
+
+If possible we should allow windows to exist outside main window so users can
+manage their workspace themselves.
+
+Notes:
+
+- currency details do not show up in window menu. Done
+- currency detail is always detached. Done.
+- windows are not sized correctly. Done.
+- if a window is already open, we should reuse window. Done.
+
+*** COMPLETED Add edit menu and export menu                            :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-09 Sun 11:56]--[2025-11-09 Sun 12:30] =>  0:34
+    :END:
+
+Need a edit menu with all of the crud operations. At present these are only in
+the toolbar. We also need one for export.
+
 *** STARTED Make UI/UX look more professional                          :code:
     :LOGBOOK:
     CLOCK: [2025-11-08 Sat 10:11]--[2025-11-08 Sat 20:04] =>  9:53
@@ -508,24 +549,109 @@ QPushButton:hover {
 ```
 #+end_src
 
+*** STARTED Current issues with package install in debian              :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-09 Sun 09:02]--[2025-11-09 Sun 09:28] =>  0:26
+    :END:
+
+At present we have several issues with packaging:
+
+- debs are built on ubuntu so they cannot install on latest debian testing as
+  the t64 migration has been completed. Error:
+
+#+begin_src sh
+root@lovelace:~# apt install /home/marco/Downloads/orestudio_0.0.4_amd64.deb
+You might want to run 'apt --fix-broken install' to correct these.
+Unsatisfied dependencies:
+ orestudio : Depends: libqt6gui6t64 (>= 6.1.2) but it is not installable
+             Depends: libqt6widgets6t64 (>= 6.1.2) but it is not installable
+Error: Unmet dependencies. Try 'apt --fix-broken install' with no packages (or specify a solution).
+root@lovelace:~# apt install libqt6widgets6t64 libqt6gui6t64
+Package libqt6gui6t64 is not available, but is referred to by another package.
+This may mean that the package is missing, has been obsoleted, or
+is only available from another source
+However the following packages replace it:
+  libqt6gui6:i386  libqt6gui6
+
+
+Package libqt6widgets6t64 is not available, but is referred to by another package.
+This may mean that the package is missing, has been obsoleted, or
+is only available from another source
+However the following packages replace it:
+  libqt6widgets6:i386  libqt6widgets6
+
+
+Error: Package 'libqt6widgets6t64' has no installation candidate
+Error: Package 'libqt6gui6t64' has no installation candidate
+#+end_src
+
+- assets are not being packaged:
+
+#+begin_src sh
+[marco@lovelace bin]$ ./ores.qt
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_currency_dollar_euro_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_history_20_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_disconnected_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_connected_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_edit_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_delete_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_save_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_document_table_20_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_document_code_16_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_star_20_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_connected_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_disconnected_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_connected_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_disconnected_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_currency_dollar_euro_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_save_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_edit_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_delete_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_document_table_20_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_document_code_16_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_star_20_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_history_20_regular.svg', because: No such file or directory
+#+end_src
+
+- when starting the package from a directory, it tries to create the log
+  relative to that directory:
+
+#+begin_src sh
+[marco@lovelace ~]$ /opt/OreStudio/0.0.4/bin/ores.qt
+terminate called after throwing an instance of 'boost::filesystem::filesystem_error'
+  what():  boost::filesystem::create_directories: Permission denied [system:13]: "/home/marco/../log", "/home/marco/../log"
+Aborted                    /opt/OreStudio/0.0.4/bin/ores.qt
+#+end_src
+
+
+*** STARTED Implement adding new currencies                            :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-09 Sun 12:31]--[2025-11-09 Sun 13:29] =>  0:58
+    :END:
+
+At present you cannot add new currencies from the UI.
+
+*** Assorted UI polish work                                            :code:
+
+Break these down into their own stories:
+
+- icons for CRUD are not enabling when on detached mode.
+- no status bar in dettached mode.
+- should we just have toolbars at the detached window level?
+- application should exit when main window is closed.
+- is it possible to dock windows like visual studio?
+
+- disabled menu options are not properly greyed out.
+
 *** Add multi-selection support to currencies                          :code:
 
-Users should be able to select multiple currencies and delete them.
+Users should be able to select multiple currencies and delete them. Maybe we
+should do like gmail and have check boxes?
 
 *** Allow in place editing of currencies                               :code:
 
 For expediency users should be able to edit multiple currencies and save them in
-one go directly in the grid.
-
-*** Do not auto maximise windows                                       :code:
-
-Every time we select currencies or history the new window is maximised. If there
-is a previous window we should just reuse it.
-
-*** Allow MDI windows outside main window                              :code:
-
-If possible we should allow windows to exist outside main window so users can
-manage their workspace themselves.
+one go directly in the grid. Shift enter to edit a field seems interesting.
 
 *** Listen for changes in currencies                                   :code:
 
@@ -533,6 +659,10 @@ Users need to be made aware when there are changes in CRUD objects, and there
 needs to be a reload button to reload data from the database in that case. This
 could be done by making the reload button a different colour when data is
 available.
+
+Notes:
+
+- history windows should also have the notification.
 
 *** Notification of server restarts                                    :code:
 

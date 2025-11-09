@@ -43,6 +43,7 @@ public:
     ~CurrencyDetailPanel() override;
 
     void setClient(std::shared_ptr<comms::client> client); // New method to set client
+    void setUsername(const std::string& username); // Set logged-in username
 
     void setCurrency(const risk::domain::currency& currency);
     risk::domain::currency getCurrency() const;
@@ -69,8 +70,10 @@ private:
     risk::domain::currency currentCurrency_;
     bool isDirty_;
     bool is_add_mode_;
+    std::string username_;
 
     void updateSaveResetButtonState();
+    static constexpr const char* max_timestamp = "9999-12-31 23:59:59";
 };
 
 } // namespace ores::qt

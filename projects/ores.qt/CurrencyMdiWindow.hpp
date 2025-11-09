@@ -27,6 +27,7 @@
 #include <QWidget>
 #include <QTableView>
 #include <QVBoxLayout>
+#include <QToolBar>
 #include <QLabel>
 #include <memory>
 #include "ores.comms/client.hpp"
@@ -65,6 +66,7 @@ signals:
     void showCurrencyHistory(const QString& iso_code); // Emitted when history requested
 
 public slots:
+    void reload();
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
@@ -79,6 +81,7 @@ private slots:
 
 private:
     QVBoxLayout* verticalLayout_;
+    QToolBar* toolBar_;
     QTableView* currencyTableView_;
     ClientCurrencyModel* currencyModel_;
     std::shared_ptr<comms::client> client_;

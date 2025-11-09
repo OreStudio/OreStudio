@@ -64,6 +64,12 @@ public:
     std::shared_ptr<comms::client> getClient() const { return client_; }
 
     /**
+     * @brief Get the logged-in username.
+     * @return The username used for login.
+     */
+    std::string getUsername() const { return username_edit_->text().toStdString(); }
+
+    /**
      * @brief Get the IO context for async operations.
      * @return Unique pointer to the IO context.
      */

@@ -135,4 +135,24 @@ void MessageBoxHelper::critical(
     msgBox.exec();
 }
 
+void MessageBoxHelper::information(
+    QWidget* parent,
+    const QString& title,
+    const QString& text) {
+
+    QMessageBox msgBox(parent);
+    msgBox.setWindowTitle(title);
+    msgBox.setText(text);
+    msgBox.setStandardButtons(QMessageBox::Ok);
+
+    // Use info icon for information
+    const QColor iconColor(220, 220, 220);
+    QIcon infoIcon = createColoredIcon("ic_fluent_info_20_filled.svg", iconColor);
+    if (!infoIcon.isNull()) {
+        msgBox.setIconPixmap(infoIcon.pixmap(48, 48));
+    }
+
+    msgBox.exec();
+}
+
 } // namespace ores::qt

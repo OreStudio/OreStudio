@@ -631,6 +631,14 @@ Aborted                    /opt/OreStudio/0.0.4/bin/ores.qt
 
 At present you cannot add new currencies from the UI.
 
+Notes:
+
+- UI goes black if you close and reopen.
+- need a way to save the new currency to trigger sending message to server side.
+- we should be able to send a message to create more than one currency in one
+  go.
+- add new message to repl.
+
 *** Assorted UI polish work                                            :code:
 
 Break these down into their own stories:

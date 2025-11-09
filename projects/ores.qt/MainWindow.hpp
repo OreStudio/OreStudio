@@ -112,6 +112,7 @@ private:
         boost::asio::io_context::executor_type>> work_guard_;
     std::unique_ptr<std::thread> io_thread_;
     std::shared_ptr<comms::client> client_;
+    std::string username_; // Logged-in username
 };
 
 }

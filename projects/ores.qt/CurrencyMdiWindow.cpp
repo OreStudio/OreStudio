@@ -31,6 +31,8 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QMessageBox>
+#include <QToolBar>
+#include <QAction>
 #include "ores.qt/CurrencyMdiWindow.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 // #include "ores.qt/CurrencyEditDialog.hpp" // Removed
@@ -52,6 +54,19 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
     BOOST_LOG_SEV(lg(), info) << "Creating currency MDI window";
 
     verticalLayout_ = new QVBoxLayout(this);
+
+    // Add toolbar
+    toolBar_ = new QToolBar(this);
+    toolBar_->setMovable(false);
+
+    // Add reload action
+    QAction* reloadAction = new QAction("Reload", this);
+    reloadAction->setIcon(QIcon::fromTheme("view-refresh"));
+    reloadAction->setToolTip("Reload currencies from server");
+    connect(reloadAction, &QAction::triggered, this, &CurrencyMdiWindow::reload);
+    toolBar_->addAction(reloadAction);
+
+    verticalLayout_->addWidget(toolBar_);
 
     // Add table view
     currencyTableView_ = new QTableView(this);
@@ -92,12 +107,22 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
     currencyModel_->refresh();
 }
 
+void CurrencyMdiWindow::reload() {
+    BOOST_LOG_SEV(lg(), info) << "Reload requested";
+    emit statusChanged("Reloading currencies...");
+    currencyModel_->refresh();
+}
+
 void CurrencyMdiWindow::onDataLoaded() {
     const QString message = QString("Loaded %1 currencies")
                               .arg(currencyModel_->rowCount());
     emit statusChanged(message);
     BOOST_LOG_SEV(lg(), info) << "Currency data loaded successfully: "
                              << currencyModel_->rowCount() << " currencies";
+
+    // Force table view to update display
+    currencyTableView_->viewport()->update();
+    currencyTableView_->update();
 }
 
 void CurrencyMdiWindow::onLoadError(const QString& error_message) {

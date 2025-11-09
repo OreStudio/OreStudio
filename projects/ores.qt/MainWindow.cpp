@@ -161,22 +161,35 @@ MainWindow::MainWindow(QWidget* parent) :
         if (currencyListWindow_) {
             BOOST_LOG_SEV(lg(), info) << "Reusing existing currencies window";
 
+            // Get the currency widget
+            auto* currencyWidget = qobject_cast<CurrencyMdiWindow*>(currencyListWindow_->widget());
+
+            // Make sure the widget is visible
+            if (currencyWidget) {
+                currencyWidget->setVisible(true);
+                currencyWidget->show();
+            }
+
             // Bring window to front
             if (currencyListWindow_->isDetached()) {
+                currencyListWindow_->setVisible(true);
                 currencyListWindow_->show();
                 currencyListWindow_->raise();
                 currencyListWindow_->activateWindow();
             } else {
+                currencyListWindow_->setVisible(true);
                 mdiArea_->setActiveSubWindow(currencyListWindow_);
                 currencyListWindow_->show();
                 currencyListWindow_->raise();
             }
 
-            // Refresh the data in case it changed
-            auto* currencyWidget = qobject_cast<CurrencyMdiWindow*>(currencyListWindow_->widget());
-            if (currencyWidget && currencyWidget->currencyModel()) {
-                currencyWidget->currencyModel()->refresh();
+            // Refresh the data using the reload method which also updates status
+            if (currencyWidget) {
+                currencyWidget->reload();
             }
+
+            // Update button states since list is now open
+            updateCrudActionState();
             return;
         }
 
@@ -208,6 +221,7 @@ MainWindow::MainWindow(QWidget* parent) :
         connect(currencyListWindow_, &QObject::destroyed, this, [this]() {
             allDetachableWindows_.removeAll(currencyListWindow_);
             currencyListWindow_ = nullptr;
+            updateCrudActionState(); // Update button states when list is closed
         });
 
         mdiArea_->addSubWindow(currencyListWindow_);
@@ -215,6 +229,9 @@ MainWindow::MainWindow(QWidget* parent) :
         // Size to content, not maximized
         currencyListWindow_->adjustSize();
         currencyListWindow_->show();
+
+        // Update button states now that list is open
+        updateCrudActionState();
     });
 
     // Initially disable data-related actions until logged in
@@ -268,16 +285,18 @@ void MainWindow::onLoginTriggered() {
     if (result == QDialog::Accepted) {
         // Transfer ownership of client infrastructure from dialog
         client_ = dialog.getClient();
+        username_ = dialog.getUsername();
         io_context_ = dialog.takeIOContext();
         work_guard_ = dialog.takeWorkGuard();
         io_thread_ = dialog.takeIOThread();
 
-        // Set client for all detail windows if they exist
+        // Set client and username for all detail windows if they exist
         for (auto* detailWindow : currencyDetailWindows_) {
             if (detailWindow) {
                 auto* detailPanel = qobject_cast<CurrencyDetailPanel*>(detailWindow->widget());
                 if (detailPanel) {
                     detailPanel->setClient(client_);
+                    detailPanel->setUsername(username_);
                 }
             }
         }
@@ -444,8 +463,11 @@ void MainWindow::updateCrudActionState() {
     // Enable Edit and History only for single selection
     // Enable Delete for one or more selections
     // Enable Export buttons only when there's an active currency window
+    // Enable Add only when the currency list window is actually open
     const bool hasActiveWindow = activeCurrencyWindow_ != nullptr;
+    const bool hasCurrencyListOpen = currencyListWindow_ != nullptr;
 
+    ui_->ActionAdd->setEnabled(hasCurrencyListOpen);
     ui_->ActionEdit->setEnabled(hasActiveWindow && selectionCount_ == 1);
     ui_->ActionDelete->setEnabled(hasActiveWindow && selectionCount_ >= 1);
     ui_->ActionHistory->setEnabled(hasActiveWindow && selectionCount_ == 1);
@@ -566,14 +588,19 @@ void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
             auto* detailPanel = qobject_cast<CurrencyDetailPanel*>(existingWindow->widget());
             if (detailPanel) {
                 detailPanel->setCurrency(currency);
+                // Make sure the widget is visible
+                detailPanel->setVisible(true);
+                detailPanel->show();
             }
 
             // Bring window to front
             if (existingWindow->isDetached()) {
+                existingWindow->setVisible(true);
                 existingWindow->show();
                 existingWindow->raise();
                 existingWindow->activateWindow();
             } else {
+                existingWindow->setVisible(true);
                 mdiArea_->setActiveSubWindow(existingWindow);
                 existingWindow->show();
                 existingWindow->raise();
@@ -588,30 +615,60 @@ void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
     // Create the detail panel
     auto* detailPanel = new CurrencyDetailPanel(this);
 
-    // Set client if we're connected
+    // Set client and username if we're connected
     if (client_) {
         detailPanel->setClient(client_);
+        detailPanel->setUsername(username_);
     }
 
     // Connect signals from panel
     connect(detailPanel, &CurrencyDetailPanel::currencyUpdated,
             this, [this]() {
+        // Refresh both the active window and the main list window if they exist
         if (activeCurrencyWindow_) {
             activeCurrencyWindow_->currencyModel()->refresh();
+        }
+        if (currencyListWindow_) {
+            auto* currencyWidget = qobject_cast<CurrencyMdiWindow*>(currencyListWindow_->widget());
+            if (currencyWidget) {
+                currencyWidget->reload();
+            }
         }
         ui_->statusbar->showMessage("Currency updated successfully.");
     });
     connect(detailPanel, &CurrencyDetailPanel::currencyCreated,
             this, [this]() {
+        BOOST_LOG_SEV(lg(), info) << "Currency created signal received, refreshing windows";
+
+        // Refresh both the active window and the main list window if they exist
         if (activeCurrencyWindow_) {
+            BOOST_LOG_SEV(lg(), info) << "Refreshing active currency window";
             activeCurrencyWindow_->currencyModel()->refresh();
+        }
+        if (currencyListWindow_) {
+            BOOST_LOG_SEV(lg(), info) << "Refreshing currency list window";
+            auto* currencyWidget = qobject_cast<CurrencyMdiWindow*>(currencyListWindow_->widget());
+            if (currencyWidget) {
+                currencyWidget->reload();
+            } else {
+                BOOST_LOG_SEV(lg(), warn) << "Failed to cast currency list widget";
+            }
+        } else {
+            BOOST_LOG_SEV(lg(), warn) << "Currency list window is null, cannot refresh";
         }
         ui_->statusbar->showMessage("Currency created successfully.");
     });
     connect(detailPanel, &CurrencyDetailPanel::currencyDeleted,
             this, [this](const QString& iso_code) {
+        // Refresh both the active window and the main list window if they exist
         if (activeCurrencyWindow_) {
             activeCurrencyWindow_->currencyModel()->refresh();
+        }
+        if (currencyListWindow_) {
+            auto* currencyWidget = qobject_cast<CurrencyMdiWindow*>(currencyListWindow_->widget());
+            if (currencyWidget) {
+                currencyWidget->reload();
+            }
         }
         ui_->statusbar->showMessage(QString("Currency '%1' deleted.").arg(iso_code));
         onCurrencyDeleted(iso_code);

@@ -21,7 +21,6 @@
 #include <QFutureWatcher>
 #include "ui_CurrencyDetailPanel.h"
 #include "ores.qt/CurrencyDetailPanel.hpp"
-#include "ores.qt/CurrencyHistoryDialog.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.comms/protocol/frame.hpp"
@@ -59,6 +58,10 @@ CurrencyDetailPanel::CurrencyDetailPanel(QWidget* parent)
 
 void CurrencyDetailPanel::setClient(std::shared_ptr<comms::client> client) {
     client_ = std::move(client);
+}
+
+void CurrencyDetailPanel::setUsername(const std::string& username) {
+    username_ = username;
 }
 
 CurrencyDetailPanel::~CurrencyDetailPanel() = default;
@@ -99,6 +102,10 @@ risk::domain::currency CurrencyDetailPanel::getCurrency() const {
     currency.rounding_precision = ui_->roundingPrecisionSpinBox->value();
     currency.format = ui_->formatEdit->text().toStdString();
     currency.currency_type = ui_->currencyTypeEdit->text().toStdString();
+
+    // Set modified_by to application user (trigger will set valid_from/valid_to)
+    currency.modified_by = username_.empty() ? "qt_user" : username_;
+
     return currency;
 }
 
@@ -206,14 +213,27 @@ void CurrencyDetailPanel::onSaveClicked() {
 
         if (success) {
             BOOST_LOG_SEV(lg(), info) << "Currency saved successfully";
+
+            // Show success message
+            MessageBoxHelper::information(this, "Save Successful",
+                QString("Currency '%1' saved successfully.")
+                .arg(QString::fromStdString(currency.iso_code)));
+
             emit statusMessage(QString("Successfully saved currency: %1")
                 .arg(QString::fromStdString(currency.iso_code)));
+
             isDirty_ = false;
             emit isDirtyChanged(false);
             updateSaveResetButtonState();
+
+            // Transition from add mode to edit mode after successful creation
             if (is_add_mode_) {
+                is_add_mode_ = false;
+                currentCurrency_ = currency; // Update with saved currency
+                ui_->isoCodeEdit->setReadOnly(true); // ISO code can't be changed anymore
                 emit currencyCreated();
             } else {
+                currentCurrency_ = currency; // Update with modified currency
                 emit currencyUpdated();
             }
         } else {

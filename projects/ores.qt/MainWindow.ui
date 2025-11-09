@@ -69,12 +69,12 @@
    <addaction name="ActionDisconnect"/>
    <addaction name="separator"/>
    <addaction name="CurrenciesAction"/>
-   <addaction name="CurrencyHistoryAction"/>
    <addaction name="separator"/>
    <addaction name="ActionSave"/>
    <addaction name="separator"/>
    <addaction name="ActionEdit"/>
    <addaction name="ActionDelete"/>
+   <addaction name="ActionHistory"/>
    <addaction name="ActionExportCSV"/>
    <addaction name="ActionExportXML"/>
   </widget>
@@ -92,7 +92,7 @@
     <string>&amp;Currencies</string>
    </property>
   </action>
-  <action name="CurrencyHistoryAction">
+  <action name="ActionHistory">
    <property name="enabled">
     <bool>false</bool>
    </property>

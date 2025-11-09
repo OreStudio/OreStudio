@@ -74,7 +74,7 @@ private slots:
     void onActiveWindowSelectionChanged(int selection_count);
     void onEditTriggered();
     void onDeleteTriggered();
-    void onCurrencyHistoryTriggered();
+    void onHistoryTriggered();
     void onExportCSVTriggered(); // New export to CSV slot
     void onExportXMLTriggered(); // New export to XML slot
     void onShowCurrencyDetails(const risk::domain::currency& currency); // New slot

@@ -132,7 +132,7 @@ MainWindow::MainWindow(QWidget* parent) :
         "ic_fluent_document_code_16_regular.svg", iconColor));
     ui_->ActionAbout->setIcon(createRecoloredIcon(
         "ic_fluent_star_20_regular.svg", iconColor));
-    ui_->CurrencyHistoryAction->setIcon(createRecoloredIcon(
+    ui_->ActionHistory->setIcon(createRecoloredIcon(
         "ic_fluent_history_20_regular.svg", iconColor));
 
     // Connect menu actions
@@ -150,7 +150,7 @@ MainWindow::MainWindow(QWidget* parent) :
     });
     connect(ui_->ActionEdit, &QAction::triggered, this, &MainWindow::onEditTriggered);
     connect(ui_->ActionDelete, &QAction::triggered, this, &MainWindow::onDeleteTriggered);
-    connect(ui_->CurrencyHistoryAction, &QAction::triggered, this, &MainWindow::onCurrencyHistoryTriggered);
+    connect(ui_->ActionHistory, &QAction::triggered, this, &MainWindow::onHistoryTriggered);
 
     // Connect to MDI area window activation to manage context-aware actions
     connect(mdiArea_, &QMdiArea::subWindowActivated,
@@ -417,7 +417,7 @@ void MainWindow::updateCrudActionState() {
 
     ui_->ActionEdit->setEnabled(hasActiveWindow && selectionCount_ == 1);
     ui_->ActionDelete->setEnabled(hasActiveWindow && selectionCount_ >= 1);
-    ui_->CurrencyHistoryAction->setEnabled(hasActiveWindow && selectionCount_ == 1);
+    ui_->ActionHistory->setEnabled(hasActiveWindow && selectionCount_ == 1);
     ui_->ActionExportCSV->setEnabled(hasActiveWindow);
     ui_->ActionExportXML->setEnabled(hasActiveWindow);
 }
@@ -436,9 +436,9 @@ void MainWindow::onDeleteTriggered() {
     }
 }
 
-void MainWindow::onCurrencyHistoryTriggered() {
+void MainWindow::onHistoryTriggered() {
     if (activeCurrencyWindow_) {
-        BOOST_LOG_SEV(lg(), info) << "Currency history action triggered, delegating to active window";
+        BOOST_LOG_SEV(lg(), info) << "History action triggered, delegating to active window";
         activeCurrencyWindow_->viewHistorySelected();
     }
 }

@@ -60,14 +60,14 @@ QLabel {
 }
 
 /* Toolbar specific styles */
-QToolBar#toolBar {
+QToolBar {
     background-color: #1A1A1A;
     border: none; /* Revert from diagnostic red border */
     padding: 2px;
     qproperty-toolButtonStyle: ToolButtonTextUnderIcon;
 }
 
-QToolBar#toolBar QToolButton {
+QToolBar QToolButton {
     background-color: transparent; /* Revert from diagnostic green background */
     border: none;
     color: #F0F0F0;

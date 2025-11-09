@@ -89,6 +89,12 @@ private:
     boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
     handle_get_currency_history_request(std::span<const std::uint8_t> payload);
 
+    /**
+     * @brief Handle create_currency_request message.
+     */
+    boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
+    handle_create_currency_request(std::span<const std::uint8_t> payload);
+
     utility::repository::context ctx_;
     repository::currency_repository currency_repo_;
 };

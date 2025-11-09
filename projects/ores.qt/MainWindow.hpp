@@ -96,7 +96,7 @@ private:
     MdiAreaWithBackground* mdiArea_;
     CurrencyMdiWindow* activeCurrencyWindow_;
     int selectionCount_;
-    CurrencyDetailPanel* currencyDetailWindow_; // Floating detail window (single instance)
+    DetachableMdiSubWindow* currencyDetailWindow_; // Currency detail MDI window (single instance)
     QLabel* connectionStatusIconLabel_; // Status bar icon label
     QString displayedCurrencyIsoCode_; // Track currently displayed currency
     QList<DetachableMdiSubWindow*> allDetachableWindows_; // Track all detachable windows

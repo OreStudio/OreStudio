@@ -4,6 +4,8 @@
     <file>resources/TradingStyle.qss</file>
   </qresource>
   <qresource prefix="/icons">
+    <file>resources/icons/ic_fluent_arrow_sync_20_filled.svg</file>
+    <file>resources/icons/ic_fluent_arrow_clockwise_16_regular.svg</file>
     <file>resources/icons/ic_fluent_add_20_filled.svg</file>
     <file>resources/icons/ic_fluent_add_20_regular.svg</file>
     <file>resources/icons/ic_fluent_arrow_clockwise_16_filled.svg</file>
@@ -12,7 +14,7 @@
     <file>resources/icons/ic_fluent_checkmark_20_regular.svg</file>
     <file>resources/icons/ic_fluent_clipboard_number_123_16_filled.svg</file>
     <file>resources/icons/ic_fluent_clipboard_number_123_16_regular.svg</file>
-    <file>resources/icons/ic_fluent_clock_16_color.svg</file>
+    <file>resources/icons/ic_fluent_clock_16_regular.svg</file>
     <file>resources/icons/ic_fluent_clock_16_filled.svg</file>
     <file>resources/icons/ic_fluent_currency_dollar_euro_20_filled.svg</file>
     <file>resources/icons/ic_fluent_currency_dollar_euro_20_regular.svg</file>
@@ -24,7 +26,7 @@
     <file>resources/icons/ic_fluent_document_code_16_regular.svg</file>
     <file>resources/icons/ic_fluent_document_table_20_filled.svg</file>
     <file>resources/icons/ic_fluent_document_table_20_regular.svg</file>
-    <file>resources/icons/ic_fluent_edit_20_color.svg</file>
+    <file>resources/icons/ic_fluent_edit_20_regular.svg</file>
     <file>resources/icons/ic_fluent_edit_20_filled.svg</file>
     <file>resources/icons/ic_fluent_error_circle_20_filled.svg</file>
     <file>resources/icons/ic_fluent_error_circle_20_regular.svg</file>

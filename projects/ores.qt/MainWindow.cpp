@@ -530,9 +530,8 @@ void MainWindow::onShowCurrencyHistory(const QString& iso_code) {
                 existingWindow->activateWindow();
             } else {
                 existingWindow->setVisible(true);
-                mdiArea_->setActiveSubWindow(existingWindow);
                 existingWindow->show();
-                existingWindow->raise();
+                mdiArea_->setActiveSubWindow(existingWindow);
             }
             return;
         }
@@ -605,9 +604,8 @@ void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
                 existingWindow->activateWindow();
             } else {
                 existingWindow->setVisible(true);
-                mdiArea_->setActiveSubWindow(existingWindow);
                 existingWindow->show();
-                existingWindow->raise();
+                mdiArea_->setActiveSubWindow(existingWindow);
             }
             return;
         }

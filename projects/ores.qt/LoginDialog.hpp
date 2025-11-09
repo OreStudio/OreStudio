@@ -108,6 +108,7 @@ private:
     void setupUI();
     void enableForm(bool enabled);
     void performLogin(const std::string& username, const std::string& password);
+    QIcon createRecoloredIcon(const QString& svgPath, const QColor& color);
 
 private:
     // UI components

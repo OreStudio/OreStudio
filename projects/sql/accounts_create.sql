@@ -63,7 +63,10 @@ begin
 
     new.valid_from = current_timestamp;
     new.valid_to = '9999-12-31 23:59:59'::timestamptz;
-    new.modified_by = current_user;
+    -- Don't override modified_by if already set by application
+    if new.modified_by is null or new.modified_by = '' then
+        new.modified_by = current_user;
+    end if;
 
     return new;
 end;

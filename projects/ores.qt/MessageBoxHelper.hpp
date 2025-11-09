@@ -69,6 +69,17 @@ public:
         const QString& title,
         const QString& text);
 
+    /**
+     * @brief Show an information dialog with custom Fluent icon
+     * @param parent Parent widget
+     * @param title Dialog title
+     * @param text Dialog message
+     */
+    static void information(
+        QWidget* parent,
+        const QString& title,
+        const QString& text);
+
 private:
     static QIcon createColoredIcon(const QString& svgPath, const QColor& color);
 };

@@ -25,11 +25,16 @@
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QTableView>
+#include <QtWidgets/QScrollBar>
 #include <QtWidgets/QApplication>
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <QUrl>
 #include <QMessageBox>
+#include <QToolBar>
+#include <QAction>
+#include <QPixmap>
+#include <QImage>
 #include "ores.qt/CurrencyMdiWindow.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 // #include "ores.qt/CurrencyEditDialog.hpp" // Removed
@@ -43,6 +48,35 @@ namespace ores::qt {
 
 using namespace ores::utility::log;
 
+QIcon CurrencyMdiWindow::createRecoloredIcon(const QString& svgPath, const QColor& color) {
+    QIcon originalIcon(svgPath);
+    if (originalIcon.isNull()) {
+        return QIcon();
+    }
+
+    QIcon coloredIcon;
+    for (int size : {16, 20, 24, 32, 48, 64}) {
+        QPixmap pixmap = originalIcon.pixmap(size, size);
+        QImage image = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+
+        for (int y = 0; y < image.height(); ++y) {
+            for (int x = 0; x < image.width(); ++x) {
+                QColor pixelColor = image.pixelColor(x, y);
+                if (pixelColor.alpha() > 0) {
+                    pixelColor.setRed(color.red());
+                    pixelColor.setGreen(color.green());
+                    pixelColor.setBlue(color.blue());
+                    image.setPixelColor(x, y, pixelColor);
+                }
+            }
+        }
+
+        coloredIcon.addPixmap(QPixmap::fromImage(image));
+    }
+
+    return coloredIcon;
+}
+
 CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWidget* parent)
     : QWidget(parent),
       currencyModel_(new ClientCurrencyModel(client, this)),
@@ -51,6 +85,66 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
     BOOST_LOG_SEV(lg(), info) << "Creating currency MDI window";
 
     verticalLayout_ = new QVBoxLayout(this);
+
+    // Add toolbar with custom colored icons
+    toolBar_ = new QToolBar(this);
+    toolBar_->setMovable(false);
+    toolBar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    const QColor iconColor(220, 220, 220); // Light gray for dark theme
+
+    // Add reload action
+    QAction* reloadAction = new QAction("Reload", this);
+    reloadAction->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
+    reloadAction->setToolTip("Reload currencies from server");
+    connect(reloadAction, &QAction::triggered, this, &CurrencyMdiWindow::reload);
+    toolBar_->addAction(reloadAction);
+
+    toolBar_->addSeparator();
+
+    // Add action for adding new currency
+    QAction* addAction = new QAction("Add", this);
+    addAction->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_add_20_filled.svg", iconColor));
+    addAction->setToolTip("Add new currency");
+    connect(addAction, &QAction::triggered, this, &CurrencyMdiWindow::addNew);
+    toolBar_->addAction(addAction);
+
+    // Add edit action
+    editAction_ = new QAction("Edit", this);
+    editAction_->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_edit_20_filled.svg", iconColor));
+    editAction_->setToolTip("Edit selected currency");
+    connect(editAction_, &QAction::triggered, this, &CurrencyMdiWindow::editSelected);
+    toolBar_->addAction(editAction_);
+
+    // Add delete action (using outline/regular version for neutral appearance)
+    deleteAction_ = new QAction("Delete", this);
+    deleteAction_->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_delete_20_regular.svg", iconColor));
+    deleteAction_->setToolTip("Delete selected currency/currencies");
+    connect(deleteAction_, &QAction::triggered, this, &CurrencyMdiWindow::deleteSelected);
+    toolBar_->addAction(deleteAction_);
+
+    // Add history action
+    historyAction_ = new QAction("History", this);
+    historyAction_->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_history_20_regular.svg", iconColor));
+    historyAction_->setToolTip("View currency history");
+    connect(historyAction_, &QAction::triggered, this, &CurrencyMdiWindow::viewHistorySelected);
+    toolBar_->addAction(historyAction_);
+
+    toolBar_->addSeparator();
+
+    // Add export actions with correct icons
+    QAction* exportCSVAction = new QAction("Export CSV", this);
+    exportCSVAction->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_document_table_20_regular.svg", iconColor));
+    exportCSVAction->setToolTip("Export currencies to CSV");
+    connect(exportCSVAction, &QAction::triggered, this, &CurrencyMdiWindow::exportToCSV);
+    toolBar_->addAction(exportCSVAction);
+
+    QAction* exportXMLAction = new QAction("Export XML", this);
+    exportXMLAction->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_document_code_16_regular.svg", iconColor));
+    exportXMLAction->setToolTip("Export currencies to ORE XML");
+    connect(exportXMLAction, &QAction::triggered, this, &CurrencyMdiWindow::exportToXML);
+    toolBar_->addAction(exportXMLAction);
+
+    verticalLayout_->addWidget(toolBar_);
 
     // Add table view
     currencyTableView_ = new QTableView(this);
@@ -65,8 +159,8 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
     // Set the model
     currencyTableView_->setModel(currencyModel_);
 
-    // Set the custom item delegate
-    currencyTableView_->setItemDelegate(new CurrencyItemDelegate(this));
+    // Set the custom item delegate with table view as parent for proper ownership
+    currencyTableView_->setItemDelegate(new CurrencyItemDelegate(currencyTableView_));
 
     // Configure headers
     QHeaderView* verticalHeader(currencyTableView_->verticalHeader());
@@ -84,11 +178,60 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
     connect(currencyTableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &CurrencyMdiWindow::onSelectionChanged);
 
+    // Initially disable actions that require selection
+    updateActionStates();
+
     // Emit initial loading status
     emit statusChanged("Loading currencies...");
 
     // Trigger data loading
     currencyModel_->refresh();
+}
+
+CurrencyMdiWindow::~CurrencyMdiWindow() {
+    BOOST_LOG_SEV(lg(), info) << "Destroying currency MDI window";
+
+    // Disconnect and cancel any active QFutureWatcher objects
+    const auto watchers = findChildren<QFutureWatcherBase*>();
+    for (auto* watcher : watchers) {
+        disconnect(watcher, nullptr, this, nullptr);
+        watcher->cancel();
+        watcher->waitForFinished();
+    }
+
+    // Disconnect all signals from the toolbar actions
+    if (toolBar_) {
+        const auto actions = toolBar_->actions();
+        for (QAction* action : actions) {
+            disconnect(action, nullptr, this, nullptr);
+        }
+    }
+
+    // Disconnect all signals from the model to prevent issues during destruction
+    if (currencyModel_) {
+        disconnect(currencyModel_, nullptr, this, nullptr);
+    }
+
+    // Disconnect all signals but don't interfere with Qt's cleanup
+    if (currencyTableView_) {
+        disconnect(currencyTableView_, nullptr, this, nullptr);
+        if (currencyTableView_->selectionModel()) {
+            disconnect(currencyTableView_->selectionModel(), nullptr, this, nullptr);
+        }
+    }
+
+    // Let Qt handle all widget destruction automatically
+}
+
+void CurrencyMdiWindow::reload() {
+    BOOST_LOG_SEV(lg(), info) << "Reload requested";
+    emit statusChanged("Reloading currencies...");
+    currencyModel_->refresh();
+}
+
+void CurrencyMdiWindow::addNew() {
+    BOOST_LOG_SEV(lg(), info) << "Add new currency requested";
+    emit addNewRequested();
 }
 
 void CurrencyMdiWindow::onDataLoaded() {
@@ -97,6 +240,17 @@ void CurrencyMdiWindow::onDataLoaded() {
     emit statusChanged(message);
     BOOST_LOG_SEV(lg(), info) << "Currency data loaded successfully: "
                              << currencyModel_->rowCount() << " currencies";
+
+    // Force table view to update display
+    currencyTableView_->viewport()->update();
+    currencyTableView_->update();
+
+    // Auto-select first row if data is available and nothing is selected
+    if (currencyModel_->rowCount() > 0 &&
+        currencyTableView_->selectionModel()->selectedRows().isEmpty()) {
+        currencyTableView_->selectRow(0);
+        BOOST_LOG_SEV(lg(), debug) << "Auto-selected first row";
+    }
 }
 
 void CurrencyMdiWindow::onLoadError(const QString& error_message) {
@@ -126,6 +280,7 @@ void CurrencyMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
 
 void CurrencyMdiWindow::onSelectionChanged() {
     const int selection_count = currencyTableView_->selectionModel()->selectedRows().count();
+    updateActionStates();
     emit selectionChanged(selection_count);
 }
 
@@ -394,9 +549,44 @@ void CurrencyMdiWindow::exportToXML() {
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Error exporting to XML: " << e.what();
-        MessageBoxHelper::critical(this, "Export Error", 
+        MessageBoxHelper::critical(this, "Export Error",
             QString("Error during XML export: %1").arg(e.what()));
     }
+}
+
+QSize CurrencyMdiWindow::sizeHint() const {
+    if (!currencyTableView_) {
+        return QWidget::sizeHint();
+    }
+
+    // Calculate width based on all columns plus scrollbar and frame
+    int width = currencyTableView_->verticalHeader()->width(); // Row header
+    for (int i = 0; i < currencyTableView_->horizontalHeader()->count(); ++i) {
+        width += currencyTableView_->columnWidth(i);
+    }
+    width += currencyTableView_->verticalScrollBar()->sizeHint().width(); // Scrollbar
+    width += currencyTableView_->frameWidth() * 2; // Frame borders
+    width += 20; // Extra padding for safety
+
+    // Calculate height for ~15 visible rows plus headers
+    int rowHeight = currencyTableView_->verticalHeader()->defaultSectionSize();
+    int headerHeight = currencyTableView_->horizontalHeader()->height();
+    int height = headerHeight + (rowHeight * 15); // 15 visible rows
+    height += currencyTableView_->horizontalScrollBar()->sizeHint().height();
+    height += currencyTableView_->frameWidth() * 2;
+    height += 20; // Extra padding
+
+    return QSize(width, height);
+}
+
+void CurrencyMdiWindow::updateActionStates() {
+    const int selection_count = currencyTableView_->selectionModel()->selectedRows().count();
+    const bool hasSelection = selection_count > 0;
+
+    // Enable/disable actions based on selection
+    editAction_->setEnabled(hasSelection);
+    deleteAction_->setEnabled(hasSelection);
+    historyAction_->setEnabled(hasSelection);
 }
 
 }

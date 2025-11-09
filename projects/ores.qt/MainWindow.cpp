@@ -26,6 +26,7 @@
 #include <QMdiSubWindow>
 #include <QPainter>
 #include <QPixmap>
+#include <QAction>
 #include <QImage>
 #include <QFile>
 #include <QFont>
@@ -35,6 +36,7 @@
 #include "ores.qt/LoginDialog.hpp"
 #include "ores.qt/CurrencyMdiWindow.hpp"
 #include "ores.qt/CurrencyHistoryMdiWindow.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/CurrencyDetailPanel.hpp" // Include the header for CurrencyDetailPanel
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/AboutDialog.hpp"
@@ -45,47 +47,14 @@ using namespace ores::utility::log;
 
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent), ui_(new Ui::MainWindow), mdiArea_(nullptr),
-    activeCurrencyWindow_(nullptr), selectionCount_(0), currencyDetailPanel_(nullptr) {
+    activeCurrencyWindow_(nullptr), selectionCount_(0),
+    currencyListWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating the main window.";
     ui_->setupUi(this);
 
     // Create MDI area with proper parent
     mdiArea_ = new MdiAreaWithBackground(this);
-
-    // Set up CurrencyDetailPanel in the dock widget
-    currencyDetailPanel_ = new CurrencyDetailPanel(this); // No client in constructor
-    ui_->currencyDetailDockWidget->setWidget(currencyDetailPanel_);
-    ui_->currencyDetailDockWidget->setVisible(false); // Initially hidden
-
-    // Connect signals from CurrencyDetailPanel to MainWindow
-    connect(currencyDetailPanel_, &CurrencyDetailPanel::currencyUpdated,
-            this, [this]() {
-        if (activeCurrencyWindow_) {
-            activeCurrencyWindow_->currencyModel()->refresh();
-        }
-        ui_->statusbar->showMessage("Currency updated successfully.");
-    });
-    connect(currencyDetailPanel_, &CurrencyDetailPanel::currencyDeleted,
-            this, [this](const QString& iso_code) {
-        if (activeCurrencyWindow_) {
-            activeCurrencyWindow_->currencyModel()->refresh();
-        }
-        ui_->statusbar->showMessage(QString("Currency '%1' deleted.").arg(iso_code));
-        onCurrencyDeleted(iso_code); // Clear panel if it's displaying the deleted currency
-    });
-    connect(currencyDetailPanel_, &CurrencyDetailPanel::statusMessage,
-            this, [this](const QString& message) {
-        ui_->statusbar->showMessage(message);
-    });
-    connect(currencyDetailPanel_, &CurrencyDetailPanel::errorMessage,
-            this, [this](const QString& message) {
-        ui_->statusbar->showMessage(message);
-    });
-    connect(currencyDetailPanel_, &CurrencyDetailPanel::isDirtyChanged,
-            this, [this](bool isDirty) {
-        ui_->ActionSave->setEnabled(isDirty);
-    });
 
     // Set application icon
     setWindowIcon(QIcon("modern-icon.png"));
@@ -110,30 +79,32 @@ MainWindow::MainWindow(QWidget* parent) :
 
     // Initialize connection status icons
     const QColor iconColor(220, 220, 220); // Light gray for dark theme
-    connectedIcon_ = createRecoloredIcon("ic_fluent_plug_connected_20_filled.svg", iconColor);
-    disconnectedIcon_ = createRecoloredIcon("ic_fluent_plug_disconnected_20_filled.svg", iconColor);
+    connectedIcon_ = createRecoloredIcon(":/icons/resources/icons/ic_fluent_plug_connected_20_filled.svg", iconColor);
+    disconnectedIcon_ = createRecoloredIcon(":/icons/resources/icons/ic_fluent_plug_disconnected_20_filled.svg", iconColor);
 
     // Apply recolored icons for dark theme visibility (light gray color)
     ui_->ActionConnect->setIcon(createRecoloredIcon(
-        "ic_fluent_plug_connected_20_filled.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_plug_connected_20_filled.svg", iconColor));
     ui_->ActionDisconnect->setIcon(createRecoloredIcon(
-        "ic_fluent_plug_disconnected_20_filled.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_plug_disconnected_20_filled.svg", iconColor));
     ui_->CurrenciesAction->setIcon(createRecoloredIcon(
-        "ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
     ui_->ActionSave->setIcon(createRecoloredIcon(
-        "ic_fluent_save_20_filled.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_save_20_filled.svg", iconColor));
     ui_->ActionEdit->setIcon(createRecoloredIcon(
-        "ic_fluent_edit_20_filled.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_edit_20_filled.svg", iconColor));
     ui_->ActionDelete->setIcon(createRecoloredIcon(
-        "ic_fluent_delete_20_filled.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_delete_20_filled.svg", iconColor));
     ui_->ActionExportCSV->setIcon(createRecoloredIcon(
-        "ic_fluent_document_table_20_regular.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_document_table_20_regular.svg", iconColor));
     ui_->ActionExportXML->setIcon(createRecoloredIcon(
-        "ic_fluent_document_code_16_regular.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_document_code_16_regular.svg", iconColor));
     ui_->ActionAbout->setIcon(createRecoloredIcon(
-        "ic_fluent_star_20_regular.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_star_20_regular.svg", iconColor));
     ui_->ActionHistory->setIcon(createRecoloredIcon(
-        "ic_fluent_history_20_regular.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_history_20_regular.svg", iconColor));
+    ui_->ActionAdd->setIcon(createRecoloredIcon(
+        ":/icons/resources/icons/ic_fluent_add_20_filled.svg", iconColor));
 
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this, &MainWindow::onLoginTriggered);
@@ -142,21 +113,39 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->ActionExportXML, &QAction::triggered, this, &MainWindow::onExportXMLTriggered);
     connect(ui_->ActionAbout, &QAction::triggered, this, &MainWindow::onAboutTriggered);
 
+    // Connect Window menu actions
+    connect(ui_->ActionDetachAll, &QAction::triggered, this, &MainWindow::onDetachAllTriggered);
+    connect(ui_->ActionReattachAll, &QAction::triggered, this, &MainWindow::onReattachAllTriggered);
+    connect(ui_->menuWindow, &QMenu::aboutToShow, this, &MainWindow::onWindowMenuAboutToShow);
+
     // Connect CRUD actions
     connect(ui_->ActionSave, &QAction::triggered, this, [this]() {
-        if (currencyDetailPanel_) {
-            currencyDetailPanel_->save();
+        // Get the currently active MDI subwindow
+        auto* activeWindow = mdiArea_->activeSubWindow();
+        if (!activeWindow) {
+            return;
+        }
+
+        // Check if it's a DetachableMdiSubWindow with a CurrencyDetailPanel
+        auto* detachableWindow = qobject_cast<DetachableMdiSubWindow*>(activeWindow);
+        if (detachableWindow) {
+            auto* detailPanel = qobject_cast<CurrencyDetailPanel*>(detachableWindow->widget());
+            if (detailPanel) {
+                detailPanel->save();
+            }
         }
     });
     connect(ui_->ActionEdit, &QAction::triggered, this, &MainWindow::onEditTriggered);
     connect(ui_->ActionDelete, &QAction::triggered, this, &MainWindow::onDeleteTriggered);
     connect(ui_->ActionHistory, &QAction::triggered, this, &MainWindow::onHistoryTriggered);
+    connect(ui_->ActionAdd, &QAction::triggered, this, &MainWindow::onAddTriggered);
+
 
     // Connect to MDI area window activation to manage context-aware actions
     connect(mdiArea_, &QMdiArea::subWindowActivated,
             this, &MainWindow::onSubWindowActivated);
 
-    // Currencies action creates MDI window with currency table
+    // Currencies action creates/reuses MDI window with currency table
     connect(ui_->CurrenciesAction, &QAction::triggered, this, [=, this]() {
         using ores::utility::log::warn;
         using ores::utility::log::info;
@@ -168,7 +157,43 @@ MainWindow::MainWindow(QWidget* parent) :
             return;
         }
 
-        BOOST_LOG_SEV(lg(), info) << "Creating currencies MDI window";
+        // Reuse existing window if it exists
+        if (currencyListWindow_) {
+            BOOST_LOG_SEV(lg(), info) << "Reusing existing currencies window";
+
+            // Get the currency widget
+            auto* currencyWidget = qobject_cast<CurrencyMdiWindow*>(currencyListWindow_->widget());
+
+            // Make sure the widget is visible
+            if (currencyWidget) {
+                currencyWidget->setVisible(true);
+                currencyWidget->show();
+            }
+
+            // Bring window to front
+            if (currencyListWindow_->isDetached()) {
+                currencyListWindow_->setVisible(true);
+                currencyListWindow_->show();
+                currencyListWindow_->raise();
+                currencyListWindow_->activateWindow();
+            } else {
+                currencyListWindow_->setVisible(true);
+                mdiArea_->setActiveSubWindow(currencyListWindow_);
+                currencyListWindow_->show();
+                currencyListWindow_->raise();
+            }
+
+            // Refresh the data using the reload method which also updates status
+            if (currencyWidget) {
+                currencyWidget->reload();
+            }
+
+            // Update button states since list is now open
+            updateCrudActionState();
+            return;
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Creating new currencies MDI window";
         auto* currencyWidget = new CurrencyMdiWindow(client_, this);
 
         // Connect status signals to status bar
@@ -180,16 +205,37 @@ MainWindow::MainWindow(QWidget* parent) :
                 this, [this](const QString& error_message) {
             ui_->statusbar->showMessage("Error loading currencies: " + error_message);
         });
+        connect(currencyWidget, &CurrencyMdiWindow::addNewRequested,
+                this, &MainWindow::onAddTriggered);
+        connect(currencyWidget, &CurrencyMdiWindow::showCurrencyDetails,
+                this, &MainWindow::onShowCurrencyDetails);
         connect(currencyWidget, &CurrencyMdiWindow::currencyDeleted,
                 this, &MainWindow::onCurrencyDeleted);
         connect(currencyWidget, &CurrencyMdiWindow::showCurrencyHistory,
                 this, &MainWindow::onShowCurrencyHistory);
 
-        auto* subWindow = mdiArea_->addSubWindow(currencyWidget);
-        subWindow->setWindowTitle("Currencies");
-        subWindow->setWindowIcon(createRecoloredIcon(
-            "ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
-        subWindow->showMaximized();
+        currencyListWindow_ = new DetachableMdiSubWindow();
+        currencyListWindow_->setWidget(currencyWidget);
+        currencyListWindow_->setWindowTitle("Currencies");
+        currencyListWindow_->setWindowIcon(createRecoloredIcon(
+            ":/icons/resources/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
+
+        // Track window for detach/reattach operations
+        allDetachableWindows_.append(currencyListWindow_);
+        connect(currencyListWindow_, &QObject::destroyed, this, [this]() {
+            allDetachableWindows_.removeAll(currencyListWindow_);
+            currencyListWindow_ = nullptr;
+            updateCrudActionState(); // Update button states when list is closed
+        });
+
+        mdiArea_->addSubWindow(currencyListWindow_);
+
+        // Size to content, not maximized
+        currencyListWindow_->adjustSize();
+        currencyListWindow_->show();
+
+        // Update button states now that list is open
+        updateCrudActionState();
     });
 
     // Initially disable data-related actions until logged in
@@ -243,13 +289,20 @@ void MainWindow::onLoginTriggered() {
     if (result == QDialog::Accepted) {
         // Transfer ownership of client infrastructure from dialog
         client_ = dialog.getClient();
+        username_ = dialog.getUsername();
         io_context_ = dialog.takeIOContext();
         work_guard_ = dialog.takeWorkGuard();
         io_thread_ = dialog.takeIOThread();
 
-        // Set client for the detail panel
-        if (currencyDetailPanel_) {
-            currencyDetailPanel_->setClient(client_);
+        // Set client and username for all detail windows if they exist
+        for (auto* detailWindow : currencyDetailWindows_) {
+            if (detailWindow) {
+                auto* detailPanel = qobject_cast<CurrencyDetailPanel*>(detailWindow->widget());
+                if (detailPanel) {
+                    detailPanel->setClient(client_);
+                    detailPanel->setUsername(username_);
+                }
+            }
         }
 
         if (client_ && client_->is_connected()) {
@@ -271,6 +324,7 @@ void MainWindow::updateMenuState() {
 
     // Enable/disable menu actions based on connection state
     ui_->CurrenciesAction->setEnabled(isConnected);
+    ui_->ActionAdd->setEnabled(isConnected);
 
     // Enable/disable connect and disconnect actions
     ui_->ActionConnect->setEnabled(!isConnected);
@@ -309,12 +363,12 @@ void MainWindow::onDisconnectTriggered() {
         io_thread_.reset();
         io_context_.reset();
 
-        // Clear client from detail panel
-        if (currencyDetailPanel_) {
-            currencyDetailPanel_->setClient(nullptr);
-            currencyDetailPanel_->clearPanel();
-            ui_->currencyDetailDockWidget->setVisible(false);
-            displayedCurrencyIsoCode_.clear();
+        // Close all detail windows if any are open
+        for (auto* detailWindow : currencyDetailWindows_) {
+            if (detailWindow) {
+                detailWindow->close();
+                // Note: The destroyed signal will clean up the map entry
+            }
         }
 
         updateMenuState();
@@ -329,7 +383,7 @@ QIcon MainWindow::createRecoloredIcon(const QString& svgPath, const QColor& colo
     QIcon originalIcon(svgPath);
     if (originalIcon.isNull()) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to load SVG: " << svgPath.toStdString();
-        return QIcon();
+        return {};
     }
 
     // Create recolored icon at multiple sizes
@@ -410,16 +464,9 @@ void MainWindow::onActiveWindowSelectionChanged(int selection_count) {
 }
 
 void MainWindow::updateCrudActionState() {
-    // Enable Edit and History only for single selection
-    // Enable Delete for one or more selections
-    // Enable Export buttons only when there's an active currency window
-    const bool hasActiveWindow = activeCurrencyWindow_ != nullptr;
-
-    ui_->ActionEdit->setEnabled(hasActiveWindow && selectionCount_ == 1);
-    ui_->ActionDelete->setEnabled(hasActiveWindow && selectionCount_ >= 1);
-    ui_->ActionHistory->setEnabled(hasActiveWindow && selectionCount_ == 1);
-    ui_->ActionExportCSV->setEnabled(hasActiveWindow);
-    ui_->ActionExportXML->setEnabled(hasActiveWindow);
+    // CRUD actions are now in the currency window toolbar
+    // This method now only handles the Save action which is still in the main window
+    // The Save action is controlled by the isDirtyChanged signal from detail panels
 }
 
 void MainWindow::onEditTriggered() {
@@ -443,6 +490,12 @@ void MainWindow::onHistoryTriggered() {
     }
 }
 
+void MainWindow::onAddTriggered() {
+    BOOST_LOG_SEV(lg(), info) << "Add action triggered";
+    risk::domain::currency new_currency;
+    onShowCurrencyDetails(new_currency);
+}
+
 void MainWindow::onShowCurrencyHistory(const QString& iso_code) {
     using ores::utility::log::warn;
     using ores::utility::log::info;
@@ -454,7 +507,37 @@ void MainWindow::onShowCurrencyHistory(const QString& iso_code) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating currency history MDI window for: "
+    // Reuse existing window if it exists for this currency
+    if (currencyHistoryWindows_.contains(iso_code)) {
+        auto* existingWindow = currencyHistoryWindows_[iso_code];
+        if (existingWindow) {
+            BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
+                                      << iso_code.toStdString();
+
+            // Get the history widget
+            auto* historyWidget = qobject_cast<CurrencyHistoryMdiWindow*>(existingWindow->widget());
+            if (historyWidget) {
+                // Make sure the widget is visible
+                historyWidget->setVisible(true);
+                historyWidget->show();
+            }
+
+            // Bring window to front
+            if (existingWindow->isDetached()) {
+                existingWindow->setVisible(true);
+                existingWindow->show();
+                existingWindow->raise();
+                existingWindow->activateWindow();
+            } else {
+                existingWindow->setVisible(true);
+                existingWindow->show();
+                mdiArea_->setActiveSubWindow(existingWindow);
+            }
+            return;
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Creating new currency history MDI window for: "
                              << iso_code.toStdString();
 
     const QColor iconColor(220, 220, 220); // Same color as other icons
@@ -470,32 +553,187 @@ void MainWindow::onShowCurrencyHistory(const QString& iso_code) {
         ui_->statusbar->showMessage("Error loading history: " + error_message);
     });
 
-    auto* subWindow = mdiArea_->addSubWindow(historyWidget);
+    auto* subWindow = new DetachableMdiSubWindow();
+    subWindow->setWidget(historyWidget);
     subWindow->setWindowTitle(QString("History: %1").arg(iso_code));
     subWindow->setWindowIcon(createRecoloredIcon(
-        "ic_fluent_history_20_regular.svg", iconColor));
-    subWindow->showMaximized();
+        ":/icons/resources/icons/ic_fluent_history_20_regular.svg", iconColor));
+
+    // Track window for detach/reattach operations and by ISO code
+    currencyHistoryWindows_[iso_code] = subWindow;
+    allDetachableWindows_.append(subWindow);
+    connect(subWindow, &QObject::destroyed, this, [this, iso_code, subWindow]() {
+        allDetachableWindows_.removeAll(subWindow);
+        currencyHistoryWindows_.remove(iso_code);
+    });
+
+    mdiArea_->addSubWindow(subWindow);
+
+    // Size to content, not maximized
+    subWindow->adjustSize();
+    subWindow->show();
 }
 
 void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
-    if (currencyDetailPanel_) {
-        displayedCurrencyIsoCode_ = QString::fromStdString(currency.iso_code);
-        currencyDetailPanel_->setCurrency(currency);
-        ui_->currencyDetailDockWidget->setVisible(true);
-        ui_->currencyDetailDockWidget->raise(); // Bring to front
+    BOOST_LOG_SEV(lg(), info) << "Showing currency details for: " << currency.iso_code;
+
+    const QString iso_code = QString::fromStdString(currency.iso_code);
+    const QColor iconColor(220, 220, 220); // Same color as other icons
+
+    // Reuse existing window if it exists for this currency
+    if (currencyDetailWindows_.contains(iso_code)) {
+        auto* existingWindow = currencyDetailWindows_[iso_code];
+        if (existingWindow) {
+            BOOST_LOG_SEV(lg(), info) << "Reusing existing detail window for: "
+                                      << currency.iso_code;
+
+            // Update currency data
+            auto* detailPanel = qobject_cast<CurrencyDetailPanel*>(existingWindow->widget());
+            if (detailPanel) {
+                detailPanel->setCurrency(currency);
+                // Make sure the widget is visible
+                detailPanel->setVisible(true);
+                detailPanel->show();
+            }
+
+            // Bring window to front
+            if (existingWindow->isDetached()) {
+                existingWindow->setVisible(true);
+                existingWindow->show();
+                existingWindow->raise();
+                existingWindow->activateWindow();
+            } else {
+                existingWindow->setVisible(true);
+                existingWindow->show();
+                mdiArea_->setActiveSubWindow(existingWindow);
+            }
+            return;
+        }
     }
+
+    BOOST_LOG_SEV(lg(), info) << "Creating new currency detail MDI window for: "
+                             << currency.iso_code;
+
+    // Create the detail panel
+    auto* detailPanel = new CurrencyDetailPanel(this);
+
+    // Set client and username if we're connected
+    if (client_) {
+        detailPanel->setClient(client_);
+        detailPanel->setUsername(username_);
+    }
+
+    // Connect signals from panel
+    connect(detailPanel, &CurrencyDetailPanel::currencyUpdated,
+            this, [this](const QString& iso_code) {
+        // Refresh both the active window and the main list window if they exist
+        if (activeCurrencyWindow_) {
+            activeCurrencyWindow_->currencyModel()->refresh();
+        }
+        if (currencyListWindow_) {
+            auto* currencyWidget = qobject_cast<CurrencyMdiWindow*>(currencyListWindow_->widget());
+            if (currencyWidget) {
+                currencyWidget->reload();
+            }
+        }
+        ui_->statusbar->showMessage(QString("Currency '%1' updated successfully.").arg(iso_code));
+
+        // Close the detail window after successful update (same as delete)
+        onCurrencyDeleted(iso_code);
+    });
+    connect(detailPanel, &CurrencyDetailPanel::currencyCreated,
+            this, [this](const QString& iso_code) {
+        BOOST_LOG_SEV(lg(), info) << "Currency created signal received, refreshing windows";
+
+        // Refresh both the active window and the main list window if they exist
+        if (activeCurrencyWindow_) {
+            BOOST_LOG_SEV(lg(), info) << "Refreshing active currency window";
+            activeCurrencyWindow_->currencyModel()->refresh();
+        }
+        if (currencyListWindow_) {
+            BOOST_LOG_SEV(lg(), info) << "Refreshing currency list window";
+            auto* currencyWidget = qobject_cast<CurrencyMdiWindow*>(currencyListWindow_->widget());
+            if (currencyWidget) {
+                currencyWidget->reload();
+            } else {
+                BOOST_LOG_SEV(lg(), warn) << "Failed to cast currency list widget";
+            }
+        } else {
+            BOOST_LOG_SEV(lg(), warn) << "Currency list window is null, cannot refresh";
+        }
+        ui_->statusbar->showMessage(QString("Currency '%1' created successfully.").arg(iso_code));
+
+        // Close the detail window after successful creation (same as delete)
+        onCurrencyDeleted(iso_code);
+    });
+    connect(detailPanel, &CurrencyDetailPanel::currencyDeleted,
+            this, [this](const QString& iso_code) {
+        // Refresh both the active window and the main list window if they exist
+        if (activeCurrencyWindow_) {
+            activeCurrencyWindow_->currencyModel()->refresh();
+        }
+        if (currencyListWindow_) {
+            auto* currencyWidget = qobject_cast<CurrencyMdiWindow*>(currencyListWindow_->widget());
+            if (currencyWidget) {
+                currencyWidget->reload();
+            }
+        }
+        ui_->statusbar->showMessage(QString("Currency '%1' deleted.").arg(iso_code));
+        onCurrencyDeleted(iso_code);
+    });
+    connect(detailPanel, &CurrencyDetailPanel::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(detailPanel, &CurrencyDetailPanel::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(detailPanel, &CurrencyDetailPanel::isDirtyChanged,
+            this, [this](bool isDirty) {
+        ui_->ActionSave->setEnabled(isDirty);
+    });
+
+    // Set initial currency data
+    detailPanel->setCurrency(currency);
+
+    // Create detachable MDI window and set the panel as its widget
+    auto* detailWindow = new DetachableMdiSubWindow();
+    detailWindow->setWidget(detailPanel);
+    detailWindow->setWindowTitle(QString("Currency Details: %1").arg(iso_code));
+    detailWindow->setWindowIcon(createRecoloredIcon(
+        ":/icons/resources/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
+
+    // Track window for detach/reattach operations and by ISO code
+    currencyDetailWindows_[iso_code] = detailWindow;
+    allDetachableWindows_.append(detailWindow);
+    connect(detailWindow, &QObject::destroyed, this, [this, iso_code, detailWindow]() {
+        BOOST_LOG_SEV(lg(), info) << "Currency detail window destroyed for: "
+                                  << iso_code.toStdString();
+        allDetachableWindows_.removeAll(detailWindow);
+        currencyDetailWindows_.remove(iso_code);
+    });
+
+    // Add to MDI area
+    mdiArea_->addSubWindow(detailWindow);
+
+    // Size to content, not maximized
+    detailWindow->adjustSize();
+    detailWindow->show();
+
+    BOOST_LOG_SEV(lg(), info) << "Currency detail window shown";
 }
 
 void MainWindow::onCurrencyDeleted(const QString& iso_code) {
-    // If the deleted currency is currently displayed in the panel, clear and hide it
-    if (displayedCurrencyIsoCode_ == iso_code) {
-        BOOST_LOG_SEV(lg(), info) << "Clearing panel because displayed currency was deleted: "
-                                 << iso_code.toStdString();
-        if (currencyDetailPanel_) {
-            currencyDetailPanel_->clearPanel();
-            ui_->currencyDetailDockWidget->setVisible(false);
+    // If a detail window exists for the deleted currency, close it
+    if (currencyDetailWindows_.contains(iso_code)) {
+        auto* detailWindow = currencyDetailWindows_[iso_code];
+        if (detailWindow) {
+            BOOST_LOG_SEV(lg(), info) << "Closing detail window because displayed currency was deleted: "
+                                     << iso_code.toStdString();
+            detailWindow->close();
+            // Note: The destroyed signal will clean up the map entry
         }
-        displayedCurrencyIsoCode_.clear();
     }
 }
 
@@ -520,6 +758,86 @@ void MainWindow::onExportXMLTriggered() {
 void MainWindow::onAboutTriggered() {
     AboutDialog dialog(this);
     dialog.exec();
+}
+
+void MainWindow::onDetachAllTriggered() {
+    BOOST_LOG_SEV(lg(), info) << "Detach All triggered";
+
+    for (auto* detachableWindow : allDetachableWindows_) {
+        if (detachableWindow && !detachableWindow->isDetached()) {
+            detachableWindow->detach();
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "All windows detached";
+}
+
+void MainWindow::onReattachAllTriggered() {
+    BOOST_LOG_SEV(lg(), info) << "Reattach All triggered";
+
+    for (auto* detachableWindow : allDetachableWindows_) {
+        if (detachableWindow && detachableWindow->isDetached()) {
+            detachableWindow->reattach();
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "All windows reattached";
+}
+
+void MainWindow::onWindowMenuAboutToShow() {
+    // Remove any existing window list items (everything after the separator)
+    QList<QAction*> actions = ui_->menuWindow->actions();
+    bool foundSeparator = false;
+    for (auto* action : actions) {
+        if (action->isSeparator()) {
+            foundSeparator = true;
+        } else if (foundSeparator) {
+            // Remove and delete dynamically created window list items
+            ui_->menuWindow->removeAction(action);
+            delete action;
+        }
+    }
+
+    // Add current window list
+    if (allDetachableWindows_.isEmpty()) {
+        auto* noWindowsAction = ui_->menuWindow->addAction("No Windows Open");
+        noWindowsAction->setEnabled(false);
+    } else {
+        for (int i = 0; i < allDetachableWindows_.size(); ++i) {
+            auto* detachableWindow = allDetachableWindows_[i];
+            QString windowTitle = detachableWindow->windowTitle();
+            if (windowTitle.isEmpty()) {
+                windowTitle = QString("Window %1").arg(i + 1);
+            }
+
+            // Add indicator if window is detached
+            if (detachableWindow->isDetached()) {
+                windowTitle += " (Detached)";
+            }
+
+            auto* windowAction = ui_->menuWindow->addAction(windowTitle);
+            connect(windowAction, &QAction::triggered, this, [detachableWindow, this]() {
+                if (detachableWindow->isDetached()) {
+                    // For detached windows, just show and activate
+                    detachableWindow->show();
+                    detachableWindow->raise();
+                    detachableWindow->activateWindow();
+                } else {
+                    // For attached windows, set as active in MDI area
+                    mdiArea_->setActiveSubWindow(detachableWindow);
+                    detachableWindow->show();
+                    detachableWindow->raise();
+                    detachableWindow->activateWindow();
+                }
+            });
+
+            // Check the active window
+            if (detachableWindow == mdiArea_->activeSubWindow()) {
+                windowAction->setCheckable(true);
+                windowAction->setChecked(true);
+            }
+        }
+    }
 }
 
 }

@@ -46,6 +46,7 @@ class MainWindow;
 namespace ores::qt {
 
 class CurrencyMdiWindow;  // Forward declaration
+class DetachableMdiSubWindow;  // Forward declaration
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -75,12 +76,16 @@ private slots:
     void onEditTriggered();
     void onDeleteTriggered();
     void onHistoryTriggered();
+    void onAddTriggered();
     void onExportCSVTriggered(); // New export to CSV slot
     void onExportXMLTriggered(); // New export to XML slot
     void onShowCurrencyDetails(const risk::domain::currency& currency); // New slot
     void onCurrencyDeleted(const QString& iso_code); // Handle currency deletion
     void onShowCurrencyHistory(const QString& iso_code); // Handle currency history request
     void onAboutTriggered(); // New about dialog slot
+    void onDetachAllTriggered(); // Detach all MDI windows
+    void onReattachAllTriggered(); // Reattach all floating windows
+    void onWindowMenuAboutToShow(); // Populate window list
 
 private:
     void updateMenuState();
@@ -92,9 +97,11 @@ private:
     MdiAreaWithBackground* mdiArea_;
     CurrencyMdiWindow* activeCurrencyWindow_;
     int selectionCount_;
-    CurrencyDetailPanel* currencyDetailPanel_; // New member variable
+    QMap<QString, DetachableMdiSubWindow*> currencyDetailWindows_; // Currency detail windows by ISO code
+    DetachableMdiSubWindow* currencyListWindow_; // Currency list MDI window (single instance)
+    QMap<QString, DetachableMdiSubWindow*> currencyHistoryWindows_; // History windows by ISO code
     QLabel* connectionStatusIconLabel_; // Status bar icon label
-    QString displayedCurrencyIsoCode_; // Track currently displayed currency
+    QList<DetachableMdiSubWindow*> allDetachableWindows_; // Track all detachable windows
 
     QIcon connectedIcon_;    // Icon for connected status
     QIcon disconnectedIcon_; // Icon for disconnected status
@@ -105,6 +112,7 @@ private:
         boost::asio::io_context::executor_type>> work_guard_;
     std::unique_ptr<std::thread> io_thread_;
     std::shared_ptr<comms::client> client_;
+    std::string username_; // Logged-in username
 };
 
 }

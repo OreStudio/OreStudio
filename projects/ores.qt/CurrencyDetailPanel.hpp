@@ -25,6 +25,8 @@
 #endif
 
 #include <QWidget>
+#include <QToolBar>
+#include <QAction>
 #include <memory>
 #include "ores.risk/domain/currency.hpp"
 #include "ores.comms/client.hpp"
@@ -43,6 +45,7 @@ public:
     ~CurrencyDetailPanel() override;
 
     void setClient(std::shared_ptr<comms::client> client); // New method to set client
+    void setUsername(const std::string& username); // Set logged-in username
 
     void setCurrency(const risk::domain::currency& currency);
     risk::domain::currency getCurrency() const;
@@ -50,7 +53,8 @@ public:
     void save();
 
 signals:
-    void currencyUpdated();
+    void currencyUpdated(const QString& iso_code);
+    void currencyCreated(const QString& iso_code);
     void currencyDeleted(const QString& iso_code);
     void statusMessage(const QString& message);
     void errorMessage(const QString& message);
@@ -63,12 +67,20 @@ private slots:
     void onFieldChanged();
 
 private:
+    QIcon createRecoloredIcon(const QString& svgPath, const QColor& color);
+
     std::unique_ptr<Ui::CurrencyDetailPanel> ui_;
     std::shared_ptr<comms::client> client_;
     risk::domain::currency currentCurrency_;
     bool isDirty_;
+    bool is_add_mode_;
+    std::string username_;
+    QToolBar* toolBar_;
+    QAction* saveAction_;
+    QAction* deleteAction_;
 
     void updateSaveResetButtonState();
+    static constexpr const char* max_timestamp = "9999-12-31 23:59:59";
 };
 
 } // namespace ores::qt

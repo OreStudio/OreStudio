@@ -67,7 +67,7 @@
        </property>
       </column>
      </widget>
-     <widget class="QWidget" name="detailWidget" native="true">
+     <widget class="QWidget" name="detailWidget">
       <layout class="QVBoxLayout" name="detailLayout">
        <property name="leftMargin">
         <number>0</number>

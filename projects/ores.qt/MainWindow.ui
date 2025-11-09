@@ -36,7 +36,7 @@
     <addaction name="separator"/>
     <addaction name="ActionConnect"/>
     <addaction name="ActionDisconnect"/>
-    <addaction name="ExitAction"/>
+    <addaction name="yExitAction"/>
    </widget>
    <widget class="QMenu" name="menuRefereceData">
     <property name="title">
@@ -44,14 +44,31 @@
     </property>
     <addaction name="CurrenciesAction"/>
    </widget>
+   <widget class="QMenu" name="menuWindow">
+    <property name="title">
+     <string>&amp;Window</string>
+    </property>
+    <addaction name="ActionDetachAll"/>
+    <addaction name="ActionReattachAll"/>
+    <addaction name="separator"/>
+   </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>&amp;Help</string>
     </property>
     <addaction name="ActionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuExport">
+    <property name="title">
+     <string>&amp;Export</string>
+    </property>
+    <addaction name="ActionExportXML"/>
+    <addaction name="ActionExportCSV"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuRefereceData"/>
+   <addaction name="menuExport"/>
+   <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -69,14 +86,6 @@
    <addaction name="ActionDisconnect"/>
    <addaction name="separator"/>
    <addaction name="CurrenciesAction"/>
-   <addaction name="separator"/>
-   <addaction name="ActionSave"/>
-   <addaction name="separator"/>
-   <addaction name="ActionEdit"/>
-   <addaction name="ActionDelete"/>
-   <addaction name="ActionHistory"/>
-   <addaction name="ActionExportCSV"/>
-   <addaction name="ActionExportXML"/>
   </widget>
   <action name="ExitAction">
    <property name="text">
@@ -86,7 +95,7 @@
   <action name="CurrenciesAction">
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_currency_dollar_euro_20_filled.svg</normaloff>ic_fluent_currency_dollar_euro_20_filled.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_currency_dollar_euro_20_filled.svg</normaloff>:/icons/resources/icons/ic_fluent_currency_dollar_euro_20_filled.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Currencies</string>
@@ -98,7 +107,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_history_20_regular.svg</normaloff>ic_fluent_history_20_regular.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_history_20_regular.svg</normaloff>:/icons/resources/icons/ic_fluent_history_20_regular.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;History</string>
@@ -110,7 +119,7 @@
   <action name="ActionConnect">
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_plug_disconnected_20_filled.svg</normaloff>ic_fluent_plug_disconnected_20_filled.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_plug_disconnected_20_filled.svg</normaloff>:/icons/resources/icons/ic_fluent_plug_disconnected_20_filled.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Connect</string>
@@ -119,19 +128,35 @@
   <action name="ActionDisconnect">
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_plug_connected_20_filled.svg</normaloff>ic_fluent_plug_connected_20_filled.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_plug_connected_20_filled.svg</normaloff>:/icons/resources/icons/ic_fluent_plug_connected_20_filled.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Disconnect</string>
    </property>
   </action>
+  <action name="ActionAdd">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_add_20_filled.svg</normaloff>:/icons/resources/icons/ic_fluent_add_20_filled.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Add</string>
+   </property>
+   <property name="toolTip">
+    <string>Add new item</string>
+   </property>
+  </action>
+
   <action name="ActionEdit">
    <property name="enabled">
     <bool>false</bool>
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_edit_20_filled.svg</normaloff>ic_fluent_edit_20_filled.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_edit_20_filled.svg</normaloff>:/icons/resources/icons/ic_fluent_edit_20_filled.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Edit</string>
@@ -146,7 +171,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_delete_20_filled.svg</normaloff>ic_fluent_delete_20_filled.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_delete_20_filled.svg</normaloff>:/icons/resources/icons/ic_fluent_delete_20_filled.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Delete</string>
@@ -161,7 +186,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_save_20_filled.svg</normaloff>ic_fluent_save_20_filled.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_save_20_filled.svg</normaloff>:/icons/resources/icons/ic_fluent_save_20_filled.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Save</string>
@@ -173,7 +198,7 @@
   <action name="ActionExportCSV">
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_document_table_20_regular.svg</normaloff>ic_fluent_document_table_20_regular.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_document_table_20_regular.svg</normaloff>:/icons/resources/icons/ic_fluent_document_table_20_regular.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;To CSV</string>
@@ -182,10 +207,22 @@
     <string>Export currencies to CSV</string>
    </property>
   </action>
+  <action name="ActionExportToXML">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_document_code_16_regular.svg</normaloff>:/icons/resources/icons/ic_fluent_document_code_16_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>To &amp;XML</string>
+   </property>
+   <property name="toolTip">
+    <string>Export currencies to XML</string>
+   </property>
+  </action>
   <action name="ActionExportXML">
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_document_code_16_regular.svg</normaloff>ic_fluent_document_code_16_regular.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_document_code_16_regular.svg</normaloff>:/icons/resources/icons/ic_fluent_document_code_16_regular.svg</iconset>
    </property>
    <property name="text">
     <string>To ORE&amp;XML</string>
@@ -197,7 +234,7 @@
   <action name="ActionAbout">
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_star_20_regular.svg</normaloff>ic_fluent_star_20_regular.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_star_20_regular.svg</normaloff>:/icons/resources/icons/ic_fluent_star_20_regular.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;About</string>
@@ -206,15 +243,34 @@
     <string>About this application</string>
    </property>
   </action>
-  <widget class="QDockWidget" name="currencyDetailDockWidget">
-   <property name="windowTitle">
-    <string>Currency Details</string>
+  <action name="ActionDetachAll">
+   <property name="text">
+    <string>&amp;Detach All</string>
    </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number> <!-- Qt::RightDockWidgetArea -->
-   </attribute>
-   <widget class="QWidget" name="dockWidgetContents"/>
-  </widget>
+   <property name="toolTip">
+    <string>Detach all MDI windows to floating windows</string>
+   </property>
+  </action>
+  <action name="ActionReattachAll">
+   <property name="text">
+    <string>&amp;Reattach All</string>
+   </property>
+   <property name="toolTip">
+    <string>Reattach all floating windows to MDI area</string>
+   </property>
+  </action>
+  <action name="ActionReload">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_arrow_sync_20_regular.svg</normaloff>:/icons/resources/icons/ic_fluent_arrow_sync_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Reload</string>
+   </property>
+   <property name="toolTip">
+    <string>Reload data from server</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

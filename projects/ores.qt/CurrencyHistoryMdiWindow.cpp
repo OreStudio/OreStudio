@@ -18,6 +18,7 @@
  *
  */
 #include <QVBoxLayout>
+#include <QFutureWatcher>
 #include "ores.qt/CurrencyHistoryMdiWindow.hpp"
 
 namespace ores::qt {
@@ -45,6 +46,30 @@ CurrencyHistoryMdiWindow::CurrencyHistoryMdiWindow(const QString& iso_code,
 
     // Load history data
     historyWidget_->loadHistory();
+}
+
+CurrencyHistoryMdiWindow::~CurrencyHistoryMdiWindow() {
+    BOOST_LOG_SEV(lg(), info) << "Destroying currency history MDI window";
+
+    // Disconnect and cancel any active QFutureWatcher objects
+    const auto watchers = findChildren<QFutureWatcherBase*>();
+    for (auto* watcher : watchers) {
+        disconnect(watcher, nullptr, this, nullptr);
+        watcher->cancel();
+        watcher->waitForFinished();
+    }
+
+    // Disconnect all signals to prevent any callbacks during destruction
+    if (historyWidget_) {
+        disconnect(historyWidget_, nullptr, this, nullptr);
+    }
+}
+
+QSize CurrencyHistoryMdiWindow::sizeHint() const {
+    if (historyWidget_) {
+        return historyWidget_->sizeHint();
+    }
+    return QWidget::sizeHint();
 }
 
 }

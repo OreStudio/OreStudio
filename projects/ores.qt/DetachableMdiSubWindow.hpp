@@ -17,48 +17,60 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_CURRENCY_HISTORY_MDI_WINDOW_HPP
-#define ORES_QT_CURRENCY_HISTORY_MDI_WINDOW_HPP
+#ifndef ORES_QT_DETACHABLE_MDI_SUB_WINDOW_HPP
+#define ORES_QT_DETACHABLE_MDI_SUB_WINDOW_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
 #endif
 
-#include <QWidget>
-#include <memory>
-#include "ores.comms/client.hpp"
+#include <QMdiSubWindow>
+#include <QMdiArea>
+#include <QPoint>
+#include <QSize>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.qt/CurrencyHistoryDialog.hpp"
 
 namespace ores::qt {
 
 /**
- * @brief MDI window for displaying currency version history.
+ * @brief QMdiSubWindow that can be detached to become a floating window.
+ *
+ * Features:
+ * - Right-click title bar menu with Detach/Reattach option
+ * - Preserves state when transitioning between MDI and floating
  */
-class CurrencyHistoryMdiWindow : public QWidget {
+class DetachableMdiSubWindow : public QMdiSubWindow {
     Q_OBJECT
 
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.qt.currency_history_mdi_window");
+        static auto instance = make_logger("ores.qt.detachable_mdi_sub_window");
         return instance;
     }
 
 public:
-    explicit CurrencyHistoryMdiWindow(const QString& iso_code,
-                                      std::shared_ptr<comms::client> client,
-                                      QWidget* parent = nullptr);
-    ~CurrencyHistoryMdiWindow() override;
+    explicit DetachableMdiSubWindow(QWidget* parent = nullptr);
+    ~DetachableMdiSubWindow() override = default;
 
-    QSize sizeHint() const override; // Provide optimal size based on dialog content
+    bool isDetached() const { return isDetached_; }
+
+public slots:
+    void detach();
+    void reattach();
 
 signals:
-    void statusChanged(const QString& message);
-    void errorOccurred(const QString& error_message);
+    void detachedStateChanged(bool detached);
+
+protected:
+    void contextMenuEvent(QContextMenuEvent* event) override;
+    void closeEvent(QCloseEvent* event) override;
 
 private:
-    CurrencyHistoryDialog* historyWidget_;
+    bool isDetached_;
+    QMdiArea* savedMdiArea_;
+    QPoint savedMdiPosition_;
+    QSize savedMdiSize_;
 };
 
 }

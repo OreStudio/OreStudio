@@ -25,6 +25,7 @@
 #include <QFutureWatcher>
 #include <QDateTime>
 #include <QIcon>
+#include <QScrollBar>
 
 namespace ores::qt {
 
@@ -69,6 +70,20 @@ CurrencyHistoryDialog::CurrencyHistoryDialog(const QString& iso_code,
 
 CurrencyHistoryDialog::~CurrencyHistoryDialog() {
     BOOST_LOG_SEV(lg(), info) << "Destroying currency history widget";
+
+    // Disconnect and cancel any active QFutureWatcher objects
+    const auto watchers = findChildren<QFutureWatcherBase*>();
+    for (auto* watcher : watchers) {
+        disconnect(watcher, nullptr, this, nullptr);
+        watcher->cancel();
+        watcher->waitForFinished();
+    }
+
+    // Disconnect all signal connections to prevent callbacks during destruction
+    if (ui_ && ui_->versionListWidget) {
+        disconnect(ui_->versionListWidget, nullptr, this, nullptr);
+    }
+
     delete ui_;
 }
 
@@ -153,7 +168,7 @@ void CurrencyHistoryDialog::onHistoryLoaded() {
         auto* modifiedByItem = new QTableWidgetItem(QString::fromStdString(version.modified_by));
 
         // Add icon to version column
-        versionItem->setIcon(QIcon("ic_fluent_history_20_regular.svg"));
+        versionItem->setIcon(QIcon(":/icons/resources/icons/ic_fluent_history_20_regular.svg"));
 
         ui_->versionListWidget->setItem(i, 0, versionItem);
         ui_->versionListWidget->setItem(i, 1, modifiedAtItem);
@@ -308,6 +323,45 @@ CurrencyHistoryDialog::calculateDiff(
     }
 
     return diffs;
+}
+
+QSize CurrencyHistoryDialog::sizeHint() const {
+    if (!ui_->versionListWidget) {
+        return QWidget::sizeHint();
+    }
+
+    // Calculate width based on version table columns plus changes/details tabs
+    int versionTableWidth = ui_->versionListWidget->verticalHeader()->width();
+    for (int i = 0; i < ui_->versionListWidget->horizontalHeader()->count(); ++i) {
+        versionTableWidth += ui_->versionListWidget->columnWidth(i);
+    }
+    versionTableWidth += ui_->versionListWidget->verticalScrollBar()->sizeHint().width();
+    versionTableWidth += ui_->versionListWidget->frameWidth() * 2;
+
+    // Changes table width
+    int changesTableWidth = 0;
+    if (ui_->changesTableWidget) {
+        changesTableWidth = ui_->changesTableWidget->verticalHeader()->width();
+        for (int i = 0; i < ui_->changesTableWidget->horizontalHeader()->count(); ++i) {
+            changesTableWidth += ui_->changesTableWidget->columnWidth(i);
+        }
+        changesTableWidth += ui_->changesTableWidget->verticalScrollBar()->sizeHint().width();
+        changesTableWidth += ui_->changesTableWidget->frameWidth() * 2;
+    }
+
+    // Use the wider of the two tables, plus some padding
+    int width = qMax(versionTableWidth, changesTableWidth) + 40;
+
+    // Height: version table height + tab widget height
+    int versionTableHeight = ui_->versionListWidget->horizontalHeader()->height();
+    int rowHeight = ui_->versionListWidget->verticalHeader()->defaultSectionSize();
+    versionTableHeight += rowHeight * qMin(10, ui_->versionListWidget->rowCount()); // Up to 10 rows
+    versionTableHeight += ui_->versionListWidget->frameWidth() * 2;
+
+    int tabHeight = 400; // Reasonable height for changes/details tabs
+    int height = versionTableHeight + tabHeight + 40; // Extra padding
+
+    return QSize(width, height);
 }
 
 }

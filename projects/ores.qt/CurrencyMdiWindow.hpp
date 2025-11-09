@@ -27,6 +27,7 @@
 #include <QWidget>
 #include <QTableView>
 #include <QVBoxLayout>
+#include <QToolBar>
 #include <QLabel>
 #include <memory>
 #include "ores.comms/client.hpp"
@@ -51,18 +52,24 @@ private:
 public:
     explicit CurrencyMdiWindow(std::shared_ptr<comms::client> client,
                                QWidget* parent = nullptr);
+    ~CurrencyMdiWindow() override;
 
     ClientCurrencyModel* currencyModel() const { return currencyModel_; } // New getter for the model
+
+    QSize sizeHint() const override; // Provide optimal size based on table content
 
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
     void selectionChanged(int selection_count);
+    void addNewRequested(); // Emitted when user wants to add new currency
     void showCurrencyDetails(const risk::domain::currency& currency); // New signal
     void currencyDeleted(const QString& iso_code); // Emitted when currency is deleted
     void showCurrencyHistory(const QString& iso_code); // Emitted when history requested
 
 public slots:
+    void reload();
+    void addNew();
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
@@ -76,10 +83,19 @@ private slots:
     void onSelectionChanged();
 
 private:
+    QIcon createRecoloredIcon(const QString& svgPath, const QColor& color);
+    void updateActionStates();
+
     QVBoxLayout* verticalLayout_;
+    QToolBar* toolBar_;
     QTableView* currencyTableView_;
     ClientCurrencyModel* currencyModel_;
     std::shared_ptr<comms::client> client_;
+
+    // Actions that need to be enabled/disabled based on selection
+    QAction* editAction_;
+    QAction* deleteAction_;
+    QAction* historyAction_;
 };
 
 }

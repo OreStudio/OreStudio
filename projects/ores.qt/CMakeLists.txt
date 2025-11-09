@@ -27,6 +27,8 @@ add_executable(ores.qt
     MainWindow.ui
     SplashScreen.cpp
     MdiAreaWithBackground.cpp
+    DetachableMdiSubWindow.hpp
+    DetachableMdiSubWindow.cpp
     CurrencyMdiWindow.cpp
     CurrencyEditDialog.cpp
     CurrencyEditDialog.ui
@@ -59,13 +61,6 @@ target_link_libraries(ores.qt PRIVATE
 
 # Copy main assets from assets/images directory
 file(GLOB ORES_MAIN_ASSETS "${CMAKE_SOURCE_DIR}/assets/images/*.png")
-foreach(in_file IN LISTS ORES_MAIN_ASSETS)
-    get_filename_component(out_file ${in_file} NAME)
-    file(COPY_FILE ${in_file} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${out_file})
-endforeach()
-
-# Copy main assets from assets/images directory
-file(GLOB ORES_MAIN_ASSETS "${CMAKE_SOURCE_DIR}/assets/images/*.svg")
 foreach(in_file IN LISTS ORES_MAIN_ASSETS)
     get_filename_component(out_file ${in_file} NAME)
     file(COPY_FILE ${in_file} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${out_file})

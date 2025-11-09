@@ -46,27 +46,44 @@ QIcon CurrencyDetailPanel::createRecoloredIcon(const QString& svgPath, const QCo
     QIcon originalIcon(svgPath);
     if (originalIcon.isNull()) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to load icon: " << svgPath.toStdString();
-        return QIcon();
+        return {};
     }
 
     QIcon coloredIcon;
+    const QColor disabledColor(50, 50, 50); // Dark gray for disabled state
+
     for (int size : {16, 20, 24, 32, 48, 64}) {
         QPixmap pixmap = originalIcon.pixmap(size, size);
-        QImage image = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
 
-        for (int y = 0; y < image.height(); ++y) {
-            for (int x = 0; x < image.width(); ++x) {
-                QColor pixelColor = image.pixelColor(x, y);
+        // Create normal state image
+        QImage normalImage = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+        for (int y = 0; y < normalImage.height(); ++y) {
+            for (int x = 0; x < normalImage.width(); ++x) {
+                QColor pixelColor = normalImage.pixelColor(x, y);
                 if (pixelColor.alpha() > 0) {
                     pixelColor.setRed(color.red());
                     pixelColor.setGreen(color.green());
                     pixelColor.setBlue(color.blue());
-                    image.setPixelColor(x, y, pixelColor);
+                    normalImage.setPixelColor(x, y, pixelColor);
                 }
             }
         }
+        coloredIcon.addPixmap(QPixmap::fromImage(normalImage), QIcon::Normal);
 
-        coloredIcon.addPixmap(QPixmap::fromImage(image));
+        // Create disabled state image
+        QImage disabledImage = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+        for (int y = 0; y < disabledImage.height(); ++y) {
+            for (int x = 0; x < disabledImage.width(); ++x) {
+                QColor pixelColor = disabledImage.pixelColor(x, y);
+                if (pixelColor.alpha() > 0) {
+                    pixelColor.setRed(disabledColor.red());
+                    pixelColor.setGreen(disabledColor.green());
+                    pixelColor.setBlue(disabledColor.blue());
+                    disabledImage.setPixelColor(x, y, pixelColor);
+                }
+            }
+        }
+        coloredIcon.addPixmap(QPixmap::fromImage(disabledImage), QIcon::Disabled);
     }
 
     return coloredIcon;
@@ -86,14 +103,14 @@ CurrencyDetailPanel::CurrencyDetailPanel(QWidget* parent)
 
     // Create Save action
     saveAction_ = new QAction("Save", this);
-    saveAction_->setIcon(createRecoloredIcon("ic_fluent_save_20_filled.svg", iconColor));
+    saveAction_->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_save_20_filled.svg", iconColor));
     saveAction_->setToolTip("Save changes");
     connect(saveAction_, &QAction::triggered, this, &CurrencyDetailPanel::onSaveClicked);
     toolBar_->addAction(saveAction_);
 
     // Create Delete action
     deleteAction_ = new QAction("Delete", this);
-    deleteAction_->setIcon(createRecoloredIcon("ic_fluent_delete_20_regular.svg", iconColor));
+    deleteAction_->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_delete_20_regular.svg", iconColor));
     deleteAction_->setToolTip("Delete currency");
     connect(deleteAction_, &QAction::triggered, this, &CurrencyDetailPanel::onDeleteClicked);
     toolBar_->addAction(deleteAction_);
@@ -212,7 +229,7 @@ void CurrencyDetailPanel::onSaveClicked() {
     // Send update request asynchronously
     QFuture<std::pair<bool, std::string>> future =
         QtConcurrent::run([this, currency]() -> std::pair<bool, std::string> {
-            BOOST_LOG_SEV(lg(), info) << "Sending save request for: "
+            BOOST_LOG_SEV(lg(), info) << "Sending save currency request for: "
                                       << currency.iso_code;
 
             // Ensure client is still valid in the background thread
@@ -247,7 +264,7 @@ void CurrencyDetailPanel::onSaveClicked() {
                 return {false, "Failed to communicate with server"};
             }
 
-            BOOST_LOG_SEV(lg(), info) << "Received save response.";
+            BOOST_LOG_SEV(lg(), info) << "Received save currency response.";
             bool result = false;
             std::string message = "Invalid server response";
             if (is_add_mode_) {
@@ -296,12 +313,6 @@ void CurrencyDetailPanel::onSaveClicked() {
                 currentCurrency_ = currency; // Update with modified currency
                 emit currencyUpdated();
             }
-
-            // Close the parent window (MDI subwindow)
-            QWidget* parentWindow = window();
-            if (parentWindow && parentWindow != this) {
-                parentWindow->close();
-            }
         } else {
             BOOST_LOG_SEV(lg(), error) << "Currency save failed: " << message;
             emit errorMessage(QString("Failed to save currency: %1")
@@ -326,7 +337,8 @@ void CurrencyDetailPanel::onDeleteClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Delete request for currency: " << currentCurrency_.iso_code;
+    BOOST_LOG_SEV(lg(), info) << "Delete request for currency: "
+                              << currentCurrency_.iso_code;
 
     // Confirm deletion
     auto reply = MessageBoxHelper::question(this, "Delete Currency",
@@ -346,7 +358,7 @@ void CurrencyDetailPanel::onDeleteClicked() {
     // Send delete request asynchronously
     QFuture<std::pair<bool, std::string>> future =
         QtConcurrent::run([this, iso_code]() -> std::pair<bool, std::string> {
-            BOOST_LOG_SEV(lg(), info) << "Sending delete_currency_request for: "
+            BOOST_LOG_SEV(lg(), info) << "Sending delete currency request for: "
                                       << iso_code;
 
             // Ensure client is still valid in the background thread
@@ -370,7 +382,7 @@ void CurrencyDetailPanel::onDeleteClicked() {
                 return {false, "Failed to communicate with server"};
             }
 
-            BOOST_LOG_SEV(lg(), info) << "Received delete_currency_response";
+            BOOST_LOG_SEV(lg(), info) << "Received delete currency response";
             auto response = risk::messaging::delete_currency_response::deserialize(
                 response_result->payload()
             );

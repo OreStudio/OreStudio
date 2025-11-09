@@ -5,7 +5,6 @@
   </qresource>
   <qresource prefix="/icons">
     <file>resources/icons/ic_fluent_arrow_sync_20_filled.svg</file>
-    <file>resources/icons/ic_fluent_arrow_clockwise_16_regular.svg</file>
     <file>resources/icons/ic_fluent_add_20_filled.svg</file>
     <file>resources/icons/ic_fluent_add_20_regular.svg</file>
     <file>resources/icons/ic_fluent_arrow_clockwise_16_filled.svg</file>

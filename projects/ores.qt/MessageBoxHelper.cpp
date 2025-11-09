@@ -66,7 +66,7 @@ QMessageBox::StandardButton MessageBoxHelper::question(
 
     // Set custom question icon
     const QColor iconColor(220, 220, 220);
-    QIcon questionIcon = createColoredIcon("ic_fluent_question_20_filled.svg", iconColor);
+    QIcon questionIcon = createColoredIcon(":/icons/resources/icons/ic_fluent_question_20_filled.svg", iconColor);
     if (!questionIcon.isNull()) {
         msgBox.setIconPixmap(questionIcon.pixmap(48, 48));
     }
@@ -75,7 +75,7 @@ QMessageBox::StandardButton MessageBoxHelper::question(
     if (buttons & QMessageBox::Yes) {
         QAbstractButton* yesButton = msgBox.button(QMessageBox::Yes);
         if (yesButton) {
-            QIcon checkIcon = createColoredIcon("ic_fluent_checkmark_20_filled.svg", iconColor);
+            QIcon checkIcon = createColoredIcon(":/icons/resources/icons/ic_fluent_checkmark_20_filled.svg", iconColor);
             if (!checkIcon.isNull()) {
                 yesButton->setIcon(checkIcon);
             }
@@ -85,7 +85,7 @@ QMessageBox::StandardButton MessageBoxHelper::question(
     if (buttons & QMessageBox::No) {
         QAbstractButton* noButton = msgBox.button(QMessageBox::No);
         if (noButton) {
-            QIcon dismissIcon = createColoredIcon("ic_fluent_dismiss_20_filled.svg", iconColor);
+            QIcon dismissIcon = createColoredIcon(":/icons/resources/icons/ic_fluent_dismiss_20_filled.svg", iconColor);
             if (!dismissIcon.isNull()) {
                 noButton->setIcon(dismissIcon);
             }
@@ -107,7 +107,7 @@ void MessageBoxHelper::warning(
 
     // Use warning icon
     const QColor iconColor(220, 220, 220);
-    QIcon warningIcon = createColoredIcon("ic_fluent_warning_20_filled.svg", iconColor);
+    QIcon warningIcon = createColoredIcon(":/icons/resources/icons/ic_fluent_warning_20_filled.svg", iconColor);
     if (!warningIcon.isNull()) {
         msgBox.setIconPixmap(warningIcon.pixmap(48, 48));
     }
@@ -127,7 +127,7 @@ void MessageBoxHelper::critical(
 
     // Use error icon for critical errors
     const QColor iconColor(220, 220, 220);
-    QIcon criticalIcon = createColoredIcon("ic_fluent_error_circle_20_filled.svg", iconColor);
+    QIcon criticalIcon = createColoredIcon(":/icons/resources/icons/ic_fluent_error_circle_20_filled.svg", iconColor);
     if (!criticalIcon.isNull()) {
         msgBox.setIconPixmap(criticalIcon.pixmap(48, 48));
     }
@@ -147,7 +147,7 @@ void MessageBoxHelper::information(
 
     // Use info icon for information
     const QColor iconColor(220, 220, 220);
-    QIcon infoIcon = createColoredIcon("ic_fluent_info_20_filled.svg", iconColor);
+    QIcon infoIcon = createColoredIcon(":/icons/resources/icons/ic_fluent_info_20_filled.svg", iconColor);
     if (!infoIcon.isNull()) {
         msgBox.setIconPixmap(infoIcon.pixmap(48, 48));
     }

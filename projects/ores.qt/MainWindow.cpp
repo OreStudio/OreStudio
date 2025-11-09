@@ -79,32 +79,32 @@ MainWindow::MainWindow(QWidget* parent) :
 
     // Initialize connection status icons
     const QColor iconColor(220, 220, 220); // Light gray for dark theme
-    connectedIcon_ = createRecoloredIcon("ic_fluent_plug_connected_20_filled.svg", iconColor);
-    disconnectedIcon_ = createRecoloredIcon("ic_fluent_plug_disconnected_20_filled.svg", iconColor);
+    connectedIcon_ = createRecoloredIcon(":/icons/resources/icons/ic_fluent_plug_connected_20_filled.svg", iconColor);
+    disconnectedIcon_ = createRecoloredIcon(":/icons/resources/icons/ic_fluent_plug_disconnected_20_filled.svg", iconColor);
 
     // Apply recolored icons for dark theme visibility (light gray color)
     ui_->ActionConnect->setIcon(createRecoloredIcon(
-        "ic_fluent_plug_connected_20_filled.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_plug_connected_20_filled.svg", iconColor));
     ui_->ActionDisconnect->setIcon(createRecoloredIcon(
-        "ic_fluent_plug_disconnected_20_filled.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_plug_disconnected_20_filled.svg", iconColor));
     ui_->CurrenciesAction->setIcon(createRecoloredIcon(
-        "ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
     ui_->ActionSave->setIcon(createRecoloredIcon(
-        "ic_fluent_save_20_filled.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_save_20_filled.svg", iconColor));
     ui_->ActionEdit->setIcon(createRecoloredIcon(
-        "ic_fluent_edit_20_filled.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_edit_20_filled.svg", iconColor));
     ui_->ActionDelete->setIcon(createRecoloredIcon(
-        "ic_fluent_delete_20_filled.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_delete_20_filled.svg", iconColor));
     ui_->ActionExportCSV->setIcon(createRecoloredIcon(
-        "ic_fluent_document_table_20_regular.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_document_table_20_regular.svg", iconColor));
     ui_->ActionExportXML->setIcon(createRecoloredIcon(
-        "ic_fluent_document_code_16_regular.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_document_code_16_regular.svg", iconColor));
     ui_->ActionAbout->setIcon(createRecoloredIcon(
-        "ic_fluent_star_20_regular.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_star_20_regular.svg", iconColor));
     ui_->ActionHistory->setIcon(createRecoloredIcon(
-        "ic_fluent_history_20_regular.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_history_20_regular.svg", iconColor));
     ui_->ActionAdd->setIcon(createRecoloredIcon(
-        "ic_fluent_add_20_filled.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_add_20_filled.svg", iconColor));
 
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this, &MainWindow::onLoginTriggered);
@@ -218,7 +218,7 @@ MainWindow::MainWindow(QWidget* parent) :
         currencyListWindow_->setWidget(currencyWidget);
         currencyListWindow_->setWindowTitle("Currencies");
         currencyListWindow_->setWindowIcon(createRecoloredIcon(
-            "ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
+            ":/icons/resources/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
 
         // Track window for detach/reattach operations
         allDetachableWindows_.append(currencyListWindow_);
@@ -557,7 +557,7 @@ void MainWindow::onShowCurrencyHistory(const QString& iso_code) {
     subWindow->setWidget(historyWidget);
     subWindow->setWindowTitle(QString("History: %1").arg(iso_code));
     subWindow->setWindowIcon(createRecoloredIcon(
-        "ic_fluent_history_20_regular.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_history_20_regular.svg", iconColor));
 
     // Track window for detach/reattach operations and by ISO code
     currencyHistoryWindows_[iso_code] = subWindow;
@@ -625,7 +625,7 @@ void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
 
     // Connect signals from panel
     connect(detailPanel, &CurrencyDetailPanel::currencyUpdated,
-            this, [this]() {
+            this, [this, detailPanel]() {
         // Refresh both the active window and the main list window if they exist
         if (activeCurrencyWindow_) {
             activeCurrencyWindow_->currencyModel()->refresh();
@@ -637,9 +637,15 @@ void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
             }
         }
         ui_->statusbar->showMessage("Currency updated successfully.");
+
+        // Close the detail window after successful update
+        QWidget* parentWindow = detailPanel->window();
+        if (parentWindow && parentWindow != detailPanel) {
+            parentWindow->close();
+        }
     });
     connect(detailPanel, &CurrencyDetailPanel::currencyCreated,
-            this, [this]() {
+            this, [this, detailPanel]() {
         BOOST_LOG_SEV(lg(), info) << "Currency created signal received, refreshing windows";
 
         // Refresh both the active window and the main list window if they exist
@@ -659,6 +665,12 @@ void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
             BOOST_LOG_SEV(lg(), warn) << "Currency list window is null, cannot refresh";
         }
         ui_->statusbar->showMessage("Currency created successfully.");
+
+        // Close the detail window after successful creation
+        QWidget* parentWindow = detailPanel->window();
+        if (parentWindow && parentWindow != detailPanel) {
+            parentWindow->close();
+        }
     });
     connect(detailPanel, &CurrencyDetailPanel::currencyDeleted,
             this, [this](const QString& iso_code) {
@@ -696,7 +708,7 @@ void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
     detailWindow->setWidget(detailPanel);
     detailWindow->setWindowTitle(QString("Currency Details: %1").arg(iso_code));
     detailWindow->setWindowIcon(createRecoloredIcon(
-        "ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
+        ":/icons/resources/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
 
     // Track window for detach/reattach operations and by ISO code
     currencyDetailWindows_[iso_code] = detailWindow;

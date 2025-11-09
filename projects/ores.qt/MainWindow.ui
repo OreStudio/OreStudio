@@ -95,7 +95,7 @@
   <action name="CurrenciesAction">
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_currency_dollar_euro_20_filled.svg</normaloff>ic_fluent_currency_dollar_euro_20_filled.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_currency_dollar_euro_20_filled.svg</normaloff>:/icons/resources/icons/ic_fluent_currency_dollar_euro_20_filled.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Currencies</string>
@@ -107,7 +107,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_history_20_regular.svg</normaloff>ic_fluent_history_20_regular.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_history_20_regular.svg</normaloff>:/icons/resources/icons/ic_fluent_history_20_regular.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;History</string>
@@ -119,7 +119,7 @@
   <action name="ActionConnect">
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_plug_disconnected_20_filled.svg</normaloff>ic_fluent_plug_disconnected_20_filled.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_plug_disconnected_20_filled.svg</normaloff>:/icons/resources/icons/ic_fluent_plug_disconnected_20_filled.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Connect</string>
@@ -128,7 +128,7 @@
   <action name="ActionDisconnect">
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_plug_connected_20_filled.svg</normaloff>ic_fluent_plug_connected_20_filled.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_plug_connected_20_filled.svg</normaloff>:/icons/resources/icons/ic_fluent_plug_connected_20_filled.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Disconnect</string>
@@ -140,7 +140,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_add_20_filled.svg</normaloff>ic_fluent_add_20_filled.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_add_20_filled.svg</normaloff>:/icons/resources/icons/ic_fluent_add_20_filled.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Add</string>
@@ -156,7 +156,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_edit_20_filled.svg</normaloff>ic_fluent_edit_20_filled.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_edit_20_filled.svg</normaloff>:/icons/resources/icons/ic_fluent_edit_20_filled.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Edit</string>
@@ -171,7 +171,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_delete_20_filled.svg</normaloff>ic_fluent_delete_20_filled.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_delete_20_filled.svg</normaloff>:/icons/resources/icons/ic_fluent_delete_20_filled.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Delete</string>
@@ -186,7 +186,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_save_20_filled.svg</normaloff>ic_fluent_save_20_filled.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_save_20_filled.svg</normaloff>:/icons/resources/icons/ic_fluent_save_20_filled.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Save</string>
@@ -198,7 +198,7 @@
   <action name="ActionExportCSV">
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_document_table_20_regular.svg</normaloff>ic_fluent_document_table_20_regular.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_document_table_20_regular.svg</normaloff>:/icons/resources/icons/ic_fluent_document_table_20_regular.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;To CSV</string>
@@ -210,7 +210,7 @@
   <action name="ActionExportToXML">
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_document_code_16_regular.svg</normaloff>ic_fluent_document_code_16_regular.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_document_code_16_regular.svg</normaloff>:/icons/resources/icons/ic_fluent_document_code_16_regular.svg</iconset>
    </property>
    <property name="text">
     <string>To &amp;XML</string>
@@ -222,7 +222,7 @@
   <action name="ActionExportXML">
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_document_code_16_regular.svg</normaloff>ic_fluent_document_code_16_regular.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_document_code_16_regular.svg</normaloff>:/icons/resources/icons/ic_fluent_document_code_16_regular.svg</iconset>
    </property>
    <property name="text">
     <string>To ORE&amp;XML</string>
@@ -234,7 +234,7 @@
   <action name="ActionAbout">
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_star_20_regular.svg</normaloff>ic_fluent_star_20_regular.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_star_20_regular.svg</normaloff>:/icons/resources/icons/ic_fluent_star_20_regular.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;About</string>
@@ -262,7 +262,7 @@
   <action name="ActionReload">
    <property name="icon">
     <iconset>
-     <normaloff>ic_fluent_arrow_sync_20_regular.svg</normaloff>ic_fluent_arrow_sync_20_regular.svg</iconset>
+     <normaloff>:/icons/resources/icons/ic_fluent_arrow_sync_20_regular.svg</normaloff>:/icons/resources/icons/ic_fluent_arrow_sync_20_regular.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Reload</string>

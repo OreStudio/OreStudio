@@ -35,6 +35,7 @@
 #include "ores.qt/LoginDialog.hpp"
 #include "ores.qt/CurrencyMdiWindow.hpp"
 #include "ores.qt/CurrencyHistoryMdiWindow.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/CurrencyDetailPanel.hpp" // Include the header for CurrencyDetailPanel
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/AboutDialog.hpp"
@@ -185,11 +186,17 @@ MainWindow::MainWindow(QWidget* parent) :
         connect(currencyWidget, &CurrencyMdiWindow::showCurrencyHistory,
                 this, &MainWindow::onShowCurrencyHistory);
 
-        auto* subWindow = mdiArea_->addSubWindow(currencyWidget);
+        auto* subWindow = new DetachableMdiSubWindow();
+        subWindow->setWidget(currencyWidget);
         subWindow->setWindowTitle("Currencies");
         subWindow->setWindowIcon(createRecoloredIcon(
             "ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
-        subWindow->showMaximized();
+
+        mdiArea_->addSubWindow(subWindow);
+
+        // Size to content, not maximized
+        subWindow->adjustSize();
+        subWindow->show();
     });
 
     // Initially disable data-related actions until logged in
@@ -470,11 +477,17 @@ void MainWindow::onShowCurrencyHistory(const QString& iso_code) {
         ui_->statusbar->showMessage("Error loading history: " + error_message);
     });
 
-    auto* subWindow = mdiArea_->addSubWindow(historyWidget);
+    auto* subWindow = new DetachableMdiSubWindow();
+    subWindow->setWidget(historyWidget);
     subWindow->setWindowTitle(QString("History: %1").arg(iso_code));
     subWindow->setWindowIcon(createRecoloredIcon(
         "ic_fluent_history_20_regular.svg", iconColor));
-    subWindow->showMaximized();
+
+    mdiArea_->addSubWindow(subWindow);
+
+    // Size to content, not maximized
+    subWindow->adjustSize();
+    subWindow->show();
 }
 
 void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {

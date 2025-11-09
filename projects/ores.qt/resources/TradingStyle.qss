@@ -47,11 +47,16 @@ QPushButton {
     border: 1px solid #444444;
     color: #F0F0F0;
     padding: 8px 12px;
+    font-family: "Arial";
 }
 
 QPushButton:hover {
     background-color: #2A2A2A;
     border: 1px solid #007ACC;
+}
+
+QLabel {
+    font-family: "Arial";
 }
 
 /* Toolbar specific styles */
@@ -67,7 +72,8 @@ QToolBar#toolBar QToolButton {
     border: none;
     color: #F0F0F0;
     padding: 4px;
-    font-size: 6pt; /* Set to desired font size */
+    font-size: 7pt;
+    font-family: "Arial";
 }
 
 QToolButton:hover {
@@ -82,6 +88,7 @@ QToolButton:disabled {
 QMenuBar {
     background-color: #282828;
     color: #F0F0F0;
+    font-family: "Arial";
 }
 
 QMenuBar::item {
@@ -95,6 +102,7 @@ QMenuBar::item:selected {
 QMenu {
     background-color: #282828;
     border: 1px solid #444444;
+    font-family: "Arial";
 }
 
 QMenu::item:selected {

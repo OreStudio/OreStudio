@@ -96,9 +96,10 @@ private:
     MdiAreaWithBackground* mdiArea_;
     CurrencyMdiWindow* activeCurrencyWindow_;
     int selectionCount_;
-    DetachableMdiSubWindow* currencyDetailWindow_; // Currency detail MDI window (single instance)
+    QMap<QString, DetachableMdiSubWindow*> currencyDetailWindows_; // Currency detail windows by ISO code
+    DetachableMdiSubWindow* currencyListWindow_; // Currency list MDI window (single instance)
+    QMap<QString, DetachableMdiSubWindow*> currencyHistoryWindows_; // History windows by ISO code
     QLabel* connectionStatusIconLabel_; // Status bar icon label
-    QString displayedCurrencyIsoCode_; // Track currently displayed currency
     QList<DetachableMdiSubWindow*> allDetachableWindows_; // Track all detachable windows
 
     QIcon connectedIcon_;    // Icon for connected status

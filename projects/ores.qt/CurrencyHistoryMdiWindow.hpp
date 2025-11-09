@@ -49,6 +49,7 @@ public:
     explicit CurrencyHistoryMdiWindow(const QString& iso_code,
                                       std::shared_ptr<comms::client> client,
                                       QWidget* parent = nullptr);
+    ~CurrencyHistoryMdiWindow() override;
 
     QSize sizeHint() const override; // Provide optimal size based on dialog content
 

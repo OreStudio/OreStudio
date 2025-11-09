@@ -47,6 +47,15 @@ CurrencyHistoryMdiWindow::CurrencyHistoryMdiWindow(const QString& iso_code,
     historyWidget_->loadHistory();
 }
 
+CurrencyHistoryMdiWindow::~CurrencyHistoryMdiWindow() {
+    BOOST_LOG_SEV(lg(), info) << "Destroying currency history MDI window";
+
+    // Disconnect all signals to prevent any callbacks during destruction
+    if (historyWidget_) {
+        disconnect(historyWidget_, nullptr, this, nullptr);
+    }
+}
+
 QSize CurrencyHistoryMdiWindow::sizeHint() const {
     if (historyWidget_) {
         return historyWidget_->sizeHint();

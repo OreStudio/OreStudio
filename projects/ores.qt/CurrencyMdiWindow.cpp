@@ -212,32 +212,15 @@ CurrencyMdiWindow::~CurrencyMdiWindow() {
         disconnect(currencyModel_, nullptr, this, nullptr);
     }
 
-    // Disconnect and clean up table view completely
+    // Disconnect all signals but don't interfere with Qt's cleanup
     if (currencyTableView_) {
-        // Disconnect all signals from table view itself
         disconnect(currencyTableView_, nullptr, this, nullptr);
-
-        // Disconnect selection model signals
         if (currencyTableView_->selectionModel()) {
             disconnect(currencyTableView_->selectionModel(), nullptr, this, nullptr);
         }
-
-        // Clear headers before destroying
-        if (currencyTableView_->horizontalHeader()) {
-            currencyTableView_->horizontalHeader()->disconnect(this);
-        }
-        if (currencyTableView_->verticalHeader()) {
-            currencyTableView_->verticalHeader()->disconnect(this);
-        }
-
-        // Clear delegate and model - delegate will be cleaned up by table view
-        currencyTableView_->setItemDelegate(nullptr);
-        currencyTableView_->setModel(nullptr);
-
-        // Explicitly delete the table view to avoid Qt's automatic cleanup issues
-        delete currencyTableView_;
-        currencyTableView_ = nullptr;
     }
+
+    // Let Qt handle all widget destruction automatically
 }
 
 void CurrencyMdiWindow::reload() {

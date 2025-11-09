@@ -514,12 +514,22 @@ void MainWindow::onShowCurrencyHistory(const QString& iso_code) {
             BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
                                       << iso_code.toStdString();
 
+            // Get the history widget
+            auto* historyWidget = qobject_cast<CurrencyHistoryMdiWindow*>(existingWindow->widget());
+            if (historyWidget) {
+                // Make sure the widget is visible
+                historyWidget->setVisible(true);
+                historyWidget->show();
+            }
+
             // Bring window to front
             if (existingWindow->isDetached()) {
+                existingWindow->setVisible(true);
                 existingWindow->show();
                 existingWindow->raise();
                 existingWindow->activateWindow();
             } else {
+                existingWindow->setVisible(true);
                 mdiArea_->setActiveSubWindow(existingWindow);
                 existingWindow->show();
                 existingWindow->raise();

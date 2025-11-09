@@ -32,13 +32,37 @@
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
-     <widget class="QListWidget" name="versionListWidget">
+     <widget class="QTableWidget" name="versionListWidget">
       <property name="minimumHeight">
        <number>150</number>
       </property>
       <property name="maximumHeight">
        <number>250</number>
       </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::SingleSelection</enum>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectRows</enum>
+      </property>
+      <column>
+       <property name="text">
+        <string>Version</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Modified At</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Modified By</string>
+       </property>
+      </column>
      </widget>
      <widget class="QWidget" name="detailWidget" native="true">
       <layout class="QVBoxLayout" name="detailLayout">

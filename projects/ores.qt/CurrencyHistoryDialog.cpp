@@ -44,10 +44,17 @@ CurrencyHistoryDialog::CurrencyHistoryDialog(const QString& iso_code,
     ui_->setupUi(this);
 
     // Connect version list selection
-    connect(ui_->versionListWidget, &QListWidget::currentRowChanged,
-            this, &CurrencyHistoryDialog::onVersionSelected);
+    connect(ui_->versionListWidget, &QTableWidget::currentCellChanged,
+            this, [this](int currentRow, int, int, int) {
+        onVersionSelected(currentRow);
+    });
 
-    // Set up table headers
+    // Set up version table headers
+    ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
+    ui_->versionListWidget->setColumnWidth(0, 80);  // Version column
+    ui_->versionListWidget->setColumnWidth(1, 200); // Modified At column
+
+    // Set up changes table headers
     ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
     ui_->changesTableWidget->setColumnWidth(0, 200);
     ui_->changesTableWidget->setColumnWidth(1, 200);
@@ -127,23 +134,28 @@ void CurrencyHistoryDialog::onHistoryLoaded() {
                               << history_.versions.size() << " versions";
 
     // Clear existing items
-    ui_->versionListWidget->clear();
+    ui_->versionListWidget->setRowCount(0);
 
-    // Add each version to the list
-    for (const auto& version : history_.versions) {
-        QString itemText = QString("Version %1\n%2\nby %3")
-            .arg(version.version_number)
-            .arg(QString::fromStdString(version.modified_at))
-            .arg(QString::fromStdString(version.modified_by));
+    // Add each version to the table
+    ui_->versionListWidget->setRowCount(history_.versions.size());
+    for (int i = 0; i < static_cast<int>(history_.versions.size()); ++i) {
+        const auto& version = history_.versions[i];
 
-        auto* item = new QListWidgetItem(itemText);
-        item->setIcon(QIcon("ic_fluent_history_20_regular.svg"));
-        ui_->versionListWidget->addItem(item);
+        auto* versionItem = new QTableWidgetItem(QString::number(version.version_number));
+        auto* modifiedAtItem = new QTableWidgetItem(QString::fromStdString(version.modified_at));
+        auto* modifiedByItem = new QTableWidgetItem(QString::fromStdString(version.modified_by));
+
+        // Add icon to version column
+        versionItem->setIcon(QIcon("ic_fluent_history_20_regular.svg"));
+
+        ui_->versionListWidget->setItem(i, 0, versionItem);
+        ui_->versionListWidget->setItem(i, 1, modifiedAtItem);
+        ui_->versionListWidget->setItem(i, 2, modifiedByItem);
     }
 
     // Select first version if available
     if (!history_.versions.empty()) {
-        ui_->versionListWidget->setCurrentRow(0);
+        ui_->versionListWidget->selectRow(0);
     }
 
     // Update title with currency name
@@ -185,13 +197,9 @@ void CurrencyHistoryDialog::displayChangesTab(int version_index) {
 
     const auto& current = history_.versions[version_index];
 
-    // If this is the first (oldest) version, show it as "created"
+    // If this is the first (oldest) version, there's nothing to diff against
+    // so leave the changes table empty
     if (version_index == static_cast<int>(history_.versions.size()) - 1) {
-        ui_->changesTableWidget->setRowCount(1);
-        ui_->changesTableWidget->setItem(0, 0, new QTableWidgetItem("Currency Created"));
-        ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem(""));
-        ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem(
-            QString::fromStdString(current.data.name)));
         return;
     }
 
@@ -209,8 +217,8 @@ void CurrencyHistoryDialog::displayChangesTab(int version_index) {
         auto* oldItem = new QTableWidgetItem(old_val);
         auto* newItem = new QTableWidgetItem(new_val);
 
-        // Highlight changed rows
-        QColor highlight(255, 249, 196); // Light yellow
+        // Highlight changed rows with a subtle color
+        QColor highlight(255, 255, 230); // Very light yellow, almost white
         fieldItem->setBackground(highlight);
         oldItem->setBackground(highlight);
         newItem->setBackground(highlight);

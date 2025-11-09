@@ -101,10 +101,10 @@
      <normaloff>ic_fluent_history_20_regular.svg</normaloff>ic_fluent_history_20_regular.svg</iconset>
    </property>
    <property name="text">
-    <string>Currency &amp;History</string>
+    <string>&amp;History</string>
    </property>
    <property name="toolTip">
-    <string>View currency history</string>
+    <string>View history</string>
    </property>
   </action>
   <action name="ActionConnect">

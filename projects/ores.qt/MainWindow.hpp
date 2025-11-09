@@ -92,7 +92,7 @@ private:
     MdiAreaWithBackground* mdiArea_;
     CurrencyMdiWindow* activeCurrencyWindow_;
     int selectionCount_;
-    CurrencyDetailPanel* currencyDetailPanel_; // New member variable
+    CurrencyDetailPanel* currencyDetailWindow_; // Floating detail window (single instance)
     QLabel* connectionStatusIconLabel_; // Status bar icon label
     QString displayedCurrencyIsoCode_; // Track currently displayed currency
 

@@ -46,47 +46,13 @@ using namespace ores::utility::log;
 
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent), ui_(new Ui::MainWindow), mdiArea_(nullptr),
-    activeCurrencyWindow_(nullptr), selectionCount_(0), currencyDetailPanel_(nullptr) {
+    activeCurrencyWindow_(nullptr), selectionCount_(0), currencyDetailWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating the main window.";
     ui_->setupUi(this);
 
     // Create MDI area with proper parent
     mdiArea_ = new MdiAreaWithBackground(this);
-
-    // Set up CurrencyDetailPanel in the dock widget
-    currencyDetailPanel_ = new CurrencyDetailPanel(this); // No client in constructor
-    ui_->currencyDetailDockWidget->setWidget(currencyDetailPanel_);
-    ui_->currencyDetailDockWidget->setVisible(false); // Initially hidden
-
-    // Connect signals from CurrencyDetailPanel to MainWindow
-    connect(currencyDetailPanel_, &CurrencyDetailPanel::currencyUpdated,
-            this, [this]() {
-        if (activeCurrencyWindow_) {
-            activeCurrencyWindow_->currencyModel()->refresh();
-        }
-        ui_->statusbar->showMessage("Currency updated successfully.");
-    });
-    connect(currencyDetailPanel_, &CurrencyDetailPanel::currencyDeleted,
-            this, [this](const QString& iso_code) {
-        if (activeCurrencyWindow_) {
-            activeCurrencyWindow_->currencyModel()->refresh();
-        }
-        ui_->statusbar->showMessage(QString("Currency '%1' deleted.").arg(iso_code));
-        onCurrencyDeleted(iso_code); // Clear panel if it's displaying the deleted currency
-    });
-    connect(currencyDetailPanel_, &CurrencyDetailPanel::statusMessage,
-            this, [this](const QString& message) {
-        ui_->statusbar->showMessage(message);
-    });
-    connect(currencyDetailPanel_, &CurrencyDetailPanel::errorMessage,
-            this, [this](const QString& message) {
-        ui_->statusbar->showMessage(message);
-    });
-    connect(currencyDetailPanel_, &CurrencyDetailPanel::isDirtyChanged,
-            this, [this](bool isDirty) {
-        ui_->ActionSave->setEnabled(isDirty);
-    });
 
     // Set application icon
     setWindowIcon(QIcon("modern-icon.png"));
@@ -145,8 +111,8 @@ MainWindow::MainWindow(QWidget* parent) :
 
     // Connect CRUD actions
     connect(ui_->ActionSave, &QAction::triggered, this, [this]() {
-        if (currencyDetailPanel_) {
-            currencyDetailPanel_->save();
+        if (currencyDetailWindow_) {
+            currencyDetailWindow_->save();
         }
     });
     connect(ui_->ActionEdit, &QAction::triggered, this, &MainWindow::onEditTriggered);
@@ -254,9 +220,9 @@ void MainWindow::onLoginTriggered() {
         work_guard_ = dialog.takeWorkGuard();
         io_thread_ = dialog.takeIOThread();
 
-        // Set client for the detail panel
-        if (currencyDetailPanel_) {
-            currencyDetailPanel_->setClient(client_);
+        // Set client for the detail window if it exists
+        if (currencyDetailWindow_) {
+            currencyDetailWindow_->setClient(client_);
         }
 
         if (client_ && client_->is_connected()) {
@@ -316,12 +282,10 @@ void MainWindow::onDisconnectTriggered() {
         io_thread_.reset();
         io_context_.reset();
 
-        // Clear client from detail panel
-        if (currencyDetailPanel_) {
-            currencyDetailPanel_->setClient(nullptr);
-            currencyDetailPanel_->clearPanel();
-            ui_->currencyDetailDockWidget->setVisible(false);
-            displayedCurrencyIsoCode_.clear();
+        // Close detail window if open
+        if (currencyDetailWindow_) {
+            currencyDetailWindow_->close();
+            // Note: The destroyed signal will clean up currencyDetailWindow_ and displayedCurrencyIsoCode_
         }
 
         updateMenuState();
@@ -491,24 +455,88 @@ void MainWindow::onShowCurrencyHistory(const QString& iso_code) {
 }
 
 void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
-    if (currencyDetailPanel_) {
-        displayedCurrencyIsoCode_ = QString::fromStdString(currency.iso_code);
-        currencyDetailPanel_->setCurrency(currency);
-        ui_->currencyDetailDockWidget->setVisible(true);
-        ui_->currencyDetailDockWidget->raise(); // Bring to front
+    BOOST_LOG_SEV(lg(), info) << "Showing currency details for: " << currency.iso_code;
+
+    displayedCurrencyIsoCode_ = QString::fromStdString(currency.iso_code);
+
+    // Create window if it doesn't exist
+    if (!currencyDetailWindow_) {
+        BOOST_LOG_SEV(lg(), info) << "Creating new currency detail window";
+        currencyDetailWindow_ = new CurrencyDetailPanel(nullptr);
+
+        // Set window flags to make it a floating window
+        currencyDetailWindow_->setWindowFlags(Qt::Window);
+        currencyDetailWindow_->setWindowTitle(QString("Currency Details: %1")
+            .arg(QString::fromStdString(currency.iso_code)));
+
+        // Set client if we're connected
+        if (client_) {
+            currencyDetailWindow_->setClient(client_);
+        }
+
+        // Connect signals
+        connect(currencyDetailWindow_, &CurrencyDetailPanel::currencyUpdated,
+                this, [this]() {
+            if (activeCurrencyWindow_) {
+                activeCurrencyWindow_->currencyModel()->refresh();
+            }
+            ui_->statusbar->showMessage("Currency updated successfully.");
+        });
+        connect(currencyDetailWindow_, &CurrencyDetailPanel::currencyDeleted,
+                this, [this](const QString& iso_code) {
+            if (activeCurrencyWindow_) {
+                activeCurrencyWindow_->currencyModel()->refresh();
+            }
+            ui_->statusbar->showMessage(QString("Currency '%1' deleted.").arg(iso_code));
+            onCurrencyDeleted(iso_code);
+        });
+        connect(currencyDetailWindow_, &CurrencyDetailPanel::statusMessage,
+                this, [this](const QString& message) {
+            ui_->statusbar->showMessage(message);
+        });
+        connect(currencyDetailWindow_, &CurrencyDetailPanel::errorMessage,
+                this, [this](const QString& message) {
+            ui_->statusbar->showMessage(message);
+        });
+        connect(currencyDetailWindow_, &CurrencyDetailPanel::isDirtyChanged,
+                this, [this](bool isDirty) {
+            ui_->ActionSave->setEnabled(isDirty);
+        });
+
+        // Connect destroyed signal to clear our pointer
+        connect(currencyDetailWindow_, &QObject::destroyed,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Currency detail window destroyed";
+            currencyDetailWindow_ = nullptr;
+            displayedCurrencyIsoCode_.clear();
+            ui_->ActionSave->setEnabled(false);
+        });
+    } else {
+        // Update window title for the new currency
+        currencyDetailWindow_->setWindowTitle(QString("Currency Details: %1")
+            .arg(QString::fromStdString(currency.iso_code)));
     }
+
+    // Update currency data
+    currencyDetailWindow_->setCurrency(currency);
+
+    // Show and activate window
+    currencyDetailWindow_->show();
+    currencyDetailWindow_->raise();
+    currencyDetailWindow_->activateWindow();
+
+    BOOST_LOG_SEV(lg(), info) << "Currency detail window shown";
 }
 
 void MainWindow::onCurrencyDeleted(const QString& iso_code) {
-    // If the deleted currency is currently displayed in the panel, clear and hide it
+    // If the deleted currency is currently displayed in the window, close it
     if (displayedCurrencyIsoCode_ == iso_code) {
-        BOOST_LOG_SEV(lg(), info) << "Clearing panel because displayed currency was deleted: "
+        BOOST_LOG_SEV(lg(), info) << "Closing detail window because displayed currency was deleted: "
                                  << iso_code.toStdString();
-        if (currencyDetailPanel_) {
-            currencyDetailPanel_->clearPanel();
-            ui_->currencyDetailDockWidget->setVisible(false);
+        if (currencyDetailWindow_) {
+            currencyDetailWindow_->close();
+            // Note: The destroyed signal will clean up currencyDetailWindow_ and displayedCurrencyIsoCode_
         }
-        displayedCurrencyIsoCode_.clear();
     }
 }
 

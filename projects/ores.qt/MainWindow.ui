@@ -206,15 +206,6 @@
     <string>About this application</string>
    </property>
   </action>
-  <widget class="QDockWidget" name="currencyDetailDockWidget">
-   <property name="windowTitle">
-    <string>Currency Details</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number> <!-- Qt::RightDockWidgetArea -->
-   </attribute>
-   <widget class="QWidget" name="dockWidgetContents"/>
-  </widget>
  </widget>
  <resources/>
  <connections/>

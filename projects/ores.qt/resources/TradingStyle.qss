@@ -65,6 +65,7 @@ QToolBar {
     border: none; /* Revert from diagnostic red border */
     padding: 2px;
     qproperty-toolButtonStyle: ToolButtonTextUnderIcon;
+    qproperty-iconSize: 20px;
 }
 
 QToolBar QToolButton {
@@ -76,13 +77,14 @@ QToolBar QToolButton {
     font-family: "Arial";
 }
 
-QToolButton:hover {
+QToolBar QToolButton:hover {
     background-color: #2A2A2A;
     border: 1px solid #007ACC;
 }
 
-QToolButton:disabled {
+QToolBar QToolButton:disabled {
     background-color: transparent;
+    color: #505050;
 }
 
 QMenuBar {

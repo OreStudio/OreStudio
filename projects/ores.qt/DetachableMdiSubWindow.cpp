@@ -83,11 +83,27 @@ void DetachableMdiSubWindow::reattach() {
 
     BOOST_LOG_SEV(lg(), info) << "Reattaching window: " << windowTitle().toStdString();
 
-    // Remove top-level window flags
+    // Store the widget before reparenting
+    QWidget* contentWidget = widget();
+
+    // Temporarily remove the widget from this subwindow
+    setWidget(nullptr);
+
+    // Hide window before changing parent
+    hide();
+
+    // Restore parent to MDI area's viewport (where subwindows actually live)
+    if (savedMdiArea_->viewport()) {
+        setParent(savedMdiArea_->viewport());
+    } else {
+        setParent(savedMdiArea_);
+    }
+
+    // Restore MDI subwindow flags
     setWindowFlags(Qt::SubWindow);
 
-    // Add back to MDI area
-    savedMdiArea_->addSubWindow(this);
+    // Restore the content widget
+    setWidget(contentWidget);
 
     // Restore position and size within MDI
     move(savedMdiPosition_);

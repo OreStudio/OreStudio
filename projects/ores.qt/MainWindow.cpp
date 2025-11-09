@@ -109,6 +109,11 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->ActionExportXML, &QAction::triggered, this, &MainWindow::onExportXMLTriggered);
     connect(ui_->ActionAbout, &QAction::triggered, this, &MainWindow::onAboutTriggered);
 
+    // Connect Window menu actions
+    connect(ui_->ActionDetachAll, &QAction::triggered, this, &MainWindow::onDetachAllTriggered);
+    connect(ui_->ActionReattachAll, &QAction::triggered, this, &MainWindow::onReattachAllTriggered);
+    connect(ui_->menuWindow, &QMenu::aboutToShow, this, &MainWindow::onWindowMenuAboutToShow);
+
     // Connect CRUD actions
     connect(ui_->ActionSave, &QAction::triggered, this, [this]() {
         if (currencyDetailWindow_) {
@@ -157,6 +162,12 @@ MainWindow::MainWindow(QWidget* parent) :
         subWindow->setWindowTitle("Currencies");
         subWindow->setWindowIcon(createRecoloredIcon(
             "ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
+
+        // Track window for detach/reattach operations
+        allDetachableWindows_.append(subWindow);
+        connect(subWindow, &QObject::destroyed, this, [this, subWindow]() {
+            allDetachableWindows_.removeAll(subWindow);
+        });
 
         mdiArea_->addSubWindow(subWindow);
 
@@ -447,6 +458,12 @@ void MainWindow::onShowCurrencyHistory(const QString& iso_code) {
     subWindow->setWindowIcon(createRecoloredIcon(
         "ic_fluent_history_20_regular.svg", iconColor));
 
+    // Track window for detach/reattach operations
+    allDetachableWindows_.append(subWindow);
+    connect(subWindow, &QObject::destroyed, this, [this, subWindow]() {
+        allDetachableWindows_.removeAll(subWindow);
+    });
+
     mdiArea_->addSubWindow(subWindow);
 
     // Size to content, not maximized
@@ -561,6 +578,86 @@ void MainWindow::onExportXMLTriggered() {
 void MainWindow::onAboutTriggered() {
     AboutDialog dialog(this);
     dialog.exec();
+}
+
+void MainWindow::onDetachAllTriggered() {
+    BOOST_LOG_SEV(lg(), info) << "Detach All triggered";
+
+    for (auto* detachableWindow : allDetachableWindows_) {
+        if (detachableWindow && !detachableWindow->isDetached()) {
+            detachableWindow->detach();
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "All windows detached";
+}
+
+void MainWindow::onReattachAllTriggered() {
+    BOOST_LOG_SEV(lg(), info) << "Reattach All triggered";
+
+    for (auto* detachableWindow : allDetachableWindows_) {
+        if (detachableWindow && detachableWindow->isDetached()) {
+            detachableWindow->reattach();
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "All windows reattached";
+}
+
+void MainWindow::onWindowMenuAboutToShow() {
+    // Remove any existing window list items (everything after the separator)
+    QList<QAction*> actions = ui_->menuWindow->actions();
+    bool foundSeparator = false;
+    for (auto* action : actions) {
+        if (action->isSeparator()) {
+            foundSeparator = true;
+        } else if (foundSeparator) {
+            // Remove and delete dynamically created window list items
+            ui_->menuWindow->removeAction(action);
+            delete action;
+        }
+    }
+
+    // Add current window list
+    if (allDetachableWindows_.isEmpty()) {
+        auto* noWindowsAction = ui_->menuWindow->addAction("No Windows Open");
+        noWindowsAction->setEnabled(false);
+    } else {
+        for (int i = 0; i < allDetachableWindows_.size(); ++i) {
+            auto* detachableWindow = allDetachableWindows_[i];
+            QString windowTitle = detachableWindow->windowTitle();
+            if (windowTitle.isEmpty()) {
+                windowTitle = QString("Window %1").arg(i + 1);
+            }
+
+            // Add indicator if window is detached
+            if (detachableWindow->isDetached()) {
+                windowTitle += " (Detached)";
+            }
+
+            auto* windowAction = ui_->menuWindow->addAction(windowTitle);
+            connect(windowAction, &QAction::triggered, this, [detachableWindow, this]() {
+                if (detachableWindow->isDetached()) {
+                    // For detached windows, just show and activate
+                    detachableWindow->show();
+                    detachableWindow->raise();
+                    detachableWindow->activateWindow();
+                } else {
+                    // For attached windows, set as active in MDI area
+                    mdiArea_->setActiveSubWindow(detachableWindow);
+                    detachableWindow->show();
+                    detachableWindow->raise();
+                    detachableWindow->activateWindow();
+                }
+            });
+
+            // Check the active window
+            if (detachableWindow == mdiArea_->activeSubWindow()) {
+                windowAction->setCheckable(true);
+                windowAction->setChecked(true);
+            }
+        }
+    }
 }
 
 }

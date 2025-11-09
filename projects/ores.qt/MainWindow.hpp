@@ -46,6 +46,7 @@ class MainWindow;
 namespace ores::qt {
 
 class CurrencyMdiWindow;  // Forward declaration
+class DetachableMdiSubWindow;  // Forward declaration
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -81,6 +82,9 @@ private slots:
     void onCurrencyDeleted(const QString& iso_code); // Handle currency deletion
     void onShowCurrencyHistory(const QString& iso_code); // Handle currency history request
     void onAboutTriggered(); // New about dialog slot
+    void onDetachAllTriggered(); // Detach all MDI windows
+    void onReattachAllTriggered(); // Reattach all floating windows
+    void onWindowMenuAboutToShow(); // Populate window list
 
 private:
     void updateMenuState();
@@ -95,6 +99,7 @@ private:
     CurrencyDetailPanel* currencyDetailWindow_; // Floating detail window (single instance)
     QLabel* connectionStatusIconLabel_; // Status bar icon label
     QString displayedCurrencyIsoCode_; // Track currently displayed currency
+    QList<DetachableMdiSubWindow*> allDetachableWindows_; // Track all detachable windows
 
     QIcon connectedIcon_;    // Icon for connected status
     QIcon disconnectedIcon_; // Icon for disconnected status

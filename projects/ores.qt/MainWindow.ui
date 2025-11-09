@@ -44,6 +44,14 @@
     </property>
     <addaction name="CurrenciesAction"/>
    </widget>
+   <widget class="QMenu" name="menuWindow">
+    <property name="title">
+     <string>&amp;Window</string>
+    </property>
+    <addaction name="ActionDetachAll"/>
+    <addaction name="ActionReattachAll"/>
+    <addaction name="separator"/>
+   </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>&amp;Help</string>
@@ -52,6 +60,7 @@
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuRefereceData"/>
+   <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -204,6 +213,22 @@
    </property>
    <property name="toolTip">
     <string>About this application</string>
+   </property>
+  </action>
+  <action name="ActionDetachAll">
+   <property name="text">
+    <string>&amp;Detach All</string>
+   </property>
+   <property name="toolTip">
+    <string>Detach all MDI windows to floating windows</string>
+   </property>
+  </action>
+  <action name="ActionReattachAll">
+   <property name="text">
+    <string>&amp;Reattach All</string>
+   </property>
+   <property name="toolTip">
+    <string>Reattach all floating windows to MDI area</string>
    </property>
   </action>
  </widget>

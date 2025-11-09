@@ -108,3 +108,7 @@ QMenu {
 QMenu::item:selected {
     background-color: #007ACC;
 }
+
+QMenu::item:disabled {
+    color: rgb(50, 50, 50);
+}

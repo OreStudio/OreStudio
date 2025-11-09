@@ -102,6 +102,47 @@ struct get_currencies_response final {
 std::ostream& operator<<(std::ostream& s, const get_currencies_response& v);
 
 /**
+ * @brief Request to create a new currency.
+ */
+struct create_currency_request final {
+    domain::currency currency;
+
+    /**
+     * @brief Serialize request to bytes.
+     */
+    std::vector<std::uint8_t> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<create_currency_request, comms::protocol::error_code>
+    deserialize(std::span<const std::uint8_t> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const create_currency_request& v);
+
+/**
+ * @brief Response confirming currency creation.
+ */
+struct create_currency_response final {
+    bool success;
+    std::string message;
+
+    /**
+     * @brief Serialize response to bytes.
+     */
+    std::vector<std::uint8_t> serialize() const;
+
+    /**
+     * @brief Deserialize response from bytes.
+     */
+    static std::expected<create_currency_response, comms::protocol::error_code>
+    deserialize(std::span<const std::uint8_t> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const create_currency_response& v);
+
+/**
  * @brief Request to update a currency.
  */
 struct update_currency_request final {

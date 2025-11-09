@@ -26,6 +26,7 @@
 #include <QMdiSubWindow>
 #include <QPainter>
 #include <QPixmap>
+#include <QAction>
 #include <QImage>
 #include <QFile>
 #include <QFont>
@@ -102,6 +103,8 @@ MainWindow::MainWindow(QWidget* parent) :
         "ic_fluent_star_20_regular.svg", iconColor));
     ui_->ActionHistory->setIcon(createRecoloredIcon(
         "ic_fluent_history_20_regular.svg", iconColor));
+    ui_->ActionAdd->setIcon(createRecoloredIcon(
+        "ic_fluent_add_20_filled.svg", iconColor));
 
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this, &MainWindow::onLoginTriggered);
@@ -135,6 +138,8 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->ActionEdit, &QAction::triggered, this, &MainWindow::onEditTriggered);
     connect(ui_->ActionDelete, &QAction::triggered, this, &MainWindow::onDeleteTriggered);
     connect(ui_->ActionHistory, &QAction::triggered, this, &MainWindow::onHistoryTriggered);
+    connect(ui_->ActionAdd, &QAction::triggered, this, &MainWindow::onAddTriggered);
+
 
     // Connect to MDI area window activation to manage context-aware actions
     connect(mdiArea_, &QMdiArea::subWindowActivated,
@@ -296,6 +301,7 @@ void MainWindow::updateMenuState() {
 
     // Enable/disable menu actions based on connection state
     ui_->CurrenciesAction->setEnabled(isConnected);
+    ui_->ActionAdd->setEnabled(isConnected);
 
     // Enable/disable connect and disconnect actions
     ui_->ActionConnect->setEnabled(!isConnected);
@@ -354,7 +360,7 @@ QIcon MainWindow::createRecoloredIcon(const QString& svgPath, const QColor& colo
     QIcon originalIcon(svgPath);
     if (originalIcon.isNull()) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to load SVG: " << svgPath.toStdString();
-        return QIcon();
+        return {};
     }
 
     // Create recolored icon at multiple sizes
@@ -466,6 +472,12 @@ void MainWindow::onHistoryTriggered() {
         BOOST_LOG_SEV(lg(), info) << "History action triggered, delegating to active window";
         activeCurrencyWindow_->viewHistorySelected();
     }
+}
+
+void MainWindow::onAddTriggered() {
+    BOOST_LOG_SEV(lg(), info) << "Add action triggered";
+    risk::domain::currency new_currency;
+    onShowCurrencyDetails(new_currency);
 }
 
 void MainWindow::onShowCurrencyHistory(const QString& iso_code) {
@@ -588,6 +600,13 @@ void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
             activeCurrencyWindow_->currencyModel()->refresh();
         }
         ui_->statusbar->showMessage("Currency updated successfully.");
+    });
+    connect(detailPanel, &CurrencyDetailPanel::currencyCreated,
+            this, [this]() {
+        if (activeCurrencyWindow_) {
+            activeCurrencyWindow_->currencyModel()->refresh();
+        }
+        ui_->statusbar->showMessage("Currency created successfully.");
     });
     connect(detailPanel, &CurrencyDetailPanel::currencyDeleted,
             this, [this](const QString& iso_code) {

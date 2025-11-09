@@ -36,7 +36,7 @@
     <addaction name="separator"/>
     <addaction name="ActionConnect"/>
     <addaction name="ActionDisconnect"/>
-    <addaction name="ExitAction"/>
+    <addaction name="yExitAction"/>
    </widget>
    <widget class="QMenu" name="menuRefereceData">
     <property name="title">
@@ -62,6 +62,7 @@
     <property name="title">
      <string>&amp;Edit</string>
     </property>
+    <addaction name="ActionAdd"/>
     <addaction name="ActionEdit"/>
     <addaction name="ActionDelete"/>
     <addaction name="ActionHistory"/>
@@ -98,6 +99,7 @@
    <addaction name="separator"/>
    <addaction name="ActionSave"/>
    <addaction name="separator"/>
+   <addaction name="ActionAdd"/>
    <addaction name="ActionEdit"/>
    <addaction name="ActionDelete"/>
    <addaction name="ActionHistory"/>
@@ -151,6 +153,22 @@
     <string>&amp;Disconnect</string>
    </property>
   </action>
+  <action name="ActionAdd">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>ic_fluent_add_20_filled.svg</normaloff>ic_fluent_add_20_filled.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Add</string>
+   </property>
+   <property name="toolTip">
+    <string>Add new item</string>
+   </property>
+  </action>
+
   <action name="ActionEdit">
    <property name="enabled">
     <bool>false</bool>

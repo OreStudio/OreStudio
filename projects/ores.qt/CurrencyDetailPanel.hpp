@@ -51,6 +51,7 @@ public:
 
 signals:
     void currencyUpdated();
+    void currencyCreated();
     void currencyDeleted(const QString& iso_code);
     void statusMessage(const QString& message);
     void errorMessage(const QString& message);
@@ -67,6 +68,7 @@ private:
     std::shared_ptr<comms::client> client_;
     risk::domain::currency currentCurrency_;
     bool isDirty_;
+    bool is_add_mode_;
 
     void updateSaveResetButtonState();
 };

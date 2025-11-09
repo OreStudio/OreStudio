@@ -38,10 +38,11 @@ namespace {
 }
 
 CurrencyDetailPanel::CurrencyDetailPanel(QWidget* parent)
-    : QWidget(parent), ui_(new Ui::CurrencyDetailPanel), isDirty_(false) { // Removed client from constructor, initialized client_ to nullptr implicitly
+    : QWidget(parent), ui_(new Ui::CurrencyDetailPanel), isDirty_(false), is_add_mode_(false) { // Removed client from constructor, initialized client_ to nullptr implicitly
     ui_->setupUi(this);
 
     // Connect signals for editable fields to detect changes
+    connect(ui_->isoCodeEdit, &QLineEdit::textChanged, this, &CurrencyDetailPanel::onFieldChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this, &CurrencyDetailPanel::onFieldChanged);
     connect(ui_->numericCodeEdit, &QLineEdit::textChanged, this, &CurrencyDetailPanel::onFieldChanged);
     connect(ui_->symbolEdit, &QLineEdit::textChanged, this, &CurrencyDetailPanel::onFieldChanged);
@@ -64,6 +65,9 @@ CurrencyDetailPanel::~CurrencyDetailPanel() = default;
 
 void CurrencyDetailPanel::setCurrency(const risk::domain::currency& currency) {
     currentCurrency_ = currency;
+    is_add_mode_ = currency.iso_code.empty();
+
+    ui_->isoCodeEdit->setReadOnly(!is_add_mode_);
     ui_->isoCodeEdit->setText(QString::fromStdString(currency.iso_code));
     ui_->nameEdit->setText(QString::fromStdString(currency.name));
     ui_->numericCodeEdit->setText(QString::fromStdString(currency.numeric_code));
@@ -85,6 +89,7 @@ void CurrencyDetailPanel::setCurrency(const risk::domain::currency& currency) {
 
 risk::domain::currency CurrencyDetailPanel::getCurrency() const {
     risk::domain::currency currency = currentCurrency_; // Start with original to keep read-only fields
+    currency.iso_code = ui_->isoCodeEdit->text().toStdString();
     currency.name = ui_->nameEdit->text().toStdString();
     currency.numeric_code = ui_->numericCodeEdit->text().toStdString();
     currency.symbol = ui_->symbolEdit->text().toStdString();
@@ -130,27 +135,38 @@ void CurrencyDetailPanel::onSaveClicked() {
 
     BOOST_LOG_SEV(lg(), info) << "Save clicked for currency: " << currentCurrency_.iso_code;
 
-    risk::domain::currency updatedCurrency = getCurrency();
+    risk::domain::currency currency = getCurrency();
 
     // Send update request asynchronously
     QFuture<std::pair<bool, std::string>> future =
-        QtConcurrent::run([this, updatedCurrency]() -> std::pair<bool, std::string> {
-            BOOST_LOG_SEV(lg(), info) << "Sending update_currency_request for: "
-                                      << updatedCurrency.iso_code;
+        QtConcurrent::run([this, currency]() -> std::pair<bool, std::string> {
+            BOOST_LOG_SEV(lg(), info) << "Sending save request for: "
+                                      << currency.iso_code;
 
             // Ensure client is still valid in the background thread
             if (!client_ || !client_->is_connected()) {
                 return {false, "Client disconnected during operation."};
             }
 
-            risk::messaging::update_currency_request request{updatedCurrency};
-            auto payload = request.serialize();
+            comms::protocol::frame request_frame;
+            if (is_add_mode_) {
+                risk::messaging::create_currency_request request{currency};
+                auto payload = request.serialize();
+                request_frame = comms::protocol::frame(
+                    comms::protocol::message_type::create_currency_request,
+                    0,
+                    std::move(payload)
+                );
+            } else {
+                risk::messaging::update_currency_request request{currency};
+                auto payload = request.serialize();
+                request_frame = comms::protocol::frame(
+                    comms::protocol::message_type::update_currency_request,
+                    0,
+                    std::move(payload)
+                );
+            }
 
-            comms::protocol::frame request_frame(
-                comms::protocol::message_type::update_currency_request,
-                0,
-                std::move(payload)
-            );
 
             // Send request synchronously (on background thread)
             auto response_result = client_->send_request_sync(std::move(request_frame));
@@ -159,38 +175,52 @@ void CurrencyDetailPanel::onSaveClicked() {
                 return {false, "Failed to communicate with server"};
             }
 
-            BOOST_LOG_SEV(lg(), info) << "Received update_currency_response";
-            auto response = risk::messaging::update_currency_response::deserialize(
-                response_result->payload()
-            );
-
-            if (!response) {
-                return {false, "Invalid server response"};
+            BOOST_LOG_SEV(lg(), info) << "Received save response.";
+            bool result = false;
+            std::string message = "Invalid server response";
+            if (is_add_mode_) {
+                using risk::messaging::create_currency_response;
+                auto response = create_currency_response::deserialize(response_result->payload());
+                if (response) {
+                    result = true;
+                    message = response->message;
+                }
+            } else {
+                using risk::messaging::update_currency_response;
+                auto response = update_currency_response::deserialize(response_result->payload());
+                if (response) {
+                    result = true;
+                    message = response->message;
+                }
             }
 
-            return {response->success, response->message};
+            return {result, message};
         });
 
     // Use a watcher to handle the result
     auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(this);
     connect(watcher, &QFutureWatcher<std::pair<bool, std::string>>::finished,
-            this, [this, watcher]() {
+            this, [this, watcher, currency]() {
         auto [success, message] = watcher->result();
         watcher->deleteLater();
 
         if (success) {
-            BOOST_LOG_SEV(lg(), info) << "Currency updated successfully";
-            emit statusMessage(QString("Successfully updated currency: %1")
-                .arg(QString::fromStdString(currentCurrency_.iso_code)));
+            BOOST_LOG_SEV(lg(), info) << "Currency saved successfully";
+            emit statusMessage(QString("Successfully saved currency: %1")
+                .arg(QString::fromStdString(currency.iso_code)));
             isDirty_ = false;
             emit isDirtyChanged(false);
             updateSaveResetButtonState();
-            emit currencyUpdated(); // Notify parent to refresh table
+            if (is_add_mode_) {
+                emit currencyCreated();
+            } else {
+                emit currencyUpdated();
+            }
         } else {
-            BOOST_LOG_SEV(lg(), error) << "Currency update failed: " << message;
-            emit errorMessage(QString("Failed to update currency: %1")
+            BOOST_LOG_SEV(lg(), error) << "Currency save failed: " << message;
+            emit errorMessage(QString("Failed to save currency: %1")
                 .arg(QString::fromStdString(message)));
-            MessageBoxHelper::critical(this, "Update Failed",
+            MessageBoxHelper::critical(this, "Save Failed",
                 QString::fromStdString(message));
         }
     });

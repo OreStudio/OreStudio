@@ -61,6 +61,8 @@ public:
 
     void loadHistory();
 
+    QSize sizeHint() const override; // Provide optimal size based on table content
+
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);

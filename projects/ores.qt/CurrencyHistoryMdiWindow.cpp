@@ -47,4 +47,11 @@ CurrencyHistoryMdiWindow::CurrencyHistoryMdiWindow(const QString& iso_code,
     historyWidget_->loadHistory();
 }
 
+QSize CurrencyHistoryMdiWindow::sizeHint() const {
+    if (historyWidget_) {
+        return historyWidget_->sizeHint();
+    }
+    return QWidget::sizeHint();
+}
+
 }

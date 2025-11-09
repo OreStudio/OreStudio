@@ -50,6 +50,8 @@ public:
                                       std::shared_ptr<comms::client> client,
                                       QWidget* parent = nullptr);
 
+    QSize sizeHint() const override; // Provide optimal size based on dialog content
+
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);

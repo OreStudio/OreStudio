@@ -25,6 +25,7 @@
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QTableView>
+#include <QtWidgets/QScrollBar>
 #include <QtWidgets/QApplication>
 #include <QFileDialog>
 #include <QDesktopServices>
@@ -394,9 +395,34 @@ void CurrencyMdiWindow::exportToXML() {
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Error exporting to XML: " << e.what();
-        MessageBoxHelper::critical(this, "Export Error", 
+        MessageBoxHelper::critical(this, "Export Error",
             QString("Error during XML export: %1").arg(e.what()));
     }
+}
+
+QSize CurrencyMdiWindow::sizeHint() const {
+    if (!currencyTableView_) {
+        return QWidget::sizeHint();
+    }
+
+    // Calculate width based on all columns plus scrollbar and frame
+    int width = currencyTableView_->verticalHeader()->width(); // Row header
+    for (int i = 0; i < currencyTableView_->horizontalHeader()->count(); ++i) {
+        width += currencyTableView_->columnWidth(i);
+    }
+    width += currencyTableView_->verticalScrollBar()->sizeHint().width(); // Scrollbar
+    width += currencyTableView_->frameWidth() * 2; // Frame borders
+    width += 20; // Extra padding for safety
+
+    // Calculate height for ~15 visible rows plus headers
+    int rowHeight = currencyTableView_->verticalHeader()->defaultSectionSize();
+    int headerHeight = currencyTableView_->horizontalHeader()->height();
+    int height = headerHeight + (rowHeight * 15); // 15 visible rows
+    height += currencyTableView_->horizontalScrollBar()->sizeHint().height();
+    height += currencyTableView_->frameWidth() * 2;
+    height += 20; // Extra padding
+
+    return QSize(width, height);
 }
 
 }

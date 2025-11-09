@@ -54,6 +54,8 @@ public:
 
     ClientCurrencyModel* currencyModel() const { return currencyModel_; } // New getter for the model
 
+    QSize sizeHint() const override; // Provide optimal size based on table content
+
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);

@@ -7,7 +7,7 @@
 #+export_file_name: index
 #+startup: inlineimages
 
-[[./assets/images/ore-studio-banner.png]]
+[[./assets/images/splash-screen.png]]
 
 #+html: <a href="https://github.com/OreStudio/OreStudio/blob/main/LICENSE"><img alt="Licence" src="https://img.shields.io/badge/License-GPLv3-blue.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/graphs/commit-activity"><img alt="Maintenance" src="https://img.shields.io/badge/Maintained%3F-yes-green.svg"/></a>

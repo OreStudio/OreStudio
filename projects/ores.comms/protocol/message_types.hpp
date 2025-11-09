@@ -44,6 +44,8 @@ enum class message_type {
     update_currency_response = 0x1004,
     delete_currency_request = 0x1005,
     delete_currency_response = 0x1006,
+    get_currency_history_request = 0x1007,
+    get_currency_history_response = 0x1008,
 
     // Accounts subsystem messages (0x2000 - 0x2FFF)
     create_account_request = 0x2001,

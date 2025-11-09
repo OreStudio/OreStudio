@@ -42,6 +42,8 @@ risk_message_handler::handle_message(comms::protocol::message_type type,
         co_return co_await handle_update_currency_request(payload);
     case comms::protocol::message_type::delete_currency_request:
         co_return co_await handle_delete_currency_request(payload);
+    case comms::protocol::message_type::get_currency_history_request:
+        co_return co_await handle_get_currency_history_request(payload);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown risk message type " << std::hex
                                    << static_cast<std::uint16_t>(type);
@@ -134,6 +136,72 @@ handle_delete_currency_request(std::span<const std::uint8_t> payload) {
         response.success = false;
         response.message = std::string("Failed to delete currency: ") + e.what();
         BOOST_LOG_SEV(lg(), error) << "Error deleting currency "
+                                   << request.iso_code << ": " << e.what();
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
+                                     comms::protocol::error_code>>
+risk_message_handler::
+handle_get_currency_history_request(std::span<const std::uint8_t> payload) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_currency_history_request.";
+
+    // Deserialize request
+    auto request_result = get_currency_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_currency_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Retrieving history for currency: " << request.iso_code;
+
+    get_currency_history_response response;
+    try {
+        // Get all versions of the currency from repository
+        auto currencies = currency_repo_.read_all(ctx_, request.iso_code);
+
+        if (currencies.empty()) {
+            response.success = false;
+            response.message = "Currency not found: " + request.iso_code;
+            BOOST_LOG_SEV(lg(), warn) << "No history found for currency: " << request.iso_code;
+            co_return response.serialize();
+        }
+
+        // Convert currencies to currency_version objects
+        domain::currency_version_history history;
+        history.iso_code = request.iso_code;
+
+        // Sort by valid_from descending (newest first)
+        std::sort(currencies.begin(), currencies.end(),
+            [](const auto& a, const auto& b) {
+                return a.valid_from > b.valid_from;
+            });
+
+        int version_number = static_cast<int>(currencies.size());
+        for (const auto& currency : currencies) {
+            domain::currency_version version;
+            version.data = currency;
+            version.version_number = version_number--;
+            version.modified_by = currency.modified_by;
+            version.modified_at = currency.valid_from;
+            version.change_summary = "Version " + std::to_string(version.version_number);
+
+            history.versions.push_back(std::move(version));
+        }
+
+        response.success = true;
+        response.message = "History retrieved successfully";
+        response.history = std::move(history);
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << response.history.versions.size()
+                                  << " versions for currency: " << request.iso_code;
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to retrieve history: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error retrieving history for "
                                    << request.iso_code << ": " << e.what();
     }
 

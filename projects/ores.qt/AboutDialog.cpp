@@ -23,6 +23,7 @@
 #include <QApplication>
 #include <QDate>
 #include <QTime>
+#include <QPixmap>
 
 namespace ores::qt {
 
@@ -33,6 +34,14 @@ AboutDialog::AboutDialog(QWidget* parent)
 
     BOOST_LOG_SEV(lg(), info) << "Creating about dialog";
     ui_->setupUi(this);
+
+    // Scale the logo to fit the dialog width while maintaining aspect ratio
+    QPixmap logo("splash-screen.png");
+    if (!logo.isNull()) {
+        int targetWidth = width();
+        QPixmap scaledLogo = logo.scaledToWidth(targetWidth, Qt::SmoothTransformation);
+        ui_->logoLabel->setPixmap(scaledLogo);
+    }
 
     setupVersionInfo();
 }

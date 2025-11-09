@@ -44,15 +44,15 @@
     </property>
     <addaction name="CurrenciesAction"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="ActionAbout"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuRefereceData"/>
    <addaction name="menuHelp"/>
-  </widget>
-  <widget class="QMenu" name="menuHelp">
-   <property name="title">
-    <string>&amp;Help</string>
-   </property>
-   <addaction name="ActionAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -74,6 +74,7 @@
    <addaction name="separator"/>
    <addaction name="ActionEdit"/>
    <addaction name="ActionDelete"/>
+   <addaction name="ActionHistory"/>
    <addaction name="ActionExportCSV"/>
    <addaction name="ActionExportXML"/>
   </widget>
@@ -89,6 +90,21 @@
    </property>
    <property name="text">
     <string>&amp;Currencies</string>
+   </property>
+  </action>
+  <action name="ActionHistory">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>ic_fluent_history_20_regular.svg</normaloff>ic_fluent_history_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;History</string>
+   </property>
+   <property name="toolTip">
+    <string>View history</string>
    </property>
   </action>
   <action name="ActionConnect">

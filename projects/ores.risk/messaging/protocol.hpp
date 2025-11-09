@@ -29,6 +29,7 @@
 #include <rfl/json.hpp>
 #include "ores.comms/protocol/message_types.hpp"
 #include "ores.risk/domain/currency.hpp"
+#include "ores.risk/domain/currency_version.hpp"
 
 namespace ores::risk::messaging {
 
@@ -181,6 +182,48 @@ struct delete_currency_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const delete_currency_response& v);
+
+/**
+ * @brief Request to retrieve version history for a currency.
+ */
+struct get_currency_history_request final {
+    std::string iso_code;
+
+    /**
+     * @brief Serialize request to bytes.
+     */
+    std::vector<std::uint8_t> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<get_currency_history_request, comms::protocol::error_code>
+    deserialize(std::span<const std::uint8_t> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const get_currency_history_request& v);
+
+/**
+ * @brief Response containing currency version history.
+ */
+struct get_currency_history_response final {
+    bool success;
+    std::string message;
+    domain::currency_version_history history;
+
+    /**
+     * @brief Serialize response to bytes.
+     */
+    std::vector<std::uint8_t> serialize() const;
+
+    /**
+     * @brief Deserialize response from bytes.
+     */
+    static std::expected<get_currency_history_response, comms::protocol::error_code>
+    deserialize(std::span<const std::uint8_t> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const get_currency_history_response& v);
 
 }
 

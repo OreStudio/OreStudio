@@ -37,6 +37,10 @@ add_executable(ores.qt
     CurrencyItemDelegate.cpp
     CurrencyDetailPanel.ui
     CurrencyDetailPanel.cpp
+    CurrencyHistoryDialog.ui
+    CurrencyHistoryDialog.cpp
+    CurrencyHistoryMdiWindow.hpp
+    CurrencyHistoryMdiWindow.cpp
     MessageBoxHelper.cpp
     AboutDialog.cpp
     AboutDialog.ui

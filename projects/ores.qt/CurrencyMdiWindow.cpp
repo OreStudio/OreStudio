@@ -159,8 +159,8 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
     // Set the model
     currencyTableView_->setModel(currencyModel_);
 
-    // Set the custom item delegate
-    currencyTableView_->setItemDelegate(new CurrencyItemDelegate(this));
+    // Set the custom item delegate with table view as parent for proper ownership
+    currencyTableView_->setItemDelegate(new CurrencyItemDelegate(currencyTableView_));
 
     // Configure headers
     QHeaderView* verticalHeader(currencyTableView_->verticalHeader());
@@ -212,14 +212,31 @@ CurrencyMdiWindow::~CurrencyMdiWindow() {
         disconnect(currencyModel_, nullptr, this, nullptr);
     }
 
-    // Disconnect table view selection signals
-    if (currencyTableView_ && currencyTableView_->selectionModel()) {
-        disconnect(currencyTableView_->selectionModel(), nullptr, this, nullptr);
-    }
-
-    // Set model to nullptr before the view is destroyed
+    // Disconnect and clean up table view completely
     if (currencyTableView_) {
+        // Disconnect all signals from table view itself
+        disconnect(currencyTableView_, nullptr, this, nullptr);
+
+        // Disconnect selection model signals
+        if (currencyTableView_->selectionModel()) {
+            disconnect(currencyTableView_->selectionModel(), nullptr, this, nullptr);
+        }
+
+        // Clear headers before destroying
+        if (currencyTableView_->horizontalHeader()) {
+            currencyTableView_->horizontalHeader()->disconnect(this);
+        }
+        if (currencyTableView_->verticalHeader()) {
+            currencyTableView_->verticalHeader()->disconnect(this);
+        }
+
+        // Clear delegate and model - delegate will be cleaned up by table view
+        currencyTableView_->setItemDelegate(nullptr);
         currencyTableView_->setModel(nullptr);
+
+        // Explicitly delete the table view to avoid Qt's automatic cleanup issues
+        delete currencyTableView_;
+        currencyTableView_ = nullptr;
     }
 }
 

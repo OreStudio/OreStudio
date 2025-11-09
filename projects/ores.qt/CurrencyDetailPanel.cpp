@@ -146,7 +146,37 @@ void CurrencyDetailPanel::setUsername(const std::string& username) {
     username_ = username;
 }
 
-CurrencyDetailPanel::~CurrencyDetailPanel() = default;
+CurrencyDetailPanel::~CurrencyDetailPanel() {
+    // Disconnect and cancel any active QFutureWatcher objects
+    const auto watchers = findChildren<QFutureWatcherBase*>();
+    for (auto* watcher : watchers) {
+        disconnect(watcher, nullptr, this, nullptr);
+        watcher->cancel();
+        watcher->waitForFinished();
+    }
+
+    // Disconnect all signals from the toolbar actions
+    if (toolBar_) {
+        const auto actions = toolBar_->actions();
+        for (QAction* action : actions) {
+            disconnect(action, nullptr, this, nullptr);
+        }
+    }
+
+    // Disconnect all UI widget signals
+    if (ui_) {
+        if (ui_->isoCodeEdit) disconnect(ui_->isoCodeEdit, nullptr, this, nullptr);
+        if (ui_->nameEdit) disconnect(ui_->nameEdit, nullptr, this, nullptr);
+        if (ui_->numericCodeEdit) disconnect(ui_->numericCodeEdit, nullptr, this, nullptr);
+        if (ui_->symbolEdit) disconnect(ui_->symbolEdit, nullptr, this, nullptr);
+        if (ui_->fractionSymbolEdit) disconnect(ui_->fractionSymbolEdit, nullptr, this, nullptr);
+        if (ui_->fractionsPerUnitSpinBox) disconnect(ui_->fractionsPerUnitSpinBox, nullptr, this, nullptr);
+        if (ui_->roundingTypeEdit) disconnect(ui_->roundingTypeEdit, nullptr, this, nullptr);
+        if (ui_->roundingPrecisionSpinBox) disconnect(ui_->roundingPrecisionSpinBox, nullptr, this, nullptr);
+        if (ui_->formatEdit) disconnect(ui_->formatEdit, nullptr, this, nullptr);
+        if (ui_->currencyTypeEdit) disconnect(ui_->currencyTypeEdit, nullptr, this, nullptr);
+    }
+}
 
 void CurrencyDetailPanel::setCurrency(const risk::domain::currency& currency) {
     currentCurrency_ = currency;

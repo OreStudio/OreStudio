@@ -191,6 +191,22 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
 CurrencyMdiWindow::~CurrencyMdiWindow() {
     BOOST_LOG_SEV(lg(), info) << "Destroying currency MDI window";
 
+    // Disconnect and cancel any active QFutureWatcher objects
+    const auto watchers = findChildren<QFutureWatcherBase*>();
+    for (auto* watcher : watchers) {
+        disconnect(watcher, nullptr, this, nullptr);
+        watcher->cancel();
+        watcher->waitForFinished();
+    }
+
+    // Disconnect all signals from the toolbar actions
+    if (toolBar_) {
+        const auto actions = toolBar_->actions();
+        for (QAction* action : actions) {
+            disconnect(action, nullptr, this, nullptr);
+        }
+    }
+
     // Disconnect all signals from the model to prevent issues during destruction
     if (currencyModel_) {
         disconnect(currencyModel_, nullptr, this, nullptr);

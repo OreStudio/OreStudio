@@ -71,6 +71,14 @@ CurrencyHistoryDialog::CurrencyHistoryDialog(const QString& iso_code,
 CurrencyHistoryDialog::~CurrencyHistoryDialog() {
     BOOST_LOG_SEV(lg(), info) << "Destroying currency history widget";
 
+    // Disconnect and cancel any active QFutureWatcher objects
+    const auto watchers = findChildren<QFutureWatcherBase*>();
+    for (auto* watcher : watchers) {
+        disconnect(watcher, nullptr, this, nullptr);
+        watcher->cancel();
+        watcher->waitForFinished();
+    }
+
     // Disconnect all signal connections to prevent callbacks during destruction
     if (ui_ && ui_->versionListWidget) {
         disconnect(ui_->versionListWidget, nullptr, this, nullptr);

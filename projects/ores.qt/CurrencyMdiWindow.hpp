@@ -60,10 +60,12 @@ signals:
     void selectionChanged(int selection_count);
     void showCurrencyDetails(const risk::domain::currency& currency); // New signal
     void currencyDeleted(const QString& iso_code); // Emitted when currency is deleted
+    void showCurrencyHistory(const QString& iso_code); // Emitted when history requested
 
 public slots:
     void editSelected();
     void deleteSelected();
+    void viewHistorySelected();
     void exportToCSV();
     void exportToXML();
 

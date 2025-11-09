@@ -34,6 +34,7 @@
 #include "ores.qt/MainWindow.hpp"
 #include "ores.qt/LoginDialog.hpp"
 #include "ores.qt/CurrencyMdiWindow.hpp"
+#include "ores.qt/CurrencyHistoryMdiWindow.hpp"
 #include "ores.qt/CurrencyDetailPanel.hpp" // Include the header for CurrencyDetailPanel
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/AboutDialog.hpp"
@@ -131,6 +132,8 @@ MainWindow::MainWindow(QWidget* parent) :
         "ic_fluent_document_code_16_regular.svg", iconColor));
     ui_->ActionAbout->setIcon(createRecoloredIcon(
         "ic_fluent_star_20_regular.svg", iconColor));
+    ui_->CurrencyHistoryAction->setIcon(createRecoloredIcon(
+        "ic_fluent_history_20_regular.svg", iconColor));
 
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this, &MainWindow::onLoginTriggered);
@@ -147,6 +150,7 @@ MainWindow::MainWindow(QWidget* parent) :
     });
     connect(ui_->ActionEdit, &QAction::triggered, this, &MainWindow::onEditTriggered);
     connect(ui_->ActionDelete, &QAction::triggered, this, &MainWindow::onDeleteTriggered);
+    connect(ui_->CurrencyHistoryAction, &QAction::triggered, this, &MainWindow::onCurrencyHistoryTriggered);
 
     // Connect to MDI area window activation to manage context-aware actions
     connect(mdiArea_, &QMdiArea::subWindowActivated,
@@ -178,6 +182,8 @@ MainWindow::MainWindow(QWidget* parent) :
         });
         connect(currencyWidget, &CurrencyMdiWindow::currencyDeleted,
                 this, &MainWindow::onCurrencyDeleted);
+        connect(currencyWidget, &CurrencyMdiWindow::showCurrencyHistory,
+                this, &MainWindow::onShowCurrencyHistory);
 
         auto* subWindow = mdiArea_->addSubWindow(currencyWidget);
         subWindow->setWindowTitle("Currencies");
@@ -404,13 +410,14 @@ void MainWindow::onActiveWindowSelectionChanged(int selection_count) {
 }
 
 void MainWindow::updateCrudActionState() {
-    // Enable Edit only for single selection
+    // Enable Edit and History only for single selection
     // Enable Delete for one or more selections
     // Enable Export buttons only when there's an active currency window
     const bool hasActiveWindow = activeCurrencyWindow_ != nullptr;
 
     ui_->ActionEdit->setEnabled(hasActiveWindow && selectionCount_ == 1);
     ui_->ActionDelete->setEnabled(hasActiveWindow && selectionCount_ >= 1);
+    ui_->CurrencyHistoryAction->setEnabled(hasActiveWindow && selectionCount_ == 1);
     ui_->ActionExportCSV->setEnabled(hasActiveWindow);
     ui_->ActionExportXML->setEnabled(hasActiveWindow);
 }
@@ -427,6 +434,47 @@ void MainWindow::onDeleteTriggered() {
         BOOST_LOG_SEV(lg(), info) << "Delete action triggered, delegating to active window";
         activeCurrencyWindow_->deleteSelected();
     }
+}
+
+void MainWindow::onCurrencyHistoryTriggered() {
+    if (activeCurrencyWindow_) {
+        BOOST_LOG_SEV(lg(), info) << "Currency history action triggered, delegating to active window";
+        activeCurrencyWindow_->viewHistorySelected();
+    }
+}
+
+void MainWindow::onShowCurrencyHistory(const QString& iso_code) {
+    using ores::utility::log::warn;
+    using ores::utility::log::info;
+
+    if (!client_ || !client_->is_connected()) {
+        BOOST_LOG_SEV(lg(), warn) << "History requested but not connected";
+        MessageBoxHelper::warning(this, "Not Connected",
+            "Please ensure you are still connected to view currency history.");
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Creating currency history MDI window for: "
+                             << iso_code.toStdString();
+
+    const QColor iconColor(220, 220, 220); // Same color as other icons
+    auto* historyWidget = new CurrencyHistoryMdiWindow(iso_code, client_, this);
+
+    // Connect status signals to status bar
+    connect(historyWidget, &CurrencyHistoryMdiWindow::statusChanged,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(historyWidget, &CurrencyHistoryMdiWindow::errorOccurred,
+            this, [this](const QString& error_message) {
+        ui_->statusbar->showMessage("Error loading history: " + error_message);
+    });
+
+    auto* subWindow = mdiArea_->addSubWindow(historyWidget);
+    subWindow->setWindowTitle(QString("History: %1").arg(iso_code));
+    subWindow->setWindowIcon(createRecoloredIcon(
+        "ic_fluent_history_20_regular.svg", iconColor));
+    subWindow->showMaximized();
 }
 
 void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>CurrencyHistoryDialog</class>
- <widget class="QDialog" name="CurrencyHistoryDialog">
+ <widget class="QWidget" name="CurrencyHistoryDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -12,9 +12,6 @@
   </property>
   <property name="windowTitle">
    <string>Currency History</string>
-  </property>
-  <property name="modal">
-   <bool>true</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -33,14 +30,14 @@
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Vertical</enum>
      </property>
      <widget class="QListWidget" name="versionListWidget">
-      <property name="minimumWidth">
-       <number>250</number>
+      <property name="minimumHeight">
+       <number>150</number>
       </property>
-      <property name="maximumWidth">
-       <number>350</number>
+      <property name="maximumHeight">
+       <number>250</number>
       </property>
      </widget>
      <widget class="QWidget" name="detailWidget" native="true">
@@ -258,35 +255,8 @@
      </widget>
     </widget>
    </item>
-   <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Close</set>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>CurrencyHistoryDialog</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>450</x>
-     <y>575</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>450</x>
-     <y>300</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

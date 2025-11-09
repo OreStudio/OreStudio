@@ -24,7 +24,7 @@
 #pragma once
 #endif
 
-#include <QDialog>
+#include <QWidget>
 #include <QString>
 #include <QVector>
 #include <QPair>
@@ -41,9 +41,9 @@ class CurrencyHistoryDialog;
 namespace ores::qt {
 
 /**
- * @brief Dialog for displaying currency version history.
+ * @brief Widget for displaying currency version history.
  */
-class CurrencyHistoryDialog : public QDialog {
+class CurrencyHistoryDialog : public QWidget {
     Q_OBJECT
 
 private:
@@ -59,13 +59,18 @@ public:
                                    QWidget* parent = nullptr);
     ~CurrencyHistoryDialog() override;
 
+    void loadHistory();
+
+signals:
+    void statusChanged(const QString& message);
+    void errorOccurred(const QString& error_message);
+
 private slots:
     void onVersionSelected(int index);
     void onHistoryLoaded();
     void onHistoryLoadError(const QString& error);
 
 private:
-    void loadHistory();
     void displayChangesTab(int version_index);
     void displayFullDetailsTab(int version_index);
 

@@ -33,18 +33,15 @@ using namespace ores::utility::log;
 CurrencyHistoryDialog::CurrencyHistoryDialog(const QString& iso_code,
                                              std::shared_ptr<comms::client> client,
                                              QWidget* parent)
-    : QDialog(parent),
+    : QWidget(parent),
       ui_(new Ui::CurrencyHistoryDialog),
       client_(std::move(client)),
       isoCode_(iso_code) {
 
-    BOOST_LOG_SEV(lg(), info) << "Creating currency history dialog for: "
+    BOOST_LOG_SEV(lg(), info) << "Creating currency history widget for: "
                               << isoCode_.toStdString();
 
     ui_->setupUi(this);
-
-    // Update title
-    setWindowTitle(QString("Currency History: %1").arg(isoCode_));
 
     // Connect version list selection
     connect(ui_->versionListWidget, &QListWidget::currentRowChanged,
@@ -54,13 +51,10 @@ CurrencyHistoryDialog::CurrencyHistoryDialog(const QString& iso_code,
     ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
     ui_->changesTableWidget->setColumnWidth(0, 200);
     ui_->changesTableWidget->setColumnWidth(1, 200);
-
-    // Load history from server
-    loadHistory();
 }
 
 CurrencyHistoryDialog::~CurrencyHistoryDialog() {
-    BOOST_LOG_SEV(lg(), info) << "Destroying currency history dialog";
+    BOOST_LOG_SEV(lg(), info) << "Destroying currency history widget";
     delete ui_;
 }
 
@@ -137,11 +131,10 @@ void CurrencyHistoryDialog::onHistoryLoaded() {
 
     // Add each version to the list
     for (const auto& version : history_.versions) {
-        QString itemText = QString("Version %1\n%2\nby %3\n%4")
+        QString itemText = QString("Version %1\n%2\nby %3")
             .arg(version.version_number)
             .arg(QString::fromStdString(version.modified_at))
-            .arg(QString::fromStdString(version.modified_by))
-            .arg(QString::fromStdString(version.change_summary));
+            .arg(QString::fromStdString(version.modified_by));
 
         auto* item = new QListWidgetItem(itemText);
         item->setIcon(QIcon("ic_fluent_history_20_regular.svg"));
@@ -160,15 +153,16 @@ void CurrencyHistoryDialog::onHistoryLoaded() {
             .arg(isoCode_)
             .arg(QString::fromStdString(latest.data.name)));
     }
+
+    emit statusChanged(QString("Loaded %1 versions").arg(history_.versions.size()));
 }
 
 void CurrencyHistoryDialog::onHistoryLoadError(const QString& error_msg) {
     BOOST_LOG_SEV(lg(), ores::utility::log::error) << "Error loading history: " << error_msg.toStdString();
 
+    emit errorOccurred(QString("Failed to load currency history: %1").arg(error_msg));
     MessageBoxHelper::critical(this, "History Load Error",
         QString("Failed to load currency history:\n%1").arg(error_msg));
-
-    reject();
 }
 
 void CurrencyHistoryDialog::onVersionSelected(int index) {

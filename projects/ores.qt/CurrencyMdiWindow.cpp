@@ -140,6 +140,24 @@ void CurrencyMdiWindow::editSelected() {
     onRowDoubleClicked(selected.first());
 }
 
+void CurrencyMdiWindow::viewHistorySelected() {
+    const auto selected = currencyTableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "View history requested but no row selected";
+        return;
+    }
+
+    const auto* currency = currencyModel_->getCurrency(selected.first().row());
+    if (!currency) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get currency for history view";
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Emitting showCurrencyHistory for currency: "
+                             << currency->iso_code;
+    emit showCurrencyHistory(QString::fromStdString(currency->iso_code));
+}
+
 void CurrencyMdiWindow::deleteSelected() {
     const auto selected = currencyTableView_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {

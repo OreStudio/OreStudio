@@ -69,6 +69,7 @@
    <addaction name="ActionDisconnect"/>
    <addaction name="separator"/>
    <addaction name="CurrenciesAction"/>
+   <addaction name="CurrencyHistoryAction"/>
    <addaction name="separator"/>
    <addaction name="ActionSave"/>
    <addaction name="separator"/>
@@ -89,6 +90,21 @@
    </property>
    <property name="text">
     <string>&amp;Currencies</string>
+   </property>
+  </action>
+  <action name="CurrencyHistoryAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>ic_fluent_history_20_regular.svg</normaloff>ic_fluent_history_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Currency &amp;History</string>
+   </property>
+   <property name="toolTip">
+    <string>View currency history</string>
    </property>
   </action>
   <action name="ActionConnect">

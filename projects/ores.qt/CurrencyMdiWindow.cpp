@@ -66,6 +66,51 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
     connect(reloadAction, &QAction::triggered, this, &CurrencyMdiWindow::reload);
     toolBar_->addAction(reloadAction);
 
+    toolBar_->addSeparator();
+
+    // Add action for adding new currency
+    QAction* addAction = new QAction("Add", this);
+    addAction->setIcon(QIcon::fromTheme("list-add"));
+    addAction->setToolTip("Add new currency");
+    connect(addAction, &QAction::triggered, this, &CurrencyMdiWindow::addNew);
+    toolBar_->addAction(addAction);
+
+    // Add edit action
+    QAction* editAction = new QAction("Edit", this);
+    editAction->setIcon(QIcon::fromTheme("document-edit"));
+    editAction->setToolTip("Edit selected currency");
+    connect(editAction, &QAction::triggered, this, &CurrencyMdiWindow::editSelected);
+    toolBar_->addAction(editAction);
+
+    // Add delete action
+    QAction* deleteAction = new QAction("Delete", this);
+    deleteAction->setIcon(QIcon::fromTheme("edit-delete"));
+    deleteAction->setToolTip("Delete selected currency/currencies");
+    connect(deleteAction, &QAction::triggered, this, &CurrencyMdiWindow::deleteSelected);
+    toolBar_->addAction(deleteAction);
+
+    // Add history action
+    QAction* historyAction = new QAction("History", this);
+    historyAction->setIcon(QIcon::fromTheme("document-properties"));
+    historyAction->setToolTip("View currency history");
+    connect(historyAction, &QAction::triggered, this, &CurrencyMdiWindow::viewHistorySelected);
+    toolBar_->addAction(historyAction);
+
+    toolBar_->addSeparator();
+
+    // Add export actions
+    QAction* exportCSVAction = new QAction("Export CSV", this);
+    exportCSVAction->setIcon(QIcon::fromTheme("document-save"));
+    exportCSVAction->setToolTip("Export currencies to CSV");
+    connect(exportCSVAction, &QAction::triggered, this, &CurrencyMdiWindow::exportToCSV);
+    toolBar_->addAction(exportCSVAction);
+
+    QAction* exportXMLAction = new QAction("Export XML", this);
+    exportXMLAction->setIcon(QIcon::fromTheme("document-save-as"));
+    exportXMLAction->setToolTip("Export currencies to ORE XML");
+    connect(exportXMLAction, &QAction::triggered, this, &CurrencyMdiWindow::exportToXML);
+    toolBar_->addAction(exportXMLAction);
+
     verticalLayout_->addWidget(toolBar_);
 
     // Add table view
@@ -111,6 +156,11 @@ void CurrencyMdiWindow::reload() {
     BOOST_LOG_SEV(lg(), info) << "Reload requested";
     emit statusChanged("Reloading currencies...");
     currencyModel_->refresh();
+}
+
+void CurrencyMdiWindow::addNew() {
+    BOOST_LOG_SEV(lg(), info) << "Add new currency requested";
+    emit addNewRequested();
 }
 
 void CurrencyMdiWindow::onDataLoaded() {

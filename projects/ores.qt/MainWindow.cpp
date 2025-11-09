@@ -112,6 +112,16 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->ActionExportCSV, &QAction::triggered, this, &MainWindow::onExportCSVTriggered);
     connect(ui_->ActionExportXML, &QAction::triggered, this, &MainWindow::onExportXMLTriggered);
     connect(ui_->ActionAbout, &QAction::triggered, this, &MainWindow::onAboutTriggered);
+    connect(ui_->ActionReload, &QAction::triggered, this, [this]() {
+        if (activeCurrencyWindow_) {
+            activeCurrencyWindow_->currencyModel()->refresh();
+        } else if (currencyListWindow_) {
+            auto* currencyWidget = qobject_cast<CurrencyMdiWindow*>(currencyListWindow_->widget());
+            if (currencyWidget) {
+                currencyWidget->reload();
+            }
+        }
+    });
 
     // Connect Window menu actions
     connect(ui_->ActionDetachAll, &QAction::triggered, this, &MainWindow::onDetachAllTriggered);
@@ -205,6 +215,10 @@ MainWindow::MainWindow(QWidget* parent) :
                 this, [this](const QString& error_message) {
             ui_->statusbar->showMessage("Error loading currencies: " + error_message);
         });
+        connect(currencyWidget, &CurrencyMdiWindow::addNewRequested,
+                this, &MainWindow::onAddTriggered);
+        connect(currencyWidget, &CurrencyMdiWindow::showCurrencyDetails,
+                this, &MainWindow::onShowCurrencyDetails);
         connect(currencyWidget, &CurrencyMdiWindow::currencyDeleted,
                 this, &MainWindow::onCurrencyDeleted);
         connect(currencyWidget, &CurrencyMdiWindow::showCurrencyHistory,
@@ -460,19 +474,9 @@ void MainWindow::onActiveWindowSelectionChanged(int selection_count) {
 }
 
 void MainWindow::updateCrudActionState() {
-    // Enable Edit and History only for single selection
-    // Enable Delete for one or more selections
-    // Enable Export buttons only when there's an active currency window
-    // Enable Add only when the currency list window is actually open
-    const bool hasActiveWindow = activeCurrencyWindow_ != nullptr;
-    const bool hasCurrencyListOpen = currencyListWindow_ != nullptr;
-
-    ui_->ActionAdd->setEnabled(hasCurrencyListOpen);
-    ui_->ActionEdit->setEnabled(hasActiveWindow && selectionCount_ == 1);
-    ui_->ActionDelete->setEnabled(hasActiveWindow && selectionCount_ >= 1);
-    ui_->ActionHistory->setEnabled(hasActiveWindow && selectionCount_ == 1);
-    ui_->ActionExportCSV->setEnabled(hasActiveWindow);
-    ui_->ActionExportXML->setEnabled(hasActiveWindow);
+    // CRUD actions are now in the currency window toolbar
+    // This method now only handles the Save action which is still in the main window
+    // The Save action is controlled by the isDirtyChanged signal from detail panels
 }
 
 void MainWindow::onEditTriggered() {

@@ -58,10 +58,12 @@
     </property>
     <addaction name="ActionAbout"/>
    </widget>
-   <widget class="QMenu" name="menuEdit">
+   <widget class="QMenu" name="menuActions">
     <property name="title">
-     <string>&amp;Edit</string>
+     <string>&amp;Actions</string>
     </property>
+    <addaction name="ActionReload"/>
+    <addaction name="separator"/>
     <addaction name="ActionAdd"/>
     <addaction name="ActionEdit"/>
     <addaction name="ActionDelete"/>
@@ -76,7 +78,7 @@
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuRefereceData"/>
-   <addaction name="menuEdit"/>
+   <addaction name="menuActions"/>
    <addaction name="menuExport"/>
    <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
@@ -96,15 +98,6 @@
    <addaction name="ActionDisconnect"/>
    <addaction name="separator"/>
    <addaction name="CurrenciesAction"/>
-   <addaction name="separator"/>
-   <addaction name="ActionSave"/>
-   <addaction name="separator"/>
-   <addaction name="ActionAdd"/>
-   <addaction name="ActionEdit"/>
-   <addaction name="ActionDelete"/>
-   <addaction name="ActionHistory"/>
-   <addaction name="ActionExportCSV"/>
-   <addaction name="ActionExportXML"/>
   </widget>
   <action name="ExitAction">
    <property name="text">
@@ -276,6 +269,18 @@
    </property>
    <property name="toolTip">
     <string>Reattach all floating windows to MDI area</string>
+   </property>
+  </action>
+  <action name="ActionReload">
+   <property name="icon">
+    <iconset>
+     <normaloff>ic_fluent_arrow_sync_20_regular.svg</normaloff>ic_fluent_arrow_sync_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Reload</string>
+   </property>
+   <property name="toolTip">
+    <string>Reload data from server</string>
    </property>
   </action>
  </widget>

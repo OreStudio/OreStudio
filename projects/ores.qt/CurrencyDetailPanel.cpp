@@ -21,6 +21,7 @@
 #include <QFutureWatcher>
 #include "ui_CurrencyDetailPanel.h"
 #include "ores.qt/CurrencyDetailPanel.hpp"
+#include "ores.qt/CurrencyHistoryDialog.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.comms/protocol/frame.hpp"
@@ -51,7 +52,20 @@ CurrencyDetailPanel::CurrencyDetailPanel(QWidget* parent)
     connect(ui_->formatEdit, &QLineEdit::textChanged, this, &CurrencyDetailPanel::onFieldChanged);
     connect(ui_->currencyTypeEdit, &QLineEdit::textChanged, this, &CurrencyDetailPanel::onFieldChanged);
 
-    // Initially disable save/reset buttons
+    // Connect View History button
+    connect(ui_->viewHistoryButton, &QPushButton::clicked, this, [this]() {
+        if (!currentCurrency_.iso_code.empty() && client_) {
+            CurrencyHistoryDialog dialog(
+                QString::fromStdString(currentCurrency_.iso_code),
+                client_,
+                this
+            );
+            dialog.exec();
+        }
+    });
+
+    // Initially disable save/reset buttons and view history button
+    ui_->viewHistoryButton->setEnabled(false);
     updateSaveResetButtonState();
 }
 
@@ -80,6 +94,9 @@ void CurrencyDetailPanel::setCurrency(const risk::domain::currency& currency) {
     isDirty_ = false;
     emit isDirtyChanged(false);
     updateSaveResetButtonState();
+
+    // Enable View History button when currency is loaded
+    ui_->viewHistoryButton->setEnabled(true);
 }
 
 risk::domain::currency CurrencyDetailPanel::getCurrency() const {
@@ -114,6 +131,9 @@ void CurrencyDetailPanel::clearPanel() {
     isDirty_ = false;
     emit isDirtyChanged(false);
     updateSaveResetButtonState();
+
+    // Disable View History button when panel is cleared
+    ui_->viewHistoryButton->setEnabled(false);
 }
 
 void CurrencyDetailPanel::save() {

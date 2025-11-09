@@ -58,8 +58,25 @@
     </property>
     <addaction name="ActionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <addaction name="ActionEdit"/>
+    <addaction name="ActionDelete"/>
+    <addaction name="ActionHistory"/>
+   </widget>
+   <widget class="QMenu" name="menuExport">
+    <property name="title">
+     <string>&amp;Export</string>
+    </property>
+    <addaction name="ActionExportXML"/>
+    <addaction name="ActionExportCSV"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuRefereceData"/>
+   <addaction name="menuEdit"/>
+   <addaction name="menuExport"/>
    <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -189,6 +206,18 @@
    </property>
    <property name="toolTip">
     <string>Export currencies to CSV</string>
+   </property>
+  </action>
+  <action name="ActionExportToXML">
+   <property name="icon">
+    <iconset>
+     <normaloff>ic_fluent_document_code_16_regular.svg</normaloff>ic_fluent_document_code_16_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>To &amp;XML</string>
+   </property>
+   <property name="toolTip">
+    <string>Export currencies to XML</string>
    </property>
   </action>
   <action name="ActionExportXML">

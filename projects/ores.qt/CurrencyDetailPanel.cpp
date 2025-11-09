@@ -308,10 +308,10 @@ void CurrencyDetailPanel::onSaveClicked() {
                 is_add_mode_ = false;
                 currentCurrency_ = currency; // Update with saved currency
                 ui_->isoCodeEdit->setReadOnly(true); // ISO code can't be changed anymore
-                emit currencyCreated();
+                emit currencyCreated(QString::fromStdString(currency.iso_code));
             } else {
                 currentCurrency_ = currency; // Update with modified currency
-                emit currencyUpdated();
+                emit currencyUpdated(QString::fromStdString(currency.iso_code));
             }
         } else {
             BOOST_LOG_SEV(lg(), error) << "Currency save failed: " << message;

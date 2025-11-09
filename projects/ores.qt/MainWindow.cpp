@@ -625,7 +625,7 @@ void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
 
     // Connect signals from panel
     connect(detailPanel, &CurrencyDetailPanel::currencyUpdated,
-            this, [this, detailPanel]() {
+            this, [this](const QString& iso_code) {
         // Refresh both the active window and the main list window if they exist
         if (activeCurrencyWindow_) {
             activeCurrencyWindow_->currencyModel()->refresh();
@@ -636,16 +636,13 @@ void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
                 currencyWidget->reload();
             }
         }
-        ui_->statusbar->showMessage("Currency updated successfully.");
+        ui_->statusbar->showMessage(QString("Currency '%1' updated successfully.").arg(iso_code));
 
-        // Close the detail window after successful update
-        QWidget* parentWindow = detailPanel->window();
-        if (parentWindow && parentWindow != detailPanel) {
-            parentWindow->close();
-        }
+        // Close the detail window after successful update (same as delete)
+        onCurrencyDeleted(iso_code);
     });
     connect(detailPanel, &CurrencyDetailPanel::currencyCreated,
-            this, [this, detailPanel]() {
+            this, [this](const QString& iso_code) {
         BOOST_LOG_SEV(lg(), info) << "Currency created signal received, refreshing windows";
 
         // Refresh both the active window and the main list window if they exist
@@ -664,13 +661,10 @@ void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
         } else {
             BOOST_LOG_SEV(lg(), warn) << "Currency list window is null, cannot refresh";
         }
-        ui_->statusbar->showMessage("Currency created successfully.");
+        ui_->statusbar->showMessage(QString("Currency '%1' created successfully.").arg(iso_code));
 
-        // Close the detail window after successful creation
-        QWidget* parentWindow = detailPanel->window();
-        if (parentWindow && parentWindow != detailPanel) {
-            parentWindow->close();
-        }
+        // Close the detail window after successful creation (same as delete)
+        onCurrencyDeleted(iso_code);
     });
     connect(detailPanel, &CurrencyDetailPanel::currencyDeleted,
             this, [this](const QString& iso_code) {

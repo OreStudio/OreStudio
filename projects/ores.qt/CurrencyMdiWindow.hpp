@@ -52,6 +52,7 @@ private:
 public:
     explicit CurrencyMdiWindow(std::shared_ptr<comms::client> client,
                                QWidget* parent = nullptr);
+    ~CurrencyMdiWindow() override;
 
     ClientCurrencyModel* currencyModel() const { return currencyModel_; } // New getter for the model
 

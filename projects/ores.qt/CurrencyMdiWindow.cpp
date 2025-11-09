@@ -188,6 +188,25 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
     currencyModel_->refresh();
 }
 
+CurrencyMdiWindow::~CurrencyMdiWindow() {
+    BOOST_LOG_SEV(lg(), info) << "Destroying currency MDI window";
+
+    // Disconnect all signals from the model to prevent issues during destruction
+    if (currencyModel_) {
+        disconnect(currencyModel_, nullptr, this, nullptr);
+    }
+
+    // Disconnect table view selection signals
+    if (currencyTableView_ && currencyTableView_->selectionModel()) {
+        disconnect(currencyTableView_->selectionModel(), nullptr, this, nullptr);
+    }
+
+    // Set model to nullptr before the view is destroyed
+    if (currencyTableView_) {
+        currencyTableView_->setModel(nullptr);
+    }
+}
+
 void CurrencyMdiWindow::reload() {
     BOOST_LOG_SEV(lg(), info) << "Reload requested";
     emit statusChanged("Reloading currencies...");

@@ -109,25 +109,25 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
     toolBar_->addAction(addAction);
 
     // Add edit action
-    QAction* editAction = new QAction("Edit", this);
-    editAction->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_edit_20_filled.svg", iconColor));
-    editAction->setToolTip("Edit selected currency");
-    connect(editAction, &QAction::triggered, this, &CurrencyMdiWindow::editSelected);
-    toolBar_->addAction(editAction);
+    editAction_ = new QAction("Edit", this);
+    editAction_->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_edit_20_filled.svg", iconColor));
+    editAction_->setToolTip("Edit selected currency");
+    connect(editAction_, &QAction::triggered, this, &CurrencyMdiWindow::editSelected);
+    toolBar_->addAction(editAction_);
 
     // Add delete action (using outline/regular version for neutral appearance)
-    QAction* deleteAction = new QAction("Delete", this);
-    deleteAction->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_delete_20_regular.svg", iconColor));
-    deleteAction->setToolTip("Delete selected currency/currencies");
-    connect(deleteAction, &QAction::triggered, this, &CurrencyMdiWindow::deleteSelected);
-    toolBar_->addAction(deleteAction);
+    deleteAction_ = new QAction("Delete", this);
+    deleteAction_->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_delete_20_regular.svg", iconColor));
+    deleteAction_->setToolTip("Delete selected currency/currencies");
+    connect(deleteAction_, &QAction::triggered, this, &CurrencyMdiWindow::deleteSelected);
+    toolBar_->addAction(deleteAction_);
 
     // Add history action
-    QAction* historyAction = new QAction("History", this);
-    historyAction->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_history_20_regular.svg", iconColor));
-    historyAction->setToolTip("View currency history");
-    connect(historyAction, &QAction::triggered, this, &CurrencyMdiWindow::viewHistorySelected);
-    toolBar_->addAction(historyAction);
+    historyAction_ = new QAction("History", this);
+    historyAction_->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_history_20_regular.svg", iconColor));
+    historyAction_->setToolTip("View currency history");
+    connect(historyAction_, &QAction::triggered, this, &CurrencyMdiWindow::viewHistorySelected);
+    toolBar_->addAction(historyAction_);
 
     toolBar_->addSeparator();
 
@@ -178,6 +178,9 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
     connect(currencyTableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &CurrencyMdiWindow::onSelectionChanged);
 
+    // Initially disable actions that require selection
+    updateActionStates();
+
     // Emit initial loading status
     emit statusChanged("Loading currencies...");
 
@@ -206,6 +209,13 @@ void CurrencyMdiWindow::onDataLoaded() {
     // Force table view to update display
     currencyTableView_->viewport()->update();
     currencyTableView_->update();
+
+    // Auto-select first row if data is available and nothing is selected
+    if (currencyModel_->rowCount() > 0 &&
+        currencyTableView_->selectionModel()->selectedRows().isEmpty()) {
+        currencyTableView_->selectRow(0);
+        BOOST_LOG_SEV(lg(), debug) << "Auto-selected first row";
+    }
 }
 
 void CurrencyMdiWindow::onLoadError(const QString& error_message) {
@@ -235,6 +245,7 @@ void CurrencyMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
 
 void CurrencyMdiWindow::onSelectionChanged() {
     const int selection_count = currencyTableView_->selectionModel()->selectedRows().count();
+    updateActionStates();
     emit selectionChanged(selection_count);
 }
 
@@ -531,6 +542,16 @@ QSize CurrencyMdiWindow::sizeHint() const {
     height += 20; // Extra padding
 
     return QSize(width, height);
+}
+
+void CurrencyMdiWindow::updateActionStates() {
+    const int selection_count = currencyTableView_->selectionModel()->selectedRows().count();
+    const bool hasSelection = selection_count > 0;
+
+    // Enable/disable actions based on selection
+    editAction_->setEnabled(hasSelection);
+    deleteAction_->setEnabled(hasSelection);
+    historyAction_->setEnabled(hasSelection);
 }
 
 }

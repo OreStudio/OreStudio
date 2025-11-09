@@ -83,12 +83,18 @@ private slots:
 
 private:
     QIcon createRecoloredIcon(const QString& svgPath, const QColor& color);
+    void updateActionStates();
 
     QVBoxLayout* verticalLayout_;
     QToolBar* toolBar_;
     QTableView* currencyTableView_;
     ClientCurrencyModel* currencyModel_;
     std::shared_ptr<comms::client> client_;
+
+    // Actions that need to be enabled/disabled based on selection
+    QAction* editAction_;
+    QAction* deleteAction_;
+    QAction* historyAction_;
 };
 
 }

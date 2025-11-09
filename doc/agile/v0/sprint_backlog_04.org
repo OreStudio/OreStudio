@@ -19,49 +19,51 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-09 Sun 13:29], for Sunday, November 09, 2025.
+#+CAPTION: Clock summary at [2025-11-09 Sun 22:12], for Sunday, November 09, 2025.
 |      | <75>                                          |        |      |      |       |
 | Tags | Headline                                      | Time   |      |      |     % |
 |------+-----------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                  | *5:07* |      |      | 100.0 |
+|      | *Total time*                                  | *8:30* |      |      | 100.0 |
 |------+-----------------------------------------------+--------+------+------+-------|
-|      | Stories                                       | 5:07   |      |      | 100.0 |
-|      | Active                                        |        | 5:07 |      | 100.0 |
-| code | Add about to menu                             |        |      | 0:07 |   2.3 |
-| code | Create a history dialog for currencies        |        |      | 1:27 |  28.3 |
-| code | Allow MDI windows outside main window         |        |      | 1:35 |  30.9 |
-| code | Add edit menu and export menu                 |        |      | 0:34 |  11.1 |
-| code | Current issues with package install in debian |        |      | 0:26 |   8.5 |
-| code | Implement adding new currencies               |        |      | 0:58 |  18.9 |
+|      | Stories                                       | 8:30   |      |      | 100.0 |
+|      | Active                                        |        | 8:30 |      | 100.0 |
+| code | Add about to menu                             |        |      | 0:07 |   1.4 |
+| code | Create a history dialog for currencies        |        |      | 1:27 |  17.1 |
+| code | Allow MDI windows outside main window         |        |      | 1:35 |  18.6 |
+| code | Add edit menu and export menu                 |        |      | 0:34 |   6.7 |
+| code | Implement adding new currencies               |        |      | 3:17 |  38.6 |
+| code | Current issues with package install in debian |        |      | 0:40 |   7.8 |
+| code | Resolve crash on shutdown problem             |        |      | 0:50 |   9.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-09 Sun 13:29]
+#+CAPTION: Clock summary at [2025-11-09 Sun 22:12]
 |       | <75>                                                   |         |       |       |       |
 | Tags  | Headline                                               | Time    |       |       |     % |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                           | *29:35* |       |       | 100.0 |
+|       | *Total time*                                           | *32:58* |       |       | 100.0 |
 |-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                | 29:35   |       |       | 100.0 |
-|       | Active                                                 |         | 29:35 |       | 100.0 |
-| agile | Sprint and product backlog refinement                  |         |       |  0:43 |   2.4 |
-| code  | Clean up client parser                                 |         |       |  0:10 |   0.6 |
-| code  | Add connect command line argument                      |         |       |  1:19 |   4.5 |
-| infra | Install Windows package on Windows machine             |         |       |  2:09 |   7.3 |
-| code  | Ignore warnings on windows and osx                     |         |       |  0:33 |   1.9 |
-| code  | Ensure applications work under OSX using github images |         |       |  0:14 |   0.8 |
-| infra | Create a splash screen and gray background             |         |       |  2:26 |   8.2 |
-| code  | Use fluent icons                                       |         |       |  0:37 |   2.1 |
-| code  | Add export functionality for currencies                |         |       |  1:30 |   5.1 |
-| code  | Add currency editing support                           |         |       |  2:45 |   9.3 |
-| code  | Add about to menu                                      |         |       |  1:02 |   3.5 |
-| code  | Create a history dialog for currencies                 |         |       |  1:27 |   4.9 |
-| code  | Allow MDI windows outside main window                  |         |       |  1:35 |   5.4 |
-| code  | Add edit menu and export menu                          |         |       |  0:34 |   1.9 |
-| code  | Make UI/UX look more professional                      |         |       | 11:07 |  37.6 |
-| code  | Current issues with package install in debian          |         |       |  0:26 |   1.5 |
-| code  | Implement adding new currencies                        |         |       |  0:58 |   3.3 |
+|       | Stories                                                | 32:58   |       |       | 100.0 |
+|       | Active                                                 |         | 32:58 |       | 100.0 |
+| agile | Sprint and product backlog refinement                  |         |       |  0:43 |   2.2 |
+| code  | Clean up client parser                                 |         |       |  0:10 |   0.5 |
+| code  | Add connect command line argument                      |         |       |  1:19 |   4.0 |
+| infra | Install Windows package on Windows machine             |         |       |  2:09 |   6.5 |
+| code  | Ignore warnings on windows and osx                     |         |       |  0:33 |   1.7 |
+| code  | Ensure applications work under OSX using github images |         |       |  0:14 |   0.7 |
+| infra | Create a splash screen and gray background             |         |       |  2:26 |   7.4 |
+| code  | Use fluent icons                                       |         |       |  0:37 |   1.9 |
+| code  | Add export functionality for currencies                |         |       |  1:30 |   4.6 |
+| code  | Add currency editing support                           |         |       |  2:45 |   8.3 |
+| code  | Add about to menu                                      |         |       |  1:02 |   3.1 |
+| code  | Create a history dialog for currencies                 |         |       |  1:27 |   4.4 |
+| code  | Allow MDI windows outside main window                  |         |       |  1:35 |   4.8 |
+| code  | Add edit menu and export menu                          |         |       |  0:34 |   1.7 |
+| code  | Implement adding new currencies                        |         |       |  3:17 |  10.0 |
+| code  | Make UI/UX look more professional                      |         |       | 11:07 |  33.7 |
+| code  | Current issues with package install in debian          |         |       |  0:40 |   2.0 |
+| code  | Resolve crash on shutdown problem                      |         |       |  0:50 |   2.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -385,6 +387,24 @@ Notes:
 Need a edit menu with all of the crud operations. At present these are only in
 the toolbar. We also need one for export.
 
+*** COMPLETED Implement adding new currencies                          :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-09 Sun 18:01]--[2025-11-09 Sun 20:20] =>  2:19
+    CLOCK: [2025-11-09 Sun 12:31]--[2025-11-09 Sun 13:29] =>  0:58
+    :END:
+
+At present you cannot add new currencies from the UI.
+
+Notes:
+
+- UI goes black if you close and reopen. Done.
+- need a way to save the new currency to trigger sending message to server side.
+- we should be able to send a message to create more than one currency in one
+  go.
+- it should be possible to clone a currency. It goes into new currency dialog
+  with all fields filed in except for ISO code - maybe set to clone?
+- add new message to repl.
+
 *** STARTED Make UI/UX look more professional                          :code:
     :LOGBOOK:
     CLOCK: [2025-11-08 Sat 10:11]--[2025-11-08 Sat 20:04] =>  9:53
@@ -624,20 +644,156 @@ Aborted                    /opt/OreStudio/0.0.4/bin/ores.qt
 #+end_src
 
 
-*** STARTED Implement adding new currencies                            :code:
     :LOGBOOK:
-    CLOCK: [2025-11-09 Sun 12:31]--[2025-11-09 Sun 13:29] =>  0:58
+    CLOCK: [2025-11-09 Sun 21:00]--[2025-11-09 Sun 21:14] =>  0:14
     :END:
 
-At present you cannot add new currencies from the UI.
+When investigating a crash we noticed the app is not exiting cleanly. Fix all of
+these crashes before we go any further.
 
-Notes:
+*** STARTED Resolve crash on shutdown problem                          :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-09 Sun 21:21]--[2025-11-09 Sun 22:11] =>  0:50
+    :END:
 
-- UI goes black if you close and reopen.
-- need a way to save the new currency to trigger sending message to server side.
-- we should be able to send a message to create more than one currency in one
-  go.
-- add new message to repl.
+At present the app crashes when shutting down. This is due to the attach /
+detach logic. We need to workout a plan for managing this. K2:
+
+#+begin_src markdown
+Yes — but only if you **keep the same ownership rule in both states** (attached *and* detached).
+The moment you let Qt parent the widget **and** still keep it in a container that you later `delete`, you again have **two owners**, and the double-delete will come back as soon as the user re-attaches the window and then quits the program.
+
+Below is the minimal change that lets the user detach/reattach as often as he wants **and** guarantees that the object is destroyed **exactly once**.
+
+--------------------------------------------------------
+1.  Pick one unique owner
+--------------------------------------------------------
+Make **MainWindow** the unique owner.
+That means:
+
+- Never give the widget a parent (pass `nullptr` in the constructor).
+- Always insert it into one of the four containers.
+- Delete it **only** from those containers (or when the user explicitly closes
+  it).
+- When the widget is *attached* to the MDI area, use
+  ,**QMdiArea::addSubWindow()**; this only sets the **QMdiSubWindow** as parent
+  of the **internal viewport**, **not** of your custom widget, so your widget
+  stays parent-less.
+
+Code sketch:
+
+```cpp
+// create
+auto w = new CurrencyMdiWindow(nullptr);          // no parent
+mdiArea->addSubWindow(w);                         // only the QMdiSubWindow gets a parent
+currencyDetailWindows_.insert(iso, w);
+allDetachableWindows_.append(w);
+```
+
+--------------------------------------------------------
+2.  Remove it from the lists at the right moment
+--------------------------------------------------------
+As soon as the widget dies (user presses ×, or you programmatically close it) you must **erase the pointer** from every container; otherwise you will dereference a dangling pointer when you later iterate over the lists.
+
+Connect once, right after creation:
+
+```cpp
+connect(w, &QObject::destroyed, this, [this, w](QObject* o) {
+    Q_UNUSED(o)
+    currencyDetailWindows_.remove(w->isoCode());
+    allDetachableWindows_.removeAll(w);
+    /* same for the other three maps/lists */
+});
+```
+
+--------------------------------------------------------
+3.  Detach / re-attach implementation
+--------------------------------------------------------
+Detaching simply reparents to **nullptr** and shows the widget as top-level:
+
+```cpp
+void MainWindow::detachWindow(QWidget* w)
+{
+    w->setParent(nullptr);
+    w->show();
+}
+```
+
+Re-attaching puts it back into the MDI area:
+
+```cpp
+void MainWindow::attachWindow(QWidget* w)
+{
+    w->setParent(nullptr);              // make sure it is still parent-less
+    mdiArea->addSubWindow(w);
+    w->show();
+}
+```
+
+Because the widget **never** had a Qt parent, Qt will **never** auto-delete it; only your own code (or the user closing the top-level window while `Qt::WA_DeleteOnClose` is set) can trigger the `destroyed()` signal, and that signal already removed the pointer from the lists.
+
+--------------------------------------------------------
+4.  Destructor becomes trivial
+--------------------------------------------------------
+```cpp
+MainWindow::~MainWindow()
+{
+    // delete every widget that is still alive
+    qDeleteAll(currencyDetailWindows_);
+    qDeleteAll(currencyHistoryWindows_);
+    delete currencyListWindow_;
+    qDeleteAll(allDetachableWindows_);
+}
+```
+
+Each widget is deleted **once**, the `destroyed()` lambda runs immediately and clears the lists, so when the next container is destroyed its `qDeleteAll` sees only `nullptr`s (or the map is already empty).
+
+--------------------------------------------------------
+5.  Optional extra safety
+--------------------------------------------------------
+If you want to be 100 % sure, store **QPointer** in the containers instead of raw pointers:
+
+```cpp
+QMap<QString, QPointer<DetachableMdiSubWindow>> currencyDetailWindows_;
+```
+
+Now the destructor can even be written as
+
+```cpp
+for (auto it = currencyDetailWindows_.begin(); it != currencyDetailWindows_.end(); ++it)
+    delete it.value();   // safe: delete nullptr is a no-op
+```
+
+but this is **not required**—the design above is already bullet-proof.
+
+--------------------------------------------------------
+Summary
+--------------------------------------------------------
+- Pick **one** owner (MainWindow).
+- Keep widgets **parent-less**.
+- Add / remove them from the lists **synchronously** via `destroyed()`.
+- Detach/reattach only changes **visual** parent, not ownership.
+
+With these rules you can detach and re-attach as often as you like, and the
+program will still shut down without the heap corruption you are seeing now.
+#+end_src
+
+*** Implement import XML                                               :code:
+
+Users should be able to import data from ORE directly.
+
+*** Add a delete all button which deletes all currencies               :code:
+
+It is useful especially in test environments to be able to delete all entities
+before a re-import.
+
+*** History should have a revert button                                :code:
+
+It should be possible to choose a given version and ask the system to revert the
+currency to that version. It just makes an update with a new version to look
+like that version. It should also be possible to open at version. It shows the
+edit dialog in "read only mode" with the entity at that version. The tool bar
+should indicate this. It should also have a revert in that dialog.
 
 *** Assorted UI polish work                                            :code:
 
@@ -648,8 +804,8 @@ Break these down into their own stories:
 - should we just have toolbars at the detached window level?
 - application should exit when main window is closed.
 - is it possible to dock windows like visual studio?
-
-- disabled menu options are not properly greyed out.
+- add a detach current window that just detaches that window.
+- disabled menu options are not properly greyed out. Done.
 
 *** Add multi-selection support to currencies                          :code:
 

@@ -19,55 +19,54 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-09 Sun 22:12], for Sunday, November 09, 2025.
-|      | <75>                                          |        |      |      |       |
-| Tags | Headline                                      | Time   |      |      |     % |
-|------+-----------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                  | *8:30* |      |      | 100.0 |
-|------+-----------------------------------------------+--------+------+------+-------|
-|      | Stories                                       | 8:30   |      |      | 100.0 |
-|      | Active                                        |        | 8:30 |      | 100.0 |
-| code | Add about to menu                             |        |      | 0:07 |   1.4 |
-| code | Create a history dialog for currencies        |        |      | 1:27 |  17.1 |
-| code | Allow MDI windows outside main window         |        |      | 1:35 |  18.6 |
-| code | Add edit menu and export menu                 |        |      | 0:34 |   6.7 |
-| code | Implement adding new currencies               |        |      | 3:17 |  38.6 |
-| code | Current issues with package install in debian |        |      | 0:40 |   7.8 |
-| code | Resolve crash on shutdown problem             |        |      | 0:50 |   9.8 |
+#+CAPTION: Clock summary at [2025-11-10 Mon 10:32], for Monday, November 10, 2025.
+|          | <75>                                      |        |      |      |       |
+| Tags     | Headline                                  | Time   |      |      |     % |
+|----------+-------------------------------------------+--------+------+------+-------|
+|          | *Total time*                              | *1:28* |      |      | 100.0 |
+|----------+-------------------------------------------+--------+------+------+-------|
+|          | Stories                                   | 1:28   |      |      | 100.0 |
+|          | Active                                    |        | 1:28 |      | 100.0 |
+| agile    | Sprint and product backlog refinement     |        |      | 0:42 |  47.7 |
+| analysis | Weaving skills and documentation together |        |      | 0:46 |  52.3 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-09 Sun 22:12]
-|       | <75>                                                   |         |       |       |       |
-| Tags  | Headline                                               | Time    |       |       |     % |
-|-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                           | *32:58* |       |       | 100.0 |
-|-------+--------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                | 32:58   |       |       | 100.0 |
-|       | Active                                                 |         | 32:58 |       | 100.0 |
-| agile | Sprint and product backlog refinement                  |         |       |  0:43 |   2.2 |
-| code  | Clean up client parser                                 |         |       |  0:10 |   0.5 |
-| code  | Add connect command line argument                      |         |       |  1:19 |   4.0 |
-| infra | Install Windows package on Windows machine             |         |       |  2:09 |   6.5 |
-| code  | Ignore warnings on windows and osx                     |         |       |  0:33 |   1.7 |
-| code  | Ensure applications work under OSX using github images |         |       |  0:14 |   0.7 |
-| infra | Create a splash screen and gray background             |         |       |  2:26 |   7.4 |
-| code  | Use fluent icons                                       |         |       |  0:37 |   1.9 |
-| code  | Add export functionality for currencies                |         |       |  1:30 |   4.6 |
-| code  | Add currency editing support                           |         |       |  2:45 |   8.3 |
-| code  | Add about to menu                                      |         |       |  1:02 |   3.1 |
-| code  | Create a history dialog for currencies                 |         |       |  1:27 |   4.4 |
-| code  | Allow MDI windows outside main window                  |         |       |  1:35 |   4.8 |
-| code  | Add edit menu and export menu                          |         |       |  0:34 |   1.7 |
-| code  | Implement adding new currencies                        |         |       |  3:17 |  10.0 |
-| code  | Make UI/UX look more professional                      |         |       | 11:07 |  33.7 |
-| code  | Current issues with package install in debian          |         |       |  0:40 |   2.0 |
-| code  | Resolve crash on shutdown problem                      |         |       |  0:50 |   2.5 |
+#+CAPTION: Clock summary at [2025-11-10 Mon 10:32]
+|          | <75>                                                   |         |       |       |       |
+| Tags     | Headline                                               | Time    |       |       |     % |
+|----------+--------------------------------------------------------+---------+-------+-------+-------|
+|          | *Total time*                                           | *35:01* |       |       | 100.0 |
+|----------+--------------------------------------------------------+---------+-------+-------+-------|
+|          | Stories                                                | 35:01   |       |       | 100.0 |
+|          | Active                                                 |         | 35:01 |       | 100.0 |
+| agile    | Sprint and product backlog refinement                  |         |       |  2:00 |   5.7 |
+| code     | Clean up client parser                                 |         |       |  0:10 |   0.5 |
+| code     | Add connect command line argument                      |         |       |  1:19 |   3.8 |
+| infra    | Install Windows package on Windows machine             |         |       |  2:09 |   6.1 |
+| code     | Ignore warnings on windows and osx                     |         |       |  0:33 |   1.6 |
+| code     | Ensure applications work under OSX using github images |         |       |  0:14 |   0.7 |
+| infra    | Create a splash screen and gray background             |         |       |  2:26 |   6.9 |
+| code     | Use fluent icons                                       |         |       |  0:37 |   1.8 |
+| code     | Add export functionality for currencies                |         |       |  1:30 |   4.3 |
+| code     | Add currency editing support                           |         |       |  2:45 |   7.9 |
+| code     | Add about to menu                                      |         |       |  1:02 |   3.0 |
+| code     | Create a history dialog for currencies                 |         |       |  1:27 |   4.1 |
+| code     | Allow MDI windows outside main window                  |         |       |  1:35 |   4.5 |
+| code     | Add edit menu and export menu                          |         |       |  0:34 |   1.6 |
+| code     | Implement adding new currencies                        |         |       |  3:17 |   9.4 |
+| code     | Make UI/UX look more professional                      |         |       | 11:07 |  31.7 |
+| code     | Current issues with package install in debian          |         |       |  0:40 |   1.9 |
+| code     | Resolve crash on shutdown problem                      |         |       |  0:50 |   2.4 |
+| analysis | Weaving skills and documentation together              |         |       |  0:46 |   2.2 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-11-10 Mon 10:17]--[2025-11-10 Mon 10:32] =>  0:15
+    CLOCK: [2025-11-09 Sun 23:47]--[2025-11-10 Mon 00:27] =>  0:40
+    CLOCK: [2025-11-09 Sun 23:24]--[2025-11-09 Sun 23:46] =>  0:22
     CLOCK: [2025-11-08 Sat 01:27]--[2025-11-08 Sat 01:36] =>  0:09
     CLOCK: [2025-11-07 Fri 10:35]--[2025-11-07 Fri 10:47] =>  0:12
     CLOCK: [2025-11-07 Fri 09:05]--[2025-11-07 Fri 09:13] =>  0:08
@@ -404,6 +403,16 @@ Notes:
 - it should be possible to clone a currency. It goes into new currency dialog
   with all fields filed in except for ISO code - maybe set to clone?
 - add new message to repl.
+
+*** COMPLETED Create an icon for the application                      :infra:
+
+We copied the Dogen icon to get us going. We should really grab our own logo.
+
+*** COMPLETED Add packaging support for images                        :infra:
+
+*Rationale*: we are now packaging the images with the binary via Qt resources.
+
+At present we are not adding images to packages.
 
 *** STARTED Make UI/UX look more professional                          :code:
     :LOGBOOK:
@@ -778,9 +787,77 @@ With these rules you can detach and re-attach as often as you like, and the
 program will still shut down without the heap corruption you are seeing now.
 #+end_src
 
+*** STARTED Weaving skills and documentation together              :analysis:
+    :LOGBOOK:
+    CLOCK: [2025-11-10 Mon 09:30]--[2025-11-10 Mon 10:16] =>  0:46
+    :END:
+
+Following on from the ideas on [[https://uhra.herts.ac.uk/id/eprint/17031/][Model Assisted Software Development]] (MASD), we
+should weave together all of the project assets so that they simultaneously
+generate:
+
+- human level documentation, accessible via org-roam. This should also include
+  diagrams to enable humans to understand the code structure.
+- external documentation for website.
+- LLM instructions, including skills.
+
+Source code remains the only source of truth, but documentation is a projection
+of the source code. The same documentation is simultaneously used by developers
+and LLMs to understand the system.
+
+Notes:
+
+- generate a new =index.org= which is a more user friendly main page.
+- split the existing =readme= into specialised pages which document aspects of
+  the system such as building etc.
+- create a =skills= folder under doc which are org mode documents that export
+  into claude skills. Create CMake targets which generate the skills directory.
+  Symlink it to the project directory =.claude/skills=.
+- add a cmake target to generate the site. This should just generate HTML for
+  the skills.
+- add plantuml diagrams at the component level. These should leave under
+  =modeling=.
+- add plantuml diagram at the project level. Each component should have a link to
+  the plantuml diagram of the component.
+- teach claude how to generate a org-mode model of the component which documents
+  each class. For comms, it should also generate an interaction diagram
+  explaining how the client and server communicate.
+- in the claude skills, explain that whenever adding domain entities, it needs
+  to update
+- perform a taxonomic analysis of how to break down existing code into skills.
+  These will follow on from MASD's logical-physical space,
+- it should also be possible to generate a PDF with all of the documentation,
+  readable as a book.
+
+*** Generate a pie chart for tasks in org via R                        :code:
+
+Ask the LLM on how to replicate the calc pie chart we previously had.
+
+*** Add a version attribute to entities                                :code:
+
+At present we are relying only on bitemporal for version control. However it is
+much easier to check a version number. It should just be a linear attribute
+which is updated whenever we insert into the entity table. If the user attempts
+to update an entity but the current version is smaller than the latest version
+we should error. Make version unique.
+
+*** Merge update and create currency messages                          :code:
+
+Due to how repositories work for bitemporal, we are always writing anyways. So
+we don't really need complex logic around updating versus creating a new
+currency. We need to simplify the UI and client / server code to have a single
+message type for both.
+
 *** Implement import XML                                               :code:
 
 Users should be able to import data from ORE directly.
+
+*** Update currency details to use tabs                                :code:
+
+We need a main tab with the currency related properties, then a "system" tab
+with temporal data which is read-only even on edit and a "image" tab with the
+image used to represent the currency. It could also contain some description or
+notes.
 
 *** Add a delete all button which deletes all currencies               :code:
 
@@ -817,12 +894,12 @@ should do like gmail and have check boxes?
 For expediency users should be able to edit multiple currencies and save them in
 one go directly in the grid. Shift enter to edit a field seems interesting.
 
-*** Listen for changes in currencies                                   :code:
-
 Users need to be made aware when there are changes in CRUD objects, and there
 needs to be a reload button to reload data from the database in that case. This
 could be done by making the reload button a different colour when data is
 available.
+
+Make the reload button blue when there are changes.
 
 Notes:
 
@@ -838,10 +915,151 @@ change to disconnected.
 It should be possible to filter the open currencies by a string. This should be
 any field. The user needs to know when the list has been filtered.
 
+*** Add a generic tagging system                                       :code:
+
+It should be possible to associate any entity with one or more tags and then do
+a search by tags on that entity type. For example, tag a set of currencies as
+emerging markets and then search by that.
+
+Labels versus tags:
+
+#+begin_src markdown
+That is an **excellent question** that gets to the heart of cloud governance and
+system design. You are correct that the underlying structure is fundamentally
+the same—a **key-value pair attached to a resource**—but the distinction is
+necessary because of the **context, governance, and enforcement mechanisms**
+applied to each one.
+
+The distinction between GCP Labels and Tags boils down to **Annotation vs.
+Policy**.
+
+---
+
+## ⚖️ Why the Distinction is Necessary
+
+| Feature              | GCP **Labels** (Annotation)                                                                          | GCP **Tags** (Policy/Governance)                                                                                                                                               |
+|:---------------------|:-----------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Primary Goal**     | **Organization, filtering, cost allocation, and reporting.**                                         | **Policy enforcement, access control, and hierarchical governance.**                                                                                                           |
+| **Structure**        | **Flexible/Arbitrary.** Key-Value pair set directly on the resource.                                 | **Structured/Centralized.** Key and Value are defined *centrally* as separate resources (at the Organization/Project level) and then *bound* to the resource.                  |
+| **Hierarchy**        | **Flat.** A resource does not inherit labels from its parent folder.                                 | **Hierarchical.** Tags are inherited by child resources (like a VM inheriting a tag from its containing project).                                                              |
+| **Access Control**   | **Low Control.** Any user with permissions to modify the resource can typically modify its labels.   | **High Control.** Dedicated **IAM Roles** are required to create, manage, and even attach Tag Keys and Values. This prevents users from "tagging" their way out of a policy.   |
+| **Enforcement**      | **None.** Labels are metadata and cannot be used directly in IAM conditions to grant or deny access. | **High.** Tags are the *only* mechanism designed for **conditional IAM policies** and Organization Policies (e.g., "deny deletion unless resource has tag `environment:dev`"). |
+| **Use Case Example** | Filtering the console: "Show me all resources labeled `owner:john_doe`."                             | Security: "Only allow network traffic from resources tagged `security_zone:trusted`."                                                                                          |
+
+### Analogy: The Whiteboard vs. The Building Code
+
+1.  **Labels are like a sticky note on a whiteboard:**
+    ,* They are **flexible**, quickly written, and easy to change.
+    ,* They are used for **informal organization** (cost center, app name, etc.).
+    ,* Changing the note has **no impact on the resource's function** or security.
+
+2.  **Tags are like a building code requirement:**
+    ,* They are **highly structured** and defined by a central authority (the city/organization).
+    ,* They are used to **enforce policy** (safety, compliance).
+    ,* If a resource (a building) doesn't have the correct tag (e.g., a **fire-rating tag**), an automated system (the policy engine) will **deny an action** (e.g., deny occupation or modification).
+
+---
+
+## How This Relates to Your SVG System
+
+Your current **three-table model** is structurally a **GCP Label** system—it's
+excellent for annotation and filtering (e.g., "Give me all icons with the tag
+'currency'").
+
+If you wanted to implement a **GCP Tag** concept, you would need to:
+
+1.  **Formalize the Tags:** Create certain tags as *official resources* (like
+    `Status` with official values `Draft`, `Approved`, `Production`).
+2.  **Add Permissions:** Implement **application logic** that checks a user's
+    role against the tag. For example: "A user needs the `Approver` role to
+    apply the `Status:Production` tag to an icon."
+
+The need to distinguish them comes down to providing one system that is
+,**flexible for organization (Labels)** and another that is **rigid for security
+and compliance (Tags)**.
+#+end_src
+
+Examples:
+
+- majors, minors, EM, latam, etc are tags we can have on currencies. On currency
+  pairs, We could also have USD crosses, which is inferred by having USD as one
+  of the pair. However these are not labels because we do not want everyone to
+  start using them. When defining a report, you could associate currencies and
+  currency pairs to the report via the tags.
+- labels are things we could associate with images for example. Flags could have
+  both "countries" and "currencies" labels so that when we want to select a flag
+  as the image for a currency, we could ask for all images labelled
+  "currencies". The labelling can be done by pretty much anyone.
+
 *** Add flags for currencies                                           :code:
 
 Add flags for the currencies. Need database support. Display them in the
 currencies dialog.
+
+Actually it is better to have a generic mechanism to upload an SVG and maybe tag
+it with an identifier. Then we could have a way to associate a currency with one
+of the available SVGs. The currency dialog could have a tab where users can
+select the SVG from a list. We can then have a table with SVG for currency which
+remembers these. This provides a generic solution for all cases where we have
+some kind of asset and an associated image.
+
+SQL:
+
+#+begin_src sql
+-- Ensure you have the necessary extension for generating random UUIDs
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- 1. icons table: Stores the SVG data
+CREATE TABLE icons (
+    -- Primary key using UUID (GUID)
+    icon_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    -- Unique key used by the application (e.g., 'usd_flag', 'btc_symbol')
+    key VARCHAR(100) UNIQUE NOT NULL,
+
+    -- The entire SVG content stored as plain text
+    svg_data TEXT NOT NULL,
+
+    -- Optional timestamps
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Index the 'key' column for faster lookups
+CREATE INDEX idx_icons_key ON icons (key);
+
+---
+
+-- 2. tags table: Stores the list of available categories
+CREATE TABLE tags (
+    -- Primary key remains SERIAL as tags are usually created centrally
+    tag_id SERIAL PRIMARY KEY,
+
+    -- The name of the tag (e.g., 'currency', 'flag', 'commodity')
+    name VARCHAR(50) UNIQUE NOT NULL
+);
+
+-- Index the 'name' column for quick lookups and joins
+CREATE INDEX idx_tags_name ON tags (name);
+
+---
+
+-- 3. icon_tags table: Junction table for the many-to-many relationship
+CREATE TABLE icon_tags (
+    -- Foreign key to the icons table (now a UUID)
+    icon_id UUID NOT NULL REFERENCES icons(icon_id) ON DELETE CASCADE,
+
+    -- Foreign key to the tags table (remains INTEGER)
+    tag_id INTEGER NOT NULL REFERENCES tags(tag_id) ON DELETE CASCADE,
+
+    -- Ensures that each icon/tag combination can only exist once
+    PRIMARY KEY (icon_id, tag_id)
+);
+
+-- Optional: Create a separate index for lookups by tag
+CREATE INDEX idx_icon_tags_tag_id ON icon_tags (tag_id);
+#+end_src
+
 
 *** Light system theme results in mix of dark and light                :code:
 
@@ -851,11 +1069,6 @@ consistently.
 *** Update readme with UI screenshots                                  :code:
 
 Now that we have a basic UI up and running, add it to docs.
-
-*** Add country support                                                :code:
-
-We will probably need country support at some point. We should link the country
-to the currencies, where applicable.
 
 *** Repl needs synchronous socket operations                           :code:
 

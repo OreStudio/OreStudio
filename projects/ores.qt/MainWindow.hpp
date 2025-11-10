@@ -32,8 +32,7 @@
 #include <boost/asio/executor_work_guard.hpp>
 #include "ores.comms/client.hpp"
 #include "ores.qt/MdiAreaWithBackground.hpp"
-#include "ores.qt/CurrencyDetailPanel.hpp" // Include the header for CurrencyDetailPanel
-#include "ores.risk/domain/currency.hpp" // Include for risk::domain::currency
+#include "ores.risk/domain/currency.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ui_MainWindow.h"
 

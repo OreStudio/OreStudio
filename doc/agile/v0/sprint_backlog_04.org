@@ -19,47 +19,49 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-10 Mon 10:32], for Monday, November 10, 2025.
+#+CAPTION: Clock summary at [2025-11-10 Mon 22:29], for Monday, November 10, 2025.
 |          | <75>                                      |        |      |      |       |
 | Tags     | Headline                                  | Time   |      |      |     % |
 |----------+-------------------------------------------+--------+------+------+-------|
-|          | *Total time*                              | *1:28* |      |      | 100.0 |
+|          | *Total time*                              | *4:59* |      |      | 100.0 |
 |----------+-------------------------------------------+--------+------+------+-------|
-|          | Stories                                   | 1:28   |      |      | 100.0 |
-|          | Active                                    |        | 1:28 |      | 100.0 |
-| agile    | Sprint and product backlog refinement     |        |      | 0:42 |  47.7 |
-| analysis | Weaving skills and documentation together |        |      | 0:46 |  52.3 |
+|          | Stories                                   | 4:59   |      |      | 100.0 |
+|          | Active                                    |        | 4:59 |      | 100.0 |
+| agile    | Sprint and product backlog refinement     |        |      | 0:42 |  14.0 |
+| code     | Clean up product website                  |        |      | 3:31 |  70.6 |
+| analysis | Weaving skills and documentation together |        |      | 0:46 |  15.4 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-10 Mon 10:32]
+#+CAPTION: Clock summary at [2025-11-10 Mon 22:29]
 |          | <75>                                                   |         |       |       |       |
 | Tags     | Headline                                               | Time    |       |       |     % |
 |----------+--------------------------------------------------------+---------+-------+-------+-------|
-|          | *Total time*                                           | *35:01* |       |       | 100.0 |
+|          | *Total time*                                           | *38:32* |       |       | 100.0 |
 |----------+--------------------------------------------------------+---------+-------+-------+-------|
-|          | Stories                                                | 35:01   |       |       | 100.0 |
-|          | Active                                                 |         | 35:01 |       | 100.0 |
-| agile    | Sprint and product backlog refinement                  |         |       |  2:00 |   5.7 |
-| code     | Clean up client parser                                 |         |       |  0:10 |   0.5 |
-| code     | Add connect command line argument                      |         |       |  1:19 |   3.8 |
-| infra    | Install Windows package on Windows machine             |         |       |  2:09 |   6.1 |
-| code     | Ignore warnings on windows and osx                     |         |       |  0:33 |   1.6 |
-| code     | Ensure applications work under OSX using github images |         |       |  0:14 |   0.7 |
-| infra    | Create a splash screen and gray background             |         |       |  2:26 |   6.9 |
-| code     | Use fluent icons                                       |         |       |  0:37 |   1.8 |
-| code     | Add export functionality for currencies                |         |       |  1:30 |   4.3 |
-| code     | Add currency editing support                           |         |       |  2:45 |   7.9 |
-| code     | Add about to menu                                      |         |       |  1:02 |   3.0 |
-| code     | Create a history dialog for currencies                 |         |       |  1:27 |   4.1 |
-| code     | Allow MDI windows outside main window                  |         |       |  1:35 |   4.5 |
-| code     | Add edit menu and export menu                          |         |       |  0:34 |   1.6 |
-| code     | Implement adding new currencies                        |         |       |  3:17 |   9.4 |
-| code     | Make UI/UX look more professional                      |         |       | 11:07 |  31.7 |
-| code     | Current issues with package install in debian          |         |       |  0:40 |   1.9 |
-| code     | Resolve crash on shutdown problem                      |         |       |  0:50 |   2.4 |
-| analysis | Weaving skills and documentation together              |         |       |  0:46 |   2.2 |
+|          | Stories                                                | 38:32   |       |       | 100.0 |
+|          | Active                                                 |         | 38:32 |       | 100.0 |
+| agile    | Sprint and product backlog refinement                  |         |       |  2:00 |   5.2 |
+| code     | Clean up client parser                                 |         |       |  0:10 |   0.4 |
+| code     | Add connect command line argument                      |         |       |  1:19 |   3.4 |
+| infra    | Install Windows package on Windows machine             |         |       |  2:09 |   5.6 |
+| code     | Ignore warnings on windows and osx                     |         |       |  0:33 |   1.4 |
+| code     | Ensure applications work under OSX using github images |         |       |  0:14 |   0.6 |
+| infra    | Create a splash screen and gray background             |         |       |  2:26 |   6.3 |
+| code     | Use fluent icons                                       |         |       |  0:37 |   1.6 |
+| code     | Add export functionality for currencies                |         |       |  1:30 |   3.9 |
+| code     | Add currency editing support                           |         |       |  2:45 |   7.1 |
+| code     | Add about to menu                                      |         |       |  1:02 |   2.7 |
+| code     | Create a history dialog for currencies                 |         |       |  1:27 |   3.8 |
+| code     | Allow MDI windows outside main window                  |         |       |  1:35 |   4.1 |
+| code     | Add edit menu and export menu                          |         |       |  0:34 |   1.5 |
+| code     | Implement adding new currencies                        |         |       |  3:17 |   8.5 |
+| code     | Make UI/UX look more professional                      |         |       | 11:07 |  28.8 |
+| code     | Current issues with package install in debian          |         |       |  0:40 |   1.7 |
+| code     | Resolve crash on shutdown problem                      |         |       |  0:50 |   2.2 |
+| code     | Clean up product website                               |         |       |  3:31 |   9.1 |
+| analysis | Weaving skills and documentation together              |         |       |  0:46 |   2.0 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -786,6 +788,17 @@ Summary
 With these rules you can detach and re-attach as often as you like, and the
 program will still shut down without the heap corruption you are seeing now.
 #+end_src
+
+*** STARTED Clean up product website                                   :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-10 Mon 22:00]--[2025-11-10 Mon 22:29] =>  0:29
+    CLOCK: [2025-11-10 Mon 17:33]--[2025-11-10 Mon 17:39] =>  0:06
+    CLOCK: [2025-11-10 Mon 12:30]--[2025-11-10 Mon 15:26] =>  2:56
+    :END:
+
+As per weaving analysis we need to tidy-up our org-mode documents to build up
+towards the setup needed for skills etc. Tidy up the product website, removing
+things such as build instructions etc into it's own documents.
 
 *** STARTED Weaving skills and documentation together              :analysis:
     :LOGBOOK:

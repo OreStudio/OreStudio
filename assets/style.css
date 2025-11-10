@@ -12,7 +12,7 @@
     --heading-color: #1a1a1a;
     --link-color: #007bff;
     --link-hover-color: #0056b3;
-    --accent-color: #007bff; /* A vibrant green for the button/focus */
+    --accent-color: #007bff;
     --accent-hover-color: #0056b3;
     --code-bg: #f8f8f8;
     --code-text: #d63384;
@@ -29,7 +29,7 @@
         --heading-color: #ffffff;
         --link-color: #90caf9;
         --link-hover-color: #64b5f6;
-        --accent-color: #0056b3; /* Brighter green for dark theme */
+        --accent-color: #0056b3;
         --accent-hover-color: #0056b3;
         --code-bg: #2d2d2d;
         --code-text: #ff6347;
@@ -250,4 +250,43 @@ footer {
     font-size: 0.9em;
     margin-top: 40px;
     border-top: 1px solid var(--border-color);
+}
+
+/* --- Badge/Shield Styling Fix --- */
+
+/* 1. Center the entire container */
+.badge-wrapper {
+    text-align: left;
+    margin: 2em 0;
+}
+
+/* 2. *** FIX: Target the ANCHOR tag (the link) directly *** */
+.badge-wrapper a {
+    /* Override general link styles (e.g., in case you added padding/border on <a>) */
+    text-decoration: none !important; /* Force no underline */
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: inline-block; /* Ensure they are treated as blocks for vertical-align and margin */
+}
+
+.badge-wrapper a:hover {
+    text-decoration: none !important; /* Keep underline off on hover */
+    /* You might want to remove link color changes on hover for these badges */
+    color: inherit; /* Inherit color from the parent, which shouldn't affect the badge image */
+}
+
+/* 3. Target the image inside the link */
+.badge-wrapper img {
+    /* Revert display property to allow horizontal flow */
+    display: inline-block;
+
+    /* Remove the huge vertical margin and add a small, balanced margin */
+    margin: 0px 0px;
+
+    /* Remove the box shadow which looks bad on small shields */
+    box-shadow: none;
+
+    /* Ensure no vertical offset issues */
+    vertical-align: middle;
 }

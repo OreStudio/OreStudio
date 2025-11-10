@@ -8,6 +8,7 @@
 
 [[./assets/images/splash-screen.png]]
 
+#+HTML: <div class="badge-wrapper">
 #+html: <a href="https://github.com/OreStudio/OreStudio/blob/main/LICENSE"><img alt="Licence" src="https://img.shields.io/badge/License-GPLv3-blue.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/graphs/commit-activity"><img alt="Maintenance" src="https://img.shields.io/badge/Maintained%3F-yes-green.svg"/></a>
 #+html: <a href="https://en.wikipedia.org/wiki/C%2B%2B20"><img alt="C++ Version" src="https://img.shields.io/badge/std-C++20-blue.svg"/></a>
@@ -37,6 +38,7 @@
 #+html: <a href="https://github.com/OreStudio/OreStudio/commits/main"><img alt="Commits" src= "https://img.shields.io/github/commits-since/OreStudio/OreStudio/v0.0.3.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/OreStudio/OreStudio/total.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/releases"><img alt="Releases" src="https://img.shields.io/github/release/OreStudio/OreStudio.svg"/></a>
+#+HTML: </div>
 
 * In a nutshell
 

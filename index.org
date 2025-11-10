@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: D04D3476-D7C5-3954-A33B-C641EBCB43F6
+:END:
+#+TITLE:      ORE Studio
+#+AUTHOR:     Marco Craveiro et al.
+#+EMAIL:      marco.craveiro@gmail.com
+#+LANGUAGE:   en
+#+OPTIONS:    html-postamble:nil toc:nil num:nil ^:nil title:nil
+#+HTML_DOCTYPE: html5
+
+#+HTML: <header>
+#+HTML: <div class="nav">
+#+HTML:   <ul>
+#+HTML:     <li><a href="file:///home/marco/Development/OreStudio/OreStudio.local1/build/output/site/doc/doc.html">Documentation</a></li>
+#+HTML:     <li><a href="https://github.com/OreStudio/OreStudio/releases">Releases</a></li>
+#+HTML:     <li><a href="https://discord.com/channels/1254062142626332732/1254062142626332735">Discord</a></li>
+#+HTML:     <li><a href="https://github.com/orestudio/OREStudio" title="GitHub"><i class="fab fa-github"></i></a></li>
+#+HTML:   </ul>
+#+HTML: </div>
+#+HTML: </header>
+
+#+HTML: <section class="hero">
+#+HTML: <img class="banner" src="./assets/images/splash-screen.png" alt="ORE Studio">
+#+HTML: <a class="btn" href="https://github.com/orestudio/OREStudio">Explore on GitHub</a>
+#+HTML: <h1>Enterprise-grade risk analytics &mdash;<br/>but visual <i>and</i> open-source.</h1>
+#+HTML: <p>ORE Studio wraps the <a href="https://github.com/OpenSourceRisk">Open-Source Risk Engine</a> (ORE) in an intuitive graphical interface - no Python or C++ required.</p>
+#+HTML: </section>
+
+*ORE Studio* is a new, an independent open-source project with the goal of
+providing a graphical wrapper around Acadia’s [[https://github.com/OpenSourceRisk/Engine][ORE]]. ORE itself builds on top of
+[[https://github.com/lballabio/QuantLib][QuantLib]], the de-facto standard open-source library for quantitative finance.
+*ORE Studio* aims to augment ORE's robust analytics to eventually provide full
+life-cycle management for all entities within the trading system,
+point-and-click reporting, trade modelling and market-data management.
+
+#+ATTR_HTML: :alt ORE Studio Qt User Interface :title ORE Studio Qt User Interface :align center
+#+ATTR_HTML: :width 100% :height 100%
+[[./assets/images/MainApplicationNew.png]]
+
+#+HTML: <div class="grid">
+#+HTML: <div class="card">
+#+HTML: <h3>QuantLib Inside</h3>
+#+HTML: <p>Benefit from over 20 years of peer-reviewed quantitative-finance models.</p>
+#+HTML: </div>
+#+HTML: <div class="card">
+#+HTML: <h3>ORE Powered</h3>
+#+HTML: <p>Latest pricing and risk analytics including XVAs, sensitivities and regulatory scenarios.</p>
+#+HTML: </div>
+#+HTML: <div class="card">
+#+HTML: <h3>Visual Workflow</h3>
+#+HTML: <p>Manage visually curves, trades and reports. Share results via the reporting management system.</p>
+#+HTML: </div>
+#+HTML: </div>
+
+#+HTML: <footer>
+#+HTML: © 2025 ORE Studio contributors.
+#+HTML: </footer>

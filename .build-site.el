@@ -49,7 +49,8 @@
 ;; Load the publishing system
 (require 'ox-publish)
 
-(defvar html-header "<link rel=\"stylesheet\" href=\"assets/style.css\">
+;; IMPORTANT: update to href=\"./assets/style.css\"> testing locally.
+(defvar html-header "<link rel=\"stylesheet\" href=\"https://orestudio.github.io/OreStudio/assets/style.css\">
 <link rel=\"icon\" href=\"/assets/images/modern-icon.png\">
 <script src=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js\"></script>
 <script>var hlf=function(){Array.prototype.forEach.call(document.querySelectorAll(\"pre.src\"),function(t){var e;e=t.getAttribute(\"class\"),e=e.replace(/src-(\w+)/,\"src-$1 $1\"),console.log(e),t.setAttribute(\"class\",e),hljs.highlightBlock(t)})};addEventListener(\"DOMContentLoaded\",hlf);</script>

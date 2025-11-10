@@ -11,7 +11,8 @@
 #+HTML: <header>
 #+HTML: <div class="nav">
 #+HTML:   <ul>
-#+HTML:     <li><a href="file:///home/marco/Development/OreStudio/OreStudio.local1/build/output/site/doc/doc.html">Documentation</a></li>
+#+HTML:     <li><a href="./readme.html">Readme</a></li>
+#+HTML:     <li><a href="./doc/doc.html">Documentation</a></li>
 #+HTML:     <li><a href="https://github.com/OreStudio/OreStudio/releases">Releases</a></li>
 #+HTML:     <li><a href="https://discord.com/channels/1254062142626332732/1254062142626332735">Discord</a></li>
 #+HTML:     <li><a href="https://github.com/orestudio/OREStudio" title="GitHub"><i class="fab fa-github"></i></a></li>

@@ -1,4 +1,4 @@
-;;; ores-database.el --- Database connectivity  -*- lexical-binding: t; -*-
+;;; ores-database.el --- Database connectivity -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2025  Marco Craveiro
 

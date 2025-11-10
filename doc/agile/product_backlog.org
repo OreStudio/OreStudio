@@ -64,6 +64,11 @@ To be done on the last Sunday of the sprint.
 
 Stories we may get two in the next two or three sprints.
 
+*** Add country support                                                :code:
+
+We will probably need country support at some point. We should link the country
+to the currencies, where applicable.
+
 *** Log file location for Qt application is non-standard on Linux      :code:
 
 At present we need to manually create the log directory for the gui to fix this
@@ -478,14 +483,6 @@ Links:
 
 We need to install and run the windows package and make sure it works. Check
 console and GUI start.
-
-*** Add packaging support for images                                  :infra:
-
-At present we are not adding images to packages.
-
-*** Create an icon for the application                                :infra:
-
-We copied the Dogen icon to get us going. We should really grab our own logo.
 
 *** Add JSON parsing support for currency                              :code:
 

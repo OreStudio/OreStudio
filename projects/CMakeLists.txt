@@ -44,16 +44,10 @@ list(APPEND ORES_JAVA_ARGS "-DPLANTUML_SECURITY_PROFILE=UNSECURE")
 list(APPEND ORES_JAVA_ARGS "-DPLANTUML_LIMIT_SIZE=65535")
 
 #
-# Include directories
-#
-# set(ORES_INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/projects)
-
-#
 # Projects
 #
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.accounts)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.cli)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.cli.tests)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.client)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.risk)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.risk.tests)

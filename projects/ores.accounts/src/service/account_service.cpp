@@ -18,7 +18,7 @@
  *
  */
 
-#include "account_service.hpp"
+#include "ores.accounts/service/account_service.hpp"
 
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>

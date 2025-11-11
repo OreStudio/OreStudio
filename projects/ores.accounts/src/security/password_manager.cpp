@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "password_manager.hpp"
+#include "ores.accounts/security/password_manager.hpp"
 
 #include <cmath>
 #include <vector>

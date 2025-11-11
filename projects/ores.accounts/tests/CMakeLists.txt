@@ -30,9 +30,9 @@ add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}
     PROPERTIES OUTPUT_NAME ${tests_binary_name})
 
-target_include_directories(${tests_binary_name}
-    PRIVATE ${CMAKE_SOURCE_DIR}/projects/${name}/include
-    PRIVATE ${CMAKE_SOURCE_DIR}/projects/)
+# target_include_directories(${tests_binary_name}
+#     PRIVATE ${CMAKE_SOURCE_DIR}/projects/${name}/include
+#     PRIVATE ${CMAKE_SOURCE_DIR}/projects/)
 
 target_link_libraries(${tests_target_name}
     PRIVATE
@@ -55,7 +55,7 @@ add_test(NAME ${tests_target_name}
     COMMAND ${tests_binary_name} --reporter junit -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml
     WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
-set_tests_properties(${tests_target_name} PROPERTIES
+set_tests_properties(${tests_target0_name} PROPERTIES
     PROCESSORS 1
     ENVIRONMENT ""
     ATTACHED_FILES_ON_FAIL "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml"

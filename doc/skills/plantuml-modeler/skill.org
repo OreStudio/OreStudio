@@ -59,9 +59,9 @@ component we are modeling. For example =ores.utility/modeling=.
 In order to determine which files to process, follow these rules:
 
 - Most of the required information for modeling should be sourced from the C++
-  header files =.hpp= of a given component. However, inspect the Implementation
-  files =.cpp= to check for any relationships at the implementation level which
-  are of significance for UML modeling.
+  header files =.hpp= of a given component (under =include=). However, inspect
+  the Implementation files =.cpp= under =src= to check for any relationships at
+  the implementation level which are of significance for UML modeling.
 - Do not follow includes in the header files. Just read each header file within
   a component and model the entities within, unless this file explicitly tells
   you to exclude them.
@@ -70,30 +70,31 @@ In order to determine which files to process, follow these rules:
 
 Before generating a diagram, ensure the following setup steps are completed:
 
-1. *Create modeling directory:* Ensure the =modeling= directory exists under the
-   component folder. Create it if necessary using =mkdir -p=.
-
-2. *CMake integration:* After generating the diagram, add a CMake target for
-   diagram generation to the component's =CMakeLists.txt=. Add the following at
-   the end of the file:
+- Ensure the =modeling= directory exists under the component folder.
+- If it does not exist, create it using =mkdir -p=.
+- You need to also add a =CMakeLists.txt= in the directory as follows (updating
+  =COMPONENT_NAME= with the actual component name (e.g. =ores.cli=)):
 
 #+begin_src cmake
 # PlantUML diagram generation
-add_custom_target(generate_COMPONENT_NAME_diagram
-    COMMAND ${Java_JAVA_EXECUTABLE}
-        -Djava.awt.headless=true
-        -DPLANTUML_SECURITY_PROFILE=UNSECURE
-        -DPLANTUML_LIMIT_SIZE=65535
-        -jar ${PLANTUML_JAR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/modeling/COMPONENT_NAME.puml
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/modeling
-    COMMENT "Generating PlantUML diagram for COMPONENT_NAME"
-    VERBATIM
-)
-add_dependencies(make_all_diagrams generate_COMPONENT_NAME_diagram)
+set(name "COMPONENT_NAME")
+
+set(diagram_target generate_${name}_diagram)
+add_custom_target(${diagram_target}
+    COMMENT "Generating PlantUML diagram for ${name}" VERBATIM
+    COMMAND java ${ORES_JAVA_ARGS} -jar ${ORES_PLANTUML_JAR} ${name}.puml
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
+add_dependencies(make_all_diagrams ${diagram_target})
 #+end_src
 
-Replace =COMPONENT_NAME= with the actual component name (e.g. =ores.cli=).
+- Finally update the main component =CMakeLists.txt= with a link to this CMake
+  file:
+
+#+begin_src cmake
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modeling) # ---> add this
+#+end_src
 
 ** PlantUML file layout
 

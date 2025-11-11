@@ -152,8 +152,8 @@ Follow these rules when modeling structs:
 3. Classes are normally expected to have behaviour. Colour classes as #FFFACD.
 4. Ignore default values.
 5. Model a =struct= by adding all of the fields.
-6. Add documentation at the top of the struct with the struct level comments,
-   followed by the comments for each field.
+6. Add a UML note documenting structs and classes after the struct or class. Add
+   the top-level comments, followed by the comments for each field to the note.
 7. Add the relevant relationships after the class. Ignore relationships to types
    outside the current component. Use the fully qualified entity name in the
    relationship. Use the appropriate UML relationship from the PlantUML

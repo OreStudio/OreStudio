@@ -1,0 +1,507 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+
+namespace ores #F2F2F2 {
+    note "Account management module for ORE Studio.\n\nThis module provides functionality for managing user accounts including\nauthentication, authorization, and login tracking." as ores_accounts_note
+    accounts --- ores_accounts_note
+    namespace accounts #F2F2F2 {
+        note "Domain types for account management" as ores_accounts_domain_note
+        domain --- ores_accounts_domain_note
+        namespace domain #F2F2F2 {
+            class account #F7E5FF {
+                +{field} version int
+                +{field} modified_by std::string
+                +{field} id boost::uuids::uuid
+                +{field} username std::string
+                +{field} password_hash std::string
+                +{field} password_salt std::string
+                +{field} totp_secret std::string
+                +{field} email std::string
+                +{field} is_admin bool
+            }
+
+            note top of account
+            Represents a user account in the system.
+
+            Fields:
+
+            - version: Version number for optimistic locking and change tracking.
+            - modified_by: Username of the user who last modified this account.
+            - id: Unique identifier for the account.
+            - username: Unique username for login purposes.
+            - password_hash: Hashed password for secure authentication.
+            - password_salt: Salt used in password hashing for additional security.
+            - totp_secret: Time-based One-Time Password secret for two-factor authentication.
+            - email: Email address associated with the account.
+            - is_admin: Flag indicating whether the account has administrative privileges.
+            end note
+
+            class login_info #F7E5FF {
+                +{field} account_id boost::uuids::uuid
+                +{field} last_ip boost::asio::ip::address
+                +{field} last_attempt_ip boost::asio::ip::address
+                +{field} failed_logins int
+                +{field} locked bool
+                +{field} last_login std::chrono::system_clock::time_point
+                +{field} online bool
+            }
+
+            note top of login_info
+            Represents login tracking and security information for an account.
+
+            Fields:
+
+            - account_id: Foreign key referencing the associated account.
+            - last_ip: IP address from the last successful login.
+            - last_attempt_ip: IP address from the most recent login attempt (successful or failed).
+            - failed_logins: Count of consecutive failed login attempts since last successful login.
+            - locked: Flag indicating whether the account is locked due to security concerns.
+            - last_login: Timestamp of the last successful login.
+            - online: Flag indicating whether the user is currently logged in.
+            end note
+
+            login_info o-u- ores::accounts::domain::account
+
+            class feature_flags #F7E5FF {
+                +{field} name std::string
+                +{field} enabled bool
+                +{field} description std::string
+                +{field} modified_by std::string
+            }
+
+            note top of feature_flags
+            Represents a feature flag in the domain layer.
+
+            Fields:
+
+            - name: Name of the feature flag, serves as the unique identifier.
+            - enabled: Flag indicating whether the feature is enabled or disabled.
+            - description: Description of what the feature flag controls.
+            - modified_by: Username of the user who last modified this feature flag.
+            end note
+        }
+
+        note "Data access layer for account management" as ores_accounts_repository_note
+        repository --- ores_accounts_repository_note
+        namespace repository #F2F2F2 {
+            class account_entity #F7E5FF {
+                +{field} {static} schema const char*
+                +{field} {static} tablename const char*
+                +{field} id sqlgen::PrimaryKey<std::string>
+                +{field} version int
+                +{field} username std::string
+                +{field} password_hash std::string
+                +{field} password_salt std::string
+                +{field} totp_secret std::string
+                +{field} email std::string
+                +{field} is_admin int
+                +{field} modified_by std::string
+                +{field} valid_from sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
+                +{field} valid_to sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
+            }
+
+            note top of account_entity
+            Represents an account in the database.
+
+            Fields:
+
+            - schema: Database schema name.
+            - tablename: Database table name.
+            - id: Primary key.
+            - version: Version for optimistic locking.
+            - username: Username.
+            - password_hash: Hashed password.
+            - password_salt: Password salt.
+            - totp_secret: TOTP secret for 2FA.
+            - email: Email address.
+            - is_admin: Admin flag.
+            - modified_by: Username who modified.
+            - valid_from: Temporal validity start.
+            - valid_to: Temporal validity end.
+            end note
+
+            class login_info_entity #F7E5FF {
+                +{field} {static} schema const char*
+                +{field} {static} tablename const char*
+                +{field} account_id sqlgen::PrimaryKey<std::string>
+                +{field} last_ip std::string
+                +{field} last_attempt_ip std::string
+                +{field} failed_logins int
+                +{field} locked int
+                +{field} last_login sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
+                +{field} online int
+            }
+
+            note top of login_info_entity
+            Represents login tracking information in the database.
+
+            Fields:
+
+            - schema: Database schema name.
+            - tablename: Database table name.
+            - account_id: Foreign key to account.
+            - last_ip: Last successful login IP.
+            - last_attempt_ip: Last login attempt IP.
+            - failed_logins: Failed login count.
+            - locked: Account locked flag.
+            - last_login: Last login timestamp.
+            - online: Online status flag.
+            end note
+
+            class feature_flags_entity #F7E5FF {
+                +{field} {static} schema const char*
+                +{field} {static} tablename const char*
+                +{field} name sqlgen::PrimaryKey<std::string>
+                +{field} enabled int
+                +{field} description std::string
+                +{field} modified_by std::string
+                +{field} valid_from sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
+                +{field} valid_to sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
+            }
+
+            note top of feature_flags_entity
+            Represents a feature flag in the database.
+
+            Fields:
+
+            - schema: Database schema name.
+            - tablename: Database table name.
+            - name: Primary key and feature flag name.
+            - enabled: Enabled flag.
+            - description: Feature description.
+            - modified_by: Username who modified.
+            - valid_from: Temporal validity start.
+            - valid_to: Temporal validity end.
+            end note
+
+            class account_mapper #FFFACD {
+                +{static} map(account_entity) domain::account
+                +{static} map(domain::account) account_entity
+                +{static} map(std::vector<account_entity>) std::vector<domain::account>
+                +{static} map(std::vector<domain::account>) std::vector<account_entity>
+            }
+
+            note top of account_mapper
+            Maps domain model entities to data storage layer and vice-versa.
+            end note
+
+            account_mapper ..> ores::accounts::domain::account
+            account_mapper ..> ores::accounts::repository::account_entity
+
+            class login_info_mapper #FFFACD {
+                +{static} map(login_info_entity) domain::login_info
+                +{static} map(domain::login_info) login_info_entity
+                +{static} map(std::vector<login_info_entity>) std::vector<domain::login_info>
+                +{static} map(std::vector<domain::login_info>) std::vector<login_info_entity>
+                -{static} timestamp_to_timepoint(sqlgen::Timestamp) std::chrono::system_clock::time_point
+                -{static} timepoint_to_timestamp(std::chrono::system_clock::time_point) sqlgen::Timestamp
+            }
+
+            note top of login_info_mapper
+            Maps domain model entities to data storage layer and vice-versa.
+            end note
+
+            login_info_mapper ..> ores::accounts::domain::login_info
+            login_info_mapper ..> ores::accounts::repository::login_info_entity
+
+            class feature_flags_mapper #FFFACD {
+                +{static} map(feature_flags_entity) domain::feature_flags
+                +{static} map(domain::feature_flags) feature_flags_entity
+                +{static} map(std::vector<feature_flags_entity>) std::vector<domain::feature_flags>
+                +{static} map(std::vector<domain::feature_flags>) std::vector<feature_flags_entity>
+            }
+
+            note top of feature_flags_mapper
+            Maps feature flags domain model entities to data storage layer and vice-versa.
+            end note
+
+            feature_flags_mapper ..> ores::accounts::domain::feature_flags
+            feature_flags_mapper ..> ores::accounts::repository::feature_flags_entity
+
+            class account_repository #FFFACD {
+                +sql() std::string
+                +write(context, domain::account) void
+                +write(context, std::vector<domain::account>) void
+                +read_latest(context) std::vector<domain::account>
+                +read_latest(context, boost::uuids::uuid) std::vector<domain::account>
+                +read_all(context) std::vector<domain::account>
+                +read_all(context, boost::uuids::uuid) std::vector<domain::account>
+                +read_latest_by_username(context, std::string) std::vector<domain::account>
+                -ensure_success(auto) void
+                -make_timestamp(std::string) auto
+                -{field} max_timestamp std::string
+            }
+
+            note top of account_repository
+            Reads and writes accounts off of data storage.
+            end note
+
+            account_repository ..> ores::accounts::domain::account
+
+            class login_info_repository #FFFACD {
+                +sql() std::string
+                +write(context, std::vector<domain::login_info>) void
+                +update(context, domain::login_info) void
+                +read(context) std::vector<domain::login_info>
+                +read(context, boost::uuids::uuid) std::vector<domain::login_info>
+                -{static} ensure_success(auto) void
+            }
+
+            note top of login_info_repository
+            Reads and writes login tracking information off of data storage.
+            end note
+
+            login_info_repository ..> ores::accounts::domain::login_info
+        }
+
+        note "Service layer for account management" as ores_accounts_service_note
+        service --- ores_accounts_service_note
+        namespace service #F2F2F2 {
+            class account_service #FFFACD {
+                +account_service(account_repository, login_info_repository)
+                +create_account(context, std::string, std::string, std::string, std::string, bool) domain::account
+                +list_accounts(context) std::vector<domain::account>
+                +delete_account(context, boost::uuids::uuid) void
+                +login(context, std::string, std::string, boost::asio::ip::address) domain::account
+                +unlock_account(context, boost::uuids::uuid) void
+                -{static} throw_if_empty(std::string, std::string) void
+                -{field} account_repo_ repository::account_repository
+                -{field} login_info_repo_ repository::login_info_repository
+                -{field} uuid_generator_ utility::uuid::uuid_v7_generator
+            }
+
+            note top of account_service
+            Service for managing user accounts including creation, listing, and deletion.
+            end note
+
+            account_service o-u- ores::accounts::repository::account_repository
+            account_service o-u- ores::accounts::repository::login_info_repository
+            account_service ..> ores::accounts::domain::account
+        }
+
+        note "Messaging protocol for account operations" as ores_accounts_messaging_note
+        messaging --- ores_accounts_messaging_note
+        namespace messaging #F2F2F2 {
+            class create_account_request #F7E5FF {
+                +{field} username std::string
+                +{field} password std::string
+                +{field} totp_secret std::string
+                +{field} email std::string
+                +{field} modified_by std::string
+                +{field} is_admin bool
+                +serialize() std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t>) std::expected<create_account_request, comms::protocol::error_code>
+            }
+
+            note top of create_account_request
+            Request to create a new account.
+
+            Fields:
+
+            - username: Username for the account.
+            - password: Password for the account.
+            - totp_secret: TOTP secret for 2FA.
+            - email: Email address.
+            - modified_by: Username who is creating.
+            - is_admin: Admin flag.
+            end note
+
+            class create_account_response #F7E5FF {
+                +{field} account_id boost::uuids::uuid
+                +serialize() std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t>) std::expected<create_account_response, comms::protocol::error_code>
+            }
+
+            note top of create_account_response
+            Response containing the created account ID.
+
+            Fields:
+
+            - account_id: ID of the created account.
+            end note
+
+            class list_accounts_request #F7E5FF {
+                +serialize() std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t>) std::expected<list_accounts_request, comms::protocol::error_code>
+            }
+
+            note top of list_accounts_request
+            Request to retrieve all accounts.
+
+            This request has no parameters - it retrieves all accounts in the system.
+            end note
+
+            class list_accounts_response #F7E5FF {
+                +{field} accounts std::vector<domain::account>
+                +serialize() std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t>) std::expected<list_accounts_response, comms::protocol::error_code>
+            }
+
+            note top of list_accounts_response
+            Response containing all accounts.
+
+            Fields:
+
+            - accounts: Vector of all accounts.
+            end note
+
+            list_accounts_response o-u- ores::accounts::domain::account
+
+            class login_request #F7E5FF {
+                +{field} username std::string
+                +{field} password std::string
+                +serialize() std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t>) std::expected<login_request, comms::protocol::error_code>
+            }
+
+            note top of login_request
+            Request to authenticate a user.
+
+            Fields:
+
+            - username: Username for authentication.
+            - password: Password for authentication.
+            end note
+
+            class login_response #F7E5FF {
+                +{field} success bool
+                +{field} error_message std::string
+                +{field} account_id boost::uuids::uuid
+                +{field} username std::string
+                +{field} is_admin bool
+                +serialize() std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t>) std::expected<login_response, comms::protocol::error_code>
+            }
+
+            note top of login_response
+            Response containing authentication result and account information.
+
+            Fields:
+
+            - success: Authentication success flag.
+            - error_message: Error message if authentication failed.
+            - account_id: ID of authenticated account.
+            - username: Username of authenticated account.
+            - is_admin: Admin flag of authenticated account.
+            end note
+
+            class unlock_account_request #F7E5FF {
+                +{field} account_id boost::uuids::uuid
+                +serialize() std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t>) std::expected<unlock_account_request, comms::protocol::error_code>
+            }
+
+            note top of unlock_account_request
+            Request to unlock a locked account.
+
+            Fields:
+
+            - account_id: ID of account to unlock.
+            end note
+
+            class unlock_account_response #F7E5FF {
+                +{field} success bool
+                +{field} error_message std::string
+                +serialize() std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t>) std::expected<unlock_account_response, comms::protocol::error_code>
+            }
+
+            note top of unlock_account_response
+            Response indicating whether unlock operation succeeded.
+
+            Fields:
+
+            - success: Unlock success flag.
+            - error_message: Error message if unlock failed.
+            end note
+
+            class accounts_message_handler #FFFACD {
+                +accounts_message_handler(utility::repository::context)
+                +handle_message(comms::protocol::message_type, std::span<const std::uint8_t>, std::string) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
+                -handle_create_account_request(std::span<const std::uint8_t>) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
+                -handle_list_accounts_request(std::span<const std::uint8_t>) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
+                -handle_login_request(std::span<const std::uint8_t>, std::string) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
+                -handle_unlock_account_request(std::span<const std::uint8_t>) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
+                -{field} ctx_ utility::repository::context
+                -{field} account_repo_ repository::account_repository
+                -{field} login_info_repo_ repository::login_info_repository
+            }
+
+            note top of accounts_message_handler
+            Message handler for accounts subsystem messages.
+
+            Processes messages in the accounts subsystem range (0x2000-0x2FFF).
+            Currently handles:
+            - create_account_request: Creates a new account
+            - list_accounts_request: Retrieves all accounts from the repository
+            - login_request: Authenticates a user and updates login tracking
+            - unlock_account_request: Unlocks a locked account
+            end note
+
+            accounts_message_handler o-u- ores::accounts::repository::account_repository
+            accounts_message_handler o-u- ores::accounts::repository::login_info_repository
+
+            class registrar #FFFACD {
+                +{static} register_handlers(comms::server&, utility::repository::context) void
+            }
+
+            note top of registrar
+            Register accounts subsystem message handlers with the server.
+
+            Registers handlers for all accounts subsystem messages (0x2000-0x2FFF).
+            Must be called before server.run().
+            end note
+        }
+
+        note "Password security management" as ores_accounts_security_note
+        security --- ores_accounts_security_note
+        namespace security #F2F2F2 {
+            class password_manager #FFFACD {
+                +{static} create_password_hash(std::string) std::string
+                +{static} verify_password_hash(std::string, std::string) bool
+                -{static} base64_encode(std::vector<unsigned char>) std::string
+                -{static} base64_decode(std::string) std::vector<unsigned char>
+                -{static} {field} DEFAULT_N std::uint64_t
+                -{static} {field} DEFAULT_r std::uint32_t
+                -{static} {field} DEFAULT_p std::uint32_t
+                -{static} {field} SALT_LEN std::size_t
+                -{static} {field} HASH_LEN std::size_t
+            }
+
+            note top of password_manager
+            Manages password hashing and verification using the scrypt algorithm.
+
+            The password_manager class provides static methods to securely hash passwords
+            and verify them against stored hashes. It uses the scrypt key derivation
+            function from OpenSSL to generate and validate password hashes, ensuring
+            strong security through configurable CPU/memory cost parameters.
+            end note
+        }
+
+        note "Test data generation" as ores_accounts_generators_note
+        generators --- ores_accounts_generators_note
+        namespace generators #F2F2F2 {
+            note "Generates synthetic account data for testing.\n\nFunctions:\n- generate_synthetic_account(): Generates a single synthetic account.\n- generate_synthetic_accounts(n): Generates N synthetic accounts." as generators_functions_note
+        }
+    }
+}
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.accounts.puml -tsvg"
+' End:
+@enduml

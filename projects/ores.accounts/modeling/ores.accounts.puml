@@ -15,13 +15,12 @@
 ' GNU Emacs; see the file COPYING. If not, write to the Free Software
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 @startuml
+set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
     note "Account management module for ORE Studio.\n\nThis module provides functionality for managing user accounts including\nauthentication, authorization, and login tracking." as ores_accounts_note
     accounts --- ores_accounts_note
     namespace accounts #F2F2F2 {
-        note "Domain types for account management" as ores_accounts_domain_note
-        domain --- ores_accounts_domain_note
         namespace domain #F2F2F2 {
             class account #F7E5FF {
                 +{field} version int
@@ -75,7 +74,7 @@ namespace ores #F2F2F2 {
             - online: Flag indicating whether the user is currently logged in.
             end note
 
-            login_info o-u- ores::accounts::domain::account
+            login_info --> ores::accounts::domain::account
 
             class feature_flags #F7E5FF {
                 +{field} name std::string
@@ -96,12 +95,8 @@ namespace ores #F2F2F2 {
             end note
         }
 
-        note "Data access layer for account management" as ores_accounts_repository_note
-        repository --- ores_accounts_repository_note
         namespace repository #F2F2F2 {
-            class account_entity #F7E5FF {
-                +{field} {static} schema const char*
-                +{field} {static} tablename const char*
+            class account_entity <<database>> #99CB99 {
                 +{field} id sqlgen::PrimaryKey<std::string>
                 +{field} version int
                 +{field} username std::string
@@ -118,10 +113,13 @@ namespace ores #F2F2F2 {
             note top of account_entity
             Represents an account in the database.
 
+            ORM Settings:
+
+            - Schema: oresdb
+            - Table: accounts
+
             Fields:
 
-            - schema: Database schema name.
-            - tablename: Database table name.
             - id: Primary key.
             - version: Version for optimistic locking.
             - username: Username.
@@ -135,9 +133,7 @@ namespace ores #F2F2F2 {
             - valid_to: Temporal validity end.
             end note
 
-            class login_info_entity #F7E5FF {
-                +{field} {static} schema const char*
-                +{field} {static} tablename const char*
+            class login_info_entity <<database>> #99CB99 {
                 +{field} account_id sqlgen::PrimaryKey<std::string>
                 +{field} last_ip std::string
                 +{field} last_attempt_ip std::string
@@ -150,10 +146,13 @@ namespace ores #F2F2F2 {
             note top of login_info_entity
             Represents login tracking information in the database.
 
+            ORM Settings:
+
+            - Schema: oresdb
+            - Table: login_info
+
             Fields:
 
-            - schema: Database schema name.
-            - tablename: Database table name.
             - account_id: Foreign key to account.
             - last_ip: Last successful login IP.
             - last_attempt_ip: Last login attempt IP.
@@ -163,9 +162,7 @@ namespace ores #F2F2F2 {
             - online: Online status flag.
             end note
 
-            class feature_flags_entity #F7E5FF {
-                +{field} {static} schema const char*
-                +{field} {static} tablename const char*
+            class feature_flags_entity <<database>> #99CB99 {
                 +{field} name sqlgen::PrimaryKey<std::string>
                 +{field} enabled int
                 +{field} description std::string
@@ -177,10 +174,13 @@ namespace ores #F2F2F2 {
             note top of feature_flags_entity
             Represents a feature flag in the database.
 
+            ORM Settings:
+
+            - Schema: oresdb
+            - Table: feature_flags
+
             Fields:
 
-            - schema: Database schema name.
-            - tablename: Database table name.
             - name: Primary key and feature flag name.
             - enabled: Enabled flag.
             - description: Feature description.
@@ -189,7 +189,7 @@ namespace ores #F2F2F2 {
             - valid_to: Temporal validity end.
             end note
 
-            class account_mapper #FFFACD {
+            class account_mapper #CECECE {
                 +{static} map(account_entity) domain::account
                 +{static} map(domain::account) account_entity
                 +{static} map(std::vector<account_entity>) std::vector<domain::account>
@@ -203,7 +203,7 @@ namespace ores #F2F2F2 {
             account_mapper ..> ores::accounts::domain::account
             account_mapper ..> ores::accounts::repository::account_entity
 
-            class login_info_mapper #FFFACD {
+            class login_info_mapper #CECECE {
                 +{static} map(login_info_entity) domain::login_info
                 +{static} map(domain::login_info) login_info_entity
                 +{static} map(std::vector<login_info_entity>) std::vector<domain::login_info>
@@ -219,7 +219,7 @@ namespace ores #F2F2F2 {
             login_info_mapper ..> ores::accounts::domain::login_info
             login_info_mapper ..> ores::accounts::repository::login_info_entity
 
-            class feature_flags_mapper #FFFACD {
+            class feature_flags_mapper #CECECE {
                 +{static} map(feature_flags_entity) domain::feature_flags
                 +{static} map(domain::feature_flags) feature_flags_entity
                 +{static} map(std::vector<feature_flags_entity>) std::vector<domain::feature_flags>
@@ -233,7 +233,7 @@ namespace ores #F2F2F2 {
             feature_flags_mapper ..> ores::accounts::domain::feature_flags
             feature_flags_mapper ..> ores::accounts::repository::feature_flags_entity
 
-            class account_repository #FFFACD {
+            class account_repository #CECECE {
                 +sql() std::string
                 +write(context, domain::account) void
                 +write(context, std::vector<domain::account>) void
@@ -253,7 +253,7 @@ namespace ores #F2F2F2 {
 
             account_repository ..> ores::accounts::domain::account
 
-            class login_info_repository #FFFACD {
+            class login_info_repository #CECECE {
                 +sql() std::string
                 +write(context, std::vector<domain::login_info>) void
                 +update(context, domain::login_info) void
@@ -269,10 +269,8 @@ namespace ores #F2F2F2 {
             login_info_repository ..> ores::accounts::domain::login_info
         }
 
-        note "Service layer for account management" as ores_accounts_service_note
-        service --- ores_accounts_service_note
         namespace service #F2F2F2 {
-            class account_service #FFFACD {
+            class account_service #CECECE {
                 +account_service(account_repository, login_info_repository)
                 +create_account(context, std::string, std::string, std::string, std::string, bool) domain::account
                 +list_accounts(context) std::vector<domain::account>
@@ -289,13 +287,11 @@ namespace ores #F2F2F2 {
             Service for managing user accounts including creation, listing, and deletion.
             end note
 
-            account_service o-u- ores::accounts::repository::account_repository
-            account_service o-u- ores::accounts::repository::login_info_repository
+            account_service o-- ores::accounts::repository::account_repository
+            account_service o-- ores::accounts::repository::login_info_repository
             account_service ..> ores::accounts::domain::account
         }
 
-        note "Messaging protocol for account operations" as ores_accounts_messaging_note
-        messaging --- ores_accounts_messaging_note
         namespace messaging #F2F2F2 {
             class create_account_request #F7E5FF {
                 +{field} username std::string
@@ -360,7 +356,7 @@ namespace ores #F2F2F2 {
             - accounts: Vector of all accounts.
             end note
 
-            list_accounts_response o-u- ores::accounts::domain::account
+            list_accounts_response o-- ores::accounts::domain::account
 
             class login_request #F7E5FF {
                 +{field} username std::string
@@ -430,7 +426,7 @@ namespace ores #F2F2F2 {
             - error_message: Error message if unlock failed.
             end note
 
-            class accounts_message_handler #FFFACD {
+            class accounts_message_handler #CECECE {
                 +accounts_message_handler(utility::repository::context)
                 +handle_message(comms::protocol::message_type, std::span<const std::uint8_t>, std::string) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
                 -handle_create_account_request(std::span<const std::uint8_t>) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
@@ -453,10 +449,10 @@ namespace ores #F2F2F2 {
             - unlock_account_request: Unlocks a locked account
             end note
 
-            accounts_message_handler o-u- ores::accounts::repository::account_repository
-            accounts_message_handler o-u- ores::accounts::repository::login_info_repository
+            accounts_message_handler o-- ores::accounts::repository::account_repository
+            accounts_message_handler o-- ores::accounts::repository::login_info_repository
 
-            class registrar #FFFACD {
+            class registrar #CECECE {
                 +{static} register_handlers(comms::server&, utility::repository::context) void
             }
 
@@ -468,10 +464,8 @@ namespace ores #F2F2F2 {
             end note
         }
 
-        note "Password security management" as ores_accounts_security_note
-        security --- ores_accounts_security_note
         namespace security #F2F2F2 {
-            class password_manager #FFFACD {
+            class password_manager #CECECE {
                 +{static} create_password_hash(std::string) std::string
                 +{static} verify_password_hash(std::string, std::string) bool
                 -{static} base64_encode(std::vector<unsigned char>) std::string
@@ -493,15 +487,31 @@ namespace ores #F2F2F2 {
             end note
         }
 
-        note "Test data generation" as ores_accounts_generators_note
-        generators --- ores_accounts_generators_note
         namespace generators #F2F2F2 {
-            note "Generates synthetic account data for testing.\n\nFunctions:\n- generate_synthetic_account(): Generates a single synthetic account.\n- generate_synthetic_accounts(n): Generates N synthetic accounts." as generators_functions_note
+            class generate_synthetic_account <<generator>> #D89EF1 {
+            }
+
+            note top of generate_synthetic_account
+            Generates a synthetic account.
+            end note
+
+            generate_synthetic_account --> ores::accounts::domain::account: generates
+
+            class generate_synthetic_accounts <<generator>> #D89EF1 {
+            }
+
+            note top of generate_synthetic_accounts
+            Generates N synthetic accounts.
+
+            Note: C++ 23 generators are not supported on all compilers.
+            end note
+
+            generate_synthetic_accounts --> ores::accounts::domain::account: generates
         }
     }
 }
 
 ' Local Variables:
-' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.accounts.puml -tsvg"
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.accounts.puml"
 ' End:
 @enduml

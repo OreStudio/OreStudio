@@ -69,6 +69,14 @@ endforeach()
 target_include_directories(ores.qt
     PRIVATE ${CMAKE_SOURCE_DIR}/projects)
 
+set(name ores.qt)
+set(diagram_target generate_${name}_diagram)
+add_custom_target(${diagram_target}
+    COMMENT "Generating PlantUML diagram for ${name}" VERBATIM
+    COMMAND java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ${name}.puml
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/modeling)
+add_dependencies(make_all_diagrams ${diagram_target})
+
 add_custom_target(run_ores_qt
     COMMENT "Running ores.qt" VERBATIM
     WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}

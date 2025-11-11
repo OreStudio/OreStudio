@@ -183,6 +183,12 @@ Follow these rules when modeling c++ structs:
     colour it as #99CB99 and add the stereotype =<<database>>=.
   - If a struct has the postfix of =_option= and it is in a =config= folder,
     colour it as #FFC072 and add the stereotype =<<config>>=.
+  - If a struct has the postfix of =_request= or =_response= it is in a
+    =messaging= folder, colour it as #E1F5FF and add the stereotype
+    =<<message>>=.
+  - If a struct has the postfix of =_request= or =_response= it is in a
+    =messaging= folder, colour it as #E1F5FF and add the stereotype
+    =<<message>>=.
   - If the struct does not fall under any of the previous categories, use the
     default colour of #F7E5FF.
 - Model public, private and protected members of the class using the appropriate
@@ -220,14 +226,13 @@ end note
 options o-u- ores::utility::database_configuration
 #+end_src
 
-
 Follow these rules when modeling c++ classes:
 
 - Colouring rules:
   - If a class has the postfix of =_exception=, colour it as #D6B19F and add
     the stereotype =<<exception>>=.
   - If the class does not fall under any of the previous categories, use the
-    default colour of #CECECE.
+    default colour of #ECECEC.
 - Do not add members related to logging.
 - Model public, private and protected members of the class using the appropriate
   PlantUML syntax for them.
@@ -238,21 +243,21 @@ For C++ classes (not structs), after modeling based on the header file, read the
 corresponding implementation file (.cpp) and check for dependencies that should
 be modeled:
 
-1. *What to look for:*
-   - Include statements for other classes within the same component
-   - Static method calls on utility or service classes
-   - Instantiation of helper classes not stored as members
+- *What to look for:*
+  - Include statements for other classes within the same component
+  - Static method calls on utility or service classes
+  - Instantiation of helper classes not stored as members
 
-2. *When to model as a dependency:*
-   - The dependency is architecturally significant (e.g., a service using a
-     security utility)
-   - The dependency is not already captured as a composition/aggregation
-     relationship
-   - The dependency helps understand the class's responsibilities
+- *When to model as a dependency:*
+  - The dependency is architecturally significant (e.g., a service using a
+    security utility)
+  - The dependency is not already captured as a composition/aggregation
+    relationship
+  - The dependency helps understand the class's responsibilities
 
-3. *How to model:*
-   - Use a dashed dependency arrow: =class_a ..> class_b : uses=
-   - Use fully qualified names for the target class
+- *How to model:*
+  - Use a dashed dependency arrow: =class_a ..> class_b : uses=
+  - Use fully qualified names for the target class
 
 Example: If =account_service.cpp= uses
 =password_manager::create_password_hash()=:
@@ -261,11 +266,19 @@ Example: If =account_service.cpp= uses
 account_service ..> ores::accounts::security::password_manager : uses
 #+end_src
 
-4. *What to ignore:*
-   - Standard library dependencies
-   - Dependencies on types outside the current component
-   - Logging infrastructure
-   - Trivial utility functions
+- *What to ignore:*
+  - Standard library dependencies
+  - Dependencies on types outside the current component
+  - Logging infrastructure
+  - Trivial utility functions
+
+- *Protocol and message handler patterns:*
+  - If a class handles messages/requests, model dependencies to all request and
+    response types it processes
+  - Look for patterns like `request_type::deserialize()` and construction of
+    response objects
+  - These are critical architectural dependencies that show the handler's
+    responsibilities
 
 **** C++ enumerations
 

@@ -1,0 +1,148 @@
+:PROPERTIES:
+:ID: 4B6536DF-56B6-A634-C7FB-FA3CF51E916D
+:END:
+#+title: Skill Manager Skill
+#+author: Marco Craveiro
+#+options: title:nil <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+#+begin_export markdown
+---
+name: skill-creator
+description: Guide for creating new Claude Code skills and updating of existing ones.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When the user requests the creation of a new skill or updating of an existing
+skill.
+
+* How to use this skill
+
+1. *Identify the skill* from the request. If it's not clear, request more
+   information from the user.
+2. Check the skill library to see if any skills exist that match the request. If
+   not create a new skill.
+3. Follow the rules under Detailed instructions to manage the request.
+
+* Detailed instructions
+
+The next sections contain a set of detailed instructions that must be followed
+when handling requests for the creation of new skills or updating existing
+skills.
+
+** ORE Studio skill setup
+
+- All claude code skill templates are stored under =doc/skills= as org-mode
+  documents.
+- These then generate actual skills under =.claude/skills= via CMake targets. DO
+  NOT EVER modify =.claude/skills= directly as your changes will be overwritten.
+
+** Creating new skills
+
+To create a new skill:
+
+- Agree the skill name with the user. Help the user come up with a concise name
+  for the skill, which does not overlap with existing skills.
+- Create a new folder under =doc/skills/SKILL-NAME=, replacing =SKILL-NAME= with
+  the actual skill name. Folders should be all in lower case with underscores
+  separating words.
+- Create a new file inside the new folder called =skill.org=. The file must
+  have the following structure:
+
+  - Preamble:
+
+#+begin_src fundamental
+:PROPERTIES:
+:ID: GUID
+:END:
+#+title: TITLE
+#+author: Marco Craveiro
+#+options: title:nil <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+#+begin_export markdown
+---
+name: SKILL-NAME
+description: SKILL DESCRIPTION
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+#+end_src
+
+     Updating the following fields:
+        - =GUID=: use =uuid= tool to generate a new UUID.
+        - =TITLE=: title for the new skill, short and descriptive, properly
+          capitalised.
+        - =SKILL-NAME=: must match the folder used by the new skill.
+        - =SKILL DESCRIPTION=: short one line skill description.
+
+  - Body:
+    - Add a section called "When to use this skill". It should identify the use
+      cases for the skill. It should be a short paragraph.
+    - Add a section called "How to use this skill". It should be composed of a
+      set of concise steps on how to use the skill. If the skill requires more
+      than 2 or 3 steps, point the reader to a section called "Detailed
+      instructions".
+    - If necessary add a section called "Detailed instructions" with step by
+      step description of the skill.
+
+  - Postamble:
+    - Add the following:
+
+#+begin_src fundamental
+,* Artefacts                                                        :noexport:
+
+,** Licence
+
+,#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+,#+END_SRC
+#+end_src
+
+** Updating existing skills
+
+To update an existing skill:
+
+- Locate the skill under =doc/skills=
+- Update the org-mode file in the desired location.
+- Inform the user the update has been performed and that skills need to be
+  regenerated.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

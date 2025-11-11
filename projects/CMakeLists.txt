@@ -35,16 +35,23 @@ add_compile_options(
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Werror>
     $<$<CXX_COMPILER_ID:MSVC>:/WX>)
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.cli)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.cli.tests)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.client)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.risk)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.risk.tests)
+#
+# Java args for PlantUML
+#
+set(ORES_PLANTUML_JAR "/usr/share/plantuml/plantuml.jar")
+set(ORES_JAVA_ARGS "-Djava.awt.headless=true")
+list(APPEND ORES_JAVA_ARGS "-DPLANTUML_SECURITY_PROFILE=UNSECURE")
+list(APPEND ORES_JAVA_ARGS "-DPLANTUML_LIMIT_SIZE=65535")
+
+#
+# Projects
+#
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.accounts)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.accounts.tests)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.cli)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.client)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.comms)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.comms.tests)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.risk)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.service)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.testing)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.utility)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.qt)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.testing)

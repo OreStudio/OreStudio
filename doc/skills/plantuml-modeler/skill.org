@@ -1,0 +1,208 @@
+:PROPERTIES:
+:ID: D6D86317-4961-6754-A6DB-9C12B5FAC997
+:END:
+#+title: PlantUML Modeler Skill
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+#+begin_export markdown
+---
+name: plantuml-modeler
+description: Concise PlantUML class diagrams for ORE Studio components.
+license: See LICENSE.txt
+---
+#+end_export
+
+* When to use
+
+When a user requests an updated PlantUML diagram for a specific ORE Studio
+component (e.g. =ores.utility=).
+
+* How to use
+
+1. *Validate component* – must exist under =projects/=. If not, inform user.
+2. *Read source* – primarily =.hpp= files in =include/=. Glance at =.cpp= files
+   in =src/= for *architecturally significant* dependencies.
+3. *Generate* – follow rules below to produce a clean, uncluttered diagram.
+4. *Validate* – compile with component’s CMake target; fix syntax errors.
+
+* Generation Rules
+
+** 1. File location & naming
+
+| Item      | Rule                                        |
+|-----------+---------------------------------------------|
+| Directory | =COMPONENT/modeling/=                       |
+| File name | =COMPONENT.puml= (e.g. =ores.utility.puml=) |
+
+*Create folder if missing: =mkdir -p COMPONENT/modeling=.*
+
+** 2. PlantUML skeleton
+
+#+begin_src plantuml
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+set namespaceSeparator ::
+
+' <<< BODY GOES HERE >>>
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar COMPONENT.puml"
+' End:
+@enduml
+#+end_src
+
+*Update copyright year as needed.*
+
+** 3. Namespace handling
+
+- Use *nested* =namespace= blocks.
+- Top-level =ores= → *no note*.
+- All other namespaces → add *note* from =namespace_name.hpp= (if exists).
+- No relationships to namespaces.
+
+| Namespace name | Colour    | Stereotype |
+|----------------+-----------+------------|
+| =database=     | =#C6F0D8= | =<<orm>>=  |
+| *any other*    | =#F2F2F2= | –          |
+
+** 4. Class / Struct styling
+
+Check conditions *in order*:
+
+| Condition                                                              | Colour    | Stereotype      | Applies to   |
+|------------------------------------------------------------------------+-----------+-----------------+--------------|
+| ends with =_entity=, =_mapper=, =_repository= **and** in =repository/= | =#99CB99= | =<<orm>>=       | class/struct |
+| ends with =_option= **and** in =config/=                               | =#FFC072= | =<<config>>=    | struct       |
+| ends with =_request= or =_response= **and** in =messaging/=            | =#E1F5FF= | =<<message>>=   | struct       |
+| ends with =_exception=                                                 | =#D6B19F= | =<<exception>>= | class        |
+| *default struct*                                                       | =#F7E5FF= | –               | struct       |
+| *default class*                                                        | =#ECECEC= | –               | class        |
+
+*Stereotype after name:* =class Foo <<orm>> #99CB99=
+
+** 5. Members & notes
+
+- *Ignore*: =operator<<=, default values, logging members.
+- Add *note after* class/struct:
+  - Top-level comment
+  - One line per field: =type name // comment=
+- ORM structs with =schema= / =tablename= → omit from members, add to note:
+
+  #+begin_src plantuml
+  ORM Settings:
+
+  - Schema: my_schema
+  - Table:  my_table
+  #+end_src
+
+** 6. Relationships
+
+- Use *fully qualified* names.
+- *Ignore* external component types.
+- Arrows:
+  - Composition: =o--= / =*--=
+  - Aggregation: =o--=
+  - Association: =--=
+  - Dependency: =..>= (label =: uses=)
+
+** 7. Implementation-file dependencies (classes only)
+
+Scan =.cpp= for:
+
+- Static method calls on component classes
+- Instantiation of non-member helpers
+- Message-handler patterns (=deserialize()=, response construction)
+
+Model as =A ..> B : uses= *only if architecturally significant*.
+
+** 8. Enumerations
+
+#+begin_src plantuml
+enum MyEnum #F2DAFD {
+    VALUE_1
+    VALUE_2
+}
+#+end_src
+
+** 9. Generator functions
+
+In =generators/= folder and name starts with =_generate=:
+
+#+begin_src plantuml
+class generate_foo <<generator>> #D89EF1 {}
+note top of generate_foo
+Generates a foo.
+end note
+generate_foo --> ores::foo::Bar : generates
+#+end_src
+
+* Evaluation Checklist
+
+| Check                        | How                                                     |
+|------------------------------+---------------------------------------------------------|
+| No class-to-namespace arrows | Search for =namespace= in arrows                        |
+| Correct stereotype order     | =class Name <<stereo>> #COLOR=                          |
+| Consistent colours           | Match table in section 4                                |
+| Syntax valid                 | Run =cmake --build --target generate_COMPONENT_diagram= |
+
+* Example (complete snippet)
+
+#+begin_src plantuml
+namespace ores #F2F2F2 {
+    note "Utility component" as N1
+    utility --- N1
+
+    namespace utility #F2F2F2 {
+        class options #F7E5FF {
+            +{field} name std::string
+            +{field} kvps std::unordered_map<std::string, std::list<std::string>>
+        }
+        note top of options
+        Stores system options.
+        - name: option name
+        - kvps: key/value pairs
+        end note
+
+        options o-u- ores::utility::database_configuration
+    }
+}
+#+end_src
+
+* Artefacts :noexport:
+
+** Licence
+
+#+BEGIN_SRC text :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

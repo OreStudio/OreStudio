@@ -1,0 +1,509 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    note "Qt based Graphical User Interface for ORE Studio." as ores_qt_note
+    qt --- ores_qt_note
+    namespace qt #F2F2F2 {
+        class AboutDialog #FFFACD {
+            +AboutDialog(QWidget* parent)
+            +~AboutDialog()
+            -{static} lg() auto&
+            -setupVersionInfo() void
+            -{field} ui_ std::unique_ptr<Ui::AboutDialog>
+        }
+
+        note top of AboutDialog
+        About dialog showing application version and build information.
+        end note
+
+        class ClientCurrencyModel #FFFACD {
+            +ClientCurrencyModel(std::shared_ptr<comms::client> client, QObject* parent)
+            +~ClientCurrencyModel()
+            +rowCount(const QModelIndex& parent) int
+            +columnCount(const QModelIndex& parent) int
+            +data(const QModelIndex& index, int role) QVariant
+            +headerData(int section, Qt::Orientation orientation, int role) QVariant
+            +refresh() void
+            +getCurrency(int row) const risk::domain::currency*
+            +getCurrencies() std::vector<risk::domain::currency>
+            -{static} lg() auto&
+            -onCurrenciesLoaded() void
+            -{field} client_ std::shared_ptr<comms::client>
+            -{field} currencies_ std::vector<risk::domain::currency>
+            -{field} watcher_ QFutureWatcher<std::pair<bool, std::vector<risk::domain::currency>>>*
+        }
+
+        note top of ClientCurrencyModel
+        Model for displaying currencies fetched from the server via client.
+
+        This model extends QAbstractTableModel and fetches currency data
+        asynchronously using the ores.comms client instead of direct database access.
+        end note
+
+        ClientCurrencyModel ..> ores::comms::client
+        ClientCurrencyModel ..> ores::risk::domain::currency
+
+        class CurrencyDetailPanel #FFFACD {
+            +CurrencyDetailPanel(QWidget* parent)
+            +~CurrencyDetailPanel()
+            +setClient(std::shared_ptr<comms::client> client) void
+            +setUsername(const std::string& username) void
+            +setCurrency(const risk::domain::currency& currency) void
+            +getCurrency() risk::domain::currency
+            +clearPanel() void
+            +save() void
+            -onSaveClicked() void
+            -onResetClicked() void
+            -onDeleteClicked() void
+            -onFieldChanged() void
+            -createRecoloredIcon(const QString& svgPath, const QColor& color) QIcon
+            -updateSaveResetButtonState() void
+            -{field} ui_ std::unique_ptr<Ui::CurrencyDetailPanel>
+            -{field} client_ std::shared_ptr<comms::client>
+            -{field} currentCurrency_ risk::domain::currency
+            -{field} isDirty_ bool
+            -{field} is_add_mode_ bool
+            -{field} username_ std::string
+            -{field} toolBar_ QToolBar*
+            -{field} saveAction_ QAction*
+            -{field} deleteAction_ QAction*
+            -{static field} max_timestamp const char*
+        }
+
+        note top of CurrencyDetailPanel
+        Panel for displaying and editing currency details.
+
+        Fields:
+
+        - ui_: UI components.
+        - client_: Communication client.
+        - currentCurrency_: Current currency being edited.
+        - isDirty_: Whether the panel has unsaved changes.
+        - is_add_mode_: Whether in add mode.
+        - username_: Logged-in username.
+        - toolBar_: Toolbar with actions.
+        - saveAction_: Save action.
+        - deleteAction_: Delete action.
+        - max_timestamp: Maximum timestamp constant.
+        end note
+
+        CurrencyDetailPanel ..> ores::comms::client
+        CurrencyDetailPanel ..> ores::risk::domain::currency
+
+        class CurrencyEditDialog #FFFACD {
+            +CurrencyEditDialog(const ores::risk::domain::currency& currency, std::shared_ptr<comms::client> client, QWidget* parent)
+            +~CurrencyEditDialog()
+            -{static} lg() auto&
+            -onSaveClicked() void
+            -onDeleteClicked() void
+            -onResetClicked() void
+            -onFieldChanged() void
+            -populateFields() void
+            -resetFields() void
+            -validateFields() bool
+            -updateSaveButtonState() void
+            -hasChanges() bool
+            -{field} ui_ Ui::CurrencyEditDialog*
+            -{field} original_ ores::risk::domain::currency
+            -{field} client_ std::shared_ptr<comms::client>
+            -{field} has_changes_ bool
+        }
+
+        note top of CurrencyEditDialog
+        Dialog for editing currency details.
+        end note
+
+        CurrencyEditDialog ..> ores::comms::client
+        CurrencyEditDialog ..> ores::risk::domain::currency
+
+        class CurrencyHistoryDialog #FFFACD {
+            +CurrencyHistoryDialog(const QString& iso_code, std::shared_ptr<comms::client> client, QWidget* parent)
+            +~CurrencyHistoryDialog()
+            +loadHistory() void
+            +sizeHint() QSize
+            -{static} lg() auto&
+            -onVersionSelected(int index) void
+            -onHistoryLoaded() void
+            -onHistoryLoadError(const QString& error) void
+            -displayChangesTab(int version_index) void
+            -displayFullDetailsTab(int version_index) void
+            -calculateDiff(const risk::domain::currency_version& current, const risk::domain::currency_version& previous) QVector<QPair<QString, QPair<QString, QString>>>
+            -{field} ui_ Ui::CurrencyHistoryDialog*
+            -{field} client_ std::shared_ptr<comms::client>
+            -{field} isoCode_ QString
+            -{field} history_ risk::domain::currency_version_history
+        }
+
+        note top of CurrencyHistoryDialog
+        Widget for displaying currency version history.
+
+        Fields:
+
+        - ui_: UI components.
+        - client_: Communication client.
+        - isoCode_: ISO code of currency.
+        - history_: Version history.
+        end note
+
+        CurrencyHistoryDialog ..> ores::comms::client
+        CurrencyHistoryDialog ..> ores::risk::domain::currency_version
+        CurrencyHistoryDialog ..> ores::risk::domain::currency_version_history
+
+        class CurrencyHistoryMdiWindow #FFFACD {
+            +CurrencyHistoryMdiWindow(const QString& iso_code, std::shared_ptr<comms::client> client, QWidget* parent)
+            +~CurrencyHistoryMdiWindow()
+            +sizeHint() QSize
+            -{static} lg() auto&
+            -{field} historyWidget_ CurrencyHistoryDialog*
+        }
+
+        note top of CurrencyHistoryMdiWindow
+        MDI window for displaying currency version history.
+        end note
+
+        CurrencyHistoryMdiWindow o-u- ores::qt::CurrencyHistoryDialog
+
+        class CurrencyItemDelegate #FFFACD {
+            +CurrencyItemDelegate(QObject* parent)
+            +paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) void
+            -{field} monospaceFont_ QFont
+        }
+
+        note top of CurrencyItemDelegate
+        Custom delegate for currency table view items.
+
+        Fields:
+
+        - monospaceFont_: Monospace font for rendering.
+        end note
+
+        class CurrencyMdiWindow #FFFACD {
+            +CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWidget* parent)
+            +~CurrencyMdiWindow()
+            +currencyModel() ClientCurrencyModel*
+            +sizeHint() QSize
+            +reload() void
+            +addNew() void
+            +editSelected() void
+            +deleteSelected() void
+            +viewHistorySelected() void
+            +exportToCSV() void
+            +exportToXML() void
+            -{static} lg() auto&
+            -onDataLoaded() void
+            -onLoadError(const QString& error_message) void
+            -onRowDoubleClicked(const QModelIndex& index) void
+            -onSelectionChanged() void
+            -createRecoloredIcon(const QString& svgPath, const QColor& color) QIcon
+            -updateActionStates() void
+            -{field} verticalLayout_ QVBoxLayout*
+            -{field} toolBar_ QToolBar*
+            -{field} currencyTableView_ QTableView*
+            -{field} currencyModel_ ClientCurrencyModel*
+            -{field} client_ std::shared_ptr<comms::client>
+            -{field} editAction_ QAction*
+            -{field} deleteAction_ QAction*
+            -{field} historyAction_ QAction*
+        }
+
+        note top of CurrencyMdiWindow
+        MDI window for displaying currencies.
+
+        Fields:
+
+        - verticalLayout_: Layout manager.
+        - toolBar_: Toolbar with actions.
+        - currencyTableView_: Table view widget.
+        - currencyModel_: Currency model.
+        - client_: Communication client.
+        - editAction_: Edit action.
+        - deleteAction_: Delete action.
+        - historyAction_: History action.
+        end note
+
+        CurrencyMdiWindow o-u- ores::qt::ClientCurrencyModel
+        CurrencyMdiWindow ..> ores::comms::client
+        CurrencyMdiWindow ..> ores::risk::domain::currency
+
+        class CurrencyTabPage #FFFACD {
+            +CurrencyTabPage(std::shared_ptr<comms::client> client, QWidget* parent)
+            -{static} lg() auto&
+            -onDataLoaded() void
+            -onLoadError(const QString& error_message) void
+            -{field} verticalLayout_ QVBoxLayout*
+            -{field} currencyTableView_ QTableView*
+            -{field} statusLabel_ QLabel*
+            -{field} currencyModel_ ClientCurrencyModel*
+        }
+
+        note top of CurrencyTabPage
+        Tab page for displaying currencies.
+
+        Fields:
+
+        - verticalLayout_: Layout manager.
+        - currencyTableView_: Table view widget.
+        - statusLabel_: Status label.
+        - currencyModel_: Currency model.
+        end note
+
+        CurrencyTabPage o-u- ores::qt::ClientCurrencyModel
+
+        class DetachableMdiSubWindow #FFFACD {
+            +DetachableMdiSubWindow(QWidget* parent)
+            +~DetachableMdiSubWindow()
+            +isDetached() bool
+            +detach() void
+            +reattach() void
+            -{static} lg() auto&
+            #contextMenuEvent(QContextMenuEvent* event) void
+            #closeEvent(QCloseEvent* event) void
+            -{field} isDetached_ bool
+            -{field} savedMdiArea_ QMdiArea*
+            -{field} savedMdiPosition_ QPoint
+            -{field} savedMdiSize_ QSize
+        }
+
+        note top of DetachableMdiSubWindow
+        QMdiSubWindow that can be detached to become a floating window.
+
+        Features:
+        - Right-click title bar menu with Detach/Reattach option
+        - Preserves state when transitioning between MDI and floating
+
+        Fields:
+
+        - isDetached_: Whether window is detached.
+        - savedMdiArea_: Saved MDI area reference.
+        - savedMdiPosition_: Saved position in MDI area.
+        - savedMdiSize_: Saved size in MDI area.
+        end note
+
+        class LoginDialog #FFFACD {
+            +LoginDialog(QWidget* parent)
+            +~LoginDialog()
+            +getClient() std::shared_ptr<comms::client>
+            +getUsername() std::string
+            +takeIOContext() std::unique_ptr<boost::asio::io_context>
+            +takeIOThread() std::unique_ptr<std::thread>
+            +takeWorkGuard() std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>
+            -{static} lg() auto&
+            -onLoginClicked() void
+            -onConnectionResult(bool success, const QString& error_message) void
+            -onLoginResult(bool success, const QString& error_message) void
+            -setupUI() void
+            -enableForm(bool enabled) void
+            -performLogin(const std::string& username, const std::string& password) void
+            -createRecoloredIcon(const QString& svgPath, const QColor& color) QIcon
+            -{field} username_edit_ QLineEdit*
+            -{field} password_edit_ QLineEdit*
+            -{field} host_edit_ QLineEdit*
+            -{field} port_spinbox_ QSpinBox*
+            -{field} login_button_ QPushButton*
+            -{field} cancel_button_ QPushButton*
+            -{field} status_label_ QLabel*
+            -{field} io_context_ std::unique_ptr<boost::asio::io_context>
+            -{field} work_guard_ std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>
+            -{field} io_thread_ std::unique_ptr<std::thread>
+            -{field} client_ std::shared_ptr<comms::client>
+        }
+
+        note top of LoginDialog
+        Dialog for user authentication and server connection.
+
+        Presents a login form with username, password, server host, and port fields.
+        Handles async connection to the ores.comms server and performs login.
+
+        Fields:
+
+        - username_edit_: Username input field.
+        - password_edit_: Password input field.
+        - host_edit_: Host input field.
+        - port_spinbox_: Port input field.
+        - login_button_: Login button.
+        - cancel_button_: Cancel button.
+        - status_label_: Status label.
+        - io_context_: IO context for async operations.
+        - work_guard_: Work guard for IO context.
+        - io_thread_: IO thread.
+        - client_: Communication client.
+        end note
+
+        LoginDialog ..> ores::comms::client
+
+        class MainTabWidget #FFFACD {
+            +MainTabWidget(QWidget* parent)
+            +setClient(std::shared_ptr<comms::client> client) void
+            +openCurrencyTabPage() void
+            +closeTab(const int& index) void
+            -{static} lg() auto&
+            #paintEvent(QPaintEvent* e) void
+            -{field} currenciesIndex_ int
+            -{field} client_ std::shared_ptr<comms::client>
+        }
+
+        note top of MainTabWidget
+        Main tab widget for the application.
+
+        Fields:
+
+        - currenciesIndex_: Index of currencies tab.
+        - client_: Communication client.
+        end note
+
+        MainTabWidget ..> ores::comms::client
+
+        class MainWindow #FFFACD {
+            +MainWindow(QWidget* parent)
+            +~MainWindow()
+            +getClient() std::shared_ptr<comms::client>
+            -{static} lg() auto&
+            -onLoginTriggered() void
+            -onDisconnectTriggered() void
+            -onSubWindowActivated(QMdiSubWindow* window) void
+            -onActiveWindowSelectionChanged(int selection_count) void
+            -onEditTriggered() void
+            -onDeleteTriggered() void
+            -onHistoryTriggered() void
+            -onAddTriggered() void
+            -onExportCSVTriggered() void
+            -onExportXMLTriggered() void
+            -onShowCurrencyDetails(const risk::domain::currency& currency) void
+            -onCurrencyDeleted(const QString& iso_code) void
+            -onShowCurrencyHistory(const QString& iso_code) void
+            -onAboutTriggered() void
+            -onDetachAllTriggered() void
+            -onReattachAllTriggered() void
+            -onWindowMenuAboutToShow() void
+            -updateMenuState() void
+            -updateCrudActionState() void
+            -createRecoloredIcon(const QString& svgPath, const QColor& color) QIcon
+            -{field} ui_ Ui::MainWindow*
+            -{field} mdiArea_ MdiAreaWithBackground*
+            -{field} activeCurrencyWindow_ CurrencyMdiWindow*
+            -{field} selectionCount_ int
+            -{field} currencyDetailWindows_ QMap<QString, DetachableMdiSubWindow*>
+            -{field} currencyListWindow_ DetachableMdiSubWindow*
+            -{field} currencyHistoryWindows_ QMap<QString, DetachableMdiSubWindow*>
+            -{field} connectionStatusIconLabel_ QLabel*
+            -{field} allDetachableWindows_ QList<DetachableMdiSubWindow*>
+            -{field} connectedIcon_ QIcon
+            -{field} disconnectedIcon_ QIcon
+            -{field} io_context_ std::unique_ptr<boost::asio::io_context>
+            -{field} work_guard_ std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>
+            -{field} io_thread_ std::unique_ptr<std::thread>
+            -{field} client_ std::shared_ptr<comms::client>
+            -{field} username_ std::string
+        }
+
+        note top of MainWindow
+        Main application window.
+
+        Fields:
+
+        - ui_: UI components.
+        - mdiArea_: MDI area with background.
+        - activeCurrencyWindow_: Active currency window.
+        - selectionCount_: Selection count.
+        - currencyDetailWindows_: Currency detail windows by ISO code.
+        - currencyListWindow_: Currency list MDI window.
+        - currencyHistoryWindows_: History windows by ISO code.
+        - connectionStatusIconLabel_: Status bar icon label.
+        - allDetachableWindows_: Track all detachable windows.
+        - connectedIcon_: Icon for connected status.
+        - disconnectedIcon_: Icon for disconnected status.
+        - io_context_: IO context for async operations.
+        - work_guard_: Work guard for IO context.
+        - io_thread_: IO thread.
+        - client_: Communication client.
+        - username_: Logged-in username.
+        end note
+
+        MainWindow o-u- ores::qt::MdiAreaWithBackground
+        MainWindow o-u- ores::qt::CurrencyMdiWindow
+        MainWindow o-u- ores::qt::DetachableMdiSubWindow
+        MainWindow ..> ores::comms::client
+        MainWindow ..> ores::risk::domain::currency
+
+        class MdiAreaWithBackground #FFFACD {
+            +MdiAreaWithBackground(QWidget* parent)
+            +setBackgroundLogo(const QString& imagePath) void
+            -{static} lg() auto&
+            #paintEvent(QPaintEvent* event) void
+            -{field} backgroundLogo_ QPixmap
+        }
+
+        note top of MdiAreaWithBackground
+        Custom QMdiArea that displays a background logo when no windows are open.
+
+        Fields:
+
+        - backgroundLogo_: Background logo pixmap.
+        end note
+
+        class MessageBoxHelper #FFFACD {
+            +{static} question(QWidget* parent, const QString& title, const QString& text, QMessageBox::StandardButtons buttons) QMessageBox::StandardButton
+            +{static} warning(QWidget* parent, const QString& title, const QString& text) void
+            +{static} critical(QWidget* parent, const QString& title, const QString& text) void
+            +{static} information(QWidget* parent, const QString& title, const QString& text) void
+            -{static} createColoredIcon(const QString& svgPath, const QColor& color) QIcon
+        }
+
+        note top of MessageBoxHelper
+        Helper class for showing message boxes with custom Fluent icons.
+        end note
+
+        class SplashScreen #FFFACD {
+            +SplashScreen(const QPixmap& pixmap)
+            +paintEvent(QPaintEvent* e) void
+            +ensureFirstPaint() void
+            +setProgressDuration(int milliseconds) void
+            +setMessage(const QString& message) void
+            -{static} lg() auto&
+            -updateProgress() void
+            -{field} painted_ bool
+            -{field} progress_ int
+            -{field} progressTimer_ QTimer*
+            -{field} totalDuration_ int
+            -{field} elapsedTime_ int
+            -{field} updateInterval_ int
+            -{field} messageText_ QString
+        }
+
+        note top of SplashScreen
+        Custom splash screen with progress bar.
+
+        Fields:
+
+        - painted_: Whether splash has been painted.
+        - progress_: Current progress value.
+        - progressTimer_: Timer for progress updates.
+        - totalDuration_: Total duration of progress.
+        - elapsedTime_: Elapsed time.
+        - updateInterval_: Update interval in milliseconds.
+        - messageText_: Message text to display.
+        end note
+    }
+}
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.qt.puml"
+' End:
+@enduml

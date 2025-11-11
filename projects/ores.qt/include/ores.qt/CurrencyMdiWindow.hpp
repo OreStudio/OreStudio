@@ -1,0 +1,103 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_QT_CURRENCY_MDI_WINDOW_HPP
+#define ORES_QT_CURRENCY_MDI_WINDOW_HPP
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+#pragma once
+#endif
+
+#include <QWidget>
+#include <QTableView>
+#include <QVBoxLayout>
+#include <QToolBar>
+#include <QLabel>
+#include <memory>
+#include "ores.comms/net/client.hpp"
+#include "ores.utility/log/make_logger.hpp"
+#include "ores.qt/ClientCurrencyModel.hpp"
+
+namespace ores::qt {
+
+/**
+ * @brief MDI window for displaying currencies.
+ */
+class CurrencyMdiWindow : public QWidget {
+    Q_OBJECT
+
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger("ores.qt.currency_mdi_window");
+        return instance;
+    }
+
+public:
+    explicit CurrencyMdiWindow(std::shared_ptr<comms::client> client,
+                               QWidget* parent = nullptr);
+    ~CurrencyMdiWindow() override;
+
+    ClientCurrencyModel* currencyModel() const { return currencyModel_; } // New getter for the model
+
+    QSize sizeHint() const override; // Provide optimal size based on table content
+
+signals:
+    void statusChanged(const QString& message);
+    void errorOccurred(const QString& error_message);
+    void selectionChanged(int selection_count);
+    void addNewRequested(); // Emitted when user wants to add new currency
+    void showCurrencyDetails(const risk::domain::currency& currency); // New signal
+    void currencyDeleted(const QString& iso_code); // Emitted when currency is deleted
+    void showCurrencyHistory(const QString& iso_code); // Emitted when history requested
+
+public slots:
+    void reload();
+    void addNew();
+    void editSelected();
+    void deleteSelected();
+    void viewHistorySelected();
+    void exportToCSV();
+    void exportToXML();
+
+private slots:
+    void onDataLoaded();
+    void onLoadError(const QString& error_message);
+    void onRowDoubleClicked(const QModelIndex& index);
+    void onSelectionChanged();
+
+private:
+    QIcon createRecoloredIcon(const QString& svgPath, const QColor& color);
+    void updateActionStates();
+
+    QVBoxLayout* verticalLayout_;
+    QToolBar* toolBar_;
+    QTableView* currencyTableView_;
+    ClientCurrencyModel* currencyModel_;
+    std::shared_ptr<comms::client> client_;
+
+    // Actions that need to be enabled/disabled based on selection
+    QAction* editAction_;
+    QAction* deleteAction_;
+    QAction* historyAction_;
+};
+
+}
+
+#endif

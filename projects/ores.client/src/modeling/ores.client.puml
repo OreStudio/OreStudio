@@ -1,0 +1,175 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    note "Deprecated client code. Code will be in comms instead." as ores_client_note
+    client --- ores_client_note
+    namespace client #F2F2F2 {
+        note "Application entry point and hosting functionality." as ores_client_app_note
+        app --- ores_client_app_note
+        namespace app #F2F2F2 {
+            class host #FFFACD {
+                +{static} execute(args: const std::vector<std::string>&, std_output: std::ostream&, error_output: std::ostream&): int
+                -{static} lg(): auto&
+            }
+
+            note top of host
+            Provides hosting clients to the application.
+            end note
+
+            class application #FFFACD {
+                +application(connection_config: std::optional<config::connection_options>, login_config: std::optional<config::login_options>)
+                +run() const: void
+                -{static} lg(): auto&
+                -{field} connection_config_ std::optional<config::connection_options>
+                -{field} login_config_ std::optional<config::login_options>
+            }
+
+            note top of application
+            Entry point for the ores client application.
+            end note
+
+            application o-- ores::client::config::connection_options
+            application o-- ores::client::config::login_options
+
+            class repl #FFFACD {
+                +repl(connection_config: std::optional<config::connection_options>, login_config: std::optional<config::login_options>)
+                +~repl()
+                +run(): void
+                -{static} lg(): auto&
+                -setup_menus(): std::unique_ptr<::cli::Cli>
+                -register_connection_commands(root_menu: ::cli::Menu&): void
+                -register_currency_commands(root_menu: ::cli::Menu&): void
+                -register_account_commands(root_menu: ::cli::Menu&): void
+                -process_connect(out: std::ostream&, host: std::string, port: std::string, identifier: std::string): boost::asio::awaitable<void>
+                -process_disconnect(): void
+                -process_get_currencies(out: std::ostream&): boost::asio::awaitable<void>
+                -process_create_account(out: std::ostream&, username: std::string, password: std::string, totp_secret: std::string, email: std::string, is_admin: bool): boost::asio::awaitable<void>
+                -process_list_accounts(out: std::ostream&): boost::asio::awaitable<void>
+                -process_login(out: std::ostream&, username: std::string, password: std::string): boost::asio::awaitable<void>
+                -process_unlock_account(out: std::ostream&, account_id_str: std::string): boost::asio::awaitable<void>
+                -auto_connect(): boost::asio::awaitable<bool>
+                -auto_login(): boost::asio::awaitable<bool>
+                -start_io_thread(): void
+                -stop_io_thread(): void
+                -display_welcome() const: void
+                -{field} connection_config_ std::optional<config::connection_options>
+                -{field} login_config_ std::optional<config::login_options>
+                -{field} config_ comms::client_options
+                -{field} client_ std::shared_ptr<comms::client>
+                -{field} io_ctx_ std::unique_ptr<boost::asio::io_context>
+                -{field} work_guard_ std::unique_ptr<boost::asio::executor_work_guard<boost::asio::any_io_executor>>
+                -{field} io_thread_ std::unique_ptr<std::thread>
+            }
+
+            note top of repl
+            Interactive REPL (Read-Eval-Print Loop) for the ORE Studio client.
+
+            Provides a command-line interface for interacting with the ORE Studio server,
+            including commands for connection management and data retrieval.
+            end note
+
+            repl o-- ores::client::config::connection_options
+            repl o-- ores::client::config::login_options
+        }
+
+        note "Configuration parsing and options for the client." as ores_client_config_note
+        config --- ores_client_config_note
+        namespace config #F2F2F2 {
+            class parser_exception <<exception>> #D6B19F {
+                +parser_exception(message: std::string)
+                +what() const noexcept: const char*
+                -{field} message_ const std::string
+            }
+
+            note top of parser_exception
+            An error occurred during parsing.
+            end note
+
+            class parser #FFFACD {
+                +parse(arguments: const std::vector<std::string>&, info: std::ostream&, error: std::ostream&) const: std::optional<options>
+            }
+
+            note top of parser
+            Command-line parser implementation using boost program options.
+
+            Note on logging: we are NOT logging any of the exceptions to the log in this
+            class. This is by design. The logger is only initialised after the options
+            have been parsed; were we to log prior to this, we would dump all the
+            messages into the console. The output is very confusing for users that are
+            accustomed to normal command line applications.
+            end note
+
+            parser ..> ores::client::config::options : returns
+
+            note top of connection_options
+            Options for connecting to the server.
+
+            Fields:
+
+            - host: Host to connect to.
+            - port: Port to connect to.
+            - client_identifier: Client identifier to send in handshake.
+            end note
+
+            class connection_options #F7E5FF {
+                +{field} host std::string
+                +{field} port std::uint16_t
+                +{field} client_identifier std::string
+            }
+
+            note top of login_options
+            Options for logging in to the server.
+
+            Fields:
+
+            - username: Username to use for login.
+            - password: Password to use for login.
+            end note
+
+            class login_options #F7E5FF {
+                +{field} username std::string
+                +{field} password std::string
+            }
+
+            note top of options
+            All of the configuration options required by the client.
+
+            Fields:
+
+            - logging: Configuration options related to logging, if any.
+            - connection: Configuration options for connecting to the server.
+            - login: Configuration options for logging in to the server.
+            end note
+
+            class options #F7E5FF {
+                +{field} logging std::optional<ores::utility::log::logging_options>
+                +{field} connection std::optional<connection_options>
+                +{field} login std::optional<login_options>
+            }
+            options o-- ores::client::config::connection_options
+            options o-- ores::client::config::login_options
+        }
+    }
+}
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.client.puml"
+' End:
+@enduml

@@ -58,3 +58,5 @@ Build complete!
 * Available Skills
 
 - [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Modeler Skill]]: Generate PlantUML diagrams.
+- [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner Skill]]: Run CMake targets.
+- [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Claude Code Skills]]: Meta-skill to create skills.

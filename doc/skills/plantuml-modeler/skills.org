@@ -26,9 +26,19 @@ within ORE Studio.
 1. *Identify the component type* from the request. The component type must exist
    as a project under the folder projects. If it does not, tell the user of the
    error. An example of a component is =ores.utility=.
-2. Follow the rules under Detailed instructions to generate the diagram.
+2. The objective of the PlantUML diagram is to provide a concise summary of the
+   main classes and their relationships for a component. It aims to avoid
+   clutter and extraneous detail which complicates the picture but does not
+   provide valuable information.
+3. Follow the rules under Detailed generation instructions to generate the
+   diagram.
+4. Once you complete the generation, follow the rules under Detailed evaluation
+   instructions to evaluate if the diagram is of sufficient quality.
 
-* Detailed instructions
+* Detailed generation instructions
+
+The next sections contain a set of detailed instructions that must be followed
+when generating PlantUML diagrams for a component.
 
 ** Filesystem instructions
 
@@ -49,12 +59,13 @@ component we are modeling. For example =ores.utility/modeling=.
 
 In order to determine which files to process, follow these rules:
 
-1. Only consider the C++ header files =.hpp= of a given component for the
-   purposes of generating PlantUML diagrams. Implementation files =.cpp= must be
-   excluded.
-2. Do not follow includes in the header files. Just read each header file within
-   a component and model the entities within, unless this file explicitly tells
-   you to exclude them.
+- Most of the required information for modeling should be sourced from the C++
+  header files =.hpp= of a given component. However, inspect the Implementation
+  files =.cpp= to check for any relationships at the implementation level which
+  are of significance for UML modeling.
+- Do not follow includes in the header files. Just read each header file within
+  a component and model the entities within, unless this file explicitly tells
+  you to exclude them.
 
 ** PlantUML file layout
 
@@ -83,6 +94,7 @@ have the following preamble:
 ' GNU Emacs; see the file COPYING. If not, write to the Free Software
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 @startuml
+set namespaceSeparator ::
 #+end_src
 
 Update the year to match the current year.
@@ -114,17 +126,23 @@ Follow these instructions to model the entities within the body:
 Only document entities that belong to the current component. Ignore all other
 entities.
 
-**** Namespaces
+**** C++ namespaces
 
-Follow these rules when modeling namespaces:
+Follow these rules when modeling C++ namespaces:
 
-1. Always use nested namespaces rather than inlined namespaces.
-2. Colour namespaces with #F2F2F2.
-3. Document each namespace with a UML note before it's definition, except the
-   top-level =ores= namespace which is never documented.
-4. Documentation is obtained from the namespace header file, which is a file
-   that has the name of the namespace. Example: =ores.utility.hpp=. If the
-   namespace header file does not exist, do not document it.
+- Always use nested namespaces in PlantUML rather than inlined namespaces.
+- Colouring rules:
+  - if a namespace has a name =database=, colour it with #C6F0D8 and add the
+    stereotype =orm=.
+  - if a namespace does not fall under any of the previous categories, use the
+    default colour of #F2F2F2.
+- Document each namespace with a UML note before it's definition, except the
+  top-level =ores= namespace which is never documented.
+- Documentation is obtained from the namespace header file, which is a file
+  that has the name of the namespace. Example: =ores.utility.hpp=. If the
+  namespace header file does not exist, do not document it.
+- Do not create any relationships between entities and namespaces;
+  relationships should only be between UML classes.
 
 Example:
 
@@ -142,24 +160,54 @@ namespace ores #F2F2F2 {
 }
 #+end_src
 
-**** Structs and Classes
+**** C++ structs and classes
 
-Follow these rules when modeling structs:
+Follow these common rules to both structs and classes:
 
-1. Ignore =operator<<=.
-2. Structs are normally expected to only have data members. Colour structs with
-   #F7E5FF.
-3. Classes are normally expected to have behaviour. Colour classes as #FFFACD.
-4. Ignore default values.
-5. Model a =struct= by adding all of the fields.
-6. Add a UML note documenting structs and classes after the struct or class. Add
-   the top-level comments, followed by the comments for each field to the note.
-7. Add the relevant relationships after the class. Ignore relationships to types
-   outside the current component. Use the fully qualified entity name in the
-   relationship. Use the appropriate UML relationship from the PlantUML
-   vocabulary.
+- Ignore =operator<<=.
+- Ignore default values.
+- Add a UML note documenting structs and classes after the struct or class. Add
+  the top-level comments, followed by the comments for each field to the note.
+- Model relationships for structs and classes as follows:
+   - Add the relevant relationships after the class.
+   - Ignore relationships to types outside the current component.
+   - Use the fully qualified entity name in the  relationship. For example, if
+     class =generator= has a field of type =domain::account= but
+     =domain::account= refers to the type =ores::risk::domain::account=, use
+     =ores::risk::domain::account= in the relationship, not =domain::account=.
+   - Use the appropriate UML relationship from the PlantUML vocabulary.
+
+Follow these rules when modeling c++ structs:
+
+- Colouring rules:
+  - If a struct has the postfix of =_entity= it is in a =database= folder,
+    colour it as #99CB99 and add the stereotype =<<database>>=.
+  - If a struct has the postfix of =_option= and it is in a =config= folder,
+    colour it as #FFC072 and add the stereotype =<<config>>=.
+  - If the struct does not fall under any of the previous categories, use the
+    default colour of #F7E5FF.
+- Model public, private and protected members of the class using the appropriate
+  PlantUML syntax for them.
+- If a struct has a field called "schema" and/or tablename, do not model it as a
+  field. Instead add it to the comment section as follows (replacing "schema
+  name" and "table name" with the default value of these fields):
 
 #+begin_src plantuml
+ORM Settings:
+
+- Schema: schema name
+- Table: table name
+#+end_src
+
+Example of a struct:
+
+#+begin_src plantuml
+class options #F7E5FF {
+    +{field} name std::string
+    +{field} kvps std::unordered_map<std::string, std::list<std::string>>
+    +{field} config ores::utility::database_configuration
+}
+
 note top of options
 Stores the options for the system.
 
@@ -170,13 +218,92 @@ Fields:
 - config: database configuration used.
 end note
 
-class options #F7E5FF {
-    +{field} name std::string
-    +{field} kvps std::unordered_map<std::string, std::list<std::string>>
-    +{field} config ores::utility::database_configuration
-}
 options o-u- ores::utility::database_configuration
 #+end_src
+
+
+Follow these rules when modeling c++ classes:
+
+- Colouring rules:
+  - If a class has the postfix of =_exception=, colour it as #D6B19F and add
+    the stereotype =<<exception>>=.
+  - If the class does not fall under any of the previous categories, use the
+    default colour of #CECECE.
+- Do not add members related to logging.
+- Model public, private and protected members of the class using the appropriate
+  PlantUML syntax for them.
+
+**** C++ enumerations
+
+Follow these rules when modeling C++ enumerations:
+
+- Colour PlantUML enumerations as #F2DAFD
+
+**** C++ stand alone functions
+
+In general we ignore stand alone functions. The exceptions are as follows:
+
+- Generators:
+  - If a function is in a folder called =generators= and its name has the prefix
+    =_generate= then model it as a UML class with the stereotype of
+    =<<generator>>= and the colour of #D89EF1.
+  - The class name should be the function name.
+  - Add a note below the UML class with the comments of the function.
+  - Add a relationship to the class it is generating.
+
+Example: This C++ source code:
+
+#+begin_src c++
+/**
+ * @brief Generates a synthetic account.
+ */
+domain::account generate_synthetic_account();
+#+end_src
+
+Maps to the following PlantUML:
+
+#+begin_src plantuml
+class generate_synthetic_account <<generator>> #D89EF1 {
+}
+
+note top of generate_synthetic_account
+Generates a synthetic account.
+end note
+
+generate_synthetic_account --> ores::accounts::domain::account: generates
+#+end_src
+
+* Detailed evaluation instructions
+
+The next sections contain a set of detailed instructions that must be followed
+after generating a PlantUML diagram for a component. They determine if the
+diagram is of sufficient quality.
+
+** Diagram review
+
+Check the diagram for common mistakes:
+
+- relationships of classes against namespaces. These indicate a mistake on how
+  the relationship was captured. Example:
+
+#+begin_src plantuml
+
+#+end_src
+
+
+** Diagram compilation
+
+In order to validate that the diagram you generated is syntactically correct,
+run the appropriate CMake target. At the project level directory, run:
+
+#+begin_src sh
+cmake --build --target generate_ores.accounts_diagram --preset linux-clang-debug
+#+end_src
+
+Replace =generate_ores.accounts_diagram= with the appropriate component name.
+
+If there are build errors, fix them until the build is green.
+
 
 
 * Artefacts                                                        :noexport:

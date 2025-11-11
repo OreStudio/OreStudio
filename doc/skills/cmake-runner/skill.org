@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: 654d4a70-e63d-4c18-b5a5-886066e36314
+:END:
+#+title: CMake Runner Skill
+#+author: Marco Craveiro
+#+options: title:nil <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+#+begin_export markdown
+---
+name: cmake-runner
+description: Guide for running CMake commands in ORE Studio for building, testing, and deploying.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When you need to configure, build, test, or deploy ORE Studio using CMake.
+
+* How to use this skill
+
+1. Identify what operation you need to perform (configure, build, test, or deploy).
+2. Follow the appropriate command from the Detailed instructions section below.
+3. Default to =linux-clang-debug= preset when on Linux unless otherwise specified.
+
+* Detailed instructions
+
+** Listing and choosing presets
+
+To see all available CMake presets:
+
+#+begin_src sh
+cmake --list-presets
+#+end_src
+
+The default preset for Linux is =linux-clang-debug=. For release builds, use =linux-clang-release=.
+
+** Configuring the project
+
+To configure the project with a specific preset:
+
+#+begin_src sh
+cmake --preset linux-clang-debug
+#+end_src
+
+For release configuration:
+
+#+begin_src sh
+cmake --preset linux-clang-release
+#+end_src
+
+** Building the project
+
+To build the entire project:
+
+#+begin_src sh
+cmake --build --preset linux-clang-debug
+#+end_src
+
+For release builds:
+
+#+begin_src sh
+cmake --build --preset linux-clang-release
+#+end_src
+
+** Running tests
+
+*** Running all tests
+
+To run all tests (target name: =rat=):
+
+#+begin_src sh
+cmake --build --preset linux-clang-release --target rat
+#+end_src
+
+*** Running specific component tests
+
+To run tests for a specific component, use the pattern =test_COMPONENT_NAME=. For example, to run tests for =ores.accounts.tests=:
+
+#+begin_src sh
+cmake --build --target test_ores.accounts.tests --preset linux-clang-debug
+#+end_src
+
+Replace =ores.accounts.tests= with the desired component name.
+
+** Deploying skills
+
+To deploy Claude Code skills:
+
+#+begin_src sh
+cmake --build --target deploy_skills --preset linux-clang-debug
+#+end_src
+
+** Deploying the site
+
+To deploy the project website:
+
+#+begin_src sh
+cmake --build --target deploy_site --preset linux-clang-debug
+#+end_src
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

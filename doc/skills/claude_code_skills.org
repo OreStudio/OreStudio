@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 2003934B-ED05-D114-404B-08C0E0D844BB
+:END:
+#+title: Claude Code Skills
+#+author: Marco Craveiro
+#+options: title:nil <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+This folder contains all of the Claude Code skills used with ORE Studio. They
+are generated using the org-mode publishing system.
+
+#+begin_src sh :dir ../../ :noweb yes :results output :wrap example
+emacs -Q --script .build-skills.el 2>&1
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Finding ID locations (1/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/v0/sprint_backlog_01.org
+Finding ID locations (2/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/v0/sprint_backlog_02.org
+Finding ID locations (3/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/v0/sprint_backlog_03.org
+Finding ID locations (4/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/v0/sprint_backlog_04.org
+Finding ID locations (5/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/v0/version_zero.org
+Finding ID locations (6/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/agile.org
+Finding ID locations (7/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/product_backlog.org
+Finding ID locations (8/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/sprint_backlog.org
+Finding ID locations (9/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/cash.org
+Finding ID locations (10/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/computational_finance.org
+Finding ID locations (11/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/currency.org
+Finding ID locations (12/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/domain.org
+Finding ID locations (13/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/finance_and_modeling.org
+Finding ID locations (14/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/functions_of_money.org
+Finding ID locations (15/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/kinds_of_money.org
+Finding ID locations (16/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/money.org
+Finding ID locations (17/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/money_and_its_close_relatives.org
+Finding ID locations (18/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/trading.org
+Finding ID locations (19/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/modeling/modeling.org
+Finding ID locations (20/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/modeling/ores.utility.org
+Finding ID locations (21/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/recipes/cli_recipes.org
+Finding ID locations (22/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/recipes/client_recipes.org
+Finding ID locations (23/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/recipes/git_recipes.org
+Finding ID locations (24/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/recipes/recipes.org
+Finding ID locations (25/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/plantuml-modeler/skills.org
+Finding ID locations (26/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/claude_code_skills.org
+Finding ID locations (27/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/doc.org
+Finding ID locations (28/29 files): /home/marco/Development/OreStudio/OreStudio.local1/index.org
+Finding ID locations (29/29 files): /home/marco/Development/OreStudio/OreStudio.local1/readme.org
+29 files scanned, 29 files contains IDs, and 29 IDs found.
+Setting ‘package-selected-packages’ temporarily since "emacs -q" would overwrite customizations
+‘ox-gfm’ is already installed
+Resetting org-publish-cache
+Publishing file /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/plantuml-modeler/skills.org using ‘org-babel-tangle-publish’
+Tangled 1 code block from skills.org
+Resetting org-publish-cache
+Publishing file /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/plantuml-modeler/skills.org using ‘org-gfm-publish-to-gfm’
+Build complete!
+#+end_example
+
+* Available Skills
+
+- [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Modeler Skill]]: Generate PlantUML diagrams.

@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_ORES_UTILITY_HPP
-#define ORES_UTILITY_ORES_UTILITY_HPP
+#ifndef ORES_TESTING_ORES_TESTING_HPP
+#define ORES_TESTING_ORES_TESTING_HPP
 
 /**
- * @brief Miscellaneous classes that do not fit elsewhere.
+ * @brief Testing related infrastructure common to all testing projects.
  */
-namespace ores::utility {}
+namespace ores::testing {}
 
 #endif

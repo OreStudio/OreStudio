@@ -21,9 +21,15 @@ When you need to configure, build, test, or deploy ORE Studio using CMake.
 
 * How to use this skill
 
-1. Identify what operation you need to perform (configure, build, test, or deploy).
-2. Follow the appropriate command from the Detailed instructions section below.
-3. Default to =linux-clang-debug= preset when on Linux unless otherwise specified.
+1. Identify what operation you need to perform (configure, build, test,
+   deploy, generate diagrams).
+2. All commands must be executed from the top-level project directory.
+3. Follow the appropriate command from the Detailed instructions section below.
+4. Default to =linux-clang-debug= preset when on Linux unless otherwise
+   specified.
+5. If you need to inspect the output of the build, see section Output directory
+   layout.
+
 
 * Detailed instructions
 
@@ -93,6 +99,14 @@ To deploy Claude Code skills:
 cmake --build --target deploy_skills --preset linux-clang-debug
 #+end_src
 
+** Generating PlantUML Diagrams
+
+To generate all PlantUML diagrams for the project:
+
+#+begin_src sh
+cmake --build --target mad --preset linux-clang-debug
+#+end_src
+
 ** Deploying the site
 
 To deploy the project website:
@@ -100,6 +114,29 @@ To deploy the project website:
 #+begin_src sh
 cmake --build --target deploy_site --preset linux-clang-debug
 #+end_src
+
+
+* Output directory layout
+
+The build output directory lives under =build/output=. There is a top-level
+directory for the presets (e.g. =linux-clang-debug=, etc) and a top-level
+directory for the site called =site=.
+
+Within the preset directory:
+
+- binaries are located under =publish/bin=.
+- logs for applications are under =publish/log=.
+- logs for tests are organised as follows:
+  - they are under =publish/log/COMPONENT_TESTS= where =COMPONENT_TESTS=
+    is the name of the component under test, e.g. =ores.accounts.tests=.
+  - Inside, there is one folder per test suite, e.g. =domain_account_tests=,
+    =domain_feature_flags_tests=, and so on. These must match the test suite
+    implementation files (e.g.
+    =projects/ores.accounts.tests/domain_account_tests.cpp=).
+  - Inside the test suite folder, there is one log file per test, e.g.
+    =account_serialization_to_json.log=. This must match the name of the unit
+    test, e.g. =TEST_CASE("account_serialization_to_json", tags) {= in
+    =projects/ores.accounts.tests/domain_account_tests.cpp=.
 
 * Artefacts                                                        :noexport:
 

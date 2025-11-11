@@ -1,0 +1,157 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    note "Testing related infrastructure common to all testing projects." as ores_testing_note
+    testing --- ores_testing_note
+    namespace testing #F2F2F2 {
+        class database_helper #FFFACD {
+            +database_helper()
+            +truncate_table(const std::string& table_name) : void
+            +get_context() : utility::repository::context&
+            -{method} lg() : auto&
+            -{field} context_ : utility::repository::context
+        }
+
+        note top of database_helper
+        Provides database setup and cleanup utilities for tests.
+
+        Fields:
+
+        - context_: Database context for operations.
+
+        Methods:
+
+        - truncate_table: Truncates the specified table.
+        - get_context: Gets the database context.
+        end note
+
+        class database_lifecycle_listener #FFFACD {
+            +database_lifecycle_listener(const Catch::IConfig*)
+            +testRunStarting(Catch::TestRunInfo const& testRunInfo) : void
+            +testRunEnded(Catch::TestRunStats const& testRunStats) : void
+            -{field} test_db_name_ : std::string
+        }
+
+        note top of database_lifecycle_listener
+        Catch2 listener that manages database lifecycle for tests.
+
+        This listener creates a unique test database when tests start running and
+        cleans it up when tests complete. It only creates databases when tests are
+        actually executed, not during test discovery.
+
+        Fields:
+
+        - test_db_name_: Name of the test database being managed.
+
+        Methods:
+
+        - testRunStarting: Called when test run starts - creates the test database.
+        - testRunEnded: Called when test run ends - drops the test database.
+        end note
+
+        class logging_listener #FFFACD {
+            +logging_listener(const Catch::IConfig*)
+            +{static} set_test_module_name(const std::string& module_name) : void
+            +extract_suite_name(const Catch::TestCaseInfo& testInfo) : std::string
+            +extract_module_name() : std::string
+            +testRunStarting(Catch::TestRunInfo const& testRunInfo) : void
+            +testRunEnded(Catch::TestRunStats const& testRunStats) : void
+            +testCaseStarting(Catch::TestCaseInfo const& testInfo) : void
+            +testCaseEnded(Catch::TestCaseStats const& testCaseStats) : void
+            +assertionEnded(Catch::AssertionStats const& assertionStats) : void
+            +sectionStarting(Catch::SectionInfo const& sectionInfo) : void
+            +sectionEnded(Catch::SectionStats const& sectionStats) : void
+            -{field} lifecycle_manager_ : std::shared_ptr<utility::log::lifecycle_manager>
+        }
+
+        note top of logging_listener
+        Catch2 event listener that sets up logging for each test case and
+        logs all test events to Boost.Log files.
+
+        This listener automatically initializes the logging infrastructure before
+        each test case starts and cleans it up when the test completes. It also logs
+        all Catch2 test events (test start/end, sections, assertions) to the
+        Boost.Log file.
+
+        The listener must be registered in each test's main.cpp file using:
+        CATCH_REGISTER_LISTENER(ores::utility::test::logging_listener)
+
+        In your tests, use logger() to access the current test's logger:
+
+        TEST_CASE("my_test", "[my_suite]") {
+            BOOST_LOG_SEV(logger(), info) << "Test message";
+        }
+
+        Fields:
+
+        - lifecycle_manager_: Manages the logging lifecycle.
+
+        Methods:
+
+        - set_test_module_name: Sets the test module name from the main function.
+        - extract_suite_name: Extracts the first tag from a Catch2 test case as the suite name.
+        - extract_module_name: Extracts the module name from the test binary name.
+        - testRunStarting: Called when test run starts.
+        - testRunEnded: Called when test run ends.
+        - testCaseStarting: Called when test case starts.
+        - testCaseEnded: Called when test case ends.
+        - assertionEnded: Called when assertion ends.
+        - sectionStarting: Called when section starts.
+        - sectionEnded: Called when section ends.
+        end note
+
+        class test_database_manager #FFFACD {
+            +{static} make_context() : utility::repository::context
+            +{static} make_database_options() : utility::database::database_options
+            +{static} generate_test_database_name() : std::string
+            +{static} create_test_database(const std::string& db_name) : void
+            +{static} drop_test_database(const std::string& db_name) : void
+            +{static} set_test_database_env(const std::string& db_name) : void
+            -{static} make_admin_context() : utility::repository::context
+            -{static} lg() : auto&
+        }
+
+        note top of test_database_manager
+        Manages isolated test databases for parallel test execution.
+
+        This class provides utilities for creating and destroying unique test
+        databases for each test process. This allows multiple test processes
+        to run concurrently without interference.
+
+        Each test database is created from the oresdb_template database, which
+        must be pre-configured with the full schema.
+
+        Methods:
+
+        - make_context: Creates a database context from environment variables.
+        - make_database_options: Creates database options from environment variables.
+        - generate_test_database_name: Generates a unique database name for this test process.
+        - create_test_database: Creates a test database from the oresdb_template.
+        - drop_test_database: Drops the test database.
+        - set_test_database_env: Sets the TEST_ORES_DB_DATABASE environment variable.
+        - make_admin_context: Creates a database context connected to the postgres database.
+        end note
+    }
+}
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.testing.puml"
+' End:
+@enduml

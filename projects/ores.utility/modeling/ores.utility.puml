@@ -1,0 +1,399 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace utility #F2F2F2 {
+        namespace string #F2F2F2 {
+            class conversion_error #FFFACD {
+            }
+
+            note top of conversion_error
+            An error occurred whilst converting a string.
+            end note
+
+            conversion_error --|> std::exception
+            conversion_error --|> boost::exception
+
+            class converter #FFFACD {
+                +{static} string_to_int(std::string, int) int
+            }
+
+            note top of converter
+            Type conversion utilities.
+
+            Methods:
+
+            - string_to_int: Converts a string into an integer.
+            end note
+        }
+
+        namespace streaming #F2F2F2 {
+        }
+
+        namespace filesystem #F2F2F2 {
+            class file_not_found #FFFACD {
+            }
+
+            note top of file_not_found
+            File was not found.
+            end note
+
+            file_not_found --|> std::exception
+            file_not_found --|> boost::exception
+
+            class io_error #FFFACD {
+            }
+
+            note top of io_error
+            An error occurred whilst performing an IO operation.
+            end note
+
+            io_error --|> std::exception
+            io_error --|> boost::exception
+
+            class file #FFFACD {
+                +{static} read_content(std::istream&) std::string
+                +{static} read_content(const std::filesystem::path&) std::string
+                +{static} write_content(const std::filesystem::path&, const std::string&) void
+                +{static} write(const std::filesystem::path&, const Ioable&) void
+                +{static} find_files(const std::filesystem::path&) std::set<std::filesystem::path>
+                +{static} find_files(const std::vector<std::filesystem::path>&) std::set<std::filesystem::path>
+                +{static} find_files(const std::list<std::filesystem::path>&) std::set<std::filesystem::path>
+                +{static} find_file_recursively_upwards(std::filesystem::path, const std::filesystem::path&) std::filesystem::path
+                +{static} remove(const std::list<std::filesystem::path>&) void
+                +{static} remove_empty_directories(const std::filesystem::path&) void
+                +{static} remove_empty_directories(const std::list<std::filesystem::path>&) void
+                +{static} recreate_directory(const std::filesystem::path&) void
+            }
+
+            note top of file
+            Utility class for file operations.
+
+            Methods:
+
+            - read_content: Returns the contents of the file.
+            - write_content: Writes the string to a file located at path.
+            - write: Dump the object as a stream to the file.
+            - find_files: Returns all files available in all input directories, recursively.
+            - find_file_recursively_upwards: Finds the relative path, by searching recursively upwards from the starting directory.
+            - remove: Deletes all files in the supplied list.
+            - remove_empty_directories: Removes all empty directories, recursively.
+            - recreate_directory: If the directory exists, deletes it and recreates it. Otherwise, creates it.
+            end note
+        }
+
+        namespace database #F2F2F2 {
+            struct database_options #F7E5FF {
+                +{field} user std::string
+                +{field} password rfl::Skip<std::string>
+                +{field} host std::string
+                +{field} database std::string
+                +{field} port int
+            }
+
+            note top of database_options
+            Configuration for database connection.
+
+            Fields:
+
+            - user: Database user name.
+            - password: Password for the user.
+            - host: Host to connect to.
+            - database: Database to connect to.
+            - port: Port the database is listening on.
+            end note
+
+            class database_configuration #FFFACD {
+                +{static} make_options_description() boost::program_options::options_description
+                +{static} read_options(const boost::program_options::variables_map&) database_options
+            }
+
+            note top of database_configuration
+            Centralized manager for database configuration parsing.
+
+            Provides utilities for creating command-line option descriptions,
+            reading configuration from parsed options, and mapping environment
+            variables.
+
+            Methods:
+
+            - make_options_description: Creates the boost::program_options description for database CLI arguments.
+            - read_options: Reads database options from parsed variables map.
+            end note
+
+            database_configuration ..> ores::utility::database::database_options
+        }
+
+        namespace environment #F2F2F2 {
+            class environment #FFFACD {
+                +{static} get_value(const std::string&) std::optional<std::string>
+                +{static} get_value_or_default(const std::string&, const std::string&) std::string
+                +{static} get_int_value_or_default(const std::string&, int) int
+            }
+
+            note top of environment
+            Utilities for reading environment variables.
+
+            Methods:
+
+            - get_value: Gets an environment variable value.
+            - get_value_or_default: Gets an environment variable value with a default.
+            - get_int_value_or_default: Gets an environment variable value as an integer.
+            end note
+        }
+
+        namespace exception #F2F2F2 {
+            class invalid_enum_value #FFFACD {
+            }
+
+            note top of invalid_enum_value
+            The exception thrown when an enum has an unexpected value.
+
+            This exception should be thrown only when:
+
+            - the current value of an enumeration is not part of its domain, .e.g. an
+            int was cast into an enumeration with a value which is not valid; or
+
+            - a given valid value on an enumeration is not supported in a given
+            context.
+            end note
+
+            invalid_enum_value --|> std::exception
+            invalid_enum_value --|> boost::exception
+        }
+
+        namespace log #F2F2F2 {
+            enum severity_level {
+                trace
+                debug
+                info
+                warn
+                error
+            }
+
+            note top of severity_level
+            Logging severity.
+
+            This must be a C++-03 enum due to the boost::log internals. It also
+            makes logging easier otherwise we'd have to always prefix "severity_level::".
+
+            Values:
+            - trace
+            - debug
+            - info
+            - warn
+            - error
+            end note
+
+            class lifecycle_manager #FFFACD {
+                -{static} make_file_sink(std::filesystem::path, severity_level, std::string) boost::shared_ptr<file_sink_type>
+                -{static} make_console_sink(severity_level, std::string) boost::shared_ptr<console_sink_type>
+            }
+
+            note top of lifecycle_manager
+            Manages the starting and stopping of logging for an application.
+
+            Note: this class uses boost shared_ptr due to legacy reasons (boost log does
+            not support std::shared_ptr).
+
+            Fields:
+
+            - file_sink_: Boost log file sink.
+            - console_sink_: Boost log console sink.
+            end note
+
+            lifecycle_manager o-- ores::utility::log::severity_level
+
+            struct logging_options #F7E5FF {
+                +{field} severity std::string
+                +{field} filename std::string
+                +{field} output_to_console bool
+                +{field} output_directory std::filesystem::path
+                +{field} tag std::string
+            }
+
+            note top of logging_options
+            Options related to logging.
+
+            Fields:
+
+            - severity: Level at which to log.
+            - filename: Name of the file to log into. If empty, file logging is disabled.
+            - output_to_console: If true, dumps the log into the console.
+            - output_directory: Directory in which to place the output.
+            - tag: Tag to filter the logging. If supplied, only messages with this tag will be logged.
+            end note
+
+            class logging_options_validator #FFFACD {
+                +{static} validate(const logging_options&) void
+            }
+
+            note top of logging_options_validator
+            Checks the validity of the supplied logging options.
+            end note
+
+            logging_options_validator ..> ores::utility::log::logging_options
+
+            class logging_configuration #FFFACD {
+                +{static} make_options_description(const std::string&) boost::program_options::options_description
+                +{static} read_options(const boost::program_options::variables_map&) std::optional<logging_options>
+            }
+
+            note top of logging_configuration
+            Centralized manager for logging configuration parsing.
+
+            Provides utilities for creating command-line option descriptions,
+            reading configuration from parsed options.
+
+            Methods:
+
+            - make_options_description: Creates the boost::program_options description for logging CLI arguments.
+            - read_options: Reads logging options from parsed variables map.
+            end note
+
+            logging_configuration ..> ores::utility::log::logging_options
+
+            class logging_exception #FFFACD {
+            }
+
+            note top of logging_exception
+            An exception has occurred during logging.
+            end note
+
+            logging_exception --|> std::exception
+            logging_exception --|> boost::exception
+        }
+
+        namespace repository #F2F2F2 {
+            class context #FFFACD {
+                +connection_pool() connection_pool_type
+            }
+
+            note top of context
+            Context for the operations on a repository.
+
+            Fields:
+
+            - connection_pool_: Connection pool for database operations.
+            end note
+
+            class repository_exception #FFFACD {
+            }
+
+            note top of repository_exception
+            A fatal error has occurred whilst reading or writing to the
+            repository.
+            end note
+
+            repository_exception --|> std::exception
+            repository_exception --|> boost::exception
+
+            class context_factory #FFFACD {
+                +{static} make_context(const configuration&) context
+            }
+
+            note top of context_factory
+            Generates a new repository context.
+
+            Methods:
+
+            - make_context: Creates a repository context from configuration.
+            end note
+
+            struct configuration #F7E5FF {
+                +{field} user std::string
+                +{field} password rfl::Skip<std::string>
+                +{field} host std::string
+                +{field} database std::string
+                +{field} port int
+                +{field} pool_size std::size_t
+                +{field} num_attempts std::size_t
+                +{field} wait_time_in_seconds std::size_t
+            }
+
+            note top of configuration
+            Configuration for creating repository context.
+
+            Fields:
+
+            - user: Database user name.
+            - password: Password for the user.
+            - host: Host to connect to.
+            - database: Database to connect to.
+            - port: Port the database is listening in on.
+            - pool_size: Number of connections in the pool.
+            - num_attempts: Number of retry attempts when acquiring a connection.
+            - wait_time_in_seconds: Wait time between retry attempts.
+            end note
+
+            context_factory +-- configuration
+            context_factory ..> ores::utility::repository::context
+            context_factory ..> ores::utility::repository::configuration
+        }
+
+        namespace uuid #F2F2F2 {
+            class uuid_v7_generator #FFFACD {
+                +operator()() boost::uuids::uuid
+            }
+
+            note top of uuid_v7_generator
+            A generator for UUID version 7 (v7) based on RFC 9562.
+
+            This class creates UUIDs that are time-sortable and contain
+            high-entropy random data. A UUID v7 is composed of a 48-bit Unix timestamp
+            (in milliseconds), a 4-bit version field, and 74 bits of random data.
+
+            The combination of a timestamp and random data makes v7 UUIDs excellent for
+            use as primary keys in distributed databases, as they are sortable by
+            generation time and have a very low probability of collision.
+
+            This implementation is designed to be efficient, creating and seeding a
+            random number engine only once upon construction.
+
+            Fields:
+
+            - random_engine: The Mersenne Twister 19937 64-bit random number engine.
+            end note
+        }
+
+        namespace program_options #F2F2F2 {
+            class environment_mapper_factory #FFFACD {
+                +{static} make_mapper(const std::string) std::function<std::string(const std::string&)>
+            }
+
+            note top of environment_mapper_factory
+            Makes environment mappers for program options.
+
+            Note: Logging is not available during configuration.
+
+            Methods:
+
+            - make_mapper: Creates an environment variable name mapping function.
+            end note
+        }
+
+        namespace rfl #F2F2F2 {
+        }
+    }
+}
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.utility.puml"
+' End:
+@enduml

@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
     // Load the stylesheet
-    QFile file(":/resources/TradingStyle.qss");
+    QFile file(":/TradingStyle.qss");
     if (file.open(QFile::ReadOnly | QFile::Text)) {
         QTextStream stream(&file);
         app.setStyleSheet(stream.readAll());

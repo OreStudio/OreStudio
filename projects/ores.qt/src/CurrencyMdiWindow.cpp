@@ -94,7 +94,7 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
 
     // Add reload action
     QAction* reloadAction = new QAction("Reload", this);
-    reloadAction->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
+    reloadAction->setIcon(createRecoloredIcon(":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
     reloadAction->setToolTip("Reload currencies from server");
     connect(reloadAction, &QAction::triggered, this, &CurrencyMdiWindow::reload);
     toolBar_->addAction(reloadAction);
@@ -103,28 +103,28 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
 
     // Add action for adding new currency
     QAction* addAction = new QAction("Add", this);
-    addAction->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_add_20_filled.svg", iconColor));
+    addAction->setIcon(createRecoloredIcon(":/icons/ic_fluent_add_20_filled.svg", iconColor));
     addAction->setToolTip("Add new currency");
     connect(addAction, &QAction::triggered, this, &CurrencyMdiWindow::addNew);
     toolBar_->addAction(addAction);
 
     // Add edit action
     editAction_ = new QAction("Edit", this);
-    editAction_->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_edit_20_filled.svg", iconColor));
+    editAction_->setIcon(createRecoloredIcon(":/icons/ic_fluent_edit_20_filled.svg", iconColor));
     editAction_->setToolTip("Edit selected currency");
     connect(editAction_, &QAction::triggered, this, &CurrencyMdiWindow::editSelected);
     toolBar_->addAction(editAction_);
 
     // Add delete action (using outline/regular version for neutral appearance)
     deleteAction_ = new QAction("Delete", this);
-    deleteAction_->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_delete_20_regular.svg", iconColor));
+    deleteAction_->setIcon(createRecoloredIcon(":/icons/ic_fluent_delete_20_regular.svg", iconColor));
     deleteAction_->setToolTip("Delete selected currency/currencies");
     connect(deleteAction_, &QAction::triggered, this, &CurrencyMdiWindow::deleteSelected);
     toolBar_->addAction(deleteAction_);
 
     // Add history action
     historyAction_ = new QAction("History", this);
-    historyAction_->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_history_20_regular.svg", iconColor));
+    historyAction_->setIcon(createRecoloredIcon(":/icons/ic_fluent_history_20_regular.svg", iconColor));
     historyAction_->setToolTip("View currency history");
     connect(historyAction_, &QAction::triggered, this, &CurrencyMdiWindow::viewHistorySelected);
     toolBar_->addAction(historyAction_);
@@ -133,13 +133,13 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
 
     // Add export actions with correct icons
     QAction* exportCSVAction = new QAction("Export CSV", this);
-    exportCSVAction->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_document_table_20_regular.svg", iconColor));
+    exportCSVAction->setIcon(createRecoloredIcon(":/icons/ic_fluent_document_table_20_regular.svg", iconColor));
     exportCSVAction->setToolTip("Export currencies to CSV");
     connect(exportCSVAction, &QAction::triggered, this, &CurrencyMdiWindow::exportToCSV);
     toolBar_->addAction(exportCSVAction);
 
     QAction* exportXMLAction = new QAction("Export XML", this);
-    exportXMLAction->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_document_code_16_regular.svg", iconColor));
+    exportXMLAction->setIcon(createRecoloredIcon(":/icons/ic_fluent_document_code_16_regular.svg", iconColor));
     exportXMLAction->setToolTip("Export currencies to ORE XML");
     connect(exportXMLAction, &QAction::triggered, this, &CurrencyMdiWindow::exportToXML);
     toolBar_->addAction(exportXMLAction);
@@ -470,7 +470,7 @@ void CurrencyMdiWindow::exportToCSV() {
     auto currencies = currencyModel_->getCurrencies();
 
     QString fileName = QFileDialog::getSaveFileName(this,
-        "Export to CSV", 
+        "Export to CSV",
         "currencies.csv",
         "CSV Files (*.csv);;All Files (*)");
 
@@ -486,7 +486,7 @@ void CurrencyMdiWindow::exportToCSV() {
         QFile file(fileName);
         if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
             BOOST_LOG_SEV(lg(), error) << "Failed to open file for writing: " << fileName.toStdString();
-            MessageBoxHelper::critical(this, "File Error", 
+            MessageBoxHelper::critical(this, "File Error",
                 QString("Could not open file for writing: %1").arg(fileName));
             return;
         }
@@ -502,7 +502,7 @@ void CurrencyMdiWindow::exportToCSV() {
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Error exporting to CSV: " << e.what();
-        MessageBoxHelper::critical(this, "Export Error", 
+        MessageBoxHelper::critical(this, "Export Error",
             QString("Error during CSV export: %1").arg(e.what()));
     }
 }
@@ -517,7 +517,7 @@ void CurrencyMdiWindow::exportToXML() {
     auto currencies = currencyModel_->getCurrencies();
 
     QString fileName = QFileDialog::getSaveFileName(this,
-        "Export to ORE XML", 
+        "Export to ORE XML",
         "currencies.xml",
         "XML Files (*.xml);;All Files (*)");
 
@@ -533,7 +533,7 @@ void CurrencyMdiWindow::exportToXML() {
         QFile file(fileName);
         if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
             BOOST_LOG_SEV(lg(), error) << "Failed to open file for writing: " << fileName.toStdString();
-            MessageBoxHelper::critical(this, "File Error", 
+            MessageBoxHelper::critical(this, "File Error",
                 QString("Could not open file for writing: %1").arg(fileName));
             return;
         }
@@ -590,5 +590,3 @@ void CurrencyMdiWindow::updateActionStates() {
 }
 
 }
-
-

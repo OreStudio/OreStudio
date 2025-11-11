@@ -103,14 +103,14 @@ CurrencyDetailPanel::CurrencyDetailPanel(QWidget* parent)
 
     // Create Save action
     saveAction_ = new QAction("Save", this);
-    saveAction_->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_save_20_filled.svg", iconColor));
+    saveAction_->setIcon(createRecoloredIcon(":/icons/ic_fluent_save_20_filled.svg", iconColor));
     saveAction_->setToolTip("Save changes");
     connect(saveAction_, &QAction::triggered, this, &CurrencyDetailPanel::onSaveClicked);
     toolBar_->addAction(saveAction_);
 
     // Create Delete action
     deleteAction_ = new QAction("Delete", this);
-    deleteAction_->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_delete_20_regular.svg", iconColor));
+    deleteAction_->setIcon(createRecoloredIcon(":/icons/ic_fluent_delete_20_regular.svg", iconColor));
     deleteAction_->setToolTip("Delete currency");
     connect(deleteAction_, &QAction::triggered, this, &CurrencyDetailPanel::onDeleteClicked);
     toolBar_->addAction(deleteAction_);

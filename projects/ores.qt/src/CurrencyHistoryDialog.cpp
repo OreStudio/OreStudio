@@ -168,7 +168,7 @@ void CurrencyHistoryDialog::onHistoryLoaded() {
         auto* modifiedByItem = new QTableWidgetItem(QString::fromStdString(version.modified_by));
 
         // Add icon to version column
-        versionItem->setIcon(QIcon(":/icons/resources/icons/ic_fluent_history_20_regular.svg"));
+        versionItem->setIcon(QIcon(":/icons/ic_fluent_history_20_regular.svg"));
 
         ui_->versionListWidget->setItem(i, 0, versionItem);
         ui_->versionListWidget->setItem(i, 1, modifiedAtItem);

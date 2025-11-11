@@ -108,8 +108,8 @@ void LoginDialog::setupUI() {
 
     // Set icons on buttons
     const QColor iconColor(220, 220, 220); // Light gray for dark theme
-    login_button_->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_checkmark_20_regular.svg", iconColor));
-    cancel_button_->setIcon(createRecoloredIcon(":/icons/resources/icons/ic_fluent_dismiss_20_regular.svg", iconColor));
+    login_button_->setIcon(createRecoloredIcon(":/icons/ic_fluent_checkmark_20_regular.svg", iconColor));
+    cancel_button_->setIcon(createRecoloredIcon(":/icons/ic_fluent_dismiss_20_regular.svg", iconColor));
 
     // Button layout
     auto* button_layout = new QHBoxLayout();

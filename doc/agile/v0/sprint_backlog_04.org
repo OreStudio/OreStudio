@@ -563,6 +563,10 @@ Notes:
 We need an easy way to see the structure of the components. Use the new skill to
 create diagrams.
 
+*** COMPLETED Generate a pie chart for tasks in org via R              :code:
+
+Ask the LLM on how to replicate the calc pie chart we previously had.
+
 *** STARTED Make UI/UX look more professional                          :code:
     :LOGBOOK:
     CLOCK: [2025-11-08 Sat 10:11]--[2025-11-08 Sat 20:04] =>  9:53
@@ -978,9 +982,9 @@ Notes:
 - it should also be possible to generate a PDF with all of the documentation,
   readable as a book.
 
-*** Generate a pie chart for tasks in org via R                        :code:
+*** When you maximise currencies merge toolbars                        :code:
 
-Ask the LLM on how to replicate the calc pie chart we previously had.
+At present we end up with two tool bars, one below the other.
 
 *** Add a version attribute to entities                                :code:
 

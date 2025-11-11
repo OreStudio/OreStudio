@@ -1,0 +1,424 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace comms #F2F2F2 {
+        class server_config #F7E5FF {
+            +{field} port std::uint16_t
+            +{field} max_connections std::uint32_t
+            +{field} certificate_file std::string
+            +{field} private_key_file std::string
+            +{field} server_identifier std::string
+        }
+
+        note top of server_config
+        Configuration for the server.
+
+        Fields:
+
+        - port: Server port number.
+        - max_connections: Maximum number of concurrent connections.
+        - certificate_file: Path to the SSL certificate file.
+        - private_key_file: Path to the SSL private key file.
+        - server_identifier: Server identifier string sent in handshake.
+        end note
+
+        class server #FFFACD {
+            +server(server_config config)
+            +register_handler(protocol::message_type_range range, std::shared_ptr<protocol::message_handler> handler) void
+            +run(boost::asio::io_context& io_context) boost::asio::awaitable<void>
+            -accept_loop(boost::asio::io_context& io_context) boost::asio::awaitable<void>
+            -setup_ssl_context() void
+            -{field} config_ server_config
+            -{field} ssl_ctx_ ssl::context
+            -{field} dispatcher_ std::shared_ptr<protocol::message_dispatcher>
+            -{field} active_connections_ std::atomic<std::size_t>
+        }
+
+        note top of server
+        ORES protocol server.
+
+        Accepts SSL connections, performs handshake, and manages client sessions.
+        end note
+
+        server o-u- ores::comms::server_config
+        server o-u- ores::comms::protocol::message_dispatcher
+
+        class client_options #F7E5FF {
+            +{field} host std::string
+            +{field} port std::uint16_t
+            +{field} client_identifier std::string
+            +{field} verify_certificate bool
+        }
+
+        note top of client_options
+        Configuration for the client.
+
+        Fields:
+
+        - host: Host to connect to.
+        - port: Port to connect to.
+        - client_identifier: Client identifier to send in handshake.
+        - verify_certificate: Whether to verify server certificate.
+        end note
+
+        class client #FFFACD {
+            +client(client_options config)
+            +client(client_options config, boost::asio::any_io_executor executor)
+            +connect() boost::asio::awaitable<bool>
+            +connect_sync() bool
+            +disconnect() void
+            +is_connected() bool
+            +send_request(protocol::frame request_frame) boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
+            +send_request_sync(protocol::frame request_frame) std::expected<protocol::frame, protocol::error_code>
+            -perform_handshake() boost::asio::awaitable<bool>
+            -setup_ssl_context() void
+            -{field} config_ client_options
+            -{field} io_ctx_ std::unique_ptr<boost::asio::io_context>
+            -{field} executor_ boost::asio::any_io_executor
+            -{field} ssl_ctx_ boost::asio::ssl::context
+            -{field} conn_ std::unique_ptr<connection>
+            -{field} sequence_number_ std::uint32_t
+            -{field} connected_ bool
+            -{field} state_mutex_ std::mutex
+        }
+
+        note top of client
+        ORES protocol client.
+
+        Connects to server via SSL, performs handshake, and manages communication.
+        end note
+
+        client o-u- ores::comms::client_options
+        client o-u- ores::comms::connection
+        client ..> ores::comms::protocol::frame
+        client ..> ores::comms::protocol::error_code
+
+        class connection #FFFACD {
+            +connection(ssl_socket socket)
+            +ssl_handshake_server() boost::asio::awaitable<void>
+            +ssl_handshake_client() boost::asio::awaitable<void>
+            +read_frame() boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
+            +write_frame(const protocol::frame& frame) boost::asio::awaitable<void>
+            +is_open() bool
+            +close() void
+            +remote_address() std::string
+            -{field} socket_ ssl_socket
+        }
+
+        note top of connection
+        SSL connection wrapper for frame-based communication.
+
+        Provides async read/write operations for protocol frames over SSL/TLS.
+        end note
+
+        connection ..> ores::comms::protocol::frame
+        connection ..> ores::comms::protocol::error_code
+
+        class session #FFFACD {
+            +session(std::unique_ptr<connection> conn, std::string server_id, std::shared_ptr<protocol::message_dispatcher> dispatcher)
+            +run() boost::asio::awaitable<void>
+            -perform_handshake() boost::asio::awaitable<bool>
+            -process_messages() boost::asio::awaitable<void>
+            -{field} conn_ std::unique_ptr<connection>
+            -{field} server_id_ std::string
+            -{field} dispatcher_ std::shared_ptr<protocol::message_dispatcher>
+            -{field} sequence_number_ std::uint32_t
+            -{field} handshake_complete_ bool
+        }
+
+        note top of session
+        Represents a client session on the server side.
+
+        Manages the lifecycle of a single client connection, including
+        handshake, message processing, and cleanup.
+        end note
+
+        session o-u- ores::comms::connection
+        session o-u- ores::comms::protocol::message_dispatcher
+
+        namespace protocol #F2F2F2 {
+            class result #FFFACD {
+                +result(const T& value)
+                +result(T&& value)
+                +result(const E& error)
+                +result(E&& error)
+                +has_value() bool
+                +has_error() bool
+                +value() T&
+                +error() E&
+                -{field} data_ std::variant<T, E>
+            }
+
+            note top of result
+            Simple result type for C++20 (std::expected replacement).
+
+            Holds either a value of type T or an error of type E.
+            end note
+
+            class message_type_range #F7E5FF {
+                +{field} min std::uint16_t
+                +{field} max std::uint16_t
+                +contains(message_type type) bool
+            }
+
+            note top of message_type_range
+            Range of message types handled by a subsystem.
+
+            Defines an inclusive range [min, max] of message types.
+
+            Fields:
+
+            - min: Minimum message type value.
+            - max: Maximum message type value.
+            end note
+
+            class message_handler #FFFACD {
+                +{abstract} handle_message(message_type type, std::span<const std::uint8_t> payload, const std::string& remote_address) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, error_code>>
+            }
+
+            note top of message_handler
+            Abstract interface for handling messages from a subsystem.
+
+            Subsystems implement this interface to process their domain-specific messages.
+            The handler is responsible for:
+            - Deserializing the payload into subsystem-specific types
+            - Executing the requested operation
+            - Serializing the response back into bytes
+            end note
+
+            class frame_header #F7E5FF {
+                +{field} magic std::uint32_t
+                +{field} version_major std::uint16_t
+                +{field} version_minor std::uint16_t
+                +{field} type message_type
+                +{field} reserved1 std::uint16_t
+                +{field} payload_size std::uint32_t
+                +{field} sequence std::uint32_t
+                +{field} crc std::uint32_t
+                +{field} reserved2 std::array<std::uint8_t, 8>
+            }
+
+            note top of frame_header
+            Frame header structure for the ORES protocol.
+
+            Frame layout (32 bytes header):
+            +0:  magic (4 bytes)       - Protocol identifier (0x4F524553 = "ORES")
+            +4:  version_major (2 bytes) - Protocol major version
+            +6:  version_minor (2 bytes) - Protocol minor version
+            +8:  type (2 bytes)        - Message type
+            +10: reserved1 (2 bytes)   - Reserved for future use
+            +12: payload_size (4 bytes) - Size of payload in bytes
+            +16: sequence (4 bytes)    - Sequence number for ordering
+            +20: crc (4 bytes)         - CRC32 checksum of header + payload
+            +24: reserved2 (8 bytes)   - Reserved for future use
+            +32: payload (N bytes)     - Message payload
+
+            Fields:
+
+            - magic: Protocol identifier.
+            - version_major: Protocol major version.
+            - version_minor: Protocol minor version.
+            - type: Message type.
+            - reserved1: Reserved for future use.
+            - payload_size: Size of payload in bytes.
+            - sequence: Sequence number for ordering.
+            - crc: CRC32 checksum of header and payload.
+            - reserved2: Reserved for future use.
+            end note
+
+            frame_header ..> ores::comms::protocol::message_type
+
+            class frame #FFFACD {
+                +frame()
+                +frame(message_type type, std::uint32_t sequence, std::vector<std::uint8_t> payload)
+                +header() frame_header
+                +payload() std::vector<std::uint8_t>
+                +serialize() std::vector<std::uint8_t>
+                +{static} deserialize_header(std::span<const std::uint8_t> data) std::expected<frame_header, error_code>
+                +{static} deserialize(const frame_header& header, std::span<const std::uint8_t> data) std::expected<frame, error_code>
+                +validate() std::expected<void, error_code>
+                -calculate_crc() std::uint32_t
+                -serialize_header(frame_header header, std::span<std::uint8_t> buffer) void
+                -{field} header_ frame_header
+                -{field} payload_ std::vector<std::uint8_t>
+            }
+
+            note top of frame
+            Complete frame with header and payload.
+            end note
+
+            frame o-u- ores::comms::protocol::frame_header
+            frame ..> ores::comms::protocol::error_code
+
+            class message_dispatcher #FFFACD {
+                +message_dispatcher()
+                +register_handler(message_type_range range, std::shared_ptr<message_handler> handler) void
+                +dispatch(const frame& request_frame, std::uint32_t sequence, const std::string& remote_address) boost::asio::awaitable<std::expected<frame, error_code>>
+                -find_handler(message_type type) message_handler*
+                -get_response_type(message_type request_type) message_type
+                -{field} handlers_ std::map<message_type_range, std::shared_ptr<message_handler>>
+            }
+
+            note top of message_dispatcher
+            Dispatches incoming messages to registered subsystem handlers.
+
+            The dispatcher maintains a registry of message handlers for different
+            message type ranges. When a message arrives, it routes it to the appropriate
+            handler based on the message type, and converts the handler's response
+            back into a frame.
+
+            Thread-safety: This class is not thread-safe. Registration should happen
+            during initialization before concurrent access begins.
+            end note
+
+            message_dispatcher o-u- ores::comms::protocol::message_type_range
+            message_dispatcher o-u- ores::comms::protocol::message_handler
+            message_dispatcher ..> ores::comms::protocol::frame
+            message_dispatcher ..> ores::comms::protocol::error_code
+            message_dispatcher ..> ores::comms::protocol::message_type
+
+            class handshake_request #F7E5FF {
+                +{field} client_version_major std::uint16_t
+                +{field} client_version_minor std::uint16_t
+                +{field} client_identifier std::string
+                +{static} serialize(handshake_request v) std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t> data) std::expected<handshake_request, error_code>
+            }
+
+            note top of handshake_request
+            Handshake request message sent by client to initiate connection.
+
+            Fields:
+
+            - client_version_major: Client protocol major version.
+            - client_version_minor: Client protocol minor version.
+            - client_identifier: Client identifier string.
+            end note
+
+            handshake_request ..> ores::comms::protocol::error_code
+
+            class handshake_response #F7E5FF {
+                +{field} server_version_major std::uint16_t
+                +{field} server_version_minor std::uint16_t
+                +{field} version_compatible bool
+                +{field} server_identifier std::string
+                +{field} status error_code
+                +{static} serialize(handshake_response v) std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t> data) std::expected<handshake_response, error_code>
+            }
+
+            note top of handshake_response
+            Handshake response message sent by server to client.
+
+            Fields:
+
+            - server_version_major: Server protocol major version.
+            - server_version_minor: Server protocol minor version.
+            - version_compatible: Whether the versions are compatible.
+            - server_identifier: Server identifier string.
+            - status: Error code indicating handshake status.
+            end note
+
+            handshake_response ..> ores::comms::protocol::error_code
+
+            class handshake_ack #F7E5FF {
+                +{field} status error_code
+                +{static} serialize(handshake_ack v) std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t> data) std::expected<handshake_ack, error_code>
+            }
+
+            note top of handshake_ack
+            Handshake acknowledgment message sent by client to complete handshake.
+
+            Fields:
+
+            - status: Error code indicating acknowledgment status.
+            end note
+
+            handshake_ack ..> ores::comms::protocol::error_code
+
+            class error_response #F7E5FF {
+                +{field} code error_code
+                +{field} message std::string
+                +{static} serialize(error_response v) std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t> data) std::expected<error_response, error_code>
+            }
+
+            note top of error_response
+            Error response message sent when request processing fails.
+
+            Fields:
+
+            - code: Error code indicating the error type.
+            - message: Human-readable error message.
+            end note
+
+            error_response ..> ores::comms::protocol::error_code
+
+            enum message_type {
+                handshake_request
+                handshake_response
+                handshake_ack
+                error_response
+                get_currencies_request
+                get_currencies_response
+                update_currency_request
+                update_currency_response
+                delete_currency_request
+                delete_currency_response
+                get_currency_history_request
+                get_currency_history_response
+                create_currency_request
+                create_currency_response
+                create_account_request
+                create_account_response
+                list_accounts_request
+                list_accounts_response
+                login_request
+                login_response
+                unlock_account_request
+                unlock_account_response
+                last_value
+            }
+
+            enum error_code {
+                none
+                version_mismatch
+                crc_validation_failed
+                invalid_message_type
+                handshake_timeout
+                handshake_failed
+                payload_too_large
+                network_error
+                handler_error
+                database_error
+                authentication_failed
+                authorization_failed
+                invalid_request
+                last_value
+            }
+        }
+    }
+}
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.comms.puml"
+' End:
+@enduml

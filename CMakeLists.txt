@@ -240,11 +240,32 @@ else()
 endif()
 
 #
+# Emacs related targets
+#
+set(ORES_SITE_DIRECTORY "build/output/site")
+add_custom_target(deploy_site
+    COMMENT "Deploying ORE Studio Website to ${ORES_SITE_DIRECTORY}" VERBATIM
+    COMMAND echo "Removing site directory" && rm -rf ${ORES_SITE_DIRECTORY}
+    COMMAND emacs -Q --script .build-site.el
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+set(ORES_SKILLS_DIRECTORY ".claude/skills")
+add_custom_target(deploy_skills
+    COMMENT "Deploying ORE Studio Claude Code Skills to ${ORES_SIRE_DIRECTORY}" VERBATIM
+    COMMAND echo "Removing skills directory" && rm -rf ${ORES_SKILLS_DIRECTORY}
+    COMMAND emacs -Q --script .build-skills.el 2>&1
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+#
 # aggregate targets and their aliases
 #
 add_custom_target(run_all_tests)
 add_custom_target(rat)
 add_dependencies(rat run_all_tests)
+
+add_custom_target(make_all_diagrams)
+add_custom_target(mad)
+add_dependencies(mad make_all_diagrams)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/build)
 add_subdirectory(${CMAKE_SOURCE_DIR}/assets)

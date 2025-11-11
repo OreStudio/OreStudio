@@ -7,16 +7,20 @@
 
 * Version Mission
 
-- create the data layer.
-- add GUI support for data operations.
+- create the main architectural tiers.
+- model all ORE XML inputs and outputs.
+- add GUI support for all data operations.
 
 * List of Sprints
 
 This version is made up of the following sprints. The last entry is the active
 sprint.
 
-| Sprint            | Mission                                                               |
-|-------------------+-----------------------------------------------------------------------|
-| [[id:34EDDBB5-CB52-35C4-E123-E0A70FB32799][Sprint Backlog 01]] | Create basic project infrastructure; handle currencies front to back. |
+| Sprint            | Mission                                                                          |
+|-------------------+----------------------------------------------------------------------------------|
+| [[id:34EDDBB5-CB52-35C4-E123-E0A70FB32799][Sprint Backlog 01]] | Create basic project infrastructure; handle currencies front to back.            |
+| [[id:0DFDAF4D-E299-98E4-25C3-5BB6500E5BA8][Sprint Backlog 02]] | Create basic project infrastructure; add client and server support.              |
+| [[id:D35D43C9-46BF-9A94-F03B-A3B706020498][Sprint Backlog 03]] | Update UI layer to use new socket code; finish login related functionality.      |
+| [[id:5A85BDB5-E915-3A44-04AB-771ACE91992B][Sprint Backlog 04]] | Implement bootstrap mode; implement claude code skills for common functionality. |
 
 | Previous: [[id:57A7FABC-21FE-5124-45EB-9685D0712176][Sprint Backlog]] |

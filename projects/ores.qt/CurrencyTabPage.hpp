@@ -29,7 +29,7 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <memory>
-#include "ores.comms/client.hpp"
+#include "ores.comms/net/client.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.qt/ClientCurrencyModel.hpp"
 

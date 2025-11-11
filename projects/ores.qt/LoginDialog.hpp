@@ -33,7 +33,7 @@
 #include <QLineEdit>
 #include <QSpinBox>
 #include <QPushButton>
-#include "ores.comms/client.hpp"
+#include "ores.comms/net/client.hpp"
 
 namespace ores::qt {
 

@@ -17,19 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.accounts/messaging/protocol.hpp"
+
 #include <expected>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.utility/messaging/reader.hpp"
-#include "ores.utility/messaging/writer.hpp"
-#include "ores.accounts/messaging/protocol.hpp"
+#include "ores.comms/protocol/reader.hpp"
+#include "ores.comms/protocol/writer.hpp"
 
 namespace ores::accounts::messaging {
 
-using namespace ores::utility::messaging;
+using namespace ores::comms::protocol;
 
 std::vector<std::uint8_t> create_account_request::serialize() const {
     std::vector<std::uint8_t> buffer;

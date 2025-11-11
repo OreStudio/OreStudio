@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.comms/net/client.hpp"
+
 #include <mutex>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
@@ -27,7 +29,6 @@
 #include <boost/asio/use_future.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/log/sources/record_ostream.hpp>
-#include "ores.comms/client.hpp"
 #include "ores.comms/protocol/handshake.hpp"
 
 namespace ores::comms {

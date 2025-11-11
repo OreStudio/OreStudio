@@ -29,7 +29,7 @@
 #include <QAction>
 #include <memory>
 #include "ores.risk/domain/currency.hpp"
-#include "ores.comms/client.hpp"
+#include "ores.comms/net/client.hpp"
 
 namespace Ui {
 class CurrencyDetailPanel;

@@ -24,7 +24,7 @@
 #pragma once
 #endif
 
-#include "ores.comms/server.hpp"
+#include "ores.comms/net/server.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
 

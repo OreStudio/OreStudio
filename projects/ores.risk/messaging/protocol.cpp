@@ -20,13 +20,12 @@
 #include "ores.risk/messaging/protocol.hpp"
 
 #include <expected>
-#include "ores.utility/messaging/reader.hpp"
-#include "ores.utility/messaging/writer.hpp"
+#include "ores.comms/protocol/reader.hpp"
+#include "ores.comms/protocol/writer.hpp"
 
 
 using namespace ores::risk;
-using namespace ores::utility::messaging;
-using ores::comms::protocol::error_code;
+using namespace ores::comms::protocol;
 
 namespace {
 

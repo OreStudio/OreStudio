@@ -30,7 +30,7 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.comms/client.hpp"
+#include "ores.comms/net/client.hpp"
 #include "ores.client/config/options.hpp"
 
 namespace cli {

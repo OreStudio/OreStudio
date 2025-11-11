@@ -22,7 +22,7 @@
 
 #include <memory>
 #include <string>
-#include "ores.comms/connection.hpp"
+#include "ores.comms/net/connection.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/protocol/message_dispatcher.hpp"
 

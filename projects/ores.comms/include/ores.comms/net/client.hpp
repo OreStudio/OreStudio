@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMMS_CLIENT_HPP
-#define ORES_COMMS_CLIENT_HPP
+#ifndef ORES_COMMS_NET_CLIENT_HPP
+#define ORES_COMMS_NET_CLIENT_HPP
 
 #include <mutex>
 #include <memory>
@@ -30,7 +30,7 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_context.hpp>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.comms/connection.hpp"
+#include "ores.comms/net/connection.hpp"
 
 namespace ores::comms {
 

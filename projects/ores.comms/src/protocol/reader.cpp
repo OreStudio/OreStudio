@@ -18,9 +18,9 @@
  *
  */
 #include <expected>
-#include "ores.utility/messaging/reader.hpp"
+#include "ores.comms/protocol/reader.hpp"
 
-namespace ores::utility::messaging {
+namespace ores::comms::protocol {
 
 std::expected<std::uint16_t, comms::protocol::error_code>
 reader::read_uint16(std::span<const std::uint8_t>& data) {

@@ -30,7 +30,7 @@
 #include <thread>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
-#include "ores.comms/client.hpp"
+#include "ores.comms/net/client.hpp"
 #include "ores.qt/MdiAreaWithBackground.hpp"
 #include "ores.risk/domain/currency.hpp"
 #include "ores.utility/log/make_logger.hpp"

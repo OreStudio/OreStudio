@@ -23,7 +23,7 @@
 #include "ores.accounts/messaging/registrar.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/repository/context_factory.hpp"
-#include "ores.comms/server.hpp"
+#include "ores.comms/net/server.hpp"
 #include "ores.service/app/application.hpp"
 #include "ores.service/app/application_exception.hpp"
 

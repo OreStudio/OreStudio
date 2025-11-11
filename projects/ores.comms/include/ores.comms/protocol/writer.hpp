@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_MESSAGING_WRITE_HPP
-#define ORES_UTILITY_MESSAGING_WRITE_HPP
+#ifndef ORES_COMMS_MESSAGING_WRITE_HPP
+#define ORES_COMMS_MESSAGING_WRITE_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 #pragma once
@@ -30,7 +30,8 @@
 #include <expected>
 #include <boost/uuid/uuid_io.hpp>
 
-namespace ores::utility::messaging {
+
+namespace ores::comms::protocol {
 
 /**
  * @brief Helper to write network data.

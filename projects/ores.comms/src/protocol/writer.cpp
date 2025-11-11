@@ -19,9 +19,9 @@
  */
 #include <cstring>
 #include <expected>
-#include "ores.utility/messaging/writer.hpp"
+#include "ores.comms/protocol/writer.hpp"
 
-namespace ores::utility::messaging {
+namespace ores::comms::protocol {
 
 void writer::
 write_uint16(std::vector<std::uint8_t>& buffer, std::uint16_t value) {

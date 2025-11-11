@@ -17,14 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.comms/server.hpp"
-#include "ores.comms/session.hpp"
+#include "ores.comms/net/server.hpp"
+
+#include <chrono>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/asio/steady_timer.hpp>
-#include <boost/asio/this_coro.hpp>
-#include <chrono>
+#include "ores.comms/net/session.hpp"
 
 namespace ores::comms {
 

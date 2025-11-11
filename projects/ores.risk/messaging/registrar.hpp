@@ -20,7 +20,7 @@
 #ifndef ORES_RISK_MESSAGING_REGISTRAR_HPP
 #define ORES_RISK_MESSAGING_REGISTRAR_HPP
 
-#include "ores.comms/server.hpp"
+#include "ores.comms/net/server.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
 

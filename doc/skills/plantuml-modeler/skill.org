@@ -205,6 +205,22 @@ Follow these common rules to both structs and classes:
      =ores::risk::domain::account= in the relationship, not =domain::account=.
    - Use the appropriate UML relationship from the PlantUML vocabulary.
 
+***** Entity processing checklist
+
+For EVERY struct or class you model, follow this checklist IN ORDER:
+
+1. *Check if it's a struct or class* (affects default color if no special rules apply)
+2. *Check the name postfix* and folder location:
+   - Does it end with =_entity= AND in =repository= folder? → =<<orm>>= with #99CB99
+   - Does it end with =_mapper= AND in =repository= folder? → =<<orm>>= with #99CB99
+   - Does it end with =_repository= AND in =repository= folder? → =<<orm>>= with #99CB99
+   - Does it end with =_option= AND in =config= folder? → =<<config>>= with #FFC072
+   - Does it end with =_request= OR =_response= AND in =messaging= folder? → =<<message>>= with #E1F5FF
+   - Does it end with =_exception=? → =<<exception>>= with #D6B19F
+3. *If no special rules matched*, apply defaults:
+   - Struct → #F7E5FF (no stereotype)
+   - Class → #ECECEC (no stereotype)
+
 Follow these rules when modeling c++ structs:
 
 - Colouring rules:

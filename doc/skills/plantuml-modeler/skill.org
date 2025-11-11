@@ -66,6 +66,35 @@ In order to determine which files to process, follow these rules:
   a component and model the entities within, unless this file explicitly tells
   you to exclude them.
 
+*** Setup and integration
+
+Before generating a diagram, ensure the following setup steps are completed:
+
+1. *Create modeling directory:* Ensure the =modeling= directory exists under the
+   component folder. Create it if necessary using =mkdir -p=.
+
+2. *CMake integration:* After generating the diagram, add a CMake target for
+   diagram generation to the component's =CMakeLists.txt=. Add the following at
+   the end of the file:
+
+#+begin_src cmake
+# PlantUML diagram generation
+add_custom_target(generate_COMPONENT_NAME_diagram
+    COMMAND ${Java_JAVA_EXECUTABLE}
+        -Djava.awt.headless=true
+        -DPLANTUML_SECURITY_PROFILE=UNSECURE
+        -DPLANTUML_LIMIT_SIZE=65535
+        -jar ${PLANTUML_JAR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/modeling/COMPONENT_NAME.puml
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/modeling
+    COMMENT "Generating PlantUML diagram for COMPONENT_NAME"
+    VERBATIM
+)
+add_dependencies(make_all_diagrams generate_COMPONENT_NAME_diagram)
+#+end_src
+
+Replace =COMPONENT_NAME= with the actual component name (e.g. =ores.cli=).
+
 ** PlantUML file layout
 
 These instructions describe the taxonomy of all PlantUML diagrams.
@@ -337,6 +366,36 @@ Check the diagram for common mistakes:
 
 #+end_src
 
+** Common pitfalls and best practices
+
+When generating diagrams, watch out for these common issues:
+
+1. *Stereotype placement:* Stereotypes must come AFTER the class name, not
+   before. Correct: =class foo <<stereotype>> #COLOR=. Incorrect:
+   =class <<stereotype>> foo #COLOR=.
+
+2. *Color codes:* Ensure consistent color usage:
+   - ORM entities (=_entity=, =_mapper=, =_repository=): #99CB99 with =<<orm>>=
+   - Message types (=_request=, =_response=): #E1F5FF with =<<message>>=
+   - Config types (=_option=): #FFC072 with =<<config>>=
+   - Exceptions (=_exception=): #D6B19F with =<<exception>>=
+   - Generators: #D89EF1 with =<<generator>>=
+   - Default structs: #F7E5FF
+   - Default classes: #ECECEC
+   - Enumerations: #F2DAFD
+
+3. *Relationship directions:* Use appropriate UML arrows:
+   - Composition: =o--= or =*--=
+   - Dependency: =..>=
+   - Association: =--=
+
+4. *Implementation dependencies:* Don't forget to check =.cpp= files for:
+   - Static method calls (e.g., =password_manager::hash()=)
+   - Message handler patterns (=deserialize()=, response construction)
+   - Service instantiation
+
+5. *Namespace documentation:* Only the top-level =ores= namespace is not
+   documented. All other namespaces need documentation from their header files.
 
 ** Diagram compilation
 

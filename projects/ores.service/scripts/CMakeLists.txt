@@ -15,5 +15,5 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/scripts)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/generate_certs.sh"
+    "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/generate_certs.sh" COPYONLY)

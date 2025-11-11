@@ -96,7 +96,7 @@ namespace ores #F2F2F2 {
         }
 
         namespace repository #F2F2F2 {
-            class account_entity <<database>> #99CB99 {
+            class account_entity <<orm>> #99CB99 {
                 +{field} id sqlgen::PrimaryKey<std::string>
                 +{field} version int
                 +{field} username std::string
@@ -133,7 +133,7 @@ namespace ores #F2F2F2 {
             - valid_to: Temporal validity end.
             end note
 
-            class login_info_entity <<database>> #99CB99 {
+            class login_info_entity <<orm>> #99CB99 {
                 +{field} account_id sqlgen::PrimaryKey<std::string>
                 +{field} last_ip std::string
                 +{field} last_attempt_ip std::string
@@ -162,7 +162,7 @@ namespace ores #F2F2F2 {
             - online: Online status flag.
             end note
 
-            class feature_flags_entity <<database>> #99CB99 {
+            class feature_flags_entity <<orm>> #99CB99 {
                 +{field} name sqlgen::PrimaryKey<std::string>
                 +{field} enabled int
                 +{field} description std::string
@@ -189,7 +189,7 @@ namespace ores #F2F2F2 {
             - valid_to: Temporal validity end.
             end note
 
-            class account_mapper #CECECE {
+            class account_mapper <<orm>> #99CB99 {
                 +{static} map(account_entity) domain::account
                 +{static} map(domain::account) account_entity
                 +{static} map(std::vector<account_entity>) std::vector<domain::account>
@@ -203,7 +203,7 @@ namespace ores #F2F2F2 {
             account_mapper ..> ores::accounts::domain::account
             account_mapper ..> ores::accounts::repository::account_entity
 
-            class login_info_mapper #CECECE {
+            class login_info_mapper <<orm>> #99CB99 {
                 +{static} map(login_info_entity) domain::login_info
                 +{static} map(domain::login_info) login_info_entity
                 +{static} map(std::vector<login_info_entity>) std::vector<domain::login_info>
@@ -219,7 +219,7 @@ namespace ores #F2F2F2 {
             login_info_mapper ..> ores::accounts::domain::login_info
             login_info_mapper ..> ores::accounts::repository::login_info_entity
 
-            class feature_flags_mapper #CECECE {
+            class feature_flags_mapper <<orm>> #99CB99 {
                 +{static} map(feature_flags_entity) domain::feature_flags
                 +{static} map(domain::feature_flags) feature_flags_entity
                 +{static} map(std::vector<feature_flags_entity>) std::vector<domain::feature_flags>
@@ -233,7 +233,7 @@ namespace ores #F2F2F2 {
             feature_flags_mapper ..> ores::accounts::domain::feature_flags
             feature_flags_mapper ..> ores::accounts::repository::feature_flags_entity
 
-            class account_repository #CECECE {
+            class account_repository <<orm>> #99CB99 {
                 +sql() std::string
                 +write(context, domain::account) void
                 +write(context, std::vector<domain::account>) void
@@ -253,7 +253,7 @@ namespace ores #F2F2F2 {
 
             account_repository ..> ores::accounts::domain::account
 
-            class login_info_repository #CECECE {
+            class login_info_repository <<orm>> #99CB99 {
                 +sql() std::string
                 +write(context, std::vector<domain::login_info>) void
                 +update(context, domain::login_info) void
@@ -270,7 +270,7 @@ namespace ores #F2F2F2 {
         }
 
         namespace service #F2F2F2 {
-            class account_service #CECECE {
+            class account_service #ECECEC {
                 +account_service(account_repository, login_info_repository)
                 +create_account(context, std::string, std::string, std::string, std::string, bool) domain::account
                 +list_accounts(context) std::vector<domain::account>
@@ -290,10 +290,11 @@ namespace ores #F2F2F2 {
             account_service o-- ores::accounts::repository::account_repository
             account_service o-- ores::accounts::repository::login_info_repository
             account_service ..> ores::accounts::domain::account
+            account_service ..> ores::accounts::security::password_manager : uses
         }
 
         namespace messaging #F2F2F2 {
-            class create_account_request #F7E5FF {
+            class create_account_request <<message>> #E1F5FF {
                 +{field} username std::string
                 +{field} password std::string
                 +{field} totp_secret std::string
@@ -317,7 +318,7 @@ namespace ores #F2F2F2 {
             - is_admin: Admin flag.
             end note
 
-            class create_account_response #F7E5FF {
+            class create_account_response <<message>> #E1F5FF {
                 +{field} account_id boost::uuids::uuid
                 +serialize() std::vector<std::uint8_t>
                 +{static} deserialize(std::span<const std::uint8_t>) std::expected<create_account_response, comms::protocol::error_code>
@@ -331,7 +332,7 @@ namespace ores #F2F2F2 {
             - account_id: ID of the created account.
             end note
 
-            class list_accounts_request #F7E5FF {
+            class list_accounts_request <<message>> #E1F5FF {
                 +serialize() std::vector<std::uint8_t>
                 +{static} deserialize(std::span<const std::uint8_t>) std::expected<list_accounts_request, comms::protocol::error_code>
             }
@@ -342,7 +343,7 @@ namespace ores #F2F2F2 {
             This request has no parameters - it retrieves all accounts in the system.
             end note
 
-            class list_accounts_response #F7E5FF {
+            class list_accounts_response <<message>> #E1F5FF {
                 +{field} accounts std::vector<domain::account>
                 +serialize() std::vector<std::uint8_t>
                 +{static} deserialize(std::span<const std::uint8_t>) std::expected<list_accounts_response, comms::protocol::error_code>
@@ -358,7 +359,7 @@ namespace ores #F2F2F2 {
 
             list_accounts_response o-- ores::accounts::domain::account
 
-            class login_request #F7E5FF {
+            class login_request <<message>> #E1F5FF {
                 +{field} username std::string
                 +{field} password std::string
                 +serialize() std::vector<std::uint8_t>
@@ -374,7 +375,7 @@ namespace ores #F2F2F2 {
             - password: Password for authentication.
             end note
 
-            class login_response #F7E5FF {
+            class login_response <<message>> #E1F5FF {
                 +{field} success bool
                 +{field} error_message std::string
                 +{field} account_id boost::uuids::uuid
@@ -396,7 +397,7 @@ namespace ores #F2F2F2 {
             - is_admin: Admin flag of authenticated account.
             end note
 
-            class unlock_account_request #F7E5FF {
+            class unlock_account_request <<message>> #E1F5FF {
                 +{field} account_id boost::uuids::uuid
                 +serialize() std::vector<std::uint8_t>
                 +{static} deserialize(std::span<const std::uint8_t>) std::expected<unlock_account_request, comms::protocol::error_code>
@@ -410,7 +411,7 @@ namespace ores #F2F2F2 {
             - account_id: ID of account to unlock.
             end note
 
-            class unlock_account_response #F7E5FF {
+            class unlock_account_response <<message>> #E1F5FF {
                 +{field} success bool
                 +{field} error_message std::string
                 +serialize() std::vector<std::uint8_t>
@@ -426,7 +427,7 @@ namespace ores #F2F2F2 {
             - error_message: Error message if unlock failed.
             end note
 
-            class accounts_message_handler #CECECE {
+            class accounts_message_handler #ECECEC {
                 +accounts_message_handler(utility::repository::context)
                 +handle_message(comms::protocol::message_type, std::span<const std::uint8_t>, std::string) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
                 -handle_create_account_request(std::span<const std::uint8_t>) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
@@ -451,8 +452,17 @@ namespace ores #F2F2F2 {
 
             accounts_message_handler o-- ores::accounts::repository::account_repository
             accounts_message_handler o-- ores::accounts::repository::login_info_repository
+            accounts_message_handler ..> ores::accounts::service::account_service : uses
+            accounts_message_handler ..> ores::accounts::messaging::create_account_request : uses
+            accounts_message_handler ..> ores::accounts::messaging::create_account_response : uses
+            accounts_message_handler ..> ores::accounts::messaging::list_accounts_request : uses
+            accounts_message_handler ..> ores::accounts::messaging::list_accounts_response : uses
+            accounts_message_handler ..> ores::accounts::messaging::login_request : uses
+            accounts_message_handler ..> ores::accounts::messaging::login_response : uses
+            accounts_message_handler ..> ores::accounts::messaging::unlock_account_request : uses
+            accounts_message_handler ..> ores::accounts::messaging::unlock_account_response : uses
 
-            class registrar #CECECE {
+            class registrar #ECECEC {
                 +{static} register_handlers(comms::server&, utility::repository::context) void
             }
 
@@ -465,7 +475,7 @@ namespace ores #F2F2F2 {
         }
 
         namespace security #F2F2F2 {
-            class password_manager #CECECE {
+            class password_manager #ECECEC {
                 +{static} create_password_hash(std::string) std::string
                 +{static} verify_password_hash(std::string, std::string) bool
                 -{static} base64_encode(std::vector<unsigned char>) std::string

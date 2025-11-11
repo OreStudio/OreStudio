@@ -5,7 +5,6 @@
 #+author: Marco Craveiro
 #+options: title:nil <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
 #+startup: inlineimages
-#+export_file_name: SKILL
 #+export_exclude_tags: noexport
 
 #+begin_export markdown

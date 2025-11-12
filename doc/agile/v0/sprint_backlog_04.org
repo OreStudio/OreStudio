@@ -18,57 +18,53 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-11 Tue 23:09], for Tuesday, November 11, 2025.
-|       | <75>                                                |         |       |      |       |
-| Tags  | Headline                                            | Time    |       |      |     % |
-|-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                        | *11:05* |       |      | 100.0 |
-|-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                             | 11:05   |       |      | 100.0 |
-|       | Active                                              |         | 11:05 |      | 100.0 |
-| agile | Sprint and product backlog refinement               |         |       | 0:33 |   5.0 |
-| code  | Create a skill for plant uml documentation          |         |       | 2:31 |  22.7 |
-| infra | Add CMake targets for site and skills               |         |       | 0:17 |   2.6 |
-| infra | Generalise the skill setup for ORE Studio           |         |       | 3:45 |  33.8 |
-| infra | Restructure components to follow the dogen approach |         |       | 2:54 |  26.2 |
-| infra | Generate PlantUML diagrams for all components       |         |       | 1:05 |   9.8 |
+#+CAPTION: Clock summary at [2025-11-12 Wed 10:53], for Wednesday, November 12, 2025.
+|      | <75>                                      |        |      |      |       |
+| Tags | Headline                                  | Time   |      |      |     % |
+|------+-------------------------------------------+--------+------+------+-------|
+|      | *Total time*                              | *1:53* |      |      | 100.0 |
+|------+-------------------------------------------+--------+------+------+-------|
+|      | Stories                                   | 1:53   |      |      | 100.0 |
+|      | Active                                    |        | 1:53 |      | 100.0 |
+| code | Fix the valgrind leaks reported on sqlgen |        |      | 1:53 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-11 Tue 23:09]
+#+CAPTION: Clock summary at [2025-11-12 Wed 10:53]
 |          | <75>                                                   |         |       |       |       |
 | Tags     | Headline                                               | Time    |       |       |     % |
 |----------+--------------------------------------------------------+---------+-------+-------+-------|
-|          | *Total time*                                           | *51:05* |       |       | 100.0 |
+|          | *Total time*                                           | *52:58* |       |       | 100.0 |
 |----------+--------------------------------------------------------+---------+-------+-------+-------|
-|          | Stories                                                | 51:05   |       |       | 100.0 |
-|          | Active                                                 |         | 51:05 |       | 100.0 |
-| agile    | Sprint and product backlog refinement                  |         |       |  2:33 |   5.0 |
+|          | Stories                                                | 52:58   |       |       | 100.0 |
+|          | Active                                                 |         | 52:58 |       | 100.0 |
+| agile    | Sprint and product backlog refinement                  |         |       |  2:33 |   4.8 |
 | code     | Clean up client parser                                 |         |       |  0:10 |   0.3 |
-| code     | Add connect command line argument                      |         |       |  1:19 |   2.6 |
-| infra    | Install Windows package on Windows machine             |         |       |  2:09 |   4.2 |
-| code     | Ignore warnings on windows and osx                     |         |       |  0:33 |   1.1 |
-| code     | Ensure applications work under OSX using github images |         |       |  0:14 |   0.5 |
-| infra    | Create a splash screen and gray background             |         |       |  2:26 |   4.8 |
+| code     | Add connect command line argument                      |         |       |  1:19 |   2.5 |
+| infra    | Install Windows package on Windows machine             |         |       |  2:09 |   4.1 |
+| code     | Ignore warnings on windows and osx                     |         |       |  0:33 |   1.0 |
+| code     | Ensure applications work under OSX using github images |         |       |  0:14 |   0.4 |
+| infra    | Create a splash screen and gray background             |         |       |  2:26 |   4.6 |
 | code     | Use fluent icons                                       |         |       |  0:37 |   1.2 |
-| code     | Add export functionality for currencies                |         |       |  1:30 |   2.9 |
-| code     | Add currency editing support                           |         |       |  2:45 |   5.4 |
+| code     | Add export functionality for currencies                |         |       |  1:30 |   2.8 |
+| code     | Add currency editing support                           |         |       |  2:45 |   5.2 |
 | code     | Add about to menu                                      |         |       |  1:02 |   2.0 |
-| code     | Create a history dialog for currencies                 |         |       |  1:27 |   2.8 |
-| code     | Allow MDI windows outside main window                  |         |       |  1:35 |   3.1 |
+| code     | Create a history dialog for currencies                 |         |       |  1:27 |   2.7 |
+| code     | Allow MDI windows outside main window                  |         |       |  1:35 |   3.0 |
 | code     | Add edit menu and export menu                          |         |       |  0:34 |   1.1 |
-| code     | Implement adding new currencies                        |         |       |  3:17 |   6.4 |
-| code     | Clean up product website                               |         |       |  4:42 |   9.2 |
-| code     | Create a skill for plant uml documentation             |         |       |  2:48 |   5.5 |
-| infra    | Add CMake targets for site and skills                  |         |       |  0:17 |   0.6 |
-| infra    | Generalise the skill setup for ORE Studio              |         |       |  3:45 |   7.3 |
-| infra    | Restructure components to follow the dogen approach    |         |       |  2:54 |   5.7 |
-| infra    | Generate PlantUML diagrams for all components          |         |       |  1:05 |   2.1 |
-| code     | Make UI/UX look more professional                      |         |       | 11:07 |  21.8 |
+| code     | Implement adding new currencies                        |         |       |  3:17 |   6.2 |
+| code     | Clean up product website                               |         |       |  4:42 |   8.9 |
+| code     | Create a skill for plant uml documentation             |         |       |  2:48 |   5.3 |
+| infra    | Add CMake targets for site and skills                  |         |       |  0:17 |   0.5 |
+| infra    | Generalise the skill setup for ORE Studio              |         |       |  3:45 |   7.1 |
+| infra    | Restructure components to follow the dogen approach    |         |       |  2:54 |   5.5 |
+| infra    | Generate PlantUML diagrams for all components          |         |       |  1:05 |   2.0 |
+| code     | Fix the valgrind leaks reported on sqlgen              |         |       |  1:53 |   3.6 |
+| code     | Make UI/UX look more professional                      |         |       | 11:07 |  21.0 |
 | code     | Current issues with package install in debian          |         |       |  0:40 |   1.3 |
 | code     | Resolve crash on shutdown problem                      |         |       |  0:50 |   1.6 |
-| analysis | Weaving skills and documentation together              |         |       |  0:46 |   1.5 |
+| analysis | Weaving skills and documentation together              |         |       |  0:46 |   1.4 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -567,6 +563,14 @@ create diagrams.
 
 Ask the LLM on how to replicate the calc pie chart we previously had.
 
+*** STARTED Fix the valgrind leaks reported on sqlgen                  :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-12 Wed 09:00]--[2025-11-12 Wed 10:53] =>  1:53
+    :END:
+
+We have a number of valgrind leaks which appear to be real leaks. Get to the
+bottom of these and produce a fix.
+
 *** STARTED Make UI/UX look more professional                          :code:
     :LOGBOOK:
     CLOCK: [2025-11-08 Sat 10:11]--[2025-11-08 Sat 20:04] =>  9:53
@@ -981,6 +985,10 @@ Notes:
   These will follow on from MASD's logical-physical space,
 - it should also be possible to generate a PDF with all of the documentation,
   readable as a book.
+
+*** Create a claude code skill to open a new sprint                    :code:
+
+Needs to update all of the version strings, copy backlog etc.
 
 *** When you maximise currencies merge toolbars                        :code:
 

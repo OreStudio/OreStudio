@@ -23,6 +23,7 @@
 
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include <boost/asio/ip/address.hpp>
 #include "ores.accounts/domain/account.hpp"
 #include "ores.accounts/repository/account_repository.hpp"
 #include "ores.accounts/repository/login_info_repository.hpp"
@@ -65,7 +66,6 @@ public:
      * the salt and hash, uses the account repository to create the account, and
      * adds a new login tracking entry.
      *
-     * @param ctx Repository context for database operations
      * @param username The unique username for the account
      * @param email The email address for the account
      * @param password The plaintext password (will be hashed)
@@ -79,7 +79,6 @@ public:
     /**
      * @brief Lists all accounts in the system.
      *
-     * @param ctx Repository context for database operations
      * @return Vector of all accounts
      */
     std::vector<domain::account> list_accounts();
@@ -89,7 +88,6 @@ public:
     /**
      * @brief Deletes an account by its ID.
      *
-     * @param ctx Repository context for database operations
      * @param account_id The ID of the account to delete
      */
     void delete_account(const boost::uuids::uuid& account_id);
@@ -103,7 +101,6 @@ public:
      * the failed_login_info counter and may lock the account after too many
      * consecutive failures.
      *
-     * @param ctx Repository context for database operations
      * @param username The username for authentication
      * @param password The plaintext password to verify
      * @param ip_address The IP address of the login attempt
@@ -121,7 +118,6 @@ public:
      * This method resets the account's locked status and clears the failed
      * login counter, allowing the user to attempt to login again.
      *
-     * @param ctx Repository context for database operations
      * @param account_id The ID of the account to unlock
      * @throws std::invalid_argument If account does not exist
      */

@@ -44,10 +44,10 @@ target_link_libraries(${lib_target_name}
         Boost::program_options
         sqlgen::sqlgen
     PRIVATE
+        faker-cxx::faker-cxx
         reflectcpp::reflectcpp
         Boost::boost
         Boost::exception
-
     )
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

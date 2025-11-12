@@ -19,10 +19,6 @@
 #ifndef ORES_SERVICE_SERVICE_HPP
 #define ORES_SERVICE_SERVICE_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 /**
  * @brief Main service for ORE Studio.
  */

@@ -20,10 +20,6 @@
 #ifndef ORES_SERVICE_APP_APPLICATION_HPP
 #define ORES_SERVICE_APP_APPLICATION_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <optional>
 #include <boost/asio/awaitable.hpp>
 #include "ores.utility/log/make_logger.hpp"

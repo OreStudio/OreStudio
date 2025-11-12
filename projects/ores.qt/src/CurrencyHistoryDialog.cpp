@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/CurrencyHistoryDialog.hpp"
+
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.comms/protocol/frame.hpp"

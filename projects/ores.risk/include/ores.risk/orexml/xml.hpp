@@ -19,10 +19,6 @@
 #ifndef ORES_RISK_XML_XML_HPP
 #define ORES_RISK_XML_XML_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 /**
  * @brief Provides XML serialisation support for the ORE domain model types
  * using native ORE XML.

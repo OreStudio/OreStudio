@@ -19,10 +19,6 @@
 #ifndef ORES_COMMS_ORES_COMMS_HPP
 #define ORES_COMMS_ORES_COMMS_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 /**
  * @brief Comms library that provides the basic connectivity bundling blocks for
  * ORE Studio.

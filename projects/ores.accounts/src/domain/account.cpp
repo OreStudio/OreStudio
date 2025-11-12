@@ -28,7 +28,7 @@ namespace ores::accounts::domain {
 
 std::ostream& operator<<(std::ostream& s, const account& v) {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 }
 
 }

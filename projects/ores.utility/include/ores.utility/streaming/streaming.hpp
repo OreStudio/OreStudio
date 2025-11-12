@@ -19,10 +19,6 @@
 #ifndef ORES_UTILITY_STREAMING_STREAMING_HPP
 #define ORES_UTILITY_STREAMING_STREAMING_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 /**
  * @brief Contains iostream related classes.
  */

@@ -19,9 +19,10 @@
  */
 #define _CRT_SECURE_NO_WARNINGS // Avoid getenv warnings
 
+#include "ores.utility/environment/environment.hpp"
+
 #include <cstdlib>
 #include "ores.utility/string/converter.hpp"
-#include "ores.utility/environment/environment.hpp"
 
 namespace ores::utility::environment {
 

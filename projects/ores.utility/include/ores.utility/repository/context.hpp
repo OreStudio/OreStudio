@@ -20,10 +20,6 @@
 #ifndef ORES_UTILITY_REPOSITORY_CONTEXT_HPP
 #define ORES_UTILITY_REPOSITORY_CONTEXT_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <sqlgen/postgres.hpp>
 
 namespace ores::utility::repository {

@@ -20,10 +20,6 @@
 #ifndef ORES_ACCOUNTS_DOMAIN_ACCOUNT_HPP
 #define ORES_ACCOUNTS_DOMAIN_ACCOUNT_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <string>
 #include <iosfwd>
 #include <boost/uuid/uuid.hpp>
@@ -37,17 +33,23 @@ struct account final {
     /**
      * @brief Version number for optimistic locking and change tracking.
      */
-    int version;
+    int version = 0;
+
+    /**
+     * @brief Flag indicating whether the account has administrative privileges.
+     */
+    bool is_admin = false;
+
+    /**
+     * @brief Unique identifier for the account.
+     */
+    boost::uuids::uuid id;
 
     /**
      * @brief Username of the user who last modified this account.
      */
     std::string modified_by;
 
-    /**
-     * @brief Unique identifier for the account.
-     */
-    boost::uuids::uuid id;
 
     /**
      * @brief Unique username for login purposes.
@@ -73,13 +75,11 @@ struct account final {
      * @brief Email address associated with the account.
      */
     std::string email;
-
-    /**
-     * @brief Flag indicating whether the account has administrative privileges.
-     */
-    bool is_admin;
 };
 
+/**
+ * @brief Serializes the account object to a stream in JSON format.
+ */
 std::ostream& operator<<(std::ostream& s, const account& v);
 
 }

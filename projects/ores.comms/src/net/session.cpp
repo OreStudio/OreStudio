@@ -18,6 +18,7 @@
  *
  */
 #include "ores.comms/net/session.hpp"
+
 #include "ores.comms/protocol/handshake.hpp"
 
 namespace ores::comms {

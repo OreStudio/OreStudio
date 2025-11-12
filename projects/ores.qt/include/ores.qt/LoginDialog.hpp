@@ -20,10 +20,6 @@
 #ifndef ORES_QT_LOGINDIALOG_HPP
 #define ORES_QT_LOGINDIALOG_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <memory>
 #include <thread>
 #include <boost/asio/io_context.hpp>

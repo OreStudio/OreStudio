@@ -20,10 +20,6 @@
 #ifndef ORES_UTILITY_STREAMING_STD_VECTOR_HPP
 #define ORES_UTILITY_STREAMING_STD_VECTOR_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <vector>
 #include <ostream>
 #include <rfl.hpp>
@@ -34,7 +30,7 @@ namespace std {
 template<typename Containee>
 inline ostream& operator<<(ostream& s, const vector<Containee>& v) {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 }
 
 }

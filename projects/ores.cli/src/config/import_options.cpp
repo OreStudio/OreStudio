@@ -17,16 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.cli/config/import_options.hpp"
+
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.cli/config/import_options.hpp"
 
 namespace ores::cli::config {
 
 std::ostream& operator<<(std::ostream& s, const import_options& v) {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 }
 
 }

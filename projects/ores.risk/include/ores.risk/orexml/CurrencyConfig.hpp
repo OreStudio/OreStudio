@@ -20,10 +20,6 @@
 #ifndef ORES_RISK_OREXML_CURRENCY_CONFIG_HPP
 #define ORES_RISK_OREXML_CURRENCY_CONFIG_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <vector>
 #include <ostream>
 #include "ores.risk/orexml/CurrencyElement.hpp"

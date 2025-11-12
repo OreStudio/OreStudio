@@ -20,10 +20,6 @@
 #ifndef ORES_RISK_REPOSITORY_CURRENCY_HPP
 #define ORES_RISK_REPOSITORY_CURRENCY_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <string>
 #include <optional>
 #include "sqlgen/Timestamp.hpp"

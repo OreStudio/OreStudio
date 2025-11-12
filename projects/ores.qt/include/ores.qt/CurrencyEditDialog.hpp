@@ -20,10 +20,6 @@
 #ifndef ORES_QT_CURRENCY_EDIT_DIALOG_HPP
 #define ORES_QT_CURRENCY_EDIT_DIALOG_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <QDialog>
 #include <memory>
 #include "ores.comms/net/client.hpp"

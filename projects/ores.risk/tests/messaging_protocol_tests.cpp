@@ -17,12 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.risk/messaging/protocol.hpp"
+
 #include <catch2/catch_test_macros.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "faker-cxx/faker.h" // IWYU pragma: keep.
 #include "ores.risk/generators/currency_generator.hpp"
-#include "ores.risk/messaging/protocol.hpp"
 
 namespace {
 

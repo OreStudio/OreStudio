@@ -17,11 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+
 #include <QMouseEvent>
 #include <QContextMenuEvent>
 #include <QMenu>
 #include <QCloseEvent>
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 

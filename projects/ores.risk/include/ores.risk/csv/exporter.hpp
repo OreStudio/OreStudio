@@ -21,10 +21,6 @@
 #ifndef ORES_RISK_CSV_EXPORTER_HPP
 #define ORES_RISK_CSV_EXPORTER_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <vector>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.risk/domain/currency.hpp"
@@ -42,6 +38,11 @@ private:
             "ores.risk.csv.exporter");
         return instance;
     }
+
+    /**
+     * @brief Properly escape CSV fields according to RFC 4180.
+     */
+    static std::string escape_csv_field(const std::string& field);
 
 public:
     static std::string

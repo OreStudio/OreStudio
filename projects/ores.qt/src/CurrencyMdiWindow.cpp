@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.qt/CurrencyMdiWindow.hpp"
+
 #include <vector>
 #include <QtCore/QVariant>
 #include <QtCore/QTimer>
@@ -35,10 +37,8 @@
 #include <QAction>
 #include <QPixmap>
 #include <QImage>
-#include "ores.qt/CurrencyMdiWindow.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-// #include "ores.qt/CurrencyEditDialog.hpp" // Removed
-#include "ores.qt/CurrencyItemDelegate.hpp" // Include the new delegate header
+#include "ores.qt/CurrencyItemDelegate.hpp"
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.comms/protocol/frame.hpp"
 #include "ores.risk/csv/exporter.hpp"

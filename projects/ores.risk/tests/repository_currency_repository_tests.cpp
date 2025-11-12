@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.risk/repository/currency_repository.hpp"
+
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -26,7 +28,6 @@
 #include "faker-cxx/faker.h" // IWYU pragma: keep.
 #include "ores.risk/domain/currency.hpp"
 #include "ores.risk/generators/currency_generator.hpp"
-#include "ores.risk/repository/currency_repository.hpp"
 
 namespace {
 

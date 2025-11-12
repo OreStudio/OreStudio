@@ -20,10 +20,6 @@
 #ifndef ORES_QT_DETACHABLE_MDI_SUB_WINDOW_HPP
 #define ORES_QT_DETACHABLE_MDI_SUB_WINDOW_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <QMdiSubWindow>
 #include <QMdiArea>
 #include <QPoint>

@@ -18,13 +18,14 @@
  * MA 02110-1301, USA.
  *
  */
+#include "ores.service/app/application.hpp"
+
 #include <boost/throw_exception.hpp>
 #include "ores.risk/messaging/registrar.hpp"
 #include "ores.accounts/messaging/registrar.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/repository/context_factory.hpp"
 #include "ores.comms/net/server.hpp"
-#include "ores.service/app/application.hpp"
 #include "ores.service/app/application_exception.hpp"
 
 namespace ores::service::app {

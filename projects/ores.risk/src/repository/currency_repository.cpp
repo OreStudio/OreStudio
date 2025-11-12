@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.risk/repository/currency_repository.hpp"
+
 #include <format>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
@@ -24,7 +26,6 @@
 #include "ores.utility/repository/repository_exception.hpp"
 #include "ores.risk/repository/currency_mapper.hpp"
 #include "ores.risk/repository/currency_entity.hpp"
-#include "ores.risk/repository/currency_repository.hpp"
 
 namespace ores::risk::repository {
 

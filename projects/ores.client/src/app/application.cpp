@@ -19,6 +19,7 @@
  *
  */
 #include "ores.client/app/application.hpp"
+
 #include "ores.client/app/repl.hpp"
 
 namespace ores::client::app {

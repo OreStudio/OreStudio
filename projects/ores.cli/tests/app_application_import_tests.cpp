@@ -17,13 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.cli/app/application.hpp"
+
 #include <sstream>
 #include <filesystem>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/test_database_manager.hpp"
-#include "ores.cli/app/application.hpp"
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
 #include "ores.risk/repository/currency_repository.hpp"

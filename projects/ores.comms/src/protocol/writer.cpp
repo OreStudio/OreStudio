@@ -17,9 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.comms/protocol/writer.hpp"
+
 #include <cstring>
 #include <expected>
-#include "ores.comms/protocol/writer.hpp"
 
 namespace ores::comms::protocol {
 

@@ -17,9 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.qt/CurrencyHistoryMdiWindow.hpp"
+
 #include <QVBoxLayout>
 #include <QFutureWatcher>
-#include "ores.qt/CurrencyHistoryMdiWindow.hpp"
 
 namespace ores::qt {
 

@@ -21,10 +21,6 @@
 #ifndef ORES_ACCOUNTS_SERVICE_ACCOUNT_SERVICE_HPP
 #define ORES_ACCOUNTS_SERVICE_ACCOUNT_SERVICE_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #include "ores.accounts/domain/account.hpp"

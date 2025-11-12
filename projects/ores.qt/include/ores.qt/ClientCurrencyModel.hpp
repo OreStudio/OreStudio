@@ -20,10 +20,6 @@
 #ifndef ORES_QT_CLIENT_CURRENCY_MODEL_HPP
 #define ORES_QT_CLIENT_CURRENCY_MODEL_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <memory>
 #include <vector>
 #include <QFutureWatcher>

@@ -20,10 +20,6 @@
 #ifndef ORES_QT_MDI_AREA_WITH_BACKGROUND_HPP
 #define ORES_QT_MDI_AREA_WITH_BACKGROUND_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <QMdiArea>
 #include <QPixmap>
 #include "ores.utility/log/make_logger.hpp"

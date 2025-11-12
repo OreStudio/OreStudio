@@ -28,7 +28,6 @@
 #include "ores.cli/app/application.hpp"
 #include "ores.cli/config/parser.hpp"
 
-
 namespace ores::cli::app {
 
 using namespace ores::utility::log;

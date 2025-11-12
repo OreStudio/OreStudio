@@ -17,8 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <algorithm>
 #include "ores.accounts/repository/feature_flags_mapper.hpp"
+
+#include <algorithm>
 
 namespace ores::accounts::repository {
 

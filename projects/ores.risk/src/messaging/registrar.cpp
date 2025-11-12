@@ -18,6 +18,7 @@
  *
  */
 #include "ores.risk/messaging/registrar.hpp"
+
 #include "ores.risk/messaging/risk_message_handler.hpp"
 
 namespace ores::risk::messaging {

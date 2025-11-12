@@ -20,10 +20,6 @@
 #ifndef ORES_UTILITY_EXCEPTION_INVALID_ENUM_VALUE_HPP
 #define ORES_UTILITY_EXCEPTION_INVALID_ENUM_VALUE_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <string>
 #include <boost/exception/info.hpp>
 

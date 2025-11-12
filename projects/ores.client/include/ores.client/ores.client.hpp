@@ -19,10 +19,6 @@
 #ifndef ORES_CLIENT_ORES_CLIENT_HPP
 #define ORES_CLIENT_ORES_CLIENT_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 /**
  * @brief Client library for connectivity in ORE Studio.
  */

@@ -20,10 +20,6 @@
 #ifndef ORES_UTILITY_REPOSITORY_CONTEXT_FACTORY_HPP
 #define ORES_UTILITY_REPOSITORY_CONTEXT_FACTORY_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <iosfwd>
 #include <string>
 #include "ores.utility/log/make_logger.hpp"

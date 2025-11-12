@@ -17,16 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.accounts/repository/login_info_entity.hpp"
+
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.accounts/repository/login_info_entity.hpp"
 
 namespace ores::accounts::repository {
 
 std::ostream& operator<<(std::ostream& s, const login_info_entity& v) {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 }
 
 }

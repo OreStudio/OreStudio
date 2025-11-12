@@ -20,10 +20,6 @@
 #ifndef ORES_ACCOUNTS_MESSAGING_PROTOCOL_HPP
 #define ORES_ACCOUNTS_MESSAGING_PROTOCOL_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <span>
 #include <iosfwd>
 #include <vector>

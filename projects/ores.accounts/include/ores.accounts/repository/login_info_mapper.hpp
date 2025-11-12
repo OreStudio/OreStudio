@@ -20,10 +20,6 @@
 #ifndef ORES_ACCOUNTS_REPOSITORY_LOGIN_INFO_MAPPER_HPP
 #define ORES_ACCOUNTS_REPOSITORY_LOGIN_INFO_MAPPER_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <vector>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.accounts/domain/login_info.hpp"

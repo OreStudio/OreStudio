@@ -17,12 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.comms/protocol/frame.hpp"
+
+#include <bit>
 #include <ostream>
 #include <cstring>
 #include <boost/crc.hpp>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.comms/protocol/frame.hpp"
 
 namespace {
 
@@ -298,7 +300,7 @@ std::expected<void, error_code> frame::validate() const {
 
 std::ostream& operator<<(std::ostream& s, const frame_header& v) {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 }
 
 }

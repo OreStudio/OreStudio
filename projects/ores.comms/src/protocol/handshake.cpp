@@ -17,9 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.comms/protocol/handshake.hpp"
+
 #include <rfl.hpp>
 #include <rfl/bson.hpp>
-#include "ores.comms/protocol/handshake.hpp"
 
 namespace ores::comms::protocol {
 

@@ -20,10 +20,6 @@
 #ifndef ORES_CLI_CONFIG_FORMAT_HPP
 #define ORES_CLI_CONFIG_FORMAT_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 namespace ores::cli::config {
 
 /**

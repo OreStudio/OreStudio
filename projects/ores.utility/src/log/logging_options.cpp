@@ -17,15 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/log/logging_options.hpp"
+
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.utility/log/logging_options.hpp"
 
 namespace ores::utility::log {
 
 std::ostream& operator<<(std::ostream& s, const logging_options& v) {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 }
 
 }

@@ -20,10 +20,6 @@
 #ifndef ORES_ACCOUNTS_REPOSITORY_ACCOUNT_MAPPER_HPP
 #define ORES_ACCOUNTS_REPOSITORY_ACCOUNT_MAPPER_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include "ores.accounts/domain/account.hpp"
 #include "ores.accounts/repository/account_entity.hpp"
 #include "ores.utility/log/make_logger.hpp"

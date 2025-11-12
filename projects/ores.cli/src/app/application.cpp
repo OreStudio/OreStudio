@@ -18,6 +18,8 @@
  * MA 02110-1301, USA.
  *
  */
+#include "ores.cli/app/application.hpp"
+
 #include <optional>
 #include <boost/throw_exception.hpp>
 #include <sqlgen/postgres.hpp>
@@ -31,7 +33,6 @@
 #include "ores.risk/csv/exporter.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
 #include "ores.cli/app/application_exception.hpp"
-#include "ores.cli/app/application.hpp"
 
 namespace ores::cli::app {
 

@@ -19,10 +19,6 @@
 #ifndef ORES_ACCOUNTS_ACCOUNTS_HPP
 #define ORES_ACCOUNTS_ACCOUNTS_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 /**
  * @brief Account management module for ORE Studio.
  *

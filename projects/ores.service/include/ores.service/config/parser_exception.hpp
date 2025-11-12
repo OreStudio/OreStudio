@@ -20,10 +20,6 @@
 #ifndef ORES_SERVICE_CONFIG_PARSER_EXCEPTION_HPP
 #define ORES_SERVICE_CONFIG_PARSER_EXCEPTION_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <string>
 #include <boost/exception/info.hpp>
 

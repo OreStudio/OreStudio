@@ -21,10 +21,6 @@
 #define ORES_ACCOUNTS_DOMAIN_ACCOUNT_GENERATOR_HPP
 
 #include <vector>
-#include "faker-cxx/faker.h" // IWYU pragma: keep.
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/string_generator.hpp>
 #include "ores.accounts/domain/account.hpp"
 
 namespace ores::accounts::generators {

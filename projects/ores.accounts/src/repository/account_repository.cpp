@@ -62,11 +62,14 @@ std::string account_repository::sql() {
     return sql;
 }
 
+account_repository::account_repository(context ctx)
+    : ctx_(std::move(ctx)) {}
+
 void account_repository::
-write(context ctx, const domain::account& account) {
+write(const domain::account& account) {
     BOOST_LOG_SEV(lg(), debug) << "Writing account to database: " << account;
 
-    const auto r = session(ctx.connection_pool())
+    const auto r = session(ctx_.connection_pool())
         .and_then(begin_transaction)
         .and_then(insert(account_mapper::map(account)))
         .and_then(commit);
@@ -76,11 +79,11 @@ write(context ctx, const domain::account& account) {
 }
 
 void account_repository::
-write(context ctx, const std::vector<domain::account>& accounts) {
+write(const std::vector<domain::account>& accounts) {
     BOOST_LOG_SEV(lg(), debug) << "Writing accounts to database. Count: "
                              << accounts.size();
 
-    const auto r = session(ctx.connection_pool())
+    const auto r = session(ctx_.connection_pool())
         .and_then(begin_transaction)
         .and_then(insert(account_mapper::map(accounts)))
         .and_then(commit);
@@ -89,7 +92,7 @@ write(context ctx, const std::vector<domain::account>& accounts) {
     BOOST_LOG_SEV(lg(), debug) << "Finished writing accounts to database.";
 }
 
-std::vector<domain::account> account_repository::read_latest(context ctx) {
+std::vector<domain::account> account_repository::read_latest() {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts.";
 
     static auto max(make_timestamp(max_timestamp));
@@ -97,7 +100,7 @@ std::vector<domain::account> account_repository::read_latest(context ctx) {
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
 
-    const auto r = session(ctx.connection_pool())
+    const auto r = session(ctx_.connection_pool())
         .and_then(query);
     ensure_success(r);
     BOOST_LOG_SEV(lg(), debug) << "Read latest accounts. Total: " << r->size();
@@ -105,7 +108,7 @@ std::vector<domain::account> account_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::account>
-account_repository::read_latest(context ctx, const boost::uuids::uuid& id) {
+account_repository::read_latest(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts. ID: " << id;
 
     static auto max(make_timestamp(max_timestamp));
@@ -114,17 +117,17 @@ account_repository::read_latest(context ctx, const boost::uuids::uuid& id) {
         where("id"_c == id_str && "valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
 
-    const auto r = session(ctx.connection_pool()).and_then(query);
+    const auto r = session(ctx_.connection_pool()).and_then(query);
     ensure_success(r);
     BOOST_LOG_SEV(lg(), debug) << "Read latest accounts. Total: " << r->size();
     return account_mapper::map(*r);
 }
 
-std::vector<domain::account> account_repository::read_all(context ctx) {
+std::vector<domain::account> account_repository::read_all() {
     const auto query = sqlgen::read<std::vector<account_entity>> |
         order_by("valid_from"_c.desc());
 
-    const auto r = session(ctx.connection_pool())
+    const auto r = session(ctx_.connection_pool())
         .and_then(query);
     ensure_success(r);
     BOOST_LOG_SEV(lg(), debug) << "Read all accounts. Total: " << r->size();
@@ -132,20 +135,20 @@ std::vector<domain::account> account_repository::read_all(context ctx) {
 }
 
 std::vector<domain::account>
-account_repository::read_all(context ctx, const boost::uuids::uuid& id) {
+account_repository::read_all(const boost::uuids::uuid& id) {
     const auto id_str = boost::lexical_cast<std::string>(id);
     const auto query = sqlgen::read<std::vector<account_entity>> |
         where("id"_c == id_str) |
         order_by("valid_from"_c.desc());
 
-    const auto r = session(ctx.connection_pool()).and_then(query);
+    const auto r = session(ctx_.connection_pool()).and_then(query);
     ensure_success(r);
     BOOST_LOG_SEV(lg(), debug) << "Read all accounts. Total: " << r->size();
     return account_mapper::map(*r);
 }
 
 std::vector<domain::account>
-account_repository::read_latest_by_username(context ctx, const std::string& username) {
+account_repository::read_latest_by_username(const std::string& username) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by username: " << username;
 
     static auto max(make_timestamp(max_timestamp));
@@ -156,7 +159,7 @@ account_repository::read_latest_by_username(context ctx, const std::string& user
     const auto sql = postgres::to_sql(query);
     BOOST_LOG_SEV(lg(), debug) << "Query: " << sql;
 
-    const auto r = session(ctx.connection_pool()).and_then(query);
+    const auto r = session(ctx_.connection_pool()).and_then(query);
     ensure_success(r);
     BOOST_LOG_SEV(lg(), debug) << "Read latest account by username. Total: " << r->size();
     return account_mapper::map(*r);

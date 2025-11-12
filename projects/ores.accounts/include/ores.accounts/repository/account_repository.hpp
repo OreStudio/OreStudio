@@ -35,7 +35,7 @@ namespace ores::accounts::repository {
  */
 class account_repository {
 private:
-    static auto& lg() {
+    [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
         static auto instance = make_logger(
             "ores.accounts.repository.account_repository");
@@ -49,6 +49,8 @@ private:
 public:
     using context = ores::utility::repository::context;
 
+    explicit account_repository(context ctx);
+
     /**
      * @brief Returns the SQL created by sqlgen to construct the table.
      */
@@ -59,33 +61,34 @@ public:
      * unique IDs.
      */
     /**@{*/
-    void write(context ctx, const domain::account& account);
-    void write(context ctx, const std::vector<domain::account>& accounts);
+    void write(const domain::account& account);
+    void write(const std::vector<domain::account>& accounts);
     /**@}*/
 
     /**
      * @brief Reads latest accounts, possibly filtered by ID.
      */
     /**@{*/
-    std::vector<domain::account> read_latest(context ctx);
-    std::vector<domain::account>
-    read_latest(context ctx, const boost::uuids::uuid& id);
+    std::vector<domain::account> read_latest();
+    std::vector<domain::account> read_latest(const boost::uuids::uuid& id);
     /**@}*/
 
     /**
      * @brief Reads all accounts, possibly filtered by ID.
      */
     /**@{*/
-    std::vector<domain::account> read_all(context ctx);
-    std::vector<domain::account>
-    read_all(context ctx, const boost::uuids::uuid& id);
+    std::vector<domain::account> read_all();
+    std::vector<domain::account> read_all(const boost::uuids::uuid& id);
     /**@}*/
 
     /**
      * @brief Reads the latest account by username.
      */
     std::vector<domain::account>
-    read_latest_by_username(context ctx, const std::string& username);
+    read_latest_by_username(const std::string& username);
+
+private:
+    context ctx_;
 };
 
 }

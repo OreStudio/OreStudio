@@ -39,18 +39,18 @@ throw_if_empty(const std::string& name, const std::string& value)
     }
 }
 
-account_service::account_service(repository::account_repository account_repo,
-    repository::login_info_repository login_info_repo)
-    : account_repo_(std::move(account_repo)),
-      login_info_repo_(std::move(login_info_repo)) {
+account_service::account_service(utility::repository::context ctx)
+    : account_repo_(ctx),
+      login_info_repo_(ctx) {
 
     BOOST_LOG_SEV(lg(), debug) << "DML for account: " << account_repo_.sql();
     BOOST_LOG_SEV(lg(), debug) << "DML for account: " << login_info_repo_.sql();
 }
 
-domain::account account_service::
-create_account(context ctx, const std::string& username, const std::string& email,
-    const std::string& password, const std::string& modified_by, bool is_admin) {
+domain::account
+account_service::create_account(const std::string& username,
+    const std::string& email, const std::string& password,
+    const std::string& modified_by, bool is_admin) {
 
     throw_if_empty("Username", username);
     throw_if_empty("Email", email);
@@ -79,75 +79,78 @@ create_account(context ctx, const std::string& username, const std::string& emai
     };
 
     std::vector<domain::account> accounts{new_account};
-    account_repo_.write(ctx, accounts);
+    account_repo_.write(accounts);
 
     // Create a corresponding login tracking entry
-    domain::login_info li{
+    domain::login_info li {
+        .last_login = {},
         .account_id = id,
-        .last_ip = {},
-        .last_attempt_ip = {},
         .failed_logins = 0,
         .locked = false,
-        .last_login = {},
-        .online = false
+        .online = false,
+        .last_ip = {},
+        .last_attempt_ip = {}
     };
 
     std::vector<domain::login_info> login_infos{li};
-    login_info_repo_.write(ctx, login_infos);
+    login_info_repo_.write(login_infos);
 
     return new_account;
 }
 
-std::vector<domain::account> account_service::list_accounts(context ctx) {
-    return account_repo_.read_latest(ctx);
+std::vector<domain::account> account_service::list_accounts() {
+    return account_repo_.read_latest();
 }
 
-void account_service::delete_account(context ctx, const boost::uuids::uuid& account_id) {
+void account_service::delete_account(const boost::uuids::uuid& account_id) {
     // For now we'll just read the account and return - in a real implementation
     // this would remove the account from the database, but that requires
     // additional repository method support
-    auto accounts = account_repo_.read_latest(ctx, account_id);
+    auto accounts = account_repo_.read_latest(account_id);
     if (accounts.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "Attempted to delete non-existent account: "
-                                << boost::uuids::to_string(account_id);
+                                  << boost::uuids::to_string(account_id);
         throw std::invalid_argument("Account does not exist");
     }
 
+    // FIXME
     // TODO: In a complete implementation, this would remove the account
     // and its associated login tracking information from the database
     BOOST_LOG_SEV(lg(), warn) << "Account deletion not fully implemented";
 }
 
-domain::account account_service::login(context ctx, const std::string& username,
+domain::account account_service::login(const std::string& username,
     const std::string& password, const boost::asio::ip::address& ip_address) {
 
     throw_if_empty("Username", username);
     throw_if_empty("Password", password); // FIXME: do not log
 
     BOOST_LOG_SEV(lg(), debug) << "Login attempt for username: " << username
-                             << " from IP: " << ip_address;
+                               << " from IP: " << ip_address;
 
     // Read the account by username
-    auto accounts = account_repo_.read_latest_by_username(ctx, username);
+    auto accounts = account_repo_.read_latest_by_username(username);
     if (accounts.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "Login failed: account not found for username: "
-                                << username;
+                                  << username;
         throw std::runtime_error("Invalid username or password");
     }
 
     const auto& account = accounts[0];
 
-    auto login_info_vec = login_info_repo_.read(ctx, account.id);
+    auto login_info_vec =
+        login_info_repo_.read(account.id);
     if (login_info_vec.empty()) {
         BOOST_LOG_SEV(lg(), error) << "Login tracking not found for account: "
-                                 << boost::uuids::to_string(account.id);
+                                   << boost::uuids::to_string(account.id);
         throw std::runtime_error("Login tracking information missing");
     }
 
     auto login_info = login_info_vec[0];
 
     if (login_info.locked) {
-        BOOST_LOG_SEV(lg(), warn) << "Login attempt for locked account: " << username;
+        BOOST_LOG_SEV(lg(), warn) << "Login attempt for locked account: "
+                                  << username;
         throw std::runtime_error("Account is locked due to too many failed login attempts");
     }
 
@@ -170,7 +173,7 @@ domain::account account_service::login(context ctx, const std::string& username,
                                     << username;
         }
 
-        login_info_repo_.update(ctx, login_info);
+        login_info_repo_.update(login_info);
 
         throw std::runtime_error("Invalid username or password");
     }
@@ -181,27 +184,28 @@ domain::account account_service::login(context ctx, const std::string& username,
     login_info.online = true;
 
     BOOST_LOG_SEV(lg(), info) << "Successful login for username: " << username
-                            << " from IP: " << ip_address;
+                              << " from IP: " << ip_address;
 
-    login_info_repo_.update(ctx, login_info);
+    login_info_repo_.update(login_info);
 
     return account;
 }
 
-void account_service::unlock_account(context ctx, const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Unlocking account: " << boost::uuids::to_string(account_id);
+void account_service::unlock_account(const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Unlocking account: "
+                               << boost::uuids::to_string(account_id);
 
-    auto accounts = account_repo_.read_latest(ctx, account_id);
+    auto accounts = account_repo_.read_latest(account_id);
     if (accounts.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "Attempted to unlock non-existent account: "
-                                << boost::uuids::to_string(account_id);
+                                  << boost::uuids::to_string(account_id);
         throw std::invalid_argument("Account does not exist");
     }
 
-    auto login_info_vec = login_info_repo_.read(ctx, account_id);
+    auto login_info_vec = login_info_repo_.read(account_id);
     if (login_info_vec.empty()) {
         BOOST_LOG_SEV(lg(), error) << "Login tracking not found for account: "
-                                 << boost::uuids::to_string(account_id);
+                                   << boost::uuids::to_string(account_id);
         throw std::runtime_error("Login tracking information missing");
     }
 
@@ -214,9 +218,9 @@ void account_service::unlock_account(context ctx, const boost::uuids::uuid& acco
     login_info.failed_logins = 0;
 
     BOOST_LOG_SEV(lg(), info) << "Account unlocked: "
-                            << boost::uuids::to_string(account_id);
+                              << boost::uuids::to_string(account_id);
 
-    login_info_repo_.update(ctx, login_info);
+    login_info_repo_.update(login_info);
 }
 
 }

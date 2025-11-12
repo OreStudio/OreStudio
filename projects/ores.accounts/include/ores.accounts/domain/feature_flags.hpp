@@ -30,14 +30,14 @@ namespace ores::accounts::domain {
  */
 struct feature_flags final {
     /**
+     * @brief Flag indicating whether the feature is enabled or disabled.
+     */
+    bool enabled = false;
+
+    /**
      * @brief Name of the feature flag, serves as the unique identifier.
      */
     std::string name;
-
-    /**
-     * @brief Flag indicating whether the feature is enabled or disabled.
-     */
-    bool enabled;
 
     /**
      * @brief Description of what the feature flag controls.

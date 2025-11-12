@@ -46,10 +46,7 @@ TEST_CASE("create_account_with_valid_data", tags) {
 
     database_helper h;
     h.truncate_table(database_table);
-
-    repository::account_repository account_repo;
-    repository::login_info_repository login_info_repo;
-    service::account_service svc(account_repo, login_info_repo);
+    service::account_service svc(h.get_context());
 
     auto original = generate_synthetic_account();
     const std::string username = original.username;
@@ -58,8 +55,8 @@ TEST_CASE("create_account_with_valid_data", tags) {
     BOOST_LOG_SEV(lg, info) << "Creating account: - username: " << username
                             << ", email: " << email;
 
-    auto account = svc.create_account(h.get_context(), username, email,
-        password, "admin", false);
+    auto account = svc.create_account(username, email, password,
+        "admin", false);
 
     BOOST_LOG_SEV(lg, info) << "Created account: " << account;
 
@@ -75,10 +72,7 @@ TEST_CASE("create_account_with_admin_flag", tags) {
 
     database_helper h;
     h.truncate_table(database_table);
-
-    repository::account_repository account_repo;
-    repository::login_info_repository login_info_repo;
-    service::account_service svc(account_repo, login_info_repo);
+    service::account_service svc(h.get_context());
 
     auto original = generate_synthetic_account();
     const std::string username = original.username;
@@ -86,10 +80,10 @@ TEST_CASE("create_account_with_admin_flag", tags) {
     const std::string password = faker::internet::password();
     const std::string modified_by = original.modified_by;
 
-    BOOST_LOG_SEV(lg, info) << "Creating admin account: - username: " << username
-                            << ", email: " << email;
+    BOOST_LOG_SEV(lg, info) << "Creating admin account: - username: "
+                            << username << ", email: " << email;
 
-    auto account = svc.create_account(h.get_context(), username, email,
+    auto account = svc.create_account(username, email,
         password, modified_by, true);
 
     BOOST_LOG_SEV(lg, info) << "Created account: " << account;
@@ -103,10 +97,7 @@ TEST_CASE("create_multiple_accounts", tags) {
 
     database_helper h;
     h.truncate_table(database_table);
-
-    repository::account_repository account_repo;
-    repository::login_info_repository login_info_repo;
-    service::account_service svc(account_repo, login_info_repo);
+    service::account_service svc(h.get_context());
 
     for (int i = 0; i < 5; ++i) {
         auto original = generate_synthetic_account();
@@ -118,7 +109,7 @@ TEST_CASE("create_multiple_accounts", tags) {
         BOOST_LOG_SEV(lg, info) << "Creating account: - username: " << username
                                 << ", email: " << email;
 
-        auto account = svc.create_account(h.get_context(), username, email,
+        auto account = svc.create_account(username, email,
             password, modified_by, is_admin);
 
         BOOST_LOG_SEV(lg, info) << "Account " << i << ": " << account;
@@ -134,10 +125,7 @@ TEST_CASE("create_account_with_empty_username_throws", tags) {
 
     database_helper h;
     h.truncate_table(database_table);
-
-    repository::account_repository account_repo;
-    repository::login_info_repository login_info_repo;
-    service::account_service svc(account_repo, login_info_repo);
+    service::account_service svc(h.get_context());
 
     BOOST_LOG_SEV(lg, info) << "Attempting to create account with empty username";
 
@@ -148,7 +136,7 @@ TEST_CASE("create_account_with_empty_username_throws", tags) {
     const std::string modified_by = original.modified_by;
     const bool is_admin = faker::datatype::boolean();
 
-    CHECK_THROWS_AS(svc.create_account(h.get_context(), username, email,
+    CHECK_THROWS_AS(svc.create_account(username, email,
         password, modified_by, false), std::invalid_argument);
 }
 
@@ -157,10 +145,7 @@ TEST_CASE("create_account_with_empty_email_throws", tags) {
 
     database_helper h;
     h.truncate_table(database_table);
-
-    repository::account_repository account_repo;
-    repository::login_info_repository login_info_repo;
-    service::account_service svc(account_repo, login_info_repo);
+    service::account_service svc(h.get_context());
 
     auto original = generate_synthetic_account();
     const std::string username = original.username;
@@ -171,7 +156,7 @@ TEST_CASE("create_account_with_empty_email_throws", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Attempting to create account with empty email";
 
-    CHECK_THROWS_AS(svc.create_account(h.get_context(), username, email,
+    CHECK_THROWS_AS(svc.create_account(username, email,
         password, modified_by, false), std::invalid_argument);
 }
 
@@ -180,10 +165,7 @@ TEST_CASE("create_account_with_empty_password_throws", tags) {
 
     database_helper h;
     h.truncate_table(database_table);
-
-    repository::account_repository account_repo;
-    repository::login_info_repository login_info_repo;
-    service::account_service svc(account_repo, login_info_repo);
+    service::account_service svc(h.get_context());
 
     auto original = generate_synthetic_account();
     const std::string username = original.username;
@@ -194,7 +176,7 @@ TEST_CASE("create_account_with_empty_password_throws", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Attempting to create account with empty password";
 
-    CHECK_THROWS_AS(svc.create_account(h.get_context(), username, email,
+    CHECK_THROWS_AS(svc.create_account(username, email,
         password, modified_by, false), std::invalid_argument);
 }
 
@@ -203,30 +185,23 @@ TEST_CASE("list_accounts_returns_empty_for_no_accounts", tags) {
 
     database_helper h;
     h.truncate_table(database_table);
-
-    repository::account_repository account_repo;
-    repository::login_info_repository login_info_repo;
-    service::account_service svc(account_repo, login_info_repo);
+    service::account_service svc(h.get_context());
 
     BOOST_LOG_SEV(lg, info) << "Listing accounts in empty database";
 
-    auto accounts = svc.list_accounts(h.get_context());
+    auto accounts = svc.list_accounts();
 
     BOOST_LOG_SEV(lg, info) << "Found " << accounts.size() << " accounts";
 
     CHECK(accounts.empty());
 }
 
-TEST_CASE("list_accounts_returns_created_accounts",
-    tags) {
+TEST_CASE("list_accounts_returns_created_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
     h.truncate_table(database_table);
-
-    repository::account_repository account_repo;
-    repository::login_info_repository login_info_repo;
-    service::account_service svc(account_repo, login_info_repo);
+    service::account_service svc(h.get_context());
 
     const int expected_count = 3;
     auto written_accounts = generate_synthetic_accounts(expected_count);
@@ -239,13 +214,13 @@ TEST_CASE("list_accounts_returns_created_accounts",
         BOOST_LOG_SEV(lg, info) << "Creating account: - username: " << username
                                 << ", email: " << email;
 
-        svc.create_account(h.get_context(), username, email,
+        svc.create_account(username, email,
             password, modified_by, false);
     }
 
     BOOST_LOG_SEV(lg, info) << "Listing accounts";
 
-    auto accounts = svc.list_accounts(h.get_context());
+    auto accounts = svc.list_accounts();
 
     BOOST_LOG_SEV(lg, info) << "Found " << accounts.size() << " accounts";
     for (const auto& acc : accounts) {
@@ -260,10 +235,7 @@ TEST_CASE("login_with_valid_credentials", tags) {
 
     database_helper h;
     h.truncate_table(database_table);
-
-    repository::account_repository account_repo;
-    repository::login_info_repository login_info_repo;
-    service::account_service svc(account_repo, login_info_repo);
+    service::account_service svc(h.get_context());
 
     auto original = generate_synthetic_account();
     const std::string username = original.username;
@@ -275,14 +247,14 @@ TEST_CASE("login_with_valid_credentials", tags) {
                             << ", email: " << email;
 
     // Create account
-    auto created_account = svc.create_account(h.get_context(), username,
+    auto created_account = svc.create_account(username,
         email, password, modified_by, false);
 
     BOOST_LOG_SEV(lg, info) << "Attempting login with valid credentials";
 
     // Attempt login
     auto ip = boost::asio::ip::make_address(faker::internet::ipv4());
-    auto logged_in_account = svc.login(h.get_context(), username, password, ip);
+    auto logged_in_account = svc.login(username, password, ip);
 
     BOOST_LOG_SEV(lg, info) << "Logged in account: " << logged_in_account;
 
@@ -295,10 +267,7 @@ TEST_CASE("login_with_invalid_password_throws", tags) {
 
     database_helper h;
     h.truncate_table(database_table);
-
-    repository::account_repository account_repo;
-    repository::login_info_repository login_info_repo;
-    service::account_service svc(account_repo, login_info_repo);
+    service::account_service svc(h.get_context());
 
     auto original = generate_synthetic_account();
     const std::string username = original.username;
@@ -308,13 +277,13 @@ TEST_CASE("login_with_invalid_password_throws", tags) {
     const bool is_admin = faker::datatype::boolean();
 
     // Create account
-    auto created_account = svc.create_account(h.get_context(), username,
+    auto created_account = svc.create_account(username,
         email, password, modified_by, false);
 
     BOOST_LOG_SEV(lg, info) << "Attempting login with invalid password";
 
     auto ip = boost::asio::ip::make_address(faker::internet::ipv4());
-    CHECK_THROWS_AS(svc.login(h.get_context(), username, "wrong_password", ip),
+    CHECK_THROWS_AS(svc.login(username, "wrong_password", ip),
         std::runtime_error);
 }
 
@@ -323,16 +292,13 @@ TEST_CASE("login_with_nonexistent_username_throws", tags) {
 
     database_helper h;
     h.truncate_table(database_table);
-
-    repository::account_repository account_repo;
-    repository::login_info_repository login_info_repo;
-    service::account_service svc(account_repo, login_info_repo);
+    service::account_service svc(h.get_context());
 
     BOOST_LOG_SEV(lg, info) << "Attempting login with nonexistent username";
     const std::string username = std::string(faker::internet::username());
     const std::string password = faker::internet::password();
     auto ip = boost::asio::ip::make_address(faker::internet::ipv4());
-    CHECK_THROWS_AS(svc.login(h.get_context(), username, password, ip),
+    CHECK_THROWS_AS(svc.login(username, password, ip),
         std::runtime_error);
 }
 
@@ -341,17 +307,14 @@ TEST_CASE("login_with_empty_username_throws", tags) {
 
     database_helper h;
     h.truncate_table(database_table);
-
-    repository::account_repository account_repo;
-    repository::login_info_repository login_info_repo;
-    service::account_service svc(account_repo, login_info_repo);
+    service::account_service svc(h.get_context());
 
     BOOST_LOG_SEV(lg, info) << "Attempting login with empty username";
 
     const std::string username;
     const std::string password = faker::internet::password();
     auto ip = boost::asio::ip::make_address(faker::internet::ipv4());
-    CHECK_THROWS_AS(svc.login(h.get_context(), username, password, ip),
+    CHECK_THROWS_AS(svc.login(username, password, ip),
         std::invalid_argument);
 }
 
@@ -360,17 +323,14 @@ TEST_CASE("login_with_empty_password_throws", tags) {
 
     database_helper h;
     h.truncate_table(database_table);
-
-    repository::account_repository account_repo;
-    repository::login_info_repository login_info_repo;
-    service::account_service svc(account_repo, login_info_repo);
+    service::account_service svc(h.get_context());
 
     BOOST_LOG_SEV(lg, info) << "Attempting login with empty password";
 
     auto original = generate_synthetic_account();
     const std::string username = std::string(faker::internet::username());
     const auto ip = boost::asio::ip::make_address(faker::internet::ipv4());
-    CHECK_THROWS_AS(svc.login(h.get_context(), username, "", ip),
+    CHECK_THROWS_AS(svc.login(username, "", ip),
         std::invalid_argument);
 }
 
@@ -380,10 +340,7 @@ TEST_CASE("account_locks_after_multiple_failed_logins",
 
     database_helper h;
     h.truncate_table(database_table);
-
-    repository::account_repository account_repo;
-    repository::login_info_repository login_info_repo;
-    service::account_service svc(account_repo, login_info_repo);
+    service::account_service svc(h.get_context());
 
     auto original = generate_synthetic_account();
     const std::string username = original.username;
@@ -394,7 +351,7 @@ TEST_CASE("account_locks_after_multiple_failed_logins",
                             << ", email: " << email;
 
     // Create account
-    svc.create_account(h.get_context(), username, email, password,
+    svc.create_account(username, email, password,
         modified_by, false);
 
     BOOST_LOG_SEV(lg, info) << "Attempting 5 failed logins to lock account";
@@ -404,7 +361,7 @@ TEST_CASE("account_locks_after_multiple_failed_logins",
     // Attempt 5 failed logins
     for (int i = 0; i < 5; ++i) {
         try {
-            svc.login(h.get_context(), username, "wrong_password", ip);
+            svc.login(username, "wrong_password", ip);
         } catch (const std::runtime_error& e) {
             BOOST_LOG_SEV(lg, info) << "Failed login attempt " << (i + 1)
                                    << ": " << e.what();
@@ -413,7 +370,7 @@ TEST_CASE("account_locks_after_multiple_failed_logins",
 
     // Next attempt should indicate account is locked
     try {
-        svc.login(h.get_context(), username, password, ip);
+        svc.login(username, password, ip);
         FAIL("Expected account to be locked");
     } catch (const std::runtime_error& e) {
         BOOST_LOG_SEV(lg, info) << "Account locked: " << e.what();
@@ -426,10 +383,7 @@ TEST_CASE("unlock_account_successful", tags) {
 
     database_helper h;
     h.truncate_table(database_table);
-
-    repository::account_repository account_repo;
-    repository::login_info_repository login_info_repo;
-    service::account_service svc(account_repo, login_info_repo);
+    service::account_service svc(h.get_context());
 
     auto original = generate_synthetic_account();
     const std::string username = original.username;
@@ -440,7 +394,7 @@ TEST_CASE("unlock_account_successful", tags) {
                             << ", email: " << email;
 
     // Create account
-    auto account = svc.create_account(h.get_context(), username, email,
+    auto account = svc.create_account(username, email,
         password, modified_by, false);
 
     BOOST_LOG_SEV(lg, info) << "Locking account by failing 5 login attempts";
@@ -450,19 +404,19 @@ TEST_CASE("unlock_account_successful", tags) {
     // Lock the account by failing 5 logins
     for (int i = 0; i < 5; ++i) {
         try {
-            svc.login(h.get_context(), username, "wrong_password", ip);
+            svc.login(username, "wrong_password", ip);
         } catch (...) {}
     }
 
     BOOST_LOG_SEV(lg, info) << "Unlocking account";
 
     // Unlock the account
-    svc.unlock_account(h.get_context(), account.id);
+    svc.unlock_account(account.id);
 
     BOOST_LOG_SEV(lg, info) << "Attempting login after unlock";
 
     // Should now be able to login successfully
-    auto logged_in_account = svc.login(h.get_context(), username, password, ip);
+    auto logged_in_account = svc.login(username, password, ip);
 
     CHECK(logged_in_account.username == username);
 }
@@ -472,17 +426,14 @@ TEST_CASE("unlock_nonexistent_account_throws", tags) {
 
     database_helper h;
     h.truncate_table(database_table);
-
-    repository::account_repository account_repo;
-    repository::login_info_repository login_info_repo;
-    service::account_service svc(account_repo, login_info_repo);
+    service::account_service svc(h.get_context());
 
     BOOST_LOG_SEV(lg, info) << "Attempting to unlock nonexistent account";
 
     boost::uuids::random_generator gen;
     auto fake_id = gen();
 
-    CHECK_THROWS_AS(svc.unlock_account(h.get_context(), fake_id),
+    CHECK_THROWS_AS(svc.unlock_account(fake_id),
         std::invalid_argument);
 }
 
@@ -492,17 +443,14 @@ TEST_CASE("delete_nonexistent_account_throws",
 
     database_helper h;
     h.truncate_table(database_table);
-
-    repository::account_repository account_repo;
-    repository::login_info_repository login_info_repo;
-    service::account_service svc(account_repo, login_info_repo);
+    service::account_service svc(h.get_context());
 
     BOOST_LOG_SEV(lg, info) << "Attempting to delete nonexistent account";
 
     boost::uuids::random_generator gen;
     auto fake_id = gen();
 
-    CHECK_THROWS_AS(svc.delete_account(h.get_context(), fake_id),
+    CHECK_THROWS_AS(svc.delete_account(fake_id),
         std::invalid_argument);
 }
 
@@ -511,10 +459,7 @@ TEST_CASE("login_with_different_ip_addresses", tags) {
 
     database_helper h;
     h.truncate_table(database_table);
-
-    repository::account_repository account_repo;
-    repository::login_info_repository login_info_repo;
-    service::account_service svc(account_repo, login_info_repo);
+    service::account_service svc(h.get_context());
 
     auto original = generate_synthetic_account();
     const std::string username = original.username;
@@ -525,8 +470,7 @@ TEST_CASE("login_with_different_ip_addresses", tags) {
                             << ", email: " << email;
 
     // Create account
-    svc.create_account(h.get_context(), username, email, password,
-        modified_by, false);
+    svc.create_account(username, email, password, modified_by, false);
 
     BOOST_LOG_SEV(lg, info) << "Testing logins from different IPs";
 
@@ -535,7 +479,7 @@ TEST_CASE("login_with_different_ip_addresses", tags) {
         std::string ip_str = std::string(faker::internet::ipv4());
         auto ip = boost::asio::ip::make_address(ip_str);
 
-        auto account = svc.login(h.get_context(), username, password, ip);
+        auto account = svc.login(username, password, ip);
 
         BOOST_LOG_SEV(lg, info) << "Login " << i << " from IP: " << ip_str
                                << " - account: " << account.username;

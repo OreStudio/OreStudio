@@ -17,9 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.qt/SplashScreen.hpp"
+
 #include <QPainter>
 #include <QLinearGradient>
-#include "ores.qt/SplashScreen.hpp"
 
 namespace ores::qt {
 

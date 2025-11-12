@@ -17,10 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.qt/CurrencyEditDialog.hpp"
+
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ui_CurrencyEditDialog.h"
-#include "ores.qt/CurrencyEditDialog.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.comms/protocol/frame.hpp"

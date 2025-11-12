@@ -17,9 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/string/converter.hpp"
+
 #include <charconv>
 #include "ores.utility/string/conversion_error.hpp"
-#include "ores.utility/string/converter.hpp"
 
 namespace ores::utility::string {
 

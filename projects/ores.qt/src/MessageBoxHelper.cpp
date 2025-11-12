@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/MessageBoxHelper.hpp"
+
 #include <QAbstractButton>
 #include <QPixmap>
 #include <QImage>

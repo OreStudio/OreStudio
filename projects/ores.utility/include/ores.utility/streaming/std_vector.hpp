@@ -30,7 +30,7 @@ namespace std {
 template<typename Containee>
 inline ostream& operator<<(ostream& s, const vector<Containee>& v) {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 }
 
 }

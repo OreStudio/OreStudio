@@ -17,10 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.risk/orexml/exporter.hpp"
+
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.risk/orexml/CurrencyConfig.hpp"
 #include "ores.risk/orexml/currency_mapper.hpp"
-#include "ores.risk/orexml/exporter.hpp"
 
 namespace ores::risk::orexml {
 

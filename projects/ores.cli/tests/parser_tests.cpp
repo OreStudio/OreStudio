@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.cli/config/parser.hpp"
+
 #include <vector>
 #include <sstream>
 #include <boost/program_options.hpp>
@@ -24,7 +26,6 @@
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/streaming/std_optional.hpp" // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.cli/config/parser.hpp"
 #include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/format.hpp"
 #include "ores.cli/config/parser_exception.hpp"

@@ -17,11 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/log/logging_configuration.hpp"
+
 #include <format>
 #include <boost/throw_exception.hpp>
 #include "ores.utility/log/severity_level.hpp"
 #include "ores.utility/log/logging_exception.hpp"
-#include "ores.utility/log/logging_configuration.hpp"
 
 namespace ores::utility::log {
 

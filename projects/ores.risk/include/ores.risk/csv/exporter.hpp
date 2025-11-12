@@ -39,6 +39,11 @@ private:
         return instance;
     }
 
+    /**
+     * @brief Properly escape CSV fields according to RFC 4180.
+     */
+    static std::string escape_csv_field(const std::string& field);
+
 public:
     static std::string
     export_currency_config(const std::vector<domain::currency>& v);

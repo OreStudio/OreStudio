@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.client/app/repl.hpp"
+
 #include <condition_variable>
 #include <iostream>
 #include <boost/asio/co_spawn.hpp>
@@ -25,7 +27,6 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <cli/cli.h>
 #include <cli/clifilesession.h>
-#include "ores.client/app/repl.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/streaming/std_vector.hpp"
 #include "ores.comms/protocol/handshake.hpp"

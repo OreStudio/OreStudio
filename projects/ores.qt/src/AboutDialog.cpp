@@ -19,6 +19,7 @@
  *
  */
 #include "ores.qt/AboutDialog.hpp"
+
 #include "ores.utility/version/version.hpp"
 #include <QApplication>
 #include <QDate>

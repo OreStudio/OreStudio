@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/ClientCurrencyModel.hpp"
+
 #include <algorithm>
 #include <QtConcurrent>
 #include "ores.comms/protocol/frame.hpp"

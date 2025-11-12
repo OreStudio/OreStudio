@@ -399,7 +399,7 @@ get_currencies_request::deserialize(std::span<const std::uint8_t> data) {
 std::ostream& operator<<(std::ostream& s, const get_currencies_request& v)
 {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 }
 
 std::vector<std::uint8_t> get_currencies_response::serialize() const {
@@ -505,7 +505,7 @@ get_currencies_response::deserialize(std::span<const std::uint8_t> data) {
 std::ostream& operator<<(std::ostream& s, const get_currencies_response& v)
 {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 }
 
 std::vector<std::uint8_t> create_currency_request::serialize() const {

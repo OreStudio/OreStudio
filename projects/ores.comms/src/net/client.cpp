@@ -37,7 +37,7 @@ using namespace ores::utility::log;
 
 std::ostream& operator<<(std::ostream& s, const client_options& v) {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 }
 
 client::client(client_options config)

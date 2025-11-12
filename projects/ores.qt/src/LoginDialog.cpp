@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/LoginDialog.hpp"
+
 #include "ores.qt/MessageBoxHelper.hpp"
 #include <QVBoxLayout>
 #include <QHBoxLayout>

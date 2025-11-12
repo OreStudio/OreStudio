@@ -17,11 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.risk/orexml/CurrencyConfig.hpp"
+
 #include <filesystem>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/filesystem/file.hpp"
-#include "ores.risk/orexml/CurrencyConfig.hpp"
 
 namespace {
 

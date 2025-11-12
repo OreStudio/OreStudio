@@ -17,8 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <rfl/json.hpp>
 #include "ores.utility/repository/context_factory.hpp"
+
+#include <rfl/json.hpp>
 
 namespace ores::utility::repository {
 
@@ -27,7 +28,7 @@ using namespace ores::utility::log;
 std::ostream&
 operator<<(std::ostream& s, const context_factory::configuration& v) {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 }
 
 context context_factory::make_context(const configuration& cfg) {

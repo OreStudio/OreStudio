@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.accounts/repository/account_repository.hpp"
+
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -25,7 +27,6 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.accounts/domain/account.hpp"
 #include "ores.accounts/generators/account_generator.hpp"
-#include "ores.accounts/repository/account_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 
 namespace {

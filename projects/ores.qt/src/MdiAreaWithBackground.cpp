@@ -17,8 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <QPainter>
 #include "ores.qt/MdiAreaWithBackground.hpp"
+
+#include <QPainter>
 
 namespace ores::qt {
 

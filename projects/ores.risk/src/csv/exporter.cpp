@@ -17,17 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.risk/csv/exporter.hpp"
+
 #include <sstream>
 #include <string>
 #include <vector>
 #include <iostream>
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.risk/csv/exporter.hpp"
 
-namespace {
+namespace ores::risk::csv {
 
-// Properly escape CSV fields according to RFC 4180 with more robust implementation
-std::string escape_csv_field(const std::string& field) {
+using domain::currency;
+using namespace ores::utility::log;
+
+std::string exporter::escape_csv_field(const std::string& field) {
     // Check if field contains special characters that need escaping
     bool needs_quoting = field.empty() ||
                          field.find(',') != std::string::npos ||
@@ -51,14 +54,6 @@ std::string escape_csv_field(const std::string& field) {
 
     return result;
 }
-
-}
-
-namespace ores::risk::csv {
-
-using domain::currency;
-using namespace ores::utility::log;
-
 
 std::string
 exporter::export_currency_config(const std::vector<currency>& v) {

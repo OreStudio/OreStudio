@@ -31,7 +31,7 @@ template <typename Containee>
 inline std::ostream&
 operator<<(std::ostream& s, const std::optional<Containee>& v) {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 }
 
 }

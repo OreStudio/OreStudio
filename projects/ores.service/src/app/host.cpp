@@ -17,13 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.service/app/host.hpp"
+
 #include <cstdlib>
 #include <boost/exception/diagnostic_information.hpp>
 #include "ores.utility/log/lifecycle_manager.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.service/app/application.hpp"
 #include "ores.service/config/parser.hpp"
-#include "ores.service/app/host.hpp"
 
 namespace ores::service::app {
 

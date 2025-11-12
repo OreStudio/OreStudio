@@ -73,7 +73,7 @@ create_account_request::deserialize(std::span<const std::uint8_t> data) {
 std::ostream& operator<<(std::ostream& s, const create_account_request& v)
 {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 }
 
 std::vector<std::uint8_t> create_account_response::serialize() const {
@@ -96,7 +96,7 @@ create_account_response::deserialize(std::span<const std::uint8_t> data) {
 std::ostream& operator<<(std::ostream& s, const create_account_response& v)
 {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 }
 
 
@@ -115,7 +115,7 @@ list_accounts_request::deserialize(std::span<const std::uint8_t> data) {
 std::ostream& operator<<(std::ostream& s, const list_accounts_request& v)
 {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 }
 
 std::vector<std::uint8_t> list_accounts_response::serialize() const {
@@ -200,7 +200,7 @@ list_accounts_response::deserialize(std::span<const std::uint8_t> data) {
 std::ostream& operator<<(std::ostream& s, const list_accounts_response& v)
 {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 }
 
 std::vector<std::uint8_t> login_request::serialize() const {
@@ -228,7 +228,7 @@ login_request::deserialize(std::span<const std::uint8_t> data) {
 std::ostream& operator<<(std::ostream& s, const login_request& v)
 {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 }
 
 std::vector<std::uint8_t> login_response::serialize() const {
@@ -271,7 +271,7 @@ login_response::deserialize(std::span<const std::uint8_t> data) {
 std::ostream& operator<<(std::ostream& s, const login_response& v)
 {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 }
 
 std::vector<std::uint8_t> unlock_account_request::serialize() const {
@@ -294,7 +294,7 @@ unlock_account_request::deserialize(std::span<const std::uint8_t> data) {
 std::ostream& operator<<(std::ostream& s, const unlock_account_request& v)
 {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 }
 
 std::vector<std::uint8_t> unlock_account_response::serialize() const {
@@ -322,7 +322,7 @@ unlock_account_response::deserialize(std::span<const std::uint8_t> data) {
 std::ostream& operator<<(std::ostream& s, const unlock_account_response& v)
 {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 }
 
 }

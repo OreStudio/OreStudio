@@ -17,8 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <expected>
 #include "ores.comms/protocol/reader.hpp"
+
+#include <expected>
 
 namespace ores::comms::protocol {
 

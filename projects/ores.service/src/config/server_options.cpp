@@ -17,20 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <ostream>
 #include "ores.service/config/server_options.hpp"
+
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 
 namespace ores::service::config {
 
 std::ostream& operator<<(std::ostream& s, const server_options& v) {
-    s << " { "
-      << "\"__type__\": " << "\"ores::service::config::server_options\"" << ", "
-      << "\"port\": " << v.port << ", "
-      << "\"max_connections\": " << v.max_connections << ", "
-      << "\"certificate_file\": " << "\"" << v.certificate_file << "\"" << ", "
-      << "\"private_key_file\": " << "\"" << v.private_key_file << "\"" << ", "
-      << "\"server_identifier\": " << "\"" << v.server_identifier << "\""
-      << " }";
+    rfl::json::write(v, s);
     return s;
 }
 

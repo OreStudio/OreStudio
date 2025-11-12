@@ -17,16 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.risk/orexml/CurrencyElement.hpp"
+
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.risk/orexml/CurrencyElement.hpp"
 
 namespace ores::risk::orexml {
 
 std::ostream& operator<<(std::ostream& s, const CurrencyElement& v) {
     rfl::json::write(v, s);
-    return(s);
+    return s;
 
 }
 

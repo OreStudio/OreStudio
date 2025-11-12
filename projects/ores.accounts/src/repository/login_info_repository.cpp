@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.accounts/repository/login_info_repository.hpp"
+
 #include <format>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
@@ -24,7 +26,6 @@
 #include "ores.utility/repository/repository_exception.hpp"
 #include "ores.accounts/repository/login_info_mapper.hpp"
 #include "ores.accounts/repository/login_info_entity.hpp"
-#include "ores.accounts/repository/login_info_repository.hpp"
 
 namespace ores::accounts::repository {
 

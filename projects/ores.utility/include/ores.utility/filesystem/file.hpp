@@ -20,10 +20,6 @@
 #ifndef ORES_UTILITY_FILESYSTEM_FILE_HPP
 #define ORES_UTILITY_FILESYSTEM_FILE_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <set>
 #include <list>
 #include <string>

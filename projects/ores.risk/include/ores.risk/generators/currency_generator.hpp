@@ -20,10 +20,6 @@
 #ifndef ORES_RISK_DOMAIN_CURRENCY_GENERATORHPP
 #define ORES_RISK_DOMAIN_CURRENCY_GENERATORHPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <vector>
 #include "faker-cxx/faker.h" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>

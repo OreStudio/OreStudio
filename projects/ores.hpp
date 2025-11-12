@@ -19,10 +19,6 @@
 #ifndef ORES_HPP
 #define ORES_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 /**
  * @brief The ORE Studio application.
  */

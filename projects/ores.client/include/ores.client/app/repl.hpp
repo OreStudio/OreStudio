@@ -20,10 +20,6 @@
 #ifndef ORES_CLIENT_APP_REPL_HPP
 #define ORES_CLIENT_APP_REPL_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <memory>
 #include <thread>
 #include <optional>

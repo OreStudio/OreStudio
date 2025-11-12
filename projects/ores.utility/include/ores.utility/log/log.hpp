@@ -19,10 +19,6 @@
 #ifndef ORES_UTILITY_LOG_LOG_HPP
 #define ORES_UTILITY_LOG_LOG_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 /**
  * @brief Implements logging for ORE Studio.
  */

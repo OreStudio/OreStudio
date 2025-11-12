@@ -19,10 +19,6 @@
 #ifndef ORES_UTILITY_UUID_UUID_V7_GENERATOR_HPP
 #define ORES_UTILITY_UUID_UUID_V7_GENERATOR_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <random>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>

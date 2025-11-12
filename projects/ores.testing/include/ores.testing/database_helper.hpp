@@ -20,10 +20,6 @@
 #ifndef ORES_TESTING_DATABASE_FIXTURE_HPP
 #define ORES_TESTING_DATABASE_FIXTURE_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <string>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"

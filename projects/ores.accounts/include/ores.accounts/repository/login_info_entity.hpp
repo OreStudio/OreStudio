@@ -20,10 +20,6 @@
 #ifndef ORES_ACCOUNTS_REPOSITORY_LOGIN_INFO_ENTITY_HPP
 #define ORES_ACCOUNTS_REPOSITORY_LOGIN_INFO_ENTITY_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <string>
 #include "sqlgen/Timestamp.hpp"
 #include "sqlgen/PrimaryKey.hpp"

@@ -21,10 +21,6 @@
 #ifndef ORES_QT_ABOUT_DIALOG_HPP
 #define ORES_QT_ABOUT_DIALOG_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <QDialog>
 #include <memory>
 #include "ui_AboutDialog.h"

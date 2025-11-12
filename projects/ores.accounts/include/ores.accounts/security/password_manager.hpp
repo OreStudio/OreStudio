@@ -21,10 +21,6 @@
 #ifndef ORES_ACCOUNTS_SECURITY_PASSWORD_MANAGER_HPP
 #define ORES_ACCOUNTS_SECURITY_PASSWORD_MANAGER_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <string>
 #include "ores.utility/log/make_logger.hpp"
 

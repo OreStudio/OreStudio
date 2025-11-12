@@ -20,10 +20,6 @@
 #ifndef ORES_ACCOUNTS_DOMAIN_ACCOUNT_GENERATOR_HPP
 #define ORES_ACCOUNTS_DOMAIN_ACCOUNT_GENERATOR_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <vector>
 #include "faker-cxx/faker.h" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>

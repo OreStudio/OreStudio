@@ -20,10 +20,6 @@
 #ifndef ORES_UTILITY_LOG_LOGGING_CONFIGURATION_HPP
 #define ORES_UTILITY_LOG_LOGGING_CONFIGURATION_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <string>
 #include <optional>
 #include <boost/program_options.hpp>

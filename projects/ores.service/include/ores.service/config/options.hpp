@@ -20,10 +20,6 @@
 #ifndef ORES_SERVICE_CONFIG_OPTIONS_HPP
 #define ORES_SERVICE_CONFIG_OPTIONS_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <iosfwd>
 #include <optional>
 #include "ores.utility/log/logging_options.hpp"

@@ -19,10 +19,6 @@
 #ifndef ORES_RISK_RISK_HPP
 #define ORES_RISK_RISK_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 /**
  * @brief Domain model for the ORE types and other related classes.
  */

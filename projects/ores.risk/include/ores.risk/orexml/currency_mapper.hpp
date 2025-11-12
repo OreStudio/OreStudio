@@ -20,10 +20,6 @@
 #ifndef ORES_RISK_OREXML_CURRENCY_MAPPER_HPP
 #define ORES_RISK_OREXML_CURRENCY_MAPPER_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.risk/domain/currency.hpp"
 #include "ores.risk/orexml/CurrencyConfig.hpp"

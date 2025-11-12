@@ -20,10 +20,6 @@
 #ifndef ORES_UTILITY_LOG_MAKE_LOGGER_HPP
 #define ORES_UTILITY_LOG_MAKE_LOGGER_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <string>
 #include <boost/log/sources/record_ostream.hpp>
 #include <boost/log/sources/severity_channel_logger.hpp>

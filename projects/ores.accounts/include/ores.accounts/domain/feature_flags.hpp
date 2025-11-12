@@ -20,10 +20,6 @@
 #ifndef ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_HPP
 #define ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <string>
 #include <iosfwd>
 

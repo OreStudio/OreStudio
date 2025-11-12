@@ -20,10 +20,6 @@
 #ifndef ORES_UTILITY_LOG_SEVERITY_LEVEL_HPP
 #define ORES_UTILITY_LOG_SEVERITY_LEVEL_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <string>
 #include <ostream>
 #include <boost/throw_exception.hpp>

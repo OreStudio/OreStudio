@@ -20,10 +20,6 @@
 #ifndef ORES_COMMS_PROTOCOL_READER_HPP
 #define ORES_COMMS_PROTOCOL_READER_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <span>
 #include <vector>
 #include <string>

@@ -20,10 +20,6 @@
 #ifndef ORES_UTILITY_PROGRAM_OPTIONS_ENVIRONMENT_MAPPER_HPP
 #define ORES_UTILITY_PROGRAM_OPTIONS_ENVIRONMENT_MAPPER_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <string>
 #include <functional>
 

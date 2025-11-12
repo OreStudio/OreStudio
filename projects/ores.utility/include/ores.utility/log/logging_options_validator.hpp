@@ -20,10 +20,6 @@
 #ifndef ORES_UTILITY_LOG_LOGGING_OPTIONS_VALIDATOR_HPP
 #define ORES_UTILITY_LOG_LOGGING_OPTIONS_VALIDATOR_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include "ores.utility/log/logging_options.hpp"
 
 namespace ores::utility::log {

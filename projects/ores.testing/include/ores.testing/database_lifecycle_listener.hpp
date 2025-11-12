@@ -20,10 +20,6 @@
 #ifndef ORES_TESTING_DATABASE_LIFECYCLE_LISTENER_HPP
 #define ORES_TESTING_DATABASE_LIFECYCLE_LISTENER_HPP
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-#pragma once
-#endif
-
 #include <string>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
 

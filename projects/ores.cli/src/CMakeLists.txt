@@ -48,6 +48,7 @@ target_link_libraries(${lib_target_name}
         ores.comms.lib
         magic_enum::magic_enum
         sqlgen::sqlgen
+        reflectcpp::reflectcpp
         cli::cli
         Boost::program_options)
 

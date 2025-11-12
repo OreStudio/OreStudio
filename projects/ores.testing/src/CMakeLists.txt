@@ -37,13 +37,11 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.utility.lib
-        OpenSSL::SSL
         Boost::log
-        Boost::program_options
-        sqlgen::sqlgen
     PRIVATE
         Boost::boost
         Boost::exception
+        sqlgen::sqlgen
         Catch2::Catch2
     )
 

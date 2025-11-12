@@ -68,14 +68,14 @@ create_account(context ctx, const std::string& username, const std::string& emai
     // Create the account object with computed fields
     domain::account new_account {
         .version = 0, // will be set by repository
-        .modified_by = modified_by,
+        .is_admin = is_admin,
         .id = id,
+        .modified_by = modified_by,
         .username = username,
         .password_hash = password_hash,
         .password_salt = "", // FIXME remove
         .totp_secret = "",
-        .email = email,
-        .is_admin = is_admin
+        .email = email
     };
 
     std::vector<domain::account> accounts{new_account};

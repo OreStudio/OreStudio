@@ -17,15 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.comms/protocol/frame.hpp"
+
 #include <span>
-#include <vector>
 #include <cstdint>
-#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/streaming/std_optional.hpp" // IWYU pragma: keep
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep
-#include "ores.comms/protocol/frame.hpp"
 #include "ores.comms/protocol/message_types.hpp"
 #include <boost/asio/prefer.hpp>
 

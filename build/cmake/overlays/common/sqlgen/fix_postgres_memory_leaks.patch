@@ -1,0 +1,41 @@
+diff --git a/src/sqlgen/postgres/Connection.cpp b/src/sqlgen/postgres/Connection.cpp
+index 6b33ad2..c2b333e 100644
+--- sqlgen-0.4.0/src/sqlgen/postgres/Connection.cpp
++++ sqlgen-0.4.0/src/sqlgen/postgres/Connection.cpp
+@@ -33,8 +33,11 @@ Result<Nothing> Connection::end_write() {
+   }
+   const auto res = PQgetResult(conn_.get());
+   if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+-    return error(PQerrorMessage(conn_.get()));
++    const auto err = error(PQerrorMessage(conn_.get()));
++    PQclear(res);
++    return err;
+   }
++  PQclear(res);
+   return Nothing{};
+ }
+
+@@ -56,8 +59,10 @@ Result<Nothing> Connection::insert_impl(
+   const auto status = PQresultStatus(res);
+
+   if (status != PGRES_COMMAND_OK) {
+-    return error("Generating prepared statement for '" + sql +
+-                 "' failed: " + PQresultErrorMessage(res));
++    const auto err = error("Generating prepared statement for '" + sql +
++                           "' failed: " + PQresultErrorMessage(res));
++    PQclear(res);
++    return err;
+   }
+
+   std::vector<const char*> current_row(_data[0].size());
+@@ -93,8 +98,10 @@ Result<Nothing> Connection::insert_impl(
+       const auto err = error(std::string("Executing INSERT failed: ") +
+                              PQresultErrorMessage(res));
+       execute("DEALLOCATE " + name + ";");
++      PQclear(res);
+       return err;
+     }
++    PQclear(res);
+   }
+
+   return execute("DEALLOCATE " + name + ";");

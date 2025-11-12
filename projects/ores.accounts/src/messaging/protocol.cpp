@@ -99,7 +99,6 @@ std::ostream& operator<<(std::ostream& s, const create_account_response& v)
     return s;
 }
 
-
 std::vector<std::uint8_t> list_accounts_request::serialize() const {
     return {};
 }

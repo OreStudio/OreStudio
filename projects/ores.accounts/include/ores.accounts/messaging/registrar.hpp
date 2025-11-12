@@ -37,7 +37,7 @@ namespace ores::accounts::messaging {
  */
 class registrar {
 private:
-    static auto& lg() {
+    [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
         static auto instance = make_logger(
             "ores.accounts.messaging.registrar");

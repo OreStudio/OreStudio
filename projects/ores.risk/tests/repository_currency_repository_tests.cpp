@@ -25,7 +25,7 @@
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "faker-cxx/faker.h" // IWYU pragma: keep.
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.risk/domain/currency.hpp"
 #include "ores.risk/generators/currency_generator.hpp"
 

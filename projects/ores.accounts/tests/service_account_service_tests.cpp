@@ -25,7 +25,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/log/make_logger.hpp"
-#include "faker-cxx/faker.h" // IWYU pragma: keep.
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.accounts/generators/account_generator.hpp"
 
 namespace {

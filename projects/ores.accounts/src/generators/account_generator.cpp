@@ -19,7 +19,7 @@
  */
 #include "ores.accounts/generators/account_generator.hpp"
 
-#include "faker-cxx/faker.h" // IWYU pragma: keep.
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/string_generator.hpp>

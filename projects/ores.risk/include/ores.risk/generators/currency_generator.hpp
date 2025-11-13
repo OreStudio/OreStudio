@@ -21,7 +21,7 @@
 #define ORES_RISK_DOMAIN_CURRENCY_GENERATORHPP
 
 #include <vector>
-#include "faker-cxx/faker.h" // IWYU pragma: keep.
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/string_generator.hpp>

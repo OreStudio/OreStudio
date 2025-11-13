@@ -22,7 +22,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include "ores.utility/log/make_logger.hpp"
-#include "faker-cxx/faker.h" // IWYU pragma: keep.
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace {
 

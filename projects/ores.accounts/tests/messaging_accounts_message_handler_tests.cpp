@@ -26,13 +26,16 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.testing/database_helper.hpp"
+#include "ores.testing/run_coroutine_test.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/faker/internet.hpp"
+
 #include "ores.accounts/generators/account_generator.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
 
 using namespace ores::accounts;
 using namespace ores::accounts::messaging;
+using ores::testing::run_coroutine_test;
 using ores::utility::faker::internet;
 
 namespace {
@@ -40,18 +43,6 @@ namespace {
 const std::string test_suite("ores.accounts.tests");
 const std::string database_table("oresdb.accounts");
 const std::string tags("[messaging_accounts_message_handler_tests]");
-
-template <typename Awaitable>
-void run_co_test(boost::asio::io_context& io_context, Awaitable&& awaitable) {
-    bool completed = false;
-    boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
-            co_await std::forward<Awaitable>(awaitable)();
-            completed = true;
-        }, boost::asio::detached);
-    io_context.run();
-    REQUIRE(completed);
-    io_context.restart(); // Prepare for next use if in a loop
-}
 
 create_account_request to_create_account_request(const domain::account& a) {
     create_account_request r;
@@ -90,7 +81,7 @@ TEST_CASE("handle_single_create_account_request", tags) {
     const auto payload = req.serialize();
 
     boost::asio::io_context io_context;
-    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+    run_coroutine_test(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
             message_type::create_account_request,
             payload, internet::endpoint());
@@ -122,7 +113,7 @@ TEST_CASE("handle_many_create_account_requests", tags) {
         BOOST_LOG_SEV(lg, info) << "Request: " << req;
 
         const auto payload = req.serialize();
-        run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+        run_coroutine_test(io_context, [&]() -> boost::asio::awaitable<void> {
             auto result = co_await handler.handle_message(
                 message_type::create_account_request,
                 payload, internet::endpoint());
@@ -152,7 +143,7 @@ TEST_CASE("handle_list_accounts_request_empty", tags) {
     const auto payload = req.serialize();
 
     boost::asio::io_context io_context;
-    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+    run_coroutine_test(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
             message_type::list_accounts_request,
             payload, internet::endpoint());
@@ -186,7 +177,7 @@ TEST_CASE("handle_list_accounts_request_with_accounts", tags) {
         BOOST_LOG_SEV(lg, info) << "Create request: " << create_req;
         const auto create_payload = create_req.serialize();
 
-        run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+        run_coroutine_test(io_context, [&]() -> boost::asio::awaitable<void> {
             auto result = co_await handler.handle_message(
                 message_type::create_account_request,
                 create_payload, internet::endpoint());
@@ -198,7 +189,7 @@ TEST_CASE("handle_list_accounts_request_with_accounts", tags) {
     BOOST_LOG_SEV(lg, info) << "Request: " << req;
 
     const auto payload = req.serialize();
-    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+    run_coroutine_test(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
             message_type::list_accounts_request,
             payload, internet::endpoint());
@@ -230,7 +221,7 @@ TEST_CASE("handle_login_request_with_valid_password", tags) {
     const auto create_payload = create_req.serialize();
 
     boost::asio::io_context io_context;
-    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+    run_coroutine_test(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
             message_type::create_account_request,
             create_payload, internet::endpoint());
@@ -244,7 +235,7 @@ TEST_CASE("handle_login_request_with_valid_password", tags) {
 
     const auto login_payload = login_req.serialize();
 
-    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+    run_coroutine_test(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
             message_type::login_request,
             login_payload, internet::endpoint());
@@ -280,7 +271,7 @@ TEST_CASE("handle_login_request_with_invalid_password", tags) {
     const auto create_payload = create_req.serialize();
 
     boost::asio::io_context io_context;
-    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+    run_coroutine_test(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
             message_type::create_account_request,
             create_payload, internet::endpoint());
@@ -294,7 +285,7 @@ TEST_CASE("handle_login_request_with_invalid_password", tags) {
     BOOST_LOG_SEV(lg, info) << "Request: " << login_req;
 
     const auto login_payload = login_req.serialize();
-    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+    run_coroutine_test(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
             message_type::login_request,
             login_payload, internet::endpoint());
@@ -331,7 +322,7 @@ TEST_CASE("handle_unlock_account_request", tags) {
     boost::uuids::uuid account_id;
 
     boost::asio::io_context io_context;
-    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+    run_coroutine_test(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
             message_type::create_account_request,
             create_payload, internet::endpoint());
@@ -350,7 +341,7 @@ TEST_CASE("handle_unlock_account_request", tags) {
 
     const auto unlock_payload = unlock_req.serialize();
 
-    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+    run_coroutine_test(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
             message_type::unlock_account_request,
             unlock_payload, internet::endpoint());
@@ -377,7 +368,7 @@ TEST_CASE("handle_invalid_message_type", tags) {
     std::vector<std::uint8_t> empty_payload;
 
     boost::asio::io_context io_context;
-    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+    run_coroutine_test(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
             static_cast<message_type>(0xFFFF),
             empty_payload, internet::endpoint());
@@ -403,7 +394,7 @@ TEST_CASE("handle_login_request_non_existent_user", tags) {
 
     const auto login_payload = login_req.serialize();
 
-    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+    run_coroutine_test(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
             message_type::login_request,
             login_payload, internet::endpoint());

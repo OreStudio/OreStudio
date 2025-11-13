@@ -17,19 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/faker/totp.hpp"
+#include "ores.utility/faker/internet.hpp"
+#include <boost/asio/ip/address.hpp>
 
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/convert/base32_converter.hpp"
 
 namespace ores::utility::faker {
 
-std::string totp::totp_secret(std::size_t num_bytes) {
-    std::vector<uint8_t> bytes(num_bytes);
-    for (auto& b : bytes) {
-        b = static_cast<uint8_t>(::faker::number::integer(0, 255));
-    }
-    return converter::base32_converter::convert(bytes);
+std::string internet::endpoint() {
+    const std::string ip = std::string(::faker::internet::ipv4());
+    const int port = ::faker::number::integer(1025, 65535);
+    return ip + ":" + std::to_string(port);
+}
+
+boost::asio::ip::address internet::ipv4() {
+    return boost::asio::ip::make_address(::faker::internet::ipv4());
 }
 
 }

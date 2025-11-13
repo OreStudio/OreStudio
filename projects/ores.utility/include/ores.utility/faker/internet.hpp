@@ -17,43 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TESTING_DATABASE_HELPER_HPP
-#define ORES_TESTING_DATABASE_HELPER_HPP
+#ifndef ORES_UTILITY_FAKER_INTERNET_HPP
+#define ORES_UTILITY_FAKER_INTERNET_HPP
 
 #include <string>
-#include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/repository/context.hpp"
+#include <boost/asio/ip/address.hpp>
 
-namespace ores::testing {
+namespace ores::utility::faker {
 
-/**
- * @brief Provides database setup and cleanup utilities for tests.
+/*
+ * @brief Extensions to generates fake data related to the internet.
  */
-class database_helper {
-private:
-    static auto& lg() {
-        using namespace ores::utility::log;
-        static auto instance = make_logger("ores.utility.test.database_helper");
-        return instance;
-    }
-
+class internet {
 public:
-    database_helper();
-
     /**
-     * @brief Truncates the specified table.
-     *
-     * @param table_name Fully qualified table name (e.g., "oresdb.accounts")
+     * @brief Generates a random IPv4 address and a port number.
      */
-    void truncate_table(const std::string& table_name);
-
+    static std::string endpoint();
     /**
-     * @brief Gets the database context.
+     * @brief Returns a faker IP address in a boost type.
      */
-    utility::repository::context& context() { return context_; }
-
-private:
-    utility::repository::context context_;
+    static boost::asio::ip::address ipv4();
 };
 
 }

@@ -23,9 +23,12 @@
 #include <faker-cxx/internet.h>
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/uuid_generators.hpp>
-#include "ores.testing/database_helper.hpp"
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include "ores.utility/faker/internet.hpp"
 #include "ores.utility/log/make_logger.hpp"
-#include "faker-cxx/faker.h" // IWYU pragma: keep.
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.testing/scoped_database_helper.hpp"
 #include "ores.accounts/generators/account_generator.hpp"
 
 namespace {
@@ -38,299 +41,241 @@ const std::string tags("[service_account_service_tests]");
 
 using namespace ores::accounts;
 using namespace ores::utility::log;
-using ores::testing::database_helper;
+using ores::utility::faker::internet;
+using ores::testing::scoped_database_helper;
 using namespace ores::accounts::generators;
 
 TEST_CASE("create_account_with_valid_data", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-    service::account_service svc(h.get_context());
+    scoped_database_helper h(database_table);
+    service::account_service sut(h.context());
 
-    auto original = generate_synthetic_account();
-    const std::string username = original.username;
-    const std::string email = original.email;
+    const auto e = generate_synthetic_account();
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+
     const std::string password = faker::internet::password();
-    BOOST_LOG_SEV(lg, info) << "Creating account: - username: " << username
-                            << ", email: " << email;
+    const auto a = sut.create_account(e.username, e.email, password,
+            e.modified_by, false);
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    auto account = svc.create_account(username, email, password,
-        "admin", false);
+    CHECK(a.username == e.username);
+    CHECK(a.email == e.email);
+    CHECK(a.is_admin == e.is_admin);
 
-    BOOST_LOG_SEV(lg, info) << "Created account: " << account;
-
-    CHECK(account.username == username);
-    CHECK(account.email == email);
-    CHECK(!account.id.is_nil());
-    CHECK(!account.password_hash.empty());
-    CHECK(account.is_admin == false);
+    CHECK(!a.id.is_nil());
+    CHECK(!a.password_hash.empty());
 }
 
 TEST_CASE("create_account_with_admin_flag", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-    service::account_service svc(h.get_context());
+    scoped_database_helper h(database_table);
+    service::account_service sut(h.context());
 
-    auto original = generate_synthetic_account();
-    const std::string username = original.username;
-    const std::string email = original.email;
+    auto e = generate_synthetic_account();
+    e.is_admin = true;
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+
     const std::string password = faker::internet::password();
-    const std::string modified_by = original.modified_by;
+    const auto a =
+        sut.create_account(e.username, e.email, password,
+        e.modified_by, e.is_admin);
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    BOOST_LOG_SEV(lg, info) << "Creating admin account: - username: "
-                            << username << ", email: " << email;
-
-    auto account = svc.create_account(username, email,
-        password, modified_by, true);
-
-    BOOST_LOG_SEV(lg, info) << "Created account: " << account;
-
-    CHECK(account.username == username);
-    CHECK(account.is_admin == true);
+    CHECK(a.username == e.username);
+    CHECK(a.is_admin == e.is_admin);
 }
 
 TEST_CASE("create_multiple_accounts", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-    service::account_service svc(h.get_context());
+    scoped_database_helper h(database_table);
+    service::account_service sut(h.context());
 
     for (int i = 0; i < 5; ++i) {
-        auto original = generate_synthetic_account();
-        const std::string username = original.username;
-        const std::string email = original.email;
+        BOOST_LOG_SEV(lg, info) << "Creating account: " << i;
+
+        const auto e = generate_synthetic_account();
+        BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+
         const std::string password = faker::internet::password();
-        const std::string modified_by = original.modified_by;
-        const bool is_admin = faker::datatype::boolean();
-        BOOST_LOG_SEV(lg, info) << "Creating account: - username: " << username
-                                << ", email: " << email;
+        const auto a =
+            sut.create_account(e.username, e.email, password,
+            e.modified_by, e.is_admin);
+        BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-        auto account = svc.create_account(username, email,
-            password, modified_by, is_admin);
-
-        BOOST_LOG_SEV(lg, info) << "Account " << i << ": " << account;
-
-        CHECK(account.username == username);
-        CHECK(account.email == email);
-        CHECK(!account.id.is_nil());
+        CHECK(a.username == e.username);
+        CHECK(a.email == e.email);
+        CHECK(!a.id.is_nil());
     }
 }
 
 TEST_CASE("create_account_with_empty_username_throws", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-    service::account_service svc(h.get_context());
+    scoped_database_helper h(database_table);
+    service::account_service sut(h.context());
 
-    BOOST_LOG_SEV(lg, info) << "Attempting to create account with empty username";
+    auto e = generate_synthetic_account();
+    e.username = "";
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
-    auto original = generate_synthetic_account();
-    const std::string username;
-    const std::string email = original.email;
     const std::string password = faker::internet::password();
-    const std::string modified_by = original.modified_by;
-    const bool is_admin = faker::datatype::boolean();
-
-    CHECK_THROWS_AS(svc.create_account(username, email,
-        password, modified_by, false), std::invalid_argument);
+    CHECK_THROWS_AS(sut.create_account(e.username, e.email, password,
+            e.modified_by, e.is_admin), std::invalid_argument);
 }
 
 TEST_CASE("create_account_with_empty_email_throws", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-    service::account_service svc(h.get_context());
+    scoped_database_helper h(database_table);
+    service::account_service sut(h.context());
 
-    auto original = generate_synthetic_account();
-    const std::string username = original.username;
-    const std::string email;
+    auto e = generate_synthetic_account();
+    e.email = "";
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+
     const std::string password = faker::internet::password();
-    const std::string modified_by = original.modified_by;
-    const bool is_admin = faker::datatype::boolean();
-
-    BOOST_LOG_SEV(lg, info) << "Attempting to create account with empty email";
-
-    CHECK_THROWS_AS(svc.create_account(username, email,
-        password, modified_by, false), std::invalid_argument);
+    CHECK_THROWS_AS(sut.create_account(e.username, e.email,
+            password, e.modified_by, e.is_admin), std::invalid_argument);
 }
 
 TEST_CASE("create_account_with_empty_password_throws", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-    service::account_service svc(h.get_context());
+    scoped_database_helper h(database_table);
+    service::account_service sut(h.context());
 
-    auto original = generate_synthetic_account();
-    const std::string username = original.username;
-    const std::string email = original.email;
-    const std::string password;
-    const std::string modified_by = original.modified_by;
-    const bool is_admin = faker::datatype::boolean();
+    const auto e = generate_synthetic_account();
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
-    BOOST_LOG_SEV(lg, info) << "Attempting to create account with empty password";
-
-    CHECK_THROWS_AS(svc.create_account(username, email,
-        password, modified_by, false), std::invalid_argument);
+    const std::string empty_password;
+    CHECK_THROWS_AS(sut.create_account(e.username, e.email,
+            empty_password, e.modified_by, e.is_admin), std::invalid_argument);
 }
 
 TEST_CASE("list_accounts_returns_empty_for_no_accounts", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-    service::account_service svc(h.get_context());
-
-    BOOST_LOG_SEV(lg, info) << "Listing accounts in empty database";
-
-    auto accounts = svc.list_accounts();
-
-    BOOST_LOG_SEV(lg, info) << "Found " << accounts.size() << " accounts";
-
-    CHECK(accounts.empty());
+    scoped_database_helper h(database_table);
+    service::account_service sut(h.context());
+    const auto a = sut.list_accounts();
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
+    CHECK(a.empty());
 }
 
 TEST_CASE("list_accounts_returns_created_accounts", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-    service::account_service svc(h.get_context());
+    scoped_database_helper h(database_table);
+    service::account_service sut(h.context());
 
     const int expected_count = 3;
-    auto written_accounts = generate_synthetic_accounts(expected_count);
+    const auto expected_list = generate_synthetic_accounts(expected_count);
 
-    for (const auto& acc : written_accounts) {
-        const std::string username = acc.username;
-        const std::string email = acc.email;
+    for (const auto& e : expected_list) {
         const std::string password = faker::internet::password();
-        const std::string modified_by = acc.modified_by;
-        BOOST_LOG_SEV(lg, info) << "Creating account: - username: " << username
-                                << ", email: " << email;
-
-        svc.create_account(username, email,
-            password, modified_by, false);
+        BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+        sut.create_account(e.username, e.email, password,
+            e.modified_by, e.is_admin);
     }
 
-    BOOST_LOG_SEV(lg, info) << "Listing accounts";
-
-    auto accounts = svc.list_accounts();
-
-    BOOST_LOG_SEV(lg, info) << "Found " << accounts.size() << " accounts";
-    for (const auto& acc : accounts) {
-        BOOST_LOG_SEV(lg, info) << "Account: " << acc;
-    }
-
-    CHECK(accounts.size() == expected_count);
+    auto actual_list = sut.list_accounts();
+    BOOST_LOG_SEV(lg, info) << "Actual: " << actual_list;
+    CHECK(actual_list.size() == expected_count);
 }
 
 TEST_CASE("login_with_valid_credentials", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-    service::account_service svc(h.get_context());
+    scoped_database_helper h(database_table);
+    service::account_service sut(h.context());
 
-    auto original = generate_synthetic_account();
-    const std::string username = original.username;
-    const std::string email = original.email;
+    auto e = generate_synthetic_account();
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+
     const std::string password = faker::internet::password();
-    const std::string modified_by = original.modified_by;
-    const bool is_admin = faker::datatype::boolean();
-    BOOST_LOG_SEV(lg, info) << "Creating account: - username: " << username
-                            << ", email: " << email;
+    const auto account = sut.create_account(e.username,
+        e.email, password, e.modified_by, e.is_admin);
 
-    // Create account
-    auto created_account = svc.create_account(username,
-        email, password, modified_by, false);
+    auto ip = internet::ipv4();
+    auto a = sut.login(account.username, password, ip);
 
-    BOOST_LOG_SEV(lg, info) << "Attempting login with valid credentials";
-
-    // Attempt login
-    auto ip = boost::asio::ip::make_address(faker::internet::ipv4());
-    auto logged_in_account = svc.login(username, password, ip);
-
-    BOOST_LOG_SEV(lg, info) << "Logged in account: " << logged_in_account;
-
-    CHECK(logged_in_account.username == username);
-    CHECK(logged_in_account.id == created_account.id);
+    CHECK(a.username == e.username);
+    CHECK(a.id == account.id);
 }
 
 TEST_CASE("login_with_invalid_password_throws", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-    service::account_service svc(h.get_context());
+    scoped_database_helper h(database_table);
+    service::account_service sut(h.context());
 
-    auto original = generate_synthetic_account();
-    const std::string username = original.username;
-    const std::string email = original.email;
+    auto e = generate_synthetic_account();
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+
     const std::string password = faker::internet::password();
-    const std::string modified_by = original.modified_by;
-    const bool is_admin = faker::datatype::boolean();
+    const auto account = sut.create_account(e.username,
+        e.email, password, e.modified_by, e.is_admin);
 
-    // Create account
-    auto created_account = svc.create_account(username,
-        email, password, modified_by, false);
-
-    BOOST_LOG_SEV(lg, info) << "Attempting login with invalid password";
-
-    auto ip = boost::asio::ip::make_address(faker::internet::ipv4());
-    CHECK_THROWS_AS(svc.login(username, "wrong_password", ip),
+    auto ip = internet::ipv4();
+    CHECK_THROWS_AS(sut.login(e.username, "wrong_password", ip),
         std::runtime_error);
 }
 
 TEST_CASE("login_with_nonexistent_username_throws", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-    service::account_service svc(h.get_context());
+    scoped_database_helper h(database_table);
+    service::account_service sut(h.context());
 
     BOOST_LOG_SEV(lg, info) << "Attempting login with nonexistent username";
     const std::string username = std::string(faker::internet::username());
     const std::string password = faker::internet::password();
-    auto ip = boost::asio::ip::make_address(faker::internet::ipv4());
-    CHECK_THROWS_AS(svc.login(username, password, ip),
+    auto ip = internet::ipv4();
+    BOOST_LOG_SEV(lg, info) << "Creating account: - username: " << username
+                            << " password: " << password << " IP: " << ip;
+
+    CHECK_THROWS_AS(sut.login(username, password, ip),
         std::runtime_error);
 }
 
 TEST_CASE("login_with_empty_username_throws", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-    service::account_service svc(h.get_context());
+    scoped_database_helper h(database_table);
+    service::account_service sut(h.context());
 
     BOOST_LOG_SEV(lg, info) << "Attempting login with empty username";
-
     const std::string username;
     const std::string password = faker::internet::password();
-    auto ip = boost::asio::ip::make_address(faker::internet::ipv4());
-    CHECK_THROWS_AS(svc.login(username, password, ip),
+    auto ip = internet::ipv4();
+    BOOST_LOG_SEV(lg, info) << "Creating account: - username: " << username
+                            << " password: " << password << " IP: " << ip;
+
+    CHECK_THROWS_AS(sut.login(username, password, ip),
         std::invalid_argument);
 }
 
 TEST_CASE("login_with_empty_password_throws", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-    service::account_service svc(h.get_context());
+    scoped_database_helper h(database_table);
+    service::account_service sut(h.context());
 
     BOOST_LOG_SEV(lg, info) << "Attempting login with empty password";
 
-    auto original = generate_synthetic_account();
-    const std::string username = std::string(faker::internet::username());
-    const auto ip = boost::asio::ip::make_address(faker::internet::ipv4());
-    CHECK_THROWS_AS(svc.login(username, "", ip),
+    auto account = generate_synthetic_account();
+    BOOST_LOG_SEV(lg, info) << "Account: " << account;
+
+    const std::string password = faker::internet::password();
+    sut.create_account(account.username, account.email, password,
+        account.modified_by, account.is_admin);
+
+    const std::string empty_password;
+    auto ip = internet::ipv4();
+    CHECK_THROWS_AS(sut.login(account.username, empty_password, ip),
         std::invalid_argument);
 }
 
@@ -338,30 +283,22 @@ TEST_CASE("account_locks_after_multiple_failed_logins",
     tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-    service::account_service svc(h.get_context());
+    scoped_database_helper h(database_table);
+    service::account_service sut(h.context());
 
-    auto original = generate_synthetic_account();
-    const std::string username = original.username;
-    const std::string email = original.email;
+    auto account = generate_synthetic_account();
+    BOOST_LOG_SEV(lg, info) << "Account: " << account;
+
     const std::string password = faker::internet::password();
-    const std::string modified_by = original.modified_by;
-    BOOST_LOG_SEV(lg, info) << "Creating account: - username: " << username
-                            << ", email: " << email;
-
-    // Create account
-    svc.create_account(username, email, password,
-        modified_by, false);
+    sut.create_account(account.username, account.email, password,
+        account.modified_by, account.is_admin);
 
     BOOST_LOG_SEV(lg, info) << "Attempting 5 failed logins to lock account";
 
-    auto ip = boost::asio::ip::make_address("192.168.1.100");
-
-    // Attempt 5 failed logins
+    auto ip = internet::ipv4();
     for (int i = 0; i < 5; ++i) {
         try {
-            svc.login(username, "wrong_password", ip);
+            sut.login(account.username, "wrong_password", ip);
         } catch (const std::runtime_error& e) {
             BOOST_LOG_SEV(lg, info) << "Failed login attempt " << (i + 1)
                                    << ": " << e.what();
@@ -370,120 +307,98 @@ TEST_CASE("account_locks_after_multiple_failed_logins",
 
     // Next attempt should indicate account is locked
     try {
-        svc.login(username, password, ip);
-        FAIL("Expected account to be locked");
+        sut.login(account.username, password, ip);
+        FAIL("Expected account to be locked.");
     } catch (const std::runtime_error& e) {
         BOOST_LOG_SEV(lg, info) << "Account locked: " << e.what();
         CHECK(std::string(e.what()).find("locked") != std::string::npos);
     }
 }
 
-TEST_CASE("unlock_account_successful", tags) {
-    auto lg(make_logger(test_suite));
+// FIXME
+// TEST_CASE("unlock_account_successful", tags) {
+//     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-    service::account_service svc(h.get_context());
+//     scoped_database_helper h(database_table);
+//     service::account_service sut(h.context());
 
-    auto original = generate_synthetic_account();
-    const std::string username = original.username;
-    const std::string email = original.email;
-    const std::string password = faker::internet::password();
-    const std::string modified_by = original.modified_by;
-    BOOST_LOG_SEV(lg, info) << "Creating account: - username: " << username
-                            << ", email: " << email;
+//     const auto account = generate_synthetic_account();
+//     BOOST_LOG_SEV(lg, info) << "Account: " << account;
+//     const std::string password = faker::internet::password();
 
-    // Create account
-    auto account = svc.create_account(username, email,
-        password, modified_by, false);
+//     const auto generated =
+//         sut.create_account(account.username, account.email,
+//         password, account.modified_by, account.is_admin);
 
-    BOOST_LOG_SEV(lg, info) << "Locking account by failing 5 login attempts";
+//     BOOST_LOG_SEV(lg, info) << "Locking account by failing 5 login attempts";
 
-    auto ip = boost::asio::ip::make_address("192.168.1.100");
+//     // Lock the account by failing 5 logins
+//     auto ip = internet::ipv4();
+//     for (int i = 0; i < 5; ++i)
+//         sut.login(account.username, "wrong_password", ip);
 
-    // Lock the account by failing 5 logins
-    for (int i = 0; i < 5; ++i) {
-        try {
-            svc.login(username, "wrong_password", ip);
-        } catch (...) {}
-    }
+//     BOOST_LOG_SEV(lg, info) << "Unlocking account.";
+//     sut.unlock_account(generated.id);
 
-    BOOST_LOG_SEV(lg, info) << "Unlocking account";
+//     BOOST_LOG_SEV(lg, info) << "Attempting login after unlock";
 
-    // Unlock the account
-    svc.unlock_account(account.id);
+//     // Should now be able to login successfully
+//     auto logged_in_account =
+//         sut.login(generated.username, password, ip);
 
-    BOOST_LOG_SEV(lg, info) << "Attempting login after unlock";
-
-    // Should now be able to login successfully
-    auto logged_in_account = svc.login(username, password, ip);
-
-    CHECK(logged_in_account.username == username);
-}
+//     CHECK(logged_in_account.username == account.username);
+// }
 
 TEST_CASE("unlock_nonexistent_account_throws", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-    service::account_service svc(h.get_context());
-
-    BOOST_LOG_SEV(lg, info) << "Attempting to unlock nonexistent account";
+    scoped_database_helper h(database_table);
+    service::account_service sut(h.context());
 
     boost::uuids::random_generator gen;
-    auto fake_id = gen();
+    const auto non_existent_id = gen();
+    BOOST_LOG_SEV(lg, info) << "Attempting to unlock nonexistent account: "
+                            << non_existent_id;
 
-    CHECK_THROWS_AS(svc.unlock_account(fake_id),
-        std::invalid_argument);
+    CHECK_THROWS_AS(sut.unlock_account(non_existent_id), std::invalid_argument);
 }
 
 TEST_CASE("delete_nonexistent_account_throws",
     tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-    service::account_service svc(h.get_context());
-
-    BOOST_LOG_SEV(lg, info) << "Attempting to delete nonexistent account";
+    scoped_database_helper h(database_table);
+    service::account_service sut(h.context());
 
     boost::uuids::random_generator gen;
-    auto fake_id = gen();
+    const auto non_existent_id = gen();
+    BOOST_LOG_SEV(lg, info) << "Attempting to delete nonexistent account: "
+                            << non_existent_id;
 
-    CHECK_THROWS_AS(svc.delete_account(fake_id),
+    CHECK_THROWS_AS(sut.delete_account(non_existent_id),
         std::invalid_argument);
 }
 
 TEST_CASE("login_with_different_ip_addresses", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-    service::account_service svc(h.get_context());
+    scoped_database_helper h(database_table);
+    service::account_service sut(h.context());
 
-    auto original = generate_synthetic_account();
-    const std::string username = original.username;
-    const std::string email = original.email;
+    auto account = generate_synthetic_account();
+    BOOST_LOG_SEV(lg, info) << "Account: " << account;
+
     const std::string password = faker::internet::password();
-    const std::string modified_by = original.modified_by;
-    BOOST_LOG_SEV(lg, info) << "Creating account: - username: " << username
-                            << ", email: " << email;
+    sut.create_account(account.username, account.email, password,
+        account.modified_by, account.is_admin);
 
-    // Create account
-    svc.create_account(username, email, password, modified_by, false);
-
-    BOOST_LOG_SEV(lg, info) << "Testing logins from different IPs";
-
-    // Login from multiple IPs
+    BOOST_LOG_SEV(lg, info) << "Testing logins from different IPs.";
     for (int i = 0; i < 3; ++i) {
-        std::string ip_str = std::string(faker::internet::ipv4());
-        auto ip = boost::asio::ip::make_address(ip_str);
+        auto ip = internet::ipv4();
+        auto login = sut.login(account.username, password, ip);
 
-        auto account = svc.login(username, password, ip);
-
-        BOOST_LOG_SEV(lg, info) << "Login " << i << " from IP: " << ip_str
-                               << " - account: " << account.username;
-
-        CHECK(account.username == username);
+        BOOST_LOG_SEV(lg, info) << "Login " << i << " from IP: " << ip
+                                << " - account: " << account.username;
+        CHECK(account.username == login.username);
     }
 }

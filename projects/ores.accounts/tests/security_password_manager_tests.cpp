@@ -32,7 +32,7 @@ const std::string tags("[security_password_manager_tests]");
 using ores::accounts::security::password_manager;
 using namespace ores::utility::log;
 
-TEST_CASE("verify_password_hash", tags) {
+TEST_CASE("verify_password_hash_with_correct_password", tags) {
     auto lg(make_logger(test_suite));
 
     const std::string password = "correct_password";
@@ -45,7 +45,7 @@ TEST_CASE("verify_password_hash", tags) {
     CHECK(password_manager::verify_password_hash(password, hash));
 }
 
-TEST_CASE("verify_password_hash_with_wrong_password", tags) {
+TEST_CASE("verify_password_hash_with_incorrect_password", tags) {
     auto lg(make_logger(test_suite));
 
     const std::string password = "correct_password";
@@ -88,4 +88,12 @@ TEST_CASE("invalid_hash_format_fails_verification", tags) {
     BOOST_LOG_SEV(lg, info) << "Malformed hash: " << malformed_hash;
 
     CHECK(!password_manager::verify_password_hash(password, malformed_hash));
+}
+
+TEST_CASE("empty_password_throws", tags) {
+    auto lg(make_logger(test_suite));
+
+    const std::string empty_password = "";
+    CHECK_THROWS_AS(password_manager::create_password_hash(empty_password),
+        std::invalid_argument);
 }

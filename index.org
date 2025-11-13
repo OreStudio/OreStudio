@@ -27,7 +27,7 @@
 #+HTML: <p>ORE Studio wraps the <a href="https://github.com/OpenSourceRisk">Open-Source Risk Engine</a> (ORE) in an intuitive graphical interface - no Python or C++ required.</p>
 #+HTML: </section>
 
-*ORE Studio* is a new, an independent open-source project with the goal of
+*ORE Studio* is a new and independent open-source project with the goal of
 providing a graphical wrapper around Acadia’s [[https://github.com/OpenSourceRisk/Engine][ORE]]. ORE itself builds on top of
 [[https://github.com/lballabio/QuantLib][QuantLib]], the de-facto standard open-source library for quantitative finance.
 *ORE Studio* aims to augment ORE's robust analytics to eventually provide full

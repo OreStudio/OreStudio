@@ -17,45 +17,29 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TESTING_DATABASE_HELPER_HPP
-#define ORES_TESTING_DATABASE_HELPER_HPP
+#ifndef ORES_TESTING_DATABASE_RUN_COROUTINE_TEST_HPP
+#define ORES_TESTING_DATABASE_RUN_COROUTINE_TEST_HPP
 
-#include <string>
-#include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/repository/context.hpp"
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
+#include <boost/asio/io_context.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace ores::testing {
 
-/**
- * @brief Provides database setup and cleanup utilities for tests.
- */
-class database_helper {
-private:
-    static auto& lg() {
-        using namespace ores::utility::log;
-        static auto instance = make_logger("ores.utility.test.database_helper");
-        return instance;
-    }
-
-public:
-    database_helper();
-
-    /**
-     * @brief Truncates the specified table.
-     *
-     * @param table_name Fully qualified table name (e.g., "oresdb.accounts")
-     */
-    void truncate_table(const std::string& table_name);
-
-    /**
-     * @brief Gets the database context.
-     */
-    utility::repository::context& context() { return context_; }
-
-private:
-    utility::repository::context context_;
-};
+template <typename Awaitable>
+void run_coroutine_test(boost::asio::io_context& io_context, Awaitable&& awaitable) {
+    bool completed = false;
+    boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
+            co_await std::forward<Awaitable>(awaitable)();
+            completed = true;
+        }, boost::asio::detached);
+    io_context.run();
+    REQUIRE(completed);
+    io_context.restart(); // Prepare for next use if in a loop
+}
 
 }
+
 
 #endif

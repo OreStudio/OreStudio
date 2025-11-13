@@ -21,8 +21,8 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/log/make_logger.hpp"
-#include "faker-cxx/faker.h" // IWYU pragma: keep.
 
 namespace {
 
@@ -38,350 +38,354 @@ using namespace ores::utility::log;
 TEST_CASE("create_account_request_with_valid_fields", tags) {
     auto lg(make_logger(test_suite));
 
-    create_account_request req;
-    req.username = "testuser";
-    req.password = "test_password";
-    req.totp_secret = "JBSWY3DPEHPK3PXP";
-    req.email = "test@example.com";
-    req.modified_by = "admin";
-    req.is_admin = false;
-    BOOST_LOG_SEV(lg, info) << "create_account_request: " << req;
+    create_account_request rq;
+    rq.username = "testuser";
+    rq.password = "test_password";
+    rq.totp_secret = "JBSWY3DPEHPK3PXP";
+    rq.email = "test@example.com";
+    rq.modified_by = "admin";
+    rq.is_admin = false;
+    BOOST_LOG_SEV(lg, info) << "Rrequest: " << rq;
 
-    CHECK(req.username == "testuser");
-    CHECK(req.password == "test_password");
-    CHECK(req.totp_secret == "JBSWY3DPEHPK3PXP");
-    CHECK(req.email == "test@example.com");
-    CHECK(req.modified_by == "admin");
-    CHECK(req.is_admin == false);
+    CHECK(rq.username == "testuser");
+    CHECK(rq.password == "test_password");
+    CHECK(rq.totp_secret == "JBSWY3DPEHPK3PXP");
+    CHECK(rq.email == "test@example.com");
+    CHECK(rq.modified_by == "admin");
+    CHECK(rq.is_admin == false);
 }
 
 TEST_CASE("create_account_request_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    create_account_request req;
-    req.username = std::string(faker::internet::username());
-    req.password = std::string(faker::internet::password());
-    req.totp_secret = faker::string::alphanumeric(16);
-    req.email = std::string(faker::internet::email());
-    req.modified_by = std::string(faker::internet::username());
-    req.is_admin = faker::datatype::boolean();
-    BOOST_LOG_SEV(lg, info) << "create_account_request: " << req;
+    create_account_request rq;
+    rq.username = std::string(faker::internet::username());
+    rq.password = std::string(faker::internet::password());
+    rq.totp_secret = faker::string::alphanumeric(16);
+    rq.email = std::string(faker::internet::email());
+    rq.modified_by = std::string(faker::internet::username());
+    rq.is_admin = faker::datatype::boolean();
+    BOOST_LOG_SEV(lg, info) << "create_account_request: " << rq;
 
-    CHECK(!req.username.empty());
-    CHECK(!req.password.empty());
-    CHECK(req.totp_secret.length() == 16);
-    CHECK(!req.email.empty());
-    CHECK(!req.modified_by.empty());
+    CHECK(!rq.username.empty());
+    CHECK(!rq.password.empty());
+    CHECK(rq.totp_secret.length() == 16);
+    CHECK(!rq.email.empty());
+    CHECK(!rq.modified_by.empty());
 }
 
 TEST_CASE("create_account_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    create_account_request original;
-    original.username = std::string(faker::internet::username());
-    original.password = std::string(faker::internet::password());
-    original.totp_secret = faker::string::alphanumeric(20);
-    original.email = std::string(faker::internet::email());
-    original.modified_by = "";
-    original.is_admin = false;
-    BOOST_LOG_SEV(lg, info) << "Original: " << original;
+    create_account_request e;
+    e.username = std::string(faker::internet::username());
+    e.password = std::string(faker::internet::password());
+    e.totp_secret = faker::string::alphanumeric(20);
+    e.email = std::string(faker::internet::email());
+    e.modified_by = std::string(faker::internet::username());
+    e.is_admin = false;
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
-    const auto serialized = original.serialize();
-    const auto result = create_account_request::deserialize(serialized);
+    const auto serialized = e.serialize();
+    const auto r = create_account_request::deserialize(serialized);
 
-    REQUIRE(result.has_value());
-    const auto& deserialized = result.value();
-    BOOST_LOG_SEV(lg, info) << "Deserialized: " << deserialized;
+    REQUIRE(r.has_value());
+    const auto& a = r.value();
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(deserialized.username == original.username);
-    CHECK(deserialized.password == original.password);
-    CHECK(deserialized.totp_secret == original.totp_secret);
-    CHECK(deserialized.email == original.email);
+    CHECK(a.username == e.username);
+    CHECK(a.password == e.password);
+    CHECK(a.totp_secret == e.totp_secret);
+    CHECK(a.email == e.email);
 }
 
 TEST_CASE("create_account_response_with_valid_uuid", tags) {
     auto lg(make_logger(test_suite));
 
-    create_account_response resp;
-    resp.account_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, info) << "create_account_response: " << resp;
+    create_account_response rp;
+    rp.account_id = boost::uuids::random_generator()();
+    BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
-    CHECK(!resp.account_id.is_nil());
+    CHECK(!rp.account_id.is_nil());
 }
 
 TEST_CASE("create_account_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    create_account_response original;
-    original.account_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, info) << "Original: " << original;
+    create_account_response e;
+    e.account_id = boost::uuids::random_generator()();
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
-    const auto serialized = original.serialize();
-    const auto result = create_account_response::deserialize(serialized);
+    const auto serialized = e.serialize();
+    const auto r = create_account_response::deserialize(serialized);
 
-    REQUIRE(result.has_value());
-    const auto& deserialized = result.value();
-    BOOST_LOG_SEV(lg, info) << "Deserialized: " << deserialized;
+    REQUIRE(r.has_value());
+    const auto& a = r.value();
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(deserialized.account_id == original.account_id);
+    CHECK(a.account_id == e.account_id);
 }
 
 TEST_CASE("list_accounts_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    list_accounts_request original;
-    BOOST_LOG_SEV(lg, info) << "Original: " << original;
+    list_accounts_request e;
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
-    const auto serialized = original.serialize();
-    const auto result = list_accounts_request::deserialize(serialized);
+    const auto serialized = e.serialize();
+    const auto r = list_accounts_request::deserialize(serialized);
 
-    REQUIRE(result.has_value());
-    const auto& deserialized = result.value();
-    BOOST_LOG_SEV(lg, info) << "Deserialized: " << deserialized;
+    REQUIRE(r.has_value());
+    const auto& a = r.value();
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 }
 
 TEST_CASE("list_accounts_response_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    list_accounts_response resp;
+    list_accounts_response rp;
 
-    for (int i = 0; i < 3; ++i) {
-        account acc;
-        acc.version = faker::number::integer(1, 100);
-        acc.modified_by = std::string(faker::internet::username());
-        acc.id = boost::uuids::random_generator()();
-        acc.username = std::string(faker::internet::username());
-        acc.password_hash = std::string(faker::crypto::sha256());
-        acc.password_salt = std::string(faker::crypto::sha256());
-        acc.totp_secret = faker::string::alphanumeric(20);
-        acc.email = std::string(faker::internet::email());
-        acc.is_admin = faker::datatype::boolean();
-        resp.accounts.push_back(acc);
+    const auto expected_size = 3;
+    rp.accounts.reserve(expected_size);
+    for (int i = 0; i < expected_size; ++i) {
+        account a;
+        a.version = faker::number::integer(1, 100);
+        a.modified_by = std::string(faker::internet::username());
+        a.id = boost::uuids::random_generator()();
+        a.username = std::string(faker::internet::username());
+        a.password_hash = std::string(faker::crypto::sha256());
+        a.password_salt = std::string(faker::crypto::sha256());
+        a.totp_secret = faker::string::alphanumeric(20);
+        a.email = std::string(faker::internet::email());
+        a.is_admin = faker::datatype::boolean();
+        rp.accounts.push_back(a);
     }
-    BOOST_LOG_SEV(lg, info) << "list_accounts_response: " << resp;
+    BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
-    CHECK(resp.accounts.size() == 3);
+    CHECK(rp.accounts.size() == expected_size);
 }
 
 TEST_CASE("list_accounts_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    list_accounts_response original;
+    list_accounts_response e;
 
-    for (int i = 0; i < 2; ++i) {
-        account acc;
-        acc.version = i + 1;
-        acc.modified_by = "user" + std::to_string(i);
-        acc.id = boost::uuids::random_generator()();
-        acc.username = "username" + std::to_string(i);
-        acc.password_hash = std::string(faker::crypto::sha256());
-        acc.password_salt = std::string(faker::crypto::sha256());
-        acc.totp_secret = faker::string::alphanumeric(16);
-        acc.email = "user" + std::to_string(i) + "@example.com";
-        acc.is_admin = (i == 0);
-        original.accounts.push_back(acc);
+    const auto expected_size = 2;
+    e.accounts.reserve(expected_size);
+    for (int i = 0; i < expected_size; ++i) {
+        account a;
+        a.version = i + 1;
+        a.modified_by = "user" + std::to_string(i);
+        a.id = boost::uuids::random_generator()();
+        a.username = "username" + std::to_string(i);
+        a.password_hash = std::string(faker::crypto::sha256());
+        a.password_salt = std::string(faker::crypto::sha256());
+        a.totp_secret = faker::string::alphanumeric(16);
+        a.email = "user" + std::to_string(i) + "@example.com";
+        a.is_admin = (i == 0);
+        e.accounts.push_back(a);
     }
-    BOOST_LOG_SEV(lg, info) << "Original: " << original;
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
-    const auto serialized = original.serialize();
-    const auto result = list_accounts_response::deserialize(serialized);
+    const auto serialized = e.serialize();
+    const auto r = list_accounts_response::deserialize(serialized);
 
-    REQUIRE(result.has_value());
-    const auto& deserialized = result.value();
-    BOOST_LOG_SEV(lg, info) << "Deserialized: " << deserialized;
+    REQUIRE(r.has_value());
+    const auto& a = r.value();
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    REQUIRE(deserialized.accounts.size() == original.accounts.size());
-    for (size_t i = 0; i < original.accounts.size(); ++i) {
-        CHECK(deserialized.accounts[i].version == original.accounts[i].version);
-        CHECK(deserialized.accounts[i].username == original.accounts[i].username);
-        CHECK(deserialized.accounts[i].email == original.accounts[i].email);
-        CHECK(deserialized.accounts[i].is_admin == original.accounts[i].is_admin);
+    REQUIRE(a.accounts.size() == e.accounts.size());
+    for (size_t i = 0; i < e.accounts.size(); ++i) {
+        CHECK(a.accounts[i].version == e.accounts[i].version);
+        CHECK(a.accounts[i].username == e.accounts[i].username);
+        CHECK(a.accounts[i].email == e.accounts[i].email);
+        CHECK(a.accounts[i].is_admin == e.accounts[i].is_admin);
     }
 }
 
 TEST_CASE("login_request_with_valid_credentials", tags) {
     auto lg(make_logger(test_suite));
 
-    login_request req;
-    req.username = "testuser";
-    req.password = "test_password";
-    BOOST_LOG_SEV(lg, info) << "login_request: " << req;
+    login_request rq;
+    rq.username = "testuser";
+    rq.password = "test_password";
+    BOOST_LOG_SEV(lg, info) << "Request: " << rq;
 
-    CHECK(req.username == "testuser");
-    CHECK(req.password == "test_password");
+    CHECK(rq.username == "testuser");
+    CHECK(rq.password == "test_password");
 }
 
 TEST_CASE("login_request_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    login_request req;
-    req.username = std::string(faker::internet::username());
-    req.password = std::string(faker::internet::password());
-    BOOST_LOG_SEV(lg, info) << "login_request: " << req;
+    login_request rq;
+    rq.username = std::string(faker::internet::username());
+    rq.password = std::string(faker::internet::password());
+    BOOST_LOG_SEV(lg, info) << "login_request: " << rq;
 
-    CHECK(!req.username.empty());
-    CHECK(!req.password.empty());
+    CHECK(!rq.username.empty());
+    CHECK(!rq.password.empty());
 }
 
 TEST_CASE("login_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    login_request original;
-    original.username = std::string(faker::internet::username());
-    original.password = std::string(faker::internet::password());
-    BOOST_LOG_SEV(lg, info) << "Original: " << original;
+    login_request e;
+    e.username = std::string(faker::internet::username());
+    e.password = std::string(faker::internet::password());
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
-    const auto serialized = original.serialize();
-    const auto result = login_request::deserialize(serialized);
+    const auto serialized = e.serialize();
+    const auto r = login_request::deserialize(serialized);
 
-    REQUIRE(result.has_value());
-    const auto& deserialized = result.value();
-    BOOST_LOG_SEV(lg, info) << "Deserialized: " << deserialized;
+    REQUIRE(r.has_value());
+    const auto& a = r.value();
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(deserialized.username == original.username);
-    CHECK(deserialized.password == original.password);
+    CHECK(a.username == e.username);
+    CHECK(a.password == e.password);
 }
 
 TEST_CASE("login_response_success", tags) {
     auto lg(make_logger(test_suite));
 
-    login_response resp;
-    resp.success = true;
-    resp.error_message = "";
-    resp.account_id = boost::uuids::random_generator()();
-    resp.username = std::string(faker::internet::username());
-    resp.is_admin = faker::datatype::boolean();
-    BOOST_LOG_SEV(lg, info) << "login_response: " << resp;
+    login_response rp;
+    rp.success = true;
+    rp.error_message = "";
+    rp.account_id = boost::uuids::random_generator()();
+    rp.username = std::string(faker::internet::username());
+    rp.is_admin = faker::datatype::boolean();
+    BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
-    CHECK(resp.success == true);
-    CHECK(resp.error_message.empty());
-    CHECK(!resp.account_id.is_nil());
-    CHECK(!resp.username.empty());
+    CHECK(rp.success == true);
+    CHECK(rp.error_message.empty());
+    CHECK(!rp.account_id.is_nil());
+    CHECK(!rp.username.empty());
 }
 
 TEST_CASE("login_response_failure", tags) {
     auto lg(make_logger(test_suite));
 
-    login_response resp;
-    resp.success = false;
-    resp.error_message = "Invalid credentials";
-    resp.account_id = boost::uuids::nil_uuid();
-    resp.username = "";
-    resp.is_admin = false;
-    BOOST_LOG_SEV(lg, info) << "login_response: " << resp;
+    login_response rp;
+    rp.success = false;
+    rp.error_message = "Invalid credentials";
+    rp.account_id = boost::uuids::nil_uuid();
+    rp.username = "";
+    rp.is_admin = false;
+    BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
-    CHECK(resp.success == false);
-    CHECK(resp.error_message == "Invalid credentials");
-    CHECK(resp.account_id.is_nil());
-    CHECK(resp.username.empty());
+    CHECK(rp.success == false);
+    CHECK(rp.error_message == "Invalid credentials");
+    CHECK(rp.account_id.is_nil());
+    CHECK(rp.username.empty());
 }
 
 TEST_CASE("login_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    login_response original;
-    original.success = true;
-    original.error_message = "";
-    original.account_id = boost::uuids::random_generator()();
-    original.username = std::string(faker::internet::username());
-    original.is_admin = faker::datatype::boolean();
-    BOOST_LOG_SEV(lg, info) << "Original: " << original;
+    login_response e;
+    e.success = true;
+    e.error_message = "";
+    e.account_id = boost::uuids::random_generator()();
+    e.username = std::string(faker::internet::username());
+    e.is_admin = faker::datatype::boolean();
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
-    const auto serialized = original.serialize();
-    const auto result = login_response::deserialize(serialized);
+    const auto serialized = e.serialize();
+    const auto r = login_response::deserialize(serialized);
 
-    REQUIRE(result.has_value());
-    const auto& deserialized = result.value();
-    BOOST_LOG_SEV(lg, info) << "Deserialized: " << deserialized;
+    REQUIRE(r.has_value());
+    const auto& a = r.value();
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(deserialized.success == original.success);
-    CHECK(deserialized.error_message == original.error_message);
-    CHECK(deserialized.account_id == original.account_id);
-    CHECK(deserialized.username == original.username);
-    CHECK(deserialized.is_admin == original.is_admin);
+    CHECK(a.success == e.success);
+    CHECK(a.error_message == e.error_message);
+    CHECK(a.account_id == e.account_id);
+    CHECK(a.username == e.username);
+    CHECK(a.is_admin == e.is_admin);
 }
 
 TEST_CASE("unlock_account_request_with_valid_uuid", tags) {
     auto lg(make_logger(test_suite));
 
-    unlock_account_request req;
-    req.account_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, info) << "unlock_account_request: " << req;
+    unlock_account_request rq;
+    rq.account_id = boost::uuids::random_generator()();
+    BOOST_LOG_SEV(lg, info) << "Request: " << rq;
 
-    CHECK(!req.account_id.is_nil());
+    CHECK(!rq.account_id.is_nil());
 }
 
 TEST_CASE("unlock_account_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    unlock_account_request original;
-    original.account_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, info) << "Original: " << original;
+    unlock_account_request e;
+    e.account_id = boost::uuids::random_generator()();
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
-    const auto serialized = original.serialize();
-    const auto result = unlock_account_request::deserialize(serialized);
+    const auto serialized = e.serialize();
+    const auto r = unlock_account_request::deserialize(serialized);
 
-    REQUIRE(result.has_value());
-    const auto& deserialized = result.value();
-    BOOST_LOG_SEV(lg, info) << "Deserialized: " << deserialized;
+    REQUIRE(r.has_value());
+    const auto& a = r.value();
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(deserialized.account_id == original.account_id);
+    CHECK(a.account_id == e.account_id);
 }
 
 TEST_CASE("unlock_account_response_success", tags) {
     auto lg(make_logger(test_suite));
 
-    unlock_account_response resp;
-    resp.success = true;
-    resp.error_message = "";
-    BOOST_LOG_SEV(lg, info) << "unlock_account_response: " << resp;
+    unlock_account_response rp;
+    rp.success = true;
+    rp.error_message = "";
+    BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
-    CHECK(resp.success == true);
-    CHECK(resp.error_message.empty());
+    CHECK(rp.success == true);
+    CHECK(rp.error_message.empty());
 }
 
 TEST_CASE("unlock_account_response_failure", tags) {
     auto lg(make_logger(test_suite));
 
-    unlock_account_response resp;
-    resp.success = false;
-    resp.error_message = "Account not found";
-    BOOST_LOG_SEV(lg, info) << "unlock_account_response: " << resp;
+    unlock_account_response rp;
+    rp.success = false;
+    rp.error_message = "Account not found";
+    BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
-    CHECK(resp.success == false);
-    CHECK(resp.error_message == "Account not found");
+    CHECK(rp.success == false);
+    CHECK(rp.error_message == "Account not found");
 }
 
 TEST_CASE("unlock_account_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    unlock_account_response original;
-    original.success = faker::datatype::boolean();
-    original.error_message = original.success ? "" : "Error occurred";
-    BOOST_LOG_SEV(lg, info) << "Original: " << original;
+    unlock_account_response e;
+    e.success = faker::datatype::boolean();
+    e.error_message = e.success ? "" : "Error occurred";
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
-    const auto serialized = original.serialize();
-    const auto result = unlock_account_response::deserialize(serialized);
+    const auto serialized = e.serialize();
+    const auto r = unlock_account_response::deserialize(serialized);
 
-    REQUIRE(result.has_value());
-    const auto& deserialized = result.value();
-    BOOST_LOG_SEV(lg, info) << "Deserialized: " << deserialized;
+    REQUIRE(r.has_value());
+    const auto& a = r.value();
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(deserialized.success == original.success);
-    CHECK(deserialized.error_message == original.error_message);
+    CHECK(a.success == e.success);
+    CHECK(a.error_message == e.error_message);
 }
 
 TEST_CASE("create_multiple_random_login_requests", tags) {
     auto lg(make_logger(test_suite));
 
     for (int i = 0; i < 3; ++i) {
-        login_request req;
-        req.username = std::string(faker::internet::username());
-        req.password = std::string(faker::internet::password());
-        BOOST_LOG_SEV(lg, info) << "login_request " << i << ":" << req;
+        login_request rq;
+        rq.username = std::string(faker::internet::username());
+        rq.password = std::string(faker::internet::password());
+        BOOST_LOG_SEV(lg, info) << "Request " << i << ":" << rq;
 
-        CHECK(!req.username.empty());
-        CHECK(!req.password.empty());
+        CHECK(!rq.username.empty());
+        CHECK(!rq.password.empty());
     }
 }
 
@@ -389,18 +393,18 @@ TEST_CASE("create_multiple_random_create_account_requests", tags) {
     auto lg(make_logger(test_suite));
 
     for (int i = 0; i < 3; ++i) {
-        create_account_request req;
-        req.username = std::string(faker::internet::username());
-        req.password = std::string(faker::internet::password());
-        req.totp_secret = faker::string::alphanumeric(16);
-        req.email = std::string(faker::internet::email());
-        req.modified_by = std::string(faker::person::firstName()) + " " +
+        create_account_request rq;
+        rq.username = std::string(faker::internet::username());
+        rq.password = std::string(faker::internet::password());
+        rq.totp_secret = faker::string::alphanumeric(16);
+        rq.email = std::string(faker::internet::email());
+        rq.modified_by = std::string(faker::person::firstName()) + " " +
             std::string(faker::person::lastName());
-        req.is_admin = faker::datatype::boolean();
-        BOOST_LOG_SEV(lg, info) << "create_account_request " << i << ":" << req;
+        rq.is_admin = faker::datatype::boolean();
+        BOOST_LOG_SEV(lg, info) << "Request " << i << ":" << rq;
 
-        CHECK(!req.username.empty());
-        CHECK(!req.email.empty());
-        CHECK(req.totp_secret.length() == 16);
+        CHECK(!rq.username.empty());
+        CHECK(!rq.email.empty());
+        CHECK(rq.totp_secret.length() == 16);
     }
 }

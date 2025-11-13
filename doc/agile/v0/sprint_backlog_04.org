@@ -18,54 +18,55 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-13 Thu 00:02], for Thursday, November 13, 2025.
+#+CAPTION: Clock summary at [2025-11-13 Thu 12:34], for Thursday, November 13, 2025.
 |      | <75>                                       |        |      |      |       |
 | Tags | Headline                                   | Time   |      |      |     % |
 |------+--------------------------------------------+--------+------+------+-------|
-|      | *Total time*                               | *0:01* |      |      | 100.0 |
+|      | *Total time*                               | *2:35* |      |      | 100.0 |
 |------+--------------------------------------------+--------+------+------+-------|
-|      | Stories                                    | 0:01   |      |      | 100.0 |
-|      | Active                                     |        | 0:01 |      | 100.0 |
-| code | Review all code created so far with an LLM |        |      | 0:01 | 100.0 |
+|      | Stories                                    | 2:35   |      |      | 100.0 |
+|      | Active                                     |        | 2:35 |      | 100.0 |
+| code | Fix the valgrind leaks reported on sqlgen  |        |      | 1:07 |  43.2 |
+| code | Review all code created so far with an LLM |        |      | 1:28 |  56.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-13 Thu 00:03]
+#+CAPTION: Clock summary at [2025-11-13 Thu 12:34]
 |          | <75>                                                   |         |       |       |       |
 | Tags     | Headline                                               | Time    |       |       |     % |
 |----------+--------------------------------------------------------+---------+-------+-------+-------|
-|          | *Total time*                                           | *57:25* |       |       | 100.0 |
+|          | *Total time*                                           | *59:59* |       |       | 100.0 |
 |----------+--------------------------------------------------------+---------+-------+-------+-------|
-|          | Stories                                                | 57:25   |       |       | 100.0 |
-|          | Active                                                 |         | 57:25 |       | 100.0 |
-| agile    | Sprint and product backlog refinement                  |         |       |  2:49 |   4.9 |
+|          | Stories                                                | 59:59   |       |       | 100.0 |
+|          | Active                                                 |         | 59:59 |       | 100.0 |
+| agile    | Sprint and product backlog refinement                  |         |       |  2:49 |   4.7 |
 | code     | Clean up client parser                                 |         |       |  0:10 |   0.3 |
-| code     | Add connect command line argument                      |         |       |  1:19 |   2.3 |
-| infra    | Install Windows package on Windows machine             |         |       |  2:09 |   3.7 |
-| code     | Ignore warnings on windows and osx                     |         |       |  0:33 |   1.0 |
+| code     | Add connect command line argument                      |         |       |  1:19 |   2.2 |
+| infra    | Install Windows package on Windows machine             |         |       |  2:09 |   3.6 |
+| code     | Ignore warnings on windows and osx                     |         |       |  0:33 |   0.9 |
 | code     | Ensure applications work under OSX using github images |         |       |  0:14 |   0.4 |
-| infra    | Create a splash screen and gray background             |         |       |  2:26 |   4.2 |
-| code     | Use fluent icons                                       |         |       |  0:37 |   1.1 |
-| code     | Add export functionality for currencies                |         |       |  1:30 |   2.6 |
-| code     | Add currency editing support                           |         |       |  2:45 |   4.8 |
-| code     | Add about to menu                                      |         |       |  1:02 |   1.8 |
-| code     | Create a history dialog for currencies                 |         |       |  1:27 |   2.5 |
-| code     | Allow MDI windows outside main window                  |         |       |  1:35 |   2.8 |
-| code     | Add edit menu and export menu                          |         |       |  0:34 |   1.0 |
-| code     | Implement adding new currencies                        |         |       |  3:17 |   5.7 |
-| code     | Clean up product website                               |         |       |  4:42 |   8.2 |
-| code     | Create a skill for plant uml documentation             |         |       |  2:48 |   4.9 |
+| infra    | Create a splash screen and gray background             |         |       |  2:26 |   4.1 |
+| code     | Use fluent icons                                       |         |       |  0:37 |   1.0 |
+| code     | Add export functionality for currencies                |         |       |  1:30 |   2.5 |
+| code     | Add currency editing support                           |         |       |  2:45 |   4.6 |
+| code     | Add about to menu                                      |         |       |  1:02 |   1.7 |
+| code     | Create a history dialog for currencies                 |         |       |  1:27 |   2.4 |
+| code     | Allow MDI windows outside main window                  |         |       |  1:35 |   2.6 |
+| code     | Add edit menu and export menu                          |         |       |  0:34 |   0.9 |
+| code     | Implement adding new currencies                        |         |       |  3:17 |   5.5 |
+| code     | Clean up product website                               |         |       |  4:42 |   7.8 |
+| code     | Create a skill for plant uml documentation             |         |       |  2:48 |   4.7 |
 | infra    | Add CMake targets for site and skills                  |         |       |  0:17 |   0.5 |
-| infra    | Generalise the skill setup for ORE Studio              |         |       |  3:45 |   6.5 |
-| infra    | Restructure components to follow the dogen approach    |         |       |  2:54 |   5.1 |
-| infra    | Generate PlantUML diagrams for all components          |         |       |  1:05 |   1.9 |
-| code     | Fix the valgrind leaks reported on sqlgen              |         |       |  1:53 |   3.3 |
-| code     | Make UI/UX look more professional                      |         |       | 11:07 |  19.4 |
-| code     | Current issues with package install in debian          |         |       |  0:40 |   1.2 |
-| code     | Resolve crash on shutdown problem                      |         |       |  0:50 |   1.5 |
+| infra    | Generalise the skill setup for ORE Studio              |         |       |  3:45 |   6.3 |
+| infra    | Restructure components to follow the dogen approach    |         |       |  2:54 |   4.8 |
+| infra    | Generate PlantUML diagrams for all components          |         |       |  1:05 |   1.8 |
+| code     | Fix the valgrind leaks reported on sqlgen              |         |       |  3:00 |   5.0 |
+| code     | Make UI/UX look more professional                      |         |       | 11:07 |  18.5 |
+| code     | Current issues with package install in debian          |         |       |  0:40 |   1.1 |
+| code     | Resolve crash on shutdown problem                      |         |       |  0:50 |   1.4 |
 | analysis | Weaving skills and documentation together              |         |       |  0:46 |   1.3 |
-| code     | Review all code created so far with an LLM             |         |       |  4:11 |   7.3 |
+| code     | Review all code created so far with an LLM             |         |       |  5:38 |   9.4 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -567,6 +568,7 @@ Ask the LLM on how to replicate the calc pie chart we previously had.
 
 *** STARTED Fix the valgrind leaks reported on sqlgen                  :code:
     :LOGBOOK:
+    CLOCK: [2025-11-13 Thu 08:20]--[2025-11-13 Thu 09:27] =>  1:07
     CLOCK: [2025-11-12 Wed 09:00]--[2025-11-12 Wed 10:53] =>  1:53
     :END:
 
@@ -990,6 +992,7 @@ Notes:
 
 *** STARTED Review all code created so far with an LLM                 :code:
     :LOGBOOK:
+    CLOCK: [2025-11-13 Thu 09:34]--[2025-11-13 Thu 11:01] =>  1:27
     CLOCK: [2025-11-12 Wed 21:18]--[2025-11-13 Thu 00:01] =>  2:43
     CLOCK: [2025-11-12 Wed 14:44]--[2025-11-12 Wed 15:32] =>  0:48
     CLOCK: [2025-11-12 Wed 12:10]--[2025-11-12 Wed 12:50] =>  0:40
@@ -1008,6 +1011,7 @@ Look for:
 - Security issues or unsafe patterns
 - Inappropriate or missing logging (check log level and message clarity)
 - Any other clear improvements worth noting
+- For unit tests, ensure they are named correctly and have enough coverage
 
 Be succinct — prefer clarity over grammar.
 
@@ -1015,12 +1019,78 @@ Output a short list of actionable items, ideally with suggested fixes.
 
 The system uses Data-Oriented design for finance.
 
-I’ll show you the header and implementation separately — comment on them
-separately.
+I’ll show you the header and implementation (if any) separately — comment on
+them separately.
 #+end_quote
 
 - reviewing =ores.accounts=. Done core library, missing tests.
 - reviewing =ores.cli=.
+
+*** Add lock account request                                           :code:
+
+As per gemini's comments, we should have a request to lock an account.
+
+Test.
+
+#+begin_src c++
+TEST_CASE("handle_login_request_locked_account", tags) {
+    auto lg(make_logger(test_suite));
+    database_helper h;
+    h.truncate_table(database_table);
+
+    accounts_message_handler handler(h.get_context());
+    boost::asio::io_context io_context;
+
+    const auto account = generate_synthetic_account();
+    create_account_request create_req(to_create_account_request(account));
+    BOOST_LOG_SEV(lg, info) << "Create account request: " << create_req;
+
+    const auto create_payload = create_req.serialize();
+    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+        auto result = co_await handler.handle_message(
+            message_type::create_account_request,
+            create_payload, "127.0.0.1:12345");
+        REQUIRE(result.has_value());
+    });
+
+    // 2. Simulate locking the account (A dedicated lock request should exist,
+    //    but for this test, we'll assume the handler has a method/logic for it
+    //    or that the system supports a lock request message type).
+    // Assuming a lock_account_request exists or the account is locked internally.
+    unlock_account_request lock_req; // Re-use struct for simplicity, assuming a dedicated lock is handled internally
+    lock_req.account_id = create_account_response::deserialize(
+        handler.get_account_id_by_username(create_req.username)).value().account_id; // Hypothetical internal method
+    // In a real system, you'd send a dedicated lock message here.
+    // For now, we rely on a separate mechanism to put the account into a locked state.
+    // **NOTE**: For a proper test, a dedicated LOCK_ACCOUNT_REQUEST is needed.
+
+    // 3. Attempt login with valid credentials for the now-locked account
+    login_request login_req;
+    login_req.username = create_req.username;
+    login_req.password = create_req.password;
+    BOOST_LOG_SEV(lg, info) << "Attempting login for locked user: " << login_req.username;
+
+    const auto login_payload = login_req.serialize();
+
+    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+        auto result = co_await handler.handle_message(
+            message_type::login_request,
+            login_payload, "192.168.1.100:54321");
+
+        REQUIRE(result.has_value());
+        const auto response_result = login_response::deserialize(result.value());
+        REQUIRE(response_result.has_value());
+        const auto& response = response_result.value();
+        BOOST_LOG_SEV(lg, info) << "Response: " << response;
+
+        CHECK(response.success == false);
+        // Check for an explicit error message/code related to account lock.
+        CHECK(response.error_message.find("locked") != std::string::npos);
+    });
+}
+#+end_src
+
+
 
 *** Add pagination support                                             :code:
 

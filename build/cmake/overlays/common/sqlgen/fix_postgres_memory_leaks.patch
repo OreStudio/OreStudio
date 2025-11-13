@@ -15,7 +15,7 @@ index 6b33ad2..c2b333e 100644
    return Nothing{};
  }
 
-@@ -56,8 +59,10 @@ Result<Nothing> Connection::insert_impl(
+@@ -56,10 +59,21 @@ Result<Nothing> Connection::insert_impl(
    const auto status = PQresultStatus(res);
 
    if (status != PGRES_COMMAND_OK) {
@@ -24,11 +24,22 @@ index 6b33ad2..c2b333e 100644
 +    const auto err = error("Generating prepared statement for '" + sql +
 +                           "' failed: " + PQresultErrorMessage(res));
 +    PQclear(res);
++
++    while ((res_prep = PQgetResult(conn_.get())) != nullptr)
++        PQclear(res_prep);
++
 +    return err;
    }
 
++  PQclear(res);
++
++  while ((res_prep = PQgetResult(conn_.get())) != nullptr)
++    PQclear(res_prep);
++
    std::vector<const char*> current_row(_data[0].size());
-@@ -93,8 +98,10 @@ Result<Nothing> Connection::insert_impl(
+
+   const int n_params = static_cast<int>(current_row.size());
+@@ -93,8 +107,10 @@ Result<Nothing> Connection::insert_impl(
        const auto err = error(std::string("Executing INSERT failed: ") +
                               PQresultErrorMessage(res));
        execute("DEALLOCATE " + name + ";");

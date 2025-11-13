@@ -39,7 +39,7 @@ struct create_account_request final {
     std::string totp_secret;
     std::string email;
     std::string modified_by;
-    bool is_admin;
+    bool is_admin = false;
 
     /**
      * @brief Serialize request to bytes.
@@ -181,11 +181,11 @@ std::ostream& operator<<(std::ostream& s, const login_request& v);
  * @brief Response containing authentication result and account information.
  */
 struct login_response final {
-    bool success;
+    bool success = false;
     std::string error_message;
     boost::uuids::uuid account_id;
     std::string username;
-    bool is_admin;
+    bool is_admin = false;
 
     /**
      * @brief Serialize response to bytes.
@@ -237,7 +237,7 @@ std::ostream& operator<<(std::ostream& s, const unlock_account_request& v);
  * @brief Response indicating whether unlock operation succeeded.
  */
 struct unlock_account_response final {
-    bool success;
+    bool success = false;
     std::string error_message;
 
     /**

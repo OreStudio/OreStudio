@@ -51,11 +51,11 @@ TEST_CASE("write_single_account", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    account_repository repo;
+    account_repository repo(h.get_context());
     auto account = generate_synthetic_account();
 
     BOOST_LOG_SEV(lg, debug) << "Account: " << account;
-    CHECK_NOTHROW(repo.write(h.get_context(), account));
+    CHECK_NOTHROW(repo.write(account));
 }
 
 TEST_CASE("write_multiple_accounts", tags) {
@@ -64,11 +64,11 @@ TEST_CASE("write_multiple_accounts", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    account_repository repo;
+    account_repository repo(h.get_context());
     auto accounts = generate_synthetic_accounts(5);
     BOOST_LOG_SEV(lg, debug) << "Accounts: " << accounts;
 
-    CHECK_NOTHROW(repo.write(h.get_context(), accounts));
+    CHECK_NOTHROW(repo.write(accounts));
 }
 
 TEST_CASE("read_latest_accounts", tags) {
@@ -77,13 +77,13 @@ TEST_CASE("read_latest_accounts", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    account_repository repo;
+    account_repository repo(h.get_context());
     auto written_accounts = generate_synthetic_accounts(3);
     BOOST_LOG_SEV(lg, debug) << "Written accounts: " << written_accounts;
 
-    repo.write(h.get_context(), written_accounts);
+    repo.write(written_accounts);
 
-    auto read_accounts = repo.read_latest(h.get_context());
+    auto read_accounts = repo.read_latest();
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     CHECK(!read_accounts.empty());
@@ -96,16 +96,16 @@ TEST_CASE("read_latest_account_by_id", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    account_repository repo;
+    account_repository repo(h.get_context());
     auto accounts = generate_synthetic_accounts(5);
 
     const auto target = accounts.front();
     BOOST_LOG_SEV(lg, debug) << "Write accounts: " << accounts;
-    repo.write(h.get_context(), accounts);
+    repo.write(accounts);
 
     BOOST_LOG_SEV(lg, debug) << "target account: " << target;
 
-    auto read_accounts = repo.read_latest(h.get_context(), target.id);
+    auto read_accounts = repo.read_latest(target.id);
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     REQUIRE(read_accounts.size() == 1);
@@ -120,13 +120,13 @@ TEST_CASE("read_all_accounts", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    account_repository repo;
+    account_repository repo(h.get_context());
     auto written_accounts = generate_synthetic_accounts(5);
     BOOST_LOG_SEV(lg, debug) << "Generated accounts: " << written_accounts;
 
-    repo.write(h.get_context(), written_accounts);
+    repo.write(written_accounts);
 
-    auto read_accounts = repo.read_all(h.get_context());
+    auto read_accounts = repo.read_all();
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     CHECK(!read_accounts.empty());
@@ -139,7 +139,7 @@ TEST_CASE("read_all_accounts_by_id", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    account_repository repo;
+    account_repository repo(h.get_context());
 
     // Write multiple versions of the same account
     auto acc1 = generate_synthetic_account();
@@ -152,11 +152,11 @@ TEST_CASE("read_all_accounts_by_id", tags) {
     acc2.email = "test.versions.v2@test.com";
     BOOST_LOG_SEV(lg, debug) << "Account 2: " << acc2;
 
-    repo.write(h.get_context(), {acc1});
-    repo.write(h.get_context(), {acc2});
+    repo.write({acc1});
+    repo.write({acc2});
 
     // Read all versions
-    auto read_accounts = repo.read_all(h.get_context(), test_id);
+    auto read_accounts = repo.read_all(test_id);
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     CHECK(read_accounts.size() >= 2);
@@ -178,18 +178,17 @@ TEST_CASE("read_latest_by_username", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    account_repository repo;
+    account_repository repo(h.get_context());
     auto accounts = generate_synthetic_accounts(5);
     BOOST_LOG_SEV(lg, debug) << "Generated accounts: " << accounts;
 
-    repo.write(h.get_context(), accounts);
+    repo.write(accounts);
 
     auto acc = accounts.front();
     BOOST_LOG_SEV(lg, debug) << "Target account: " << acc;
 
     // Read by username
-    auto read_accounts = repo.read_latest_by_username(
-        h.get_context(), acc.username);
+    auto read_accounts = repo.read_latest_by_username(acc.username);
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     REQUIRE(read_accounts.size() == 1);
@@ -203,14 +202,13 @@ TEST_CASE("read_nonexistent_account_by_id", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    account_repository repo;
+    account_repository repo(h.get_context());
 
     // Generate a random UUID that doesn't exist in database.
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
-    auto read_accounts =
-        repo.read_latest(h.get_context(), nonexistent_id);
+    auto read_accounts = repo.read_latest(nonexistent_id);
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     CHECK(read_accounts.size() == 0);
@@ -222,13 +220,12 @@ TEST_CASE("read_nonexistent_username", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    account_repository repo;
+    account_repository repo(h.get_context());
 
     const std::string nonexistent_username = "nonexistent.user.12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent username: " << nonexistent_username;
 
-    auto read_accounts = repo.read_latest_by_username(
-        h.get_context(), nonexistent_username);
+    auto read_accounts = repo.read_latest_by_username(nonexistent_username);
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     CHECK(read_accounts.size() == 0);
@@ -240,7 +237,7 @@ TEST_CASE("write_and_read_admin_account", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    account_repository repo;
+    account_repository repo(h.get_context());
 
     // Create admin account
     auto admin_acc = generate_synthetic_account();
@@ -248,10 +245,10 @@ TEST_CASE("write_and_read_admin_account", tags) {
     BOOST_LOG_SEV(lg, debug) << "Admin account: " << admin_acc;
 
     const auto admin_id = admin_acc.id;
-    repo.write(h.get_context(), {admin_acc});
+    repo.write({admin_acc});
 
     // Read back and verify admin flag
-    auto read_accounts = repo.read_latest(h.get_context(), admin_id);
+    auto read_accounts = repo.read_latest(admin_id);
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     REQUIRE(read_accounts.size() == 1);

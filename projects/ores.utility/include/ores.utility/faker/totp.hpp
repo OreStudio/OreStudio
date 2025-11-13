@@ -17,36 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_MESSAGING_REGISTRAR_HPP
-#define ORES_ACCOUNTS_MESSAGING_REGISTRAR_HPP
+#ifndef ORES_UTILITY_FAKER_TOTP_HPP
+#define ORES_UTILITY_FAKER_TOTP_HPP
 
-#include "ores.comms/net/server.hpp"
-#include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/repository/context.hpp"
+#include <string>
 
-namespace ores::accounts::messaging {
+namespace ores::utility::faker {
 
-/**
- * @brief Register accounts subsystem message handlers with the server.
- *
- * Registers handlers for all accounts subsystem messages (0x2000-0x2FFF).
- * Must be called before server.run().
- *
- * @param server The server to register handlers with
- * @param ctx Database context for repository access
+/*
+ * @brief Generates fake Time-based One-Time Password (TOTP) secrets.
  */
-class registrar {
-private:
-    [[nodiscard]] static auto& lg() {
-        using namespace ores::utility::log;
-        static auto instance = make_logger(
-            "ores.accounts.messaging.registrar");
-        return instance;
-    }
-
+class totp {
 public:
-    static void register_handlers(comms::server& server,
-        utility::repository::context ctx);
+    static std::string totp_secret(std::size_t num_bytes = 20);
 };
 
 }

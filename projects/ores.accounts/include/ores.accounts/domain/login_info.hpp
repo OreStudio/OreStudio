@@ -32,9 +32,29 @@ namespace ores::accounts::domain {
  */
 struct login_info final {
     /**
+     * @brief Timestamp of the last successful login.
+     */
+    std::chrono::system_clock::time_point last_login;
+
+    /**
      * @brief Foreign key referencing the associated account.
      */
     boost::uuids::uuid account_id;
+
+    /**
+     * @brief Count of consecutive failed login attempts since last successful login.
+     */
+    int failed_logins = 0;
+
+    /**
+     * @brief Flag indicating whether the account is locked due to security concerns.
+     */
+    bool locked = false;
+
+    /**
+     * @brief Flag indicating whether the user is currently logged in.
+     */
+    bool online = false;
 
     /**
      * @brief IP address from the last successful login.
@@ -45,26 +65,6 @@ struct login_info final {
      * @brief IP address from the most recent login attempt (successful or failed).
      */
     boost::asio::ip::address last_attempt_ip;
-
-    /**
-     * @brief Count of consecutive failed login attempts since last successful login.
-     */
-    int failed_logins;
-
-    /**
-     * @brief Flag indicating whether the account is locked due to security concerns.
-     */
-    bool locked;
-
-    /**
-     * @brief Timestamp of the last successful login.
-     */
-    std::chrono::system_clock::time_point last_login;
-
-    /**
-     * @brief Flag indicating whether the user is currently logged in.
-     */
-    bool online;
 };
 
 std::ostream& operator<<(std::ostream& s, const login_info& v);

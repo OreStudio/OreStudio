@@ -17,27 +17,36 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_DOMAIN_ACCOUNT_GENERATOR_HPP
-#define ORES_ACCOUNTS_DOMAIN_ACCOUNT_GENERATOR_HPP
+#include "ores.utility/convert/base32_converter.hpp"
 
-#include <vector>
-#include "ores.accounts/domain/account.hpp"
+#include <array>
 
-namespace ores::accounts::generators {
+namespace {
 
-/**
- * @brief Generates a synthetic account.
- */
-domain::account generate_synthetic_account();
-
-/**
- * @brief Generates N synthetic accounts.
- *
- * @note c++ 23 generators are not supported on all compilers.
- */
-std::vector<domain::account>
-generate_synthetic_accounts(std::size_t n);
+static const std::array<char, 33> alphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567");
 
 }
 
-#endif
+namespace ores::utility::converter {
+
+std::string base32_converter::convert(const std::vector<uint8_t>& data) {
+    std::string result;
+    size_t bit_index = 0;
+    size_t current_byte = 0;
+
+    for (uint8_t byte : data) {
+        current_byte = (current_byte << 8) | byte;
+        bit_index += 8;
+        while (bit_index >= 5) {
+            bit_index -= 5;
+            size_t idx = (current_byte >> bit_index) & 0x1F;
+            result += alphabet[idx];
+        }
+    }
+    if (bit_index > 0) {
+        result += alphabet[(current_byte << (5 - bit_index)) & 0x1F];
+    }
+    return result;
+}
+
+}

@@ -51,12 +51,15 @@ std::string login_info_repository::sql() {
     return sql;
 }
 
-void login_info_repository::
-write(context ctx, const std::vector<domain::login_info>& login_infos) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing login_info to database. Count: "
-                             << login_infos.size();
+login_info_repository::login_info_repository(context ctx)
+    : ctx_(std::move(ctx)) {}
 
-    const auto r = session(ctx.connection_pool())
+void login_info_repository::
+write(const std::vector<domain::login_info>& login_infos) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing login_info to database. Count: "
+                               << login_infos.size();
+
+    const auto r = session(ctx_.connection_pool())
         .and_then(begin_transaction)
         .and_then(insert(login_info_mapper::map(login_infos)))
         .and_then(commit);
@@ -66,7 +69,7 @@ write(context ctx, const std::vector<domain::login_info>& login_infos) {
 }
 
 void login_info_repository::
-update(context ctx, const domain::login_info& login_info) {
+update(const domain::login_info& login_info) {
     BOOST_LOG_SEV(lg(), debug) << "Updating login_info for account: "
                                << boost::uuids::to_string(login_info.account_id);
 
@@ -80,7 +83,7 @@ update(context ctx, const domain::login_info& login_info) {
         "online"_c.set(entity.online)
     ) | where("account_id"_c == entity.account_id);
 
-    const auto r = session(ctx.connection_pool())
+    const auto r = session(ctx_.connection_pool())
         .and_then(begin_transaction)
         .and_then(query)
         .and_then(commit);
@@ -89,12 +92,12 @@ update(context ctx, const domain::login_info& login_info) {
     BOOST_LOG_SEV(lg(), debug) << "Finished updating login_info.";
 }
 
-std::vector<domain::login_info> login_info_repository::read(context ctx) {
+std::vector<domain::login_info> login_info_repository::read() {
     BOOST_LOG_SEV(lg(), debug) << "Reading all login_info.";
 
     const auto query = sqlgen::read<std::vector<login_info_entity>>;
 
-    const auto r = session(ctx.connection_pool())
+    const auto r = session(ctx_.connection_pool())
         .and_then(query);
     ensure_success(r);
     BOOST_LOG_SEV(lg(), debug) << "Read all login_info. Total: " << r->size();
@@ -102,14 +105,16 @@ std::vector<domain::login_info> login_info_repository::read(context ctx) {
 }
 
 std::vector<domain::login_info>
-login_info_repository::read(context ctx, const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading login_info for account: " << account_id;
+login_info_repository::read(const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading login_info for account: "
+                               << account_id;
 
-    const auto account_id_str = boost::lexical_cast<std::string>(account_id);
+    const auto account_id_str =
+        boost::lexical_cast<std::string>(account_id);
     const auto query = sqlgen::read<std::vector<login_info_entity>> |
         where("account_id"_c == account_id_str);
 
-    const auto r = session(ctx.connection_pool()).and_then(query);
+    const auto r = session(ctx_.connection_pool()).and_then(query);
     ensure_success(r);
     BOOST_LOG_SEV(lg(), debug) << "Read login_info. Total: " << r->size();
     return login_info_mapper::map(*r);

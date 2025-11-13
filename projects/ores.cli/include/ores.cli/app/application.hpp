@@ -24,7 +24,6 @@
 #include <ostream>
 #include <optional>
 #include <filesystem>
-#include <boost/asio/awaitable.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
 #include "ores.utility/database/database_options.hpp"
@@ -39,7 +38,7 @@ namespace ores::cli::app {
  */
 class application final {
 private:
-    static auto& lg() {
+    [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
         static auto instance = make_logger("ores.cli.application");
         return instance;

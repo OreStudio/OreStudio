@@ -17,27 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_DOMAIN_ACCOUNT_GENERATOR_HPP
-#define ORES_ACCOUNTS_DOMAIN_ACCOUNT_GENERATOR_HPP
+#include "ores.utility/faker/totp.hpp"
 
-#include <vector>
-#include "ores.accounts/domain/account.hpp"
+#include "faker-cxx/faker.h" // IWYU pragma: keep.
+#include "ores.utility/convert/base32_converter.hpp"
 
-namespace ores::accounts::generators {
+namespace ores::utility::faker {
 
-/**
- * @brief Generates a synthetic account.
- */
-domain::account generate_synthetic_account();
-
-/**
- * @brief Generates N synthetic accounts.
- *
- * @note c++ 23 generators are not supported on all compilers.
- */
-std::vector<domain::account>
-generate_synthetic_accounts(std::size_t n);
-
+std::string totp::totp_secret(std::size_t num_bytes) {
+    std::vector<uint8_t> bytes(num_bytes);
+    for (auto& b : bytes) {
+        b = static_cast<uint8_t>(::faker::number::integer(0, 255));
+    }
+    return converter::base32_converter::convert(bytes);
 }
 
-#endif
+}

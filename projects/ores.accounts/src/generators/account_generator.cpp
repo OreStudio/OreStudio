@@ -23,40 +23,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/string_generator.hpp>
-
-namespace {
-
-// Minimal RFC 4648 Base32 encoder (no padding)
-std::string base32_encode(const std::vector<uint8_t>& data) {
-    static const std::array<char, 33> alphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567");
-    std::string result;
-    size_t bit_index = 0;
-    size_t current_byte = 0;
-
-    for (uint8_t byte : data) {
-        current_byte = (current_byte << 8) | byte;
-        bit_index += 8;
-        while (bit_index >= 5) {
-            bit_index -= 5;
-            size_t idx = (current_byte >> bit_index) & 0x1F;
-            result += alphabet[idx];
-        }
-    }
-    if (bit_index > 0) {
-        result += alphabet[(current_byte << (5 - bit_index)) & 0x1F];
-    }
-    return result;
-}
-
-std::string generate_totp_secret(size_t num_bytes = 20) {
-    std::vector<uint8_t> bytes(num_bytes);
-    for (auto& b : bytes) {
-        b = static_cast<uint8_t>(faker::number::integer(0, 255));
-    }
-    return base32_encode(bytes);
-}
-
-}
+#include "ores.utility/faker/totp.hpp"
 
 namespace ores::accounts::generators {
 
@@ -75,7 +42,9 @@ domain::account generate_synthetic_account() {
 
     r.password_hash = faker::crypto::sha256();
     r.password_salt = faker::crypto::sha256();
-    r.totp_secret = generate_totp_secret();
+
+    using utility::faker::totp;
+    r.totp_secret = totp::totp_secret();
 
     r.is_admin = false;
     return r;

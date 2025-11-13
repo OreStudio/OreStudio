@@ -35,7 +35,7 @@ namespace ores::accounts::repository {
  */
 class login_info_repository {
 private:
-    static auto& lg() {
+    [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
         static auto instance = make_logger(
             "ores.accounts.repository.login_info_repository");
@@ -46,6 +46,7 @@ private:
 
 public:
     using context = ores::utility::repository::context;
+    explicit login_info_repository(context ctx);
 
     /**
      * @brief Returns the SQL created by sqlgen to construct the table.
@@ -55,21 +56,23 @@ public:
     /**
      * @brief Writes login information to database (insert only).
      */
-    void write(context ctx, const std::vector<domain::login_info>& login_infos);
+    void write(const std::vector<domain::login_info>& login_infos);
 
     /**
      * @brief Updates existing login information in database.
      */
-    void update(context ctx, const domain::login_info& login_info);
+    void update(const domain::login_info& login_info);
 
     /**
      * @brief Reads login information, possibly filtered by account ID.
      */
     /**@{*/
-    std::vector<domain::login_info> read(context ctx);
-    std::vector<domain::login_info>
-    read(context ctx, const boost::uuids::uuid& account_id);
+    std::vector<domain::login_info> read();
+    std::vector<domain::login_info> read(const boost::uuids::uuid& account_id);
     /**@}*/
+
+private:
+    context ctx_;
 };
 
 }

@@ -17,36 +17,38 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_MESSAGING_REGISTRAR_HPP
-#define ORES_ACCOUNTS_MESSAGING_REGISTRAR_HPP
+#ifndef ORES_UTILITY_CONVERTER_BASE64_CONVERTER_HPP
+#define ORES_UTILITY_CONVERTER_BASE64_CONVERTER_HPP
 
-#include "ores.comms/net/server.hpp"
+#include <string>
+#include <vector>
+#include <cstdint>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/repository/context.hpp"
 
-namespace ores::accounts::messaging {
+namespace ores::utility::converter {
 
 /**
- * @brief Register accounts subsystem message handlers with the server.
- *
- * Registers handlers for all accounts subsystem messages (0x2000-0x2FFF).
- * Must be called before server.run().
- *
- * @param server The server to register handlers with
- * @param ctx Database context for repository access
+ * @brief Minimal Base64 encoder.
  */
-class registrar {
+class base64_converter {
 private:
     [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
         static auto instance = make_logger(
-            "ores.accounts.messaging.registrar");
+            "ores.utility.converter.base64_converter");
         return instance;
     }
 
 public:
-    static void register_handlers(comms::server& server,
-        utility::repository::context ctx);
+    /**
+     * @brief Convert to Base64.
+     */
+    static std::string convert(const std::vector<uint8_t>& data);
+
+    /**
+     * @brief Convert from Base64.
+     */
+    static std::vector<uint8_t> convert(const std::string& data);
 };
 
 }

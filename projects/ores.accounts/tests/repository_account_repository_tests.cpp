@@ -51,7 +51,7 @@ TEST_CASE("write_single_account", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    account_repository repo(h.get_context());
+    account_repository repo(h.context());
     auto account = generate_synthetic_account();
 
     BOOST_LOG_SEV(lg, debug) << "Account: " << account;
@@ -64,7 +64,7 @@ TEST_CASE("write_multiple_accounts", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    account_repository repo(h.get_context());
+    account_repository repo(h.context());
     auto accounts = generate_synthetic_accounts(5);
     BOOST_LOG_SEV(lg, debug) << "Accounts: " << accounts;
 
@@ -77,7 +77,7 @@ TEST_CASE("read_latest_accounts", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    account_repository repo(h.get_context());
+    account_repository repo(h.context());
     auto written_accounts = generate_synthetic_accounts(3);
     BOOST_LOG_SEV(lg, debug) << "Written accounts: " << written_accounts;
 
@@ -96,7 +96,7 @@ TEST_CASE("read_latest_account_by_id", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    account_repository repo(h.get_context());
+    account_repository repo(h.context());
     auto accounts = generate_synthetic_accounts(5);
 
     const auto target = accounts.front();
@@ -120,7 +120,7 @@ TEST_CASE("read_all_accounts", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    account_repository repo(h.get_context());
+    account_repository repo(h.context());
     auto written_accounts = generate_synthetic_accounts(5);
     BOOST_LOG_SEV(lg, debug) << "Generated accounts: " << written_accounts;
 
@@ -139,7 +139,7 @@ TEST_CASE("read_all_accounts_by_id", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    account_repository repo(h.get_context());
+    account_repository repo(h.context());
 
     // Write multiple versions of the same account
     auto acc1 = generate_synthetic_account();
@@ -178,7 +178,7 @@ TEST_CASE("read_latest_by_username", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    account_repository repo(h.get_context());
+    account_repository repo(h.context());
     auto accounts = generate_synthetic_accounts(5);
     BOOST_LOG_SEV(lg, debug) << "Generated accounts: " << accounts;
 
@@ -202,7 +202,7 @@ TEST_CASE("read_nonexistent_account_by_id", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    account_repository repo(h.get_context());
+    account_repository repo(h.context());
 
     // Generate a random UUID that doesn't exist in database.
     const auto nonexistent_id = boost::uuids::random_generator()();
@@ -220,7 +220,7 @@ TEST_CASE("read_nonexistent_username", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    account_repository repo(h.get_context());
+    account_repository repo(h.context());
 
     const std::string nonexistent_username = "nonexistent.user.12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent username: " << nonexistent_username;
@@ -237,7 +237,7 @@ TEST_CASE("write_and_read_admin_account", tags) {
     database_helper h;
     h.truncate_table(database_table);
 
-    account_repository repo(h.get_context());
+    account_repository repo(h.context());
 
     // Create admin account
     auto admin_acc = generate_synthetic_account();

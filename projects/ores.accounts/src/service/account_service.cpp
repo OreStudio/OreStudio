@@ -151,7 +151,7 @@ domain::account account_service::login(const std::string& username,
     if (login_info.locked) {
         BOOST_LOG_SEV(lg(), warn) << "Login attempt for locked account: "
                                   << username;
-        throw std::runtime_error("Account is locked due to too many failed login attempts");
+        throw std::runtime_error("Account is locked due to too many failed attempts");
     }
 
     using security::password_manager;
@@ -170,7 +170,7 @@ domain::account account_service::login(const std::string& username,
         if (login_info.failed_logins >= max_failed_attempts) {
             login_info.locked = true;
             BOOST_LOG_SEV(lg(), warn) << "Account locked due to too many failed attempts: "
-                                    << username;
+                                      << username;
         }
 
         login_info_repo_.update(login_info);

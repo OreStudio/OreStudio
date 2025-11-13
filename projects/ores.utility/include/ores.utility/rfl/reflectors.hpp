@@ -36,7 +36,7 @@ namespace rfl {
  *
  * Serializes UUID as string representation.
  */
-template <>
+template<>
 struct Reflector<boost::uuids::uuid> {
     using ReflType = std::string;
 
@@ -59,7 +59,7 @@ struct Reflector<boost::uuids::uuid> {
  * Serialized format: "YYYY-MM-DD HH:MM:SS" (assumed to be UTC)
  * Example: "2023-10-27 14:45:30"
  */
-template <>
+template<>
 struct Reflector<std::chrono::system_clock::time_point> {
     using ReflType = std::string;
 
@@ -97,12 +97,13 @@ struct Reflector<std::chrono::system_clock::time_point> {
         return std::format("{:%F %T}Z", v);
     }
 };
+
 /**
  * @brief Custom reflector for boost::asio::ip::address.
  *
  * Serializes IP address as string representation (supports both IPv4 and IPv6).
  */
-template <>
+template<>
 struct Reflector<boost::asio::ip::address> {
     using ReflType = std::string;
 

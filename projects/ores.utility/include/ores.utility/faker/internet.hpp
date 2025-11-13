@@ -21,6 +21,7 @@
 #define ORES_UTILITY_FAKER_INTERNET_HPP
 
 #include <string>
+#include <boost/asio/ip/address.hpp>
 
 namespace ores::utility::faker {
 
@@ -29,10 +30,14 @@ namespace ores::utility::faker {
  */
 class internet {
 public:
-    /*
+    /**
      * @brief Generates a random IPv4 address and a port number.
      */
     static std::string endpoint();
+    /**
+     * @brief Returns a faker IP address in a boost type.
+     */
+    static boost::asio::ip::address ipv4();
 };
 
 }

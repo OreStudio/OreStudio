@@ -18,6 +18,7 @@
  *
  */
 #include "ores.utility/faker/internet.hpp"
+#include <boost/asio/ip/address.hpp>
 
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 
@@ -27,6 +28,10 @@ std::string internet::endpoint() {
     const std::string ip = std::string(::faker::internet::ipv4());
     const int port = ::faker::number::integer(1025, 65535);
     return ip + ":" + std::to_string(port);
+}
+
+boost::asio::ip::address internet::ipv4() {
+    return boost::asio::ip::make_address(::faker::internet::ipv4());
 }
 
 }

@@ -38,77 +38,77 @@ using namespace ores::utility::log;
 TEST_CASE("create_login_info_with_ipv4_addresses", tags) {
     auto lg(make_logger(test_suite));
 
-    login_info li;
-    li.account_id = boost::uuids::random_generator()();
-    li.last_ip = boost::asio::ip::make_address("192.168.1.100");
-    li.last_attempt_ip = boost::asio::ip::make_address("192.168.1.101");
-    li.failed_logins = 0;
-    li.locked = false;
-    li.last_login = std::chrono::system_clock::now();
-    li.online = true;
-    BOOST_LOG_SEV(lg, info) << "Login info: " << li;
+    login_info sut;
+    sut.account_id = boost::uuids::random_generator()();
+    sut.last_ip = boost::asio::ip::make_address("192.168.1.100");
+    sut.last_attempt_ip = boost::asio::ip::make_address("192.168.1.101");
+    sut.failed_logins = 0;
+    sut.locked = false;
+    sut.last_login = std::chrono::system_clock::now();
+    sut.online = true;
+    BOOST_LOG_SEV(lg, info) << "Login info: " << sut;
 
-    CHECK(li.failed_logins == 0);
-    CHECK(li.locked == false);
-    CHECK(li.online == true);
-    CHECK(li.last_ip.to_string() == "192.168.1.100");
-    CHECK(li.last_attempt_ip.to_string() == "192.168.1.101");
+    CHECK(sut.failed_logins == 0);
+    CHECK(sut.locked == false);
+    CHECK(sut.online == true);
+    CHECK(sut.last_ip.to_string() == "192.168.1.100");
+    CHECK(sut.last_attempt_ip.to_string() == "192.168.1.101");
 }
 
 TEST_CASE("create_login_info_with_ipv6_addresses", tags) {
     auto lg(make_logger(test_suite));
 
-    login_info li;
-    li.account_id = boost::uuids::random_generator()();
-    li.last_ip = boost::asio::ip::make_address("2001:0db8:85a3:0000:0000:8a2e:0370:7334");
-    li.last_attempt_ip = boost::asio::ip::make_address("::1");
-    li.failed_logins = 0;
-    li.locked = false;
-    li.last_login = std::chrono::system_clock::now();
-    li.online = false;
-    BOOST_LOG_SEV(lg, info) << "Login info: " << li;
+    login_info sut;
+    sut.account_id = boost::uuids::random_generator()();
+    sut.last_ip = boost::asio::ip::make_address("2001:0db8:85a3:0000:0000:8a2e:0370:7334");
+    sut.last_attempt_ip = boost::asio::ip::make_address("::1");
+    sut.failed_logins = 0;
+    sut.locked = false;
+    sut.last_login = std::chrono::system_clock::now();
+    sut.online = false;
+    BOOST_LOG_SEV(lg, info) << "Login info: " << sut;
 
-    CHECK(li.failed_logins == 0);
-    CHECK(li.locked == false);
-    CHECK(li.online == false);
-    CHECK(li.last_attempt_ip.to_string() == "::1");
+    CHECK(sut.failed_logins == 0);
+    CHECK(sut.locked == false);
+    CHECK(sut.online == false);
+    CHECK(sut.last_attempt_ip.to_string() == "::1");
 }
 
 TEST_CASE("create_locked_account_login_info", tags) {
     auto lg(make_logger(test_suite));
 
-    login_info li;
-    li.account_id = boost::uuids::random_generator()();
-    li.last_ip = boost::asio::ip::make_address("10.0.0.50");
-    li.last_attempt_ip = boost::asio::ip::make_address("203.0.113.42");
-    li.failed_logins = 5;
-    li.locked = true;
-    li.last_login = std::chrono::system_clock::now() - std::chrono::hours(24);
-    li.online = false;
-    BOOST_LOG_SEV(lg, info) << "Login info: " << li;
+    login_info sut;
+    sut.account_id = boost::uuids::random_generator()();
+    sut.last_ip = boost::asio::ip::make_address("10.0.0.50");
+    sut.last_attempt_ip = boost::asio::ip::make_address("203.0.113.42");
+    sut.failed_logins = 5;
+    sut.locked = true;
+    sut.last_login = std::chrono::system_clock::now() - std::chrono::hours(24);
+    sut.online = false;
+    BOOST_LOG_SEV(lg, info) << "Login info: " << sut;
 
-    CHECK(li.failed_logins == 5);
-    CHECK(li.locked == true);
-    CHECK(li.online == false);
-    CHECK(li.last_attempt_ip.to_string() == "203.0.113.42");
+    CHECK(sut.failed_logins == 5);
+    CHECK(sut.locked == true);
+    CHECK(sut.online == false);
+    CHECK(sut.last_attempt_ip.to_string() == "203.0.113.42");
 }
 
 TEST_CASE("login_info_with_failed_attempts", tags) {
     auto lg(make_logger(test_suite));
 
-    login_info li;
-    li.account_id = boost::uuids::random_generator()();
-    li.last_ip = boost::asio::ip::make_address("172.16.0.1");
-    li.last_attempt_ip = boost::asio::ip::make_address("172.16.0.1");
-    li.failed_logins = 3;
-    li.locked = false;
-    li.last_login = std::chrono::system_clock::now() - std::chrono::minutes(30);
-    li.online = false;
-    BOOST_LOG_SEV(lg, info) << "Login info: " << li;
+    login_info sut;
+    sut.account_id = boost::uuids::random_generator()();
+    sut.last_ip = boost::asio::ip::make_address("172.16.0.1");
+    sut.last_attempt_ip = boost::asio::ip::make_address("172.16.0.1");
+    sut.failed_logins = 3;
+    sut.locked = false;
+    sut.last_login = std::chrono::system_clock::now() - std::chrono::minutes(30);
+    sut.online = false;
+    BOOST_LOG_SEV(lg, info) << "Login info: " << sut;
 
-    CHECK(li.failed_logins == 3);
-    CHECK(li.locked == false);
-    CHECK(li.last_ip.to_string() == "172.16.0.1");
+    CHECK(sut.failed_logins == 3);
+    CHECK(sut.locked == false);
+    CHECK(sut.last_ip.to_string() == "172.16.0.1");
 }
 
 TEST_CASE("login_info_serialization_to_json", tags) {
@@ -117,19 +117,19 @@ TEST_CASE("login_info_serialization_to_json", tags) {
     boost::uuids::string_generator uuid_gen;
     const auto account_uuid = uuid_gen("123e4567-e89b-12d3-a456-426614174000");
 
-    login_info li;
-    li.account_id = account_uuid;
-    li.last_ip = boost::asio::ip::make_address("198.51.100.42");
-    li.last_attempt_ip = boost::asio::ip::make_address("198.51.100.43");
-    li.failed_logins = 1;
-    li.locked = false;
-    li.last_login = std::chrono::system_clock::now();
-    li.online = true;
-    BOOST_LOG_SEV(lg, info) << "Login info: " << li;
+    login_info sut;
+    sut.account_id = account_uuid;
+    sut.last_ip = boost::asio::ip::make_address("198.51.100.42");
+    sut.last_attempt_ip = boost::asio::ip::make_address("198.51.100.43");
+    sut.failed_logins = 1;
+    sut.locked = false;
+    sut.last_login = std::chrono::system_clock::now();
+    sut.online = true;
+    BOOST_LOG_SEV(lg, info) << "Login info: " << sut;
 
-    std::ostringstream oss;
-    oss << li;
-    const std::string json_output = oss.str();
+    std::ostringstream os;
+    os << sut;
+    const std::string json_output = os.str();
 
     CHECK(!json_output.empty());
     CHECK(json_output.find("123e4567-e89b-12d3-a456-426614174000") != std::string::npos);
@@ -139,66 +139,66 @@ TEST_CASE("login_info_serialization_to_json", tags) {
 TEST_CASE("login_info_with_different_ip_versions", tags) {
     auto lg(make_logger(test_suite));
 
-    login_info li;
-    li.account_id = boost::uuids::random_generator()();
-    li.last_ip = boost::asio::ip::make_address("192.0.2.1");
-    li.last_attempt_ip = boost::asio::ip::make_address("2001:db8::1");
-    li.failed_logins = 0;
-    li.locked = false;
-    li.last_login = std::chrono::system_clock::now();
-    li.online = true;
-    BOOST_LOG_SEV(lg, info) << "Login info: " << li;
+    login_info sut;
+    sut.account_id = boost::uuids::random_generator()();
+    sut.last_ip = boost::asio::ip::make_address("192.0.2.1");
+    sut.last_attempt_ip = boost::asio::ip::make_address("2001:db8::1");
+    sut.failed_logins = 0;
+    sut.locked = false;
+    sut.last_login = std::chrono::system_clock::now();
+    sut.online = true;
+    BOOST_LOG_SEV(lg, info) << "Login info: " << sut;
 
-    CHECK(li.last_ip.is_v4());
-    CHECK(li.last_attempt_ip.is_v6());
-    CHECK(li.last_ip.to_string() == "192.0.2.1");
-    CHECK(li.last_attempt_ip.to_string() == "2001:db8::1");
+    CHECK(sut.last_ip.is_v4());
+    CHECK(sut.last_attempt_ip.is_v6());
+    CHECK(sut.last_ip.to_string() == "192.0.2.1");
+    CHECK(sut.last_attempt_ip.to_string() == "2001:db8::1");
 }
 
 TEST_CASE("create_login_info_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    login_info li;
-    li.account_id = boost::uuids::random_generator()();
-    li.last_ip = boost::asio::ip::make_address(faker::internet::ipv4());
-    li.last_attempt_ip = boost::asio::ip::make_address(faker::internet::ipv4());
-    li.failed_logins = faker::number::integer(0, 10);
-    li.locked = faker::datatype::boolean();
-    li.last_login = std::chrono::system_clock::now() -
+    login_info sut;
+    sut.account_id = boost::uuids::random_generator()();
+    sut.last_ip = boost::asio::ip::make_address(faker::internet::ipv4());
+    sut.last_attempt_ip = boost::asio::ip::make_address(faker::internet::ipv4());
+    sut.failed_logins = faker::number::integer(0, 10);
+    sut.locked = faker::datatype::boolean();
+    sut.last_login = std::chrono::system_clock::now() -
         std::chrono::hours(faker::number::integer(0, 168));
-    li.online = faker::datatype::boolean();
-    BOOST_LOG_SEV(lg, info) << "Login info: " << li;
+    sut.online = faker::datatype::boolean();
+    BOOST_LOG_SEV(lg, info) << "Login info: " << sut;
 
-    CHECK(li.failed_logins >= 0);
-    CHECK(li.failed_logins <= 10);
+    CHECK(sut.failed_logins >= 0);
+    CHECK(sut.failed_logins <= 10);
 }
 
 TEST_CASE("create_multiple_random_login_infos", tags) {
     auto lg(make_logger(test_suite));
 
     for (int i = 0; i < 3; ++i) {
-        login_info li;
-        li.account_id = boost::uuids::random_generator()();
+        login_info sut;
+        sut.account_id = boost::uuids::random_generator()();
 
         const bool use_ipv6 = faker::datatype::boolean();
         if (use_ipv6) {
-            li.last_ip = boost::asio::ip::make_address(faker::internet::ipv6());
-            li.last_attempt_ip = boost::asio::ip::make_address(faker::internet::ipv6());
+            sut.last_ip = boost::asio::ip::make_address(faker::internet::ipv6());
+            sut.last_attempt_ip = boost::asio::ip::make_address(faker::internet::ipv6());
         } else {
-            li.last_ip = boost::asio::ip::make_address(faker::internet::ipv4());
-            li.last_attempt_ip = boost::asio::ip::make_address(faker::internet::ipv4());
+            sut.last_ip = boost::asio::ip::make_address(faker::internet::ipv4());
+            sut.last_attempt_ip = boost::asio::ip::make_address(faker::internet::ipv4());
         }
 
-        li.failed_logins = faker::number::integer(0, 5);
-        li.locked = li.failed_logins >= 3;
-        li.last_login = std::chrono::system_clock::now() -
+        sut.failed_logins = faker::number::integer(0, 5);
+        sut.locked = sut.failed_logins >= 3;
+        sut.last_login = std::chrono::system_clock::now() -
             std::chrono::minutes(faker::number::integer(0, 1440));
-        li.online = faker::datatype::boolean();
-        BOOST_LOG_SEV(lg, info) << "Login info " << i << ":" << li;
+        sut.online = faker::datatype::boolean();
+        BOOST_LOG_SEV(lg, info) << "Login info " << i << ":" << sut;
 
-        CHECK(li.failed_logins >= 0);
-        if (li.locked) {
-            CHECK(li.failed_logins >= 3);
+        CHECK(sut.failed_logins >= 0);
+        if (sut.locked) {
+            CHECK(sut.failed_logins >= 3);
         }
     }
 }

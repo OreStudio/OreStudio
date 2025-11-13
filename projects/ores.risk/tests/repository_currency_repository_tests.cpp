@@ -53,7 +53,7 @@ TEST_CASE("write_single_currency", tags) {
     BOOST_LOG_SEV(lg, debug) << "Currency: " << currency;
 
     currency_repository repo;
-    CHECK_NOTHROW(repo.write(h.get_context(), currency));
+    CHECK_NOTHROW(repo.write(h.context(), currency));
 }
 
 TEST_CASE("write_multiple_currencies", tags) {
@@ -66,7 +66,7 @@ TEST_CASE("write_multiple_currencies", tags) {
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
 
     currency_repository repo;
-    CHECK_NOTHROW(repo.write(h.get_context(), currencies));
+    CHECK_NOTHROW(repo.write(h.context(), currencies));
 }
 
 TEST_CASE("read_latest_currencies", tags) {
@@ -79,9 +79,9 @@ TEST_CASE("read_latest_currencies", tags) {
     BOOST_LOG_SEV(lg, debug) << "Written currencies: " << written_currencies;
 
     currency_repository repo;
-    repo.write(h.get_context(), written_currencies);
+    repo.write(h.context(), written_currencies);
 
-    auto read_currencies = repo.read_latest(h.get_context());
+    auto read_currencies = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
     CHECK(!read_currencies.empty());
@@ -99,12 +99,12 @@ TEST_CASE("read_latest_currency_by_iso_code", tags) {
     BOOST_LOG_SEV(lg, debug) << "Currency: " << currency;
 
     currency_repository repo;
-    repo.write(h.get_context(), currency);
+    repo.write(h.context(), currency);
 
     currency.name = original_name + " v2";
-    repo.write(h.get_context(), currency);
+    repo.write(h.context(), currency);
 
-    auto read_currencies = repo.read_latest(h.get_context(), currency.iso_code);
+    auto read_currencies = repo.read_latest(h.context(), currency.iso_code);
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
     REQUIRE(read_currencies.size() == 1);
@@ -122,9 +122,9 @@ TEST_CASE("read_all_currencies", tags) {
     BOOST_LOG_SEV(lg, debug) << "Written currencies: " << written_currencies;
 
     currency_repository repo;
-    repo.write(h.get_context(), written_currencies);
+    repo.write(h.context(), written_currencies);
 
-    auto read_currencies = repo.read_all(h.get_context());
+    auto read_currencies = repo.read_all(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
     CHECK(!read_currencies.empty());
@@ -152,11 +152,11 @@ TEST_CASE("read_all_currencies_multiple_versions", tags) {
     ccy2.modified_by = "unit test";
     BOOST_LOG_SEV(lg, debug) << "Currency 2: " << ccy2;
 
-    repo.write(h.get_context(), {ccy1});
-    repo.write(h.get_context(), {ccy2});
+    repo.write(h.context(), {ccy1});
+    repo.write(h.context(), {ccy2});
 
     // Read all versions
-    auto read_currencies = repo.read_all(h.get_context(), test_iso_code);
+    auto read_currencies = repo.read_all(h.context(), test_iso_code);
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
     CHECK(read_currencies.size() == 2);
@@ -185,7 +185,7 @@ TEST_CASE("read_nonexistent_iso_code", tags) {
     const std::string nonexistent_iso = "XXX";
     BOOST_LOG_SEV(lg, debug) << "Non-existent ISO code: " << nonexistent_iso;
 
-    auto read_currencies = repo.read_latest(h.get_context(), nonexistent_iso);
+    auto read_currencies = repo.read_latest(h.context(), nonexistent_iso);
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
     CHECK(read_currencies.size() == 0);
@@ -201,7 +201,7 @@ TEST_CASE("write_and_read_currency_with_unicode_symbols", tags) {
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
 
     currency_repository repo;
-    repo.write(h.get_context(), currencies);
+    repo.write(h.context(), currencies);
 
     std::vector<std::pair<std::string, std::string>> currency_data = {
         {"EUR", "€"},
@@ -214,7 +214,7 @@ TEST_CASE("write_and_read_currency_with_unicode_symbols", tags) {
     BOOST_LOG_SEV(lg, debug) << "Currency data: " << currency_data;
 
     // Read back and verify symbols
-    auto read_currencies = repo.read_latest(h.get_context());
+    auto read_currencies = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
     CHECK(read_currencies.size() == currencies.size());
@@ -246,10 +246,10 @@ TEST_CASE("write_and_read_currency_with_no_fractions", tags) {
     BOOST_LOG_SEV(lg, debug) << "Currency with no fractions: " << jpy;
 
     currency_repository repo;
-    repo.write(h.get_context(), {jpy});
+    repo.write(h.context(), {jpy});
 
     // Read back and verify
-    auto read_currencies = repo.read_latest(h.get_context(), "JPY");
+    auto read_currencies = repo.read_latest(h.context(), "JPY");
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
     REQUIRE(read_currencies.size() == 1);

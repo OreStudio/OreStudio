@@ -17,43 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TESTING_DATABASE_HELPER_HPP
-#define ORES_TESTING_DATABASE_HELPER_HPP
+#ifndef ORES_TESTING_SCOPED_DATABASE_HELPER_HPP
+#define ORES_TESTING_SCOPED_DATABASE_HELPER_HPP
 
 #include <string>
-#include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/repository/context.hpp"
+#include "ores.testing/database_helper.hpp"
 
 namespace ores::testing {
 
 /**
  * @brief Provides database setup and cleanup utilities for tests.
  */
-class database_helper {
-private:
-    static auto& lg() {
-        using namespace ores::utility::log;
-        static auto instance = make_logger("ores.utility.test.database_helper");
-        return instance;
-    }
-
+class scoped_database_helper {
 public:
-    database_helper();
-
-    /**
-     * @brief Truncates the specified table.
-     *
-     * @param table_name Fully qualified table name (e.g., "oresdb.accounts")
-     */
-    void truncate_table(const std::string& table_name);
+    explicit scoped_database_helper(const std::string& table_name) {
+        helper_.truncate_table(table_name);
+    }
 
     /**
      * @brief Gets the database context.
      */
-    utility::repository::context& context() { return context_; }
+    utility::repository::context& context() { return  helper_.context(); }
 
 private:
-    utility::repository::context context_;
+    database_helper helper_;
 };
 
 }

@@ -36,48 +36,48 @@ using namespace ores::utility::log;
 TEST_CASE("create_feature_flag_with_valid_fields", tags) {
     auto lg(make_logger(test_suite));
 
-    feature_flags flag;
-    flag.name = "enable_dark_mode";
-    flag.enabled = true;
-    flag.description = "Enables dark mode across the application";
-    flag.modified_by = "admin";
-    BOOST_LOG_SEV(lg, info) << "Feature flag: " << flag;
+    feature_flags sut;
+    sut.name = "enable_dark_mode";
+    sut.enabled = true;
+    sut.description = "Enables dark mode across the application";
+    sut.modified_by = "admin";
+    BOOST_LOG_SEV(lg, info) << "Feature flag: " << sut;
 
-    CHECK(flag.name == "enable_dark_mode");
-    CHECK(flag.enabled == true);
-    CHECK(flag.description == "Enables dark mode across the application");
-    CHECK(flag.modified_by == "admin");
+    CHECK(sut.name == "enable_dark_mode");
+    CHECK(sut.enabled == true);
+    CHECK(sut.description == "Enables dark mode across the application");
+    CHECK(sut.modified_by == "admin");
 }
 
 TEST_CASE("create_disabled_feature_flag", tags) {
     auto lg(make_logger(test_suite));
 
-    feature_flags flag;
-    flag.name = "experimental_feature";
-    flag.enabled = false;
-    flag.description = "Experimental feature under development";
-    flag.modified_by = "developer";
-    BOOST_LOG_SEV(lg, info) << "Feature flag: " << flag;
+    feature_flags sut;
+    sut.name = "experimental_feature";
+    sut.enabled = false;
+    sut.description = "Experimental feature under development";
+    sut.modified_by = "developer";
+    BOOST_LOG_SEV(lg, info) << "Feature flag: " << sut;
 
-    CHECK(flag.name == "experimental_feature");
-    CHECK(flag.enabled == false);
-    CHECK(!flag.description.empty());
-    CHECK(flag.modified_by == "developer");
+    CHECK(sut.name == "experimental_feature");
+    CHECK(sut.enabled == false);
+    CHECK(!sut.description.empty());
+    CHECK(sut.modified_by == "developer");
 }
 
 TEST_CASE("feature_flag_serialization_to_json", tags) {
     auto lg(make_logger(test_suite));
 
-    feature_flags flag;
-    flag.name = "api_rate_limiting";
-    flag.enabled = true;
-    flag.description = "Controls API rate limiting behavior";
-    flag.modified_by = "sysadmin";
-    BOOST_LOG_SEV(lg, info) << "Feature flag: " << flag;
+    feature_flags sut;
+    sut.name = "api_rate_limiting";
+    sut.enabled = true;
+    sut.description = "Controls API rate limiting behavior";
+    sut.modified_by = "sysadmin";
+    BOOST_LOG_SEV(lg, info) << "Feature flag: " << sut;
 
-    std::ostringstream oss;
-    oss << flag;
-    const std::string json_output = oss.str();
+    std::ostringstream os;
+    os << sut;
+    const std::string json_output = os.str();
 
     CHECK(!json_output.empty());
     CHECK(json_output.find("api_rate_limiting") != std::string::npos);
@@ -87,17 +87,17 @@ TEST_CASE("feature_flag_serialization_to_json", tags) {
 TEST_CASE("create_feature_flag_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    feature_flags flag;
-    flag.name = std::string(faker::word::noun()) + "_" +
+    feature_flags sut;
+    sut.name = std::string(faker::word::noun()) + "_" +
         std::string(faker::word::verb());
-    flag.enabled = faker::datatype::boolean();
-    flag.description = std::string(faker::lorem::sentence());
-    flag.modified_by = std::string(faker::internet::username());
-    BOOST_LOG_SEV(lg, info) << "Feature flag: " << flag;
+    sut.enabled = faker::datatype::boolean();
+    sut.description = std::string(faker::lorem::sentence());
+    sut.modified_by = std::string(faker::internet::username());
+    BOOST_LOG_SEV(lg, info) << "Feature flag: " << sut;
 
-    CHECK(!flag.name.empty());
-    CHECK(!flag.description.empty());
-    CHECK(!flag.modified_by.empty());
+    CHECK(!sut.name.empty());
+    CHECK(!sut.description.empty());
+    CHECK(!sut.modified_by.empty());
 }
 
 TEST_CASE("create_multiple_random_feature_flags", tags) {
@@ -111,37 +111,39 @@ TEST_CASE("create_multiple_random_feature_flags", tags) {
     };
 
     for (int i = 0; i < 5; ++i) {
-        feature_flags flag;
+        feature_flags sut;
 
-        const auto prefix = feature_prefixes[faker::number::integer<size_t>(0,
+        const auto prefix =
+            feature_prefixes[faker::number::integer<size_t>(0,
             feature_prefixes.size() - 1)];
-        const auto subject = feature_subjects[faker::number::integer<size_t>(0,
+        const auto subject =
+            feature_subjects[faker::number::integer<size_t>(0,
             feature_subjects.size() - 1)];
 
-        flag.name = prefix + "_" + subject;
-        flag.enabled = faker::datatype::boolean();
-        flag.description = std::string(faker::lorem::sentence());
-        flag.modified_by =
-            std::string(faker::person::firstName()) + " " + std::string(faker::person::lastName());
-        BOOST_LOG_SEV(lg, info) << "Feature flag: " << flag;
+        sut.name = prefix + "_" + subject;
+        sut.enabled = faker::datatype::boolean();
+        sut.description = std::string(faker::lorem::sentence());
+        sut.modified_by = std::string(faker::internet::username());
 
-        CHECK(!flag.name.empty());
-        CHECK(flag.name.find("_") != std::string::npos);
-        CHECK(!flag.description.empty());
-        CHECK(!flag.modified_by.empty());
+        BOOST_LOG_SEV(lg, info) << "Feature flag: " << sut;
+
+        CHECK(!sut.name.empty());
+        CHECK(sut.name.find("_") != std::string::npos);
+        CHECK(!sut.description.empty());
+        CHECK(!sut.modified_by.empty());
     }
 }
 
 TEST_CASE("create_system_feature_flags", tags) {
     auto lg(make_logger(test_suite));
 
-    feature_flags flag;
-    flag.name = "maintenance_mode";
-    flag.enabled = faker::datatype::boolean();
-    flag.description = "When enabled, puts the system into maintenance mode";
-    flag.modified_by = "system";
-    BOOST_LOG_SEV(lg, info) << "Feature flag: " << flag;
+    feature_flags sut;
+    sut.name = "maintenance_mode";
+    sut.enabled = faker::datatype::boolean();
+    sut.description = "When enabled, puts the system into maintenance mode";
+    sut.modified_by = "system";
+    BOOST_LOG_SEV(lg, info) << "Feature flag: " << sut;
 
-    CHECK(flag.name == "maintenance_mode");
-    CHECK(flag.modified_by == "system");
+    CHECK(sut.name == "maintenance_mode");
+    CHECK(sut.modified_by == "system");
 }

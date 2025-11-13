@@ -15,7 +15,15 @@ index 6b33ad2..c2b333e 100644
    return Nothing{};
  }
 
-@@ -56,10 +59,21 @@ Result<Nothing> Connection::insert_impl(
+@@ -50,16 +53,27 @@ Result<Nothing> Connection::insert_impl(
+
+   const auto sql = to_sql_impl(_stmt);
+
+-  const auto res = PQprepare(conn_.get(), name.c_str(), sql.c_str(),
+-                             _data.at(0).size(), nullptr);
++  auto res = PQprepare(conn_.get(), name.c_str(), sql.c_str(),
++                       _data.at(0).size(), nullptr);
+
    const auto status = PQresultStatus(res);
 
    if (status != PGRES_COMMAND_OK) {
@@ -25,16 +33,16 @@ index 6b33ad2..c2b333e 100644
 +                           "' failed: " + PQresultErrorMessage(res));
 +    PQclear(res);
 +
-+    while ((res_prep = PQgetResult(conn_.get())) != nullptr)
-+        PQclear(res_prep);
++    while ((res = PQgetResult(conn_.get())) != nullptr)
++        PQclear(res);
 +
 +    return err;
    }
 
 +  PQclear(res);
 +
-+  while ((res_prep = PQgetResult(conn_.get())) != nullptr)
-+    PQclear(res_prep);
++  while ((res = PQgetResult(conn_.get())) != nullptr)
++    PQclear(res);
 +
    std::vector<const char*> current_row(_data[0].size());
 

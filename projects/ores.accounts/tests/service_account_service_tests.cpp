@@ -279,8 +279,7 @@ TEST_CASE("login_with_empty_password_throws", tags) {
         std::invalid_argument);
 }
 
-TEST_CASE("account_locks_after_multiple_failed_logins",
-    tags) {
+TEST_CASE("account_locks_after_multiple_failed_logins", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
@@ -331,8 +330,11 @@ TEST_CASE("unlock_account_successful", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Locking account by failing 5 login attempts";
     auto ip = internet::ipv4();
-    for (int i = 0; i < 5; ++i)
-        sut.login(account.username, "wrong_password", ip);
+    for (int i = 0; i < 5; ++i) {
+        try {
+            sut.login(account.username, "wrong_password", ip);
+        } catch (...) {}
+    }
 
     BOOST_LOG_SEV(lg, info) << "Unlocking account.";
     sut.unlock_account(generated.id);

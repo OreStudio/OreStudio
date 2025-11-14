@@ -33,7 +33,7 @@
 namespace {
 
 const std::string test_suite("ores.cli.tests");
-const std::string tags("[parser_tests]");
+const std::string tags("[parsing]");
 
 }
 

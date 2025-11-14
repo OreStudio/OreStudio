@@ -25,7 +25,7 @@
 namespace {
 
 const std::string test_suite("ores.accounts.tests");
-const std::string tags("[security_password_manager_tests]");
+const std::string tags("[security]");
 
 }
 

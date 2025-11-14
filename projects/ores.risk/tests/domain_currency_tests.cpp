@@ -27,7 +27,7 @@
 namespace {
 
 const std::string test_suite("ores.risk.tests.");
-const std::string tags("[domain_currency_tests]");
+const std::string tags("[domain]");
 
 }
 

@@ -31,7 +31,7 @@
 namespace {
 
 const std::string test_suite("ores.comms.tests");
-const std::string tags("[frame_tests]");
+const std::string tags("[messaging]");
 
 int message_type_as_int(ores::comms::protocol::message_type mt) {
     return static_cast<std::underlying_type_t<ores::comms::protocol::message_type>>(mt);

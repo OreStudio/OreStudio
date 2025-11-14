@@ -568,12 +568,20 @@ Ask the LLM on how to replicate the calc pie chart we previously had.
 
 *** STARTED Fix the valgrind leaks reported on sqlgen                  :code:
     :LOGBOOK:
+    CLOCK: [2025-11-14 Fri 11:22]--[2025-11-14 Fri 11:25] =>  0:03
+    CLOCK: [2025-11-14 Fri 11:06]--[2025-11-14 Fri 11:22] =>  0:16
+    CLOCK: [2025-11-14 Fri 09:30]--[2025-11-14 Fri 11:05] =>  1:35
     CLOCK: [2025-11-13 Thu 08:20]--[2025-11-13 Thu 09:27] =>  1:07
     CLOCK: [2025-11-12 Wed 09:00]--[2025-11-12 Wed 10:53] =>  1:53
     :END:
 
 We have a number of valgrind leaks which appear to be real leaks. Get to the
 bottom of these and produce a fix.
+
+Links:
+
+- [[https://github.com/getml/sqlgen/issues/88][#88: Discussion on potential memory leaks in the postgres backend]]
+- [[https://github.com/getml/sqlgen/pull/89][#89: Fix memory management for postgres in edge cases]]
 
 *** STARTED Make UI/UX look more professional                          :code:
     :LOGBOOK:

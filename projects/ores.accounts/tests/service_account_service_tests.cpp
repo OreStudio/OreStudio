@@ -35,7 +35,7 @@ namespace {
 
 const std::string test_suite("ores.accounts.tests");
 const std::string database_table("oresdb.accounts");
-const std::string tags("[service_account_service_tests]");
+const std::string tags("[service]");
 
 }
 
@@ -279,8 +279,7 @@ TEST_CASE("login_with_empty_password_throws", tags) {
         std::invalid_argument);
 }
 
-TEST_CASE("account_locks_after_multiple_failed_logins",
-    tags) {
+TEST_CASE("account_locks_after_multiple_failed_logins", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
@@ -315,39 +314,39 @@ TEST_CASE("account_locks_after_multiple_failed_logins",
     }
 }
 
-// FIXME
-// TEST_CASE("unlock_account_successful", tags) {
-//     auto lg(make_logger(test_suite));
+TEST_CASE("unlock_account_successful", tags) {
+    auto lg(make_logger(test_suite));
 
-//     scoped_database_helper h(database_table);
-//     service::account_service sut(h.context());
+    scoped_database_helper h(database_table);
+    service::account_service sut(h.context());
 
-//     const auto account = generate_synthetic_account();
-//     BOOST_LOG_SEV(lg, info) << "Account: " << account;
-//     const std::string password = faker::internet::password();
+    const auto account = generate_synthetic_account();
+    BOOST_LOG_SEV(lg, info) << "Account: " << account;
+    const std::string password = faker::internet::password();
 
-//     const auto generated =
-//         sut.create_account(account.username, account.email,
-//         password, account.modified_by, account.is_admin);
+    const auto generated =
+        sut.create_account(account.username, account.email,
+        password, account.modified_by, account.is_admin);
 
-//     BOOST_LOG_SEV(lg, info) << "Locking account by failing 5 login attempts";
+    BOOST_LOG_SEV(lg, info) << "Locking account by failing 5 login attempts";
+    auto ip = internet::ipv4();
+    for (int i = 0; i < 5; ++i) {
+        try {
+            sut.login(account.username, "wrong_password", ip);
+        } catch (...) {}
+    }
 
-//     // Lock the account by failing 5 logins
-//     auto ip = internet::ipv4();
-//     for (int i = 0; i < 5; ++i)
-//         sut.login(account.username, "wrong_password", ip);
+    BOOST_LOG_SEV(lg, info) << "Unlocking account.";
+    sut.unlock_account(generated.id);
 
-//     BOOST_LOG_SEV(lg, info) << "Unlocking account.";
-//     sut.unlock_account(generated.id);
+    BOOST_LOG_SEV(lg, info) << "Attempting login after unlock";
 
-//     BOOST_LOG_SEV(lg, info) << "Attempting login after unlock";
+    // Should now be able to login successfully
+    auto logged_in_account =
+        sut.login(generated.username, password, ip);
 
-//     // Should now be able to login successfully
-//     auto logged_in_account =
-//         sut.login(generated.username, password, ip);
-
-//     CHECK(logged_in_account.username == account.username);
-// }
+    CHECK(logged_in_account.username == account.username);
+}
 
 TEST_CASE("unlock_nonexistent_account_throws", tags) {
     auto lg(make_logger(test_suite));

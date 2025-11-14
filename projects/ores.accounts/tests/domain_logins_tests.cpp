@@ -28,7 +28,7 @@
 namespace {
 
 const std::string test_suite("ores.accounts.tests");
-const std::string tags("[domain_login_info_tests]");
+const std::string tags("[domain]");
 
 }
 

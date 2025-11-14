@@ -28,7 +28,7 @@
 namespace {
 
 const std::string test_suite("ores.risk.tests.");
-const std::string tags("[messaging_protocol_tests]");
+const std::string tags("[messaging]");
 
 }
 

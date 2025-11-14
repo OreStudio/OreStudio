@@ -36,6 +36,11 @@ add_compile_options(
     $<$<CXX_COMPILER_ID:MSVC>:/WX>)
 
 #
+# Catch2 args
+# ${ORES_CATCH_REPORTER}
+set(ORES_CATCH2_ARGS --reporter xml --durations yes --filenames-as-tags)
+
+#
 # Java args for PlantUML
 #
 set(ORES_PLANTUML_JAR "/usr/share/plantuml/plantuml.jar")

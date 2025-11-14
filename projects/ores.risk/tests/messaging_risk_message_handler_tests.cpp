@@ -35,7 +35,7 @@ namespace {
 
 const std::string test_suite("ores.risk.tests");
 const std::string database_table("oresdb.currencies");
-const std::string tags("[messaging_risk_message_handler_tests]");
+const std::string tags("[messaging][handler]");
 
 }
 

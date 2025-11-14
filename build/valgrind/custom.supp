@@ -16,7 +16,6 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-
 #
 #  CMake itself
 #
@@ -69,6 +68,14 @@
    fun:_Znwm
    fun:_ZN5boost6detail24add_thread_exit_function*
 }
+{
+   Boost Log Thread Exit Callback
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   fun:_ZN5boost6detail8heap_newINS0_25thread_exit_callback_nodeERPNS0_25thread_exit_function_baseERPS2_EEPT_OT0_OT1_
+   ...
+}
 #
 #  Boost.Log – Thread Data
 #
@@ -77,7 +84,7 @@
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:_Znwm
-   fun:_ZN5boost6detail12shared_countC[12]*
+   fun:_ZN5boost6detail12shared_countC*
    fun:_ZN5boost10shared_ptrINS_6detail16thread_data_baseEE*
 }
 {
@@ -87,26 +94,19 @@
    fun:_Znwm
    fun:_ZN5boost6detail25make_external_thread_dataEv
 }
-#
-# Postgres OpenSSL
-#
 {
-   Postgres OpenSSL Init GlobalState
+   Boost Log External Launch Thread Data
    Memcheck:Leak
    match-leak-kinds: reachable
-   fun:malloc
-   fun:CRYPTO_malloc
-   fun:CRYPTO_zalloc
-   fun:ossl_*_new
+   fun:_Znwm
+   fun:_ZN5boost6detail8heap_newINS0_26externally_launched_threadEEEPT_v
    ...
-   fun:OPENSSL_init_crypto
-   fun:pg_strong_random
-   fun:scram_exchange
-   fun:pg_fe_sendauth
-   fun:PQconnectdb
 }
+#
+# OpenSSL Init
+#
 {
-   Postgres OpenSL Config Modules
+   OpenSSL Init Thread Local
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
@@ -114,14 +114,48 @@
    fun:CRYPTO_zalloc
    fun:ossl_sa_new
    ...
-   fun:CONF_modules_load
-   fun:CONF_modules_load_file_ex
-   fun:ossl_config_int
-   fun:pg_strong_random
-   fun:PQconnectdb
 }
 {
-   Postgres OpenSSL Thread Cleanup
+   OpenSSL Init Error State
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:CRYPTO_calloc
+   fun:CRYPTO_THREAD_set_local_ex
+   fun:ossl_err_get_state_int
+   ...
+}
+{
+   OpenSSL Init Config Modules
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:CRYPTO_calloc
+   fun:alloc_node
+   fun:ossl_sa_set
+   ...
+}
+{
+   OpenSSL Init Rand
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:CRYPTO_calloc
+   fun:alloc_node
+   fun:ossl_sa_set
+   fun:ossl_sa_CTX_TABLE_ENTRY_set
+   fun:CRYPTO_THREAD_set_local_ex
+   fun:rand_get0_public
+   ...
+}
+{
+   OpenSSL Thread Cleanup
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
@@ -134,8 +168,11 @@
    fun:__run_exit_handlers
    fun:exit
 }
+#
+# OpenSSL Other
+#
 {
-   Postgres OpenSSL Node Alloc During Connect
+   OpenSSL Node Alloc During Connect
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
@@ -143,12 +180,9 @@
    fun:CRYPTO_calloc
    fun:alloc_node
    fun:ossl_sa_set
-   ...
-   fun:pg_strong_random
-   fun:PQconnectdb
 }
 {
-   Postgres OpenSSL RAND Usage
+   OpenSSL Rand Usage
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
@@ -157,15 +191,9 @@
    fun:rand_get0_public
    fun:RAND_bytes_ex
    fun:RAND_bytes
-   fun:pg_strong_random
-   fun:scram_exchange
-   fun:PQconnectdb
 }
-#
-# OpenSSL
-#
 {
-   Main OpenSSL At Exit Cleanup
+   OpenSSL Exit Cleanup
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
@@ -175,4 +203,22 @@
    fun:OPENSSL_cleanup
    fun:_ZZ4mainEN19boost_se_guard_t_31*
    fun:main
+}
+#
+# Postgres OpenSSL
+#
+{
+   Postgres SSL Connection Init
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:pg_strong_random
+   fun:build_client_first_message
+   fun:scram_exchange
+   fun:pg_SASL_init
+   fun:pg_fe_sendauth
+   fun:PQconnectPoll
+   ...
 }

@@ -42,7 +42,7 @@ namespace {
 
 const std::string test_suite("ores.accounts.tests");
 const std::string database_table("oresdb.accounts");
-const std::string tags("[messaging_accounts_message_handler_tests]");
+const std::string tags("[messaging][handler]");
 
 create_account_request to_create_account_request(const domain::account& a) {
     create_account_request r;

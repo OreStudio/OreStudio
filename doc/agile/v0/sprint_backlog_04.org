@@ -18,55 +18,57 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-13 Thu 23:34], for Thursday, November 13, 2025.
+#+CAPTION: Clock summary at [2025-11-14 Fri 20:31], for Friday, November 14, 2025.
 |      | <75>                                       |        |      |      |       |
 | Tags | Headline                                   | Time   |      |      |     % |
 |------+--------------------------------------------+--------+------+------+-------|
-|      | *Total time*                               | *6:39* |      |      | 100.0 |
+|      | *Total time*                               | *2:34* |      |      | 100.0 |
 |------+--------------------------------------------+--------+------+------+-------|
-|      | Stories                                    | 6:39   |      |      | 100.0 |
-|      | Active                                     |        | 6:39 |      | 100.0 |
-| code | Fix the valgrind leaks reported on sqlgen  |        |      | 1:07 |  16.8 |
-| code | Review all code created so far with an LLM |        |      | 5:32 |  83.2 |
+|      | Stories                                    | 2:34   |      |      | 100.0 |
+|      | Active                                     |        | 2:34 |      | 100.0 |
+| code | Consider adding tags to catch2 tests       |        |      | 0:34 |  22.1 |
+| code | Fix the valgrind leaks reported on sqlgen  |        |      | 1:54 |  74.0 |
+| code | Review all code created so far with an LLM |        |      | 0:06 |   3.9 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-13 Thu 23:34]
+#+CAPTION: Clock summary at [2025-11-14 Fri 20:31]
 |          | <75>                                                   |         |       |       |       |
 | Tags     | Headline                                               | Time    |       |       |     % |
 |----------+--------------------------------------------------------+---------+-------+-------+-------|
-|          | *Total time*                                           | *64:03* |       |       | 100.0 |
+|          | *Total time*                                           | *66:37* |       |       | 100.0 |
 |----------+--------------------------------------------------------+---------+-------+-------+-------|
-|          | Stories                                                | 64:03   |       |       | 100.0 |
-|          | Active                                                 |         | 64:03 |       | 100.0 |
-| agile    | Sprint and product backlog refinement                  |         |       |  2:49 |   4.4 |
+|          | Stories                                                | 66:37   |       |       | 100.0 |
+|          | Active                                                 |         | 66:37 |       | 100.0 |
+| agile    | Sprint and product backlog refinement                  |         |       |  2:49 |   4.2 |
 | code     | Clean up client parser                                 |         |       |  0:10 |   0.3 |
-| code     | Add connect command line argument                      |         |       |  1:19 |   2.1 |
-| infra    | Install Windows package on Windows machine             |         |       |  2:09 |   3.4 |
-| code     | Ignore warnings on windows and osx                     |         |       |  0:33 |   0.9 |
+| code     | Add connect command line argument                      |         |       |  1:19 |   2.0 |
+| infra    | Install Windows package on Windows machine             |         |       |  2:09 |   3.2 |
+| code     | Ignore warnings on windows and osx                     |         |       |  0:33 |   0.8 |
 | code     | Ensure applications work under OSX using github images |         |       |  0:14 |   0.4 |
-| infra    | Create a splash screen and gray background             |         |       |  2:26 |   3.8 |
-| code     | Use fluent icons                                       |         |       |  0:37 |   1.0 |
+| infra    | Create a splash screen and gray background             |         |       |  2:26 |   3.7 |
+| code     | Use fluent icons                                       |         |       |  0:37 |   0.9 |
 | code     | Add export functionality for currencies                |         |       |  1:30 |   2.3 |
-| code     | Add currency editing support                           |         |       |  2:45 |   4.3 |
+| code     | Add currency editing support                           |         |       |  2:45 |   4.1 |
 | code     | Add about to menu                                      |         |       |  1:02 |   1.6 |
-| code     | Create a history dialog for currencies                 |         |       |  1:27 |   2.3 |
-| code     | Allow MDI windows outside main window                  |         |       |  1:35 |   2.5 |
+| code     | Create a history dialog for currencies                 |         |       |  1:27 |   2.2 |
+| code     | Allow MDI windows outside main window                  |         |       |  1:35 |   2.4 |
 | code     | Add edit menu and export menu                          |         |       |  0:34 |   0.9 |
-| code     | Implement adding new currencies                        |         |       |  3:17 |   5.1 |
-| code     | Clean up product website                               |         |       |  4:42 |   7.3 |
-| code     | Create a skill for plant uml documentation             |         |       |  2:48 |   4.4 |
+| code     | Implement adding new currencies                        |         |       |  3:17 |   4.9 |
+| code     | Clean up product website                               |         |       |  4:42 |   7.1 |
+| code     | Create a skill for plant uml documentation             |         |       |  2:48 |   4.2 |
 | infra    | Add CMake targets for site and skills                  |         |       |  0:17 |   0.4 |
-| infra    | Generalise the skill setup for ORE Studio              |         |       |  3:45 |   5.9 |
-| infra    | Restructure components to follow the dogen approach    |         |       |  2:54 |   4.5 |
-| infra    | Generate PlantUML diagrams for all components          |         |       |  1:05 |   1.7 |
-| code     | Fix the valgrind leaks reported on sqlgen              |         |       |  3:00 |   4.7 |
-| code     | Make UI/UX look more professional                      |         |       | 11:07 |  17.4 |
+| infra    | Generalise the skill setup for ORE Studio              |         |       |  3:45 |   5.6 |
+| infra    | Restructure components to follow the dogen approach    |         |       |  2:54 |   4.4 |
+| infra    | Generate PlantUML diagrams for all components          |         |       |  1:05 |   1.6 |
+| analysis | Weaving skills and documentation together              |         |       |  0:46 |   1.2 |
+| code     | Consider adding tags to catch2 tests                   |         |       |  0:34 |   0.9 |
+| code     | Fix the valgrind leaks reported on sqlgen              |         |       |  4:54 |   7.4 |
+| code     | Make UI/UX look more professional                      |         |       | 11:07 |  16.7 |
 | code     | Current issues with package install in debian          |         |       |  0:40 |   1.0 |
 | code     | Resolve crash on shutdown problem                      |         |       |  0:50 |   1.3 |
-| analysis | Weaving skills and documentation together              |         |       |  0:46 |   1.2 |
-| code     | Review all code created so far with an LLM             |         |       |  9:42 |  15.1 |
+| code     | Review all code created so far with an LLM             |         |       |  9:48 |  14.7 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -566,14 +568,92 @@ create diagrams.
 
 Ask the LLM on how to replicate the calc pie chart we previously had.
 
+*** COMPLETED Weaving skills and documentation together            :analysis:
+    :LOGBOOK:
+    CLOCK: [2025-11-10 Mon 09:30]--[2025-11-10 Mon 10:16] =>  0:46
+    :END:
+
+Following on from the ideas on [[https://uhra.herts.ac.uk/id/eprint/17031/][Model Assisted Software Development]] (MASD), we
+should weave together all of the project assets so that they simultaneously
+generate:
+
+- human level documentation, accessible via org-roam. This should also include
+  diagrams to enable humans to understand the code structure.
+- external documentation for website.
+- LLM instructions, including skills.
+
+Source code remains the only source of truth, but documentation is a projection
+of the source code. The same documentation is simultaneously used by developers
+and LLMs to understand the system.
+
+Notes:
+
+- generate a new =index.org= which is a more user friendly main page.
+- split the existing =readme= into specialised pages which document aspects of
+  the system such as building etc.
+- create a =skills= folder under doc which are org mode documents that export
+  into claude skills. Create CMake targets which generate the skills directory.
+  Symlink it to the project directory =.claude/skills=.
+- add a cmake target to generate the site. This should just generate HTML for
+  the skills.
+- add plantuml diagrams at the component level. These should leave under
+  =modeling=.
+- add plantuml diagram at the project level. Each component should have a link to
+  the plantuml diagram of the component.
+- teach claude how to generate a org-mode model of the component which documents
+  each class. For comms, it should also generate an interaction diagram
+  explaining how the client and server communicate.
+- in the claude skills, explain that whenever adding domain entities, it needs
+  to update
+- perform a taxonomic analysis of how to break down existing code into skills.
+  These will follow on from MASD's logical-physical space,
+- it should also be possible to generate a PDF with all of the documentation,
+  readable as a book.
+
+*** COMPLETED Consider adding tags to catch2 tests                     :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-14 Fri 20:21]--[2025-11-14 Fri 20:31] =>  0:10
+    CLOCK: [2025-11-14 Fri 15:02]--[2025-11-14 Fri 15:26] =>  0:24
+    :END:
+
+It would be nice to run say repository tests when we do a DB change, or comms
+tests etc. Catch supports tags for this. The problem is we need to manually add
+CMake targets for each tag.
+
+#+begin_src cmake
+function(add_catch2_tag_target test_exe tag)
+    string(REPLACE "[" "" clean_tag "${tag}")
+    string(REPLACE "]" "" clean_tag "${clean_tag}")
+    add_custom_target(test-${clean_tag}
+        COMMAND ${test_exe} "${tag}"
+        DEPENDS ${test_exe}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    )
+    # Optional: register with CTest
+    add_test(NAME ${test_exe}_${clean_tag} COMMAND ${test_exe} "${tag}")
+endfunction()
+
+# Usage:
+add_catch2_tag_target(my_app_tests "[repository]")
+add_catch2_tag_target(my_app_tests "[comms]")
+#+end_src
+
 *** STARTED Fix the valgrind leaks reported on sqlgen                  :code:
     :LOGBOOK:
+    CLOCK: [2025-11-14 Fri 11:22]--[2025-11-14 Fri 11:25] =>  0:03
+    CLOCK: [2025-11-14 Fri 11:06]--[2025-11-14 Fri 11:22] =>  0:16
+    CLOCK: [2025-11-14 Fri 09:30]--[2025-11-14 Fri 11:05] =>  1:35
     CLOCK: [2025-11-13 Thu 08:20]--[2025-11-13 Thu 09:27] =>  1:07
     CLOCK: [2025-11-12 Wed 09:00]--[2025-11-12 Wed 10:53] =>  1:53
     :END:
 
 We have a number of valgrind leaks which appear to be real leaks. Get to the
 bottom of these and produce a fix.
+
+Links:
+
+- [[https://github.com/getml/sqlgen/issues/88][#88: Discussion on potential memory leaks in the postgres backend]]
+- [[https://github.com/getml/sqlgen/pull/89][#89: Fix memory management for postgres in edge cases]]
 
 *** STARTED Make UI/UX look more professional                          :code:
     :LOGBOOK:
@@ -948,50 +1028,9 @@ With these rules you can detach and re-attach as often as you like, and the
 program will still shut down without the heap corruption you are seeing now.
 #+end_src
 
-*** STARTED Weaving skills and documentation together              :analysis:
-    :LOGBOOK:
-    CLOCK: [2025-11-10 Mon 09:30]--[2025-11-10 Mon 10:16] =>  0:46
-    :END:
-
-Following on from the ideas on [[https://uhra.herts.ac.uk/id/eprint/17031/][Model Assisted Software Development]] (MASD), we
-should weave together all of the project assets so that they simultaneously
-generate:
-
-- human level documentation, accessible via org-roam. This should also include
-  diagrams to enable humans to understand the code structure.
-- external documentation for website.
-- LLM instructions, including skills.
-
-Source code remains the only source of truth, but documentation is a projection
-of the source code. The same documentation is simultaneously used by developers
-and LLMs to understand the system.
-
-Notes:
-
-- generate a new =index.org= which is a more user friendly main page.
-- split the existing =readme= into specialised pages which document aspects of
-  the system such as building etc.
-- create a =skills= folder under doc which are org mode documents that export
-  into claude skills. Create CMake targets which generate the skills directory.
-  Symlink it to the project directory =.claude/skills=.
-- add a cmake target to generate the site. This should just generate HTML for
-  the skills.
-- add plantuml diagrams at the component level. These should leave under
-  =modeling=.
-- add plantuml diagram at the project level. Each component should have a link to
-  the plantuml diagram of the component.
-- teach claude how to generate a org-mode model of the component which documents
-  each class. For comms, it should also generate an interaction diagram
-  explaining how the client and server communicate.
-- in the claude skills, explain that whenever adding domain entities, it needs
-  to update
-- perform a taxonomic analysis of how to break down existing code into skills.
-  These will follow on from MASD's logical-physical space,
-- it should also be possible to generate a PDF with all of the documentation,
-  readable as a book.
-
 *** STARTED Review all code created so far with an LLM                 :code:
     :LOGBOOK:
+    CLOCK: [2025-11-14 Fri 11:52]--[2025-11-14 Fri 11:58] =>  0:06
     CLOCK: [2025-11-13 Thu 22:17]--[2025-11-13 Thu 23:33] =>  1:16
     CLOCK: [2025-11-13 Thu 18:20]--[2025-11-13 Thu 20:13] =>  1:53
     CLOCK: [2025-11-13 Thu 16:45]--[2025-11-13 Thu 17:40] =>  0:55
@@ -1033,6 +1072,23 @@ Notes:
 
 - account unlock should return boolean rather than throw.
 
+*** Invalid password should not throw                                  :code:
+
+At present in the unlock test we have:
+
+#+begin_src c++
+    BOOST_LOG_SEV(lg, info) << "Locking account by failing 5 login attempts";
+    auto ip = internet::ipv4();
+    for (int i = 0; i < 5; ++i) {
+        try {
+            sut.login(account.username, "wrong_password", ip);
+        } catch (...) {}
+    }
+#+end_src
+
+This is very suspicious; a failed login should just return false or the modern
+c++ equivalent (=std::expected=?).
+
 *** Faker with seeds                                                   :code:
 
 As suggested by phi4:
@@ -1044,6 +1100,13 @@ Randomness: Ensure that the use of faker data is appropriate for testing.
 Consider seeding the random generator for reproducibility in tests.
 #+end_quote
 
+Notes:
+
+#include "faker-cxx/generator.h"
+void setSeed(std::mt19937_64::result_type seed)
+Catch::rngSeed()
+
+
 *** Implement delete account                                           :code:
 
 At present you cannot delete an account.
@@ -1052,30 +1115,6 @@ At present you cannot delete an account.
 
 At present we can create an account and ignore the result, etc. We should be
 forced to look at the result.
-
-*** Consider adding tags to catch2 tests                               :code:
-
-It would be nice to run say repository tests when we do a DB change, or comms
-tests etc. Catch supports tags for this. The problem is we need to manually add
-CMake targets for each tag.
-
-#+begin_src cmake
-function(add_catch2_tag_target test_exe tag)
-    string(REPLACE "[" "" clean_tag "${tag}")
-    string(REPLACE "]" "" clean_tag "${clean_tag}")
-    add_custom_target(test-${clean_tag}
-        COMMAND ${test_exe} "${tag}"
-        DEPENDS ${test_exe}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    )
-    # Optional: register with CTest
-    add_test(NAME ${test_exe}_${clean_tag} COMMAND ${test_exe} "${tag}")
-endfunction()
-
-# Usage:
-add_catch2_tag_target(my_app_tests "[repository]")
-add_catch2_tag_target(my_app_tests "[comms]")
-#+end_src
 
 *** Add lock account request                                           :code:
 

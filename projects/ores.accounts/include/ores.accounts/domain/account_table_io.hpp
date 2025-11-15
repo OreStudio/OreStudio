@@ -17,18 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_DOMAIN_LOGIN_INFO_JSON_IO_HPP
-#define ORES_ACCOUNTS_DOMAIN_LOGIN_INFO_JSON_IO_HPP
+#ifndef ORES_ACCOUNTS_DOMAIN_ACCOUNT_TABLE_IO_HPP
+#define ORES_ACCOUNTS_DOMAIN_ACCOUNT_TABLE_IO_HPP
 
 #include <iosfwd>
-#include "ores.accounts/domain/login_info.hpp"
+#include <vector>
+#include "ores.accounts/domain/account.hpp"
 
 namespace ores::accounts::domain {
 
 /**
- * @brief Dumps the feature flags object to a stream in JSON format.
+ * @brief Dumps the account object to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const login_info& v);
+std::ostream& operator<<(std::ostream& s, const std::vector<account>& v);
 
 }
 

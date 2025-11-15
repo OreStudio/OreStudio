@@ -25,6 +25,9 @@
 
 namespace ores::accounts::domain {
 
+/**
+ * @brief Dumps the feature flags object to a stream in JSON format.
+ */
 std::ostream& operator<<(std::ostream& s, const feature_flags& v);
 
 }

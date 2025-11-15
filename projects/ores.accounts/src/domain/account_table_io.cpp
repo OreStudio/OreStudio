@@ -17,19 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_DOMAIN_LOGIN_INFO_JSON_IO_HPP
-#define ORES_ACCOUNTS_DOMAIN_LOGIN_INFO_JSON_IO_HPP
+#include "ores.accounts/domain/account_table_io.hpp"
 
-#include <iosfwd>
-#include "ores.accounts/domain/login_info.hpp"
+#include <ostream>
+#include <fort.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::accounts::domain {
 
-/**
- * @brief Dumps the feature flags object to a stream in JSON format.
- */
-std::ostream& operator<<(std::ostream& s, const login_info& v);
+std::ostream& operator<<(std::ostream& s, const std::vector<account>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
 
+    table << fort::header << "ID (UUID)" << "Username" << "Email"
+          << "Admin?" << "Modified By" << "Version" << fort::endr;
+
+    for (const auto& a : v) {
+        std::string admin_status = a.is_admin ? "Y" : "N";
+        table << boost::uuids::to_string(a.id) << a.username
+              << a.email << admin_status << a.modified_by
+              << a.version << fort::endr;
+    }
+    s << std::endl << table.to_string() << std::endl;
+
+    return s;
 }
 
-#endif
+}

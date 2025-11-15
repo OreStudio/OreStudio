@@ -17,19 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_DOMAIN_LOGIN_INFO_JSON_IO_HPP
-#define ORES_ACCOUNTS_DOMAIN_LOGIN_INFO_JSON_IO_HPP
+#include "ores.accounts/domain/feature_flags_table_io.hpp"
 
-#include <iosfwd>
-#include "ores.accounts/domain/login_info.hpp"
+#include <ostream>
+#include <fort.hpp>
 
 namespace ores::accounts::domain {
 
-/**
- * @brief Dumps the feature flags object to a stream in JSON format.
- */
-std::ostream& operator<<(std::ostream& s, const login_info& v);
+std::ostream& operator<<(std::ostream& s, const std::vector<feature_flags>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
 
+    table << fort::header << "Name" << "Description" << "Enabled"
+          << "Modified By" << fort::endr;
+
+    for (const auto& ff : v) {
+        table << ff.name << ff.description << ff.enabled
+              << ff.modified_by << fort::endr;
+    }
+    s << std::endl << table.to_string() << std::endl;
+
+    return s;
 }
 
-#endif
+}

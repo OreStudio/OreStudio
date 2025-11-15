@@ -29,7 +29,8 @@ using namespace ores::utility::log;
 SplashScreen::SplashScreen(const QPixmap& pixmap)
     : QSplashScreen(pixmap) {
     progressTimer_ = new QTimer(this);
-    connect(progressTimer_, &QTimer::timeout, this, &SplashScreen::updateProgress);
+    connect(progressTimer_, &QTimer::timeout, this,
+        &SplashScreen::updateProgress);
 }
 
 void SplashScreen::setProgressDuration(int milliseconds) {

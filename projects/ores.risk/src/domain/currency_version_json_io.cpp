@@ -17,38 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_HPP
-#define ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_HPP
+#include "ores.risk/domain/currency_version_json_io.hpp"
 
-#include <string>
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 
-namespace ores::accounts::domain {
+namespace ores::risk::domain {
 
-/**
- * @brief Represents a feature flag in the domain layer.
- */
-struct feature_flags final {
-    /**
-     * @brief Flag indicating whether the feature is enabled or disabled.
-     */
-    bool enabled = false;
-
-    /**
-     * @brief Name of the feature flag, serves as the unique identifier.
-     */
-    std::string name;
-
-    /**
-     * @brief Description of what the feature flag controls.
-     */
-    std::string description;
-
-    /**
-     * @brief Username of the user who last modified this feature flag.
-     */
-    std::string modified_by;
-};
-
+std::ostream& operator<<(std::ostream& s, const currency_version& v) {
+    rfl::json::write(v, s);
+    return s;
 }
 
-#endif
+}

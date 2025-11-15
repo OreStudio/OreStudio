@@ -48,8 +48,8 @@ To create a new skill:
 - Agree the skill name with the user. Help the user come up with a concise name
   for the skill, which does not overlap with existing skills.
 - Create a new folder under =doc/skills/SKILL-NAME=, replacing =SKILL-NAME= with
-  the actual skill name. Folders should be all in lower case with underscores
-  separating words.
+  the actual skill name. Folders should be all in lower case with dashes
+  separating words. Example =my-new-skil=.
 - Create a new file inside the new folder called =skill.org=. The file must
   have the following structure:
 
@@ -116,6 +116,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 MA 02110-1301, USA.
 ,#+END_SRC
 #+end_src
+    - Update the file =doc/skills/claude_code_skills.org= in section "Available
+      Skills" with a link to new skill, following the pattern of the previous
+      skills.
 
 ** Updating existing skills
 

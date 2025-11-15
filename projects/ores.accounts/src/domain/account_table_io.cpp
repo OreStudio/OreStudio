@@ -17,38 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_HPP
-#define ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_HPP
+#include "ores.accounts/domain/account_table_io.hpp"
 
-#include <string>
+#include <ostream>
+#include <fort.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::accounts::domain {
 
-/**
- * @brief Represents a feature flag in the domain layer.
- */
-struct feature_flags final {
-    /**
-     * @brief Flag indicating whether the feature is enabled or disabled.
-     */
-    bool enabled = false;
+std::ostream& operator<<(std::ostream& s, const std::vector<account>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
 
-    /**
-     * @brief Name of the feature flag, serves as the unique identifier.
-     */
-    std::string name;
+    table << fort::header << "ID (UUID)" << "Username" << "Email"
+          << "Admin?" << "Modified By" << "Version" << fort::endr;
 
-    /**
-     * @brief Description of what the feature flag controls.
-     */
-    std::string description;
+    for (const auto& a : v) {
+        std::string admin_status = a.is_admin ? "Y" : "N";
+        table << boost::uuids::to_string(a.id) << a.username
+              << a.email << admin_status << a.modified_by
+              << a.version << fort::endr;
+    }
+    s << std::endl << table.to_string() << std::endl;
 
-    /**
-     * @brief Username of the user who last modified this feature flag.
-     */
-    std::string modified_by;
-};
-
+    return s;
 }
 
-#endif
+}

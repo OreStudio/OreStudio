@@ -27,6 +27,7 @@
 #include <memory>
 #include "ores.comms/net/client.hpp"
 #include "ores.risk/domain/currency_version.hpp"
+#include "ores.risk/domain/currency_version_history.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ui_CurrencyHistoryDialog.h"
 

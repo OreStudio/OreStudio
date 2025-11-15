@@ -20,6 +20,7 @@
 #include "ores.accounts/repository/feature_flags_mapper.hpp"
 
 #include <algorithm>
+#include "ores.accounts/domain/feature_flags_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::accounts::repository {
 

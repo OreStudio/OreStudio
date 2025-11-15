@@ -21,6 +21,7 @@
 
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
+#include "ores.accounts/domain/account_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::accounts::repository {
 

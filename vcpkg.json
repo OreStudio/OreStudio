@@ -25,6 +25,7 @@
         "boost-scope-exit",
         "cli",
         "faker-cxx",
-        "catch2"
+        "catch2",
+        "libfort"
     ]
 }

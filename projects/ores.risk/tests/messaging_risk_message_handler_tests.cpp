@@ -23,10 +23,11 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.testing/database_helper.hpp"
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.risk/domain/currency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
 #include "ores.risk/generators/currency_generator.hpp"
@@ -44,14 +45,12 @@ using namespace ores::utility::log;
 using ores::risk::domain::currency;
 using namespace ores::risk::messaging;
 using namespace ores::risk::generators;
-using ores::testing::database_helper;
+using ores::testing::scoped_database_helper;
 
 TEST_CASE("handle_get_currencies_request_empty", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-
+    scoped_database_helper h(database_table);
     risk_message_handler handler(h.context());
 
     get_currencies_request req;
@@ -84,9 +83,7 @@ TEST_CASE("handle_get_currencies_request_empty", tags) {
 TEST_CASE("handle_get_currencies_request_with_single_currency", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-
+    scoped_database_helper h(database_table);
     auto ccy = generate_synthetic_currency();
     risk::repository::currency_repository repo;
     repo.write(h.context(), {ccy});
@@ -125,9 +122,7 @@ TEST_CASE("handle_get_currencies_request_with_single_currency", tags) {
 TEST_CASE("handle_get_currencies_request_with_multiple_currencies", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-
+    scoped_database_helper h(database_table);
     // Create multiple test currencies
     risk::repository::currency_repository repo;
 
@@ -174,9 +169,7 @@ TEST_CASE("handle_get_currencies_request_with_multiple_currencies", tags) {
 TEST_CASE("handle_get_currencies_request_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-
+    scoped_database_helper h(database_table);
     // Create random currencies
     const int currency_count = 10;
     auto currencies = generate_unique_synthetic_currencies(currency_count);
@@ -217,9 +210,7 @@ TEST_CASE("handle_get_currencies_request_with_faker", tags) {
 TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-
+    scoped_database_helper h(database_table);
     // Create a currency with specific values
     risk::domain::currency original_ccy;
     original_ccy.iso_code = "BTC";
@@ -289,9 +280,7 @@ TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip", tags) 
 TEST_CASE("handle_get_currencies_request_with_unicode_symbols", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-
+    scoped_database_helper h(database_table);
     // Create currencies with special Unicode symbols
     std::vector<std::pair<std::string, std::string>> currency_data = {
         {"EUR", "€"},
@@ -348,7 +337,7 @@ TEST_CASE("handle_invalid_message_type",
     tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
+    scoped_database_helper h(database_table);
     risk_message_handler handler(h.context());
 
     std::vector<std::uint8_t> empty_payload;

@@ -17,36 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_HPP
-#define ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_HPP
+#ifndef ORES_RISK_DOMAIN_CURRENCY_VERSION_HISTORY_HPP
+#define ORES_RISK_DOMAIN_CURRENCY_VERSION_HISTORY_HPP
 
 #include <string>
+#include <vector>
+#include "ores.risk/domain/currency_version.hpp"
 
-namespace ores::accounts::domain {
+namespace ores::risk::domain {
 
 /**
- * @brief Represents a feature flag in the domain layer.
+ * @brief Contains the full version history for a currency.
  */
-struct feature_flags final {
+struct currency_version_history final {
     /**
-     * @brief Flag indicating whether the feature is enabled or disabled.
+     * @brief ISO code of the currency.
      */
-    bool enabled = false;
+    std::string iso_code;
 
     /**
-     * @brief Name of the feature flag, serves as the unique identifier.
+     * @brief All versions of this currency, ordered from newest to oldest.
      */
-    std::string name;
-
-    /**
-     * @brief Description of what the feature flag controls.
-     */
-    std::string description;
-
-    /**
-     * @brief Username of the user who last modified this feature flag.
-     */
-    std::string modified_by;
+    std::vector<currency_version> versions;
 };
 
 }

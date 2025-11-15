@@ -17,38 +17,29 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_HPP
-#define ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_HPP
+#include "ores.risk/domain/currency_table_io.hpp"
 
-#include <string>
+#include <ostream>
+#include <fort.hpp>
 
-namespace ores::accounts::domain {
+namespace ores::risk::domain {
 
-/**
- * @brief Represents a feature flag in the domain layer.
- */
-struct feature_flags final {
-    /**
-     * @brief Flag indicating whether the feature is enabled or disabled.
-     */
-    bool enabled = false;
+std::ostream& operator<<(std::ostream& s, const std::vector<currency>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
 
-    /**
-     * @brief Name of the feature flag, serves as the unique identifier.
-     */
-    std::string name;
+    table << fort::header << "ISO Code" << "Name" << "Symbol" << "Type"
+          << "Fractions/Unit" << "Precision" << "Modified By" << "Valid From"
+          << "Valid To" << fort::endr;
 
-    /**
-     * @brief Description of what the feature flag controls.
-     */
-    std::string description;
+    for (const auto& c : v) {
+        table << c.iso_code << c.name << c.symbol << c.currency_type
+              << c.fractions_per_unit << c.rounding_precision << c.modified_by
+              << c.valid_from << c.valid_to << fort::endr;
+    }
+    s << std::endl << table.to_string() << std::endl;
 
-    /**
-     * @brief Username of the user who last modified this feature flag.
-     */
-    std::string modified_by;
-};
-
+    return s;
 }
 
-#endif
+}

@@ -21,30 +21,76 @@
 #define ORES_RISK_DOMAIN_CURRENCY_HPP
 
 #include <string>
-#include <iosfwd>
 
 namespace ores::risk::domain {
 
 /**
- * @brief Represents a currency.
+ * @brief Represents a currency with its metadata and formatting rules.
  */
 struct currency final {
+    /**
+     * @brief ISO 4217 alphabetic code (e.g., "USD").
+     */
     std::string iso_code;
+
+    /**
+     * @brief Full name of the currency (e.g., "United States Dollar").
+     */
     std::string name;
+
+    /**
+     * @brief ISO 4217 numeric code (e.g., "840").
+     */
     std::string numeric_code;
+    /**
+     * @brief Currency symbol (e.g., "$").
+     */
     std::string symbol;
+    /**
+     * @brief Symbol for fractional unit (e.g., "cent").
+     */
     std::string fraction_symbol;
+
+    /**
+     * @brief Number of fractional units per whole unit (e.g., 100 for cents).
+     */
     int fractions_per_unit;
+
+    /**
+     * @brief Rounding method for fractional amounts.
+     */
     std::string rounding_type;
+
+    /**
+     * @brief Decimal places to round to during formatting.
+     */
     int rounding_precision;
+
+    /**
+     * @brief Format string for display.
+     */
     std::string format;
+
+    /**
+     * @brief Type classification (e.g., fiat, crypto, major, minor, etc.).
+     */
     std::string currency_type;
+
+    /**
+     * @brief Username of the person who created this version.
+     */
     std::string modified_by;
+
+    /**
+     * @brief Start date of validity.
+     */
     std::string valid_from;
+
+    /**
+     * @brief End date of validity.
+     */
     std::string valid_to;
 };
-
-std::ostream& operator<<(std::ostream& s, const currency& v);
 
 }
 

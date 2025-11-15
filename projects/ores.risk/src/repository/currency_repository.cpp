@@ -24,6 +24,7 @@
 #include <rfl/json.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "ores.utility/repository/repository_exception.hpp"
+#include "ores.risk/domain/currency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.risk/repository/currency_mapper.hpp"
 #include "ores.risk/repository/currency_entity.hpp"
 

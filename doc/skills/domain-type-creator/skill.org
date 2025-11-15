@@ -1,0 +1,303 @@
+:PROPERTIES:
+:ID: b1450696-8c51-4cc5-8910-84912a411ab6
+:END:
+#+title: Domain Type Creator
+#+author: Marco Craveiro
+#+options: title:nil <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+#+begin_export markdown
+---
+name: domain-type-creator
+description: Guide for creating new domain types with full JSON I/O, table I/O, generators, and repository support.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When you need to add a new domain type to the ORE Studio project with complete
+support for JSON I/O, table I/O, test data generation, and database persistence
+with CRUD operations.
+
+* How to use this skill
+
+1. Gather information about the domain type (name, fields, project location).
+2. Follow the detailed instructions to create all required components in order.
+3. Build and test the new domain type.
+
+* Detailed instructions
+
+The following sections describe the step-by-step process for creating a complete domain type.
+
+** Gather requirements
+
+Before starting, gather the following information from the user:
+
+- *Domain type name*: the name of the new type (e.g., =currency=, =account=).
+- *Project location*: which project the domain type belongs to (e.g., =ores.risk=, =ores.accounts=).
+- *Fields*: list of fields with their types and descriptions.
+
+** Step 1: Create the domain class definition
+
+Create the header file under =projects/PROJECT/include/PROJECT/domain/TYPE_NAME.hpp=.
+
+The domain class should:
+
+- Use a =struct= with all fields public.
+- Include comprehensive doxygen comments for the struct and all fields.
+- Use appropriate C++ types:
+  - =boost::uuids::uuid= for unique identifiers
+  - =std::string= for text fields
+  - =bool= for flags
+  - =int= or appropriate numeric types for counters
+  - =std::chrono::system_clock::time_point= for timestamps
+  - =boost::asio::ip::address= for IP addresses
+- Follow the pattern established in =projects/ores.accounts/include/ores.accounts/domain/account.hpp=.
+
+Example structure:
+
+#+begin_src cpp
+namespace ores::PROJECT::domain {
+
+/**
+ * @brief Brief description of the domain type.
+ */
+struct TYPE_NAME final {
+    /**
+     * @brief Description of field.
+     */
+    TYPE field_name;
+
+    // ... more fields
+};
+
+}
+#+end_src
+
+** Step 2: Create JSON I/O support
+
+Create two files for JSON serialization:
+
+1. Header: =projects/PROJECT/include/PROJECT/domain/TYPE_NAME_json_io.hpp=
+2. Implementation: =projects/PROJECT/src/domain/TYPE_NAME_json_io.cpp=
+
+The header should declare:
+
+#+begin_src cpp
+#include <iosfwd>
+#include "PROJECT/domain/TYPE_NAME.hpp"
+
+namespace ores::PROJECT::domain {
+
+/**
+ * @brief Dumps the TYPE_NAME object to a stream in JSON format.
+ */
+std::ostream& operator<<(std::ostream& s, const TYPE_NAME& v);
+
+}
+#+end_src
+
+The implementation should:
+
+- Include =<rfl.hpp>= and =<rfl/json.hpp>=
+- Include =ores.utility/rfl/reflectors.hpp= for custom type support
+- Use =rfl::json::write()= for serialization
+- Follow the pattern in =projects/ores.accounts/src/domain/account_json_io.cpp=
+
+** Step 3: Create table I/O support
+
+Create two files for table output:
+
+1. Header: =projects/PROJECT/include/PROJECT/domain/TYPE_NAME_table_io.hpp=
+2. Implementation: =projects/PROJECT/src/domain/TYPE_NAME_table_io.cpp=
+
+The header should declare:
+
+#+begin_src cpp
+#include <iosfwd>
+#include <vector>
+#include "PROJECT/domain/TYPE_NAME.hpp"
+
+namespace ores::PROJECT::domain {
+
+/**
+ * @brief Dumps the TYPE_NAME object to a stream in table format.
+ */
+std::ostream& operator<<(std::ostream& s, const std::vector<TYPE_NAME>& v);
+
+}
+#+end_src
+
+The implementation should:
+
+- Include =<fort.hpp>= for table formatting
+- Include =<boost/uuid/uuid_io.hpp>= for UUID string conversion
+- Use =fort::char_table= with =FT_BASIC_STYLE=
+- Create appropriate column headers using =fort::header=
+- Format special types appropriately:
+  - UUIDs: use =boost::uuids::to_string()=
+  - Booleans: convert to "Y"/"N"
+  - Timestamps: format using =std::put_time()= as "YYYY-MM-DD HH:MM:SS"
+  - IP addresses: use =.to_string()=
+- End each row with =fort::endr=
+- Follow the pattern in =projects/ores.accounts/src/domain/account_table_io.cpp=
+
+** Step 4: Create generator support
+
+Create two files for test data generation:
+
+1. Header: =projects/PROJECT/include/PROJECT/generators/TYPE_NAME_generator.hpp=
+2. Implementation: =projects/PROJECT/src/generators/TYPE_NAME_generator.cpp=
+
+The generator class should:
+
+- Provide a static method =generate()= that creates a random instance
+- Provide a static method =generate_set(size_t n)= that creates n random instances
+- Use =faker-cxx= library for generating realistic fake data
+- Use =ores.utility/uuid/uuid_v7_generator= for generating UUIDs
+- Follow the pattern in =projects/ores.accounts/src/generators/account_generator.cpp=
+
+** Step 5: Create repository entity and mapper
+
+Create the database entity and mapper for ORM support:
+
+1. Entity header: =projects/PROJECT/include/PROJECT/repository/TYPE_NAME_entity.hpp=
+2. Entity implementation: =projects/PROJECT/src/repository/TYPE_NAME_entity.cpp=
+3. Mapper header: =projects/PROJECT/include/PROJECT/repository/TYPE_NAME_mapper.hpp=
+4. Mapper implementation: =projects/PROJECT/src/repository/TYPE_NAME_mapper.cpp=
+
+One domain class does not always map to a single entity. Entities reflect
+database tables. Clarify with the user how domain classes should be mapped to
+database entities.
+
+The entity should:
+
+- Use sqlgen annotations for table and column mapping
+- Include all fields from the domain type.
+- Follow the pattern in =projects/ores.accounts/include/ores.accounts/repository/account_entity.hpp=
+
+The mapper should:
+
+- Provide =to_domain()= method to convert entity to domain type
+- Provide =from_domain()= method to convert domain type to entity
+- Handle type conversions (e.g., UUID to string, timestamp conversions)
+- Follow the pattern in =projects/ores.accounts/src/repository/account_mapper.cpp=
+
+** Step 6: Create repository with CRUD operations
+
+Create the repository class:
+
+1. Header: =projects/PROJECT/include/PROJECT/repository/TYPE_NAME_repository.hpp=
+2. Implementation: =projects/PROJECT/src/repository/TYPE_NAME_repository.cpp=
+
+The repository should provide:
+
+- Constructor accepting a =context= parameter
+- =sql()= method returning the table creation SQL
+- Write methods:
+  - =void write(const domain::TYPE_NAME& obj)=
+  - =void write(const std::vector<domain::TYPE_NAME>& objs)=
+- Read methods:
+  - =std::vector<domain::TYPE_NAME> read_latest()=
+  - =std::vector<domain::TYPE_NAME> read_latest(const KEY_TYPE& key)=
+  - =std::vector<domain::TYPE_NAME> read_all()=
+  - =std::vector<domain::TYPE_NAME> read_all(const KEY_TYPE& key)=
+  - =std::vector<domain::TYPE_NAME> read_at_timepoint(const std::string& timestamp)=
+  - =std::vector<domain::TYPE_NAME> read_at_timepoint(const std::string& timestamp, const KEY_TYPE& key)=
+
+Implementation details:
+
+- Use sqlgen for database operations
+- Use the mapper to convert between domain and entity types
+- Include proper error handling with =ensure_success()=
+- Include logging using =BOOST_LOG_SEV=
+- Follow the pattern in =projects/ores.accounts/src/repository/account_repository.cpp=
+
+** Step 7: Update CMakeLists.txt
+
+The CMakeLists.txt in =projects/PROJECT/src/CMakeLists.txt= will use
+=GLOB_RECURSE= to pick up all =*.cpp= files automatically so do not add new
+files.
+
+Ensure the following dependencies are linked:
+
+- =libfort::fort= for table I/O
+- =reflectcpp::reflectcpp= for JSON I/O
+- =faker-cxx::faker-cxx= for generators
+- =sqlgen::sqlgen= for repository
+- =Boost::boost= for various Boost libraries
+
+** Step 8: Create tests
+
+Create comprehensive tests for the new domain type under =projects/PROJECT.tests/=:
+
+1. Domain tests: test JSON and table serialization
+2. Generator tests: verify generator produces valid instances
+3. Repository tests: test all CRUD operations
+
+Follow the test patterns in =projects/ores.accounts.tests/=.
+
+** Step 9: Build and verify
+
+1. Reconfigure CMake to pick up new files:
+
+#+begin_src sh
+cmake --preset linux-clang-debug
+#+end_src
+
+2. Build the project:
+
+#+begin_src sh
+cmake --build --preset linux-clang-debug --target PROJECT.lib
+#+end_src
+
+3. Build and run tests:
+
+#+begin_src sh
+cmake --build --preset linux-clang-debug --target PROJECT.tests
+./build/output/linux-clang-debug/publish/bin/PROJECT.tests
+#+end_src
+
+* Common patterns and conventions
+
+** Naming conventions
+
+- Use snake_case for all C++ identifiers (classes, methods, variables)
+- File names should match the class name exactly
+- Headers use =.hpp= extension
+- Implementation files use =.cpp= extension
+
+** Code organization
+
+- Group related functionality in logically named files
+- Standard library includes first, then third-party, then project headers
+- Use namespace aliases to reduce verbosity
+
+** Documentation
+
+- Add doxygen comments for all public APIs
+- Explain the "why" in comments, not the "what"
+- Include =@brief= tags for all documented items
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

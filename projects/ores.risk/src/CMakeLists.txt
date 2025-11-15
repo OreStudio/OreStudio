@@ -40,7 +40,8 @@ target_link_libraries(${lib_target_name}
         pugixml::pugixml
         Boost::boost
         ores.utility.lib
-        faker-cxx::faker-cxx # for generators
+        faker-cxx::faker-cxx
+        libfort::fort
    PUBLIC
         reflectcpp::reflectcpp
         ores.comms.lib

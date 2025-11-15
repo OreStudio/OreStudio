@@ -23,6 +23,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.utility/repository/repository_exception.hpp"
+#include "ores.accounts/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.accounts/repository/account_entity.hpp"
 #include "ores.accounts/repository/account_mapper.hpp"
 

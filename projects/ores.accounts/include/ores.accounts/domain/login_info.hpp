@@ -20,7 +20,6 @@
 #ifndef ORES_ACCOUNTS_DOMAIN_LOGIN_INFO_HPP
 #define ORES_ACCOUNTS_DOMAIN_LOGIN_INFO_HPP
 
-#include <iosfwd>
 #include <chrono>
 #include <boost/uuid/uuid.hpp>
 #include <boost/asio/ip/address.hpp>
@@ -66,8 +65,6 @@ struct login_info final {
      */
     boost::asio::ip::address last_attempt_ip;
 };
-
-std::ostream& operator<<(std::ostream& s, const login_info& v);
 
 }
 

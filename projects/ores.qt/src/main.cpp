@@ -65,9 +65,9 @@ int main(int argc, char *argv[]) {
     }
 
     // Set application icon
-    app.setWindowIcon(QIcon("modern-icon.png"));
+    app.setWindowIcon(QIcon(":/images/modern-icon.png"));
 
-    ores::qt::SplashScreen splash(QPixmap("splash-screen.png"));
+    ores::qt::SplashScreen splash(QPixmap(":/images/splash-screen.png"));
     splash.show();
 
     // Start progress bar animation

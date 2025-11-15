@@ -58,7 +58,7 @@ MainWindow::MainWindow(QWidget* parent) :
     mdiArea_ = new MdiAreaWithBackground(this);
 
     // Set application icon
-    setWindowIcon(QIcon("modern-icon.png"));
+    setWindowIcon(QIcon(":/images/modern-icon.png"));
 
     // Create and configure status bar connection icon label
     connectionStatusIconLabel_ = new QLabel(this);
@@ -76,7 +76,7 @@ MainWindow::MainWindow(QWidget* parent) :
         BOOST_LOG_SEV(lg(), error) << "MDI area viewport is null!";
     }
 
-    mdiArea_->setBackgroundLogo("ore-studio-background.png");
+    mdiArea_->setBackgroundLogo(":/images/ore-studio-background.png");
 
     // Initialize connection status icons
     const QColor iconColor(220, 220, 220); // Light gray for dark theme

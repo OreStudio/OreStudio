@@ -40,7 +40,7 @@
 
 (defvar ores-client-shell-prompt "ores-client-shell> "
   "Prompt for ores-client-shell.")
-
+;; (setq ores-client-shell-program "~/Development/OreStudio/OreStudio.local1/build/output/linux-clang-debug/publish/bin/ores.client")
 (defvar ores-client-shell-program "./ores.client"
   "Path to the ores-client-shell executable.")
 

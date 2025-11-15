@@ -58,16 +58,8 @@
     </property>
     <addaction name="ActionAbout"/>
    </widget>
-   <widget class="QMenu" name="menuExport">
-    <property name="title">
-     <string>&amp;Export</string>
-    </property>
-    <addaction name="ActionExportXML"/>
-    <addaction name="ActionExportCSV"/>
-   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuRefereceData"/>
-   <addaction name="menuExport"/>
    <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -101,21 +93,6 @@
     <string>&amp;Currencies</string>
    </property>
   </action>
-  <action name="ActionHistory">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset>
-     <normaloff>:/icons/ic_fluent_history_20_regular.svg</normaloff>:/icons/ic_fluent_history_20_regular.svg</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;History</string>
-   </property>
-   <property name="toolTip">
-    <string>View history</string>
-   </property>
-  </action>
   <action name="ActionConnect">
    <property name="icon">
     <iconset>
@@ -132,103 +109,6 @@
    </property>
    <property name="text">
     <string>&amp;Disconnect</string>
-   </property>
-  </action>
-  <action name="ActionAdd">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset>
-     <normaloff>:/icons/ic_fluent_add_20_filled.svg</normaloff>:/icons/ic_fluent_add_20_filled.svg</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Add</string>
-   </property>
-   <property name="toolTip">
-    <string>Add new item</string>
-   </property>
-  </action>
-
-  <action name="ActionEdit">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset>
-     <normaloff>:/icons/ic_fluent_edit_20_filled.svg</normaloff>:/icons/ic_fluent_edit_20_filled.svg</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Edit</string>
-   </property>
-   <property name="toolTip">
-    <string>Edit selected item</string>
-   </property>
-  </action>
-  <action name="ActionDelete">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset>
-     <normaloff>:/icons/ic_fluent_delete_20_filled.svg</normaloff>:/icons/ic_fluent_delete_20_filled.svg</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Delete</string>
-   </property>
-   <property name="toolTip">
-    <string>Delete selected item</string>
-   </property>
-  </action>
-  <action name="ActionSave">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset>
-     <normaloff>:/icons/ic_fluent_save_20_filled.svg</normaloff>:/icons/ic_fluent_save_20_filled.svg</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Save</string>
-   </property>
-   <property name="toolTip">
-    <string>Save changes</string>
-   </property>
-  </action>
-  <action name="ActionExportCSV">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/icons/ic_fluent_document_table_20_regular.svg</normaloff>:/icons/ic_fluent_document_table_20_regular.svg</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;To CSV</string>
-   </property>
-   <property name="toolTip">
-    <string>Export currencies to CSV</string>
-   </property>
-  </action>
-  <action name="ActionExportToXML">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/icons/ic_fluent_document_code_16_regular.svg</normaloff>:/icons/ic_fluent_document_code_16_regular.svg</iconset>
-   </property>
-   <property name="text">
-    <string>To &amp;XML</string>
-   </property>
-   <property name="toolTip">
-    <string>Export currencies to XML</string>
-   </property>
-  </action>
-  <action name="ActionExportXML">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/icons/ic_fluent_document_code_16_regular.svg</normaloff>:/icons/ic_fluent_document_code_16_regular.svg</iconset>
-   </property>
-   <property name="text">
-    <string>To ORE&amp;XML</string>
-   </property>
-   <property name="toolTip">
-    <string>Export currencies to ORE XML</string>
    </property>
   </action>
   <action name="ActionAbout">
@@ -257,18 +137,6 @@
    </property>
    <property name="toolTip">
     <string>Reattach all floating windows to MDI area</string>
-   </property>
-  </action>
-  <action name="ActionReload">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/icons/ic_fluent_arrow_sync_20_regular.svg</normaloff>:/icons/ic_fluent_arrow_sync_20_regular.svg</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Reload</string>
-   </property>
-   <property name="toolTip">
-    <string>Reload data from server</string>
    </property>
   </action>
  </widget>

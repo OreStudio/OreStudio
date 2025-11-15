@@ -40,7 +40,6 @@ class MainWindow;
 
 namespace ores::qt {
 
-class CurrencyMdiWindow;
 class DetachableMdiSubWindow;
 
 class MainWindow : public QMainWindow {
@@ -66,17 +65,6 @@ public:
 private slots:
     void onLoginTriggered();
     void onDisconnectTriggered();
-    void onSubWindowActivated(QMdiSubWindow* window);
-    void onActiveWindowSelectionChanged(int selection_count);
-    void onEditTriggered();
-    void onDeleteTriggered();
-    void onHistoryTriggered();
-    void onAddTriggered();
-    void onExportCSVTriggered();
-    void onExportXMLTriggered();
-    void onShowCurrencyDetails(const risk::domain::currency& currency);
-    void onCurrencyDeleted(const QString& iso_code);
-    void onShowCurrencyHistory(const QString& iso_code);
     void onAboutTriggered();
     void onDetachAllTriggered();
     void onReattachAllTriggered();
@@ -84,16 +72,10 @@ private slots:
 
 private:
     void updateMenuState();
-    void updateCrudActionState();
 
 private:
     Ui::MainWindow* ui_;
     MdiAreaWithBackground* mdiArea_;
-    CurrencyMdiWindow* activeCurrencyWindow_;
-    int selectionCount_;
-    QMap<QString, DetachableMdiSubWindow*> currencyDetailWindows_;
-    DetachableMdiSubWindow* currencyListWindow_;
-    QMap<QString, DetachableMdiSubWindow*> currencyHistoryWindows_;
     QLabel* connectionStatusIconLabel_;
     QList<DetachableMdiSubWindow*> allDetachableWindows_;
 

@@ -31,35 +31,44 @@ namespace ores::qt {
 using namespace ores::utility::log;
 
 AboutDialog::AboutDialog(QWidget* parent)
-    : QDialog(parent), ui_(new Ui::AboutDialog) {
+    : QDialog(parent) {
 
-    BOOST_LOG_SEV(lg(), info) << "Creating about dialog";
-    ui_->setupUi(this);
+    BOOST_LOG_SEV(lg(), debug) << "Creating about dialog.";
+    ui_.setupUi(this);
 
-    // Scale the logo to fit the dialog width while maintaining aspect ratio
-    QPixmap logo("splash-screen.png");
-    if (!logo.isNull()) {
-        int targetWidth = width();
-        QPixmap scaledLogo = logo.scaledToWidth(targetWidth, Qt::SmoothTransformation);
-        ui_->logoLabel->setPixmap(scaledLogo);
-    }
-
-    setupVersionInfo();
+    updateVersionLabels();
 }
 
 AboutDialog::~AboutDialog() {
-    BOOST_LOG_SEV(lg(), info) << "Destroying about dialog";
+    BOOST_LOG_SEV(lg(), debug) << "Destroying about dialog.";
 }
 
-void AboutDialog::setupVersionInfo() {
-    // Get version and build information
-    QString version = QString("Version: %1").arg(ORES_VERSION);
-    QString build = QString("Build: %1").arg(ORES_BUILD_INFO);
+void AboutDialog::showEvent(QShowEvent* e) {
+    QDialog::showEvent(e);
 
-    ui_->versionLabel->setText(version);
-    ui_->buildLabel->setText(build);
+    const char* image(":/images/splash-screen.png");
+    BOOST_LOG_SEV(lg(), debug) << "Scaling logo to fit the dialog. Image: "
+                               << image;
+    QPixmap logo(image);
+    if (!logo.isNull()) {
+        int targetWidth = width();
+        BOOST_LOG_SEV(lg(), debug) << "Scaling to target width: " << targetWidth;
 
-    // Set window title with version
+        QPixmap scaledLogo = logo.scaledToWidth(targetWidth, Qt::SmoothTransformation);
+        ui_.logoLabel->setPixmap(std::move(scaledLogo));
+        BOOST_LOG_SEV(lg(), debug) << "Scaled successfully.";
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "Missing file: splash-screen.png";
+    }
+}
+
+void AboutDialog::updateVersionLabels() {
+    const QString version = QString("Version: %1").arg(ORES_VERSION);
+    const QString build = QString("Build: %1").arg(ORES_BUILD_INFO);
+
+    ui_.versionLabel->setText(version);
+    ui_.buildLabel->setText(build);
+
     setWindowTitle(QString("About OreStudio %1").arg(ORES_VERSION));
 }
 

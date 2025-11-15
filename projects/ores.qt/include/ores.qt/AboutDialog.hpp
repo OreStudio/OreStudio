@@ -22,7 +22,6 @@
 #define ORES_QT_ABOUT_DIALOG_HPP
 
 #include <QDialog>
-#include <memory>
 #include "ui_AboutDialog.h"
 #include "ores.utility/log/make_logger.hpp"
 
@@ -35,13 +34,20 @@ class AboutDialog;
 namespace ores::qt {
 
 /**
- * @brief About dialog showing application version and build information.
+ * @brief Modal dialog displaying application version and build metadata.
+ *
+ * Presents key runtime information such as the application version, build
+ * identifier, and associated branding (e.g., logo or splash image). Used
+ * primarily for diagnostics and user-facing transparency.
+ *
+ * The dialog initializes its UI, loads the application logo, and populates
+ * version/build labels using compile-time metadata.
  */
-class AboutDialog : public QDialog {
+class AboutDialog final : public QDialog {
     Q_OBJECT
 
 private:
-    static auto& lg() {
+    [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
         static auto instance = make_logger("ores.qt.about_dialog");
         return instance;
@@ -49,13 +55,25 @@ private:
 
 public:
     explicit AboutDialog(QWidget* parent = nullptr);
-    ~AboutDialog();
+    ~AboutDialog() override;
 
 private:
-    void setupVersionInfo();
+    void showEvent(QShowEvent* e) override;
+
+    /**
+     * @brief Populate all version and build-related UI labels.
+     *
+     * Retrieves the application version and build metadata (e.g., build
+     * timestamp, commit information) and updates the corresponding labels in
+     * the dialog. This function performs only UI updates; it does not compute
+     * or cache any version data.
+     *
+     * Call this after the UI is initialised.
+     */
+    void updateVersionLabels();
 
 private:
-    std::unique_ptr<Ui::AboutDialog> ui_;
+    Ui::AboutDialog ui_;
 };
 
 }

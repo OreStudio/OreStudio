@@ -53,4 +53,12 @@ get_int_value_or_default(const std::string& name, int default_value) {
     }
 }
 
+void environment::set_value(const std::string& name, const std::string& value) {
+#ifdef _WIN32
+    _putenv_s(name.c_str(), value.c_str());
+#else
+    setenv(name.c_str(), value.c_str(), 1);
+#endif
+}
+
 }

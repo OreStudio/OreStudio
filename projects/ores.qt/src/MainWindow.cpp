@@ -37,7 +37,7 @@
 #include "ores.qt/CurrencyMdiWindow.hpp"
 #include "ores.qt/CurrencyHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.qt/CurrencyDetailDialog.hpp" // Include the header for CurrencyDetailDialog
+#include "ores.qt/CurrencyDetailDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/AboutDialog.hpp"
@@ -54,22 +54,17 @@ MainWindow::MainWindow(QWidget* parent) :
     BOOST_LOG_SEV(lg(), info) << "Creating the main window.";
     ui_->setupUi(this);
 
-    // Create MDI area with proper parent
     mdiArea_ = new MdiAreaWithBackground(this);
 
-    // Set application icon
     setWindowIcon(QIcon(":/images/modern-icon.png"));
 
-    // Create and configure status bar connection icon label
     connectionStatusIconLabel_ = new QLabel(this);
     connectionStatusIconLabel_->setFixedWidth(20);
     connectionStatusIconLabel_->setAlignment(Qt::AlignCenter);
     ui_->statusbar->addPermanentWidget(connectionStatusIconLabel_);
 
-    // Set up MDI area
     ui_->horizontalLayout_3->addWidget(mdiArea_);
 
-    // Ensure viewport is initialized by accessing it
     if (mdiArea_->viewport()) {
         BOOST_LOG_SEV(lg(), debug) << "MDI area viewport initialized successfully";
     } else {
@@ -78,12 +73,13 @@ MainWindow::MainWindow(QWidget* parent) :
 
     mdiArea_->setBackgroundLogo(":/images/ore-studio-background.png");
 
-    // Initialize connection status icons
     const QColor iconColor(220, 220, 220); // Light gray for dark theme
-    connectedIcon_ = IconUtils::IconUtils::createRecoloredIcon(":/icons/ic_fluent_plug_connected_20_filled.svg", iconColor);
-    disconnectedIcon_ = IconUtils::IconUtils::createRecoloredIcon(":/icons/ic_fluent_plug_disconnected_20_filled.svg", iconColor);
+    connectedIcon_ = IconUtils::IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_plug_connected_20_filled.svg",
+        iconColor);
+    disconnectedIcon_ = IconUtils::IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_plug_disconnected_20_filled.svg", iconColor);
 
-    // Apply recolored icons for dark theme visibility (light gray color)
     ui_->ActionConnect->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_plug_connected_20_filled.svg", iconColor));
     ui_->ActionDisconnect->setIcon(IconUtils::createRecoloredIcon(
@@ -108,47 +104,56 @@ MainWindow::MainWindow(QWidget* parent) :
         ":/icons/ic_fluent_add_20_filled.svg", iconColor));
 
     // Connect menu actions
-    connect(ui_->ActionConnect, &QAction::triggered, this, &MainWindow::onLoginTriggered);
-    connect(ui_->ActionDisconnect, &QAction::triggered, this, &MainWindow::onDisconnectTriggered);
-    connect(ui_->ActionExportCSV, &QAction::triggered, this, &MainWindow::onExportCSVTriggered);
-    connect(ui_->ActionExportXML, &QAction::triggered, this, &MainWindow::onExportXMLTriggered);
-    connect(ui_->ActionAbout, &QAction::triggered, this, &MainWindow::onAboutTriggered);
+    connect(ui_->ActionConnect, &QAction::triggered, this,
+        &MainWindow::onLoginTriggered);
+    connect(ui_->ActionDisconnect, &QAction::triggered, this,
+        &MainWindow::onDisconnectTriggered);
+    connect(ui_->ActionExportCSV, &QAction::triggered, this,
+        &MainWindow::onExportCSVTriggered);
+    connect(ui_->ActionExportXML, &QAction::triggered, this,
+        &MainWindow::onExportXMLTriggered);
+    connect(ui_->ActionAbout, &QAction::triggered, this,
+        &MainWindow::onAboutTriggered);
 
     // Connect Window menu actions
-    connect(ui_->ActionDetachAll, &QAction::triggered, this, &MainWindow::onDetachAllTriggered);
-    connect(ui_->ActionReattachAll, &QAction::triggered, this, &MainWindow::onReattachAllTriggered);
-    connect(ui_->menuWindow, &QMenu::aboutToShow, this, &MainWindow::onWindowMenuAboutToShow);
+    connect(ui_->ActionDetachAll, &QAction::triggered, this,
+        &MainWindow::onDetachAllTriggered);
+    connect(ui_->ActionReattachAll, &QAction::triggered, this,
+        &MainWindow::onReattachAllTriggered);
+    connect(ui_->menuWindow, &QMenu::aboutToShow, this,
+        &MainWindow::onWindowMenuAboutToShow);
 
     // Connect CRUD actions
-    connect(ui_->ActionSave, &QAction::triggered, this, [this]() {
-        // Get the currently active MDI subwindow
+    connect(ui_->ActionSave, &QAction::triggered, this,
+        [this]() {
         auto* activeWindow = mdiArea_->activeSubWindow();
-        if (!activeWindow) {
+        if (!activeWindow)
             return;
-        }
 
-        // Check if it's a DetachableMdiSubWindow with a CurrencyDetailDialog
-        auto* detachableWindow = qobject_cast<DetachableMdiSubWindow*>(activeWindow);
+        auto* detachableWindow =
+            qobject_cast<DetachableMdiSubWindow*>(activeWindow);
         if (detachableWindow) {
-            auto* detailDialog = qobject_cast<CurrencyDetailDialog*>(detachableWindow->widget());
-            if (detailDialog) {
+            auto* detailDialog =
+                qobject_cast<CurrencyDetailDialog*>(detachableWindow->widget());
+            if (detailDialog)
                 detailDialog->save();
-            }
         }
     });
-    connect(ui_->ActionEdit, &QAction::triggered, this, &MainWindow::onEditTriggered);
-    connect(ui_->ActionDelete, &QAction::triggered, this, &MainWindow::onDeleteTriggered);
-    connect(ui_->ActionHistory, &QAction::triggered, this, &MainWindow::onHistoryTriggered);
-    connect(ui_->ActionAdd, &QAction::triggered, this, &MainWindow::onAddTriggered);
+    connect(ui_->ActionEdit, &QAction::triggered, this,
+        &MainWindow::onEditTriggered);
+    connect(ui_->ActionDelete, &QAction::triggered, this,
+        &MainWindow::onDeleteTriggered);
+    connect(ui_->ActionHistory, &QAction::triggered, this,
+        &MainWindow::onHistoryTriggered);
+    connect(ui_->ActionAdd, &QAction::triggered, this,
+        &MainWindow::onAddTriggered);
 
-
-    // Connect to MDI area window activation to manage context-aware actions
     connect(mdiArea_, &QMdiArea::subWindowActivated,
             this, &MainWindow::onSubWindowActivated);
 
-    // Currencies action creates/reuses MDI window with currency table
     QPointer<MainWindow> self = this;
-    connect(ui_->CurrenciesAction, &QAction::triggered, self, [&, self]() {
+    connect(ui_->CurrenciesAction, &QAction::triggered, self,
+        [&, self]() {
         if (!self) return;
         if (!client_ || !client_->is_connected()) {
             BOOST_LOG_SEV(lg(), warn) << "Currencies action triggered but not connected";
@@ -162,7 +167,8 @@ MainWindow::MainWindow(QWidget* parent) :
             BOOST_LOG_SEV(lg(), info) << "Reusing existing currencies window";
 
             // Get the currency widget
-            auto* currencyWidget = qobject_cast<CurrencyMdiWindow*>(currencyListWindow_->widget());
+            auto* currencyWidget =
+                qobject_cast<CurrencyMdiWindow*>(currencyListWindow_->widget());
 
             // Make sure the widget is visible
             if (currencyWidget) {
@@ -193,16 +199,18 @@ MainWindow::MainWindow(QWidget* parent) :
         }
 
         BOOST_LOG_SEV(lg(), info) << "Creating new currencies MDI window";
-        auto* currencyWidget = new CurrencyMdiWindow(client_, this);
+        auto* currencyWidget =
+            new CurrencyMdiWindow(client_, this);
 
         // Connect status signals to status bar
         connect(currencyWidget, &CurrencyMdiWindow::statusChanged,
                 this, [this](const QString& message) {
             ui_->statusbar->showMessage(message);
         });
-        connect(currencyWidget, &CurrencyMdiWindow::errorOccurred,
-                this, [this](const QString& error_message) {
-            ui_->statusbar->showMessage("Error loading currencies: " + error_message);
+        connect(currencyWidget, &CurrencyMdiWindow::errorOccurred, this,
+                [this](const QString& error_message) {
+                    ui_->statusbar->showMessage("Error loading currencies: " +
+                        error_message);
         });
         connect(currencyWidget, &CurrencyMdiWindow::addNewRequested,
                 this, &MainWindow::onAddTriggered);
@@ -267,38 +275,33 @@ MainWindow::MainWindow(QWidget* parent) :
         const int x = (screenGeometry.width() - width()) / 2;
         const int y = (screenGeometry.height() - height()) / 2;
         move(x, y);
-        BOOST_LOG_SEV(lg(), debug) << "Window centered at (" << x << ", " << y << ")";
+        BOOST_LOG_SEV(lg(), debug) << "Window centered at ("
+                                   << x << ", " << y << ")";
     }
 
-    // Login dialog removed - will be triggered from menu
-    BOOST_LOG_SEV(lg(), info) << "Main window created without forced login.";
+    BOOST_LOG_SEV(lg(), info) << "Main window created.";
 }
 
 MainWindow::~MainWindow() {
     // Disconnect all detachable windows to prevent destroyed signal handlers
     // from accessing member variables during destruction
     for (auto* window : allDetachableWindows_) {
-        if (window) {
+        if (window)
             disconnect(window, &QObject::destroyed, this, nullptr);
-        }
     }
 
-    // Disconnect client
-    if (client_) {
+    if (client_)
         client_->disconnect();
-    }
 
     // Reset work guard to allow IO context to finish
     work_guard_.reset();
 
     // Stop IO context and join thread
-    if (io_context_) {
+    if (io_context_)
         io_context_->stop();
-    }
 
-    if (io_thread_ && io_thread_->joinable()) {
+    if (io_thread_ && io_thread_->joinable())
         io_thread_->join();
-    }
 
     BOOST_LOG_SEV(lg(), info) << "MainWindow destroyed, client disconnected.";
 }
@@ -320,7 +323,8 @@ void MainWindow::onLoginTriggered() {
         // Set client and username for all detail windows if they exist
         for (auto* detailWindow : currencyDetailWindows_) {
             if (detailWindow) {
-                auto* detailDialog = qobject_cast<CurrencyDetailDialog*>(detailWindow->widget());
+                auto* detailDialog =
+                    qobject_cast<CurrencyDetailDialog*>(detailWindow->widget());
                 if (detailDialog) {
                     detailDialog->setClient(client_);
                     detailDialog->setUsername(username_);
@@ -329,17 +333,16 @@ void MainWindow::onLoginTriggered() {
         }
 
         if (client_ && client_->is_connected()) {
-            BOOST_LOG_SEV(lg(), info) << "Successfully connected to server and authenticated.";
+            BOOST_LOG_SEV(lg(), info) << "Successfully connected and authenticated.";
             updateMenuState();
-            ui_->statusbar->showMessage("Successfully connected and logged in to the server.");
+            ui_->statusbar->showMessage("Successfully connected and logged in.");
         } else {
             BOOST_LOG_SEV(lg(), error) << "Client is not properly connected after login.";
             MessageBoxHelper::critical(this, "Connection Error",
                 "Failed to establish server connection.");
         }
-    } else {
+    } else
         BOOST_LOG_SEV(lg(), info) << "Login cancelled by user.";
-    }
 }
 
 void MainWindow::updateMenuState() {
@@ -355,12 +358,13 @@ void MainWindow::updateMenuState() {
 
     // Update connection status icon in status bar
     if (isConnected) {
-        connectionStatusIconLabel_->setPixmap(connectedIcon_.pixmap(16, 16)); // Use 16x16 for status bar
-    } else {
+        // Use 16x16 for status bar
+        connectionStatusIconLabel_->setPixmap(connectedIcon_.pixmap(16, 16));
+    } else
         connectionStatusIconLabel_->setPixmap(disconnectedIcon_.pixmap(16, 16));
-    }
 
-    BOOST_LOG_SEV(lg(), debug) << "Menu state updated. Connected: " << isConnected;
+    BOOST_LOG_SEV(lg(), debug) << "Menu state updated. Connected: "
+                               << isConnected;
 }
 
 void MainWindow::onDisconnectTriggered() {
@@ -397,33 +401,39 @@ void MainWindow::onDisconnectTriggered() {
         updateMenuState();
 
         BOOST_LOG_SEV(lg(), info) << "Disconnected from server";
-        ui_->statusbar->showMessage("Successfully disconnected from the server.");
+        ui_->statusbar->showMessage(
+            "Successfully disconnected from the server.");
     }
 }
 
 void MainWindow::onSubWindowActivated(QMdiSubWindow* window) {
     // Disconnect from previous active window if any
     if (activeCurrencyWindow_) {
-        disconnect(activeCurrencyWindow_, &CurrencyMdiWindow::selectionChanged,
-                   this, &MainWindow::onActiveWindowSelectionChanged);
-        disconnect(activeCurrencyWindow_, &CurrencyMdiWindow::showCurrencyDetails,
-                   this, &MainWindow::onShowCurrencyDetails);
+        disconnect(activeCurrencyWindow_,
+            &CurrencyMdiWindow::selectionChanged,
+            this, &MainWindow::onActiveWindowSelectionChanged);
+        disconnect(activeCurrencyWindow_,
+            &CurrencyMdiWindow::showCurrencyDetails,
+            this, &MainWindow::onShowCurrencyDetails);
         activeCurrencyWindow_ = nullptr;
         selectionCount_ = 0;
     }
 
     // Check if the new active window is a CurrencyMdiWindow
     if (window) {
-        auto* currencyWindow = qobject_cast<CurrencyMdiWindow*>(window->widget());
+        auto* currencyWindow =
+        qobject_cast<CurrencyMdiWindow*>(window->widget());
         if (currencyWindow) {
             activeCurrencyWindow_ = currencyWindow;
 
             // Connect to selection changes
-            connect(activeCurrencyWindow_, &CurrencyMdiWindow::selectionChanged,
-                    this, &MainWindow::onActiveWindowSelectionChanged);
+            connect(activeCurrencyWindow_,
+                &CurrencyMdiWindow::selectionChanged,
+                this, &MainWindow::onActiveWindowSelectionChanged);
             // Connect to show currency details signal
-            connect(activeCurrencyWindow_, &CurrencyMdiWindow::showCurrencyDetails,
-                    this, &MainWindow::onShowCurrencyDetails);
+            connect(activeCurrencyWindow_,
+                &CurrencyMdiWindow::showCurrencyDetails,
+                this, &MainWindow::onShowCurrencyDetails);
         }
     }
 
@@ -436,11 +446,7 @@ void MainWindow::onActiveWindowSelectionChanged(int selection_count) {
     updateCrudActionState();
 }
 
-void MainWindow::updateCrudActionState() {
-    // CRUD actions are now in the currency window toolbar
-    // This method now only handles the Save action which is still in the main window
-    // The Save action is controlled by the isDirtyChanged signal from detail dialogs
-}
+void MainWindow::updateCrudActionState() { }
 
 void MainWindow::onEditTriggered() {
     if (activeCurrencyWindow_) {
@@ -488,7 +494,8 @@ void MainWindow::onShowCurrencyHistory(const QString& iso_code) {
                                       << iso_code.toStdString();
 
             // Get the history widget
-            auto* historyWidget = qobject_cast<CurrencyHistoryDialog*>(existingWindow->widget());
+            auto* historyWidget =
+                qobject_cast<CurrencyHistoryDialog*>(existingWindow->widget());
             if (historyWidget) {
                 // Make sure the widget is visible
                 historyWidget->setVisible(true);
@@ -538,7 +545,8 @@ void MainWindow::onShowCurrencyHistory(const QString& iso_code) {
     // Track window for detach/reattach operations and by ISO code
     currencyHistoryWindows_[iso_code] = subWindow;
     allDetachableWindows_.append(subWindow);
-    connect(subWindow, &QObject::destroyed, this, [this, iso_code, subWindow]() {
+    connect(subWindow, &QObject::destroyed, this,
+        [this, iso_code, subWindow]() {
         allDetachableWindows_.removeAll(subWindow);
         currencyHistoryWindows_.remove(iso_code);
     });
@@ -564,7 +572,8 @@ void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
                                       << currency.iso_code;
 
             // Update currency data
-            auto* detailDialog = qobject_cast<CurrencyDetailDialog*>(existingWindow->widget());
+            auto* detailDialog =
+                qobject_cast<CurrencyDetailDialog*>(existingWindow->widget());
             if (detailDialog) {
                 detailDialog->setCurrency(currency);
                 // Make sure the widget is visible

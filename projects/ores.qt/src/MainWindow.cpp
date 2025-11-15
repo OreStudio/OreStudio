@@ -37,7 +37,7 @@
 #include "ores.qt/CurrencyMdiWindow.hpp"
 #include "ores.qt/CurrencyHistoryMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.qt/CurrencyDetailPanel.hpp" // Include the header for CurrencyDetailPanel
+#include "ores.qt/CurrencyDetailDialog.hpp" // Include the header for CurrencyDetailDialog
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/AboutDialog.hpp"
 
@@ -126,12 +126,12 @@ MainWindow::MainWindow(QWidget* parent) :
             return;
         }
 
-        // Check if it's a DetachableMdiSubWindow with a CurrencyDetailPanel
+        // Check if it's a DetachableMdiSubWindow with a CurrencyDetailDialog
         auto* detachableWindow = qobject_cast<DetachableMdiSubWindow*>(activeWindow);
         if (detachableWindow) {
-            auto* detailPanel = qobject_cast<CurrencyDetailPanel*>(detachableWindow->widget());
-            if (detailPanel) {
-                detailPanel->save();
+            auto* detailDialog = qobject_cast<CurrencyDetailDialog*>(detachableWindow->widget());
+            if (detailDialog) {
+                detailDialog->save();
             }
         }
     });
@@ -297,10 +297,10 @@ void MainWindow::onLoginTriggered() {
         // Set client and username for all detail windows if they exist
         for (auto* detailWindow : currencyDetailWindows_) {
             if (detailWindow) {
-                auto* detailPanel = qobject_cast<CurrencyDetailPanel*>(detailWindow->widget());
-                if (detailPanel) {
-                    detailPanel->setClient(client_);
-                    detailPanel->setUsername(username_);
+                auto* detailDialog = qobject_cast<CurrencyDetailDialog*>(detailWindow->widget());
+                if (detailDialog) {
+                    detailDialog->setClient(client_);
+                    detailDialog->setUsername(username_);
                 }
             }
         }
@@ -466,7 +466,7 @@ void MainWindow::onActiveWindowSelectionChanged(int selection_count) {
 void MainWindow::updateCrudActionState() {
     // CRUD actions are now in the currency window toolbar
     // This method now only handles the Save action which is still in the main window
-    // The Save action is controlled by the isDirtyChanged signal from detail panels
+    // The Save action is controlled by the isDirtyChanged signal from detail dialogs
 }
 
 void MainWindow::onEditTriggered() {
@@ -588,12 +588,12 @@ void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
                                       << currency.iso_code;
 
             // Update currency data
-            auto* detailPanel = qobject_cast<CurrencyDetailPanel*>(existingWindow->widget());
-            if (detailPanel) {
-                detailPanel->setCurrency(currency);
+            auto* detailDialog = qobject_cast<CurrencyDetailDialog*>(existingWindow->widget());
+            if (detailDialog) {
+                detailDialog->setCurrency(currency);
                 // Make sure the widget is visible
-                detailPanel->setVisible(true);
-                detailPanel->show();
+                detailDialog->setVisible(true);
+                detailDialog->show();
             }
 
             // Bring window to front
@@ -614,17 +614,17 @@ void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
     BOOST_LOG_SEV(lg(), info) << "Creating new currency detail MDI window for: "
                              << currency.iso_code;
 
-    // Create the detail panel
-    auto* detailPanel = new CurrencyDetailPanel(this);
+    // Create the detail dialog
+    auto* detailDialog = new CurrencyDetailDialog(this);
 
     // Set client and username if we're connected
     if (client_) {
-        detailPanel->setClient(client_);
-        detailPanel->setUsername(username_);
+        detailDialog->setClient(client_);
+        detailDialog->setUsername(username_);
     }
 
-    // Connect signals from panel
-    connect(detailPanel, &CurrencyDetailPanel::currencyUpdated,
+    // Connect signals from dialog
+    connect(detailDialog, &CurrencyDetailDialog::currencyUpdated,
             this, [this](const QString& iso_code) {
         // Refresh both the active window and the main list window if they exist
         if (activeCurrencyWindow_) {
@@ -641,7 +641,7 @@ void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
         // Close the detail window after successful update (same as delete)
         onCurrencyDeleted(iso_code);
     });
-    connect(detailPanel, &CurrencyDetailPanel::currencyCreated,
+    connect(detailDialog, &CurrencyDetailDialog::currencyCreated,
             this, [this](const QString& iso_code) {
         BOOST_LOG_SEV(lg(), info) << "Currency created signal received, refreshing windows";
 
@@ -666,7 +666,7 @@ void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
         // Close the detail window after successful creation (same as delete)
         onCurrencyDeleted(iso_code);
     });
-    connect(detailPanel, &CurrencyDetailPanel::currencyDeleted,
+    connect(detailDialog, &CurrencyDetailDialog::currencyDeleted,
             this, [this](const QString& iso_code) {
         // Refresh both the active window and the main list window if they exist
         if (activeCurrencyWindow_) {
@@ -681,25 +681,25 @@ void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
         ui_->statusbar->showMessage(QString("Currency '%1' deleted.").arg(iso_code));
         onCurrencyDeleted(iso_code);
     });
-    connect(detailPanel, &CurrencyDetailPanel::statusMessage,
+    connect(detailDialog, &CurrencyDetailDialog::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
-    connect(detailPanel, &CurrencyDetailPanel::errorMessage,
+    connect(detailDialog, &CurrencyDetailDialog::errorMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
-    connect(detailPanel, &CurrencyDetailPanel::isDirtyChanged,
+    connect(detailDialog, &CurrencyDetailDialog::isDirtyChanged,
             this, [this](bool isDirty) {
         ui_->ActionSave->setEnabled(isDirty);
     });
 
     // Set initial currency data
-    detailPanel->setCurrency(currency);
+    detailDialog->setCurrency(currency);
 
-    // Create detachable MDI window and set the panel as its widget
+    // Create detachable MDI window and set the dialog as its widget
     auto* detailWindow = new DetachableMdiSubWindow();
-    detailWindow->setWidget(detailPanel);
+    detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Currency Details: %1").arg(iso_code));
     detailWindow->setWindowIcon(createRecoloredIcon(
         ":/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));

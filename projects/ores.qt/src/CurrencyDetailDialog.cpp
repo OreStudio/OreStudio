@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/CurrencyDetailPanel.hpp"
+#include "ores.qt/CurrencyDetailDialog.hpp"
 
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -27,7 +27,7 @@
 #include <QPixmap>
 #include <QImage>
 #include <QPainter>
-#include "ui_CurrencyDetailPanel.h"
+#include "ui_CurrencyDetailDialog.h"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.comms/protocol/frame.hpp"
@@ -39,7 +39,7 @@ using comms::protocol::message_type;
 using namespace ores::utility::log;
 using FutureResult = std::pair<bool, std::string>;
 
-QIcon CurrencyDetailPanel::createRecoloredIcon(const QString& svgPath, const QColor& color) {
+QIcon CurrencyDetailDialog::createRecoloredIcon(const QString& svgPath, const QColor& color) {
     QIcon originalIcon(svgPath);
     if (originalIcon.isNull()) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to load icon: " << svgPath.toStdString();
@@ -86,8 +86,8 @@ QIcon CurrencyDetailPanel::createRecoloredIcon(const QString& svgPath, const QCo
     return coloredIcon;
 }
 
-CurrencyDetailPanel::CurrencyDetailPanel(QWidget* parent)
-    : QWidget(parent), ui_(new Ui::CurrencyDetailPanel), isDirty_(false),
+CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
+    : QWidget(parent), ui_(new Ui::CurrencyDetailDialog), isDirty_(false),
       isAddMode_(false) {
 
     ui_->setupUi(this);
@@ -106,7 +106,7 @@ CurrencyDetailPanel::CurrencyDetailPanel(QWidget* parent)
             iconColor));
     saveAction_->setToolTip("Save changes");
     connect(saveAction_, &QAction::triggered, this,
-        &CurrencyDetailPanel::onSaveClicked);
+        &CurrencyDetailDialog::onSaveClicked);
     toolBar_->addAction(saveAction_);
 
     // Create Delete action
@@ -115,10 +115,10 @@ CurrencyDetailPanel::CurrencyDetailPanel(QWidget* parent)
             ":/icons/ic_fluent_delete_20_regular.svg", iconColor));
     deleteAction_->setToolTip("Delete currency");
     connect(deleteAction_, &QAction::triggered, this,
-        &CurrencyDetailPanel::onDeleteClicked);
+        &CurrencyDetailDialog::onDeleteClicked);
     toolBar_->addAction(deleteAction_);
 
-    // Add toolbar to the panel's layout
+    // Add toolbar to the dialog's layout
     // Get the main layout from the UI
     auto* mainLayout = qobject_cast<QVBoxLayout*>(layout());
     if (mainLayout)
@@ -126,41 +126,41 @@ CurrencyDetailPanel::CurrencyDetailPanel(QWidget* parent)
 
     // Connect signals for editable fields to detect changes
     connect(ui_->isoCodeEdit, &QLineEdit::textChanged, this,
-        &CurrencyDetailPanel::onFieldChanged);
+        &CurrencyDetailDialog::onFieldChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-        &CurrencyDetailPanel::onFieldChanged);
+        &CurrencyDetailDialog::onFieldChanged);
     connect(ui_->numericCodeEdit, &QLineEdit::textChanged, this,
-        &CurrencyDetailPanel::onFieldChanged);
+        &CurrencyDetailDialog::onFieldChanged);
     connect(ui_->symbolEdit, &QLineEdit::textChanged, this,
-        &CurrencyDetailPanel::onFieldChanged);
+        &CurrencyDetailDialog::onFieldChanged);
     connect(ui_->fractionSymbolEdit, &QLineEdit::textChanged, this,
-        &CurrencyDetailPanel::onFieldChanged);
+        &CurrencyDetailDialog::onFieldChanged);
     connect(ui_->fractionsPerUnitSpinBox,
         QOverload<int>::of(&QSpinBox::valueChanged), this,
-        &CurrencyDetailPanel::onFieldChanged);
+        &CurrencyDetailDialog::onFieldChanged);
     connect(ui_->roundingTypeEdit, &QLineEdit::textChanged, this,
-        &CurrencyDetailPanel::onFieldChanged);
+        &CurrencyDetailDialog::onFieldChanged);
     connect(ui_->roundingPrecisionSpinBox, QOverload<int>::of(
             &QSpinBox::valueChanged), this,
-        &CurrencyDetailPanel::onFieldChanged);
+        &CurrencyDetailDialog::onFieldChanged);
     connect(ui_->formatEdit, &QLineEdit::textChanged, this,
-        &CurrencyDetailPanel::onFieldChanged);
+        &CurrencyDetailDialog::onFieldChanged);
     connect(ui_->currencyTypeEdit, &QLineEdit::textChanged, this,
-        &CurrencyDetailPanel::onFieldChanged);
+        &CurrencyDetailDialog::onFieldChanged);
 
     // Initially disable save/reset buttons
     updateSaveResetButtonState();
 }
 
-void CurrencyDetailPanel::setClient(std::shared_ptr<comms::client> client) {
+void CurrencyDetailDialog::setClient(std::shared_ptr<comms::client> client) {
     client_ = std::move(client);
 }
 
-void CurrencyDetailPanel::setUsername(const std::string& username) {
+void CurrencyDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-CurrencyDetailPanel::~CurrencyDetailPanel() {
+CurrencyDetailDialog::~CurrencyDetailDialog() {
     const auto watchers = findChildren<QFutureWatcherBase*>();
     for (auto* watcher : watchers) {
         disconnect(watcher, nullptr, this, nullptr);
@@ -169,7 +169,7 @@ CurrencyDetailPanel::~CurrencyDetailPanel() {
     }
 }
 
-void CurrencyDetailPanel::setCurrency(const risk::domain::currency& currency) {
+void CurrencyDetailDialog::setCurrency(const risk::domain::currency& currency) {
     currentCurrency_ = currency;
     isAddMode_ = currency.iso_code.empty();
 
@@ -193,7 +193,7 @@ void CurrencyDetailPanel::setCurrency(const risk::domain::currency& currency) {
     updateSaveResetButtonState();
 }
 
-risk::domain::currency CurrencyDetailPanel::getCurrency() const {
+risk::domain::currency CurrencyDetailDialog::getCurrency() const {
     risk::domain::currency currency = currentCurrency_;
     currency.iso_code = ui_->isoCodeEdit->text().toStdString();
     currency.name = ui_->nameEdit->text().toStdString();
@@ -210,7 +210,7 @@ risk::domain::currency CurrencyDetailPanel::getCurrency() const {
     return currency;
 }
 
-void CurrencyDetailPanel::clearPanel() {
+void CurrencyDetailDialog::clearDialog() {
     ui_->isoCodeEdit->clear();
     ui_->nameEdit->clear();
     ui_->numericCodeEdit->clear();
@@ -230,11 +230,11 @@ void CurrencyDetailPanel::clearPanel() {
     updateSaveResetButtonState();
 }
 
-void CurrencyDetailPanel::save() {
+void CurrencyDetailDialog::save() {
     onSaveClicked();
 }
 
-void CurrencyDetailPanel::onSaveClicked() {
+void CurrencyDetailDialog::onSaveClicked() {
     if (!client_ || !client_->is_connected()) {
         BOOST_LOG_SEV(lg(), warn) << "Save clicked but client not connected.";
         emit errorMessage("Not connected to server. Please login.");
@@ -246,7 +246,7 @@ void CurrencyDetailPanel::onSaveClicked() {
 
     risk::domain::currency currency = getCurrency();
 
-    QPointer<CurrencyDetailPanel> self = this;
+    QPointer<CurrencyDetailDialog> self = this;
     QFuture<FutureResult> future =
         QtConcurrent::run([self, currency]() -> FutureResult {
             if (!self) return {false, ""};
@@ -343,13 +343,13 @@ void CurrencyDetailPanel::onSaveClicked() {
     watcher->setFuture(future);
 }
 
-void CurrencyDetailPanel::onResetClicked() {
+void CurrencyDetailDialog::onResetClicked() {
     BOOST_LOG_SEV(lg(), debug) << "Reset clicked for currency: "
                                << currentCurrency_.iso_code;
     setCurrency(currentCurrency_);
 }
 
-void CurrencyDetailPanel::onDeleteClicked() {
+void CurrencyDetailDialog::onDeleteClicked() {
     if (!client_ || !client_->is_connected()) {
         BOOST_LOG_SEV(lg(), warn) << "Delete clicked but client not connected.";
         emit errorMessage("Not connected to server. Please login.");
@@ -371,7 +371,7 @@ void CurrencyDetailPanel::onDeleteClicked() {
         return;
     }
 
-    QPointer<CurrencyDetailPanel> self = this;
+    QPointer<CurrencyDetailDialog> self = this;
     const std::string iso_code = currentCurrency_.iso_code;
     QFuture<FutureResult> future =
         QtConcurrent::run([self, iso_code]() -> FutureResult {
@@ -425,7 +425,7 @@ void CurrencyDetailPanel::onDeleteClicked() {
             emit self->statusMessage(QString("Successfully deleted currency: %1")
                 .arg(QString::fromStdString(iso_code)));
             emit self->currencyDeleted(QString::fromStdString(iso_code));
-            self->clearPanel();
+            self->clearDialog();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Currency deletion failed: "
                                        << message;
@@ -439,13 +439,13 @@ void CurrencyDetailPanel::onDeleteClicked() {
     watcher->setFuture(future);
 }
 
-void CurrencyDetailPanel::onFieldChanged() {
+void CurrencyDetailDialog::onFieldChanged() {
     isDirty_ = true;
     emit isDirtyChanged(true);
     updateSaveResetButtonState();
 }
 
-void CurrencyDetailPanel::updateSaveResetButtonState() {
+void CurrencyDetailDialog::updateSaveResetButtonState() {
     if (saveAction_)
         saveAction_->setEnabled(isDirty_);
 

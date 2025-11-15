@@ -60,9 +60,9 @@ namespace ores #F2F2F2 {
         ClientCurrencyModel ..> ores::comms::client
         ClientCurrencyModel ..> ores::risk::domain::currency
 
-        class CurrencyDetailPanel #FFFACD {
-            +CurrencyDetailPanel(QWidget* parent)
-            +~CurrencyDetailPanel()
+        class CurrencyDetailDialog #FFFACD {
+            +CurrencyDetailDialog(QWidget* parent)
+            +~CurrencyDetailDialog()
             +setClient(std::shared_ptr<comms::client> client) void
             +setUsername(const std::string& username) void
             +setCurrency(const risk::domain::currency& currency) void
@@ -75,7 +75,7 @@ namespace ores #F2F2F2 {
             -onFieldChanged() void
             -createRecoloredIcon(const QString& svgPath, const QColor& color) QIcon
             -updateSaveResetButtonState() void
-            -{field} ui_ std::unique_ptr<Ui::CurrencyDetailPanel>
+            -{field} ui_ std::unique_ptr<Ui::CurrencyDetailDialog>
             -{field} client_ std::shared_ptr<comms::client>
             -{field} currentCurrency_ risk::domain::currency
             -{field} isDirty_ bool
@@ -87,7 +87,7 @@ namespace ores #F2F2F2 {
             -{static field} max_timestamp const char*
         }
 
-        note top of CurrencyDetailPanel
+        note top of CurrencyDetailDialog
         Panel for displaying and editing currency details.
 
         Fields:
@@ -104,8 +104,8 @@ namespace ores #F2F2F2 {
         - max_timestamp: Maximum timestamp constant.
         end note
 
-        CurrencyDetailPanel ..> ores::comms::client
-        CurrencyDetailPanel ..> ores::risk::domain::currency
+        CurrencyDetailDialog ..> ores::comms::client
+        CurrencyDetailDialog ..> ores::risk::domain::currency
 
         class CurrencyEditDialog #FFFACD {
             +CurrencyEditDialog(const ores::risk::domain::currency& currency, std::shared_ptr<comms::client> client, QWidget* parent)

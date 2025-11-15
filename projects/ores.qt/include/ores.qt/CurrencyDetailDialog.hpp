@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_CURRENCY_DETAIL_PANEL_HPP
-#define ORES_QT_CURRENCY_DETAIL_PANEL_HPP
+#ifndef ORES_QT_CURRENCY_DETAIL_DIALOG_HPP
+#define ORES_QT_CURRENCY_DETAIL_DIALOG_HPP
 
 #include <QWidget>
 #include <QToolBar>
@@ -31,32 +31,32 @@
 
 namespace Ui {
 
-class CurrencyDetailPanel;
+class CurrencyDetailDialog;
 
 }
 
 namespace ores::qt {
 
-class CurrencyDetailPanel final : public QWidget {
+class CurrencyDetailDialog final : public QWidget {
     Q_OBJECT
 
 private:
     [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.qt.currency_detail_panel");
+        static auto instance = make_logger("ores.qt.currency_detail_dialog");
         return instance;
     }
 
 public:
-    explicit CurrencyDetailPanel(QWidget* parent = nullptr);
-    ~CurrencyDetailPanel() override;
+    explicit CurrencyDetailDialog(QWidget* parent = nullptr);
+    ~CurrencyDetailDialog() override;
 
     void setClient(std::shared_ptr<comms::client> client);
     void setUsername(const std::string& username);
 
     void setCurrency(const risk::domain::currency& currency);
     [[nodiscard]] risk::domain::currency getCurrency() const;
-    void clearPanel();
+    void clearDialog();
     void save();
 
 signals:
@@ -78,7 +78,7 @@ private:
     QIcon createRecoloredIcon(const QString& svgPath, const QColor& color);
 
 private:
-    std::unique_ptr<Ui::CurrencyDetailPanel> ui_;
+    std::unique_ptr<Ui::CurrencyDetailDialog> ui_;
     bool isDirty_;
     bool isAddMode_;
     std::string username_;

@@ -47,7 +47,7 @@ struct currency_version final {
     std::string modified_by;
 
     /**
-     * @brief Timestamp when this version was created (ISO 8601 format).
+     * @brief Timestamp when this version was created.
      */
     std::string modified_at;
 

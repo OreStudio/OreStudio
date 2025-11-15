@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.accounts/domain/login_info.hpp"
+#include "ores.accounts/domain/account_json_io.hpp"
 
 #include <ostream>
 #include <rfl.hpp>
@@ -26,7 +26,7 @@
 
 namespace ores::accounts::domain {
 
-std::ostream& operator<<(std::ostream& s, const login_info& v) {
+std::ostream& operator<<(std::ostream& s, const account& v) {
     rfl::json::write(v, s);
     return s;
 }

@@ -26,6 +26,7 @@
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.accounts/domain/account.hpp"
+#include "ores.accounts/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.accounts/generators/account_generator.hpp"
 #include "ores.testing/database_helper.hpp"
 

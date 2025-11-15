@@ -29,7 +29,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/faker/internet.hpp"
-
+#include "ores.accounts/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.accounts/generators/account_generator.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
 

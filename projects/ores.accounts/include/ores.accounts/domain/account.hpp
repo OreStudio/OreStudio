@@ -21,7 +21,6 @@
 #define ORES_ACCOUNTS_DOMAIN_ACCOUNT_HPP
 
 #include <string>
-#include <iosfwd>
 #include <boost/uuid/uuid.hpp>
 
 namespace ores::accounts::domain {
@@ -76,11 +75,6 @@ struct account final {
      */
     std::string email;
 };
-
-/**
- * @brief Serializes the account object to a stream in JSON format.
- */
-std::ostream& operator<<(std::ostream& s, const account& v);
 
 }
 

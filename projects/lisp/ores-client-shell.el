@@ -44,6 +44,33 @@
 (defvar ores-client-shell-program "./ores.client"
   "Path to the ores-client-shell executable.")
 
+(defvar ores-client-shell-last-program nil
+  "Last used ores-client executable path.")
+
+(defun ores-client (&optional path)
+  "Start an ores-client session.
+If PATH is provided, use it as the client executable path."
+  (interactive
+   (list (read-file-name "Path to ores-client executable: "
+                         nil
+                         (or ores-client-shell-last-program ores-client-shell-program)
+                         t)))
+
+  (let ((program (expand-file-name path))
+        (buffer (get-buffer-create ores-client-shell-buffer-name)))
+
+    (unless (file-executable-p program)
+      (error "Client executable not found or not executable: %s" program))
+
+    (setq ores-client-shell-last-program program)
+
+    (pop-to-buffer buffer)
+
+    (unless (comint-check-proc buffer)
+      (make-comint-in-buffer "ores-client" buffer program nil nil)
+      (ores-client-shell-mode)
+      (message "ORES client started. Type 'help' for available commands."))))
+
 (defun ores-client-shell-send-input ()
   "Send input to ores-client-shell process."
   (interactive)
@@ -117,12 +144,6 @@ If PATH is provided, use it as the client executable path."
   (ores-client-shell)
   (comint-send-string ores-client-shell-buffer-name
                       (format "connect %s %s %s\n" host port identifier)))
-
-;; Provide the mode
-(provide 'ores-client-shell-mode)
-
-
-
 
 
 (provide 'ores-client-shell)

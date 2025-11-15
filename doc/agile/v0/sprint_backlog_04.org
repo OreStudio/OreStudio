@@ -18,68 +18,72 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-15 Sat 21:26], for Saturday, November 15, 2025.
+#+CAPTION: Clock summary at [2025-11-15 Sat 23:57], for Saturday, November 15, 2025.
 |       | <75>                                           |         |       |      |       |
 | Tags  | Headline                                       | Time    |       |      |     % |
 |-------+------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                   | *10:38* |       |      | 100.0 |
+|       | *Total time*                                   | *11:51* |       |      | 100.0 |
 |-------+------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                        | 10:38   |       |      | 100.0 |
-|       | Active                                         |         | 10:38 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |         |       | 0:27 |   4.2 |
-| code  | Split JSON based =operator<<= from domain type |         |       | 0:53 |   8.3 |
-| code  | Add a table representation of domain types     |         |       | 2:05 |  19.6 |
-| code  | Add a comint based emacs mode for the client   |         |       | 0:24 |   3.8 |
-| code  | Review all code created so far with an LLM     |         |       | 6:25 |  60.3 |
-| code  | Fix broken windows build due to local time     |         |       | 0:24 |   3.8 |
+|       | Stories                                        | 11:51   |       |      | 100.0 |
+|       | Active                                         |         | 11:51 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |         |       | 0:52 |   7.3 |
+| code  | Split JSON based =operator<<= from domain type |         |       | 0:53 |   7.5 |
+| code  | Add a table representation of domain types     |         |       | 2:05 |  17.6 |
+| code  | Add a comint based emacs mode for the client   |         |       | 0:24 |   3.4 |
+| code  | Review all code created so far with an LLM     |         |       | 6:25 |  54.1 |
+| code  | Fix broken windows build due to local time     |         |       | 0:24 |   3.4 |
+| code  | Split main window class                        |         |       | 0:48 |   6.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-15 Sat 21:26]
+#+CAPTION: Clock summary at [2025-11-15 Sat 23:58]
 |          | <75>                                                   |         |       |       |       |
 | Tags     | Headline                                               | Time    |       |       |     % |
 |----------+--------------------------------------------------------+---------+-------+-------+-------|
-|          | *Total time*                                           | *77:15* |       |       | 100.0 |
+|          | *Total time*                                           | *78:28* |       |       | 100.0 |
 |----------+--------------------------------------------------------+---------+-------+-------+-------|
-|          | Stories                                                | 77:15   |       |       | 100.0 |
-|          | Active                                                 |         | 77:15 |       | 100.0 |
-| agile    | Sprint and product backlog refinement                  |         |       |  3:16 |   4.2 |
+|          | Stories                                                | 78:28   |       |       | 100.0 |
+|          | Active                                                 |         | 78:28 |       | 100.0 |
+| agile    | Sprint and product backlog refinement                  |         |       |  3:41 |   4.7 |
 | code     | Clean up client parser                                 |         |       |  0:10 |   0.2 |
 | code     | Add connect command line argument                      |         |       |  1:19 |   1.7 |
-| infra    | Install Windows package on Windows machine             |         |       |  2:09 |   2.8 |
+| infra    | Install Windows package on Windows machine             |         |       |  2:09 |   2.7 |
 | code     | Ignore warnings on windows and osx                     |         |       |  0:33 |   0.7 |
 | code     | Ensure applications work under OSX using github images |         |       |  0:14 |   0.3 |
 | infra    | Create a splash screen and gray background             |         |       |  2:26 |   3.1 |
 | code     | Use fluent icons                                       |         |       |  0:37 |   0.8 |
 | code     | Add export functionality for currencies                |         |       |  1:30 |   1.9 |
-| code     | Add currency editing support                           |         |       |  2:45 |   3.6 |
+| code     | Add currency editing support                           |         |       |  2:45 |   3.5 |
 | code     | Add about to menu                                      |         |       |  1:02 |   1.3 |
-| code     | Create a history dialog for currencies                 |         |       |  1:27 |   1.9 |
+| code     | Create a history dialog for currencies                 |         |       |  1:27 |   1.8 |
 | code     | Allow MDI windows outside main window                  |         |       |  1:35 |   2.0 |
 | code     | Add edit menu and export menu                          |         |       |  0:34 |   0.7 |
-| code     | Implement adding new currencies                        |         |       |  3:17 |   4.3 |
-| code     | Clean up product website                               |         |       |  4:42 |   6.1 |
+| code     | Implement adding new currencies                        |         |       |  3:17 |   4.2 |
+| code     | Clean up product website                               |         |       |  4:42 |   6.0 |
 | code     | Create a skill for plant uml documentation             |         |       |  2:48 |   3.6 |
 | infra    | Add CMake targets for site and skills                  |         |       |  0:17 |   0.4 |
-| infra    | Generalise the skill setup for ORE Studio              |         |       |  3:45 |   4.9 |
-| infra    | Restructure components to follow the dogen approach    |         |       |  2:54 |   3.8 |
+| infra    | Generalise the skill setup for ORE Studio              |         |       |  3:45 |   4.8 |
+| infra    | Restructure components to follow the dogen approach    |         |       |  2:54 |   3.7 |
 | infra    | Generate PlantUML diagrams for all components          |         |       |  1:05 |   1.4 |
 | analysis | Weaving skills and documentation together              |         |       |  0:46 |   1.0 |
 | code     | Consider adding tags to catch2 tests                   |         |       |  0:34 |   0.7 |
 | code     | Split JSON based =operator<<= from domain type         |         |       |  0:53 |   1.1 |
 | code     | Add a table representation of domain types             |         |       |  2:05 |   2.7 |
 | code     | Add a comint based emacs mode for the client           |         |       |  0:24 |   0.5 |
-| code     | Fix the valgrind leaks reported on sqlgen              |         |       |  4:54 |   6.3 |
-| code     | Review all code created so far with an LLM             |         |       | 16:13 |  21.0 |
-| code     | Make UI/UX look more professional                      |         |       | 11:07 |  14.4 |
-| code     | Current issues with package install in debian          |         |       |  0:40 |   0.9 |
-| code     | Resolve crash on shutdown problem                      |         |       |  0:50 |   1.1 |
+| code     | Fix the valgrind leaks reported on sqlgen              |         |       |  4:54 |   6.2 |
+| code     | Review all code created so far with an LLM             |         |       | 16:13 |  20.7 |
 | code     | Fix broken windows build due to local time             |         |       |  0:24 |   0.5 |
+| code     | Resolve crash on shutdown problem                      |         |       |  0:50 |   1.1 |
+| code     | Split main window class                                |         |       |  0:48 |   1.0 |
+| code     | Make UI/UX look more professional                      |         |       | 11:07 |  14.2 |
+| code     | Current issues with package install in debian          |         |       |  0:40 |   0.8 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-11-15 Sat 23:46]--[2025-11-15 Sat 23:56] =>  0:10
+    CLOCK: [2025-11-15 Sat 22:41]--[2025-11-15 Sat 22:56] =>  0:15
     CLOCK: [2025-11-15 Sat 21:11]--[2025-11-15 Sat 21:26] =>  0:15
     CLOCK: [2025-11-15 Sat 13:30]--[2025-11-15 Sat 13:42] =>  0:12
     CLOCK: [2025-11-12 Wed 17:45]--[2025-11-12 Wed 18:01] =>  0:16
@@ -736,6 +740,215 @@ them separately.
 - reviewed =ores.cli=.
 - reviewed =ores.risk=.
 
+*** COMPLETED Fix broken windows build due to local time               :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-15 Sat 14:03]--[2025-11-15 Sat 14:27] =>  0:24
+    :END:
+
+Getting the following error:
+
+#+begin_src
+[99/283] Building CXX object projects/ores.accounts/src/CMakeFiles/ores.accounts.lib.dir/domain/login_info_table_io.cpp.obj
+FAILED: [code=1] projects/ores.accounts/src/CMakeFiles/ores.accounts.lib.dir/domain/login_info_table_io.cpp.obj
+C:\PROGRA~1\LLVM\bin\CLANG_~1.EXE -DBOOST_ATOMIC_DYN_LINK -DBOOST_ATOMIC_NO_LIB -DBOOST_CHRONO_DYN_LINK -DBOOST_CHRONO_NO_LIB -DBOOST_CONTAINER_DYN_LINK -DBOOST_CONTAINER_NO_LIB -DBOOST_DATE_TIME_DYN_LINK -DBOOST_DATE_TIME_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK=1 -DBOOST_FILESYSTEM_NO_LIB -DBOOST_LOG_DYN_LINK -DBOOST_LOG_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_PROGRAM_OPTIONS_NO_LIB -DBOOST_THREAD_DYN_LINK -DBOOST_THREAD_NO_LIB -DBOOST_THREAD_USE_DLL -DBOOST_USE_WINAPI_VERSION=0xa00 -DYYJSON_IMPORTS -D_WIN32_WINNT=0xa00 -Dores_accounts_lib_EXPORTS -I/.../OreStudio/projects/ores.accounts/include -I/.../OreStudio/projects/ores.comms/include -I/.../OreStudio/projects/ores.utility/include -isystem /.../OreStudio/build/output/windows-clang-debug/vcpkg_installed/x64-windows/include -isystem /.../OreStudio/build/output/windows-clang-debug/vcpkg_installed/x64-windows/include/server -O0 -std=c++23 -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -g -Xclang -gcodeview -Werror -MD -MT projects/ores.accounts/src/CMakeFiles/ores.accounts.lib.dir/domain/login_info_table_io.cpp.obj -MF projects\ores.accounts\src\CMakeFiles\ores.accounts.lib.dir\domain\login_info_table_io.cpp.obj.d @projects\ores.accounts\src\CMakeFiles\ores.accounts.lib.dir\domain\login_info_table_io.cpp.obj.modmap -o projects/ores.accounts/src/CMakeFiles/ores.accounts.lib.dir/domain/login_info_table_io.cpp.obj -c /.../OreStudio/projects/ores.accounts/src/domain/login_info_table_io.cpp
+projects/ores.accounts/src/domain/login_info_table_io.cpp:41:34: error: 'localtime' is deprecated: This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [-Werror,-Wdeprecated-declarations]
+   41 |         ss << std::put_time(std::localtime(&last_login_time), "%Y-%m-%d %H:%M:%S");
+      |
+#+end_src
+
+Suggested Gemini fix:
+
+#+begin_src c++
+inline std::tm* safe_localtime(const std::time_t* time, std::tm* result) {
+#ifdef _WIN32
+    return localtime_s(result, time) == 0 ? result : nullptr;
+#else
+    return localtime_r(time, result);
+#endif
+}
+#+end_src
+
+
+*** COMPLETED Resolve crash on shutdown problem                        :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-09 Sun 21:21]--[2025-11-09 Sun 22:11] =>  0:50
+    :END:
+
+At present the app crashes when shutting down. This is due to the attach /
+detach logic. We need to workout a plan for managing this. K2:
+
+#+begin_src markdown
+Yes — but only if you **keep the same ownership rule in both states** (attached *and* detached).
+The moment you let Qt parent the widget **and** still keep it in a container that you later `delete`, you again have **two owners**, and the double-delete will come back as soon as the user re-attaches the window and then quits the program.
+
+Below is the minimal change that lets the user detach/reattach as often as he wants **and** guarantees that the object is destroyed **exactly once**.
+
+--------------------------------------------------------
+1.  Pick one unique owner
+--------------------------------------------------------
+Make **MainWindow** the unique owner.
+That means:
+
+- Never give the widget a parent (pass `nullptr` in the constructor).
+- Always insert it into one of the four containers.
+- Delete it **only** from those containers (or when the user explicitly closes
+  it).
+- When the widget is *attached* to the MDI area, use
+  ,**QMdiArea::addSubWindow()**; this only sets the **QMdiSubWindow** as parent
+  of the **internal viewport**, **not** of your custom widget, so your widget
+  stays parent-less.
+
+Code sketch:
+
+```cpp
+// create
+auto w = new CurrencyMdiWindow(nullptr);          // no parent
+mdiArea->addSubWindow(w);                         // only the QMdiSubWindow gets a parent
+currencyDetailWindows_.insert(iso, w);
+allDetachableWindows_.append(w);
+```
+
+--------------------------------------------------------
+2.  Remove it from the lists at the right moment
+--------------------------------------------------------
+As soon as the widget dies (user presses ×, or you programmatically close it) you must **erase the pointer** from every container; otherwise you will dereference a dangling pointer when you later iterate over the lists.
+
+Connect once, right after creation:
+
+```cpp
+connect(w, &QObject::destroyed, this, [this, w](QObject* o) {
+    Q_UNUSED(o)
+    currencyDetailWindows_.remove(w->isoCode());
+    allDetachableWindows_.removeAll(w);
+    /* same for the other three maps/lists */
+});
+```
+
+--------------------------------------------------------
+3.  Detach / re-attach implementation
+--------------------------------------------------------
+Detaching simply reparents to **nullptr** and shows the widget as top-level:
+
+```cpp
+void MainWindow::detachWindow(QWidget* w)
+{
+    w->setParent(nullptr);
+    w->show();
+}
+```
+
+Re-attaching puts it back into the MDI area:
+
+```cpp
+void MainWindow::attachWindow(QWidget* w)
+{
+    w->setParent(nullptr);              // make sure it is still parent-less
+    mdiArea->addSubWindow(w);
+    w->show();
+}
+```
+
+Because the widget **never** had a Qt parent, Qt will **never** auto-delete it; only your own code (or the user closing the top-level window while `Qt::WA_DeleteOnClose` is set) can trigger the `destroyed()` signal, and that signal already removed the pointer from the lists.
+
+--------------------------------------------------------
+4.  Destructor becomes trivial
+--------------------------------------------------------
+```cpp
+MainWindow::~MainWindow()
+{
+    // delete every widget that is still alive
+    qDeleteAll(currencyDetailWindows_);
+    qDeleteAll(currencyHistoryWindows_);
+    delete currencyListWindow_;
+    qDeleteAll(allDetachableWindows_);
+}
+```
+
+Each widget is deleted **once**, the `destroyed()` lambda runs immediately and clears the lists, so when the next container is destroyed its `qDeleteAll` sees only `nullptr`s (or the map is already empty).
+
+--------------------------------------------------------
+5.  Optional extra safety
+--------------------------------------------------------
+If you want to be 100 % sure, store **QPointer** in the containers instead of raw pointers:
+
+```cpp
+QMap<QString, QPointer<DetachableMdiSubWindow>> currencyDetailWindows_;
+```
+
+Now the destructor can even be written as
+
+```cpp
+for (auto it = currencyDetailWindows_.begin(); it != currencyDetailWindows_.end(); ++it)
+    delete it.value();   // safe: delete nullptr is a no-op
+```
+
+but this is **not required**—the design above is already bullet-proof.
+
+--------------------------------------------------------
+Summary
+--------------------------------------------------------
+- Pick **one** owner (MainWindow).
+- Keep widgets **parent-less**.
+- Add / remove them from the lists **synchronously** via `destroyed()`.
+- Detach/reattach only changes **visual** parent, not ownership.
+
+With these rules you can detach and re-attach as often as you like, and the
+program will still shut down without the heap corruption you are seeing now.
+#+end_src
+
+*** COMPLETED Assets are not being packaged                            :code:
+
+*Rationale*: All assets are now interned into resources.
+
+#+begin_src sh
+[marco@lovelace bin]$ ./ores.qt
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_currency_dollar_euro_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_history_20_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_disconnected_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_connected_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_edit_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_delete_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_save_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_document_table_20_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_document_code_16_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_star_20_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_connected_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_disconnected_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_connected_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_disconnected_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_currency_dollar_euro_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_save_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_edit_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_delete_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_document_table_20_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_document_code_16_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_star_20_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_history_20_regular.svg', because: No such file or directory
+#+end_src
+
+*** COMPLETED Split main window class                                  :code:
+   :LOGBOOK:
+   CLOCK: [2025-11-15 Sat 22:57]--[2025-11-15 Sat 23:45] =>  0:48
+   :END:
+
+At present the code in main window is very complex. We need to add a lot of
+windows, and it is not scalable.
+
+*** COMPLETED Move =base32_encode= to utilities                        :code:
+
+*Rationale*: refactor has been done. Created new story for tests in utilities.
+
+Add tests. Also move =host_to_network_32=, =read_uint16=, etc.
+
+*** COMPLETED Add multi-selection support to currencies                :code:
+
+Users should be able to select multiple currencies and delete them. Maybe we
+should do like gmail and have check boxes?
+
+*** COMPLETED Update readme with UI screenshots                        :code:
+
+Now that we have a basic UI up and running, add it to docs.
+
 *** STARTED Make UI/UX look more professional                          :code:
     :LOGBOOK:
     CLOCK: [2025-11-08 Sat 10:11]--[2025-11-08 Sat 20:04] =>  9:53
@@ -941,34 +1154,6 @@ Error: Package 'libqt6widgets6t64' has no installation candidate
 Error: Package 'libqt6gui6t64' has no installation candidate
 #+end_src
 
-- assets are not being packaged:
-
-#+begin_src sh
-[marco@lovelace bin]$ ./ores.qt
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_currency_dollar_euro_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_history_20_regular.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_disconnected_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_connected_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_edit_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_delete_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_save_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_document_table_20_regular.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_document_code_16_regular.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_star_20_regular.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_connected_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_disconnected_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_connected_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_disconnected_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_currency_dollar_euro_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_save_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_edit_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_delete_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_document_table_20_regular.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_document_code_16_regular.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_star_20_regular.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_history_20_regular.svg', because: No such file or directory
-#+end_src
-
 - when starting the package from a directory, it tries to create the log
   relative to that directory:
 
@@ -987,161 +1172,18 @@ Aborted                    /opt/OreStudio/0.0.4/bin/ores.qt
 When investigating a crash we noticed the app is not exiting cleanly. Fix all of
 these crashes before we go any further.
 
-*** STARTED Resolve crash on shutdown problem                          :code:
-    :LOGBOOK:
-    CLOCK: [2025-11-09 Sun 21:21]--[2025-11-09 Sun 22:11] =>  0:50
-    :END:
+*** Add a "detached" mode                                             :code:
 
-At present the app crashes when shutting down. This is due to the attach /
-detach logic. We need to workout a plan for managing this. K2:
+At present we can detach all windows but if we then create a new one, we still
+have to detach it. It would be nice to set the default to detach or not, and
+then use that setting.
 
-#+begin_src markdown
-Yes — but only if you **keep the same ownership rule in both states** (attached *and* detached).
-The moment you let Qt parent the widget **and** still keep it in a container that you later `delete`, you again have **two owners**, and the double-delete will come back as soon as the user re-attaches the window and then quits the program.
+*** Merge update and create currency messages                          :code:
 
-Below is the minimal change that lets the user detach/reattach as often as he wants **and** guarantees that the object is destroyed **exactly once**.
-
---------------------------------------------------------
-1.  Pick one unique owner
---------------------------------------------------------
-Make **MainWindow** the unique owner.
-That means:
-
-- Never give the widget a parent (pass `nullptr` in the constructor).
-- Always insert it into one of the four containers.
-- Delete it **only** from those containers (or when the user explicitly closes
-  it).
-- When the widget is *attached* to the MDI area, use
-  ,**QMdiArea::addSubWindow()**; this only sets the **QMdiSubWindow** as parent
-  of the **internal viewport**, **not** of your custom widget, so your widget
-  stays parent-less.
-
-Code sketch:
-
-```cpp
-// create
-auto w = new CurrencyMdiWindow(nullptr);          // no parent
-mdiArea->addSubWindow(w);                         // only the QMdiSubWindow gets a parent
-currencyDetailWindows_.insert(iso, w);
-allDetachableWindows_.append(w);
-```
-
---------------------------------------------------------
-2.  Remove it from the lists at the right moment
---------------------------------------------------------
-As soon as the widget dies (user presses ×, or you programmatically close it) you must **erase the pointer** from every container; otherwise you will dereference a dangling pointer when you later iterate over the lists.
-
-Connect once, right after creation:
-
-```cpp
-connect(w, &QObject::destroyed, this, [this, w](QObject* o) {
-    Q_UNUSED(o)
-    currencyDetailWindows_.remove(w->isoCode());
-    allDetachableWindows_.removeAll(w);
-    /* same for the other three maps/lists */
-});
-```
-
---------------------------------------------------------
-3.  Detach / re-attach implementation
---------------------------------------------------------
-Detaching simply reparents to **nullptr** and shows the widget as top-level:
-
-```cpp
-void MainWindow::detachWindow(QWidget* w)
-{
-    w->setParent(nullptr);
-    w->show();
-}
-```
-
-Re-attaching puts it back into the MDI area:
-
-```cpp
-void MainWindow::attachWindow(QWidget* w)
-{
-    w->setParent(nullptr);              // make sure it is still parent-less
-    mdiArea->addSubWindow(w);
-    w->show();
-}
-```
-
-Because the widget **never** had a Qt parent, Qt will **never** auto-delete it; only your own code (or the user closing the top-level window while `Qt::WA_DeleteOnClose` is set) can trigger the `destroyed()` signal, and that signal already removed the pointer from the lists.
-
---------------------------------------------------------
-4.  Destructor becomes trivial
---------------------------------------------------------
-```cpp
-MainWindow::~MainWindow()
-{
-    // delete every widget that is still alive
-    qDeleteAll(currencyDetailWindows_);
-    qDeleteAll(currencyHistoryWindows_);
-    delete currencyListWindow_;
-    qDeleteAll(allDetachableWindows_);
-}
-```
-
-Each widget is deleted **once**, the `destroyed()` lambda runs immediately and clears the lists, so when the next container is destroyed its `qDeleteAll` sees only `nullptr`s (or the map is already empty).
-
---------------------------------------------------------
-5.  Optional extra safety
---------------------------------------------------------
-If you want to be 100 % sure, store **QPointer** in the containers instead of raw pointers:
-
-```cpp
-QMap<QString, QPointer<DetachableMdiSubWindow>> currencyDetailWindows_;
-```
-
-Now the destructor can even be written as
-
-```cpp
-for (auto it = currencyDetailWindows_.begin(); it != currencyDetailWindows_.end(); ++it)
-    delete it.value();   // safe: delete nullptr is a no-op
-```
-
-but this is **not required**—the design above is already bullet-proof.
-
---------------------------------------------------------
-Summary
---------------------------------------------------------
-- Pick **one** owner (MainWindow).
-- Keep widgets **parent-less**.
-- Add / remove them from the lists **synchronously** via `destroyed()`.
-- Detach/reattach only changes **visual** parent, not ownership.
-
-With these rules you can detach and re-attach as often as you like, and the
-program will still shut down without the heap corruption you are seeing now.
-#+end_src
-
-*** STARTED Fix broken windows build due to local time                 :code:
-    :LOGBOOK:
-    CLOCK: [2025-11-15 Sat 14:03]--[2025-11-15 Sat 14:27] =>  0:24
-    :END:
-
-Getting the following error:
-
-#+begin_src
-[99/283] Building CXX object projects/ores.accounts/src/CMakeFiles/ores.accounts.lib.dir/domain/login_info_table_io.cpp.obj
-FAILED: [code=1] projects/ores.accounts/src/CMakeFiles/ores.accounts.lib.dir/domain/login_info_table_io.cpp.obj
-C:\PROGRA~1\LLVM\bin\CLANG_~1.EXE -DBOOST_ATOMIC_DYN_LINK -DBOOST_ATOMIC_NO_LIB -DBOOST_CHRONO_DYN_LINK -DBOOST_CHRONO_NO_LIB -DBOOST_CONTAINER_DYN_LINK -DBOOST_CONTAINER_NO_LIB -DBOOST_DATE_TIME_DYN_LINK -DBOOST_DATE_TIME_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK=1 -DBOOST_FILESYSTEM_NO_LIB -DBOOST_LOG_DYN_LINK -DBOOST_LOG_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_PROGRAM_OPTIONS_NO_LIB -DBOOST_THREAD_DYN_LINK -DBOOST_THREAD_NO_LIB -DBOOST_THREAD_USE_DLL -DBOOST_USE_WINAPI_VERSION=0xa00 -DYYJSON_IMPORTS -D_WIN32_WINNT=0xa00 -Dores_accounts_lib_EXPORTS -I/.../OreStudio/projects/ores.accounts/include -I/.../OreStudio/projects/ores.comms/include -I/.../OreStudio/projects/ores.utility/include -isystem /.../OreStudio/build/output/windows-clang-debug/vcpkg_installed/x64-windows/include -isystem /.../OreStudio/build/output/windows-clang-debug/vcpkg_installed/x64-windows/include/server -O0 -std=c++23 -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -g -Xclang -gcodeview -Werror -MD -MT projects/ores.accounts/src/CMakeFiles/ores.accounts.lib.dir/domain/login_info_table_io.cpp.obj -MF projects\ores.accounts\src\CMakeFiles\ores.accounts.lib.dir\domain\login_info_table_io.cpp.obj.d @projects\ores.accounts\src\CMakeFiles\ores.accounts.lib.dir\domain\login_info_table_io.cpp.obj.modmap -o projects/ores.accounts/src/CMakeFiles/ores.accounts.lib.dir/domain/login_info_table_io.cpp.obj -c /.../OreStudio/projects/ores.accounts/src/domain/login_info_table_io.cpp
-projects/ores.accounts/src/domain/login_info_table_io.cpp:41:34: error: 'localtime' is deprecated: This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [-Werror,-Wdeprecated-declarations]
-   41 |         ss << std::put_time(std::localtime(&last_login_time), "%Y-%m-%d %H:%M:%S");
-      |
-#+end_src
-
-Suggested Gemini fix:
-
-#+begin_src c++
-inline std::tm* safe_localtime(const std::time_t* time, std::tm* result) {
-#ifdef _WIN32
-    return localtime_s(result, time) == 0 ? result : nullptr;
-#else
-    return localtime_r(time, result);
-#endif
-}
-#+end_src
-
+Due to how repositories work for bitemporal, we are always writing anyways. So
+we don't really need complex logic around updating versus creating a new
+currency. We need to simplify the UI and client / server code to have a single
+message type for both.
 
 *** Improve handling of error responses                                :code:
 
@@ -1230,6 +1272,94 @@ By standardizing the **`error_response`** type, the client can always extract an
 #+end_src
 
 
+*** Implement authentication bootstrap workflow                        :code:
+
+Notes:
+
+- when there are no accounts setup, the repl should say to the user that it
+  needs to create an admin account.
+- first account must be admin.
+- once there is an account we need to make sure the user is logged in before we
+  process most message types.
+
+Mongo message:
+
+#+begin_src logview
+2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] ** WARNING: Access control is not enabled for the database.
+2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] **          Read and write access to data and configuration is unrestricted.
+#+end_src
+
+Requirements:
+
+#+begin_src markdown
+# Authentication Bootstrapping Requirements
+
+## R1: Initial System State (Bootstrap Mode)
+
+The system **MUST** start in a special **"Bootstrap Mode"** where the only
+permitted action is the creation of the initial Administrator account.
+
+## R2: Access Control in Bootstrap Mode
+
+While the system is in Bootstrap Mode:
+
+- **R2.1: Allowed Endpoint:** The service **MUST** only expose and accept
+  requests for a single endpoint: `POST /api/v1/accounts/create-admin` (or
+  equivalent).
+- **R2.2: Local-Only Restriction:** All requests to the allowed endpoint
+  ,**MUST** originate from a **trusted local interface** (e.g., `127.0.0.1` or
+  the server's designated internal IP range). Requests from any external/public
+  IP address **MUST** be rejected.
+- **R2.3: General Endpoint Rejection:** All other API endpoints (e.g., login,
+  user creation, data access) **MUST** immediately return a $\mathbf{403}$
+  ,**Forbidden** or $\mathbf{401}$ **Unauthorized** status, along with a clear
+  message indicating the system is in setup mode.
+
+## R3: Initial Admin Account Creation
+
+The first account created through the allowed endpoint **MUST** adhere to the
+following:
+
+- **R3.1: Mandatory Admin Role:** The account **MUST** be assigned the highest
+  level of **Administrator privileges** (`is_admin: true`).
+- **R3.2: Strong Password Policy:** The request **MUST** be validated against a
+  strong password policy (e.g., minimum 12 characters, requiring a mix of case,
+  numbers, and symbols). Failure to meet this standard **MUST** result in a
+  $\mathbf{400}$ **Bad Request** error.
+- **R3.3: One-Time Execution:** The administrator creation process **MUST** only
+  be allowed to succeed **exactly once**.
+
+## R4: System State Transition
+
+Upon successful creation of the first Administrator account (R3):
+
+- **R4.1: State Change:** The system **MUST** immediately and atomically
+  transition from **"Bootstrap Mode"** to **"Secure Mode"**. This state change
+  ,**MUST** be persisted.
+- **R4.2: Bootstrap Endpoint Deactivation:** The `POST
+  /api/v1/accounts/create-admin` endpoint **MUST** be permanently disabled. Any
+  subsequent request to this endpoint **MUST** return a $\mathbf{403}$
+  ,**Forbidden** error.
+
+## R5: Secure Mode Operation
+
+Once the system is in **"Secure Mode"**:
+
+- **R5.1: General Access Control:** All operational API endpoints **MUST** now
+  enforce **full authentication and authorization**.
+- **R5.2: Mandatory Login:** All users, including the newly created
+  Administrator, **MUST** successfully complete a login process to obtain a
+  valid session token before accessing any resource.
+- **R5.3: Standard Account Creation:** The standard non-admin account creation
+  endpoint (`POST /api/v1/accounts/create`) **MUST** become available, subject
+  to any configured access controls (e.g., only open to logged-in Admins, or
+  fully public).
+#+end_src
+
+Links:
+
+- [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
+
 *** Add support for simple log shipping                                :code:
 
 It would be very useful to be able to browse both client and server logs from
@@ -1257,6 +1387,12 @@ Links:
 *** Add skill to improve UI design                                     :code:
 
 Make the UI more professional.
+
+Links:
+
+- [[https://github.com/VoltAgent/awesome-claude-skills][Awesome Claude Skills]]
+- [[https://github.com/ComposioHQ/awesome-claude-skills][another awesome-claude-skills]]
+- [[https://github.com/diet103/claude-code-infrastructure-showcase/tree/main][claude-code-infrastructure-showcase]]
 
 *** Invalid password should not throw                                  :code:
 
@@ -1297,6 +1433,12 @@ Catch::rngSeed()
 
 At present we can create an account and ignore the result, etc. We should be
 forced to look at the result.
+
+*** Create basic manual                                                :code:
+
+We should start populating the manual from the start. Ensure there is a claude
+skill that updates the manual as we add new entities. Create a PDF build for it.
+We can use templates from thesis. Link it to site so that yuo can browse it.
 
 *** Delete currency only deletes single currency                       :code:
 
@@ -1467,19 +1609,14 @@ Failed to connect to server: Failed to connect to server
 
 If we try again after the error, "authenticating..." shows up in red.
 
-*** Add a "detached" mode                                             :code:
+*** Add tests to utilities                                             :code:
 
-At present we can detach all windows but if we then create a new one, we still
-have to detach it. It would be nice to set the default to detach or not, and
-then use that setting.
-
-*** Move =base32_encode= to utilities                                  :code:
-
-Add tests. Also move =host_to_network_32=, =read_uint16=, etc.
+We should add some cursory tests to utilities.
 
 *** Create a claude code skill to open a new sprint                    :code:
 
-Needs to update all of the version strings, copy backlog etc.
+Needs to update all of the version strings, copy backlog etc. Create the skill
+as part of opening next sprint.
 
 *** When you maximise currencies merge toolbars                        :code:
 
@@ -1502,16 +1639,15 @@ even require a full blown postgres - sqlite is enough. It should be possible to
 setup a connection to a database in this manner. Ideally the client should
 support both at the same time.
 
-*** Merge update and create currency messages                          :code:
+*** Add a delete all button which deletes all currencies               :code:
 
-Due to how repositories work for bitemporal, we are always writing anyways. So
-we don't really need complex logic around updating versus creating a new
-currency. We need to simplify the UI and client / server code to have a single
-message type for both.
+It is useful especially in test environments to be able to delete all entities
+before a re-import.
 
 *** Implement import XML                                               :code:
 
-Users should be able to import data from ORE directly.
+Users should be able to import data from ORE directly. Add option in Qt to
+import XML.
 
 *** Update currency details to use tabs                                :code:
 
@@ -1519,11 +1655,6 @@ We need a main tab with the currency related properties, then a "system" tab
 with temporal data which is read-only even on edit and a "image" tab with the
 image used to represent the currency. It could also contain some description or
 notes.
-
-*** Add a delete all button which deletes all currencies               :code:
-
-It is useful especially in test environments to be able to delete all entities
-before a re-import.
 
 *** History should have a revert button                                :code:
 
@@ -1544,11 +1675,6 @@ Break these down into their own stories:
 - is it possible to dock windows like visual studio?
 - add a detach current window that just detaches that window.
 - disabled menu options are not properly greyed out. Done.
-
-*** Add multi-selection support to currencies                          :code:
-
-Users should be able to select multiple currencies and delete them. Maybe we
-should do like gmail and have check boxes?
 
 *** Allow in place editing of currencies                               :code:
 
@@ -1727,10 +1853,6 @@ CREATE INDEX idx_icon_tags_tag_id ON icon_tags (tag_id);
 We need to ensure we can have both light and dark themes and they work
 consistently.
 
-*** Update readme with UI screenshots                                  :code:
-
-Now that we have a basic UI up and running, add it to docs.
-
 *** Repl needs synchronous socket operations                           :code:
 
 At present the operations on sockets are async. This is a problem with the repl
@@ -1752,6 +1874,9 @@ an operation. We need some kind of initial polling which puts the server in a
 mode replying to all clients: "database not available". While this is happening,
 it should keep polling the database and checking the connectivity.
 
+Ideally the server should start, but poll the DB. It should send messages to
+clients informing them of the issues with database.
+
 *** Add SC script on windows to install ores.service                   :code:
 
 We should package a trivial batch file that sets up the service on windows. We
@@ -1762,6 +1887,9 @@ Ideally it should be done via the packaging step.
 
 We need to initialise the database on installation. The package should contain
 all of the necessary SQL as well as a script to do it.
+
+Or maybe we should do everything from within sqlgen and generate the scripts for
+the cases where we need manual work in database.
 
 *** Resolve all of the OpenSSL leaks in valgrind                       :code:
 
@@ -1789,94 +1917,6 @@ Components:
 - name: human readable
 - description
 - id
-
-*** Implement authentication bootstrap workflow                        :code:
-
-Notes:
-
-- when there are no accounts setup, the repl should say to the user that it
-  needs to create an admin account.
-- first account must be admin.
-- once there is an account we need to make sure the user is logged in before we
-  process most message types.
-
-Mongo message:
-
-#+begin_src logview
-2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] ** WARNING: Access control is not enabled for the database.
-2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] **          Read and write access to data and configuration is unrestricted.
-#+end_src
-
-Requirements:
-
-#+begin_src markdown
-# Authentication Bootstrapping Requirements
-
-## R1: Initial System State (Bootstrap Mode)
-
-The system **MUST** start in a special **"Bootstrap Mode"** where the only
-permitted action is the creation of the initial Administrator account.
-
-## R2: Access Control in Bootstrap Mode
-
-While the system is in Bootstrap Mode:
-
-- **R2.1: Allowed Endpoint:** The service **MUST** only expose and accept
-  requests for a single endpoint: `POST /api/v1/accounts/create-admin` (or
-  equivalent).
-- **R2.2: Local-Only Restriction:** All requests to the allowed endpoint
-  ,**MUST** originate from a **trusted local interface** (e.g., `127.0.0.1` or
-  the server's designated internal IP range). Requests from any external/public
-  IP address **MUST** be rejected.
-- **R2.3: General Endpoint Rejection:** All other API endpoints (e.g., login,
-  user creation, data access) **MUST** immediately return a $\mathbf{403}$
-  ,**Forbidden** or $\mathbf{401}$ **Unauthorized** status, along with a clear
-  message indicating the system is in setup mode.
-
-## R3: Initial Admin Account Creation
-
-The first account created through the allowed endpoint **MUST** adhere to the
-following:
-
-- **R3.1: Mandatory Admin Role:** The account **MUST** be assigned the highest
-  level of **Administrator privileges** (`is_admin: true`).
-- **R3.2: Strong Password Policy:** The request **MUST** be validated against a
-  strong password policy (e.g., minimum 12 characters, requiring a mix of case,
-  numbers, and symbols). Failure to meet this standard **MUST** result in a
-  $\mathbf{400}$ **Bad Request** error.
-- **R3.3: One-Time Execution:** The administrator creation process **MUST** only
-  be allowed to succeed **exactly once**.
-
-## R4: System State Transition
-
-Upon successful creation of the first Administrator account (R3):
-
-- **R4.1: State Change:** The system **MUST** immediately and atomically
-  transition from **"Bootstrap Mode"** to **"Secure Mode"**. This state change
-  ,**MUST** be persisted.
-- **R4.2: Bootstrap Endpoint Deactivation:** The `POST
-  /api/v1/accounts/create-admin` endpoint **MUST** be permanently disabled. Any
-  subsequent request to this endpoint **MUST** return a $\mathbf{403}$
-  ,**Forbidden** error.
-
-## R5: Secure Mode Operation
-
-Once the system is in **"Secure Mode"**:
-
-- **R5.1: General Access Control:** All operational API endpoints **MUST** now
-  enforce **full authentication and authorization**.
-- **R5.2: Mandatory Login:** All users, including the newly created
-  Administrator, **MUST** successfully complete a login process to obtain a
-  valid session token before accessing any resource.
-- **R5.3: Standard Account Creation:** The standard non-admin account creation
-  endpoint (`POST /api/v1/accounts/create`) **MUST** become available, subject
-  to any configured access controls (e.g., only open to logged-in Admins, or
-  fully public).
-#+end_src
-
-Links:
-
-- [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
 
 *** Remove postgres passwords from github workflows                    :code:
 

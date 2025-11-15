@@ -50,7 +50,7 @@ public:
                                QWidget* parent = nullptr);
     ~CurrencyMdiWindow() override;
 
-    ClientCurrencyModel* currencyModel() const { return currencyModel_; }
+    ClientCurrencyModel* currencyModel() const { return currencyModel_.get(); }
 
     QSize sizeHint() const override;
 
@@ -81,16 +81,18 @@ private slots:
 private:
     void updateActionStates();
 
+private:
     QVBoxLayout* verticalLayout_;
-    QToolBar* toolBar_;
     QTableView* currencyTableView_;
-    ClientCurrencyModel* currencyModel_;
-    std::shared_ptr<comms::client> client_;
+    QToolBar* toolBar_;
 
-    // Actions that need to be enabled/disabled based on selection
+    QAction* addAction_;
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* historyAction_;
+
+    std::unique_ptr<ClientCurrencyModel> currencyModel_;
+    std::shared_ptr<comms::client> client_;
 };
 
 }

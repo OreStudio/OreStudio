@@ -22,6 +22,7 @@
 
 #include <QMdiSubWindow>
 #include <QMdiArea>
+#include <QPointer>
 #include <QPoint>
 #include <QSize>
 #include "ores.utility/log/make_logger.hpp"
@@ -39,7 +40,7 @@ class DetachableMdiSubWindow : public QMdiSubWindow {
     Q_OBJECT
 
 private:
-    static auto& lg() {
+    [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
         static auto instance = make_logger("ores.qt.detachable_mdi_sub_window");
         return instance;
@@ -64,7 +65,7 @@ protected:
 
 private:
     bool isDetached_;
-    QMdiArea* savedMdiArea_;
+    QPointer<QMdiArea> savedMdiArea_;
     QPoint savedMdiPosition_;
     QSize savedMdiSize_;
 };

@@ -24,7 +24,7 @@
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.testing/database_helper.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.risk/domain/currency.hpp" // IWYU pragma: keep.
 #include "ores.risk/domain/currency_json_io.hpp" // IWYU pragma: keep.
@@ -41,15 +41,13 @@ const std::string tags("[repository]");
 using namespace ores::risk::generators;
 using ores::risk::domain::currency;
 using ores::risk::repository::currency_repository;
-using ores::testing::database_helper;
+using ores::testing::scoped_database_helper;
 using namespace ores::utility::log;
 
 TEST_CASE("write_single_currency", tags) {
     auto lg(make_logger(test_suite));
 
-    ores::testing::database_helper h;
-    h.truncate_table(database_table);
-
+    scoped_database_helper h(database_table);
     auto currency = generate_synthetic_currency();
     BOOST_LOG_SEV(lg, debug) << "Currency: " << currency;
 
@@ -60,9 +58,7 @@ TEST_CASE("write_single_currency", tags) {
 TEST_CASE("write_multiple_currencies", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-
+    scoped_database_helper h(database_table);
     auto currencies = generate_unique_synthetic_currencies(3);
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
 
@@ -73,9 +69,7 @@ TEST_CASE("write_multiple_currencies", tags) {
 TEST_CASE("read_latest_currencies", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-
+    scoped_database_helper h(database_table);
     auto written_currencies = generate_unique_synthetic_currencies(3);
     BOOST_LOG_SEV(lg, debug) << "Written currencies: " << written_currencies;
 
@@ -92,9 +86,7 @@ TEST_CASE("read_latest_currencies", tags) {
 TEST_CASE("read_latest_currency_by_iso_code", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-
+    scoped_database_helper h(database_table);
     auto currency = generate_synthetic_currency();
     const auto original_name = currency.name;
     BOOST_LOG_SEV(lg, debug) << "Currency: " << currency;
@@ -116,9 +108,7 @@ TEST_CASE("read_latest_currency_by_iso_code", tags) {
 TEST_CASE("read_all_currencies", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-
+    scoped_database_helper h(database_table);
     auto written_currencies = generate_unique_synthetic_currencies(3);
     BOOST_LOG_SEV(lg, debug) << "Written currencies: " << written_currencies;
 
@@ -135,9 +125,7 @@ TEST_CASE("read_all_currencies", tags) {
 TEST_CASE("read_all_currencies_multiple_versions", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-
+    scoped_database_helper h(database_table);
     currency_repository repo;
 
     // Write multiple versions of the same currency
@@ -178,9 +166,7 @@ TEST_CASE("read_all_currencies_multiple_versions", tags) {
 TEST_CASE("read_nonexistent_iso_code", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-
+    scoped_database_helper h(database_table);
     currency_repository repo;
 
     const std::string nonexistent_iso = "XXX";
@@ -195,9 +181,7 @@ TEST_CASE("read_nonexistent_iso_code", tags) {
 TEST_CASE("write_and_read_currency_with_unicode_symbols", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-
+    scoped_database_helper h(database_table);
     auto currencies = generate_synthetic_unicode_currencies();
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
 
@@ -235,9 +219,7 @@ TEST_CASE("write_and_read_currency_with_unicode_symbols", tags) {
 TEST_CASE("write_and_read_currency_with_no_fractions", tags) {
     auto lg(make_logger(test_suite));
 
-    database_helper h;
-    h.truncate_table(database_table);
-
+    scoped_database_helper h(database_table);
     const auto currencies = generate_synthetic_unicode_currencies();
     const auto& jpy = *
         std::ranges::find_if(currencies, [](const auto& c) {

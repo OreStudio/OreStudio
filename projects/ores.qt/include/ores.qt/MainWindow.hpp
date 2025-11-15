@@ -85,7 +85,6 @@ private slots:
 private:
     void updateMenuState();
     void updateCrudActionState();
-    QIcon createRecoloredIcon(const QString& svgPath, const QColor& color);
 
 private:
     Ui::MainWindow* ui_;

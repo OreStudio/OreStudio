@@ -37,6 +37,7 @@
 #include <QAction>
 #include <QPixmap>
 #include <QImage>
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/CurrencyItemDelegate.hpp"
 #include "ores.risk/messaging/protocol.hpp"
@@ -47,35 +48,6 @@
 namespace ores::qt {
 
 using namespace ores::utility::log;
-
-QIcon CurrencyMdiWindow::createRecoloredIcon(const QString& svgPath, const QColor& color) {
-    QIcon originalIcon(svgPath);
-    if (originalIcon.isNull()) {
-        return QIcon();
-    }
-
-    QIcon coloredIcon;
-    for (int size : {16, 20, 24, 32, 48, 64}) {
-        QPixmap pixmap = originalIcon.pixmap(size, size);
-        QImage image = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
-
-        for (int y = 0; y < image.height(); ++y) {
-            for (int x = 0; x < image.width(); ++x) {
-                QColor pixelColor = image.pixelColor(x, y);
-                if (pixelColor.alpha() > 0) {
-                    pixelColor.setRed(color.red());
-                    pixelColor.setGreen(color.green());
-                    pixelColor.setBlue(color.blue());
-                    image.setPixelColor(x, y, pixelColor);
-                }
-            }
-        }
-
-        coloredIcon.addPixmap(QPixmap::fromImage(image));
-    }
-
-    return coloredIcon;
-}
 
 CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWidget* parent)
     : QWidget(parent),
@@ -94,7 +66,7 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
 
     // Add reload action
     QAction* reloadAction = new QAction("Reload", this);
-    reloadAction->setIcon(createRecoloredIcon(":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
+    reloadAction->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
     reloadAction->setToolTip("Reload currencies from server");
     connect(reloadAction, &QAction::triggered, this, &CurrencyMdiWindow::reload);
     toolBar_->addAction(reloadAction);
@@ -103,28 +75,28 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
 
     // Add action for adding new currency
     QAction* addAction = new QAction("Add", this);
-    addAction->setIcon(createRecoloredIcon(":/icons/ic_fluent_add_20_filled.svg", iconColor));
+    addAction->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_add_20_filled.svg", iconColor));
     addAction->setToolTip("Add new currency");
     connect(addAction, &QAction::triggered, this, &CurrencyMdiWindow::addNew);
     toolBar_->addAction(addAction);
 
     // Add edit action
     editAction_ = new QAction("Edit", this);
-    editAction_->setIcon(createRecoloredIcon(":/icons/ic_fluent_edit_20_filled.svg", iconColor));
+    editAction_->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_edit_20_filled.svg", iconColor));
     editAction_->setToolTip("Edit selected currency");
     connect(editAction_, &QAction::triggered, this, &CurrencyMdiWindow::editSelected);
     toolBar_->addAction(editAction_);
 
     // Add delete action (using outline/regular version for neutral appearance)
     deleteAction_ = new QAction("Delete", this);
-    deleteAction_->setIcon(createRecoloredIcon(":/icons/ic_fluent_delete_20_regular.svg", iconColor));
+    deleteAction_->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_delete_20_regular.svg", iconColor));
     deleteAction_->setToolTip("Delete selected currency/currencies");
     connect(deleteAction_, &QAction::triggered, this, &CurrencyMdiWindow::deleteSelected);
     toolBar_->addAction(deleteAction_);
 
     // Add history action
     historyAction_ = new QAction("History", this);
-    historyAction_->setIcon(createRecoloredIcon(":/icons/ic_fluent_history_20_regular.svg", iconColor));
+    historyAction_->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_history_20_regular.svg", iconColor));
     historyAction_->setToolTip("View currency history");
     connect(historyAction_, &QAction::triggered, this, &CurrencyMdiWindow::viewHistorySelected);
     toolBar_->addAction(historyAction_);
@@ -133,13 +105,13 @@ CurrencyMdiWindow::CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWid
 
     // Add export actions with correct icons
     QAction* exportCSVAction = new QAction("Export CSV", this);
-    exportCSVAction->setIcon(createRecoloredIcon(":/icons/ic_fluent_document_table_20_regular.svg", iconColor));
+    exportCSVAction->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_document_table_20_regular.svg", iconColor));
     exportCSVAction->setToolTip("Export currencies to CSV");
     connect(exportCSVAction, &QAction::triggered, this, &CurrencyMdiWindow::exportToCSV);
     toolBar_->addAction(exportCSVAction);
 
     QAction* exportXMLAction = new QAction("Export XML", this);
-    exportXMLAction->setIcon(createRecoloredIcon(":/icons/ic_fluent_document_code_16_regular.svg", iconColor));
+    exportXMLAction->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_document_code_16_regular.svg", iconColor));
     exportXMLAction->setToolTip("Export currencies to ORE XML");
     connect(exportXMLAction, &QAction::triggered, this, &CurrencyMdiWindow::exportToXML);
     toolBar_->addAction(exportXMLAction);

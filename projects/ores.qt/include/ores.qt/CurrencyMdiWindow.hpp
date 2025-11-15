@@ -39,7 +39,7 @@ class CurrencyMdiWindow : public QWidget {
     Q_OBJECT
 
 private:
-    static auto& lg() {
+    [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
         static auto instance = make_logger("ores.qt.currency_mdi_window");
         return instance;
@@ -50,18 +50,18 @@ public:
                                QWidget* parent = nullptr);
     ~CurrencyMdiWindow() override;
 
-    ClientCurrencyModel* currencyModel() const { return currencyModel_; } // New getter for the model
+    ClientCurrencyModel* currencyModel() const { return currencyModel_; }
 
-    QSize sizeHint() const override; // Provide optimal size based on table content
+    QSize sizeHint() const override;
 
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
     void selectionChanged(int selection_count);
-    void addNewRequested(); // Emitted when user wants to add new currency
-    void showCurrencyDetails(const risk::domain::currency& currency); // New signal
-    void currencyDeleted(const QString& iso_code); // Emitted when currency is deleted
-    void showCurrencyHistory(const QString& iso_code); // Emitted when history requested
+    void addNewRequested();
+    void showCurrencyDetails(const risk::domain::currency& currency);
+    void currencyDeleted(const QString& iso_code);
+    void showCurrencyHistory(const QString& iso_code);
 
 public slots:
     void reload();
@@ -79,7 +79,6 @@ private slots:
     void onSelectionChanged();
 
 private:
-    QIcon createRecoloredIcon(const QString& svgPath, const QColor& color);
     void updateActionStates();
 
     QVBoxLayout* verticalLayout_;

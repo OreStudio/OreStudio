@@ -38,6 +38,6 @@ private:
     QFont monospaceFont_;
 };
 
-} // namespace ores::qt
+}
 
-#endif // ORES_QT_CURRENCY_ITEM_DELEGATE_HPP
+#endif

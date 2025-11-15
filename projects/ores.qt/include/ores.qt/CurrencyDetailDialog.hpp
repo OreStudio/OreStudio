@@ -75,7 +75,6 @@ private slots:
 
 private:
     void updateSaveResetButtonState();
-    QIcon createRecoloredIcon(const QString& svgPath, const QColor& color);
 
 private:
     std::unique_ptr<Ui::CurrencyDetailDialog> ui_;

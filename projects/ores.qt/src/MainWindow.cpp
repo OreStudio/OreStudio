@@ -38,6 +38,7 @@
 #include "ores.qt/CurrencyHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/CurrencyDetailDialog.hpp" // Include the header for CurrencyDetailDialog
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/AboutDialog.hpp"
 
@@ -79,31 +80,31 @@ MainWindow::MainWindow(QWidget* parent) :
 
     // Initialize connection status icons
     const QColor iconColor(220, 220, 220); // Light gray for dark theme
-    connectedIcon_ = createRecoloredIcon(":/icons/ic_fluent_plug_connected_20_filled.svg", iconColor);
-    disconnectedIcon_ = createRecoloredIcon(":/icons/ic_fluent_plug_disconnected_20_filled.svg", iconColor);
+    connectedIcon_ = IconUtils::IconUtils::createRecoloredIcon(":/icons/ic_fluent_plug_connected_20_filled.svg", iconColor);
+    disconnectedIcon_ = IconUtils::IconUtils::createRecoloredIcon(":/icons/ic_fluent_plug_disconnected_20_filled.svg", iconColor);
 
     // Apply recolored icons for dark theme visibility (light gray color)
-    ui_->ActionConnect->setIcon(createRecoloredIcon(
+    ui_->ActionConnect->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_plug_connected_20_filled.svg", iconColor));
-    ui_->ActionDisconnect->setIcon(createRecoloredIcon(
+    ui_->ActionDisconnect->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_plug_disconnected_20_filled.svg", iconColor));
-    ui_->CurrenciesAction->setIcon(createRecoloredIcon(
+    ui_->CurrenciesAction->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
-    ui_->ActionSave->setIcon(createRecoloredIcon(
+    ui_->ActionSave->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_save_20_filled.svg", iconColor));
-    ui_->ActionEdit->setIcon(createRecoloredIcon(
+    ui_->ActionEdit->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_edit_20_filled.svg", iconColor));
-    ui_->ActionDelete->setIcon(createRecoloredIcon(
+    ui_->ActionDelete->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_delete_20_filled.svg", iconColor));
-    ui_->ActionExportCSV->setIcon(createRecoloredIcon(
+    ui_->ActionExportCSV->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_document_table_20_regular.svg", iconColor));
-    ui_->ActionExportXML->setIcon(createRecoloredIcon(
+    ui_->ActionExportXML->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_document_code_16_regular.svg", iconColor));
-    ui_->ActionAbout->setIcon(createRecoloredIcon(
+    ui_->ActionAbout->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_star_20_regular.svg", iconColor));
-    ui_->ActionHistory->setIcon(createRecoloredIcon(
+    ui_->ActionHistory->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_history_20_regular.svg", iconColor));
-    ui_->ActionAdd->setIcon(createRecoloredIcon(
+    ui_->ActionAdd->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_add_20_filled.svg", iconColor));
 
     // Connect menu actions
@@ -217,7 +218,7 @@ MainWindow::MainWindow(QWidget* parent) :
         currencyListWindow_ = new DetachableMdiSubWindow();
         currencyListWindow_->setWidget(currencyWidget);
         currencyListWindow_->setWindowTitle("Currencies");
-        currencyListWindow_->setWindowIcon(createRecoloredIcon(
+        currencyListWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
             ":/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
 
         // Track window for detach/reattach operations
@@ -378,56 +379,6 @@ void MainWindow::onDisconnectTriggered() {
     }
 }
 
-QIcon MainWindow::createRecoloredIcon(const QString& svgPath, const QColor& color) {
-    // Qt6 can load SVG files directly into QIcon
-    QIcon originalIcon(svgPath);
-    if (originalIcon.isNull()) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to load SVG: " << svgPath.toStdString();
-        return {};
-    }
-
-    // Create recolored icon at multiple sizes
-    QIcon recoloredIcon;
-    const QColor disabledColor(50, 50, 50); // Dark gray for disabled state
-
-    for (int size : {16, 20, 24, 32, 48, 64}) {
-        // Get pixmap from original icon
-        QPixmap pixmap = originalIcon.pixmap(size, size);
-
-        // Create normal state image
-        QImage normalImage = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
-        for (int y = 0; y < normalImage.height(); ++y) {
-            for (int x = 0; x < normalImage.width(); ++x) {
-                QColor pixelColor = normalImage.pixelColor(x, y);
-                if (pixelColor.alpha() > 0) {
-                    pixelColor.setRed(color.red());
-                    pixelColor.setGreen(color.green());
-                    pixelColor.setBlue(color.blue());
-                    normalImage.setPixelColor(x, y, pixelColor);
-                }
-            }
-        }
-        recoloredIcon.addPixmap(QPixmap::fromImage(normalImage), QIcon::Normal);
-
-        // Create disabled state image
-        QImage disabledImage = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
-        for (int y = 0; y < disabledImage.height(); ++y) {
-            for (int x = 0; x < disabledImage.width(); ++x) {
-                QColor pixelColor = disabledImage.pixelColor(x, y);
-                if (pixelColor.alpha() > 0) {
-                    pixelColor.setRed(disabledColor.red());
-                    pixelColor.setGreen(disabledColor.green());
-                    pixelColor.setBlue(disabledColor.blue());
-                    disabledImage.setPixelColor(x, y, pixelColor);
-                }
-            }
-        }
-        recoloredIcon.addPixmap(QPixmap::fromImage(disabledImage), QIcon::Disabled);
-    }
-
-    return recoloredIcon;
-}
-
 void MainWindow::onSubWindowActivated(QMdiSubWindow* window) {
     // Disconnect from previous active window if any
     if (activeCurrencyWindow_) {
@@ -559,7 +510,7 @@ void MainWindow::onShowCurrencyHistory(const QString& iso_code) {
     auto* subWindow = new DetachableMdiSubWindow();
     subWindow->setWidget(historyWidget);
     subWindow->setWindowTitle(QString("History: %1").arg(iso_code));
-    subWindow->setWindowIcon(createRecoloredIcon(
+    subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_history_20_regular.svg", iconColor));
 
     // Track window for detach/reattach operations and by ISO code
@@ -704,7 +655,7 @@ void MainWindow::onShowCurrencyDetails(const risk::domain::currency& currency) {
     auto* detailWindow = new DetachableMdiSubWindow();
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Currency Details: %1").arg(iso_code));
-    detailWindow->setWindowIcon(createRecoloredIcon(
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
 
     // Track window for detach/reattach operations and by ISO code

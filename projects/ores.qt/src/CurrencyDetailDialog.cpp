@@ -28,6 +28,7 @@
 #include <QImage>
 #include <QPainter>
 #include "ui_CurrencyDetailDialog.h"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.comms/protocol/frame.hpp"
@@ -38,62 +39,6 @@ using comms::protocol::frame;
 using comms::protocol::message_type;
 using namespace ores::utility::log;
 using FutureResult = std::pair<bool, std::string>;
-
-QIcon CurrencyDetailDialog::
-createRecoloredIcon(const QString& svgPath, const QColor& color) {
-    QIcon originalIcon(svgPath);
-    if (originalIcon.isNull()) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to load icon: "
-                                  << svgPath.toStdString();
-        return {};
-    }
-
-    QIcon coloredIcon;
-    const QColor disabledColor(50, 50, 50); // Dark gray for disabled state
-    const QSize baseSize(64, 64); // Use a large base size for optimal rendering
-
-    QPixmap basePixmap = originalIcon.pixmap(baseSize);
-
-    // State 1: Normal Color
-    QPixmap normalPixmap(baseSize);
-    normalPixmap.fill(Qt::transparent); // Start with a transparent canvas
-
-    QPainter painter(&normalPixmap);
-    painter.setRenderHint(QPainter::Antialiasing);
-
-    // Set the desired color as the source
-    painter.setCompositionMode(QPainter::CompositionMode_Source);
-    painter.fillRect(normalPixmap.rect(), color);
-
-    // Use the original icon as a mask (SourceIn composition mode) This keeps
-    // the colored pixels only where the original icon was opaque.
-    painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
-    painter.drawPixmap(0, 0, basePixmap);
-
-    painter.end();
-    coloredIcon.addPixmap(normalPixmap, QIcon::Normal);
-
-
-    // State 2: Disabled Color
-    QPixmap disabledPixmap(baseSize);
-    disabledPixmap.fill(Qt::transparent);
-
-    QPainter disabledPainter(&disabledPixmap);
-    disabledPainter.setRenderHint(QPainter::Antialiasing);
-
-    // Set the disabled color as the source
-    disabledPainter.setCompositionMode(QPainter::CompositionMode_Source);
-    disabledPainter.fillRect(disabledPixmap.rect(), disabledColor);
-
-    // Use the original icon as a mask
-    disabledPainter.setCompositionMode(QPainter::CompositionMode_SourceIn);
-    disabledPainter.drawPixmap(0, 0, basePixmap);
-
-    disabledPainter.end();
-    coloredIcon.addPixmap(disabledPixmap, QIcon::Disabled);
-
-    return coloredIcon;
-}
 
 CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     : QWidget(parent), ui_(new Ui::CurrencyDetailDialog), isDirty_(false),
@@ -111,7 +56,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
 
     // Create Save action
     saveAction_ = new QAction("Save", this);
-    saveAction_->setIcon(createRecoloredIcon(":/icons/ic_fluent_save_20_filled.svg",
+    saveAction_->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_save_20_filled.svg",
             iconColor));
     saveAction_->setToolTip("Save changes");
     connect(saveAction_, &QAction::triggered, this,
@@ -120,7 +65,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
 
     // Create Delete action
     deleteAction_ = new QAction("Delete", this);
-    deleteAction_->setIcon(createRecoloredIcon(
+    deleteAction_->setIcon(IconUtils::createRecoloredIcon(
             ":/icons/ic_fluent_delete_20_regular.svg", iconColor));
     deleteAction_->setToolTip("Delete currency");
     connect(deleteAction_, &QAction::triggered, this,

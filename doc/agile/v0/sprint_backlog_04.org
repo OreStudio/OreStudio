@@ -18,64 +18,70 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-15 Sat 06:25], for Saturday, November 15, 2025.
-|      | <75>                                           |        |      |      |       |
-| Tags | Headline                                       | Time   |      |      |     % |
-|------+------------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                   | *3:22* |      |      | 100.0 |
-|------+------------------------------------------------+--------+------+------+-------|
-|      | Stories                                        | 3:22   |      |      | 100.0 |
-|      | Active                                         |        | 3:22 |      | 100.0 |
-| code | Split JSON based =operator<<= from domain type |        |      | 0:53 |  26.2 |
-| code | Add a table representation of domain types     |        |      | 2:05 |  61.9 |
-| code | Add a comint based emacs mode for the client   |        |      | 0:24 |  11.9 |
+#+CAPTION: Clock summary at [2025-11-15 Sat 21:26], for Saturday, November 15, 2025.
+|       | <75>                                           |         |       |      |       |
+| Tags  | Headline                                       | Time    |       |      |     % |
+|-------+------------------------------------------------+---------+-------+------+-------|
+|       | *Total time*                                   | *10:38* |       |      | 100.0 |
+|-------+------------------------------------------------+---------+-------+------+-------|
+|       | Stories                                        | 10:38   |       |      | 100.0 |
+|       | Active                                         |         | 10:38 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |         |       | 0:27 |   4.2 |
+| code  | Split JSON based =operator<<= from domain type |         |       | 0:53 |   8.3 |
+| code  | Add a table representation of domain types     |         |       | 2:05 |  19.6 |
+| code  | Add a comint based emacs mode for the client   |         |       | 0:24 |   3.8 |
+| code  | Review all code created so far with an LLM     |         |       | 6:25 |  60.3 |
+| code  | Fix broken windows build due to local time     |         |       | 0:24 |   3.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-15 Sat 06:25]
+#+CAPTION: Clock summary at [2025-11-15 Sat 21:26]
 |          | <75>                                                   |         |       |       |       |
 | Tags     | Headline                                               | Time    |       |       |     % |
 |----------+--------------------------------------------------------+---------+-------+-------+-------|
-|          | *Total time*                                           | *69:59* |       |       | 100.0 |
+|          | *Total time*                                           | *77:15* |       |       | 100.0 |
 |----------+--------------------------------------------------------+---------+-------+-------+-------|
-|          | Stories                                                | 69:59   |       |       | 100.0 |
-|          | Active                                                 |         | 69:59 |       | 100.0 |
-| agile    | Sprint and product backlog refinement                  |         |       |  2:49 |   4.0 |
+|          | Stories                                                | 77:15   |       |       | 100.0 |
+|          | Active                                                 |         | 77:15 |       | 100.0 |
+| agile    | Sprint and product backlog refinement                  |         |       |  3:16 |   4.2 |
 | code     | Clean up client parser                                 |         |       |  0:10 |   0.2 |
-| code     | Add connect command line argument                      |         |       |  1:19 |   1.9 |
-| infra    | Install Windows package on Windows machine             |         |       |  2:09 |   3.1 |
-| code     | Ignore warnings on windows and osx                     |         |       |  0:33 |   0.8 |
+| code     | Add connect command line argument                      |         |       |  1:19 |   1.7 |
+| infra    | Install Windows package on Windows machine             |         |       |  2:09 |   2.8 |
+| code     | Ignore warnings on windows and osx                     |         |       |  0:33 |   0.7 |
 | code     | Ensure applications work under OSX using github images |         |       |  0:14 |   0.3 |
-| infra    | Create a splash screen and gray background             |         |       |  2:26 |   3.5 |
-| code     | Use fluent icons                                       |         |       |  0:37 |   0.9 |
-| code     | Add export functionality for currencies                |         |       |  1:30 |   2.1 |
-| code     | Add currency editing support                           |         |       |  2:45 |   3.9 |
-| code     | Add about to menu                                      |         |       |  1:02 |   1.5 |
-| code     | Create a history dialog for currencies                 |         |       |  1:27 |   2.1 |
-| code     | Allow MDI windows outside main window                  |         |       |  1:35 |   2.3 |
-| code     | Add edit menu and export menu                          |         |       |  0:34 |   0.8 |
-| code     | Implement adding new currencies                        |         |       |  3:17 |   4.7 |
-| code     | Clean up product website                               |         |       |  4:42 |   6.7 |
-| code     | Create a skill for plant uml documentation             |         |       |  2:48 |   4.0 |
+| infra    | Create a splash screen and gray background             |         |       |  2:26 |   3.1 |
+| code     | Use fluent icons                                       |         |       |  0:37 |   0.8 |
+| code     | Add export functionality for currencies                |         |       |  1:30 |   1.9 |
+| code     | Add currency editing support                           |         |       |  2:45 |   3.6 |
+| code     | Add about to menu                                      |         |       |  1:02 |   1.3 |
+| code     | Create a history dialog for currencies                 |         |       |  1:27 |   1.9 |
+| code     | Allow MDI windows outside main window                  |         |       |  1:35 |   2.0 |
+| code     | Add edit menu and export menu                          |         |       |  0:34 |   0.7 |
+| code     | Implement adding new currencies                        |         |       |  3:17 |   4.3 |
+| code     | Clean up product website                               |         |       |  4:42 |   6.1 |
+| code     | Create a skill for plant uml documentation             |         |       |  2:48 |   3.6 |
 | infra    | Add CMake targets for site and skills                  |         |       |  0:17 |   0.4 |
-| infra    | Generalise the skill setup for ORE Studio              |         |       |  3:45 |   5.4 |
-| infra    | Restructure components to follow the dogen approach    |         |       |  2:54 |   4.1 |
-| infra    | Generate PlantUML diagrams for all components          |         |       |  1:05 |   1.5 |
-| analysis | Weaving skills and documentation together              |         |       |  0:46 |   1.1 |
-| code     | Consider adding tags to catch2 tests                   |         |       |  0:34 |   0.8 |
-| code     | Split JSON based =operator<<= from domain type         |         |       |  0:53 |   1.3 |
-| code     | Add a table representation of domain types             |         |       |  2:05 |   3.0 |
-| code     | Add a comint based emacs mode for the client           |         |       |  0:24 |   0.6 |
-| code     | Fix the valgrind leaks reported on sqlgen              |         |       |  4:54 |   7.0 |
-| code     | Make UI/UX look more professional                      |         |       | 11:07 |  15.9 |
-| code     | Current issues with package install in debian          |         |       |  0:40 |   1.0 |
-| code     | Resolve crash on shutdown problem                      |         |       |  0:50 |   1.2 |
-| code     | Review all code created so far with an LLM             |         |       |  9:48 |  14.0 |
+| infra    | Generalise the skill setup for ORE Studio              |         |       |  3:45 |   4.9 |
+| infra    | Restructure components to follow the dogen approach    |         |       |  2:54 |   3.8 |
+| infra    | Generate PlantUML diagrams for all components          |         |       |  1:05 |   1.4 |
+| analysis | Weaving skills and documentation together              |         |       |  0:46 |   1.0 |
+| code     | Consider adding tags to catch2 tests                   |         |       |  0:34 |   0.7 |
+| code     | Split JSON based =operator<<= from domain type         |         |       |  0:53 |   1.1 |
+| code     | Add a table representation of domain types             |         |       |  2:05 |   2.7 |
+| code     | Add a comint based emacs mode for the client           |         |       |  0:24 |   0.5 |
+| code     | Fix the valgrind leaks reported on sqlgen              |         |       |  4:54 |   6.3 |
+| code     | Review all code created so far with an LLM             |         |       | 16:13 |  21.0 |
+| code     | Make UI/UX look more professional                      |         |       | 11:07 |  14.4 |
+| code     | Current issues with package install in debian          |         |       |  0:40 |   0.9 |
+| code     | Resolve crash on shutdown problem                      |         |       |  0:50 |   1.1 |
+| code     | Fix broken windows build due to local time             |         |       |  0:24 |   0.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-11-15 Sat 21:11]--[2025-11-15 Sat 21:26] =>  0:15
+    CLOCK: [2025-11-15 Sat 13:30]--[2025-11-15 Sat 13:42] =>  0:12
     CLOCK: [2025-11-12 Wed 17:45]--[2025-11-12 Wed 18:01] =>  0:16
     CLOCK: [2025-11-11 Tue 22:38]--[2025-11-11 Tue 23:09] =>  0:31
     CLOCK: [2025-11-11 Tue 13:47]--[2025-11-11 Tue 13:49] =>  0:02
@@ -667,7 +673,7 @@ Dumping JSON in the client is not very helpful. Ideally we want a simple table.
 It would be nice not to have to start a shell to run the client but have access
 to the usual emacs facilities for running external processes.
 
-*** STARTED Fix the valgrind leaks reported on sqlgen                  :code:
+*** BLOCKED Fix the valgrind leaks reported on sqlgen                  :code:
     :LOGBOOK:
     CLOCK: [2025-11-14 Fri 11:22]--[2025-11-14 Fri 11:25] =>  0:03
     CLOCK: [2025-11-14 Fri 11:06]--[2025-11-14 Fri 11:22] =>  0:16
@@ -684,11 +690,62 @@ Links:
 - [[https://github.com/getml/sqlgen/issues/88][#88: Discussion on potential memory leaks in the postgres backend]]
 - [[https://github.com/getml/sqlgen/pull/89][#89: Fix memory management for postgres in edge cases]]
 
+*** COMPLETED Review all code created so far with an LLM               :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-15 Sat 18:36]--[2025-11-15 Sat 20:35] =>  1:59
+    CLOCK: [2025-11-15 Sat 17:51]--[2025-11-15 Sat 18:26] =>  0:35
+    CLOCK: [2025-11-15 Sat 16:37]--[2025-11-15 Sat 17:35] =>  0:58
+    CLOCK: [2025-11-15 Sat 14:03]--[2025-11-15 Sat 16:37] =>  2:34
+    CLOCK: [2025-11-15 Sat 13:43]--[2025-11-15 Sat 14:02] =>  0:19
+    CLOCK: [2025-11-14 Fri 11:52]--[2025-11-14 Fri 11:58] =>  0:06
+    CLOCK: [2025-11-13 Thu 22:17]--[2025-11-13 Thu 23:33] =>  1:16
+    CLOCK: [2025-11-13 Thu 18:20]--[2025-11-13 Thu 20:13] =>  1:53
+    CLOCK: [2025-11-13 Thu 16:45]--[2025-11-13 Thu 17:40] =>  0:55
+    CLOCK: [2025-11-13 Thu 09:34]--[2025-11-13 Thu 11:01] =>  1:27
+    CLOCK: [2025-11-12 Wed 21:18]--[2025-11-13 Thu 00:01] =>  2:43
+    CLOCK: [2025-11-12 Wed 14:44]--[2025-11-12 Wed 15:32] =>  0:48
+    CLOCK: [2025-11-12 Wed 12:10]--[2025-11-12 Wed 12:50] =>  0:40
+    :END:
+
+Current code review prompt:
+
+#+begin_quote
+Perform a fast, focused code review on the code I’ll show you.
+
+Look for:
+
+- Obvious bugs or logic errors
+- Missed opportunities to use C++23 features
+- Incorrect or unclear comments (improve them if needed)
+- Security issues or unsafe patterns
+- Inappropriate or missing logging (check log level and message clarity)
+- Any other clear improvements worth noting
+- For unit tests, ensure they are named correctly and have enough coverage
+
+Be succinct — prefer clarity over grammar.
+
+Output a short list of actionable items, ideally with suggested fixes.
+
+The system uses Data-Oriented design for finance.
+
+I’ll show you the header and implementation (if any) separately — comment on
+them separately.
+#+end_quote
+
+- reviewed =ores.accounts=. Done core library, missing tests.
+- reviewed =ores.cli=.
+- reviewed =ores.risk=.
+
 *** STARTED Make UI/UX look more professional                          :code:
     :LOGBOOK:
     CLOCK: [2025-11-08 Sat 10:11]--[2025-11-08 Sat 20:04] =>  9:53
     CLOCK: [2025-11-08 Sat 08:57]--[2025-11-08 Sat 10:11] =>  1:14
     :END:
+
+Links:
+
+- [[https://www.claude.com/blog/improving-frontend-design-through-skills][Improving frontend design through Skills]]
+- [[https://github.com/VoltAgent/awesome-claude-skills][Awesome Claude Skills]]
 
 Analysis from Gemini:
 
@@ -1057,49 +1114,149 @@ With these rules you can detach and re-attach as often as you like, and the
 program will still shut down without the heap corruption you are seeing now.
 #+end_src
 
-*** STARTED Review all code created so far with an LLM                 :code:
+*** STARTED Fix broken windows build due to local time                 :code:
     :LOGBOOK:
-    CLOCK: [2025-11-14 Fri 11:52]--[2025-11-14 Fri 11:58] =>  0:06
-    CLOCK: [2025-11-13 Thu 22:17]--[2025-11-13 Thu 23:33] =>  1:16
-    CLOCK: [2025-11-13 Thu 18:20]--[2025-11-13 Thu 20:13] =>  1:53
-    CLOCK: [2025-11-13 Thu 16:45]--[2025-11-13 Thu 17:40] =>  0:55
-    CLOCK: [2025-11-13 Thu 09:34]--[2025-11-13 Thu 11:01] =>  1:27
-    CLOCK: [2025-11-12 Wed 21:18]--[2025-11-13 Thu 00:01] =>  2:43
-    CLOCK: [2025-11-12 Wed 14:44]--[2025-11-12 Wed 15:32] =>  0:48
-    CLOCK: [2025-11-12 Wed 12:10]--[2025-11-12 Wed 12:50] =>  0:40
+    CLOCK: [2025-11-15 Sat 14:03]--[2025-11-15 Sat 14:27] =>  0:24
     :END:
 
-Current code review prompt:
+Getting the following error:
 
-#+begin_quote
-Perform a fast, focused code review on the code I’ll show you.
+#+begin_src
+[99/283] Building CXX object projects/ores.accounts/src/CMakeFiles/ores.accounts.lib.dir/domain/login_info_table_io.cpp.obj
+FAILED: [code=1] projects/ores.accounts/src/CMakeFiles/ores.accounts.lib.dir/domain/login_info_table_io.cpp.obj
+C:\PROGRA~1\LLVM\bin\CLANG_~1.EXE -DBOOST_ATOMIC_DYN_LINK -DBOOST_ATOMIC_NO_LIB -DBOOST_CHRONO_DYN_LINK -DBOOST_CHRONO_NO_LIB -DBOOST_CONTAINER_DYN_LINK -DBOOST_CONTAINER_NO_LIB -DBOOST_DATE_TIME_DYN_LINK -DBOOST_DATE_TIME_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK=1 -DBOOST_FILESYSTEM_NO_LIB -DBOOST_LOG_DYN_LINK -DBOOST_LOG_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_PROGRAM_OPTIONS_NO_LIB -DBOOST_THREAD_DYN_LINK -DBOOST_THREAD_NO_LIB -DBOOST_THREAD_USE_DLL -DBOOST_USE_WINAPI_VERSION=0xa00 -DYYJSON_IMPORTS -D_WIN32_WINNT=0xa00 -Dores_accounts_lib_EXPORTS -I/.../OreStudio/projects/ores.accounts/include -I/.../OreStudio/projects/ores.comms/include -I/.../OreStudio/projects/ores.utility/include -isystem /.../OreStudio/build/output/windows-clang-debug/vcpkg_installed/x64-windows/include -isystem /.../OreStudio/build/output/windows-clang-debug/vcpkg_installed/x64-windows/include/server -O0 -std=c++23 -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -g -Xclang -gcodeview -Werror -MD -MT projects/ores.accounts/src/CMakeFiles/ores.accounts.lib.dir/domain/login_info_table_io.cpp.obj -MF projects\ores.accounts\src\CMakeFiles\ores.accounts.lib.dir\domain\login_info_table_io.cpp.obj.d @projects\ores.accounts\src\CMakeFiles\ores.accounts.lib.dir\domain\login_info_table_io.cpp.obj.modmap -o projects/ores.accounts/src/CMakeFiles/ores.accounts.lib.dir/domain/login_info_table_io.cpp.obj -c /.../OreStudio/projects/ores.accounts/src/domain/login_info_table_io.cpp
+projects/ores.accounts/src/domain/login_info_table_io.cpp:41:34: error: 'localtime' is deprecated: This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [-Werror,-Wdeprecated-declarations]
+   41 |         ss << std::put_time(std::localtime(&last_login_time), "%Y-%m-%d %H:%M:%S");
+      |
+#+end_src
 
-Look for:
+Suggested Gemini fix:
 
-- Obvious bugs or logic errors
-- Missed opportunities to use C++23 features
-- Incorrect or unclear comments (improve them if needed)
-- Security issues or unsafe patterns
-- Inappropriate or missing logging (check log level and message clarity)
-- Any other clear improvements worth noting
-- For unit tests, ensure they are named correctly and have enough coverage
+#+begin_src c++
+inline std::tm* safe_localtime(const std::time_t* time, std::tm* result) {
+#ifdef _WIN32
+    return localtime_s(result, time) == 0 ? result : nullptr;
+#else
+    return localtime_r(time, result);
+#endif
+}
+#+end_src
 
-Be succinct — prefer clarity over grammar.
 
-Output a short list of actionable items, ideally with suggested fixes.
+*** Improve handling of error responses                                :code:
 
-The system uses Data-Oriented design for finance.
+As per Gemini code review:
 
-I’ll show you the header and implementation (if any) separately — comment on
-them separately.
-#+end_quote
+#+begin_src markdown
+Certainly. Point \#2 from the review of `CurrencyHistoryDialog.cpp` addressed the potential complexity of error checking by suggesting that relying on the specific response message type is **fragile**.
 
-- reviewing =ores.accounts=. Done core library, missing tests.
-- reviewing =ores.cli=.
+The goal is to move from:
 
-Notes:
+1.  Client sends **Request A**.
+2.  Server returns **Response A** (Success) OR **Error Response** (Failure) OR **Response B** (Unexpected success type).
+3.  Client checks: *Is the message type exactly **Response A**?*
 
-- account unlock should return boolean rather than throw.
+to a more robust pattern where the client checks for a generic failure response first.
+
+-----
+
+## 🐞 Fragile Error Check (Current Code)
+
+The current code in `loadHistory` checks for success by expecting *only* the specific success message type:
+
+```cpp
+// Current Fragile Logic
+if (result->header().type != comms::protocol::message_type::get_currency_history_response) {
+    onHistoryLoadError(QString("Server does not support currency history (received message type %1)")
+        .arg(static_cast<int>(result->header().type)));
+    return;
+}
+```
+
+This logic has two main problems:
+
+1.  **Hiding Server Errors:** If the server returns a generic protocol error (`message_type::error_response`) because, for example, the client's session timed out, the client logs a misleading message: "Server does not support currency history." It should be reporting the actual error message sent by the server.
+2.  **Lack of Standardization:** Every client method needs to implement its own logic to handle unexpected types.
+
+-----
+
+## 🛠️ Suggested Improvement: Standardized Error Handling
+
+The improvement is to check for a generic **`error_response`** message type first, and report its payload/message, before attempting to deserialize the successful response.
+
+Assuming your system has a standard `error_response` message:
+
+```cpp
+void CurrencyHistoryDialog::handleHistoryResponse(const HistoryResult& result) {
+    if (!result) {
+        onHistoryLoadError(QString::fromStdString(result.error()));
+        return;
+    }
+
+    // 1. Check for a generic server-side error response
+    if (result->header().type == comms::protocol::message_type::error_response) {
+        // Assume error_response contains a readable message payload
+        auto error_response = risk::messaging::error_response::deserialize(result->payload());
+        if (error_response) {
+            onHistoryLoadError(QString::fromStdString(error_response->message));
+        } else {
+            onHistoryLoadError("Server returned a malformed error response.");
+        }
+        return;
+    }
+
+    // 2. Check for the specific SUCCESS response type
+    if (result->header().type == comms::protocol::message_type::get_currency_history_response) {
+        auto response = risk::messaging::get_currency_history_response::deserialize(result->payload());
+
+        if (!response || !response->success) {
+            // Handle success=false within the expected response type
+            onHistoryLoadError(QString::fromStdString(response ? response->message : "Invalid or failed history response."));
+            return;
+        }
+
+        history_ = std::move(response->history);
+        onHistoryLoaded();
+        return;
+    }
+
+    // 3. Handle truly unexpected message type
+    onHistoryLoadError(QString("Received unexpected message type %1 from server.")
+        .arg(static_cast<int>(result->header().type)));
+}
+```
+
+By standardizing the **`error_response`** type, the client can always extract and display the relevant server-side failure reason, leading to much clearer logging and user feedback.
+#+end_src
+
+
+*** Add support for simple log shipping                                :code:
+
+It would be very useful to be able to browse both client and server logs from
+the client (either command line or qt). This will be even more useful with AI
+agents. Add a simple component that periodically loads up the logs to the
+database.
+
+Possible names: log shipping, log forwarding, etc.
+
+*** Add max timestamp to utilities                                     :code:
+
+We have it scattered around the code base.
+
+#+begin_src c++
+"9999-12-31 23:59:59"
+#+end_src
+
+*** Add skill to create new project component                          :code:
+
+Should create folders, CMakeLists, sample test, add to main make file etc. The
+new project should compile.
+
+Links:
+
+*** Add skill to improve UI design                                     :code:
+
+Make the UI more professional.
 
 *** Invalid password should not throw                                  :code:
 
@@ -1117,15 +1274,6 @@ At present in the unlock test we have:
 
 This is very suspicious; a failed login should just return false or the modern
 c++ equivalent (=std::expected=?).
-
-*** Local versus remote connectivity                                   :code:
-
-In some cases it makes sense to use the UI directly against the database - for
-example, users may just want to create a simple setup to play around and the
-complexity of having to have a server is not helpful. In addition, they may not
-even require a full blown postgres - sqlite is enough. It should be possible to
-setup a connection to a database in this manner. Ideally the client should
-support both at the same time.
 
 *** Faker with seeds                                                   :code:
 
@@ -1145,18 +1293,27 @@ void setSeed(std::mt19937_64::result_type seed)
 Catch::rngSeed()
 
 
-*** Implement delete account                                           :code:
-
-At present you cannot delete an account.
-
 *** Add =[[nodiscard]]= to repository operations returning data        :code:
 
 At present we can create an account and ignore the result, etc. We should be
 forced to look at the result.
 
+*** Delete currency only deletes single currency                       :code:
+
+At present we are deleting one currency at a time, sending a message for each,
+in =CurrencyMdiWindow.cpp=.
+
+*** Implement delete account                                           :code:
+
+At present you cannot delete an account.
+
 *** Add lock account request                                           :code:
 
 As per gemini's comments, we should have a request to lock an account.
+
+Notes:
+
+- account unlock should return boolean rather than throw.
 
 Test.
 
@@ -1335,6 +1492,15 @@ much easier to check a version number. It should just be a linear attribute
 which is updated whenever we insert into the entity table. If the user attempts
 to update an entity but the current version is smaller than the latest version
 we should error. Make version unique.
+
+*** Local versus remote connectivity                                   :code:
+
+In some cases it makes sense to use the UI directly against the database - for
+example, users may just want to create a simple setup to play around and the
+complexity of having to have a server is not helpful. In addition, they may not
+even require a full blown postgres - sqlite is enough. It should be possible to
+setup a connection to a database in this manner. Ideally the client should
+support both at the same time.
 
 *** Merge update and create currency messages                          :code:
 

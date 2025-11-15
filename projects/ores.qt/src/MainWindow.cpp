@@ -34,9 +34,7 @@
 #include <QIcon>
 #include "ui_MainWindow.h"
 #include "ores.qt/LoginDialog.hpp"
-#include "ores.qt/CurrencyMdiWindow.hpp"
-#include "ores.qt/CurrencyDetailDialog.hpp"
-#include "ores.qt/CurrencyHistoryDialog.hpp"
+#include "ores.qt/CurrencyController.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -103,164 +101,10 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->menuWindow, &QMenu::aboutToShow, this,
         &MainWindow::onWindowMenuAboutToShow);
 
-    // Note: This will be refactored to use entity controllers
-    connect(ui_->CurrenciesAction, &QAction::triggered, this,
-        [this, iconColor]() {
-        if (!client_ || !client_->is_connected()) {
-            BOOST_LOG_SEV(lg(), warn) << "Currencies action triggered but not connected";
-            MessageBoxHelper::warning(this, "Not Connected",
-                "Please login first to view currencies.");
-            return;
-        }
-
-        BOOST_LOG_SEV(lg(), info) << "Creating new currencies MDI window";
-        auto* currencyWidget = new CurrencyMdiWindow(client_, this);
-
-        // Connect status signals to status bar
-        connect(currencyWidget, &CurrencyMdiWindow::statusChanged,
-                this, [this](const QString& message) {
-            ui_->statusbar->showMessage(message);
-        });
-        connect(currencyWidget, &CurrencyMdiWindow::errorOccurred, this,
-                [this](const QString& error_message) {
-            ui_->statusbar->showMessage("Error loading currencies: " + error_message);
-        });
-
-        // Connect currency operations (add, edit, history)
-        connect(currencyWidget, &CurrencyMdiWindow::addNewRequested, this,
-                [this, iconColor]() {
-            BOOST_LOG_SEV(lg(), info) << "Add new currency requested";
-            risk::domain::currency new_currency;
-
-            auto* detailDialog = new CurrencyDetailDialog(this);
-            if (client_) {
-                detailDialog->setClient(client_);
-                detailDialog->setUsername(username_);
-            }
-
-            connect(detailDialog, &CurrencyDetailDialog::statusMessage, this,
-                    [this](const QString& message) {
-                ui_->statusbar->showMessage(message);
-            });
-            connect(detailDialog, &CurrencyDetailDialog::errorMessage, this,
-                    [this](const QString& message) {
-                ui_->statusbar->showMessage(message);
-            });
-
-            detailDialog->setCurrency(new_currency);
-
-            auto* detailWindow = new DetachableMdiSubWindow();
-            detailWindow->setWidget(detailDialog);
-            detailWindow->setWindowTitle("New Currency");
-            detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-                ":/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
-
-            allDetachableWindows_.append(detailWindow);
-            connect(detailWindow, &QObject::destroyed, this,
-                    [this, detailWindow]() {
-                allDetachableWindows_.removeAll(detailWindow);
-            });
-
-            mdiArea_->addSubWindow(detailWindow);
-            detailWindow->adjustSize();
-            detailWindow->show();
-        });
-
-        connect(currencyWidget, &CurrencyMdiWindow::showCurrencyDetails, this,
-                [this, iconColor](const risk::domain::currency& currency) {
-            BOOST_LOG_SEV(lg(), info) << "Showing currency details for: " << currency.iso_code;
-
-            auto* detailDialog = new CurrencyDetailDialog(this);
-            if (client_) {
-                detailDialog->setClient(client_);
-                detailDialog->setUsername(username_);
-            }
-
-            connect(detailDialog, &CurrencyDetailDialog::statusMessage, this,
-                    [this](const QString& message) {
-                ui_->statusbar->showMessage(message);
-            });
-            connect(detailDialog, &CurrencyDetailDialog::errorMessage, this,
-                    [this](const QString& message) {
-                ui_->statusbar->showMessage(message);
-            });
-
-            detailDialog->setCurrency(currency);
-
-            const QString iso_code = QString::fromStdString(currency.iso_code);
-            auto* detailWindow = new DetachableMdiSubWindow();
-            detailWindow->setWidget(detailDialog);
-            detailWindow->setWindowTitle(QString("Currency Details: %1").arg(iso_code));
-            detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-                ":/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
-
-            allDetachableWindows_.append(detailWindow);
-            connect(detailWindow, &QObject::destroyed, this,
-                    [this, detailWindow]() {
-                allDetachableWindows_.removeAll(detailWindow);
-            });
-
-            mdiArea_->addSubWindow(detailWindow);
-            detailWindow->adjustSize();
-            detailWindow->show();
-        });
-
-        connect(currencyWidget, &CurrencyMdiWindow::showCurrencyHistory, this,
-                [this, iconColor](const QString& iso_code) {
-            BOOST_LOG_SEV(lg(), info) << "Showing currency history for: " << iso_code.toStdString();
-
-            if (!client_ || !client_->is_connected()) {
-                MessageBoxHelper::warning(this, "Not Connected",
-                    "Please ensure you are still connected to view currency history.");
-                return;
-            }
-
-            auto* historyWidget = new CurrencyHistoryDialog(iso_code, client_, this);
-
-            connect(historyWidget, &CurrencyHistoryDialog::statusChanged, this,
-                    [this](const QString& message) {
-                ui_->statusbar->showMessage(message);
-            });
-            connect(historyWidget, &CurrencyHistoryDialog::errorOccurred, this,
-                    [this](const QString& error_message) {
-                ui_->statusbar->showMessage("Error loading history: " + error_message);
-            });
-
-            historyWidget->loadHistory();
-
-            auto* historyWindow = new DetachableMdiSubWindow();
-            historyWindow->setWidget(historyWidget);
-            historyWindow->setWindowTitle(QString("History: %1").arg(iso_code));
-            historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-                ":/icons/ic_fluent_history_20_regular.svg", iconColor));
-
-            allDetachableWindows_.append(historyWindow);
-            connect(historyWindow, &QObject::destroyed, this,
-                    [this, historyWindow]() {
-                allDetachableWindows_.removeAll(historyWindow);
-            });
-
-            mdiArea_->addSubWindow(historyWindow);
-            historyWindow->adjustSize();
-            historyWindow->show();
-        });
-
-        auto* currencyWindow = new DetachableMdiSubWindow();
-        currencyWindow->setWidget(currencyWidget);
-        currencyWindow->setWindowTitle("Currencies");
-        currencyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
-
-        // Track window for detach/reattach operations
-        allDetachableWindows_.append(currencyWindow);
-        connect(currencyWindow, &QObject::destroyed, this,
-            [this, currencyWindow]() {
-            allDetachableWindows_.removeAll(currencyWindow);
-        });
-
-        mdiArea_->addSubWindow(currencyWindow);
-        currencyWindow->adjustSize();
-        currencyWindow->show();
+    // Connect Currencies action to controller
+    connect(ui_->CurrenciesAction, &QAction::triggered, this, [this]() {
+        if (currencyController_)
+            currencyController_->showListWindow();
     });
 
     // Initially disable data-related actions until logged in
@@ -322,6 +166,10 @@ void MainWindow::onLoginTriggered() {
 
         if (client_ && client_->is_connected()) {
             BOOST_LOG_SEV(lg(), info) << "Successfully connected and authenticated.";
+
+            // Create entity controllers after successful login
+            createControllers();
+
             updateMenuState();
             ui_->statusbar->showMessage("Successfully connected and logged in.");
         } else {
@@ -354,6 +202,27 @@ void MainWindow::updateMenuState() {
                                << isConnected;
 }
 
+void MainWindow::createControllers() {
+    BOOST_LOG_SEV(lg(), info) << "Creating entity controllers";
+
+    // Create currency controller
+    currencyController_ = std::make_unique<CurrencyController>(
+        this, mdiArea_, client_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect controller signals to status bar
+    connect(currencyController_.get(), &CurrencyController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(currencyController_.get(), &CurrencyController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    BOOST_LOG_SEV(lg(), info) << "Entity controllers created";
+}
+
 void MainWindow::onDisconnectTriggered() {
     BOOST_LOG_SEV(lg(), info) << "Disconnect action triggered";
 
@@ -371,6 +240,13 @@ void MainWindow::onDisconnectTriggered() {
         if (io_thread_ && io_thread_->joinable()) {
             io_thread_->join();
         }
+
+        // Close all windows managed by controllers
+        if (currencyController_)
+            currencyController_->closeAllWindows();
+
+        // Reset controllers
+        currencyController_.reset();
 
         // Clear client infrastructure
         client_.reset();

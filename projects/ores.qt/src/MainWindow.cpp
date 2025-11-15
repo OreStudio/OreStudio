@@ -147,10 +147,9 @@ MainWindow::MainWindow(QWidget* parent) :
             this, &MainWindow::onSubWindowActivated);
 
     // Currencies action creates/reuses MDI window with currency table
-    connect(ui_->CurrenciesAction, &QAction::triggered, this, [=, this]() {
-        using ores::utility::log::warn;
-        using ores::utility::log::info;
-
+    QPointer<MainWindow> self = this;
+    connect(ui_->CurrenciesAction, &QAction::triggered, self, [&, self]() {
+        if (!self) return;
         if (!client_ || !client_->is_connected()) {
             BOOST_LOG_SEV(lg(), warn) << "Currencies action triggered but not connected";
             MessageBoxHelper::warning(this, "Not Connected",
@@ -185,9 +184,8 @@ MainWindow::MainWindow(QWidget* parent) :
             }
 
             // Refresh the data using the reload method which also updates status
-            if (currencyWidget) {
+            if (currencyWidget)
                 currencyWidget->reload();
-            }
 
             // Update button states since list is now open
             updateCrudActionState();
@@ -223,10 +221,26 @@ MainWindow::MainWindow(QWidget* parent) :
 
         // Track window for detach/reattach operations
         allDetachableWindows_.append(currencyListWindow_);
-        connect(currencyListWindow_, &QObject::destroyed, this, [this]() {
-            allDetachableWindows_.removeAll(currencyListWindow_);
-            currencyListWindow_ = nullptr;
-            updateCrudActionState(); // Update button states when list is closed
+        QPointer<DetachableMdiSubWindow> windowBeingDestroyed = currencyListWindow_;
+        connect(currencyListWindow_, &QObject::destroyed, self,
+            [self, windowBeingDestroyed]() {
+            if (!self)
+                return;
+
+            // Safely remove the pointer to the window that is NOW being
+            // destroyed (captured by windowBeingDestroyed) from the
+            // MainWindow's list member.
+            if (!windowBeingDestroyed.isNull()) {
+                self->allDetachableWindows_.removeAll(windowBeingDestroyed.data());
+            }
+
+            // Only set currencyListWindow_ to nullptr if the destroyed window
+            // is the one currently stored in the member variable.
+            if (self->currencyListWindow_ == windowBeingDestroyed)
+                self->currencyListWindow_ = nullptr;
+
+            // Update the state
+            self->updateCrudActionState();
         });
 
         mdiArea_->addSubWindow(currencyListWindow_);
@@ -261,6 +275,14 @@ MainWindow::MainWindow(QWidget* parent) :
 }
 
 MainWindow::~MainWindow() {
+    // Disconnect all detachable windows to prevent destroyed signal handlers
+    // from accessing member variables during destruction
+    for (auto* window : allDetachableWindows_) {
+        if (window) {
+            disconnect(window, &QObject::destroyed, this, nullptr);
+        }
+    }
+
     // Disconnect client
     if (client_) {
         client_->disconnect();

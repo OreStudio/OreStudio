@@ -24,6 +24,20 @@
 #include <QMenu>
 #include <QCloseEvent>
 
+namespace {
+
+/**
+ * @brief Helper function to convert QFlags to a readable hexadecimal string
+ * for debugging.
+ */
+std::string flagsToHex(Qt::WindowFlags flags) {
+    std::stringstream ss;
+    ss << "0x" << std::hex << std::setw(8) << std::setfill('0') << flags.toInt();
+    return ss.str();
+}
+
+}
+
 namespace ores::qt {
 
 using namespace ores::utility::log;
@@ -62,6 +76,8 @@ void DetachableMdiSubWindow::detach() {
     // Remove from MDI area
     setParent(nullptr);
 
+    BOOST_LOG_SEV(lg(), debug) << "Detaching: Flags before reset: "
+                               << flagsToHex(windowFlags());
     const Qt::WindowFlags detachableFlags =
         Qt::Window |
         Qt::WindowTitleHint |
@@ -69,6 +85,8 @@ void DetachableMdiSubWindow::detach() {
         Qt::WindowMinMaxButtonsHint |
         Qt::WindowCloseButtonHint;
     setWindowFlags(detachableFlags);
+    BOOST_LOG_SEV(lg(), debug) << "Detaching: Flags after setting them: "
+                               << flagsToHex(windowFlags());
 
     // Position at same screen location
     move(globalPos);
@@ -102,12 +120,23 @@ void DetachableMdiSubWindow::reattach() {
     // Hide window before changing parent
     hide();
 
-    // Restore MDI subwindow flags
-    setWindowFlags(Qt::SubWindow);
+    // Restore MDI sub-window flags
+    BOOST_LOG_SEV(lg(), debug) << "Reattach: Flags before reset: "
+                               << flagsToHex(windowFlags());
+    setWindowFlags(Qt::WindowFlags());
+    BOOST_LOG_SEV(lg(), debug) << "Reattach: Flags after reset: "
+                               << flagsToHex(windowFlags());
 
-    // This correctly handles reparenting to the viewport and manages the
+    // This correctly handles re-parenting to the viewport and manages the
     // content widget.
+    setParent(savedMdiArea_->viewport());
+    setWindowFlags(Qt::SubWindow);
     savedMdiArea_->addSubWindow(this);
+    updateGeometry();
+    ensurePolished();
+    BOOST_LOG_SEV(lg(), debug) << "Reattach: Flags after adding subwindow: "
+                               << flagsToHex(windowFlags());
+
 
     // Restore position and size within MDI
     move(savedMdiPosition_);

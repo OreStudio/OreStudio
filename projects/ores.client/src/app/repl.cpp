@@ -33,6 +33,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
+#include "ores.accounts/domain/account_table_io.hpp"
 
 namespace ores::client::app {
 

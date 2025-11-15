@@ -30,20 +30,21 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QLabel" name="logoLabel">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="pixmap">
-      <pixmap>splash-screen.png</pixmap>
-     </property>
-     <property name="scaledContents">
-      <bool>false</bool>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
+     <widget class="QWidget" name="logoContainer">
+       <layout class="QVBoxLayout" name="logoLayout">
+         <!-- Background image -->
+         <item>
+           <widget class="QLabel" name="logoLabel">
+             <property name="pixmap">
+               <pixmap>splash-screen.png</pixmap>
+             </property>
+             <property name="scaledContents">
+               <bool>true</bool>
+             </property>
+           </widget>
+         </item>
+       </layout>
+     </widget>
    </item>
    <item>
     <spacer name="verticalSpacer">
@@ -60,51 +61,6 @@
       </size>
      </property>
     </spacer>
-   </item>
-   <item>
-    <widget class="QLabel" name="titleLabel">
-     <property name="font">
-      <font>
-       <pointsize>16</pointsize>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>OreStudio</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-     <property name="margin">
-      <number>10</number>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="versionLabel">
-     <property name="text">
-      <string>Version:</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-     <property name="margin">
-      <number>10</number>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="buildLabel">
-     <property name="text">
-      <string>Build:</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-     <property name="margin">
-      <number>10</number>
-     </property>
-    </widget>
    </item>
    <item>
     <widget class="QLabel" name="projectLinkLabel">

@@ -23,6 +23,7 @@
 
 #include <QDialog>
 #include "ui_AboutDialog.h"
+#include "ores.qt/LogoLabel.hpp"
 #include "ores.utility/log/make_logger.hpp"
 
 namespace Ui {
@@ -74,6 +75,7 @@ private:
 
 private:
     Ui::AboutDialog ui_;
+    LogoLabel* logoLabel_;
 };
 
 }

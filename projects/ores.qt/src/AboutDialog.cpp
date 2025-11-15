@@ -21,10 +21,11 @@
 #include "ores.qt/AboutDialog.hpp"
 
 #include "ores.utility/version/version.hpp"
-#include <QApplication>
 #include <QDate>
 #include <QTime>
+#include <QPainter>
 #include <QPixmap>
+#include <QApplication>
 
 namespace ores::qt {
 
@@ -36,7 +37,17 @@ AboutDialog::AboutDialog(QWidget* parent)
     BOOST_LOG_SEV(lg(), debug) << "Creating about dialog.";
     ui_.setupUi(this);
 
-    updateVersionLabels();
+    // Replace ui_.logoLabel with our custom LogoLabel in the layout
+    logoLabel_ = new LogoLabel(ui_.logoContainer);
+    logoLabel_->setAlignment(ui_.logoLabel->alignment());
+    logoLabel_->setScaledContents(ui_.logoLabel->hasScaledContents());
+
+    // Replace the widget in the layout
+    QLayout* layout = ui_.logoLabel->parentWidget()->layout();
+    if (layout) {
+        layout->replaceWidget(ui_.logoLabel, logoLabel_);
+        ui_.logoLabel->deleteLater();
+    }
 }
 
 AboutDialog::~AboutDialog() {
@@ -55,21 +66,18 @@ void AboutDialog::showEvent(QShowEvent* e) {
         BOOST_LOG_SEV(lg(), debug) << "Scaling to target width: " << targetWidth;
 
         QPixmap scaledLogo = logo.scaledToWidth(targetWidth, Qt::SmoothTransformation);
-        ui_.logoLabel->setPixmap(std::move(scaledLogo));
+
+        logoLabel_->setPixmap(std::move(scaledLogo));
+
+        const QString text = QString("Version %1 | Build %2")
+                                 .arg(ORES_VERSION)
+                                 .arg(ORES_BUILD_INFO);
+        logoLabel_->setTextOverlay(text);
+
         BOOST_LOG_SEV(lg(), debug) << "Scaled successfully.";
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Missing file: splash-screen.png";
     }
-}
-
-void AboutDialog::updateVersionLabels() {
-    const QString version = QString("Version: %1").arg(ORES_VERSION);
-    const QString build = QString("Build: %1").arg(ORES_BUILD_INFO);
-
-    ui_.versionLabel->setText(version);
-    ui_.buildLabel->setText(build);
-
-    setWindowTitle(QString("About OreStudio %1").arg(ORES_VERSION));
 }
 
 }

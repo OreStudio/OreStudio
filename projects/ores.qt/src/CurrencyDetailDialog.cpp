@@ -39,49 +39,58 @@ using comms::protocol::message_type;
 using namespace ores::utility::log;
 using FutureResult = std::pair<bool, std::string>;
 
-QIcon CurrencyDetailDialog::createRecoloredIcon(const QString& svgPath, const QColor& color) {
+QIcon CurrencyDetailDialog::
+createRecoloredIcon(const QString& svgPath, const QColor& color) {
     QIcon originalIcon(svgPath);
     if (originalIcon.isNull()) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to load icon: " << svgPath.toStdString();
+        BOOST_LOG_SEV(lg(), warn) << "Failed to load icon: "
+                                  << svgPath.toStdString();
         return {};
     }
 
     QIcon coloredIcon;
     const QColor disabledColor(50, 50, 50); // Dark gray for disabled state
+    const QSize baseSize(64, 64); // Use a large base size for optimal rendering
 
-    for (int size : {16, 20, 24, 32, 48, 64}) {
-        QPixmap pixmap = originalIcon.pixmap(size, size);
+    QPixmap basePixmap = originalIcon.pixmap(baseSize);
 
-        // Create normal state image
-        QImage normalImage = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
-        for (int y = 0; y < normalImage.height(); ++y) {
-            for (int x = 0; x < normalImage.width(); ++x) {
-                QColor pixelColor = normalImage.pixelColor(x, y);
-                if (pixelColor.alpha() > 0) {
-                    pixelColor.setRed(color.red());
-                    pixelColor.setGreen(color.green());
-                    pixelColor.setBlue(color.blue());
-                    normalImage.setPixelColor(x, y, pixelColor);
-                }
-            }
-        }
-        coloredIcon.addPixmap(QPixmap::fromImage(normalImage), QIcon::Normal);
+    // State 1: Normal Color
+    QPixmap normalPixmap(baseSize);
+    normalPixmap.fill(Qt::transparent); // Start with a transparent canvas
 
-        // Create disabled state image
-        QImage disabledImage = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
-        for (int y = 0; y < disabledImage.height(); ++y) {
-            for (int x = 0; x < disabledImage.width(); ++x) {
-                QColor pixelColor = disabledImage.pixelColor(x, y);
-                if (pixelColor.alpha() > 0) {
-                    pixelColor.setRed(disabledColor.red());
-                    pixelColor.setGreen(disabledColor.green());
-                    pixelColor.setBlue(disabledColor.blue());
-                    disabledImage.setPixelColor(x, y, pixelColor);
-                }
-            }
-        }
-        coloredIcon.addPixmap(QPixmap::fromImage(disabledImage), QIcon::Disabled);
-    }
+    QPainter painter(&normalPixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    // Set the desired color as the source
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
+    painter.fillRect(normalPixmap.rect(), color);
+
+    // Use the original icon as a mask (SourceIn composition mode) This keeps
+    // the colored pixels only where the original icon was opaque.
+    painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
+    painter.drawPixmap(0, 0, basePixmap);
+
+    painter.end();
+    coloredIcon.addPixmap(normalPixmap, QIcon::Normal);
+
+
+    // State 2: Disabled Color
+    QPixmap disabledPixmap(baseSize);
+    disabledPixmap.fill(Qt::transparent);
+
+    QPainter disabledPainter(&disabledPixmap);
+    disabledPainter.setRenderHint(QPainter::Antialiasing);
+
+    // Set the disabled color as the source
+    disabledPainter.setCompositionMode(QPainter::CompositionMode_Source);
+    disabledPainter.fillRect(disabledPixmap.rect(), disabledColor);
+
+    // Use the original icon as a mask
+    disabledPainter.setCompositionMode(QPainter::CompositionMode_SourceIn);
+    disabledPainter.drawPixmap(0, 0, basePixmap);
+
+    disabledPainter.end();
+    coloredIcon.addPixmap(disabledPixmap, QIcon::Disabled);
 
     return coloredIcon;
 }

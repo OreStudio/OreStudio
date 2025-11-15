@@ -20,10 +20,9 @@
 #include "ores.accounts/domain/login_info_table_io.hpp"
 
 #include <ostream>
-#include <iomanip>
-#include <sstream>
 #include <fort.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.utility/datetime/datetime.hpp"
 
 namespace ores::accounts::domain {
 
@@ -32,20 +31,20 @@ std::ostream& operator<<(std::ostream& s, const std::vector<login_info>& v) {
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "Account ID" << "Last Login" << "Failed Logins"
-          << "Locked?" << "Online?" << "Last IP" << "Last Attempt IP" << fort::endr;
+          << "Locked?" << "Online?" << "Last IP" << "Last Attempt IP"
+          << fort::endr;
 
     for (const auto& li : v) {
-        // Format the timestamp as a readable string
-        auto last_login_time = std::chrono::system_clock::to_time_t(li.last_login);
-        std::stringstream ss;
-        ss << std::put_time(std::localtime(&last_login_time), "%Y-%m-%d %H:%M:%S");
+        const auto formatted_time =
+            utility::datetime::datetime::format_time_point(
+            li.last_login, "%Y-%m-%d %H:%M:%S");
 
-        std::string locked_status = li.locked ? "Y" : "N";
-        std::string online_status = li.online ? "Y" : "N";
-
-        table << boost::uuids::to_string(li.account_id) << ss.str()
-              << li.failed_logins << locked_status << online_status
-              << li.last_ip.to_string() << li.last_attempt_ip.to_string() << fort::endr;
+        table << boost::uuids::to_string(li.account_id)
+              << formatted_time << li.failed_logins
+              << (li.locked ? "Y" : "N") << (li.online ? "Y" : "N")
+              << li.last_ip.to_string()
+              << li.last_attempt_ip.to_string()
+              << fort::endr;
     }
     s << std::endl << table.to_string() << std::endl;
 

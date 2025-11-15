@@ -50,5 +50,8 @@
     <file>icons/ic_fluent_text_abc_underline_double_32_regular.svg</file>
     <file>icons/ic_fluent_warning_20_filled.svg</file>
     <file>icons/ic_fluent_warning_20_regular.svg</file>
+    <file>images/modern-icon.png</file>
+    <file>images/ore-studio-background.png</file>
+    <file>images/splash-screen.png</file>
   </qresource>
 </RCC>

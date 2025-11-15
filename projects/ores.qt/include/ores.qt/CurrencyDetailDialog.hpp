@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_CURRENCY_DETAIL_PANEL_HPP
-#define ORES_QT_CURRENCY_DETAIL_PANEL_HPP
+#ifndef ORES_QT_CURRENCY_DETAIL_DIALOG_HPP
+#define ORES_QT_CURRENCY_DETAIL_DIALOG_HPP
 
 #include <QWidget>
 #include <QToolBar>
@@ -26,26 +26,37 @@
 #include <memory>
 #include "ores.risk/domain/currency.hpp"
 #include "ores.comms/net/client.hpp"
+#include "ores.utility/log/make_logger.hpp"
+
 
 namespace Ui {
-class CurrencyDetailPanel;
+
+class CurrencyDetailDialog;
+
 }
 
 namespace ores::qt {
 
-class CurrencyDetailPanel : public QWidget {
+class CurrencyDetailDialog final : public QWidget {
     Q_OBJECT
 
-public:
-    explicit CurrencyDetailPanel(QWidget* parent = nullptr); // Removed client from constructor
-    ~CurrencyDetailPanel() override;
+private:
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger("ores.qt.currency_detail_dialog");
+        return instance;
+    }
 
-    void setClient(std::shared_ptr<comms::client> client); // New method to set client
-    void setUsername(const std::string& username); // Set logged-in username
+public:
+    explicit CurrencyDetailDialog(QWidget* parent = nullptr);
+    ~CurrencyDetailDialog() override;
+
+    void setClient(std::shared_ptr<comms::client> client);
+    void setUsername(const std::string& username);
 
     void setCurrency(const risk::domain::currency& currency);
-    risk::domain::currency getCurrency() const;
-    void clearPanel();
+    [[nodiscard]] risk::domain::currency getCurrency() const;
+    void clearDialog();
     void save();
 
 signals:
@@ -63,22 +74,22 @@ private slots:
     void onFieldChanged();
 
 private:
-    QIcon createRecoloredIcon(const QString& svgPath, const QColor& color);
+    void updateSaveResetButtonState();
 
-    std::unique_ptr<Ui::CurrencyDetailPanel> ui_;
-    std::shared_ptr<comms::client> client_;
-    risk::domain::currency currentCurrency_;
+private:
+    std::unique_ptr<Ui::CurrencyDetailDialog> ui_;
     bool isDirty_;
-    bool is_add_mode_;
+    bool isAddMode_;
     std::string username_;
     QToolBar* toolBar_;
     QAction* saveAction_;
     QAction* deleteAction_;
 
-    void updateSaveResetButtonState();
+    std::shared_ptr<comms::client> client_;
+    risk::domain::currency currentCurrency_;
     static constexpr const char* max_timestamp = "9999-12-31 23:59:59";
 };
 
-} // namespace ores::qt
+}
 
-#endif // ORES_QT_CURRENCY_DETAIL_PANEL_HPP
+#endif

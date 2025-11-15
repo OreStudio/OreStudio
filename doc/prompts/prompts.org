@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 590DED5A-FF09-8D94-9B2B-74FC027FCFEF
+:END:
+#+title: Prompts
+#+author: Marco Craveiro
+#+options: title:nil <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+This file is a repository for useful prompts we may want to reuse. They are not
+claude specific, or else they would most likely go into [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Claude Code Skills]].
+
+
+* Code Review
+
+Used successfully in Gemini 2.5 Flash, ChatGPT.
+
+#+begin_quote
+Perform a fast, focused code review on the code I’ll show you.
+
+Look for:
+
+- Obvious bugs or logic errors
+- Missed opportunities to use C++23 features
+- Incorrect or unclear comments (improve them if needed)
+- Security issues or unsafe patterns
+- Inappropriate or missing logging (check log level and message clarity)
+- Any other clear improvements worth noting
+- For unit tests, ensure they are named correctly and have enough coverage
+
+Be succinct — prefer clarity over grammar.
+
+Output a short list of actionable items, ideally with suggested fixes.
+
+The system uses Data-Oriented design for finance.
+
+I’ll show you the header and implementation (if any) separately — comment on
+them separately.
+#+end_quote

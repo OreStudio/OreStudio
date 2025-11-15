@@ -40,14 +40,14 @@ class MainWindow;
 
 namespace ores::qt {
 
-class CurrencyMdiWindow;  // Forward declaration
-class DetachableMdiSubWindow;  // Forward declaration
+class CurrencyMdiWindow;
+class DetachableMdiSubWindow;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
 private:
-    static auto& lg() {
+    [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
         static auto instance = make_logger("ores.qt.main_window");
         return instance;
@@ -72,34 +72,33 @@ private slots:
     void onDeleteTriggered();
     void onHistoryTriggered();
     void onAddTriggered();
-    void onExportCSVTriggered(); // New export to CSV slot
-    void onExportXMLTriggered(); // New export to XML slot
-    void onShowCurrencyDetails(const risk::domain::currency& currency); // New slot
-    void onCurrencyDeleted(const QString& iso_code); // Handle currency deletion
-    void onShowCurrencyHistory(const QString& iso_code); // Handle currency history request
-    void onAboutTriggered(); // New about dialog slot
-    void onDetachAllTriggered(); // Detach all MDI windows
-    void onReattachAllTriggered(); // Reattach all floating windows
-    void onWindowMenuAboutToShow(); // Populate window list
+    void onExportCSVTriggered();
+    void onExportXMLTriggered();
+    void onShowCurrencyDetails(const risk::domain::currency& currency);
+    void onCurrencyDeleted(const QString& iso_code);
+    void onShowCurrencyHistory(const QString& iso_code);
+    void onAboutTriggered();
+    void onDetachAllTriggered();
+    void onReattachAllTriggered();
+    void onWindowMenuAboutToShow();
 
 private:
     void updateMenuState();
     void updateCrudActionState();
-    QIcon createRecoloredIcon(const QString& svgPath, const QColor& color);
 
 private:
     Ui::MainWindow* ui_;
     MdiAreaWithBackground* mdiArea_;
     CurrencyMdiWindow* activeCurrencyWindow_;
     int selectionCount_;
-    QMap<QString, DetachableMdiSubWindow*> currencyDetailWindows_; // Currency detail windows by ISO code
-    DetachableMdiSubWindow* currencyListWindow_; // Currency list MDI window (single instance)
-    QMap<QString, DetachableMdiSubWindow*> currencyHistoryWindows_; // History windows by ISO code
-    QLabel* connectionStatusIconLabel_; // Status bar icon label
-    QList<DetachableMdiSubWindow*> allDetachableWindows_; // Track all detachable windows
+    QMap<QString, DetachableMdiSubWindow*> currencyDetailWindows_;
+    DetachableMdiSubWindow* currencyListWindow_;
+    QMap<QString, DetachableMdiSubWindow*> currencyHistoryWindows_;
+    QLabel* connectionStatusIconLabel_;
+    QList<DetachableMdiSubWindow*> allDetachableWindows_;
 
-    QIcon connectedIcon_;    // Icon for connected status
-    QIcon disconnectedIcon_; // Icon for disconnected status
+    QIcon connectedIcon_;
+    QIcon disconnectedIcon_;
 
     // Client infrastructure
     std::unique_ptr<boost::asio::io_context> io_context_;
@@ -107,7 +106,7 @@ private:
         boost::asio::io_context::executor_type>> work_guard_;
     std::unique_ptr<std::thread> io_thread_;
     std::shared_ptr<comms::client> client_;
-    std::string username_; // Logged-in username
+    std::string username_;
 };
 
 }

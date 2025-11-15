@@ -24,14 +24,29 @@
 #include <QMenu>
 #include <QCloseEvent>
 
+namespace {
+
+/**
+ * @brief Helper function to convert QFlags to a readable hexadecimal string
+ * for debugging.
+ */
+std::string flagsToHex(Qt::WindowFlags flags) {
+    std::stringstream ss;
+    ss << "0x" << std::hex << std::setw(8) << std::setfill('0') << flags.toInt();
+    return ss.str();
+}
+
+}
+
 namespace ores::qt {
 
 using namespace ores::utility::log;
 
 DetachableMdiSubWindow::DetachableMdiSubWindow(QWidget* parent)
-    : QMdiSubWindow(parent),
-      isDetached_(false),
-      savedMdiArea_(nullptr) {
+    : QMdiSubWindow(parent), isDetached_(false),
+      savedMdiArea_(qobject_cast<QMdiArea*>(parent)) {
+    // If parent is not QMdiArea, it will be set when QMdiArea::addSubWindow()
+    // is called.
 }
 
 void DetachableMdiSubWindow::detach() {
@@ -40,10 +55,18 @@ void DetachableMdiSubWindow::detach() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Detaching window: " << windowTitle().toStdString();
-
-    // Save current state
+    // Capture the MDI area before detaching.
+    // mdiArea() returns the MdiArea if the parent is the viewport or the area itself.
     savedMdiArea_ = mdiArea();
+    if (!savedMdiArea_) {
+        BOOST_LOG_SEV(lg(), error) << "Cannot detach: not currently in an MDI area";
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Detaching window: "
+                              << windowTitle().toStdString();
+
+    // Save current state relative to MDI area
     savedMdiPosition_ = pos();
     savedMdiSize_ = size();
 
@@ -53,8 +76,17 @@ void DetachableMdiSubWindow::detach() {
     // Remove from MDI area
     setParent(nullptr);
 
-    // Convert to top-level window
-    setWindowFlags(Qt::Window);
+    BOOST_LOG_SEV(lg(), debug) << "Detaching: Flags before reset: "
+                               << flagsToHex(windowFlags());
+    const Qt::WindowFlags detachableFlags =
+        Qt::Window |
+        Qt::WindowTitleHint |
+        Qt::WindowSystemMenuHint |
+        Qt::WindowMinMaxButtonsHint |
+        Qt::WindowCloseButtonHint;
+    setWindowFlags(detachableFlags);
+    BOOST_LOG_SEV(lg(), debug) << "Detaching: Flags after setting them: "
+                               << flagsToHex(windowFlags());
 
     // Position at same screen location
     move(globalPos);
@@ -82,29 +114,29 @@ void DetachableMdiSubWindow::reattach() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Reattaching window: " << windowTitle().toStdString();
-
-    // Store the widget before reparenting
-    QWidget* contentWidget = widget();
-
-    // Temporarily remove the widget from this subwindow
-    setWidget(nullptr);
+    BOOST_LOG_SEV(lg(), info) << "Reattaching window: "
+                              << windowTitle().toStdString();
 
     // Hide window before changing parent
     hide();
 
-    // Restore parent to MDI area's viewport (where subwindows actually live)
-    if (savedMdiArea_->viewport()) {
-        setParent(savedMdiArea_->viewport());
-    } else {
-        setParent(savedMdiArea_);
-    }
+    // Restore MDI sub-window flags
+    BOOST_LOG_SEV(lg(), debug) << "Reattach: Flags before reset: "
+                               << flagsToHex(windowFlags());
+    setWindowFlags(Qt::WindowFlags());
+    BOOST_LOG_SEV(lg(), debug) << "Reattach: Flags after reset: "
+                               << flagsToHex(windowFlags());
 
-    // Restore MDI subwindow flags
+    // This correctly handles re-parenting to the viewport and manages the
+    // content widget.
+    setParent(savedMdiArea_->viewport());
     setWindowFlags(Qt::SubWindow);
+    savedMdiArea_->addSubWindow(this);
+    updateGeometry();
+    ensurePolished();
+    BOOST_LOG_SEV(lg(), debug) << "Reattach: Flags after adding subwindow: "
+                               << flagsToHex(windowFlags());
 
-    // Restore the content widget
-    setWidget(contentWidget);
 
     // Restore position and size within MDI
     move(savedMdiPosition_);
@@ -112,12 +144,10 @@ void DetachableMdiSubWindow::reattach() {
 
     isDetached_ = false;
 
-    // Show in MDI area
     show();
-
     emit detachedStateChanged(false);
 
-    BOOST_LOG_SEV(lg(), info) << "Window reattached successfully";
+    BOOST_LOG_SEV(lg(), info) << "Window reattached successfully.";
 }
 
 void DetachableMdiSubWindow::contextMenuEvent(QContextMenuEvent* event) {
@@ -127,10 +157,12 @@ void DetachableMdiSubWindow::contextMenuEvent(QContextMenuEvent* event) {
 
         if (isDetached_) {
             QAction* reattachAction = menu.addAction("Reattach");
-            connect(reattachAction, &QAction::triggered, this, &DetachableMdiSubWindow::reattach);
+            connect(reattachAction, &QAction::triggered, this,
+                &DetachableMdiSubWindow::reattach);
         } else {
             QAction* detachAction = menu.addAction("Detach");
-            connect(detachAction, &QAction::triggered, this, &DetachableMdiSubWindow::detach);
+            connect(detachAction, &QAction::triggered, this,
+                &DetachableMdiSubWindow::detach);
         }
 
         menu.exec(event->globalPos());

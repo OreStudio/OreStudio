@@ -27,17 +27,18 @@
 
 namespace ores::qt {
 
+using comms::protocol::frame;
+using comms::protocol::message_type;
 using namespace ores::utility::log;
 
 ClientCurrencyModel::
 ClientCurrencyModel(std::shared_ptr<comms::client> client, QObject* parent)
     : QAbstractTableModel(parent), client_(std::move(client)),
-      watcher_(new QFutureWatcher < std::pair < bool,
-      std::vector<risk::domain::currency>>>(this)) {
+      watcher_(new QFutureWatcher<FutureWatcherResult>(this)) {
 
-    connect(watcher_, &QFutureWatcher < std::pair < bool,
-        std::vector<risk::domain::currency>>>::finished,
-            this, &ClientCurrencyModel::onCurrenciesLoaded);
+    connect(watcher_,
+        &QFutureWatcher<FutureWatcherResult>::finished,
+        this, &ClientCurrencyModel::onCurrenciesLoaded);
 }
 
 int ClientCurrencyModel::rowCount(const QModelIndex& parent) const {
@@ -49,7 +50,7 @@ int ClientCurrencyModel::rowCount(const QModelIndex& parent) const {
 int ClientCurrencyModel::columnCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
-    return 10;  // Match the original model's column count
+    return 10; // Match the original model's column count
 }
 
 QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
@@ -102,53 +103,51 @@ headerData(int section, Qt::Orientation orientation, int role) const {
 }
 
 void ClientCurrencyModel::refresh() {
-    BOOST_LOG_SEV(lg(), info) << "Calling refresh.";
-    // Perform request asynchronously using QtConcurrent
-    QFuture<std::pair<bool, std::vector<risk::domain::currency>>> future =
-        QtConcurrent::run([this]() -> std::pair<bool, std::vector<risk::domain::currency>> {
-           BOOST_LOG_SEV(lg(), info) << "Making a currencies request.";
+    BOOST_LOG_SEV(lg(), debug) << "Calling refresh.";
+    QPointer<ClientCurrencyModel> self = this;
+
+    QFuture<FutureWatcherResult> future =
+        QtConcurrent::run([self]() -> FutureWatcherResult {
+            BOOST_LOG_SEV(lg(), debug) << "Making a currencies request.";
+            if (!self) return {false, {}};
 
             risk::messaging::get_currencies_request request;
             auto payload = request.serialize();
 
-            comms::protocol::frame request_frame(
-                comms::protocol::message_type::get_currencies_request,
-                0,
-                std::move(payload)
-            );
+            frame request_frame(message_type::get_currencies_request,
+                0, std::move(payload));
 
             // Send request synchronously (on background thread)
-            auto response_result = client_->send_request_sync(std::move(request_frame));
+            auto response_result =
+                self->client_->send_request_sync(std::move(request_frame));
 
-            if (!response_result) {
+            if (!response_result)
                 return {false, {}};
-            }
 
-            BOOST_LOG_SEV(lg(), info) << "Received a currencies resposne.";
-            auto response = risk::messaging::get_currencies_response::deserialize(
-                response_result->payload()
-            );
+            BOOST_LOG_SEV(lg(), debug) << "Received a currencies response.";
+            auto response =
+                risk::messaging::get_currencies_response::deserialize(
+                    response_result->payload());
 
             if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize currencies response";
                 return {false, {}};
             }
 
             return {true, std::move(response->currencies)};
         });
 
-    watcher_->setFuture(future);
+     watcher_->setFuture(future);
 }
 
 void ClientCurrencyModel::onCurrenciesLoaded() {
-    BOOST_LOG_SEV(lg(), info) << "On currencies loaded event";
+    BOOST_LOG_SEV(lg(), debug) << "On currencies loaded event.";
     auto [success, currencies] = watcher_->result();
 
     if (success) {
-        // Sort currencies alphabetically by name
-        std::sort(currencies.begin(), currencies.end(),
-                  [](const risk::domain::currency& a, const risk::domain::currency& b) {
-                      return a.name < b.name;
-                  });
+        std::ranges::sort(currencies, [](auto const& a, auto const& b) {
+            return a.name < b.name;
+        });
 
         beginResetModel();
         currencies_ = std::move(currencies);
@@ -156,14 +155,15 @@ void ClientCurrencyModel::onCurrenciesLoaded() {
 
         emit dataLoaded();
     } else {
+        BOOST_LOG_SEV(lg(), error) << "Currencies request failed: no response.";
         emit loadError(tr("Failed to load currencies from server"));
     }
 }
 
 const risk::domain::currency* ClientCurrencyModel::getCurrency(int row) const {
-    if (row < 0 || row >= static_cast<int>(currencies_.size())) {
+    if (row < 0 || row >= static_cast<int>(currencies_.size()))
         return nullptr;
-    }
+
     return &currencies_[row];
 }
 

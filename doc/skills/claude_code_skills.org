@@ -60,3 +60,5 @@ Build complete!
 - [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Modeler Skill]]: Generate PlantUML diagrams.
 - [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner Skill]]: Run CMake targets.
 - [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Claude Code Skills]]: Meta-skill to create skills.
+- [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]]: Create a new domain type with all of it's basic services.
+- [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][Skill Manager Skill]]: Skill to create new skills.

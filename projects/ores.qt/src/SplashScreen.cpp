@@ -29,7 +29,8 @@ using namespace ores::utility::log;
 SplashScreen::SplashScreen(const QPixmap& pixmap)
     : QSplashScreen(pixmap) {
     progressTimer_ = new QTimer(this);
-    connect(progressTimer_, &QTimer::timeout, this, &SplashScreen::updateProgress);
+    connect(progressTimer_, &QTimer::timeout, this,
+        &SplashScreen::updateProgress);
 }
 
 void SplashScreen::setProgressDuration(int milliseconds) {
@@ -99,7 +100,7 @@ void SplashScreen::paintEvent(QPaintEvent* e) {
         // Calculate the position to center the text horizontally
         QFontMetrics fm(font);
         int textWidth = fm.horizontalAdvance(messageText_);
-         int textX = barX;
+        int textX = barX;
 
         // Position the text a few pixels above the progress bar
         int textY = barY - fm.descent() - 5; // 5px padding above the bar

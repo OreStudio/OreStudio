@@ -92,4 +92,4 @@ void CurrencyItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
     QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter);
 }
 
-} // namespace ores::qt
+}

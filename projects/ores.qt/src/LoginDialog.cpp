@@ -19,6 +19,7 @@
  */
 #include "ores.qt/LoginDialog.hpp"
 
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -109,8 +110,8 @@ void LoginDialog::setupUI() {
 
     // Set icons on buttons
     const QColor iconColor(220, 220, 220); // Light gray for dark theme
-    login_button_->setIcon(createRecoloredIcon(":/icons/ic_fluent_checkmark_20_regular.svg", iconColor));
-    cancel_button_->setIcon(createRecoloredIcon(":/icons/ic_fluent_dismiss_20_regular.svg", iconColor));
+    login_button_->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_checkmark_20_regular.svg", iconColor));
+    cancel_button_->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_dismiss_20_regular.svg", iconColor));
 
     // Button layout
     auto* button_layout = new QHBoxLayout();
@@ -334,55 +335,6 @@ void LoginDialog::onLoginResult(bool success, const QString& error_message) {
         io_context_.reset();
         client_.reset();
     }
-}
-
-QIcon LoginDialog::createRecoloredIcon(const QString& svgPath, const QColor& color) {
-    QIcon originalIcon(svgPath);
-    if (originalIcon.isNull()) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to load SVG: " << svgPath.toStdString();
-        return {};
-    }
-
-    // Create recolored icon at multiple sizes
-    QIcon recoloredIcon;
-    const QColor disabledColor(50, 50, 50); // Dark gray for disabled state
-
-    for (int size : {16, 20, 24, 32, 48, 64}) {
-        // Get pixmap from original icon
-        QPixmap pixmap = originalIcon.pixmap(size, size);
-
-        // Create normal state image
-        QImage normalImage = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
-        for (int y = 0; y < normalImage.height(); ++y) {
-            for (int x = 0; x < normalImage.width(); ++x) {
-                QColor pixelColor = normalImage.pixelColor(x, y);
-                if (pixelColor.alpha() > 0) {
-                    pixelColor.setRed(color.red());
-                    pixelColor.setGreen(color.green());
-                    pixelColor.setBlue(color.blue());
-                    normalImage.setPixelColor(x, y, pixelColor);
-                }
-            }
-        }
-        recoloredIcon.addPixmap(QPixmap::fromImage(normalImage), QIcon::Normal);
-
-        // Create disabled state image
-        QImage disabledImage = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
-        for (int y = 0; y < disabledImage.height(); ++y) {
-            for (int x = 0; x < disabledImage.width(); ++x) {
-                QColor pixelColor = disabledImage.pixelColor(x, y);
-                if (pixelColor.alpha() > 0) {
-                    pixelColor.setRed(disabledColor.red());
-                    pixelColor.setGreen(disabledColor.green());
-                    pixelColor.setBlue(disabledColor.blue());
-                    disabledImage.setPixelColor(x, y, pixelColor);
-                }
-            }
-        }
-        recoloredIcon.addPixmap(QPixmap::fromImage(disabledImage), QIcon::Disabled);
-    }
-
-    return recoloredIcon;
 }
 
 }

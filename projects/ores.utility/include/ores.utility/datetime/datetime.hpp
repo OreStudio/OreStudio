@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,25 +17,29 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_CURRENCY_ITEM_DELEGATE_HPP
-#define ORES_QT_CURRENCY_ITEM_DELEGATE_HPP
+#ifndef ORES_UTILITY_DATETIME_DATETIME_HPP
+#define ORES_UTILITY_DATETIME_DATETIME_HPP
 
-#include <QStyledItemDelegate>
-#include <QFont>
+#include <chrono>
+#include <string>
 
-namespace ores::qt {
+namespace ores::utility::datetime {
 
-class CurrencyItemDelegate : public QStyledItemDelegate {
-    Q_OBJECT
-
+/**
+ * @brief Utilities for date and time operations.
+ */
+class datetime final {
 public:
-    explicit CurrencyItemDelegate(QObject* parent = nullptr);
-
-    void paint(QPainter* painter, const QStyleOptionViewItem& option,
-               const QModelIndex& index) const override;
-
-private:
-    QFont monospaceFont_;
+    /**
+     * @brief Formats a time point as a string.
+     *
+     * @param tp Time point to format.
+     * @param format Format string (e.g., "%Y-%m-%d %H:%M:%S").
+     * @return Formatted string representation of the time point.
+     */
+    static std::string format_time_point(
+        const std::chrono::system_clock::time_point& tp,
+        const std::string& format);
 };
 
 }

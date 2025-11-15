@@ -36,11 +36,11 @@ namespace ores::qt {
  * This model extends QAbstractTableModel and fetches currency data
  * asynchronously using the ores.comms client instead of direct database access.
  */
-class ClientCurrencyModel : public QAbstractTableModel {
+class ClientCurrencyModel final : public QAbstractTableModel {
     Q_OBJECT
 
 private:
-    static auto& lg() {
+    [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
         static auto instance = make_logger(
             "ores.qt.client_currency_model");
@@ -97,9 +97,11 @@ private slots:
     void onCurrenciesLoaded();
 
 private:
+    using FutureWatcherResult = std::pair<bool,
+                                          std::vector<risk::domain::currency>>;
     std::shared_ptr<comms::client> client_;
     std::vector<risk::domain::currency> currencies_;
-    QFutureWatcher<std::pair<bool, std::vector<risk::domain::currency>>>* watcher_;
+    QFutureWatcher<FutureWatcherResult>* watcher_;
 };
 
 }

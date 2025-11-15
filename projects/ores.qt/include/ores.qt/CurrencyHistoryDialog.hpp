@@ -20,11 +20,11 @@
 #ifndef ORES_QT_CURRENCY_HISTORY_DIALOG_HPP
 #define ORES_QT_CURRENCY_HISTORY_DIALOG_HPP
 
+#include <memory>
+#include <QPair>
 #include <QWidget>
 #include <QString>
 #include <QVector>
-#include <QPair>
-#include <memory>
 #include "ores.comms/net/client.hpp"
 #include "ores.risk/domain/currency_version.hpp"
 #include "ores.risk/domain/currency_version_history.hpp"
@@ -44,14 +44,16 @@ class CurrencyHistoryDialog : public QWidget {
     Q_OBJECT
 
 private:
-    static auto& lg() {
+    [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
         static auto instance = make_logger("ores.qt.currency_history_dialog");
         return instance;
     }
 
+    const QIcon& getHistoryIcon() const;
+
 public:
-    explicit CurrencyHistoryDialog(const QString& iso_code,
+    explicit CurrencyHistoryDialog(QString iso_code,
                                    std::shared_ptr<comms::client> client,
                                    QWidget* parent = nullptr);
     ~CurrencyHistoryDialog() override;
@@ -75,13 +77,15 @@ private:
 
     /**
      * @brief Calculate differences between two versions.
-     * @return List of (field_name, (old_value, new_value)) pairs
+     *
+     * @return Vector of (field_name, (old_value, new_value)) pairs.
      */
-    QVector<QPair<QString, QPair<QString, QString>>> calculateDiff(
+    using DiffResult = QVector<QPair<QString, QPair<QString, QString>>>;
+    DiffResult calculateDiff(
         const risk::domain::currency_version& current,
         const risk::domain::currency_version& previous);
 
-    Ui::CurrencyHistoryDialog* ui_;
+    std::unique_ptr<Ui::CurrencyHistoryDialog> ui_;
     std::shared_ptr<comms::client> client_;
     QString isoCode_;
     risk::domain::currency_version_history history_;

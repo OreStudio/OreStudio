@@ -207,14 +207,10 @@ void test_database_manager::drop_test_database(const std::string& db_name) {
 void test_database_manager::set_test_database_env(const std::string& db_name) {
     const std::string variable = prefix + "DATABASE";
     BOOST_LOG_SEV(lg(), info) << "Setting " << variable
-                              << "DATABASE environment variable to: "
+                              << " environment variable to: "
                               << db_name;
 
-#ifdef _WIN32
-    _putenv_s(variable.c_str(), db_name.c_str());
-#else
-    setenv(variable.c_str(), db_name.c_str(), 1);
-#endif
+    environment::set_value(variable, db_name);
 
     BOOST_LOG_SEV(lg(), info) << "Environment variable set successfully";
 }

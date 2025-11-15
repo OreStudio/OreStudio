@@ -27,9 +27,8 @@ namespace ores::qt {
 
 QIcon MessageBoxHelper::createColoredIcon(const QString& svgPath, const QColor& color) {
     QIcon originalIcon(svgPath);
-    if (originalIcon.isNull()) {
-        return QIcon();
-    }
+    if (originalIcon.isNull())
+        return {};
 
     QIcon coloredIcon;
     for (int size : {16, 20, 24, 32, 48, 64}) {
@@ -156,4 +155,4 @@ void MessageBoxHelper::information(
     msgBox.exec();
 }
 
-} // namespace ores::qt
+}

@@ -21,46 +21,63 @@
 #include "ores.qt/AboutDialog.hpp"
 
 #include "ores.utility/version/version.hpp"
-#include <QApplication>
 #include <QDate>
 #include <QTime>
+#include <QPainter>
 #include <QPixmap>
+#include <QApplication>
 
 namespace ores::qt {
 
 using namespace ores::utility::log;
 
 AboutDialog::AboutDialog(QWidget* parent)
-    : QDialog(parent), ui_(new Ui::AboutDialog) {
+    : QDialog(parent) {
 
-    BOOST_LOG_SEV(lg(), info) << "Creating about dialog";
-    ui_->setupUi(this);
+    BOOST_LOG_SEV(lg(), debug) << "Creating about dialog.";
+    ui_.setupUi(this);
 
-    // Scale the logo to fit the dialog width while maintaining aspect ratio
-    QPixmap logo("splash-screen.png");
-    if (!logo.isNull()) {
-        int targetWidth = width();
-        QPixmap scaledLogo = logo.scaledToWidth(targetWidth, Qt::SmoothTransformation);
-        ui_->logoLabel->setPixmap(scaledLogo);
+    // Replace ui_.logoLabel with our custom LogoLabel in the layout
+    logoLabel_ = new LogoLabel(ui_.logoContainer);
+    logoLabel_->setAlignment(ui_.logoLabel->alignment());
+    logoLabel_->setScaledContents(ui_.logoLabel->hasScaledContents());
+
+    // Replace the widget in the layout
+    QLayout* layout = ui_.logoLabel->parentWidget()->layout();
+    if (layout) {
+        layout->replaceWidget(ui_.logoLabel, logoLabel_);
+        ui_.logoLabel->deleteLater();
     }
-
-    setupVersionInfo();
 }
 
 AboutDialog::~AboutDialog() {
-    BOOST_LOG_SEV(lg(), info) << "Destroying about dialog";
+    BOOST_LOG_SEV(lg(), debug) << "Destroying about dialog.";
 }
 
-void AboutDialog::setupVersionInfo() {
-    // Get version and build information
-    QString version = QString("Version: %1").arg(ORES_VERSION);
-    QString build = QString("Build: %1").arg(ORES_BUILD_INFO);
+void AboutDialog::showEvent(QShowEvent* e) {
+    QDialog::showEvent(e);
 
-    ui_->versionLabel->setText(version);
-    ui_->buildLabel->setText(build);
+    const char* image(":/images/splash-screen.png");
+    BOOST_LOG_SEV(lg(), debug) << "Scaling logo to fit the dialog. Image: "
+                               << image;
+    QPixmap logo(image);
+    if (!logo.isNull()) {
+        int targetWidth = width();
+        BOOST_LOG_SEV(lg(), debug) << "Scaling to target width: " << targetWidth;
 
-    // Set window title with version
-    setWindowTitle(QString("About OreStudio %1").arg(ORES_VERSION));
+        QPixmap scaledLogo = logo.scaledToWidth(targetWidth, Qt::SmoothTransformation);
+
+        logoLabel_->setPixmap(std::move(scaledLogo));
+
+        const QString text = QString("Version %1 | Build %2")
+                                 .arg(ORES_VERSION)
+                                 .arg(ORES_BUILD_INFO);
+        logoLabel_->setTextOverlay(text);
+
+        BOOST_LOG_SEV(lg(), debug) << "Scaled successfully.";
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "Missing file: splash-screen.png";
+    }
 }
 
 }

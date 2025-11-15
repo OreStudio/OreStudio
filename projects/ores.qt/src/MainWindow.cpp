@@ -35,7 +35,7 @@
 #include "ui_MainWindow.h"
 #include "ores.qt/LoginDialog.hpp"
 #include "ores.qt/CurrencyMdiWindow.hpp"
-#include "ores.qt/CurrencyHistoryMdiWindow.hpp"
+#include "ores.qt/CurrencyHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/CurrencyDetailDialog.hpp" // Include the header for CurrencyDetailDialog
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -515,7 +515,7 @@ void MainWindow::onShowCurrencyHistory(const QString& iso_code) {
                                       << iso_code.toStdString();
 
             // Get the history widget
-            auto* historyWidget = qobject_cast<CurrencyHistoryMdiWindow*>(existingWindow->widget());
+            auto* historyWidget = qobject_cast<CurrencyHistoryDialog*>(existingWindow->widget());
             if (historyWidget) {
                 // Make sure the widget is visible
                 historyWidget->setVisible(true);
@@ -541,17 +541,20 @@ void MainWindow::onShowCurrencyHistory(const QString& iso_code) {
                              << iso_code.toStdString();
 
     const QColor iconColor(220, 220, 220); // Same color as other icons
-    auto* historyWidget = new CurrencyHistoryMdiWindow(iso_code, client_, this);
+    auto* historyWidget = new CurrencyHistoryDialog(iso_code, client_, this);
 
     // Connect status signals to status bar
-    connect(historyWidget, &CurrencyHistoryMdiWindow::statusChanged,
+    connect(historyWidget, &CurrencyHistoryDialog::statusChanged,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
-    connect(historyWidget, &CurrencyHistoryMdiWindow::errorOccurred,
+    connect(historyWidget, &CurrencyHistoryDialog::errorOccurred,
             this, [this](const QString& error_message) {
         ui_->statusbar->showMessage("Error loading history: " + error_message);
     });
+
+    // Load history data
+    historyWidget->loadHistory();
 
     auto* subWindow = new DetachableMdiSubWindow();
     subWindow->setWidget(historyWidget);

@@ -21,7 +21,6 @@
 #define ORES_RISK_DOMAIN_CURRENCY_HPP
 
 #include <string>
-#include <iosfwd>
 
 namespace ores::risk::domain {
 
@@ -92,8 +91,6 @@ struct currency final {
      */
     std::string valid_to;
 };
-
-std::ostream& operator<<(std::ostream& s, const currency& v);
 
 }
 

@@ -30,6 +30,7 @@
 #include "ores.comms/protocol/message_types.hpp"
 #include "ores.risk/domain/currency.hpp"
 #include "ores.risk/domain/currency_version.hpp"
+#include "ores.risk/domain/currency_version_history.hpp"
 
 namespace ores::risk::messaging {
 

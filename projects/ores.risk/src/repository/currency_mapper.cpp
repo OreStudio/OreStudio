@@ -19,6 +19,8 @@
  */
 #include "ores.risk/repository/currency_mapper.hpp"
 
+#include "ores.risk/domain/currency_json_io.hpp" // IWYU pragma: keep.
+
 namespace ores::risk::repository {
 
 using namespace ores::utility::log;

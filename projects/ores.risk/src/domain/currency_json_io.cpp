@@ -17,46 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_RISK_DOMAIN_CURRENCY_VERSION_HPP
-#define ORES_RISK_DOMAIN_CURRENCY_VERSION_HPP
+#include "ores.risk/domain/currency_json_io.hpp"
 
-#include <string>
-#include "ores.risk/domain/currency.hpp"
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 
 namespace ores::risk::domain {
 
-/**
- * @brief Represents a specific version of a currency with metadata.
- */
-struct currency_version final {
-    /**
-     * @brief The currency data at this version.
-     */
-    currency data;
-
-    /**
-     * @brief Version number (1-based, higher is newer).
-     */
-    int version_number;
-
-    /**
-     * @brief Username of the person who created this version.
-     */
-    std::string modified_by;
-
-    /**
-     * @brief Timestamp when this version was created.
-     */
-    std::string modified_at;
-
-    /**
-     * @brief Summary of changes made in this version.
-     *
-     * Examples: "Created currency", "Modified 2 fields", "Updated name and symbol"
-     */
-    std::string change_summary;
-};
-
+std::ostream& operator<<(std::ostream& s, const currency& v) {
+    rfl::json::write(v, s);
+    return s;
 }
 
-#endif
+}

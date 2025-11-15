@@ -21,6 +21,8 @@
 #define ORES_RISK_DOMAIN_CURRENCY_VERSION_HPP
 
 #include <string>
+#include <vector>
+#include <iosfwd>
 #include "ores.risk/domain/currency.hpp"
 
 namespace ores::risk::domain {
@@ -56,6 +58,25 @@ struct currency_version final {
      */
     std::string change_summary;
 };
+
+std::ostream& operator<<(std::ostream& s, const currency_version& v);
+
+/**
+ * @brief Contains the full version history for a currency.
+ */
+struct currency_version_history final {
+    /**
+     * @brief ISO code of the currency.
+     */
+    std::string iso_code;
+
+    /**
+     * @brief All versions of this currency, ordered from newest to oldest.
+     */
+    std::vector<currency_version> versions;
+};
+
+std::ostream& operator<<(std::ostream& s, const currency_version_history& v);
 
 }
 

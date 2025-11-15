@@ -21,8 +21,9 @@
 
 #include <array>
 #include <catch2/catch_test_macros.hpp>
-#include "ores.utility/log/make_logger.hpp"
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include "ores.utility/log/make_logger.hpp"
+#include "ores.risk/domain/currency_json_io.hpp" // IWYU pragma: keep.
 
 namespace {
 

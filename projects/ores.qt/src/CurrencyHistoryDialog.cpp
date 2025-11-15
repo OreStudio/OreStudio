@@ -30,40 +30,40 @@
 
 namespace ores::qt {
 
+using comms::protocol::frame;
+using comms::protocol::message_type;
 using namespace ores::utility::log;
 
-CurrencyHistoryDialog::CurrencyHistoryDialog(const QString& iso_code,
-                                             std::shared_ptr<comms::client> client,
-                                             QWidget* parent)
-    : QWidget(parent),
-      ui_(new Ui::CurrencyHistoryDialog),
-      client_(std::move(client)),
-      isoCode_(iso_code) {
+const QIcon& CurrencyHistoryDialog::getHistoryIcon() const {
+    static const QIcon historyIcon(":/icons/ic_fluent_history_20_regular.svg");
+    return historyIcon;
+}
+
+CurrencyHistoryDialog::CurrencyHistoryDialog(QString iso_code,
+    std::shared_ptr<comms::client> client, QWidget* parent)
+    : QWidget(parent), ui_(new Ui::CurrencyHistoryDialog),
+      client_(std::move(client)), isoCode_(std::move(iso_code)) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating currency history widget for: "
                               << isoCode_.toStdString();
 
     ui_->setupUi(this);
 
-    // Connect version list selection
     connect(ui_->versionListWidget, &QTableWidget::currentCellChanged,
             this, [this](int currentRow, int, int, int) {
         onVersionSelected(currentRow);
     });
 
-    // Apply same styling as currencies table
     ui_->versionListWidget->setAlternatingRowColors(true);
     ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui_->versionListWidget->resizeRowsToContents();
 
-    // Configure version table headers (same as currencies table)
     QHeaderView* versionVerticalHeader = ui_->versionListWidget->verticalHeader();
     QHeaderView* versionHorizontalHeader = ui_->versionListWidget->horizontalHeader();
     versionVerticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
     versionHorizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-    // Set up changes table headers
     ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
     ui_->changesTableWidget->setColumnWidth(0, 200);
     ui_->changesTableWidget->setColumnWidth(1, 200);
@@ -79,74 +79,71 @@ CurrencyHistoryDialog::~CurrencyHistoryDialog() {
         watcher->cancel();
         watcher->waitForFinished();
     }
-
-    // Disconnect all signal connections to prevent callbacks during destruction
-    if (ui_ && ui_->versionListWidget) {
-        disconnect(ui_->versionListWidget, nullptr, this, nullptr);
-    }
-
-    delete ui_;
 }
 
 void CurrencyHistoryDialog::loadHistory() {
     BOOST_LOG_SEV(lg(), info) << "Loading currency history for: "
                               << isoCode_.toStdString();
 
-    // Create request
     risk::messaging::get_currency_history_request request{isoCode_.toStdString()};
     auto payload = request.serialize();
 
-    comms::protocol::frame request_frame(
-        comms::protocol::message_type::get_currency_history_request,
-        0,
-        std::move(payload)
+    frame request_frame(message_type::get_currency_history_request,
+        0, std::move(payload)
     );
 
-    // Send request asynchronously
-    using HistoryResult = std::expected<comms::protocol::frame, std::string>;
-    QFuture<HistoryResult> future = QtConcurrent::run([this, frame = std::move(request_frame)]() mutable -> HistoryResult {
-        auto response_result = client_->send_request_sync(std::move(frame));
+    using HistoryResult = std::expected<frame, std::string>;
+    QPointer<CurrencyHistoryDialog> self = this;
+    QFuture<HistoryResult> future =
+        QtConcurrent::run([self, frame = std::move(request_frame)]() mutable -> HistoryResult {
+        auto response_result = self->client_->send_request_sync(std::move(frame));
         if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Could not obtain currency history: "
+                                       << "Failed to communicate with server.";
             return std::unexpected("Failed to communicate with server");
         }
         return *response_result;
     });
 
     // Use watcher to handle results
-    auto* watcher = new QFutureWatcher<HistoryResult>(this);
-    connect(watcher, &QFutureWatcher<HistoryResult>::finished,
-            this, [this, watcher]() {
+    auto* watcher = new QFutureWatcher<HistoryResult>(self);
+    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self,
+        [self, watcher]() {
+
+        if (!self) return;
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (!result) {
-            onHistoryLoadError(QString::fromStdString(result.error()));
+            self->onHistoryLoadError(QString::fromStdString(result.error()));
             return;
         }
 
         // Check if server sent an error_response instead
-        if (result->header().type != comms::protocol::message_type::get_currency_history_response) {
-            onHistoryLoadError(QString("Server does not support currency history (received message type %1)")
+        if (result->header().type != message_type::get_currency_history_response) {
+            self->onHistoryLoadError(
+                QString("Server does not support currency history: received message type %1")
                 .arg(static_cast<int>(result->header().type)));
             return;
         }
 
-        auto response = risk::messaging::get_currency_history_response::deserialize(
-            result->payload()
-        );
+        auto response = risk::messaging::get_currency_history_response::
+            deserialize(result->payload());
 
         if (!response) {
-            onHistoryLoadError("Invalid server response");
+            BOOST_LOG_SEV(lg(), error) << "Could not deserialise server response.";
+            self->onHistoryLoadError("Invalid server response");
             return;
         }
 
         if (!response->success) {
-            onHistoryLoadError(QString::fromStdString(response->message));
+            BOOST_LOG_SEV(lg(), error) << "Response was not success.";
+            self->onHistoryLoadError(QString::fromStdString(response->message));
             return;
         }
 
-        history_ = std::move(response->history);
-        onHistoryLoaded();
+        self->history_ = std::move(response->history);
+        self->onHistoryLoaded();
     });
 
     watcher->setFuture(future);
@@ -156,32 +153,30 @@ void CurrencyHistoryDialog::onHistoryLoaded() {
     BOOST_LOG_SEV(lg(), info) << "History loaded successfully: "
                               << history_.versions.size() << " versions";
 
-    // Clear existing items
+    const QIcon& cachedIcon = getHistoryIcon();
     ui_->versionListWidget->setRowCount(0);
-
-    // Add each version to the table
     ui_->versionListWidget->setRowCount(history_.versions.size());
+
     for (int i = 0; i < static_cast<int>(history_.versions.size()); ++i) {
         const auto& version = history_.versions[i];
 
-        auto* versionItem = new QTableWidgetItem(QString::number(version.version_number));
-        auto* modifiedAtItem = new QTableWidgetItem(QString::fromStdString(version.modified_at));
-        auto* modifiedByItem = new QTableWidgetItem(QString::fromStdString(version.modified_by));
+        auto* versionItem =
+            new QTableWidgetItem(QString::number(version.version_number));
+        auto* modifiedAtItem =
+            new QTableWidgetItem(QString::fromStdString(version.modified_at));
+        auto* modifiedByItem =
+            new QTableWidgetItem(QString::fromStdString(version.modified_by));
 
-        // Add icon to version column
-        versionItem->setIcon(QIcon(":/icons/ic_fluent_history_20_regular.svg"));
+        versionItem->setIcon(cachedIcon);
 
         ui_->versionListWidget->setItem(i, 0, versionItem);
         ui_->versionListWidget->setItem(i, 1, modifiedAtItem);
         ui_->versionListWidget->setItem(i, 2, modifiedByItem);
     }
 
-    // Select first version if available
-    if (!history_.versions.empty()) {
+    if (!history_.versions.empty())
         ui_->versionListWidget->selectRow(0);
-    }
 
-    // Update title with currency name
     if (!history_.versions.empty()) {
         const auto& latest = history_.versions[0];
         ui_->titleLabel->setText(QString("Currency History: %1 - %2")
@@ -189,23 +184,26 @@ void CurrencyHistoryDialog::onHistoryLoaded() {
             .arg(QString::fromStdString(latest.data.name)));
     }
 
-    emit statusChanged(QString("Loaded %1 versions").arg(history_.versions.size()));
+    emit statusChanged(QString("Loaded %1 versions")
+        .arg(history_.versions.size()));
 }
 
 void CurrencyHistoryDialog::onHistoryLoadError(const QString& error_msg) {
-    BOOST_LOG_SEV(lg(), ores::utility::log::error) << "Error loading history: " << error_msg.toStdString();
+    BOOST_LOG_SEV(lg(), error) << "Error loading history: "
+                               << error_msg.toStdString();
 
-    emit errorOccurred(QString("Failed to load currency history: %1").arg(error_msg));
+    emit errorOccurred(QString("Failed to load currency history: %1")
+        .arg(error_msg));
     MessageBoxHelper::critical(this, "History Load Error",
-        QString("Failed to load currency history:\n%1").arg(error_msg));
+        QString("Failed to load currency history:\n%1")
+        .arg(error_msg));
 }
 
 void CurrencyHistoryDialog::onVersionSelected(int index) {
-    if (index < 0 || index >= static_cast<int>(history_.versions.size())) {
+    if (index < 0 || index >= static_cast<int>(history_.versions.size()))
         return;
-    }
 
-    BOOST_LOG_SEV(lg(), debug) << "Version selected: " << index;
+    BOOST_LOG_SEV(lg(), trace) << "Version selected: " << index;
 
     displayChangesTab(index);
     displayFullDetailsTab(index);
@@ -214,17 +212,15 @@ void CurrencyHistoryDialog::onVersionSelected(int index) {
 void CurrencyHistoryDialog::displayChangesTab(int version_index) {
     ui_->changesTableWidget->setRowCount(0);
 
-    if (version_index >= static_cast<int>(history_.versions.size())) {
+    if (version_index >= static_cast<int>(history_.versions.size()))
         return;
-    }
 
     const auto& current = history_.versions[version_index];
 
-    // If this is the first (oldest) version, there's nothing to diff against
-    // so leave the changes table empty
-    if (version_index == static_cast<int>(history_.versions.size()) - 1) {
+    // If this is the first (oldest) version, there's nothing to diff against so
+    // leave the changes table empty
+    if (version_index == static_cast<int>(history_.versions.size()) - 1)
         return;
-    }
 
     // Calculate diff with previous version
     const auto& previous = history_.versions[version_index + 1];
@@ -247,9 +243,8 @@ void CurrencyHistoryDialog::displayChangesTab(int version_index) {
 }
 
 void CurrencyHistoryDialog::displayFullDetailsTab(int version_index) {
-    if (version_index >= static_cast<int>(history_.versions.size())) {
+    if (version_index >= static_cast<int>(history_.versions.size()))
         return;
-    }
 
     const auto& version = history_.versions[version_index];
     const auto& data = version.data;
@@ -265,104 +260,64 @@ void CurrencyHistoryDialog::displayFullDetailsTab(int version_index) {
     ui_->modifiedAtValue->setText(QString::fromStdString(version.modified_at));
 }
 
-QVector<QPair<QString, QPair<QString, QString>>>
-CurrencyHistoryDialog::calculateDiff(
-    const risk::domain::currency_version& current,
+#define CHECK_DIFF_STRING(FIELD_NAME, FIELD) \
+    if (current.data.FIELD != previous.data.FIELD) { \
+        diffs.append({FIELD_NAME, { \
+            QString::fromStdString(previous.data.FIELD), \
+            QString::fromStdString(current.data.FIELD) \
+        }}); \
+    }
+
+#define CHECK_DIFF_INT(FIELD_NAME, FIELD) \
+    if (current.data.FIELD != previous.data.FIELD) { \
+        diffs.append({FIELD_NAME, { \
+            QString::number(previous.data.FIELD), \
+            QString::number(current.data.FIELD) \
+        }}); \
+    }
+
+CurrencyHistoryDialog::DiffResult CurrencyHistoryDialog::
+calculateDiff(const risk::domain::currency_version& current,
     const risk::domain::currency_version& previous) {
 
-    QVector<QPair<QString, QPair<QString, QString>>> diffs;
+    DiffResult diffs;
 
-    // Compare each field
-    if (current.data.iso_code != previous.data.iso_code) {
-        diffs.append({"ISO Code", {QString::fromStdString(previous.data.iso_code),
-                                   QString::fromStdString(current.data.iso_code)}});
-    }
+    // Compare string fields
+    CHECK_DIFF_STRING("ISO Code", iso_code);
+    CHECK_DIFF_STRING("Name", name);
+    CHECK_DIFF_STRING("Numeric Code", numeric_code);
+    CHECK_DIFF_STRING("Symbol", symbol);
+    CHECK_DIFF_STRING("Fraction Symbol", fraction_symbol);
+    CHECK_DIFF_STRING("Rounding Type", rounding_type);
+    CHECK_DIFF_STRING("Format", format);
+    CHECK_DIFF_STRING("Currency Type", currency_type);
 
-    if (current.data.name != previous.data.name) {
-        diffs.append({"Name", {QString::fromStdString(previous.data.name),
-                               QString::fromStdString(current.data.name)}});
-    }
-
-    if (current.data.numeric_code != previous.data.numeric_code) {
-        diffs.append({"Numeric Code", {QString::fromStdString(previous.data.numeric_code),
-                                       QString::fromStdString(current.data.numeric_code)}});
-    }
-
-    if (current.data.symbol != previous.data.symbol) {
-        diffs.append({"Symbol", {QString::fromStdString(previous.data.symbol),
-                                 QString::fromStdString(current.data.symbol)}});
-    }
-
-    if (current.data.fraction_symbol != previous.data.fraction_symbol) {
-        diffs.append({"Fraction Symbol", {QString::fromStdString(previous.data.fraction_symbol),
-                                          QString::fromStdString(current.data.fraction_symbol)}});
-    }
-
-    if (current.data.fractions_per_unit != previous.data.fractions_per_unit) {
-        diffs.append({"Fractions Per Unit", {QString::number(previous.data.fractions_per_unit),
-                                             QString::number(current.data.fractions_per_unit)}});
-    }
-
-    if (current.data.rounding_type != previous.data.rounding_type) {
-        diffs.append({"Rounding Type", {QString::fromStdString(previous.data.rounding_type),
-                                        QString::fromStdString(current.data.rounding_type)}});
-    }
-
-    if (current.data.rounding_precision != previous.data.rounding_precision) {
-        diffs.append({"Rounding Precision", {QString::number(previous.data.rounding_precision),
-                                             QString::number(current.data.rounding_precision)}});
-    }
-
-    if (current.data.format != previous.data.format) {
-        diffs.append({"Format", {QString::fromStdString(previous.data.format),
-                                 QString::fromStdString(current.data.format)}});
-    }
-
-    if (current.data.currency_type != previous.data.currency_type) {
-        diffs.append({"Currency Type", {QString::fromStdString(previous.data.currency_type),
-                                        QString::fromStdString(current.data.currency_type)}});
-    }
+    // Compare integer fields
+    CHECK_DIFF_INT("Fractions Per Unit", fractions_per_unit);
+    CHECK_DIFF_INT("Rounding Precision", rounding_precision);
 
     return diffs;
 }
 
+#undef CHECK_DIFF_STRING
+#undef CHECK_DIFF_INT
+
 QSize CurrencyHistoryDialog::sizeHint() const {
-    if (!ui_->versionListWidget) {
-        return QWidget::sizeHint();
-    }
+    // Call the base implementation first to get the minimum size required by
+    // the layout manager and its content's size policies.
+    QSize baseSize = QWidget::sizeHint();
 
-    // Calculate width based on version table columns plus changes/details tabs
-    int versionTableWidth = ui_->versionListWidget->verticalHeader()->width();
-    for (int i = 0; i < ui_->versionListWidget->horizontalHeader()->count(); ++i) {
-        versionTableWidth += ui_->versionListWidget->columnWidth(i);
-    }
-    versionTableWidth += ui_->versionListWidget->verticalScrollBar()->sizeHint().width();
-    versionTableWidth += ui_->versionListWidget->frameWidth() * 2;
+    // Define a reasonable minimum size for a history dialog. This ensures the
+    // two panes (Version List and Details/Changes) are comfortably visible.
+    // These numbers are chosen to fit most content without excessive manual
+    // calculation.
+    const int minimumWidth = 900;
+    const int minimumHeight = 600;
 
-    // Changes table width
-    int changesTableWidth = 0;
-    if (ui_->changesTableWidget) {
-        changesTableWidth = ui_->changesTableWidget->verticalHeader()->width();
-        for (int i = 0; i < ui_->changesTableWidget->horizontalHeader()->count(); ++i) {
-            changesTableWidth += ui_->changesTableWidget->columnWidth(i);
-        }
-        changesTableWidth += ui_->changesTableWidget->verticalScrollBar()->sizeHint().width();
-        changesTableWidth += ui_->changesTableWidget->frameWidth() * 2;
-    }
-
-    // Use the wider of the two tables, plus some padding
-    int width = qMax(versionTableWidth, changesTableWidth) + 40;
-
-    // Height: version table height + tab widget height
-    int versionTableHeight = ui_->versionListWidget->horizontalHeader()->height();
-    int rowHeight = ui_->versionListWidget->verticalHeader()->defaultSectionSize();
-    versionTableHeight += rowHeight * qMin(10, ui_->versionListWidget->rowCount()); // Up to 10 rows
-    versionTableHeight += ui_->versionListWidget->frameWidth() * 2;
-
-    int tabHeight = 400; // Reasonable height for changes/details tabs
-    int height = versionTableHeight + tabHeight + 40; // Extra padding
-
-    return QSize(width, height);
+    // Return the maximum of the base size (to accommodate large text/UI
+    // elements) and the defined minimum size.
+    return { qMax(baseSize.width(), minimumWidth),
+             qMax(baseSize.height(), minimumHeight) };
 }
 
 }

@@ -34,6 +34,7 @@
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
 #include "ores.accounts/domain/account_table_io.hpp"
+#include "ores.risk/domain/currency_table_io.hpp"
 
 namespace ores::client::app {
 

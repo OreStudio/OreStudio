@@ -34,14 +34,10 @@
 
 namespace ores::qt {
 
+using comms::protocol::frame;
+using comms::protocol::message_type;
 using namespace ores::utility::log;
-
-namespace {
-    auto& lg() {
-        static auto instance = make_logger("ores.qt.currency_detail_panel");
-        return instance;
-    }
-}
+using FutureResult = std::pair<bool, std::string>;
 
 QIcon CurrencyDetailPanel::createRecoloredIcon(const QString& svgPath, const QColor& color) {
     QIcon originalIcon(svgPath);
@@ -91,7 +87,9 @@ QIcon CurrencyDetailPanel::createRecoloredIcon(const QString& svgPath, const QCo
 }
 
 CurrencyDetailPanel::CurrencyDetailPanel(QWidget* parent)
-    : QWidget(parent), ui_(new Ui::CurrencyDetailPanel), isDirty_(false), is_add_mode_(false) { // Removed client from constructor, initialized client_ to nullptr implicitly
+    : QWidget(parent), ui_(new Ui::CurrencyDetailPanel), isDirty_(false),
+      isAddMode_(false) {
+
     ui_->setupUi(this);
 
     // Create toolbar
@@ -104,36 +102,51 @@ CurrencyDetailPanel::CurrencyDetailPanel(QWidget* parent)
 
     // Create Save action
     saveAction_ = new QAction("Save", this);
-    saveAction_->setIcon(createRecoloredIcon(":/icons/ic_fluent_save_20_filled.svg", iconColor));
+    saveAction_->setIcon(createRecoloredIcon(":/icons/ic_fluent_save_20_filled.svg",
+            iconColor));
     saveAction_->setToolTip("Save changes");
-    connect(saveAction_, &QAction::triggered, this, &CurrencyDetailPanel::onSaveClicked);
+    connect(saveAction_, &QAction::triggered, this,
+        &CurrencyDetailPanel::onSaveClicked);
     toolBar_->addAction(saveAction_);
 
     // Create Delete action
     deleteAction_ = new QAction("Delete", this);
-    deleteAction_->setIcon(createRecoloredIcon(":/icons/ic_fluent_delete_20_regular.svg", iconColor));
+    deleteAction_->setIcon(createRecoloredIcon(
+            ":/icons/ic_fluent_delete_20_regular.svg", iconColor));
     deleteAction_->setToolTip("Delete currency");
-    connect(deleteAction_, &QAction::triggered, this, &CurrencyDetailPanel::onDeleteClicked);
+    connect(deleteAction_, &QAction::triggered, this,
+        &CurrencyDetailPanel::onDeleteClicked);
     toolBar_->addAction(deleteAction_);
 
     // Add toolbar to the panel's layout
     // Get the main layout from the UI
     auto* mainLayout = qobject_cast<QVBoxLayout*>(layout());
-    if (mainLayout) {
+    if (mainLayout)
         mainLayout->insertWidget(0, toolBar_);
-    }
 
     // Connect signals for editable fields to detect changes
-    connect(ui_->isoCodeEdit, &QLineEdit::textChanged, this, &CurrencyDetailPanel::onFieldChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &CurrencyDetailPanel::onFieldChanged);
-    connect(ui_->numericCodeEdit, &QLineEdit::textChanged, this, &CurrencyDetailPanel::onFieldChanged);
-    connect(ui_->symbolEdit, &QLineEdit::textChanged, this, &CurrencyDetailPanel::onFieldChanged);
-    connect(ui_->fractionSymbolEdit, &QLineEdit::textChanged, this, &CurrencyDetailPanel::onFieldChanged);
-    connect(ui_->fractionsPerUnitSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this, &CurrencyDetailPanel::onFieldChanged);
-    connect(ui_->roundingTypeEdit, &QLineEdit::textChanged, this, &CurrencyDetailPanel::onFieldChanged);
-    connect(ui_->roundingPrecisionSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this, &CurrencyDetailPanel::onFieldChanged);
-    connect(ui_->formatEdit, &QLineEdit::textChanged, this, &CurrencyDetailPanel::onFieldChanged);
-    connect(ui_->currencyTypeEdit, &QLineEdit::textChanged, this, &CurrencyDetailPanel::onFieldChanged);
+    connect(ui_->isoCodeEdit, &QLineEdit::textChanged, this,
+        &CurrencyDetailPanel::onFieldChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
+        &CurrencyDetailPanel::onFieldChanged);
+    connect(ui_->numericCodeEdit, &QLineEdit::textChanged, this,
+        &CurrencyDetailPanel::onFieldChanged);
+    connect(ui_->symbolEdit, &QLineEdit::textChanged, this,
+        &CurrencyDetailPanel::onFieldChanged);
+    connect(ui_->fractionSymbolEdit, &QLineEdit::textChanged, this,
+        &CurrencyDetailPanel::onFieldChanged);
+    connect(ui_->fractionsPerUnitSpinBox,
+        QOverload<int>::of(&QSpinBox::valueChanged), this,
+        &CurrencyDetailPanel::onFieldChanged);
+    connect(ui_->roundingTypeEdit, &QLineEdit::textChanged, this,
+        &CurrencyDetailPanel::onFieldChanged);
+    connect(ui_->roundingPrecisionSpinBox, QOverload<int>::of(
+            &QSpinBox::valueChanged), this,
+        &CurrencyDetailPanel::onFieldChanged);
+    connect(ui_->formatEdit, &QLineEdit::textChanged, this,
+        &CurrencyDetailPanel::onFieldChanged);
+    connect(ui_->currencyTypeEdit, &QLineEdit::textChanged, this,
+        &CurrencyDetailPanel::onFieldChanged);
 
     // Initially disable save/reset buttons
     updateSaveResetButtonState();
@@ -148,42 +161,19 @@ void CurrencyDetailPanel::setUsername(const std::string& username) {
 }
 
 CurrencyDetailPanel::~CurrencyDetailPanel() {
-    // Disconnect and cancel any active QFutureWatcher objects
     const auto watchers = findChildren<QFutureWatcherBase*>();
     for (auto* watcher : watchers) {
         disconnect(watcher, nullptr, this, nullptr);
         watcher->cancel();
         watcher->waitForFinished();
     }
-
-    // Disconnect all signals from the toolbar actions
-    if (toolBar_) {
-        const auto actions = toolBar_->actions();
-        for (QAction* action : actions) {
-            disconnect(action, nullptr, this, nullptr);
-        }
-    }
-
-    // Disconnect all UI widget signals
-    if (ui_) {
-        if (ui_->isoCodeEdit) disconnect(ui_->isoCodeEdit, nullptr, this, nullptr);
-        if (ui_->nameEdit) disconnect(ui_->nameEdit, nullptr, this, nullptr);
-        if (ui_->numericCodeEdit) disconnect(ui_->numericCodeEdit, nullptr, this, nullptr);
-        if (ui_->symbolEdit) disconnect(ui_->symbolEdit, nullptr, this, nullptr);
-        if (ui_->fractionSymbolEdit) disconnect(ui_->fractionSymbolEdit, nullptr, this, nullptr);
-        if (ui_->fractionsPerUnitSpinBox) disconnect(ui_->fractionsPerUnitSpinBox, nullptr, this, nullptr);
-        if (ui_->roundingTypeEdit) disconnect(ui_->roundingTypeEdit, nullptr, this, nullptr);
-        if (ui_->roundingPrecisionSpinBox) disconnect(ui_->roundingPrecisionSpinBox, nullptr, this, nullptr);
-        if (ui_->formatEdit) disconnect(ui_->formatEdit, nullptr, this, nullptr);
-        if (ui_->currencyTypeEdit) disconnect(ui_->currencyTypeEdit, nullptr, this, nullptr);
-    }
 }
 
 void CurrencyDetailPanel::setCurrency(const risk::domain::currency& currency) {
     currentCurrency_ = currency;
-    is_add_mode_ = currency.iso_code.empty();
+    isAddMode_ = currency.iso_code.empty();
 
-    ui_->isoCodeEdit->setReadOnly(!is_add_mode_);
+    ui_->isoCodeEdit->setReadOnly(!isAddMode_);
     ui_->isoCodeEdit->setText(QString::fromStdString(currency.iso_code));
     ui_->nameEdit->setText(QString::fromStdString(currency.name));
     ui_->numericCodeEdit->setText(QString::fromStdString(currency.numeric_code));
@@ -204,7 +194,7 @@ void CurrencyDetailPanel::setCurrency(const risk::domain::currency& currency) {
 }
 
 risk::domain::currency CurrencyDetailPanel::getCurrency() const {
-    risk::domain::currency currency = currentCurrency_; // Start with original to keep read-only fields
+    risk::domain::currency currency = currentCurrency_;
     currency.iso_code = ui_->isoCodeEdit->text().toStdString();
     currency.name = ui_->nameEdit->text().toStdString();
     currency.numeric_code = ui_->numericCodeEdit->text().toStdString();
@@ -215,8 +205,6 @@ risk::domain::currency CurrencyDetailPanel::getCurrency() const {
     currency.rounding_precision = ui_->roundingPrecisionSpinBox->value();
     currency.format = ui_->formatEdit->text().toStdString();
     currency.currency_type = ui_->currencyTypeEdit->text().toStdString();
-
-    // Set modified_by to application user (trigger will set valid_from/valid_to)
     currency.modified_by = username_.empty() ? "qt_user" : username_;
 
     return currency;
@@ -253,102 +241,101 @@ void CurrencyDetailPanel::onSaveClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Save clicked for currency: " << currentCurrency_.iso_code;
+    BOOST_LOG_SEV(lg(), debug) << "Save clicked for currency: "
+                               << currentCurrency_.iso_code;
 
     risk::domain::currency currency = getCurrency();
 
-    // Send update request asynchronously
-    QFuture<std::pair<bool, std::string>> future =
-        QtConcurrent::run([this, currency]() -> std::pair<bool, std::string> {
-            BOOST_LOG_SEV(lg(), info) << "Sending save currency request for: "
-                                      << currency.iso_code;
+    QPointer<CurrencyDetailPanel> self = this;
+    QFuture<FutureResult> future =
+        QtConcurrent::run([self, currency]() -> FutureResult {
+            if (!self) return {false, ""};
+                BOOST_LOG_SEV(lg(), debug) << "Sending save currency request for: "
+                                           << currency.iso_code;
 
-            // Ensure client is still valid in the background thread
-            if (!client_ || !client_->is_connected()) {
-                return {false, "Client disconnected during operation."};
-            }
+                if (!self->client_ || !self->client_->is_connected())
+                    return {false, "Client disconnected during save request."};
 
-            comms::protocol::frame request_frame;
-            if (is_add_mode_) {
-                risk::messaging::create_currency_request request{currency};
-                auto payload = request.serialize();
-                request_frame = comms::protocol::frame(
-                    comms::protocol::message_type::create_currency_request,
-                    0,
-                    std::move(payload)
-                );
-            } else {
-                risk::messaging::update_currency_request request{currency};
-                auto payload = request.serialize();
-                request_frame = comms::protocol::frame(
-                    comms::protocol::message_type::update_currency_request,
-                    0,
-                    std::move(payload)
-                );
-            }
-
-
-            // Send request synchronously (on background thread)
-            auto response_result = client_->send_request_sync(std::move(request_frame));
-
-            if (!response_result) {
-                return {false, "Failed to communicate with server"};
-            }
-
-            BOOST_LOG_SEV(lg(), info) << "Received save currency response.";
-            bool result = false;
-            std::string message = "Invalid server response";
-            if (is_add_mode_) {
-                using risk::messaging::create_currency_response;
-                auto response = create_currency_response::deserialize(response_result->payload());
-                if (response) {
-                    result = true;
-                    message = response->message;
+                frame request_frame;
+                if (self->isAddMode_) {
+                    risk::messaging::create_currency_request request{currency};
+                    auto payload = request.serialize();
+                    request_frame = frame(message_type::create_currency_request,
+                        0, std::move(payload));
+                } else {
+                    risk::messaging::update_currency_request request{currency};
+                    auto payload = request.serialize();
+                    request_frame = frame(message_type::update_currency_request,
+                        0, std::move(payload));
                 }
-            } else {
-                using risk::messaging::update_currency_response;
-                auto response = update_currency_response::deserialize(response_result->payload());
-                if (response) {
-                    result = true;
-                    message = response->message;
+
+                auto response_result =
+                    self->client_->send_request_sync(std::move(request_frame));
+
+                if (!response_result)
+                    return {false, "Failed to communicate with server"};
+
+                BOOST_LOG_SEV(lg(), debug) << "Received save currency response.";
+                bool result = false;
+                std::string message = "Invalid server response";
+                if (self->isAddMode_) {
+                    using risk::messaging::create_currency_response;
+                    auto response = create_currency_response::
+                        deserialize(response_result->payload());
+                    if (response) {
+                        result = true;
+                        message = response->message;
+                    }
+                } else {
+                    using risk::messaging::update_currency_response;
+                    auto response = update_currency_response::
+                        deserialize(response_result->payload());
+                    if (response) {
+                        result = true;
+                        message = response->message;
+                    }
                 }
-            }
 
-            return {result, message};
-        });
+                return {result, message};
+            });
 
-    // Use a watcher to handle the result
-    auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(this);
-    connect(watcher, &QFutureWatcher<std::pair<bool, std::string>>::finished,
-            this, [this, watcher, currency]() {
+    auto* watcher = new QFutureWatcher<FutureResult>(self);
+    connect(watcher, &QFutureWatcher<FutureResult>::finished, self,
+        [self, watcher, currency]() {
+
+        if (!self)
+            return;
+
         auto [success, message] = watcher->result();
         watcher->deleteLater();
 
         if (success) {
-            BOOST_LOG_SEV(lg(), info) << "Currency saved successfully";
+            BOOST_LOG_SEV(lg(), debug) << "Currency saved successfully.";
 
-            emit statusMessage(QString("Successfully saved currency: %1")
+            emit self->statusMessage(QString("Successfully saved currency: %1")
                 .arg(QString::fromStdString(currency.iso_code)));
 
-            isDirty_ = false;
-            emit isDirtyChanged(false);
-            updateSaveResetButtonState();
+            self->isDirty_ = false;
+            emit self->isDirtyChanged(false);
+            self->updateSaveResetButtonState();
 
             // Transition from add mode to edit mode after successful creation
-            if (is_add_mode_) {
-                is_add_mode_ = false;
-                currentCurrency_ = currency; // Update with saved currency
-                ui_->isoCodeEdit->setReadOnly(true); // ISO code can't be changed anymore
-                emit currencyCreated(QString::fromStdString(currency.iso_code));
+            if (self->isAddMode_) {
+                self->isAddMode_ = false;
+                self->currentCurrency_ = currency; // Update with saved currency
+                self->ui_->isoCodeEdit->setReadOnly(true); // ISO code can't be changed anymore
+                emit self->currencyCreated(
+                    QString::fromStdString(currency.iso_code));
             } else {
-                currentCurrency_ = currency; // Update with modified currency
-                emit currencyUpdated(QString::fromStdString(currency.iso_code));
+                self->currentCurrency_ = currency; // Update with modified currency
+                emit self->currencyUpdated(
+                    QString::fromStdString(currency.iso_code));
             }
         } else {
             BOOST_LOG_SEV(lg(), error) << "Currency save failed: " << message;
-            emit errorMessage(QString("Failed to save currency: %1")
+            emit self->errorMessage(QString("Failed to save currency: %1")
                 .arg(QString::fromStdString(message)));
-            MessageBoxHelper::critical(this, "Save Failed",
+            MessageBoxHelper::critical(self, "Save Failed",
                 QString::fromStdString(message));
         }
     });
@@ -357,8 +344,9 @@ void CurrencyDetailPanel::onSaveClicked() {
 }
 
 void CurrencyDetailPanel::onResetClicked() {
-    BOOST_LOG_SEV(lg(), info) << "Reset clicked for currency: " << currentCurrency_.iso_code;
-    setCurrency(currentCurrency_); // Revert to original values
+    BOOST_LOG_SEV(lg(), debug) << "Reset clicked for currency: "
+                               << currentCurrency_.iso_code;
+    setCurrency(currentCurrency_);
 }
 
 void CurrencyDetailPanel::onDeleteClicked() {
@@ -368,81 +356,82 @@ void CurrencyDetailPanel::onDeleteClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Delete request for currency: "
-                              << currentCurrency_.iso_code;
+    BOOST_LOG_SEV(lg(), debug) << "Delete request for currency: "
+                               << currentCurrency_.iso_code;
 
-    // Confirm deletion
-    auto reply = MessageBoxHelper::question(this, "Delete Currency",
+    auto reply =
+        MessageBoxHelper::question(this, "Delete Currency",
         QString("Are you sure you want to delete currency '%1' (%2)?")
-            .arg(QString::fromStdString(currentCurrency_.name))
-            .arg(QString::fromStdString(currentCurrency_.iso_code)),
+        .arg(QString::fromStdString(currentCurrency_.name))
+        .arg(QString::fromStdString(currentCurrency_.iso_code)),
         QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
-        BOOST_LOG_SEV(lg(), info) << "Delete cancelled by user";
+        BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
         return;
     }
 
-    // Store currency ISO code for the async operation
+    QPointer<CurrencyDetailPanel> self = this;
     const std::string iso_code = currentCurrency_.iso_code;
+    QFuture<FutureResult> future =
+        QtConcurrent::run([self, iso_code]() -> FutureResult {
+            if (!self) return {false, {}};
+            BOOST_LOG_SEV(lg(), debug) << "Sending delete currency request for: "
+                                       << iso_code;
 
-    // Send delete request asynchronously
-    QFuture<std::pair<bool, std::string>> future =
-        QtConcurrent::run([this, iso_code]() -> std::pair<bool, std::string> {
-            BOOST_LOG_SEV(lg(), info) << "Sending delete currency request for: "
-                                      << iso_code;
-
-            // Ensure client is still valid in the background thread
-            if (!client_ || !client_->is_connected()) {
+            if (!self->client_ || !self->client_->is_connected()) {
+                BOOST_LOG_SEV(lg(), error) << "Client disconnected during operation.";
                 return {false, "Client disconnected during operation."};
             }
 
             risk::messaging::delete_currency_request request{iso_code};
             auto payload = request.serialize();
 
-            comms::protocol::frame request_frame(
-                comms::protocol::message_type::delete_currency_request,
-                0,
-                std::move(payload)
-            );
+            frame request_frame(message_type::delete_currency_request,
+                    0, std::move(payload));
 
-            // Send request synchronously (on background thread)
-            auto response_result = client_->send_request_sync(std::move(request_frame));
+            auto response_result =
+                self->client_->send_request_sync(std::move(request_frame));
 
             if (!response_result) {
-                return {false, "Failed to communicate with server"};
+                BOOST_LOG_SEV(lg(), error) << "Failed to communicate with server.";
+                return {false, "Failed to communicate with server."};
             }
 
-            BOOST_LOG_SEV(lg(), info) << "Received delete currency response";
+            BOOST_LOG_SEV(lg(), debug) << "Received delete currency response.";
             auto response = risk::messaging::delete_currency_response::deserialize(
-                response_result->payload()
-            );
+                response_result->payload());
 
             if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Invalid server response";
                 return {false, "Invalid server response"};
             }
 
             return {response->success, response->message};
         });
 
-    // Use a watcher to handle the result
-    auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(this);
-    connect(watcher, &QFutureWatcher<std::pair<bool, std::string>>::finished,
-            this, [this, watcher, iso_code]() {
+
+    auto* watcher = new QFutureWatcher<FutureResult>(self);
+    connect(watcher, &QFutureWatcher<FutureResult>::finished, self,
+        [self, watcher, iso_code]() {
+
+        BOOST_LOG_SEV(lg(), debug) << "Received currencies delete result.";
+        if (!self) return;
         auto [success, message] = watcher->result();
         watcher->deleteLater();
 
         if (success) {
-            BOOST_LOG_SEV(lg(), info) << "Currency deleted successfully";
-            emit statusMessage(QString("Successfully deleted currency: %1")
+            BOOST_LOG_SEV(lg(), debug) << "Currency deleted successfully.";
+            emit self->statusMessage(QString("Successfully deleted currency: %1")
                 .arg(QString::fromStdString(iso_code)));
-            emit currencyDeleted(QString::fromStdString(iso_code)); // Notify parent
-            clearPanel(); // Clear panel after deletion
+            emit self->currencyDeleted(QString::fromStdString(iso_code));
+            self->clearPanel();
         } else {
-            BOOST_LOG_SEV(lg(), error) << "Currency deletion failed: " << message;
-            emit errorMessage(QString("Failed to delete currency: %1")
+            BOOST_LOG_SEV(lg(), error) << "Currency deletion failed: "
+                                       << message;
+            emit self->errorMessage(QString("Failed to delete currency: %1")
                 .arg(QString::fromStdString(message)));
-            MessageBoxHelper::critical(this, "Delete Failed",
+            MessageBoxHelper::critical(self, "Delete Failed",
                 QString::fromStdString(message));
         }
     });
@@ -457,15 +446,11 @@ void CurrencyDetailPanel::onFieldChanged() {
 }
 
 void CurrencyDetailPanel::updateSaveResetButtonState() {
-    // Enable Save button only when there are unsaved changes
-    if (saveAction_) {
+    if (saveAction_)
         saveAction_->setEnabled(isDirty_);
-    }
 
-    // Enable Delete button only when not in add mode (i.e., editing existing currency)
-    if (deleteAction_) {
-        deleteAction_->setEnabled(!is_add_mode_);
-    }
+    if (deleteAction_)
+        deleteAction_->setEnabled(!isAddMode_);
 }
 
-} // namespace ores::qt
+}

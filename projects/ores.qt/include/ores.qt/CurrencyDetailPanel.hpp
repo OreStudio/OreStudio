@@ -26,25 +26,36 @@
 #include <memory>
 #include "ores.risk/domain/currency.hpp"
 #include "ores.comms/net/client.hpp"
+#include "ores.utility/log/make_logger.hpp"
+
 
 namespace Ui {
+
 class CurrencyDetailPanel;
+
 }
 
 namespace ores::qt {
 
-class CurrencyDetailPanel : public QWidget {
+class CurrencyDetailPanel final : public QWidget {
     Q_OBJECT
 
+private:
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger("ores.qt.currency_detail_panel");
+        return instance;
+    }
+
 public:
-    explicit CurrencyDetailPanel(QWidget* parent = nullptr); // Removed client from constructor
+    explicit CurrencyDetailPanel(QWidget* parent = nullptr);
     ~CurrencyDetailPanel() override;
 
-    void setClient(std::shared_ptr<comms::client> client); // New method to set client
-    void setUsername(const std::string& username); // Set logged-in username
+    void setClient(std::shared_ptr<comms::client> client);
+    void setUsername(const std::string& username);
 
     void setCurrency(const risk::domain::currency& currency);
-    risk::domain::currency getCurrency() const;
+    [[nodiscard]] risk::domain::currency getCurrency() const;
     void clearPanel();
     void save();
 
@@ -63,22 +74,23 @@ private slots:
     void onFieldChanged();
 
 private:
+    void updateSaveResetButtonState();
     QIcon createRecoloredIcon(const QString& svgPath, const QColor& color);
 
+private:
     std::unique_ptr<Ui::CurrencyDetailPanel> ui_;
-    std::shared_ptr<comms::client> client_;
-    risk::domain::currency currentCurrency_;
     bool isDirty_;
-    bool is_add_mode_;
+    bool isAddMode_;
     std::string username_;
     QToolBar* toolBar_;
     QAction* saveAction_;
     QAction* deleteAction_;
 
-    void updateSaveResetButtonState();
+    std::shared_ptr<comms::client> client_;
+    risk::domain::currency currentCurrency_;
     static constexpr const char* max_timestamp = "9999-12-31 23:59:59";
 };
 
-} // namespace ores::qt
+}
 
-#endif // ORES_QT_CURRENCY_DETAIL_PANEL_HPP
+#endif

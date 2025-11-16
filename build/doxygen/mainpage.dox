@@ -3,7 +3,7 @@
 /**
  * @mainpage ORE Studio
  *
- * @brief **ORE Studio** is a graphical wrapper around Acadia’s [Open Source
+ * @brief **ORE Studio** is a graphical wrapper around Acadia's [Open Source
  * Risk Engine (ORE)](https://github.com/OpenSourceRisk/Engine), which itself is
  * built on top of [QuantLib](https://github.com/lballabio/QuantLib). This
  * open-source project has **no affiliation whatsoever** with Acadia, ORE, or
@@ -54,22 +54,98 @@
  *
  * \endverbatim
  *
- * **ORE Studio** extends ORE with additional goals:
+ * @subsection orestudio_subsection ORE Studio Goals
  *
- * - persistent database storage for inputs and outputs, including
- *   basic [CRUD operations](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete);
- * - a graphical user interface for data creation and exploration;
- * - tools to configure and orchestrate ORE execution.
+ * **ORE Studio** extends ORE with additional capabilities:
  *
- * @section thispage_section This Page
+ * - **Persistent Storage**: PostgreSQL database with temporal versioning for
+ *   inputs and outputs, supporting full
+ *   [CRUD operations](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete)
+ * - **Graphical Interface**: Qt 6-based desktop application with MDI interface
+ *   for visual data creation and exploration
+ * - **Import/Export**: Command-line tools for bulk operations with JSON, XML,
+ *   and CSV formats
+ * - **Client-Server Architecture**: SSL/TLS secured binary protocol for
+ *   multi-client access
+ * - **Orchestration Tools**: Configuration and execution management for ORE
+ *   workflows
  *
- * This page contains the **API documentation** for **ORE Studio**. Key
- * locations:
+ * @section arch_section Architecture
  *
- * - The source code is available at [GitHub](https://github.com/OreStudio/OreStudio)
- * - Agile development notes and sprint updates: [Agile
- *   folder](https://orestudio.github.io/OreStudio/doc/agile/agile.html)
- * - For additional information, visit the [ORE Studio
- *   website](https://orestudio.github.io/OreStudio/index.html)
+ * ORE Studio is a C++20 application built on a layered architecture. The system
+ * is organized into nine components across five layers:
+ *
+ * - **Foundation**: ores.utility (database, logging, filesystem utilities)
+ * - **Infrastructure**: ores.comms (client-server protocol), ores.testing
+ *   (test infrastructure)
+ * - **Domain**: ores.risk (ORE domain model), ores.accounts (user management)
+ * - **Client**: ores.client (deprecated REPL client)
+ * - **Application**: ores.cli (command-line tool), ores.qt (GUI), ores.service
+ *   (server)
+ *
+ * For a visual representation of the system architecture and component
+ * dependencies, see the system diagram at `projects/modeling/ores.puml`. Each
+ * component has its own class diagram showing detailed internal structure.
+ *
+ * For architectural details, see the ores namespace documentation.
+ *
+ * @section features_section Key Features
+ *
+ * @subsection data_management Data Management
+ * - Temporal database with version history tracking
+ * - ORE XML native format support for interoperability
+ * - JSON and CSV export for data analysis
+ * - Full CRUD operations through GUI and CLI
+ *
+ * @subsection security Security & Authentication
+ * - Scrypt-based password hashing
+ * - Account locking after failed login attempts
+ * - SSL/TLS encrypted client-server communication
+ * - Feature flags for runtime capability control
+ *
+ * @subsection development Development
+ * - Comprehensive test coverage with Catch2
+ * - Database isolation for parallel test execution
+ * - PlantUML component diagrams for architecture documentation
+ * - CMake build system with vcpkg dependency management
+ *
+ * @section quickstart_section Quick Start
+ *
+ * @subsection explore_components Explore Components
+ *
+ * Start with these key namespaces:
+ * - ores::risk::domain - Core ORE domain types (currencies, etc.)
+ * - ores::accounts - User account management and authentication
+ * - ores::comms - Client-server communication protocol
+ * - ores::qt - Qt GUI application components
+ * - ores::utility - Foundation utilities (database, logging, etc.)
+ *
+ * @subsection build_system Build System
+ *
+ * - Configure: `cmake --preset linux-clang-debug`
+ * - Build: `cmake --build --preset linux-clang-debug`
+ * - Run tests: `cmake --build --preset linux-clang-release --target rat`
+ * - Generate diagrams: `cmake --build --preset linux-clang-debug --target mad`
+ *
+ * See `CLAUDE.md` in the repository root for detailed build instructions and
+ * development guidelines.
+ *
+ * @section resources_section Resources
+ *
+ * @subsection documentation Documentation
+ * - **API Documentation**: This Doxygen site
+ * - **Architecture**: Component diagrams in `projects/*/modeling/` directories
+ * - **System Overview**: `projects/modeling/ores.puml`
+ * - **Developer Guide**: `CLAUDE.md` in repository root
+ *
+ * @subsection project_links Project Links
+ * - **Source Code**: [GitHub](https://github.com/OreStudio/OreStudio)
+ * - **Website**: [ORE Studio](https://orestudio.github.io/OreStudio/index.html)
+ * - **Agile Updates**: [Sprint Notes](https://orestudio.github.io/OreStudio/doc/agile/agile.html)
+ *
+ * @subsection related_projects Related Projects
+ * - **QuantLib**: [quantlib.org](https://www.quantlib.org)
+ * - **Open Source Risk**: [opensourcerisk.org](https://www.opensourcerisk.org)
+ * - **ORE GitHub**: [OpenSourceRisk/Engine](https://github.com/OpenSourceRisk/Engine)
  *
  */

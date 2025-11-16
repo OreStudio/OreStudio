@@ -20,7 +20,24 @@
 #define ORES_CLIENT_ORES_CLIENT_HPP
 
 /**
- * @brief Client library for connectivity in ORE Studio.
+ * @brief Deprecated client application for ORE Studio.
+ *
+ * @deprecated This module is deprecated. Client functionality has moved to
+ * ores.comms. This standalone client application will be removed in a future
+ * release.
+ *
+ * Interactive REPL (Read-Eval-Print Loop) client for connecting to the ORE
+ * Studio server. Features include:
+ *
+ * - Interactive command-line interface with command completion
+ * - Connection management: connect, disconnect to ORE Studio server
+ * - Currency operations: list and retrieve currency data
+ * - Account operations: create accounts, login, list accounts, unlock accounts
+ * - Auto-connect and auto-login from configuration file
+ * - Boost program_options for CLI argument parsing
+ *
+ * The module is organized into namespaces: config (configuration parsing),
+ * and app (REPL and application hosting).
  */
 namespace ores::client {}
 

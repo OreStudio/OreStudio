@@ -20,7 +20,24 @@
 #define ORES_RISK_RISK_HPP
 
 /**
- * @brief Domain model for the ORE types and other related classes.
+ * @brief Domain model for Open Risk Engine (ORE) types and risk analytics.
+ *
+ * Implements the core domain model for quantitative risk analysis following
+ * ORE (Open Source Risk Engine) specifications. Key features:
+ *
+ * - Domain model: Currency entities with temporal versioning
+ * - ORE XML support: Import/export to native ORE XML format using pugixml
+ * - CSV export: Structured CSV output for currencies
+ * - JSON I/O: Serialization using reflection (rfl library)
+ * - Table I/O: Formatted table output using fort library
+ * - Database persistence: ORM entities, mappers, and repositories with temporal support
+ * - Message-based API: Request/response handlers for currency operations (0x3000-0x3FFF)
+ * - Synthetic data: Test data generation using faker-cxx
+ * - Version history: Track all changes to entities with valid_from/valid_to fields
+ *
+ * The module is organized into namespaces: domain (core entities), repository
+ * (ORM and persistence), orexml (ORE XML I/O), csv (CSV export), messaging
+ * (API handlers), and generators (test data).
  */
 namespace ores::risk {}
 

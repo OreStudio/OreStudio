@@ -21,8 +21,24 @@
 #define ORES_QT_ORES_QT_HPP
 
 /**
- * @brief Qt based Graphical User Interface for ORE Studio.
+ * @brief Qt-based graphical user interface for ORE Studio.
+ *
+ * Modern desktop application built with Qt 6 providing visual management of
+ * ORE data. Key features:
+ *
+ * - MDI interface: Multiple Document Interface with detachable windows
+ * - Currency management: List, create, edit, delete currencies with history tracking
+ * - Authentication: Login dialog with secure password handling
+ * - Real-time updates: Asynchronous data loading and server synchronization
+ * - Entity controllers: Modular controller pattern for managing entity windows
+ * - Custom widgets: Specialized delegates, dialogs, and UI components
+ * - Background logo: Customizable MDI area background
+ * - Connection status: Visual indication of server connectivity
+ *
+ * The application uses an entity controller pattern where MainWindow delegates
+ * entity-specific operations (e.g., CurrencyController) which manage their own
+ * MDI windows, dialogs, and data models.
  */
-namespace ores::cli { }
+namespace ores::qt { }
 
 #endif

@@ -1,0 +1,128 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+
+title ORE Studio System Architecture
+
+note as SystemNote
+The ORE Studio application.
+end note
+
+' Foundation Layer
+package "Foundation Layer" #LIGHTBLUE {
+    component [ores.utility] as utility #ECECEC
+
+    note right of utility
+    Miscellaneous classes that do not fit elsewhere.
+    end note
+}
+
+' Infrastructure Layer
+package "Infrastructure Layer" #LIGHTGREEN {
+    component [ores.comms] as comms #ECECEC
+    component [ores.testing] as testing #ECECEC
+
+    note right of comms
+    Comms library that provides the basic connectivity
+    bundling blocks for ORE Studio.
+    end note
+
+    note right of testing
+    Testing related infrastructure common to all
+    testing projects.
+    end note
+}
+
+' Domain Layer
+package "Domain Layer" #LIGHTYELLOW {
+    component [ores.risk] as risk #ECECEC
+    component [ores.accounts] as accounts #ECECEC
+
+    note right of risk
+    Domain model for the ORE types and other
+    related classes.
+    end note
+
+    note right of accounts
+    Account management module for ORE Studio.
+    Provides functionality for managing user accounts
+    including authentication, authorization, and
+    login tracking.
+    end note
+}
+
+' Client Layer
+package "Client Layer" #LIGHTCYAN {
+    component [ores.client] as client #ECECEC
+
+    note right of client
+    Client library for connectivity in ORE Studio.
+    end note
+}
+
+' Application Layer
+package "Application Layer" #LIGHTCORAL {
+    component [ores.cli] as cli #ECECEC
+    component [ores.qt] as qt #ECECEC
+    component [ores.service] as service #ECECEC
+
+    note right of cli
+    Console tool for ORE Studio.
+    end note
+
+    note right of qt
+    Qt based Graphical User Interface for ORE Studio.
+    end note
+
+    note right of service
+    Main service for ORE Studio.
+    end note
+}
+
+' Dependencies - Infrastructure to Foundation
+comms --> utility
+testing --> utility
+
+' Dependencies - Domain to Foundation/Infrastructure
+risk --> utility
+accounts --> comms
+accounts --> utility
+
+' Dependencies - Client to Foundation/Domain/Infrastructure
+client --> utility
+client --> accounts
+client --> comms
+
+' Dependencies - Applications to all layers
+cli --> utility
+cli --> accounts
+cli --> risk
+
+qt --> utility
+qt --> accounts
+qt --> risk
+qt --> comms
+
+service --> utility
+service --> accounts
+service --> risk
+service --> comms
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.puml"
+' End:
+@enduml

@@ -30,11 +30,12 @@ committed changes must be considered.
 
 1. Ensure that your local branch contains the commits you wish to summarise.
 2. Run the skill from within the repository root.
-3. Provide the base branch if different from the default (``main``).
+3. Provide the base branch if different from the default (=main=).
 4. The skill will automatically:
    - Determine the branch point,
    - Extract the relevant commit messages,
    - Produce a clean PR title and overview.
+
 
 * Detailed Instructions
 

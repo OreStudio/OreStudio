@@ -9,56 +9,93 @@
 This folder contains all of the Claude Code skills used with ORE Studio. They
 are generated using the org-mode publishing system.
 
+* Skill Catalog
+
+** Meta-Skills
+
+- [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][Skill Manager]]: Skill to create new skills.
+
+** Documentation
+
+- [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Modeler]]: Generate PlantUML diagrams.
+
+** Development
+
+- [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner]]: Run CMake targets.
+- [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]]: Create a new domain type with all of it's basic services.
+- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Summary]]: Generate a title and summary for an open PR of the work in this
+  branch.
+
+* Rebuilding skills
+
+If you add new skills or update existing skills, you need to redeploy them to
+claude. First regenerate them then ask Claude to reload and list the available
+skills. To regenerate, run the =deploy_skills= target:
+
 #+begin_src sh :dir ../../ :noweb yes :results output :wrap example
-emacs -Q --script .build-skills.el 2>&1
+cmake --build --preset linux-clang-debug --target deploy_skills
 #+end_src
 
 #+RESULTS:
 #+begin_example
-Finding ID locations (1/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/v0/sprint_backlog_01.org
-Finding ID locations (2/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/v0/sprint_backlog_02.org
-Finding ID locations (3/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/v0/sprint_backlog_03.org
-Finding ID locations (4/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/v0/sprint_backlog_04.org
-Finding ID locations (5/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/v0/version_zero.org
-Finding ID locations (6/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/agile.org
-Finding ID locations (7/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/product_backlog.org
-Finding ID locations (8/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/sprint_backlog.org
-Finding ID locations (9/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/cash.org
-Finding ID locations (10/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/computational_finance.org
-Finding ID locations (11/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/currency.org
-Finding ID locations (12/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/domain.org
-Finding ID locations (13/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/finance_and_modeling.org
-Finding ID locations (14/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/functions_of_money.org
-Finding ID locations (15/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/kinds_of_money.org
-Finding ID locations (16/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/money.org
-Finding ID locations (17/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/money_and_its_close_relatives.org
-Finding ID locations (18/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/trading.org
-Finding ID locations (19/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/modeling/modeling.org
-Finding ID locations (20/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/modeling/ores.utility.org
-Finding ID locations (21/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/recipes/cli_recipes.org
-Finding ID locations (22/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/recipes/client_recipes.org
-Finding ID locations (23/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/recipes/git_recipes.org
-Finding ID locations (24/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/recipes/recipes.org
-Finding ID locations (25/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/plantuml-modeler/skills.org
-Finding ID locations (26/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/claude_code_skills.org
-Finding ID locations (27/29 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/doc.org
-Finding ID locations (28/29 files): /home/marco/Development/OreStudio/OreStudio.local1/index.org
-Finding ID locations (29/29 files): /home/marco/Development/OreStudio/OreStudio.local1/readme.org
-29 files scanned, 29 files contains IDs, and 29 IDs found.
+[1/1] Deploying ORE Studio Claude Code Skills to
+Removing skills directory
+Finding ID locations (1/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/v0/sprint_backlog_01.org
+Finding ID locations (2/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/v0/sprint_backlog_02.org
+Finding ID locations (3/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/v0/sprint_backlog_03.org
+Finding ID locations (4/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/v0/sprint_backlog_04.org
+Finding ID locations (5/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/v0/sprint_backlog_05.org
+Duplicate ID "5A85BDB5-E915-3A44-04AB-771ACE91992B"
+Finding ID locations (6/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/v0/version_zero.org
+Finding ID locations (7/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/agile.org
+Finding ID locations (8/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/product_backlog.org
+Finding ID locations (9/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/agile/sprint_backlog.org
+Finding ID locations (10/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/cash.org
+Finding ID locations (11/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/computational_finance.org
+Finding ID locations (12/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/currency.org
+Finding ID locations (13/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/domain.org
+Finding ID locations (14/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/finance_and_modeling.org
+Finding ID locations (15/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/functions_of_money.org
+Finding ID locations (16/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/kinds_of_money.org
+Finding ID locations (17/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/money.org
+Finding ID locations (18/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/money_and_its_close_relatives.org
+Finding ID locations (19/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/domain/trading.org
+Finding ID locations (20/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/modeling/modeling.org
+Finding ID locations (21/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/modeling/ores.utility.org
+Finding ID locations (22/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/prompts/prompts.org
+Finding ID locations (23/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/recipes/cli_recipes.org
+Finding ID locations (24/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/recipes/client_recipes.org
+Finding ID locations (25/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/recipes/git_recipes.org
+Finding ID locations (26/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/recipes/recipes.org
+Finding ID locations (27/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/cmake-runner/skill.org
+Finding ID locations (28/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/domain-type-creator/skill.org
+Finding ID locations (29/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/plantuml-modeler/skill.org
+Finding ID locations (30/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/pr-summary-skill/skill.org
+Finding ID locations (31/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/skill-manager/skill.org
+Finding ID locations (32/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/claude_code_skills.org
+Finding ID locations (33/36 files): /home/marco/Development/OreStudio/OreStudio.local1/doc/doc.org
+Finding ID locations (34/36 files): /home/marco/Development/OreStudio/OreStudio.local1/index.org
+Finding ID locations (35/36 files): /home/marco/Development/OreStudio/OreStudio.local1/readme.org
+Warning (emacs): WARNING: 1 duplicate IDs found, check *Messages* buffer
+36 files scanned, 35 files contains IDs, and 34 IDs found.
 Setting ‘package-selected-packages’ temporarily since "emacs -q" would overwrite customizations
 ‘ox-gfm’ is already installed
 Resetting org-publish-cache
-Publishing file /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/plantuml-modeler/skills.org using ‘org-babel-tangle-publish’
-Tangled 1 code block from skills.org
+Publishing file /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/skill-manager/skill.org using ‘org-babel-tangle-publish’
+Tangled 1 code block from skill.org
+Publishing file /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/plantuml-modeler/skill.org using ‘org-babel-tangle-publish’
+Tangled 1 code block from skill.org
+Publishing file /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/cmake-runner/skill.org using ‘org-babel-tangle-publish’
+Tangled 1 code block from skill.org
+Publishing file /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/domain-type-creator/skill.org using ‘org-babel-tangle-publish’
+Tangled 1 code block from skill.org
+Publishing file /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/pr-summary-skill/skill.org using ‘org-babel-tangle-publish’
+Tangled 1 code block from skill.org
 Resetting org-publish-cache
-Publishing file /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/plantuml-modeler/skills.org using ‘org-gfm-publish-to-gfm’
+Publishing file /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/skill-manager/skill.org using ‘org-gfm-publish-to-gfm’
+Publishing file /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/plantuml-modeler/skill.org using ‘org-gfm-publish-to-gfm’
+Publishing file /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/cmake-runner/skill.org using ‘org-gfm-publish-to-gfm’
+Publishing file /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/domain-type-creator/skill.org using ‘org-gfm-publish-to-gfm’
+Publishing file /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/pr-summary-skill/skill.org using ‘org-gfm-publish-to-gfm’
 Build complete!
 #+end_example
-
-* Available Skills
-
-- [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Modeler Skill]]: Generate PlantUML diagrams.
-- [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner Skill]]: Run CMake targets.
-- [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Claude Code Skills]]: Meta-skill to create skills.
-- [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]]: Create a new domain type with all of it's basic services.
-- [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][Skill Manager Skill]]: Skill to create new skills.

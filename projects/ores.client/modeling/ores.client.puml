@@ -18,7 +18,7 @@
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
-    note "Deprecated client code. Code will be in comms instead." as ores_client_note
+    note "Interactive REPL (Read-Eval-Print Loop) client for ORE Studio server" as ores_client_note
     client --- ores_client_note
     namespace client #F2F2F2 {
         note "Application entry point and hosting functionality." as ores_client_app_note

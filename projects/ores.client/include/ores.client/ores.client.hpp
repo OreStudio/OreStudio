@@ -20,14 +20,10 @@
 #define ORES_CLIENT_ORES_CLIENT_HPP
 
 /**
- * @brief Deprecated client application for ORE Studio.
+ * @brief Interactive REPL (Read-Eval-Print Loop) client for connecting to the
+ * ORE Studio server.
  *
- * @deprecated This module is deprecated. Client functionality has moved to
- * ores.comms. This standalone client application will be removed in a future
- * release.
- *
- * Interactive REPL (Read-Eval-Print Loop) client for connecting to the ORE
- * Studio server. Features include:
+ *  Features include:
  *
  * - Interactive command-line interface with command completion
  * - Connection management: connect, disconnect to ORE Studio server

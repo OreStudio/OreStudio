@@ -18,68 +18,69 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-15 Sat 21:26], for Saturday, November 15, 2025.
-|       | <75>                                           |         |       |      |       |
-| Tags  | Headline                                       | Time    |       |      |     % |
-|-------+------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                   | *10:38* |       |      | 100.0 |
-|-------+------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                        | 10:38   |       |      | 100.0 |
-|       | Active                                         |         | 10:38 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |         |       | 0:27 |   4.2 |
-| code  | Split JSON based =operator<<= from domain type |         |       | 0:53 |   8.3 |
-| code  | Add a table representation of domain types     |         |       | 2:05 |  19.6 |
-| code  | Add a comint based emacs mode for the client   |         |       | 0:24 |   3.8 |
-| code  | Review all code created so far with an LLM     |         |       | 6:25 |  60.3 |
-| code  | Fix broken windows build due to local time     |         |       | 0:24 |   3.8 |
+#+CAPTION: Clock summary at [2025-11-16 Sun 11:59], for Sunday, November 16, 2025.
+|       | <75>                     |        |      |      |       |
+| Tags  | Headline                 | Time   |      |      |     % |
+|-------+--------------------------+--------+------+------+-------|
+|       | *Total time*             | *1:48* |      |      | 100.0 |
+|-------+--------------------------+--------+------+------+-------|
+|       | Stories                  | 1:48   |      |      | 100.0 |
+|       | Active                   |        | 1:48 |      | 100.0 |
+| infra | Update doxygen main page |        |      | 0:23 |  21.3 |
+| code  | Improve UML diagrams     |        |      | 1:25 |  78.7 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-15 Sat 21:26]
+#+CAPTION: Clock summary at [2025-11-16 Sun 11:59]
 |          | <75>                                                   |         |       |       |       |
 | Tags     | Headline                                               | Time    |       |       |     % |
 |----------+--------------------------------------------------------+---------+-------+-------+-------|
-|          | *Total time*                                           | *77:15* |       |       | 100.0 |
+|          | *Total time*                                           | *80:16* |       |       | 100.0 |
 |----------+--------------------------------------------------------+---------+-------+-------+-------|
-|          | Stories                                                | 77:15   |       |       | 100.0 |
-|          | Active                                                 |         | 77:15 |       | 100.0 |
-| agile    | Sprint and product backlog refinement                  |         |       |  3:16 |   4.2 |
+|          | Stories                                                | 80:16   |       |       | 100.0 |
+|          | Active                                                 |         | 80:16 |       | 100.0 |
+| agile    | Sprint and product backlog refinement                  |         |       |  3:41 |   4.6 |
 | code     | Clean up client parser                                 |         |       |  0:10 |   0.2 |
-| code     | Add connect command line argument                      |         |       |  1:19 |   1.7 |
-| infra    | Install Windows package on Windows machine             |         |       |  2:09 |   2.8 |
+| code     | Add connect command line argument                      |         |       |  1:19 |   1.6 |
+| infra    | Install Windows package on Windows machine             |         |       |  2:09 |   2.7 |
 | code     | Ignore warnings on windows and osx                     |         |       |  0:33 |   0.7 |
 | code     | Ensure applications work under OSX using github images |         |       |  0:14 |   0.3 |
-| infra    | Create a splash screen and gray background             |         |       |  2:26 |   3.1 |
+| infra    | Create a splash screen and gray background             |         |       |  2:26 |   3.0 |
 | code     | Use fluent icons                                       |         |       |  0:37 |   0.8 |
 | code     | Add export functionality for currencies                |         |       |  1:30 |   1.9 |
-| code     | Add currency editing support                           |         |       |  2:45 |   3.6 |
+| code     | Add currency editing support                           |         |       |  2:45 |   3.4 |
 | code     | Add about to menu                                      |         |       |  1:02 |   1.3 |
-| code     | Create a history dialog for currencies                 |         |       |  1:27 |   1.9 |
+| code     | Create a history dialog for currencies                 |         |       |  1:27 |   1.8 |
 | code     | Allow MDI windows outside main window                  |         |       |  1:35 |   2.0 |
 | code     | Add edit menu and export menu                          |         |       |  0:34 |   0.7 |
-| code     | Implement adding new currencies                        |         |       |  3:17 |   4.3 |
-| code     | Clean up product website                               |         |       |  4:42 |   6.1 |
-| code     | Create a skill for plant uml documentation             |         |       |  2:48 |   3.6 |
+| code     | Implement adding new currencies                        |         |       |  3:17 |   4.1 |
+| code     | Clean up product website                               |         |       |  4:42 |   5.9 |
+| code     | Create a skill for plant uml documentation             |         |       |  2:48 |   3.5 |
 | infra    | Add CMake targets for site and skills                  |         |       |  0:17 |   0.4 |
-| infra    | Generalise the skill setup for ORE Studio              |         |       |  3:45 |   4.9 |
-| infra    | Restructure components to follow the dogen approach    |         |       |  2:54 |   3.8 |
-| infra    | Generate PlantUML diagrams for all components          |         |       |  1:05 |   1.4 |
+| infra    | Generalise the skill setup for ORE Studio              |         |       |  3:45 |   4.7 |
+| infra    | Restructure components to follow the dogen approach    |         |       |  2:54 |   3.6 |
+| infra    | Generate PlantUML diagrams for all components          |         |       |  1:05 |   1.3 |
 | analysis | Weaving skills and documentation together              |         |       |  0:46 |   1.0 |
 | code     | Consider adding tags to catch2 tests                   |         |       |  0:34 |   0.7 |
 | code     | Split JSON based =operator<<= from domain type         |         |       |  0:53 |   1.1 |
-| code     | Add a table representation of domain types             |         |       |  2:05 |   2.7 |
+| code     | Add a table representation of domain types             |         |       |  2:05 |   2.6 |
 | code     | Add a comint based emacs mode for the client           |         |       |  0:24 |   0.5 |
-| code     | Fix the valgrind leaks reported on sqlgen              |         |       |  4:54 |   6.3 |
-| code     | Review all code created so far with an LLM             |         |       | 16:13 |  21.0 |
-| code     | Make UI/UX look more professional                      |         |       | 11:07 |  14.4 |
-| code     | Current issues with package install in debian          |         |       |  0:40 |   0.9 |
-| code     | Resolve crash on shutdown problem                      |         |       |  0:50 |   1.1 |
+| code     | Fix the valgrind leaks reported on sqlgen              |         |       |  4:54 |   6.1 |
+| code     | Review all code created so far with an LLM             |         |       | 16:13 |  20.2 |
 | code     | Fix broken windows build due to local time             |         |       |  0:24 |   0.5 |
+| code     | Resolve crash on shutdown problem                      |         |       |  0:50 |   1.0 |
+| code     | Split main window class                                |         |       |  0:48 |   1.0 |
+| infra    | Update doxygen main page                               |         |       |  0:23 |   0.5 |
+| code     | Improve UML diagrams                                   |         |       |  1:25 |   1.8 |
+| code     | Make UI/UX look more professional                      |         |       | 11:07 |  13.8 |
+| code     | Current issues with package install in debian          |         |       |  0:40 |   0.8 |
 #+end:
 
-*** STARTED Sprint and product backlog refinement                     :agile:
+*** COMPLETED Sprint and product backlog refinement                   :agile:
     :LOGBOOK:
+    CLOCK: [2025-11-15 Sat 23:46]--[2025-11-15 Sat 23:56] =>  0:10
+    CLOCK: [2025-11-15 Sat 22:41]--[2025-11-15 Sat 22:56] =>  0:15
     CLOCK: [2025-11-15 Sat 21:11]--[2025-11-15 Sat 21:26] =>  0:15
     CLOCK: [2025-11-15 Sat 13:30]--[2025-11-15 Sat 13:42] =>  0:12
     CLOCK: [2025-11-12 Wed 17:45]--[2025-11-12 Wed 18:01] =>  0:16
@@ -673,7 +674,7 @@ Dumping JSON in the client is not very helpful. Ideally we want a simple table.
 It would be nice not to have to start a shell to run the client but have access
 to the usual emacs facilities for running external processes.
 
-*** BLOCKED Fix the valgrind leaks reported on sqlgen                  :code:
+*** COMPLETED Fix the valgrind leaks reported on sqlgen                :code:
     :LOGBOOK:
     CLOCK: [2025-11-14 Fri 11:22]--[2025-11-14 Fri 11:25] =>  0:03
     CLOCK: [2025-11-14 Fri 11:06]--[2025-11-14 Fri 11:22] =>  0:16
@@ -736,7 +737,231 @@ them separately.
 - reviewed =ores.cli=.
 - reviewed =ores.risk=.
 
-*** STARTED Make UI/UX look more professional                          :code:
+*** COMPLETED Fix broken windows build due to local time               :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-15 Sat 14:03]--[2025-11-15 Sat 14:27] =>  0:24
+    :END:
+
+Getting the following error:
+
+#+begin_src
+[99/283] Building CXX object projects/ores.accounts/src/CMakeFiles/ores.accounts.lib.dir/domain/login_info_table_io.cpp.obj
+FAILED: [code=1] projects/ores.accounts/src/CMakeFiles/ores.accounts.lib.dir/domain/login_info_table_io.cpp.obj
+C:\PROGRA~1\LLVM\bin\CLANG_~1.EXE -DBOOST_ATOMIC_DYN_LINK -DBOOST_ATOMIC_NO_LIB -DBOOST_CHRONO_DYN_LINK -DBOOST_CHRONO_NO_LIB -DBOOST_CONTAINER_DYN_LINK -DBOOST_CONTAINER_NO_LIB -DBOOST_DATE_TIME_DYN_LINK -DBOOST_DATE_TIME_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK=1 -DBOOST_FILESYSTEM_NO_LIB -DBOOST_LOG_DYN_LINK -DBOOST_LOG_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_PROGRAM_OPTIONS_NO_LIB -DBOOST_THREAD_DYN_LINK -DBOOST_THREAD_NO_LIB -DBOOST_THREAD_USE_DLL -DBOOST_USE_WINAPI_VERSION=0xa00 -DYYJSON_IMPORTS -D_WIN32_WINNT=0xa00 -Dores_accounts_lib_EXPORTS -I/.../OreStudio/projects/ores.accounts/include -I/.../OreStudio/projects/ores.comms/include -I/.../OreStudio/projects/ores.utility/include -isystem /.../OreStudio/build/output/windows-clang-debug/vcpkg_installed/x64-windows/include -isystem /.../OreStudio/build/output/windows-clang-debug/vcpkg_installed/x64-windows/include/server -O0 -std=c++23 -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -g -Xclang -gcodeview -Werror -MD -MT projects/ores.accounts/src/CMakeFiles/ores.accounts.lib.dir/domain/login_info_table_io.cpp.obj -MF projects\ores.accounts\src\CMakeFiles\ores.accounts.lib.dir\domain\login_info_table_io.cpp.obj.d @projects\ores.accounts\src\CMakeFiles\ores.accounts.lib.dir\domain\login_info_table_io.cpp.obj.modmap -o projects/ores.accounts/src/CMakeFiles/ores.accounts.lib.dir/domain/login_info_table_io.cpp.obj -c /.../OreStudio/projects/ores.accounts/src/domain/login_info_table_io.cpp
+projects/ores.accounts/src/domain/login_info_table_io.cpp:41:34: error: 'localtime' is deprecated: This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [-Werror,-Wdeprecated-declarations]
+   41 |         ss << std::put_time(std::localtime(&last_login_time), "%Y-%m-%d %H:%M:%S");
+      |
+#+end_src
+
+Suggested Gemini fix:
+
+#+begin_src c++
+inline std::tm* safe_localtime(const std::time_t* time, std::tm* result) {
+#ifdef _WIN32
+    return localtime_s(result, time) == 0 ? result : nullptr;
+#else
+    return localtime_r(time, result);
+#endif
+}
+#+end_src
+
+
+*** COMPLETED Resolve crash on shutdown problem                        :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-09 Sun 21:21]--[2025-11-09 Sun 22:11] =>  0:50
+    :END:
+
+At present the app crashes when shutting down. This is due to the attach /
+detach logic. We need to workout a plan for managing this. K2:
+
+#+begin_src markdown
+Yes — but only if you **keep the same ownership rule in both states** (attached *and* detached).
+The moment you let Qt parent the widget **and** still keep it in a container that you later `delete`, you again have **two owners**, and the double-delete will come back as soon as the user re-attaches the window and then quits the program.
+
+Below is the minimal change that lets the user detach/reattach as often as he wants **and** guarantees that the object is destroyed **exactly once**.
+
+--------------------------------------------------------
+1.  Pick one unique owner
+--------------------------------------------------------
+Make **MainWindow** the unique owner.
+That means:
+
+- Never give the widget a parent (pass `nullptr` in the constructor).
+- Always insert it into one of the four containers.
+- Delete it **only** from those containers (or when the user explicitly closes
+  it).
+- When the widget is *attached* to the MDI area, use
+  ,**QMdiArea::addSubWindow()**; this only sets the **QMdiSubWindow** as parent
+  of the **internal viewport**, **not** of your custom widget, so your widget
+  stays parent-less.
+
+Code sketch:
+
+```cpp
+// create
+auto w = new CurrencyMdiWindow(nullptr);          // no parent
+mdiArea->addSubWindow(w);                         // only the QMdiSubWindow gets a parent
+currencyDetailWindows_.insert(iso, w);
+allDetachableWindows_.append(w);
+```
+
+--------------------------------------------------------
+2.  Remove it from the lists at the right moment
+--------------------------------------------------------
+As soon as the widget dies (user presses ×, or you programmatically close it) you must **erase the pointer** from every container; otherwise you will dereference a dangling pointer when you later iterate over the lists.
+
+Connect once, right after creation:
+
+```cpp
+connect(w, &QObject::destroyed, this, [this, w](QObject* o) {
+    Q_UNUSED(o)
+    currencyDetailWindows_.remove(w->isoCode());
+    allDetachableWindows_.removeAll(w);
+    /* same for the other three maps/lists */
+});
+```
+
+--------------------------------------------------------
+3.  Detach / re-attach implementation
+--------------------------------------------------------
+Detaching simply reparents to **nullptr** and shows the widget as top-level:
+
+```cpp
+void MainWindow::detachWindow(QWidget* w)
+{
+    w->setParent(nullptr);
+    w->show();
+}
+```
+
+Re-attaching puts it back into the MDI area:
+
+```cpp
+void MainWindow::attachWindow(QWidget* w)
+{
+    w->setParent(nullptr);              // make sure it is still parent-less
+    mdiArea->addSubWindow(w);
+    w->show();
+}
+```
+
+Because the widget **never** had a Qt parent, Qt will **never** auto-delete it; only your own code (or the user closing the top-level window while `Qt::WA_DeleteOnClose` is set) can trigger the `destroyed()` signal, and that signal already removed the pointer from the lists.
+
+--------------------------------------------------------
+4.  Destructor becomes trivial
+--------------------------------------------------------
+```cpp
+MainWindow::~MainWindow()
+{
+    // delete every widget that is still alive
+    qDeleteAll(currencyDetailWindows_);
+    qDeleteAll(currencyHistoryWindows_);
+    delete currencyListWindow_;
+    qDeleteAll(allDetachableWindows_);
+}
+```
+
+Each widget is deleted **once**, the `destroyed()` lambda runs immediately and clears the lists, so when the next container is destroyed its `qDeleteAll` sees only `nullptr`s (or the map is already empty).
+
+--------------------------------------------------------
+5.  Optional extra safety
+--------------------------------------------------------
+If you want to be 100 % sure, store **QPointer** in the containers instead of raw pointers:
+
+```cpp
+QMap<QString, QPointer<DetachableMdiSubWindow>> currencyDetailWindows_;
+```
+
+Now the destructor can even be written as
+
+```cpp
+for (auto it = currencyDetailWindows_.begin(); it != currencyDetailWindows_.end(); ++it)
+    delete it.value();   // safe: delete nullptr is a no-op
+```
+
+but this is **not required**—the design above is already bullet-proof.
+
+--------------------------------------------------------
+Summary
+--------------------------------------------------------
+- Pick **one** owner (MainWindow).
+- Keep widgets **parent-less**.
+- Add / remove them from the lists **synchronously** via `destroyed()`.
+- Detach/reattach only changes **visual** parent, not ownership.
+
+With these rules you can detach and re-attach as often as you like, and the
+program will still shut down without the heap corruption you are seeing now.
+#+end_src
+
+*** COMPLETED Assets are not being packaged                            :code:
+
+*Rationale*: All assets are now interned into resources.
+
+#+begin_src sh
+[marco@lovelace bin]$ ./ores.qt
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_currency_dollar_euro_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_history_20_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_disconnected_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_connected_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_edit_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_delete_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_save_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_document_table_20_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_document_code_16_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_star_20_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_connected_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_disconnected_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_connected_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_disconnected_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_currency_dollar_euro_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_save_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_edit_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_delete_20_filled.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_document_table_20_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_document_code_16_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_star_20_regular.svg', because: No such file or directory
+qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_history_20_regular.svg', because: No such file or directory
+#+end_src
+
+*** COMPLETED Split main window class                                  :code:
+   :LOGBOOK:
+   CLOCK: [2025-11-15 Sat 22:57]--[2025-11-15 Sat 23:45] =>  0:48
+   :END:
+
+At present the code in main window is very complex. We need to add a lot of
+windows, and it is not scalable.
+
+*** COMPLETED Move =base32_encode= to utilities                        :code:
+
+*Rationale*: refactor has been done. Created new story for tests in utilities.
+
+Add tests. Also move =host_to_network_32=, =read_uint16=, etc.
+
+*** COMPLETED Add multi-selection support to currencies                :code:
+
+Users should be able to select multiple currencies and delete them. Maybe we
+should do like gmail and have check boxes?
+
+*** COMPLETED Update readme with UI screenshots                        :code:
+
+Now that we have a basic UI up and running, add it to docs.
+
+*** COMPLETED Update doxygen main page                                :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-16 Sun 10:10]--[2025-11-16 Sun 10:33] =>  0:23
+    :END:
+
+It should be a bit more informative.
+
+*** COMPLETED Improve UML diagrams                                     :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-16 Sun 10:34]--[2025-11-16 Sun 11:59] =>  1:25
+    :END:
+
+After the extensive refactor, we need to update the Qt class diagram. We also
+need to generate a system level component diagram.
+
+*** POSTPONED Make UI/UX look more professional                        :code:
     :LOGBOOK:
     CLOCK: [2025-11-08 Sat 10:11]--[2025-11-08 Sat 20:04] =>  9:53
     CLOCK: [2025-11-08 Sat 08:57]--[2025-11-08 Sat 10:11] =>  1:14
@@ -905,7 +1130,7 @@ QPushButton:hover {
 ```
 #+end_src
 
-*** STARTED Current issues with package install in debian              :code:
+*** POSTPONED Current issues with package install in debian            :code:
     :LOGBOOK:
     CLOCK: [2025-11-09 Sun 09:02]--[2025-11-09 Sun 09:28] =>  0:26
     :END:
@@ -941,34 +1166,6 @@ Error: Package 'libqt6widgets6t64' has no installation candidate
 Error: Package 'libqt6gui6t64' has no installation candidate
 #+end_src
 
-- assets are not being packaged:
-
-#+begin_src sh
-[marco@lovelace bin]$ ./ores.qt
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_currency_dollar_euro_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_history_20_regular.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_disconnected_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_connected_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_edit_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_delete_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_save_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_document_table_20_regular.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_document_code_16_regular.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_star_20_regular.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_connected_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_disconnected_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_connected_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_plug_disconnected_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_currency_dollar_euro_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_save_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_edit_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_delete_20_filled.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_document_table_20_regular.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_document_code_16_regular.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_star_20_regular.svg', because: No such file or directory
-qt.svg: Cannot open file '/opt/OreStudio/0.0.4/bin/ic_fluent_history_20_regular.svg', because: No such file or directory
-#+end_src
-
 - when starting the package from a directory, it tries to create the log
   relative to that directory:
 
@@ -986,969 +1183,6 @@ Aborted                    /opt/OreStudio/0.0.4/bin/ores.qt
 
 When investigating a crash we noticed the app is not exiting cleanly. Fix all of
 these crashes before we go any further.
-
-*** STARTED Resolve crash on shutdown problem                          :code:
-    :LOGBOOK:
-    CLOCK: [2025-11-09 Sun 21:21]--[2025-11-09 Sun 22:11] =>  0:50
-    :END:
-
-At present the app crashes when shutting down. This is due to the attach /
-detach logic. We need to workout a plan for managing this. K2:
-
-#+begin_src markdown
-Yes — but only if you **keep the same ownership rule in both states** (attached *and* detached).
-The moment you let Qt parent the widget **and** still keep it in a container that you later `delete`, you again have **two owners**, and the double-delete will come back as soon as the user re-attaches the window and then quits the program.
-
-Below is the minimal change that lets the user detach/reattach as often as he wants **and** guarantees that the object is destroyed **exactly once**.
-
---------------------------------------------------------
-1.  Pick one unique owner
---------------------------------------------------------
-Make **MainWindow** the unique owner.
-That means:
-
-- Never give the widget a parent (pass `nullptr` in the constructor).
-- Always insert it into one of the four containers.
-- Delete it **only** from those containers (or when the user explicitly closes
-  it).
-- When the widget is *attached* to the MDI area, use
-  ,**QMdiArea::addSubWindow()**; this only sets the **QMdiSubWindow** as parent
-  of the **internal viewport**, **not** of your custom widget, so your widget
-  stays parent-less.
-
-Code sketch:
-
-```cpp
-// create
-auto w = new CurrencyMdiWindow(nullptr);          // no parent
-mdiArea->addSubWindow(w);                         // only the QMdiSubWindow gets a parent
-currencyDetailWindows_.insert(iso, w);
-allDetachableWindows_.append(w);
-```
-
---------------------------------------------------------
-2.  Remove it from the lists at the right moment
---------------------------------------------------------
-As soon as the widget dies (user presses ×, or you programmatically close it) you must **erase the pointer** from every container; otherwise you will dereference a dangling pointer when you later iterate over the lists.
-
-Connect once, right after creation:
-
-```cpp
-connect(w, &QObject::destroyed, this, [this, w](QObject* o) {
-    Q_UNUSED(o)
-    currencyDetailWindows_.remove(w->isoCode());
-    allDetachableWindows_.removeAll(w);
-    /* same for the other three maps/lists */
-});
-```
-
---------------------------------------------------------
-3.  Detach / re-attach implementation
---------------------------------------------------------
-Detaching simply reparents to **nullptr** and shows the widget as top-level:
-
-```cpp
-void MainWindow::detachWindow(QWidget* w)
-{
-    w->setParent(nullptr);
-    w->show();
-}
-```
-
-Re-attaching puts it back into the MDI area:
-
-```cpp
-void MainWindow::attachWindow(QWidget* w)
-{
-    w->setParent(nullptr);              // make sure it is still parent-less
-    mdiArea->addSubWindow(w);
-    w->show();
-}
-```
-
-Because the widget **never** had a Qt parent, Qt will **never** auto-delete it; only your own code (or the user closing the top-level window while `Qt::WA_DeleteOnClose` is set) can trigger the `destroyed()` signal, and that signal already removed the pointer from the lists.
-
---------------------------------------------------------
-4.  Destructor becomes trivial
---------------------------------------------------------
-```cpp
-MainWindow::~MainWindow()
-{
-    // delete every widget that is still alive
-    qDeleteAll(currencyDetailWindows_);
-    qDeleteAll(currencyHistoryWindows_);
-    delete currencyListWindow_;
-    qDeleteAll(allDetachableWindows_);
-}
-```
-
-Each widget is deleted **once**, the `destroyed()` lambda runs immediately and clears the lists, so when the next container is destroyed its `qDeleteAll` sees only `nullptr`s (or the map is already empty).
-
---------------------------------------------------------
-5.  Optional extra safety
---------------------------------------------------------
-If you want to be 100 % sure, store **QPointer** in the containers instead of raw pointers:
-
-```cpp
-QMap<QString, QPointer<DetachableMdiSubWindow>> currencyDetailWindows_;
-```
-
-Now the destructor can even be written as
-
-```cpp
-for (auto it = currencyDetailWindows_.begin(); it != currencyDetailWindows_.end(); ++it)
-    delete it.value();   // safe: delete nullptr is a no-op
-```
-
-but this is **not required**—the design above is already bullet-proof.
-
---------------------------------------------------------
-Summary
---------------------------------------------------------
-- Pick **one** owner (MainWindow).
-- Keep widgets **parent-less**.
-- Add / remove them from the lists **synchronously** via `destroyed()`.
-- Detach/reattach only changes **visual** parent, not ownership.
-
-With these rules you can detach and re-attach as often as you like, and the
-program will still shut down without the heap corruption you are seeing now.
-#+end_src
-
-*** STARTED Fix broken windows build due to local time                 :code:
-    :LOGBOOK:
-    CLOCK: [2025-11-15 Sat 14:03]--[2025-11-15 Sat 14:27] =>  0:24
-    :END:
-
-Getting the following error:
-
-#+begin_src
-[99/283] Building CXX object projects/ores.accounts/src/CMakeFiles/ores.accounts.lib.dir/domain/login_info_table_io.cpp.obj
-FAILED: [code=1] projects/ores.accounts/src/CMakeFiles/ores.accounts.lib.dir/domain/login_info_table_io.cpp.obj
-C:\PROGRA~1\LLVM\bin\CLANG_~1.EXE -DBOOST_ATOMIC_DYN_LINK -DBOOST_ATOMIC_NO_LIB -DBOOST_CHRONO_DYN_LINK -DBOOST_CHRONO_NO_LIB -DBOOST_CONTAINER_DYN_LINK -DBOOST_CONTAINER_NO_LIB -DBOOST_DATE_TIME_DYN_LINK -DBOOST_DATE_TIME_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK=1 -DBOOST_FILESYSTEM_NO_LIB -DBOOST_LOG_DYN_LINK -DBOOST_LOG_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_PROGRAM_OPTIONS_NO_LIB -DBOOST_THREAD_DYN_LINK -DBOOST_THREAD_NO_LIB -DBOOST_THREAD_USE_DLL -DBOOST_USE_WINAPI_VERSION=0xa00 -DYYJSON_IMPORTS -D_WIN32_WINNT=0xa00 -Dores_accounts_lib_EXPORTS -I/.../OreStudio/projects/ores.accounts/include -I/.../OreStudio/projects/ores.comms/include -I/.../OreStudio/projects/ores.utility/include -isystem /.../OreStudio/build/output/windows-clang-debug/vcpkg_installed/x64-windows/include -isystem /.../OreStudio/build/output/windows-clang-debug/vcpkg_installed/x64-windows/include/server -O0 -std=c++23 -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -g -Xclang -gcodeview -Werror -MD -MT projects/ores.accounts/src/CMakeFiles/ores.accounts.lib.dir/domain/login_info_table_io.cpp.obj -MF projects\ores.accounts\src\CMakeFiles\ores.accounts.lib.dir\domain\login_info_table_io.cpp.obj.d @projects\ores.accounts\src\CMakeFiles\ores.accounts.lib.dir\domain\login_info_table_io.cpp.obj.modmap -o projects/ores.accounts/src/CMakeFiles/ores.accounts.lib.dir/domain/login_info_table_io.cpp.obj -c /.../OreStudio/projects/ores.accounts/src/domain/login_info_table_io.cpp
-projects/ores.accounts/src/domain/login_info_table_io.cpp:41:34: error: 'localtime' is deprecated: This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [-Werror,-Wdeprecated-declarations]
-   41 |         ss << std::put_time(std::localtime(&last_login_time), "%Y-%m-%d %H:%M:%S");
-      |
-#+end_src
-
-Suggested Gemini fix:
-
-#+begin_src c++
-inline std::tm* safe_localtime(const std::time_t* time, std::tm* result) {
-#ifdef _WIN32
-    return localtime_s(result, time) == 0 ? result : nullptr;
-#else
-    return localtime_r(time, result);
-#endif
-}
-#+end_src
-
-
-*** Improve handling of error responses                                :code:
-
-As per Gemini code review:
-
-#+begin_src markdown
-Certainly. Point \#2 from the review of `CurrencyHistoryDialog.cpp` addressed the potential complexity of error checking by suggesting that relying on the specific response message type is **fragile**.
-
-The goal is to move from:
-
-1.  Client sends **Request A**.
-2.  Server returns **Response A** (Success) OR **Error Response** (Failure) OR **Response B** (Unexpected success type).
-3.  Client checks: *Is the message type exactly **Response A**?*
-
-to a more robust pattern where the client checks for a generic failure response first.
-
------
-
-## 🐞 Fragile Error Check (Current Code)
-
-The current code in `loadHistory` checks for success by expecting *only* the specific success message type:
-
-```cpp
-// Current Fragile Logic
-if (result->header().type != comms::protocol::message_type::get_currency_history_response) {
-    onHistoryLoadError(QString("Server does not support currency history (received message type %1)")
-        .arg(static_cast<int>(result->header().type)));
-    return;
-}
-```
-
-This logic has two main problems:
-
-1.  **Hiding Server Errors:** If the server returns a generic protocol error (`message_type::error_response`) because, for example, the client's session timed out, the client logs a misleading message: "Server does not support currency history." It should be reporting the actual error message sent by the server.
-2.  **Lack of Standardization:** Every client method needs to implement its own logic to handle unexpected types.
-
------
-
-## 🛠️ Suggested Improvement: Standardized Error Handling
-
-The improvement is to check for a generic **`error_response`** message type first, and report its payload/message, before attempting to deserialize the successful response.
-
-Assuming your system has a standard `error_response` message:
-
-```cpp
-void CurrencyHistoryDialog::handleHistoryResponse(const HistoryResult& result) {
-    if (!result) {
-        onHistoryLoadError(QString::fromStdString(result.error()));
-        return;
-    }
-
-    // 1. Check for a generic server-side error response
-    if (result->header().type == comms::protocol::message_type::error_response) {
-        // Assume error_response contains a readable message payload
-        auto error_response = risk::messaging::error_response::deserialize(result->payload());
-        if (error_response) {
-            onHistoryLoadError(QString::fromStdString(error_response->message));
-        } else {
-            onHistoryLoadError("Server returned a malformed error response.");
-        }
-        return;
-    }
-
-    // 2. Check for the specific SUCCESS response type
-    if (result->header().type == comms::protocol::message_type::get_currency_history_response) {
-        auto response = risk::messaging::get_currency_history_response::deserialize(result->payload());
-
-        if (!response || !response->success) {
-            // Handle success=false within the expected response type
-            onHistoryLoadError(QString::fromStdString(response ? response->message : "Invalid or failed history response."));
-            return;
-        }
-
-        history_ = std::move(response->history);
-        onHistoryLoaded();
-        return;
-    }
-
-    // 3. Handle truly unexpected message type
-    onHistoryLoadError(QString("Received unexpected message type %1 from server.")
-        .arg(static_cast<int>(result->header().type)));
-}
-```
-
-By standardizing the **`error_response`** type, the client can always extract and display the relevant server-side failure reason, leading to much clearer logging and user feedback.
-#+end_src
-
-
-*** Add support for simple log shipping                                :code:
-
-It would be very useful to be able to browse both client and server logs from
-the client (either command line or qt). This will be even more useful with AI
-agents. Add a simple component that periodically loads up the logs to the
-database.
-
-Possible names: log shipping, log forwarding, etc.
-
-*** Add max timestamp to utilities                                     :code:
-
-We have it scattered around the code base.
-
-#+begin_src c++
-"9999-12-31 23:59:59"
-#+end_src
-
-*** Add skill to create new project component                          :code:
-
-Should create folders, CMakeLists, sample test, add to main make file etc. The
-new project should compile.
-
-Links:
-
-*** Add skill to improve UI design                                     :code:
-
-Make the UI more professional.
-
-*** Invalid password should not throw                                  :code:
-
-At present in the unlock test we have:
-
-#+begin_src c++
-    BOOST_LOG_SEV(lg, info) << "Locking account by failing 5 login attempts";
-    auto ip = internet::ipv4();
-    for (int i = 0; i < 5; ++i) {
-        try {
-            sut.login(account.username, "wrong_password", ip);
-        } catch (...) {}
-    }
-#+end_src
-
-This is very suspicious; a failed login should just return false or the modern
-c++ equivalent (=std::expected=?).
-
-*** Faker with seeds                                                   :code:
-
-As suggested by phi4:
-
-#+begin_quote
-Faker Usage:
-
-Randomness: Ensure that the use of faker data is appropriate for testing.
-Consider seeding the random generator for reproducibility in tests.
-#+end_quote
-
-Notes:
-
-#include "faker-cxx/generator.h"
-void setSeed(std::mt19937_64::result_type seed)
-Catch::rngSeed()
-
-
-*** Add =[[nodiscard]]= to repository operations returning data        :code:
-
-At present we can create an account and ignore the result, etc. We should be
-forced to look at the result.
-
-*** Delete currency only deletes single currency                       :code:
-
-At present we are deleting one currency at a time, sending a message for each,
-in =CurrencyMdiWindow.cpp=.
-
-*** Implement delete account                                           :code:
-
-At present you cannot delete an account.
-
-*** Add lock account request                                           :code:
-
-As per gemini's comments, we should have a request to lock an account.
-
-Notes:
-
-- account unlock should return boolean rather than throw.
-
-Test.
-
-#+begin_src c++
-TEST_CASE("handle_login_request_locked_account", tags) {
-    auto lg(make_logger(test_suite));
-    database_helper h;
-    h.truncate_table(database_table);
-
-    accounts_message_handler handler(h.get_context());
-    boost::asio::io_context io_context;
-
-    const auto account = generate_synthetic_account();
-    create_account_request create_req(to_create_account_request(account));
-    BOOST_LOG_SEV(lg, info) << "Create account request: " << create_req;
-
-    const auto create_payload = create_req.serialize();
-    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
-        auto result = co_await handler.handle_message(
-            message_type::create_account_request,
-            create_payload, "127.0.0.1:12345");
-        REQUIRE(result.has_value());
-    });
-
-    // 2. Simulate locking the account (A dedicated lock request should exist,
-    //    but for this test, we'll assume the handler has a method/logic for it
-    //    or that the system supports a lock request message type).
-    // Assuming a lock_account_request exists or the account is locked internally.
-    unlock_account_request lock_req; // Re-use struct for simplicity, assuming a dedicated lock is handled internally
-    lock_req.account_id = create_account_response::deserialize(
-        handler.get_account_id_by_username(create_req.username)).value().account_id; // Hypothetical internal method
-    // In a real system, you'd send a dedicated lock message here.
-    // For now, we rely on a separate mechanism to put the account into a locked state.
-    // **NOTE**: For a proper test, a dedicated LOCK_ACCOUNT_REQUEST is needed.
-
-    // 3. Attempt login with valid credentials for the now-locked account
-    login_request login_req;
-    login_req.username = create_req.username;
-    login_req.password = create_req.password;
-    BOOST_LOG_SEV(lg, info) << "Attempting login for locked user: " << login_req.username;
-
-    const auto login_payload = login_req.serialize();
-
-    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
-        auto result = co_await handler.handle_message(
-            message_type::login_request,
-            login_payload, "192.168.1.100:54321");
-
-        REQUIRE(result.has_value());
-        const auto response_result = login_response::deserialize(result.value());
-        REQUIRE(response_result.has_value());
-        const auto& response = response_result.value();
-        BOOST_LOG_SEV(lg, info) << "Response: " << response;
-
-        CHECK(response.success == false);
-        // Check for an explicit error message/code related to account lock.
-        CHECK(response.error_message.find("locked") != std::string::npos);
-    });
-}
-#+end_src
-
-
-
-*** Add pagination support                                             :code:
-
-At present we are returning all elements from accounts, currencies etc. We need
-to implement pagination:
-
-- Add offset and limit to list_accounts_request.
-- Add total_available_count to list_accounts_response.
-
-#+begin_src c++
-std::vector<domain::account>
-account_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts with offset: "
-                               << offset << " and limit: " << limit;
-
-    static auto max(make_timestamp(max_timestamp));
-    const auto query = sqlgen::read<std::vector<account_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("valid_from"_c.desc()) |
-        sqlgen::limit(limit) |
-        sqlgen::offset(offset);
-
-    const auto r = session(ctx_.connection_pool())
-        .and_then(query);
-    ensure_success(r);
-    BOOST_LOG_SEV(lg(), debug) << "Read latest accounts. Total: " << r->size();
-    return account_mapper::map(*r);
-}
-
-
-std::uint32_t account_repository::get_total_account_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account count.";
-
-    static auto max(make_timestamp(max_timestamp));
-
-    // Select the count of records that are currently active (valid_to == max_timestamp)
-    // We expect the result to be a vector containing a single long long (the count).
-    using count_result_type = std::vector<long long>;
-    const auto query = sqlgen::select<count_result_type>(sqlgen::count("id"_c)) |
-        from<account_entity> |
-        where("valid_to"_c == max.value());
-
-    const auto r = session(ctx_.connection_pool())
-        .and_then(query);
-    ensure_success(r);
-
-    if (r->empty() || r->at(0) < 0) {
-        return 0;
-    }
-
-    const auto total_count = static_cast<std::uint32_t>(r->at(0));
-
-    BOOST_LOG_SEV(lg(), debug) << "Total active accounts found: " << total_count;
-    return total_count;
-}
-#+end_src
-
-
-Links:
-
-- [[https://readyset.io/blog/optimizing-sql-pagination-in-postgres][Optimizing SQL Pagination in Postgres]]
-
-*** Do not return sensitive fields                                     :code:
-
-As per code review:
-
-#+begin_quote
-Major Security Flaw (list_accounts_response): The serialization format
-explicitly includes highly sensitive fields (password_hash, password_salt,
-totp_secret) for every domain::account returned. This is a severe security risk.
-These fields must not be exposed over any messaging protocol, even internal
-ones, unless it is a dedicated, highly protected replication channel.
-
-Proposed Change: Create a protocol-safe subset structure, e.g.,
-domain::account_summary, which contains only non-sensitive data (id, username,
-email, is_admin, version, modified_by). Update list_accounts_response to use
-std::vector<domain::account_summary>.
-
-Change list_accounts_response::accounts to use a non-sensitive type like
-std::vector<domain::account_summary>.
-#+end_quote
-*** Improve error message when server is not running                   :code:
-
-At present we get:
-
-#+begin_quote
-Failed to connect to server: Failed to connect to server
-#+end_quote
-
-If we try again after the error, "authenticating..." shows up in red.
-
-*** Add a "detached" mode                                             :code:
-
-At present we can detach all windows but if we then create a new one, we still
-have to detach it. It would be nice to set the default to detach or not, and
-then use that setting.
-
-*** Move =base32_encode= to utilities                                  :code:
-
-Add tests. Also move =host_to_network_32=, =read_uint16=, etc.
-
-*** Create a claude code skill to open a new sprint                    :code:
-
-Needs to update all of the version strings, copy backlog etc.
-
-*** When you maximise currencies merge toolbars                        :code:
-
-At present we end up with two tool bars, one below the other.
-
-*** Add a version attribute to entities                                :code:
-
-At present we are relying only on bitemporal for version control. However it is
-much easier to check a version number. It should just be a linear attribute
-which is updated whenever we insert into the entity table. If the user attempts
-to update an entity but the current version is smaller than the latest version
-we should error. Make version unique.
-
-*** Local versus remote connectivity                                   :code:
-
-In some cases it makes sense to use the UI directly against the database - for
-example, users may just want to create a simple setup to play around and the
-complexity of having to have a server is not helpful. In addition, they may not
-even require a full blown postgres - sqlite is enough. It should be possible to
-setup a connection to a database in this manner. Ideally the client should
-support both at the same time.
-
-*** Merge update and create currency messages                          :code:
-
-Due to how repositories work for bitemporal, we are always writing anyways. So
-we don't really need complex logic around updating versus creating a new
-currency. We need to simplify the UI and client / server code to have a single
-message type for both.
-
-*** Implement import XML                                               :code:
-
-Users should be able to import data from ORE directly.
-
-*** Update currency details to use tabs                                :code:
-
-We need a main tab with the currency related properties, then a "system" tab
-with temporal data which is read-only even on edit and a "image" tab with the
-image used to represent the currency. It could also contain some description or
-notes.
-
-*** Add a delete all button which deletes all currencies               :code:
-
-It is useful especially in test environments to be able to delete all entities
-before a re-import.
-
-*** History should have a revert button                                :code:
-
-It should be possible to choose a given version and ask the system to revert the
-currency to that version. It just makes an update with a new version to look
-like that version. It should also be possible to open at version. It shows the
-edit dialog in "read only mode" with the entity at that version. The tool bar
-should indicate this. It should also have a revert in that dialog.
-
-*** Assorted UI polish work                                            :code:
-
-Break these down into their own stories:
-
-- icons for CRUD are not enabling when on detached mode.
-- no status bar in dettached mode.
-- should we just have toolbars at the detached window level?
-- application should exit when main window is closed.
-- is it possible to dock windows like visual studio?
-- add a detach current window that just detaches that window.
-- disabled menu options are not properly greyed out. Done.
-
-*** Add multi-selection support to currencies                          :code:
-
-Users should be able to select multiple currencies and delete them. Maybe we
-should do like gmail and have check boxes?
-
-*** Allow in place editing of currencies                               :code:
-
-For expediency users should be able to edit multiple currencies and save them in
-one go directly in the grid. Shift enter to edit a field seems interesting.
-
-Users need to be made aware when there are changes in CRUD objects, and there
-needs to be a reload button to reload data from the database in that case. This
-could be done by making the reload button a different colour when data is
-available.
-
-Make the reload button blue when there are changes.
-
-Notes:
-
-- history windows should also have the notification.
-
-*** Notification of server restarts                                    :code:
-
-Whenever we lose connection to the server the UI needs to tell the user and
-change to disconnected.
-
-*** Add search to currencies                                           :code:
-
-It should be possible to filter the open currencies by a string. This should be
-any field. The user needs to know when the list has been filtered.
-
-*** Add a generic tagging system                                       :code:
-
-It should be possible to associate any entity with one or more tags and then do
-a search by tags on that entity type. For example, tag a set of currencies as
-emerging markets and then search by that.
-
-Labels versus tags:
-
-#+begin_src markdown
-That is an **excellent question** that gets to the heart of cloud governance and
-system design. You are correct that the underlying structure is fundamentally
-the same—a **key-value pair attached to a resource**—but the distinction is
-necessary because of the **context, governance, and enforcement mechanisms**
-applied to each one.
-
-The distinction between GCP Labels and Tags boils down to **Annotation vs.
-Policy**.
-
----
-
-## ⚖️ Why the Distinction is Necessary
-
-| Feature              | GCP **Labels** (Annotation)                                                                          | GCP **Tags** (Policy/Governance)                                                                                                                                               |
-|:---------------------|:-----------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Primary Goal**     | **Organization, filtering, cost allocation, and reporting.**                                         | **Policy enforcement, access control, and hierarchical governance.**                                                                                                           |
-| **Structure**        | **Flexible/Arbitrary.** Key-Value pair set directly on the resource.                                 | **Structured/Centralized.** Key and Value are defined *centrally* as separate resources (at the Organization/Project level) and then *bound* to the resource.                  |
-| **Hierarchy**        | **Flat.** A resource does not inherit labels from its parent folder.                                 | **Hierarchical.** Tags are inherited by child resources (like a VM inheriting a tag from its containing project).                                                              |
-| **Access Control**   | **Low Control.** Any user with permissions to modify the resource can typically modify its labels.   | **High Control.** Dedicated **IAM Roles** are required to create, manage, and even attach Tag Keys and Values. This prevents users from "tagging" their way out of a policy.   |
-| **Enforcement**      | **None.** Labels are metadata and cannot be used directly in IAM conditions to grant or deny access. | **High.** Tags are the *only* mechanism designed for **conditional IAM policies** and Organization Policies (e.g., "deny deletion unless resource has tag `environment:dev`"). |
-| **Use Case Example** | Filtering the console: "Show me all resources labeled `owner:john_doe`."                             | Security: "Only allow network traffic from resources tagged `security_zone:trusted`."                                                                                          |
-
-### Analogy: The Whiteboard vs. The Building Code
-
-1.  **Labels are like a sticky note on a whiteboard:**
-    ,* They are **flexible**, quickly written, and easy to change.
-    ,* They are used for **informal organization** (cost center, app name, etc.).
-    ,* Changing the note has **no impact on the resource's function** or security.
-
-2.  **Tags are like a building code requirement:**
-    ,* They are **highly structured** and defined by a central authority (the city/organization).
-    ,* They are used to **enforce policy** (safety, compliance).
-    ,* If a resource (a building) doesn't have the correct tag (e.g., a **fire-rating tag**), an automated system (the policy engine) will **deny an action** (e.g., deny occupation or modification).
-
----
-
-## How This Relates to Your SVG System
-
-Your current **three-table model** is structurally a **GCP Label** system—it's
-excellent for annotation and filtering (e.g., "Give me all icons with the tag
-'currency'").
-
-If you wanted to implement a **GCP Tag** concept, you would need to:
-
-1.  **Formalize the Tags:** Create certain tags as *official resources* (like
-    `Status` with official values `Draft`, `Approved`, `Production`).
-2.  **Add Permissions:** Implement **application logic** that checks a user's
-    role against the tag. For example: "A user needs the `Approver` role to
-    apply the `Status:Production` tag to an icon."
-
-The need to distinguish them comes down to providing one system that is
-,**flexible for organization (Labels)** and another that is **rigid for security
-and compliance (Tags)**.
-#+end_src
-
-Examples:
-
-- majors, minors, EM, latam, etc are tags we can have on currencies. On currency
-  pairs, We could also have USD crosses, which is inferred by having USD as one
-  of the pair. However these are not labels because we do not want everyone to
-  start using them. When defining a report, you could associate currencies and
-  currency pairs to the report via the tags.
-- labels are things we could associate with images for example. Flags could have
-  both "countries" and "currencies" labels so that when we want to select a flag
-  as the image for a currency, we could ask for all images labelled
-  "currencies". The labelling can be done by pretty much anyone.
-
-*** Add flags for currencies                                           :code:
-
-Add flags for the currencies. Need database support. Display them in the
-currencies dialog.
-
-Actually it is better to have a generic mechanism to upload an SVG and maybe tag
-it with an identifier. Then we could have a way to associate a currency with one
-of the available SVGs. The currency dialog could have a tab where users can
-select the SVG from a list. We can then have a table with SVG for currency which
-remembers these. This provides a generic solution for all cases where we have
-some kind of asset and an associated image.
-
-SQL:
-
-#+begin_src sql
--- Ensure you have the necessary extension for generating random UUIDs
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
--- 1. icons table: Stores the SVG data
-CREATE TABLE icons (
-    -- Primary key using UUID (GUID)
-    icon_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-    -- Unique key used by the application (e.g., 'usd_flag', 'btc_symbol')
-    key VARCHAR(100) UNIQUE NOT NULL,
-
-    -- The entire SVG content stored as plain text
-    svg_data TEXT NOT NULL,
-
-    -- Optional timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Index the 'key' column for faster lookups
-CREATE INDEX idx_icons_key ON icons (key);
-
----
-
--- 2. tags table: Stores the list of available categories
-CREATE TABLE tags (
-    -- Primary key remains SERIAL as tags are usually created centrally
-    tag_id SERIAL PRIMARY KEY,
-
-    -- The name of the tag (e.g., 'currency', 'flag', 'commodity')
-    name VARCHAR(50) UNIQUE NOT NULL
-);
-
--- Index the 'name' column for quick lookups and joins
-CREATE INDEX idx_tags_name ON tags (name);
-
----
-
--- 3. icon_tags table: Junction table for the many-to-many relationship
-CREATE TABLE icon_tags (
-    -- Foreign key to the icons table (now a UUID)
-    icon_id UUID NOT NULL REFERENCES icons(icon_id) ON DELETE CASCADE,
-
-    -- Foreign key to the tags table (remains INTEGER)
-    tag_id INTEGER NOT NULL REFERENCES tags(tag_id) ON DELETE CASCADE,
-
-    -- Ensures that each icon/tag combination can only exist once
-    PRIMARY KEY (icon_id, tag_id)
-);
-
--- Optional: Create a separate index for lookups by tag
-CREATE INDEX idx_icon_tags_tag_id ON icon_tags (tag_id);
-#+end_src
-
-
-*** Light system theme results in mix of dark and light                :code:
-
-We need to ensure we can have both light and dark themes and they work
-consistently.
-
-*** Update readme with UI screenshots                                  :code:
-
-Now that we have a basic UI up and running, add it to docs.
-
-*** Repl needs synchronous socket operations                           :code:
-
-At present the operations on sockets are async. This is a problem with the repl
-because we issue commands out of order. For example this causes scripting to
-fail.
-
-- [[https://github.com/daniele77/cli/discussions/251][#251: Basic Scripting with Cli]]
-
-*** Setup Qt properly on Windows                                       :code:
-
-Seems like our package is still missing Qt DLLs. Use the windows tool to
-determine what is missing. Consider installing Qt in the build machine via the
-built packages.
-
-*** Server must check database connectivity on startup                 :code:
-
-At present the server only checks connectivity to database when a user requests
-an operation. We need some kind of initial polling which puts the server in a
-mode replying to all clients: "database not available". While this is happening,
-it should keep polling the database and checking the connectivity.
-
-*** Add SC script on windows to install ores.service                   :code:
-
-We should package a trivial batch file that sets up the service on windows. We
-should also consider adding a simple script to setup the service on Linux.
-Ideally it should be done via the packaging step.
-
-*** Package SQL scripts                                                :code:
-
-We need to initialise the database on installation. The package should contain
-all of the necessary SQL as well as a script to do it.
-
-*** Resolve all of the OpenSSL leaks in valgrind                       :code:
-
-We are freeing up open SSL memory and still have leaks. For now just apply the
-suppression suggestions and deal with this later.
-
-*** Add support for feature flags                                      :code:
-
-We need a way to know if we are in bootstrap mode or not. Implement a generic
-mechanism for feature flags.
-
-Example chrome flag:
-
-#+begin_quote
-Temporarily unexpire M139 flags.
-
-Temporarily unexpire flags that expired as of M139. These flags will be removed
-soon. – Mac, Windows, Linux, ChromeOS, Android
-
-#temporary-unexpire-flags-m139
-#+end_quote
-
-Components:
-
-- name: human readable
-- description
-- id
-
-*** Implement authentication bootstrap workflow                        :code:
-
-Notes:
-
-- when there are no accounts setup, the repl should say to the user that it
-  needs to create an admin account.
-- first account must be admin.
-- once there is an account we need to make sure the user is logged in before we
-  process most message types.
-
-Mongo message:
-
-#+begin_src logview
-2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] ** WARNING: Access control is not enabled for the database.
-2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] **          Read and write access to data and configuration is unrestricted.
-#+end_src
-
-Requirements:
-
-#+begin_src markdown
-# Authentication Bootstrapping Requirements
-
-## R1: Initial System State (Bootstrap Mode)
-
-The system **MUST** start in a special **"Bootstrap Mode"** where the only
-permitted action is the creation of the initial Administrator account.
-
-## R2: Access Control in Bootstrap Mode
-
-While the system is in Bootstrap Mode:
-
-- **R2.1: Allowed Endpoint:** The service **MUST** only expose and accept
-  requests for a single endpoint: `POST /api/v1/accounts/create-admin` (or
-  equivalent).
-- **R2.2: Local-Only Restriction:** All requests to the allowed endpoint
-  ,**MUST** originate from a **trusted local interface** (e.g., `127.0.0.1` or
-  the server's designated internal IP range). Requests from any external/public
-  IP address **MUST** be rejected.
-- **R2.3: General Endpoint Rejection:** All other API endpoints (e.g., login,
-  user creation, data access) **MUST** immediately return a $\mathbf{403}$
-  ,**Forbidden** or $\mathbf{401}$ **Unauthorized** status, along with a clear
-  message indicating the system is in setup mode.
-
-## R3: Initial Admin Account Creation
-
-The first account created through the allowed endpoint **MUST** adhere to the
-following:
-
-- **R3.1: Mandatory Admin Role:** The account **MUST** be assigned the highest
-  level of **Administrator privileges** (`is_admin: true`).
-- **R3.2: Strong Password Policy:** The request **MUST** be validated against a
-  strong password policy (e.g., minimum 12 characters, requiring a mix of case,
-  numbers, and symbols). Failure to meet this standard **MUST** result in a
-  $\mathbf{400}$ **Bad Request** error.
-- **R3.3: One-Time Execution:** The administrator creation process **MUST** only
-  be allowed to succeed **exactly once**.
-
-## R4: System State Transition
-
-Upon successful creation of the first Administrator account (R3):
-
-- **R4.1: State Change:** The system **MUST** immediately and atomically
-  transition from **"Bootstrap Mode"** to **"Secure Mode"**. This state change
-  ,**MUST** be persisted.
-- **R4.2: Bootstrap Endpoint Deactivation:** The `POST
-  /api/v1/accounts/create-admin` endpoint **MUST** be permanently disabled. Any
-  subsequent request to this endpoint **MUST** return a $\mathbf{403}$
-  ,**Forbidden** error.
-
-## R5: Secure Mode Operation
-
-Once the system is in **"Secure Mode"**:
-
-- **R5.1: General Access Control:** All operational API endpoints **MUST** now
-  enforce **full authentication and authorization**.
-- **R5.2: Mandatory Login:** All users, including the newly created
-  Administrator, **MUST** successfully complete a login process to obtain a
-  valid session token before accessing any resource.
-- **R5.3: Standard Account Creation:** The standard non-admin account creation
-  endpoint (`POST /api/v1/accounts/create`) **MUST** become available, subject
-  to any configured access controls (e.g., only open to logged-in Admins, or
-  fully public).
-#+end_src
-
-Links:
-
-- [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
-
-*** Remove postgres passwords from github workflows                    :code:
-
-As a quick hack we added the dev passwords to the workflows. We should really
-generate these on the fly and supply them to the tests.
-
-*** Allow supplying the postgres connection URI                        :code:
-
-At present we are supplying all of the components for the connection. It may be
-easier to allow the entire URI:
-
-- connection-uri: The connection URI to connect to PostgreSQL. Example:
-  =postgresql://postgres:postgres@localhost/postgres=.
-
-*** Consider adding log command line options to qt                     :code:
-
-At present we have hard-coded logging options. However, maybe users should be
-able to change the logging settings from the UI rather than having to restart
-the app and supply command line options.
-
-*** Investigate valgrind leak on sqlgen                                :code:
-
-Is this a real leak:
-
-#+begin_src valgrind-leak
-==2599359==
-==2599359== HEAP SUMMARY:
-==2599359==     in use at exit: 11,421 bytes in 78 blocks
-==2599359==   total heap usage: 403,744 allocs, 403,666 frees, 161,473,513 bytes allocated
-==2599359==
-==2599359== 1,944 bytes in 9 blocks are definitely lost in loss record 20 of 21
-==2599359==    at 0x4F2B818: malloc (vg_replace_malloc.c:446)
-==2599359==    by 0x5AE29FF: PQmakeEmptyPGresult (fe-exec.c:161)
-==2599359==    by 0x5AEA9F2: pqParseInput3 (fe-protocol3.c:264)
-==2599359==    by 0x5AE5853: parseInput (fe-exec.c:1997)
-==2599359==    by 0x5AE5975: PQgetResult (fe-exec.c:2083)
-==2599359==    by 0x5AE5FB7: PQexecFinish (fe-exec.c:2388)
-==2599359==    by 0x5AE5D98: PQprepare (fe-exec.c:2275)
-==2599359==    by 0x5A7F688: sqlgen::postgres::Connection::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Connection.cpp:44)
-==2599359==    by 0x525189F: sqlgen::Session<sqlgen::postgres::Connection>::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Session.hpp:50)
-==2599359==    by 0x523F4FF: sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> >::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Transaction.hpp:61)
-==2599359==    by 0x523EE20: rfl::Result<rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > > sqlgen::insert_impl<__gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, bool) requires is_connection<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > (insert.hpp:46)
-==2599359==    by 0x523EB55: auto sqlgen::insert_impl<std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> >, rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > const&, bool) (insert.hpp:69)
-==2599359==
-==2599359== 3,672 bytes in 17 blocks are definitely lost in loss record 21 of 21
-==2599359==    at 0x4F2B818: malloc (vg_replace_malloc.c:446)
-==2599359==    by 0x5AE29FF: PQmakeEmptyPGresult (fe-exec.c:161)
-==2599359==    by 0x5AEA78E: pqParseInput3 (fe-protocol3.c:200)
-==2599359==    by 0x5AE5853: parseInput (fe-exec.c:1997)
-==2599359==    by 0x5AE5975: PQgetResult (fe-exec.c:2083)
-==2599359==    by 0x5AE5FB7: PQexecFinish (fe-exec.c:2388)
-==2599359==    by 0x5AE5E15: PQexecPrepared (fe-exec.c:2298)
-==2599359==    by 0x5A7FB5B: sqlgen::postgres::Connection::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Connection.cpp:72)
-==2599359==    by 0x525189F: sqlgen::Session<sqlgen::postgres::Connection>::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Session.hpp:50)
-==2599359==    by 0x523F4FF: sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> >::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Transaction.hpp:61)
-==2599359==    by 0x523EE20: rfl::Result<rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > > sqlgen::insert_impl<__gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, bool) requires is_connection<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > (insert.hpp:46)
-==2599359==    by 0x523EB55: auto sqlgen::insert_impl<std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> >, rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > const&, bool) (insert.hpp:69)
-==2599359==
-==2599359== LEAK SUMMARY:
-==2599359==    definitely lost: 5,616 bytes in 26 blocks
-==2599359==    indirectly lost: 0 bytes in 0 blocks
-==2599359==      possibly lost: 0 bytes in 0 blocks
-==2599359==    still reachable: 5,805 bytes in 52 blocks
-==2599359==         suppressed: 0 bytes in 0 blocks
-==2599359== Reachable blocks (those to which a pointer was found) are not shown.
-==2599359== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==2599359==
-==2599359== For lists of detected and suppressed errors, rerun with: -s
-==2599359== ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 0 from 0)
-#+end_src
-
-
 
 *** Footer
 

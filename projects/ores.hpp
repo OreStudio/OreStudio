@@ -20,7 +20,57 @@
 #define ORES_HPP
 
 /**
- * @brief The ORE Studio application.
+ * @brief ORE Studio - Graphical interface and data management for Open Source Risk Engine.
+ *
+ * ORE Studio is a C++20 application providing persistent storage, graphical user
+ * interface, and orchestration tools for quantitative risk analysis using the
+ * Open Source Risk Engine (ORE). The system is built on a layered architecture
+ * with clear separation of concerns.
+ *
+ * @section architecture System Architecture
+ *
+ * The system is organized into five architectural layers:
+ *
+ * **Foundation Layer** (`ores.utility`)
+ * - Core infrastructure: database connectivity, logging, filesystem utilities
+ * - UUID generation, environment variables, string conversion
+ * - No dependencies on other ORE Studio components
+ *
+ * **Infrastructure Layer** (`ores.comms`, `ores.testing`)
+ * - Communications: Binary protocol over SSL/TLS for client-server messaging
+ * - Testing: Catch2 integration with database isolation and logging
+ * - Depends on: Foundation
+ *
+ * **Domain Layer** (`ores.risk`, `ores.accounts`)
+ * - Risk: ORE domain model with XML/CSV/JSON I/O and temporal versioning
+ * - Accounts: User authentication, authorization, and feature flags
+ * - Depends on: Foundation, Infrastructure
+ *
+ * **Client Layer** (`ores.client`)
+ * - Deprecated REPL client (functionality moved to ores.comms)
+ * - Depends on: Foundation, Infrastructure, Domain
+ *
+ * **Application Layer** (`ores.cli`, `ores.qt`, `ores.service`)
+ * - CLI: Command-line import/export of currencies in multiple formats
+ * - Qt: Desktop GUI with MDI interface for visual data management
+ * - Service: Multi-client server hosting all backend services
+ * - Depends on: All layers
+ *
+ * @section components Component Documentation
+ *
+ * For detailed component documentation, see:
+ * - Component class diagrams: `projects/COMPONENT/modeling/COMPONENT.puml`
+ * - Component headers: `projects/COMPONENT/include/COMPONENT/COMPONENT.hpp`
+ * - System architecture: `projects/modeling/ores.puml`
+ *
+ * @section documentation Further Documentation
+ *
+ * - Full API documentation: See Doxygen mainpage
+ * - Source code: https://github.com/OreStudio/OreStudio
+ * - Project website: https://orestudio.github.io/OreStudio
+ *
+ * @note This project has no affiliation with Acadia, Open Source Risk Engine,
+ * or QuantLib. See Doxygen documentation for full context.
  */
 namespace ores { }
 

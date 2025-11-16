@@ -20,7 +20,22 @@
 #define ORES_SERVICE_SERVICE_HPP
 
 /**
- * @brief Main service for ORE Studio.
+ * @brief Main server application for ORE Studio.
+ *
+ * Multi-client server application hosting the ORE Studio backend services.
+ * Key features:
+ *
+ * - Server hosting: Runs the ORE Studio comms server with SSL/TLS
+ * - Subsystem integration: Registers message handlers for accounts, risk, and
+ *   other subsystems
+ * - Database access: Provides database context to all subsystems
+ * - Configuration: Boost program_options parser for server, database, and
+ *   logging configuration
+ * - Concurrent connections: Supports multiple simultaneous client connections
+ * - Asynchronous I/O: Built on Boost.Asio coroutines for scalable async operations
+ *
+ * The module is organized into namespaces: config (option parsing and
+ * configuration), and app (application hosting and execution).
  */
 namespace ores::service {}
 

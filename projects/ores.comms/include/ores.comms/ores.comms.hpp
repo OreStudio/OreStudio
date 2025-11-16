@@ -20,8 +20,22 @@
 #define ORES_COMMS_ORES_COMMS_HPP
 
 /**
- * @brief Comms library that provides the basic connectivity bundling blocks for
- * ORE Studio.
+ * @brief Communications library providing client-server connectivity for ORE Studio.
+ *
+ * Implements a custom binary protocol over SSL/TLS for secure client-server
+ * communication. Key features:
+ *
+ * - SSL/TLS security: All connections secured with OpenSSL
+ * - Binary protocol: Frame-based message exchange with headers and payloads
+ * - Server: Asynchronous multi-client server with session management
+ * - Client: Thread-safe client with both sync and async APIs
+ * - Handshake: Connection establishment with server/client identification
+ * - Message dispatching: Pluggable message handlers by subsystem range
+ * - Connection pooling: Maximum connection limits and active connection tracking
+ * - Error handling: Comprehensive error codes and std::expected-based APIs
+ *
+ * The protocol namespace defines message frames, types, handlers, and the
+ * message dispatcher that routes messages to registered subsystem handlers.
  */
 namespace ores::comms {}
 

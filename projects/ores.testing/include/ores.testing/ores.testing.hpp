@@ -21,7 +21,24 @@
 #define ORES_TESTING_ORES_TESTING_HPP
 
 /**
- * @brief Testing related infrastructure common to all testing projects.
+ * @brief Testing infrastructure common to all test projects.
+ *
+ * Provides comprehensive testing utilities for ORE Studio components using
+ * Catch2. Key features:
+ *
+ * - Database isolation: Each test process gets a unique database for parallel execution
+ * - Catch2 listeners: Automatic logging and database lifecycle management
+ * - Logging integration: Boost.Log configured per-test-case with suite-based organization
+ * - Database helpers: Table truncation and context management for tests
+ * - Template databases: Tests clone from oresdb_template with full schema
+ * - Environment-driven: Database configuration from TEST_ORES_DB_* environment variables
+ *
+ * Usage: Register the listeners in each test's main.cpp:
+ *   CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
+ *   CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
+ *
+ * The logging_listener initializes logging per test case, the
+ * database_lifecycle_listener creates/drops test databases.
  */
 namespace ores::testing {}
 

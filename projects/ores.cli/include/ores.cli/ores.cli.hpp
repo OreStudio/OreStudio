@@ -22,6 +22,18 @@
 
 /**
  * @brief Console tool for ORE Studio.
+ *
+ * Command-line interface for importing and exporting ORE data. Key features:
+ *
+ * - Import: Load currencies from JSON, XML, or CSV files into the database
+ * - Export: Extract currencies to JSON, XML, or CSV format
+ * - Temporal queries: Export data as-of specific timepoints or all versions
+ * - Filter support: Export specific entities by key
+ * - Configuration: Boost program_options parser for CLI arguments
+ * - Database integration: Direct repository access for data operations
+ *
+ * The module is organized into namespaces: config (option parsing and
+ * configuration), and app (application hosting and execution).
  */
 namespace ores::cli { }
 

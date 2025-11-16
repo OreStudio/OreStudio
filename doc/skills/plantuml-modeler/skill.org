@@ -100,7 +100,12 @@ Check conditions *in order*:
 
 ** 5. Members & notes
 
-- *Ignore*: =operator<<=, default values, logging members.
+- *Include methods and fields* with appropriate visibility (=+=, =-=, =#=):
+  - Public methods (=+=): Include all public methods
+  - Protected methods (=#=): Include important protected methods
+  - Private methods (=-=): Include key private methods
+  - Fields: Prefix with ={field}= marker (e.g., =+{field} name std::string=)
+- *Ignore*: =operator<<=, default values, logging members, trivial getters/setters.
 - Add *note after* class/struct:
   - Top-level comment
   - One line per field: =type name // comment=
@@ -171,14 +176,19 @@ namespace ores #F2F2F2 {
     utility --- N1
 
     namespace utility #F2F2F2 {
-        class options #F7E5FF {
-            +{field} name std::string
-            +{field} kvps std::unordered_map<std::string, std::list<std::string>>
+        class options #ECECEC {
+            +options(const std::string& name)
+            +~options()
+            +add(const std::string& key, const std::string& value) void
+            +get(const std::string& key) std::vector<std::string>
+            +has(const std::string& key) bool
+            -{field} name_ std::string
+            -{field} kvps_ std::unordered_map<std::string, std::list<std::string>>
         }
         note top of options
         Stores system options.
-        - name: option name
-        - kvps: key/value pairs
+        - name_: option name
+        - kvps_: key/value pairs
         end note
 
         options o-u- ores::utility::database_configuration

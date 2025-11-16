@@ -19,7 +19,8 @@
 title ORE Studio System Architecture
 
 note as SystemNote
-The ORE Studio application.
+C++20 application providing persistent storage, graphical interface,
+and orchestration tools for Open Source Risk Engine (ORE).
 end note
 
 ' Foundation Layer
@@ -27,41 +28,76 @@ package "Foundation Layer" #LIGHTBLUE {
     component [ores.utility] as utility #ECECEC
 
     note right of utility
-    Miscellaneous classes that do not fit elsewhere.
+    Foundation utilities with no dependencies on other ORE Studio components:
+    - Database: PostgreSQL connection management with libpq
+    - Repository: Database context abstraction for ORM operations
+    - Logging: Boost.Log integration with per-module and per-test-case support
+    - Filesystem: File I/O, directory operations, recursive search
+    - UUID: UUID v7 generation for time-ordered unique identifiers
+    - String: Type conversion and string manipulation
+    - Environment: Variable access with type conversion
     end note
 }
 
 ' Infrastructure Layer
 package "Infrastructure Layer" #LIGHTGREEN {
     component [ores.comms] as comms #ECECEC
-    component [ores.testing] as testing #ECECEC
 
     note right of comms
-    Comms library that provides the basic connectivity
-    bundling blocks for ORE Studio.
+    Custom binary protocol over SSL/TLS for secure client-server communication:
+    - Security: All connections secured with OpenSSL
+    - Protocol: Frame-based messages with headers and payloads
+    - Server: Async multi-client server with session management
+    - Client: Thread-safe client with both sync and async APIs
+    - Handshake: Connection establishment with server/client identification
+    - Dispatching: Pluggable message handlers by subsystem range
+    - Pooling: Maximum connection limits and active connection tracking
+    - Errors: Comprehensive error codes with std::expected-based APIs
     end note
 
+    component [ores.testing] as testing #ECECEC
+
     note right of testing
-    Testing related infrastructure common to all
-    testing projects.
+    Comprehensive testing infrastructure for all ORE Studio components:
+    - Framework: Catch2 with custom listeners
+    - Database Isolation: Each test process gets unique database for parallel execution
+    - Listeners: logging_listener and database_lifecycle_listener for auto-setup
+    - Logging: Boost.Log configured per-test-case with suite-based organization
+    - Database Helpers: Table truncation and context management
+    - Template Databases: Tests clone from oresdb_template with full schema
+    - Configuration: Environment-driven via TEST_ORES_DB_* variables
     end note
 }
 
 ' Domain Layer
 package "Domain Layer" #LIGHTYELLOW {
     component [ores.risk] as risk #ECECEC
-    component [ores.accounts] as accounts #ECECEC
 
     note right of risk
-    Domain model for the ORE types and other
-    related classes.
+    Core domain model for Open Risk Engine (ORE) types following ORE specifications:
+    - Domain: Currency entities with temporal versioning (valid_from/valid_to)
+    - ORE XML: Import/export to native ORE format using pugixml
+    - CSV Export: Structured CSV output for currencies
+    - JSON I/O: Serialization using reflection (rfl library)
+    - Table I/O: Formatted table output using fort library
+    - Persistence: ORM entities, mappers, and repositories with temporal support
+    - Message API: Request/response handlers for currency operations (0x3000-0x3FFF)
+    - Test Data: Synthetic data generation using faker-cxx
+    Organized into: domain, repository, orexml, csv, messaging, generators namespaces.
     end note
 
+    component [ores.accounts] as accounts #ECECEC
+
     note right of accounts
-    Account management module for ORE Studio.
-    Provides functionality for managing user accounts
-    including authentication, authorization, and
-    login tracking.
+    Comprehensive user account management with secure authentication:
+    - Account Lifecycle: Creation, listing, and deletion of user accounts
+    - Authentication: Secure password hashing using scrypt, login tracking
+    - Security: Account locking after failed login attempts, unlock capability
+    - Feature Flags: Runtime feature toggles with audit tracking
+    - Message API: Async request/response handlers (0x2000-0x2FFF)
+    - Temporal Support: Version tracking with valid_from/valid_to fields
+    - Test Data: Synthetic account generation for development
+    Organized into: domain, repository, service, messaging, security, generators namespaces.
     end note
 }
 
@@ -70,26 +106,59 @@ package "Client Layer" #LIGHTCYAN {
     component [ores.client] as client #ECECEC
 
     note right of client
-    Client library for connectivity in ORE Studio.
+    Interactive REPL (Read-Eval-Print Loop) client for ORE Studio server:
+    - Interface: Command-line with command completion
+    - Connection: Connect/disconnect to ORE Studio server
+    - Currency Ops: List and retrieve currency data
+    - Account Ops: Create accounts, login, list accounts, unlock accounts
+    - Auto-Connect: Automatic connection and login from configuration file
+    - Configuration: Boost program_options for CLI argument parsing
+    Organized into: config (configuration parsing), app (REPL and hosting) namespaces.
     end note
 }
 
 ' Application Layer
 package "Application Layer" #LIGHTCORAL {
     component [ores.cli] as cli #ECECEC
-    component [ores.qt] as qt #ECECEC
-    component [ores.service] as service #ECECEC
 
     note right of cli
-    Console tool for ORE Studio.
+    Command-line interface for importing and exporting ORE data:
+    - Import: Load currencies from JSON, XML, or CSV files into database
+    - Export: Extract currencies to JSON, XML, or CSV format
+    - Temporal Queries: Export data as-of specific timepoints or all versions
+    - Filtering: Export specific entities by key
+    - Configuration: Boost program_options parser for CLI arguments
+    - Database Integration: Direct repository access for data operations
+    Organized into: config (option parsing), app (application hosting) namespaces.
     end note
+
+    component [ores.qt] as qt #ECECEC
 
     note right of qt
-    Qt based Graphical User Interface for ORE Studio.
+    Modern desktop application built with Qt 6 for visual ORE data management:
+    - MDI Interface: Multiple Document Interface with detachable windows
+    - Currency Management: List, create, edit, delete currencies with history tracking
+    - Authentication: Login dialog with secure password handling
+    - Real-time Updates: Asynchronous data loading and server synchronization
+    - Entity Controllers: Modular controller pattern for managing entity windows
+    - Custom Widgets: Specialized delegates, dialogs, and UI components
+    - Background Logo: Customizable MDI area background
+    - Connection Status: Visual indication of server connectivity
+    MainWindow delegates to entity controllers (e.g., CurrencyController) which manage
+    their own MDI windows, dialogs, and data models.
     end note
 
+    component [ores.service] as service #ECECEC
+
     note right of service
-    Main service for ORE Studio.
+    Main server application hosting all ORE Studio backend services:
+    - Server Hosting: Runs the ORE Studio comms server with SSL/TLS
+    - Subsystem Integration: Registers message handlers for accounts, risk, and other subsystems
+    - Database Access: Provides database context to all subsystems
+    - Configuration: Boost program_options parser for server, database, and logging
+    - Concurrent Connections: Supports multiple simultaneous client connections
+    - Asynchronous I/O: Built on Boost.Asio coroutines for scalable async operations
+    Organized into: config (option parsing and configuration), app (application hosting) namespaces.
     end note
 }
 

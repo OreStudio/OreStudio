@@ -826,3 +826,82 @@ export VCPKG_DISABLE_SYSTEM_PACKAGE_CHECK=1
     :END:
 
 The action to review PRs using gemini is failing.
+
+* AI Generated Sprint Summary
+
+#+begin_src markdown
+# **OreStudio Sprint 2 – Release Notes**
+*October 2025*
+
+This sprint focused on **establishing core project infrastructure**, **defining the foundational architecture**, and **implementing initial client-server communication** using modern C++ and asio-based networking.
+
+---
+
+## ✅ **Highlights**
+
+- **Project foundation laid** with a clean, modular structure: `risk`, `comms`, `accounts`, and CLI/console layers.
+- **Client-server communication implemented** using **Boost.Cobalt** over ASIO with SSL support.
+- **PostgreSQL integration completed** via `sqlgen` for domain persistence and schema management.
+- **Data modeling modernized** using `reflect-cpp` for serialization, replacing manual XML parsing.
+- **Authentication framework started** with database schema and messaging for accounts and login.
+
+---
+
+## 🛠️ **Key Improvements**
+
+### **Architecture & Structure**
+- Conducted white-boarding sessions to define a **data-oriented architecture** with clear subsystem boundaries.
+- Created dedicated `comms` library for all communication primitives (socket handling, message framing, dispatch).
+- Renamed `core` to `risk` to better reflect domain focus and avoid ambiguity.
+- Refactored CLI to align with new project structure and improve maintainability.
+
+### **Networking & Communication**
+- Prototyped GRPC and ZeroMQ, then settled on **Boost.Cobalt/ASIO** for its modern coroutine support and simplicity.
+- Implemented a basic but secure **Cobalt-based server and client** with SSL.
+- Designed message structure with subsystem and message IDs for extensibility.
+- Established a generic dispatcher pattern for handling incoming messages.
+
+### **Data & Persistence**
+- Integrated `sqlgen` for PostgreSQL access, enabling type-safe database operations.
+- Added **temporal support** to currencies with `valid_from`/`valid_to` timestamps.
+- Replaced hand-rolled XML parsing with **`reflect-cpp`** for ORE domain types, improving maintainability.
+- Implemented commands to dump currencies: `latest`, `as_of`, and full history.
+
+### **Authentication**
+- Added initial support for accounts and logins:
+  - Database tables for `account` and `login` with fields for security (hash, salt, TOTP).
+  - Messaging infrastructure for login/logout workflows.
+  - Began implementation of password management (hashing with HMAC-SHA512).
+
+### **Developer Experience**
+- Restored Qt UI support after abandoning ImGui due to cross-platform build issues.
+- Added logging support to tests for better debugging.
+- Fixed CI/CD build issues on Windows, macOS, and Linux (YAML, CMake, vcpkg).
+- Updated vcpkg to latest version and addressed binary caching warnings.
+- Added Valgrind suppressions for spurious leaks in test infrastructure.
+
+---
+
+## ⚠️ **Known Issues & Postponed**
+
+- **Qtbase build warnings remain** due to system dependencies — workaround with `VCPKG_DISABLE_SYSTEM_PACKAGE_CHECK=1` not yet applied.
+- **Gemini CLI GitHub Action is failing** — review automation temporarily disabled.
+- **Initial account creation workflow not implemented** — system does not yet enforce bootstrap mode for first admin creation.
+- **GRPC and ZeroMQ experiments cancelled** in favor of simpler ASIO/Cobalt approach.
+
+---
+
+## 📊 **Time Summary**
+- **Total effort**: 90h 59m
+- **Code**: 68% | **Infra**: 12% | **Agile/Analysis**: 5%
+- Top tasks: `comms` library (8h), risk messaging (8h), accounts/login (7.7h), sqlgen integration (7.4h), CLI refactor (4.8h)
+
+---
+
+*Next sprint: Focus on completing authentication (session management, account
+ lockout), stabilizing builds, and enabling database isolation for testing.*
+#+end_src
+
+* Footer
+
+| Previous: [[id:154212FF-BB02-8D84-1E33-9338B458380A][Version Zero]] |

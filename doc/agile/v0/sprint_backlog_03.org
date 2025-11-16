@@ -875,6 +875,73 @@ Notes:
 At present we have a number of spurious warnings on both windows and OSX. Try to
 see if we can get CDash to ignore them.
 
-*** Footer
+
+* AI Generated Sprint Summary
+
+#+begin_src markdown
+# **OreStudio Sprint3 – Release Notes***November2025*
+
+This sprint focused on **enabling secure user sessions**, **improving test reliability**, and **laying the groundwork for robust CI/CD** with database integration and better build hygiene.
+
+---
+
+## ✅ **Highlights**
+
+- **Login and session management implemented** — users can now securely log in and out.
+- **Account locking logic added** after repeated failed login attempts.
+- **PostgreSQL integrated into CI** — enabling realistic integration testing using test databases and synthetic data.
+- **Test isolation achieved** — tests now use separate database instances to prevent interference.
+- **Boost.Log usage standardized** — resolved memory noise and improved logging consistency.
+
+---
+
+## 🛠️ **Key Improvements**
+
+### **Authentication & Security**
+- Implemented session support for login/logout workflows.
+- Added account lockout after N failed password attempts.
+- Began implementation of **authentication bootstrap workflow** (postponed): system will require creation of an initial admin account before normal operation.
+- Added command-line arguments for database configuration in services (replacing hardcoded credentials).
+
+### **Testing & CI/CD**
+- Integrated **PostgreSQL into GitHub CI** using `setup-postgresql` action.
+- Isolated test database usage from application and across test suites.
+- Added **test data generators** using `faker-cxx` for more realistic scenarios.
+- Split test utilities into a dedicated `ores.testing` library to avoid Catch2 linkage in production code.
+- Improved code coverage and unified test structure post-refactor.
+- Fixed broken Linux, macOS, and Windows CI builds caused by missing DLLs and test configuration.
+
+### **Build & Infrastructure**
+- Enabled Qt GUI builds by switching to distro-supplied Qt to save disk space.
+- Resolved vcpkg patch application failures on Windows (line-ending issues).
+- Created a **staging directory** for clean binary output (aligned with Dogen approach).
+- Investigated dynamic library builds; concluded static linking is safer for now due to packaging complexity.
+
+### **Code Quality**
+- Standardized Boost.Log usage, eliminating local static loggers that caused valgrind noise.
+- Fixed misspelling issues that broke builds due to org-mode URL typos.
+- Added `write_one` method to repository pattern for consistency with MongoDB-style APIs.
+- PostgreSQL support fully implemented for currency CRUD operations.
+
+---
+
+## ⚠️ **Known Issues & Postponed**
+
+- **CTest shows only one test per suite** — individual test results not visible in CDash. Issue reported to Kitware.
+- **OpenSSL leaks still appear in valgrind** — mostly initialization-related; suppressions applied temporarily.
+- **Feature flags framework postponed** — needed to manage bootstrap vs. secure mode, but deferred for next sprint.
+- **Authentication bootstrap workflow not completed** — core logic defined, but not yet enforced in service startup.
+
+---
+
+## 📊 **Time Summary**
+- **Total effort**:71h45m- **Code**:70% | **Infra**:12% | **Agile**:3%- Top tasks: PostgreSQL in CI (14h), Boost.Log refactor (8h), dynamic library investigation (7h), test data generation (8h)
+
+---
+
+*Next sprint: Focus on finalizing login workflow, UI integration with new socket code, and stabilizing packaging across platforms.*
+#+end_src
+
+* Footer
 
 | Previous: [[id:154212FF-BB02-8D84-1E33-9338B458380A][Version Zero]] |

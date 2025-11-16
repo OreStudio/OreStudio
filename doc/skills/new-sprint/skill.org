@@ -41,7 +41,6 @@ When the user requests to open up a new sprint.
 +#+html: <a href="https://orestudio.github.io/OreStudio/doc/agile/v0/sprint_backlog_05.html"><img alt="Agile Sprint" src="https://img.shields.io/badge/Sprint-5-blue.svg"/></a>
 #+end_src
 
-
 2. Update commits since in the =readme.org= to the current sprint (note - not
    the new sprint). Example: assuming the new sprint is 05 and the current
    sprint is 04, update =v0.0.3= to =v0.0.4=.
@@ -109,7 +108,17 @@ For =continuous-windows.yml=:
 +| [[id:2A3C7481-0984-D344-575B-7BFBB8D5A98B][Sprint Backlog 05]] | implement bootstrap mode; finish up all remaining tasks around domain entities.         |
 #+end_src
 
-8. Create a new agile sprint backlog for the new sprint in =doc/agile/v0=, with
+8. Update the version header file:
+   =projects/ores.utility/src/version/version.hpp=:
+
+#+begin_src diff
+-#define ORES_VERSION_PATCH 4
+-#define ORES_VERSION "0.0.4"
++#define ORES_VERSION_PATCH 5
++#define ORES_VERSION "0.0.5"
+#+end_src
+
+9. Create a new agile sprint backlog for the new sprint in =doc/agile/v0=, with
    the file name =sprint_backlog_NN.org= where NN is the new sprint. Use the
    template below to create the file. First generate the template without any
    changes and git stage the file so that I can look at the modifications you

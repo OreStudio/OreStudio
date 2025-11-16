@@ -7,13 +7,13 @@
 #+startup: inlineimages
 #+export_exclude_tags: noexport
 
-#+begin_export markdown
+#+begin_src markdown
 ---
 name: pr-summary-generator
 description: Generate a pull request title and overview using only committed work on the current branch.
 license: Complete terms in LICENSE.txt
 ---
-#+end_export
+#+end_src
 
 This skill inspects the Git commit history of the current branch, from the
 branching point up to the latest commit *without pushing changes* and *ignoring

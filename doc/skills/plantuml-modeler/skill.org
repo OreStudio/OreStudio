@@ -64,7 +64,7 @@ set namespaceSeparator ::
 ' <<< BODY GOES HERE >>>
 
 ' Local Variables:
-' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar COMPONENT.puml"
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar COMPONENT.puml"
 ' End:
 @enduml
 #+end_src
@@ -122,11 +122,14 @@ Check conditions *in order*:
 
 - Use *fully qualified* names.
 - *Ignore* external component types.
+- *Always include inheritance relationships* for classes that extend base classes.
 - Arrows:
-  - Composition: =o--= / =*--=
-  - Aggregation: =o--=
+  - Inheritance: =-up-|>= (derived class -up-|> base class) - forces parent above child
+  - Composition: =*--= (strong ownership)
+  - Aggregation: =o--= (weak ownership/reference)
   - Association: =--=
-  - Dependency: =..>= (label =: uses=)
+  - Dependency: =..>= (label =: uses=, =: creates=, =: generates=)
+- *Use directional arrows* (=-up-=, =-down-=, =-left-=, =-right-=) to control layout when needed
 
 ** 7. Implementation-file dependencies (classes only)
 
@@ -176,9 +179,21 @@ namespace ores #F2F2F2 {
     utility --- N1
 
     namespace utility #F2F2F2 {
+        class base_options #ECECEC {
+            +base_options()
+            +~base_options()
+            +{abstract} validate() bool
+            #{field} is_valid_ bool
+        }
+        note top of base_options
+        Base class for options.
+        - is_valid_: validation state
+        end note
+
         class options #ECECEC {
             +options(const std::string& name)
             +~options()
+            +validate() bool
             +add(const std::string& key, const std::string& value) void
             +get(const std::string& key) std::vector<std::string>
             +has(const std::string& key) bool
@@ -191,7 +206,9 @@ namespace ores #F2F2F2 {
         - kvps_: key/value pairs
         end note
 
-        options o-u- ores::utility::database_configuration
+        ' Relationships
+        ores::utility::options -up-|> ores::utility::base_options
+        ores::utility::options o-- ores::utility::database_configuration
     }
 }
 #+end_src

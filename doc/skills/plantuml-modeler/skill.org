@@ -213,6 +213,120 @@ namespace ores #F2F2F2 {
 }
 #+end_src
 
+* System-Level Component Diagrams
+
+When creating a system-level architecture diagram showing all ORE Studio components
+and their relationships:
+
+** 1. File location & naming
+
+- Directory: =projects/modeling/=
+- Diagram file: =ores.puml=
+- CMakeLists: =projects/modeling/CMakeLists.txt=
+
+** 2. System description
+
+Add a system-level note at the top sourced from =projects/ores.hpp=:
+
+#+begin_src plantuml
+note as SystemNote
+The ORE Studio application.
+end note
+#+end_src
+
+** 3. Diagram structure
+
+Use PlantUML component diagram syntax with packages to group components by
+architectural layer. Place component notes *inside* their package:
+
+#+begin_src plantuml
+@startuml
+title ORE Studio System Architecture
+
+note as SystemNote
+The ORE Studio application.
+end note
+
+package "Foundation Layer" #LIGHTBLUE {
+    component [ores.utility] as utility #ECECEC
+
+    note right of utility
+    Miscellaneous classes that do not fit elsewhere.
+    end note
+}
+
+package "Application Layer" #LIGHTCORAL {
+    component [ores.cli] as cli #ECECEC
+
+    note right of cli
+    Console tool for ORE Studio.
+    end note
+}
+
+' Dependencies
+cli --> utility
+
+@enduml
+#+end_src
+
+** 4. Component descriptions
+
+For each component:
+
+1. Read the component header file (e.g.,
+   =projects/ores.accounts/include/ores.accounts/ores.accounts.hpp=)
+2. Extract the =@brief= description from the namespace documentation
+3. Add a =note right of component= *inside* the package block
+4. Place the note immediately after the component definition
+
+** 5. Component dependencies
+
+Determine dependencies by analyzing =CMakeLists.txt= files in =projects/COMPONENT/src/=:
+
+1. Look for =target_link_libraries= statements
+2. Extract =ores.*.lib= dependencies (ignore external libraries)
+3. Create arrows using =-->= syntax
+4. Group related dependencies with comments (by layer)
+
+** 6. Architectural layers
+
+Organize components into packages by layer:
+
+| Layer                | Colour        | Components                      |
+|----------------------+---------------+---------------------------------|
+| Foundation Layer     | =#LIGHTBLUE=  | ores.utility                    |
+| Infrastructure Layer | =#LIGHTGREEN= | ores.comms, ores.testing        |
+| Domain Layer         | =#LIGHTYELLOW= | ores.risk, ores.accounts        |
+| Client Layer         | =#LIGHTCYAN=  | ores.client                     |
+| Application Layer    | =#LIGHTCORAL= | ores.cli, ores.qt, ores.service |
+
+** 7. CMakeLists.txt setup
+
+Create =projects/modeling/CMakeLists.txt= following the same pattern as component
+diagrams:
+
+#+begin_src cmake
+set(name "ores")
+
+set(diagram_target generate_${name}_diagram)
+add_custom_target(${diagram_target}
+    COMMENT "Generating PlantUML diagram for ${name}" VERBATIM
+    COMMAND java ${ORES_JAVA_ARGS} -jar ${ORES_PLANTUML_JAR} ${name}.puml
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
+add_dependencies(make_all_diagrams ${diagram_target})
+#+end_src
+
+Then add to =projects/CMakeLists.txt=:
+
+#+begin_src cmake
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modeling)
+#+end_src
+
+** 8. Example system diagram
+
+See =projects/modeling/ores.puml= for a complete example showing all ORE Studio
+components organized by architectural layer with their dependencies.
+
 * Artefacts :noexport:
 
 ** Licence

@@ -18,32 +18,38 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-16 Sun 13:09], for Sunday, November 16, 2025.
+#+CAPTION: Clock summary at [2025-11-16 Sun 23:50], for Sunday, November 16, 2025.
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *1:08* |      |      | 100.0 |
+|       | *Total time*                          | *3:25* |      |      | 100.0 |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 1:08   |      |      | 100.0 |
-|       | Active                                |        | 1:08 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 1:08 | 100.0 |
+|       | Stories                               | 3:25   |      |      | 100.0 |
+|       | Active                                |        | 3:25 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 1:20 |  39.0 |
+| infra | Add AI generated sprint summary       |        |      | 1:38 |  47.8 |
+| infra | Add skill to generate release notes   |        |      | 0:27 |  13.2 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-16 Sun 13:09]
+#+CAPTION: Clock summary at [2025-11-16 Sun 23:50]
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *1:08* |      |      | 100.0 |
+|       | *Total time*                          | *3:25* |      |      | 100.0 |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 1:08   |      |      | 100.0 |
-|       | Active                                |        | 1:08 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 1:08 | 100.0 |
+|       | Stories                               | 3:25   |      |      | 100.0 |
+|       | Active                                |        | 3:25 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 1:20 |  39.0 |
+| infra | Add AI generated sprint summary       |        |      | 1:38 |  47.8 |
+| infra | Add skill to generate release notes   |        |      | 0:27 |  13.2 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-11-16 Sun 23:48]--[2025-11-16 Sun 23:57] =>  0:09
+    CLOCK: [2025-11-16 Sun 23:37]--[2025-11-16 Sun 23:47] =>  0:10
     CLOCK: [2025-11-16 Sun 12:01]--[2025-11-16 Sun 13:09] =>  1:08
     :END:
 
@@ -193,6 +199,587 @@ print(p)
 [[file:sprint_backlog_05_tags.png]]
 
 
-*** Footer
+*** COMPLETED Add AI generated sprint summary                         :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-16 Sun 21:58]--[2025-11-16 Sun 22:19] =>  0:21
+    CLOCK: [2025-11-16 Sun 19:22]--[2025-11-16 Sun 19:38] =>  0:16
+    CLOCK: [2025-11-16 Sun 17:21]--[2025-11-16 Sun 18:22] =>  1:01
+    :END:
+
+It is a bit difficult to make sense of a sprint with all the story details. We
+should use AI to make a human readable summary. Also, add a skill for this.
+
+*** COMPLETED Add skill to generate release notes                     :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-16 Sun 23:10]--[2025-11-16 Sun 23:37] =>  0:27
+    :END:
+
+It should be quite straightforward to do this, based on the spr
+
+*** COMPLETED Create a claude code skill to open a new sprint          :code:
+
+Needs to update all of the version strings, copy backlog etc. Create the skill
+as part of opening next sprint.
+
+Created, just needs to be tested at the end of this sprint.
+
+*** COMPLETED Resolve all of the OpenSSL leaks in valgrind             :code:
+
+*Rationale*: According to LLMs, all the leaks left are just initialisation and
+can be ignored. Added them to suppression.
+
+We are freeing up open SSL memory and still have leaks. For now just apply the
+suppression suggestions and deal with this later.
+
+*** COMPLETED Investigate valgrind leak on sqlgen                      :code:
+
+*Rationale*: All the sqlgen leaks we were aware of were fixed and patched upstream.
+
+Is this a real leak:
+
+#+begin_src valgrind-leak
+==2599359==
+==2599359== HEAP SUMMARY:
+==2599359==     in use at exit: 11,421 bytes in 78 blocks
+==2599359==   total heap usage: 403,744 allocs, 403,666 frees, 161,473,513 bytes allocated
+==2599359==
+==2599359== 1,944 bytes in 9 blocks are definitely lost in loss record 20 of 21
+==2599359==    at 0x4F2B818: malloc (vg_replace_malloc.c:446)
+==2599359==    by 0x5AE29FF: PQmakeEmptyPGresult (fe-exec.c:161)
+==2599359==    by 0x5AEA9F2: pqParseInput3 (fe-protocol3.c:264)
+==2599359==    by 0x5AE5853: parseInput (fe-exec.c:1997)
+==2599359==    by 0x5AE5975: PQgetResult (fe-exec.c:2083)
+==2599359==    by 0x5AE5FB7: PQexecFinish (fe-exec.c:2388)
+==2599359==    by 0x5AE5D98: PQprepare (fe-exec.c:2275)
+==2599359==    by 0x5A7F688: sqlgen::postgres::Connection::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Connection.cpp:44)
+==2599359==    by 0x525189F: sqlgen::Session<sqlgen::postgres::Connection>::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Session.hpp:50)
+==2599359==    by 0x523F4FF: sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> >::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Transaction.hpp:61)
+==2599359==    by 0x523EE20: rfl::Result<rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > > sqlgen::insert_impl<__gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, bool) requires is_connection<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > (insert.hpp:46)
+==2599359==    by 0x523EB55: auto sqlgen::insert_impl<std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> >, rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > const&, bool) (insert.hpp:69)
+==2599359==
+==2599359== 3,672 bytes in 17 blocks are definitely lost in loss record 21 of 21
+==2599359==    at 0x4F2B818: malloc (vg_replace_malloc.c:446)
+==2599359==    by 0x5AE29FF: PQmakeEmptyPGresult (fe-exec.c:161)
+==2599359==    by 0x5AEA78E: pqParseInput3 (fe-protocol3.c:200)
+==2599359==    by 0x5AE5853: parseInput (fe-exec.c:1997)
+==2599359==    by 0x5AE5975: PQgetResult (fe-exec.c:2083)
+==2599359==    by 0x5AE5FB7: PQexecFinish (fe-exec.c:2388)
+==2599359==    by 0x5AE5E15: PQexecPrepared (fe-exec.c:2298)
+==2599359==    by 0x5A7FB5B: sqlgen::postgres::Connection::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Connection.cpp:72)
+==2599359==    by 0x525189F: sqlgen::Session<sqlgen::postgres::Connection>::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Session.hpp:50)
+==2599359==    by 0x523F4FF: sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> >::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Transaction.hpp:61)
+==2599359==    by 0x523EE20: rfl::Result<rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > > sqlgen::insert_impl<__gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, bool) requires is_connection<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > (insert.hpp:46)
+==2599359==    by 0x523EB55: auto sqlgen::insert_impl<std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> >, rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > const&, bool) (insert.hpp:69)
+==2599359==
+==2599359== LEAK SUMMARY:
+==2599359==    definitely lost: 5,616 bytes in 26 blocks
+==2599359==    indirectly lost: 0 bytes in 0 blocks
+==2599359==      possibly lost: 0 bytes in 0 blocks
+==2599359==    still reachable: 5,805 bytes in 52 blocks
+==2599359==         suppressed: 0 bytes in 0 blocks
+==2599359== Reachable blocks (those to which a pointer was found) are not shown.
+==2599359== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==2599359==
+==2599359== For lists of detected and suppressed errors, rerun with: -s
+==2599359== ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 0 from 0)
+#+end_src
+
+*** COMPLETED Copy across icons and other assets to package            :code:
+
+*Rationale*: All of the icon errors were resolved last sprint.
+
+At present when you start the gui you get:
+
+: /opt/OreStudio/0.0.3/bin/ores.qt
+: qt.svg: Cannot open file '/home/marco/money-pound-box-line.svg', because: No such file or directory
+: qt.svg: Cannot open file '/home/marco/money-pound-box-line.svg', because: No such file or directory
+
+We need to put the assets under a suitable directory in opt and try to open them
+from there.
+
+*** COMPLETED Implement database configuration                         :code:
+
+*Rationale*: this has now been done.
+
+We have hard coded database configuration. Implement this properly both for
+console and UI.
+
+*** COMPLETED Fix site links to main page                               :doc:
+
+*Rationale*: Fixed with the introduction of =index.org=.
+
+At present we renamed readme to index in the HTML export. Do a symlink or a copy
+of this file to fix links.
+
+*** COMPLETED Add JSON parsing support for currency                    :code:
+
+*Rationale*: This is now available via reflect-cpp.
+
+We need to have the ability to read and write currencies from JSON.
+
+*** Add more account commands                                          :code:
+
+See the azeroth account commands for inspiration.
+
+Links:
+
+- [[https://www.azerothcore.org/wiki/gm-commands][GM Commands]]
+
+*** CLI Importing needs to read from database                          :code:
+
+After we do the import into the database, we need to read the currencies again
+to get the valid from/to.
+
+*** Tidy-up database code                                              :code:
+
+- add helpers to utility to ensure success, execute query, etc.
+- add helpers for max timestamp, timestamp.
+
+*** Split console recipes by entity                                    :code:
+
+At present we have one very long file, but this is not scalable. We could split
+out:
+
+- general args (help, info, etc)
+- by entity
+
+Notes:
+
+- Rename console to CLI.
+- reduce output, only first few entries are needed.
+- add a toc.
+
+*** Add a "detached" mode                                              :code:
+
+At present we can detach all windows but if we then create a new one, we still
+have to detach it. It would be nice to set the default to detach or not, and
+then use that setting.
+
+*** Merge update and create currency messages                          :code:
+
+Due to how repositories work for bitemporal, we are always writing anyways. So
+we don't really need complex logic around updating versus creating a new
+currency. We need to simplify the UI and client / server code to have a single
+message type for both.
+
+*** Improve handling of error responses                                :code:
+
+As per Gemini code review:
+
+#+begin_src markdown
+Certainly. Point \#2 from the review of `CurrencyHistoryDialog.cpp` addressed the potential complexity of error checking by suggesting that relying on the specific response message type is **fragile**.
+
+The goal is to move from:
+
+1.  Client sends **Request A**.
+2.  Server returns **Response A** (Success) OR **Error Response** (Failure) OR **Response B** (Unexpected success type).
+3.  Client checks: *Is the message type exactly **Response A**?*
+
+to a more robust pattern where the client checks for a generic failure response first.
+
+-----
+
+## 🐞 Fragile Error Check (Current Code)
+
+The current code in `loadHistory` checks for success by expecting *only* the specific success message type:
+
+```cpp
+// Current Fragile Logic
+if (result->header().type != comms::protocol::message_type::get_currency_history_response) {
+    onHistoryLoadError(QString("Server does not support currency history (received message type %1)")
+        .arg(static_cast<int>(result->header().type)));
+    return;
+}
+```
+
+This logic has two main problems:
+
+1.  **Hiding Server Errors:** If the server returns a generic protocol error (`message_type::error_response`) because, for example, the client's session timed out, the client logs a misleading message: "Server does not support currency history." It should be reporting the actual error message sent by the server.
+2.  **Lack of Standardization:** Every client method needs to implement its own logic to handle unexpected types.
+
+-----
+
+## 🛠️ Suggested Improvement: Standardized Error Handling
+
+The improvement is to check for a generic **`error_response`** message type first, and report its payload/message, before attempting to deserialize the successful response.
+
+Assuming your system has a standard `error_response` message:
+
+```cpp
+void CurrencyHistoryDialog::handleHistoryResponse(const HistoryResult& result) {
+    if (!result) {
+        onHistoryLoadError(QString::fromStdString(result.error()));
+        return;
+    }
+
+    // 1. Check for a generic server-side error response
+    if (result->header().type == comms::protocol::message_type::error_response) {
+        // Assume error_response contains a readable message payload
+        auto error_response = risk::messaging::error_response::deserialize(result->payload());
+        if (error_response) {
+            onHistoryLoadError(QString::fromStdString(error_response->message));
+        } else {
+            onHistoryLoadError("Server returned a malformed error response.");
+        }
+        return;
+    }
+
+    // 2. Check for the specific SUCCESS response type
+    if (result->header().type == comms::protocol::message_type::get_currency_history_response) {
+        auto response = risk::messaging::get_currency_history_response::deserialize(result->payload());
+
+        if (!response || !response->success) {
+            // Handle success=false within the expected response type
+            onHistoryLoadError(QString::fromStdString(response ? response->message : "Invalid or failed history response."));
+            return;
+        }
+
+        history_ = std::move(response->history);
+        onHistoryLoaded();
+        return;
+    }
+
+    // 3. Handle truly unexpected message type
+    onHistoryLoadError(QString("Received unexpected message type %1 from server.")
+        .arg(static_cast<int>(result->header().type)));
+}
+```
+
+By standardizing the **`error_response`** type, the client can always extract and display the relevant server-side failure reason, leading to much clearer logging and user feedback.
+#+end_src
+
+
+*** Implement authentication bootstrap workflow                        :code:
+
+Notes:
+
+- when there are no accounts setup, the repl should say to the user that it
+  needs to create an admin account.
+- first account must be admin.
+- once there is an account we need to make sure the user is logged in before we
+  process most message types.
+
+Mongo message:
+
+#+begin_src logview
+2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] ** WARNING: Access control is not enabled for the database.
+2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] **          Read and write access to data and configuration is unrestricted.
+#+end_src
+
+Requirements:
+
+#+begin_src markdown
+# Authentication Bootstrapping Requirements
+
+## R1: Initial System State (Bootstrap Mode)
+
+The system **MUST** start in a special **"Bootstrap Mode"** where the only
+permitted action is the creation of the initial Administrator account.
+
+## R2: Access Control in Bootstrap Mode
+
+While the system is in Bootstrap Mode:
+
+- **R2.1: Allowed Endpoint:** The service **MUST** only expose and accept
+  requests for a single endpoint: `POST /api/v1/accounts/create-admin` (or
+  equivalent).
+- **R2.2: Local-Only Restriction:** All requests to the allowed endpoint
+  ,**MUST** originate from a **trusted local interface** (e.g., `127.0.0.1` or
+  the server's designated internal IP range). Requests from any external/public
+  IP address **MUST** be rejected.
+- **R2.3: General Endpoint Rejection:** All other API endpoints (e.g., login,
+  user creation, data access) **MUST** immediately return a $\mathbf{403}$
+  ,**Forbidden** or $\mathbf{401}$ **Unauthorized** status, along with a clear
+  message indicating the system is in setup mode.
+
+## R3: Initial Admin Account Creation
+
+The first account created through the allowed endpoint **MUST** adhere to the
+following:
+
+- **R3.1: Mandatory Admin Role:** The account **MUST** be assigned the highest
+  level of **Administrator privileges** (`is_admin: true`).
+- **R3.2: Strong Password Policy:** The request **MUST** be validated against a
+  strong password policy (e.g., minimum 12 characters, requiring a mix of case,
+  numbers, and symbols). Failure to meet this standard **MUST** result in a
+  $\mathbf{400}$ **Bad Request** error.
+- **R3.3: One-Time Execution:** The administrator creation process **MUST** only
+  be allowed to succeed **exactly once**.
+
+## R4: System State Transition
+
+Upon successful creation of the first Administrator account (R3):
+
+- **R4.1: State Change:** The system **MUST** immediately and atomically
+  transition from **"Bootstrap Mode"** to **"Secure Mode"**. This state change
+  ,**MUST** be persisted.
+- **R4.2: Bootstrap Endpoint Deactivation:** The `POST
+  /api/v1/accounts/create-admin` endpoint **MUST** be permanently disabled. Any
+  subsequent request to this endpoint **MUST** return a $\mathbf{403}$
+  ,**Forbidden** error.
+
+## R5: Secure Mode Operation
+
+Once the system is in **"Secure Mode"**:
+
+- **R5.1: General Access Control:** All operational API endpoints **MUST** now
+  enforce **full authentication and authorization**.
+- **R5.2: Mandatory Login:** All users, including the newly created
+  Administrator, **MUST** successfully complete a login process to obtain a
+  valid session token before accessing any resource.
+- **R5.3: Standard Account Creation:** The standard non-admin account creation
+  endpoint (`POST /api/v1/accounts/create`) **MUST** become available, subject
+  to any configured access controls (e.g., only open to logged-in Admins, or
+  fully public).
+#+end_src
+
+Links:
+
+- [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
+
+*** Add max timestamp to utilities                                     :code:
+
+We have it scattered around the code base.
+
+*** Invalid password should not throw                                  :code:
+
+At present in the unlock test we have:
+
+#+begin_src c++
+    BOOST_LOG_SEV(lg, info) << "Locking account by failing 5 login attempts";
+    auto ip = internet::ipv4();
+    for (int i = 0; i < 5; ++i) {
+        try {
+            sut.login(account.username, "wrong_password", ip);
+        } catch (...) {}
+    }
+#+end_src
+
+This is very suspicious; a failed login should just return false or the modern
+c++ equivalent (=std::expected=?).
+
+*** Faker with seeds                                                   :code:
+
+As suggested by phi4:
+
+#+begin_quote
+Faker Usage:
+
+Randomness: Ensure that the use of faker data is appropriate for testing.
+Consider seeding the random generator for reproducibility in tests.
+#+end_quote
+
+Notes:
+
+#include "faker-cxx/generator.h"
+void setSeed(std::mt19937_64::result_type seed)
+Catch::rngSeed()
+
+
+*** Add =[[nodiscard]]= to repository operations returning data        :code:
+
+At present we can create an account and ignore the result, etc. We should be
+forced to look at the result.
+
+*** Delete currency only deletes single currency                       :code:
+
+At present we are deleting one currency at a time, sending a message for each,
+in =CurrencyMdiWindow.cpp=.
+
+*** Implement delete account                                           :code:
+
+At present you cannot delete an account.
+
+*** Add lock account request                                           :code:
+
+As per gemini's comments, we should have a request to lock an account.
+
+Notes:
+
+- account unlock should return boolean rather than throw.
+
+Test.
+
+#+begin_src c++
+TEST_CASE("handle_login_request_locked_account", tags) {
+    auto lg(make_logger(test_suite));
+    database_helper h;
+    h.truncate_table(database_table);
+
+    accounts_message_handler handler(h.get_context());
+    boost::asio::io_context io_context;
+
+    const auto account = generate_synthetic_account();
+    create_account_request create_req(to_create_account_request(account));
+    BOOST_LOG_SEV(lg, info) << "Create account request: " << create_req;
+
+    const auto create_payload = create_req.serialize();
+    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+        auto result = co_await handler.handle_message(
+            message_type::create_account_request,
+            create_payload, "127.0.0.1:12345");
+        REQUIRE(result.has_value());
+    });
+
+    // 2. Simulate locking the account (A dedicated lock request should exist,
+    //    but for this test, we'll assume the handler has a method/logic for it
+    //    or that the system supports a lock request message type).
+    // Assuming a lock_account_request exists or the account is locked internally.
+    unlock_account_request lock_req; // Re-use struct for simplicity, assuming a dedicated lock is handled internally
+    lock_req.account_id = create_account_response::deserialize(
+        handler.get_account_id_by_username(create_req.username)).value().account_id; // Hypothetical internal method
+    // In a real system, you'd send a dedicated lock message here.
+    // For now, we rely on a separate mechanism to put the account into a locked state.
+    // **NOTE**: For a proper test, a dedicated LOCK_ACCOUNT_REQUEST is needed.
+
+    // 3. Attempt login with valid credentials for the now-locked account
+    login_request login_req;
+    login_req.username = create_req.username;
+    login_req.password = create_req.password;
+    BOOST_LOG_SEV(lg, info) << "Attempting login for locked user: " << login_req.username;
+
+    const auto login_payload = login_req.serialize();
+
+    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+        auto result = co_await handler.handle_message(
+            message_type::login_request,
+            login_payload, "192.168.1.100:54321");
+
+        REQUIRE(result.has_value());
+        const auto response_result = login_response::deserialize(result.value());
+        REQUIRE(response_result.has_value());
+        const auto& response = response_result.value();
+        BOOST_LOG_SEV(lg, info) << "Response: " << response;
+
+        CHECK(response.success == false);
+        // Check for an explicit error message/code related to account lock.
+        CHECK(response.error_message.find("locked") != std::string::npos);
+    });
+}
+#+end_src
+
+
+
+*** Add pagination support                                             :code:
+
+At present we are returning all elements from accounts, currencies etc. We need
+to implement pagination:
+
+- Add offset and limit to list_accounts_request.
+- Add total_available_count to list_accounts_response.
+
+#+begin_src c++
+std::vector<domain::account>
+account_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts with offset: "
+                               << offset << " and limit: " << limit;
+
+    static auto max(make_timestamp(max_timestamp));
+    const auto query = sqlgen::read<std::vector<account_entity>> |
+        where("valid_to"_c == max.value()) |
+        order_by("valid_from"_c.desc()) |
+        sqlgen::limit(limit) |
+        sqlgen::offset(offset);
+
+    const auto r = session(ctx_.connection_pool())
+        .and_then(query);
+    ensure_success(r);
+    BOOST_LOG_SEV(lg(), debug) << "Read latest accounts. Total: " << r->size();
+    return account_mapper::map(*r);
+}
+
+
+std::uint32_t account_repository::get_total_account_count() {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account count.";
+
+    static auto max(make_timestamp(max_timestamp));
+
+    // Select the count of records that are currently active (valid_to == max_timestamp)
+    // We expect the result to be a vector containing a single long long (the count).
+    using count_result_type = std::vector<long long>;
+    const auto query = sqlgen::select<count_result_type>(sqlgen::count("id"_c)) |
+        from<account_entity> |
+        where("valid_to"_c == max.value());
+
+    const auto r = session(ctx_.connection_pool())
+        .and_then(query);
+    ensure_success(r);
+
+    if (r->empty() || r->at(0) < 0) {
+        return 0;
+    }
+
+    const auto total_count = static_cast<std::uint32_t>(r->at(0));
+
+    BOOST_LOG_SEV(lg(), debug) << "Total active accounts found: " << total_count;
+    return total_count;
+}
+#+end_src
+
+
+Links:
+
+- [[https://readyset.io/blog/optimizing-sql-pagination-in-postgres][Optimizing SQL Pagination in Postgres]]
+
+
+
+
+#+begin_src c++
+"9999-12-31 23:59:59"
+#+end_src
+
+
+
+
+*** Improve error message when server is not running                   :code:
+
+At present we get:
+
+#+begin_quote
+Failed to connect to server: Failed to connect to server
+#+end_quote
+
+If we try again after the error, "authenticating..." shows up in red.
+
+*** Add tests to utilities                                             :code:
+
+We should add some cursory tests to utilities.
+
+
+
+*** Implement import XML                                               :code:
+
+Users should be able to import data from ORE directly. Add option in Qt to
+import XML.
+
+*** Update currency details to use tabs                                :code:
+
+We need a main tab with the currency related properties, then a "system" tab
+with temporal data which is read-only even on edit and a "image" tab with the
+image used to represent the currency. It could also contain some description or
+notes.
+
+*** Add search to currencies                                           :code:
+
+It should be possible to filter the open currencies by a string. This should be
+any field. The user needs to know when the list has been filtered.
+
+*** Server must check database connectivity on startup                 :code:
+
+At present the server only checks connectivity to database when a user requests
+an operation. We need some kind of initial polling which puts the server in a
+mode replying to all clients: "database not available". While this is happening,
+it should keep polling the database and checking the connectivity.
+
+Ideally the server should start, but poll the DB. It should send messages to
+clients informing them of the issues with database.
+
+*** Consider adding log command line options to qt                     :code:
+
+At present we have hard-coded logging options. However, maybe users should be
+able to change the logging settings from the UI rather than having to restart
+the app and supply command line options.
+
+* Footer
 
 | Previous: [[id:154212FF-BB02-8D84-1E33-9338B458380A][Version Zero]] |

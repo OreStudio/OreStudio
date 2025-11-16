@@ -18,7 +18,8 @@ are generated using the org-mode publishing system.
 ** Documentation
 
 - [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Modeler]]: Generate PlantUML diagrams.
-- [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][New Sprint Skill]]: Create new sprint backlogs.
+- [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][New Sprint]]: Create new sprint backlogs.
+- [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][Release Notes Generator]]: Generates the release notes for a sprint backlog.
 
 ** Development
 
@@ -33,7 +34,7 @@ If you add new skills or update existing skills, you need to redeploy them to
 claude. First regenerate them then ask Claude to reload and list the available
 skills. To regenerate, run the =deploy_skills= target:
 
-#+begin_src sh :dir ../../ :noweb yes :results output :wrap example
+#+begin_src sh :dir ../../ :noweb yes :results output :wrap example :exports both
 cmake --build --preset linux-clang-debug --target deploy_skills
 #+end_src
 

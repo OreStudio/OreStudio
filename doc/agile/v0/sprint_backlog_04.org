@@ -18,33 +18,27 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-15 Sat 23:57], for Saturday, November 15, 2025.
-|       | <75>                                           |         |       |      |       |
-| Tags  | Headline                                       | Time    |       |      |     % |
-|-------+------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                   | *11:51* |       |      | 100.0 |
-|-------+------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                        | 11:51   |       |      | 100.0 |
-|       | Active                                         |         | 11:51 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |         |       | 0:52 |   7.3 |
-| code  | Split JSON based =operator<<= from domain type |         |       | 0:53 |   7.5 |
-| code  | Add a table representation of domain types     |         |       | 2:05 |  17.6 |
-| code  | Add a comint based emacs mode for the client   |         |       | 0:24 |   3.4 |
-| code  | Review all code created so far with an LLM     |         |       | 6:25 |  54.1 |
-| code  | Fix broken windows build due to local time     |         |       | 0:24 |   3.4 |
-| code  | Split main window class                        |         |       | 0:48 |   6.8 |
+#+CAPTION: Clock summary at [2025-11-16 Sun 10:33], for Sunday, November 16, 2025.
+|       | <75>                     |        |      |      |       |
+| Tags  | Headline                 | Time   |      |      |     % |
+|-------+--------------------------+--------+------+------+-------|
+|       | *Total time*             | *0:23* |      |      | 100.0 |
+|-------+--------------------------+--------+------+------+-------|
+|       | Stories                  | 0:23   |      |      | 100.0 |
+|       | Active                   |        | 0:23 |      | 100.0 |
+| infra | Update doxygen main page |        |      | 0:23 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-15 Sat 23:58]
+#+CAPTION: Clock summary at [2025-11-16 Sun 10:33]
 |          | <75>                                                   |         |       |       |       |
 | Tags     | Headline                                               | Time    |       |       |     % |
 |----------+--------------------------------------------------------+---------+-------+-------+-------|
-|          | *Total time*                                           | *78:28* |       |       | 100.0 |
+|          | *Total time*                                           | *78:51* |       |       | 100.0 |
 |----------+--------------------------------------------------------+---------+-------+-------+-------|
-|          | Stories                                                | 78:28   |       |       | 100.0 |
-|          | Active                                                 |         | 78:28 |       | 100.0 |
+|          | Stories                                                | 78:51   |       |       | 100.0 |
+|          | Active                                                 |         | 78:51 |       | 100.0 |
 | agile    | Sprint and product backlog refinement                  |         |       |  3:41 |   4.7 |
 | code     | Clean up client parser                                 |         |       |  0:10 |   0.2 |
 | code     | Add connect command line argument                      |         |       |  1:19 |   1.7 |
@@ -69,14 +63,15 @@
 | analysis | Weaving skills and documentation together              |         |       |  0:46 |   1.0 |
 | code     | Consider adding tags to catch2 tests                   |         |       |  0:34 |   0.7 |
 | code     | Split JSON based =operator<<= from domain type         |         |       |  0:53 |   1.1 |
-| code     | Add a table representation of domain types             |         |       |  2:05 |   2.7 |
+| code     | Add a table representation of domain types             |         |       |  2:05 |   2.6 |
 | code     | Add a comint based emacs mode for the client           |         |       |  0:24 |   0.5 |
 | code     | Fix the valgrind leaks reported on sqlgen              |         |       |  4:54 |   6.2 |
-| code     | Review all code created so far with an LLM             |         |       | 16:13 |  20.7 |
+| code     | Review all code created so far with an LLM             |         |       | 16:13 |  20.6 |
 | code     | Fix broken windows build due to local time             |         |       |  0:24 |   0.5 |
 | code     | Resolve crash on shutdown problem                      |         |       |  0:50 |   1.1 |
 | code     | Split main window class                                |         |       |  0:48 |   1.0 |
-| code     | Make UI/UX look more professional                      |         |       | 11:07 |  14.2 |
+| infra    | Update doxygen main page                               |         |       |  0:23 |   0.5 |
+| code     | Make UI/UX look more professional                      |         |       | 11:07 |  14.1 |
 | code     | Current issues with package install in debian          |         |       |  0:40 |   0.8 |
 #+end:
 
@@ -949,6 +944,13 @@ should do like gmail and have check boxes?
 
 Now that we have a basic UI up and running, add it to docs.
 
+*** COMPLETED Update doxygen main page                                :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-16 Sun 10:10]--[2025-11-16 Sun 10:33] =>  0:23
+    :END:
+
+It should be a bit more informative.
+
 *** STARTED Make UI/UX look more professional                          :code:
     :LOGBOOK:
     CLOCK: [2025-11-08 Sat 10:11]--[2025-11-08 Sat 20:04] =>  9:53
@@ -1172,7 +1174,7 @@ Aborted                    /opt/OreStudio/0.0.4/bin/ores.qt
 When investigating a crash we noticed the app is not exiting cleanly. Fix all of
 these crashes before we go any further.
 
-*** Add a "detached" mode                                             :code:
+*** Add a "detached" mode                                              :code:
 
 At present we can detach all windows but if we then create a new one, we still
 have to detach it. It would be nice to set the default to detach or not, and

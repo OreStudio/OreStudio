@@ -15,12 +15,12 @@ license: See LICENSE.txt
 ---
 #+end_export
 
-* When to use
+* When to Use This Skill
 
 When a user requests an updated PlantUML diagram for a specific ORE Studio
 component (e.g. =ores.utility=).
 
-* How to use
+* How to Use This Skill
 
 1. *Validate component* – must exist under =projects/=. If not, inform user.
 2. *Read source* – primarily =.hpp= files in =include/=. Glance at =.cpp= files

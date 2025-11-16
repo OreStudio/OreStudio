@@ -2,7 +2,7 @@
     "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
     "name": "ores",
     "description": "GUI for Open Source Risk Engine (ORE)",
-    "version-string": "0.0.4",
+    "version-string": "0.0.5",
     "dependencies": [
         "qtbase",
         "openssl",

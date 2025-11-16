@@ -48,6 +48,8 @@ To be done on the last Sunday of the sprint.
    you can fix them before the release tag.
 4. Tag commit and sign it with key.
 5. Push tag. You can generate new builds overnight.
+6. When tag build is finished, unpack and copy binaries into release, announce
+   twitter and linked in.
 
 ** Open new sprint
 
@@ -55,14 +57,16 @@ To be done on the last Sunday of the sprint.
    =vcpkg.json=. Build all and run tests. This should all be in one commit.
 2. Create a demo. Publish it on youtube.
 3. Write up release notes, publish them in github.
-4. When tag build is finished, unpack and copy binaries into release, announce
-   twitter and linked in.
 
 * Stories
 
 ** Near
 
 Stories we may get two in the next two or three sprints.
+
+*** Add skill to update vcpkg                                         :infra:
+
+As per instructions in [[id:CB42DFE5-804B-E1C4-E1E3-0A6C4766609C][readme]].
 
 *** BLOCKED Ignore warnings on windows and osx                         :code:
     :LOGBOOK:

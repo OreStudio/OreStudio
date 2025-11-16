@@ -9,7 +9,7 @@
 
 * Sprint Mission
 
-- implement bootstrap mode.
+- code review all code using LLMs
 - implement claude code skills for common functionality.
 
 * Stories

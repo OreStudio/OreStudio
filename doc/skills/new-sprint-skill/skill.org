@@ -94,7 +94,14 @@ For =continuous-windows.yml=:
 +    "version-string": "0.0.5",
 #+end_src
 
-6. Create a new agile sprint backlog for the new sprint in =doc/agile/v0=, with
+6. Update =doc/agile/v0/version_zero.org= adding an entry for the new sprint.
+   Update the GUID and the sprint number.
+
+#+begin_src diff
++| [[id:2A3C7481-0984-D344-575B-7BFBB8D5A98B][Sprint Backlog 05]] | implement bootstrap mode; finish up all remaining tasks around domain entities.         |
+#+end_src
+
+7. Create a new agile sprint backlog for the new sprint in =doc/agile/v0=, with
    the file name =sprint_backlog_NN.org= where NN is the new sprint. Use the
    template below to create the file. First generate the template without any
    changes and git stage the file so that I can look at the modifications you

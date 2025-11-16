@@ -18,6 +18,7 @@ are generated using the org-mode publishing system.
 ** Documentation
 
 - [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Modeler]]: Generate PlantUML diagrams.
+- [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][New Sprint Skill]]: Create new sprint backlogs.
 
 ** Development
 

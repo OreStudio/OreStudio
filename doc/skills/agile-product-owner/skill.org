@@ -1,0 +1,407 @@
+:PROPERTIES:
+:ID: 2df8adaf-20c9-4757-9399-798eec6df828
+:END:
+#+title: Agile Product Owner
+#+author: Marco Craveiro
+#+options: title:nil <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+#+begin_export markdown
+---
+name: agile-product-owner
+description: Manage development team through story creation, prioritization, and sprint planning.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to Use This Skill
+
+Use this skill when you need to manage the ORE Studio product backlog, create
+new stories, prioritize work, plan sprints, or capture future work items. This
+includes creating stories for new features, bugs, technical debt, and cleanup
+tasks that emerge during development.
+
+* How to Use This Skill
+
+1. *Understand the current context*: Identify the current sprint and product
+   version.
+2. *Determine story type*: Decide if the story belongs in the current sprint,
+   product backlog (near or far), or a previous sprint (for reference only).
+3. *Create or update stories*: Add new stories to the appropriate location with
+   proper formatting.
+4. *Prioritize work*: Order stories by priority within their respective
+   backlogs.
+5. *Plan sprints*: Allocate stories from the product backlog to sprint backlogs
+   when planning new sprints.
+6. *Maintain version direction*: Update the major version manifest with
+   milestones and strategic direction.
+
+* Detailed Instructions
+
+** Step 1: Understand the Agile Structure
+
+*** Directory Organization
+
+All agile artifacts are stored under =doc/agile/=:
+
+- Current major version: =v0=
+- Version-specific files: =doc/agile/v0/=
+- Product backlog: =doc/agile/product_backlog.org=
+- Major version manifest: =doc/agile/v0/version_zero.org=
+
+*** Sprint Backlogs
+
+Sprint backlogs are located at =doc/agile/v0/sprint_backlog_NN.org= where NN is
+the sprint number:
+
+- *Latest sprint backlog*: Contains stories for the current sprint under active
+  development. /e.g./, =sprint_backlog_05.org=.
+- *Older sprint backlogs*: Contains completed work; consult occasionally when
+  researching past decisions or completed features. /e.g./,
+  =sprint_backlog_01.org= through =sprint_backlog_04.org=.
+
+To identify the current sprint:
+
+1. List files in =doc/agile/v0/= matching the pattern =sprint_backlog_*.org=.
+2. Find the file with the highest sprint number - /e.g./,
+   =sprint_backlog_05.org= means sprint 5 is current.
+3. Read the sprint mission at the top of the file to understand current focus.
+
+*** Product Backlog
+
+Location: =doc/agile/product_backlog.org=.
+
+The product backlog is organized into two sections:
+
+**** Near Stories
+
+Stories that may be tackled in the near future (next 1-3 sprints):
+
+- High priority items.
+- Well-understood requirements.
+- Clear business value.
+- Ready or nearly ready for sprint allocation.
+
+**** Far Stories
+
+Interesting ideas that may be explored later but are not immediate priorities:
+
+- Future enhancements.
+- Exploratory work.
+- Nice-to-have features.
+- Low priority but valuable long-term.
+
+*** Major Version Manifest
+
+Location: =doc/agile/v0/version_zero.org=.
+
+Contains:
+
+- Overall direction for the major version.
+- Strategic goals and vision.
+- Project planning and roadmap.
+- Near-term milestones.
+- Links to all sprint backlogs.
+
+** Step 2: Creating New Stories
+
+*** When to Create Stories
+
+Create stories in the following situations:
+
+1. *New feature requests*: User-facing functionality.
+2. *Bug fixes*: Defects that need resolution.
+3. *Technical debt*: Code quality improvements, refactoring.
+4. *Infrastructure work*: Build system, CI/CD, tooling.
+5. *Cleanup tasks discovered during development*: Technical improvements
+   identified while working on other tasks
+6. *Research and analysis*: Investigations, proof of concepts.
+7. *Documentation*: User guides, developer documentation.
+
+*** Choosing Story Location
+
+**** Current Sprint Backlog
+
+Add to =doc/agile/v0/sprint_backlog_NN.org= (latest NN) when:
+
+- Work aligns with current sprint mission.
+- Work is needed to complete current sprint goals.
+- Urgent bug fixes or critical issues.
+- Small cleanup tasks related to current work.
+
+**** Product Backlog (Near)
+
+Add to =doc/agile/product_backlog.org= under "Near Stories" when:
+
+- Work is important but not for this sprint.
+- Requirements are clear and understood.
+- Could be tackled in next 1-3 sprints.
+- Has clear business value.
+
+**** Product Backlog (Far)
+
+Add to =doc/agile/product_backlog.org= under "Far Stories" when:
+
+- Interesting idea worth capturing.
+- Low priority or unclear value.
+- Requires more analysis before prioritisation.
+- Long-term enhancement.
+
+*** Story Format
+
+Stories in ORE Studio use org-mode format with specific structure:
+
+**** Sprint Backlog Stories
+
+Stories in sprint backlogs should include:
+
+#+begin_src fundamental
+,**** STARTED Story title                                           :tag1:tag2:
+DEADLINE: <2025-11-30 Sun>
+
+Description of the story and acceptance criteria.
+
+***** Tasks
+- [ ] Task 1
+- [ ] Task 2
+- [ ] Task 3
+
+***** Notes
+
+Any additional context, decisions, or links to related work.
+#+end_src
+
+Status options:
+
+- =STARTED= – Currently in progress.
+- =COMPLETED= – Finished and verified.
+- =CANCELLED= – No longer needed.
+- =POSTPONED= – Deferred to future sprint.
+- =BLOCKED= – Cannot proceed due to dependencies.
+
+Common tags:
+
+- =:code:= – Code implementation.
+- =:infra:= – Infrastructure work.
+- =:analysis:= – Research or analysis.
+- =:agile:= – Agile process work.
+- =:doc:= – Documentation.
+
+**** Product Backlog Stories
+
+Stories in product backlog are simpler:
+
+#+begin_src fundamental
+,*** Story title
+
+Description and rationale.
+
+- Acceptance criteria 1
+- Acceptance criteria 2
+#+end_src
+
+** Step 3: Prioritizing Stories
+
+*** Within Sprint Backlog
+
+Stories within the current sprint backlog should be ordered by:
+
+1. *Blockers first*: Work that blocks other team members.
+2. *Sprint mission alignment*: Work directly supporting sprint goals.
+3. *Dependencies*: Work that other tasks depend on.
+4. *Value delivery*: Work that delivers user value sooner.
+
+*** Within Product Backlog
+
+**** Near Stories Priority
+
+Order by:
+
+1. *Business value*: Impact on users or business goals.
+2. *Strategic alignment*: Fit with major version direction.
+3. *Risk reduction*: Technical debt that creates risk.
+4. *Dependencies*: Work that unblocks other work.
+5. *Effort*: Consider quick wins.
+
+**** Far Stories Priority
+
+Less critical to order precisely:
+
+- Group related stories together.
+- Keep most interesting ideas toward the top.
+- Archive or remove stories that are no longer relevant.
+
+** Step 4: Planning Sprints
+
+When planning a new sprint (typically done using the =new-sprint= skill):
+
+1. *Review product backlog* – Identify candidate stories from "Near" section.
+2. *Define sprint mission* – Determine the sprint's primary focus.
+3. *Select stories* – Move stories from product backlog to new sprint backlog.
+4. *Balance work* – Mix of features, bugs, technical debt, and infrastructure.
+5. *Estimate capacity* – Don't overcommit.
+6. *Update backlogs* – Remove moved stories from product backlog.
+
+** Step 5: Capturing Emergent Work
+
+During development, new work items are often discovered:
+
+*** Technical Debt and Cleanup
+
+When you identify cleanup work during implementation:
+
+1. *Assess urgency*:
+
+   - Can it be done now? → Do it immediately.
+   - Needed for current sprint? → Add to current sprint backlog.
+   - Can wait? → Add to product backlog.
+
+2. *Document context*:
+
+   - What needs cleaning up?
+   - Why is it needed?
+   - Where is the code located?
+   - What is the impact if not done?
+
+3. *Tag appropriately*:
+
+   - Use =:code:= for refactoring
+   - Use =:infra:= for build/tooling improvements
+   - Use =:analysis:= if investigation needed first
+
+*** Future Enhancements
+
+When users or team members suggest enhancements:
+
+1. *Capture the idea* in product backlog (Far section)
+2. *Document the value proposition*
+3. *Note any dependencies or prerequisites*
+4. *Add to appropriate section* based on priority
+
+*** Research Items
+
+When you need to investigate something:
+
+1. *Create a research story* in appropriate backlog
+2. *Define clear research questions*
+3. *Specify deliverables* (report, proof of concept, decision)
+4. *Tag with =:analysis:=*
+
+** Step 6: Maintaining the Major Version Manifest
+
+The major version manifest =doc/agile/v0/version_zero.org= should be updated when:
+
+*** Adding Milestones
+
+- Significant feature completions
+- Release candidates
+- Integration points with external systems
+
+*** Updating Strategic Direction
+
+- Major architectural decisions
+- Technology choices
+- Platform decisions
+- User experience direction
+
+*** Linking Sprint Backlogs
+
+- Ensure all sprint backlogs are linked in the manifest
+- Keep descriptions up to date
+- Note sprint completion status
+
+** Step 7: Best Practices
+
+*** Story Creation
+
+1. *Be specific* – Clear, actionable descriptions
+2. *Include context* – Why is this work needed?
+3. *Define acceptance criteria* – How do we know it's done?
+4. *Link related work* – Reference other stories, commits, or documentation
+5. *Use appropriate tags* – Helps with reporting and filtering
+
+*** Story Sizing
+
+1. *Break down large stories* – Keep stories small enough to complete in a few days
+2. *Create epics* – Use parent stories for large features
+3. *Separate concerns* – Split technical and user-facing work if it helps
+
+*** Backlog Hygiene
+
+1. *Review regularly* – Product backlog should be reviewed at least monthly
+2. *Archive completed work* – Keep sprint backlogs but mark them as historical
+3. *Remove stale stories* – Delete stories that are no longer relevant
+4. *Refine stories* – Add detail to stories as they get closer to implementation
+5. *Move stories* – Promote stories from Far to Near as priorities change
+
+*** Sprint Discipline
+
+1. *Respect the sprint mission* – New stories should align with sprint goals
+2. *Limit work in progress* – Focus on completing stories before starting new ones
+3. *Track time* – Use org-mode clocking for time tracking
+4. *Update status* – Keep story status current (STARTED, COMPLETED, etc.)
+5. *Document decisions* – Add notes to stories as work progresses
+
+** Step 8: Working with Story Tags
+
+ORE Studio uses org-mode tags for categorisation:
+
+*** Standard Tags
+
+- =:code:= – Implementation work, programming
+- =:infra:= – Build system, CI/CD, deployment, tooling
+- =:analysis:= – Research, investigation, design
+- =:agile:= – Sprint planning, backlog grooming
+- =:doc:= – Documentation, guides, diagrams
+
+*** Using Tags
+
+1. *Multiple tags allowed* – Stories can have several tags
+2. *Use for reporting* – Tags enable time tracking by category
+3. *Be consistent* – Follow established tag patterns
+4. *Don't over-tag* – Use tags that add value for reporting
+
+** Step 9: Org-mode Time Tracking
+
+Sprint backlogs use org-mode's time tracking features:
+
+*** Clocking Time
+
+- Use =org-clock-in= and =org-clock-out= to track work
+- Time is automatically summed in clock tables
+- Helps understand actual vs. estimated effort
+
+*** Clock Tables
+
+Sprint backlogs include two clock tables:
+
+1. *Today's summary* – Shows work done today
+2. *Sprint summary* – Shows total work for the sprint
+
+These tables auto-update and provide insights into:
+
+- Time per story
+- Time per tag (code vs. infra vs. analysis)
+- Progress toward sprint goals
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

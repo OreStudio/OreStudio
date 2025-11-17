@@ -1,0 +1,268 @@
+:PROPERTIES:
+:ID: 37b88704-7a45-4347-a80a-9d9b4ee71bef
+:END:
+#+title: System Architect
+#+author: Marco Craveiro
+#+options: title:nil <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+#+begin_export markdown
+---
+name: system-architect
+description: Analyze system architecture and plan incremental migrations for system-wide changes.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to Use This Skill
+
+Use this skill when planning architectural changes that span multiple components or affect the system's architectural layers. This includes refactoring efforts, adding cross-cutting concerns, introducing new architectural patterns, or any modification that requires understanding how changes propagate through the system.
+
+* How to Use This Skill
+
+1. **Analyze current architecture** – Read the system-level diagram to understand component relationships and dependencies.
+2. **Deep-dive into affected components** – Read component-level diagrams for all potentially impacted areas.
+3. **Assess impact across tiers** – Evaluate how changes affect each architectural layer (Foundation, Infrastructure, Domain, Application).
+4. **Consider database implications** – Analyze database schema changes and migration requirements.
+5. **Plan backwards compatibility** – Design versioning strategy to maintain compatibility during migration.
+6. **Create migration plan** – Design an incremental, testable path from current to target state.
+7. **Generate TODO list** – Create a structured task list for tracking the migration.
+8. **Document architectural updates** – Plan PlantUML diagram updates to reflect the changes.
+9. **Validate plan** – Ensure each step maintains system integrity and is independently deployable.
+
+* Detailed Instructions
+
+** Step 1: Understand the Current Architecture
+
+Read the system architecture diagram:
+
+- Location: =projects/modeling/ores.puml=
+- Identify all components and their dependencies.
+- Note the architectural layers:
+  - Foundation Layer (ores.utility)
+  - Infrastructure Layer (ores.comms, ores.testing)
+  - Domain Layer (ores.risk, ores.accounts)
+  - Application Layer (ores.client, ores.cli, ores.qt, ores.service)
+
+** Step 2: Analyze Component Internals
+
+For each component potentially affected by the proposed change:
+
+- Location: =projects/COMPONENT/modeling/COMPONENT.puml=
+- Read the component diagram to understand:
+  - Internal class structure and relationships
+  - Key domain entities and their responsibilities
+  - Generators, repositories, and other supporting infrastructure
+  - Dependencies on other components
+
+** Step 3: Perform Impact Analysis
+
+Evaluate the proposed change across all architectural tiers:
+
+*** Foundation Layer
+
+- Will this change require new utility classes or modifications to existing ones?
+- Are there shared abstractions that need to change?
+
+*** Infrastructure Layer
+
+- Does this affect communication protocols or messaging?
+- Are there testing infrastructure changes needed?
+
+*** Domain Layer
+
+- Which domain entities are affected?
+- Do we need new domain types or modifications to existing ones?
+- What repository changes are required?
+
+*** Application Layer
+
+- Which applications/interfaces need updates?
+- How does this affect the CLI, service, or GUI?
+
+** Step 4: Analyze Database Schema Implications
+
+For changes affecting data persistence:
+
+*** Schema Changes
+
+- What tables need to be added, modified, or removed?
+- What columns need to be added, modified, or removed?
+- Are there index changes required?
+- Do we need new constraints or relationships?
+
+*** Migration Strategy
+
+- Can the schema change be applied incrementally?
+- Do we need to support both old and new schemas during migration?
+- What is the data migration path?
+- Are there performance considerations during migration?
+
+*** Stored Procedures and Business Logic
+
+- Would business logic in stored procedures improve performance?
+- What is the trade-off between layer separation and efficiency?
+- Document any architectural compromises and their justification.
+
+** Step 5: Design Backwards Compatibility Strategy
+
+*** Versioning Approach
+
+- Will this be a breaking change?
+- Do we need to version APIs, protocols, or data formats?
+- What is the deprecation timeline for old versions?
+
+*** Compatibility Mechanisms
+
+- Can we support both old and new versions simultaneously?
+- Do we need feature flags or configuration switches?
+- How long must we maintain backwards compatibility?
+
+*** Migration Path for Clients
+
+- How will existing clients transition to the new version?
+- What migration documentation is needed?
+- Are there automated migration tools required?
+
+** Step 6: Create an Incremental Migration Plan
+
+Design a step-by-step migration that:
+
+1. **Starts at the foundation** – Make changes to lower layers first (utility, infrastructure).
+2. **Progresses upward** – Move to domain layer, then application layer.
+3. **Maintains compatibility** – Each step should leave the system in a working state.
+4. **Enables testing** – Every increment should be testable.
+5. **Minimizes risk** – Break large changes into smaller, reviewable chunks.
+
+For each step, specify:
+
+- What components are modified
+- What new files/classes are added
+- What dependencies change
+- What database schema changes are needed
+- What tests are needed
+- Expected build targets to verify the change
+- What PlantUML diagrams need updating
+
+** Step 7: Document Dependencies and Ordering
+
+Create a dependency graph showing:
+
+- Which changes must happen before others
+- Which changes can happen in parallel
+- Critical paths in the migration
+- Database migration sequencing
+- Diagram update sequencing
+
+** Step 8: Plan Documentation Updates
+
+*** PlantUML Diagram Updates
+
+For each architectural change, plan diagram updates:
+
+**** System Diagram
+
+- Location: =projects/modeling/ores.puml=
+- Update component relationships
+- Add new components
+- Update layer assignments
+- Regenerate with: =cmake --build --target generate_ores_diagram --preset linux-clang-debug=
+
+**** Component Diagrams
+
+- Location: =projects/COMPONENT/modeling/COMPONENT.puml=
+- Update affected component diagrams
+- Add new classes, relationships, or namespaces
+- Update stereotypes and colors as needed
+- Regenerate with: =cmake --build --target generate_COMPONENT_diagram --preset linux-clang-debug=
+
+**** Diagram Update Timing
+
+- Update diagrams incrementally as changes are implemented
+- Keep diagrams in sync with code at each migration step
+- Include diagram updates in the TODO list
+
+** Step 9: Generate Migration TODO List
+
+Use the TodoWrite tool to create a structured task list with:
+
+*** Task Categories
+
+1. **Architecture analysis** tasks
+2. **Database schema** changes
+3. **Foundation layer** changes
+4. **Infrastructure layer** changes
+5. **Domain layer** changes
+6. **Application layer** changes
+7. **Testing** tasks
+8. **Documentation** updates (including PlantUML diagrams)
+9. **Deployment** tasks
+
+*** Task Details
+
+For each task:
+
+- Clear description of what needs to be done
+- Component or layer being modified
+- Dependencies on other tasks
+- Acceptance criteria
+- Build target to verify completion
+
+** Step 10: Validate the Plan
+
+Before execution:
+
+- Confirm all affected components are identified
+- Verify no circular dependencies are introduced
+- Ensure each step is independently buildable and testable
+- Check that the plan aligns with architectural principles
+- Validate that layer separation is maintained, except where justified by performance or efficiency gains
+- Confirm backwards compatibility strategy is sound
+- Verify database migration path is safe and reversible
+- Ensure all diagram updates are planned
+
+** Step 11: Consider Architectural Trade-offs
+
+*** Layer Separation vs. Efficiency
+
+While strict layer separation is preferred:
+
+- **Performance considerations**: Business logic in stored procedures may be acceptable if it significantly improves performance
+- **Efficiency gains**: Direct database access may be warranted in specific performance-critical paths
+- **Documentation requirement**: Any deviation from strict layer separation must be:
+  - Clearly documented in code comments
+  - Justified in the architecture decision records
+  - Noted in the migration plan
+  - Reviewed for long-term maintainability
+
+*** Decision Criteria
+
+When considering architectural compromises:
+
+1. Measure the performance/efficiency gain
+2. Assess the maintainability cost
+3. Consider alternative solutions that maintain separation
+4. Document the trade-off analysis
+5. Get stakeholder approval for significant deviations
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

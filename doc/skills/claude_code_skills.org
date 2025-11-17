@@ -27,6 +27,8 @@ using the org-mode publishing system.
 - [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]]: Create a new domain type with all of it's basic services.
 - [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Summary]]: Generate a title and summary for an open PR of the work in this
   branch.
+- [[id:37b88704-7a45-4347-a80a-9d9b4ee71bef][System Architect]]: Analyze system architecture and plan incremental migrations
+  for system-wide changes.
 
 * Rebuilding skills
 

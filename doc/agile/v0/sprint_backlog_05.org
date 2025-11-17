@@ -18,32 +18,31 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-16 Sun 23:50], for Sunday, November 16, 2025.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *3:25* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 3:25   |      |      | 100.0 |
-|       | Active                                |        | 3:25 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 1:20 |  39.0 |
-| infra | Add AI generated sprint summary       |        |      | 1:38 |  47.8 |
-| infra | Add skill to generate release notes   |        |      | 0:27 |  13.2 |
+#+CAPTION: Clock summary at [2025-11-17 Mon 00:38], for Monday, November 17, 2025.
+|      | <75>                                 |        |      |      |       |
+| Tags | Headline                             | Time   |      |      |     % |
+|------+--------------------------------------+--------+------+------+-------|
+|      | *Total time*                         | *0:38* |      |      | 100.0 |
+|------+--------------------------------------+--------+------+------+-------|
+|      | Stories                              | 0:38   |      |      | 100.0 |
+|      | Active                               |        | 0:38 |      | 100.0 |
+| code | Version of =ores.qt= does not update |        |      | 0:38 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-16 Sun 23:50]
+#+CAPTION: Clock summary at [2025-11-17 Mon 00:38]
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *3:25* |      |      | 100.0 |
+|       | *Total time*                          | *4:10* |      |      | 100.0 |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 3:25   |      |      | 100.0 |
-|       | Active                                |        | 3:25 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 1:20 |  39.0 |
-| infra | Add AI generated sprint summary       |        |      | 1:38 |  47.8 |
-| infra | Add skill to generate release notes   |        |      | 0:27 |  13.2 |
+|       | Stories                               | 4:10   |      |      | 100.0 |
+|       | Active                                |        | 4:10 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 1:27 |  34.8 |
+| infra | Add AI generated sprint summary       |        |      | 1:38 |  39.2 |
+| infra | Add skill to generate release notes   |        |      | 0:27 |  10.8 |
+| code  | Version of =ores.qt= does not update  |        |      | 0:38 |  15.2 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -317,18 +316,15 @@ of this file to fix links.
 
 We need to have the ability to read and write currencies from JSON.
 
-*** Add more account commands                                          :code:
+*** COMPLETED Version of =ores.qt= does not update                     :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-17 Mon 00:00]--[2025-11-17 Mon 00:38] =>  0:38
+    :END:
 
-See the azeroth account commands for inspiration.
+For some reason updating =version.hpp= is not sufficient to get =ores.qt= to
+update its version info.
 
-Links:
-
-- [[https://www.azerothcore.org/wiki/gm-commands][GM Commands]]
-
-*** CLI Importing needs to read from database                          :code:
-
-After we do the import into the database, we need to read the currencies again
-to get the valid from/to.
+We duplicated the version files when we split headers from implementation.
 
 *** Tidy-up database code                                              :code:
 
@@ -589,6 +585,19 @@ in =CurrencyMdiWindow.cpp=.
 *** Implement delete account                                           :code:
 
 At present you cannot delete an account.
+
+*** CLI Importing needs to read from database                          :code:
+
+After we do the import into the database, we need to read the currencies again
+to get the valid from/to.
+
+*** Add more account commands                                          :code:
+
+See the azeroth account commands for inspiration.
+
+Links:
+
+- [[https://www.azerothcore.org/wiki/gm-commands][GM Commands]]
 
 *** Add lock account request                                           :code:
 

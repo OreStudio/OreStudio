@@ -101,11 +101,35 @@ cmake --build --target deploy_skills --preset linux-clang-debug
 
 ** Generating PlantUML Diagrams
 
+*** Generating all diagrams
+
 To generate all PlantUML diagrams for the project:
 
 #+begin_src sh
 cmake --build --target mad --preset linux-clang-debug
 #+end_src
+
+*** Generating individual component diagrams
+
+To generate a diagram for a specific component, use the pattern
+=generate_COMPONENT_diagram= where =COMPONENT= is the component name (with dots).
+
+For example, to generate the ores.risk diagram:
+
+#+begin_src sh
+cmake --build --target generate_ores.risk_diagram --preset linux-clang-debug
+#+end_src
+
+To generate the ores.comms diagram:
+
+#+begin_src sh
+cmake --build --target generate_ores.comms_diagram --preset linux-clang-debug
+#+end_src
+
+Other available diagram targets include:
+- =generate_ores.accounts_diagram=
+- =generate_ores.utility_diagram=
+- =generate_ores_diagram= (system-level architecture diagram)
 
 ** Deploying the site
 

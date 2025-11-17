@@ -20,17 +20,14 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace utility #F2F2F2 {
         namespace string #F2F2F2 {
-            class conversion_error #FFFACD {
+            class conversion_error <<exception>> #D6B19F {
             }
 
             note top of conversion_error
             An error occurred whilst converting a string.
             end note
 
-            conversion_error --|> std::exception
-            conversion_error --|> boost::exception
-
-            class converter #FFFACD {
+            class converter #ECECEC {
                 +{static} string_to_int(std::string, int) int
             }
 
@@ -47,27 +44,21 @@ namespace ores #F2F2F2 {
         }
 
         namespace filesystem #F2F2F2 {
-            class file_not_found #FFFACD {
+            class file_not_found <<exception>> #D6B19F {
             }
 
             note top of file_not_found
             File was not found.
             end note
 
-            file_not_found --|> std::exception
-            file_not_found --|> boost::exception
-
-            class io_error #FFFACD {
+            class io_error <<exception>> #D6B19F {
             }
 
             note top of io_error
             An error occurred whilst performing an IO operation.
             end note
 
-            io_error --|> std::exception
-            io_error --|> boost::exception
-
-            class file #FFFACD {
+            class file #ECECEC {
                 +{static} read_content(std::istream&) std::string
                 +{static} read_content(const std::filesystem::path&) std::string
                 +{static} write_content(const std::filesystem::path&, const std::string&) void
@@ -98,7 +89,7 @@ namespace ores #F2F2F2 {
             end note
         }
 
-        namespace database #F2F2F2 {
+        namespace database #C6F0D8 {
             struct database_options #F7E5FF {
                 +{field} user std::string
                 +{field} password rfl::Skip<std::string>
@@ -119,7 +110,7 @@ namespace ores #F2F2F2 {
             - port: Port the database is listening on.
             end note
 
-            class database_configuration #FFFACD {
+            class database_configuration #ECECEC {
                 +{static} make_options_description() boost::program_options::options_description
                 +{static} read_options(const boost::program_options::variables_map&) database_options
             }
@@ -141,7 +132,7 @@ namespace ores #F2F2F2 {
         }
 
         namespace environment #F2F2F2 {
-            class environment #FFFACD {
+            class environment #ECECEC {
                 +{static} get_value(const std::string&) std::optional<std::string>
                 +{static} get_value_or_default(const std::string&, const std::string&) std::string
                 +{static} get_int_value_or_default(const std::string&, int) int
@@ -159,7 +150,7 @@ namespace ores #F2F2F2 {
         }
 
         namespace exception #F2F2F2 {
-            class invalid_enum_value #FFFACD {
+            class invalid_enum_value <<exception>> #D6B19F {
             }
 
             note top of invalid_enum_value
@@ -173,9 +164,6 @@ namespace ores #F2F2F2 {
             - a given valid value on an enumeration is not supported in a given
             context.
             end note
-
-            invalid_enum_value --|> std::exception
-            invalid_enum_value --|> boost::exception
         }
 
         namespace log #F2F2F2 {
@@ -201,7 +189,7 @@ namespace ores #F2F2F2 {
             - error
             end note
 
-            class lifecycle_manager #FFFACD {
+            class lifecycle_manager #ECECEC {
                 -{static} make_file_sink(std::filesystem::path, severity_level, std::string) boost::shared_ptr<file_sink_type>
                 -{static} make_console_sink(severity_level, std::string) boost::shared_ptr<console_sink_type>
             }
@@ -240,7 +228,7 @@ namespace ores #F2F2F2 {
             - tag: Tag to filter the logging. If supplied, only messages with this tag will be logged.
             end note
 
-            class logging_options_validator #FFFACD {
+            class logging_options_validator #ECECEC {
                 +{static} validate(const logging_options&) void
             }
 
@@ -250,7 +238,7 @@ namespace ores #F2F2F2 {
 
             logging_options_validator ..> ores::utility::log::logging_options
 
-            class logging_configuration #FFFACD {
+            class logging_configuration #ECECEC {
                 +{static} make_options_description(const std::string&) boost::program_options::options_description
                 +{static} read_options(const boost::program_options::variables_map&) std::optional<logging_options>
             }
@@ -269,19 +257,16 @@ namespace ores #F2F2F2 {
 
             logging_configuration ..> ores::utility::log::logging_options
 
-            class logging_exception #FFFACD {
+            class logging_exception <<exception>> #D6B19F {
             }
 
             note top of logging_exception
             An exception has occurred during logging.
             end note
-
-            logging_exception --|> std::exception
-            logging_exception --|> boost::exception
         }
 
         namespace repository #F2F2F2 {
-            class context #FFFACD {
+            class context #ECECEC {
                 +connection_pool() connection_pool_type
             }
 
@@ -293,7 +278,7 @@ namespace ores #F2F2F2 {
             - connection_pool_: Connection pool for database operations.
             end note
 
-            class repository_exception #FFFACD {
+            class repository_exception <<exception>> #D6B19F {
             }
 
             note top of repository_exception
@@ -301,10 +286,7 @@ namespace ores #F2F2F2 {
             repository.
             end note
 
-            repository_exception --|> std::exception
-            repository_exception --|> boost::exception
-
-            class context_factory #FFFACD {
+            class context_factory #ECECEC {
                 +{static} make_context(const configuration&) context
             }
 
@@ -348,7 +330,7 @@ namespace ores #F2F2F2 {
         }
 
         namespace uuid #F2F2F2 {
-            class uuid_v7_generator #FFFACD {
+            class uuid_v7_generator #ECECEC {
                 +operator()() boost::uuids::uuid
             }
 
@@ -373,7 +355,7 @@ namespace ores #F2F2F2 {
         }
 
         namespace program_options #F2F2F2 {
-            class environment_mapper_factory #FFFACD {
+            class environment_mapper_factory #ECECEC {
                 +{static} make_mapper(const std::string) std::function<std::string(const std::string&)>
             }
 

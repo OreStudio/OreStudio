@@ -101,8 +101,8 @@ package "Domain Layer" #LIGHTYELLOW {
     end note
 }
 
-' Client Layer
-package "Client Layer" #LIGHTCYAN {
+' Application Layer
+package "Application Layer" #LIGHTCORAL {
     component [ores.client] as client #ECECEC
 
     note right of client
@@ -115,10 +115,7 @@ package "Client Layer" #LIGHTCYAN {
     - Configuration: Boost program_options for CLI argument parsing
     Organized into: config (configuration parsing), app (REPL and hosting) namespaces.
     end note
-}
 
-' Application Layer
-package "Application Layer" #LIGHTCORAL {
     component [ores.cli] as cli #ECECEC
 
     note right of cli

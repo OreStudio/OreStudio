@@ -81,7 +81,7 @@ TEST_CASE("test_version_option", tags) {
 
     CHECK(!result.has_value());
     CHECK(!info.str().empty());
-    CHECK(info.str().find("OreStudio") != std::string::npos);
+    CHECK(info.str().find("ORE Studio") != std::string::npos);
     CHECK(info.str().find("Copyright") != std::string::npos);
 }
 

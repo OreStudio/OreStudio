@@ -28,6 +28,7 @@
 #include <QPainter>
 #include <QPixmap>
 #include <QAction>
+#include <QCloseEvent>
 #include <QImage>
 #include <QFile>
 #include <QFont>
@@ -96,8 +97,6 @@ MainWindow::MainWindow(QWidget* parent) :
     // Connect Window menu actions
     connect(ui_->ActionDetachAll, &QAction::triggered, this,
         &MainWindow::onDetachAllTriggered);
-    connect(ui_->ActionReattachAll, &QAction::triggered, this,
-        &MainWindow::onReattachAllTriggered);
     connect(ui_->menuWindow, &QMenu::aboutToShow, this,
         &MainWindow::onWindowMenuAboutToShow);
 
@@ -126,13 +125,60 @@ MainWindow::MainWindow(QWidget* parent) :
     BOOST_LOG_SEV(lg(), info) << "Main window created.";
 }
 
-MainWindow::~MainWindow() {
-    // Disconnect all detachable windows to prevent destroyed signal handlers
-    // from accessing member variables during destruction
+void MainWindow::closeEvent(QCloseEvent* event) {
+    BOOST_LOG_SEV(lg(), info) << "MainWindow close event triggered";
+    BOOST_LOG_SEV(lg(), info) << "Closing " << allDetachableWindows_.size()
+                              << " detachable windows before main window closes";
+
+    // Close all detachable windows first
+    // Make a copy of the list since closing windows modifies the original list
+    QList<QPointer<DetachableMdiSubWindow>> windowsCopy;
     for (auto* window : allDetachableWindows_) {
         if (window)
-            disconnect(window, &QObject::destroyed, this, nullptr);
+            windowsCopy.append(window);
     }
+
+    int closed_count = 0;
+    for (auto window : windowsCopy) {
+        if (window) {
+            QString title = window->windowTitle();
+            bool is_detached = window->isDetached();
+            BOOST_LOG_SEV(lg(), debug) << "Closing window: " << title.toStdString()
+                                       << " (detached=" << is_detached << ")";
+            window->close();
+            closed_count++;
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Closed " << closed_count
+                              << " windows, accepting close event";
+
+    // Accept the close event to allow MainWindow to close
+    event->accept();
+}
+
+MainWindow::~MainWindow() {
+    BOOST_LOG_SEV(lg(), info) << "MainWindow destructor called";
+    BOOST_LOG_SEV(lg(), info) << "Closing " << allDetachableWindows_.size()
+                              << " detachable windows";
+
+    // Close and delete all detachable windows before MainWindow destruction
+    // Use deleteLater() to ensure detached windows are properly destroyed
+    int closed_count = 0;
+    for (auto* window : allDetachableWindows_) {
+        if (window) {
+            QString title = window->windowTitle();
+            bool is_detached = window->isDetached();
+            BOOST_LOG_SEV(lg(), debug) << "Destroying window: " << title.toStdString()
+                                       << " (detached=" << is_detached << ")";
+            disconnect(window, &QObject::destroyed, this, nullptr);
+            window->setAttribute(Qt::WA_DeleteOnClose);
+            window->close();
+            window->deleteLater();
+            closed_count++;
+        }
+    }
+    BOOST_LOG_SEV(lg(), info) << "Scheduled " << closed_count << " windows for deletion";
 
     if (client_)
         client_->disconnect();
@@ -276,18 +322,6 @@ void MainWindow::onDetachAllTriggered() {
     }
 
     BOOST_LOG_SEV(lg(), info) << "All windows detached";
-}
-
-void MainWindow::onReattachAllTriggered() {
-    BOOST_LOG_SEV(lg(), info) << "Reattach All triggered";
-
-    for (auto* detachableWindow : allDetachableWindows_) {
-        if (detachableWindow && detachableWindow->isDetached()) {
-            detachableWindow->reattach();
-        }
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "All windows reattached";
 }
 
 void MainWindow::onWindowMenuAboutToShow() {

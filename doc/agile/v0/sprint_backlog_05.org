@@ -18,40 +18,43 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-17 Mon 14:54], for Monday, November 17, 2025.
+#+CAPTION: Clock summary at [2025-11-17 Mon 22:21], for Monday, November 17, 2025.
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *3:51* |      |      | 100.0 |
+|       | *Total time*                          | *5:44* |      |      | 100.0 |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 3:51   |      |      | 100.0 |
-|       | Active                                |        | 3:51 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:45 |  19.5 |
-| code  | Version of =ores.qt= does not update  |        |      | 0:54 |  23.4 |
-| code  | Minor updates to UML diagrams         |        |      | 0:13 |   5.6 |
-| infra | Project planning                      |        |      | 1:59 |  51.5 |
+|       | Stories                               | 5:44   |      |      | 100.0 |
+|       | Active                                |        | 5:44 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:55 |  16.0 |
+| code  | Version of =ores.qt= does not update  |        |      | 0:54 |  15.7 |
+| code  | Minor updates to UML diagrams         |        |      | 0:13 |   3.8 |
+| infra | Add support for project planning      |        |      | 2:24 |  41.9 |
+| code  | Add a "detached" mode                 |        |      | 1:18 |  22.7 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-17 Mon 14:54]
+#+CAPTION: Clock summary at [2025-11-17 Mon 22:21]
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *7:23* |      |      | 100.0 |
+|       | *Total time*                          | *9:16* |      |      | 100.0 |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 7:23   |      |      | 100.0 |
-|       | Active                                |        | 7:23 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 2:12 |  29.8 |
-| infra | Add AI generated sprint summary       |        |      | 1:38 |  22.1 |
-| infra | Add skill to generate release notes   |        |      | 0:27 |   6.1 |
-| code  | Version of =ores.qt= does not update  |        |      | 0:54 |  12.2 |
-| code  | Minor updates to UML diagrams         |        |      | 0:13 |   2.9 |
-| infra | Project planning                      |        |      | 1:59 |  26.9 |
+|       | Stories                               | 9:16   |      |      | 100.0 |
+|       | Active                                |        | 9:16 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 2:22 |  25.5 |
+| infra | Add AI generated sprint summary       |        |      | 1:38 |  17.6 |
+| infra | Add skill to generate release notes   |        |      | 0:27 |   4.9 |
+| code  | Version of =ores.qt= does not update  |        |      | 0:54 |   9.7 |
+| code  | Minor updates to UML diagrams         |        |      | 0:13 |   2.3 |
+| infra | Add support for project planning      |        |      | 2:24 |  25.9 |
+| code  | Add a "detached" mode                 |        |      | 1:18 |  14.0 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-11-17 Mon 22:11]--[2025-11-17 Mon 22:21] =>  0:10
     CLOCK: [2025-11-17 Mon 09:50]--[2025-11-17 Mon 10:16] =>  0:26
     CLOCK: [2025-11-17 Mon 08:58]--[2025-11-17 Mon 09:10] =>  0:12
     CLOCK: [2025-11-17 Mon 08:50]--[2025-11-17 Mon 08:57] =>  0:07
@@ -362,6 +365,17 @@ required.
 We need some basic way of keeping track of broad milestones. Copy across the
 approach we add for Dogen and polish it up.
 
+*** COMPLETED Add a "detached" mode                                    :code:
+   :LOGBOOK:
+   CLOCK: [2025-11-17 Mon 21:21]--[2025-11-17 Mon 21:38] =>  0:17
+   CLOCK: [2025-11-17 Mon 16:55]--[2025-11-17 Mon 17:56] =>  1:01
+   :END:
+
+At present we can detach all windows but if we then create a new one, we still
+have to detach it. It would be nice to set the default to detach or not, and
+then use that setting. Actually we just removed reattach to avoid issues of
+ownership. You still need to manually detach.
+
 *** Sprint Demo                                                       :infra:
 
 Time spent doing the demo. This is the first one so it will be very basic.
@@ -402,12 +416,6 @@ all platforms.
 Links:
 
 - [[https://github.com/jurplel/install-qt-action][install-qt-action]]
-
-*** Add a "detached" mode                                              :code:
-
-At present we can detach all windows but if we then create a new one, we still
-have to detach it. It would be nice to set the default to detach or not, and
-then use that setting.
 
 *** Merge update and create currency messages                          :code:
 

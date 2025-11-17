@@ -53,6 +53,8 @@ To be done on the last Sunday of the sprint.
 
 ** Open new sprint
 
+Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][New Sprint Skill]].
+
 1. Open new sprint, updating CMake version, README, GitHub (packages),
    =vcpkg.json=. Build all and run tests. This should all be in one commit.
 2. Create a demo. Publish it on youtube.
@@ -64,11 +66,39 @@ To be done on the last Sunday of the sprint.
 
 Stories we may get two in the next two or three sprints.
 
+*** Add entity related charts                                          :code:
+
+Have a think on things that could benefit from a graphical display at the entity
+level. Some ideas:
+
+- entity history: number of additions, edits, deletions over time. Bar chart.
+  Makes it easier to pick up weird system problems. This is overall across all
+  instances.
+- single entity history. In the history tab for that entity, graph showing the
+  changes to the entity over time.
+
+In addition, we need to be able to support charts in ASCII so that we can see
+them in the REPL. This will be used by the AI agents.
+
+Links:
+
+- [[https://github.com/Civitasv/asciichart][GH asciichart]]
+
+*** Add REPL to Qt                                                     :code:
+
+Users should be able to interact with the system directly via the REPL. Add a
+simple widget for this.
+
+*** Add skill to review product backlog                               :infra:
+
+We could get claude to review the stories, add more details, etc. Needs more
+thinking.
+
 *** Add skill to update vcpkg                                         :infra:
 
 As per instructions in [[id:CB42DFE5-804B-E1C4-E1E3-0A6C4766609C][readme]].
 
-*** Ignore warnings on windows and osx                                 :code:
+*** Ignore warnings on windows and OSX                                 :code:
 
 At present we have a number of spurious warnings on both windows and OSX. Try to
 see if we can get CDash to ignore them.

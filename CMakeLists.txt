@@ -259,6 +259,17 @@ add_custom_target(deploy_skills
     COMMAND emacs -Q --script .build-skills.el 2>&1
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+set(ORES_TASKS_DIRECTORY "build/output/tasks")
+add_custom_target(deploy_tasks
+    COMMENT "Deploying ORE Studio Tasks to ${ORES_TASKS_DIRECTORY}" VERBATIM
+    COMMAND echo "Removing site directory" && rm -rf ${ORES_TASKS_DIRECTORY}
+    COMMAND emacs -Q --script .build-tasks.el
+    COMMAND mkdir -p ${ORES_TASKS_DIRECTORY}
+    COMMAND mv doc/agile/v0/version_zero.tjp ${ORES_TASKS_DIRECTORY}
+    COMMAND cd ${ORES_TASKS_DIRECTORY}
+    COMMAND tj3 version_zero.tjp
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 #
 # aggregate targets and their aliases
 #

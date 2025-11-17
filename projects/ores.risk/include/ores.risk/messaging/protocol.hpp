@@ -103,9 +103,13 @@ struct get_currencies_response final {
 std::ostream& operator<<(std::ostream& s, const get_currencies_response& v);
 
 /**
- * @brief Request to create a new currency.
+ * @brief Request to save a currency (create or update).
+ *
+ * Due to bitemporal storage, both create and update operations
+ * result in writing a new record. Database triggers handle temporal
+ * versioning automatically.
  */
-struct create_currency_request final {
+struct save_currency_request final {
     domain::currency currency;
 
     /**
@@ -116,16 +120,16 @@ struct create_currency_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<create_currency_request, comms::protocol::error_code>
+    static std::expected<save_currency_request, comms::protocol::error_code>
     deserialize(std::span<const std::uint8_t> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const create_currency_request& v);
+std::ostream& operator<<(std::ostream& s, const save_currency_request& v);
 
 /**
- * @brief Response confirming currency creation.
+ * @brief Response confirming currency save operation.
  */
-struct create_currency_response final {
+struct save_currency_response final {
     bool success;
     std::string message;
 
@@ -137,52 +141,11 @@ struct create_currency_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<create_currency_response, comms::protocol::error_code>
+    static std::expected<save_currency_response, comms::protocol::error_code>
     deserialize(std::span<const std::uint8_t> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const create_currency_response& v);
-
-/**
- * @brief Request to update a currency.
- */
-struct update_currency_request final {
-    domain::currency currency;
-
-    /**
-     * @brief Serialize request to bytes.
-     */
-    std::vector<std::uint8_t> serialize() const;
-
-    /**
-     * @brief Deserialize request from bytes.
-     */
-    static std::expected<update_currency_request, comms::protocol::error_code>
-    deserialize(std::span<const std::uint8_t> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const update_currency_request& v);
-
-/**
- * @brief Response confirming currency update.
- */
-struct update_currency_response final {
-    bool success;
-    std::string message;
-
-    /**
-     * @brief Serialize response to bytes.
-     */
-    std::vector<std::uint8_t> serialize() const;
-
-    /**
-     * @brief Deserialize response from bytes.
-     */
-    static std::expected<update_currency_response, comms::protocol::error_code>
-    deserialize(std::span<const std::uint8_t> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const update_currency_response& v);
+std::ostream& operator<<(std::ostream& s, const save_currency_response& v);
 
 /**
  * @brief Request to delete a currency.

@@ -26,7 +26,21 @@ component (e.g. =ores.utility=).
 2. *Read source* – primarily =.hpp= files in =include/=. Glance at =.cpp= files
    in =src/= for *architecturally significant* dependencies.
 3. *Generate* – follow rules below to produce a clean, uncluttered diagram.
-4. *Validate* – compile with component’s CMake target; fix syntax errors.
+4. *Validate* – compile with component's CMake target; fix syntax errors.
+
+* Diagram File Locations
+
+** Component diagrams
+
+Component-level class diagrams are located at:
+- Directory: =projects/COMPONENT/modeling/=
+- File: =COMPONENT.puml= (e.g., =projects/ores.utility/modeling/ores.utility.puml=)
+
+** System architecture diagram
+
+The system-level architecture diagram showing all components and their relationships:
+- Directory: =projects/modeling/=
+- File: =ores.puml= (full path: =projects/modeling/ores.puml=)
 
 * Generation Rules
 
@@ -292,13 +306,12 @@ Determine dependencies by analyzing =CMakeLists.txt= files in =projects/COMPONEN
 
 Organize components into packages by layer:
 
-| Layer                | Colour        | Components                      |
-|----------------------+---------------+---------------------------------|
-| Foundation Layer     | =#LIGHTBLUE=  | ores.utility                    |
-| Infrastructure Layer | =#LIGHTGREEN= | ores.comms, ores.testing        |
-| Domain Layer         | =#LIGHTYELLOW= | ores.risk, ores.accounts        |
-| Client Layer         | =#LIGHTCYAN=  | ores.client                     |
-| Application Layer    | =#LIGHTCORAL= | ores.cli, ores.qt, ores.service |
+| Layer                | Colour         | Components                                       |
+|----------------------+----------------+--------------------------------------------------|
+| Foundation Layer     | =#LIGHTBLUE=   | ores.utility                                     |
+| Infrastructure Layer | =#LIGHTGREEN=  | ores.comms, ores.testing                         |
+| Domain Layer         | =#LIGHTYELLOW= | ores.risk, ores.accounts                         |
+| Application Layer    | =#LIGHTCORAL=  | ores.client, ores.cli, ores.qt, ores.service |
 
 ** 7. CMakeLists.txt setup
 

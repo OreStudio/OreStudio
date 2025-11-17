@@ -31,10 +31,6 @@ configure_file("${version_dir}/version.hpp.in" "${version_dir}/version.hpp")
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})
 
-# Make the library rebuild when version.hpp changes
-set_source_files_properties(${lib_files} PROPERTIES
-    OBJECT_DEPENDS "${version_dir}/version.hpp")
-
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}

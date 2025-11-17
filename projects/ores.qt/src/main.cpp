@@ -35,7 +35,7 @@ namespace {
 using namespace ores::utility::log;
 auto lg(make_logger("main"));
 
-const std::string product_version("OreStudio v" ORES_VERSION);
+const std::string product_version("Qt UI for ORE Studio v" ORES_VERSION);
 
 ores::utility::log::logging_options createLoggingConfiguration() {
     // FIXME: read this from command line

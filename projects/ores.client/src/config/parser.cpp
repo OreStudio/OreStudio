@@ -31,7 +31,7 @@
 namespace {
 
 const std::string more_information("Try --help' for more information.");
-const std::string product_version("OreStudio Client v" ORES_VERSION);
+const std::string product_version("Client for ORE Studio v" ORES_VERSION);
 const std::string build_info(ORES_BUILD_INFO);
 const std::string usage_error_msg("Usage error: ");
 

@@ -18,38 +18,40 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-17 Mon 22:21], for Monday, November 17, 2025.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *5:44* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 5:44   |      |      | 100.0 |
-|       | Active                                |        | 5:44 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:55 |  16.0 |
-| code  | Version of =ores.qt= does not update  |        |      | 0:54 |  15.7 |
-| code  | Minor updates to UML diagrams         |        |      | 0:13 |   3.8 |
-| infra | Add support for project planning      |        |      | 2:24 |  41.9 |
-| code  | Add a "detached" mode                 |        |      | 1:18 |  22.7 |
+#+CAPTION: Clock summary at [2025-11-17 Mon 23:11], for Monday, November 17, 2025.
+|       | <75>                                      |        |      |      |       |
+| Tags  | Headline                                  | Time   |      |      |     % |
+|-------+-------------------------------------------+--------+------+------+-------|
+|       | *Total time*                              | *6:26* |      |      | 100.0 |
+|-------+-------------------------------------------+--------+------+------+-------|
+|       | Stories                                   | 6:26   |      |      | 100.0 |
+|       | Active                                    |        | 6:26 |      | 100.0 |
+| agile | Sprint and product backlog refinement     |        |      | 0:55 |  14.2 |
+| code  | Version of =ores.qt= does not update      |        |      | 0:54 |  14.0 |
+| code  | Minor updates to UML diagrams             |        |      | 0:13 |   3.4 |
+| infra | Add support for project planning          |        |      | 2:24 |  37.3 |
+| code  | Add a "detached" mode                     |        |      | 1:18 |  20.2 |
+| code  | Merge update and create currency messages |        |      | 0:42 |  10.9 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-17 Mon 22:21]
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *9:16* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 9:16   |      |      | 100.0 |
-|       | Active                                |        | 9:16 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 2:22 |  25.5 |
-| infra | Add AI generated sprint summary       |        |      | 1:38 |  17.6 |
-| infra | Add skill to generate release notes   |        |      | 0:27 |   4.9 |
-| code  | Version of =ores.qt= does not update  |        |      | 0:54 |   9.7 |
-| code  | Minor updates to UML diagrams         |        |      | 0:13 |   2.3 |
-| infra | Add support for project planning      |        |      | 2:24 |  25.9 |
-| code  | Add a "detached" mode                 |        |      | 1:18 |  14.0 |
+#+CAPTION: Clock summary at [2025-11-17 Mon 23:11]
+|       | <75>                                      |        |      |      |       |
+| Tags  | Headline                                  | Time   |      |      |     % |
+|-------+-------------------------------------------+--------+------+------+-------|
+|       | *Total time*                              | *9:58* |      |      | 100.0 |
+|-------+-------------------------------------------+--------+------+------+-------|
+|       | Stories                                   | 9:58   |      |      | 100.0 |
+|       | Active                                    |        | 9:58 |      | 100.0 |
+| agile | Sprint and product backlog refinement     |        |      | 2:22 |  23.7 |
+| infra | Add AI generated sprint summary           |        |      | 1:38 |  16.4 |
+| infra | Add skill to generate release notes       |        |      | 0:27 |   4.5 |
+| code  | Version of =ores.qt= does not update      |        |      | 0:54 |   9.0 |
+| code  | Minor updates to UML diagrams             |        |      | 0:13 |   2.2 |
+| infra | Add support for project planning          |        |      | 2:24 |  24.1 |
+| code  | Add a "detached" mode                     |        |      | 1:18 |  13.0 |
+| code  | Merge update and create currency messages |        |      | 0:42 |   7.0 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -376,22 +378,143 @@ have to detach it. It would be nice to set the default to detach or not, and
 then use that setting. Actually we just removed reattach to avoid issues of
 ownership. You still need to manually detach.
 
-*** Sprint Demo                                                       :infra:
+*** STARTED Merge update and create currency messages                  :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-17 Mon 22:28]--[2025-11-17 Mon 23:10] =>  0:42
+    :END:
 
-Time spent doing the demo. This is the first one so it will be very basic.
+Due to how repositories work for bitemporal, we are always writing anyways. So
+we don't really need complex logic around updating versus creating a new
+currency. We need to simplify the UI and client / server code to have a single
+message type for both.
 
-**** Presentation
+**** Architectural Assessment
 
-***** ORE Studio v0.0.4, "Fazenda Camilunga"
+***** Impact Summary
 
-    Marco Craveiro
-    Moimba Software Engineering
-    Released on 16th November 2025
+This change affects all three main architectural layers:
 
-*** Tidy-up database code                                              :code:
+- *Infrastructure Layer*: Reduce message protocol from 4 to 2 types (breaking
+  change).
+- *Domain Layer*: Merge handlers and simplify repository interface.
+- *Application Layer*: Simplify Qt dialog and client code.
 
-- add helpers to utility to ensure success, execute query, etc.
-- add helpers for max timestamp, timestamp.
+***** Current State
+
+Infrastructure (ores.comms):
+
+- Message types: =create_currency_request/response= (0x1009/0x100A) and
+  =update_currency_request/response= (0x1003/0x1004)
+
+Domain (ores.risk):
+
+- =handle_create_currency_request()= calls =currency_repo_.write()=
+- =handle_update_currency_request()= calls =currency_repo_.update()=
+- Both methods effectively do the same thing: insert new row with temporal
+  versioning.
+
+Application (ores.qt):
+
+- =CurrencyDetailDialog= uses =isAddMode_= flag to branch on message type.
+- Lines 214-224: Sends different request types.
+- Lines 235-251: Deserializes different response types.
+- Lines 277-287: Emits different signals (=currencyCreated= vs
+  =currencyUpdated=).
+
+***** Affected Files
+
+1. =projects/ores.comms/include/ores.comms/protocol/message_types.hpp=
+2. =projects/ores.risk/include/ores.risk/messaging/protocol.hpp=
+3. =projects/ores.risk/src/messaging/protocol.cpp=
+4. =projects/ores.risk/src/messaging/risk_message_handler.cpp=
+5. =projects/ores.risk/include/ores.risk/messaging/risk_message_handler.hpp=
+6. =projects/ores.risk/include/ores.risk/repository/currency_repository.hpp=
+7. =projects/ores.risk/src/repository/currency_repository.cpp=
+8. =projects/ores.qt/src/CurrencyDetailDialog.cpp=
+9. =projects/ores.qt/include/ores.qt/CurrencyDetailDialog.hpp=
+10. Test files for all affected components
+
+**** Migration Plan
+
+***** Step 1: Domain Layer - Repository Simplification
+
+- [ ] Remove =update()= method from =currency_repository= class.
+- [ ] Update repository tests to use =write()= for both create and update
+  scenarios.
+- [ ] Verify all tests pass.
+- Build target: =ores.risk.lib=
+- Test target: =ores.risk.tests=
+
+***** Step 2: Domain Layer - Messaging Consolidation
+
+- [ ] Rename =create_currency_request/response= to
+  =save_currency_request/response=.
+- [ ] Remove =update_currency_request/response= types from =protocol.hpp= and
+  =protocol.cpp=.
+- [ ] Merge =handle_create_currency_request()= and
+  =handle_update_currency_request()= into =handle_save_currency_request()=
+- [ ] Update =risk_message_handler= to use single handler
+- [ ] Update messaging tests
+- [ ] Verify all tests pass
+- Build target: =ores.risk.lib=
+- Test target: =ores.risk.tests=
+
+***** Step 3: Infrastructure Layer - Protocol Update
+
+- [ ] In =message_types.hpp=, rename =create_currency_request/response= to
+  =save_currency_request/response=
+- [ ] Remove =update_currency_request/response= enum values
+- [ ] Update protocol version to indicate breaking change
+- [ ] Update protocol documentation
+- Build target: =ores.comms.lib=
+- Test target: =ores.comms.tests=
+
+***** Step 4: Application Layer - Qt Dialog Simplification
+
+- [ ] In =CurrencyDetailDialog.cpp=, simplify =onSaveClicked()= to always send
+  =save_currency_request=
+- [ ] Remove branching on =isAddMode_= for message type selection (lines 214-224)
+- [ ] Simplify response handling to use single =save_currency_response= (lines 235-251)
+- [ ] Consider keeping =isAddMode_= for UI behavior (e.g., ISO code readonly after save)
+- [ ] Keep or merge =currencyCreated= and =currencyUpdated= signals based on caller needs
+- [ ] Update Qt tests
+- Build target: =ores.qt=
+- Manual test: Create and edit currencies in GUI
+
+***** Step 5: Application Layer - Client Updates
+
+- [ ] Review =ores.client= for any usage of update/create currency messages
+- [ ] Update if needed (client likely uses repository directly)
+- Build target: =ores.client=
+- Manual test: REPL currency operations
+
+***** Step 6: Documentation and Diagrams
+
+- [ ] Update =projects/ores.risk/modeling/ores.risk.puml= to reflect merged messages
+- [ ] Update =projects/ores.comms/modeling/ores.comms.puml= to reflect protocol changes
+- [ ] Regenerate diagrams with: =cmake --build --target generate_ores_risk_diagram
+  --preset linux-clang-debug=
+- [ ] Regenerate diagrams with: =cmake --build --target
+  generate_ores_comms_diagram --preset linux-clang-debug=
+
+***** Step 7: Integration Testing
+
+- [ ] Build entire project: =cmake --build --preset linux-clang-debug=
+- [ ] Run all tests: =cmake --build --preset linux-clang-debug --target rat=
+- [ ] Manual end-to-end test: Create currency via GUI → Save → Edit → Save → Verify history
+- [ ] Verify currency history shows proper temporal versioning
+- [ ] Test with service: Start service, connect with Qt client, perform create/update operations
+
+***** Step 8: Backwards Compatibility Consideration
+
+Note: This is a *breaking protocol change*. Clients using old protocol will not
+be compatible.
+
+Options to consider:
+
+- Accept breaking change (simpler, justified by better design)
+- Implement protocol version negotiation (more complex, may be overkill)
+- Recommended: Accept breaking change, document in release notes
 
 *** Split console recipes by entity                                    :code:
 
@@ -407,43 +530,31 @@ Notes:
 - reduce output, only first few entries are needed.
 - add a toc.
 
-*** Use prebuilt qt                                                    :code:
-
-At present we are having problems creating an installable gui. This is because
-Qt is hard to build and package from vcpkg. We should use prebuilt binaries for
-all platforms.
-
-Links:
-
-- [[https://github.com/jurplel/install-qt-action][install-qt-action]]
-
-*** Merge update and create currency messages                          :code:
-
-Due to how repositories work for bitemporal, we are always writing anyways. So
-we don't really need complex logic around updating versus creating a new
-currency. We need to simplify the UI and client / server code to have a single
-message type for both.
-
 *** Improve handling of error responses                                :code:
 
 As per Gemini code review:
 
 #+begin_src markdown
-Certainly. Point \#2 from the review of `CurrencyHistoryDialog.cpp` addressed the potential complexity of error checking by suggesting that relying on the specific response message type is **fragile**.
+Certainly. Point \#2 from the review of `CurrencyHistoryDialog.cpp` addressed
+the potential complexity of error checking by suggesting that relying on the
+specific response message type is **fragile**.
 
 The goal is to move from:
 
 1.  Client sends **Request A**.
-2.  Server returns **Response A** (Success) OR **Error Response** (Failure) OR **Response B** (Unexpected success type).
+2.  Server returns **Response A** (Success) OR **Error Response** (Failure) OR
+    ,**Response B** (Unexpected success type).
 3.  Client checks: *Is the message type exactly **Response A**?*
 
-to a more robust pattern where the client checks for a generic failure response first.
+to a more robust pattern where the client checks for a generic failure response
+first.
 
 -----
 
 ## 🐞 Fragile Error Check (Current Code)
 
-The current code in `loadHistory` checks for success by expecting *only* the specific success message type:
+The current code in `loadHistory` checks for success by expecting *only* the
+specific success message type:
 
 ```cpp
 // Current Fragile Logic
@@ -456,14 +567,21 @@ if (result->header().type != comms::protocol::message_type::get_currency_history
 
 This logic has two main problems:
 
-1.  **Hiding Server Errors:** If the server returns a generic protocol error (`message_type::error_response`) because, for example, the client's session timed out, the client logs a misleading message: "Server does not support currency history." It should be reporting the actual error message sent by the server.
-2.  **Lack of Standardization:** Every client method needs to implement its own logic to handle unexpected types.
+1.  **Hiding Server Errors:** If the server returns a generic protocol error
+    (`message_type::error_response`) because, for example, the client's session
+    timed out, the client logs a misleading message: "Server does not support
+    currency history." It should be reporting the actual error message sent by
+    the server.
+2.  **Lack of Standardization:** Every client method needs to implement its own
+    logic to handle unexpected types.
 
 -----
 
 ## 🛠️ Suggested Improvement: Standardized Error Handling
 
-The improvement is to check for a generic **`error_response`** message type first, and report its payload/message, before attempting to deserialize the successful response.
+The improvement is to check for a generic **`error_response`** message type
+first, and report its payload/message, before attempting to deserialize the
+successful response.
 
 Assuming your system has a standard `error_response` message:
 
@@ -507,9 +625,10 @@ void CurrencyHistoryDialog::handleHistoryResponse(const HistoryResult& result) {
 }
 ```
 
-By standardizing the **`error_response`** type, the client can always extract and display the relevant server-side failure reason, leading to much clearer logging and user feedback.
+By standardizing the **`error_response`** type, the client can always extract
+and display the relevant server-side failure reason, leading to much clearer
+logging and user feedback.
 #+end_src
-
 
 *** Implement authentication bootstrap workflow                        :code:
 
@@ -603,6 +722,11 @@ Links:
 
 We have it scattered around the code base.
 
+*** Tidy-up database code                                              :code:
+
+- add helpers to utility to ensure success, execute query, etc.
+- add helpers for max timestamp, timestamp.
+
 *** Invalid password should not throw                                  :code:
 
 At present in the unlock test we have:
@@ -637,6 +761,28 @@ Notes:
 void setSeed(std::mt19937_64::result_type seed)
 Catch::rngSeed()
 
+
+*** Use prebuilt qt                                                    :code:
+
+At present we are having problems creating an installable gui. This is because
+Qt is hard to build and package from vcpkg. We should use prebuilt binaries for
+all platforms.
+
+Links:
+
+- [[https://github.com/jurplel/install-qt-action][install-qt-action]]
+
+*** Sprint Demo                                                       :infra:
+
+Time spent doing the demo. This is the first one so it will be very basic.
+
+**** Presentation
+
+***** ORE Studio v0.0.4, "Fazenda Camilunga"
+
+    Marco Craveiro
+    Moimba Software Engineering
+    Released on 16th November 2025
 
 *** Add =[[nodiscard]]= to repository operations returning data        :code:
 

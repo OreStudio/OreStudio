@@ -309,59 +309,33 @@ namespace ores #F2F2F2 {
             - currencies: List of all currencies.
             end note
 
-            class create_currency_request #F7E5FF {
+            class save_currency_request #F7E5FF {
                 +{field} currency : domain::currency
                 +serialize() const : std::vector<std::uint8_t>
-                +{static} deserialize(std::span<const std::uint8_t> data) : std::expected<create_currency_request, comms::protocol::error_code>
+                +{static} deserialize(std::span<const std::uint8_t> data) : std::expected<save_currency_request, comms::protocol::error_code>
             }
 
-            note top of create_currency_request
-            Request to create a new currency.
+            note top of save_currency_request
+            Request to save a currency (create or update).
+
+            Due to bitemporal storage, both create and update operations
+            result in writing a new record. Database triggers handle
+            temporal versioning automatically.
 
             Fields:
 
-            - currency: The currency to create.
+            - currency: The currency to save.
             end note
 
-            class create_currency_response #F7E5FF {
+            class save_currency_response #F7E5FF {
                 +{field} success : bool
                 +{field} message : std::string
                 +serialize() const : std::vector<std::uint8_t>
-                +{static} deserialize(std::span<const std::uint8_t> data) : std::expected<create_currency_response, comms::protocol::error_code>
+                +{static} deserialize(std::span<const std::uint8_t> data) : std::expected<save_currency_response, comms::protocol::error_code>
             }
 
-            note top of create_currency_response
-            Response confirming currency creation.
-
-            Fields:
-
-            - success: Whether the operation succeeded.
-            - message: Status or error message.
-            end note
-
-            class update_currency_request #F7E5FF {
-                +{field} currency : domain::currency
-                +serialize() const : std::vector<std::uint8_t>
-                +{static} deserialize(std::span<const std::uint8_t> data) : std::expected<update_currency_request, comms::protocol::error_code>
-            }
-
-            note top of update_currency_request
-            Request to update a currency.
-
-            Fields:
-
-            - currency: The currency with updated data.
-            end note
-
-            class update_currency_response #F7E5FF {
-                +{field} success : bool
-                +{field} message : std::string
-                +serialize() const : std::vector<std::uint8_t>
-                +{static} deserialize(std::span<const std::uint8_t> data) : std::expected<update_currency_response, comms::protocol::error_code>
-            }
-
-            note top of update_currency_response
-            Response confirming currency update.
+            note top of save_currency_response
+            Response confirming currency save operation.
 
             Fields:
 
@@ -441,7 +415,7 @@ namespace ores #F2F2F2 {
                 -handle_update_currency_request(std::span<const std::uint8_t> payload) : boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
                 -handle_delete_currency_request(std::span<const std::uint8_t> payload) : boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
                 -handle_get_currency_history_request(std::span<const std::uint8_t> payload) : boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
-                -handle_create_currency_request(std::span<const std::uint8_t> payload) : boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
+                -handle_save_currency_request(std::span<const std::uint8_t> payload) : boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
                 -{field} ctx_ : utility::repository::context
                 -{field} currency_repo_ : repository::currency_repository
             }

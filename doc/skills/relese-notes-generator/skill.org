@@ -7,13 +7,13 @@
 #+startup: inlineimages
 #+export_exclude_tags: noexport
 
-#+begin_src markdown
+#+begin_export markdown
 ---
 name: release-notes-generator
 description: Generates release notes in the ORE Studio format.
 license: Complete terms in LICENSE.txt
 ---
-#+end_src
+#+end_export
 
 This skill generates release notes from a ORE Sprint Backlog file.
 

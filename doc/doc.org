@@ -12,7 +12,6 @@ product website.
 
 - [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]]: documentation related to the [[https://masd-project.github.io/progen/docs/mde_and_the_software_development_process.html][software development process]] used to
   develop this project.
-- [[id:680CEB24-8DC4-9884-9B3B-C8CFBF6CD400][Modeling]]: models used to document its structure and functionality.
 - [[id:CE1D1ADC-E267-8AD4-7033-3A0FEA7F89EC][Domain]]: assorted documents covering domain related topics.
 - [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]]: Notebooks on how to use ORE Studio.
 - [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]]: Claude code skills used in this project.

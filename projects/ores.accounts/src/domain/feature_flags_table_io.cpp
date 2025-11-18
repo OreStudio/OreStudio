@@ -24,7 +24,7 @@
 
 namespace ores::accounts::domain {
 
-std::ostream& operator<<(std::ostream& s, const std::vector<feature_flags>& v) {
+void print_feature_flags_table(std::ostream& s, const std::vector<feature_flags>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
@@ -36,7 +36,10 @@ std::ostream& operator<<(std::ostream& s, const std::vector<feature_flags>& v) {
               << ff.modified_by << fort::endr;
     }
     s << std::endl << table.to_string() << std::endl;
+}
 
+std::ostream& operator<<(std::ostream& s, const std::vector<feature_flags>& v) {
+    print_feature_flags_table(s, v);
     return s;
 }
 

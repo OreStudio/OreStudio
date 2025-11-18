@@ -27,6 +27,11 @@
 namespace ores::risk::domain {
 
 /**
+ * @brief Prints currencies to a stream in table format.
+ */
+void print_currency_table(std::ostream& s, const std::vector<currency>& v);
+
+/**
  * @brief Dumps the currency object to a stream in table format.
  */
 std::ostream& operator<<(std::ostream& s, const std::vector<currency>& v);

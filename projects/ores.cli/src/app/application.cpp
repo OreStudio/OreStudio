@@ -33,7 +33,10 @@
 #include "ores.risk/orexml/importer.hpp"
 #include "ores.risk/orexml/exporter.hpp"
 #include "ores.risk/csv/exporter.hpp"
+#include "ores.risk/domain/currency_table_io.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
+#include "ores.accounts/domain/account_table_io.hpp"
+#include "ores.accounts/domain/feature_flags_table_io.hpp"
 #include "ores.accounts/repository/account_repository.hpp"
 #include "ores.cli/app/application_exception.hpp"
 
@@ -142,7 +145,50 @@ export_currencies(const config::export_options& cfg) const {
     } else if (cfg.target_format == config::format::csv) {
         std::string ccy_cfgs = csv_exporter::export_currency_config(ccys);
         output_stream_ << ccy_cfgs << std::endl;
+    } else if (cfg.target_format == config::format::table) {
+        risk::domain::print_currency_table(output_stream_, ccys);
     }
+}
+
+void application::
+export_accounts(const config::export_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting accounts.";
+    accounts::repository::account_repository repo(context_);
+
+    const auto reader([&]() {
+        if (cfg.all_versions) {
+            BOOST_LOG_SEV(lg(), debug) << "Reading all versions for accounts.";
+            // Note: account repository doesn't support reading all versions by username yet
+            if (cfg.key.empty())
+                return repo.read_all();
+            else
+                return repo.read_latest_by_username(cfg.key);
+        } else if (cfg.as_of.empty()) {
+            BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts.";
+            if (cfg.key.empty())
+                return repo.read_latest();
+            else
+                return repo.read_latest_by_username(cfg.key);
+        }
+        BOOST_LOG_SEV(lg(), debug) << "Reading accounts as of: " << cfg.as_of;
+        // Note: account repository doesn't have read_at_timepoint yet
+        return repo.read_latest();
+    });
+
+    const std::vector<accounts::domain::account> accts(reader());
+    if (cfg.target_format == config::format::json) {
+        output_stream_ << accts << std::endl;
+    } else if (cfg.target_format == config::format::table) {
+        accounts::domain::print_account_table(output_stream_, accts);
+    }
+}
+
+void application::
+export_feature_flags(const config::export_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting feature flags.";
+    // TODO: Implement when feature_flags repository is available
+    BOOST_THROW_EXCEPTION(
+        application_exception("Feature flags export not yet implemented"));
 }
 
 void application::
@@ -156,6 +202,12 @@ export_data(const std::optional<config::export_options>& ocfg) const {
     switch (cfg.target_entity) {
         case config::entity::currencies:
             export_currencies(cfg);
+            break;
+        case config::entity::accounts:
+            export_accounts(cfg);
+            break;
+        case config::entity::feature_flags:
+            export_feature_flags(cfg);
             break;
         default:
             BOOST_THROW_EXCEPTION(

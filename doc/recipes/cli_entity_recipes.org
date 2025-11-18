@@ -360,6 +360,10 @@ export ORES_CLI_DB_PASSWORD
   --format table
 #+end_src
 
+#+RESULTS:
+#+begin_src text
+#+end_src
+
 **** List specific currency
 
 #+begin_src sh

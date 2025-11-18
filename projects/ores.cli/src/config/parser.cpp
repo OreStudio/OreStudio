@@ -42,20 +42,16 @@ const std::string usage_error_msg("Usage error: ");
 const std::string no_command_msg("No command supplied. ");
 
 const std::string entity_arg("entity");
-const std::string import_command_name("import");
-const std::string import_command_desc("Imports data into the system.");
 const std::string import_targets_arg("target");
-
-const std::string export_command_name("export");
-const std::string export_command_desc("Exports data from the system.");
 const std::string export_as_of_arg("as-of");
 const std::string export_key_arg("key");
 const std::string export_all_versions_arg("all-versions");
 const std::string export_format_arg("format");
-
-const std::string delete_command_name("delete");
-const std::string delete_command_desc("Deletes entities from the system.");
 const std::string delete_key_arg("key");
+
+const std::string import_command_name("import");
+const std::string export_command_name("export");
+const std::string delete_command_name("delete");
 
 const std::string currencies_command_name("currencies");
 const std::string currencies_command_desc("Manage currencies (import, export, list, delete, add).");
@@ -191,9 +187,6 @@ options_description make_client_options_description() {
  */
 void validate_command_name(const std::string& command_name) {
     const bool is_valid_command_name(
-        command_name == import_command_name ||
-        command_name == export_command_name ||
-        command_name == delete_command_name ||
         command_name == currencies_command_name ||
         command_name == accounts_command_name ||
         command_name == feature_flags_command_name);
@@ -201,7 +194,8 @@ void validate_command_name(const std::string& command_name) {
     if (!is_valid_command_name)
     {
         BOOST_THROW_EXCEPTION(parser_exception(
-                std::format("Invalid or unsupported command: {}",
+                std::format("Invalid or unsupported command: {}. "
+                    "Available commands: currencies, accounts, feature_flags",
                     command_name)));
     }
 }
@@ -236,14 +230,11 @@ void print_help(const options_description& od, std::ostream& info) {
              << name << desc << std::endl;
     });
 
-    lambda(import_command_name, import_command_desc);
-    lambda(export_command_name, export_command_desc);
-    lambda(delete_command_name, delete_command_desc);
     lambda(currencies_command_name, currencies_command_desc);
     lambda(accounts_command_name, accounts_command_desc);
     lambda(feature_flags_command_name, feature_flags_command_desc);
 
-    info << std::endl << "For command specific options, type <command> --help."
+    info << std::endl << "For entity and operation specific options, use: <entity> <operation> --help"
          << std::endl;
 }
 
@@ -432,40 +423,7 @@ handle_command(const std::string& command_name, const bool has_help,
     using ores::utility::program_options::environment_mapper_factory;
     const auto name_mapper(environment_mapper_factory::make_mapper("CLI"));
 
-    if (command_name == import_command_name) {
-        auto d(make_import_options_description());
-        d.add(db_desc).add(logging_desc);
-        if (has_help) {
-            print_help_command(import_command_name, d, info);
-            return {};
-        }
-
-        store(command_line_parser(o).options(d).run(), vm);
-        store(parse_environment(d, name_mapper), vm);
-        r.importing = read_import_options(vm);
-    } else if (command_name == export_command_name) {
-        auto d(make_export_options_description());
-        d.add(db_desc).add(logging_desc);
-        if (has_help) {
-            print_help_command(export_command_name, d, info);
-            return {};
-        }
-
-        store(command_line_parser(o).options(d).run(), vm);
-        store(parse_environment(d, name_mapper), vm);
-        r.exporting = read_export_options(vm);
-    } else if (command_name == delete_command_name) {
-        auto d(make_delete_options_description());
-        d.add(db_desc).add(logging_desc);
-        if (has_help) {
-            print_help_command(delete_command_name, d, info);
-            return {};
-        }
-
-        store(command_line_parser(o).options(d).run(), vm);
-        store(parse_environment(d, name_mapper), vm);
-        r.deleting = read_delete_options(vm);
-    } else if (command_name == currencies_command_name) {
+    if (command_name == currencies_command_name) {
         // Entity-based command: currencies <operation> [options]
         if (has_help && o.empty()) {
             // Show help for currencies command

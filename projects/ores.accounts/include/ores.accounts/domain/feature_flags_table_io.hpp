@@ -27,6 +27,11 @@
 namespace ores::accounts::domain {
 
 /**
+ * @brief Prints feature flags to a stream in table format.
+ */
+void print_feature_flags_table(std::ostream& s, const std::vector<feature_flags>& v);
+
+/**
  * @brief Dumps the feature flags object to a stream in table format.
  */
 std::ostream& operator<<(std::ostream& s, const std::vector<feature_flags>& v);

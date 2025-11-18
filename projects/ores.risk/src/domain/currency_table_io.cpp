@@ -24,7 +24,7 @@
 
 namespace ores::risk::domain {
 
-std::ostream& operator<<(std::ostream& s, const std::vector<currency>& v) {
+void print_currency_table(std::ostream& s, const std::vector<currency>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
@@ -38,7 +38,10 @@ std::ostream& operator<<(std::ostream& s, const std::vector<currency>& v) {
               << c.valid_from << c.valid_to << fort::endr;
     }
     s << std::endl << table.to_string() << std::endl;
+}
 
+std::ostream& operator<<(std::ostream& s, const std::vector<currency>& v) {
+    print_currency_table(s, v);
     return s;
 }
 

@@ -57,6 +57,10 @@ const std::string delete_command_name("delete");
 const std::string delete_command_desc("Deletes entities from the system.");
 const std::string delete_key_arg("key");
 
+const std::string currencies_command_name("currencies");
+const std::string currencies_command_desc("Manage currencies (import, export, list, delete).");
+const std::string operation_arg("operation");
+
 const std::string help_arg("help");
 const std::string version_arg("version");
 const std::string command_arg("command");
@@ -182,7 +186,8 @@ void validate_command_name(const std::string& command_name) {
     const bool is_valid_command_name(
         command_name == import_command_name ||
         command_name == export_command_name ||
-        command_name == delete_command_name);
+        command_name == delete_command_name ||
+        command_name == currencies_command_name);
 
     if (!is_valid_command_name)
     {
@@ -225,6 +230,7 @@ void print_help(const options_description& od, std::ostream& info) {
     lambda(import_command_name, import_command_desc);
     lambda(export_command_name, export_command_desc);
     lambda(delete_command_name, delete_command_desc);
+    lambda(currencies_command_name, currencies_command_desc);
 
     info << std::endl << "For command specific options, type <command> --help."
          << std::endl;
@@ -448,6 +454,72 @@ handle_command(const std::string& command_name, const bool has_help,
         store(command_line_parser(o).options(d).run(), vm);
         store(parse_environment(d, name_mapper), vm);
         r.deleting = read_delete_options(vm);
+    } else if (command_name == currencies_command_name) {
+        // Entity-based command: currencies <operation> [options]
+        if (o.empty()) {
+            BOOST_THROW_EXCEPTION(parser_exception(
+                "currencies command requires an operation (import, export, list, delete)"));
+        }
+
+        const auto operation = o.front();
+        o.erase(o.begin()); // Remove operation from args
+
+        if (operation == import_command_name) {
+            auto d(make_import_options_description());
+            d.add(db_desc).add(logging_desc);
+            if (has_help) {
+                print_help_command("currencies import", d, info);
+                return {};
+            }
+            store(command_line_parser(o).options(d).run(), vm);
+            store(parse_environment(d, name_mapper), vm);
+            // Force entity to be currencies
+            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
+                std::string("currencies"), false)));
+            r.importing = read_import_options(vm);
+        } else if (operation == export_command_name) {
+            auto d(make_export_options_description());
+            d.add(db_desc).add(logging_desc);
+            if (has_help) {
+                print_help_command("currencies export", d, info);
+                return {};
+            }
+            store(command_line_parser(o).options(d).run(), vm);
+            store(parse_environment(d, name_mapper), vm);
+            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
+                std::string("currencies"), false)));
+            r.exporting = read_export_options(vm);
+        } else if (operation == delete_command_name) {
+            auto d(make_delete_options_description());
+            d.add(db_desc).add(logging_desc);
+            if (has_help) {
+                print_help_command("currencies delete", d, info);
+                return {};
+            }
+            store(command_line_parser(o).options(d).run(), vm);
+            store(parse_environment(d, name_mapper), vm);
+            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
+                std::string("currencies"), false)));
+            r.deleting = read_delete_options(vm);
+        } else if (operation == "list") {
+            // New list operation
+            auto d(make_export_options_description()); // Reuse export options for now
+            d.add(db_desc).add(logging_desc);
+            if (has_help) {
+                print_help_command("currencies list", d, info);
+                return {};
+            }
+            store(command_line_parser(o).options(d).run(), vm);
+            store(parse_environment(d, name_mapper), vm);
+            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
+                std::string("currencies"), false)));
+            // Treat list as export for now
+            r.exporting = read_export_options(vm);
+        } else {
+            BOOST_THROW_EXCEPTION(parser_exception(
+                std::format("Invalid operation for currencies: {}. "
+                    "Valid operations: import, export, list, delete", operation)));
+        }
     }
 
     r.database = database_configuration::read_options(vm);

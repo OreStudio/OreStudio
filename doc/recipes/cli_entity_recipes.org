@@ -1,0 +1,317 @@
+:PROPERTIES:
+:ID: A1B2C3D4-E5F6-7890-ABCD-EF1234567890
+:END:
+#+title: CLI Entity-Based Recipes
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+
+Demonstrates all entity-based CLI commands in =ores.cli= using the new
+entity-first syntax.
+
+* Recipes
+  :PROPERTIES:
+  :header-args: :exports both
+  :header-args+: :results raw
+  :header-args+: :dir ../../build/output/linux-clang-debug/publish/bin
+  :header-args+: :var data_dir="../../../../../projects/ores.risk.tests/test_data/currencies"
+  :header-args+: :var ORES_DB_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "ores")
+  :header-args+: :var db_args="--db-user ores --db-host localhost --db-port 5432 --db-database oresdb"
+  :header-args+: :var log_args="--log-enabled --log-level info"
+  :END:
+
+** General
+   :PROPERTIES:
+   :header-args+: :wrap src text
+   :END:
+
+General commands that do not exercise domain functionality.
+
+*** Help
+
+Display global help showing all available commands.
+
+#+begin_src sh
+./ores.cli --help
+#+end_src
+
+*** Version
+
+Display version information.
+
+#+begin_src sh
+./ores.cli --version
+#+end_src
+
+** Currencies
+   :PROPERTIES:
+   :header-args+: :wrap src json
+   :END:
+
+Currency management operations using entity-based syntax.
+
+*** Help
+
+Show available operations for currencies.
+
+#+begin_src sh :wrap src text
+./ores.cli currencies --help
+#+end_src
+
+*** Import
+
+Import currencies from ORE XML format.
+
+**** Import single file
+
+#+begin_src sh
+export ORES_DB_PASSWORD
+./ores.cli currencies import ${db_args} ${log_args} \
+  --target ${data_dir}/currencies_API.xml | jq .
+#+end_src
+
+**** Import multiple files
+
+#+begin_src sh
+export ORES_DB_PASSWORD
+./ores.cli currencies import ${db_args} ${log_args} \
+  --target ${data_dir}/currencies_API.xml \
+  --target ${data_dir}/currencies_extended.xml | jq .
+#+end_src
+
+*** Export
+
+Export currencies to various formats.
+
+**** Export all as XML
+
+#+begin_src sh :wrap src xml
+export ORES_DB_PASSWORD
+./ores.cli currencies export ${db_args} ${log_args} \
+  --format xml
+#+end_src
+
+**** Export all as JSON
+
+#+begin_src sh
+export ORES_DB_PASSWORD
+./ores.cli currencies export ${db_args} ${log_args} \
+  --format json | jq .
+#+end_src
+
+**** Export all as CSV
+
+#+begin_src sh :wrap src csv
+export ORES_DB_PASSWORD
+./ores.cli currencies export ${db_args} ${log_args} \
+  --format csv
+#+end_src
+
+**** Export specific currency
+
+#+begin_src sh
+export ORES_DB_PASSWORD
+./ores.cli currencies export ${db_args} ${log_args} \
+  --format json --key USD | jq .
+#+end_src
+
+**** Export all versions of a currency
+
+#+begin_src sh
+export ORES_DB_PASSWORD
+./ores.cli currencies export ${db_args} ${log_args} \
+  --format json --key USD --all-versions | jq .
+#+end_src
+
+**** Export as of specific time point
+
+#+begin_src sh
+export ORES_DB_PASSWORD
+./ores.cli currencies export ${db_args} ${log_args} \
+  --format json --as-of "2025-01-01 00:00:00" | jq .
+#+end_src
+
+*** List
+
+List currencies (currently uses export internally).
+
+**** List all currencies
+
+#+begin_src sh
+export ORES_DB_PASSWORD
+./ores.cli currencies list ${db_args} ${log_args} \
+  --format json | jq .
+#+end_src
+
+**** List specific currency
+
+#+begin_src sh
+export ORES_DB_PASSWORD
+./ores.cli currencies list ${db_args} ${log_args} \
+  --format json --key EUR | jq .
+#+end_src
+
+*** Delete
+
+Delete a currency by ISO code.
+
+#+begin_src sh
+export ORES_DB_PASSWORD
+./ores.cli currencies delete ${db_args} ${log_args} \
+  --key XXX
+#+end_src
+
+** Accounts
+   :PROPERTIES:
+   :header-args+: :wrap src json
+   :END:
+
+Account management operations using entity-based syntax.
+
+*** Help
+
+Show available operations for accounts.
+
+#+begin_src sh :wrap src text
+./ores.cli accounts --help
+#+end_src
+
+*** List
+
+List accounts from the database.
+
+**** List all accounts
+
+#+begin_src sh
+export ORES_DB_PASSWORD
+./ores.cli accounts list ${db_args} ${log_args} \
+  --format json | jq .
+#+end_src
+
+**** List specific account by username
+
+#+begin_src sh
+export ORES_DB_PASSWORD
+./ores.cli accounts list ${db_args} ${log_args} \
+  --format json --key admin | jq .
+#+end_src
+
+**** List all versions of an account
+
+#+begin_src sh
+export ORES_DB_PASSWORD
+./ores.cli accounts list ${db_args} ${log_args} \
+  --format json --key admin --all-versions | jq .
+#+end_src
+
+*** Delete
+
+Delete an account by username or UUID.
+
+**** Delete by username
+
+#+begin_src sh
+export ORES_DB_PASSWORD
+./ores.cli accounts delete ${db_args} ${log_args} \
+  --key testuser
+#+end_src
+
+**** Delete by UUID
+
+#+begin_src sh
+export ORES_DB_PASSWORD
+./ores.cli accounts delete ${db_args} ${log_args} \
+  --key 12345678-1234-5678-1234-567812345678
+#+end_src
+
+*** Add
+
+Add a new account (not yet implemented).
+
+#+begin_src sh :wrap src text
+export ORES_DB_PASSWORD
+./ores.cli accounts add ${db_args} ${log_args}
+#+end_src
+
+** Feature Flags
+   :PROPERTIES:
+   :header-args+: :wrap src json
+   :END:
+
+Feature flag management operations using entity-based syntax.
+
+*** Help
+
+Show available operations for feature flags.
+
+#+begin_src sh :wrap src text
+./ores.cli feature_flags --help
+#+end_src
+
+*** List
+
+List feature flags from the database.
+
+**** List all feature flags
+
+#+begin_src sh
+export ORES_DB_PASSWORD
+./ores.cli feature_flags list ${db_args} ${log_args} \
+  --format json | jq .
+#+end_src
+
+**** List specific feature flag
+
+#+begin_src sh
+export ORES_DB_PASSWORD
+./ores.cli feature_flags list ${db_args} ${log_args} \
+  --format json --key ENABLE_NEW_FEATURE | jq .
+#+end_src
+
+*** Delete
+
+Delete a feature flag by key.
+
+#+begin_src sh
+export ORES_DB_PASSWORD
+./ores.cli feature_flags delete ${db_args} ${log_args} \
+  --key DEPRECATED_FEATURE
+#+end_src
+
+*** Add
+
+Add a new feature flag (not yet implemented).
+
+#+begin_src sh :wrap src text
+export ORES_DB_PASSWORD
+./ores.cli feature_flags add ${db_args} ${log_args}
+#+end_src
+
+** Legacy Command-Based Syntax
+
+The old command-based syntax is still supported for backward compatibility.
+
+*** Import currencies (legacy)
+
+#+begin_src sh :wrap src json
+export ORES_DB_PASSWORD
+./ores.cli import ${db_args} ${log_args} \
+  --entity currencies --target ${data_dir}/currencies_API.xml | jq .
+#+end_src
+
+*** Export currencies (legacy)
+
+#+begin_src sh :wrap src json
+export ORES_DB_PASSWORD
+./ores.cli export ${db_args} ${log_args} \
+  --entity currencies --format json | jq .
+#+end_src
+
+*** Delete account (legacy)
+
+#+begin_src sh :wrap src text
+export ORES_DB_PASSWORD
+./ores.cli delete ${db_args} ${log_args} \
+  --entity accounts --key testuser
+#+end_src
+
+| Previous: [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] |

@@ -857,7 +857,7 @@ What the ask is:
 
 ***** Tasks
 
-- [ ] Analyze current CLI structure and command parsing
+- [X] Analyze current CLI structure and command parsing
 - [ ] Design new entity-based command structure
 - [ ] Implement new command parser for entity-first syntax
 - [ ] Migrate currencies commands to new structure
@@ -866,6 +866,32 @@ What the ask is:
 - [ ] Update recipes to use new command structure
 - [ ] Build and test all CLI commands
 - [ ] Update help text and documentation
+
+***** Design
+
+****** Current Structure
+- Syntax: =./ores.cli <command> --entity <entity_name> <options>=
+- Commands: =import=, =export=, =delete=
+- Entities: =currencies=, =accounts=
+- Example: =./ores.cli export --entity currencies --format xml=
+
+****** New Structure
+- Syntax: =./ores.cli <entity> <operation> [options]=
+- Entities: =currencies=, =accounts=, (future: =feature_flags=)
+- Operations per entity:
+  - currencies: =import=, =export=, =list=, =delete=, =add=
+  - accounts: =list=, =delete=, =add=
+  - feature_flags: =list=, =delete=, =add=
+- Example: =./ores.cli currencies export --format xml=
+
+****** Implementation Approach
+1. Modify parser.cpp to parse entity as first positional argument
+2. Parse operation as second positional argument
+3. Keep existing option structures (import_options, export_options, delete_options) but populate them based on entity+operation combination
+4. Add new =list_options= structure for list command
+5. Add new =add_options= structure for add command (future work)
+6. Update help text to be entity-centric
+7. Keep application.cpp mostly unchanged (just dispatch based on options)
 
 *** Update =ores.client= with REPL commands for all entities           :code:
 

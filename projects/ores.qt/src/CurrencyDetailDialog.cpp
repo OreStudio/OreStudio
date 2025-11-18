@@ -210,18 +210,11 @@ void CurrencyDetailDialog::onSaveClicked() {
                 if (!self->client_ || !self->client_->is_connected())
                     return {false, "Client disconnected during save request."};
 
-                frame request_frame;
-                if (self->isAddMode_) {
-                    risk::messaging::create_currency_request request{currency};
-                    auto payload = request.serialize();
-                    request_frame = frame(message_type::create_currency_request,
-                        0, std::move(payload));
-                } else {
-                    risk::messaging::update_currency_request request{currency};
-                    auto payload = request.serialize();
-                    request_frame = frame(message_type::update_currency_request,
-                        0, std::move(payload));
-                }
+                // Use single save_currency message for both create and update
+                risk::messaging::save_currency_request request{currency};
+                auto payload = request.serialize();
+                frame request_frame = frame(message_type::save_currency_request,
+                    0, std::move(payload));
 
                 auto response_result =
                     self->client_->send_request_sync(std::move(request_frame));
@@ -230,24 +223,16 @@ void CurrencyDetailDialog::onSaveClicked() {
                     return {false, "Failed to communicate with server"};
 
                 BOOST_LOG_SEV(lg(), debug) << "Received save currency response.";
+
+                using risk::messaging::save_currency_response;
+                auto response = save_currency_response::
+                    deserialize(response_result->payload());
+
                 bool result = false;
                 std::string message = "Invalid server response";
-                if (self->isAddMode_) {
-                    using risk::messaging::create_currency_response;
-                    auto response = create_currency_response::
-                        deserialize(response_result->payload());
-                    if (response) {
-                        result = true;
-                        message = response->message;
-                    }
-                } else {
-                    using risk::messaging::update_currency_response;
-                    auto response = update_currency_response::
-                        deserialize(response_result->payload());
-                    if (response) {
-                        result = true;
-                        message = response->message;
-                    }
+                if (response) {
+                    result = response->success;
+                    message = response->message;
                 }
 
                 return {result, message};

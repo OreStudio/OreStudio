@@ -21,13 +21,13 @@
 #define ORES_COMMS_PROTOCOL_MESSAGE_TYPES_HPP
 
 #include <cstdint>
-#include <algorithm>
 
 namespace ores::comms::protocol {
 
-constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553; // "ORES" in ASCII
+ // "ORES" in ASCII
+constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 1;
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 2;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 enum class message_type {
@@ -40,14 +40,12 @@ enum class message_type {
     // Risk subsystem messages (0x1000 - 0x1FFF)
     get_currencies_request = 0x1001,
     get_currencies_response = 0x1002,
-    update_currency_request = 0x1003,
-    update_currency_response = 0x1004,
+    save_currency_request = 0x1003,
+    save_currency_response = 0x1004,
     delete_currency_request = 0x1005,
     delete_currency_response = 0x1006,
     get_currency_history_request = 0x1007,
     get_currency_history_response = 0x1008,
-    create_currency_request = 0x1009,
-    create_currency_response = 0x100A,
 
     // Accounts subsystem messages (0x2000 - 0x2FFF)
     create_account_request = 0x2001,

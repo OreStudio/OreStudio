@@ -72,10 +72,14 @@ private:
     handle_get_currencies_request(std::span<const std::uint8_t> payload);
 
     /**
-     * @brief Handle update_currency_request message.
+     * @brief Handle save_currency_request message (create or update).
+     *
+     * Due to bitemporal storage, both create and update operations
+     * result in writing a new record. Database triggers handle temporal
+     * versioning automatically.
      */
     boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
-    handle_update_currency_request(std::span<const std::uint8_t> payload);
+    handle_save_currency_request(std::span<const std::uint8_t> payload);
 
     /**
      * @brief Handle delete_currency_request message.
@@ -88,12 +92,6 @@ private:
      */
     boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
     handle_get_currency_history_request(std::span<const std::uint8_t> payload);
-
-    /**
-     * @brief Handle create_currency_request message.
-     */
-    boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
-    handle_create_currency_request(std::span<const std::uint8_t> payload);
 
     utility::repository::context ctx_;
     repository::currency_repository currency_repo_;

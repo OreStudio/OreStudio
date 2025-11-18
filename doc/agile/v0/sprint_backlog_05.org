@@ -18,32 +18,50 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-16 Sun 13:09], for Sunday, November 16, 2025.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *1:08* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 1:08   |      |      | 100.0 |
-|       | Active                                |        | 1:08 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 1:08 | 100.0 |
+#+CAPTION: Clock summary at [2025-11-17 Mon 23:36], for Monday, November 17, 2025.
+|       | <75>                                      |        |      |      |       |
+| Tags  | Headline                                  | Time   |      |      |     % |
+|-------+-------------------------------------------+--------+------+------+-------|
+|       | *Total time*                              | *6:51* |      |      | 100.0 |
+|-------+-------------------------------------------+--------+------+------+-------|
+|       | Stories                                   | 6:51   |      |      | 100.0 |
+|       | Active                                    |        | 6:51 |      | 100.0 |
+| agile | Sprint and product backlog refinement     |        |      | 0:55 |  13.4 |
+| code  | Version of =ores.qt= does not update      |        |      | 0:54 |  13.1 |
+| code  | Minor updates to UML diagrams             |        |      | 0:13 |   3.2 |
+| infra | Add support for project planning          |        |      | 2:24 |  35.0 |
+| code  | Add a "detached" mode                     |        |      | 1:18 |  19.0 |
+| code  | Merge update and create currency messages |        |      | 1:07 |  16.3 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-16 Sun 13:09]
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *1:08* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 1:08   |      |      | 100.0 |
-|       | Active                                |        | 1:08 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 1:08 | 100.0 |
+#+CAPTION: Clock summary at [2025-11-17 Mon 23:36]
+|       | <75>                                      |         |       |      |       |
+| Tags  | Headline                                  | Time    |       |      |     % |
+|-------+-------------------------------------------+---------+-------+------+-------|
+|       | *Total time*                              | *10:23* |       |      | 100.0 |
+|-------+-------------------------------------------+---------+-------+------+-------|
+|       | Stories                                   | 10:23   |       |      | 100.0 |
+|       | Active                                    |         | 10:23 |      | 100.0 |
+| agile | Sprint and product backlog refinement     |         |       | 2:22 |  22.8 |
+| infra | Add AI generated sprint summary           |         |       | 1:38 |  15.7 |
+| infra | Add skill to generate release notes       |         |       | 0:27 |   4.3 |
+| code  | Version of =ores.qt= does not update      |         |       | 0:54 |   8.7 |
+| code  | Minor updates to UML diagrams             |         |       | 0:13 |   2.1 |
+| infra | Add support for project planning          |         |       | 2:24 |  23.1 |
+| code  | Add a "detached" mode                     |         |       | 1:18 |  12.5 |
+| code  | Merge update and create currency messages |         |       | 1:07 |  10.8 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-11-17 Mon 22:11]--[2025-11-17 Mon 22:21] =>  0:10
+    CLOCK: [2025-11-17 Mon 09:50]--[2025-11-17 Mon 10:16] =>  0:26
+    CLOCK: [2025-11-17 Mon 08:58]--[2025-11-17 Mon 09:10] =>  0:12
+    CLOCK: [2025-11-17 Mon 08:50]--[2025-11-17 Mon 08:57] =>  0:07
+    CLOCK: [2025-11-16 Sun 23:48]--[2025-11-16 Sun 23:57] =>  0:09
+    CLOCK: [2025-11-16 Sun 23:37]--[2025-11-16 Sun 23:47] =>  0:10
     CLOCK: [2025-11-16 Sun 12:01]--[2025-11-16 Sun 13:09] =>  1:08
     :END:
 
@@ -192,7 +210,977 @@ print(p)
 #+RESULTS: tags-chart
 [[file:sprint_backlog_05_tags.png]]
 
+[[file:sprint_backlog_05_plan.png]]
 
-*** Footer
+[[file:sprint_backlog_05_plan.png]]
+
+*** COMPLETED Add AI generated sprint summary                         :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-16 Sun 21:58]--[2025-11-16 Sun 22:19] =>  0:21
+    CLOCK: [2025-11-16 Sun 19:22]--[2025-11-16 Sun 19:38] =>  0:16
+    CLOCK: [2025-11-16 Sun 17:21]--[2025-11-16 Sun 18:22] =>  1:01
+    :END:
+
+It is a bit difficult to make sense of a sprint with all the story details. We
+should use AI to make a human readable summary. Also, add a skill for this.
+
+*** COMPLETED Add skill to generate release notes                     :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-16 Sun 23:10]--[2025-11-16 Sun 23:37] =>  0:27
+    :END:
+
+It should be quite straightforward to do this, based on the spr
+
+*** COMPLETED Create a claude code skill to open a new sprint          :code:
+
+Needs to update all of the version strings, copy backlog etc. Create the skill
+as part of opening next sprint.
+
+Created, just needs to be tested at the end of this sprint.
+
+*** COMPLETED Resolve all of the OpenSSL leaks in valgrind             :code:
+
+*Rationale*: According to LLMs, all the leaks left are just initialisation and
+can be ignored. Added them to suppression.
+
+We are freeing up open SSL memory and still have leaks. For now just apply the
+suppression suggestions and deal with this later.
+
+*** COMPLETED Investigate valgrind leak on sqlgen                      :code:
+
+*Rationale*: All the sqlgen leaks we were aware of were fixed and patched upstream.
+
+Is this a real leak:
+
+#+begin_src valgrind-leak
+==2599359==
+==2599359== HEAP SUMMARY:
+==2599359==     in use at exit: 11,421 bytes in 78 blocks
+==2599359==   total heap usage: 403,744 allocs, 403,666 frees, 161,473,513 bytes allocated
+==2599359==
+==2599359== 1,944 bytes in 9 blocks are definitely lost in loss record 20 of 21
+==2599359==    at 0x4F2B818: malloc (vg_replace_malloc.c:446)
+==2599359==    by 0x5AE29FF: PQmakeEmptyPGresult (fe-exec.c:161)
+==2599359==    by 0x5AEA9F2: pqParseInput3 (fe-protocol3.c:264)
+==2599359==    by 0x5AE5853: parseInput (fe-exec.c:1997)
+==2599359==    by 0x5AE5975: PQgetResult (fe-exec.c:2083)
+==2599359==    by 0x5AE5FB7: PQexecFinish (fe-exec.c:2388)
+==2599359==    by 0x5AE5D98: PQprepare (fe-exec.c:2275)
+==2599359==    by 0x5A7F688: sqlgen::postgres::Connection::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Connection.cpp:44)
+==2599359==    by 0x525189F: sqlgen::Session<sqlgen::postgres::Connection>::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Session.hpp:50)
+==2599359==    by 0x523F4FF: sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> >::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Transaction.hpp:61)
+==2599359==    by 0x523EE20: rfl::Result<rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > > sqlgen::insert_impl<__gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, bool) requires is_connection<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > (insert.hpp:46)
+==2599359==    by 0x523EB55: auto sqlgen::insert_impl<std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> >, rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > const&, bool) (insert.hpp:69)
+==2599359==
+==2599359== 3,672 bytes in 17 blocks are definitely lost in loss record 21 of 21
+==2599359==    at 0x4F2B818: malloc (vg_replace_malloc.c:446)
+==2599359==    by 0x5AE29FF: PQmakeEmptyPGresult (fe-exec.c:161)
+==2599359==    by 0x5AEA78E: pqParseInput3 (fe-protocol3.c:200)
+==2599359==    by 0x5AE5853: parseInput (fe-exec.c:1997)
+==2599359==    by 0x5AE5975: PQgetResult (fe-exec.c:2083)
+==2599359==    by 0x5AE5FB7: PQexecFinish (fe-exec.c:2388)
+==2599359==    by 0x5AE5E15: PQexecPrepared (fe-exec.c:2298)
+==2599359==    by 0x5A7FB5B: sqlgen::postgres::Connection::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Connection.cpp:72)
+==2599359==    by 0x525189F: sqlgen::Session<sqlgen::postgres::Connection>::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Session.hpp:50)
+==2599359==    by 0x523F4FF: sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> >::insert(sqlgen::dynamic::Insert const&, std::vector<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, std::allocator<std::vector<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::optional<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > > const&) (Transaction.hpp:61)
+==2599359==    by 0x523EE20: rfl::Result<rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > > sqlgen::insert_impl<__gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, __gnu_cxx::__normal_iterator<ores::accounts::repository::account_entity const*, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > >, bool) requires is_connection<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > (insert.hpp:46)
+==2599359==    by 0x523EB55: auto sqlgen::insert_impl<std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> >, rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > >(rfl::Ref<sqlgen::Transaction<sqlgen::Session<sqlgen::postgres::Connection> > > const&, std::vector<ores::accounts::repository::account_entity, std::allocator<ores::accounts::repository::account_entity> > const&, bool) (insert.hpp:69)
+==2599359==
+==2599359== LEAK SUMMARY:
+==2599359==    definitely lost: 5,616 bytes in 26 blocks
+==2599359==    indirectly lost: 0 bytes in 0 blocks
+==2599359==      possibly lost: 0 bytes in 0 blocks
+==2599359==    still reachable: 5,805 bytes in 52 blocks
+==2599359==         suppressed: 0 bytes in 0 blocks
+==2599359== Reachable blocks (those to which a pointer was found) are not shown.
+==2599359== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==2599359==
+==2599359== For lists of detected and suppressed errors, rerun with: -s
+==2599359== ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 0 from 0)
+#+end_src
+
+*** COMPLETED Copy across icons and other assets to package            :code:
+
+*Rationale*: All of the icon errors were resolved last sprint.
+
+At present when you start the gui you get:
+
+: /opt/OreStudio/0.0.3/bin/ores.qt
+: qt.svg: Cannot open file '/home/marco/money-pound-box-line.svg', because: No such file or directory
+: qt.svg: Cannot open file '/home/marco/money-pound-box-line.svg', because: No such file or directory
+
+We need to put the assets under a suitable directory in opt and try to open them
+from there.
+
+*** COMPLETED Implement database configuration                         :code:
+
+*Rationale*: this has now been done.
+
+We have hard coded database configuration. Implement this properly both for
+console and UI.
+
+*** COMPLETED Fix site links to main page                               :doc:
+
+*Rationale*: Fixed with the introduction of =index.org=.
+
+At present we renamed readme to index in the HTML export. Do a symlink or a copy
+of this file to fix links.
+
+*** COMPLETED Add JSON parsing support for currency                    :code:
+
+*Rationale*: This is now available via reflect-cpp.
+
+We need to have the ability to read and write currencies from JSON.
+
+*** COMPLETED Version of =ores.qt= does not update                     :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-17 Mon 09:27]--[2025-11-17 Mon 09:35] =>  0:08
+    CLOCK: [2025-11-17 Mon 00:39]--[2025-11-17 Mon 00:47] =>  0:08
+    CLOCK: [2025-11-17 Mon 00:00]--[2025-11-17 Mon 00:38] =>  0:38
+    :END:
+
+For some reason updating =version.hpp= is not sufficient to get =ores.qt= to
+update its version info.
+
+We duplicated the version files when we split headers from implementation.
+
+Notes:
+
+- log the commit as well.
+- use a standard version string for all products so we can easily grep for it.
+
+*** COMPLETED Minor updates to UML diagrams                            :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-17 Mon 09:36]--[2025-11-17 Mon 09:49] =>  0:13
+    :END:
+
+Review the diagrams and find any remaining inconsistencies. Update the skill as
+required.
+
+*** COMPLETED Add support for project planning                        :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-17 Mon 16:00]--[2025-11-17 Mon 16:25] =>  0:25
+    CLOCK: [2025-11-17 Mon 14:00]--[2025-11-17 Mon 14:53] =>  0:53
+    CLOCK: [2025-11-17 Mon 10:17]--[2025-11-17 Mon 11:23] =>  1:06
+    :END:
+
+We need some basic way of keeping track of broad milestones. Copy across the
+approach we add for Dogen and polish it up.
+
+*** COMPLETED Add a "detached" mode                                    :code:
+   :LOGBOOK:
+   CLOCK: [2025-11-17 Mon 21:21]--[2025-11-17 Mon 21:38] =>  0:17
+   CLOCK: [2025-11-17 Mon 16:55]--[2025-11-17 Mon 17:56] =>  1:01
+   :END:
+
+At present we can detach all windows but if we then create a new one, we still
+have to detach it. It would be nice to set the default to detach or not, and
+then use that setting. Actually we just removed reattach to avoid issues of
+ownership. You still need to manually detach.
+
+*** COMPLETED Merge update and create currency messages                :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-17 Mon 23:11]--[2025-11-17 Mon 23:36] =>  0:25
+    CLOCK: [2025-11-17 Mon 22:28]--[2025-11-17 Mon 23:10] =>  0:42
+    :END:
+
+Due to how repositories work for bitemporal, we are always writing anyways. So
+we don't really need complex logic around updating versus creating a new
+currency. We need to simplify the UI and client / server code to have a single
+message type for both.
+
+**** Architectural Assessment
+
+***** Impact Summary
+
+This change affects all three main architectural layers:
+
+- *Infrastructure Layer*: Reduce message protocol from 4 to 2 types (breaking
+  change).
+- *Domain Layer*: Merge handlers and simplify repository interface.
+- *Application Layer*: Simplify Qt dialog and client code.
+
+***** Current State
+
+Infrastructure (ores.comms):
+
+- Message types: =create_currency_request/response= (0x1009/0x100A) and
+  =update_currency_request/response= (0x1003/0x1004)
+
+Domain (ores.risk):
+
+- =handle_create_currency_request()= calls =currency_repo_.write()=
+- =handle_update_currency_request()= calls =currency_repo_.update()=
+- Both methods effectively do the same thing: insert new row with temporal
+  versioning.
+
+Application (ores.qt):
+
+- =CurrencyDetailDialog= uses =isAddMode_= flag to branch on message type.
+- Lines 214-224: Sends different request types.
+- Lines 235-251: Deserializes different response types.
+- Lines 277-287: Emits different signals (=currencyCreated= vs
+  =currencyUpdated=).
+
+***** Affected Files
+
+1. =projects/ores.comms/include/ores.comms/protocol/message_types.hpp=
+2. =projects/ores.risk/include/ores.risk/messaging/protocol.hpp=
+3. =projects/ores.risk/src/messaging/protocol.cpp=
+4. =projects/ores.risk/src/messaging/risk_message_handler.cpp=
+5. =projects/ores.risk/include/ores.risk/messaging/risk_message_handler.hpp=
+6. =projects/ores.risk/include/ores.risk/repository/currency_repository.hpp=
+7. =projects/ores.risk/src/repository/currency_repository.cpp=
+8. =projects/ores.qt/src/CurrencyDetailDialog.cpp=
+9. =projects/ores.qt/include/ores.qt/CurrencyDetailDialog.hpp=
+10. Test files for all affected components
+
+**** Migration Plan
+
+***** Step 1: Domain Layer - Repository Simplification
+
+- [ ] Remove =update()= method from =currency_repository= class.
+- [ ] Update repository tests to use =write()= for both create and update
+  scenarios.
+- [ ] Verify all tests pass.
+- Build target: =ores.risk.lib=
+- Test target: =ores.risk.tests=
+
+***** Step 2: Domain Layer - Messaging Consolidation
+
+- [ ] Rename =create_currency_request/response= to
+  =save_currency_request/response=.
+- [ ] Remove =update_currency_request/response= types from =protocol.hpp= and
+  =protocol.cpp=.
+- [ ] Merge =handle_create_currency_request()= and
+  =handle_update_currency_request()= into =handle_save_currency_request()=
+- [ ] Update =risk_message_handler= to use single handler
+- [ ] Update messaging tests
+- [ ] Verify all tests pass
+- Build target: =ores.risk.lib=
+- Test target: =ores.risk.tests=
+
+***** Step 3: Infrastructure Layer - Protocol Update
+
+- [ ] In =message_types.hpp=, rename =create_currency_request/response= to
+  =save_currency_request/response=
+- [ ] Remove =update_currency_request/response= enum values
+- [ ] Update protocol version to indicate breaking change
+- [ ] Update protocol documentation
+- Build target: =ores.comms.lib=
+- Test target: =ores.comms.tests=
+
+***** Step 4: Application Layer - Qt Dialog Simplification
+
+- [ ] In =CurrencyDetailDialog.cpp=, simplify =onSaveClicked()= to always send
+  =save_currency_request=
+- [ ] Remove branching on =isAddMode_= for message type selection (lines 214-224)
+- [ ] Simplify response handling to use single =save_currency_response= (lines 235-251)
+- [ ] Consider keeping =isAddMode_= for UI behavior (e.g., ISO code readonly after save)
+- [ ] Keep or merge =currencyCreated= and =currencyUpdated= signals based on caller needs
+- [ ] Update Qt tests
+- Build target: =ores.qt=
+- Manual test: Create and edit currencies in GUI
+
+***** Step 5: Application Layer - Client Updates
+
+- [ ] Review =ores.client= for any usage of update/create currency messages
+- [ ] Update if needed (client likely uses repository directly)
+- Build target: =ores.client=
+- Manual test: REPL currency operations
+
+***** Step 6: Documentation and Diagrams
+
+- [ ] Update =projects/ores.risk/modeling/ores.risk.puml= to reflect merged messages
+- [ ] Update =projects/ores.comms/modeling/ores.comms.puml= to reflect protocol changes
+- [ ] Regenerate diagrams with: =cmake --build --target generate_ores_risk_diagram
+  --preset linux-clang-debug=
+- [ ] Regenerate diagrams with: =cmake --build --target
+  generate_ores_comms_diagram --preset linux-clang-debug=
+
+***** Step 7: Integration Testing
+
+- [ ] Build entire project: =cmake --build --preset linux-clang-debug=
+- [ ] Run all tests: =cmake --build --preset linux-clang-debug --target rat=
+- [ ] Manual end-to-end test: Create currency via GUI → Save → Edit → Save → Verify history
+- [ ] Verify currency history shows proper temporal versioning
+- [ ] Test with service: Start service, connect with Qt client, perform create/update operations
+
+***** Step 8: Backwards Compatibility Consideration
+
+Note: This is a *breaking protocol change*. Clients using old protocol will not
+be compatible.
+
+Options to consider:
+
+- Accept breaking change (simpler, justified by better design)
+- Implement protocol version negotiation (more complex, may be overkill)
+- Recommended: Accept breaking change, document in release notes
+
+
+*** COMPLETED Uninformative incompatible protocol version error in qt  :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-17 Mon 23:40]
+    :END:
+
+As part of the merging of currency messages we did a backwards incompatible
+change in the protocol. I tested how the client handles this and it was not
+great. It shows a message to the user saying "Failed to connect to server:
+failed to connect to server". Ideally it should say something like:
+
+#+begin_quote
+Incompatible protocol version between server and client. Server version: 2.
+Client version 1. Please upgrade the client.
+#+end_quote
+
+In addition to this, the client does not seem to log the protocol version. The
+server does:
+
+#+begin_src logview
+2025-11-17 23:27:02.733675 [INFO] [ores.comms.server] ORES Server starting on port 55555 (identifier: ores-service-v1)
+2025-11-17 23:27:02.733701 [INFO] [ores.comms.server] Protocol version: 2.0
+2025-11-17 23:27:02.733816 [INFO] [ores.comms.server] Server listening on port 55555
+#+end_src
+
+The client should do the exact same thing on connect to make troubleshooting
+easier. We should also add the protocol version to the about text so that we can
+easily know without having to look at the logs.
+
+Client logs:
+
+#+begin_src logview
+2025-11-17 23:27:26.381109 [INFO] [ores.comms.client] Sent handshake request. Client: ores-qt-client Version: 1.0
+2025-11-17 23:27:26.381132 [DEBUG] [ores.comms.client] About to read handshake response frame
+2025-11-17 23:27:26.381155 [DEBUG] [ores.comms.connection] Waiting to read the next frame.
+2025-11-17 23:27:26.392206 [ERROR] [ores.comms.connection] Network error in read_frame: stream truncated [asio.ssl.stream:1]
+2025-11-17 23:27:26.392293 [ERROR] [ores.comms.client] Failed to read handshake response.  Error code: 7
+2025-11-17 23:27:26.392325 [ERROR] [ores.comms.client] Protocol handshake failed.
+2025-11-17 23:27:26.392430 [INFO] [ores.comms.client] Disconnected from server
+2025-11-17 23:27:26.392464 [DEBUG] [ores.comms.client] connect_sync: task completed, result=false
+2025-11-17 23:27:26.392551 [DEBUG] [ores.comms.client] connect_sync: returning false
+2025-11-17 23:27:26.392652 [DEBUG] [ores.comms.login_dialog] On connection result called.
+2025-11-17 23:27:26.392683 [WARN] [ores.comms.login_dialog] Connection was not successful.
+2025-11-17 23:27:26.392704 [INFO] [ores.comms.login_dialog] Enable form: true
+#+end_src
+
+Server logs:
+
+#+begin_src logview
+2025-11-17 23:27:02.733816 [INFO] [ores.comms.server] Server listening on port 55555
+2025-11-17 23:27:26.377606 [INFO] [ores.comms.server] Accepted connection from 127.0.0.1:48894
+2025-11-17 23:27:26.377913 [INFO] [ores.comms.session] Session started for client: 127.0.0.1:48894
+2025-11-17 23:27:26.381088 [DEBUG] [ores.comms.session] Starting server handshake process...
+2025-11-17 23:27:26.381132 [DEBUG] [ores.comms.session] About to read handshake request frame from client
+2025-11-17 23:27:26.381178 [DEBUG] [ores.comms.connection] Waiting to read the next frame.
+2025-11-17 23:27:26.381293 [DEBUG] [ores.comms.connection] Read header of size: 32
+2025-11-17 23:27:26.381332 [DEBUG] [ores.comms.protocol.frame] Deserializing frame header from data of size: 32
+2025-11-17 23:27:26.381358 [ERROR] [ores.comms.protocol.frame] Invalid major version: 1
+2025-11-17 23:27:26.381382 [ERROR] [ores.comms.connection] Failed to deserialize header, error: 1
+2025-11-17 23:27:26.381422 [ERROR] [ores.comms.session] Failed to read handshake request: error code 1
+2025-11-17 23:27:26.381454 [WARN] [ores.comms.session] Handshake failed for client: 127.0.0.1:48894
+2025-11-17 23:27:26.381478 [DEBUG] [ores.comms.server] Session completed, active connections: 0
+#+end_src
+
+**** Problem Analysis
+
+*Current behavior:*
+
+1. Client (v1) sends handshake request with v1 in frame header
+2. Server tries to deserialize frame header
+3. Frame deserializer at =frame.cpp:204-207= checks version and returns
+   =version_mismatch= error
+4. Session cannot read the frame, logs error, and closes connection
+5. Client receives "stream truncated" error (connection closed unexpectedly)
+6. Client shows uninformative "Failed to connect to server" message
+
+*Root cause:*
+
+The protocol version check happens too early - during frame header
+deserialisation in =frame.cpp=. By the time the error is detected, the server
+cannot send a proper error response because it failed to even read the frame.
+
+*What should happen:*
+
+1. Server reads handshake request frame (even with mismatched version)
+2. Session deserializes handshake request and extracts client version
+3. Session checks version compatibility (this code already exists at
+   =session.cpp:101-119=)
+4. Server sends =handshake_response= with version details and =version_mismatch=
+   error code
+5. Client receives response, extracts version information, and shows meaningful
+   error message
+6. Client logs protocol version on connect (like server does)
+7. Qt About dialog shows protocol version for easy troubleshooting
+
+**** Implementation Plan
+
+***** COMPLETED Task 1: Allow Reading Frames During Handshake
+      CLOSED: [2025-11-17 Sun]
+
+- [X] Modify =frame::deserialize_header()= to accept optional
+  =skip_version_check= parameter (default false)
+- [X] Skip version validation when parameter is true
+- [X] Update =connection::read_frame()= to support lenient reading during
+  handshake
+- [X] Ensure session uses lenient reading for handshake request
+
+Modified files:
+- =projects/ores.comms/include/ores.comms/protocol/frame.hpp= - Added =skip_version_check= parameter
+- =projects/ores.comms/src/protocol/frame.cpp= - Implemented conditional version checking
+- =projects/ores.comms/include/ores.comms/net/connection.hpp= - Added parameter to =read_frame()=
+- =projects/ores.comms/src/net/connection.cpp= - Pass through skip_version_check parameter
+- =projects/ores.comms/src/net/session.cpp= - Use lenient reading for handshake request
+
+***** COMPLETED Task 2: Add Client Protocol Version Logging
+      CLOSED: [2025-11-17 Sun]
+
+- [X] Add protocol version logging in =client.cpp= on successful connection
+- [X] Format: "Protocol version: X.Y" matching server format
+- [X] Log after SSL handshake, before protocol handshake
+
+Modified files:
+- =projects/ores.comms/src/net/client.cpp= - Added protocol version logging at client.cpp:102-104
+
+***** COMPLETED Task 3: Improve Client Error Handling
+      CLOSED: [2025-11-17 Sun]
+
+- [X] When handshake fails, check if response is =handshake_response= with
+  =version_mismatch=
+- [X] Extract server and client version from response
+- [X] Create detailed error message: "Incompatible protocol version. Server:
+  X.Y, Client: A.B"
+- [X] Return this message through the error path to =LoginDialog=
+
+Modified files:
+- =projects/ores.comms/include/ores.comms/net/client.hpp= - Added =last_error()= method and =last_error_= member
+- =projects/ores.comms/src/net/client.cpp= - Store detailed error message on version mismatch, implement =last_error()= getter
+
+***** COMPLETED Task 4: Add Protocol Version to Qt About Dialog
+      CLOSED: [2025-11-17 Sun]
+
+- [X] Locate Qt About dialog implementation
+- [X] Add protocol version display: "Protocol Version: X.Y"
+- [X] Place near application version information
+
+Modified files:
+- =projects/ores.qt/src/AboutDialog.cpp= - Added protocol version to version string display
+
+***** COMPLETED Task 5: Testing
+      CLOSED: [2025-11-17 Sun]
+
+- [X] Test with matching versions (should work normally)
+  - All unit tests pass (699 assertions in 146 test cases)
+  - Build successful for all components
+- [X] Verify client logs protocol version on connect
+  - Added logging at client.cpp:102-106: "Protocol version: X.Y (client: identifier)"
+- [X] Verify About dialog shows protocol version
+  - Added to AboutDialog.cpp:73-77: "Version X | Build Y | Protocol Z.W"
+- [X] Verify server sends proper =handshake_response= on version mismatch
+  - Server already sends proper handshake_response with version_compatible flag (session.cpp:104-111)
+  - Now accessible due to lenient frame reading during handshake
+- [X] Add automated version mismatch tests
+  - Added 3 test cases to frame_tests.cpp
+  - Tests verify strict mode rejects mismatched versions
+  - Tests verify lenient mode accepts mismatched versions
+  - Tests simulate handshake scenario with version mismatch
+  - All comms tests pass: 62 assertions in 9 test cases (up from 49 in 6)
+
+Modified files:
+- =projects/ores.comms/tests/frame_tests.cpp= - Added version mismatch test cases
+
+Testing notes:
+- Manual testing with mismatched versions would require temporarily changing
+  PROTOCOL_VERSION_MAJOR in message_types.hpp, rebuilding, and running
+  server/client with different versions
+- The implementation ensures server can read handshake request even with
+  version mismatch and sends detailed handshake_response
+- Client stores detailed error message in =last_error_= accessible via =last_error()=
+
+*** Split console recipes by entity                                    :code:
+
+At present we have one very long file, but this is not scalable. We could split
+out:
+
+- general args (help, info, etc)
+- by entity
+
+Notes:
+
+- Rename console to CLI.
+- reduce output, only first few entries are needed.
+- add a toc.
+
+*** Improve handling of error responses                                :code:
+
+As per Gemini code review:
+
+#+begin_src markdown
+Certainly. Point \#2 from the review of `CurrencyHistoryDialog.cpp` addressed
+the potential complexity of error checking by suggesting that relying on the
+specific response message type is **fragile**.
+
+The goal is to move from:
+
+1.  Client sends **Request A**.
+2.  Server returns **Response A** (Success) OR **Error Response** (Failure) OR
+    ,**Response B** (Unexpected success type).
+3.  Client checks: *Is the message type exactly **Response A**?*
+
+to a more robust pattern where the client checks for a generic failure response
+first.
+
+-----
+
+## 🐞 Fragile Error Check (Current Code)
+
+The current code in `loadHistory` checks for success by expecting *only* the
+specific success message type:
+
+```cpp
+// Current Fragile Logic
+if (result->header().type != comms::protocol::message_type::get_currency_history_response) {
+    onHistoryLoadError(QString("Server does not support currency history (received message type %1)")
+        .arg(static_cast<int>(result->header().type)));
+    return;
+}
+```
+
+This logic has two main problems:
+
+1.  **Hiding Server Errors:** If the server returns a generic protocol error
+    (`message_type::error_response`) because, for example, the client's session
+    timed out, the client logs a misleading message: "Server does not support
+    currency history." It should be reporting the actual error message sent by
+    the server.
+2.  **Lack of Standardization:** Every client method needs to implement its own
+    logic to handle unexpected types.
+
+-----
+
+## 🛠️ Suggested Improvement: Standardized Error Handling
+
+The improvement is to check for a generic **`error_response`** message type
+first, and report its payload/message, before attempting to deserialize the
+successful response.
+
+Assuming your system has a standard `error_response` message:
+
+```cpp
+void CurrencyHistoryDialog::handleHistoryResponse(const HistoryResult& result) {
+    if (!result) {
+        onHistoryLoadError(QString::fromStdString(result.error()));
+        return;
+    }
+
+    // 1. Check for a generic server-side error response
+    if (result->header().type == comms::protocol::message_type::error_response) {
+        // Assume error_response contains a readable message payload
+        auto error_response = risk::messaging::error_response::deserialize(result->payload());
+        if (error_response) {
+            onHistoryLoadError(QString::fromStdString(error_response->message));
+        } else {
+            onHistoryLoadError("Server returned a malformed error response.");
+        }
+        return;
+    }
+
+    // 2. Check for the specific SUCCESS response type
+    if (result->header().type == comms::protocol::message_type::get_currency_history_response) {
+        auto response = risk::messaging::get_currency_history_response::deserialize(result->payload());
+
+        if (!response || !response->success) {
+            // Handle success=false within the expected response type
+            onHistoryLoadError(QString::fromStdString(response ? response->message : "Invalid or failed history response."));
+            return;
+        }
+
+        history_ = std::move(response->history);
+        onHistoryLoaded();
+        return;
+    }
+
+    // 3. Handle truly unexpected message type
+    onHistoryLoadError(QString("Received unexpected message type %1 from server.")
+        .arg(static_cast<int>(result->header().type)));
+}
+```
+
+By standardizing the **`error_response`** type, the client can always extract
+and display the relevant server-side failure reason, leading to much clearer
+logging and user feedback.
+#+end_src
+
+*** Implement authentication bootstrap workflow                        :code:
+
+Notes:
+
+- when there are no accounts setup, the repl should say to the user that it
+  needs to create an admin account.
+- first account must be admin.
+- once there is an account we need to make sure the user is logged in before we
+  process most message types.
+
+Mongo message:
+
+#+begin_src logview
+2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] ** WARNING: Access control is not enabled for the database.
+2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] **          Read and write access to data and configuration is unrestricted.
+#+end_src
+
+Requirements:
+
+#+begin_src markdown
+# Authentication Bootstrapping Requirements
+
+## R1: Initial System State (Bootstrap Mode)
+
+The system **MUST** start in a special **"Bootstrap Mode"** where the only
+permitted action is the creation of the initial Administrator account.
+
+## R2: Access Control in Bootstrap Mode
+
+While the system is in Bootstrap Mode:
+
+- **R2.1: Allowed Endpoint:** The service **MUST** only expose and accept
+  requests for a single endpoint: `POST /api/v1/accounts/create-admin` (or
+  equivalent).
+- **R2.2: Local-Only Restriction:** All requests to the allowed endpoint
+  ,**MUST** originate from a **trusted local interface** (e.g., `127.0.0.1` or
+  the server's designated internal IP range). Requests from any external/public
+  IP address **MUST** be rejected.
+- **R2.3: General Endpoint Rejection:** All other API endpoints (e.g., login,
+  user creation, data access) **MUST** immediately return a $\mathbf{403}$
+  ,**Forbidden** or $\mathbf{401}$ **Unauthorized** status, along with a clear
+  message indicating the system is in setup mode.
+
+## R3: Initial Admin Account Creation
+
+The first account created through the allowed endpoint **MUST** adhere to the
+following:
+
+- **R3.1: Mandatory Admin Role:** The account **MUST** be assigned the highest
+  level of **Administrator privileges** (`is_admin: true`).
+- **R3.2: Strong Password Policy:** The request **MUST** be validated against a
+  strong password policy (e.g., minimum 12 characters, requiring a mix of case,
+  numbers, and symbols). Failure to meet this standard **MUST** result in a
+  $\mathbf{400}$ **Bad Request** error.
+- **R3.3: One-Time Execution:** The administrator creation process **MUST** only
+  be allowed to succeed **exactly once**.
+
+## R4: System State Transition
+
+Upon successful creation of the first Administrator account (R3):
+
+- **R4.1: State Change:** The system **MUST** immediately and atomically
+  transition from **"Bootstrap Mode"** to **"Secure Mode"**. This state change
+  ,**MUST** be persisted.
+- **R4.2: Bootstrap Endpoint Deactivation:** The `POST
+  /api/v1/accounts/create-admin` endpoint **MUST** be permanently disabled. Any
+  subsequent request to this endpoint **MUST** return a $\mathbf{403}$
+  ,**Forbidden** error.
+
+## R5: Secure Mode Operation
+
+Once the system is in **"Secure Mode"**:
+
+- **R5.1: General Access Control:** All operational API endpoints **MUST** now
+  enforce **full authentication and authorization**.
+- **R5.2: Mandatory Login:** All users, including the newly created
+  Administrator, **MUST** successfully complete a login process to obtain a
+  valid session token before accessing any resource.
+- **R5.3: Standard Account Creation:** The standard non-admin account creation
+  endpoint (`POST /api/v1/accounts/create`) **MUST** become available, subject
+  to any configured access controls (e.g., only open to logged-in Admins, or
+  fully public).
+#+end_src
+
+Links:
+
+- [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
+
+*** Add max timestamp to utilities                                     :code:
+
+We have it scattered around the code base.
+
+*** Tidy-up database code                                              :code:
+
+- add helpers to utility to ensure success, execute query, etc.
+- add helpers for max timestamp, timestamp.
+
+*** Invalid password should not throw                                  :code:
+
+At present in the unlock test we have:
+
+#+begin_src c++
+    BOOST_LOG_SEV(lg, info) << "Locking account by failing 5 login attempts";
+    auto ip = internet::ipv4();
+    for (int i = 0; i < 5; ++i) {
+        try {
+            sut.login(account.username, "wrong_password", ip);
+        } catch (...) {}
+    }
+#+end_src
+
+This is very suspicious; a failed login should just return false or the modern
+c++ equivalent (=std::expected=?).
+
+*** Faker with seeds                                                   :code:
+
+As suggested by phi4:
+
+#+begin_quote
+Faker Usage:
+
+Randomness: Ensure that the use of faker data is appropriate for testing.
+Consider seeding the random generator for reproducibility in tests.
+#+end_quote
+
+Notes:
+
+#include "faker-cxx/generator.h"
+void setSeed(std::mt19937_64::result_type seed)
+Catch::rngSeed()
+
+
+*** Use prebuilt qt                                                    :code:
+
+At present we are having problems creating an installable gui. This is because
+Qt is hard to build and package from vcpkg. We should use prebuilt binaries for
+all platforms.
+
+Links:
+
+- [[https://github.com/jurplel/install-qt-action][install-qt-action]]
+
+*** Sprint Demo                                                       :infra:
+
+Time spent doing the demo. This is the first one so it will be very basic.
+
+**** Presentation
+
+***** ORE Studio v0.0.4, "Fazenda Camilunga"
+
+    Marco Craveiro
+    Moimba Software Engineering
+    Released on 16th November 2025
+
+*** Add =[[nodiscard]]= to repository operations returning data        :code:
+
+At present we can create an account and ignore the result, etc. We should be
+forced to look at the result.
+
+*** Delete currency only deletes single currency                       :code:
+
+At present we are deleting one currency at a time, sending a message for each,
+in =CurrencyMdiWindow.cpp=.
+
+*** Implement delete account                                           :code:
+
+At present you cannot delete an account.
+
+*** CLI Importing needs to read from database                          :code:
+
+After we do the import into the database, we need to read the currencies again
+to get the valid from/to.
+
+*** Add more account commands                                          :code:
+
+See the azeroth account commands for inspiration.
+
+Links:
+
+- [[https://www.azerothcore.org/wiki/gm-commands][GM Commands]]
+
+*** Add lock account request                                           :code:
+
+As per gemini's comments, we should have a request to lock an account.
+
+Notes:
+
+- account unlock should return boolean rather than throw.
+
+Test.
+
+#+begin_src c++
+TEST_CASE("handle_login_request_locked_account", tags) {
+    auto lg(make_logger(test_suite));
+    database_helper h;
+    h.truncate_table(database_table);
+
+    accounts_message_handler handler(h.get_context());
+    boost::asio::io_context io_context;
+
+    const auto account = generate_synthetic_account();
+    create_account_request create_req(to_create_account_request(account));
+    BOOST_LOG_SEV(lg, info) << "Create account request: " << create_req;
+
+    const auto create_payload = create_req.serialize();
+    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+        auto result = co_await handler.handle_message(
+            message_type::create_account_request,
+            create_payload, "127.0.0.1:12345");
+        REQUIRE(result.has_value());
+    });
+
+    // 2. Simulate locking the account (A dedicated lock request should exist,
+    //    but for this test, we'll assume the handler has a method/logic for it
+    //    or that the system supports a lock request message type).
+    // Assuming a lock_account_request exists or the account is locked internally.
+    unlock_account_request lock_req; // Re-use struct for simplicity, assuming a dedicated lock is handled internally
+    lock_req.account_id = create_account_response::deserialize(
+        handler.get_account_id_by_username(create_req.username)).value().account_id; // Hypothetical internal method
+    // In a real system, you'd send a dedicated lock message here.
+    // For now, we rely on a separate mechanism to put the account into a locked state.
+    // **NOTE**: For a proper test, a dedicated LOCK_ACCOUNT_REQUEST is needed.
+
+    // 3. Attempt login with valid credentials for the now-locked account
+    login_request login_req;
+    login_req.username = create_req.username;
+    login_req.password = create_req.password;
+    BOOST_LOG_SEV(lg, info) << "Attempting login for locked user: " << login_req.username;
+
+    const auto login_payload = login_req.serialize();
+
+    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+        auto result = co_await handler.handle_message(
+            message_type::login_request,
+            login_payload, "192.168.1.100:54321");
+
+        REQUIRE(result.has_value());
+        const auto response_result = login_response::deserialize(result.value());
+        REQUIRE(response_result.has_value());
+        const auto& response = response_result.value();
+        BOOST_LOG_SEV(lg, info) << "Response: " << response;
+
+        CHECK(response.success == false);
+        // Check for an explicit error message/code related to account lock.
+        CHECK(response.error_message.find("locked") != std::string::npos);
+    });
+}
+#+end_src
+
+
+
+*** Add pagination support                                             :code:
+
+At present we are returning all elements from accounts, currencies etc. We need
+to implement pagination:
+
+- Add offset and limit to list_accounts_request.
+- Add total_available_count to list_accounts_response.
+
+#+begin_src c++
+std::vector<domain::account>
+account_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts with offset: "
+                               << offset << " and limit: " << limit;
+
+    static auto max(make_timestamp(max_timestamp));
+    const auto query = sqlgen::read<std::vector<account_entity>> |
+        where("valid_to"_c == max.value()) |
+        order_by("valid_from"_c.desc()) |
+        sqlgen::limit(limit) |
+        sqlgen::offset(offset);
+
+    const auto r = session(ctx_.connection_pool())
+        .and_then(query);
+    ensure_success(r);
+    BOOST_LOG_SEV(lg(), debug) << "Read latest accounts. Total: " << r->size();
+    return account_mapper::map(*r);
+}
+
+
+std::uint32_t account_repository::get_total_account_count() {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account count.";
+
+    static auto max(make_timestamp(max_timestamp));
+
+    // Select the count of records that are currently active (valid_to == max_timestamp)
+    // We expect the result to be a vector containing a single long long (the count).
+    using count_result_type = std::vector<long long>;
+    const auto query = sqlgen::select<count_result_type>(sqlgen::count("id"_c)) |
+        from<account_entity> |
+        where("valid_to"_c == max.value());
+
+    const auto r = session(ctx_.connection_pool())
+        .and_then(query);
+    ensure_success(r);
+
+    if (r->empty() || r->at(0) < 0) {
+        return 0;
+    }
+
+    const auto total_count = static_cast<std::uint32_t>(r->at(0));
+
+    BOOST_LOG_SEV(lg(), debug) << "Total active accounts found: " << total_count;
+    return total_count;
+}
+#+end_src
+
+
+Links:
+
+- [[https://readyset.io/blog/optimizing-sql-pagination-in-postgres][Optimizing SQL Pagination in Postgres]]
+
+
+
+
+#+begin_src c++
+"9999-12-31 23:59:59"
+#+end_src
+
+
+
+
+*** Improve error message when server is not running                   :code:
+
+At present we get:
+
+#+begin_quote
+Failed to connect to server: Failed to connect to server
+#+end_quote
+
+If we try again after the error, "authenticating..." shows up in red.
+
+*** Add tests to utilities                                             :code:
+
+We should add some cursory tests to utilities.
+
+
+
+*** Implement import XML                                               :code:
+
+Users should be able to import data from ORE directly. Add option in Qt to
+import XML.
+
+*** Update currency details to use tabs                                :code:
+
+We need a main tab with the currency related properties, then a "system" tab
+with temporal data which is read-only even on edit and a "image" tab with the
+image used to represent the currency. It could also contain some description or
+notes.
+
+*** Add search to currencies                                           :code:
+
+It should be possible to filter the open currencies by a string. This should be
+any field. The user needs to know when the list has been filtered.
+
+*** Server must check database connectivity on startup                 :code:
+
+At present the server only checks connectivity to database when a user requests
+an operation. We need some kind of initial polling which puts the server in a
+mode replying to all clients: "database not available". While this is happening,
+it should keep polling the database and checking the connectivity.
+
+Ideally the server should start, but poll the DB. It should send messages to
+clients informing them of the issues with database.
+
+*** Consider adding log command line options to qt                     :code:
+
+At present we have hard-coded logging options. However, maybe users should be
+able to change the logging settings from the UI rather than having to restart
+the app and supply command line options.
+
+* Footer
 
 | Previous: [[id:154212FF-BB02-8D84-1E33-9338B458380A][Version Zero]] |

@@ -1184,6 +1184,71 @@ Aborted                    /opt/OreStudio/0.0.4/bin/ores.qt
 When investigating a crash we noticed the app is not exiting cleanly. Fix all of
 these crashes before we go any further.
 
-*** Footer
+* AI Generated Sprint Summary
+
+#+begin_src markdown
+# **OreStudio Sprint 4 – Release Notes**
+ *November 2025*
+
+This sprint focused on **stabilizing the core application**, **improving developer workflows**, and **laying the foundation for AI-assisted development** using LLMs and Claude skills.
+
+---
+
+## ✅ **Highlights**
+
+- **LLM-powered code review completed** across core modules (`ores.accounts`, `ores.cli`, `ores.risk`), identifying bugs, modern C++ improvements, and security patterns.
+- **Claude skills framework implemented** to automate documentation, code generation, and system analysis using structured prompts and PlantUML.
+- **UI/UX modernization** with Fluent UI icons, professional dark theme styling, and MDI window flexibility.
+- **Critical crash on shutdown resolved** via improved Qt ownership model and lifecycle management.
+- **Build and packaging improvements** on Windows and Linux, including CMake targets for docs/skills and better dependency handling.
+
+---
+
+## 🛠️ **Key Improvements**
+
+### **Developer Experience**
+- Added CMake targets for `site` and `skills` to streamline documentation and AI skill generation.
+- Restructured components to follow Dogen conventions: `component/src`, `modeling`, `tests`.
+- Generated PlantUML diagrams for all components; integrated into documentation pipeline.
+- Created reusable meta-skills for modeling, documentation, and code generation.
+
+### **Code Quality & Stability**
+- Fixed memory leaks in `sqlgen` backend (valgrind-clean).
+- Resolved Windows build errors (deprecated `localtime` → `localtime_s`).
+- Split monolithic `MainWindow` class for maintainability.
+- Decoupled JSON serialization from domain types; added table-based output.
+
+### **UI & UX**
+- Implemented currency CRUD: add, edit, delete, clone, multi-select.
+- Added export to CSV and ORE XML.
+- Detachable MDI windows for flexible workspace layout.
+- Splash screen, about dialog, and history viewer added.
+- Started professional styling (dark theme, monospace fonts, aligned columns) — further work postponed.
+
+### **Infrastructure**
+- Windows packaging now includes required Qt and OpenSSL DLLs via `vcpkg`.
+- Assets (icons) now bundled via Qt resources and properly packaged.
+- Debian package issues identified (t64 migration); fix postponed pending stable Qt6.8 on Debian.
+
+---
+
+## ⚠️ **Known Issues & Postponed**
+
+- **Debian package installation fails** due to `t64`-suffixed Qt6 dependencies not available. Target: fix after Qt6.8+ lands in Debian.
+- **Full UI professional styling** (side panels, hover effects, status bar) postponed — will resume using Claude skills for design suggestions.
+
+---
+
+## 📊 **Time Summary**
+- **Total effort**: 80h 16m
+- **Code**: 52% | **Infra**: 21% | **Agile/Analysis**: 6%
+- Top tasks: LLM code review (16h), UI/UX polish (11h), crash fix & window management (8h)
+
+---
+
+*Next sprint: Focus on test tagging, CI/CD improvements, and expanding LLM skills for automated testing and documentation.*
+#+end_src
+
+* Footer
 
 | Previous: [[id:154212FF-BB02-8D84-1E33-9338B458380A][Version Zero]] |

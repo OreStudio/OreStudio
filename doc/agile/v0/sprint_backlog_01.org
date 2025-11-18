@@ -1110,3 +1110,86 @@ Links:
 - [[https://forum.qt.io/topic/33926/postgresql-and-trying-to-connect-using-qt][PostgreSQL and Trying to connect using Qt]]
 - [[https://code.qt.io/cgit/qt/qtbase.git/tree/examples/sql/books?h=6.7][index : qt/qtbase.git]]
 - [[https://doc.qt.io/qt-6/examples-sql.html][SQL Examples]]
+
+* AI Generated Sprint Summary
+
+#+begin_src markdown
+# **OreStudio Sprint 1 – Release Notes**
+*July 2024*
+
+This sprint focused on **establishing the foundational project infrastructure**, **setting up CI/CD and development tooling**, and **implementing end-to-end currency handling** from XML/JSON parsing to Qt UI display.
+
+---
+
+## ✅ **Highlights**
+
+- **Project infrastructure bootstrapped** with GitHub repo, Discord channel, CI/CD via GitHub Actions, and automated packaging.
+- **Development environment standardized** using CMake presets, vcpkg, and modern C++20.
+- **Currency domain fully implemented** — XML and JSON parsing, database persistence (PostgreSQL), and Qt-based UI display.
+- **Documentation and onboarding improved** with Doxygen, org-mode recipes, and a live project website.
+
+---
+
+## 🛠️ **Key Improvements**
+
+### **Project Setup & Infrastructure**
+- Created GitHub organization and repository: [github.com/OreStudio/OreStudio](https://github.com/OreStudio/OreStudio)
+- Set up Discord channel for team communication and Emacs integration.
+- Implemented CI/CD pipelines with GitHub Actions for Linux, Windows, and macOS.
+- Enabled nightly builds with Valgrind memcheck (DWARF4 workaround applied).
+- Automated package generation (DEB, MSI, DMG) and deployment.
+
+### **Development Environment**
+- Standardized build system using **CMake presets** and **vcpkg** for dependency management.
+- Upgraded to **C++20** and modernized toolchain configuration.
+- Set up laptop development environment with R, Org-mode, and latest vcpkg.
+- Fixed Valgrind compatibility issues by upgrading CI OS to Ubuntu 22.04.
+
+### **Currency Domain Implementation**
+- Added full **XML parsing support** for ORE currency data using hand-rolled parsers.
+- Implemented **JSON serialization/deserialization** for currency objects.
+- Integrated **PostgreSQL support** for storing and retrieving currencies.
+- Built a **Qt-based UI** to display currencies in a table view with:
+  - Proper column headers
+  - Responsive layout
+  - Logging integration
+  - Menu-driven navigation
+
+### **Documentation & Tooling**
+- Launched project website: [orestudio.github.io/OreStudio](https://orestudio.github.io/OreStudio)
+- Merged `README` and `index` into a single org-mode landing page.
+- Added project objectives, domain concepts, and bibliography.
+- Generated and published **Doxygen documentation**.
+- Created **org-babel recipes** for CLI command examples.
+- Added **PlantUML modeling** support for future architecture diagrams.
+
+### **Agile & Reporting**
+- Transitioned from pie charts to **bar charts** for sprint resourcing (improved readability).
+- Introduced **story classification tags** (`code`, `infra`, `doc`, `agile`) for better time tracking.
+- Implemented sprint backlog refinement with visual reporting.
+
+---
+
+## ⚠️ **Known Issues & Postponed**
+
+- **Windows installer fails under Wine** — likely missing system DLLs; needs real Windows testing.
+- **macOS DMG not uploading** — filename mismatch in CPack configuration.
+- **Code quality actions not working** — CodeQL build fails due to missing vcpkg submodules.
+- **Data container structure postponed** — workspace/environment model deferred to future sprint.
+- **PlantUML in org-babel postponed** — will revisit after LLM integration.
+
+---
+
+## 📊 **Time Summary**
+- **Total effort**: 80h 13m
+- **Code**: 38% | **Infra**: 27% | **Doc**: 12% | **Agile**: 8%
+- Top tasks: Qt UI refactor (10h), XML parsing (6.5h), command line options (5.8h), nightly/memcheck setup (3.4h)
+
+---
+
+*Next sprint: Focus on project structuring, core refactoring, and exploring advanced UI frameworks like ImGui.*
+#+end_src
+
+* Footer
+
+| Previous: [[id:154212FF-BB02-8D84-1E33-9338B458380A][Version Zero]] |

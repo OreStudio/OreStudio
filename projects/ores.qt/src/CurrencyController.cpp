@@ -169,7 +169,18 @@ void CurrencyController::onAddNewRequested() {
 
     mdiArea_->addSubWindow(detailWindow);
     detailWindow->adjustSize();
-    detailWindow->show();
+
+    // If the parent currency list window is detached, detach this window too
+    // and position it near the parent
+    if (currencyListWindow_ && currencyListWindow_->isDetached()) {
+        detailWindow->show();  // Show first so geometry is valid
+        detailWindow->detach();
+
+        // Position near parent with offset
+        QPoint parentPos = currencyListWindow_->pos();
+        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
+    } else
+        detailWindow->show();
 }
 
 void CurrencyController::onShowCurrencyDetails(
@@ -212,19 +223,57 @@ void CurrencyController::onShowCurrencyDetails(
 
     mdiArea_->addSubWindow(detailWindow);
     detailWindow->adjustSize();
-    detailWindow->show();
+
+    // If the parent currency list window is detached, detach this window too
+    // and position it near the parent
+    if (currencyListWindow_ && currencyListWindow_->isDetached()) {
+        detailWindow->show();  // Show first so geometry is valid
+        detailWindow->detach();
+
+        // Position near parent with offset
+        QPoint parentPos = currencyListWindow_->pos();
+        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
+    } else {
+        detailWindow->show();
+    }
 }
 
 void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
     BOOST_LOG_SEV(lg(), info) << "Showing currency history for: "
                              << isoCode.toStdString();
-    const QColor iconColor(220, 220, 220);
 
     if (!client_ || !client_->is_connected()) {
         MessageBoxHelper::warning(mainWindow_, "Not Connected",
             "Please ensure you are still connected to view currency history.");
         return;
     }
+
+    // Reuse existing history window if it exists
+    if (currencyHistoryWindows_.contains(isoCode)) {
+        auto existingWindow = currencyHistoryWindows_[isoCode];
+        if (existingWindow) {
+            BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
+                                      << isoCode.toStdString();
+
+            // Bring window to front
+            if (existingWindow->isDetached()) {
+                existingWindow->setVisible(true);
+                existingWindow->show();
+                existingWindow->raise();
+                existingWindow->activateWindow();
+            } else {
+                existingWindow->setVisible(true);
+                mdiArea_->setActiveSubWindow(existingWindow);
+                existingWindow->show();
+                existingWindow->raise();
+            }
+            return;
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
+                              << isoCode.toStdString();
+    const QColor iconColor(220, 220, 220);
 
     auto* historyWidget = new CurrencyHistoryDialog(isoCode, client_,
                                                      mainWindow_);
@@ -246,17 +295,35 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_history_20_regular.svg", iconColor));
 
+    // Track this history window
+    currencyHistoryWindows_[isoCode] = historyWindow;
+
     allDetachableWindows_.append(historyWindow);
     QPointer<CurrencyController> self = this;
+    QPointer<DetachableMdiSubWindow> windowPtr = historyWindow;
     connect(historyWindow, &QObject::destroyed, this,
-            [self, historyWindow]() {
-        if (self)
-            self->allDetachableWindows_.removeAll(historyWindow);
+            [self, windowPtr, isoCode]() {
+        if (self) {
+            self->allDetachableWindows_.removeAll(windowPtr.data());
+            self->currencyHistoryWindows_.remove(isoCode);
+        }
     });
 
     mdiArea_->addSubWindow(historyWindow);
     historyWindow->adjustSize();
-    historyWindow->show();
+
+    // If the parent currency list window is detached, detach this window too
+    // and position it near the parent
+    if (currencyListWindow_ && currencyListWindow_->isDetached()) {
+        historyWindow->show();  // Show first so geometry is valid
+        historyWindow->detach();
+
+        // Position near parent with offset
+        QPoint parentPos = currencyListWindow_->pos();
+        historyWindow->move(parentPos.x() + 30, parentPos.y() + 30);
+    } else {
+        historyWindow->show();
+    }
 }
 
 }

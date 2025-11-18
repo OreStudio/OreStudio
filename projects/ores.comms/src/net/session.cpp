@@ -66,8 +66,11 @@ boost::asio::awaitable<bool> session::perform_handshake() {
         BOOST_LOG_SEV(lg(), debug) << "Starting server handshake process...";
 
         // Read handshake request from client
+        // Use lenient reading (skip_version_check=true) to allow reading frames
+        // with mismatched protocol versions. This enables us to send a proper
+        // handshake_response with version details instead of rejecting the frame.
         BOOST_LOG_SEV(lg(), debug) << "About to read handshake request frame from client";
-        auto frame_result = co_await conn_->read_frame();
+        auto frame_result = co_await conn_->read_frame(true);  // skip_version_check=true
         if (!frame_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to read handshake request: error code "
                                       << static_cast<int>(frame_result.error());

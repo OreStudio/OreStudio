@@ -54,7 +54,6 @@ public:
 
 public slots:
     void detach();
-    void reattach();
 
 signals:
     void detachedStateChanged(bool detached);

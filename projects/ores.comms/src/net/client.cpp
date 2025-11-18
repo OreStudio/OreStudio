@@ -20,6 +20,7 @@
 #include "ores.comms/net/client.hpp"
 
 #include <mutex>
+#include <format>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include <boost/asio/connect.hpp>
@@ -98,6 +99,12 @@ boost::asio::awaitable<bool> client::connect() {
         co_await conn_->ssl_handshake_client();
         BOOST_LOG_SEV(lg(), info) << "SSL handshake complete.";
 
+        // Log protocol version (matches server format for easy grepping)
+        BOOST_LOG_SEV(lg(), info) << "Protocol version: "
+                                  << protocol::PROTOCOL_VERSION_MAJOR << "."
+                                  << protocol::PROTOCOL_VERSION_MINOR
+                                  << " (client: " << config_.client_identifier << ")";
+
         // Perform protocol handshake
         bool handshake_ok = co_await perform_handshake();
         if (!handshake_ok) {
@@ -175,7 +182,16 @@ boost::asio::awaitable<bool> client::perform_handshake() {
 
         // Check compatibility
         if (!response.version_compatible) {
-            BOOST_LOG_SEV(lg(), error) << "Version incompatible with server";
+            std::string error_msg = std::format(
+                "Incompatible protocol version. Server: {}.{}, Client: {}.{}",
+                response.server_version_major, response.server_version_minor,
+                protocol::PROTOCOL_VERSION_MAJOR, protocol::PROTOCOL_VERSION_MINOR);
+
+            BOOST_LOG_SEV(lg(), error) << error_msg;
+            {
+                std::lock_guard guard{state_mutex_};
+                last_error_ = error_msg;
+            }
             co_return false;
         }
 
@@ -221,6 +237,11 @@ void client::disconnect() {
 bool client::is_connected() const {
     std::lock_guard guard{state_mutex_};
     return connected_ && conn_ && conn_->is_open();
+}
+
+std::string client::last_error() const {
+    std::lock_guard guard{state_mutex_};
+    return last_error_;
 }
 
 boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>

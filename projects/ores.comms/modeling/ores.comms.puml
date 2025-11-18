@@ -379,14 +379,14 @@ namespace ores #F2F2F2 {
                 error_response
                 get_currencies_request
                 get_currencies_response
-                update_currency_request
-                update_currency_response
+                save_currency_request
+                save_currency_response
                 delete_currency_request
                 delete_currency_response
                 get_currency_history_request
                 get_currency_history_response
-                create_currency_request
-                create_currency_response
+                save_currency_request
+                save_currency_response
                 create_account_request
                 create_account_response
                 list_accounts_request

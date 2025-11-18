@@ -22,6 +22,7 @@
 #include <QIcon>
 #include <QTextStream>
 #include <QTimer>
+#include "ores.utility/version/version.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/log/logging_options.hpp"
@@ -33,6 +34,8 @@ namespace {
 
 using namespace ores::utility::log;
 auto lg(make_logger("main"));
+
+const std::string product_version("Qt UI for ORE Studio v" ORES_VERSION);
 
 ores::utility::log::logging_options createLoggingConfiguration() {
     // FIXME: read this from command line
@@ -50,7 +53,7 @@ int main(int argc, char *argv[]) {
     auto cfg(createLoggingConfiguration());
     ores::utility::log::lifecycle_manager lm(cfg);
 
-    BOOST_LOG_SEV(lg, info) << "Started UI.";
+    BOOST_LOG_SEV(lg, info) << "Started Qt UI " << product_version;
 
     QApplication app(argc, argv);
 

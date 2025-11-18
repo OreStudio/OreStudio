@@ -39,10 +39,8 @@ risk_message_handler::handle_message(comms::protocol::message_type type,
     switch (type) {
     case comms::protocol::message_type::get_currencies_request:
         co_return co_await handle_get_currencies_request(payload);
-    case comms::protocol::message_type::create_currency_request:
-        co_return co_await handle_create_currency_request(payload);
-    case comms::protocol::message_type::update_currency_request:
-        co_return co_await handle_update_currency_request(payload);
+    case comms::protocol::message_type::save_currency_request:
+        co_return co_await handle_save_currency_request(payload);
     case comms::protocol::message_type::delete_currency_request:
         co_return co_await handle_delete_currency_request(payload);
     case comms::protocol::message_type::get_currency_history_request:
@@ -57,31 +55,31 @@ risk_message_handler::handle_message(comms::protocol::message_type type,
 boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
                                      comms::protocol::error_code>>
 risk_message_handler::
-handle_create_currency_request(std::span<const std::uint8_t> payload) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing create_currency_request.";
+handle_save_currency_request(std::span<const std::uint8_t> payload) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_currency_request.";
 
     // Deserialize request
-    auto request_result = create_currency_request::deserialize(payload);
+    auto request_result = save_currency_request::deserialize(payload);
     if (!request_result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize create_currency_request";
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_currency_request";
         co_return std::unexpected(request_result.error());
     }
 
     const auto& request = *request_result;
-    BOOST_LOG_SEV(lg(), info) << "Creating currency: " << request.currency.iso_code;
+    BOOST_LOG_SEV(lg(), info) << "Saving currency: " << request.currency.iso_code;
 
-    create_currency_response response;
+    save_currency_response response;
     try {
-        // Create currency in repository
+        // Write currency to repository (bitemporal - creates new version)
         currency_repo_.write(ctx_, request.currency);
         response.success = true;
-        response.message = "Currency created successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully created currency: "
+        response.message = "Currency saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved currency: "
                                   << request.currency.iso_code;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to create currency: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error creating currency "
+        response.message = std::string("Failed to save currency: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving currency "
                                    << request.currency.iso_code << ": " << e.what();
     }
 
@@ -108,40 +106,6 @@ handle_get_currencies_request(std::span<const std::uint8_t> payload) {
 
     // Create and serialize response
     get_currencies_response response{std::move(currencies)};
-    co_return response.serialize();
-}
-
-boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
-                                     comms::protocol::error_code>>
-risk_message_handler::
-handle_update_currency_request(std::span<const std::uint8_t> payload) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing update_currency_request.";
-
-    // Deserialize request
-    auto request_result = update_currency_request::deserialize(payload);
-    if (!request_result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize update_currency_request";
-        co_return std::unexpected(request_result.error());
-    }
-
-    const auto& request = *request_result;
-    BOOST_LOG_SEV(lg(), info) << "Updating currency: " << request.currency.iso_code;
-
-    update_currency_response response;
-    try {
-        // Update currency in repository
-        currency_repo_.update(ctx_, request.currency);
-        response.success = true;
-        response.message = "Currency updated successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully updated currency: "
-                                  << request.currency.iso_code;
-    } catch (const std::exception& e) {
-        response.success = false;
-        response.message = std::string("Failed to update currency: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error updating currency "
-                                   << request.currency.iso_code << ": " << e.what();
-    }
-
     co_return response.serialize();
 }
 

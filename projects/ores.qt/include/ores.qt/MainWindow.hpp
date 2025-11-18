@@ -99,6 +99,15 @@ public:
      */
     std::shared_ptr<comms::client> getClient() const { return client_; }
 
+protected:
+    /**
+     * @brief Handles the close event for the main window.
+     *
+     * Ensures all detachable windows (MDI and detached) are closed before
+     * the main window closes, so the application can terminate cleanly.
+     */
+    void closeEvent(QCloseEvent* event) override;
+
 private slots:
     /**
      * @brief Handles login action from menu/toolbar.
@@ -125,11 +134,6 @@ private slots:
      * @brief Detaches all MDI windows to separate floating windows.
      */
     void onDetachAllTriggered();
-
-    /**
-     * @brief Reattaches all floating windows back to the MDI area.
-     */
-    void onReattachAllTriggered();
 
     /**
      * @brief Updates the Window menu with the list of currently open windows.

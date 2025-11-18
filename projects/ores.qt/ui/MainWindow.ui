@@ -49,7 +49,6 @@
      <string>&amp;Window</string>
     </property>
     <addaction name="ActionDetachAll"/>
-    <addaction name="ActionReattachAll"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -129,14 +128,6 @@
    </property>
    <property name="toolTip">
     <string>Detach all MDI windows to floating windows</string>
-   </property>
-  </action>
-  <action name="ActionReattachAll">
-   <property name="text">
-    <string>&amp;Reattach All</string>
-   </property>
-   <property name="toolTip">
-    <string>Reattach all floating windows to MDI area</string>
    </property>
   </action>
  </widget>

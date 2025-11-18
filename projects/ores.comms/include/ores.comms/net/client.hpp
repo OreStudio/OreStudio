@@ -112,6 +112,15 @@ public:
     bool is_connected() const;
 
     /**
+     * @brief Get the last error message.
+     *
+     * Returns the detailed error message from the last failed operation.
+     * Useful for displaying meaningful error messages to users after
+     * connection failures.
+     */
+    std::string last_error() const;
+
+    /**
      * @brief Send a request frame and receive response frame (async version).
      *
      * Generic method for sending any request and receiving response.
@@ -153,6 +162,7 @@ private:
     std::unique_ptr<connection> conn_;
     std::uint32_t sequence_number_;
     bool connected_;
+    std::string last_error_;  // Last error message for UI display
     mutable std::mutex state_mutex_; // Thread-safe state protection
 };
 

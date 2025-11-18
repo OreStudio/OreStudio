@@ -64,9 +64,13 @@ public:
      *
      * Reads the frame header first, then reads the payload based on
      * the size specified in the header.
+     *
+     * @param skip_version_check If true, skips protocol version validation.
+     *        This is useful during handshake to allow the server to send a proper
+     *        version mismatch response instead of rejecting the frame immediately.
      */
     boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
-    read_frame();
+    read_frame(bool skip_version_check = false);
 
     /**
      * @brief Write a frame to the connection.

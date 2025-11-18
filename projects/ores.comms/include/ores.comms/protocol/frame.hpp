@@ -101,8 +101,14 @@ public:
      * Validates magic number, version, message type, reserved fields, and payload size.
      * Does NOT validate CRC as that requires the full frame.
      * Returns the validated header which can be used to determine how much payload to read.
+     *
+     * @param data The data buffer containing the header
+     * @param skip_version_check If true, skips protocol version validation.
+     *        This is useful during handshake to allow the server to send a proper
+     *        version mismatch response instead of rejecting the frame immediately.
      */
-    static std::expected<frame_header, error_code> deserialize_header(std::span<const std::uint8_t> data);
+    static std::expected<frame_header, error_code> deserialize_header(
+        std::span<const std::uint8_t> data, bool skip_version_check = false);
 
     /**
      * @brief Deserialize complete frame using a pre-parsed header.

@@ -40,9 +40,6 @@ risk_message_handler::handle_message(comms::protocol::message_type type,
     case comms::protocol::message_type::get_currencies_request:
         co_return co_await handle_get_currencies_request(payload);
     case comms::protocol::message_type::save_currency_request:
-    case comms::protocol::message_type::create_currency_request:  // Legacy, deprecated
-    case comms::protocol::message_type::update_currency_request:  // Legacy, deprecated
-        // All save operations use the same handler
         co_return co_await handle_save_currency_request(payload);
     case comms::protocol::message_type::delete_currency_request:
         co_return co_await handle_delete_currency_request(payload);

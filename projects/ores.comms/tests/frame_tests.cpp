@@ -304,3 +304,132 @@ TEST_CASE("test_frame_roundtrip_multiple_message_types", tags) {
 
     BOOST_LOG_SEV(lg, debug) << "All message types tested successfully";
 }
+
+TEST_CASE("test_frame_version_mismatch_strict_mode", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Create a frame with current protocol version
+    std::vector<std::uint8_t> payload = {0x01, 0x02, 0x03};
+    ores::comms::protocol::frame frame(
+        message_type::handshake_request,
+        1,
+        payload
+    );
+
+    // Serialize it
+    auto serialized = frame.serialize();
+    REQUIRE(!serialized.empty());
+
+    BOOST_LOG_SEV(lg, debug) << "Created frame with current protocol version";
+
+    // Corrupt the version in the serialized header
+    // Version major is at offset 4-5 (after 4-byte magic)
+    // Let's change it to something different
+    std::uint16_t wrong_version = 99;
+    serialized[4] = static_cast<std::uint8_t>((wrong_version >> 8) & 0xFF);
+    serialized[5] = static_cast<std::uint8_t>(wrong_version & 0xFF);
+
+    BOOST_LOG_SEV(lg, debug) << "Modified version to " << wrong_version;
+
+    // Try to deserialize with strict version checking (default)
+    auto header_result = ores::comms::protocol::frame::deserialize_header(
+        std::span<const std::uint8_t>(serialized));
+
+    // Should fail with version_mismatch error
+    REQUIRE(!header_result.has_value());
+    CHECK(header_result.error() == ores::comms::protocol::error_code::version_mismatch);
+
+    BOOST_LOG_SEV(lg, debug) << "Version mismatch correctly detected in strict mode";
+}
+
+TEST_CASE("test_frame_version_mismatch_lenient_mode", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Create a frame with current protocol version
+    std::vector<std::uint8_t> payload = {0xAA, 0xBB, 0xCC};
+    ores::comms::protocol::frame frame(
+        message_type::handshake_request,
+        42,
+        payload
+    );
+
+    // Serialize it
+    auto serialized = frame.serialize();
+    REQUIRE(!serialized.empty());
+
+    BOOST_LOG_SEV(lg, debug) << "Created frame with current protocol version";
+
+    // Corrupt the version in the serialized header
+    // Version major is at offset 4-5 (after 4-byte magic)
+    std::uint16_t wrong_version = 1; // Different from current version
+    serialized[4] = static_cast<std::uint8_t>((wrong_version >> 8) & 0xFF);
+    serialized[5] = static_cast<std::uint8_t>(wrong_version & 0xFF);
+
+    BOOST_LOG_SEV(lg, debug) << "Modified version to " << wrong_version;
+
+    // Try to deserialize with lenient version checking (skip_version_check=true)
+    auto header_result = ores::comms::protocol::frame::deserialize_header(
+        std::span<const std::uint8_t>(serialized), true);
+
+    // Should succeed even with mismatched version
+    REQUIRE(header_result.has_value());
+    CHECK(header_result->version_major == wrong_version);
+    CHECK(header_result->type == message_type::handshake_request);
+    CHECK(header_result->sequence == 42);
+
+    BOOST_LOG_SEV(lg, debug) << "Successfully read header with mismatched version in lenient mode";
+
+    // Now deserialize the complete frame using the header we just read
+    // Note: We need to fix the CRC since we modified the version
+    // For this test, let's just verify the header was read correctly
+}
+
+TEST_CASE("test_frame_version_mismatch_handshake_scenario", tags) {
+    auto lg(make_logger(test_suite));
+
+    // This simulates the handshake scenario:
+    // 1. Client with v1 sends handshake_request
+    // 2. Server with v2 needs to read it (lenient mode)
+    // 3. Server sends handshake_response with version info
+
+    // Create a handshake request from a "v1 client"
+    std::vector<std::uint8_t> payload = {0x11, 0x22};
+    ores::comms::protocol::frame client_frame(
+        message_type::handshake_request,
+        1,
+        payload
+    );
+
+    auto serialized = client_frame.serialize();
+    REQUIRE(!serialized.empty());
+
+    BOOST_LOG_SEV(lg, debug) << "Created handshake request from v1 client";
+
+    // Modify version to simulate v1 (assuming current is v2)
+    std::uint16_t client_version = 1;
+    serialized[4] = static_cast<std::uint8_t>((client_version >> 8) & 0xFF);
+    serialized[5] = static_cast<std::uint8_t>(client_version & 0xFF);
+
+    BOOST_LOG_SEV(lg, debug) << "Modified to client version " << client_version;
+
+    // Server tries to read with strict mode - should fail
+    auto strict_result = ores::comms::protocol::frame::deserialize_header(
+        std::span<const std::uint8_t>(serialized), false);
+
+    CHECK(!strict_result.has_value());
+    if (!strict_result.has_value()) {
+        BOOST_LOG_SEV(lg, debug) << "Strict mode correctly rejected mismatched version";
+    }
+
+    // Server tries to read with lenient mode - should succeed
+    auto lenient_result = ores::comms::protocol::frame::deserialize_header(
+        std::span<const std::uint8_t>(serialized), true);
+
+    REQUIRE(lenient_result.has_value());
+    CHECK(lenient_result->version_major == client_version);
+    CHECK(lenient_result->type == message_type::handshake_request);
+
+    BOOST_LOG_SEV(lg, debug) << "Lenient mode successfully read handshake from v"
+                            << client_version << " client";
+    BOOST_LOG_SEV(lg, debug) << "Server can now send handshake_response with version details";
+}

@@ -40,9 +40,10 @@ boost::asio::awaitable<void> connection::ssl_handshake_client() {
 }
 
 boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
-connection::read_frame() {
+connection::read_frame(bool skip_version_check) {
     try {
-        BOOST_LOG_SEV(lg(), debug) << "Waiting to read the next frame.";
+        BOOST_LOG_SEV(lg(), debug) << "Waiting to read the next frame"
+                                 << " (skip_version_check=" << skip_version_check << ")";
 
         // Read the fixed 32-byte header first
         std::vector<std::uint8_t> buffer(protocol::frame_header::size);
@@ -57,7 +58,7 @@ connection::read_frame() {
         // Deserialize and validate the header.
         // validates magic, version, type, reserved fields, payload size.
         auto header_result = protocol::frame::deserialize_header(
-            std::span<const std::uint8_t>(buffer));
+            std::span<const std::uint8_t>(buffer), skip_version_check);
         if (!header_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to deserialize header, error: "
                                      << static_cast<int>(header_result.error());

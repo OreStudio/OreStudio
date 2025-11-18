@@ -154,9 +154,10 @@ std::vector<std::uint8_t> frame::serialize() const {
 }
 
 std::expected<frame_header, error_code>
-frame::deserialize_header(std::span<const std::uint8_t> data) {
+frame::deserialize_header(std::span<const std::uint8_t> data, bool skip_version_check) {
     BOOST_LOG_SEV(lg(), debug) << "Deserializing frame header from data of size: "
-                               << data.size();
+                               << data.size()
+                               << " (skip_version_check=" << skip_version_check << ")";
 
     if (data.size() < frame_header::size) {
         BOOST_LOG_SEV(lg(), error) << "Data too short for header: "
@@ -201,11 +202,14 @@ frame::deserialize_header(std::span<const std::uint8_t> data) {
         BOOST_LOG_SEV(lg(), error) << "Invalid magic number: " << header.magic;
         return std::unexpected(error_code::invalid_message_type);
     }
-    if (header.version_major != PROTOCOL_VERSION_MAJOR) {
+
+    // Skip version check if requested (e.g., during handshake)
+    if (!skip_version_check && header.version_major != PROTOCOL_VERSION_MAJOR) {
         BOOST_LOG_SEV(lg(), error) << "Invalid major version: "
                                    << header.version_major;
         return std::unexpected(error_code::version_mismatch);
     }
+
     if (header.reserved1 != 0) {
         BOOST_LOG_SEV(lg(), error) << "Invalid reserved1 field";
         return std::unexpected(error_code::invalid_message_type);

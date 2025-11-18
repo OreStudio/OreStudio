@@ -467,6 +467,19 @@ handle_command(const std::string& command_name, const bool has_help,
         r.deleting = read_delete_options(vm);
     } else if (command_name == currencies_command_name) {
         // Entity-based command: currencies <operation> [options]
+        if (has_help && o.empty()) {
+            // Show help for currencies command
+            info << "currencies - Manage currencies" << std::endl << std::endl;
+            info << "Usage: ores.cli currencies <operation> [options]" << std::endl << std::endl;
+            info << "Available operations:" << std::endl;
+            info << "  import     Import currencies from ORE XML files" << std::endl;
+            info << "  export     Export currencies to various formats" << std::endl;
+            info << "  list       List currencies from database" << std::endl;
+            info << "  delete     Delete a currency by ISO code" << std::endl << std::endl;
+            info << "For operation-specific options, use: currencies <operation> --help" << std::endl;
+            return {};
+        }
+
         if (o.empty()) {
             BOOST_THROW_EXCEPTION(parser_exception(
                 "currencies command requires an operation (import, export, list, delete)"));
@@ -533,6 +546,18 @@ handle_command(const std::string& command_name, const bool has_help,
         }
     } else if (command_name == accounts_command_name) {
         // Entity-based command: accounts <operation> [options]
+        if (has_help && o.empty()) {
+            // Show help for accounts command
+            info << "accounts - Manage accounts" << std::endl << std::endl;
+            info << "Usage: ores.cli accounts <operation> [options]" << std::endl << std::endl;
+            info << "Available operations:" << std::endl;
+            info << "  list       List accounts from database" << std::endl;
+            info << "  delete     Delete an account by username or UUID" << std::endl;
+            info << "  add        Add a new account (not yet implemented)" << std::endl << std::endl;
+            info << "For operation-specific options, use: accounts <operation> --help" << std::endl;
+            return {};
+        }
+
         if (o.empty()) {
             BOOST_THROW_EXCEPTION(parser_exception(
                 "accounts command requires an operation (list, delete, add)"));
@@ -578,6 +603,18 @@ handle_command(const std::string& command_name, const bool has_help,
         }
     } else if (command_name == feature_flags_command_name) {
         // Entity-based command: feature_flags <operation> [options]
+        if (has_help && o.empty()) {
+            // Show help for feature_flags command
+            info << "feature_flags - Manage feature flags" << std::endl << std::endl;
+            info << "Usage: ores.cli feature_flags <operation> [options]" << std::endl << std::endl;
+            info << "Available operations:" << std::endl;
+            info << "  list       List feature flags from database" << std::endl;
+            info << "  delete     Delete a feature flag by key" << std::endl;
+            info << "  add        Add a new feature flag (not yet implemented)" << std::endl << std::endl;
+            info << "For operation-specific options, use: feature_flags <operation> --help" << std::endl;
+            return {};
+        }
+
         if (o.empty()) {
             BOOST_THROW_EXCEPTION(parser_exception(
                 "feature_flags command requires an operation (list, delete, add)"));

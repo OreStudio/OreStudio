@@ -58,8 +58,11 @@ private:
     void import_data(const std::optional<config::import_options>& ocfg) const;
 
     void export_currencies(const config::export_options& cfg) const;
+    void export_accounts(const config::export_options& cfg) const;
+    void export_feature_flags(const config::export_options& cfg) const;
     void export_data(const std::optional<config::export_options>& ocfg) const;
 
+    void delete_currency(const config::delete_options& cfg) const;
     void delete_account(const config::delete_options& cfg) const;
     void delete_data(const std::optional<config::delete_options>& ocfg) const;
 

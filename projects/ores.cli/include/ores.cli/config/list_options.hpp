@@ -17,30 +17,44 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.accounts/domain/feature_flags_table_io.hpp"
+#ifndef ORES_CLI_CONFIG_LIST_OPTIONS_HPP
+#define ORES_CLI_CONFIG_LIST_OPTIONS_HPP
 
-#include <ostream>
-#include <fort.hpp>
+#include <iosfwd>
+#include <string>
+#include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/format.hpp"
 
-namespace ores::accounts::domain {
+namespace ores::cli::config {
 
-void print_feature_flags_table(std::ostream& s, const std::vector<feature_flags>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
+/**
+ * @brief Configuration options related to listing entities.
+ */
+struct list_options final {
+    /**
+     * @brief Entity to list.
+     */
+    entity target_entity;
+    /**
+     * @brief Format for output (json or table).
+     */
+    format target_format;
+    /**
+     * @brief Time point from which to list data. If empty, defaults to latest.
+     */
+    std::string as_of;
+    /**
+     * @brief Key to filter data by (optional).
+     */
+    std::string key;
+    /**
+     * @brief If true, retrieves all versions rather than just latest.
+     */
+    bool all_versions;
+};
 
-    table << fort::header << "Name" << "Description" << "Enabled"
-          << "Modified By" << fort::endr;
+std::ostream& operator<<(std::ostream& s, const list_options& v);
 
-    for (const auto& ff : v) {
-        table << ff.name << ff.description << ff.enabled
-              << ff.modified_by << fort::endr;
-    }
-    s << std::endl << table.to_string() << std::endl;
 }
 
-std::ostream& operator<<(std::ostream& s, const std::vector<feature_flags>& v) {
-    print_feature_flags_table(s, v);
-    return s;
-}
-
-}
+#endif

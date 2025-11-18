@@ -25,7 +25,7 @@
 
 namespace ores::accounts::domain {
 
-std::ostream& operator<<(std::ostream& s, const std::vector<account>& v) {
+void print_account_table(std::ostream& s, const std::vector<account>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
@@ -39,7 +39,10 @@ std::ostream& operator<<(std::ostream& s, const std::vector<account>& v) {
               << a.version << fort::endr;
     }
     s << std::endl << table.to_string() << std::endl;
+}
 
+std::ostream& operator<<(std::ostream& s, const std::vector<account>& v) {
+    print_account_table(s, v);
     return s;
 }
 

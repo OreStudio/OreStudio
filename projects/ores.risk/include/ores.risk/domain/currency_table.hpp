@@ -17,30 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.accounts/domain/feature_flags_table_io.hpp"
+#ifndef ORES_RISK_DOMAIN_CURRENCY_TABLE_HPP
+#define ORES_RISK_DOMAIN_CURRENCY_TABLE_HPP
 
-#include <ostream>
-#include <fort.hpp>
+#include <string>
+#include <vector>
+#include "ores.risk/domain/currency.hpp"
 
-namespace ores::accounts::domain {
+namespace ores::risk::domain {
 
-void print_feature_flags_table(std::ostream& s, const std::vector<feature_flags>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
+/**
+ * @brief Converts a single currency to table format string.
+ */
+std::string convert_to_table(const currency& c);
 
-    table << fort::header << "Name" << "Description" << "Enabled"
-          << "Modified By" << fort::endr;
-
-    for (const auto& ff : v) {
-        table << ff.name << ff.description << ff.enabled
-              << ff.modified_by << fort::endr;
-    }
-    s << std::endl << table.to_string() << std::endl;
-}
-
-std::ostream& operator<<(std::ostream& s, const std::vector<feature_flags>& v) {
-    print_feature_flags_table(s, v);
-    return s;
-}
+/**
+ * @brief Converts a vector of currencies to table format string.
+ */
+std::string convert_to_table(const std::vector<currency>& v);
 
 }
+
+#endif

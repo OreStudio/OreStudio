@@ -17,30 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.accounts/domain/feature_flags_table_io.hpp"
+#ifndef ORES_CLI_CONFIG_OPERATION_HPP
+#define ORES_CLI_CONFIG_OPERATION_HPP
 
-#include <ostream>
-#include <fort.hpp>
+namespace ores::cli::config {
 
-namespace ores::accounts::domain {
-
-void print_feature_flags_table(std::ostream& s, const std::vector<feature_flags>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
-
-    table << fort::header << "Name" << "Description" << "Enabled"
-          << "Modified By" << fort::endr;
-
-    for (const auto& ff : v) {
-        table << ff.name << ff.description << ff.enabled
-              << ff.modified_by << fort::endr;
-    }
-    s << std::endl << table.to_string() << std::endl;
-}
-
-std::ostream& operator<<(std::ostream& s, const std::vector<feature_flags>& v) {
-    print_feature_flags_table(s, v);
-    return s;
-}
+/**
+ * @brief List of available operations that can be performed on entities.
+ */
+enum class operation {
+    import_data,
+    export_data,
+    list_entity,
+    delete_entity,
+    add_entity
+};
 
 }
+
+#endif

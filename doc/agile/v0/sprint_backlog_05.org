@@ -18,39 +18,41 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-18 Tue 09:56], for Tuesday, November 18, 2025.
+#+CAPTION: Clock summary at [2025-11-18 Tue 17:29], for Tuesday, November 18, 2025.
 |       | <75>                                                    |        |      |      |       |
 | Tags  | Headline                                                | Time   |      |      |     % |
 |-------+---------------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                            | *1:03* |      |      | 100.0 |
+|       | *Total time*                                            | *3:14* |      |      | 100.0 |
 |-------+---------------------------------------------------------+--------+------+------+-------|
-|       | Stories                                                 | 1:03   |      |      | 100.0 |
-|       | Active                                                  |        | 1:03 |      | 100.0 |
-| agile | Sprint and product backlog refinement                   |        |      | 0:13 |  20.6 |
-| code  | Uninformative incompatible protocol version error in qt |        |      | 0:30 |  47.6 |
-| code  | Implement delete account                                |        |      | 0:20 |  31.7 |
+|       | Stories                                                 | 3:14   |      |      | 100.0 |
+|       | Active                                                  |        | 3:14 |      | 100.0 |
+| agile | Sprint and product backlog refinement                   |        |      | 0:13 |   6.7 |
+| code  | Uninformative incompatible protocol version error in qt |        |      | 0:51 |  26.3 |
+| code  | Implement delete account                                |        |      | 0:20 |  10.3 |
+| code  | Reorganise CLI structure by entity                      |        |      | 1:50 |  56.7 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-18 Tue 09:56]
+#+CAPTION: Clock summary at [2025-11-18 Tue 17:29]
 |       | <75>                                                    |         |       |      |       |
 | Tags  | Headline                                                | Time    |       |      |     % |
 |-------+---------------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                            | *11:46* |       |      | 100.0 |
+|       | *Total time*                                            | *13:57* |       |      | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                                 | 11:46   |       |      | 100.0 |
-|       | Active                                                  |         | 11:46 |      | 100.0 |
-| agile | Sprint and product backlog refinement                   |         |       | 2:35 |  22.0 |
-| infra | Add AI generated sprint summary                         |         |       | 1:38 |  13.9 |
-| infra | Add skill to generate release notes                     |         |       | 0:27 |   3.8 |
-| code  | Version of =ores.qt= does not update                    |         |       | 0:54 |   7.6 |
-| code  | Minor updates to UML diagrams                           |         |       | 0:13 |   1.8 |
-| infra | Add support for project planning                        |         |       | 2:24 |  20.4 |
-| code  | Add a "detached" mode                                   |         |       | 1:18 |  11.0 |
-| code  | Merge update and create currency messages               |         |       | 1:07 |   9.5 |
-| code  | Uninformative incompatible protocol version error in qt |         |       | 0:50 |   7.1 |
-| code  | Implement delete account                                |         |       | 0:20 |   2.8 |
+|       | Stories                                                 | 13:57   |       |      | 100.0 |
+|       | Active                                                  |         | 13:57 |      | 100.0 |
+| agile | Sprint and product backlog refinement                   |         |       | 2:35 |  18.5 |
+| infra | Add AI generated sprint summary                         |         |       | 1:38 |  11.7 |
+| infra | Add skill to generate release notes                     |         |       | 0:27 |   3.2 |
+| code  | Version of =ores.qt= does not update                    |         |       | 0:54 |   6.5 |
+| code  | Minor updates to UML diagrams                           |         |       | 0:13 |   1.6 |
+| infra | Add support for project planning                        |         |       | 2:24 |  17.2 |
+| code  | Add a "detached" mode                                   |         |       | 1:18 |   9.3 |
+| code  | Merge update and create currency messages               |         |       | 1:07 |   8.0 |
+| code  | Uninformative incompatible protocol version error in qt |         |       | 1:11 |   8.5 |
+| code  | Implement delete account                                |         |       | 0:20 |   2.4 |
+| code  | Reorganise CLI structure by entity                      |         |       | 1:50 |  13.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -721,7 +723,7 @@ Testing notes:
   version mismatch and sends detailed handshake_response
 - Client stores detailed error message in =last_error_= accessible via =last_error()=
 
-*** STARTED Implement delete account                                   :code:
+*** COMPLETED Implement delete account                                 :code:
     :LOGBOOK:
     CLOCK: [2025-11-18 Tue 08:45]--[2025-11-18 Tue 09:05] =>  0:20
     :END:
@@ -786,7 +788,11 @@ The implementation follows the same bitemporal soft-delete pattern used for curr
 
 The CLI implementation adds a new "delete" command that supports deleting accounts by either UUID or username. The command automatically detects whether the provided key is a UUID and, if not, treats it as a username and performs a lookup to find the corresponding account ID. This provides a flexible user experience while maintaining type safety at the database level.
 
-*** Reorganise CLI structure by entity                                 :code:
+*** STARTED Reorganise CLI structure by entity                         :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-18 Tue 17:29]
+    CLOCK: [2025-11-18 Tue 14:30]--[2025-11-18 Tue 16:20] =>  1:50
+    :END:
 
 The structure of CLI commands at present is very confusing. We have import and
 export as the top-level concepts, but in reality that is not how the tool should
@@ -851,6 +857,166 @@ What the ask is:
 - update existing recipes to follow this pattern. Recipes should also be
   organised by entity rather than by import and export.
 - add commands for missing entities such as accounts and feature flags.
+
+***** Tasks
+
+- [X] Analyze current CLI structure and command parsing
+- [X] Design new entity-based command structure
+- [X] Implement new command parser for entity-first syntax
+- [X] Migrate currencies commands to new structure
+- [X] Migrate accounts commands to new structure
+- [X] Add feature flags commands
+- [X] Update recipes to use new command structure
+- [X] Build and test all CLI commands
+- [X] Update help text and documentation
+- [X] Remove legacy command-based syntax support
+
+***** COMPLETED Phase 1: Foundation Structures
+CLOSED: [2025-11-18 Tue]
+
+Modified files:
+- =projects/ores.cli/include/ores.cli/config/operation.hpp= - Created operation enum with import_data, export_data, list, delete_entity, add
+- =projects/ores.cli/include/ores.cli/config/list_options.hpp= - Created list_options structure for listing entities
+- =projects/ores.cli/src/config/list_options.cpp= - Implemented stream output operator
+- =projects/ores.cli/include/ores.cli/config/options.hpp= - Added optional<list_options> listing field
+- =doc/agile/v0/sprint_backlog_05.org= - Added design documentation
+
+Notes:
+- All new structures compile successfully
+- Design documented in sprint backlog
+- Pull request: https://github.com/OreStudio/OreStudio/pull/98
+- Next phase: Implement currencies entity commands
+
+***** COMPLETED Phase 2: Currencies Entity Commands
+CLOSED: [2025-11-18 Tue]
+
+Modified files:
+- =projects/ores.cli/src/config/parser.cpp= - Added currencies command handler
+
+Implementation details:
+- Added =currencies= as a top-level command alongside import/export/delete
+- Parser now accepts: =./ores.cli currencies <operation> [options]=
+- Supported operations: import, export, list, delete
+- Auto-populates entity field with "currencies"
+- Reuses existing option structures (import_options, export_options, delete_options)
+- Both old and new syntax work side-by-side
+
+Examples:
+- New: =./ores.cli currencies export --format xml=
+- Old: =./ores.cli export --entity currencies --format xml=
+
+Testing:
+- [X] Compiles successfully
+- [X] Help text shows currencies command
+- [X] Operation-specific help works (e.g. =currencies export --help=)
+- [X] Parser validates operations correctly
+
+Notes:
+- List operation reuses export options for now (future: dedicated list_options)
+- Ready for additional entities (accounts, feature_flags) to follow same pattern
+- Minimal changes maximize compatibility
+
+***** COMPLETED Phase 3: All Entities Implementation
+CLOSED: [2025-11-18 Tue]
+
+Modified files:
+- =projects/ores.cli/include/ores.cli/config/entity.hpp= - Added feature_flags to enum
+- =projects/ores.cli/src/config/parser.cpp= - Added accounts and feature_flags handlers
+
+Implementation details:
+- Added =accounts= entity command with operations: list, delete, add
+- Added =feature_flags= entity command with operations: list, delete, add
+- All entities follow the same pattern as currencies
+- Add operation marked as "not yet implemented" for accounts and feature_flags
+- Both old and new syntax continue to work side-by-side
+
+Supported commands:
+1. Currencies:
+   - =./ores.cli currencies import --target file.xml=
+   - =./ores.cli currencies export --format xml=
+   - =./ores.cli currencies list --format json=
+   - =./ores.cli currencies delete --key USD=
+
+2. Accounts:
+   - =./ores.cli accounts list --format json=
+   - =./ores.cli accounts delete --key username=
+   - =./ores.cli accounts add= (placeholder)
+
+3. Feature Flags:
+   - =./ores.cli feature_flags list --format json=
+   - =./ores.cli feature_flags delete --key flag_name=
+   - =./ores.cli feature_flags add= (placeholder)
+
+Testing:
+- [X] All code compiles without warnings
+- [X] Help text shows all three entity commands
+- [X] Operation-specific help works for all entities
+- [X] Parser validates operations correctly for each entity
+- [X] Error messages guide users to valid operations
+
+Summary:
+- Complete entity-based CLI structure implemented for all current entities
+- Backward compatible with existing command-based syntax
+- Foundation in place for future entity additions
+- Clean, consistent pattern across all entities
+
+***** COMPLETED Phase 4: Legacy Syntax Removal
+CLOSED: [2025-11-18 Tue]
+
+Modified files:
+- =projects/ores.cli/src/config/parser.cpp= - Removed legacy command handlers
+- =doc/recipes/cli_entity_recipes.org= - Removed legacy syntax examples
+
+Implementation details:
+- Removed support for old command-based syntax (import, export, delete commands)
+- CLI now exclusively accepts entity-based syntax
+- Updated =validate_command_name()= to only accept entity commands (currencies, accounts, feature_flags)
+- Updated help text to show only entity-based commands
+- Removed "Legacy Command-Based Syntax" section from recipes
+
+Testing:
+- [X] Build successful with legacy handlers removed
+- [X] Entity commands work correctly (currencies, accounts, feature_flags)
+- [X] Help system displays only entity-based commands
+- [X] Legacy commands properly rejected with helpful error message
+- [X] All entity operations (import, export, list, delete) functional
+
+Examples of rejected legacy syntax:
+- =./ores.cli import --entity currencies= → Error: "Invalid or unsupported command: import"
+- =./ores.cli export --entity accounts= → Error: "Invalid or unsupported command: export"
+- =./ores.cli delete --entity currencies= → Error: "Invalid or unsupported command: delete"
+
+Summary:
+- Clean break from legacy syntax completed
+- All functionality migrated to entity-based commands
+- Documentation updated to reflect new syntax only
+- User-friendly error messages guide users to correct syntax
+
+***** Design
+
+****** Current Structure
+- Syntax: =./ores.cli <command> --entity <entity_name> <options>=
+- Commands: =import=, =export=, =delete=
+- Entities: =currencies=, =accounts=
+- Example: =./ores.cli export --entity currencies --format xml=
+
+****** New Structure
+- Syntax: =./ores.cli <entity> <operation> [options]=
+- Entities: =currencies=, =accounts=, (future: =feature_flags=)
+- Operations per entity:
+  - currencies: =import=, =export=, =list=, =delete=, =add=
+  - accounts: =list=, =delete=, =add=
+  - feature_flags: =list=, =delete=, =add=
+- Example: =./ores.cli currencies export --format xml=
+
+****** Implementation Approach
+1. Modify parser.cpp to parse entity as first positional argument
+2. Parse operation as second positional argument
+3. Keep existing option structures (import_options, export_options, delete_options) but populate them based on entity+operation combination
+4. Add new =list_options= structure for list command
+5. Add new =add_options= structure for add command (future work)
+6. Update help text to be entity-centric
+7. Keep application.cpp mostly unchanged (just dispatch based on options)
 
 *** Update =ores.client= with REPL commands for all entities           :code:
 

@@ -17,30 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.accounts/domain/feature_flags_table_io.hpp"
+#ifndef ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_JSON_IO_HPP
+#define ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_JSON_IO_HPP
 
-#include <ostream>
-#include <fort.hpp>
+#include <string>
+#include <vector>
+#include "ores.accounts/domain/feature_flags.hpp"
 
 namespace ores::accounts::domain {
 
-void print_feature_flags_table(std::ostream& s, const std::vector<feature_flags>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
-
-    table << fort::header << "Name" << "Description" << "Enabled"
-          << "Modified By" << fort::endr;
-
-    for (const auto& ff : v) {
-        table << ff.name << ff.description << ff.enabled
-              << ff.modified_by << fort::endr;
-    }
-    s << std::endl << table.to_string() << std::endl;
-}
-
-std::ostream& operator<<(std::ostream& s, const std::vector<feature_flags>& v) {
-    print_feature_flags_table(s, v);
-    return s;
-}
+/**
+ * @brief Dumps the feature flags object to a stream in JSON format.
+ */
+/**@{*/
+std::string convert_to_json(const feature_flags& v);
+std::string convert_to_json(const std::vector<feature_flags>& v);
+/**@}*/
 
 }
+
+#endif

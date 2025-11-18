@@ -17,30 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.accounts/domain/feature_flags_table_io.hpp"
+#include "ores.accounts/domain/account_table.hpp"
 
-#include <ostream>
 #include <fort.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::accounts::domain {
 
-void print_feature_flags_table(std::ostream& s, const std::vector<feature_flags>& v) {
+std::string convert_to_table(const std::vector<account>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Name" << "Description" << "Enabled"
-          << "Modified By" << fort::endr;
+    table << fort::header << "ID (UUID)" << "Username" << "Email"
+          << "Admin?" << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& ff : v) {
-        table << ff.name << ff.description << ff.enabled
-              << ff.modified_by << fort::endr;
+    for (const auto& a : v) {
+        std::string admin_status = a.is_admin ? "Y" : "N";
+        table << boost::uuids::to_string(a.id) << a.username
+              << a.email << admin_status << a.modified_by
+              << a.version << fort::endr;
     }
-    s << std::endl << table.to_string() << std::endl;
-}
-
-std::ostream& operator<<(std::ostream& s, const std::vector<feature_flags>& v) {
-    print_feature_flags_table(s, v);
-    return s;
+    return table.to_string();
 }
 
 }

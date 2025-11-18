@@ -17,30 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.accounts/domain/feature_flags_table_io.hpp"
+#include "ores.accounts/domain/account_json.hpp"
 
-#include <ostream>
-#include <fort.hpp>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 
 namespace ores::accounts::domain {
 
-void print_feature_flags_table(std::ostream& s, const std::vector<feature_flags>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
-
-    table << fort::header << "Name" << "Description" << "Enabled"
-          << "Modified By" << fort::endr;
-
-    for (const auto& ff : v) {
-        table << ff.name << ff.description << ff.enabled
-              << ff.modified_by << fort::endr;
-    }
-    s << std::endl << table.to_string() << std::endl;
+std::string convert_to_json(const account& v) {
+    return rfl::json::write(v);
 }
 
-std::ostream& operator<<(std::ostream& s, const std::vector<feature_flags>& v) {
-    print_feature_flags_table(s, v);
-    return s;
+std::string convert_to_json(const std::vector<account>& v) {
+    return rfl::json::write(v);
 }
 
 }

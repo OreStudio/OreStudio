@@ -295,19 +295,14 @@ process_connect(std::ostream& out, std::string host, std::string port, std::stri
 
         client_ = std::make_shared<comms::client>(config_);
 
-        bool connected = co_await client_->connect();
+        co_await client_->connect();
 
-        if (connected) {
-            BOOST_LOG_SEV(lg(), info) << "Successfully connected";
-            out << "✓ Connected\nores-client> " << std::flush;
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Connection failed";
-            out << "✗ Connection failed\nores-client> " << std::flush;
-        }
+        BOOST_LOG_SEV(lg(), info) << "Successfully connected";
+        out << "✓ Connected\nores-client> " << std::flush;
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Connect exception: " << e.what();
-        out << "✗ Error: " << e.what() << std::endl;
+        out << "✗ Error: " << e.what() << "\nores-client> " << std::flush;
     }
 }
 
@@ -413,17 +408,11 @@ boost::asio::awaitable<bool> repl::auto_connect() {
 
         client_ = std::make_shared<comms::client>(config_);
 
-        bool connected = co_await client_->connect();
+        co_await client_->connect();
 
-        if (connected) {
-            BOOST_LOG_SEV(lg(), info) << "Successfully auto-connected";
-            std::cout << "✓ Auto-connected to " << config_.host << ":" << config_.port << std::endl;
-            co_return true;
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Auto-connect failed";
-            std::cout << "✗ Auto-connect failed" << std::endl;
-            co_return false;
-        }
+        BOOST_LOG_SEV(lg(), info) << "Successfully auto-connected";
+        std::cout << "✓ Auto-connected to " << config_.host << ":" << config_.port << std::endl;
+        co_return true;
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Auto-connect exception: " << e.what();

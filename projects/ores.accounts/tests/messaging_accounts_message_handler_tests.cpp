@@ -399,3 +399,86 @@ TEST_CASE("handle_login_request_non_existent_user", tags) {
         CHECK(rp.error_message.find("user") != std::string::npos);
     });
 }
+
+TEST_CASE("handle_delete_account_request_success", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h(database_table);
+    accounts_message_handler sut(h.context());
+
+    // Create an account first
+    const auto account = generate_synthetic_account();
+    BOOST_LOG_SEV(lg, info) << "Account: " << account;
+
+    create_account_request ca_rq(to_create_account_request(account));
+    BOOST_LOG_SEV(lg, info) << "Request: " << ca_rq;
+
+    const auto create_payload = ca_rq.serialize();
+
+    boost::uuids::uuid account_id;
+    boost::asio::io_context io_ctx;
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::create_account_request,
+            create_payload, internet::endpoint());
+        REQUIRE(r.has_value());
+
+        const auto response_result =
+            create_account_response::deserialize(r.value());
+        REQUIRE(response_result.has_value());
+        account_id = response_result.value().account_id;
+    });
+
+    // Delete the account
+    delete_account_request drq;
+    drq.account_id = account_id;
+    BOOST_LOG_SEV(lg, info) << "Delete request: " << drq;
+
+    const auto delete_payload = drq.serialize();
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::delete_account_request,
+            delete_payload, internet::endpoint());
+
+        REQUIRE(r.has_value());
+        const auto response_result =
+            delete_account_response::deserialize(r.value());
+        REQUIRE(response_result.has_value());
+        const auto& rp = response_result.value();
+        BOOST_LOG_SEV(lg, info) << "Response: " << rp;
+
+        CHECK(rp.success == true);
+        CHECK(rp.message == "Account deleted successfully");
+    });
+}
+
+TEST_CASE("handle_delete_account_request_non_existent_account", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h(database_table);
+    accounts_message_handler sut(h.context());
+
+    // Try to delete a non-existent account
+    delete_account_request drq;
+    drq.account_id = boost::uuids::random_generator()();
+    BOOST_LOG_SEV(lg, info) << "Delete request: " << drq;
+
+    const auto payload = drq.serialize();
+
+    boost::asio::io_context io_ctx;
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::delete_account_request,
+            payload, internet::endpoint());
+
+        REQUIRE(r.has_value());
+        const auto response_result =
+            delete_account_response::deserialize(r.value());
+        REQUIRE(response_result.has_value());
+        const auto& rp = response_result.value();
+        BOOST_LOG_SEV(lg, info) << "Response: " << rp;
+
+        CHECK(rp.success == false);
+        CHECK(rp.message.find("does not exist") != std::string::npos);
+    });
+}

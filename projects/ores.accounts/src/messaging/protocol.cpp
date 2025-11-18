@@ -324,4 +324,55 @@ std::ostream& operator<<(std::ostream& s, const unlock_account_response& v)
     return s;
 }
 
+std::vector<std::uint8_t> delete_account_request::serialize() const {
+    std::vector<std::uint8_t> buffer;
+    writer::write_uuid(buffer, account_id);
+    return buffer;
+}
+
+std::expected<delete_account_request, comms::protocol::error_code>
+delete_account_request::deserialize(std::span<const std::uint8_t> data) {
+    auto account_id_result = reader::read_uuid(data);
+    if (!account_id_result) {
+        return std::unexpected(account_id_result.error());
+    }
+    return delete_account_request{*account_id_result};
+}
+
+std::ostream& operator<<(std::ostream& s, const delete_account_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::uint8_t> delete_account_response::serialize() const {
+    std::vector<std::uint8_t> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    return buffer;
+}
+
+std::expected<delete_account_response, comms::protocol::error_code>
+delete_account_response::deserialize(std::span<const std::uint8_t> data) {
+    delete_account_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) {
+        return std::unexpected(success_result.error());
+    }
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) {
+        return std::unexpected(message_result.error());
+    }
+    response.message = *message_result;
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const delete_account_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
 }

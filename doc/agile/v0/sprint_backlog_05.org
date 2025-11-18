@@ -18,44 +18,44 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-17 Mon 23:36], for Monday, November 17, 2025.
-|       | <75>                                      |        |      |      |       |
-| Tags  | Headline                                  | Time   |      |      |     % |
-|-------+-------------------------------------------+--------+------+------+-------|
-|       | *Total time*                              | *6:51* |      |      | 100.0 |
-|-------+-------------------------------------------+--------+------+------+-------|
-|       | Stories                                   | 6:51   |      |      | 100.0 |
-|       | Active                                    |        | 6:51 |      | 100.0 |
-| agile | Sprint and product backlog refinement     |        |      | 0:55 |  13.4 |
-| code  | Version of =ores.qt= does not update      |        |      | 0:54 |  13.1 |
-| code  | Minor updates to UML diagrams             |        |      | 0:13 |   3.2 |
-| infra | Add support for project planning          |        |      | 2:24 |  35.0 |
-| code  | Add a "detached" mode                     |        |      | 1:18 |  19.0 |
-| code  | Merge update and create currency messages |        |      | 1:07 |  16.3 |
+#+CAPTION: Clock summary at [2025-11-18 Tue 09:56], for Tuesday, November 18, 2025.
+|       | <75>                                                    |        |      |      |       |
+| Tags  | Headline                                                | Time   |      |      |     % |
+|-------+---------------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                            | *1:03* |      |      | 100.0 |
+|-------+---------------------------------------------------------+--------+------+------+-------|
+|       | Stories                                                 | 1:03   |      |      | 100.0 |
+|       | Active                                                  |        | 1:03 |      | 100.0 |
+| agile | Sprint and product backlog refinement                   |        |      | 0:13 |  20.6 |
+| code  | Uninformative incompatible protocol version error in qt |        |      | 0:30 |  47.6 |
+| code  | Implement delete account                                |        |      | 0:20 |  31.7 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-17 Mon 23:36]
-|       | <75>                                      |         |       |      |       |
-| Tags  | Headline                                  | Time    |       |      |     % |
-|-------+-------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                              | *10:23* |       |      | 100.0 |
-|-------+-------------------------------------------+---------+-------+------+-------|
-|       | Stories                                   | 10:23   |       |      | 100.0 |
-|       | Active                                    |         | 10:23 |      | 100.0 |
-| agile | Sprint and product backlog refinement     |         |       | 2:22 |  22.8 |
-| infra | Add AI generated sprint summary           |         |       | 1:38 |  15.7 |
-| infra | Add skill to generate release notes       |         |       | 0:27 |   4.3 |
-| code  | Version of =ores.qt= does not update      |         |       | 0:54 |   8.7 |
-| code  | Minor updates to UML diagrams             |         |       | 0:13 |   2.1 |
-| infra | Add support for project planning          |         |       | 2:24 |  23.1 |
-| code  | Add a "detached" mode                     |         |       | 1:18 |  12.5 |
-| code  | Merge update and create currency messages |         |       | 1:07 |  10.8 |
+#+CAPTION: Clock summary at [2025-11-18 Tue 09:56]
+|       | <75>                                                    |         |       |      |       |
+| Tags  | Headline                                                | Time    |       |      |     % |
+|-------+---------------------------------------------------------+---------+-------+------+-------|
+|       | *Total time*                                            | *11:46* |       |      | 100.0 |
+|-------+---------------------------------------------------------+---------+-------+------+-------|
+|       | Stories                                                 | 11:46   |       |      | 100.0 |
+|       | Active                                                  |         | 11:46 |      | 100.0 |
+| agile | Sprint and product backlog refinement                   |         |       | 2:35 |  22.0 |
+| infra | Add AI generated sprint summary                         |         |       | 1:38 |  13.9 |
+| infra | Add skill to generate release notes                     |         |       | 0:27 |   3.8 |
+| code  | Version of =ores.qt= does not update                    |         |       | 0:54 |   7.6 |
+| code  | Minor updates to UML diagrams                           |         |       | 0:13 |   1.8 |
+| infra | Add support for project planning                        |         |       | 2:24 |  20.4 |
+| code  | Add a "detached" mode                                   |         |       | 1:18 |  11.0 |
+| code  | Merge update and create currency messages               |         |       | 1:07 |   9.5 |
+| code  | Uninformative incompatible protocol version error in qt |         |       | 0:50 |   7.1 |
+| code  | Implement delete account                                |         |       | 0:20 |   2.8 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-11-18 Tue 09:16]--[2025-11-18 Tue 09:29] =>  0:13
     CLOCK: [2025-11-17 Mon 22:11]--[2025-11-17 Mon 22:21] =>  0:10
     CLOCK: [2025-11-17 Mon 09:50]--[2025-11-17 Mon 10:16] =>  0:26
     CLOCK: [2025-11-17 Mon 08:58]--[2025-11-17 Mon 09:10] =>  0:12
@@ -518,10 +518,31 @@ Options to consider:
 - Recommended: Accept breaking change, document in release notes
 
 
+*** CANCELLED Split console recipes by entity                          :code:
+
+*Rationale*: This work will be carried out as part of the client and CLI
+refactors.
+
+At present we have one very long file, but this is not scalable. We could split
+out:
+
+- general args (help, info, etc)
+- by entity
+
+Notes:
+
+- Rename console to CLI.
+- reduce output, only first few entries are needed.
+- add a toc.
+
 *** COMPLETED Uninformative incompatible protocol version error in qt  :code:
     :LOGBOOK:
-    CLOCK: [2025-11-17 Mon 23:40]
+    CLOCK: [2025-11-18 Tue 09:55]--[2025-11-18 Tue 10:16] =>  0:21
+    CLOCK: [2025-11-18 Tue 09:30]--[2025-11-18 Tue 09:54] =>  0:24
+    CLOCK: [2025-11-17 Mon 23:40]--[2025-11-18 Tue 00:06] =>  0:26
     :END:
+
+Note: most work done but Qt UI still shows incorrect message.
 
 As part of the merging of currency messages we did a backwards incompatible
 change in the protocol. I tested how the client handles this and it was not
@@ -650,10 +671,12 @@ Modified files:
 - [X] Create detailed error message: "Incompatible protocol version. Server:
   X.Y, Client: A.B"
 - [X] Return this message through the error path to =LoginDialog=
+- [X] Update LoginDialog to use =client_->last_error()= instead of hardcoded message
 
 Modified files:
 - =projects/ores.comms/include/ores.comms/net/client.hpp= - Added =last_error()= method and =last_error_= member
 - =projects/ores.comms/src/net/client.cpp= - Store detailed error message on version mismatch, implement =last_error()= getter
+- =projects/ores.qt/src/LoginDialog.cpp= - Use =client_->last_error()= to get detailed error message (lines 207-212)
 
 ***** COMPLETED Task 4: Add Protocol Version to Qt About Dialog
       CLOSED: [2025-11-17 Sun]
@@ -686,9 +709,11 @@ Modified files:
   - All comms tests pass: 62 assertions in 9 test cases (up from 49 in 6)
 
 Modified files:
+
 - =projects/ores.comms/tests/frame_tests.cpp= - Added version mismatch test cases
 
 Testing notes:
+
 - Manual testing with mismatched versions would require temporarily changing
   PROTOCOL_VERSION_MAJOR in message_types.hpp, rebuilding, and running
   server/client with different versions
@@ -696,19 +721,180 @@ Testing notes:
   version mismatch and sends detailed handshake_response
 - Client stores detailed error message in =last_error_= accessible via =last_error()=
 
-*** Split console recipes by entity                                    :code:
+*** STARTED Implement delete account                                   :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-18 Tue 08:45]--[2025-11-18 Tue 09:05] =>  0:20
+    :END:
 
-At present we have one very long file, but this is not scalable. We could split
-out:
+At present you cannot delete an account.
 
-- general args (help, info, etc)
-- by entity
+***** Tasks
+
+Backend:
+- [X] Add delete_account message types to protocol
+- [X] Add delete_account_request/response message structs
+- [X] Implement serialize/deserialize for delete_account messages
+- [X] Add remove() method to account_repository for bitemporal soft delete
+- [X] Implement handle_delete_account_request in message handler
+- [X] Add protocol serialization tests (5 test cases)
+- [X] Add message handler tests (2 test cases for success and failure)
+- [X] Build and run all tests (90 test cases, 346 assertions, all passing)
+
+CLI:
+- [X] Add "accounts" to entity enum
+- [X] Create delete_options configuration struct
+- [X] Add delete_options to main options struct
+- [X] Implement delete command parser infrastructure
+- [X] Implement delete_account() in application (supports UUID or username)
+- [X] Implement delete_data() dispatcher method
+- [X] Add delete command to help text
+- [X] Build and test CLI delete command
+
+***** COMPLETED Implementation Details
+
+****** Backend
+
+Modified files:
+
+- =projects/ores.comms/include/ores.comms/protocol/message_types.hpp= - Added delete_account_request (0x2009) and delete_account_response (0x200A) message types
+- =projects/ores.accounts/include/ores.accounts/messaging/protocol.hpp= - Added delete_account_request and delete_account_response structs with serialize/deserialize methods
+- =projects/ores.accounts/src/messaging/protocol.cpp= - Implemented serialization using write_uuid/read_uuid for account_id and write_bool/read_bool + write_string/read_string for response
+- =projects/ores.accounts/include/ores.accounts/repository/account_repository.hpp= - Added remove() method declaration
+- =projects/ores.accounts/src/repository/account_repository.cpp= - Implemented remove() method using bitemporal soft delete (sets valid_to = current_timestamp via database trigger)
+- =projects/ores.accounts/src/service/account_service.cpp= - Updated delete_account() from stub to call repository remove() method
+- =projects/ores.accounts/include/ores.accounts/messaging/accounts_message_handler.hpp= - Added handle_delete_account_request() declaration and updated class documentation
+- =projects/ores.accounts/src/messaging/accounts_message_handler.cpp= - Added delete_account_request case to switch statement and implemented handler with try/catch for error handling
+- =projects/ores.accounts/tests/messaging_protocol_tests.cpp= - Added 5 serialization tests: request with valid UUID, request serialize/deserialize, response success, response failure, response serialize/deserialize
+- =projects/ores.accounts/tests/messaging_accounts_message_handler_tests.cpp= - Added 2 handler tests: successful deletion and deletion of non-existent account
+
+****** CLI
+
+Modified files:
+
+- =projects/ores.cli/include/ores.cli/config/entity.hpp= - Added "accounts" to entity enum
+- =projects/ores.cli/include/ores.cli/config/delete_options.hpp= - Created delete_options struct with target_entity and key fields
+- =projects/ores.cli/src/config/delete_options.cpp= - Implemented stream output operator for delete_options
+- =projects/ores.cli/include/ores.cli/config/options.hpp= - Added optional deleting field to main options struct
+- =projects/ores.cli/src/config/options.cpp= - Updated stream output operator to include deleting field
+- =projects/ores.cli/src/config/parser.cpp= - Added delete command constants, make_delete_options_description(), read_delete_options(), and integrated delete command into handle_command() and help text
+- =projects/ores.cli/include/ores.cli/app/application.hpp= - Added delete_account() and delete_data() method declarations
+- =projects/ores.cli/src/app/application.cpp= - Implemented delete_account() (supports deletion by UUID or username) and delete_data() (dispatcher for entity-specific deletion)
+
+***** Notes
+
+The implementation follows the same bitemporal soft-delete pattern used for currencies. When an account is deleted, the database trigger closes the temporal record by setting valid_to = current_timestamp, preserving the account's history while marking it as no longer active. The delete operation validates that the account exists before attempting deletion and returns appropriate success/failure messages.
+
+The CLI implementation adds a new "delete" command that supports deleting accounts by either UUID or username. The command automatically detects whether the provided key is a UUID and, if not, treats it as a username and performs a lookup to find the corresponding account ID. This provides a flexible user experience while maintaining type safety at the database level.
+
+*** Reorganise CLI structure by entity                                 :code:
+
+The structure of CLI commands at present is very confusing. We have import and
+export as the top-level concepts, but in reality that is not how the tool should
+work. The mission of the CLI tool is to wrap around repository functionality at
+the entity level so that we can operate directly against the database without
+going over the comms layer. Its units of work are relative to entities, for
+example:
+
+- currencies:
+  - import currencies from ORE Format. We use the terminology "import" to mean
+    bringing data from an external system.
+  - export currencies to ORE format. We use the terminology "export" to mean
+    taking data out to feed an external system.
+  - list existing currencies as a table or as JSON. We need support for latest,
+    "at time point" and "all" (meaning every single version). It should be
+    possible to supply some filtering by primary key (e.g. =--iso-code=).
+  - delete one or more currencies. User supplies a number of primary keys (e.g.
+    =--iso-code ABC --iso-code CDE --iso-code FGH= and so on).
+  - add a currency supplying arguments (e.g. =--iso-code= and so forth).
+  - add currencies from JSON.
+- accounts:
+  - list existing currencies as a table or as JSON. We need support for latest,
+    "at time point" and "all" (meaning every single version). It should be
+    possible to supply some filtering by primary key.
+  - delete one or more accounts. User supplies a list of primary keys.
+  - add an account supplying arguments.
+  - add accounts from JSON.
+- feature flags:
+  - list existing feature flags as a table or as JSON. We need support for
+    latest, "at time point" and "all" (meaning every single version). It should
+    be possible to supply some filtering by primary key.
+  - delete one or more feature flags. User supplies a list of primary keys.
+  - add feature flags supplying arguments.
+  - add feature flags from JSON.
+
+All of these operations should only involve repositories and possibly helper
+classes such as exporter and importer.
+
+What the ask is:
+
+- reorganise existing commands to fit this pattern, being driven by entities
+  rather than by import/export as it is at present. That is instead of:
+
+#+begin_src sh
+./ores.cli export --format xml --entity currencies
+#+end_src
+
+  We want:
+
+#+begin_src sh
+./ores.cli currencies export
+#+end_src
+
+  To mean "export currencies into ORE XML". And to list currencies:
+
+#+begin_src sh
+./ores.cli currencies list --format table
+#+end_src
+
+  Which means dump currencies as a table.
+
+- update existing recipes to follow this pattern. Recipes should also be
+  organised by entity rather than by import and export.
+- add commands for missing entities such as accounts and feature flags.
+
+*** Update =ores.client= with REPL commands for all entities           :code:
+
+The job of the client is to exercise the entirety of the comms protocol, and to
+provide a way to perform CRUD operations via command line. Note:
+
+- client never access the repositories directly, it should do exactly the same as the qt client
+  would do.
+- client's only interface is the REPL.
+- client will eventually be used by AI agents.
+
+Client needs to have messages at the entity level:
+
+- currencies:
+  - import currencies from ORE Format. Given a path in the filesystem, it
+    performs the import using the importer and appropriate comms messages.
+  - export currencies to ORE format. Uses comms to obtain the currencies, then
+    the exporter to convert, then dumps them into the terminal as ORE XML.
+  - list existing currencies as a table or as JSON. We need support for latest,
+    "at time point" and "all" (meaning every single version). It should be
+    possible to supply some filtering by the entity's ID (e.g.
+    =--iso-code=).
+  - delete one or more currencies. User supplies a number of entity IDs (e.g.
+    =--iso-code ABC --iso-code CDE --iso-code FGH= and so on).
+  - add a currency supplying arguments (e.g. =--iso-code= and so forth).
+  - add currencies from JSON.
+- accounts:
+  - list existing currencies as a table or as JSON. We need support for latest,
+    "at time point" and "all" (meaning every single version). It should be
+    possible to supply filtering by the entity's ID.
+  - delete one or more accounts. User supplies a list of entity IDs.
+  - add an account supplying arguments.
+  - add accounts from JSON.
+- feature flags:
+  - list existing feature flags as a table or as JSON. We need support for
+    latest, "at time point" and "all" (meaning every single version). It should
+    be possible to supply some filtering by the entity's ID
+  - delete one or more feature flags. User supplies a list of entity IDs.
+  - add feature flags supplying arguments.
+  - add feature flags from JSON.
 
 Notes:
 
-- Rename console to CLI.
-- reduce output, only first few entries are needed.
-- add a toc.
+- update recipes with the new client commands.
 
 *** Improve handling of error responses                                :code:
 
@@ -973,10 +1159,6 @@ forced to look at the result.
 
 At present we are deleting one currency at a time, sending a message for each,
 in =CurrencyMdiWindow.cpp=.
-
-*** Implement delete account                                           :code:
-
-At present you cannot delete an account.
 
 *** CLI Importing needs to read from database                          :code:
 

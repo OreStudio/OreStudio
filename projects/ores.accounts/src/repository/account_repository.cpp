@@ -166,4 +166,22 @@ account_repository::read_latest_by_username(const std::string& username) {
     return account_mapper::map(*r);
 }
 
+void account_repository::remove(const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing account from database: " << account_id;
+
+    // Delete the account - the database trigger will close the temporal record
+    // instead of actually deleting it (sets valid_to = current_timestamp)
+    const auto id_str = boost::lexical_cast<std::string>(account_id);
+    const auto query = sqlgen::delete_from<account_entity> |
+        where("id"_c == id_str);
+
+    const auto r = session(ctx_.connection_pool())
+        .and_then(begin_transaction)
+        .and_then(query)
+        .and_then(commit);
+    ensure_success(r);
+
+    BOOST_LOG_SEV(lg(), debug) << "Finished removing account from database.";
+}
+
 }

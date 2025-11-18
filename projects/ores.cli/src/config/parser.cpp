@@ -53,6 +53,10 @@ const std::string export_key_arg("key");
 const std::string export_all_versions_arg("all-versions");
 const std::string export_format_arg("format");
 
+const std::string delete_command_name("delete");
+const std::string delete_command_desc("Deletes entities from the system.");
+const std::string delete_key_arg("key");
+
 const std::string help_arg("help");
 const std::string version_arg("version");
 const std::string command_arg("command");
@@ -148,6 +152,20 @@ options_description make_export_options_description() {
 }
 
 /**
+ * @brief Creates the options related to deleting entities.
+ */
+options_description make_delete_options_description() {
+    options_description r("Delete");
+    r.add_options()
+        ("entity",
+            value<std::string>(),
+            "Entity to delete, e.g. 'accounts', etc.")
+        ("key", value<std::string>(), "Key to identify the entity (e.g., account ID or username).");
+
+    return r;
+}
+
+/**
  * @brief Creates the options related to client testing.
  */
 options_description make_client_options_description() {
@@ -163,7 +181,8 @@ options_description make_client_options_description() {
 void validate_command_name(const std::string& command_name) {
     const bool is_valid_command_name(
         command_name == import_command_name ||
-        command_name == export_command_name);
+        command_name == export_command_name ||
+        command_name == delete_command_name);
 
     if (!is_valid_command_name)
     {
@@ -205,6 +224,7 @@ void print_help(const options_description& od, std::ostream& info) {
 
     lambda(import_command_name, import_command_desc);
     lambda(export_command_name, export_command_desc);
+    lambda(delete_command_name, delete_command_desc);
 
     info << std::endl << "For command specific options, type <command> --help."
          << std::endl;
@@ -348,6 +368,23 @@ export_options read_export_options(const variables_map& vm) {
 
 
 /**
+ * @brief Reads the delete configuration from the variables map.
+ */
+ores::cli::config::delete_options read_delete_options(const variables_map& vm) {
+    ores::cli::config::delete_options r;
+
+    r.target_entity = read_entity(vm);
+
+    if (vm.count(delete_key_arg) == 0) {
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply --key argument for delete command."));
+    }
+    r.key = vm[delete_key_arg].as<std::string>();
+
+    return r;
+}
+
+/**
  * @brief Contains the processing logic for when the user supplies a command in
  * the command line.
  */
@@ -400,6 +437,17 @@ handle_command(const std::string& command_name, const bool has_help,
         store(command_line_parser(o).options(d).run(), vm);
         store(parse_environment(d, name_mapper), vm);
         r.exporting = read_export_options(vm);
+    } else if (command_name == delete_command_name) {
+        auto d(make_delete_options_description());
+        d.add(db_desc).add(logging_desc);
+        if (has_help) {
+            print_help_command(delete_command_name, d, info);
+            return {};
+        }
+
+        store(command_line_parser(o).options(d).run(), vm);
+        store(parse_environment(d, name_mapper), vm);
+        r.deleting = read_delete_options(vm);
     }
 
     r.database = database_configuration::read_options(vm);

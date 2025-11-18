@@ -17,18 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ENTITY_HPP
-#define ORES_CLI_CONFIG_ENTITY_HPP
+#ifndef ORES_CLI_CONFIG_DELETE_OPTIONS_HPP
+#define ORES_CLI_CONFIG_DELETE_OPTIONS_HPP
+
+#include <iosfwd>
+#include <string>
+#include "ores.cli/config/entity.hpp"
 
 namespace ores::cli::config {
 
 /**
- * @brief List of available entities to target.
+ * @brief Configuration related to deleting entities.
  */
-enum class entity {
-    currencies,
-    accounts
+struct delete_options final {
+    /**
+     * @brief Which entity to delete.
+     */
+    entity target_entity;
+    /**
+     * @brief Key to identify the entity to delete (e.g., account ID/username).
+     */
+    std::string key;
 };
+
+std::ostream& operator<<(std::ostream& s, const delete_options& v);
 
 }
 

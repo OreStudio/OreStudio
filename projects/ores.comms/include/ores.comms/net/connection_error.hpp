@@ -17,17 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ENTITY_HPP
-#define ORES_CLI_CONFIG_ENTITY_HPP
+#ifndef ORES_COMMS_NET_CONNECTION_ERROR_HPP
+#define ORES_COMMS_NET_CONNECTION_ERROR_HPP
 
-namespace ores::cli::config {
+#include <stdexcept>
+#include <string>
+
+namespace ores::comms {
 
 /**
- * @brief List of available entities to target.
+ * @brief Exception thrown when client connection or handshake fails.
+ *
+ * This exception provides detailed error messages for connection failures,
+ * protocol mismatches, and handshake errors.
  */
-enum class entity {
-    currencies,
-    accounts
+class connection_error : public std::runtime_error {
+public:
+    explicit connection_error(const std::string& message)
+        : std::runtime_error(message) {}
+
+    explicit connection_error(const char* message)
+        : std::runtime_error(message) {}
 };
 
 }

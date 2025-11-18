@@ -36,6 +36,7 @@ namespace ores::accounts::messaging {
  * - list_accounts_request: Retrieves all accounts from the repository
  * - login_request: Authenticates a user and updates login tracking
  * - unlock_account_request: Unlocks a locked account
+ * - delete_account_request: Deletes an account (bitemporal soft delete)
  */
 class accounts_message_handler final : public comms::protocol::message_handler {
 private:
@@ -96,6 +97,12 @@ private:
      */
     handler_result
     handle_unlock_account_request(std::span<const std::uint8_t> payload);
+
+    /**
+     * @brief Handle delete_account_request message.
+     */
+    handler_result
+    handle_delete_account_request(std::span<const std::uint8_t> payload);
 
     service::account_service service_;
 };

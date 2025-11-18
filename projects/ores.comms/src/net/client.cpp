@@ -30,6 +30,7 @@
 #include <boost/asio/use_future.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/log/sources/record_ostream.hpp>
+#include "ores.comms/net/connection_error.hpp"
 #include "ores.comms/protocol/handshake.hpp"
 
 namespace ores::comms {
@@ -70,7 +71,7 @@ void client::setup_ssl_context() {
     BOOST_LOG_SEV(lg(), info) << "SSL context configured for client";
 }
 
-boost::asio::awaitable<bool> client::connect() {
+boost::asio::awaitable<void> client::connect() {
     try {
         BOOST_LOG_SEV(lg(), info) << "Connecting to " << config_.host
                                   << ":" << config_.port;
@@ -106,120 +107,109 @@ boost::asio::awaitable<bool> client::connect() {
                                   << " (client: " << config_.client_identifier << ")";
 
         // Perform protocol handshake
-        bool handshake_ok = co_await perform_handshake();
-        if (!handshake_ok) {
-            BOOST_LOG_SEV(lg(), error) << "Protocol handshake failed.";
-            disconnect();
-            co_return false;
-        }
+        co_await perform_handshake();
 
         {
             std::lock_guard guard{state_mutex_};
             connected_ = true;
         }
         BOOST_LOG_SEV(lg(), info) << "Successfully connected to server.";
-        co_return true;
 
+    } catch (const connection_error&) {
+        // Re-throw connection_error as-is
+        disconnect();
+        throw;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Connection error: " << e.what();
         disconnect();
-        co_return false;
+        throw connection_error(std::format("Failed to connect to server: {}", e.what()));
     }
 }
 
-boost::asio::awaitable<bool> client::perform_handshake() {
-    try {
-        // Send handshake request
-        auto request_frame = protocol::create_handshake_request_frame(
-            [this]() {
-                std::lock_guard guard{state_mutex_};
-                return ++sequence_number_;
-            }(),
-            config_.client_identifier);
+boost::asio::awaitable<void> client::perform_handshake() {
+    // Send handshake request
+    auto request_frame = protocol::create_handshake_request_frame(
+        [this]() {
+            std::lock_guard guard{state_mutex_};
+            return ++sequence_number_;
+        }(),
+        config_.client_identifier);
 
-        BOOST_LOG_SEV(lg(), debug) << "About to send handshake request frame.";
-        co_await conn_->write_frame(request_frame);
-        BOOST_LOG_SEV(lg(), info) << "Sent handshake request. Client: "
-                                  << config_.client_identifier
-                                  << " Version: "
-                                  << protocol::PROTOCOL_VERSION_MAJOR
-                                  << "."
-                                  << protocol::PROTOCOL_VERSION_MINOR;
+    BOOST_LOG_SEV(lg(), debug) << "About to send handshake request frame.";
+    co_await conn_->write_frame(request_frame);
+    BOOST_LOG_SEV(lg(), info) << "Sent handshake request. Client: "
+                              << config_.client_identifier
+                              << " Version: "
+                              << protocol::PROTOCOL_VERSION_MAJOR
+                              << "."
+                              << protocol::PROTOCOL_VERSION_MINOR;
 
-        // Read handshake response
-        BOOST_LOG_SEV(lg(), debug) << "About to read handshake response frame";
-        auto response_frame_result = co_await conn_->read_frame();
-        if (!response_frame_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to read handshake response. "
-                                       << " Error code: "
-                                       << static_cast<int>(response_frame_result.error());
-            co_return false;
-        }
-
-        const auto& response_frame = *response_frame_result;
-
-        // Verify message type
-        if (response_frame.header().type != protocol::message_type::handshake_response) {
-            BOOST_LOG_SEV(lg(), error) << "Expected handshake response, got message type: "
-                                       << static_cast<int>(response_frame.header().type);
-            co_return false;
-        }
-
-        // Deserialize response
-        auto response_result = protocol::handshake_response::deserialize(response_frame.payload());
-        if (!response_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize handshake response";
-            co_return false;
-        }
-
-        const auto& response = *response_result;
-        BOOST_LOG_SEV(lg(), info) << "Received handshake response (server: "
-                                  << response.server_identifier << " version: "
-                                  << response.server_version_major
-                                  << "." << response.server_version_minor
-                                  << ". Compatible: "
-                                  << response.version_compatible;
-
-        // Check compatibility
-        if (!response.version_compatible) {
-            std::string error_msg = std::format(
-                "Incompatible protocol version. Server: {}.{}, Client: {}.{}",
-                response.server_version_major, response.server_version_minor,
-                protocol::PROTOCOL_VERSION_MAJOR, protocol::PROTOCOL_VERSION_MINOR);
-
-            BOOST_LOG_SEV(lg(), error) << error_msg;
-            {
-                std::lock_guard guard{state_mutex_};
-                last_error_ = error_msg;
-            }
-            co_return false;
-        }
-
-        if (response.status != protocol::error_code::none) {
-            BOOST_LOG_SEV(lg(), error) << "Server reported error: "
-                                       << static_cast<int>(response.status);
-            co_return false;
-        }
-
-        // Send acknowledgment
-        auto ack_frame = protocol::create_handshake_ack_frame(
-            [this]() {
-                std::lock_guard guard{state_mutex_};
-                return ++sequence_number_;
-            }(),
-            protocol::error_code::none);
-
-        BOOST_LOG_SEV(lg(), debug) << "About to send handshake acknowledgment frame";
-        co_await conn_->write_frame(ack_frame);
-        BOOST_LOG_SEV(lg(), info) << "Sent handshake acknowledgment";
-
-        BOOST_LOG_SEV(lg(), debug) << "Client handshake completed successfully";
-        co_return true;
-
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Handshake exception: " << e.what();
-        co_return false;
+    // Read handshake response
+    BOOST_LOG_SEV(lg(), debug) << "About to read handshake response frame";
+    auto response_frame_result = co_await conn_->read_frame();
+    if (!response_frame_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to read handshake response. "
+                                   << " Error code: "
+                                   << static_cast<int>(response_frame_result.error());
+        throw connection_error("Failed to read handshake response from server");
     }
+
+    const auto& response_frame = *response_frame_result;
+
+    // Verify message type
+    if (response_frame.header().type != protocol::message_type::handshake_response) {
+        BOOST_LOG_SEV(lg(), error) << "Expected handshake response, got message type: "
+                                   << static_cast<int>(response_frame.header().type);
+        throw connection_error(std::format(
+            "Unexpected message type during handshake: {}",
+            static_cast<int>(response_frame.header().type)));
+    }
+
+    // Deserialize response
+    auto response_result = protocol::handshake_response::deserialize(
+        response_frame.payload());
+    if (!response_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize handshake response";
+        throw connection_error("Failed to deserialize handshake response");
+    }
+
+    const auto& response = *response_result;
+    BOOST_LOG_SEV(lg(), info) << "Received handshake response (server: "
+                              << response.server_identifier << " version: "
+                              << response.server_version_major
+                              << "." << response.server_version_minor
+                              << ". Compatible: "
+                              << response.version_compatible;
+
+    if (!response.version_compatible) {
+        std::string error_msg = std::format(
+            "Incompatible protocol version. Server: {}.{}, Client: {}.{}",
+            response.server_version_major, response.server_version_minor,
+            protocol::PROTOCOL_VERSION_MAJOR, protocol::PROTOCOL_VERSION_MINOR);
+        BOOST_LOG_SEV(lg(), error) << error_msg;
+        throw connection_error(error_msg);
+    }
+
+    if (response.status != protocol::error_code::none) {
+        BOOST_LOG_SEV(lg(), error) << "Server reported error: "
+                                   << static_cast<int>(response.status);
+        throw connection_error(std::format(
+            "Server rejected handshake with error code: {}",
+            static_cast<int>(response.status)));
+    }
+
+    auto ack_frame = protocol::create_handshake_ack_frame(
+        [this]() {
+            std::lock_guard guard{state_mutex_};
+            return ++sequence_number_;
+        }(),
+        protocol::error_code::none);
+
+    BOOST_LOG_SEV(lg(), debug) << "About to send handshake acknowledgement frame.";
+    co_await conn_->write_frame(ack_frame);
+    BOOST_LOG_SEV(lg(), debug) << "Sent handshake acknowledgement.";
+
+    BOOST_LOG_SEV(lg(), debug) << "Client handshake completed successfully.";
 }
 
 void client::disconnect() {
@@ -237,11 +227,6 @@ void client::disconnect() {
 bool client::is_connected() const {
     std::lock_guard guard{state_mutex_};
     return connected_ && conn_ && conn_->is_open();
-}
-
-std::string client::last_error() const {
-    std::lock_guard guard{state_mutex_};
-    return last_error_;
 }
 
 boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
@@ -288,14 +273,13 @@ client::send_request(protocol::frame request_frame) {
     }
 }
 
-bool client::connect_sync() {
+void client::connect_sync() {
     BOOST_LOG_SEV(lg(), debug) << "connect_sync: starting";
 
-    auto task = [this]() -> boost::asio::awaitable<bool> {
+    auto task = [this]() -> boost::asio::awaitable<void> {
         BOOST_LOG_SEV(lg(), debug) << "connect_sync: task started";
-        bool result = co_await connect();
-        BOOST_LOG_SEV(lg(), debug) << "connect_sync: task completed, result=" << result;
-        co_return result;
+        co_await connect();
+        BOOST_LOG_SEV(lg(), debug) << "connect_sync: task completed";
     };
 
     BOOST_LOG_SEV(lg(), debug) << "connect_sync: spawning task with use_future";
@@ -308,9 +292,8 @@ bool client::connect_sync() {
     }
 
     BOOST_LOG_SEV(lg(), debug) << "connect_sync: getting result from future";
-    bool result = future.get();
-    BOOST_LOG_SEV(lg(), debug) << "connect_sync: returning " << result;
-    return result;
+    future.get(); // Will throw if connect() threw
+    BOOST_LOG_SEV(lg(), debug) << "connect_sync: completed successfully";
 }
 
 std::expected<protocol::frame, protocol::error_code>

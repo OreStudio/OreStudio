@@ -858,7 +858,7 @@ What the ask is:
 ***** Tasks
 
 - [X] Analyze current CLI structure and command parsing
-- [ ] Design new entity-based command structure
+- [X] Design new entity-based command structure
 - [ ] Implement new command parser for entity-first syntax
 - [ ] Migrate currencies commands to new structure
 - [ ] Migrate accounts commands to new structure
@@ -866,6 +866,21 @@ What the ask is:
 - [ ] Update recipes to use new command structure
 - [ ] Build and test all CLI commands
 - [ ] Update help text and documentation
+
+***** COMPLETED Setup and Design
+CLOSED: [2025-11-18 Tue]
+
+Modified files:
+- =projects/ores.cli/include/ores.cli/config/operation.hpp= - Created operation enum with import_data, export_data, list, delete_entity, add
+- =projects/ores.cli/include/ores.cli/config/list_options.hpp= - Created list_options structure for listing entities
+- =projects/ores.cli/src/config/list_options.cpp= - Implemented stream output operator
+- =projects/ores.cli/include/ores.cli/config/options.hpp= - Added optional<list_options> listing field
+- =doc/agile/v0/sprint_backlog_05.org= - Added design documentation
+
+Notes:
+- All new structures compile successfully
+- Design documented in sprint backlog
+- Ready to proceed with parser modification
 
 ***** Design
 

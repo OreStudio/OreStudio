@@ -17,19 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ENTITY_HPP
-#define ORES_CLI_CONFIG_ENTITY_HPP
+#include "ores.cli/config/delete_options.hpp"
+
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include <ostream>
 
 namespace ores::cli::config {
 
-/**
- * @brief List of available entities to target.
- */
-enum class entity {
-    currencies,
-    accounts
-};
-
+std::ostream& operator<<(std::ostream& s, const delete_options& v) {
+    rfl::json::write(v, s);
+    return s;
 }
 
-#endif
+}

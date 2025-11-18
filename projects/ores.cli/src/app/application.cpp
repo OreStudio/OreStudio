@@ -21,7 +21,9 @@
 #include "ores.cli/app/application.hpp"
 
 #include <optional>
+#include <boost/lexical_cast.hpp>
 #include <boost/throw_exception.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <sqlgen/postgres.hpp>
 #include <magic_enum/magic_enum.hpp>
 #include "ores.cli/config/export_options.hpp"
@@ -32,6 +34,7 @@
 #include "ores.risk/orexml/exporter.hpp"
 #include "ores.risk/csv/exporter.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
+#include "ores.accounts/repository/account_repository.hpp"
 #include "ores.cli/app/application_exception.hpp"
 
 namespace ores::cli::app {
@@ -166,9 +169,60 @@ void application::run(const config::options& cfg) const {
 
     import_data(cfg.importing);
     export_data(cfg.exporting);
+    delete_data(cfg.deleting);
 
     BOOST_LOG_SEV(lg(), info) << "Finished application.";
     return;
+}
+
+void application::
+delete_account(const config::delete_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Deleting account: " << cfg.key;
+    accounts::repository::account_repository repo(context_);
+
+    // Try to parse as UUID first
+    boost::uuids::uuid account_id;
+    try {
+        account_id = boost::lexical_cast<boost::uuids::uuid>(cfg.key);
+        BOOST_LOG_SEV(lg(), debug) << "Parsed key as UUID: "
+                                   << boost::uuids::to_string(account_id);
+    } catch (const boost::bad_lexical_cast&) {
+        // If not a UUID, treat as username and look it up
+        BOOST_LOG_SEV(lg(), debug) << "Key is not a UUID, treating as username";
+        const auto accounts = repo.read_latest_by_username(cfg.key);
+        if (accounts.empty()) {
+            BOOST_THROW_EXCEPTION(
+                application_exception(std::format("Account not found: {}", cfg.key)));
+        }
+        account_id = accounts.front().id;
+        BOOST_LOG_SEV(lg(), debug) << "Found account ID: "
+                                   << boost::uuids::to_string(account_id);
+    }
+
+    repo.remove(account_id);
+    output_stream_ << "Account deleted successfully: "
+                   << boost::uuids::to_string(account_id) << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Deleted account: "
+                              << boost::uuids::to_string(account_id);
+}
+
+void application::
+delete_data(const std::optional<config::delete_options>& ocfg) const {
+    if (!ocfg.has_value()) {
+        BOOST_LOG_SEV(lg(), debug) << "No deletion configuration found.";
+        return;
+    }
+
+    const auto& cfg(ocfg.value());
+    switch (cfg.target_entity) {
+        case config::entity::accounts:
+            delete_account(cfg);
+            break;
+        default:
+            BOOST_THROW_EXCEPTION(
+                application_exception(std::format("Delete not supported for entity: {}",
+                        magic_enum::enum_name(cfg.target_entity))));
+    }
 }
 
 }

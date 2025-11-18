@@ -513,32 +513,4 @@ export ORES_CLI_DB_PASSWORD
 ./ores.cli feature_flags add ${db_args} ${log_args}
 #+end_src
 
-** Legacy Command-Based Syntax
-
-The old command-based syntax is still supported for backward compatibility.
-
-*** Import currencies (legacy)
-
-#+begin_src sh :wrap src json
-export ORES_CLI_DB_PASSWORD
-./ores.cli import ${db_args} ${log_args} \
-  --entity currencies --target ${data_dir}/currencies_API.xml | jq .
-#+end_src
-
-*** Export currencies (legacy)
-
-#+begin_src sh :wrap src json
-export ORES_CLI_DB_PASSWORD
-./ores.cli export ${db_args} ${log_args} \
-  --entity currencies --format json | jq .
-#+end_src
-
-*** Delete account (legacy)
-
-#+begin_src sh :wrap src text
-export ORES_CLI_DB_PASSWORD
-./ores.cli delete ${db_args} ${log_args} \
-  --entity accounts --key testuser
-#+end_src
-
 | Previous: [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] |

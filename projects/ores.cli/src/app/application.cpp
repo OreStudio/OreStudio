@@ -231,6 +231,15 @@ void application::run(const config::options& cfg) const {
 }
 
 void application::
+delete_currency(const config::delete_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Deleting currency: " << cfg.key;
+    currency_repository rp;
+    rp.remove(context_, cfg.key);
+    output_stream_ << "Currency deleted successfully: " << cfg.key << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Deleted currency: " << cfg.key;
+}
+
+void application::
 delete_account(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting account: " << cfg.key;
     accounts::repository::account_repository repo(context_);
@@ -270,8 +279,15 @@ delete_data(const std::optional<config::delete_options>& ocfg) const {
 
     const auto& cfg(ocfg.value());
     switch (cfg.target_entity) {
+        case config::entity::currencies:
+            delete_currency(cfg);
+            break;
         case config::entity::accounts:
             delete_account(cfg);
+            break;
+        case config::entity::feature_flags:
+            BOOST_THROW_EXCEPTION(
+                application_exception("Feature flags deletion not yet implemented"));
             break;
         default:
             BOOST_THROW_EXCEPTION(

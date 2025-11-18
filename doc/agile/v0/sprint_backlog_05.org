@@ -880,7 +880,7 @@ Modified files:
 Notes:
 - All new structures compile successfully
 - Design documented in sprint backlog
-- Pull request created for foundation work
+- Pull request: https://github.com/OreStudio/OreStudio/pull/98
 - Next phase: Implement currencies entity commands
 
 ***** Design

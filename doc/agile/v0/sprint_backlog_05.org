@@ -786,7 +786,10 @@ The implementation follows the same bitemporal soft-delete pattern used for curr
 
 The CLI implementation adds a new "delete" command that supports deleting accounts by either UUID or username. The command automatically detects whether the provided key is a UUID and, if not, treats it as a username and performs a lookup to find the corresponding account ID. This provides a flexible user experience while maintaining type safety at the database level.
 
-*** Reorganise CLI structure by entity                                 :code:
+*** STARTED Reorganise CLI structure by entity                         :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-18 Tue 10:30]
+    :END:
 
 The structure of CLI commands at present is very confusing. We have import and
 export as the top-level concepts, but in reality that is not how the tool should
@@ -851,6 +854,18 @@ What the ask is:
 - update existing recipes to follow this pattern. Recipes should also be
   organised by entity rather than by import and export.
 - add commands for missing entities such as accounts and feature flags.
+
+***** Tasks
+
+- [ ] Analyze current CLI structure and command parsing
+- [ ] Design new entity-based command structure
+- [ ] Implement new command parser for entity-first syntax
+- [ ] Migrate currencies commands to new structure
+- [ ] Migrate accounts commands to new structure
+- [ ] Add feature flags commands
+- [ ] Update recipes to use new command structure
+- [ ] Build and test all CLI commands
+- [ ] Update help text and documentation
 
 *** Update =ores.client= with REPL commands for all entities           :code:
 

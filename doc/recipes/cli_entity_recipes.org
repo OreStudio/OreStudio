@@ -14,7 +14,7 @@ entity-first syntax.
   :header-args+: :results raw
   :header-args+: :dir ../../build/output/linux-clang-debug/publish/bin
   :header-args+: :var data_dir="../../../../../projects/ores.risk/tests/test_data/currencies"
-  :header-args+: :var ORES_DB_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "ores")
+  :header-args+: :var ORES_CLI_DB_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "ores")
   :header-args+: :var db_args="--db-user ores --db-host localhost --db-port 5432 --db-database oresdb"
   :header-args+: :var log_args="--log-enabled --log-level info"
   :END:
@@ -125,48 +125,193 @@ Import currencies from ORE XML format.
 **** Import single file
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli currencies import ${db_args} ${log_args} \
-  --target ${data_dir}/currencies_API.xml | jq .
+  --target ${data_dir}/currencies_API.xml | jq .[:3]
 #+end_src
 
 #+RESULTS:
 #+begin_src json
+[
+  {
+    "iso_code": "AED",
+    "name": "United Arab Emirates dirham",
+    "numeric_code": "784",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "",
+    "valid_from": "",
+    "valid_to": ""
+  },
+  {
+    "iso_code": "AFN",
+    "name": "Afghan afghani",
+    "numeric_code": "971",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "",
+    "valid_from": "",
+    "valid_to": ""
+  },
+  {
+    "iso_code": "ALL",
+    "name": "Albanian lek",
+    "numeric_code": "8",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "",
+    "valid_from": "",
+    "valid_to": ""
+  }
+]
 #+end_src
 
 **** Import multiple files
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli currencies import ${db_args} ${log_args} \
   --target ${data_dir}/currencies_API.xml \
-  --target ${data_dir}/currencies_extended.xml | jq .
+  --target ${data_dir}/currencies_extended.xml | jq .[:5]
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "iso_code": "AED",
+    "name": "United Arab Emirates dirham",
+    "numeric_code": "784",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "",
+    "valid_from": "",
+    "valid_to": ""
+  },
+  {
+    "iso_code": "AFN",
+    "name": "Afghan afghani",
+    "numeric_code": "971",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "",
+    "valid_from": "",
+    "valid_to": ""
+  },
+  {
+    "iso_code": "ALL",
+    "name": "Albanian lek",
+    "numeric_code": "8",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "",
+    "valid_from": "",
+    "valid_to": ""
+  },
+  {
+    "iso_code": "AMD",
+    "name": "Armenian dram",
+    "numeric_code": "51",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "",
+    "valid_from": "",
+    "valid_to": ""
+  },
+  {
+    "iso_code": "ANG",
+    "name": "Netherlands Antillean guilder",
+    "numeric_code": "532",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "",
+    "valid_from": "",
+    "valid_to": ""
+  }
+]
 #+end_src
 
 *** Export
 
-Export currencies to various formats.
+Export currencies to external formats (ORE XML or CSV).
 
-**** Export all as XML
+**** Export all as ORE XML
 
 #+begin_src sh :wrap src xml
-export ORES_DB_PASSWORD
-./ores.cli currencies export ${db_args} ${log_args} \
-  --format xml
+export ORES_CLI_DB_PASSWORD
+./ores.cli currencies export ${db_args} ${log_args} --format xml | \
+    xmllint --format - | \
+    head -n 20
 #+end_src
 
-**** Export all as JSON
-
-#+begin_src sh
-export ORES_DB_PASSWORD
-./ores.cli currencies export ${db_args} ${log_args} \
-  --format json | jq .
+#+RESULTS:
+#+begin_src xml
+<?xml version="1.0" encoding="UTF-8"?>
+<CurrencyConfig>
+  <Currency>
+    <Name>Zimbabwean dollar</Name>
+    <ISOCode>ZWL</ISOCode>
+    <NumericCode>932</NumericCode>
+    <Symbol/>
+    <FractionSymbol/>
+    <FractionsPerUnit>100</FractionsPerUnit>
+    <RoundingType>Closest</RoundingType>
+    <RoundingPrecision>2</RoundingPrecision>
+    <Format/>
+    <CurrencyType/>
+  </Currency>
+  <Currency>
+    <Name>South African rand</Name>
+    <ISOCode>ZAR</ISOCode>
+    <NumericCode>710</NumericCode>
+    <Symbol/>
+    <FractionSymbol/>
 #+end_src
 
 **** Export all as CSV
 
 #+begin_src sh :wrap src csv
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli currencies export ${db_args} ${log_args} \
   --format csv
 #+end_src
@@ -174,7 +319,7 @@ export ORES_DB_PASSWORD
 **** Export specific currency
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli currencies export ${db_args} ${log_args} \
   --format json --key USD | jq .
 #+end_src
@@ -182,7 +327,7 @@ export ORES_DB_PASSWORD
 **** Export all versions of a currency
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli currencies export ${db_args} ${log_args} \
   --format json --key USD --all-versions | jq .
 #+end_src
@@ -190,27 +335,35 @@ export ORES_DB_PASSWORD
 **** Export as of specific time point
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli currencies export ${db_args} ${log_args} \
   --format json --as-of "2025-01-01 00:00:00" | jq .
 #+end_src
 
 *** List
 
-List currencies (currently uses export internally).
+List currencies using internal formats (JSON or table).
 
-**** List all currencies
+**** List all currencies as JSON
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli currencies list ${db_args} ${log_args} \
   --format json | jq .
+#+end_src
+
+**** List all currencies as table
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli currencies list ${db_args} ${log_args} \
+  --format table
 #+end_src
 
 **** List specific currency
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli currencies list ${db_args} ${log_args} \
   --format json --key EUR | jq .
 #+end_src
@@ -220,7 +373,7 @@ export ORES_DB_PASSWORD
 Delete a currency by ISO code.
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli currencies delete ${db_args} ${log_args} \
   --key XXX
 #+end_src
@@ -230,7 +383,7 @@ export ORES_DB_PASSWORD
 Add a new currency (not yet implemented).
 
 #+begin_src sh :wrap src text
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli currencies add ${db_args} ${log_args}
 #+end_src
 
@@ -256,7 +409,7 @@ List accounts from the database.
 **** List all accounts
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli accounts list ${db_args} ${log_args} \
   --format json | jq .
 #+end_src
@@ -264,7 +417,7 @@ export ORES_DB_PASSWORD
 **** List specific account by username
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli accounts list ${db_args} ${log_args} \
   --format json --key admin | jq .
 #+end_src
@@ -272,7 +425,7 @@ export ORES_DB_PASSWORD
 **** List all versions of an account
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli accounts list ${db_args} ${log_args} \
   --format json --key admin --all-versions | jq .
 #+end_src
@@ -284,7 +437,7 @@ Delete an account by username or UUID.
 **** Delete by username
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli accounts delete ${db_args} ${log_args} \
   --key testuser
 #+end_src
@@ -292,7 +445,7 @@ export ORES_DB_PASSWORD
 **** Delete by UUID
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli accounts delete ${db_args} ${log_args} \
   --key 12345678-1234-5678-1234-567812345678
 #+end_src
@@ -302,7 +455,7 @@ export ORES_DB_PASSWORD
 Add a new account (not yet implemented).
 
 #+begin_src sh :wrap src text
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli accounts add ${db_args} ${log_args}
 #+end_src
 
@@ -328,7 +481,7 @@ List feature flags from the database.
 **** List all feature flags
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli feature_flags list ${db_args} ${log_args} \
   --format json | jq .
 #+end_src
@@ -336,7 +489,7 @@ export ORES_DB_PASSWORD
 **** List specific feature flag
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli feature_flags list ${db_args} ${log_args} \
   --format json --key ENABLE_NEW_FEATURE | jq .
 #+end_src
@@ -346,7 +499,7 @@ export ORES_DB_PASSWORD
 Delete a feature flag by key.
 
 #+begin_src sh
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli feature_flags delete ${db_args} ${log_args} \
   --key DEPRECATED_FEATURE
 #+end_src
@@ -356,7 +509,7 @@ export ORES_DB_PASSWORD
 Add a new feature flag (not yet implemented).
 
 #+begin_src sh :wrap src text
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli feature_flags add ${db_args} ${log_args}
 #+end_src
 
@@ -367,7 +520,7 @@ The old command-based syntax is still supported for backward compatibility.
 *** Import currencies (legacy)
 
 #+begin_src sh :wrap src json
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli import ${db_args} ${log_args} \
   --entity currencies --target ${data_dir}/currencies_API.xml | jq .
 #+end_src
@@ -375,7 +528,7 @@ export ORES_DB_PASSWORD
 *** Export currencies (legacy)
 
 #+begin_src sh :wrap src json
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli export ${db_args} ${log_args} \
   --entity currencies --format json | jq .
 #+end_src
@@ -383,7 +536,7 @@ export ORES_DB_PASSWORD
 *** Delete account (legacy)
 
 #+begin_src sh :wrap src text
-export ORES_DB_PASSWORD
+export ORES_CLI_DB_PASSWORD
 ./ores.cli delete ${db_args} ${log_args} \
   --entity accounts --key testuser
 #+end_src

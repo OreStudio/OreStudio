@@ -473,8 +473,8 @@ handle_command(const std::string& command_name, const bool has_help,
             info << "Usage: ores.cli currencies <operation> [options]" << std::endl << std::endl;
             info << "Available operations:" << std::endl;
             info << "  import     Import currencies from ORE XML files" << std::endl;
-            info << "  export     Export currencies to various formats" << std::endl;
-            info << "  list       List currencies from database" << std::endl;
+            info << "  export     Export currencies to ORE XML or CSV (external formats)" << std::endl;
+            info << "  list       List currencies as JSON or table (internal formats)" << std::endl;
             info << "  delete     Delete a currency by ISO code" << std::endl;
             info << "  add        Add a new currency (not yet implemented)" << std::endl << std::endl;
             info << "For operation-specific options, use: currencies <operation> --help" << std::endl;
@@ -556,7 +556,7 @@ handle_command(const std::string& command_name, const bool has_help,
             info << "accounts - Manage accounts" << std::endl << std::endl;
             info << "Usage: ores.cli accounts <operation> [options]" << std::endl << std::endl;
             info << "Available operations:" << std::endl;
-            info << "  list       List accounts from database" << std::endl;
+            info << "  list       List accounts as JSON or table (internal formats)" << std::endl;
             info << "  delete     Delete an account by username or UUID" << std::endl;
             info << "  add        Add a new account (not yet implemented)" << std::endl << std::endl;
             info << "For operation-specific options, use: accounts <operation> --help" << std::endl;
@@ -613,7 +613,7 @@ handle_command(const std::string& command_name, const bool has_help,
             info << "feature_flags - Manage feature flags" << std::endl << std::endl;
             info << "Usage: ores.cli feature_flags <operation> [options]" << std::endl << std::endl;
             info << "Available operations:" << std::endl;
-            info << "  list       List feature flags from database" << std::endl;
+            info << "  list       List feature flags as JSON or table (internal formats)" << std::endl;
             info << "  delete     Delete a feature flag by key" << std::endl;
             info << "  add        Add a new feature flag (not yet implemented)" << std::endl << std::endl;
             info << "For operation-specific options, use: feature_flags <operation> --help" << std::endl;

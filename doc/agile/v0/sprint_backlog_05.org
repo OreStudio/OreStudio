@@ -518,7 +518,10 @@ Options to consider:
 - Recommended: Accept breaking change, document in release notes
 
 
-*** Uninformative Incompatible protocol version error in qt            :code:
+*** COMPLETED Uninformative incompatible protocol version error in qt  :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-17 Mon 23:40]
+    :END:
 
 As part of the merging of currency messages we did a backwards incompatible
 change in the protocol. I tested how the client handles this and it was not
@@ -576,11 +579,122 @@ Server logs:
 2025-11-17 23:27:26.381422 [ERROR] [ores.comms.session] Failed to read handshake request: error code 1
 2025-11-17 23:27:26.381454 [WARN] [ores.comms.session] Handshake failed for client: 127.0.0.1:48894
 2025-11-17 23:27:26.381478 [DEBUG] [ores.comms.server] Session completed, active connections: 0
-
 #+end_src
 
+**** Problem Analysis
 
+*Current behavior:*
 
+1. Client (v1) sends handshake request with v1 in frame header
+2. Server tries to deserialize frame header
+3. Frame deserializer at =frame.cpp:204-207= checks version and returns
+   =version_mismatch= error
+4. Session cannot read the frame, logs error, and closes connection
+5. Client receives "stream truncated" error (connection closed unexpectedly)
+6. Client shows uninformative "Failed to connect to server" message
+
+*Root cause:*
+
+The protocol version check happens too early - during frame header
+deserialisation in =frame.cpp=. By the time the error is detected, the server
+cannot send a proper error response because it failed to even read the frame.
+
+*What should happen:*
+
+1. Server reads handshake request frame (even with mismatched version)
+2. Session deserializes handshake request and extracts client version
+3. Session checks version compatibility (this code already exists at
+   =session.cpp:101-119=)
+4. Server sends =handshake_response= with version details and =version_mismatch=
+   error code
+5. Client receives response, extracts version information, and shows meaningful
+   error message
+6. Client logs protocol version on connect (like server does)
+7. Qt About dialog shows protocol version for easy troubleshooting
+
+**** Implementation Plan
+
+***** COMPLETED Task 1: Allow Reading Frames During Handshake
+      CLOSED: [2025-11-17 Sun]
+
+- [X] Modify =frame::deserialize_header()= to accept optional
+  =skip_version_check= parameter (default false)
+- [X] Skip version validation when parameter is true
+- [X] Update =connection::read_frame()= to support lenient reading during
+  handshake
+- [X] Ensure session uses lenient reading for handshake request
+
+Modified files:
+- =projects/ores.comms/include/ores.comms/protocol/frame.hpp= - Added =skip_version_check= parameter
+- =projects/ores.comms/src/protocol/frame.cpp= - Implemented conditional version checking
+- =projects/ores.comms/include/ores.comms/net/connection.hpp= - Added parameter to =read_frame()=
+- =projects/ores.comms/src/net/connection.cpp= - Pass through skip_version_check parameter
+- =projects/ores.comms/src/net/session.cpp= - Use lenient reading for handshake request
+
+***** COMPLETED Task 2: Add Client Protocol Version Logging
+      CLOSED: [2025-11-17 Sun]
+
+- [X] Add protocol version logging in =client.cpp= on successful connection
+- [X] Format: "Protocol version: X.Y" matching server format
+- [X] Log after SSL handshake, before protocol handshake
+
+Modified files:
+- =projects/ores.comms/src/net/client.cpp= - Added protocol version logging at client.cpp:102-104
+
+***** COMPLETED Task 3: Improve Client Error Handling
+      CLOSED: [2025-11-17 Sun]
+
+- [X] When handshake fails, check if response is =handshake_response= with
+  =version_mismatch=
+- [X] Extract server and client version from response
+- [X] Create detailed error message: "Incompatible protocol version. Server:
+  X.Y, Client: A.B"
+- [X] Return this message through the error path to =LoginDialog=
+
+Modified files:
+- =projects/ores.comms/include/ores.comms/net/client.hpp= - Added =last_error()= method and =last_error_= member
+- =projects/ores.comms/src/net/client.cpp= - Store detailed error message on version mismatch, implement =last_error()= getter
+
+***** COMPLETED Task 4: Add Protocol Version to Qt About Dialog
+      CLOSED: [2025-11-17 Sun]
+
+- [X] Locate Qt About dialog implementation
+- [X] Add protocol version display: "Protocol Version: X.Y"
+- [X] Place near application version information
+
+Modified files:
+- =projects/ores.qt/src/AboutDialog.cpp= - Added protocol version to version string display
+
+***** COMPLETED Task 5: Testing
+      CLOSED: [2025-11-17 Sun]
+
+- [X] Test with matching versions (should work normally)
+  - All unit tests pass (699 assertions in 146 test cases)
+  - Build successful for all components
+- [X] Verify client logs protocol version on connect
+  - Added logging at client.cpp:102-106: "Protocol version: X.Y (client: identifier)"
+- [X] Verify About dialog shows protocol version
+  - Added to AboutDialog.cpp:73-77: "Version X | Build Y | Protocol Z.W"
+- [X] Verify server sends proper =handshake_response= on version mismatch
+  - Server already sends proper handshake_response with version_compatible flag (session.cpp:104-111)
+  - Now accessible due to lenient frame reading during handshake
+- [X] Add automated version mismatch tests
+  - Added 3 test cases to frame_tests.cpp
+  - Tests verify strict mode rejects mismatched versions
+  - Tests verify lenient mode accepts mismatched versions
+  - Tests simulate handshake scenario with version mismatch
+  - All comms tests pass: 62 assertions in 9 test cases (up from 49 in 6)
+
+Modified files:
+- =projects/ores.comms/tests/frame_tests.cpp= - Added version mismatch test cases
+
+Testing notes:
+- Manual testing with mismatched versions would require temporarily changing
+  PROTOCOL_VERSION_MAJOR in message_types.hpp, rebuilding, and running
+  server/client with different versions
+- The implementation ensures server can read handshake request even with
+  version mismatch and sends detailed handshake_response
+- Client stores detailed error message in =last_error_= accessible via =last_error()=
 
 *** Split console recipes by entity                                    :code:
 

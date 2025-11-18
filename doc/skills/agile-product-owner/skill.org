@@ -343,6 +343,54 @@ The major version manifest =doc/agile/v0/version_zero.org= should be updated whe
 4. *Update status* – Keep story status current (STARTED, COMPLETED, etc.)
 5. *Document decisions* – Add notes to stories as work progresses
 
+*** Session Continuity and Progress Tracking
+
+To ensure work can be resumed after session restarts or context switches:
+
+1. *Mark tasks as COMPLETED immediately* – When a task within a story's
+   implementation plan is finished, mark it as COMPLETED in the sprint backlog
+   (not just in the TodoWrite tool). Change =- [ ]= to =- [X]= and add status:
+
+   #+begin_src fundamental
+   ,***** COMPLETED Task 1: Description
+   CLOSED: [2025-11-17 Sun]
+
+   - [X] Subtask 1
+   - [X] Subtask 2
+   #+end_src
+
+2. *Document modified files* – Add a "Modified files" section under each
+   completed task listing the files changed and what was done:
+
+   #+begin_src fundamental
+   Modified files:
+   - =path/to/file.cpp= - Brief description of changes
+   - =path/to/other.hpp= - Brief description of changes
+   #+end_src
+
+3. *Mark entire stories as COMPLETED* – When all tasks in a story are done,
+   change the story status from =STARTED= to =COMPLETED= and add a CLOSED
+   timestamp:
+
+   #+begin_src fundamental
+   ,*** COMPLETED Story title                                          :tag:
+   CLOSED: [2025-11-17 Sun]
+       :LOGBOOK:
+       CLOCK: [2025-11-17 Mon 23:40]
+       :END:
+   #+end_src
+
+4. *Update incrementally* – Don't wait until the end of a story to update the
+   sprint backlog. Update it as each task completes so progress is always
+   visible and resumable.
+
+5. *Benefits of incremental updates*:
+   - Session restarts can quickly identify what's done and what remains
+   - User can see progress in real-time
+   - Multiple sessions can collaborate without duplicating work
+   - Work history is preserved for future reference
+   - Easier to track actual time spent vs. estimated time
+
 ** Step 8: Working with Story Tags
 
 ORE Studio uses org-mode tags for categorisation:

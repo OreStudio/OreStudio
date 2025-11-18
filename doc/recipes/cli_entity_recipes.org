@@ -13,7 +13,7 @@ entity-first syntax.
   :header-args: :exports both
   :header-args+: :results raw
   :header-args+: :dir ../../build/output/linux-clang-debug/publish/bin
-  :header-args+: :var data_dir="../../../../../projects/ores.risk.tests/test_data/currencies"
+  :header-args+: :var data_dir="../../../../../projects/ores.risk/tests/test_data/currencies"
   :header-args+: :var ORES_DB_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "ores")
   :header-args+: :var db_args="--db-user ores --db-host localhost --db-port 5432 --db-database oresdb"
   :header-args+: :var log_args="--log-enabled --log-level info"
@@ -34,12 +34,58 @@ Display global help showing all available commands.
 ./ores.cli --help
 #+end_src
 
+#+RESULTS:
+#+begin_src text
+ORE Studio is a User Interface for Open Source Risk Engine (ORE).
+CLI provides a command line version of the interface.
+ORE Studio is created by the ORE Studio project.
+ores.cli uses a command-based interface: <command> <options>.
+See below for a list of valid commands.
+
+Global options:
+
+General:
+  -h [ --help ]                       Display usage and exit.
+  -v [ --version ]                    Output version information and exit.
+
+Logging:
+  -e [ --log-enabled ]                Generate a log file.
+  -l [ --log-level ] arg (=info)      What level to use for logging. Valid
+                                      values: trace, debug, info, warn, error.
+  --log-to-console                    Output logging to the console, as well as
+                                      to file.
+  --log-directory arg (=log)          Where to place the log files.
+  --log-filename arg (=ores.cli.log)  Name of the log file.
+
+Commands:
+
+   import         Imports data into the system.
+   export         Exports data from the system.
+   delete         Deletes entities from the system.
+   currencies     Manage currencies (import, export, list, delete).
+   accounts       Manage accounts (list, delete, add).
+   feature_flags  Manage feature flags (list, delete, add).
+
+For command specific options, type <command> --help.
+#+end_src
+
 *** Version
 
 Display version information.
 
 #+begin_src sh
 ./ores.cli --version
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+CLI for ORE Studio v0.0.5
+Copyright (C) 2025 Marco Craveiro.
+License GPLv3: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Build: Provider = LOCAL
+IMPORTANT: build details are NOT for security purposes.
 #+end_src
 
 ** Currencies
@@ -57,6 +103,21 @@ Show available operations for currencies.
 ./ores.cli currencies --help
 #+end_src
 
+#+RESULTS:
+#+begin_src text
+currencies - Manage currencies
+
+Usage: ores.cli currencies <operation> [options]
+
+Available operations:
+  import     Import currencies from ORE XML files
+  export     Export currencies to various formats
+  list       List currencies from database
+  delete     Delete a currency by ISO code
+
+For operation-specific options, use: currencies <operation> --help
+#+end_src
+
 *** Import
 
 Import currencies from ORE XML format.
@@ -67,6 +128,10 @@ Import currencies from ORE XML format.
 export ORES_DB_PASSWORD
 ./ores.cli currencies import ${db_args} ${log_args} \
   --target ${data_dir}/currencies_API.xml | jq .
+#+end_src
+
+#+RESULTS:
+#+begin_src json
 #+end_src
 
 **** Import multiple files
@@ -158,6 +223,15 @@ Delete a currency by ISO code.
 export ORES_DB_PASSWORD
 ./ores.cli currencies delete ${db_args} ${log_args} \
   --key XXX
+#+end_src
+
+*** Add
+
+Add a new currency (not yet implemented).
+
+#+begin_src sh :wrap src text
+export ORES_DB_PASSWORD
+./ores.cli currencies add ${db_args} ${log_args}
 #+end_src
 
 ** Accounts

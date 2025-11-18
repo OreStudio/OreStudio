@@ -58,7 +58,7 @@ const std::string delete_command_desc("Deletes entities from the system.");
 const std::string delete_key_arg("key");
 
 const std::string currencies_command_name("currencies");
-const std::string currencies_command_desc("Manage currencies (import, export, list, delete).");
+const std::string currencies_command_desc("Manage currencies (import, export, list, delete, add).");
 
 const std::string accounts_command_name("accounts");
 const std::string accounts_command_desc("Manage accounts (list, delete, add).");
@@ -475,7 +475,8 @@ handle_command(const std::string& command_name, const bool has_help,
             info << "  import     Import currencies from ORE XML files" << std::endl;
             info << "  export     Export currencies to various formats" << std::endl;
             info << "  list       List currencies from database" << std::endl;
-            info << "  delete     Delete a currency by ISO code" << std::endl << std::endl;
+            info << "  delete     Delete a currency by ISO code" << std::endl;
+            info << "  add        Add a new currency (not yet implemented)" << std::endl << std::endl;
             info << "For operation-specific options, use: currencies <operation> --help" << std::endl;
             return {};
         }
@@ -539,10 +540,14 @@ handle_command(const std::string& command_name, const bool has_help,
                 std::string("currencies"), false)));
             // Treat list as export for now
             r.exporting = read_export_options(vm);
+        } else if (operation == "add") {
+            // Add operation - not yet implemented
+            BOOST_THROW_EXCEPTION(parser_exception(
+                "currencies add operation is not yet implemented"));
         } else {
             BOOST_THROW_EXCEPTION(parser_exception(
                 std::format("Invalid operation for currencies: {}. "
-                    "Valid operations: import, export, list, delete", operation)));
+                    "Valid operations: import, export, list, delete, add", operation)));
         }
     } else if (command_name == accounts_command_name) {
         // Entity-based command: accounts <operation> [options]

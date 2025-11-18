@@ -90,16 +90,16 @@ public:
     /**
      * @brief Connect to server and perform handshake (async version).
      *
-     * Returns true if connection and handshake succeed.
+     * @throws connection_error if connection or handshake fails
      */
-    boost::asio::awaitable<bool> connect();
+    boost::asio::awaitable<void> connect();
 
     /**
      * @brief Connect to server and perform handshake (blocking version).
      *
-     * Returns true if connection and handshake succeed.
+     * @throws connection_error if connection or handshake fails
      */
-    bool connect_sync();
+    void connect_sync();
 
     /**
      * @brief Disconnect from server.
@@ -110,15 +110,6 @@ public:
      * @brief Check if client is connected.
      */
     bool is_connected() const;
-
-    /**
-     * @brief Get the last error message.
-     *
-     * Returns the detailed error message from the last failed operation.
-     * Useful for displaying meaningful error messages to users after
-     * connection failures.
-     */
-    std::string last_error() const;
 
     /**
      * @brief Send a request frame and receive response frame (async version).
@@ -147,8 +138,10 @@ public:
 private:
     /**
      * @brief Perform protocol handshake with server.
+     *
+     * @throws connection_error if handshake fails
      */
-    boost::asio::awaitable<bool> perform_handshake();
+    boost::asio::awaitable<void> perform_handshake();
 
     /**
      * @brief Setup SSL context for client.
@@ -162,7 +155,6 @@ private:
     std::unique_ptr<connection> conn_;
     std::uint32_t sequence_number_;
     bool connected_;
-    std::string last_error_;  // Last error message for UI display
     mutable std::mutex state_mutex_; // Thread-safe state protection
 };
 

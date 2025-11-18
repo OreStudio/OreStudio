@@ -193,23 +193,30 @@ void LoginDialog::onLoginClicked() {
     });
 
     // Perform connection asynchronously using QtConcurrent
-    auto* watcher = new QFutureWatcher<bool>(this);
-    connect(watcher, &QFutureWatcher<bool>::finished,
+    // Returns empty string on success, error message on failure
+    auto* watcher = new QFutureWatcher<QString>(this);
+    connect(watcher, &QFutureWatcher<QString>::finished,
         [this, watcher, username, password]() {
-        const bool connected = watcher->result();
+        QString error_message = watcher->result();
         watcher->deleteLater();
 
-        if (connected) {
+        if (error_message.isEmpty()) {
             emit connectionCompleted(true, QString());
-            // Proceed to login
             performLogin(username.toStdString(), password.toStdString());
         } else {
-            emit connectionCompleted(false, "Failed to connect to server");
+            BOOST_LOG_SEV(lg(), error) << "Connection error: "
+                                       << error_message.toStdString();
+            emit connectionCompleted(false, error_message);
         }
     });
 
-    QFuture<bool> future = QtConcurrent::run([this]() {
-        return client_->connect_sync();
+    QFuture<QString> future = QtConcurrent::run([this]() -> QString {
+        try {
+            client_->connect_sync();
+            return QString(); // Empty string indicates success
+        } catch (const std::exception& e) {
+            return QString::fromStdString(e.what());
+        }
     });
 
     watcher->setFuture(future);

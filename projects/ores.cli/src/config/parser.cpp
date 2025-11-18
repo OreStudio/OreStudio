@@ -59,6 +59,13 @@ const std::string delete_key_arg("key");
 
 const std::string currencies_command_name("currencies");
 const std::string currencies_command_desc("Manage currencies (import, export, list, delete).");
+
+const std::string accounts_command_name("accounts");
+const std::string accounts_command_desc("Manage accounts (list, delete, add).");
+
+const std::string feature_flags_command_name("feature_flags");
+const std::string feature_flags_command_desc("Manage feature flags (list, delete, add).");
+
 const std::string operation_arg("operation");
 
 const std::string help_arg("help");
@@ -187,7 +194,9 @@ void validate_command_name(const std::string& command_name) {
         command_name == import_command_name ||
         command_name == export_command_name ||
         command_name == delete_command_name ||
-        command_name == currencies_command_name);
+        command_name == currencies_command_name ||
+        command_name == accounts_command_name ||
+        command_name == feature_flags_command_name);
 
     if (!is_valid_command_name)
     {
@@ -231,6 +240,8 @@ void print_help(const options_description& od, std::ostream& info) {
     lambda(export_command_name, export_command_desc);
     lambda(delete_command_name, delete_command_desc);
     lambda(currencies_command_name, currencies_command_desc);
+    lambda(accounts_command_name, accounts_command_desc);
+    lambda(feature_flags_command_name, feature_flags_command_desc);
 
     info << std::endl << "For command specific options, type <command> --help."
          << std::endl;
@@ -519,6 +530,96 @@ handle_command(const std::string& command_name, const bool has_help,
             BOOST_THROW_EXCEPTION(parser_exception(
                 std::format("Invalid operation for currencies: {}. "
                     "Valid operations: import, export, list, delete", operation)));
+        }
+    } else if (command_name == accounts_command_name) {
+        // Entity-based command: accounts <operation> [options]
+        if (o.empty()) {
+            BOOST_THROW_EXCEPTION(parser_exception(
+                "accounts command requires an operation (list, delete, add)"));
+        }
+
+        const auto operation = o.front();
+        o.erase(o.begin()); // Remove operation from args
+
+        if (operation == "list") {
+            // List accounts operation
+            auto d(make_export_options_description()); // Reuse export options for list
+            d.add(db_desc).add(logging_desc);
+            if (has_help) {
+                print_help_command("accounts list", d, info);
+                return {};
+            }
+            store(command_line_parser(o).options(d).run(), vm);
+            store(parse_environment(d, name_mapper), vm);
+            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
+                std::string("accounts"), false)));
+            // Treat list as export for now
+            r.exporting = read_export_options(vm);
+        } else if (operation == delete_command_name) {
+            auto d(make_delete_options_description());
+            d.add(db_desc).add(logging_desc);
+            if (has_help) {
+                print_help_command("accounts delete", d, info);
+                return {};
+            }
+            store(command_line_parser(o).options(d).run(), vm);
+            store(parse_environment(d, name_mapper), vm);
+            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
+                std::string("accounts"), false)));
+            r.deleting = read_delete_options(vm);
+        } else if (operation == "add") {
+            // Add operation - not yet implemented
+            BOOST_THROW_EXCEPTION(parser_exception(
+                "accounts add operation is not yet implemented"));
+        } else {
+            BOOST_THROW_EXCEPTION(parser_exception(
+                std::format("Invalid operation for accounts: {}. "
+                    "Valid operations: list, delete, add", operation)));
+        }
+    } else if (command_name == feature_flags_command_name) {
+        // Entity-based command: feature_flags <operation> [options]
+        if (o.empty()) {
+            BOOST_THROW_EXCEPTION(parser_exception(
+                "feature_flags command requires an operation (list, delete, add)"));
+        }
+
+        const auto operation = o.front();
+        o.erase(o.begin()); // Remove operation from args
+
+        if (operation == "list") {
+            // List feature_flags operation
+            auto d(make_export_options_description()); // Reuse export options for list
+            d.add(db_desc).add(logging_desc);
+            if (has_help) {
+                print_help_command("feature_flags list", d, info);
+                return {};
+            }
+            store(command_line_parser(o).options(d).run(), vm);
+            store(parse_environment(d, name_mapper), vm);
+            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
+                std::string("feature_flags"), false)));
+            // Treat list as export for now
+            r.exporting = read_export_options(vm);
+        } else if (operation == delete_command_name) {
+            auto d(make_delete_options_description());
+            d.add(db_desc).add(logging_desc);
+            if (has_help) {
+                print_help_command("feature_flags delete", d, info);
+                return {};
+            }
+            store(command_line_parser(o).options(d).run(), vm);
+            store(parse_environment(d, name_mapper), vm);
+            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
+                std::string("feature_flags"), false)));
+            r.deleting = read_delete_options(vm);
+        } else if (operation == "add") {
+            // Add operation - not yet implemented
+            BOOST_THROW_EXCEPTION(parser_exception(
+                "feature_flags add operation is not yet implemented"));
+        } else {
+            BOOST_THROW_EXCEPTION(parser_exception(
+                std::format("Invalid operation for feature_flags: {}. "
+                    "Valid operations: list, delete, add", operation)));
         }
     }
 

@@ -27,7 +27,8 @@ namespace ores::cli::config {
  */
 enum class entity {
     currencies,
-    accounts
+    accounts,
+    feature_flags
 };
 
 }

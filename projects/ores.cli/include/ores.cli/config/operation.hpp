@@ -28,9 +28,9 @@ namespace ores::cli::config {
 enum class operation {
     import_data,
     export_data,
-    list,
+    list_entity,
     delete_entity,
-    add
+    add_entity
 };
 
 }

@@ -10,83 +10,36 @@
 #+begin_export markdown
 ---
 name: semi-autonomous-developer
-description: Autonomously pick up stories from sprint backlog, implement them incrementally with tests and commits, then submit for review.
+description: Given a story, implement it incrementally with tests and commits, then submit for review.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
 
 * When to Use This Skill
 
-Use this skill when you want to autonomously work through stories in the sprint
-backlog with minimal human intervention. This skill combines agile story
+Use this skill when the user asks you to work semi-autonomously on a specific
+story with minimal human intervention. This skill combines agile story
 management with incremental development, comprehensive testing, and proper git
 workflow.
 
 This is ideal for:
 
-- Working through well-defined stories from the sprint backlog
-- Implementing features with proper testing at each step
-- Maintaining clean git history with incremental commits
-- Creating professional pull requests for review
-- Following established development workflow automatically
+- Working through a single user specified story.
+- Implementing features with proper testing at each step.
+- Maintaining clean git history with incremental commits.
+- Creating professional pull requests for review.
+- Following established development workflow automatically.
 
 * How to Use This Skill
 
-Simply invoke this skill and it will:
+When the user asks you to work semi-autonomously on a story:
 
-1. Pick up the next story from the current sprint backlog
-2. Create a feature branch
-3. Plan and implement the story incrementally
-4. Test and commit at each step
-5. Mark the story as BLOCKED (awaiting review)
-6. Push the branch and create a pull request
-
-* Semi-Autonomous Developer Mode
-
-** IMPORTANT: Explicit Mode Activation Required
-
-This skill operates in two distinct modes, and the user MUST explicitly enable
-or disable semi-autonomous developer mode:
-
-*** When Semi-Autonomous Developer Mode is ENABLED
-
-When the user explicitly enables this mode (e.g., "Enable semi-autonomous
-developer mode" or "Use the semi-autonomous developer skill"), you should:
-
-- *Work autonomously* on stories from the sprint backlog
-- *Create feature branches* automatically with proper naming
-- *Commit changes* incrementally after each successful test
-- *Push branches* to remote repository
-- *Create pull requests* without asking
-- *Make assumptions* when clarification is needed (documenting them)
-- *Proceed continuously* until the story is complete
-
-*** When Semi-Autonomous Developer Mode is DISABLED (Default)
-
-When this mode is NOT explicitly enabled (which is the default state), you should:
-
-- *Wait for explicit user guidance* at each step
-- *Never create feature branches* unless explicitly asked
-- *Never commit changes* unless explicitly asked
-- *Never push to remote* unless explicitly asked
-- *Never create pull requests* unless explicitly asked
-- *Ask for clarification* when uncertain rather than making assumptions
-- *Work interactively* with the user driving the development process
-
-*** How to Enable/Disable
-
-The user must use explicit commands such as:
-
-- To enable: "Enable semi-autonomous developer mode" or "Use the semi-autonomous
-  developer skill"
-- To disable: "Disable semi-autonomous developer mode" or "Exit semi-autonomous
-  mode" or "Switch to interactive mode"
-
-*** Default Behavior
-
-*By default, semi-autonomous developer mode is DISABLED.* You should only operate
-in autonomous mode when the user has explicitly enabled it. When in doubt, ask
-the user if they want to enable semi-autonomous developer mode.
+1. Find the story requested by the user in the current sprint backlog.
+2. Create a feature branch.
+3. Plan and implement the story incrementally.
+4. Test and commit at each step.
+5. Mark the story as BLOCKED (awaiting review).
+6. Push the branch and create a pull request.
 
 * Detailed Instructions
 
@@ -96,24 +49,7 @@ the user if they want to enable semi-autonomous developer mode.
 
 1. List files in =doc/agile/v0/= matching pattern =sprint_backlog_*.org=
 2. Find the file with the highest sprint number - this is the current sprint
-3. Read the sprint backlog file to find candidate stories
-
-*** Story Selection Criteria
-
-Pick the next story that:
-
-1. Has status =STARTED= or is unmarked (no status keyword)
-2. Is NOT =COMPLETED=, =CANCELLED=, =POSTPONED=, or =BLOCKED=
-3. Appears next in the file after any currently in-progress stories
-4. Aligns with the sprint mission
-
-*** Multiple Stories in Progress
-
-If multiple stories are already =STARTED=:
-
-1. Look for the one that appears to need the most immediate attention
-2. Check if any story has uncompleted tasks that can be progressed
-3. If unclear, ask the user which story to work on
+3. Read the sprint backlog file and find the story chosen by the user.
 
 ** Step 2: Create Feature Branch
 
@@ -279,7 +215,7 @@ more idiomatic C++ error handling.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>
+Authored-By: Claude <noreply@anthropic.com>
 #+end_src
 
 #+begin_src fundamental
@@ -290,7 +226,7 @@ delete account" story.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>
+Authored-By: Claude <noreply@anthropic.com>
 #+end_src
 
 **** E. Update Sprint Backlog
@@ -427,7 +363,7 @@ All implementation completed. Ready for user testing and PR review.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>"
+Authored-By: Claude <noreply@anthropic.com>"
 #+end_src
 
 ** Step 8: Push Feature Branch
@@ -549,19 +485,13 @@ git commit -m "[agile] Add PR link to story
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>"
+Authored-By: Claude <noreply@anthropic.com>"
 git push origin main
-#+end_src
-
-*** Return to Main Branch
-
-#+begin_src sh
-git checkout main
 #+end_src
 
 ** Step 11: Summary Report
 
-Provide the user with a summary:
+Update the story in the sprint backlog with a summary:
 
 #+begin_src fundamental
 ✓ Story Implementation Complete

@@ -256,7 +256,7 @@ More detailed explanation if needed, including:
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>"
+Authored-By: Claude <noreply@anthropic.com>"
 #+end_src
 
 ***** Git Commit Convention
@@ -279,7 +279,7 @@ more idiomatic C++ error handling.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>
+Authored-By: Claude <noreply@anthropic.com>
 #+end_src
 
 #+begin_src fundamental
@@ -290,7 +290,7 @@ delete account" story.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>
+Authored-By: Claude <noreply@anthropic.com>
 #+end_src
 
 **** E. Update Sprint Backlog
@@ -326,7 +326,7 @@ git commit -m "[agile] Update backlog: completed step 1 of story
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>"
+Authored-By: Claude <noreply@anthropic.com>"
 #+end_src
 
 ** Step 5: Handle Clarifications
@@ -427,7 +427,7 @@ All implementation completed. Ready for user testing and PR review.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>"
+Authored-By: Claude <noreply@anthropic.com>"
 #+end_src
 
 ** Step 8: Push Feature Branch
@@ -503,7 +503,7 @@ Create a comprehensive PR description based on:
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>
+Authored-By: Claude <noreply@anthropic.com>
 #+end_src
 
 *** Create PR Using GitHub CLI
@@ -534,7 +534,7 @@ Add the PR link to the story:
 #+begin_src fundamental
 ,***** Notes
 
-Pull Request: #123
+Pull Request: URL of the PR.
 Branch: feature/summary-of-story-title
 
 Story is BLOCKED pending PR review and testing.
@@ -549,7 +549,7 @@ git commit -m "[agile] Add PR link to story
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>"
+Authored-By: Claude <noreply@anthropic.com>"
 git push origin main
 #+end_src
 
@@ -561,7 +561,7 @@ git checkout main
 
 ** Step 11: Summary Report
 
-Provide the user with a summary:
+Update the story in the sprint backlog with a summary:
 
 #+begin_src fundamental
 ✓ Story Implementation Complete

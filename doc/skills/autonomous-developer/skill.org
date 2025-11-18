@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 8c4f5b9a-3d2e-4c89-a7f1-9e8d6f2b5a4c
 :END:
-#+title: Semi Automated Developer
+#+title: Autonomous Developer
 #+author: Marco Craveiro
 #+options: title:nil <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
 #+startup: inlineimages
@@ -9,7 +9,7 @@
 
 #+begin_export markdown
 ---
-name: semi-automated-developer
+name: autonomous-developer
 description: Autonomously pick up stories from sprint backlog, implement them incrementally with tests and commits, then submit for review.
 license: Complete terms in LICENSE.txt
 ---
@@ -41,17 +41,17 @@ Simply invoke this skill and it will:
 5. Mark the story as BLOCKED (awaiting review)
 6. Push the branch and create a pull request
 
-* Semi-Automated Developer Mode
+* Autonomous Developer Mode
 
 ** IMPORTANT: Explicit Mode Activation Required
 
 This skill operates in two distinct modes, and the user MUST explicitly enable
-or disable semi-automated developer mode:
+or disable autonomous developer mode:
 
-*** When Semi-Automated Developer Mode is ENABLED
+*** When Autonomous Developer Mode is ENABLED
 
-When the user explicitly enables this mode (e.g., "Enable semi-automated
-developer mode" or "Use the semi-automated developer skill"), you should:
+When the user explicitly enables this mode (e.g., "Enable autonomous
+developer mode" or "Use the autonomous developer skill"), you should:
 
 - *Work autonomously* on stories from the sprint backlog
 - *Create feature branches* automatically with proper naming
@@ -61,7 +61,7 @@ developer mode" or "Use the semi-automated developer skill"), you should:
 - *Make assumptions* when clarification is needed (documenting them)
 - *Proceed continuously* until the story is complete
 
-*** When Semi-Automated Developer Mode is DISABLED (Default)
+*** When Autonomous Developer Mode is DISABLED (Default)
 
 When this mode is NOT explicitly enabled (which is the default state), you should:
 
@@ -77,16 +77,16 @@ When this mode is NOT explicitly enabled (which is the default state), you shoul
 
 The user must use explicit commands such as:
 
-- To enable: "Enable semi-automated developer mode" or "Use the semi-automated
+- To enable: "Enable autonomous developer mode" or "Use the autonomous
   developer skill"
-- To disable: "Disable semi-automated developer mode" or "Exit semi-automated
+- To disable: "Disable autonomous developer mode" or "Exit autonomous
   mode" or "Switch to interactive mode"
 
 *** Default Behavior
 
-*By default, semi-automated developer mode is DISABLED.* You should only operate
+*By default, autonomous developer mode is DISABLED.* You should only operate
 in autonomous mode when the user has explicitly enabled it. When in doubt, ask
-the user if they want to enable semi-automated developer mode.
+the user if they want to enable autonomous developer mode.
 
 * Detailed Instructions
 

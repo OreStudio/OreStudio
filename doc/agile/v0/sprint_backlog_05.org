@@ -912,6 +912,50 @@ Notes:
 - Ready for additional entities (accounts, feature_flags) to follow same pattern
 - Minimal changes maximize compatibility
 
+***** COMPLETED Phase 3: All Entities Implementation
+CLOSED: [2025-11-18 Tue]
+
+Modified files:
+- =projects/ores.cli/include/ores.cli/config/entity.hpp= - Added feature_flags to enum
+- =projects/ores.cli/src/config/parser.cpp= - Added accounts and feature_flags handlers
+
+Implementation details:
+- Added =accounts= entity command with operations: list, delete, add
+- Added =feature_flags= entity command with operations: list, delete, add
+- All entities follow the same pattern as currencies
+- Add operation marked as "not yet implemented" for accounts and feature_flags
+- Both old and new syntax continue to work side-by-side
+
+Supported commands:
+1. Currencies:
+   - =./ores.cli currencies import --target file.xml=
+   - =./ores.cli currencies export --format xml=
+   - =./ores.cli currencies list --format json=
+   - =./ores.cli currencies delete --key USD=
+
+2. Accounts:
+   - =./ores.cli accounts list --format json=
+   - =./ores.cli accounts delete --key username=
+   - =./ores.cli accounts add= (placeholder)
+
+3. Feature Flags:
+   - =./ores.cli feature_flags list --format json=
+   - =./ores.cli feature_flags delete --key flag_name=
+   - =./ores.cli feature_flags add= (placeholder)
+
+Testing:
+- [X] All code compiles without warnings
+- [X] Help text shows all three entity commands
+- [X] Operation-specific help works for all entities
+- [X] Parser validates operations correctly for each entity
+- [X] Error messages guide users to valid operations
+
+Summary:
+- Complete entity-based CLI structure implemented for all current entities
+- Backward compatible with existing command-based syntax
+- Foundation in place for future entity additions
+- Clean, consistent pattern across all entities
+
 ***** Design
 
 ****** Current Structure

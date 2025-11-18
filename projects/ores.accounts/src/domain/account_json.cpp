@@ -17,20 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_TABLE_IO_HPP
-#define ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_TABLE_IO_HPP
+#include "ores.accounts/domain/account_json.hpp"
 
-#include <iosfwd>
-#include <vector>
-#include "ores.accounts/domain/feature_flags.hpp"
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 
 namespace ores::accounts::domain {
 
-/**
- * @brief Dumps the feature flags object to a stream in table format.
- */
-std::ostream& operator<<(std::ostream& s, const std::vector<feature_flags>& v);
-
+std::string convert_to_json(const account& v) {
+    return rfl::json::write(v);
 }
 
-#endif
+std::string convert_to_json(const std::vector<account>& v) {
+    return rfl::json::write(v);
+}
+
+}

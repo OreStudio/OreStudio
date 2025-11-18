@@ -33,10 +33,13 @@
 #include "ores.risk/orexml/importer.hpp"
 #include "ores.risk/orexml/exporter.hpp"
 #include "ores.risk/csv/exporter.hpp"
-#include "ores.risk/domain/currency_table_io.hpp"
+#include "ores.risk/domain/currency_table.hpp"
+#include "ores.risk/domain/currency_json.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
-#include "ores.accounts/domain/account_table_io.hpp"
-#include "ores.accounts/domain/feature_flags_table_io.hpp"
+#include "ores.accounts/domain/account_table.hpp"
+#include "ores.accounts/domain/account_json.hpp"
+#include "ores.accounts/domain/feature_flags_table.hpp"
+#include "ores.accounts/domain/feature_flags_json.hpp"
 #include "ores.accounts/repository/account_repository.hpp"
 #include "ores.cli/app/application_exception.hpp"
 
@@ -141,12 +144,12 @@ export_currencies(const config::export_options& cfg) const {
         std::string ccy_cfgs = ore_exporter::export_currency_config(ccys);
         output_stream_ << ccy_cfgs << std::endl;
     } else if (cfg.target_format == config::format::json) {
-        output_stream_ << ccys << std::endl;
+        output_stream_ << risk::domain::convert_to_json(ccys) << std::endl;
     } else if (cfg.target_format == config::format::csv) {
         std::string ccy_cfgs = csv_exporter::export_currency_config(ccys);
         output_stream_ << ccy_cfgs << std::endl;
     } else if (cfg.target_format == config::format::table) {
-        risk::domain::print_currency_table(output_stream_, ccys);
+        output_stream_ << risk::domain::convert_to_table(ccys) << std::endl;
     }
 }
 
@@ -177,9 +180,9 @@ export_accounts(const config::export_options& cfg) const {
 
     const std::vector<accounts::domain::account> accts(reader());
     if (cfg.target_format == config::format::json) {
-        output_stream_ << accts << std::endl;
+        output_stream_ << accounts::domain::convert_to_json(accts) << std::endl;
     } else if (cfg.target_format == config::format::table) {
-        accounts::domain::print_account_table(output_stream_, accts);
+        output_stream_ << accounts::domain::convert_to_table(accts) << std::endl;
     }
 }
 

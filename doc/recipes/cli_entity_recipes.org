@@ -349,7 +349,198 @@ List currencies using internal formats (JSON or table).
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
 ./ores.cli currencies list ${db_args} ${log_args} \
-  --format json | jq .
+  --format json
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+
++----------+------------------------------------------------------------+--------+----------------+----------------+-----------+-------------+---------------------+---------------------+
+| ISO Code | Name                                                       | Symbol | Type           | Fractions/Unit | Precision | Modified By | Valid From          | Valid To            |
++----------+------------------------------------------------------------+--------+----------------+----------------+-----------+-------------+---------------------+---------------------+
+| ZWL      | Zimbabwean dollar                                          |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| ZAR      | South African rand                                         |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| ZMW      | Zambian kwacha                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| AED      | United Arab Emirates dirham                                |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| AFN      | Afghan afghani                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| ALL      | Albanian lek                                               |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| AMD      | Armenian dram                                              |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| ANG      | Netherlands Antillean guilder                              |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| AOA      | Angolan kwanza                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| ARS      | Argentine peso                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| AUD      | Australian dollar                                          |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| AWG      | Aruban florin                                              |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| AZN      | Azerbaijani manat                                          |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| BAM      | Bosnia and Herzegovina convertible mark                    |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| BBD      | Barbados dollar                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| BDT      | Bangladeshi taka                                           |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| BGN      | Bulgarian lev                                              |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| BHD      | Bahraini dinar                                             |        |                | 1000           | 3         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| BIF      | Burundian franc                                            |        |                | 1              | 0         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| BMD      | Bermudian dollar                                           |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| BND      | Brunei dollar                                              |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| BOB      | Boliviano                                                  |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| BOV      | Bolivian Mvdol (funds code)                                |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| BRL      | Brazilian real                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| BSD      | Bahamian dollar                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| BTN      | Bhutanese ngultrum                                         |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| BWP      | Botswana pula                                              |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| BYN      | Belarusian ruble                                           |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| BZD      | Belize dollar                                              |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| CAD      | Canadian dollar                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| CDF      | Congolese franc                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| CHE      | WIR euro (complementary currency)                          |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| CHF      | Swiss franc                                                |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| CHW      | WIR franc (complementary currency)                         |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| CLF      | Unidad de Fomento (funds code)                             |        |                | 10000          | 4         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| CLP      | Chilean peso                                               |        |                | 1              | 0         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| CNH      | Offshore Chinese Yuan traded in Hong Kong (Non-ISO)        |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| CNT      | Offshore Chinese Yuan traded in Taiwan (Non-ISO)           |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| CNY      | Chinese yuan                                               |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| COP      | Colombian peso                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| COU      | Unidad de Valor Real (UVR) (funds code)                    |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| CRC      | Costa Rican colon                                          |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| CUC      | Cuban convertible peso                                     |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| CUP      | Cuban peso                                                 |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| CVE      | Cape Verdean escudo                                        |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| CZK      | Czech koruna                                               |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| DJF      | Djiboutian franc                                           |        |                | 1              | 0         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| DKK      | Danish krone                                               |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| DOP      | Dominican peso                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| DZD      | Algerian dinar                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| EGP      | Egyptian pound                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| ERN      | Eritrean nakfa                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| ETB      | Ethiopian birr                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| EUR      | Euro                                                       |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| FJD      | Fiji dollar                                                |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| FKP      | Falkland Islands pound                                     |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| GBP      | Pound sterling                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| GEL      | Georgian lari                                              |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| GGP      | Guernsey Pound (Non-ISO)                                   |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| GHS      | Ghanaian cedi                                              |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| GIP      | Gibraltar pound                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| GMD      | Gambian dalasi                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| GNF      | Guinean franc                                              |        |                | 1              | 0         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| GTQ      | Guatemalan quetzal                                         |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| GYD      | Guyanese dollar                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| HKD      | Hong Kong dollar                                           |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| HNL      | Honduran lempira                                           |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| HRK      | Croatian kuna                                              |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| HTG      | Haitian gourde                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| HUF      | Hungarian forint                                           |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| IDR      | Indonesian rupiah                                          |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| ILS      | Israeli new shekel                                         |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| IMP      | Isle of Man Pound (Non-ISO)                                |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| INR      | Indian rupee                                               |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| IQD      | Iraqi dinar                                                |        |                | 1000           | 3         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| IRR      | Iranian rial                                               |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| ISK      | Icelandic krona                                            |        |                | 1              | 0         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| JEP      | Jersey Pound (Non-ISO)                                     |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| JMD      | Jamaican dollar                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| JOD      | Jordanian dinar                                            |        |                | 1000           | 3         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| JPY      | Japanese yen                                               |        |                | 1              | 0         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| KES      | Kenyan shilling                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| KGS      | Kyrgyzstani som                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| KHR      | Cambodian riel                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| KID      | Kiribati dollar (Non-ISO)                                  |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| KMF      | Comoro franc                                               |        |                | 1              | 0         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| KPW      | North Korean won                                           |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| KRW      | South Korean won                                           |        |                | 1              | 0         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| KWD      | Kuwaiti dinar                                              |        |                | 1000           | 3         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| KYD      | Cayman Islands dollar                                      |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| KZT      | Kazakhstani tenge                                          |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| LAK      | Lao kip                                                    |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| LBP      | Lebanese pound                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| LKR      | Sri Lankan rupee                                           |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| LRD      | Liberian dollar                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| LSL      | Lesotho loti                                               |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| LYD      | Libyan dinar                                               |        |                | 1000           | 3         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| MAD      | Moroccan dirham                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| MDL      | Moldovan leu                                               |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| MGA      | Malagasy ariary                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| MKD      | Macedonian denar                                           |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| MMK      | Myanmar kyat                                               |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| MNT      | Mongolian toegroeg                                         |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| MOP      | Macanese pataca                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| MRU      | Mauritanian ouguiya                                        |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| MUR      | Mauritian rupee                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| MVR      | Maldivian rufiyaa                                          |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| MWK      | Malawian kwacha                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| MXN      | Mexican peso                                               |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| MXV      | Mexican Unidad de Inversion (UDI) (funds code)             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| MYR      | Malaysian ringgit                                          |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| MZN      | Mozambican metical                                         |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| NAD      | Namibian dollar                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| NGN      | Nigerian naira                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| NIO      | Nicaraguan cordoba                                         |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| NOK      | Norwegian krone                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| NPR      | Nepalese rupee                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| NZD      | New Zealand dollar                                         |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| OMR      | Omani rial                                                 |        |                | 1000           | 3         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| PAB      | Panamanian balboa                                          |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| PEN      | Peruvian sol                                               |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| PGK      | Papua New Guinean kina                                     |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| PHP      | Philippine peso                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| PKR      | Pakistani rupee                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| PLN      | Polish z_oty                                               |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| PYG      | Paraguayan guarani                                         |        |                | 1              | 0         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| QAR      | Qatari riyal                                               |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| RON      | Romanian leu                                               |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| RSD      | Serbian dinar                                              |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| RUB      | Russian ruble                                              |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| RWF      | Rwandan franc                                              |        |                | 1              | 0         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| SAR      | Saudi riyal                                                |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| SBD      | Solomon Islands dollar                                     |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| SCR      | Seychelles rupee                                           |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| SDG      | Sudanese pound                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| SEK      | Swedish krona/kronor                                       |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| SGD      | Singapore dollar                                           |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| SHP      | Saint Helena pound                                         |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| SLL      | Sierra Leonean leone                                       |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| SOS      | Somali shilling                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| SRD      | Surinamese dollar                                          |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| SSP      | South Sudanese pound                                       |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| STN      | Sao Tome and Principe dobra                                |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| SVC      | Salvadoran colon                                           |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| SYP      | Syrian pound                                               |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| SZL      | Swazi lilangeni                                            |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| THB      | Thai baht                                                  |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| TJS      | Tajikistani somoni                                         |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| TMT      | Turkmenistan manat                                         |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| TND      | Tunisian dinar                                             |        |                | 1000           | 3         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| TOP      | Tongan pa_anga                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| TRY      | Turkish lira                                               |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| TTD      | Trinidad and Tobago dollar                                 |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| TWD      | New Taiwan dollar                                          |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| TZS      | Tanzanian shilling                                         |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| UAH      | Ukrainian hryvnia                                          |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| UGX      | Ugandan shilling                                           |        |                | 1              | 0         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| USD      | United States dollar                                       |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| USN      | United States dollar (next day) (funds code)               |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| UYI      | Uruguay Peso en Unidades Indexadas (URUIURUI) (funds code) |        |                | 1              | 0         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| UYU      | Uruguayan peso                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| UYW      | Unidad previsional                                         |        |                | 10000          | 4         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| UZS      | Uzbekistan som                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| VES      | Venezuelan bolivar soberano                                |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| VND      | Vietnamese dong                                            |        |                | 1              | 0         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| VUV      | Vanuatu vatu                                               |        |                | 1              | 0         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| WST      | Samoan tala                                                |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| XAF      | CFA franc BEAC                                             |        |                | 1              | 0         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| XAG      | Silver (one troy ounce)                                    |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| XAU      | Gold (one troy ounce)                                      |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| XCD      | East Caribbean dollar                                      |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| XOF      | CFA franc BCEAO                                            |        |                | 1              | 0         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| XPD      | Palladium (one troy ounce)                                 |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| XPF      | CFP franc (franc Pacifique)                                |        |                | 1              | 0         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| XPT      | Platinum (one troy ounce)                                  |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| XSU      | SUCRE                                                      |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| XUA      | ADB Unit of Account                                        |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| YER      | Yemeni rial                                                |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| TESTC    | Test Currency 2                                            | T      | Test           | 0              | 0         | newuser3    | 2025-11-17 23:35:09 | 2025-11-17 23:35:09 |
+| BTC      | Bitcoin                                                    | ₿    | Cryptocurrency | 100000000      | 8         | ores        | 2025-11-05 17:28:10 | 2025-11-05 17:28:10 |
++----------+------------------------------------------------------------+--------+----------------+----------------+-----------+-------------+---------------------+---------------------+
+
+
 #+end_src
 
 **** List all currencies as table
@@ -357,11 +548,21 @@ export ORES_CLI_DB_PASSWORD
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
 ./ores.cli currencies list ${db_args} ${log_args} \
-  --format table
+  --format table  | head -n 10
 #+end_src
 
 #+RESULTS:
 #+begin_src text
+
++----------+------------------------------------------------------------+--------+----------------+----------------+-----------+-------------+---------------------+---------------------+
+| ISO Code | Name                                                       | Symbol | Type           | Fractions/Unit | Precision | Modified By | Valid From          | Valid To            |
++----------+------------------------------------------------------------+--------+----------------+----------------+-----------+-------------+---------------------+---------------------+
+| ZWL      | Zimbabwean dollar                                          |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| ZAR      | South African rand                                         |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| ZMW      | Zambian kwacha                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| AED      | United Arab Emirates dirham                                |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| AFN      | Afghan afghani                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| ALL      | Albanian lek                                               |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
 #+end_src
 
 **** List specific currency

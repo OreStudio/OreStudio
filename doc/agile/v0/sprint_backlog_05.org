@@ -18,39 +18,41 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-18 Tue 09:56], for Tuesday, November 18, 2025.
+#+CAPTION: Clock summary at [2025-11-18 Tue 17:29], for Tuesday, November 18, 2025.
 |       | <75>                                                    |        |      |      |       |
 | Tags  | Headline                                                | Time   |      |      |     % |
 |-------+---------------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                            | *1:03* |      |      | 100.0 |
+|       | *Total time*                                            | *3:14* |      |      | 100.0 |
 |-------+---------------------------------------------------------+--------+------+------+-------|
-|       | Stories                                                 | 1:03   |      |      | 100.0 |
-|       | Active                                                  |        | 1:03 |      | 100.0 |
-| agile | Sprint and product backlog refinement                   |        |      | 0:13 |  20.6 |
-| code  | Uninformative incompatible protocol version error in qt |        |      | 0:30 |  47.6 |
-| code  | Implement delete account                                |        |      | 0:20 |  31.7 |
+|       | Stories                                                 | 3:14   |      |      | 100.0 |
+|       | Active                                                  |        | 3:14 |      | 100.0 |
+| agile | Sprint and product backlog refinement                   |        |      | 0:13 |   6.7 |
+| code  | Uninformative incompatible protocol version error in qt |        |      | 0:51 |  26.3 |
+| code  | Implement delete account                                |        |      | 0:20 |  10.3 |
+| code  | Reorganise CLI structure by entity                      |        |      | 1:50 |  56.7 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-18 Tue 09:56]
+#+CAPTION: Clock summary at [2025-11-18 Tue 17:29]
 |       | <75>                                                    |         |       |      |       |
 | Tags  | Headline                                                | Time    |       |      |     % |
 |-------+---------------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                            | *11:46* |       |      | 100.0 |
+|       | *Total time*                                            | *13:57* |       |      | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                                 | 11:46   |       |      | 100.0 |
-|       | Active                                                  |         | 11:46 |      | 100.0 |
-| agile | Sprint and product backlog refinement                   |         |       | 2:35 |  22.0 |
-| infra | Add AI generated sprint summary                         |         |       | 1:38 |  13.9 |
-| infra | Add skill to generate release notes                     |         |       | 0:27 |   3.8 |
-| code  | Version of =ores.qt= does not update                    |         |       | 0:54 |   7.6 |
-| code  | Minor updates to UML diagrams                           |         |       | 0:13 |   1.8 |
-| infra | Add support for project planning                        |         |       | 2:24 |  20.4 |
-| code  | Add a "detached" mode                                   |         |       | 1:18 |  11.0 |
-| code  | Merge update and create currency messages               |         |       | 1:07 |   9.5 |
-| code  | Uninformative incompatible protocol version error in qt |         |       | 0:50 |   7.1 |
-| code  | Implement delete account                                |         |       | 0:20 |   2.8 |
+|       | Stories                                                 | 13:57   |       |      | 100.0 |
+|       | Active                                                  |         | 13:57 |      | 100.0 |
+| agile | Sprint and product backlog refinement                   |         |       | 2:35 |  18.5 |
+| infra | Add AI generated sprint summary                         |         |       | 1:38 |  11.7 |
+| infra | Add skill to generate release notes                     |         |       | 0:27 |   3.2 |
+| code  | Version of =ores.qt= does not update                    |         |       | 0:54 |   6.5 |
+| code  | Minor updates to UML diagrams                           |         |       | 0:13 |   1.6 |
+| infra | Add support for project planning                        |         |       | 2:24 |  17.2 |
+| code  | Add a "detached" mode                                   |         |       | 1:18 |   9.3 |
+| code  | Merge update and create currency messages               |         |       | 1:07 |   8.0 |
+| code  | Uninformative incompatible protocol version error in qt |         |       | 1:11 |   8.5 |
+| code  | Implement delete account                                |         |       | 0:20 |   2.4 |
+| code  | Reorganise CLI structure by entity                      |         |       | 1:50 |  13.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -721,7 +723,7 @@ Testing notes:
   version mismatch and sends detailed handshake_response
 - Client stores detailed error message in =last_error_= accessible via =last_error()=
 
-*** STARTED Implement delete account                                   :code:
+*** COMPLETED Implement delete account                                 :code:
     :LOGBOOK:
     CLOCK: [2025-11-18 Tue 08:45]--[2025-11-18 Tue 09:05] =>  0:20
     :END:
@@ -788,7 +790,8 @@ The CLI implementation adds a new "delete" command that supports deleting accoun
 
 *** STARTED Reorganise CLI structure by entity                         :code:
     :LOGBOOK:
-    CLOCK: [2025-11-18 Tue 10:30]
+    CLOCK: [2025-11-18 Tue 17:29]
+    CLOCK: [2025-11-18 Tue 14:30]--[2025-11-18 Tue 16:20] =>  1:50
     :END:
 
 The structure of CLI commands at present is very confusing. We have import and

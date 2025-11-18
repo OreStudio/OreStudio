@@ -27,11 +27,6 @@
 namespace ores::accounts::domain {
 
 /**
- * @brief Prints accounts to a stream in table format.
- */
-void print_account_table(std::ostream& s, const std::vector<account>& v);
-
-/**
  * @brief Dumps the account object to a stream in table format.
  */
 std::ostream& operator<<(std::ostream& s, const std::vector<account>& v);

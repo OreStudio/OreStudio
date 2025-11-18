@@ -17,19 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_TABLE_IO_HPP
-#define ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_TABLE_IO_HPP
+#ifndef ORES_RISK_DOMAIN_CURRENCY_JSON_HPP
+#define ORES_RISK_DOMAIN_CURRENCY_JSON_HPP
 
-#include <iosfwd>
+#include <string>
 #include <vector>
-#include "ores.accounts/domain/feature_flags.hpp"
+#include "ores.risk/domain/currency.hpp"
 
-namespace ores::accounts::domain {
+namespace ores::risk::domain {
 
 /**
- * @brief Dumps the feature flags object to a stream in table format.
+ * @brief Converts a single currency to JSON format string.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<feature_flags>& v);
+std::string convert_to_json(const currency& c);
+
+/**
+ * @brief Converts a vector of currencies to JSON format string.
+ */
+std::string convert_to_json(const std::vector<currency>& v);
 
 }
 

@@ -20,24 +20,12 @@
 #include "ores.risk/domain/currency_table_io.hpp"
 
 #include <ostream>
-#include <fort.hpp>
+#include "ores.risk/domain/currency_table.hpp"
 
 namespace ores::risk::domain {
 
 void print_currency_table(std::ostream& s, const std::vector<currency>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
-
-    table << fort::header << "ISO Code" << "Name" << "Symbol" << "Type"
-          << "Fractions/Unit" << "Precision" << "Modified By" << "Valid From"
-          << "Valid To" << fort::endr;
-
-    for (const auto& c : v) {
-        table << c.iso_code << c.name << c.symbol << c.currency_type
-              << c.fractions_per_unit << c.rounding_precision << c.modified_by
-              << c.valid_from << c.valid_to << fort::endr;
-    }
-    s << std::endl << table.to_string() << std::endl;
+    s << convert_to_table(v);
 }
 
 std::ostream& operator<<(std::ostream& s, const std::vector<currency>& v) {

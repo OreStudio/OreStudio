@@ -17,19 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_TABLE_IO_HPP
-#define ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_TABLE_IO_HPP
+#ifndef ORES_ACCOUNTS_DOMAIN_LOGIN_INFO_TABLE_IO_HPP
+#define ORES_ACCOUNTS_DOMAIN_LOGIN_INFO_TABLE_IO_HPP
 
-#include <iosfwd>
 #include <vector>
-#include "ores.accounts/domain/feature_flags.hpp"
+#include "ores.accounts/domain/login_info.hpp"
 
 namespace ores::accounts::domain {
 
 /**
- * @brief Dumps the feature flags object to a stream in table format.
+ * @brief Converts feature flags to table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<feature_flags>& v);
+std::string convert_to_table(const std::vector<login_info>& v);
 
 }
 

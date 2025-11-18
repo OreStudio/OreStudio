@@ -47,6 +47,8 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_login_request(payload, remote_address);
     case message_type::unlock_account_request:
         co_return co_await handle_unlock_account_request(payload);
+    case message_type::delete_account_request:
+        co_return co_await handle_delete_account_request(payload);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown accounts message type: "
                                    << std::hex << static_cast<std::uint16_t>(type);
@@ -180,6 +182,42 @@ handle_unlock_account_request(std::span<const std::uint8_t> payload) {
         unlock_account_response response{
             .success = false,
             .error_message = e.what()
+        };
+        co_return response.serialize();
+    }
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_delete_account_request(std::span<const std::uint8_t> payload) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_account_request";
+
+    auto request_result = delete_account_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_account_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+
+    try {
+        service_.delete_account(request.account_id);
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully deleted account: "
+                                  << boost::uuids::to_string(request.account_id);
+
+        delete_account_response response{
+            .success = true,
+            .message = "Account deleted successfully"
+        };
+        co_return response.serialize();
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete account: " << e.what();
+
+        delete_account_response response{
+            .success = false,
+            .message = std::string("Failed to delete account: ") + e.what()
         };
         co_return response.serialize();
     }

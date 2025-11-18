@@ -103,9 +103,10 @@ std::vector<domain::account> account_service::list_accounts() {
 }
 
 void account_service::delete_account(const boost::uuids::uuid& account_id) {
-    // For now we'll just read the account and return - in a real implementation
-    // this would remove the account from the database, but that requires
-    // additional repository method support
+    BOOST_LOG_SEV(lg(), debug) << "Deleting account: "
+                               << boost::uuids::to_string(account_id);
+
+    // Verify account exists before attempting deletion
     auto accounts = account_repo_.read_latest(account_id);
     if (accounts.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "Attempted to delete non-existent account: "
@@ -113,10 +114,11 @@ void account_service::delete_account(const boost::uuids::uuid& account_id) {
         throw std::invalid_argument("Account does not exist");
     }
 
-    // FIXME
-    // TODO: In a complete implementation, this would remove the account
-    // and its associated login tracking information from the database
-    BOOST_LOG_SEV(lg(), warn) << "Account deletion not fully implemented";
+    // Perform bitemporal soft delete (sets valid_to = current_timestamp)
+    account_repo_.remove(account_id);
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully deleted account: "
+                              << boost::uuids::to_string(account_id);
 }
 
 domain::account account_service::login(const std::string& username,

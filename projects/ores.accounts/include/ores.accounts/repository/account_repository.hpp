@@ -87,6 +87,14 @@ public:
     std::vector<domain::account>
     read_latest_by_username(const std::string& username);
 
+    /**
+     * @brief Deletes an account by closing its temporal validity.
+     *
+     * Sets the valid_to timestamp to now, effectively "deleting" the account
+     * from the current point in time onwards while preserving history.
+     */
+    void remove(const boost::uuids::uuid& account_id);
+
 private:
     context ctx_;
 };

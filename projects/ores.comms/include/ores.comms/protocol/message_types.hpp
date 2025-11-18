@@ -56,6 +56,8 @@ enum class message_type {
     login_response = 0x2006,
     unlock_account_request = 0x2007,
     unlock_account_response = 0x2008,
+    delete_account_request = 0x2009,
+    delete_account_response = 0x200A,
 
     last_value
 };

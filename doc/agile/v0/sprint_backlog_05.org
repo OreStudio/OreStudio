@@ -859,13 +859,14 @@ What the ask is:
 
 - [X] Analyze current CLI structure and command parsing
 - [X] Design new entity-based command structure
-- [ ] Implement new command parser for entity-first syntax
-- [ ] Migrate currencies commands to new structure
-- [ ] Migrate accounts commands to new structure
-- [ ] Add feature flags commands
-- [ ] Update recipes to use new command structure
-- [ ] Build and test all CLI commands
-- [ ] Update help text and documentation
+- [X] Implement new command parser for entity-first syntax
+- [X] Migrate currencies commands to new structure
+- [X] Migrate accounts commands to new structure
+- [X] Add feature flags commands
+- [X] Update recipes to use new command structure
+- [X] Build and test all CLI commands
+- [X] Update help text and documentation
+- [X] Remove legacy command-based syntax support
 
 ***** COMPLETED Phase 1: Foundation Structures
 CLOSED: [2025-11-18 Tue]
@@ -955,6 +956,38 @@ Summary:
 - Backward compatible with existing command-based syntax
 - Foundation in place for future entity additions
 - Clean, consistent pattern across all entities
+
+***** COMPLETED Phase 4: Legacy Syntax Removal
+CLOSED: [2025-11-18 Tue]
+
+Modified files:
+- =projects/ores.cli/src/config/parser.cpp= - Removed legacy command handlers
+- =doc/recipes/cli_entity_recipes.org= - Removed legacy syntax examples
+
+Implementation details:
+- Removed support for old command-based syntax (import, export, delete commands)
+- CLI now exclusively accepts entity-based syntax
+- Updated =validate_command_name()= to only accept entity commands (currencies, accounts, feature_flags)
+- Updated help text to show only entity-based commands
+- Removed "Legacy Command-Based Syntax" section from recipes
+
+Testing:
+- [X] Build successful with legacy handlers removed
+- [X] Entity commands work correctly (currencies, accounts, feature_flags)
+- [X] Help system displays only entity-based commands
+- [X] Legacy commands properly rejected with helpful error message
+- [X] All entity operations (import, export, list, delete) functional
+
+Examples of rejected legacy syntax:
+- =./ores.cli import --entity currencies= → Error: "Invalid or unsupported command: import"
+- =./ores.cli export --entity accounts= → Error: "Invalid or unsupported command: export"
+- =./ores.cli delete --entity currencies= → Error: "Invalid or unsupported command: delete"
+
+Summary:
+- Clean break from legacy syntax completed
+- All functionality migrated to entity-based commands
+- Documentation updated to reflect new syntax only
+- User-friendly error messages guide users to correct syntax
 
 ***** Design
 

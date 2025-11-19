@@ -1,0 +1,28 @@
+#+title: ORE Studio Manual
+#+author: Marco Craveiro
+#+options: date:nil <:nil c:nil todo:nil H:7 ^:{}
+#+latex_class: article
+#+latex_class_options: [a4paper,11pt]
+#+latex_header: \usepackage[margin=1in]{geometry}
+#+latex_header: \usepackage{graphicx}
+#+latex_header: \usepackage{fancyhdr}
+#+latex_header: \usepackage{titlesec}
+#+latex_header: \usepackage{parskip}
+#+latex_header: \setlength{\parindent}{0pt}
+#+latex_header: \pagestyle{fancy}
+#+latex_header: \fancyhf{}
+#+latex_header: \fancyhead[l]{\leftmark}
+#+latex_header: \fancyfoot[c]{\thepage}
+#+latex_header: \titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+#+latex_header: \titleformat{\subsection}{\bfseries}{\thesubsection}{1em}{}
+#+latex_header: \usepackage{setspace}
+#+latex_header: \onehalfspacing
+#+latex_header: \usepackage{booktabs}
+#+latex_header: \usepackage{hyperref}
+#+latex_header: \hypersetup{colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=cyan}
+#+latex: \thispagestyle{empty}
+#+latex: \newpage
+
+** Introduction
+
+** Chapter 1

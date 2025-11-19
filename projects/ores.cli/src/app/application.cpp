@@ -20,12 +20,20 @@
  */
 #include "ores.cli/app/application.hpp"
 
+#include <chrono>
+#include <fstream>
+#include <iomanip>
 #include <optional>
+#include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <boost/throw_exception.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <rfl/json.hpp>
 #include <sqlgen/postgres.hpp>
 #include <magic_enum/magic_enum.hpp>
+#include "ores.utility/rfl/reflectors.hpp"
 #include "ores.cli/config/export_options.hpp"
 #include "ores.utility/streaming/std_vector.hpp"
 #include "ores.utility/repository/context_factory.hpp"
@@ -41,6 +49,8 @@
 #include "ores.accounts/domain/feature_flags_table.hpp"
 #include "ores.accounts/domain/feature_flags_json.hpp"
 #include "ores.accounts/repository/account_repository.hpp"
+#include "ores.accounts/repository/feature_flags_repository.hpp"
+#include "ores.accounts/security/password_manager.hpp"
 #include "ores.cli/app/application_exception.hpp"
 
 namespace ores::cli::app {
@@ -189,9 +199,40 @@ export_accounts(const config::export_options& cfg) const {
 void application::
 export_feature_flags(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting feature flags.";
-    // TODO: Implement when feature_flags repository is available
-    BOOST_THROW_EXCEPTION(
-        application_exception("Feature flags export not yet implemented"));
+
+    accounts::repository::feature_flags_repository repo(context_);
+    std::vector<accounts::domain::feature_flags> flags;
+
+    if (!cfg.key.empty()) {
+        // Export specific feature flag by name
+        if (cfg.all_versions) {
+            flags = repo.read_all(cfg.key);
+        } else {
+            flags = repo.read_latest(cfg.key);
+        }
+    } else {
+        // Export all feature flags
+        if (cfg.all_versions) {
+            flags = repo.read_all();
+        } else {
+            flags = repo.read_latest();
+        }
+    }
+
+    // Output in the requested format
+    if (cfg.target_format == config::format::json ||
+        cfg.target_format == config::format::table) {
+        if (cfg.target_format == config::format::json) {
+            output_stream_ << accounts::domain::convert_to_json(flags) << std::endl;
+        } else if (cfg.target_format == config::format::table) {
+            output_stream_ << accounts::domain::convert_to_table(flags) << std::endl;
+        }
+    } else {
+        BOOST_THROW_EXCEPTION(
+            application_exception("Only JSON and table formats are supported for feature flags"));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << flags.size() << " feature flag(s).";
 }
 
 void application::
@@ -225,6 +266,7 @@ void application::run(const config::options& cfg) const {
     import_data(cfg.importing);
     export_data(cfg.exporting);
     delete_data(cfg.deleting);
+    add_data(cfg.adding);
 
     BOOST_LOG_SEV(lg(), info) << "Finished application.";
     return;
@@ -271,6 +313,15 @@ delete_account(const config::delete_options& cfg) const {
 }
 
 void application::
+delete_feature_flag(const config::delete_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Deleting feature flag: " << cfg.key;
+    accounts::repository::feature_flags_repository repo(context_);
+    repo.remove(cfg.key);
+    output_stream_ << "Feature flag deleted successfully: " << cfg.key << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Deleted feature flag: " << cfg.key;
+}
+
+void application::
 delete_data(const std::optional<config::delete_options>& ocfg) const {
     if (!ocfg.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "No deletion configuration found.";
@@ -286,12 +337,125 @@ delete_data(const std::optional<config::delete_options>& ocfg) const {
             delete_account(cfg);
             break;
         case config::entity::feature_flags:
-            BOOST_THROW_EXCEPTION(
-                application_exception("Feature flags deletion not yet implemented"));
+            delete_feature_flag(cfg);
             break;
         default:
             BOOST_THROW_EXCEPTION(
                 application_exception(std::format("Delete not supported for entity: {}",
+                        magic_enum::enum_name(cfg.target_entity))));
+    }
+}
+
+void application::
+add_currency(const config::add_options& cfg) const {
+    BOOST_LOG_SEV(lg(), info) << "Adding currency: " << cfg.iso_code.value_or("");
+
+    // Construct currency from command-line arguments
+    risk::domain::currency currency;
+    currency.iso_code = cfg.iso_code.value();
+    currency.name = cfg.name.value();
+    currency.numeric_code = cfg.numeric_code.value_or("0");
+    currency.symbol = cfg.symbol.value_or("");
+    currency.fraction_symbol = cfg.fraction_symbol.value_or("");
+    currency.fractions_per_unit = cfg.fractions_per_unit.value_or(100);
+    currency.rounding_type = cfg.rounding_type.value_or("Closest");
+    currency.rounding_precision = cfg.rounding_precision.value_or(2);
+    currency.format = cfg.format.value_or("");
+    currency.currency_type = cfg.currency_type.value_or("");
+    currency.modified_by = cfg.modified_by.value();
+
+    // Set timestamps to current time
+    const auto now = std::chrono::system_clock::now();
+    const auto time_t_now = std::chrono::system_clock::to_time_t(now);
+    std::tm tm_now;
+    localtime_r(&time_t_now, &tm_now);
+    std::ostringstream oss;
+    oss << std::put_time(&tm_now, "%Y-%m-%d %H:%M:%S");
+    const auto timestamp = oss.str();
+    currency.valid_from = timestamp;
+    currency.valid_to = timestamp;
+
+    // Write to database
+    currency_repository repo;
+    repo.write(context_, currency);
+
+    output_stream_ << "Successfully added currency: " << currency.iso_code << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added currency: " << currency.iso_code;
+}
+
+void application::
+add_account(const config::add_options& cfg) const {
+    BOOST_LOG_SEV(lg(), info) << "Adding account: " << cfg.username.value_or("");
+
+    // Generate UUID for the account
+    boost::uuids::random_generator gen;
+    const auto account_id = gen();
+
+    // Hash the password
+    using accounts::security::password_manager;
+    const auto password_hash = password_manager::create_password_hash(cfg.password.value());
+
+    // Construct account from command-line arguments
+    accounts::domain::account account;
+    account.version = 0;
+    account.is_admin = cfg.is_admin.value_or(false);
+    account.id = account_id;
+    account.modified_by = cfg.modified_by.value();
+    account.username = cfg.username.value();
+    account.password_hash = password_hash;
+    account.password_salt = "";  // Not used - hash contains salt
+    account.totp_secret = "";    // Can be set later
+    account.email = cfg.email.value();
+
+    // Write to database
+    accounts::repository::account_repository repo(context_);
+    repo.write(account);
+
+    output_stream_ << "Successfully added account: " << account.username
+                   << " (ID: " << boost::uuids::to_string(account_id) << ")" << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added account: " << account.username;
+}
+
+void application::
+add_feature_flag(const config::add_options& cfg) const {
+    BOOST_LOG_SEV(lg(), info) << "Adding feature flag: " << cfg.flag_name.value_or("");
+
+    // Construct feature flag from command-line arguments
+    accounts::domain::feature_flags flag;
+    flag.name = cfg.flag_name.value();
+    flag.description = cfg.description.value_or("");
+    flag.enabled = cfg.enabled.value_or(false);
+    flag.modified_by = cfg.modified_by.value();
+
+    // Write to database
+    accounts::repository::feature_flags_repository repo(context_);
+    repo.write(flag);
+
+    output_stream_ << "Successfully added feature flag: " << flag.name << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added feature flag: " << flag.name;
+}
+
+void application::
+add_data(const std::optional<config::add_options>& ocfg) const {
+    if (!ocfg.has_value()) {
+        BOOST_LOG_SEV(lg(), debug) << "No add configuration found.";
+        return;
+    }
+
+    const auto& cfg(ocfg.value());
+    switch (cfg.target_entity) {
+        case config::entity::currencies:
+            add_currency(cfg);
+            break;
+        case config::entity::accounts:
+            add_account(cfg);
+            break;
+        case config::entity::feature_flags:
+            add_feature_flag(cfg);
+            break;
+        default:
+            BOOST_THROW_EXCEPTION(
+                application_exception(std::format("Add not supported for entity: {}",
                         magic_enum::enum_name(cfg.target_entity))));
     }
 }

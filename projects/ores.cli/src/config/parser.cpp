@@ -173,6 +173,96 @@ options_description make_delete_options_description() {
 }
 
 /**
+ * @brief Creates the options related to adding currencies.
+ */
+options_description make_add_currency_options_description() {
+    options_description r("Add Currency Options");
+    r.add_options()
+        ("iso-code",
+            value<std::string>(),
+            "Currency ISO code (required, e.g., USD)")
+        ("name",
+            value<std::string>(),
+            "Currency name (required, e.g., 'United States Dollar')")
+        ("numeric-code",
+            value<std::string>()->default_value("0"),
+            "Currency numeric code")
+        ("symbol",
+            value<std::string>()->default_value(""),
+            "Currency symbol")
+        ("fraction-symbol",
+            value<std::string>()->default_value(""),
+            "Fraction symbol")
+        ("fractions-per-unit",
+            value<int>()->default_value(100),
+            "Fractions per unit")
+        ("rounding-type",
+            value<std::string>()->default_value("Closest"),
+            "Rounding type")
+        ("rounding-precision",
+            value<int>()->default_value(2),
+            "Rounding precision")
+        ("format",
+            value<std::string>()->default_value(""),
+            "Display format")
+        ("currency-type",
+            value<std::string>()->default_value(""),
+            "Currency type")
+        ("modified-by",
+            value<std::string>(),
+            "Username of modifier (required)");
+
+    return r;
+}
+
+/**
+ * @brief Creates the options related to adding accounts.
+ */
+options_description make_add_account_options_description() {
+    options_description r("Add Account Options");
+    r.add_options()
+        ("username",
+            value<std::string>(),
+            "Account username (required)")
+        ("email",
+            value<std::string>(),
+            "Account email address (required)")
+        ("password",
+            value<std::string>(),
+            "Account password (required)")
+        ("is-admin",
+            value<bool>()->default_value(false),
+            "Whether the account has admin privileges (default: false)")
+        ("modified-by",
+            value<std::string>(),
+            "Username of modifier (required)");
+
+    return r;
+}
+
+/**
+ * @brief Creates the options related to adding feature flags.
+ */
+options_description make_add_feature_flag_options_description() {
+    options_description r("Add Feature Flag Options");
+    r.add_options()
+        ("name",
+            value<std::string>(),
+            "Feature flag name (required)")
+        ("description",
+            value<std::string>()->default_value(""),
+            "Feature flag description")
+        ("enabled",
+            value<bool>()->default_value(false),
+            "Whether the feature is enabled (default: false)")
+        ("modified-by",
+            value<std::string>(),
+            "Username of modifier (required)");
+
+    return r;
+}
+
+/**
  * @brief Creates the options related to client testing.
  */
 options_description make_client_options_description() {
@@ -393,6 +483,93 @@ ores::cli::config::delete_options read_delete_options(const variables_map& vm) {
 }
 
 /**
+ * @brief Reads the add configuration from the variables map.
+ */
+ores::cli::config::add_options read_add_options(const variables_map& vm) {
+    ores::cli::config::add_options r;
+
+    r.target_entity = read_entity(vm);
+
+    if (vm.count("modified-by") == 0) {
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply --modified-by for add command."));
+    }
+    r.modified_by = vm["modified-by"].as<std::string>();
+
+    // Read entity-specific fields based on target entity
+    if (r.target_entity == ores::cli::config::entity::currencies) {
+        // Currency-specific required fields
+        if (vm.count("iso-code") == 0) {
+            BOOST_THROW_EXCEPTION(
+                parser_exception("Must supply --iso-code for add currency command."));
+        }
+        r.iso_code = vm["iso-code"].as<std::string>();
+
+        if (vm.count("name") == 0) {
+            BOOST_THROW_EXCEPTION(
+                parser_exception("Must supply --name for add currency command."));
+        }
+        r.name = vm["name"].as<std::string>();
+
+        // Optional currency fields with defaults
+        if (vm.count("numeric-code") != 0)
+            r.numeric_code = vm["numeric-code"].as<std::string>();
+        if (vm.count("symbol") != 0)
+            r.symbol = vm["symbol"].as<std::string>();
+        if (vm.count("fraction-symbol") != 0)
+            r.fraction_symbol = vm["fraction-symbol"].as<std::string>();
+        if (vm.count("fractions-per-unit") != 0)
+            r.fractions_per_unit = vm["fractions-per-unit"].as<int>();
+        if (vm.count("rounding-type") != 0)
+            r.rounding_type = vm["rounding-type"].as<std::string>();
+        if (vm.count("rounding-precision") != 0)
+            r.rounding_precision = vm["rounding-precision"].as<int>();
+        if (vm.count("format") != 0)
+            r.format = vm["format"].as<std::string>();
+        if (vm.count("currency-type") != 0)
+            r.currency_type = vm["currency-type"].as<std::string>();
+    } else if (r.target_entity == ores::cli::config::entity::accounts) {
+        // Account-specific required fields
+        if (vm.count("username") == 0) {
+            BOOST_THROW_EXCEPTION(
+                parser_exception("Must supply --username for add account command."));
+        }
+        r.username = vm["username"].as<std::string>();
+
+        if (vm.count("email") == 0) {
+            BOOST_THROW_EXCEPTION(
+                parser_exception("Must supply --email for add account command."));
+        }
+        r.email = vm["email"].as<std::string>();
+
+        if (vm.count("password") == 0) {
+            BOOST_THROW_EXCEPTION(
+                parser_exception("Must supply --password for add account command."));
+        }
+        r.password = vm["password"].as<std::string>();
+
+        // Optional account fields with defaults
+        if (vm.count("is-admin") != 0)
+            r.is_admin = vm["is-admin"].as<bool>();
+    } else if (r.target_entity == ores::cli::config::entity::feature_flags) {
+        // Feature flag-specific required fields
+        if (vm.count("name") == 0) {
+            BOOST_THROW_EXCEPTION(
+                parser_exception("Must supply --name for add feature flag command."));
+        }
+        r.flag_name = vm["name"].as<std::string>();
+
+        // Optional feature flag fields with defaults
+        if (vm.count("description") != 0)
+            r.description = vm["description"].as<std::string>();
+        if (vm.count("enabled") != 0)
+            r.enabled = vm["enabled"].as<bool>();
+    }
+
+    return r;
+}
+
+/**
  * @brief Contains the processing logic for when the user supplies a command in
  * the command line.
  */
@@ -434,14 +611,14 @@ handle_command(const std::string& command_name, const bool has_help,
             info << "  export     Export currencies to ORE XML or CSV (external formats)" << std::endl;
             info << "  list       List currencies as JSON or table (internal formats)" << std::endl;
             info << "  delete     Delete a currency by ISO code" << std::endl;
-            info << "  add        Add a new currency (not yet implemented)" << std::endl << std::endl;
+            info << "  add        Add currencies from JSON files" << std::endl << std::endl;
             info << "For operation-specific options, use: currencies <operation> --help" << std::endl;
             return {};
         }
 
         if (o.empty()) {
             BOOST_THROW_EXCEPTION(parser_exception(
-                "currencies command requires an operation (import, export, list, delete)"));
+                "currencies command requires an operation (import, export, list, delete, add)"));
         }
 
         const auto operation = o.front();
@@ -499,9 +676,17 @@ handle_command(const std::string& command_name, const bool has_help,
             // Treat list as export for now
             r.exporting = read_export_options(vm);
         } else if (operation == "add") {
-            // Add operation - not yet implemented
-            BOOST_THROW_EXCEPTION(parser_exception(
-                "currencies add operation is not yet implemented"));
+            auto d(make_add_currency_options_description());
+            d.add(db_desc).add(logging_desc);
+            if (has_help) {
+                print_help_command("currencies add", d, info);
+                return {};
+            }
+            store(command_line_parser(o).options(d).run(), vm);
+            store(parse_environment(d, name_mapper), vm);
+            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
+                std::string("currencies"), false)));
+            r.adding = read_add_options(vm);
         } else {
             BOOST_THROW_EXCEPTION(parser_exception(
                 std::format("Invalid operation for currencies: {}. "
@@ -516,7 +701,7 @@ handle_command(const std::string& command_name, const bool has_help,
             info << "Available operations:" << std::endl;
             info << "  list       List accounts as JSON or table (internal formats)" << std::endl;
             info << "  delete     Delete an account by username or UUID" << std::endl;
-            info << "  add        Add a new account (not yet implemented)" << std::endl << std::endl;
+            info << "  add        Add an account using command-line arguments" << std::endl << std::endl;
             info << "For operation-specific options, use: accounts <operation> --help" << std::endl;
             return {};
         }
@@ -556,9 +741,17 @@ handle_command(const std::string& command_name, const bool has_help,
                 std::string("accounts"), false)));
             r.deleting = read_delete_options(vm);
         } else if (operation == "add") {
-            // Add operation - not yet implemented
-            BOOST_THROW_EXCEPTION(parser_exception(
-                "accounts add operation is not yet implemented"));
+            auto d(make_add_account_options_description());
+            d.add(db_desc).add(logging_desc);
+            if (has_help) {
+                print_help_command("accounts add", d, info);
+                return {};
+            }
+            store(command_line_parser(o).options(d).run(), vm);
+            store(parse_environment(d, name_mapper), vm);
+            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
+                std::string("accounts"), false)));
+            r.adding = read_add_options(vm);
         } else {
             BOOST_THROW_EXCEPTION(parser_exception(
                 std::format("Invalid operation for accounts: {}. "
@@ -573,7 +766,7 @@ handle_command(const std::string& command_name, const bool has_help,
             info << "Available operations:" << std::endl;
             info << "  list       List feature flags as JSON or table (internal formats)" << std::endl;
             info << "  delete     Delete a feature flag by key" << std::endl;
-            info << "  add        Add a new feature flag (not yet implemented)" << std::endl << std::endl;
+            info << "  add        Add a new feature flag" << std::endl << std::endl;
             info << "For operation-specific options, use: feature_flags <operation> --help" << std::endl;
             return {};
         }
@@ -613,9 +806,17 @@ handle_command(const std::string& command_name, const bool has_help,
                 std::string("feature_flags"), false)));
             r.deleting = read_delete_options(vm);
         } else if (operation == "add") {
-            // Add operation - not yet implemented
-            BOOST_THROW_EXCEPTION(parser_exception(
-                "feature_flags add operation is not yet implemented"));
+            auto d(make_add_feature_flag_options_description());
+            d.add(db_desc).add(logging_desc);
+            if (has_help) {
+                print_help_command("feature_flags add", d, info);
+                return {};
+            }
+            store(command_line_parser(o).options(d).run(), vm);
+            store(parse_environment(d, name_mapper), vm);
+            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
+                std::string("feature_flags"), false)));
+            r.adding = read_add_options(vm);
         } else {
             BOOST_THROW_EXCEPTION(parser_exception(
                 std::format("Invalid operation for feature_flags: {}. "

@@ -44,17 +44,6 @@ const std::string build_info(ORES_BUILD_INFO);
 const std::string usage_error_msg("Usage error: ");
 const std::string no_command_msg("No command supplied. ");
 
-const std::string entity_arg("entity");
-const std::string import_targets_arg("target");
-const std::string export_as_of_arg("as-of");
-const std::string export_key_arg("key");
-const std::string export_all_versions_arg("all-versions");
-const std::string export_format_arg("format");
-const std::string delete_key_arg("key");
-
-const std::string import_command_name("import");
-const std::string export_command_name("export");
-const std::string delete_command_name("delete");
 
 const std::string currencies_command_name("currencies");
 const std::string currencies_command_desc("Manage currencies (import, export, list, delete, add).");
@@ -128,153 +117,6 @@ positional_options_description make_positional_options() {
     return r;
 }
 
-/**
- * @brief Creates the options related to importing.
- */
-options_description make_import_options_description() {
-    options_description r("Import");
-    r.add_options()
-        ("entity",
-            value<std::string>(),
-            "Entity to import, e.g. 'currency_config', etc.")
-        ("target",
-            value<std::vector<std::string>>(),
-            "One or more target files containing entities.");
-
-    return r;
-}
-
-/**
- * @brief Creates the options related to ORE exporting.
- */
-options_description make_export_options_description() {
-    options_description r("Export");
-    r.add_options()
-        ("entity",
-            value<std::string>(),
-            "Entity to export, e.g. 'currency_config', etc.")
-        ("as-of", value<std::string>(),
-            "Time point from which to dump data. If not supplied, defaults to latest.")
-        ("key", value<std::string>(), "Key to filter data by.")
-        ("all-versions", "If supplied, retrieves all versions.")
-        ("format", value<std::string>(), "Format to export data in, e.g. xml or json.");
-
-    return r;
-}
-
-/**
- * @brief Creates the options related to deleting entities.
- */
-options_description make_delete_options_description() {
-    options_description r("Delete");
-    r.add_options()
-        ("entity",
-            value<std::string>(),
-            "Entity to delete, e.g. 'accounts', etc.")
-        ("key", value<std::string>(), "Key to identify the entity (e.g., account ID or username).");
-
-    return r;
-}
-
-/**
- * @brief Creates the options related to adding currencies.
- */
-options_description make_add_currency_options_description() {
-    options_description r("Add Currency Options");
-    r.add_options()
-        ("iso-code",
-            value<std::string>(),
-            "Currency ISO code (required, e.g., USD)")
-        ("name",
-            value<std::string>(),
-            "Currency name (required, e.g., 'United States Dollar')")
-        ("numeric-code",
-            value<std::string>()->default_value("0"),
-            "Currency numeric code")
-        ("symbol",
-            value<std::string>()->default_value(""),
-            "Currency symbol")
-        ("fraction-symbol",
-            value<std::string>()->default_value(""),
-            "Fraction symbol")
-        ("fractions-per-unit",
-            value<int>()->default_value(100),
-            "Fractions per unit")
-        ("rounding-type",
-            value<std::string>()->default_value("Closest"),
-            "Rounding type")
-        ("rounding-precision",
-            value<int>()->default_value(2),
-            "Rounding precision")
-        ("format",
-            value<std::string>()->default_value(""),
-            "Display format")
-        ("currency-type",
-            value<std::string>()->default_value(""),
-            "Currency type")
-        ("modified-by",
-            value<std::string>(),
-            "Username of modifier (required)");
-
-    return r;
-}
-
-/**
- * @brief Creates the options related to adding accounts.
- */
-options_description make_add_account_options_description() {
-    options_description r("Add Account Options");
-    r.add_options()
-        ("username",
-            value<std::string>(),
-            "Account username (required)")
-        ("email",
-            value<std::string>(),
-            "Account email address (required)")
-        ("password",
-            value<std::string>(),
-            "Account password (required)")
-        ("is-admin",
-            value<bool>()->default_value(false),
-            "Whether the account has admin privileges (default: false)")
-        ("modified-by",
-            value<std::string>(),
-            "Username of modifier (required)");
-
-    return r;
-}
-
-/**
- * @brief Creates the options related to adding feature flags.
- */
-options_description make_add_feature_flag_options_description() {
-    options_description r("Add Feature Flag Options");
-    r.add_options()
-        ("name",
-            value<std::string>(),
-            "Feature flag name (required)")
-        ("description",
-            value<std::string>()->default_value(""),
-            "Feature flag description")
-        ("enabled",
-            value<bool>()->default_value(false),
-            "Whether the feature is enabled (default: false)")
-        ("modified-by",
-            value<std::string>(),
-            "Username of modifier (required)");
-
-    return r;
-}
-
-/**
- * @brief Creates the options related to client testing.
- */
-options_description make_client_options_description() {
-    options_description r("Client");
-    // No options needed - connection details are provided in REPL
-    return r;
-}
-
 
 /**
  * @brief Ensures the supplied command is a valid command.
@@ -333,22 +175,6 @@ void print_help(const options_description& od, std::ostream& info) {
 }
 
 /**
- * @brief Prints help text at the command level.
- *
- * @param command_name name of the command to print help for.
- * @param od command options.
- * @param info information stream.
- */
-void print_help_command(const std::string& command_name,
-    const options_description& od, std::ostream& info) {
-    print_help_header(info);
-    info << "Displaying options specific to the '" << command_name << "' command. "
-         << std::endl
-         << "For global options, type --help." << std::endl << std::endl
-         << od;
-}
-
-/**
  * @brief Print the program's version details.
  *
  * @param info information stream.
@@ -397,183 +223,6 @@ handle_no_command(const bool has_version, const bool has_help,
 
 
 /**
- * @brief Reads entity from the variables map.
- */
-entity read_entity(const variables_map& vm) {
-    if (vm.count(entity_arg) == 0)
-        BOOST_THROW_EXCEPTION(parser_exception("Must supply entity."));
-
-    const auto s(vm[entity_arg].as<std::string>());
-    auto e = magic_enum::enum_cast<entity>(s);
-    if (e.has_value())
-        return e.value();
-
-    BOOST_THROW_EXCEPTION(
-        parser_exception("Invalid or unsupported entity: '" + s + "'"));
-}
-
-/**
- * @brief Reads format from the variables map.
- */
-format read_format(const variables_map& vm) {
-    if (vm.count(export_format_arg) == 0)
-        return format::json;
-
-    const auto s(vm[export_format_arg].as<std::string>());
-    auto f = magic_enum::enum_cast<format>(s);
-    if (f.has_value())
-        return f.value();
-
-    BOOST_THROW_EXCEPTION(
-        parser_exception("Invalid or unsupported format: '" + s + "'"));
-}
-
-/**
- * @brief Reads the import configuration from the variables map.
- */
-import_options read_import_options(const variables_map& vm) {
-    import_options r;
-
-    r.target_entity = read_entity(vm);
-
-    const auto t(vm[import_targets_arg].as<std::vector<std::string>>());
-    if (t.empty()) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply at least one import target."));
-    }
-
-    r.targets.reserve(t.size());
-    using std::filesystem::absolute;
-    std::ranges::transform(t, std::back_inserter(r.targets),
-        [](const auto& s) { return absolute(s); });
-    return r;
-}
-
-/**
- * @brief Reads the ore_export configuration from the variables map.
- */
-export_options read_export_options(const variables_map& vm) {
-    export_options r;
-
-    r.target_entity = read_entity(vm);
-    r.target_format = read_format(vm);
-    r.all_versions = vm.count(export_all_versions_arg) != 0;
-
-    if (vm.count(export_as_of_arg) != 0)
-        r.as_of = vm[export_as_of_arg].as<std::string>();
-
-    if (vm.count(export_key_arg) != 0)
-        r.key = vm[export_key_arg].as<std::string>();
-
-    return r;
-}
-
-
-/**
- * @brief Reads the delete configuration from the variables map.
- */
-ores::cli::config::delete_options read_delete_options(const variables_map& vm) {
-    ores::cli::config::delete_options r;
-
-    r.target_entity = read_entity(vm);
-
-    if (vm.count(delete_key_arg) == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --key argument for delete command."));
-    }
-    r.key = vm[delete_key_arg].as<std::string>();
-
-    return r;
-}
-
-/**
- * @brief Reads the add configuration from the variables map.
- */
-ores::cli::config::add_options read_add_options(const variables_map& vm) {
-    ores::cli::config::add_options r;
-
-    r.target_entity = read_entity(vm);
-
-    if (vm.count("modified-by") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --modified-by for add command."));
-    }
-    r.modified_by = vm["modified-by"].as<std::string>();
-
-    // Read entity-specific fields based on target entity
-    if (r.target_entity == ores::cli::config::entity::currencies) {
-        // Currency-specific required fields
-        if (vm.count("iso-code") == 0) {
-            BOOST_THROW_EXCEPTION(
-                parser_exception("Must supply --iso-code for add currency command."));
-        }
-        r.iso_code = vm["iso-code"].as<std::string>();
-
-        if (vm.count("name") == 0) {
-            BOOST_THROW_EXCEPTION(
-                parser_exception("Must supply --name for add currency command."));
-        }
-        r.name = vm["name"].as<std::string>();
-
-        // Optional currency fields with defaults
-        if (vm.count("numeric-code") != 0)
-            r.numeric_code = vm["numeric-code"].as<std::string>();
-        if (vm.count("symbol") != 0)
-            r.symbol = vm["symbol"].as<std::string>();
-        if (vm.count("fraction-symbol") != 0)
-            r.fraction_symbol = vm["fraction-symbol"].as<std::string>();
-        if (vm.count("fractions-per-unit") != 0)
-            r.fractions_per_unit = vm["fractions-per-unit"].as<int>();
-        if (vm.count("rounding-type") != 0)
-            r.rounding_type = vm["rounding-type"].as<std::string>();
-        if (vm.count("rounding-precision") != 0)
-            r.rounding_precision = vm["rounding-precision"].as<int>();
-        if (vm.count("format") != 0)
-            r.format = vm["format"].as<std::string>();
-        if (vm.count("currency-type") != 0)
-            r.currency_type = vm["currency-type"].as<std::string>();
-    } else if (r.target_entity == ores::cli::config::entity::accounts) {
-        // Account-specific required fields
-        if (vm.count("username") == 0) {
-            BOOST_THROW_EXCEPTION(
-                parser_exception("Must supply --username for add account command."));
-        }
-        r.username = vm["username"].as<std::string>();
-
-        if (vm.count("email") == 0) {
-            BOOST_THROW_EXCEPTION(
-                parser_exception("Must supply --email for add account command."));
-        }
-        r.email = vm["email"].as<std::string>();
-
-        if (vm.count("password") == 0) {
-            BOOST_THROW_EXCEPTION(
-                parser_exception("Must supply --password for add account command."));
-        }
-        r.password = vm["password"].as<std::string>();
-
-        // Optional account fields with defaults
-        if (vm.count("is-admin") != 0)
-            r.is_admin = vm["is-admin"].as<bool>();
-    } else if (r.target_entity == ores::cli::config::entity::feature_flags) {
-        // Feature flag-specific required fields
-        if (vm.count("name") == 0) {
-            BOOST_THROW_EXCEPTION(
-                parser_exception("Must supply --name for add feature flag command."));
-        }
-        r.flag_name = vm["name"].as<std::string>();
-
-        // Optional feature flag fields with defaults
-        if (vm.count("description") != 0)
-            r.description = vm["description"].as<std::string>();
-        if (vm.count("enabled") != 0)
-            r.enabled = vm["enabled"].as<bool>();
-    }
-
-    return r;
-}
-
-/**
  * @brief Contains the processing logic for when the user supplies a command in
  * the command line.
  */
@@ -581,29 +230,7 @@ std::optional<options>
 handle_command(const std::string& command_name, const bool has_help,
     const parsed_options& po, std::ostream& info, variables_map& vm) {
 
-    /*
-     * Collect all the unrecognized options from the first pass. It includes the
-     * positional command name, so we need to erase it.
-     */
-    using boost::program_options::include_positional;
-    using boost::program_options::collect_unrecognized;
-    auto o(collect_unrecognized(po.options, include_positional));
-    o.erase(o.begin());
-
-    /*
-     * For each command we need to setup their set of options, parse them and
-     * then generate the appropriate options.
-     */
-    options r;
-    using boost::program_options::command_line_parser;
-    using boost::program_options::parse_environment;
-    using ores::utility::database::database_configuration;
-
-    const auto db_desc(database_configuration::make_options_description());
-    const auto logging_desc(make_top_level_visible_options_description());
-    using ores::utility::program_options::environment_mapper_factory;
-    const auto name_mapper(environment_mapper_factory::make_mapper("CLI"));
-
+    // All entity commands are handled by dedicated parsers
     if (command_name == currencies_command_name) {
         return entity_parsers::handle_currencies_command(has_help, po, info, vm);
     } else if (command_name == accounts_command_name) {
@@ -612,14 +239,8 @@ handle_command(const std::string& command_name, const bool has_help,
         return entity_parsers::handle_feature_flags_command(has_help, po, info, vm);
     }
 
-    r.database = database_configuration::read_options(vm);
-
-    /*
-     * Now process the common options.
-     */
-    using ores::utility::log::logging_configuration;
-    r.logging = logging_configuration::read_options(vm);
-    return r;
+    // Unreachable - all commands handled above
+    return {};
 }
 
 /**

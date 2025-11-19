@@ -31,6 +31,7 @@
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
 #include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/parser_exception.hpp"
+#include "ores.cli/config/entity_parsers/currencies_parser.hpp"
 
 namespace {
 
@@ -80,6 +81,7 @@ using ores::cli::config::options;
 using ores::cli::config::import_options;
 using ores::cli::config::export_options;
 using ores::cli::config::parser_exception;
+namespace entity_parsers = ores::cli::config::entity_parsers;
 
 /**
  * @brief Creates the the top-level option descriptions that are visible to the
@@ -601,97 +603,7 @@ handle_command(const std::string& command_name, const bool has_help,
     const auto name_mapper(environment_mapper_factory::make_mapper("CLI"));
 
     if (command_name == currencies_command_name) {
-        // Entity-based command: currencies <operation> [options]
-        if (has_help && o.empty()) {
-            // Show help for currencies command
-            info << "currencies - Manage currencies" << std::endl << std::endl;
-            info << "Usage: ores.cli currencies <operation> [options]" << std::endl << std::endl;
-            info << "Available operations:" << std::endl;
-            info << "  import     Import currencies from ORE XML files" << std::endl;
-            info << "  export     Export currencies to ORE XML or CSV (external formats)" << std::endl;
-            info << "  list       List currencies as JSON or table (internal formats)" << std::endl;
-            info << "  delete     Delete a currency by ISO code" << std::endl;
-            info << "  add        Add currencies from JSON files" << std::endl << std::endl;
-            info << "For operation-specific options, use: currencies <operation> --help" << std::endl;
-            return {};
-        }
-
-        if (o.empty()) {
-            BOOST_THROW_EXCEPTION(parser_exception(
-                "currencies command requires an operation (import, export, list, delete, add)"));
-        }
-
-        const auto operation = o.front();
-        o.erase(o.begin()); // Remove operation from args
-
-        if (operation == import_command_name) {
-            auto d(make_import_options_description());
-            d.add(db_desc).add(logging_desc);
-            if (has_help) {
-                print_help_command("currencies import", d, info);
-                return {};
-            }
-            store(command_line_parser(o).options(d).run(), vm);
-            store(parse_environment(d, name_mapper), vm);
-            // Force entity to be currencies
-            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
-                std::string("currencies"), false)));
-            r.importing = read_import_options(vm);
-        } else if (operation == export_command_name) {
-            auto d(make_export_options_description());
-            d.add(db_desc).add(logging_desc);
-            if (has_help) {
-                print_help_command("currencies export", d, info);
-                return {};
-            }
-            store(command_line_parser(o).options(d).run(), vm);
-            store(parse_environment(d, name_mapper), vm);
-            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
-                std::string("currencies"), false)));
-            r.exporting = read_export_options(vm);
-        } else if (operation == delete_command_name) {
-            auto d(make_delete_options_description());
-            d.add(db_desc).add(logging_desc);
-            if (has_help) {
-                print_help_command("currencies delete", d, info);
-                return {};
-            }
-            store(command_line_parser(o).options(d).run(), vm);
-            store(parse_environment(d, name_mapper), vm);
-            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
-                std::string("currencies"), false)));
-            r.deleting = read_delete_options(vm);
-        } else if (operation == "list") {
-            // New list operation
-            auto d(make_export_options_description()); // Reuse export options for now
-            d.add(db_desc).add(logging_desc);
-            if (has_help) {
-                print_help_command("currencies list", d, info);
-                return {};
-            }
-            store(command_line_parser(o).options(d).run(), vm);
-            store(parse_environment(d, name_mapper), vm);
-            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
-                std::string("currencies"), false)));
-            // Treat list as export for now
-            r.exporting = read_export_options(vm);
-        } else if (operation == "add") {
-            auto d(make_add_currency_options_description());
-            d.add(db_desc).add(logging_desc);
-            if (has_help) {
-                print_help_command("currencies add", d, info);
-                return {};
-            }
-            store(command_line_parser(o).options(d).run(), vm);
-            store(parse_environment(d, name_mapper), vm);
-            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
-                std::string("currencies"), false)));
-            r.adding = read_add_options(vm);
-        } else {
-            BOOST_THROW_EXCEPTION(parser_exception(
-                std::format("Invalid operation for currencies: {}. "
-                    "Valid operations: import, export, list, delete, add", operation)));
-        }
+        return entity_parsers::handle_currencies_command(has_help, po, info, vm);
     } else if (command_name == accounts_command_name) {
         // Entity-based command: accounts <operation> [options]
         if (has_help && o.empty()) {

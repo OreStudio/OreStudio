@@ -23,43 +23,16 @@
 #include <mutex>
 #include <memory>
 #include <string>
-#include <iostream>
 #include <cstdint>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_context.hpp>
 #include "ores.utility/log/make_logger.hpp"
+#include "ores.comms/net/client_options.hpp"
 #include "ores.comms/net/connection.hpp"
 
 namespace ores::comms {
-
-/**
- * @brief Configuration for the client.
- */
-struct client_options final {
-    /**
-     * @brief Host to connect to.
-     */
-    std::string host = "localhost";
-
-    /**
-     * @brief Port to connect to.
-     */
-    std::uint16_t port = 55555;
-
-    /**
-     * @brief Client identifier to send in handshake.
-     */
-    std::string client_identifier = "ores-client";
-
-    /**
-     * @brief Whether to verify server certificate.
-     */
-    bool verify_certificate = true;
-};
-
-std::ostream& operator<<(std::ostream& s, const client_options& v);
 
 /**
  * @brief ORES protocol client.
@@ -73,6 +46,18 @@ private:
         static auto instance = make_logger("ores.comms.client");
         return instance;
     }
+
+    /**
+     * @brief Setup SSL context for client.
+     */
+    void setup_ssl_context();
+
+    /**
+     * @brief Perform protocol handshake with server.
+     *
+     * @throws connection_error if handshake fails
+     */
+    boost::asio::awaitable<void> perform_handshake();
 
 public:
     /**
@@ -136,18 +121,6 @@ public:
     send_request_sync(protocol::frame request_frame);
 
 private:
-    /**
-     * @brief Perform protocol handshake with server.
-     *
-     * @throws connection_error if handshake fails
-     */
-    boost::asio::awaitable<void> perform_handshake();
-
-    /**
-     * @brief Setup SSL context for client.
-     */
-    void setup_ssl_context();
-
     client_options config_;
     std::unique_ptr<boost::asio::io_context> io_ctx_; // Owned io_context for sync operations
     boost::asio::any_io_executor executor_;

@@ -38,6 +38,7 @@
 #include "ores.utility/streaming/std_vector.hpp"
 #include "ores.utility/repository/context_factory.hpp"
 #include "ores.utility/database/database_options.hpp"
+#include "ores.utility/datetime/datetime.hpp"
 #include "ores.risk/orexml/importer.hpp"
 #include "ores.risk/orexml/exporter.hpp"
 #include "ores.risk/csv/exporter.hpp"
@@ -366,12 +367,8 @@ add_currency(const config::add_options& cfg) const {
 
     // Set timestamps to current time
     const auto now = std::chrono::system_clock::now();
-    const auto time_t_now = std::chrono::system_clock::to_time_t(now);
-    std::tm tm_now;
-    localtime_r(&time_t_now, &tm_now);
-    std::ostringstream oss;
-    oss << std::put_time(&tm_now, "%Y-%m-%d %H:%M:%S");
-    const auto timestamp = oss.str();
+    const auto timestamp = utility::datetime::datetime::format_time_point(
+        now, "%Y-%m-%d %H:%M:%S");
     currency.valid_from = timestamp;
     currency.valid_to = timestamp;
 

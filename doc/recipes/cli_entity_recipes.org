@@ -111,9 +111,10 @@ Usage: ores.cli currencies <operation> [options]
 
 Available operations:
   import     Import currencies from ORE XML files
-  export     Export currencies to various formats
-  list       List currencies from database
+  export     Export currencies to ORE XML or CSV (external formats)
+  list       List currencies as JSON or table (internal formats)
   delete     Delete a currency by ISO code
+  add        Add currencies from JSON files
 
 For operation-specific options, use: currencies <operation> --help
 #+end_src
@@ -603,6 +604,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+RESULTS:
 #+begin_src json
+Currency deleted successfully: ZAR
 #+end_src
 
 *** Add
@@ -611,7 +613,14 @@ Add a new currency (not yet implemented).
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies add ${db_args} ${log_args}
+./ores.cli currencies add ${db_args} ${log_args} --iso-code ABCDE --name "New Currency" \
+    --numeric-code 1234 --modified-by test --currency-type major
+
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Successfully added currency: ABCDE
 #+end_src
 
 ** Accounts
@@ -629,6 +638,20 @@ Show available operations for accounts.
 ./ores.cli accounts --help
 #+end_src
 
+#+RESULTS:
+#+begin_src text
+accounts - Manage accounts
+
+Usage: ores.cli accounts <operation> [options]
+
+Available operations:
+  list       List accounts as JSON or table (internal formats)
+  delete     Delete an account by username or UUID
+  add        Add an account using command-line arguments
+
+For operation-specific options, use: accounts <operation> --help
+#+end_src
+
 *** List
 
 List accounts from the database.
@@ -641,6 +664,45 @@ export ORES_CLI_DB_PASSWORD
   --format json | jq .
 #+end_src
 
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "version": 0,
+    "is_admin": false,
+    "id": "2c750156-40ec-4b03-aa7a-22c42c5bbd5e",
+    "modified_by": "admin",
+    "username": "testuser",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$h+P2+QkHhxkiU4inVE9HxQ==$59hnkP3B5cN8hsIHh/rCswfv7/6QntVUnLkRQGDXy62Fylamux0YkscVd5jTwOSyboUbV85wRYArLplOZxKOMw==",
+    "password_salt": "",
+    "totp_secret": "",
+    "email": "testuser@example.com"
+  },
+  {
+    "version": 0,
+    "is_admin": false,
+    "id": "c26dc10b-0e63-447d-beb2-ce442cdb75e2",
+    "modified_by": "admin",
+    "username": "admin",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$44ceH1Lhmg36u2kNxgo1Yw==$g5Ss6+hIDBTMrkO5+YHSn4OtEt77MHPnNy+2gY+wfD53ldg+mq7vZxGAuFD7DiAFfToWgr8gJ3xil4+BYlt8cg==",
+    "password_salt": "",
+    "totp_secret": "",
+    "email": "test@example.com"
+  },
+  {
+    "version": 0,
+    "is_admin": false,
+    "id": "019a5e49-476c-70ce-9909-3887cae700e9",
+    "modified_by": "ores",
+    "username": "newuser3",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$aLdQ7pVcrnlHJMZXoWOV3Q==$nkk9nQs8iyTazzvRfUjyYYqO3GTAIRL5A9K/5LxdvX0QRliEWB0SDgaadXiJNhf/kw3aYH1jeVvgXJbjQkq80Q==",
+    "password_salt": "",
+    "totp_secret": "",
+    "email": "newuser3@example.com"
+  }
+]
+#+end_src
+
 **** List specific account by username
 
 #+begin_src sh
@@ -649,12 +711,46 @@ export ORES_CLI_DB_PASSWORD
   --format json --key admin | jq .
 #+end_src
 
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "version": 0,
+    "is_admin": false,
+    "id": "c26dc10b-0e63-447d-beb2-ce442cdb75e2",
+    "modified_by": "admin",
+    "username": "admin",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$44ceH1Lhmg36u2kNxgo1Yw==$g5Ss6+hIDBTMrkO5+YHSn4OtEt77MHPnNy+2gY+wfD53ldg+mq7vZxGAuFD7DiAFfToWgr8gJ3xil4+BYlt8cg==",
+    "password_salt": "",
+    "totp_secret": "",
+    "email": "test@example.com"
+  }
+]
+#+end_src
+
 **** List all versions of an account
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
 ./ores.cli accounts list ${db_args} ${log_args} \
   --format json --key admin --all-versions | jq .
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "version": 0,
+    "is_admin": false,
+    "id": "c26dc10b-0e63-447d-beb2-ce442cdb75e2",
+    "modified_by": "admin",
+    "username": "admin",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$44ceH1Lhmg36u2kNxgo1Yw==$g5Ss6+hIDBTMrkO5+YHSn4OtEt77MHPnNy+2gY+wfD53ldg+mq7vZxGAuFD7DiAFfToWgr8gJ3xil4+BYlt8cg==",
+    "password_salt": "",
+    "totp_secret": "",
+    "email": "test@example.com"
+  }
+]
 #+end_src
 
 *** Delete
@@ -666,7 +762,12 @@ Delete an account by username or UUID.
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
 ./ores.cli accounts delete ${db_args} ${log_args} \
-  --key testuser
+  --key testuser3
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+Account deleted successfully: 6d3dfec6-d78d-4a85-9882-3d47445090e4
 #+end_src
 
 **** Delete by UUID
@@ -674,16 +775,44 @@ export ORES_CLI_DB_PASSWORD
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
 ./ores.cli accounts delete ${db_args} ${log_args} \
-  --key 12345678-1234-5678-1234-567812345678
+  --key f557660a-bcf4-4916-8610-4c0b61295f57
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+Account deleted successfully: f557660a-bcf4-4916-8610-4c0b61295f57
 #+end_src
 
 *** Add
 
-Add a new account (not yet implemented).
+Add a new account using command-line arguments.
+
+**** Add regular user account
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli accounts add ${db_args} ${log_args}
+./ores.cli accounts add ${db_args} ${log_args} \
+  --username testuser3 \
+  --email testuser3@example.com \
+  --password "SecurePassword123" \
+  --modified-by admin
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Successfully added account: testuser3 (ID: 6d3dfec6-d78d-4a85-9882-3d47445090e4)
+#+end_src
+
+**** Add admin account
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli accounts add ${db_args} ${log_args} \
+  --username adminuser \
+  --email admin@example.com \
+  --password "AdminPassword456" \
+  --is-admin true \
+  --modified-by admin
 #+end_src
 
 ** Feature Flags
@@ -698,7 +827,46 @@ Feature flag management operations using entity-based syntax.
 Show available operations for feature flags.
 
 #+begin_src sh :wrap src text
-./ores.cli feature_flags --help
+./ores.cli feature_flags add --help
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+ORE Studio is a User Interface for Open Source Risk Engine (ORE).
+CLI provides a command line version of the interface.
+ORE Studio is created by the ORE Studio project.
+Displaying options specific to the 'feature_flags add' command.
+For global options, type --help.
+
+Add Feature Flag Options:
+  --name arg                           Feature flag name (required)
+  --description arg                    Feature flag description
+  --enabled arg (=0)                   Whether the feature is enabled (default:
+                                       false)
+  --modified-by arg                    Username of modifier (required)
+
+Database:
+  --db-user arg (=ores)                Database user name.
+  --db-password arg                    Database password. Can also be provided
+                                       via ORES_DB_PASSWORD environment
+                                       variable.
+  --db-host arg (=localhost)           Database host.
+  --db-database arg (=oresdb)          Database name.
+  --db-port arg (=5432)                Database port.
+
+
+General:
+  -h [ --help ]                        Display usage and exit.
+  -v [ --version ]                     Output version information and exit.
+
+Logging:
+  -e [ --log-enabled ]                 Generate a log file.
+  -l [ --log-level ] arg (=info)       What level to use for logging. Valid
+                                       values: trace, debug, info, warn, error.
+  --log-to-console                     Output logging to the console, as well
+                                       as to file.
+  --log-directory arg (=log)           Where to place the log files.
+  --log-filename arg (=ores.cli.log)   Name of the log file.
 #+end_src
 
 *** List
@@ -713,12 +881,48 @@ export ORES_CLI_DB_PASSWORD
   --format json | jq .
 #+end_src
 
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "enabled": false,
+    "name": "Test feature3",
+    "description": "Some description",
+    "modified_by": "ores"
+  },
+  {
+    "enabled": false,
+    "name": "Test feature2",
+    "description": "Some description",
+    "modified_by": "ores"
+  },
+  {
+    "enabled": false,
+    "name": "Test feature",
+    "description": "Some description",
+    "modified_by": "ores"
+  }
+]
+#+end_src
+
 **** List specific feature flag
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
 ./ores.cli feature_flags list ${db_args} ${log_args} \
-  --format json --key ENABLE_NEW_FEATURE | jq .
+  --format json --key "Test feature3" | jq .
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "enabled": false,
+    "name": "Test feature3",
+    "description": "Some description",
+    "modified_by": "ores"
+  }
+]
 #+end_src
 
 *** Delete
@@ -728,7 +932,12 @@ Delete a feature flag by key.
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
 ./ores.cli feature_flags delete ${db_args} ${log_args} \
-  --key DEPRECATED_FEATURE
+  --key "Test feature3"
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+Feature flag deleted successfully: Test feature3
 #+end_src
 
 *** Add
@@ -737,7 +946,13 @@ Add a new feature flag (not yet implemented).
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli feature_flags add ${db_args} ${log_args}
+./ores.cli feature_flags add ${db_args} ${log_args} --name "Test feature3" \
+    --description "Some description" --enabled 0 --modified-by admin
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Successfully added feature flag: Test feature3
 #+end_src
 
 | Previous: [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] |

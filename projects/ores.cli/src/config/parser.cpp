@@ -31,6 +31,9 @@
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
 #include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/parser_exception.hpp"
+#include "ores.cli/config/entity_parsers/currencies_parser.hpp"
+#include "ores.cli/config/entity_parsers/accounts_parser.hpp"
+#include "ores.cli/config/entity_parsers/feature_flags_parser.hpp"
 
 namespace {
 
@@ -41,17 +44,6 @@ const std::string build_info(ORES_BUILD_INFO);
 const std::string usage_error_msg("Usage error: ");
 const std::string no_command_msg("No command supplied. ");
 
-const std::string entity_arg("entity");
-const std::string import_targets_arg("target");
-const std::string export_as_of_arg("as-of");
-const std::string export_key_arg("key");
-const std::string export_all_versions_arg("all-versions");
-const std::string export_format_arg("format");
-const std::string delete_key_arg("key");
-
-const std::string import_command_name("import");
-const std::string export_command_name("export");
-const std::string delete_command_name("delete");
 
 const std::string currencies_command_name("currencies");
 const std::string currencies_command_desc("Manage currencies (import, export, list, delete, add).");
@@ -80,6 +72,7 @@ using ores::cli::config::options;
 using ores::cli::config::import_options;
 using ores::cli::config::export_options;
 using ores::cli::config::parser_exception;
+namespace entity_parsers = ores::cli::config::entity_parsers;
 
 /**
  * @brief Creates the the top-level option descriptions that are visible to the
@@ -121,63 +114,6 @@ options_description make_top_level_hidden_options_description() {
 positional_options_description make_positional_options() {
     positional_options_description r;
     r.add("command", 1).add("args", -1);
-    return r;
-}
-
-/**
- * @brief Creates the options related to importing.
- */
-options_description make_import_options_description() {
-    options_description r("Import");
-    r.add_options()
-        ("entity",
-            value<std::string>(),
-            "Entity to import, e.g. 'currency_config', etc.")
-        ("target",
-            value<std::vector<std::string>>(),
-            "One or more target files containing entities.");
-
-    return r;
-}
-
-/**
- * @brief Creates the options related to ORE exporting.
- */
-options_description make_export_options_description() {
-    options_description r("Export");
-    r.add_options()
-        ("entity",
-            value<std::string>(),
-            "Entity to export, e.g. 'currency_config', etc.")
-        ("as-of", value<std::string>(),
-            "Time point from which to dump data. If not supplied, defaults to latest.")
-        ("key", value<std::string>(), "Key to filter data by.")
-        ("all-versions", "If supplied, retrieves all versions.")
-        ("format", value<std::string>(), "Format to export data in, e.g. xml or json.");
-
-    return r;
-}
-
-/**
- * @brief Creates the options related to deleting entities.
- */
-options_description make_delete_options_description() {
-    options_description r("Delete");
-    r.add_options()
-        ("entity",
-            value<std::string>(),
-            "Entity to delete, e.g. 'accounts', etc.")
-        ("key", value<std::string>(), "Key to identify the entity (e.g., account ID or username).");
-
-    return r;
-}
-
-/**
- * @brief Creates the options related to client testing.
- */
-options_description make_client_options_description() {
-    options_description r("Client");
-    // No options needed - connection details are provided in REPL
     return r;
 }
 
@@ -239,22 +175,6 @@ void print_help(const options_description& od, std::ostream& info) {
 }
 
 /**
- * @brief Prints help text at the command level.
- *
- * @param command_name name of the command to print help for.
- * @param od command options.
- * @param info information stream.
- */
-void print_help_command(const std::string& command_name,
-    const options_description& od, std::ostream& info) {
-    print_help_header(info);
-    info << "Displaying options specific to the '" << command_name << "' command. "
-         << std::endl
-         << "For global options, type --help." << std::endl << std::endl
-         << od;
-}
-
-/**
  * @brief Print the program's version details.
  *
  * @param info information stream.
@@ -303,96 +223,6 @@ handle_no_command(const bool has_version, const bool has_help,
 
 
 /**
- * @brief Reads entity from the variables map.
- */
-entity read_entity(const variables_map& vm) {
-    if (vm.count(entity_arg) == 0)
-        BOOST_THROW_EXCEPTION(parser_exception("Must supply entity."));
-
-    const auto s(vm[entity_arg].as<std::string>());
-    auto e = magic_enum::enum_cast<entity>(s);
-    if (e.has_value())
-        return e.value();
-
-    BOOST_THROW_EXCEPTION(
-        parser_exception("Invalid or unsupported entity: '" + s + "'"));
-}
-
-/**
- * @brief Reads format from the variables map.
- */
-format read_format(const variables_map& vm) {
-    if (vm.count(export_format_arg) == 0)
-        return format::json;
-
-    const auto s(vm[export_format_arg].as<std::string>());
-    auto f = magic_enum::enum_cast<format>(s);
-    if (f.has_value())
-        return f.value();
-
-    BOOST_THROW_EXCEPTION(
-        parser_exception("Invalid or unsupported format: '" + s + "'"));
-}
-
-/**
- * @brief Reads the import configuration from the variables map.
- */
-import_options read_import_options(const variables_map& vm) {
-    import_options r;
-
-    r.target_entity = read_entity(vm);
-
-    const auto t(vm[import_targets_arg].as<std::vector<std::string>>());
-    if (t.empty()) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply at least one import target."));
-    }
-
-    r.targets.reserve(t.size());
-    using std::filesystem::absolute;
-    std::ranges::transform(t, std::back_inserter(r.targets),
-        [](const auto& s) { return absolute(s); });
-    return r;
-}
-
-/**
- * @brief Reads the ore_export configuration from the variables map.
- */
-export_options read_export_options(const variables_map& vm) {
-    export_options r;
-
-    r.target_entity = read_entity(vm);
-    r.target_format = read_format(vm);
-    r.all_versions = vm.count(export_all_versions_arg) != 0;
-
-    if (vm.count(export_as_of_arg) != 0)
-        r.as_of = vm[export_as_of_arg].as<std::string>();
-
-    if (vm.count(export_key_arg) != 0)
-        r.key = vm[export_key_arg].as<std::string>();
-
-    return r;
-}
-
-
-/**
- * @brief Reads the delete configuration from the variables map.
- */
-ores::cli::config::delete_options read_delete_options(const variables_map& vm) {
-    ores::cli::config::delete_options r;
-
-    r.target_entity = read_entity(vm);
-
-    if (vm.count(delete_key_arg) == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --key argument for delete command."));
-    }
-    r.key = vm[delete_key_arg].as<std::string>();
-
-    return r;
-}
-
-/**
  * @brief Contains the processing logic for when the user supplies a command in
  * the command line.
  */
@@ -400,237 +230,17 @@ std::optional<options>
 handle_command(const std::string& command_name, const bool has_help,
     const parsed_options& po, std::ostream& info, variables_map& vm) {
 
-    /*
-     * Collect all the unrecognized options from the first pass. It includes the
-     * positional command name, so we need to erase it.
-     */
-    using boost::program_options::include_positional;
-    using boost::program_options::collect_unrecognized;
-    auto o(collect_unrecognized(po.options, include_positional));
-    o.erase(o.begin());
-
-    /*
-     * For each command we need to setup their set of options, parse them and
-     * then generate the appropriate options.
-     */
-    options r;
-    using boost::program_options::command_line_parser;
-    using boost::program_options::parse_environment;
-    using ores::utility::database::database_configuration;
-
-    const auto db_desc(database_configuration::make_options_description());
-    const auto logging_desc(make_top_level_visible_options_description());
-    using ores::utility::program_options::environment_mapper_factory;
-    const auto name_mapper(environment_mapper_factory::make_mapper("CLI"));
-
+    // All entity commands are handled by dedicated parsers
     if (command_name == currencies_command_name) {
-        // Entity-based command: currencies <operation> [options]
-        if (has_help && o.empty()) {
-            // Show help for currencies command
-            info << "currencies - Manage currencies" << std::endl << std::endl;
-            info << "Usage: ores.cli currencies <operation> [options]" << std::endl << std::endl;
-            info << "Available operations:" << std::endl;
-            info << "  import     Import currencies from ORE XML files" << std::endl;
-            info << "  export     Export currencies to ORE XML or CSV (external formats)" << std::endl;
-            info << "  list       List currencies as JSON or table (internal formats)" << std::endl;
-            info << "  delete     Delete a currency by ISO code" << std::endl;
-            info << "  add        Add a new currency (not yet implemented)" << std::endl << std::endl;
-            info << "For operation-specific options, use: currencies <operation> --help" << std::endl;
-            return {};
-        }
-
-        if (o.empty()) {
-            BOOST_THROW_EXCEPTION(parser_exception(
-                "currencies command requires an operation (import, export, list, delete)"));
-        }
-
-        const auto operation = o.front();
-        o.erase(o.begin()); // Remove operation from args
-
-        if (operation == import_command_name) {
-            auto d(make_import_options_description());
-            d.add(db_desc).add(logging_desc);
-            if (has_help) {
-                print_help_command("currencies import", d, info);
-                return {};
-            }
-            store(command_line_parser(o).options(d).run(), vm);
-            store(parse_environment(d, name_mapper), vm);
-            // Force entity to be currencies
-            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
-                std::string("currencies"), false)));
-            r.importing = read_import_options(vm);
-        } else if (operation == export_command_name) {
-            auto d(make_export_options_description());
-            d.add(db_desc).add(logging_desc);
-            if (has_help) {
-                print_help_command("currencies export", d, info);
-                return {};
-            }
-            store(command_line_parser(o).options(d).run(), vm);
-            store(parse_environment(d, name_mapper), vm);
-            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
-                std::string("currencies"), false)));
-            r.exporting = read_export_options(vm);
-        } else if (operation == delete_command_name) {
-            auto d(make_delete_options_description());
-            d.add(db_desc).add(logging_desc);
-            if (has_help) {
-                print_help_command("currencies delete", d, info);
-                return {};
-            }
-            store(command_line_parser(o).options(d).run(), vm);
-            store(parse_environment(d, name_mapper), vm);
-            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
-                std::string("currencies"), false)));
-            r.deleting = read_delete_options(vm);
-        } else if (operation == "list") {
-            // New list operation
-            auto d(make_export_options_description()); // Reuse export options for now
-            d.add(db_desc).add(logging_desc);
-            if (has_help) {
-                print_help_command("currencies list", d, info);
-                return {};
-            }
-            store(command_line_parser(o).options(d).run(), vm);
-            store(parse_environment(d, name_mapper), vm);
-            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
-                std::string("currencies"), false)));
-            // Treat list as export for now
-            r.exporting = read_export_options(vm);
-        } else if (operation == "add") {
-            // Add operation - not yet implemented
-            BOOST_THROW_EXCEPTION(parser_exception(
-                "currencies add operation is not yet implemented"));
-        } else {
-            BOOST_THROW_EXCEPTION(parser_exception(
-                std::format("Invalid operation for currencies: {}. "
-                    "Valid operations: import, export, list, delete, add", operation)));
-        }
+        return entity_parsers::handle_currencies_command(has_help, po, info, vm);
     } else if (command_name == accounts_command_name) {
-        // Entity-based command: accounts <operation> [options]
-        if (has_help && o.empty()) {
-            // Show help for accounts command
-            info << "accounts - Manage accounts" << std::endl << std::endl;
-            info << "Usage: ores.cli accounts <operation> [options]" << std::endl << std::endl;
-            info << "Available operations:" << std::endl;
-            info << "  list       List accounts as JSON or table (internal formats)" << std::endl;
-            info << "  delete     Delete an account by username or UUID" << std::endl;
-            info << "  add        Add a new account (not yet implemented)" << std::endl << std::endl;
-            info << "For operation-specific options, use: accounts <operation> --help" << std::endl;
-            return {};
-        }
-
-        if (o.empty()) {
-            BOOST_THROW_EXCEPTION(parser_exception(
-                "accounts command requires an operation (list, delete, add)"));
-        }
-
-        const auto operation = o.front();
-        o.erase(o.begin()); // Remove operation from args
-
-        if (operation == "list") {
-            // List accounts operation
-            auto d(make_export_options_description()); // Reuse export options for list
-            d.add(db_desc).add(logging_desc);
-            if (has_help) {
-                print_help_command("accounts list", d, info);
-                return {};
-            }
-            store(command_line_parser(o).options(d).run(), vm);
-            store(parse_environment(d, name_mapper), vm);
-            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
-                std::string("accounts"), false)));
-            // Treat list as export for now
-            r.exporting = read_export_options(vm);
-        } else if (operation == delete_command_name) {
-            auto d(make_delete_options_description());
-            d.add(db_desc).add(logging_desc);
-            if (has_help) {
-                print_help_command("accounts delete", d, info);
-                return {};
-            }
-            store(command_line_parser(o).options(d).run(), vm);
-            store(parse_environment(d, name_mapper), vm);
-            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
-                std::string("accounts"), false)));
-            r.deleting = read_delete_options(vm);
-        } else if (operation == "add") {
-            // Add operation - not yet implemented
-            BOOST_THROW_EXCEPTION(parser_exception(
-                "accounts add operation is not yet implemented"));
-        } else {
-            BOOST_THROW_EXCEPTION(parser_exception(
-                std::format("Invalid operation for accounts: {}. "
-                    "Valid operations: list, delete, add", operation)));
-        }
+        return entity_parsers::handle_accounts_command(has_help, po, info, vm);
     } else if (command_name == feature_flags_command_name) {
-        // Entity-based command: feature_flags <operation> [options]
-        if (has_help && o.empty()) {
-            // Show help for feature_flags command
-            info << "feature_flags - Manage feature flags" << std::endl << std::endl;
-            info << "Usage: ores.cli feature_flags <operation> [options]" << std::endl << std::endl;
-            info << "Available operations:" << std::endl;
-            info << "  list       List feature flags as JSON or table (internal formats)" << std::endl;
-            info << "  delete     Delete a feature flag by key" << std::endl;
-            info << "  add        Add a new feature flag (not yet implemented)" << std::endl << std::endl;
-            info << "For operation-specific options, use: feature_flags <operation> --help" << std::endl;
-            return {};
-        }
-
-        if (o.empty()) {
-            BOOST_THROW_EXCEPTION(parser_exception(
-                "feature_flags command requires an operation (list, delete, add)"));
-        }
-
-        const auto operation = o.front();
-        o.erase(o.begin()); // Remove operation from args
-
-        if (operation == "list") {
-            // List feature_flags operation
-            auto d(make_export_options_description()); // Reuse export options for list
-            d.add(db_desc).add(logging_desc);
-            if (has_help) {
-                print_help_command("feature_flags list", d, info);
-                return {};
-            }
-            store(command_line_parser(o).options(d).run(), vm);
-            store(parse_environment(d, name_mapper), vm);
-            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
-                std::string("feature_flags"), false)));
-            // Treat list as export for now
-            r.exporting = read_export_options(vm);
-        } else if (operation == delete_command_name) {
-            auto d(make_delete_options_description());
-            d.add(db_desc).add(logging_desc);
-            if (has_help) {
-                print_help_command("feature_flags delete", d, info);
-                return {};
-            }
-            store(command_line_parser(o).options(d).run(), vm);
-            store(parse_environment(d, name_mapper), vm);
-            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
-                std::string("feature_flags"), false)));
-            r.deleting = read_delete_options(vm);
-        } else if (operation == "add") {
-            // Add operation - not yet implemented
-            BOOST_THROW_EXCEPTION(parser_exception(
-                "feature_flags add operation is not yet implemented"));
-        } else {
-            BOOST_THROW_EXCEPTION(parser_exception(
-                std::format("Invalid operation for feature_flags: {}. "
-                    "Valid operations: list, delete, add", operation)));
-        }
+        return entity_parsers::handle_feature_flags_command(has_help, po, info, vm);
     }
 
-    r.database = database_configuration::read_options(vm);
-
-    /*
-     * Now process the common options.
-     */
-    using ores::utility::log::logging_configuration;
-    r.logging = logging_configuration::read_options(vm);
-    return r;
+    // Unreachable - all commands handled above
+    return {};
 }
 
 /**

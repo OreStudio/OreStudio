@@ -31,6 +31,7 @@
 #include "ores.cli/config/import_options.hpp"
 #include "ores.cli/config/export_options.hpp"
 #include "ores.cli/config/delete_options.hpp"
+#include "ores.cli/config/add_options.hpp"
 
 namespace ores::cli::app {
 
@@ -64,7 +65,13 @@ private:
 
     void delete_currency(const config::delete_options& cfg) const;
     void delete_account(const config::delete_options& cfg) const;
+    void delete_feature_flag(const config::delete_options& cfg) const;
     void delete_data(const std::optional<config::delete_options>& ocfg) const;
+
+    void add_currency(const config::add_options& cfg) const;
+    void add_account(const config::add_options& cfg) const;
+    void add_feature_flag(const config::add_options& cfg) const;
+    void add_data(const std::optional<config::add_options>& ocfg) const;
 
 public:
     /**

@@ -26,6 +26,8 @@ namespace ores #F2F2F2 {
         namespace config #F2F2F2 {
             class entity <<enumeration>> #F2DAFD {
                 currencies
+                accounts
+                feature_flags
             }
 
             note top of entity
@@ -81,10 +83,54 @@ namespace ores #F2F2F2 {
             export_options o-- ores::cli::config::entity
             export_options o-- ores::cli::config::format
 
+            class delete_options #F7E5FF {
+                +{field} target_entity entity
+                +{field} key std::string
+            }
+
+            note top of delete_options
+            Configuration related to deleting entities.
+
+            Fields:
+
+            - target_entity: Which entity to delete.
+            - key: Key to identify the entity.
+            end note
+
+            delete_options o-- ores::cli::config::entity
+
+            class add_options #F7E5FF {
+                +{field} target_entity entity
+                +{field} modified_by std::string
+                +{field} iso_code std::optional<std::string>
+                +{field} name std::optional<std::string>
+                +{field} username std::optional<std::string>
+                +{field} email std::optional<std::string>
+                +{field} password std::optional<std::string>
+                +{field} is_admin std::optional<bool>
+                +{field} flag_name std::optional<std::string>
+                +{field} description std::optional<std::string>
+                +{field} enabled std::optional<bool>
+            }
+
+            note top of add_options
+            Configuration related to adding new entities.
+
+            Fields:
+
+            - target_entity: Which entity to add.
+            - modified_by: Username of the modifier.
+            - Entity-specific fields are optional based on target_entity.
+            end note
+
+            add_options o-- ores::cli::config::entity
+
             class options #F7E5FF {
                 +{field} logging std::optional<ores::utility::log::logging_options>
                 +{field} importing std::optional<import_options>
                 +{field} exporting std::optional<export_options>
+                +{field} deleting std::optional<delete_options>
+                +{field} adding std::optional<add_options>
                 +{field} database ores::utility::database::database_options
             }
 
@@ -96,18 +142,22 @@ namespace ores #F2F2F2 {
             - logging: Configuration options related to logging, if any.
             - importing: Configuration related to importing of data, if any.
             - exporting: Configuration related to exporting of data, if any.
+            - deleting: Configuration related to deleting entities, if any.
+            - adding: Configuration related to adding entities, if any.
             - database: Database connection configuration.
             end note
 
             options o-- ores::cli::config::import_options
             options o-- ores::cli::config::export_options
+            options o-- ores::cli::config::delete_options
+            options o-- ores::cli::config::add_options
 
             class parser #FFFACD {
                 +parse(arguments: const std::vector<std::string>&, info: std::ostream&, error: std::ostream&) const: std::optional<options>
             }
 
             note top of parser
-            Command-line parser implementation using boost program options.
+            Command-line parser coordinator that delegates to entity-specific parsers.
 
             Note on logging: we are NOT logging any of the exceptions to the log in this
             class. This is by design. The logger is only initialised after the options
@@ -117,6 +167,62 @@ namespace ores #F2F2F2 {
             end note
 
             parser ..> ores::cli::config::options : returns
+            parser ..> ores::cli::config::entity_parsers::currencies_parser : delegates
+            parser ..> ores::cli::config::entity_parsers::accounts_parser : delegates
+            parser ..> ores::cli::config::entity_parsers::feature_flags_parser : delegates
+
+            note "Entity-specific parser implementations." as entity_parsers_note
+            entity_parsers --- entity_parsers_note
+            namespace entity_parsers #F2F2F2 {
+                class currencies_parser #FFFACD {
+                    +{static} handle_currencies_command(has_help: bool, po: const parsed_options&, info: std::ostream&, vm: variables_map&): std::optional<options>
+                }
+
+                note top of currencies_parser
+                Handles parsing of currencies entity commands (import, export, list, delete, add).
+                end note
+
+                currencies_parser ..> ores::cli::config::options : returns
+
+                class accounts_parser #FFFACD {
+                    +{static} handle_accounts_command(has_help: bool, po: const parsed_options&, info: std::ostream&, vm: variables_map&): std::optional<options>
+                }
+
+                note top of accounts_parser
+                Handles parsing of accounts entity commands (list, delete, add).
+                end note
+
+                accounts_parser ..> ores::cli::config::options : returns
+
+                class feature_flags_parser #FFFACD {
+                    +{static} handle_feature_flags_command(has_help: bool, po: const parsed_options&, info: std::ostream&, vm: variables_map&): std::optional<options>
+                }
+
+                note top of feature_flags_parser
+                Handles parsing of feature_flags entity commands (list, delete, add).
+                end note
+
+                feature_flags_parser ..> ores::cli::config::options : returns
+            }
+
+            note "Shared parser utility functions." as parser_helpers_note
+            parser_helpers --- parser_helpers_note
+            class parser_helpers <<utility>> #E6F3FF {
+                +{static} print_help_header(s: std::ostream&): void
+                +{static} print_help_command(command_name: const std::string&, od: const options_description&, info: std::ostream&): void
+                +{static} add_common_options(base: options_description): options_description
+                +{static} force_entity(vm: variables_map&, e: entity): void
+                +{static} validate_operation(entity_name: const std::string&, operation: const std::string&, allowed_operations: const std::vector<std::string>&): void
+                +{static} print_entity_help(entity_name: const std::string&, description: const std::string&, operations: const std::vector<std::pair<std::string, std::string>>&, info: std::ostream&): void
+            }
+
+            note top of parser_helpers
+            Shared utility functions used by all entity parsers.
+            end note
+
+            currencies_parser ..> parser_helpers : uses
+            accounts_parser ..> parser_helpers : uses
+            feature_flags_parser ..> parser_helpers : uses
 
             class parser_exception <<exception>> #D6B19F {
                 +parser_exception(message: std::string_view)

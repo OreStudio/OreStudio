@@ -28,7 +28,11 @@ on:  # yamllint disable-line rule:truthy
       - 'docs/**'
     tags:
       - '*'
-  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - 'docs/**'
 
 jobs:
   build:

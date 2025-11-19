@@ -28,6 +28,7 @@
 #include "ores.cli/config/export_options.hpp"
 #include "ores.cli/config/delete_options.hpp"
 #include "ores.cli/config/list_options.hpp"
+#include "ores.cli/config/add_options.hpp"
 
 namespace ores::cli::config {
 
@@ -56,6 +57,10 @@ struct options final {
      * @brief Configuration related to listing entities, if any.
      */
     std::optional<list_options> listing;
+    /**
+     * @brief Configuration related to adding entities, if any.
+     */
+    std::optional<add_options> adding;
     /**
      * @brief Database connection configuration.
      */

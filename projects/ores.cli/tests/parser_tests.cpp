@@ -61,8 +61,8 @@ TEST_CASE("test_help_option", tags) {
     CHECK(!info.str().empty());
     CHECK(info.str().find("ORE Studio") != std::string::npos);
     CHECK(info.str().find("Commands:") != std::string::npos);
-    CHECK(info.str().find("import") != std::string::npos);
-    CHECK(info.str().find("export") != std::string::npos);
+    CHECK(info.str().find("currencies") != std::string::npos);
+    CHECK(info.str().find("accounts") != std::string::npos);
 }
 
 TEST_CASE("test_version_option", tags) {
@@ -91,7 +91,7 @@ TEST_CASE("test_import_help", tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"import", "--help"};
+    std::vector<std::string> args = {"currencies", "import", "--help"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
@@ -102,7 +102,6 @@ TEST_CASE("test_import_help", tags) {
     CHECK(!result.has_value());
     CHECK(!info.str().empty());
     CHECK(info.str().find("import") != std::string::npos);
-    CHECK(info.str().find("--entity") != std::string::npos);
     CHECK(info.str().find("--target") != std::string::npos);
 }
 
@@ -112,7 +111,7 @@ TEST_CASE("test_export_help", tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"export", "--help"};
+    std::vector<std::string> args = {"currencies", "list", "--help"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
@@ -122,8 +121,7 @@ TEST_CASE("test_export_help", tags) {
 
     CHECK(!result.has_value());
     CHECK(!info.str().empty());
-    CHECK(info.str().find("export") != std::string::npos);
-    CHECK(info.str().find("--entity") != std::string::npos);
+    CHECK(info.str().find("list") != std::string::npos);
     CHECK(info.str().find("--as-of") != std::string::npos);
     CHECK(info.str().find("--key") != std::string::npos);
     CHECK(info.str().find("--all-versions") != std::string::npos);
@@ -137,12 +135,12 @@ TEST_CASE("test_logging_options", tags) {
     std::ostringstream info, error;
 
     std::vector<std::string> args = {
+        "currencies",
         "import",
         "--log-enabled",
         "--log-level", "debug",
         "--log-directory", "test_logs",
         "--log-to-console",
-        "--entity", "currencies",
         "--target", "test.xml"
     };
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
@@ -166,8 +164,8 @@ TEST_CASE("test_import_basic", tags) {
     std::ostringstream info, error;
 
     std::vector<std::string> args = {
+        "currencies",
         "import",
-        "--entity", "currencies",
         "--target", "test_file.xml"
     };
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
@@ -191,8 +189,8 @@ TEST_CASE("test_import_multiple_targets", tags) {
     std::ostringstream info, error;
 
     std::vector<std::string> args = {
+        "currencies",
         "import",
-        "--entity", "currencies",
         "--target", "file1.xml",
         "--target", "file2.xml",
         "--target", "file3.xml"
@@ -220,8 +218,8 @@ TEST_CASE("test_export_basic", tags) {
     std::ostringstream info, error;
 
     std::vector<std::string> args = {
-        "export",
-        "--entity", "currencies"
+        "currencies",
+        "list"
     };
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
@@ -246,8 +244,8 @@ TEST_CASE("test_export_full_options", tags) {
     std::ostringstream info, error;
 
     std::vector<std::string> args = {
-        "export",
-        "--entity", "currencies",
+        "currencies",
+        "list",
         "--as-of", "2025-01-01",
         "--key", "USD",
         "--all-versions",
@@ -312,10 +310,10 @@ TEST_CASE("test_import_with_logging", tags) {
     std::ostringstream info, error;
 
     std::vector<std::string> args = {
+        "currencies",
         "import",
         "--log-enabled",
         "--log-level", "trace",
-        "--entity", "currencies",
         "--target", "test.xml"
     };
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
@@ -339,10 +337,10 @@ TEST_CASE("test_export_with_logging", tags) {
     std::ostringstream info, error;
 
     std::vector<std::string> args = {
-        "export",
+        "currencies",
+        "list",
         "--log-enabled",
         "--log-level", "warn",
-        "--entity", "currencies",
         "--format", "json"
     };
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;

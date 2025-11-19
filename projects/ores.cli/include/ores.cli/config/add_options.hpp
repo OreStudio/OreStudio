@@ -20,8 +20,8 @@
 #ifndef ORES_CLI_CONFIG_ADD_OPTIONS_HPP
 #define ORES_CLI_CONFIG_ADD_OPTIONS_HPP
 
-#include <filesystem>
-#include <vector>
+#include <string>
+#include <optional>
 #include "ores.cli/config/entity.hpp"
 
 namespace ores::cli::config {

@@ -32,6 +32,7 @@
 #include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 #include "ores.cli/config/entity_parsers/currencies_parser.hpp"
+#include "ores.cli/config/entity_parsers/accounts_parser.hpp"
 
 namespace {
 
@@ -605,70 +606,7 @@ handle_command(const std::string& command_name, const bool has_help,
     if (command_name == currencies_command_name) {
         return entity_parsers::handle_currencies_command(has_help, po, info, vm);
     } else if (command_name == accounts_command_name) {
-        // Entity-based command: accounts <operation> [options]
-        if (has_help && o.empty()) {
-            // Show help for accounts command
-            info << "accounts - Manage accounts" << std::endl << std::endl;
-            info << "Usage: ores.cli accounts <operation> [options]" << std::endl << std::endl;
-            info << "Available operations:" << std::endl;
-            info << "  list       List accounts as JSON or table (internal formats)" << std::endl;
-            info << "  delete     Delete an account by username or UUID" << std::endl;
-            info << "  add        Add an account using command-line arguments" << std::endl << std::endl;
-            info << "For operation-specific options, use: accounts <operation> --help" << std::endl;
-            return {};
-        }
-
-        if (o.empty()) {
-            BOOST_THROW_EXCEPTION(parser_exception(
-                "accounts command requires an operation (list, delete, add)"));
-        }
-
-        const auto operation = o.front();
-        o.erase(o.begin()); // Remove operation from args
-
-        if (operation == "list") {
-            // List accounts operation
-            auto d(make_export_options_description()); // Reuse export options for list
-            d.add(db_desc).add(logging_desc);
-            if (has_help) {
-                print_help_command("accounts list", d, info);
-                return {};
-            }
-            store(command_line_parser(o).options(d).run(), vm);
-            store(parse_environment(d, name_mapper), vm);
-            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
-                std::string("accounts"), false)));
-            // Treat list as export for now
-            r.exporting = read_export_options(vm);
-        } else if (operation == delete_command_name) {
-            auto d(make_delete_options_description());
-            d.add(db_desc).add(logging_desc);
-            if (has_help) {
-                print_help_command("accounts delete", d, info);
-                return {};
-            }
-            store(command_line_parser(o).options(d).run(), vm);
-            store(parse_environment(d, name_mapper), vm);
-            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
-                std::string("accounts"), false)));
-            r.deleting = read_delete_options(vm);
-        } else if (operation == "add") {
-            auto d(make_add_account_options_description());
-            d.add(db_desc).add(logging_desc);
-            if (has_help) {
-                print_help_command("accounts add", d, info);
-                return {};
-            }
-            store(command_line_parser(o).options(d).run(), vm);
-            store(parse_environment(d, name_mapper), vm);
-            vm.insert(std::make_pair(entity_arg, boost::program_options::variable_value(
-                std::string("accounts"), false)));
-            r.adding = read_add_options(vm);
-        } else {
-            BOOST_THROW_EXCEPTION(parser_exception(
-                std::format("Invalid operation for accounts: {}. "
-                    "Valid operations: list, delete, add", operation)));
-        }
+        return entity_parsers::handle_accounts_command(has_help, po, info, vm);
     } else if (command_name == feature_flags_command_name) {
         // Entity-based command: feature_flags <operation> [options]
         if (has_help && o.empty()) {

@@ -23,6 +23,7 @@
 #include <memory>
 #include <thread>
 #include <optional>
+#include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
 #include "ores.utility/log/make_logger.hpp"

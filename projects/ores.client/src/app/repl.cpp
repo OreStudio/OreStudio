@@ -28,7 +28,7 @@
 #include <cli/cli.h>
 #include <cli/clifilesession.h>
 #include "ores.utility/version/version.hpp"
-#include "ores.utility/streaming/std_vector.hpp"
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.comms/protocol/handshake.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.risk/messaging/protocol.hpp"

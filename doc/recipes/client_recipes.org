@@ -15,28 +15,32 @@ Demonstrates all of the functionality available on the command line tool
   :header-args+: :dir ../../build/output/linux-clang-debug/publish/bin
   :END:
 
-
 ** Client
    :PROPERTIES:
    :header-args+: :var log_args="--log-enabled --log-level trace --log-directory ../log"
+   :header-args+: :var ORES_CLIENT_LOGIN_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "newuser3")
    :END:
 
 *** Basic connect
 
+#+name: basic-connect
+#+begin_src ores-client
+connect localhost 55555 test
+exit
+#+end_src
+
 #+begin_src sh :noweb yes :results output  :wrap example
-{
-    echo "connect localhost 55555 test"
-    sleep 1
-    echo "exit"
-} | ./ores.client ${log_args} client
+./ores.client ${log_args} << 'EOF'
+<<basic-connect>>
+EOF
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-ORE Studio Client REPL v0.0.4
+ORE Studio Client REPL v0.0.5
 Type 'help' for available commands, 'exit' to quit
 
-ores-client> ores-client> ✓ Connected
+ores-client> ✓ Connected.
 ores-client> Bye!
 #+end_example
 
@@ -44,66 +48,96 @@ ores-client> Bye!
    :PROPERTIES:
    :header-args+: :var ORES_CLIENT_LOGIN_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "ores")
    :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
-   :header-args+: :var login_args="--login-username xxx "
    :END:
 
-#+begin_src sh :noweb yes :results output  :wrap example
-{
-    echo "exit"
-} | ./ores.client ${log_args} ${connect_args} client
- client
-#+END_SRC
-
-*** Auto login
-   :PROPERTIES:
-   :header-args+: :var ORES_CLIENT_LOGIN_PASSWORD=123
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
-   :header-args+: :var login_args="--login-username newuser"
-   :END:
+#+name: auto-connect
+#+begin_src ores-client
+exit
+#+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-echo $ORES_CLIENT_LOGIN_PASSWORD
-{
-    echo "exit"
-} | ./ores.client ${log_args} ${connect_args} ${login_args} client
- client
+./ores.client ${log_args} ${connect_args} << 'EOF'
+<<auto-connect>>
+EOF
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
-123
-#+end_example
-
-*** Create account
-
-#+begin_src sh :noweb yes :results output  :wrap example
-{
-    echo "connect localhost 55555 test"
-    sleep 1
-    echo "accounts create newuser3 123 567 newuser3@example.com 1"
-    sleep 1
-    echo "accounts create newuser3 123 567 newuser3@example.com 1"
-    sleep 1
-    echo "exit"
-} | ./ores.client ${log_args} client
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-ORE Studio Client REPL v0.0.4
+✓ Auto-connected to localhost:55555
+ORE Studio Client REPL v0.0.5
 Type 'help' for available commands, 'exit' to quit
-
-ores-client> ores-client> ✓ Connected
-ores-client> ores-client> ✗ Error: Repository error: Executing INSERT failed: ERROR:  duplicate key value violates unique constraint "accounts_username_unique_idx"
-DETAIL:  Key (username)=(newuser3) already exists.
-
-ores-client> ores-client> ✗ Error: Repository error: Executing INSERT failed: ERROR:  duplicate key value violates unique constraint "accounts_username_unique_idx"
-DETAIL:  Key (username)=(newuser3) already exists.
 
 ores-client> Bye!
 #+end_example
 
+*** Auto login
+   :PROPERTIES:
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :header-args+: :var login_args="--login-username newuser3"
+   :END:
 
+#+name: auto-login
+#+begin_src ores-client
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_CLIENT_LOGIN_PASSWORD
+./ores.client ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<auto-login>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Auto-connected to localhost:55555
+✓ Auto-login successful!
+  Username: newuser3
+  Account ID: 019a5e49-476c-70ce-9909-3887cae700e9
+  Admin: No
+ORE Studio Client REPL v0.0.5
+Type 'help' for available commands, 'exit' to quit
+
+ores-client> Bye!
+#+end_example
+
+*** Create account
+   :PROPERTIES:
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :header-args+: :var login_args="--login-username newuser3"
+   :END:
+
+#+name: create-account
+#+begin_src ores-client
+accounts create newuser10 123 567 newuser10@example.com 1
+accounts create newuser11 123 567 newuser11@example.com 1
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_CLIENT_LOGIN_PASSWORD
+./ores.client ${log_args} ${connect_args} ${login_args}  << 'EOF'
+<<create-account>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Auto-connected to localhost:55555
+✓ Auto-login successful!
+  Username: newuser3
+  Account ID: 019a5e49-476c-70ce-9909-3887cae700e9
+  Admin: No
+ORE Studio Client REPL v0.0.5
+Type 'help' for available commands, 'exit' to quit
+
+ores-client>
+✓ Account created with ID: 019a9ea8-c265-7046-96d2-42dd4c53a662
+ores-client>
+✓ Account created with ID: 019a9ea8-c33a-7fdc-936f-1f0723c12679
+ores-client>
+Bye!
+#+end_example
 
 * Footer
 

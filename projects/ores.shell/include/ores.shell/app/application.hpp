@@ -25,7 +25,7 @@
 #include "ores.comms/net/client_options.hpp"
 #include "ores.shell/config/login_options.hpp"
 
-namespace ores::client::app {
+namespace ores::shell::app {
 
 /**
  * @brief Entry point for the ores client application.

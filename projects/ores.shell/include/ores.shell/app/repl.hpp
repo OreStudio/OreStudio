@@ -33,7 +33,7 @@ class Menu;
 
 }
 
-namespace ores::client::app {
+namespace ores::shell::app {
 
 /**
  * @brief Interactive REPL (Read-Eval-Print Loop) for the ORE Studio client.

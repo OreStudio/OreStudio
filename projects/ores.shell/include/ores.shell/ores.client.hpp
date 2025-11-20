@@ -35,6 +35,6 @@
  * The module is organized into namespaces: config (configuration parsing),
  * and app (REPL and application hosting).
  */
-namespace ores::client {}
+namespace ores::shell {}
 
 #endif

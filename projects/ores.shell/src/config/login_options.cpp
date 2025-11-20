@@ -23,7 +23,7 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 
-namespace ores::client::config {
+namespace ores::shell::config {
 
 std::ostream& operator<<(std::ostream& s, const login_options& v) {
     rfl::json::write(v, s);

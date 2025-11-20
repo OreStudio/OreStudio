@@ -33,7 +33,7 @@
 #include "ores.accounts/domain/account_table_io.hpp"
 #include "ores.risk/domain/currency_table_io.hpp"
 
-namespace ores::client::app {
+namespace ores::shell::app {
 
 using namespace ores::utility::log;
 

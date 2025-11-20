@@ -25,7 +25,7 @@
 #include <cli/cli.h>
 #include "ores.utility/log/make_logger.hpp"
 
-namespace ores::client::app::commands::connection {
+namespace ores::shell::app::commands::connection {
 
 using namespace ores::utility::log;
 

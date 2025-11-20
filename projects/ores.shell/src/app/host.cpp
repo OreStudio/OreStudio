@@ -26,10 +26,10 @@
 #include "ores.shell/app/application.hpp"
 #include "ores.shell/config/parser.hpp"
 
-namespace ores::client::app {
+namespace ores::shell::app {
 
 using namespace ores::utility::log;
-using ores::client::config::parser;
+using ores::shell::config::parser;
 using ores::utility::log::lifecycle_manager;
 
 int host::execute(const std::vector<std::string>& args,
@@ -66,7 +66,7 @@ int host::execute(const std::vector<std::string>& args,
      * Execute the application.
      */
     try {
-        ores::client::app::application app(cfg.connection, cfg.login);
+        ores::shell::app::application app(cfg.connection, cfg.login);
         app.run();
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {

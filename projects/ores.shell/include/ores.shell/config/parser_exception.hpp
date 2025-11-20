@@ -23,7 +23,7 @@
 #include <string>
 #include <boost/exception/info.hpp>
 
-namespace ores::client::config {
+namespace ores::shell::config {
 
 /**
  * @brief An error occurred during parsing.

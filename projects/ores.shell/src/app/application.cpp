@@ -22,7 +22,7 @@
 
 #include "ores.shell/app/repl.hpp"
 
-namespace ores::client::app {
+namespace ores::shell::app {
 
 using namespace ores::utility::log;
 

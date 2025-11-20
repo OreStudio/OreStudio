@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
         OPENSSL_cleanup();
     } BOOST_SCOPE_EXIT_END;
 
-    using namespace ores::client;
+    using namespace ores::shell;
     try {
         const auto args(std::vector<std::string>(argv + 1, argv + argc));
 

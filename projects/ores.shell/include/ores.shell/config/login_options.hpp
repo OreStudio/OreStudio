@@ -23,7 +23,7 @@
 #include <iosfwd>
 #include <string>
 
-namespace ores::client::config {
+namespace ores::shell::config {
 
 /**
  * @brief Options for logging in to the server.

@@ -26,7 +26,7 @@
 #include <optional>
 #include "ores.shell/config/options.hpp"
 
-namespace ores::client::config {
+namespace ores::shell::config {
 
 /**
  * @brief Command-line parser implementation using boost program options.

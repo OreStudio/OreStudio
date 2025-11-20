@@ -49,9 +49,9 @@ using boost::program_options::variables_map;
 using boost::program_options::options_description;
 
 using ores::comms::net::client_options;
-using ores::client::config::options;
-using ores::client::config::login_options;
-using ores::client::config::parser_exception;
+using ores::shell::config::options;
+using ores::shell::config::login_options;
+using ores::shell::config::parser_exception;
 
 /**
  * @brief Creates the option descriptions.
@@ -218,7 +218,7 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
 
 }
 
-namespace ores::client::config {
+namespace ores::shell::config {
 
 std::optional<options>
 parser::parse(const std::vector<std::string>& arguments,

@@ -31,7 +31,7 @@ namespace cli {
 class Menu;
 }
 
-namespace ores::client::app::commands::connection {
+namespace ores::shell::app::commands::connection {
 
 /**
  * @brief Register connection management commands.

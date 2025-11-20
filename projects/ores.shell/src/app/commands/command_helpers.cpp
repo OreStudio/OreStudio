@@ -23,7 +23,7 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 
-namespace ores::client::app::commands {
+namespace ores::shell::app::commands {
 
 bool command_helpers::require_connection(
     const std::shared_ptr<comms::net::client>& client,

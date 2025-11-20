@@ -26,7 +26,7 @@
 #include <boost/asio/io_context.hpp>
 #include "ores.comms/net/client.hpp"
 
-namespace ores::client::app::commands {
+namespace ores::shell::app::commands {
 
 /**
  * @brief Shared utility functions for command handlers.

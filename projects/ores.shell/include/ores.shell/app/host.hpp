@@ -26,7 +26,7 @@
 #include <boost/asio/awaitable.hpp>
 #include "ores.utility/log/make_logger.hpp"
 
-namespace ores::client::app {
+namespace ores::shell::app {
 
 /**
  * @brief Provides hosting clients to the application.

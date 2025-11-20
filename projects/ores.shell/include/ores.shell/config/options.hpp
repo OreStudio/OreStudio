@@ -26,7 +26,7 @@
 #include "ores.comms/net/client_options.hpp"
 #include "ores.utility/log/logging_options.hpp"
 
-namespace ores::client::config {
+namespace ores::shell::config {
 
 /**
  * @brief All of the configuration options required by the client.

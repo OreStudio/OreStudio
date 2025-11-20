@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLIENT_CONFIG_PARSER_EXCEPTION_HPP
-#define ORES_CLIENT_CONFIG_PARSER_EXCEPTION_HPP
+#ifndef ORES_SHELL_CONFIG_PARSER_EXCEPTION_HPP
+#define ORES_SHELL_CONFIG_PARSER_EXCEPTION_HPP
 
 #include <string>
 #include <boost/exception/info.hpp>

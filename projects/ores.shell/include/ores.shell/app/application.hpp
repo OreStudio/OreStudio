@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLIENT_APP_APPLICATION_HPP
-#define ORES_CLIENT_APP_APPLICATION_HPP
+#ifndef ORES_SHELL_APP_APPLICATION_HPP
+#define ORES_SHELL_APP_APPLICATION_HPP
 
 #include <optional>
 #include "ores.utility/log/make_logger.hpp"

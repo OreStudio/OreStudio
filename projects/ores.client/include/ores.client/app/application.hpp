@@ -41,7 +41,7 @@ public:
     /**
      * @brief Construct application with configuration.
      */
-    explicit application(std::optional<config::connection_options> connection_config = std::nullopt,
+    explicit application(std::optional<comms::net::client_options> connection_config = std::nullopt,
                          std::optional<config::login_options> login_config = std::nullopt);
 
     application(const application&) = delete;
@@ -55,7 +55,7 @@ public:
     void run() const;
 
 private:
-    std::optional<config::connection_options> connection_config_;
+    std::optional<comms::net::client_options> connection_config_;
     std::optional<config::login_options> login_config_;
 
 };

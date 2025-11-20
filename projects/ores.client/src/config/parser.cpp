@@ -49,7 +49,7 @@ using boost::program_options::variables_map;
 using boost::program_options::options_description;
 
 using ores::utility::log::logging_options;
-using ores::client::config::connection_options;
+using ores::comms::net::client_options;
 using ores::client::config::login_options;
 using ores::client::config::options;
 using ores::client::config::parser_exception;
@@ -124,7 +124,7 @@ void version(std::ostream& info) {
 /**
  * @brief Reads the connection configuration from the variables map.
  */
-std::optional<connection_options>
+std::optional<client_options>
 read_connection_configuration(const variables_map& vm) {
     // Check if any connection options are provided
     const bool has_host = vm.count(connect_host_arg) != 0;
@@ -134,7 +134,7 @@ read_connection_configuration(const variables_map& vm) {
     if (!has_host && !has_port && !has_identifier)
         return {};
 
-    connection_options r;
+    client_options r;
     r.host = has_host ? vm[connect_host_arg].as<std::string>() : "localhost";
     r.port = has_port ? static_cast<std::uint16_t>(std::stoi(vm[connect_port_arg].as<std::string>())) : 55555;
     r.client_identifier = has_identifier ? vm[connect_identifier_arg].as<std::string>() : "ores-client";

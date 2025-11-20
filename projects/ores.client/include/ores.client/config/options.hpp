@@ -23,30 +23,10 @@
 #include <iosfwd>
 #include <optional>
 #include <string>
-#include <cstdint>
+#include "ores.comms/net/client_options.hpp"
 #include "ores.utility/log/logging_options.hpp"
 
 namespace ores::client::config {
-
-/**
- * @brief Options for connecting to the server.
- */
-struct connection_options final {
-    /**
-     * @brief Host to connect to.
-     */
-    std::string host;
-
-    /**
-     * @brief Port to connect to.
-     */
-    std::uint16_t port;
-
-    /**
-     * @brief Client identifier to send in handshake.
-     */
-    std::string client_identifier;
-};
 
 /**
  * @brief Options for logging in to the server.
@@ -70,12 +50,12 @@ struct options final {
     /**
      * @brief Configuration options related to logging, if any.
      */
-    std::optional<ores::utility::log::logging_options> logging;
+    std::optional<utility::log::logging_options> logging;
 
     /**
      * @brief Configuration options for connecting to the server.
      */
-    std::optional<connection_options> connection;
+    std::optional<comms::net::client_options> connection;
 
     /**
      * @brief Configuration options for logging in to the server.

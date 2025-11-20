@@ -37,7 +37,7 @@ namespace ores::client::app {
 
 using namespace ores::utility::log;
 
-repl::repl(std::optional<config::connection_options> connection_config,
+repl::repl(std::optional<comms::net::client_options> connection_config,
            std::optional<config::login_options> login_config)
     : connection_config_(std::move(connection_config)),
       login_config_(std::move(login_config)),

@@ -56,7 +56,7 @@ public:
      * @param connection_config Optional connection configuration for auto-connect
      * @param login_config Optional login configuration for auto-login
      */
-    repl(std::optional<config::connection_options> connection_config = std::nullopt,
+    repl(std::optional<comms::net::client_options> connection_config = std::nullopt,
          std::optional<config::login_options> login_config = std::nullopt);
 
     repl(const repl&) = delete;
@@ -199,7 +199,7 @@ private:
      */
     void display_welcome() const;
 
-    std::optional<config::connection_options> connection_config_;
+    std::optional<comms::net::client_options> connection_config_;
     std::optional<config::login_options> login_config_;
     comms::net::client_options config_;
     std::shared_ptr<comms::net::client> client_;

@@ -17,39 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLIENT_CONFIG_OPTIONS_HPP
-#define ORES_CLIENT_CONFIG_OPTIONS_HPP
-
-#include <iosfwd>
-#include <optional>
 #include "ores.client/config/login_options.hpp"
-#include "ores.comms/net/client_options.hpp"
-#include "ores.utility/log/logging_options.hpp"
+
+#include <iostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 
 namespace ores::client::config {
 
-/**
- * @brief All of the configuration options required by the client.
- */
-struct options final {
-    /**
-     * @brief Configuration options related to logging, if any.
-     */
-    std::optional<utility::log::logging_options> logging;
-
-    /**
-     * @brief Configuration options for connecting to the server.
-     */
-    std::optional<comms::net::client_options> connection;
-
-    /**
-     * @brief Configuration options for logging in to the server.
-     */
-    std::optional<login_options> login;
-};
-
-std::ostream& operator<<(std::ostream& s, const options& v);
-
+std::ostream& operator<<(std::ostream& s, const login_options& v) {
+    rfl::json::write(v, s);
+    return s;
 }
 
-#endif
+}

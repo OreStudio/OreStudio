@@ -22,7 +22,8 @@
 
 #include <optional>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.client/config/options.hpp"
+#include "ores.comms/net/client_options.hpp"
+#include "ores.client/config/login_options.hpp"
 
 namespace ores::client::app {
 
@@ -57,7 +58,6 @@ public:
 private:
     std::optional<comms::net::client_options> connection_config_;
     std::optional<config::login_options> login_config_;
-
 };
 
 }

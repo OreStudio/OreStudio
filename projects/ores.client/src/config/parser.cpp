@@ -48,10 +48,9 @@ using boost::program_options::value;
 using boost::program_options::variables_map;
 using boost::program_options::options_description;
 
-using ores::utility::log::logging_options;
 using ores::comms::net::client_options;
-using ores::client::config::login_options;
 using ores::client::config::options;
+using ores::client::config::login_options;
 using ores::client::config::parser_exception;
 
 /**

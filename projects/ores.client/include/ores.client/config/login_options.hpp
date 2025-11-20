@@ -17,38 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLIENT_CONFIG_OPTIONS_HPP
-#define ORES_CLIENT_CONFIG_OPTIONS_HPP
+#ifndef ORES_CLIENT_CONFIG_LOGIN_OPTIONS_HPP
+#define ORES_CLIENT_CONFIG_LOGIN_OPTIONS_HPP
 
 #include <iosfwd>
-#include <optional>
-#include "ores.client/config/login_options.hpp"
-#include "ores.comms/net/client_options.hpp"
-#include "ores.utility/log/logging_options.hpp"
+#include <string>
 
 namespace ores::client::config {
 
 /**
- * @brief All of the configuration options required by the client.
+ * @brief Options for logging in to the server.
  */
-struct options final {
+struct login_options final {
     /**
-     * @brief Configuration options related to logging, if any.
+     * @brief Username to use for login.
      */
-    std::optional<utility::log::logging_options> logging;
+    std::string username;
 
     /**
-     * @brief Configuration options for connecting to the server.
+     * @brief Password to use for login.
      */
-    std::optional<comms::net::client_options> connection;
-
-    /**
-     * @brief Configuration options for logging in to the server.
-     */
-    std::optional<login_options> login;
+    std::string password;
 };
 
-std::ostream& operator<<(std::ostream& s, const options& v);
+std::ostream& operator<<(std::ostream& s, const login_options& v);
 
 }
 

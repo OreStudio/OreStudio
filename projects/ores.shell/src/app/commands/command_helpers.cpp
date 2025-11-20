@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.client/app/commands/command_helpers.hpp"
+#include "ores.shell/app/commands/command_helpers.hpp"
 
 #include <ostream>
 #include <boost/asio/co_spawn.hpp>

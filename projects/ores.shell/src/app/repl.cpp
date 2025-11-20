@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.client/app/repl.hpp"
+#include "ores.shell/app/repl.hpp"
 
 #include <iostream>
 #include <boost/lexical_cast.hpp>

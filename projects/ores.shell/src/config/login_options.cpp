@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.client/config/login_options.hpp"
+#include "ores.shell/config/login_options.hpp"
 
 #include <iostream>
 #include <rfl.hpp>

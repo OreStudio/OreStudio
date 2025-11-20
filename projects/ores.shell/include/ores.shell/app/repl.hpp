@@ -24,7 +24,7 @@
 #include <optional>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/net/client.hpp"
-#include "ores.client/config/login_options.hpp"
+#include "ores.shell/config/login_options.hpp"
 
 namespace cli {
 

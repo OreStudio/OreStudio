@@ -24,7 +24,7 @@
 #include <vector>
 #include <string>
 #include <optional>
-#include "ores.client/config/options.hpp"
+#include "ores.shell/config/options.hpp"
 
 namespace ores::client::config {
 

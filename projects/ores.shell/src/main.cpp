@@ -20,8 +20,8 @@
 #include <iostream>
 #include <openssl/crypto.h>
 #include <boost/scope_exit.hpp>
-#include "ores.client/config/parser_exception.hpp"
-#include "ores.client/app/host.hpp"
+#include "ores.shell/config/parser_exception.hpp"
+#include "ores.shell/app/host.hpp"
 
 int main(int argc, char** argv) {
     BOOST_SCOPE_EXIT(void) {

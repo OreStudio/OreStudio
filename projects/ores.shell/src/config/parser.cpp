@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.client/config/parser.hpp"
+#include "ores.shell/config/parser.hpp"
 
 #include <format>
 #include <ostream>
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
-#include "ores.client/config/parser_exception.hpp"
+#include "ores.shell/config/parser_exception.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/log/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"

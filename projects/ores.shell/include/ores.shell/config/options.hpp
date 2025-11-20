@@ -22,7 +22,7 @@
 
 #include <iosfwd>
 #include <optional>
-#include "ores.client/config/login_options.hpp"
+#include "ores.shell/config/login_options.hpp"
 #include "ores.comms/net/client_options.hpp"
 #include "ores.utility/log/logging_options.hpp"
 

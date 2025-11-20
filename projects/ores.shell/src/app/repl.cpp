@@ -44,7 +44,7 @@ repl::repl(std::optional<comms::net::client_options> connection_config,
       config_{
           .host = "localhost",
           .port = 55555,
-          .client_identifier = "ores-client",
+          .client_identifier = "ores-shell",
           .verify_certificate = false
       },
       client_(std::make_shared<comms::net::client>(config_)) {
@@ -72,7 +72,7 @@ void repl::run() {
 
 std::unique_ptr<::cli::Cli> repl::setup_menus() {
     auto root_menu =
-        std::make_unique<::cli::Menu>("ores-client");
+        std::make_unique<::cli::Menu>("ores-shell");
 
     register_connection_commands(*root_menu);
     register_currency_commands(*root_menu);
@@ -281,7 +281,7 @@ bool repl::auto_connect() {
         } else {
             config_.host = "localhost";
             config_.port = 55555;
-            config_.client_identifier = "ores-client";
+            config_.client_identifier = "ores-shell";
         }
 
         BOOST_LOG_SEV(lg(), info) << "Auto-connecting to " << config_.host << ":"

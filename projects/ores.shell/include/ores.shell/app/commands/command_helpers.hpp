@@ -22,8 +22,6 @@
 
 #include <memory>
 #include <iosfwd>
-#include <boost/asio/awaitable.hpp>
-#include <boost/asio/io_context.hpp>
 #include "ores.comms/net/client.hpp"
 
 namespace ores::shell::app::commands {
@@ -40,18 +38,8 @@ public:
      * @param out Output stream for error messages
      * @return true if connected, false otherwise
      */
-    static bool require_connection(
-        const std::shared_ptr<comms::net::client>& client,
+    static bool require_connection(const std::shared_ptr<comms::net::client>& client,
         std::ostream& out);
-
-    /**
-     * @brief Spawn a command coroutine with error handling.
-     *
-     * @param io_ctx The I/O context to spawn on
-     * @param awaitable The coroutine to execute
-     */
-    template<typename Awaitable>
-    static void spawn_command(boost::asio::io_context& io_ctx, Awaitable&& awaitable);
 };
 
 }

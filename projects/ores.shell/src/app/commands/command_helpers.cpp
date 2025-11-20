@@ -25,26 +25,13 @@
 
 namespace ores::shell::app::commands {
 
-bool command_helpers::require_connection(
-    const std::shared_ptr<comms::net::client>& client,
-    std::ostream& out) {
-
+bool command_helpers::
+require_connection(const std::shared_ptr<comms::net::client>& client, std::ostream& out) {
     if (!client || !client->is_connected()) {
         out << "✗ Not connected to server. Use 'connect' command first" << std::endl;
         return false;
     }
     return true;
 }
-
-template<typename Awaitable>
-void command_helpers::spawn_command(boost::asio::io_context& io_ctx, Awaitable&& awaitable) {
-    auto executor = io_ctx.get_executor();
-    boost::asio::co_spawn(executor, std::forward<Awaitable>(awaitable), boost::asio::detached);
-}
-
-// Explicit instantiation for common types
-template void command_helpers::spawn_command(
-    boost::asio::io_context&,
-    boost::asio::awaitable<void>&&);
 
 }

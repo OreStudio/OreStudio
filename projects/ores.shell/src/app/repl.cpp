@@ -64,21 +64,22 @@ void repl::run() {
 
     display_welcome();
     auto cli_instance = setup_menus();
-    ::cli::CliFileSession session(*cli_instance, std::cin, std::cout);
+    cli::CliFileSession session(*cli_instance, std::cin, std::cout);
     session.Start();
 
     BOOST_LOG_SEV(lg(), info) << "REPL session ended.";
 }
 
-std::unique_ptr<::cli::Cli> repl::setup_menus() {
+std::unique_ptr<cli::Cli> repl::setup_menus() {
     auto root_menu =
-        std::make_unique<::cli::Menu>("ores-shell");
+        std::make_unique<cli::Menu>("ores-shell");
 
     register_connection_commands(*root_menu);
     register_currency_commands(*root_menu);
     register_account_commands(*root_menu);
 
-    auto cli_instance = std::make_unique<::cli::Cli>(std::move(root_menu));
+    auto cli_instance =
+        std::make_unique<cli::Cli>(std::move(root_menu));
     cli_instance->ExitAction([](auto& out) {
         out << "Bye!" << std::endl;
     });
@@ -86,7 +87,7 @@ std::unique_ptr<::cli::Cli> repl::setup_menus() {
     return cli_instance;
 }
 
-void repl::register_connection_commands(::cli::Menu& root_menu) {
+void repl::register_connection_commands(cli::Menu& root_menu) {
     root_menu.Insert("connect",
         [this](std::ostream& out, std::string host, std::string port,
         std::string identifier) {
@@ -99,9 +100,9 @@ void repl::register_connection_commands(::cli::Menu& root_menu) {
     }, "Disconnect from server");
 }
 
-void repl::register_currency_commands(::cli::Menu& root_menu) {
+void repl::register_currency_commands(cli::Menu& root_menu) {
     auto currencies_menu =
-        std::make_unique<::cli::Menu>("currencies");
+        std::make_unique<cli::Menu>("currencies");
 
     currencies_menu->Insert("get", [this](std::ostream& out) {
         process_get_currencies(std::ref(out));
@@ -110,9 +111,9 @@ void repl::register_currency_commands(::cli::Menu& root_menu) {
     root_menu.Insert(std::move(currencies_menu));
 }
 
-void repl::register_account_commands(::cli::Menu& root_menu) {
+void repl::register_account_commands(cli::Menu& root_menu) {
     auto accounts_menu =
-        std::make_unique<::cli::Menu>("accounts");
+        std::make_unique<cli::Menu>("accounts");
 
     accounts_menu->Insert("create", [this](std::ostream & out, std::string username,
             std::string password, std::string totp_secret,
@@ -298,7 +299,8 @@ bool repl::auto_connect() {
         client_->connect_sync();
 
         BOOST_LOG_SEV(lg(), info) << "Successfully auto-connected";
-        std::cout << "✓ Auto-connected to " << config_.host << ":" << config_.port << std::endl;
+        std::cout << "✓ Auto-connected to " << config_.host
+                  << ":" << config_.port << std::endl;
         return true;
 
     } catch (const std::exception& e) {
@@ -320,7 +322,8 @@ bool repl::auto_login() {
             return false;
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Creating auto-login request for user: " << login_config_->username;
+        BOOST_LOG_SEV(lg(), debug) << "Creating auto-login request for user: "
+                                   << login_config_->username;
 
         accounts::messaging::login_request request{
             .username = login_config_->username,

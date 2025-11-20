@@ -1,10 +1,10 @@
-;;; ores-client-mode.el --- trivial major mode for my command-line tool -*- lexical-binding: t; -*-
+;;; ores-shell-mode.el --- trivial major mode for my command-line tool -*- lexical-binding: t; -*-
 
 ;; Author: Your Name <you@example.com>
 ;; Version: 0.2
 ;; Package-Requires: ((emacs "24.3"))
-;; Keywords: languages, ores-client
-;; URL: https://example.com/ores-client-mode
+;; Keywords: languages, ores-shell
+;; URL: https://github.com/OreStudio/OreStudio
 
 ;;; Commentary:
 
@@ -14,19 +14,18 @@
 ;; distinguishable from arguments.
 
 ;;; Code:
-
 (require 'font-lock)
 
 ;; ----------------------------------------------------------------------
 ;; 1. Syntax table (unchanged)
 ;; ----------------------------------------------------------------------
-(defvar ores-client-mode-syntax-table
+(defvar ores-shell-mode-syntax-table
   (let ((table (make-syntax-table)))
     (modify-syntax-entry ?# "<" table)
     (modify-syntax-entry ?\n ">" table)
     (modify-syntax-entry ?\" "\"" table)
     table)
-  "Syntax table for `ores-client-mode'.")
+  "Syntax table for `ores-shell-mode'.")
 
 ;; ----------------------------------------------------------------------
 ;; 2. Command keywords – the list you may extend later
@@ -68,23 +67,23 @@
     ;; ---- localhost -----------------------------------------------------
     ( "\\<localhost\\>" . font-lock-builtin-face)
     )
-  "Font-lock keywords for `ores-client-mode'.")
+  "Font-lock keywords for `ores-shell-mode'.")
 
 ;; ----------------------------------------------------------------------
 ;; 5. Major mode definition
 ;; ----------------------------------------------------------------------
-(define-derived-mode ores-client-mode prog-mode "Ores-Client"
+(define-derived-mode ores-shell-mode prog-mode "Ores-Client"
   "Major mode for editing Ores-Client script files.
 
-\\{ores-client-mode-map}"
-  :syntax-table ores-client-mode-syntax-table
+\\{ores-shell-mode-map}"
+  :syntax-table ores-shell-mode-syntax-table
   (setq font-lock-defaults '(ores-client-font-lock-keywords))
   (setq-local comment-start "# ")
   (setq-local comment-start-skip "#+ *")
   (setq-local comment-end ""))
 
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.ores-client\\'" . ores-client-mode))
+(add-to-list 'auto-mode-alist '("\\.ores-client\\'" . ores-shell-mode))
 
-(provide 'ores-client-mode)
-;;; ores-client-mode.el ends here
+(provide 'ores-shell-mode)
+;;; ores-shell-mode.el ends here

@@ -32,7 +32,7 @@ using comms::protocol::message_type;
 using namespace ores::utility::log;
 
 ClientCurrencyModel::
-ClientCurrencyModel(std::shared_ptr<comms::client> client, QObject* parent)
+ClientCurrencyModel(std::shared_ptr<comms::net::client> client, QObject* parent)
     : QAbstractTableModel(parent), client_(std::move(client)),
       watcher_(new QFutureWatcher<FutureWatcherResult>(this)) {
 

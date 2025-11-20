@@ -25,7 +25,7 @@ namespace ores::risk::messaging {
 
 using namespace ores::utility::log;
 
-void registrar::register_handlers(comms::server& server,
+void registrar::register_handlers(comms::net::server& server,
     utility::repository::context ctx) {
     BOOST_LOG_SEV(lg(), info) << "Registering risk subsystem message handlers.";
 

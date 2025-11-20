@@ -23,7 +23,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace ores::comms {
+namespace ores::comms::net {
 
 /**
  * @brief Exception thrown when client connection or handshake fails.

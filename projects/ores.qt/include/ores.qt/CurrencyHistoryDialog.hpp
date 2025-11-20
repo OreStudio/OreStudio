@@ -54,8 +54,8 @@ private:
 
 public:
     explicit CurrencyHistoryDialog(QString iso_code,
-                                   std::shared_ptr<comms::client> client,
-                                   QWidget* parent = nullptr);
+        std::shared_ptr<comms::net::client> client,
+        QWidget* parent = nullptr);
     ~CurrencyHistoryDialog() override;
 
     void loadHistory();
@@ -86,7 +86,7 @@ private:
         const risk::domain::currency_version& previous);
 
     std::unique_ptr<Ui::CurrencyHistoryDialog> ui_;
-    std::shared_ptr<comms::client> client_;
+    std::shared_ptr<comms::net::client> client_;
     QString isoCode_;
     risk::domain::currency_version_history history_;
 };

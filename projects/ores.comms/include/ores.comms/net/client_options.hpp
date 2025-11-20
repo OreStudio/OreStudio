@@ -24,7 +24,7 @@
 #include <string>
 #include <cstdint>
 
-namespace ores::comms {
+namespace ores::comms::net {
 
 /**
  * @brief Configuration for the client.

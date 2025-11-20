@@ -17,39 +17,39 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SERVICE_CONFIG_SERVER_OPTIONS_HPP
-#define ORES_SERVICE_CONFIG_SERVER_OPTIONS_HPP
+#ifndef ORES_COMMS_NET_SERVER_OPTIONS_HPP
+#define ORES_COMMS_NET_SERVER_OPTIONS_HPP
 
 #include <iosfwd>
 #include <string>
 #include <cstdint>
 
-namespace ores::service::config {
+namespace ores::comms::net {
 
 /**
- * @brief Configuration options for the ORES server.
+ * @brief Configuration for the server.
  */
 struct server_options final {
     /**
-     * @brief Port to listen on.
+     * @brief TCP port the server listens on.
      */
     std::uint16_t port = 55555;
     /**
-     * @brief Maximum number of concurrent connections.
+     * @brief Maximum number of concurrent client connections.
      */
     std::uint32_t max_connections = 10;
     /**
-     * @brief Path to SSL certificate file.
+     * @brief Path to the TLS certificate file (PEM format).
      */
     std::string certificate_file = "server.crt";
     /**
-     * @brief Path to SSL private key file.
+     * @brief Path to the TLS private key file (PEM format).
      */
     std::string private_key_file = "server.key";
     /**
-     * @brief Server identifier for handshake.
+     * @brief Human-readable identifier for the server instance.
      */
-    std::string server_identifier = "ores-service-v1";
+    std::string server_identifier = "ores-server";
 };
 
 std::ostream& operator<<(std::ostream& s, const server_options& v);

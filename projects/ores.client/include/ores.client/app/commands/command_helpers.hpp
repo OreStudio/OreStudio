@@ -41,7 +41,7 @@ public:
      * @return true if connected, false otherwise
      */
     static bool require_connection(
-        const std::shared_ptr<comms::client>& client,
+        const std::shared_ptr<comms::net::client>& client,
         std::ostream& out);
 
     /**

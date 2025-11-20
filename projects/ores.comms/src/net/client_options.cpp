@@ -23,7 +23,7 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 
-namespace ores::comms {
+namespace ores::comms::net {
 
 std::ostream& operator<<(std::ostream& s, const client_options& v) {
     rfl::json::write(v, s);

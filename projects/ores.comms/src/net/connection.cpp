@@ -23,7 +23,7 @@
 #include <boost/asio/write.hpp>
 #include <boost/asio/use_awaitable.hpp>
 
-namespace ores::comms {
+namespace ores::comms::net {
 
 using namespace ores::utility::log;
 

@@ -26,7 +26,7 @@
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/protocol/message_dispatcher.hpp"
 
-namespace ores::comms {
+namespace ores::comms::net {
 
 /**
  * @brief Represents a client session on the server side.

@@ -40,7 +40,7 @@ const QIcon& CurrencyHistoryDialog::getHistoryIcon() const {
 }
 
 CurrencyHistoryDialog::CurrencyHistoryDialog(QString iso_code,
-    std::shared_ptr<comms::client> client, QWidget* parent)
+    std::shared_ptr<comms::net::client> client, QWidget* parent)
     : QWidget(parent), ui_(new Ui::CurrencyHistoryDialog),
       client_(std::move(client)), isoCode_(std::move(iso_code)) {
 

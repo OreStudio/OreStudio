@@ -45,7 +45,7 @@ private:
     }
 
 public:
-    static void register_handlers(comms::server& server,
+    static void register_handlers(comms::net::server& server,
         utility::repository::context ctx);
 };
 

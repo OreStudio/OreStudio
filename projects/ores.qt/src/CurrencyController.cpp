@@ -34,7 +34,7 @@ using namespace ores::utility::log;
 CurrencyController::CurrencyController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
-    std::shared_ptr<comms::client> client,
+    std::shared_ptr<comms::net::client> client,
     const QString& username,
     QList<DetachableMdiSubWindow*>& allDetachableWindows,
     QObject* parent)

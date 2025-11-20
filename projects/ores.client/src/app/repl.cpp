@@ -47,7 +47,7 @@ repl::repl(std::optional<config::connection_options> connection_config,
           .client_identifier = "ores-client",
           .verify_certificate = false
       },
-      client_(std::make_shared<comms::client>(config_)) {
+      client_(std::make_shared<comms::net::client>(config_)) {
     BOOST_LOG_SEV(lg(), info) << "REPL created with configuration: " << config_;
 }
 
@@ -175,7 +175,7 @@ void repl::process_connect(std::ostream& out, std::string host, std::string port
             client_->disconnect();
         }
 
-        client_ = std::make_shared<comms::client>(config_);
+        client_ = std::make_shared<comms::net::client>(config_);
 
         client_->connect_sync();
 
@@ -293,7 +293,7 @@ bool repl::auto_connect() {
             client_->disconnect();
         }
 
-        client_ = std::make_shared<comms::client>(config_);
+        client_ = std::make_shared<comms::net::client>(config_);
 
         client_->connect_sync();
 

@@ -42,7 +42,7 @@ public:
     explicit EntityController(
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
-        std::shared_ptr<comms::client> client,
+        std::shared_ptr<comms::net::client> client,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -56,7 +56,7 @@ public:
     /**
      * @brief Set the client connection (e.g., after reconnecting).
      */
-    virtual void setClient(std::shared_ptr<comms::client> client,
+    virtual void setClient(std::shared_ptr<comms::net::client> client,
                            const QString& username);
 
     /**
@@ -78,7 +78,7 @@ signals:
 protected:
     QMainWindow* mainWindow_;
     QMdiArea* mdiArea_;
-    std::shared_ptr<comms::client> client_;
+    std::shared_ptr<comms::net::client> client_;
     QString username_;
 };
 

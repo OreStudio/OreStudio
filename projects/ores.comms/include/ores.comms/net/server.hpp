@@ -22,31 +22,20 @@
 
 #include <string>
 #include <memory>
-#include <cstdint>
 #include <atomic>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
 #include "ores.utility/log/make_logger.hpp"
+#include "ores.comms/net/server_options.hpp"
 #include "ores.comms/protocol/message_dispatcher.hpp"
 #include "ores.comms/protocol/message_handler.hpp"
 
-namespace ores::comms {
+namespace ores::comms::net {
 
 using tcp = boost::asio::ip::tcp;
 namespace ssl = boost::asio::ssl;
-
-/**
- * @brief Configuration for the server.
- */
-struct server_config final {
-    std::uint16_t port = 55555;
-    std::uint32_t max_connections = 10;
-    std::string certificate_file = "server.crt";
-    std::string private_key_file = "server.key";
-    std::string server_identifier = "ores-server";
-};
 
 /**
  * @brief ORES protocol server.
@@ -65,7 +54,7 @@ public:
     /**
      * @brief Construct server with configuration.
      */
-    explicit server(server_config config);
+    explicit server(server_options options);
 
     /**
      * @brief Register a message handler for a range of message types.
@@ -95,7 +84,7 @@ private:
      */
     void setup_ssl_context();
 
-    server_config config_;
+    server_options options_;
     ssl::context ssl_ctx_;
     std::shared_ptr<protocol::message_dispatcher> dispatcher_;
     std::atomic<std::size_t> active_connections_{0};

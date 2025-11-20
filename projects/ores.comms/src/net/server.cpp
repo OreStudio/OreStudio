@@ -27,12 +27,12 @@
 #include <boost/asio/steady_timer.hpp>
 #include "ores.comms/net/session.hpp"
 
-namespace ores::comms {
+namespace ores::comms::net {
 
 using namespace ores::utility::log;
 
-server::server(server_config config)
-    : config_(std::move(config)),
+server::server(server_options options)
+    : options_(std::move(options)),
       ssl_ctx_(ssl::context::tlsv13),
       dispatcher_(std::make_shared<protocol::message_dispatcher>()) {
     setup_ssl_context();
@@ -52,19 +52,19 @@ void server::setup_ssl_context() {
         ssl::context::no_tlsv1_1 |
         ssl::context::single_dh_use);
 
-    ssl_ctx_.use_certificate_chain_file(config_.certificate_file);
-    ssl_ctx_.use_private_key_file(config_.private_key_file, ssl::context::pem);
+    ssl_ctx_.use_certificate_chain_file(options_.certificate_file);
+    ssl_ctx_.use_private_key_file(options_.private_key_file, ssl::context::pem);
 
     BOOST_LOG_SEV(lg(), info) << "SSL context configured with certificate: "
-                             << config_.certificate_file;
+                              << options_.certificate_file;
 }
 
 boost::asio::awaitable<void> server::run(boost::asio::io_context& io_context) {
-    BOOST_LOG_SEV(lg(), info) << "ORES Server starting on port " << config_.port
-                             << " (identifier: " << config_.server_identifier << ")";
+    BOOST_LOG_SEV(lg(), info) << "ORES Server starting on port " << options_.port
+                              << ". Identifier: " << options_.server_identifier;
     BOOST_LOG_SEV(lg(), info) << "Protocol version: "
-                             << protocol::PROTOCOL_VERSION_MAJOR << "."
-                             << protocol::PROTOCOL_VERSION_MINOR;
+                              << protocol::PROTOCOL_VERSION_MAJOR << "."
+                              << protocol::PROTOCOL_VERSION_MINOR;
 
     co_await accept_loop(io_context);
 }
@@ -72,33 +72,35 @@ boost::asio::awaitable<void> server::run(boost::asio::io_context& io_context) {
 boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_context) {
     tcp::acceptor acceptor(
         co_await boost::asio::this_coro::executor,
-        tcp::endpoint(tcp::v4(), config_.port));
+        tcp::endpoint(tcp::v4(), options_.port));
 
-    BOOST_LOG_SEV(lg(), info) << "Server listening on port " << config_.port;
+    BOOST_LOG_SEV(lg(), info) << "Server listening on port " << options_.port;
 
     while (true) {
         try {
             // Wait if we've reached max connections
-            while (active_connections_.load() >= config_.max_connections) {
-                BOOST_LOG_SEV(lg(), info) << "Max connections (" << config_.max_connections
-                                         << ") reached, waiting...";
+            while (active_connections_.load() >= options_.max_connections) {
+                BOOST_LOG_SEV(lg(), info) << "Max connections (" << options_.max_connections
+                                         << ") reached, waiting.";
                 boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
                 timer.expires_after(std::chrono::milliseconds(100));
                 co_await timer.async_wait(boost::asio::use_awaitable);
             }
 
             // Accept new connection
-            tcp::socket socket = co_await acceptor.async_accept(boost::asio::use_awaitable);
+            tcp::socket socket = co_await acceptor.async_accept(
+            boost::asio::use_awaitable);
             BOOST_LOG_SEV(lg(), info) << "Accepted connection from "
-                                     << socket.remote_endpoint().address().to_string()
-                                     << ":" << socket.remote_endpoint().port();
+                                      << socket.remote_endpoint().address().to_string()
+                                      << ":" << socket.remote_endpoint().port();
 
             // Create SSL socket and connection wrapper
             auto conn = std::make_unique<connection>(
                 connection::ssl_socket(std::move(socket), ssl_ctx_));
 
             // Create session and spawn it
-            auto sess = std::make_shared<session>(std::move(conn), config_.server_identifier, dispatcher_);
+            auto sess = std::make_shared<session>(std::move(conn),
+                options_.server_identifier, dispatcher_);
 
             // Increment active connections
             ++active_connections_;

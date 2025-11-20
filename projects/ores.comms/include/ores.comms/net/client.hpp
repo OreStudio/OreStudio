@@ -32,7 +32,7 @@
 #include "ores.comms/net/client_options.hpp"
 #include "ores.comms/net/connection.hpp"
 
-namespace ores::comms {
+namespace ores::comms::net {
 
 /**
  * @brief ORES protocol client.

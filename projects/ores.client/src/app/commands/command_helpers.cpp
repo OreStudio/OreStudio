@@ -26,7 +26,7 @@
 namespace ores::client::app::commands {
 
 bool command_helpers::require_connection(
-    const std::shared_ptr<comms::client>& client,
+    const std::shared_ptr<comms::net::client>& client,
     std::ostream& out) {
 
     if (!client || !client->is_connected()) {

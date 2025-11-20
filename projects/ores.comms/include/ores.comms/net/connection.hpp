@@ -26,7 +26,7 @@
 #include "ores.comms/protocol/frame.hpp"
 #include "ores.utility/log/make_logger.hpp"
 
-namespace ores::comms {
+namespace ores::comms::net {
 
 /**
  * @brief SSL connection wrapper for frame-based communication.

@@ -48,7 +48,7 @@ private:
     }
 
 public:
-    explicit ClientCurrencyModel(std::shared_ptr<comms::client> client,
+    explicit ClientCurrencyModel(std::shared_ptr<comms::net::client> client,
                                    QObject* parent = nullptr);
     ~ClientCurrencyModel() override = default;
 
@@ -99,7 +99,7 @@ private slots:
 private:
     using FutureWatcherResult = std::pair<bool,
                                           std::vector<risk::domain::currency>>;
-    std::shared_ptr<comms::client> client_;
+    std::shared_ptr<comms::net::client> client_;
     std::vector<risk::domain::currency> currencies_;
     QFutureWatcher<FutureWatcherResult>* watcher_;
 };

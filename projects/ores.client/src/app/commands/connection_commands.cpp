@@ -39,8 +39,8 @@ auto& lg() {
 void register_commands(
     ::cli::Menu& root_menu,
     boost::asio::io_context& io_ctx,
-    std::shared_ptr<comms::client>& client,
-    comms::client_options& config) {
+    std::shared_ptr<comms::net::client>& client,
+    comms::net::client_options& config) {
 
     root_menu.Insert("connect",
         [&io_ctx, &client, &config](std::ostream& out, std::string host,
@@ -69,8 +69,8 @@ void register_commands(
 
 boost::asio::awaitable<void> process_connect(
     std::ostream& out,
-    std::shared_ptr<comms::client>& client,
-    comms::client_options& config,
+    std::shared_ptr<comms::net::client>& client,
+    comms::net::client_options& config,
     std::string host,
     std::string port,
     std::string identifier) {
@@ -106,7 +106,7 @@ boost::asio::awaitable<void> process_connect(
             client->disconnect();
         }
 
-        client = std::make_shared<comms::client>(config);
+        client = std::make_shared<comms::net::client>(config);
 
         co_await client->connect();
 
@@ -119,7 +119,7 @@ boost::asio::awaitable<void> process_connect(
     }
 }
 
-void process_disconnect(std::shared_ptr<comms::client>& client) {
+void process_disconnect(std::shared_ptr<comms::net::client>& client) {
     if (!client) {
         BOOST_LOG_SEV(lg(), warn) << "No client instance.";
         return;

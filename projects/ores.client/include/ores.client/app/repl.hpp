@@ -201,8 +201,8 @@ private:
 
     std::optional<config::connection_options> connection_config_;
     std::optional<config::login_options> login_config_;
-    comms::client_options config_;
-    std::shared_ptr<comms::client> client_;
+    comms::net::client_options config_;
+    std::shared_ptr<comms::net::client> client_;
 };
 
 }

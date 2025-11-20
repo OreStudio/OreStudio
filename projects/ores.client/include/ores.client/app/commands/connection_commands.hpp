@@ -46,8 +46,8 @@ namespace ores::client::app::commands::connection {
 void register_commands(
     ::cli::Menu& root_menu,
     boost::asio::io_context& io_ctx,
-    std::shared_ptr<comms::client>& client,
-    comms::client_options& config);
+    std::shared_ptr<comms::net::client>& client,
+    comms::net::client_options& config);
 
 /**
  * @brief Process a connection request.
@@ -64,8 +64,8 @@ void register_commands(
  */
 boost::asio::awaitable<void> process_connect(
     std::ostream& out,
-    std::shared_ptr<comms::client>& client,
-    comms::client_options& config,
+    std::shared_ptr<comms::net::client>& client,
+    comms::net::client_options& config,
     std::string host,
     std::string port,
     std::string identifier);
@@ -77,7 +77,7 @@ boost::asio::awaitable<void> process_connect(
  *
  * @param client The client instance
  */
-void process_disconnect(std::shared_ptr<comms::client>& client);
+void process_disconnect(std::shared_ptr<comms::net::client>& client);
 
 }
 

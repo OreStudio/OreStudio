@@ -31,7 +31,7 @@
 #include "ores.comms/net/connection_error.hpp"
 #include "ores.comms/protocol/handshake.hpp"
 
-namespace ores::comms {
+namespace ores::comms::net {
 
 using namespace ores::utility::log;
 

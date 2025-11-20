@@ -21,18 +21,16 @@
 #define ORES_CLIENT_APP_REPL_HPP
 
 #include <memory>
-#include <thread>
 #include <optional>
-#include <boost/asio/awaitable.hpp>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/executor_work_guard.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/net/client.hpp"
 #include "ores.client/config/options.hpp"
 
 namespace cli {
+
 class Cli;
 class Menu;
+
 }
 
 namespace ores::client::app {
@@ -60,11 +58,6 @@ public:
      */
     repl(std::optional<config::connection_options> connection_config = std::nullopt,
          std::optional<config::login_options> login_config = std::nullopt);
-
-    /**
-     * @brief Destructor - ensures clean shutdown.
-     */
-    ~repl();
 
     repl(const repl&) = delete;
     repl& operator=(const repl&) = delete;
@@ -121,15 +114,15 @@ private:
      * @param port New port (empty to keep current)
      * @param identifier New client identifier (empty to keep current)
      */
-    boost::asio::awaitable<void> process_connect(
-        std::ostream& out, std::string host, std::string port, std::string identifier);
+    void process_connect(std::ostream& out, std::string host, std::string port,
+        std::string identifier);
 
     /**
      * @brief Process a disconnect request.
      *
      * Cleanly disconnects from the server if connected.
      */
-    void process_disconnect();
+    void process_disconnect(std::ostream& out);
 
     /**
      * @brief Process a get currencies request.
@@ -138,7 +131,7 @@ private:
      *
      * @param out Output stream for results
      */
-    boost::asio::awaitable<void> process_get_currencies(std::ostream& out);
+    void process_get_currencies(std::ostream& out);
 
     /**
      * @brief Process a create account request.
@@ -153,8 +146,7 @@ private:
      * @param email Account email
      * @param is_admin Whether the account has admin privileges
      */
-    boost::asio::awaitable<void>
-    process_create_account(std::ostream& out, std::string username,
+    void process_create_account(std::ostream& out, std::string username,
         std::string password, std::string totp_secret, std::string email,
         bool is_admin);
 
@@ -165,7 +157,7 @@ private:
      *
      * @param out Output stream for results
      */
-    boost::asio::awaitable<void> process_list_accounts(std::ostream& out);
+    void process_list_accounts(std::ostream& out);
 
     /**
      * @brief Process a login request.
@@ -176,8 +168,7 @@ private:
      * @param username Account username
      * @param password Account password
      */
-    boost::asio::awaitable<void>
-    process_login(std::ostream& out, std::string username, std::string password);
+    void process_login(std::ostream& out, std::string username, std::string password);
 
     /**
      * @brief Process an unlock account request.
@@ -187,36 +178,21 @@ private:
      * @param out Output stream for results
      * @param account_id_str Account ID as a string (UUID)
      */
-    boost::asio::awaitable<void>
-    process_unlock_account(std::ostream& out, std::string account_id_str);
+    void process_unlock_account(std::ostream& out, std::string account_id_str);
 
     /**
      * @brief Attempt to connect automatically if connection options are provided.
      *
      * Performs connection automatically based on provided configuration.
      */
-    boost::asio::awaitable<bool> auto_connect();
+    bool auto_connect();
 
     /**
      * @brief Attempt to login automatically if login options are provided.
      *
      * Performs login automatically based on provided configuration after connecting.
      */
-    boost::asio::awaitable<bool> auto_login();
-
-    /**
-     * @brief Start the I/O context thread.
-     *
-     * Launches a background thread to handle async operations.
-     */
-    void start_io_thread();
-
-    /**
-     * @brief Stop the I/O context thread.
-     *
-     * Stops the I/O context and joins the background thread.
-     */
-    void stop_io_thread();
+    bool auto_login();
 
     /**
      * @brief Display the welcome message.
@@ -227,9 +203,6 @@ private:
     std::optional<config::login_options> login_config_;
     comms::client_options config_;
     std::shared_ptr<comms::client> client_;
-    std::unique_ptr<boost::asio::io_context> io_ctx_;
-    std::unique_ptr<boost::asio::executor_work_guard<boost::asio::any_io_executor>> work_guard_;
-    std::unique_ptr<std::thread> io_thread_;
 };
 
 }

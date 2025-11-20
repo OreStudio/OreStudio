@@ -381,7 +381,7 @@ bool repl::auto_login() {
 }
 
 void repl::display_welcome() const {
-    std::cout << "ORE Studio Client REPL v" << ORES_VERSION << std::endl;
+    std::cout << "ORE Studio Shell REPL v" << ORES_VERSION << std::endl;
     std::cout << "Type 'help' for available commands, 'exit' to quit" << std::endl;
     std::cout << std::endl;
 }

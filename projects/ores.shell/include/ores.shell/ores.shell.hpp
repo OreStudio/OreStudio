@@ -20,7 +20,7 @@
 #define ORES_SHELL_ORES_SHELL_HPP
 
 /**
- * @brief Interactive REPL (Read-Eval-Print Loop) client for connecting to the
+ * @brief Interactive REPL (Read-Eval-Print Loop) or shell for connecting to the
  * ORE Studio server.
  *
  *  Features include:
@@ -32,7 +32,7 @@
  * - Auto-connect and auto-login from configuration file
  * - Boost program_options for CLI argument parsing
  *
- * The module is organized into namespaces: config (configuration parsing),
+ * The module is organised into namespaces: config (configuration parsing),
  * and app (REPL and application hosting).
  */
 namespace ores::shell {}

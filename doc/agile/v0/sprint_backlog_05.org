@@ -18,39 +18,43 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-20 Thu 00:42], for Thursday, November 20, 2025.
-|      | <75>                                                     |        |      |      |       |
-| Tags | Headline                                                 | Time   |      |      |     % |
-|------+----------------------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                             | *0:41* |      |      | 100.0 |
-|------+----------------------------------------------------------+--------+------+------+-------|
-|      | Stories                                                  | 0:41   |      |      | 100.0 |
-|      | Active                                                   |        | 0:41 |      | 100.0 |
-| code | Update =ores.client= with REPL commands for all entities |        |      | 0:41 | 100.0 |
+#+CAPTION: Clock summary at [2025-11-20 Thu 17:35], for Thursday, November 20, 2025.
+|       | <75>                                                     |        |      |      |       |
+| Tags  | Headline                                                 | Time   |      |      |     % |
+|-------+----------------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                             | *6:10* |      |      | 100.0 |
+|-------+----------------------------------------------------------+--------+------+------+-------|
+|       | Stories                                                  | 6:10   |      |      | 100.0 |
+|       | Active                                                   |        | 6:10 |      | 100.0 |
+| infra | OCR scan notebooks                                       |        |      | 1:41 |  27.3 |
+| code  | Update =ores.client= with REPL commands for all entities |        |      | 4:07 |  66.8 |
+| code  | Consider renaming =client= to =repl=                     |        |      | 0:22 |   5.9 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-20 Thu 00:42]
+#+CAPTION: Clock summary at [2025-11-20 Thu 17:35]
 |       | <75>                                                     |         |       |      |       |
 | Tags  | Headline                                                 | Time    |       |      |     % |
 |-------+----------------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                             | *20:09* |       |      | 100.0 |
+|       | *Total time*                                             | *25:38* |       |      | 100.0 |
 |-------+----------------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                                  | 20:09   |       |      | 100.0 |
-|       | Active                                                   |         | 20:09 |      | 100.0 |
-| agile | Sprint and product backlog refinement                    |         |       | 2:35 |  12.8 |
-| infra | Add AI generated sprint summary                          |         |       | 1:38 |   8.1 |
-| infra | Add skill to generate release notes                      |         |       | 0:27 |   2.2 |
-| code  | Version of =ores.qt= does not update                     |         |       | 0:54 |   4.5 |
-| code  | Minor updates to UML diagrams                            |         |       | 0:13 |   1.1 |
-| infra | Add support for project planning                         |         |       | 2:24 |  11.9 |
-| code  | Add a "detached" mode                                    |         |       | 1:18 |   6.5 |
-| code  | Merge update and create currency messages                |         |       | 1:07 |   5.5 |
-| code  | Uninformative incompatible protocol version error in qt  |         |       | 1:11 |   5.9 |
-| code  | Implement delete account                                 |         |       | 0:20 |   1.7 |
-| code  | Reorganise CLI structure by entity                       |         |       | 4:43 |  23.4 |
-| code  | Update =ores.client= with REPL commands for all entities |         |       | 3:19 |  16.5 |
+|       | Stories                                                  | 25:38   |       |      | 100.0 |
+|       | Active                                                   |         | 25:38 |      | 100.0 |
+| agile | Sprint and product backlog refinement                    |         |       | 2:35 |  10.1 |
+| infra | Add AI generated sprint summary                          |         |       | 1:38 |   6.4 |
+| infra | Add skill to generate release notes                      |         |       | 0:27 |   1.8 |
+| code  | Version of =ores.qt= does not update                     |         |       | 0:54 |   3.5 |
+| code  | Minor updates to UML diagrams                            |         |       | 0:13 |   0.8 |
+| infra | Add support for project planning                         |         |       | 2:24 |   9.4 |
+| code  | Add a "detached" mode                                    |         |       | 1:18 |   5.1 |
+| code  | Merge update and create currency messages                |         |       | 1:07 |   4.4 |
+| code  | Uninformative incompatible protocol version error in qt  |         |       | 1:11 |   4.6 |
+| code  | Implement delete account                                 |         |       | 0:20 |   1.3 |
+| code  | Reorganise CLI structure by entity                       |         |       | 4:43 |  18.4 |
+| infra | OCR scan notebooks                                       |         |       | 1:41 |   6.6 |
+| code  | Update =ores.client= with REPL commands for all entities |         |       | 6:45 |  26.3 |
+| code  | Consider renaming =client= to =repl=                     |         |       | 0:22 |   1.4 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1018,8 +1022,20 @@ Summary:
 6. Update help text to be entity-centric
 7. Keep application.cpp mostly unchanged (just dispatch based on options)
 
+*** STARTED OCR scan notebooks                                        :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-20 Thu 09:20]--[2025-11-20 Thu 11:01] =>  1:41
+    :END:
+
+We need to scan all of our finance notebooks so we can use them with AI. Each
+sprint will have a story similar to this until we scan and process them all.
+
 *** STARTED Update =ores.client= with REPL commands for all entities   :code:
     :LOGBOOK:
+    CLOCK: [2025-11-20 Thu 17:24]--[2025-11-20 Thu 17:35] =>  0:11
+    CLOCK: [2025-11-20 Thu 15:36]--[2025-11-20 Thu 17:10] =>  1:34
+    CLOCK: [2025-11-20 Thu 12:45]--[2025-11-20 Thu 13:30] =>  0:45
+    CLOCK: [2025-11-20 Thu 11:24]--[2025-11-20 Thu 12:20] =>  0:56
     CLOCK: [2025-11-20 Thu 00:25]--[2025-11-20 Thu 00:42] =>  0:17
     CLOCK: [2025-11-19 Wed 22:53]--[2025-11-20 Thu 00:24] =>  1:31
     CLOCK: [2025-11-19 Wed 22:20]--[2025-11-19 Wed 22:52] =>  0:32
@@ -1067,6 +1083,197 @@ Client needs to have messages at the entity level:
 Notes:
 
 - update recipes with the new client commands.
+
+*** STARTED Consider renaming =client= to =repl=                       :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-20 Thu 11:01]--[2025-11-20 Thu 11:23] =>  0:22
+    :END:
+
+We will make use of the lib from the UI so this makes more sense. Or maybe we
+could call it shell. Also consider integrating it into Qt.
+
+#+begin_src markdown
+Thanks for the clarification! You're using **[daniele77/cli](https://github.com/daniele77/cli)** — a lightweight, single-header C++11 library for building interactive command-line interfaces (REPLs), **not** CLI11.
+
+This actually makes integration **easier and more natural** for your Qt-embedded REPL, because **daniele77/cli is designed specifically for interactive loops**, unlike CLI11 (which targets one-shot CLI apps).
+
+---
+
+### ✅ Good News: daniele77/cli is REPL-Friendly
+Key features that help you:
+- Built around a **`cli::Cli` object** that manages commands, help, and the input loop.
+- You register **command handlers** as `std::function` objects.
+- It **does not own the I/O** — you provide `std::istream&` and `std::ostream&` for input/output.
+- **No forced `exit()`** or process termination — it returns control after each command.
+
+This means you can **reuse your command logic almost as-is**, and only replace the I/O layer with Qt widgets.
+
+---
+
+### 🔧 Integration Strategy
+
+You **do not embed the CLI loop** directly (`cli.run()`), because that assumes `std::cin`/`std::cout`.
+Instead, **reuse the `cli::Cli` parser** but **drive it manually** with Qt-provided input.
+
+#### Step 1: Keep your existing command registrations
+Assume you have something like:
+
+```cpp
+cli::Cli cli;
+
+cli.AddCommand("echo", "Echo text", [&](const cli::Args& args) {
+    for (size_t i = 1; i < args.size(); ++i) {
+        std::cout << args[i] << " ";
+    }
+    std::cout << std::endl;
+});
+```
+
+You’ll keep this **exactly the same**, but **redirect output**.
+
+#### Step 2: Replace `std::cout` / `std::cin` with string-based I/O
+You can’t easily monkey-patch `std::cout`, so instead:
+
+- **Capture output** by giving your lambdas a way to return strings.
+- **Avoid printing directly** in command handlers.
+
+**Refactor your commands to return `std::string` (or `QString`)**:
+
+```cpp
+// Keep logic separate from I/O
+std::string handleEcho(const cli::Args& args) {
+    if (args.size() < 2) return "Usage: echo <text...>\n";
+    std::ostringstream oss;
+    for (size_t i = 1; i < args.size(); ++i) {
+        oss << args[i] << " ";
+    }
+    oss << "\n";
+    return oss.str();
+}
+
+// Register (for internal use)
+cli.AddCommand("echo", "Echo text", [&](const cli::Args& args) {
+    lastOutput = handleEcho(args);  // Store in a member variable
+});
+```
+
+But an even cleaner way: **don’t use lambdas that print — use a central evaluator**.
+
+#### Step 3: Create a Qt-compatible evaluate function
+
+```cpp
+// ReplEngine.h
+#include "cli.h"
+#include <QString>
+
+class ReplEngine {
+public:
+    ReplEngine();  // Registers all commands
+    QString evaluate(const QString& inputLine);
+
+private:
+    cli::Cli cliParser;
+    QString lastResult;
+};
+```
+
+```cpp
+// ReplEngine.cpp
+#include "ReplEngine.h"
+
+ReplEngine::ReplEngine() {
+    // Example command
+    cliParser.AddCommand("echo", "Echo args", [&](const cli::Args& args) {
+        if (args.size() < 2) {
+            lastResult = "Usage: echo <text...>\n";
+            return;
+        }
+        QStringList parts;
+        for (size_t i = 1; i < args.size(); ++i) {
+            parts << QString::fromStdString(args[i]);
+        }
+        lastResult = parts.join(" ") + "\n";
+    });
+
+    cliParser.AddCommand("help", "Show help", [&](const cli::Args&) {
+        std::ostringstream oss;
+        cliParser.PrintHelp(oss);
+        lastResult = QString::fromStdString(oss.str());
+    });
+
+    // Add your other commands similarly...
+}
+
+QString ReplEngine::evaluate(const QString& inputLine) {
+    lastResult.clear();
+
+    if (inputLine.trimmed().isEmpty()) {
+        return "";
+    }
+
+    // Tokenize input (simple whitespace split)
+    // For better parsing (quotes, escapes), use a proper shell lexer
+    QStringList qtArgs = inputLine.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+    std::vector<std::string> args;
+    for (const QString& arg : qtArgs) {
+        args.push_back(arg.toStdString());
+    }
+
+    // Parse and dispatch
+    try {
+        bool recognized = cliParser.Parse(args);
+        if (!recognized) {
+            return "Unknown command. Type 'help' for available commands.\n";
+        }
+    } catch (const std::exception& e) {
+        return QString("Error: %1\n").arg(e.what());
+    }
+
+    return lastResult;
+}
+```
+
+> 🔎 **Note**: `cli::Cli::Parse()` returns `true` if a known command was found and executed. If `false`, it’s an unknown command.
+
+#### Step 4: Use this `ReplEngine` in your Qt widget (as shown earlier)
+Your `ReplWidget` stays the same — it just calls `engine.evaluate(input)` and displays the result.
+
+---
+
+### ⚠️ Caveats & Tips
+
+1. **Tokenization**:
+   `input.split(QRegularExpression("\\s+"))` doesn’t handle quoted strings (`echo "hello world"`).
+   ➤ If you need that, use **`QProcess::splitCommand(input)`** (Qt 5.15+), which does shell-style splitting.
+
+2. **Stateful Commands**:
+   If your REPL commands rely on shared state (e.g., a database connection), pass a reference to that state into `ReplEngine`.
+
+3. **Help Formatting**:
+   `cli::Cli::PrintHelp()` outputs to a `std::ostream`. We capture it via `std::ostringstream`.
+
+4. **No Loop Needed**:
+   You’re **not calling `cli.run()`** — you’re just using `cli.Parse(...)` per line.
+
+---
+
+### ✅ Summary
+
+Yes! **daniele77/cli integrates very well** with a Qt-embedded REPL because:
+- It’s designed for interactive use.
+- It separates command logic from I/O.
+- You can drive parsing **one line at a time**.
+- You retain all your existing command definitions with minor refactoring.
+
+You get:
+- A native Qt widget REPL.
+- All your CLI commands available in the GUI.
+- Consistent help and validation.
+- No external processes or terminal emulation.
+
+If you’d like help adapting your specific commands or improving tokenization, feel free to share a snippet!
+#+end_src
+
 
 *** Implement authentication bootstrap workflow                        :code:
 

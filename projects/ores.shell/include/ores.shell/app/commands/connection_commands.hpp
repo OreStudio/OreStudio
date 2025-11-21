@@ -33,7 +33,7 @@ class Menu;
 namespace ores::shell::app::commands {
 
 /**
- * @brief Manages commands related to connection.
+ * @brief Manages commands related to connections.
  */
 class connection_commands {
 private:

@@ -1,0 +1,109 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_SHELL_APP_COMMANDS_ACCOUNTS_COMMANDS_HPP
+#define ORES_SHELL_APP_COMMANDS_ACCOUNTS_COMMANDS_HPP
+
+#include <string>
+#include "ores.utility/log/make_logger.hpp"
+#include "ores.shell/app/client_manager.hpp"
+
+namespace cli {
+
+class Menu;
+
+}
+
+namespace ores::shell::app::commands {
+
+/**
+ * @brief Manages commands related to accounts.
+ */
+class accounts_commands {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger("ores.shell.app.commands.connection");
+        return instance;
+    }
+
+public:
+    /**
+     * @brief Register account-related commands.
+     *
+     * Creates the accounts submenu and adds account operations.
+     */
+  static void register_commands(cli::Menu& root_menu, client_manager& client_manager);
+
+    /**
+     * @brief Process a create account request.
+     *
+     * Creates a new account with the provided details.
+     *
+     * @param out Output stream for results
+     * @param client_manager Manager for client connectivity.
+     * @param username Account username
+     * @param password_hash Hashed password
+     * @param password_salt Password salt
+     * @param totp_secret TOTP secret for 2FA
+     * @param email Account email
+     * @param is_admin Whether the account has admin privileges
+     */
+    static void process_create_account(std::ostream& out, client_manager& client_manager,
+        std::string username, std::string password, std::string totp_secret,
+        std::string email, bool is_admin);
+
+    /**
+     * @brief Process a list accounts request.
+     *
+     * Retrieves all accounts from the server and displays them.
+     *
+     * @param out Output stream for results
+     * @param client_manager Manager for client connectivity.
+     */
+    static void process_list_accounts(std::ostream& out, client_manager& client_manager);
+
+    /**
+     * @brief Process a login request.
+     *
+     * Authenticates a user with the provided credentials.
+     *
+     * @param client_manager Manager for client connectivity.
+     * @param username Account username
+     * @param password Account password
+     */
+    static void process_login(client_manager& client_manager, std::string username,
+        std::string password);
+
+    /**
+     * @brief Process an unlock account request.
+     *
+     * Unlocks a locked account by account ID.
+     *
+     * @param out Output stream for results
+     * @param client_manager Manager for client connectivity.
+     * @param account_id Account ID UUID as a string.
+     */
+    static void process_unlock_account(std::ostream& out, client_manager& client_manager,
+        std::string account_id);
+};
+
+}
+
+#endif

@@ -20,23 +20,18 @@
 #include "ores.shell/app/repl.hpp"
 
 #include <iostream>
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <cli/cli.h>
 #include <cli/clifilesession.h>
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.accounts/messaging/protocol.hpp"
 #include "ores.shell/app/commands/currencies_commands.hpp"
 #include "ores.shell/app/commands/connection_commands.hpp"
-// #include "ores.accounts/domain/account_table_io.hpp"
-// #include "ores.risk/domain/currency_table_io.hpp"
+#include "ores.shell/app/commands/accounts_commands.hpp"
 
 namespace ores::shell::app {
 
 using namespace ores::utility::log;
-using comms::protocol::message_type;
 
 repl::repl(client_manager& client_manager)
     : client_manager_(client_manager) {
@@ -55,15 +50,16 @@ void repl::run() {
 }
 
 std::unique_ptr<cli::Cli> repl::setup_menus() {
-    auto root_menu =
+    auto root =
         std::make_unique<cli::Menu>("ores-shell");
 
-    commands::connection_commands::register_commands(*root_menu, client_manager_);
-    commands::currencies_commands::register_commands(*root_menu, client_manager_);
-    register_account_commands(*root_menu);
+    using namespace commands;
+    connection_commands::register_commands(*root, client_manager_);
+    currencies_commands::register_commands(*root, client_manager_);
+    accounts_commands::register_commands(*root, client_manager_);
 
     auto cli_instance =
-        std::make_unique<cli::Cli>(std::move(root_menu));
+        std::make_unique<cli::Cli>(std::move(root));
     cli_instance->ExitAction([](auto& out) {
         out << "Bye!" << std::endl;
     });
@@ -71,134 +67,10 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     return cli_instance;
 }
 
-void repl::register_account_commands(cli::Menu& root_menu) {
-    auto accounts_menu =
-        std::make_unique<cli::Menu>("accounts");
-
-    accounts_menu->Insert("create", [this](std::ostream & out, std::string username,
-            std::string password, std::string totp_secret,
-            std::string email, std::string is_admin_str) {
-        bool is_admin = (is_admin_str == "true" || is_admin_str == "1");
-        process_create_account(std::ref(out), std::move(username),
-                std::move(password), std::move(totp_secret),
-                std::move(email), is_admin);
-    }, "Create a new account (username password totp_secret email is_admin)");
-
-    accounts_menu->Insert("list", [this](std::ostream& out) {
-        process_list_accounts(std::ref(out));
-    }, "Retrieve all accounts from the server");
-
-    accounts_menu->Insert("login", [this](std::ostream& /*out*/,
-            std::string username, std::string password) {
-        process_login(std::move(username),
-            std::move(password));
-    }, "Login with username and password");
-
-    accounts_menu->Insert("unlock", [this](std::ostream & out,
-            std::string account_id_str) {
-        process_unlock_account(std::ref(out), std::move(account_id_str));
-    }, "Unlock a locked account (account_id)");
-
-    root_menu.Insert(std::move(accounts_menu));
-}
-
 void repl::display_welcome() const {
     std::cout << "ORE Studio Shell REPL v" << ORES_VERSION << std::endl;
     std::cout << "Type 'help' for available commands, 'exit' to quit" << std::endl;
     std::cout << std::endl;
-}
-
-void repl::process_create_account(std::ostream& out, std::string username,
-    std::string password, std::string totp_secret, std::string email,
-    bool is_admin) {
-    try {
-        BOOST_LOG_SEV(lg(), debug) << "Initiating create account request.";
-
-        using accounts::messaging::create_account_request;
-        using accounts::messaging::create_account_response;
-        client_manager_.process_request<create_account_request,
-                                        create_account_response,
-                                        message_type::create_account_request>
-            (create_account_request {
-                .username = std::move(username),
-                .password = std::move(password),
-                .totp_secret = std::move(totp_secret),
-                .email = std::move(email),
-                .is_admin = is_admin
-            })
-            .and_then([&](const auto& response) {
-                BOOST_LOG_SEV(lg(), info) << "Successfully created account with ID: "
-                                          << response.account_id;
-                out << "✓ Account created with ID: " << response.account_id << std::endl;
-                return std::optional{response};
-            });
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Create account exception: " << e.what();
-        out << "✗ Error: " << e.what() << std::endl;
-    }
-}
-
-void repl::process_list_accounts(std::ostream& out) {
-    try {
-        BOOST_LOG_SEV(lg(), debug) << "Initiating list account request.";
-        using accounts::messaging::list_accounts_request;
-        using accounts::messaging::list_accounts_response;
-        client_manager_.process_request<list_accounts_request,
-                                        list_accounts_response,
-                                        message_type::list_accounts_request>
-            (list_accounts_request{})
-            .and_then([&](const auto& response) {
-                BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                                          << response.accounts.size() << " accounts";
-
-                out << response.accounts << std::endl;
-                return std::optional{response};
-            });
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "List accounts exception: " << e.what();
-        out << "✗ Error: " << e.what() << std::endl;
-    }
-}
-
-void repl::process_login(std::string username, std::string password) {
-    client_manager_.login(username, password);
-}
-
-void repl::process_unlock_account(std::ostream& out, std::string account_id) {
-    try {
-        BOOST_LOG_SEV(lg(), debug) << "Creating unlock account request for ID: "
-                                   << account_id;
-
-        using accounts::messaging::unlock_account_request;
-        using accounts::messaging::unlock_account_response;
-        client_manager_.process_request<unlock_account_request,
-                                        unlock_account_response,
-                                        message_type::unlock_account_request>
-            (unlock_account_request{
-                .account_id = boost::lexical_cast<boost::uuids::uuid>(account_id)})
-            .and_then([&](const auto& response) {
-                if (response.success) {
-                    BOOST_LOG_SEV(lg(), info) << "Successfully unlocked account: "
-                                              << account_id;
-
-                    out << "✓ Account unlocked successfully!" << std::endl
-                        << "  Account ID: " << account_id << std::endl;
-                } else {
-                    BOOST_LOG_SEV(lg(), warn)
-                        << "Failed to unlock account: " << response.error_message;
-                    out << "✗ Failed to unlock account: " << response.error_message << std::endl;
-                }
-                return std::optional{response};
-            });
-
-    } catch (const boost::bad_lexical_cast& e) {
-        BOOST_LOG_SEV(lg(), error) << "Invalid account ID format: " << account_id;
-        out << "✗ Invalid account ID format. Expected UUID." << std::endl;
-        return;
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Unlock account exception: " << e.what();
-        out << "✗ Error: " << e.what() << std::endl;
-    }
 }
 
 }

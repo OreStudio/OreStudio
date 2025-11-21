@@ -79,59 +79,6 @@ private:
     std::unique_ptr<::cli::Cli> setup_menus();
 
     /**
-     * @brief Register account-related commands.
-     *
-     * Creates the accounts submenu and adds account operations.
-     */
-    void register_account_commands(::cli::Menu& root_menu);
-
-    /**
-     * @brief Process a create account request.
-     *
-     * Creates a new account with the provided details.
-     *
-     * @param out Output stream for results
-     * @param username Account username
-     * @param password_hash Hashed password
-     * @param password_salt Password salt
-     * @param totp_secret TOTP secret for 2FA
-     * @param email Account email
-     * @param is_admin Whether the account has admin privileges
-     */
-    void process_create_account(std::ostream& out, std::string username,
-        std::string password, std::string totp_secret, std::string email,
-        bool is_admin);
-
-    /**
-     * @brief Process a list accounts request.
-     *
-     * Retrieves all accounts from the server and displays them.
-     *
-     * @param out Output stream for results
-     */
-    void process_list_accounts(std::ostream& out);
-
-    /**
-     * @brief Process a login request.
-     *
-     * Authenticates a user with the provided credentials.
-     *
-     * @param username Account username
-     * @param password Account password
-     */
-    void process_login(std::string username, std::string password);
-
-    /**
-     * @brief Process an unlock account request.
-     *
-     * Unlocks a locked account by account ID.
-     *
-     * @param out Output stream for results
-     * @param account_id Account ID UUID as a string.
-     */
-    void process_unlock_account(std::ostream& out, std::string account_id);
-
-    /**
      * @brief Display the welcome message.
      */
     void display_welcome() const;

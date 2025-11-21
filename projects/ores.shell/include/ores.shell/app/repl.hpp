@@ -79,13 +79,6 @@ private:
     std::unique_ptr<::cli::Cli> setup_menus();
 
     /**
-     * @brief Register connection management commands.
-     *
-     * Adds connect and disconnect commands to the root menu.
-     */
-    void register_connection_commands(::cli::Menu& root_menu);
-
-    /**
      * @brief Register currency-related commands.
      *
      * Creates the currencies submenu and adds currency operations.
@@ -98,27 +91,6 @@ private:
      * Creates the accounts submenu and adds account operations.
      */
     void register_account_commands(::cli::Menu& root_menu);
-
-    /**
-     * @brief Process a connection request.
-     *
-     * Handles the async connection workflow including configuration updates
-     * and existing connection cleanup.
-     *
-     * @param out Output stream for user feedback
-     * @param host New host (empty to keep current)
-     * @param port New port (empty to keep current)
-     * @param identifier New client identifier (empty to keep current)
-     */
-    void process_connect(std::string host, std::string port,
-        std::string identifier);
-
-    /**
-     * @brief Process a disconnect request.
-     *
-     * Cleanly disconnects from the server if connected.
-     */
-    void process_disconnect();
 
     /**
      * @brief Process a get currencies request.

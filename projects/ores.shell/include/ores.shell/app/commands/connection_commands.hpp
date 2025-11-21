@@ -30,8 +30,11 @@ class Menu;
 
 }
 
-namespace ores::shell::app::commands::connection {
+namespace ores::shell::app::commands {
 
+/**
+ * @brief Manages commands related to connection.
+ */
 class connection_commands {
 private:
     auto& lg() {
@@ -75,9 +78,6 @@ public:
      * @param client_manager Manager for client connectivity.
      */
     static void process_disconnect(std::ostream& out, client_manager& client_manager);
-
-private:
-;
 };
 
 }

@@ -29,6 +29,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
+#include "ores.shell/app/commands/connection_commands.hpp"
 // #include "ores.accounts/domain/account_table_io.hpp"
 // #include "ores.risk/domain/currency_table_io.hpp"
 
@@ -58,7 +59,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     auto root_menu =
         std::make_unique<cli::Menu>("ores-shell");
 
-    register_connection_commands(*root_menu);
+    commands::connection_commands::register_commands(*root_menu, client_manager_);
     register_currency_commands(*root_menu);
     register_account_commands(*root_menu);
 
@@ -69,18 +70,6 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     });
 
     return cli_instance;
-}
-
-void repl::register_connection_commands(cli::Menu& root_menu) {
-    root_menu.Insert("connect", [this](std::ostream& /*out*/, std::string host,
-            std::string port, std::string identifier) {
-            this->process_connect(std::move(host), std::move(port),
-                std::move(identifier));
-        }, "Connect to server (optional: host port identifier)");
-
-    root_menu.Insert("disconnect", [this](std::ostream& /*out*/) {
-        process_disconnect();
-    }, "Disconnect from server");
 }
 
 void repl::register_currency_commands(cli::Menu& root_menu) {
@@ -123,15 +112,6 @@ void repl::register_account_commands(cli::Menu& root_menu) {
     }, "Unlock a locked account (account_id)");
 
     root_menu.Insert(std::move(accounts_menu));
-}
-
-void repl::process_connect(std::string host, std::string port,
-    std::string identifier) {
-    client_manager_.connect(host, port, identifier);
-}
-
-void repl::process_disconnect() {
-    client_manager_.disconnect();
 }
 
 void repl::process_get_currencies(std::ostream& out) {

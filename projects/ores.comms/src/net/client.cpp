@@ -90,7 +90,7 @@ boost::asio::awaitable<void> client::perform_handshake() {
     }
 
     const auto& response = *response_result;
-    BOOST_LOG_SEV(lg(), info) << "Received handshake response (server: "
+    BOOST_LOG_SEV(lg(), info) << "Received handshake response. Server: "
                               << response.server_identifier << " version: "
                               << response.server_version_major
                               << "." << response.server_version_minor

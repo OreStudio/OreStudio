@@ -23,7 +23,7 @@
 #include <functional>
 #include <cli/cli.h>
 
-namespace ores::shell::app::commands::connection {
+namespace ores::shell::app::commands {
 
 using namespace ores::utility::log;
 

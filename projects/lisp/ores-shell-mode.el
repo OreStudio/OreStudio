@@ -31,7 +31,7 @@
 ;; 2. Command keywords – the list you may extend later
 ;; ----------------------------------------------------------------------
 (defconst ores-client-keywords
-  '("connect" "login" "accounts" "create" "exit" "help")
+  '("connect" "login" "accounts" "create" "exit" "help"  "currencies")
   "Top-level command keywords for ores-client.")
 
 ;; ----------------------------------------------------------------------

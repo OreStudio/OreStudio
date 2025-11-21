@@ -52,7 +52,7 @@
   "Last used ORE Studio shell executable path.")
 
 (defconst ores-shell-keywords
-  '("connect" "login" "accounts" "create" "exit" "help")
+  '("connect" "login" "accounts" "create" "exit" "help" "currencies")
   "Top-level command keywords for ores-client.")
 
 (defface ores-shell-command-face

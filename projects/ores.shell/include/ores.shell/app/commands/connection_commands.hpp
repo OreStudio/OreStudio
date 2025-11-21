@@ -20,64 +20,65 @@
 #ifndef ORES_SHELL_APP_COMMANDS_CONNECTION_COMMANDS_HPP
 #define ORES_SHELL_APP_COMMANDS_CONNECTION_COMMANDS_HPP
 
-#include <memory>
-#include <iosfwd>
 #include <string>
-#include <boost/asio/awaitable.hpp>
-#include <boost/asio/io_context.hpp>
-#include "ores.comms/net/client.hpp"
+#include "ores.utility/log/make_logger.hpp"
+#include "ores.shell/app/client_manager.hpp"
 
 namespace cli {
+
 class Menu;
+
 }
 
 namespace ores::shell::app::commands::connection {
 
-/**
- * @brief Register connection management commands.
- *
- * Adds connect and disconnect commands to the root menu.
- *
- * @param root_menu The root menu to add commands to
- * @param io_ctx I/O context for async operations
- * @param client The comms client instance
- * @param config Configuration reference that can be updated
- */
-void register_commands(
-    ::cli::Menu& root_menu,
-    boost::asio::io_context& io_ctx,
-    std::shared_ptr<comms::net::client>& client,
-    comms::net::client_options& config);
+class connection_commands {
+private:
+    auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger("ores.shell.app.commands.connection");
+        return instance;
+    }
 
-/**
- * @brief Process a connection request.
- *
- * Handles the async connection workflow including configuration updates
- * and existing connection cleanup.
- *
- * @param out Output stream for user feedback
- * @param client The client instance
- * @param config Configuration to update
- * @param host New host (empty to keep current)
- * @param port New port (empty to keep current)
- * @param identifier New client identifier (empty to keep current)
- */
-boost::asio::awaitable<void> process_connect(
-    std::ostream& out,
-    std::shared_ptr<comms::net::client>& client,
-    comms::net::client_options& config,
-    std::string host,
-    std::string port,
-    std::string identifier);
+public:
+    /**
+     * @brief Register connection management commands.
+     *
+     * Adds connect and disconnect commands to the root menu.
+     *
+     * @param root The root menu to add commands to
+     * @param client_manager Manager for client connectivity.
+     */
+    static void register_commands(cli::Menu& root, client_manager& client_manager);
 
-/**
- * @brief Process a disconnect request.
- *
- * Cleanly disconnects from the server if connected.
- *
- * @param client The client instance
- */
-void process_disconnect(std::shared_ptr<comms::net::client>& client);
+    /**
+     * @brief Process a connection request.
+     *
+     * Handles the async connection workflow including configuration updates
+     * and existing connection cleanup.
+     *
+     * @param out Output stream for user feedback.
+     * @param client_manager Manager for client connectivity.
+     * @param host New host (empty to keep current).
+     * @param port New port (empty to keep current).
+     * @param identifier New client identifier (empty to keep current).
+     */
+    static void process_connect(std::ostream& out, client_manager& client_manager,
+        std::string host, std::string port, std::string identifier);
+
+    /**
+     * @brief Process a disconnect request.
+     *
+     * Cleanly disconnects from the server if connected.
+     *
+     * @param out Output stream for user feedback.
+     * @param client_manager Manager for client connectivity.
+     */
+    static void process_disconnect(std::ostream& out, client_manager& client_manager);
+
+private:
+;
+};
 
 }
 

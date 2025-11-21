@@ -17,13 +17,53 @@ Demonstrates all of the functionality available on the command line tool
   :header-args+: :var ORES_CLIENT_LOGIN_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "newuser3")
   :END:
 
+** General
+
+*** Help
+
+#+name: help-exit
+#+begin_src ores-client
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<help-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.5
+Type 'help' for available commands, 'exit' to quit
+
+ores-shell> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - connect <string> <string> <string>
+	Connect to server (optional: host port identifier)
+ - disconnect
+	Disconnect from server
+ - currencies
+	(menu)
+ - accounts
+	(menu)
+ores-shell> Bye!
+#+end_example
+
 ** Connectivity
 
 Functionality related to connectivity such as connect to server, etc.
 
 *** Auto connect
    :PROPERTIES:
-   :header-args+: :var ORES_CLIENT_LOGIN_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "ores")
    :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
    :END:
 
@@ -32,7 +72,7 @@ Functionality related to connectivity such as connect to server, etc.
 exit
 #+end_src
 
-#+begin_src sh :noweb yes :results output  :wrap example
+#+begin_src sh :noweb yes :results output :wrap example
 ./ores.shell ${log_args} ${connect_args} << 'EOF'
 <<auto-connect>>
 EOF
@@ -40,11 +80,12 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Auto-connected to localhost:55555
+✓ Connected.
+✓ Disconnected successfully from the server.
 ORE Studio Shell REPL v0.0.5
 Type 'help' for available commands, 'exit' to quit
 
-ores-client> Bye!
+ores-shell> Bye!
 #+end_example
 
 *** Basic connect
@@ -55,7 +96,7 @@ connect localhost 55555 test
 exit
 #+end_src
 
-#+begin_src sh :noweb yes :results output  :wrap example
+#+begin_src sh :noweb yes :results output :wrap example
 ./ores.shell ${log_args} << 'EOF'
 <<basic-connect>>
 EOF
@@ -63,16 +104,17 @@ EOF
 
 #+RESULTS:
 #+begin_example
-ORE Studio Client REPL v0.0.5
+ORE Studio Shell REPL v0.0.5
 Type 'help' for available commands, 'exit' to quit
 
-ores-client> ✓ Connected.
-ores-client> Bye!
+ores-shell> ✓ Connected.
+ores-shell> Bye!
+✓ Disconnected successfully from the server.
 #+end_example
 
 *** Auto login
    :PROPERTIES:
-   :custom_id: auto-login
+   :custom_id: auto-login-id
    :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
    :header-args+: :var login_args="--login-username newuser3"
    :END:
@@ -82,7 +124,7 @@ ores-client> Bye!
 exit
 #+end_src
 
-#+begin_src sh :noweb yes :results output  :wrap example
+#+begin_src sh :noweb yes :results output :wrap example
 export ORES_CLIENT_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<auto-login>>
@@ -91,15 +133,16 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Auto-connected to localhost:55555
-✓ Auto-login successful!
-  Username: newuser3
-  Account ID: 019a5e49-476c-70ce-9909-3887cae700e9
+✓ Connected.
+✓ Login successful.
+  Username: 'newuser3'
+  Account ID: '019a5e49-476c-70ce-9909-3887cae700e9'
   Admin: No
 ORE Studio Shell REPL v0.0.5
 Type 'help' for available commands, 'exit' to quit
 
-ores-client> Bye!
+ores-shell> Bye!
+✓ Disconnected successfully from the server.
 #+end_example
 
 ** Accounts
@@ -116,8 +159,8 @@ Functionality related to the accounts domain entity.
 
 #+name: create-account
 #+begin_src ores-client
-accounts create newuser14 123 567 newuser14@example.com 1
-accounts create newuser15 123 567 newuser15@example.com 1
+accounts create newuser20 123 567 newuser20@example.com 1
+accounts create newuser21 123 567 newuser21@example.com 1
 exit
 #+end_src
 
@@ -130,23 +173,25 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Auto-connected to localhost:55555
-✓ Auto-login successful!
-  Username: newuser3
-  Account ID: 019a5e49-476c-70ce-9909-3887cae700e9
+✓ Connected.
+✓ Login successful.
+  Username: 'newuser3'
+  Account ID: '019a5e49-476c-70ce-9909-3887cae700e9'
   Admin: No
 ORE Studio Shell REPL v0.0.5
 Type 'help' for available commands, 'exit' to quit
 
-ores-client> ✓ Account created with ID: 019aa21e-9ea5-763d-a8b7-29e691093834
-ores-client> ✓ Account created with ID: 019aa21e-9efc-7d10-a679-7af147cd94da
-ores-client> Bye!
+ores-shell> ✓ Account created with ID: 019aa79f-2463-7bce-aebe-e48d8d565819
+ores-shell> ✓ Account created with ID: 019aa79f-24ba-725e-be98-7cd92914e22d
+ores-shell> Bye!
+✓ Disconnected successfully from the server.
 #+end_example
 
 *** Login
 
 Explicit login is discouraged as it saves your credentials to the history.
-Instead, consider using [[#auto-login][Auto login]].
+Instead, consider using [[#auto-login-id
+][Auto login]].
 
 #+name: explicit-login
 #+begin_src ores-client
@@ -162,15 +207,16 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Auto-connected to localhost:55555
+✓ Connected.
 ORE Studio Shell REPL v0.0.5
 Type 'help' for available commands, 'exit' to quit
 
-ores-client> ✓ Login successful.
-  Username: newuser10
-  Account ID: 019a9ea8-c265-7046-96d2-42dd4c53a662
+ores-shell> ✓ Login successful.
+  Username: 'newuser10'
+  Account ID: '019a9ea8-c265-7046-96d2-42dd4c53a662'
   Admin: No
-ores-client> Bye!
+ores-shell> Bye!
+✓ Disconnected successfully from the server.
 #+end_example
 
 * Footer

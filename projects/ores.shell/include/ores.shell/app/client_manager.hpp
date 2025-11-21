@@ -75,65 +75,58 @@ public:
               comms::protocol::message_type RequestMsgType>
     std::optional<ResponseType> process_request(RequestType request) {
         using namespace ores::utility::log;
-        try {
-            if (!client_ || !client_->is_connected()) {
-                output_ << "✗ Not connected to server. Use 'connect' command first"
-                        << std::endl;
-                return std::nullopt;
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Initiating request.";
-            auto payload = request.serialize();
-
-            comms::protocol::frame request_frame(RequestMsgType, 0, std::move(payload));
-            BOOST_LOG_SEV(lg(), debug) << "Sending request frame";
-
-            auto response_result = client_->send_request_sync(
-                std::move(request_frame));
-
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Request failed with error code: "
-                                           << static_cast<int>(response_result.error());
-                output_ << "✗ Request failed" << std::endl;
-                return std::nullopt;
-            }
-
-            using comms::protocol::message_type;
-            if (response_result->header().type == message_type::error_response) {
-                using comms::protocol::error_response;
-                auto err_resp = error_response::deserialize(response_result->payload());
-                if (err_resp) {
-                    BOOST_LOG_SEV(lg(), error) << "Server returned error: "
-                                               << err_resp->message;
-                    output_ << "✗ Error: " << err_resp->message << std::endl;
-                } else {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to deserialize error response";
-                    output_ << "✗ Server error (could not parse error message)" << std::endl;
-                }
-                return std::nullopt;
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Deserializing response";
-
-            auto response = ResponseType::deserialize(response_result->payload());
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-                output_ << "✗ Failed to parse response" << std::endl;
-                return std::nullopt;
-            }
-
-            BOOST_LOG_SEV(lg(), info) << "Successfully processed request";
-            return std::move(*response);
-
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Request exception: " << e.what();
-            output_ << "✗ Error: " << e.what() << std::endl;
+        if (!client_ || !client_->is_connected()) {
+            output_ << "✗ Not connected to server. Use 'connect' command first"
+                    << std::endl;
+            return std::nullopt;
         }
-        return std::nullopt;
+
+        BOOST_LOG_SEV(lg(), debug) << "Initiating request.";
+        auto payload = request.serialize();
+
+        comms::protocol::frame request_frame(RequestMsgType, 0, std::move(payload));
+        BOOST_LOG_SEV(lg(), debug) << "Sending request frame";
+
+        auto response_result = client_->send_request_sync(std::move(request_frame));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Request failed with error code: "
+                                       << static_cast<int>(response_result.error());
+            output_ << "✗ Request failed" << std::endl;
+            return std::nullopt;
+        }
+
+        using comms::protocol::message_type;
+        if (response_result->header().type == message_type::error_response) {
+            using comms::protocol::error_response;
+            auto err_resp = error_response::deserialize(response_result->payload());
+            if (err_resp) {
+                BOOST_LOG_SEV(lg(), error) << "Server returned error: "
+                                           << err_resp->message;
+                output_ << "✗ Error: " << err_resp->message << std::endl;
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize error response";
+                output_ << "✗ Server error (could not parse error message)" << std::endl;
+            }
+            return std::nullopt;
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "Deserializing response";
+
+        auto response = ResponseType::deserialize(response_result->payload());
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+            output_ << "✗ Failed to parse response" << std::endl;
+            return std::nullopt;
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully processed request";
+        return std::move(*response);
     }
 
-    void initialise();
-    void connect(std::string host, std::string port, std::string identifier);
+    bool connect(std::string host, std::string port, std::string identifier);
+    bool login(std::string username, std::string password);
+    void disconnect();
 
 private:
     std::ostream& output_;

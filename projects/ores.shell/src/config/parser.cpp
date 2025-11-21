@@ -136,7 +136,7 @@ read_connection_configuration(const variables_map& vm) {
     client_options r;
     r.host = has_host ? vm[connect_host_arg].as<std::string>() : "localhost";
     r.port = has_port ? static_cast<std::uint16_t>(std::stoi(vm[connect_port_arg].as<std::string>())) : 55555;
-    r.client_identifier = has_identifier ? vm[connect_identifier_arg].as<std::string>() : "ores-client";
+    r.client_identifier = has_identifier ? vm[connect_identifier_arg].as<std::string>() : "ores-shell";
 
     if (r.port < 1 || r.port > 65535) {
         BOOST_THROW_EXCEPTION(parser_exception(

@@ -25,6 +25,7 @@
 namespace ores::shell::app {
 
 using namespace ores::utility::log;
+using comms::protocol::message_type;
 
 void client_manager::connect(comms::net::client_options config) {
     BOOST_LOG_SEV(lg(), info) << "Connecting to " << config.host << ":"
@@ -45,17 +46,20 @@ void client_manager::connect(comms::net::client_options config) {
 
 bool client_manager::auto_connect() {
     try {
-        comms::net::client_options config;
-        if (connection_config_) {
-            config.host = connection_config_->host;
-            config.port = connection_config_->port;
-            config.client_identifier = connection_config_->client_identifier;
-        } else {
-            config.host = "localhost";
-            config.port = 55555;
-            config.client_identifier = "ores-shell";
-        }
-
+        using comms::net::client_options;
+        client_options config = connection_config_
+            .transform([](const auto& cfg) {
+                return client_options{
+                    .host = cfg.host,
+                    .port = cfg.port,
+                    .client_identifier = cfg.client_identifier,
+                    .verify_certificate = false // FIXME: for now
+                };
+            })
+            .value_or(client_options{
+                    .host = "localhost",
+                    .port = 55555,
+                    .client_identifier = "ores-shell" });
         BOOST_LOG_SEV(lg(), info) << "Auto-connecting to " << config.host << ":"
                                   << config.port << " (identifier: "
                                   << config.client_identifier << ")";
@@ -74,44 +78,15 @@ bool client_manager::auto_login() {
     if (!login_config_)
         return false;
 
-    accounts::messaging::login_request request{
-        .username = login_config_->username,
-        .password = login_config_->password
-    };
-
-    using accounts::messaging::login_response;
-    std::optional<login_response> response = process_request<
-        accounts::messaging::login_request,
-        accounts::messaging::login_response,
-        comms::protocol::message_type::login_request
-    >(request);
-
-    if (!response)
-        return false;
-
-    if (response->success) {
-        BOOST_LOG_SEV(lg(), info) << "Auto-login successful for user: " << response->username
-                                  << " (ID: " << response->account_id << ")";
-
-        output_ << "✓ Auto-login successful!" << std::endl;
-        output_ << "  Username: " << response->username << std::endl;
-        output_ << "  Account ID: " << response->account_id << std::endl;
-        output_ << "  Admin: " << (response->is_admin ? "Yes" : "No") << std::endl;
-        return true;
-    } else {
-        BOOST_LOG_SEV(lg(), warn) << "Auto-login failed: " << response->error_message;
-        output_ << "✗ Auto-login failed: " << response->error_message << std::endl;
-        return false;
-    }
+    return login(login_config_->username, login_config_->password);
 }
 
 client_manager::client_manager(std::ostream& out,
-                               std::optional<comms::net::client_options> connection_config,
-                               std::optional<config::login_options> login_config)
+    std::optional<comms::net::client_options> connection_config,
+    std::optional<config::login_options> login_config)
     : output_(out), connection_config_(std::move(connection_config)),
-      login_config_(std::move(login_config)) {}
+      login_config_(std::move(login_config)) {
 
-void client_manager::initialise() {
     BOOST_LOG_SEV(lg(), debug) << "Initialising client manager.";
     if (connection_config_) {
         BOOST_LOG_SEV(lg(), debug) << "Configuration was provided. "
@@ -123,7 +98,7 @@ void client_manager::initialise() {
     }
 }
 
-void client_manager::connect(std::string host, std::string port, std::string identifier) {
+bool client_manager::connect(std::string host, std::string port, std::string identifier) {
     try {
         comms::net::client_options config;
         if (!host.empty()) {
@@ -138,22 +113,78 @@ void client_manager::connect(std::string host, std::string port, std::string ide
             } catch (...) {
                 BOOST_LOG_SEV(lg(), error) << "Invalid port number: " << port;
                 output_ << "✗ Invalid port number: " << port << std::endl;
-                return;
+                return false;
             }
         }
+
         if (!identifier.empty()) {
             BOOST_LOG_SEV(lg(), debug) << "Updating client identifier to: "
                                      << identifier;
             config.client_identifier = std::move(identifier);
         }
 
-        // FIXME: for now
-        config.verify_certificate = false;
+        config.verify_certificate = false; // FIXME: for now
+        BOOST_LOG_SEV(lg(), warn) << "Not verifying the servre certificate.";
+
         connect(config);
+        return true;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Connect exception: " << e.what();
         output_ << "✗ Error: " << e.what() << std::endl;
     }
+    return false;
+}
+
+bool client_manager::login(std::string username, std::string password) {
+    try {
+        BOOST_LOG_SEV(lg(), debug) << "Creating login request for user: "
+                                   << username;
+
+        using accounts::messaging::login_request;
+        using accounts::messaging::login_response;
+        return process_request<login_request, login_response, message_type::login_request>(
+            login_request{
+                .username = username,
+                .password = password})
+            .and_then([&](const auto& response) {
+                if (response.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Login successful for user: "
+                                              << response.username
+                                              << " ID: " << response.account_id;
+
+                    output_ << "✓ Login successful." << std::endl
+                            << "  Username: '" << response.username << "'" << std::endl
+                            << "  Account ID: '" << response.account_id << "'" << std::endl
+                            << "  Admin: " << (response.is_admin ? "Yes" : "No") << std::endl;
+                    return std::optional{response};
+                } else {
+                    BOOST_LOG_SEV(lg(), warn) << "Login failed: "
+                                              << response.error_message;
+                    output_ << "✗ Login failed: " << response.error_message << std::endl;
+                }
+                return std::optional<login_response>{};
+            }).has_value();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Connect exception: " << e.what();
+        output_ << "✗ Error: " << e.what() << std::endl;
+    }
+    return false;
+}
+
+void client_manager::disconnect() {
+    if (!client_) {
+        BOOST_LOG_SEV(lg(), warn) << "No client instance.";
+        return;
+    }
+
+    if (!client_->is_connected()) {
+        BOOST_LOG_SEV(lg(), debug) << "Already disconnected.";
+        return;
+    }
+
+    client_->disconnect();
+    BOOST_LOG_SEV(lg(), info) << "Disconnected from server.";
+    output_ << "✓ Disconnected successfully from the server." << std::endl;
 }
 
 }

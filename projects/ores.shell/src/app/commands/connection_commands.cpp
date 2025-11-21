@@ -111,11 +111,11 @@ boost::asio::awaitable<void> process_connect(
         co_await client->connect();
 
         BOOST_LOG_SEV(lg(), info) << "Successfully connected";
-        out << "✓ Connected\nores-client> " << std::flush;
+        out << "✓ Connected" << std::endl;
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Connect exception: " << e.what();
-        out << "✗ Error: " << e.what() << "\nores-client> " << std::flush;
+        out << "✗ Error: " << e.what() << std::endl;
     }
 }
 

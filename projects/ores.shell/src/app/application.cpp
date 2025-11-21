@@ -20,7 +20,9 @@
  */
 #include "ores.shell/app/application.hpp"
 
+#include <iostream>
 #include "ores.shell/app/repl.hpp"
+#include "ores.shell/app/client_manager.hpp"
 
 namespace ores::shell::app {
 
@@ -36,7 +38,8 @@ void application::run() const {
     BOOST_LOG_SEV(lg(), info) << "Starting client REPL";
 
     try {
-        repl client_repl(connection_config_, login_config_);
+        client_manager client_manager(std::cout, connection_config_, login_config_);
+        repl client_repl(client_manager);
         client_repl.run();
         BOOST_LOG_SEV(lg(), info) << "Client REPL session ended";
     } catch (const std::exception& e) {

@@ -21,10 +21,8 @@
 #define ORES_SHELL_APP_REPL_HPP
 
 #include <memory>
-#include <optional>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.comms/net/client.hpp"
-#include "ores.shell/config/login_options.hpp"
+#include "ores.shell/app/client_manager.hpp"
 
 namespace cli {
 
@@ -56,8 +54,7 @@ public:
      * @param connection_config Optional connection configuration for auto-connect
      * @param login_config Optional login configuration for auto-login
      */
-    repl(std::optional<comms::net::client_options> connection_config = std::nullopt,
-         std::optional<config::login_options> login_config = std::nullopt);
+    explicit repl(client_manager client_manager_);
 
     repl(const repl&) = delete;
     repl& operator=(const repl&) = delete;
@@ -114,7 +111,7 @@ private:
      * @param port New port (empty to keep current)
      * @param identifier New client identifier (empty to keep current)
      */
-    void process_connect(std::ostream& out, std::string host, std::string port,
+    void process_connect(std::string host, std::string port,
         std::string identifier);
 
     /**
@@ -122,7 +119,7 @@ private:
      *
      * Cleanly disconnects from the server if connected.
      */
-    void process_disconnect(std::ostream& out);
+    void process_disconnect();
 
     /**
      * @brief Process a get currencies request.
@@ -164,11 +161,10 @@ private:
      *
      * Authenticates a user with the provided credentials.
      *
-     * @param out Output stream for results
      * @param username Account username
      * @param password Account password
      */
-    void process_login(std::ostream& out, std::string username, std::string password);
+    void process_login(std::string username, std::string password);
 
     /**
      * @brief Process an unlock account request.
@@ -176,33 +172,15 @@ private:
      * Unlocks a locked account by account ID.
      *
      * @param out Output stream for results
-     * @param account_id_str Account ID as a string (UUID)
+     * @param account_id Account ID UUID as a string.
      */
-    void process_unlock_account(std::ostream& out, std::string account_id_str);
-
-    /**
-     * @brief Attempt to connect automatically if connection options are provided.
-     *
-     * Performs connection automatically based on provided configuration.
-     */
-    bool auto_connect();
-
-    /**
-     * @brief Attempt to login automatically if login options are provided.
-     *
-     * Performs login automatically based on provided configuration after connecting.
-     */
-    bool auto_login();
+    void process_unlock_account(std::ostream& out, std::string account_id);
 
     /**
      * @brief Display the welcome message.
      */
     void display_welcome() const;
-
-    std::optional<comms::net::client_options> connection_config_;
-    std::optional<config::login_options> login_config_;
-    comms::net::client_options config_;
-    std::shared_ptr<comms::net::client> client_;
+    client_manager client_manager_;
 };
 
 }

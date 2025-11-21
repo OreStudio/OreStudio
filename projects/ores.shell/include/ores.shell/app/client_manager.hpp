@@ -30,18 +30,19 @@
 namespace ores::shell::app {
 
 template<typename Request>
-concept HasSerialize = requires(Request req) {
+concept Serialialisable = requires(Request req) {
     { req.serialize() } -> std::convertible_to<std::vector<std::byte>>;
 };
 
 template<typename Response>
-concept HasDeserialize = requires(std::span<const std::byte> data) {
+concept Deserialisable = requires(std::span<const std::byte> data) {
     {
         Response::deserialize(data)
     } -> std::same_as<std::expected<Response, comms::protocol::error_code>>;
 };
 
-class client_manager {
+
+class client_manager final {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
@@ -70,8 +71,10 @@ public:
         std::optional<comms::net::client_options> connection_config = std::nullopt,
         std::optional<config::login_options> login_config = std::nullopt);
 
-    template <HasSerialize RequestType,
-              HasDeserialize ResponseType,
+    ~client_manager();
+
+    template <Serialialisable RequestType,
+              Deserialisable ResponseType,
               comms::protocol::message_type RequestMsgType>
     std::optional<ResponseType> process_request(RequestType request) {
         using namespace ores::utility::log;

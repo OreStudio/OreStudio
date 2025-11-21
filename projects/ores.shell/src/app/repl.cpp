@@ -38,8 +38,8 @@ namespace ores::shell::app {
 using namespace ores::utility::log;
 using comms::protocol::message_type;
 
-repl::repl(client_manager client_manager)
-    : client_manager_(std::move(client_manager)) {
+repl::repl(client_manager& client_manager)
+    : client_manager_(client_manager) {
     BOOST_LOG_SEV(lg(), info) << "REPL created.";
 }
 

@@ -41,7 +41,6 @@ void application::run() const {
         client_manager client_manager(std::cout, connection_config_, login_config_);
         repl client_repl(client_manager);
         client_repl.run();
-        BOOST_LOG_SEV(lg(), info) << "Client REPL session ended";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Client REPL error: " << e.what();
         throw;

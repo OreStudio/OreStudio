@@ -98,6 +98,10 @@ client_manager::client_manager(std::ostream& out,
     }
 }
 
+client_manager::~client_manager() {
+    disconnect();
+}
+
 bool client_manager::connect(std::string host, std::string port, std::string identifier) {
     try {
         comms::net::client_options config;

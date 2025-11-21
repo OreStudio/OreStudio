@@ -51,10 +51,9 @@ public:
     /**
      * @brief Construct a REPL instance with configuration.
      *
-     * @param connection_config Optional connection configuration for auto-connect
-     * @param login_config Optional login configuration for auto-login
+     * @param client_manager Reference to a client manager.
      */
-    explicit repl(client_manager client_manager_);
+    explicit repl(client_manager& client_manager_);
 
     repl(const repl&) = delete;
     repl& operator=(const repl&) = delete;
@@ -180,7 +179,7 @@ private:
      * @brief Display the welcome message.
      */
     void display_welcome() const;
-    client_manager client_manager_;
+    client_manager& client_manager_;
 };
 
 }

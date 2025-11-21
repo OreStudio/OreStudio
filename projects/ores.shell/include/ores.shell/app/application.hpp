@@ -34,7 +34,7 @@ class application final {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.client.application");
+        static auto instance = make_logger("ores.shell.application");
         return instance;
     }
 

@@ -39,7 +39,7 @@ int message_type_as_int(ores::comms::protocol::message_type mt) {
 
 // Helper function to deserialize a complete frame (header + payload)
 std::expected<ores::comms::protocol::frame, ores::comms::protocol::error_code>
-deserialize_frame(std::span<const std::uint8_t> data) {
+deserialize_frame(std::span<const std::byte> data) {
     // First deserialize the header
     auto header_result = ores::comms::protocol::frame::deserialize_header(data);
     if (!header_result) {
@@ -59,7 +59,12 @@ TEST_CASE("test_frame_serialization", tags) {
     auto lg(make_logger(test_suite));
 
     // Create a frame with some test data
-    std::vector<std::uint8_t> payload = {0x01, 0x02, 0x03, 0x04};
+    std::vector<std::byte> payload = {
+        std::byte{0x01},
+        std::byte{0x02},
+        std::byte{0x03},
+        std::byte{0x04}
+    };
     ores::comms::protocol::frame frame(
         message_type::handshake_request,
         123, // sequence number
@@ -79,7 +84,7 @@ TEST_CASE("test_frame_serialization", tags) {
 
     // Deserialize it back
     auto deserialized_result = deserialize_frame(
-        std::span<const std::uint8_t>(serialized.data(), serialized.size())
+        std::span<const std::byte>(serialized.data(), serialized.size())
     );
 
     REQUIRE(deserialized_result.has_value());
@@ -108,7 +113,7 @@ TEST_CASE("test_frame_serialization_empty_payload", tags) {
     auto lg(make_logger(test_suite));
 
     // Create a frame with empty payload
-    std::vector<std::uint8_t> empty_payload = {};
+    std::vector<std::byte> empty_payload = {};
     ores::comms::protocol::frame frame(
         message_type::handshake_response,
         456, // sequence number
@@ -127,7 +132,7 @@ TEST_CASE("test_frame_serialization_empty_payload", tags) {
 
     // Deserialize it back
     auto deserialized_result = deserialize_frame(
-        std::span<const std::uint8_t>(serialized.data(), serialized.size())
+        std::span<const std::byte>(serialized.data(), serialized.size())
     );
 
     REQUIRE(deserialized_result.has_value());
@@ -149,9 +154,9 @@ TEST_CASE("test_frame_serialization_large_payload", tags) {
     auto lg(make_logger(test_suite));
 
     // Create a frame with a larger payload
-    std::vector<std::uint8_t> large_payload(1000);
+    std::vector<std::byte> large_payload(1000);
     for (size_t i = 0; i < large_payload.size(); ++i) {
-        large_payload[i] = static_cast<std::uint8_t>(i % 256);
+        large_payload[i] = static_cast<std::byte>(i % 256);
     }
 
     BOOST_LOG_SEV(lg, debug) << "Created large payload of size: " << large_payload.size();
@@ -174,7 +179,7 @@ TEST_CASE("test_frame_serialization_large_payload", tags) {
 
     // Deserialize it back
     auto deserialized_result = deserialize_frame(
-        std::span<const std::uint8_t>(serialized.data(), serialized.size())
+        std::span<const std::byte>(serialized.data(), serialized.size())
     );
 
     REQUIRE(deserialized_result.has_value());
@@ -200,13 +205,13 @@ TEST_CASE("test_frame_deserialization_invalid_data", tags) {
     auto lg(make_logger(test_suite));
 
     // Try to deserialize invalid data (too short)
-    std::vector<std::uint8_t> invalid_data = {0x01, 0x02};
+    std::vector<std::byte> invalid_data = { std::byte{0x01}, std::byte{0x02} };
 
     BOOST_LOG_SEV(lg, debug) << "Attempting to deserialize invalid data of size: "
                             << invalid_data.size();
 
     auto result = deserialize_frame(
-        std::span<const std::uint8_t>(invalid_data.data(), invalid_data.size())
+        std::span<const std::byte>(invalid_data.data(), invalid_data.size())
     );
 
     // Should fail with an error
@@ -221,7 +226,12 @@ TEST_CASE("test_frame_deserialization_corrupted_data", tags) {
     auto lg(make_logger(test_suite));
 
     // Create a valid frame and serialize it
-    std::vector<std::uint8_t> payload = {0x01, 0x02, 0x03, 0x04};
+    std::vector<std::byte> payload = {
+        std::byte{0x01},
+        std::byte{0x02},
+        std::byte{0x03},
+        std::byte{0x04}
+    };
     ores::comms::protocol::frame frame(
         message_type::handshake_request,
         101, // sequence number
@@ -236,12 +246,12 @@ TEST_CASE("test_frame_deserialization_corrupted_data", tags) {
 
     // Corrupt the magic number in the serialized data
     if (serialized.size() > 0) {
-        serialized[0] ^= 0xFF; // Flip some bits to corrupt the data
+        serialized[0] ^= std::byte(0xFF); // Flip some bits to corrupt the data
 
         BOOST_LOG_SEV(lg, debug) << "Corrupted first byte of serialized data";
 
         auto result = deserialize_frame(
-            std::span<const std::uint8_t>(serialized.data(), serialized.size())
+            std::span<const std::byte>(serialized.data(), serialized.size())
         );
 
         // Should fail with an error
@@ -257,7 +267,12 @@ TEST_CASE("test_frame_roundtrip_multiple_message_types", tags) {
     auto lg(make_logger(test_suite));
 
     // Test serialization/deserialization with different message types
-    std::vector<std::uint8_t> payload = {0xDE, 0xAD, 0xBE, 0xEF};
+    std::vector<std::byte> payload = {
+        std::byte{0xDE},
+        std::byte{0xAD},
+        std::byte{0xBE},
+        std::byte{0xEF}
+    };
 
     std::vector<message_type> message_types = {
         message_type::handshake_request,
@@ -283,7 +298,7 @@ TEST_CASE("test_frame_roundtrip_multiple_message_types", tags) {
 
         // Deserialize
         auto deserialized_result = deserialize_frame(
-            std::span<const std::uint8_t>(serialized.data(), serialized.size())
+            std::span<const std::byte>(serialized.data(), serialized.size())
         );
 
         REQUIRE(deserialized_result.has_value());
@@ -309,7 +324,12 @@ TEST_CASE("test_frame_version_mismatch_strict_mode", tags) {
     auto lg(make_logger(test_suite));
 
     // Create a frame with current protocol version
-    std::vector<std::uint8_t> payload = {0x01, 0x02, 0x03};
+    std::vector<std::byte> payload = {
+        std::byte{0x01},
+        std::byte{0x02},
+        std::byte{0x03}
+    };
+
     ores::comms::protocol::frame frame(
         message_type::handshake_request,
         1,
@@ -326,14 +346,14 @@ TEST_CASE("test_frame_version_mismatch_strict_mode", tags) {
     // Version major is at offset 4-5 (after 4-byte magic)
     // Let's change it to something different
     std::uint16_t wrong_version = 99;
-    serialized[4] = static_cast<std::uint8_t>((wrong_version >> 8) & 0xFF);
-    serialized[5] = static_cast<std::uint8_t>(wrong_version & 0xFF);
+    serialized[4] = static_cast<std::byte>((wrong_version >> 8) & 0xFF);
+    serialized[5] = static_cast<std::byte>(wrong_version & 0xFF);
 
     BOOST_LOG_SEV(lg, debug) << "Modified version to " << wrong_version;
 
     // Try to deserialize with strict version checking (default)
     auto header_result = ores::comms::protocol::frame::deserialize_header(
-        std::span<const std::uint8_t>(serialized));
+        std::span<const std::byte>(serialized));
 
     // Should fail with version_mismatch error
     REQUIRE(!header_result.has_value());
@@ -346,7 +366,12 @@ TEST_CASE("test_frame_version_mismatch_lenient_mode", tags) {
     auto lg(make_logger(test_suite));
 
     // Create a frame with current protocol version
-    std::vector<std::uint8_t> payload = {0xAA, 0xBB, 0xCC};
+    std::vector<std::byte> payload = {
+        std::byte{0xAA},
+        std::byte{0xBB},
+        std::byte{0xCC}
+    };
+
     ores::comms::protocol::frame frame(
         message_type::handshake_request,
         42,
@@ -362,14 +387,14 @@ TEST_CASE("test_frame_version_mismatch_lenient_mode", tags) {
     // Corrupt the version in the serialized header
     // Version major is at offset 4-5 (after 4-byte magic)
     std::uint16_t wrong_version = 1; // Different from current version
-    serialized[4] = static_cast<std::uint8_t>((wrong_version >> 8) & 0xFF);
-    serialized[5] = static_cast<std::uint8_t>(wrong_version & 0xFF);
+    serialized[4] = static_cast<std::byte>((wrong_version >> 8) & 0xFF);
+    serialized[5] = static_cast<std::byte>(wrong_version & 0xFF);
 
     BOOST_LOG_SEV(lg, debug) << "Modified version to " << wrong_version;
 
     // Try to deserialize with lenient version checking (skip_version_check=true)
     auto header_result = ores::comms::protocol::frame::deserialize_header(
-        std::span<const std::uint8_t>(serialized), true);
+        std::span<const std::byte>(serialized), true);
 
     // Should succeed even with mismatched version
     REQUIRE(header_result.has_value());
@@ -393,7 +418,11 @@ TEST_CASE("test_frame_version_mismatch_handshake_scenario", tags) {
     // 3. Server sends handshake_response with version info
 
     // Create a handshake request from a "v1 client"
-    std::vector<std::uint8_t> payload = {0x11, 0x22};
+    std::vector<std::byte> payload = {
+        std::byte{0x11},
+        std::byte{0x22}
+    };
+
     ores::comms::protocol::frame client_frame(
         message_type::handshake_request,
         1,
@@ -407,14 +436,14 @@ TEST_CASE("test_frame_version_mismatch_handshake_scenario", tags) {
 
     // Modify version to simulate v1 (assuming current is v2)
     std::uint16_t client_version = 1;
-    serialized[4] = static_cast<std::uint8_t>((client_version >> 8) & 0xFF);
-    serialized[5] = static_cast<std::uint8_t>(client_version & 0xFF);
+    serialized[4] = static_cast<std::byte>((client_version >> 8) & 0xFF);
+    serialized[5] = static_cast<std::byte>(client_version & 0xFF);
 
     BOOST_LOG_SEV(lg, debug) << "Modified to client version " << client_version;
 
     // Server tries to read with strict mode - should fail
     auto strict_result = ores::comms::protocol::frame::deserialize_header(
-        std::span<const std::uint8_t>(serialized), false);
+        std::span<const std::byte>(serialized), false);
 
     CHECK(!strict_result.has_value());
     if (!strict_result.has_value()) {
@@ -423,7 +452,7 @@ TEST_CASE("test_frame_version_mismatch_handshake_scenario", tags) {
 
     // Server tries to read with lenient mode - should succeed
     auto lenient_result = ores::comms::protocol::frame::deserialize_header(
-        std::span<const std::uint8_t>(serialized), true);
+        std::span<const std::byte>(serialized), true);
 
     REQUIRE(lenient_result.has_value());
     CHECK(lenient_result->version_major == client_version);

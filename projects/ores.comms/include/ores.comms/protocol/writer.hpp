@@ -37,30 +37,30 @@ public:
     /**
      * @brief Helper to write a 16-bit integer in network byte order.
      */
-    static void write_uint16(std::vector<std::uint8_t>& buffer,
+    static void write_uint16(std::vector<std::byte>& buffer,
         std::uint16_t value);
 
     /**
      * @brief Helper to write a 32-bit integer in network byte order.
      */
-    static void write_uint32(std::vector<std::uint8_t>& buffer,
+    static void write_uint32(std::vector<std::byte>& buffer,
         std::uint32_t value);
 
     /**
      * @brief Helper to write a string with 16-bit length prefix.
      */
-    static void write_string(std::vector<std::uint8_t>& buffer,
+    static void write_string(std::vector<std::byte>& buffer,
         const std::string& str);
 
     /**
      * @brief Helper to write a boolean (1 byte).
      */
-    static void write_bool(std::vector<std::uint8_t>& buffer, bool value);
+    static void write_bool(std::vector<std::byte>& buffer, bool value);
 
     /**
      * @brief Helper to write a UUID (16 bytes).
      */
-    static void write_uuid(std::vector<std::uint8_t>& buffer,
+    static void write_uuid(std::vector<std::byte>& buffer,
     const boost::uuids::uuid& uuid);
 };
 

@@ -32,7 +32,7 @@ namespace {
 /**
  * @brief Helper function to serialize a single currency
  */
-void serialize_currency(std::vector<std::uint8_t>& buffer, const domain::currency& currency) {
+void serialize_currency(std::vector<std::byte>& buffer, const domain::currency& currency) {
     writer::write_string(buffer, currency.iso_code);
     writer::write_string(buffer, currency.name);
     writer::write_string(buffer, currency.numeric_code);
@@ -49,7 +49,7 @@ void serialize_currency(std::vector<std::uint8_t>& buffer, const domain::currenc
 }
 
 std::expected<domain::currency, error_code>
-deserialize_currency(std::span<const std::uint8_t>& data) {
+deserialize_currency(std::span<const std::byte>& data) {
     domain::currency currency;
 
     auto iso_code = reader::read_string(data);
@@ -111,14 +111,14 @@ deserialize_currency(std::span<const std::uint8_t>& data) {
 
 namespace ores::risk::messaging {
 
-std::vector<std::uint8_t> delete_currency_request::serialize() const {
-    std::vector<std::uint8_t> buffer;
+std::vector<std::byte> delete_currency_request::serialize() const {
+    std::vector<std::byte> buffer;
     writer::write_string(buffer, iso_code);
     return buffer;
 }
 
 std::expected<delete_currency_request, comms::protocol::error_code>
-delete_currency_request::deserialize(std::span<const std::uint8_t> data) {
+delete_currency_request::deserialize(std::span<const std::byte> data) {
     auto iso_code_result = reader::read_string(data);
     if (!iso_code_result) {
         return std::unexpected(iso_code_result.error());
@@ -131,15 +131,15 @@ std::ostream& operator<<(std::ostream& s, const delete_currency_request& v) {
     return s;
 }
 
-std::vector<std::uint8_t> delete_currency_response::serialize() const {
-    std::vector<std::uint8_t> buffer;
+std::vector<std::byte> delete_currency_response::serialize() const {
+    std::vector<std::byte> buffer;
     writer::write_bool(buffer, success);
     writer::write_string(buffer, message);
     return buffer;
 }
 
 std::expected<delete_currency_response, comms::protocol::error_code>
-delete_currency_response::deserialize(std::span<const std::uint8_t> data) {
+delete_currency_response::deserialize(std::span<const std::byte> data) {
     delete_currency_response response;
 
     auto success_result = reader::read_bool(data);
@@ -162,14 +162,14 @@ std::ostream& operator<<(std::ostream& s, const delete_currency_response& v) {
     return s;
 }
 
-std::vector<std::uint8_t> get_currency_history_request::serialize() const {
-    std::vector<std::uint8_t> buffer;
+std::vector<std::byte> get_currency_history_request::serialize() const {
+    std::vector<std::byte> buffer;
     writer::write_string(buffer, iso_code);
     return buffer;
 }
 
 std::expected<get_currency_history_request, comms::protocol::error_code>
-get_currency_history_request::deserialize(std::span<const std::uint8_t> data) {
+get_currency_history_request::deserialize(std::span<const std::byte> data) {
     auto iso_code_result = reader::read_string(data);
     if (!iso_code_result) {
         return std::unexpected(iso_code_result.error());
@@ -182,8 +182,8 @@ std::ostream& operator<<(std::ostream& s, const get_currency_history_request& v)
     return s;
 }
 
-std::vector<std::uint8_t> get_currency_history_response::serialize() const {
-    std::vector<std::uint8_t> buffer;
+std::vector<std::byte> get_currency_history_response::serialize() const {
+    std::vector<std::byte> buffer;
 
     // Write success flag and message
     writer::write_bool(buffer, success);
@@ -223,7 +223,7 @@ std::vector<std::uint8_t> get_currency_history_response::serialize() const {
 }
 
 std::expected<get_currency_history_response, comms::protocol::error_code>
-get_currency_history_response::deserialize(std::span<const std::uint8_t> data) {
+get_currency_history_response::deserialize(std::span<const std::byte> data) {
     get_currency_history_response response;
 
     // Read success flag and message
@@ -333,12 +333,12 @@ get_currency_history_response::deserialize(std::span<const std::uint8_t> data) {
 
 
 
-std::vector<std::uint8_t> get_currencies_request::serialize() const {
+std::vector<std::byte> get_currencies_request::serialize() const {
     return {};
 }
 
 std::expected<get_currencies_request, comms::protocol::error_code>
-get_currencies_request::deserialize(std::span<const std::uint8_t> data) {
+get_currencies_request::deserialize(std::span<const std::byte> data) {
     if (!data.empty()) {
         return std::unexpected(comms::protocol::error_code::payload_too_large);
     }
@@ -351,8 +351,8 @@ std::ostream& operator<<(std::ostream& s, const get_currencies_request& v)
     return s;
 }
 
-std::vector<std::uint8_t> get_currencies_response::serialize() const {
-    std::vector<std::uint8_t> buffer;
+std::vector<std::byte> get_currencies_response::serialize() const {
+    std::vector<std::byte> buffer;
 
     // Write currency count
     writer::write_uint32(buffer, static_cast<std::uint32_t>(currencies.size()));
@@ -378,7 +378,7 @@ std::vector<std::uint8_t> get_currencies_response::serialize() const {
 }
 
 std::expected<get_currencies_response, comms::protocol::error_code>
-get_currencies_response::deserialize(std::span<const std::uint8_t> data) {
+get_currencies_response::deserialize(std::span<const std::byte> data) {
     get_currencies_response response;
 
     // Read currency count
@@ -457,14 +457,14 @@ std::ostream& operator<<(std::ostream& s, const get_currencies_response& v)
     return s;
 }
 
-std::vector<std::uint8_t> save_currency_request::serialize() const {
-    std::vector<std::uint8_t> buffer;
+std::vector<std::byte> save_currency_request::serialize() const {
+    std::vector<std::byte> buffer;
     serialize_currency(buffer, currency);
     return buffer;
 }
 
 std::expected<save_currency_request, comms::protocol::error_code>
-save_currency_request::deserialize(std::span<const std::uint8_t> data) {
+save_currency_request::deserialize(std::span<const std::byte> data) {
     auto currency_result = deserialize_currency(data);
     if (!currency_result) {
         return std::unexpected(currency_result.error());
@@ -477,15 +477,15 @@ std::ostream& operator<<(std::ostream& s, const save_currency_request& v) {
     return s;
 }
 
-std::vector<std::uint8_t> save_currency_response::serialize() const {
-    std::vector<std::uint8_t> buffer;
+std::vector<std::byte> save_currency_response::serialize() const {
+    std::vector<std::byte> buffer;
     writer::write_bool(buffer, success);
     writer::write_string(buffer, message);
     return buffer;
 }
 
 std::expected<save_currency_response, comms::protocol::error_code>
-save_currency_response::deserialize(std::span<const std::uint8_t> data) {
+save_currency_response::deserialize(std::span<const std::byte> data) {
     save_currency_response response;
 
     auto success_result = reader::read_bool(data);

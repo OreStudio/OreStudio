@@ -24,17 +24,17 @@
 
 namespace ores::comms::protocol {
 
-std::vector<std::uint8_t>
+std::vector<std::byte>
 handshake_request::serialize(handshake_request v) {
     auto bson_data = rfl::bson::write(v);
     return {
-        reinterpret_cast<const std::uint8_t*>(bson_data.data()),
-        reinterpret_cast<const std::uint8_t*>(bson_data.data()) + bson_data.size()
+        reinterpret_cast<const std::byte*>(bson_data.data()),
+        reinterpret_cast<const std::byte*>(bson_data.data()) + bson_data.size()
     };
 }
 
 std::expected<handshake_request, error_code>
-handshake_request::deserialize(std::span<const std::uint8_t> data) {
+handshake_request::deserialize(std::span<const std::byte> data) {
     auto result = rfl::bson::read<handshake_request>(data.data(), data.size());
 
     if (!result) {
@@ -44,17 +44,17 @@ handshake_request::deserialize(std::span<const std::uint8_t> data) {
     return result.value();
 }
 
-std::vector<std::uint8_t>
+std::vector<std::byte>
 handshake_response::serialize(handshake_response v) {
     auto bson_data = rfl::bson::write(v);
     return {
-        reinterpret_cast<const std::uint8_t*>(bson_data.data()),
-        reinterpret_cast<const std::uint8_t*>(bson_data.data()) + bson_data.size()
+        reinterpret_cast<const std::byte*>(bson_data.data()),
+        reinterpret_cast<const std::byte*>(bson_data.data()) + bson_data.size()
     };
 }
 
 std::expected<handshake_response, error_code> handshake_response::
-deserialize(std::span<const std::uint8_t> data) {
+deserialize(std::span<const std::byte> data) {
     auto result = rfl::bson::read<handshake_response>(data.data(), data.size());
 
     if (!result) {
@@ -64,17 +64,17 @@ deserialize(std::span<const std::uint8_t> data) {
     return result.value();
 }
 
-std::vector<std::uint8_t>
+std::vector<std::byte>
 handshake_ack::serialize(handshake_ack v) {
     auto bson_data = rfl::bson::write(v);
     return {
-        reinterpret_cast<const std::uint8_t*>(bson_data.data()),
-        reinterpret_cast<const std::uint8_t*>(bson_data.data()) + bson_data.size()
+        reinterpret_cast<const std::byte*>(bson_data.data()),
+        reinterpret_cast<const std::byte*>(bson_data.data()) + bson_data.size()
     };
 }
 
 std::expected<handshake_ack, error_code> handshake_ack::
-deserialize(std::span<const std::uint8_t> data) {
+deserialize(std::span<const std::byte> data) {
     auto result = rfl::bson::read<handshake_ack>(data.data(), data.size());
 
     if (!result) {
@@ -84,17 +84,17 @@ deserialize(std::span<const std::uint8_t> data) {
     return result.value();
 }
 
-std::vector<std::uint8_t>
+std::vector<std::byte>
 error_response::serialize(error_response v) {
     auto bson_data = rfl::bson::write(v);
     return {
-        reinterpret_cast<const std::uint8_t*>(bson_data.data()),
-        reinterpret_cast<const std::uint8_t*>(bson_data.data()) + bson_data.size()
+        reinterpret_cast<const std::byte*>(bson_data.data()),
+        reinterpret_cast<const std::byte*>(bson_data.data()) + bson_data.size()
     };
 }
 
 std::expected<error_response, error_code> error_response::
-deserialize(std::span<const std::uint8_t> data) {
+deserialize(std::span<const std::byte> data) {
     auto result = rfl::bson::read<error_response>(data.data(), data.size());
 
     if (!result) {

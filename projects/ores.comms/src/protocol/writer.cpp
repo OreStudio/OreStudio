@@ -25,33 +25,35 @@
 namespace ores::comms::protocol {
 
 void writer::
-write_uint16(std::vector<std::uint8_t>& buffer, std::uint16_t value) {
-    buffer.push_back(static_cast<std::uint8_t>(value >> 8));
-    buffer.push_back(static_cast<std::uint8_t>(value & 0xFF));
+write_uint16(std::vector<std::byte>& buffer, std::uint16_t value) {
+    buffer.push_back(static_cast<std::byte>(value >> 8));
+    buffer.push_back(static_cast<std::byte>(value & 0xFF));
 }
 
-void writer::
-write_uint32(std::vector<std::uint8_t>& buffer, std::uint32_t value) {
-    buffer.push_back(static_cast<std::uint8_t>(value >> 24));
-    buffer.push_back(static_cast<std::uint8_t>((value >> 16) & 0xFF));
-    buffer.push_back(static_cast<std::uint8_t>((value >> 8) & 0xFF));
-    buffer.push_back(static_cast<std::uint8_t>(value & 0xFF));
+void writer::write_uint32(std::vector<std::byte>& buffer, std::uint32_t value) {
+    buffer.push_back(static_cast<std::byte>(value >> 24));
+    buffer.push_back(static_cast<std::byte>((value >> 16) & 0xFF));
+    buffer.push_back(static_cast<std::byte>((value >> 8) & 0xFF));
+    buffer.push_back(static_cast<std::byte>(value & 0xFF));
 }
 
-void writer::
-write_string(std::vector<std::uint8_t>& buffer, const std::string& str) {
+void writer::write_string(std::vector<std::byte>& buffer, const std::string& str) {
     auto len = static_cast<std::uint16_t>(std::min(str.size(), size_t(65535)));
     write_uint16(buffer, len);
-    buffer.insert(buffer.end(), str.begin(), str.begin() + len);
+
+    auto offset = buffer.size();
+    buffer.resize(offset + len);
+    std::memcpy(buffer.data() + offset, str.data(), len);
 }
 
-void writer::
-write_uuid(std::vector<std::uint8_t>& buffer, const boost::uuids::uuid& uuid) {
-    buffer.insert(buffer.end(), uuid.begin(), uuid.end());
+void writer::write_uuid(std::vector<std::byte>& buffer, const boost::uuids::uuid& uuid) {
+    auto offset = buffer.size();
+    buffer.resize(offset + uuid.size());
+    std::memcpy(buffer.data() + offset, uuid.data(), uuid.size());
 }
 
-void writer::write_bool(std::vector<std::uint8_t>& buffer, bool value) {
-    buffer.push_back(value ? 1 : 0);
+void writer::write_bool(std::vector<std::byte>& buffer, bool value) {
+    buffer.push_back(std::byte{static_cast<uint8_t>(value)});
 }
 
 }

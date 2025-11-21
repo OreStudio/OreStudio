@@ -23,7 +23,6 @@
 #include <span>
 #include <iosfwd>
 #include <vector>
-#include <cstdint>
 #include <expected>
 #include "ores.comms/protocol/message_types.hpp"
 #include "ores.accounts/domain/account.hpp"
@@ -57,13 +56,13 @@ struct create_account_request final {
      * - N bytes: email (UTF-8)
      * - 1 byte: is_admin (boolean)
      */
-    std::vector<std::uint8_t> serialize() const;
+    std::vector<std::byte> serialize() const;
 
     /**
      * @brief Deserialize request from bytes.
      */
     static std::expected<create_account_request, comms::protocol::error_code>
-    deserialize(std::span<const std::uint8_t> data);
+    deserialize(std::span<const std::byte> data);
 };
 
 std::ostream& operator<<(std::ostream& s, const create_account_request& V);
@@ -80,13 +79,13 @@ struct create_account_response final {
      * Format:
      * - 16 bytes: account_id (UUID)
      */
-    std::vector<std::uint8_t> serialize() const;
+    std::vector<std::byte> serialize() const;
 
     /**
      * @brief Deserialize response from bytes.
      */
     static std::expected<create_account_response, comms::protocol::error_code>
-    deserialize(std::span<const std::uint8_t> data);
+    deserialize(std::span<const std::byte> data);
 };
 
 std::ostream& operator<<(std::ostream& s, const create_account_response& v);
@@ -100,13 +99,13 @@ struct list_accounts_request final {
     /**
      * @brief Serialize request to bytes.
      */
-    std::vector<std::uint8_t> serialize() const;
+    std::vector<std::byte> serialize() const;
 
     /**
      * @brief Deserialize request from bytes.
      */
     static std::expected<list_accounts_request, comms::protocol::error_code>
-    deserialize(std::span<const std::uint8_t> data);
+    deserialize(std::span<const std::byte> data);
 };
 
 std::ostream& operator<<(std::ostream& s, const list_accounts_request& v);
@@ -139,13 +138,13 @@ struct list_accounts_response final {
      *   - N bytes: email (UTF-8)
      *   - 1 byte: is_admin (boolean)
      */
-    std::vector<std::uint8_t> serialize() const;
+    std::vector<std::byte> serialize() const;
 
     /**
      * @brief Deserialize response from bytes.
      */
     static std::expected<list_accounts_response, comms::protocol::error_code>
-    deserialize(std::span<const std::uint8_t> data);
+    deserialize(std::span<const std::byte> data);
 };
 
 std::ostream& operator<<(std::ostream& s, const list_accounts_response& v);
@@ -166,13 +165,13 @@ struct login_request final {
      * - 2 bytes: password length
      * - N bytes: password (UTF-8)
      */
-    std::vector<std::uint8_t> serialize() const;
+    std::vector<std::byte> serialize() const;
 
     /**
      * @brief Deserialize request from bytes.
      */
     static std::expected<login_request, comms::protocol::error_code>
-    deserialize(std::span<const std::uint8_t> data);
+    deserialize(std::span<const std::byte> data);
 };
 
 std::ostream& operator<<(std::ostream& s, const login_request& v);
@@ -199,13 +198,13 @@ struct login_response final {
      * - N bytes: username (UTF-8)
      * - 1 byte: is_admin (boolean)
      */
-    std::vector<std::uint8_t> serialize() const;
+    std::vector<std::byte> serialize() const;
 
     /**
      * @brief Deserialize response from bytes.
      */
     static std::expected<login_response, comms::protocol::error_code>
-    deserialize(std::span<const std::uint8_t> data);
+    deserialize(std::span<const std::byte> data);
 };
 
 std::ostream& operator<<(std::ostream& s, const login_response& v);
@@ -222,13 +221,13 @@ struct unlock_account_request final {
      * Format:
      * - 16 bytes: account_id (UUID)
      */
-    std::vector<std::uint8_t> serialize() const;
+    std::vector<std::byte> serialize() const;
 
     /**
      * @brief Deserialize request from bytes.
      */
     static std::expected<unlock_account_request, comms::protocol::error_code>
-    deserialize(std::span<const std::uint8_t> data);
+    deserialize(std::span<const std::byte> data);
 };
 
 std::ostream& operator<<(std::ostream& s, const unlock_account_request& v);
@@ -248,13 +247,13 @@ struct unlock_account_response final {
      * - 2 bytes: error_message length
      * - N bytes: error_message (UTF-8)
      */
-    std::vector<std::uint8_t> serialize() const;
+    std::vector<std::byte> serialize() const;
 
     /**
      * @brief Deserialize response from bytes.
      */
     static std::expected<unlock_account_response, comms::protocol::error_code>
-    deserialize(std::span<const std::uint8_t> data);
+    deserialize(std::span<const std::byte> data);
 };
 
 std::ostream& operator<<(std::ostream& s, const unlock_account_response& v);
@@ -271,13 +270,13 @@ struct delete_account_request final {
      * Format:
      * - 16 bytes: account_id (UUID)
      */
-    std::vector<std::uint8_t> serialize() const;
+    std::vector<std::byte> serialize() const;
 
     /**
      * @brief Deserialize request from bytes.
      */
     static std::expected<delete_account_request, comms::protocol::error_code>
-    deserialize(std::span<const std::uint8_t> data);
+    deserialize(std::span<const std::byte> data);
 };
 
 std::ostream& operator<<(std::ostream& s, const delete_account_request& v);
@@ -297,13 +296,13 @@ struct delete_account_response final {
      * - 2 bytes: message length
      * - N bytes: message (UTF-8)
      */
-    std::vector<std::uint8_t> serialize() const;
+    std::vector<std::byte> serialize() const;
 
     /**
      * @brief Deserialize response from bytes.
      */
     static std::expected<delete_account_response, comms::protocol::error_code>
-    deserialize(std::span<const std::uint8_t> data);
+    deserialize(std::span<const std::byte> data);
 };
 
 std::ostream& operator<<(std::ostream& s, const delete_account_response& v);

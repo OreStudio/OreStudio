@@ -65,7 +65,7 @@ options_description make_options_description() {
         ("version,v", "Output version information and exit.");
 
     const auto lod(logging_configuration::make_options_description(
-            "ores.client.log"));
+            "ores.shell.log"));
 
     options_description cod("Connection");
     cod.add_options()
@@ -92,11 +92,11 @@ options_description make_options_description() {
  * @brief Print help text.
  */
 void print_help(const options_description& od, std::ostream& info) {
-    info << "ORES Client is an interactive REPL for OreStudio."
+    info << "ORE Studio Shell is an interactive REPL for ORE Studio."
          << std::endl
          << "It provides a command-line interface for connecting to and interacting with ores.service."
          << std::endl << std::endl
-         << "Usage: ores.client [options]"
+         << "Usage: ores.shell [options]"
          << std::endl << std::endl
          << od << std::endl;
 }

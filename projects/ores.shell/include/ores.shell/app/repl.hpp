@@ -45,7 +45,7 @@ class repl final {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.client.app.repl");
+        static auto instance = make_logger("ores.shell.app.repl");
         return instance;
     }
 

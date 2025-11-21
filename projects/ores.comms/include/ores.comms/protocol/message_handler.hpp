@@ -75,8 +75,8 @@ public:
      * @param remote_address The remote endpoint address (IP:port) of the client connection
      * @return Expected containing response payload bytes, or error_code on failure
      */
-    virtual boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, error_code>>
-    handle_message(message_type type, std::span<const std::uint8_t> payload,
+    virtual boost::asio::awaitable<std::expected<std::vector<std::byte>, error_code>>
+    handle_message(message_type type, std::span<const std::byte> payload,
                    const std::string& remote_address) = 0;
 };
 

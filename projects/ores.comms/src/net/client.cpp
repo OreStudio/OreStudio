@@ -246,7 +246,7 @@ client::send_request(protocol::frame request_frame) {
                 std::lock_guard guard{state_mutex_};
                 return ++sequence_number_;
             }(),
-            std::vector<std::uint8_t>(request_frame.payload()));
+            std::vector<std::byte>(request_frame.payload()));
 
         BOOST_LOG_SEV(lg(), trace) << "Sending request frame, type: "
                                    << std::hex << static_cast<std::uint16_t>(request_frame.header().type);

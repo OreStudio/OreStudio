@@ -43,13 +43,13 @@ struct get_currencies_request final {
     /**
      * @brief Serialize request to bytes.
      */
-    std::vector<std::uint8_t> serialize() const;
+    std::vector<std::byte> serialize() const;
 
     /**
      * @brief Deserialize request from bytes.
      */
     static std::expected<get_currencies_request, comms::protocol::error_code>
-    deserialize(std::span<const std::uint8_t> data);
+    deserialize(std::span<const std::byte> data);
 };
 
 std::ostream& operator<<(std::ostream& s, const get_currencies_request& v);
@@ -91,13 +91,13 @@ struct get_currencies_response final {
      *   - 2 bytes: valid_to length
      *   - N bytes: valid_to (UTF-8)
      */
-    std::vector<std::uint8_t> serialize() const;
+    std::vector<std::byte> serialize() const;
 
     /**
      * @brief Deserialize response from bytes.
      */
     static std::expected<get_currencies_response, comms::protocol::error_code>
-    deserialize(std::span<const std::uint8_t> data);
+    deserialize(std::span<const std::byte> data);
 };
 
 std::ostream& operator<<(std::ostream& s, const get_currencies_response& v);
@@ -115,13 +115,13 @@ struct save_currency_request final {
     /**
      * @brief Serialize request to bytes.
      */
-    std::vector<std::uint8_t> serialize() const;
+    std::vector<std::byte> serialize() const;
 
     /**
      * @brief Deserialize request from bytes.
      */
     static std::expected<save_currency_request, comms::protocol::error_code>
-    deserialize(std::span<const std::uint8_t> data);
+    deserialize(std::span<const std::byte> data);
 };
 
 std::ostream& operator<<(std::ostream& s, const save_currency_request& v);
@@ -136,13 +136,13 @@ struct save_currency_response final {
     /**
      * @brief Serialize response to bytes.
      */
-    std::vector<std::uint8_t> serialize() const;
+    std::vector<std::byte> serialize() const;
 
     /**
      * @brief Deserialize response from bytes.
      */
     static std::expected<save_currency_response, comms::protocol::error_code>
-    deserialize(std::span<const std::uint8_t> data);
+    deserialize(std::span<const std::byte> data);
 };
 
 std::ostream& operator<<(std::ostream& s, const save_currency_response& v);
@@ -156,13 +156,13 @@ struct delete_currency_request final {
     /**
      * @brief Serialize request to bytes.
      */
-    std::vector<std::uint8_t> serialize() const;
+    std::vector<std::byte> serialize() const;
 
     /**
      * @brief Deserialize request from bytes.
      */
     static std::expected<delete_currency_request, comms::protocol::error_code>
-    deserialize(std::span<const std::uint8_t> data);
+    deserialize(std::span<const std::byte> data);
 };
 
 std::ostream& operator<<(std::ostream& s, const delete_currency_request& v);
@@ -177,13 +177,13 @@ struct delete_currency_response final {
     /**
      * @brief Serialize response to bytes.
      */
-    std::vector<std::uint8_t> serialize() const;
+    std::vector<std::byte> serialize() const;
 
     /**
      * @brief Deserialize response from bytes.
      */
     static std::expected<delete_currency_response, comms::protocol::error_code>
-    deserialize(std::span<const std::uint8_t> data);
+    deserialize(std::span<const std::byte> data);
 };
 
 std::ostream& operator<<(std::ostream& s, const delete_currency_response& v);
@@ -197,13 +197,13 @@ struct get_currency_history_request final {
     /**
      * @brief Serialize request to bytes.
      */
-    std::vector<std::uint8_t> serialize() const;
+    std::vector<std::byte> serialize() const;
 
     /**
      * @brief Deserialize request from bytes.
      */
     static std::expected<get_currency_history_request, comms::protocol::error_code>
-    deserialize(std::span<const std::uint8_t> data);
+    deserialize(std::span<const std::byte> data);
 };
 
 std::ostream& operator<<(std::ostream& s, const get_currency_history_request& v);
@@ -219,13 +219,13 @@ struct get_currency_history_response final {
     /**
      * @brief Serialize response to bytes.
      */
-    std::vector<std::uint8_t> serialize() const;
+    std::vector<std::byte> serialize() const;
 
     /**
      * @brief Deserialize response from bytes.
      */
     static std::expected<get_currency_history_response, comms::protocol::error_code>
-    deserialize(std::span<const std::uint8_t> data);
+    deserialize(std::span<const std::byte> data);
 };
 
 std::ostream& operator<<(std::ostream& s, const get_currency_history_response& v);

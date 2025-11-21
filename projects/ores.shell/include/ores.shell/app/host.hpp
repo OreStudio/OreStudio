@@ -35,7 +35,7 @@ class host {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.client.app.host");
+        static auto instance = make_logger("ores.shell.app.host");
         return instance;
     }
 

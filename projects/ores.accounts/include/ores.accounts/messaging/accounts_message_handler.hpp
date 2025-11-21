@@ -56,7 +56,7 @@ public:
     explicit accounts_message_handler(utility::repository::context ctx);
 
     using handler_result = boost::asio::awaitable<
-        std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>
+        std::expected<std::vector<std::byte>, comms::protocol::error_code>
     >;
 
     /**
@@ -69,7 +69,7 @@ public:
      */
     handler_result
     handle_message(comms::protocol::message_type type,
-        std::span<const std::uint8_t> payload,
+        std::span<const std::byte> payload,
         const std::string& remote_address) override;
 
 private:
@@ -77,32 +77,32 @@ private:
      * @brief Handle create_account_request message.
      */
     handler_result
-    handle_create_account_request(std::span<const std::uint8_t> payload);
+    handle_create_account_request(std::span<const std::byte> payload);
 
     /**
      * @brief Handle list_accounts_request message.
      */
     handler_result
-    handle_list_accounts_request(std::span<const std::uint8_t> payload);
+    handle_list_accounts_request(std::span<const std::byte> payload);
 
     /**
      * @brief Handle login_request message.
      */
     handler_result
-    handle_login_request(std::span<const std::uint8_t> payload,
+    handle_login_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
     /**
      * @brief Handle unlock_account_request message.
      */
     handler_result
-    handle_unlock_account_request(std::span<const std::uint8_t> payload);
+    handle_unlock_account_request(std::span<const std::byte> payload);
 
     /**
      * @brief Handle delete_account_request message.
      */
     handler_result
-    handle_delete_account_request(std::span<const std::uint8_t> payload);
+    handle_delete_account_request(std::span<const std::byte> payload);
 
     service::account_service service_;
 };

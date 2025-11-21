@@ -27,14 +27,13 @@
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.risk/messaging/protocol.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
+#include "ores.shell/app/commands/currencies_commands.hpp"
 #include "ores.shell/app/commands/connection_commands.hpp"
 // #include "ores.accounts/domain/account_table_io.hpp"
 // #include "ores.risk/domain/currency_table_io.hpp"
 
 namespace ores::shell::app {
-
 
 using namespace ores::utility::log;
 using comms::protocol::message_type;
@@ -60,7 +59,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
         std::make_unique<cli::Menu>("ores-shell");
 
     commands::connection_commands::register_commands(*root_menu, client_manager_);
-    register_currency_commands(*root_menu);
+    commands::currencies_commands::register_commands(*root_menu, client_manager_);
     register_account_commands(*root_menu);
 
     auto cli_instance =
@@ -70,17 +69,6 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     });
 
     return cli_instance;
-}
-
-void repl::register_currency_commands(cli::Menu& root_menu) {
-    auto currencies_menu =
-        std::make_unique<cli::Menu>("currencies");
-
-    currencies_menu->Insert("get", [this](std::ostream& out) {
-        process_get_currencies(std::ref(out));
-    }, "Retrieve all currencies from the server");
-
-    root_menu.Insert(std::move(currencies_menu));
 }
 
 void repl::register_account_commands(cli::Menu& root_menu) {
@@ -112,26 +100,6 @@ void repl::register_account_commands(cli::Menu& root_menu) {
     }, "Unlock a locked account (account_id)");
 
     root_menu.Insert(std::move(accounts_menu));
-}
-
-void repl::process_get_currencies(std::ostream& out) {
-    try {
-        BOOST_LOG_SEV(lg(), debug) << "Initiating get currencies request.";
-
-        using risk::messaging::get_currencies_request;
-        using risk::messaging::get_currencies_response;
-        client_manager_.process_request<get_currencies_request,
-                                        get_currencies_response,
-                                        message_type::get_currencies_request>
-            (get_currencies_request{})
-            .and_then([&](const auto& response) {
-                out << response.currencies << std::endl;
-                return std::optional{response};
-            });
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Get currencies exception: " << e.what();
-        out << "✗ Error: " << e.what() << std::endl;
-    }
 }
 
 void repl::display_welcome() const {

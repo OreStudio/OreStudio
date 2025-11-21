@@ -79,27 +79,11 @@ private:
     std::unique_ptr<::cli::Cli> setup_menus();
 
     /**
-     * @brief Register currency-related commands.
-     *
-     * Creates the currencies submenu and adds currency operations.
-     */
-    void register_currency_commands(::cli::Menu& root_menu);
-
-    /**
      * @brief Register account-related commands.
      *
      * Creates the accounts submenu and adds account operations.
      */
     void register_account_commands(::cli::Menu& root_menu);
-
-    /**
-     * @brief Process a get currencies request.
-     *
-     * Retrieves all currencies from the server and displays them.
-     *
-     * @param out Output stream for results
-     */
-    void process_get_currencies(std::ostream& out);
 
     /**
      * @brief Process a create account request.

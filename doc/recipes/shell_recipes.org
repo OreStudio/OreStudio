@@ -81,11 +81,11 @@ EOF
 #+RESULTS:
 #+begin_example
 ✓ Connected.
-✓ Disconnected successfully from the server.
 ORE Studio Shell REPL v0.0.5
 Type 'help' for available commands, 'exit' to quit
 
 ores-shell> Bye!
+✓ Disconnected successfully from the server.
 #+end_example
 
 *** Basic connect

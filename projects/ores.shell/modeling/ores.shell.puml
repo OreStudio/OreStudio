@@ -1,0 +1,204 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    note "Interactive REPL (Read-Eval-Print Loop) or shell for connecting to the ORE Studio server" as ores_shell_note
+    shell --- ores_shell_note
+
+    namespace shell #F2F2F2 {
+        note "Configuration parsing and options for the shell." as ores_shell_config_note
+        config --- ores_shell_config_note
+
+        namespace config #F2F2F2 {
+            class parser_exception <<exception>> #D6B19F {
+                +parser_exception(message: std::string)
+                +what() const noexcept: const char*
+                -{field} message_ const std::string
+            }
+
+            note top of parser_exception
+            An error occurred during parsing.
+            - message_: error message
+            end note
+
+            class parser #ECECEC {
+                +parse(arguments: const std::vector<std::string>&, info: std::ostream&, error: std::ostream&) const: std::optional<options>
+            }
+
+            note top of parser
+            Command-line parser implementation using boost program options.
+
+            Note on logging: we are NOT logging any of the exceptions to the log in this
+            class. This is by design. The logger is only initialised after the options
+            have been parsed; were we to log prior to this, we would dump all the
+            messages into the console. The output is very confusing for users that are
+            accustomed to normal command line applications.
+            end note
+
+            struct login_options <<config>> #FFC072 {
+                +{field} username std::string
+                +{field} password std::string
+            }
+
+            note top of login_options
+            Options for logging in to the server.
+            - username: Username to use for login
+            - password: Password to use for login
+            end note
+
+            struct options <<config>> #FFC072 {
+                +{field} logging std::optional<utility::log::logging_options>
+                +{field} connection std::optional<comms::net::client_options>
+                +{field} login std::optional<login_options>
+            }
+
+            note top of options
+            All of the configuration options required by the client.
+            - logging: Configuration options related to logging, if any
+            - connection: Configuration options for connecting to the server
+            - login: Configuration options for logging in to the server
+            end note
+
+            ores::shell::config::options o-- ores::shell::config::login_options
+            ores::shell::config::parser ..> ores::shell::config::options : returns
+        }
+
+        note "Application entry point and hosting functionality." as ores_shell_app_note
+        app --- ores_shell_app_note
+
+        namespace app #F2F2F2 {
+            class host #ECECEC {
+                +{static} execute(args: const std::vector<std::string>&, std_output: std::ostream&, error_output: std::ostream&): int
+                -{static} lg(): auto&
+            }
+
+            note top of host
+            Provides hosting clients to the application.
+            end note
+
+            class application #ECECEC {
+                +application(connection_config: std::optional<comms::net::client_options>, login_config: std::optional<config::login_options>)
+                +run() const: void
+                -{static} lg(): auto&
+                -{field} connection_config_ std::optional<comms::net::client_options>
+                -{field} login_config_ std::optional<config::login_options>
+            }
+
+            note top of application
+            Entry point for the ores client application.
+            - connection_config_: optional connection configuration
+            - login_config_: optional login configuration
+            end note
+
+            class repl #ECECEC {
+                +repl(client_manager: client_manager&)
+                +run(): void
+                -{static} lg(): auto&
+                -setup_menus(): std::unique_ptr<::cli::Cli>
+                -display_welcome() const: void
+                -{field} client_manager_ client_manager&
+            }
+
+            note top of repl
+            Interactive REPL (Read-Eval-Print Loop) for the ORE Studio client.
+
+            Provides a command-line interface for interacting with the ORE Studio server,
+            including commands for connection management and data retrieval.
+            - client_manager_: reference to client manager
+            end note
+
+            class client_manager #ECECEC {
+                +client_manager(out: std::ostream&, connection_config: std::optional<comms::net::client_options>, login_config: std::optional<config::login_options>)
+                +~client_manager()
+                +process_request<RequestType, ResponseType, RequestMsgType>(request: RequestType): std::optional<ResponseType>
+                +connect(host: std::string, port: std::string, identifier: std::string): bool
+                +login(username: std::string, password: std::string): bool
+                +disconnect(): void
+                -{static} lg(): auto&
+                -connect(config: comms::net::client_options): void
+                -auto_connect(): bool
+                -auto_login(): bool
+                -{field} output_ std::ostream&
+                -{field} connection_config_ const std::optional<comms::net::client_options>
+                -{field} login_config_ const std::optional<config::login_options>
+                -{field} client_ std::shared_ptr<comms::net::client>
+            }
+
+            note top of client_manager
+            Manages client connection lifecycle and request processing.
+            - output_: output stream reference
+            - connection_config_: optional connection configuration
+            - login_config_: optional login configuration
+            - client_: shared pointer to the client
+            end note
+
+            ores::shell::app::repl o-- ores::shell::app::client_manager
+            ores::shell::app::application ..> ores::shell::app::repl : creates
+            ores::shell::app::application ..> ores::shell::app::client_manager : creates
+
+            note "Command handlers for the REPL." as ores_shell_commands_note
+            commands --- ores_shell_commands_note
+
+            namespace commands #F2F2F2 {
+                class connection_commands #ECECEC {
+                    +{static} register_commands(root: cli::Menu&, client_manager: client_manager&): void
+                    +{static} process_connect(out: std::ostream&, client_manager: client_manager&, host: std::string, port: std::string, identifier: std::string): void
+                    +{static} process_disconnect(out: std::ostream&, client_manager: client_manager&): void
+                    -{static} lg(): auto&
+                }
+
+                note top of connection_commands
+                Manages commands related to connections.
+                end note
+
+                class currencies_commands #ECECEC {
+                    +{static} register_commands(root_menu: cli::Menu&, client_manager: client_manager&): void
+                    +{static} process_get_currencies(out: std::ostream&, client_manager: client_manager&): void
+                    -{static} lg(): auto&
+                }
+
+                note top of currencies_commands
+                Manages commands related to currencies.
+                end note
+
+                class accounts_commands #ECECEC {
+                    +{static} register_commands(root_menu: cli::Menu&, client_manager: client_manager&): void
+                    +{static} process_create_account(out: std::ostream&, client_manager: client_manager&, username: std::string, password: std::string, totp_secret: std::string, email: std::string, is_admin: bool): void
+                    +{static} process_list_accounts(out: std::ostream&, client_manager: client_manager&): void
+                    +{static} process_login(client_manager: client_manager&, username: std::string, password: std::string): void
+                    +{static} process_unlock_account(out: std::ostream&, client_manager: client_manager&, account_id: std::string): void
+                    -{static} lg(): auto&
+                }
+
+                note top of accounts_commands
+                Manages commands related to accounts.
+                end note
+
+                ores::shell::app::commands::connection_commands ..> ores::shell::app::client_manager : uses
+                ores::shell::app::commands::currencies_commands ..> ores::shell::app::client_manager : uses
+                ores::shell::app::commands::accounts_commands ..> ores::shell::app::client_manager : uses
+            }
+        }
+    }
+}
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.shell.puml"
+' End:
+@enduml

@@ -18,42 +18,37 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-21 Fri 12:58], for Friday, November 21, 2025.
-|       | <75>                                                    |        |      |      |       |
-| Tags  | Headline                                                | Time   |      |      |     % |
-|-------+---------------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                            | *3:56* |      |      | 100.0 |
-|-------+---------------------------------------------------------+--------+------+------+-------|
-|       | Stories                                                 | 3:56   |      |      | 100.0 |
-|       | Active                                                  |        | 3:56 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint                      |        |      | 1:42 |  43.2 |
-| code  | Update =ores.shell= with REPL commands for all entities |        |      | 2:14 |  56.8 |
+#+CAPTION: Clock summary at [2025-11-22 Sat 00:01], for Saturday, November 22, 2025.
+|      | <75>         |        |     |
+| Tags | Headline     | Time   |   % |
+|------+--------------+--------+-----|
+|      | *Total time* | *0:00* | 0.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-21 Fri 12:58]
-|       | <75>                                                    |         |       |      |       |
-| Tags  | Headline                                                | Time    |       |      |     % |
-|-------+---------------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                            | *29:34* |       |      | 100.0 |
-|-------+---------------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                                 | 29:34   |       |      | 100.0 |
-|       | Active                                                  |         | 29:34 |      | 100.0 |
-| agile | Sprint and product backlog refinement                   |         |       | 2:35 |   8.7 |
-| infra | Add AI generated sprint summary                         |         |       | 1:38 |   5.5 |
-| infra | Add skill to generate release notes                     |         |       | 0:27 |   1.5 |
-| code  | Version of =ores.qt= does not update                    |         |       | 0:54 |   3.0 |
-| code  | Minor updates to UML diagrams                           |         |       | 0:13 |   0.7 |
-| infra | Add support for project planning                        |         |       | 2:24 |   8.1 |
-| code  | Add a "detached" mode                                   |         |       | 1:18 |   4.4 |
-| code  | Merge update and create currency messages               |         |       | 1:07 |   3.8 |
-| code  | Uninformative incompatible protocol version error in qt |         |       | 1:11 |   4.0 |
-| code  | Implement delete account                                |         |       | 0:20 |   1.1 |
-| code  | Reorganise CLI structure by entity                      |         |       | 4:43 |  16.0 |
-| infra | OCR scan notebooks for this sprint                      |         |       | 3:23 |  11.4 |
-| code  | Update =ores.shell= with REPL commands for all entities |         |       | 8:59 |  30.4 |
-| code  | Consider renaming =client= to =repl=                    |         |       | 0:22 |   1.2 |
+#+CAPTION: Clock summary at [2025-11-22 Sat 00:01]
+|       | <75>                                                    |         |       |       |       |
+| Tags  | Headline                                                | Time    |       |       |     % |
+|-------+---------------------------------------------------------+---------+-------+-------+-------|
+|       | *Total time*                                            | *34:23* |       |       | 100.0 |
+|-------+---------------------------------------------------------+---------+-------+-------+-------|
+|       | Stories                                                 | 34:23   |       |       | 100.0 |
+|       | Active                                                  |         | 34:23 |       | 100.0 |
+| agile | Sprint and product backlog refinement                   |         |       |  2:35 |   7.5 |
+| infra | Add AI generated sprint summary                         |         |       |  1:38 |   4.8 |
+| infra | Add skill to generate release notes                     |         |       |  0:27 |   1.3 |
+| code  | Version of =ores.qt= does not update                    |         |       |  0:54 |   2.6 |
+| code  | Minor updates to UML diagrams                           |         |       |  0:13 |   0.6 |
+| infra | Add support for project planning                        |         |       |  2:24 |   7.0 |
+| code  | Add a "detached" mode                                   |         |       |  1:18 |   3.8 |
+| code  | Merge update and create currency messages               |         |       |  1:07 |   3.2 |
+| code  | Uninformative incompatible protocol version error in qt |         |       |  1:11 |   3.4 |
+| code  | Implement delete account                                |         |       |  0:20 |   1.0 |
+| code  | Reorganise CLI structure by entity                      |         |       |  4:43 |  13.7 |
+| code  | Update =ores.shell= with REPL commands for all entities |         |       | 13:48 |  40.1 |
+| infra | OCR scan notebooks for this sprint                      |         |       |  3:23 |   9.8 |
+| code  | Consider renaming =client= to =repl=                    |         |       |  0:22 |   1.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1021,17 +1016,11 @@ Summary:
 6. Update help text to be entity-centric
 7. Keep application.cpp mostly unchanged (just dispatch based on options)
 
-*** STARTED OCR scan notebooks for this sprint                        :infra:
+*** COMPLETED Update =ores.shell= with REPL commands for all entities  :code:
     :LOGBOOK:
-    CLOCK: [2025-11-21 Fri 09:00]--[2025-11-21 Fri 10:42] =>  1:42
-    CLOCK: [2025-11-20 Thu 09:20]--[2025-11-20 Thu 11:01] =>  1:41
-    :END:
-
-We need to scan all of our finance notebooks so we can use them with AI. Each
-sprint will have a story similar to this until we scan and process them all.
-
-*** STARTED Update =ores.shell= with REPL commands for all entities    :code:
-    :LOGBOOK:
+    CLOCK: [2025-11-21 Fri 22:57]--[2025-11-21 Fri 23:58] =>  1:01
+    CLOCK: [2025-11-21 Fri 22:38]--[2025-11-21 Fri 22:56] =>  0:18
+    CLOCK: [2025-11-21 Fri 15:39]--[2025-11-21 Fri 19:09] =>  3:30
     CLOCK: [2025-11-21 Fri 11:19]--[2025-11-21 Fri 12:58] =>  1:39
     CLOCK: [2025-11-21 Fri 10:43]--[2025-11-21 Fri 11:18] =>  0:35
     CLOCK: [2025-11-20 Thu 17:24]--[2025-11-20 Thu 17:35] =>  0:11
@@ -1043,6 +1032,22 @@ sprint will have a story similar to this until we scan and process them all.
     CLOCK: [2025-11-19 Wed 22:20]--[2025-11-19 Wed 22:52] =>  0:32
     CLOCK: [2025-11-19 Wed 17:01]--[2025-11-19 Wed 18:00] =>  0:59
     :END:
+
+Refactor ores.shell so that we can add entities without making REPL code too
+cumbersome. At present all entities are processed from within the REPL file
+itself. This is not scalable. Also, fix all the code generated by LLMs around
+this area.
+
+*** STARTED OCR scan notebooks for this sprint                        :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-21 Fri 09:00]--[2025-11-21 Fri 10:42] =>  1:42
+    CLOCK: [2025-11-20 Thu 09:20]--[2025-11-20 Thu 11:01] =>  1:41
+    :END:
+
+We need to scan all of our finance notebooks so we can use them with AI. Each
+sprint will have a story similar to this until we scan and process them all.
+
+*** Missing shell functionality                                        :code:
 
 The job of the client is to exercise the entirety of the comms protocol, and to
 provide a way to perform CRUD operations via command line. Note:
@@ -1085,6 +1090,56 @@ Client needs to have messages at the entity level:
 Notes:
 
 - update recipes with the new client commands.
+
+*** Add a logout message                                               :code:
+
+At present we are just closing the socket. We should send a proper message.
+
+*** Do not disable cert verification                                   :code:
+
+At present we've hacked cert verify to false. We should not do this. Gemini:
+
+#+begin_quote
+You cannot use Let's Encrypt for development purposes because it requires a
+public domain name that Let's Encrypt can verify, and your local development
+server is not publicly accessible. The recommended approach is to create a local
+certificate authority (CA) using a tool like mkcert to sign your certificates,
+which allows you to bypass browser warnings for local domains like localhost.
+
+Option 1: Use mkcert for local development
+
+- Install mkcert: Follow the instructions to install the mkcert tool on your
+  system.
+- Install the local CA: Run the command to install the local CA root certificate
+  into your system's trust store. This is a one-time setup.
+- Generate a local certificate: Use mkcert to generate certificates for your
+  local development domains (e.g., localhost, my-app.local). The generated
+  certificates will be signed by your trusted local CA and will not cause
+  browser warnings.
+
+Option 2: Use Let's Encrypt with a real public domain
+
+Purchase a domain: Buy a public domain name (e.g., mydomain.dev).
+
+- Use an ACME client: Use an ACME client like Certbot to automate the
+  certificate process. You can run certbot on a server that is accessible to the
+  public internet.
+- Complete the validation: The client will need to verify your ownership of the
+  domain through a DNS or HTTP challenge, which requires the domain to be
+  publicly reachable.
+- Deploy the certificate: Let's Encrypt will issue a certificate that you can
+  then deploy to your development server.
+
+Why Let's Encrypt doesn't work for local development
+
+- Let's Encrypt's primary purpose is to secure public-facing websites by
+  automatically verifying domain ownership.
+- They use ACME protocol challenges (DNS or HTTP) that require the public
+  internet to access your server at the specified domain.
+- Since your local server is not on the public internet, it cannot respond to
+  these challenges, and Let's Encrypt cannot verify your ownership of the
+  domain.
+#+end_quote
 
 *** STARTED Consider renaming =client= to =repl=                       :code:
     :LOGBOOK:
@@ -1276,6 +1331,28 @@ You get:
 If you’d like help adapting your specific commands or improving tokenization, feel free to share a snippet!
 #+end_src
 
+
+*** Create a "request response" helper                                 :code:
+
+At present we have a lot of code doing a similar pattern: send a request, then
+get the response and deserialise. We started to factor out this code in
+=client_manager=:
+
+#+begin_src c++
+    template <HasSerialize RequestType,
+              HasDeserialize ResponseType,
+              comms::protocol::message_type RequestMsgType>
+    std::optional<ResponseType> process_request(RequestType request) {
+#+end_src
+
+But this is just for the sync case. We should braintstorm with the LLMs:
+
+- what is the correct name for this pattern.
+- can we do it for the async case too.
+
+*** Opening and closing currencies does not work                       :code:
+
+We just get a black window.
 
 *** Add output option to repl                                          :code:
 

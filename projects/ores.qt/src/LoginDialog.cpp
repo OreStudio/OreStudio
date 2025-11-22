@@ -178,14 +178,14 @@ void LoginDialog::onLoginClicked() {
         boost::asio::make_work_guard(*io_context_)
     );
 
-    comms::client_options config{
+    comms::net::client_options config{
         .host = host.toStdString(),
         .port = port,
         .client_identifier = "ores-qt-client",
         .verify_certificate = false
     };
 
-    client_ = std::make_shared<comms::client>(config, io_context_->get_executor());
+    client_ = std::make_shared<comms::net::client>(config, io_context_->get_executor());
 
     // Start IO thread
     io_thread_ = std::make_unique<std::thread>([this]() {
@@ -213,7 +213,7 @@ void LoginDialog::onLoginClicked() {
     QFuture<QString> future = QtConcurrent::run([this]() -> QString {
         try {
             client_->connect_sync();
-            return QString(); // Empty string indicates success
+            return {}; // Empty string indicates success
         } catch (const std::exception& e) {
             return QString::fromStdString(e.what());
         }

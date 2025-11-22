@@ -3,7 +3,7 @@
 :END:
 #+title: Prompts
 #+author: Marco Craveiro
-#+options: title:nil <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+startup: inlineimages
 
 This file is a repository for useful prompts we may want to reuse. They are not

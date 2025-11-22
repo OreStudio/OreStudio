@@ -39,37 +39,37 @@ public:
      * @brief Helper to read a 16-bit integer in network byte order.
      */
     static std::expected<std::uint16_t, comms::protocol::error_code>
-    read_uint16(std::span<const std::uint8_t>& data);
+    read_uint16(std::span<const std::byte>& data);
 
     /**
      * @brief Helper to read a 32-bit integer in network byte order.
      */
     static std::expected<std::uint32_t, comms::protocol::error_code>
-    read_uint32(std::span<const std::uint8_t>& data);
+    read_uint32(std::span<const std::byte>& data);
 
     /**
      * @brief Helper to write a UUID (16 bytes).
      */
-    static void write_uuid(std::vector<std::uint8_t>& buffer,
+    static void write_uuid(std::vector<std::byte>& buffer,
         const boost::uuids::uuid& uuid);
 
     /**
      * @brief Helper to read a string with 16-bit length prefix.
      */
     static std::expected<std::string, comms::protocol::error_code>
-    read_string(std::span<const std::uint8_t>& data);
+    read_string(std::span<const std::byte>& data);
 
     /**
      * @brief Helper to read a UUID (16 bytes).
      */
     static std::expected<boost::uuids::uuid, comms::protocol::error_code>
-    read_uuid(std::span<const std::uint8_t>& data);
+    read_uuid(std::span<const std::byte>& data);
 
     /**
      * @brief Helper to read a boolean (1 byte).
      */
     static std::expected<bool, comms::protocol::error_code>
-    read_bool(std::span<const std::uint8_t>& data);
+    read_bool(std::span<const std::byte>& data);
 };
 
 }

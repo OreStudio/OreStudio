@@ -73,8 +73,9 @@ frame::frame() : header_{}, payload_{} {
 }
 
 frame::frame(message_type type,
-    std::uint32_t sequence, std::vector<std::uint8_t> payload)
-    : header_{}, payload_(std::move(payload)) {
+    std::uint32_t sequence, std::vector<std::byte> payload) :
+    header_{}, payload_(std::move(payload)) {
+
     header_.magic = PROTOCOL_MAGIC;
     header_.version_major = PROTOCOL_VERSION_MAJOR;
     header_.version_minor = PROTOCOL_VERSION_MINOR;
@@ -86,7 +87,7 @@ frame::frame(message_type type,
     header_.reserved2.fill(0);
 }
 
-void frame::serialize_header(frame_header header, std::span<std::uint8_t> buffer) const {
+void frame::serialize_header(frame_header header, std::span<std::byte> buffer) const {
     if (buffer.size() < frame_header::size) {
         BOOST_LOG_SEV(lg(), error) << "Buffer too small for header: "
                                    << buffer.size();
@@ -121,7 +122,7 @@ std::uint32_t frame::calculate_crc() const {
     boost::crc_32_type crc;
 
     // Serialize header with CRC field set to 0
-    std::array<std::uint8_t, frame_header::size> header_bytes;
+    std::array<std::byte, frame_header::size> header_bytes;
     frame_header temp_header = header_;
     temp_header.crc = 0;
     serialize_header(temp_header, header_bytes);
@@ -130,18 +131,17 @@ std::uint32_t frame::calculate_crc() const {
     crc.process_bytes(header_bytes.data(), header_bytes.size());
 
     // Process payload if present
-    if (!payload_.empty()) {
+    if (!payload_.empty())
         crc.process_bytes(payload_.data(), payload_.size());
-    }
 
     return crc.checksum();
 }
 
-std::vector<std::uint8_t> frame::serialize() const {
+std::vector<std::byte> frame::serialize() const {
     frame_header header_with_crc = header_;
     header_with_crc.crc = calculate_crc();
 
-    std::vector<std::uint8_t> result;
+    std::vector<std::byte> result;
     result.resize(frame_header::size + payload_.size());
     serialize_header(header_with_crc, result);
     if (!payload_.empty()) {
@@ -154,7 +154,7 @@ std::vector<std::uint8_t> frame::serialize() const {
 }
 
 std::expected<frame_header, error_code>
-frame::deserialize_header(std::span<const std::uint8_t> data, bool skip_version_check) {
+frame::deserialize_header(std::span<const std::byte> data, bool skip_version_check) {
     BOOST_LOG_SEV(lg(), debug) << "Deserializing frame header from data of size: "
                                << data.size()
                                << " (skip_version_check=" << skip_version_check << ")";
@@ -230,7 +230,7 @@ frame::deserialize_header(std::span<const std::uint8_t> data, bool skip_version_
 }
 
 std::expected<frame, error_code> frame::
-deserialize(const frame_header& header, std::span<const std::uint8_t> data) {
+deserialize(const frame_header& header, std::span<const std::byte> data) {
     BOOST_LOG_SEV(lg(), debug) << "Deserializing frame with payload. Total data size: "
                                << data.size();
 

@@ -51,7 +51,7 @@ using comms::protocol::message_type;
 using namespace ores::utility::log;
 
 CurrencyMdiWindow::
-CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWidget* parent)
+CurrencyMdiWindow(std::shared_ptr<comms::net::client> client, QWidget* parent)
     : QWidget(parent),
       verticalLayout_(new QVBoxLayout(this)),
       currencyTableView_(new QTableView(this)),

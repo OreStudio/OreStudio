@@ -21,10 +21,7 @@
 #include "ores.cli/app/application.hpp"
 
 #include <chrono>
-#include <fstream>
-#include <iomanip>
 #include <optional>
-#include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -33,7 +30,7 @@
 #include <rfl/json.hpp>
 #include <sqlgen/postgres.hpp>
 #include <magic_enum/magic_enum.hpp>
-#include "ores.utility/rfl/reflectors.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.cli/config/export_options.hpp"
 #include "ores.utility/streaming/std_vector.hpp"
 #include "ores.utility/repository/context_factory.hpp"

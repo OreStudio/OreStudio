@@ -24,7 +24,7 @@
 #include <optional>
 #include "ores.utility/log/logging_options.hpp"
 #include "ores.utility/database/database_options.hpp"
-#include "ores.service/config/server_options.hpp"
+#include "ores.comms/net/server_options.hpp"
 
 namespace ores::service::config {
 
@@ -39,7 +39,7 @@ struct options final {
     /**
      * @brief Configuration related to server operations.
      */
-    server_options server;
+    comms::net::server_options server;
     /**
      * @brief Configuration related to database operations.
      */

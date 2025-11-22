@@ -32,8 +32,8 @@ namespace ores::accounts::messaging {
 
 using namespace ores::comms::protocol;
 
-std::vector<std::uint8_t> create_account_request::serialize() const {
-    std::vector<std::uint8_t> buffer;
+std::vector<std::byte> create_account_request::serialize() const {
+    std::vector<std::byte> buffer;
     writer::write_string(buffer, username);
     writer::write_string(buffer, password);
     writer::write_string(buffer, totp_secret);
@@ -44,7 +44,7 @@ std::vector<std::uint8_t> create_account_request::serialize() const {
 }
 
 std::expected<create_account_request, comms::protocol::error_code>
-create_account_request::deserialize(std::span<const std::uint8_t> data) {
+create_account_request::deserialize(std::span<const std::byte> data) {
     create_account_request request;
 
     auto username_result = reader::read_string(data);
@@ -76,14 +76,14 @@ std::ostream& operator<<(std::ostream& s, const create_account_request& v)
     return s;
 }
 
-std::vector<std::uint8_t> create_account_response::serialize() const {
-    std::vector<std::uint8_t> buffer;
+std::vector<std::byte> create_account_response::serialize() const {
+    std::vector<std::byte> buffer;
     writer::write_uuid(buffer, account_id);
     return buffer;
 }
 
 std::expected<create_account_response, comms::protocol::error_code>
-create_account_response::deserialize(std::span<const std::uint8_t> data) {
+create_account_response::deserialize(std::span<const std::byte> data) {
     create_account_response response;
 
     auto account_id_result = reader::read_uuid(data);
@@ -99,12 +99,12 @@ std::ostream& operator<<(std::ostream& s, const create_account_response& v)
     return s;
 }
 
-std::vector<std::uint8_t> list_accounts_request::serialize() const {
+std::vector<std::byte> list_accounts_request::serialize() const {
     return {};
 }
 
 std::expected<list_accounts_request, comms::protocol::error_code>
-list_accounts_request::deserialize(std::span<const std::uint8_t> data) {
+list_accounts_request::deserialize(std::span<const std::byte> data) {
     if (!data.empty()) {
         return std::unexpected(comms::protocol::error_code::payload_too_large);
     }
@@ -117,8 +117,8 @@ std::ostream& operator<<(std::ostream& s, const list_accounts_request& v)
     return s;
 }
 
-std::vector<std::uint8_t> list_accounts_response::serialize() const {
-    std::vector<std::uint8_t> buffer;
+std::vector<std::byte> list_accounts_response::serialize() const {
+    std::vector<std::byte> buffer;
 
     // Write account count
     writer::write_uint32(buffer, static_cast<std::uint32_t>(accounts.size()));
@@ -140,7 +140,7 @@ std::vector<std::uint8_t> list_accounts_response::serialize() const {
 }
 
 std::expected<list_accounts_response, comms::protocol::error_code>
-list_accounts_response::deserialize(std::span<const std::uint8_t> data) {
+list_accounts_response::deserialize(std::span<const std::byte> data) {
     list_accounts_response response;
 
     // Read account count
@@ -202,15 +202,15 @@ std::ostream& operator<<(std::ostream& s, const list_accounts_response& v)
     return s;
 }
 
-std::vector<std::uint8_t> login_request::serialize() const {
-    std::vector<std::uint8_t> buffer;
+std::vector<std::byte> login_request::serialize() const {
+    std::vector<std::byte> buffer;
     writer::write_string(buffer, username);
     writer::write_string(buffer, password);
     return buffer;
 }
 
 std::expected<login_request, comms::protocol::error_code>
-login_request::deserialize(std::span<const std::uint8_t> data) {
+login_request::deserialize(std::span<const std::byte> data) {
     login_request request;
 
     auto username_result = reader::read_string(data);
@@ -230,8 +230,8 @@ std::ostream& operator<<(std::ostream& s, const login_request& v)
     return s;
 }
 
-std::vector<std::uint8_t> login_response::serialize() const {
-    std::vector<std::uint8_t> buffer;
+std::vector<std::byte> login_response::serialize() const {
+    std::vector<std::byte> buffer;
     writer::write_bool(buffer, success);
     writer::write_string(buffer, error_message);
     writer::write_uuid(buffer, account_id);
@@ -241,7 +241,7 @@ std::vector<std::uint8_t> login_response::serialize() const {
 }
 
 std::expected<login_response, comms::protocol::error_code>
-login_response::deserialize(std::span<const std::uint8_t> data) {
+login_response::deserialize(std::span<const std::byte> data) {
     login_response response;
 
     auto success_result = reader::read_bool(data);
@@ -273,14 +273,14 @@ std::ostream& operator<<(std::ostream& s, const login_response& v)
     return s;
 }
 
-std::vector<std::uint8_t> unlock_account_request::serialize() const {
-    std::vector<std::uint8_t> buffer;
+std::vector<std::byte> unlock_account_request::serialize() const {
+    std::vector<std::byte> buffer;
     writer::write_uuid(buffer, account_id);
     return buffer;
 }
 
 std::expected<unlock_account_request, comms::protocol::error_code>
-unlock_account_request::deserialize(std::span<const std::uint8_t> data) {
+unlock_account_request::deserialize(std::span<const std::byte> data) {
     unlock_account_request request;
 
     auto account_id_result = reader::read_uuid(data);
@@ -296,15 +296,15 @@ std::ostream& operator<<(std::ostream& s, const unlock_account_request& v)
     return s;
 }
 
-std::vector<std::uint8_t> unlock_account_response::serialize() const {
-    std::vector<std::uint8_t> buffer;
+std::vector<std::byte> unlock_account_response::serialize() const {
+    std::vector<std::byte> buffer;
     writer::write_bool(buffer, success);
     writer::write_string(buffer, error_message);
     return buffer;
 }
 
 std::expected<unlock_account_response, comms::protocol::error_code>
-unlock_account_response::deserialize(std::span<const std::uint8_t> data) {
+unlock_account_response::deserialize(std::span<const std::byte> data) {
     unlock_account_response response;
 
     auto success_result = reader::read_bool(data);
@@ -324,14 +324,14 @@ std::ostream& operator<<(std::ostream& s, const unlock_account_response& v)
     return s;
 }
 
-std::vector<std::uint8_t> delete_account_request::serialize() const {
-    std::vector<std::uint8_t> buffer;
+std::vector<std::byte> delete_account_request::serialize() const {
+    std::vector<std::byte> buffer;
     writer::write_uuid(buffer, account_id);
     return buffer;
 }
 
 std::expected<delete_account_request, comms::protocol::error_code>
-delete_account_request::deserialize(std::span<const std::uint8_t> data) {
+delete_account_request::deserialize(std::span<const std::byte> data) {
     auto account_id_result = reader::read_uuid(data);
     if (!account_id_result) {
         return std::unexpected(account_id_result.error());
@@ -344,15 +344,15 @@ std::ostream& operator<<(std::ostream& s, const delete_account_request& v) {
     return s;
 }
 
-std::vector<std::uint8_t> delete_account_response::serialize() const {
-    std::vector<std::uint8_t> buffer;
+std::vector<std::byte> delete_account_response::serialize() const {
+    std::vector<std::byte> buffer;
     writer::write_bool(buffer, success);
     writer::write_string(buffer, message);
     return buffer;
 }
 
 std::expected<delete_account_response, comms::protocol::error_code>
-delete_account_response::deserialize(std::span<const std::uint8_t> data) {
+delete_account_response::deserialize(std::span<const std::byte> data) {
     delete_account_response response;
 
     auto success_result = reader::read_bool(data);

@@ -18,38 +18,37 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-19 Wed 12:21], for Wednesday, November 19, 2025.
-|      | <75>                               |        |      |      |       |
-| Tags | Headline                           | Time   |      |      |     % |
-|------+------------------------------------+--------+------+------+-------|
-|      | *Total time*                       | *0:58* |      |      | 100.0 |
-|------+------------------------------------+--------+------+------+-------|
-|      | Stories                            | 0:58   |      |      | 100.0 |
-|      | Active                             |        | 0:58 |      | 100.0 |
-| code | Reorganise CLI structure by entity |        |      | 0:58 | 100.0 |
+#+CAPTION: Clock summary at [2025-11-22 Sat 00:01], for Saturday, November 22, 2025.
+|      | <75>         |        |     |
+| Tags | Headline     | Time   |   % |
+|------+--------------+--------+-----|
+|      | *Total time* | *0:00* | 0.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-19 Wed 12:21]
-|       | <75>                                                    |         |       |      |       |
-| Tags  | Headline                                                | Time    |       |      |     % |
-|-------+---------------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                            | *16:50* |       |      | 100.0 |
-|-------+---------------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                                 | 16:50   |       |      | 100.0 |
-|       | Active                                                  |         | 16:50 |      | 100.0 |
-| agile | Sprint and product backlog refinement                   |         |       | 2:35 |  15.3 |
-| infra | Add AI generated sprint summary                         |         |       | 1:38 |   9.7 |
-| infra | Add skill to generate release notes                     |         |       | 0:27 |   2.7 |
-| code  | Version of =ores.qt= does not update                    |         |       | 0:54 |   5.3 |
-| code  | Minor updates to UML diagrams                           |         |       | 0:13 |   1.3 |
-| infra | Add support for project planning                        |         |       | 2:24 |  14.3 |
-| code  | Add a "detached" mode                                   |         |       | 1:18 |   7.7 |
-| code  | Merge update and create currency messages               |         |       | 1:07 |   6.6 |
-| code  | Uninformative incompatible protocol version error in qt |         |       | 1:11 |   7.0 |
-| code  | Implement delete account                                |         |       | 0:20 |   2.0 |
-| code  | Reorganise CLI structure by entity                      |         |       | 4:43 |  28.0 |
+#+CAPTION: Clock summary at [2025-11-22 Sat 00:01]
+|       | <75>                                                    |         |       |       |       |
+| Tags  | Headline                                                | Time    |       |       |     % |
+|-------+---------------------------------------------------------+---------+-------+-------+-------|
+|       | *Total time*                                            | *34:23* |       |       | 100.0 |
+|-------+---------------------------------------------------------+---------+-------+-------+-------|
+|       | Stories                                                 | 34:23   |       |       | 100.0 |
+|       | Active                                                  |         | 34:23 |       | 100.0 |
+| agile | Sprint and product backlog refinement                   |         |       |  2:35 |   7.5 |
+| infra | Add AI generated sprint summary                         |         |       |  1:38 |   4.8 |
+| infra | Add skill to generate release notes                     |         |       |  0:27 |   1.3 |
+| code  | Version of =ores.qt= does not update                    |         |       |  0:54 |   2.6 |
+| code  | Minor updates to UML diagrams                           |         |       |  0:13 |   0.6 |
+| infra | Add support for project planning                        |         |       |  2:24 |   7.0 |
+| code  | Add a "detached" mode                                   |         |       |  1:18 |   3.8 |
+| code  | Merge update and create currency messages               |         |       |  1:07 |   3.2 |
+| code  | Uninformative incompatible protocol version error in qt |         |       |  1:11 |   3.4 |
+| code  | Implement delete account                                |         |       |  0:20 |   1.0 |
+| code  | Reorganise CLI structure by entity                      |         |       |  4:43 |  13.7 |
+| code  | Update =ores.shell= with REPL commands for all entities |         |       | 13:48 |  40.1 |
+| infra | OCR scan notebooks for this sprint                      |         |       |  3:23 |   9.8 |
+| code  | Consider renaming =client= to =repl=                    |         |       |  0:22 |   1.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -785,7 +784,7 @@ The implementation follows the same bitemporal soft-delete pattern used for curr
 
 The CLI implementation adds a new "delete" command that supports deleting accounts by either UUID or username. The command automatically detects whether the provided key is a UUID and, if not, treats it as a username and performs a lookup to find the corresponding account ID. This provides a flexible user experience while maintaining type safety at the database level.
 
-*** STARTED Reorganise CLI structure by entity                         :code:
+*** COMPLETED Reorganise CLI structure by entity                       :code:
     :LOGBOOK:
     CLOCK: [2025-11-19 Wed 11:15]--[2025-11-19 Wed 12:13] =>  0:58
     CLOCK: [2025-11-18 Tue 21:54]--[2025-11-18 Tue 23:18] =>  1:24
@@ -1017,7 +1016,38 @@ Summary:
 6. Update help text to be entity-centric
 7. Keep application.cpp mostly unchanged (just dispatch based on options)
 
-*** Update =ores.client= with REPL commands for all entities           :code:
+*** COMPLETED Update =ores.shell= with REPL commands for all entities  :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-21 Fri 22:57]--[2025-11-21 Fri 23:58] =>  1:01
+    CLOCK: [2025-11-21 Fri 22:38]--[2025-11-21 Fri 22:56] =>  0:18
+    CLOCK: [2025-11-21 Fri 15:39]--[2025-11-21 Fri 19:09] =>  3:30
+    CLOCK: [2025-11-21 Fri 11:19]--[2025-11-21 Fri 12:58] =>  1:39
+    CLOCK: [2025-11-21 Fri 10:43]--[2025-11-21 Fri 11:18] =>  0:35
+    CLOCK: [2025-11-20 Thu 17:24]--[2025-11-20 Thu 17:35] =>  0:11
+    CLOCK: [2025-11-20 Thu 15:36]--[2025-11-20 Thu 17:10] =>  1:34
+    CLOCK: [2025-11-20 Thu 12:45]--[2025-11-20 Thu 13:30] =>  0:45
+    CLOCK: [2025-11-20 Thu 11:24]--[2025-11-20 Thu 12:20] =>  0:56
+    CLOCK: [2025-11-20 Thu 00:25]--[2025-11-20 Thu 00:42] =>  0:17
+    CLOCK: [2025-11-19 Wed 22:53]--[2025-11-20 Thu 00:24] =>  1:31
+    CLOCK: [2025-11-19 Wed 22:20]--[2025-11-19 Wed 22:52] =>  0:32
+    CLOCK: [2025-11-19 Wed 17:01]--[2025-11-19 Wed 18:00] =>  0:59
+    :END:
+
+Refactor ores.shell so that we can add entities without making REPL code too
+cumbersome. At present all entities are processed from within the REPL file
+itself. This is not scalable. Also, fix all the code generated by LLMs around
+this area.
+
+*** STARTED OCR scan notebooks for this sprint                        :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-21 Fri 09:00]--[2025-11-21 Fri 10:42] =>  1:42
+    CLOCK: [2025-11-20 Thu 09:20]--[2025-11-20 Thu 11:01] =>  1:41
+    :END:
+
+We need to scan all of our finance notebooks so we can use them with AI. Each
+sprint will have a story similar to this until we scan and process them all.
+
+*** Missing shell functionality                                        :code:
 
 The job of the client is to exercise the entirety of the comms protocol, and to
 provide a way to perform CRUD operations via command line. Note:
@@ -1060,6 +1090,416 @@ Client needs to have messages at the entity level:
 Notes:
 
 - update recipes with the new client commands.
+
+*** Add a logout message                                               :code:
+
+At present we are just closing the socket. We should send a proper message.
+
+*** Do not disable cert verification                                   :code:
+
+At present we've hacked cert verify to false. We should not do this. Gemini:
+
+#+begin_quote
+You cannot use Let's Encrypt for development purposes because it requires a
+public domain name that Let's Encrypt can verify, and your local development
+server is not publicly accessible. The recommended approach is to create a local
+certificate authority (CA) using a tool like mkcert to sign your certificates,
+which allows you to bypass browser warnings for local domains like localhost.
+
+Option 1: Use mkcert for local development
+
+- Install mkcert: Follow the instructions to install the mkcert tool on your
+  system.
+- Install the local CA: Run the command to install the local CA root certificate
+  into your system's trust store. This is a one-time setup.
+- Generate a local certificate: Use mkcert to generate certificates for your
+  local development domains (e.g., localhost, my-app.local). The generated
+  certificates will be signed by your trusted local CA and will not cause
+  browser warnings.
+
+Option 2: Use Let's Encrypt with a real public domain
+
+Purchase a domain: Buy a public domain name (e.g., mydomain.dev).
+
+- Use an ACME client: Use an ACME client like Certbot to automate the
+  certificate process. You can run certbot on a server that is accessible to the
+  public internet.
+- Complete the validation: The client will need to verify your ownership of the
+  domain through a DNS or HTTP challenge, which requires the domain to be
+  publicly reachable.
+- Deploy the certificate: Let's Encrypt will issue a certificate that you can
+  then deploy to your development server.
+
+Why Let's Encrypt doesn't work for local development
+
+- Let's Encrypt's primary purpose is to secure public-facing websites by
+  automatically verifying domain ownership.
+- They use ACME protocol challenges (DNS or HTTP) that require the public
+  internet to access your server at the specified domain.
+- Since your local server is not on the public internet, it cannot respond to
+  these challenges, and Let's Encrypt cannot verify your ownership of the
+  domain.
+#+end_quote
+
+*** STARTED Consider renaming =client= to =repl=                       :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-20 Thu 11:01]--[2025-11-20 Thu 11:23] =>  0:22
+    :END:
+
+We will make use of the lib from the UI so this makes more sense. Or maybe we
+could call it shell. Also consider integrating it into Qt.
+
+#+begin_src markdown
+Thanks for the clarification! You're using **[daniele77/cli](https://github.com/daniele77/cli)** — a lightweight, single-header C++11 library for building interactive command-line interfaces (REPLs), **not** CLI11.
+
+This actually makes integration **easier and more natural** for your Qt-embedded REPL, because **daniele77/cli is designed specifically for interactive loops**, unlike CLI11 (which targets one-shot CLI apps).
+
+---
+
+### ✅ Good News: daniele77/cli is REPL-Friendly
+Key features that help you:
+- Built around a **`cli::Cli` object** that manages commands, help, and the input loop.
+- You register **command handlers** as `std::function` objects.
+- It **does not own the I/O** — you provide `std::istream&` and `std::ostream&` for input/output.
+- **No forced `exit()`** or process termination — it returns control after each command.
+
+This means you can **reuse your command logic almost as-is**, and only replace the I/O layer with Qt widgets.
+
+---
+
+### 🔧 Integration Strategy
+
+You **do not embed the CLI loop** directly (`cli.run()`), because that assumes `std::cin`/`std::cout`.
+Instead, **reuse the `cli::Cli` parser** but **drive it manually** with Qt-provided input.
+
+#### Step 1: Keep your existing command registrations
+Assume you have something like:
+
+```cpp
+cli::Cli cli;
+
+cli.AddCommand("echo", "Echo text", [&](const cli::Args& args) {
+    for (size_t i = 1; i < args.size(); ++i) {
+        std::cout << args[i] << " ";
+    }
+    std::cout << std::endl;
+});
+```
+
+You’ll keep this **exactly the same**, but **redirect output**.
+
+#### Step 2: Replace `std::cout` / `std::cin` with string-based I/O
+You can’t easily monkey-patch `std::cout`, so instead:
+
+- **Capture output** by giving your lambdas a way to return strings.
+- **Avoid printing directly** in command handlers.
+
+**Refactor your commands to return `std::string` (or `QString`)**:
+
+```cpp
+// Keep logic separate from I/O
+std::string handleEcho(const cli::Args& args) {
+    if (args.size() < 2) return "Usage: echo <text...>\n";
+    std::ostringstream oss;
+    for (size_t i = 1; i < args.size(); ++i) {
+        oss << args[i] << " ";
+    }
+    oss << "\n";
+    return oss.str();
+}
+
+// Register (for internal use)
+cli.AddCommand("echo", "Echo text", [&](const cli::Args& args) {
+    lastOutput = handleEcho(args);  // Store in a member variable
+});
+```
+
+But an even cleaner way: **don’t use lambdas that print — use a central evaluator**.
+
+#### Step 3: Create a Qt-compatible evaluate function
+
+```cpp
+// ReplEngine.h
+#include "cli.h"
+#include <QString>
+
+class ReplEngine {
+public:
+    ReplEngine();  // Registers all commands
+    QString evaluate(const QString& inputLine);
+
+private:
+    cli::Cli cliParser;
+    QString lastResult;
+};
+```
+
+```cpp
+// ReplEngine.cpp
+#include "ReplEngine.h"
+
+ReplEngine::ReplEngine() {
+    // Example command
+    cliParser.AddCommand("echo", "Echo args", [&](const cli::Args& args) {
+        if (args.size() < 2) {
+            lastResult = "Usage: echo <text...>\n";
+            return;
+        }
+        QStringList parts;
+        for (size_t i = 1; i < args.size(); ++i) {
+            parts << QString::fromStdString(args[i]);
+        }
+        lastResult = parts.join(" ") + "\n";
+    });
+
+    cliParser.AddCommand("help", "Show help", [&](const cli::Args&) {
+        std::ostringstream oss;
+        cliParser.PrintHelp(oss);
+        lastResult = QString::fromStdString(oss.str());
+    });
+
+    // Add your other commands similarly...
+}
+
+QString ReplEngine::evaluate(const QString& inputLine) {
+    lastResult.clear();
+
+    if (inputLine.trimmed().isEmpty()) {
+        return "";
+    }
+
+    // Tokenize input (simple whitespace split)
+    // For better parsing (quotes, escapes), use a proper shell lexer
+    QStringList qtArgs = inputLine.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+    std::vector<std::string> args;
+    for (const QString& arg : qtArgs) {
+        args.push_back(arg.toStdString());
+    }
+
+    // Parse and dispatch
+    try {
+        bool recognized = cliParser.Parse(args);
+        if (!recognized) {
+            return "Unknown command. Type 'help' for available commands.\n";
+        }
+    } catch (const std::exception& e) {
+        return QString("Error: %1\n").arg(e.what());
+    }
+
+    return lastResult;
+}
+```
+
+> 🔎 **Note**: `cli::Cli::Parse()` returns `true` if a known command was found and executed. If `false`, it’s an unknown command.
+
+#### Step 4: Use this `ReplEngine` in your Qt widget (as shown earlier)
+Your `ReplWidget` stays the same — it just calls `engine.evaluate(input)` and displays the result.
+
+---
+
+### ⚠️ Caveats & Tips
+
+1. **Tokenization**:
+   `input.split(QRegularExpression("\\s+"))` doesn’t handle quoted strings (`echo "hello world"`).
+   ➤ If you need that, use **`QProcess::splitCommand(input)`** (Qt 5.15+), which does shell-style splitting.
+
+2. **Stateful Commands**:
+   If your REPL commands rely on shared state (e.g., a database connection), pass a reference to that state into `ReplEngine`.
+
+3. **Help Formatting**:
+   `cli::Cli::PrintHelp()` outputs to a `std::ostream`. We capture it via `std::ostringstream`.
+
+4. **No Loop Needed**:
+   You’re **not calling `cli.run()`** — you’re just using `cli.Parse(...)` per line.
+
+---
+
+### ✅ Summary
+
+Yes! **daniele77/cli integrates very well** with a Qt-embedded REPL because:
+- It’s designed for interactive use.
+- It separates command logic from I/O.
+- You can drive parsing **one line at a time**.
+- You retain all your existing command definitions with minor refactoring.
+
+You get:
+- A native Qt widget REPL.
+- All your CLI commands available in the GUI.
+- Consistent help and validation.
+- No external processes or terminal emulation.
+
+If you’d like help adapting your specific commands or improving tokenization, feel free to share a snippet!
+#+end_src
+
+
+*** Create a "request response" helper                                 :code:
+
+At present we have a lot of code doing a similar pattern: send a request, then
+get the response and deserialise. We started to factor out this code in
+=client_manager=:
+
+#+begin_src c++
+    template <HasSerialize RequestType,
+              HasDeserialize ResponseType,
+              comms::protocol::message_type RequestMsgType>
+    std::optional<ResponseType> process_request(RequestType request) {
+#+end_src
+
+But this is just for the sync case. We should braintstorm with the LLMs:
+
+- what is the correct name for this pattern.
+- can we do it for the async case too.
+
+*** Opening and closing currencies does not work                       :code:
+
+We just get a black window.
+
+*** Add output option to repl                                          :code:
+
+It should be possible to set the "output type" or format in the shell, from json
+to table. Find the correct terminology for this.
+
+*** Update enums in message types to use magic enums                   :code:
+
+At present we cannot dump these to the logs easily.
+
+*** Split =protocol.hpp= into components                               :code:
+
+These files will become too large as we add more entities.
+
+*** Implement authentication bootstrap workflow                        :code:
+
+Notes:
+
+- when there are no accounts setup, the repl should say to the user that it
+  needs to create an admin account.
+- first account must be admin.
+- once there is an account we need to make sure the user is logged in before we
+  process most message types.
+
+Mongo message:
+
+#+begin_src logview
+2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] ** WARNING: Access control is not enabled for the database.
+2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] **          Read and write access to data and configuration is unrestricted.
+#+end_src
+
+Requirements:
+
+#+begin_src markdown
+# Authentication Bootstrapping Requirements
+
+## R1: Initial System State (Bootstrap Mode)
+
+The system **MUST** start in a special **"Bootstrap Mode"** where the only
+permitted action is the creation of the initial Administrator account.
+
+## R2: Access Control in Bootstrap Mode
+
+While the system is in Bootstrap Mode:
+
+- **R2.1: Allowed Endpoint:** The service **MUST** only expose and accept
+  requests for a single endpoint: `POST /api/v1/accounts/create-admin` (or
+  equivalent).
+- **R2.2: Local-Only Restriction:** All requests to the allowed endpoint
+  ,**MUST** originate from a **trusted local interface** (e.g., `127.0.0.1` or
+  the server's designated internal IP range). Requests from any external/public
+  IP address **MUST** be rejected.
+- **R2.3: General Endpoint Rejection:** All other API endpoints (e.g., login,
+  user creation, data access) **MUST** immediately return a $\mathbf{403}$
+  ,**Forbidden** or $\mathbf{401}$ **Unauthorized** status, along with a clear
+  message indicating the system is in setup mode.
+
+## R3: Initial Admin Account Creation
+
+The first account created through the allowed endpoint **MUST** adhere to the
+following:
+
+- **R3.1: Mandatory Admin Role:** The account **MUST** be assigned the highest
+  level of **Administrator privileges** (`is_admin: true`).
+- **R3.2: Strong Password Policy:** The request **MUST** be validated against a
+  strong password policy (e.g., minimum 12 characters, requiring a mix of case,
+  numbers, and symbols). Failure to meet this standard **MUST** result in a
+  $\mathbf{400}$ **Bad Request** error.
+- **R3.3: One-Time Execution:** The administrator creation process **MUST** only
+  be allowed to succeed **exactly once**.
+
+## R4: System State Transition
+
+Upon successful creation of the first Administrator account (R3):
+
+- **R4.1: State Change:** The system **MUST** immediately and atomically
+  transition from **"Bootstrap Mode"** to **"Secure Mode"**. This state change
+  ,**MUST** be persisted.
+- **R4.2: Bootstrap Endpoint Deactivation:** The `POST
+  /api/v1/accounts/create-admin` endpoint **MUST** be permanently disabled. Any
+  subsequent request to this endpoint **MUST** return a $\mathbf{403}$
+  ,**Forbidden** error.
+
+## R5: Secure Mode Operation
+
+Once the system is in **"Secure Mode"**:
+
+- **R5.1: General Access Control:** All operational API endpoints **MUST** now
+  enforce **full authentication and authorization**.
+- **R5.2: Mandatory Login:** All users, including the newly created
+  Administrator, **MUST** successfully complete a login process to obtain a
+  valid session token before accessing any resource.
+- **R5.3: Standard Account Creation:** The standard non-admin account creation
+  endpoint (`POST /api/v1/accounts/create`) **MUST** become available, subject
+  to any configured access controls (e.g., only open to logged-in Admins, or
+  fully public).
+#+end_src
+
+Links:
+
+- [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
+
+*** Tidy-up database code                                              :code:
+
+- add helpers to utility to ensure success, execute query, etc.
+- add helpers for max timestamp, timestamp.
+
+Merged stories:
+
+*Add max timestamp to utilities*
+
+We have it scattered around the code base.
+
+*** Invalid password should not throw                                  :code:
+
+At present in the unlock test we have:
+
+#+begin_src c++
+    BOOST_LOG_SEV(lg, info) << "Locking account by failing 5 login attempts";
+    auto ip = internet::ipv4();
+    for (int i = 0; i < 5; ++i) {
+        try {
+            sut.login(account.username, "wrong_password", ip);
+        } catch (...) {}
+    }
+#+end_src
+
+This is very suspicious; a failed login should just return false or the modern
+c++ equivalent (=std::expected=?).
+
+*** Faker with seeds                                                   :code:
+
+As suggested by phi4:
+
+#+begin_quote
+Faker Usage:
+
+Randomness: Ensure that the use of faker data is appropriate for testing.
+Consider seeding the random generator for reproducibility in tests.
+#+end_quote
+
+Notes:
+
+#include "faker-cxx/generator.h"
+void setSeed(std::mt19937_64::result_type seed)
+Catch::rngSeed()
+
 
 *** Improve handling of error responses                                :code:
 
@@ -1160,138 +1600,6 @@ By standardizing the **`error_response`** type, the client can always extract
 and display the relevant server-side failure reason, leading to much clearer
 logging and user feedback.
 #+end_src
-
-*** Implement authentication bootstrap workflow                        :code:
-
-Notes:
-
-- when there are no accounts setup, the repl should say to the user that it
-  needs to create an admin account.
-- first account must be admin.
-- once there is an account we need to make sure the user is logged in before we
-  process most message types.
-
-Mongo message:
-
-#+begin_src logview
-2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] ** WARNING: Access control is not enabled for the database.
-2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] **          Read and write access to data and configuration is unrestricted.
-#+end_src
-
-Requirements:
-
-#+begin_src markdown
-# Authentication Bootstrapping Requirements
-
-## R1: Initial System State (Bootstrap Mode)
-
-The system **MUST** start in a special **"Bootstrap Mode"** where the only
-permitted action is the creation of the initial Administrator account.
-
-## R2: Access Control in Bootstrap Mode
-
-While the system is in Bootstrap Mode:
-
-- **R2.1: Allowed Endpoint:** The service **MUST** only expose and accept
-  requests for a single endpoint: `POST /api/v1/accounts/create-admin` (or
-  equivalent).
-- **R2.2: Local-Only Restriction:** All requests to the allowed endpoint
-  ,**MUST** originate from a **trusted local interface** (e.g., `127.0.0.1` or
-  the server's designated internal IP range). Requests from any external/public
-  IP address **MUST** be rejected.
-- **R2.3: General Endpoint Rejection:** All other API endpoints (e.g., login,
-  user creation, data access) **MUST** immediately return a $\mathbf{403}$
-  ,**Forbidden** or $\mathbf{401}$ **Unauthorized** status, along with a clear
-  message indicating the system is in setup mode.
-
-## R3: Initial Admin Account Creation
-
-The first account created through the allowed endpoint **MUST** adhere to the
-following:
-
-- **R3.1: Mandatory Admin Role:** The account **MUST** be assigned the highest
-  level of **Administrator privileges** (`is_admin: true`).
-- **R3.2: Strong Password Policy:** The request **MUST** be validated against a
-  strong password policy (e.g., minimum 12 characters, requiring a mix of case,
-  numbers, and symbols). Failure to meet this standard **MUST** result in a
-  $\mathbf{400}$ **Bad Request** error.
-- **R3.3: One-Time Execution:** The administrator creation process **MUST** only
-  be allowed to succeed **exactly once**.
-
-## R4: System State Transition
-
-Upon successful creation of the first Administrator account (R3):
-
-- **R4.1: State Change:** The system **MUST** immediately and atomically
-  transition from **"Bootstrap Mode"** to **"Secure Mode"**. This state change
-  ,**MUST** be persisted.
-- **R4.2: Bootstrap Endpoint Deactivation:** The `POST
-  /api/v1/accounts/create-admin` endpoint **MUST** be permanently disabled. Any
-  subsequent request to this endpoint **MUST** return a $\mathbf{403}$
-  ,**Forbidden** error.
-
-## R5: Secure Mode Operation
-
-Once the system is in **"Secure Mode"**:
-
-- **R5.1: General Access Control:** All operational API endpoints **MUST** now
-  enforce **full authentication and authorization**.
-- **R5.2: Mandatory Login:** All users, including the newly created
-  Administrator, **MUST** successfully complete a login process to obtain a
-  valid session token before accessing any resource.
-- **R5.3: Standard Account Creation:** The standard non-admin account creation
-  endpoint (`POST /api/v1/accounts/create`) **MUST** become available, subject
-  to any configured access controls (e.g., only open to logged-in Admins, or
-  fully public).
-#+end_src
-
-Links:
-
-- [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
-
-*** Add max timestamp to utilities                                     :code:
-
-We have it scattered around the code base.
-
-*** Tidy-up database code                                              :code:
-
-- add helpers to utility to ensure success, execute query, etc.
-- add helpers for max timestamp, timestamp.
-
-*** Invalid password should not throw                                  :code:
-
-At present in the unlock test we have:
-
-#+begin_src c++
-    BOOST_LOG_SEV(lg, info) << "Locking account by failing 5 login attempts";
-    auto ip = internet::ipv4();
-    for (int i = 0; i < 5; ++i) {
-        try {
-            sut.login(account.username, "wrong_password", ip);
-        } catch (...) {}
-    }
-#+end_src
-
-This is very suspicious; a failed login should just return false or the modern
-c++ equivalent (=std::expected=?).
-
-*** Faker with seeds                                                   :code:
-
-As suggested by phi4:
-
-#+begin_quote
-Faker Usage:
-
-Randomness: Ensure that the use of faker data is appropriate for testing.
-Consider seeding the random generator for reproducibility in tests.
-#+end_quote
-
-Notes:
-
-#include "faker-cxx/generator.h"
-void setSeed(std::mt19937_64::result_type seed)
-Catch::rngSeed()
-
 
 *** Use prebuilt qt                                                    :code:
 

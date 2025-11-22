@@ -75,7 +75,7 @@ private:
 
 public:
     frame();
-    frame(message_type type, std::uint32_t sequence, std::vector<std::uint8_t> payload);
+    frame(message_type type, std::uint32_t sequence, std::vector<std::byte> payload);
 
     /**
      * @brief Get the frame header.
@@ -85,7 +85,7 @@ public:
     /**
      * @brief Get the payload.
      */
-    const std::vector<std::uint8_t>& payload() const { return payload_; }
+    const std::vector<std::byte>& payload() const { return payload_; }
 
     /**
      * @brief Serialize frame to bytes.
@@ -93,7 +93,7 @@ public:
      * Calculates CRC32 over header (excluding CRC field) and payload,
      * then serializes to network byte order.
      */
-    std::vector<std::uint8_t> serialize() const;
+    std::vector<std::byte> serialize() const;
 
     /**
      * @brief Deserialize and validate header from bytes.
@@ -108,7 +108,7 @@ public:
      *        version mismatch response instead of rejecting the frame immediately.
      */
     static std::expected<frame_header, error_code> deserialize_header(
-        std::span<const std::uint8_t> data, bool skip_version_check = false);
+        std::span<const std::byte> data, bool skip_version_check = false);
 
     /**
      * @brief Deserialize complete frame using a pre-parsed header.
@@ -117,7 +117,8 @@ public:
      * Validates CRC32 checksum over the entire frame.
      * Returns error if validation fails.
      */
-    static std::expected<frame, error_code> deserialize(const frame_header& header, std::span<const std::uint8_t> data);
+    static std::expected<frame, error_code>
+    deserialize(const frame_header& header, std::span<const std::byte> data);
 
     /**
      * @brief Validate frame integrity.
@@ -128,7 +129,7 @@ public:
 
 private:
     frame_header header_;
-    std::vector<std::uint8_t> payload_;
+    std::vector<std::byte> payload_;
 
     /**
      * @brief Calculate CRC32 for the frame.
@@ -140,7 +141,7 @@ private:
     /**
      * @brief Serialize header to bytes in network byte order.
      */
-    void serialize_header(frame_header header, std::span<std::uint8_t> buffer) const;
+    void serialize_header(frame_header header, std::span<std::byte> buffer) const;
 };
 
 std::ostream& operator<<(std::ostream& s, const frame_header& v);

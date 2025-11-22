@@ -46,7 +46,7 @@ private:
     }
 
 public:
-    explicit CurrencyMdiWindow(std::shared_ptr<comms::client> client,
+    explicit CurrencyMdiWindow(std::shared_ptr<comms::net::client> client,
                                QWidget* parent = nullptr);
     ~CurrencyMdiWindow() override;
 
@@ -92,7 +92,7 @@ private:
     QAction* historyAction_;
 
     std::unique_ptr<ClientCurrencyModel> currencyModel_;
-    std::shared_ptr<comms::client> client_;
+    std::shared_ptr<comms::net::client> client_;
 };
 
 }

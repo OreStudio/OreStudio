@@ -39,13 +39,13 @@ struct handshake_request final {
     /**
      * @brief Serialize to frame payload.
      */
-    static std::vector<std::uint8_t> serialize(handshake_request v);
+    static std::vector<std::byte> serialize(handshake_request v);
 
     /**
      * @brief Deserialize from frame payload.
      */
     static std::expected<handshake_request, error_code>
-    deserialize(std::span<const std::uint8_t> data);
+    deserialize(std::span<const std::byte> data);
 };
 
 /**
@@ -61,12 +61,13 @@ struct handshake_response final {
     /**
      * @brief Serialize to frame payload.
      */
-    static std::vector<std::uint8_t> serialize(handshake_response v);
+    static std::vector<std::byte> serialize(handshake_response v);
 
     /**
      * @brief Deserialize from frame payload.
      */
-    static std::expected<handshake_response, error_code> deserialize(std::span<const std::uint8_t> data);
+    static std::expected<handshake_response, error_code>
+    deserialize(std::span<const std::byte> data);
 };
 
 /**
@@ -78,12 +79,13 @@ struct handshake_ack final {
     /**
      * @brief Serialize to frame payload.
      */
-    static std::vector<std::uint8_t> serialize(handshake_ack v);
+    static std::vector<std::byte> serialize(handshake_ack v);
 
     /**
      * @brief Deserialize from frame payload.
      */
-    static std::expected<handshake_ack, error_code> deserialize(std::span<const std::uint8_t> data);
+    static std::expected<handshake_ack, error_code>
+    deserialize(std::span<const std::byte> data);
 };
 
 /**
@@ -96,12 +98,12 @@ struct error_response final {
     /**
      * @brief Serialize to frame payload.
      */
-    static std::vector<std::uint8_t> serialize(error_response v);
+    static std::vector<std::byte> serialize(error_response v);
 
     /**
      * @brief Deserialize from frame payload.
      */
-    static std::expected<error_response, error_code> deserialize(std::span<const std::uint8_t> data);
+    static std::expected<error_response, error_code> deserialize(std::span<const std::byte> data);
 };
 
 /**

@@ -28,10 +28,10 @@ using namespace ores::utility::log;
 risk_message_handler::risk_message_handler(utility::repository::context ctx)
     : ctx_(std::move(ctx)) {}
 
-boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      comms::protocol::error_code>>
 risk_message_handler::handle_message(comms::protocol::message_type type,
-    std::span<const std::uint8_t> payload, const std::string& remote_address) {
+    std::span<const std::byte> payload, const std::string& remote_address) {
 
     BOOST_LOG_SEV(lg(), debug) << "Handling risk message type "
                                << std::hex << static_cast<std::uint16_t>(type);
@@ -52,10 +52,10 @@ risk_message_handler::handle_message(comms::protocol::message_type type,
     }
 }
 
-boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      comms::protocol::error_code>>
 risk_message_handler::
-handle_save_currency_request(std::span<const std::uint8_t> payload) {
+handle_save_currency_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing save_currency_request.";
 
     // Deserialize request
@@ -86,10 +86,10 @@ handle_save_currency_request(std::span<const std::uint8_t> payload) {
     co_return response.serialize();
 }
 
-boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      comms::protocol::error_code>>
 risk_message_handler::
-handle_get_currencies_request(std::span<const std::uint8_t> payload) {
+handle_get_currencies_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing get_currencies_request.";
 
     // Deserialize request
@@ -109,10 +109,10 @@ handle_get_currencies_request(std::span<const std::uint8_t> payload) {
     co_return response.serialize();
 }
 
-boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      comms::protocol::error_code>>
 risk_message_handler::
-handle_delete_currency_request(std::span<const std::uint8_t> payload) {
+handle_delete_currency_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_currency_request.";
 
     // Deserialize request
@@ -143,10 +143,10 @@ handle_delete_currency_request(std::span<const std::uint8_t> payload) {
     co_return response.serialize();
 }
 
-boost::asio::awaitable<std::expected<std::vector<std::uint8_t>,
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      comms::protocol::error_code>>
 risk_message_handler::
-handle_get_currency_history_request(std::span<const std::uint8_t> payload) {
+handle_get_currency_history_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing get_currency_history_request.";
 
     // Deserialize request

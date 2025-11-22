@@ -106,7 +106,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     updateSaveResetButtonState();
 }
 
-void CurrencyDetailDialog::setClient(std::shared_ptr<comms::client> client) {
+void CurrencyDetailDialog::setClient(std::shared_ptr<comms::net::client> client) {
     client_ = std::move(client);
 }
 

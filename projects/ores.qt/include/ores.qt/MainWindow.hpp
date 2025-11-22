@@ -97,7 +97,7 @@ public:
      * @brief Get the connected client instance.
      * @return Shared pointer to the client, or nullptr if not connected.
      */
-    std::shared_ptr<comms::client> getClient() const { return client_; }
+    std::shared_ptr<comms::net::client> getClient() const { return client_; }
 
 protected:
     /**
@@ -206,7 +206,7 @@ private:
     std::unique_ptr<std::thread> io_thread_;
 
     /** @brief Client connection to the server */
-    std::shared_ptr<comms::client> client_;
+    std::shared_ptr<comms::net::client> client_;
 
     /** @brief Username of currently logged-in user */
     std::string username_;

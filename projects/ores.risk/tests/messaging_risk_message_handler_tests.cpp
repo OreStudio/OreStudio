@@ -340,7 +340,7 @@ TEST_CASE("handle_invalid_message_type",
     scoped_database_helper h(database_table);
     risk_message_handler handler(h.context());
 
-    std::vector<std::uint8_t> empty_payload;
+    std::vector<std::byte> empty_payload;
 
     boost::asio::io_context io_context;
     bool test_completed = false;

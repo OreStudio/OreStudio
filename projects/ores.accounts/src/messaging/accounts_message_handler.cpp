@@ -33,7 +33,7 @@ accounts_message_handler::accounts_message_handler(utility::repository::context 
 
 accounts_message_handler::handler_result
 accounts_message_handler::handle_message(message_type type,
-    std::span<const std::uint8_t> payload, const std::string& remote_address) {
+    std::span<const std::byte> payload, const std::string& remote_address) {
 
     BOOST_LOG_SEV(lg(), debug) << "Handling accounts message type: "
                                << std::hex << static_cast<std::uint16_t>(type);
@@ -57,7 +57,7 @@ accounts_message_handler::handle_message(message_type type,
 }
 
 accounts_message_handler::handler_result accounts_message_handler::
-handle_create_account_request(std::span<const std::uint8_t> payload) {
+handle_create_account_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing create_account_request.";
 
     auto request_result = create_account_request::deserialize(payload);
@@ -82,7 +82,7 @@ handle_create_account_request(std::span<const std::uint8_t> payload) {
 
 accounts_message_handler::handler_result
 accounts_message_handler::accounts_message_handler::
-handle_list_accounts_request(std::span<const std::uint8_t> payload) {
+handle_list_accounts_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing list_accounts_request.";
 
     auto request_result = list_accounts_request::deserialize(payload);
@@ -100,7 +100,7 @@ handle_list_accounts_request(std::span<const std::uint8_t> payload) {
 }
 
 accounts_message_handler::handler_result accounts_message_handler::
-handle_login_request(std::span<const std::uint8_t> payload,
+handle_login_request(std::span<const std::byte> payload,
     const std::string& remote_address) {
     BOOST_LOG_SEV(lg(), debug) << "Processing login_request from "
                                << remote_address;
@@ -155,7 +155,7 @@ handle_login_request(std::span<const std::uint8_t> payload,
 }
 
 accounts_message_handler::handler_result accounts_message_handler::
-handle_unlock_account_request(std::span<const std::uint8_t> payload) {
+handle_unlock_account_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing unlock_account_request";
 
     auto request_result = unlock_account_request::deserialize(payload);
@@ -188,7 +188,7 @@ handle_unlock_account_request(std::span<const std::uint8_t> payload) {
 }
 
 accounts_message_handler::handler_result accounts_message_handler::
-handle_delete_account_request(std::span<const std::uint8_t> payload) {
+handle_delete_account_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_account_request";
 
     auto request_result = delete_account_request::deserialize(payload);

@@ -57,7 +57,7 @@ public:
      * @brief Get the connected client instance.
      * @return Shared pointer to the connected client, or nullptr if login failed.
      */
-    std::shared_ptr<comms::client> getClient() const { return client_; }
+    std::shared_ptr<comms::net::client> getClient() const { return client_; }
 
     /**
      * @brief Get the logged-in username.
@@ -120,7 +120,7 @@ private:
     std::unique_ptr<boost::asio::executor_work_guard<
         boost::asio::io_context::executor_type>> work_guard_;
     std::unique_ptr<std::thread> io_thread_;
-    std::shared_ptr<comms::client> client_;
+    std::shared_ptr<comms::net::client> client_;
 };
 
 }

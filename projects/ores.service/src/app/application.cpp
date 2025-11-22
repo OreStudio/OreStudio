@@ -59,29 +59,16 @@ application::application() = default;
 
 boost::asio::awaitable<void> application::
 run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
-    BOOST_LOG_SEV(lg(), info) << "Starting ORE Studio Service v"
-                              << ORES_VERSION;
+    BOOST_LOG_SEV(lg(), info) << "Starting ORE Studio Service v" << ORES_VERSION;
 
-    // Configure server from parsed options
-    ores::comms::server_config server_cfg;
-    server_cfg.port = cfg.server.port;
-    server_cfg.max_connections = cfg.server.max_connections;
-    server_cfg.certificate_file = cfg.server.certificate_file;
-    server_cfg.private_key_file = cfg.server.private_key_file;
-    server_cfg.server_identifier = cfg.server.server_identifier;
-
-    // Create database context from configuration
     auto ctx = make_context(cfg.database);
-
-    // Create server and register message handlers
-    ores::comms::server srv(server_cfg);
+    ores::comms::net::server srv(cfg.server);
     ores::risk::messaging::registrar::register_handlers(srv, ctx);
     ores::accounts::messaging::registrar::register_handlers(srv, ctx);
 
-    // Run server
     co_await srv.run(io_ctx);
 
-    BOOST_LOG_SEV(lg(), info) << "ORES Service stopped normally";
+    BOOST_LOG_SEV(lg(), info) << "ORES Service stopped normally.";
 }
 
 }

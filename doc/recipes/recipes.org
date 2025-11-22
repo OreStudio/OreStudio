@@ -8,9 +8,8 @@
 
 Notebooks on how to use ORE Studio.
 
-- [[id:60086B77-B674-0B34-10AB-BF8AF3F8D75E][CLI Recipes (Legacy)]]: How to use the CLI tool with command-based syntax.
-- [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI Recipes (Entity-Based)]]: How to use the CLI tool with new entity-based syntax.
-- [[id:2E53EE1A-6856-6904-7FEB-AC95C6722A63][Client Recipes]]: How to use the client REPL.
+- [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI Recipes]]: How to use the CLI tool with new entity-based syntax.
+- [[id:2E53EE1A-6856-6904-7FEB-AC95C6722A63][ORE Studio Shell Recipes]]: How to use the client REPL.
 - [[id:B5F94CD2-E6E0-9F44-BB13-4C2CEEF01A44][Git Recipes]]: Tips and tricks for Git.
 
 | Previous: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] |

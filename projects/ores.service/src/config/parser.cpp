@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
+#include "ores.comms/net/server_options.hpp"
 #include "ores.service/config/parser_exception.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/log/logging_configuration.hpp"
@@ -49,8 +50,8 @@ using boost::program_options::variables_map;
 using boost::program_options::parsed_options;
 using boost::program_options::options_description;
 
+using ores::comms::net::server_options;
 using ores::service::config::options;
-using ores::service::config::server_options;
 using ores::service::config::parser_exception;
 
 /**

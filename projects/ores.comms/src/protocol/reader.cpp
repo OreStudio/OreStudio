@@ -24,7 +24,7 @@
 namespace ores::comms::protocol {
 
 std::expected<std::uint16_t, comms::protocol::error_code>
-reader::read_uint16(std::span<const std::uint8_t>& data) {
+reader::read_uint16(std::span<const std::byte>& data) {
     if (data.size() < 2) {
         return std::unexpected(comms::protocol::error_code::payload_too_large);
     }
@@ -35,7 +35,7 @@ reader::read_uint16(std::span<const std::uint8_t>& data) {
 }
 
 std::expected<std::uint32_t, comms::protocol::error_code>
-reader::read_uint32(std::span<const std::uint8_t>& data) {
+reader::read_uint32(std::span<const std::byte>& data) {
     if (data.size() < 4) {
         return std::unexpected(comms::protocol::error_code::payload_too_large);
     }
@@ -48,7 +48,7 @@ reader::read_uint32(std::span<const std::uint8_t>& data) {
 }
 
 std::expected<std::string, comms::protocol::error_code>
-reader::read_string(std::span<const std::uint8_t>& data) {
+reader::read_string(std::span<const std::byte>& data) {
     auto len_result = read_uint16(data);
     if (!len_result) {
         return std::unexpected(len_result.error());
@@ -63,22 +63,27 @@ reader::read_string(std::span<const std::uint8_t>& data) {
 }
 
 std::expected<boost::uuids::uuid, comms::protocol::error_code>
-reader::read_uuid(std::span<const std::uint8_t>& data) {
+reader::read_uuid(std::span<const std::byte>& data) {
     if (data.size() < 16) {
         return std::unexpected(comms::protocol::error_code::payload_too_large);
     }
     boost::uuids::uuid uuid;
-    std::copy_n(data.begin(), 16, uuid.begin());
+    std::memcpy(
+        uuid.data(),
+        reinterpret_cast<const unsigned char*>(data.data()),
+        16
+    );
+
     data = data.subspan(16);
     return uuid;
 }
 
 std::expected<bool, comms::protocol::error_code>
-reader::read_bool(std::span<const std::uint8_t>& data) {
+reader::read_bool(std::span<const std::byte>& data) {
     if (data.size() < 1) {
         return std::unexpected(comms::protocol::error_code::payload_too_large);
     }
-    bool value = data[0] != 0;
+    bool value = std::to_integer<uint8_t>(data[0]);
     data = data.subspan(1);
     return value;
 }

@@ -23,7 +23,7 @@
 #include <boost/asio/write.hpp>
 #include <boost/asio/use_awaitable.hpp>
 
-namespace ores::comms {
+namespace ores::comms::net {
 
 using namespace ores::utility::log;
 
@@ -46,7 +46,7 @@ connection::read_frame(bool skip_version_check) {
                                  << " (skip_version_check=" << skip_version_check << ")";
 
         // Read the fixed 32-byte header first
-        std::vector<std::uint8_t> buffer(protocol::frame_header::size);
+        std::vector<std::byte> buffer(protocol::frame_header::size);
         co_await boost::asio::async_read(
             socket_,
             boost::asio::buffer(buffer),
@@ -58,7 +58,7 @@ connection::read_frame(bool skip_version_check) {
         // Deserialize and validate the header.
         // validates magic, version, type, reserved fields, payload size.
         auto header_result = protocol::frame::deserialize_header(
-            std::span<const std::uint8_t>(buffer), skip_version_check);
+            std::span<const std::byte>(buffer), skip_version_check);
         if (!header_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to deserialize header, error: "
                                      << static_cast<int>(header_result.error());
@@ -82,7 +82,7 @@ connection::read_frame(bool skip_version_check) {
 
         // Deserialize the complete frame (validates CRC)
         auto frame_result = protocol::frame::deserialize(header,
-            std::span<const std::uint8_t>(buffer));
+            std::span<const std::byte>(buffer));
         if (!frame_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to deserialize frame, error: "
                                      << static_cast<int>(frame_result.error());

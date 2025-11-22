@@ -355,7 +355,7 @@ TEST_CASE("handle_invalid_message_type", tags) {
     scoped_database_helper h(database_table);
     accounts_message_handler sut(h.context());
 
-    std::vector<std::uint8_t> empty_payload;
+    std::vector<std::byte> empty_payload;
     boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(

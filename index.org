@@ -5,7 +5,7 @@
 #+AUTHOR:     Marco Craveiro et al.
 #+EMAIL:      marco.craveiro@gmail.com
 #+LANGUAGE:   en
-#+OPTIONS:    html-postamble:nil toc:nil num:nil ^:nil title:nil
+#+OPTIONS: html-postamble:nil toc:nil num:nil ^:nil title:nil
 #+HTML_DOCTYPE: html5
 
 #+HTML: <header>

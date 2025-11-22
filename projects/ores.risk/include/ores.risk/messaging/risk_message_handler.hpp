@@ -59,17 +59,17 @@ public:
      * @param remote_address The remote endpoint address of the client connection
      * @return Expected containing response payload, or error code
      */
-    boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::protocol::error_code>>
     handle_message(comms::protocol::message_type type,
-        std::span<const std::uint8_t> payload,
+        std::span<const std::byte> payload,
         const std::string& remote_address) override;
 
 private:
     /**
      * @brief Handle get_currencies_request message.
      */
-    boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
-    handle_get_currencies_request(std::span<const std::uint8_t> payload);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::protocol::error_code>>
+    handle_get_currencies_request(std::span<const std::byte> payload);
 
     /**
      * @brief Handle save_currency_request message (create or update).
@@ -78,20 +78,20 @@ private:
      * result in writing a new record. Database triggers handle temporal
      * versioning automatically.
      */
-    boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
-    handle_save_currency_request(std::span<const std::uint8_t> payload);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::protocol::error_code>>
+    handle_save_currency_request(std::span<const std::byte> payload);
 
     /**
      * @brief Handle delete_currency_request message.
      */
-    boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
-    handle_delete_currency_request(std::span<const std::uint8_t> payload);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::protocol::error_code>>
+    handle_delete_currency_request(std::span<const std::byte> payload);
 
     /**
      * @brief Handle get_currency_history_request message.
      */
-    boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
-    handle_get_currency_history_request(std::span<const std::uint8_t> payload);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::protocol::error_code>>
+    handle_get_currency_history_request(std::span<const std::byte> payload);
 
     utility::repository::context ctx_;
     repository::currency_repository currency_repo_;

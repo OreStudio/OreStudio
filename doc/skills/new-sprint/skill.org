@@ -3,7 +3,7 @@
 :END:
 #+title: New Sprint Skill
 #+author: Marco Craveiro
-#+options: title:nil <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
 #+startup: inlineimages
 #+export_exclude_tags: noexport
 

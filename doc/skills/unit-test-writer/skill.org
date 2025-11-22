@@ -1,0 +1,311 @@
+:PROPERTIES:
+:ID: cb56337e-4839-4048-b5a7-c481812ce3d0
+:END:
+#+title: Unit Test Writer
+#+author: Marco Craveiro
+#+options: title:nil <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+#+begin_export markdown
+---
+name: unit-test-writer
+description: Generate Catch2 unit tests following ORE Studio conventions.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+
+* When to use this skill
+
+When you need to create unit tests for a component following the ORE Studio
+testing patterns and conventions.
+
+
+* How to use this skill
+
+1. Identify the component and layer being tested (domain, repository, service,
+   etc.)
+2. Determine the type of tests needed (basic construction, JSON I/O, database
+   operations)
+3. Follow the detailed instructions to generate tests using Catch2 framework
+
+* Detailed instructions
+
+** Step 1: Understand Test File Organization
+
+Tests are located under =projects/COMPONENT/tests/= with the naming pattern:
+
+- =LAYER_CLASS_tests.cpp= - e.g., =domain_account_tests.cpp=, =repository_account_repository_tests.cpp=
+
+Common layers:
+
+- =domain= - Domain entity tests
+- =repository= - Database repository tests
+- =service= - Service layer tests
+- =security= - Security-related tests
+
+** Step 2: Standard File Structure
+
+Every test file should follow this structure:
+
+#+begin_src cpp
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ ,*
+ ,* Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ ,*
+ ,* This program is free software; you can redistribute it and/or modify it under
+ ,* the terms of the GNU General Public License as published by the Free Software
+ ,* Foundation; either version 3 of the License, or (at your option) any later
+ ,* version.
+ ,*
+ ,* This program is distributed in the hope that it will be useful, but WITHOUT
+ ,* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ ,* FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ ,* details.
+ ,*
+ ,* You should have received a copy of the GNU General Public License along with
+ ,* this program; if not, write to the Free Software Foundation, Inc., 51
+ ,* Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ ,*
+ ,*/
+#include "COMPONENT/LAYER/CLASS.hpp"
+
+#include <catch2/catch_test_macros.hpp>
+// Additional includes as needed
+
+namespace {
+
+const std::string test_suite("COMPONENT.tests");
+const std::string tags("[LAYER]");
+
+}
+
+// Using declarations for commonly used types
+
+// TEST_CASE definitions follow
+#+end_src
+
+
+** Step 3: Required Includes
+
+Include headers based on test type:
+
+- Basic Domain Tests
+
+  #+begin_src cpp
+  #include <catch2/catch_test_macros.hpp>
+  #include <faker-cxx/faker.h> // IWYU pragma: keep.
+  #include "ores.utility/log/make_logger.hpp"
+  #include "COMPONENT/domain/CLASS_json_io.hpp" // IWYU pragma: keep.
+  #+end_src
+
+- Repository Tests
+
+  #+begin_src cpp
+  #include <catch2/catch_test_macros.hpp>
+  #include <boost/uuid/uuid_io.hpp>
+  #include "ores.utility/log/make_logger.hpp"
+  #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+  #include "COMPONENT/generators/CLASS_generator.hpp"
+  #include "ores.testing/database_helper.hpp"
+  #+end_src
+
+** Step 4: Test Case Naming Conventions
+
+Use descriptive snake_case names:
+
+- =create_TYPE_with_valid_fields= - Basic construction
+- =TYPE_serialization_to_json= - JSON serialization
+- =create_TYPE_with_faker= - Faker-generated data
+- =write_single_TYPE= - Repository write operations
+- =read_latest_TYPE= - Repository read operations
+- =read_TYPE_by_FIELD= - Repository filtered reads
+
+** Step 5: Test Case Structure
+
+Every test case follows this pattern:
+
+#+begin_src cpp
+TEST_CASE("test_name", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Setup (e.g., database helper for repository tests)
+    // ...
+
+    // Create system under test
+    TYPE sut;
+    // ... initialize fields
+
+    // Log the test data
+    BOOST_LOG_SEV(lg, info) << "Description: " << sut;
+
+    // Assertions
+    CHECK(sut.field == expected_value);
+    CHECK_NOTHROW(some_operation());
+    // ...
+}
+#+end_src
+
+** Step 6: Domain Test Patterns
+
+Domain tests typically include:
+
+1. **Basic Construction**
+
+   #+begin_src cpp
+   TEST_CASE("create_TYPE_with_valid_fields", tags) {
+       auto lg(make_logger(test_suite));
+
+       TYPE sut;
+       sut.field1 = "value1";
+       sut.field2 = 42;
+       BOOST_LOG_SEV(lg, info) << "TYPE: " << sut;
+
+       CHECK(sut.field1 == "value1");
+       CHECK(sut.field2 == 42);
+   }
+   #+end_src
+
+2. **JSON Serialization**
+
+   #+begin_src cpp
+   TEST_CASE("TYPE_serialization_to_json", tags) {
+       auto lg(make_logger(test_suite));
+
+       TYPE sut;
+       // ... initialize
+       BOOST_LOG_SEV(lg, info) << "TYPE: " << sut;
+
+       std::ostringstream os;
+       os << sut;
+       const std::string json_output = os.str();
+
+       CHECK(!json_output.empty());
+       CHECK(json_output.find("expected_field") != std::string::npos);
+   }
+   #+end_src
+
+3. **Faker-Generated Data**
+
+   #+begin_src cpp
+   TEST_CASE("create_TYPE_with_faker", tags) {
+       auto lg(make_logger(test_suite));
+
+       TYPE sut;
+       sut.name = std::string(faker::word::noun());
+       sut.enabled = faker::datatype::boolean();
+       sut.description = std::string(faker::lorem::sentence());
+       BOOST_LOG_SEV(lg, info) << "TYPE: " << sut;
+
+       CHECK(!sut.name.empty());
+       CHECK(!sut.description.empty());
+   }
+   #+end_src
+
+
+** Step 7: Repository Test Patterns
+
+Repository tests require database setup:
+
+1. **Write Operations**
+
+   #+begin_src cpp
+   TEST_CASE("write_single_TYPE", tags) {
+       auto lg(make_logger(test_suite));
+
+       database_helper h;
+       h.truncate_table("oresdb.table_name");
+
+       TYPE_repository repo(h.context());
+       auto entity = generate_synthetic_TYPE();
+
+       BOOST_LOG_SEV(lg, debug) << "TYPE: " << entity;
+       CHECK_NOTHROW(repo.write(entity));
+   }
+   #+end_src
+
+2. **Read Operations**
+
+   #+begin_src cpp
+   TEST_CASE("read_latest_TYPES", tags) {
+       auto lg(make_logger(test_suite));
+
+       database_helper h;
+       h.truncate_table("oresdb.table_name");
+
+       TYPE_repository repo(h.context());
+       auto written = generate_synthetic_TYPES(3);
+       repo.write(written);
+
+       auto read = repo.read_latest();
+       BOOST_LOG_SEV(lg, debug) << "Read TYPES: " << read;
+
+       CHECK(!read.empty());
+       CHECK(read.size() >= written.size());
+   }
+   #+end_src
+
+** Step 8: Using Generators
+
+When generators exist for a type, use them instead of manual construction:
+
+#+begin_src cpp
+#include "COMPONENT/generators/TYPE_generator.hpp"
+
+using namespace ores::COMPONENT::generators;
+
+TEST_CASE("test_with_generator", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Single entity
+    auto entity = generate_synthetic_TYPE();
+
+    // Multiple entities
+    auto entities = generate_synthetic_TYPES(5);
+
+    // Use in tests...
+}
+#+end_src
+
+** Step 9: Common Tags
+
+Use appropriate tags for test categorization:
+
+- =[domain]= - Domain entity tests
+- =[repository]= - Repository/database tests
+- =[service]= - Service layer tests
+- =[security]= - Security-related tests
+- =[messaging]= - Message handling tests
+
+** Step 10: Best Practices
+
+1. **Logging**: Always log test data with =BOOST_LOG_SEV= for debugging
+2. **Database Cleanup**: Use =database_helper::truncate_table()= before repository tests
+3. **Descriptive Names**: Test names should clearly describe what is being tested
+4. **Assertions**: Use =CHECK= for non-fatal assertions, =REQUIRE= for fatal ones
+5. **Setup/Teardown**: Use database_helper which handles setup/teardown automatically
+6. **Faker Data**: Use faker-cxx for realistic random test data
+7. **Multiple Cases**: Test both happy paths and edge cases
+8. **Batch Operations**: Test both single and multiple entity operations for repositories
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

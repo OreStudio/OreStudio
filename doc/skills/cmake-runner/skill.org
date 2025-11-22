@@ -156,11 +156,11 @@ Within the preset directory:
   - Inside, there is one folder per test suite, e.g. =domain_account_tests=,
     =domain_feature_flags_tests=, and so on. These must match the test suite
     implementation files (e.g.
-    =projects/ores.accounts.tests/domain_account_tests.cpp=).
+    =projects/ores.accounts/tests/domain_account_tests.cpp=).
   - Inside the test suite folder, there is one log file per test, e.g.
     =account_serialization_to_json.log=. This must match the name of the unit
     test, e.g. =TEST_CASE("account_serialization_to_json", tags) {= in
-    =projects/ores.accounts.tests/domain_account_tests.cpp=.
+    =projects/ores.accounts/tests/domain_account_tests.cpp=.
 
 * Artefacts                                                        :noexport:
 

@@ -103,17 +103,18 @@ package "Domain Layer" #LIGHTYELLOW {
 
 ' Application Layer
 package "Application Layer" #LIGHTCORAL {
-    component [ores.client] as client #ECECEC
+    component [ores.shell] as shell #ECECEC
 
-    note right of client
-    Interactive REPL (Read-Eval-Print Loop) client for ORE Studio server:
-    - Interface: Command-line with command completion
-    - Connection: Connect/disconnect to ORE Studio server
-    - Currency Ops: List and retrieve currency data
-    - Account Ops: Create accounts, login, list accounts, unlock accounts
+    note right of shell
+    Interactive REPL (Read-Eval-Print Loop) shell for connecting to ORE Studio server:
+    - Interface: Interactive command-line with command completion
+    - Connection Management: Connect/disconnect to ORE Studio server
+    - Currency Operations: List and retrieve currency data
+    - Account Operations: Create accounts, login, list accounts, unlock accounts
     - Auto-Connect: Automatic connection and login from configuration file
     - Configuration: Boost program_options for CLI argument parsing
-    Organized into: config (configuration parsing), app (REPL and hosting) namespaces.
+    - Command Handlers: Modular command classes for connection, currencies, and accounts
+    Organized into: config (configuration parsing), app (REPL, client manager, commands) namespaces.
     end note
 
     component [ores.cli] as cli #ECECEC
@@ -168,10 +169,10 @@ risk --> utility
 accounts --> comms
 accounts --> utility
 
-' Dependencies - Client to Foundation/Domain/Infrastructure
-client --> utility
-client --> accounts
-client --> comms
+' Dependencies - Shell to Foundation/Domain/Infrastructure
+shell --> utility
+shell --> accounts
+shell --> comms
 
 ' Dependencies - Applications to all layers
 cli --> utility

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMMS_SERVER_HPP
-#define ORES_COMMS_SERVER_HPP
+#ifndef ORES_COMMS_NET_SERVER_HPP
+#define ORES_COMMS_NET_SERVER_HPP
 
 #include <string>
 #include <memory>

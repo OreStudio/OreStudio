@@ -21,8 +21,7 @@
 
 #include <fort.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <iomanip>
-#include <sstream>
+#include "ores.utility/datetime/datetime.hpp"
 
 namespace ores::accounts::domain {
 
@@ -37,10 +36,10 @@ std::string convert_to_table(const std::vector<login_info>& v) {
         std::string locked_status = li.locked ? "Y" : "N";
         std::string online_status = li.online ? "Y" : "N";
 
-        // Format the timestamp
-        auto time = std::chrono::system_clock::to_time_t(li.last_login);
-        std::stringstream ss;
-        ss << std::put_time(std::localtime(&time), "%Y-%m-%d %H:%M:%S");
+        // Format the timestamp using cross-platform utility
+        using utility::datetime::datetime;
+        auto timestamp_str = datetime::format_time_point(li.last_login,
+            "%Y-%m-%d %H:%M:%S");
 
         table << boost::uuids::to_string(li.account_id)
               << li.last_ip.to_string()
@@ -48,7 +47,7 @@ std::string convert_to_table(const std::vector<login_info>& v) {
               << li.failed_logins
               << locked_status
               << online_status
-              << ss.str()
+              << timestamp_str
               << fort::endr;
     }
     return table.to_string();

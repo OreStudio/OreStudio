@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_DOMAIN_ACCOUNT_JSON_IO_HPP
-#define ORES_ACCOUNTS_DOMAIN_ACCOUNT_JSON_IO_HPP
+#ifndef ORES_ACCOUNTS_DOMAIN_ACCOUNT_JSON_HPP
+#define ORES_ACCOUNTS_DOMAIN_ACCOUNT_JSON_HPP
 
 #include <string>
 #include <vector>

@@ -23,6 +23,7 @@
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.accounts/domain/feature_flags_json_io.hpp" // IWYU pragma: keep.
+#include "ores.accounts/domain/feature_flags_table.hpp"
 
 namespace {
 
@@ -147,4 +148,70 @@ TEST_CASE("create_system_feature_flags", tags) {
 
     CHECK(sut.name == "maintenance_mode");
     CHECK(sut.modified_by == "system");
+}
+
+TEST_CASE("feature_flags_convert_single_to_table", tags) {
+    auto lg(make_logger(test_suite));
+
+    feature_flags ff;
+    ff.name = "dark_mode";
+    ff.enabled = true;
+    ff.description = "Enables dark mode";
+    ff.modified_by = "admin";
+
+    std::vector<feature_flags> flags = {ff};
+    auto table = convert_to_table(flags);
+
+    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+
+    CHECK(!table.empty());
+    CHECK(table.find("dark_mode") != std::string::npos);
+    CHECK(table.find("Enables dark mode") != std::string::npos);
+}
+
+TEST_CASE("feature_flags_convert_multiple_to_table", tags) {
+    auto lg(make_logger(test_suite));
+
+    std::vector<feature_flags> flags;
+    for (int i = 0; i < 3; ++i) {
+        feature_flags ff;
+        ff.name = "feature_" + std::to_string(i);
+        ff.enabled = (i % 2 == 0);
+        ff.description = "Description for feature " + std::to_string(i);
+        ff.modified_by = "system";
+        flags.push_back(ff);
+    }
+
+    auto table = convert_to_table(flags);
+
+    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+
+    CHECK(!table.empty());
+    CHECK(table.find("feature_0") != std::string::npos);
+    CHECK(table.find("feature_1") != std::string::npos);
+    CHECK(table.find("feature_2") != std::string::npos);
+}
+
+TEST_CASE("feature_flags_table_with_faker_data", tags) {
+    auto lg(make_logger(test_suite));
+
+    std::vector<feature_flags> flags;
+    for (int i = 0; i < 5; ++i) {
+        feature_flags ff;
+        ff.name = std::string(faker::word::noun()) + "_feature";
+        ff.enabled = faker::datatype::boolean();
+        ff.description = std::string(faker::lorem::sentence());
+        ff.modified_by = std::string(faker::internet::username());
+        flags.push_back(ff);
+    }
+
+    auto table = convert_to_table(flags);
+
+    BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
+
+    CHECK(!table.empty());
+    // Verify all feature names appear in table
+    for (const auto& ff : flags) {
+        CHECK(table.find(ff.name) != std::string::npos);
+    }
 }

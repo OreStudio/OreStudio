@@ -24,6 +24,7 @@
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.accounts/domain/account_json_io.hpp" // IWYU pragma: keep.
+#include "ores.accounts/domain/account_table.hpp"
 
 namespace {
 
@@ -174,5 +175,100 @@ TEST_CASE("create_multiple_random_accounts", tags) {
         CHECK(sut.version >= 1);
         CHECK(!sut.username.empty());
         CHECK(!sut.email.empty());
+    }
+}
+
+TEST_CASE("account_convert_single_to_table", tags) {
+    auto lg(make_logger(test_suite));
+
+    account acc;
+    acc.version = 1;
+    acc.modified_by = "admin";
+    acc.id = boost::uuids::random_generator()();
+    acc.username = "john.doe";
+    acc.password_hash = "hash123";
+    acc.password_salt = "salt456";
+    acc.totp_secret = "TOTP789";
+    acc.email = "john.doe@example.com";
+    acc.is_admin = false;
+
+    std::vector<account> accounts = {acc};
+    auto table = convert_to_table(accounts);
+
+    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+
+    CHECK(!table.empty());
+    CHECK(table.find("john.doe") != std::string::npos);
+    CHECK(table.find("john.doe@example.com") != std::string::npos);
+}
+
+TEST_CASE("account_convert_multiple_to_table", tags) {
+    auto lg(make_logger(test_suite));
+
+    std::vector<account> accounts;
+    for (int i = 0; i < 3; ++i) {
+        account acc;
+        acc.version = i + 1;
+        acc.modified_by = "system";
+        acc.id = boost::uuids::random_generator()();
+        acc.username = "user" + std::to_string(i);
+        acc.password_hash = "hash" + std::to_string(i);
+        acc.password_salt = "salt" + std::to_string(i);
+        acc.totp_secret = "TOTP" + std::to_string(i);
+        acc.email = "user" + std::to_string(i) + "@example.com";
+        acc.is_admin = (i == 0);
+        accounts.push_back(acc);
+    }
+
+    auto table = convert_to_table(accounts);
+
+    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+
+    CHECK(!table.empty());
+    CHECK(table.find("user0") != std::string::npos);
+    CHECK(table.find("user1") != std::string::npos);
+    CHECK(table.find("user2") != std::string::npos);
+    CHECK(table.find("user0@example.com") != std::string::npos);
+    CHECK(table.find("user1@example.com") != std::string::npos);
+    CHECK(table.find("user2@example.com") != std::string::npos);
+}
+
+TEST_CASE("account_convert_empty_vector_to_table", tags) {
+    auto lg(make_logger(test_suite));
+
+    std::vector<account> accounts;
+    auto table = convert_to_table(accounts);
+
+    BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
+
+    CHECK(!table.empty()); // Table should still have headers
+}
+
+TEST_CASE("account_table_with_faker_data", tags) {
+    auto lg(make_logger(test_suite));
+
+    std::vector<account> accounts;
+    for (int i = 0; i < 5; ++i) {
+        account acc;
+        acc.version = faker::number::integer(1, 10);
+        acc.modified_by = std::string(faker::internet::username());
+        acc.id = boost::uuids::random_generator()();
+        acc.username = std::string(faker::internet::username());
+        acc.password_hash = faker::number::hexadecimal(64);
+        acc.password_salt = faker::number::hexadecimal(32);
+        acc.totp_secret = faker::string::alphanumeric(16);
+        acc.email = std::string(faker::internet::email());
+        acc.is_admin = faker::datatype::boolean();
+        accounts.push_back(acc);
+    }
+
+    auto table = convert_to_table(accounts);
+
+    BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
+
+    CHECK(!table.empty());
+    // Verify all usernames appear in table
+    for (const auto& acc : accounts) {
+        CHECK(table.find(acc.username) != std::string::npos);
     }
 }

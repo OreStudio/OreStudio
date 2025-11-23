@@ -115,27 +115,6 @@
   "Filter OUTPUT from ores-shell process."
   (replace-regexp-in-string "\r" "" output))
 
-(define-derived-mode ores-shell-mode comint-mode "Ores-Shell"
-  "Major mode for interacting with ORE Studio shell executable.
-
-Major commands:
-\\[comint-send-input] - Send input
-\\[ores-shell-disconnect] - Send disconnect command
-\\[comint-interrupt-subjob] - Interrupt current command
-
-Example session:
-  ores-shell> connect localhost 55555 test
-  ores-shell> accounts create newuser3 123 567 newuser3@example.com 1
-  ores-shell> help
-  ores-shell> exit"
-  :syntax-table nil :abbrev-table nil
-  (setq comint-prompt-regexp (concat "^" (regexp-quote ores-shell-prompt)))
-  (setq comint-prompt-read-only t)
-  (font-lock-add-keywords nil ores-shell-font-lock-keywords)
-
-  (setq-local paragraph-start comint-prompt-regexp)
-  (ores-shell--setup-comint))
-
 (defun ores-shell (&optional prefix)
   "Start an ores-shell session.
 With PREFIX argument (\\[universal-argument]), always ask for path.
@@ -152,7 +131,7 @@ Otherwise use last path if set, or ask for path if not set."
                    (ores-shell-last-program
                     ores-shell-last-program)
                    (t
-                    (read-file-name "Path to ores-client executable: "
+                    (read-file-name "Path to ores-shell executable: "
                                     nil
                                     ores-shell-program
                                     t))))
@@ -168,11 +147,16 @@ Otherwise use last path if set, or ask for path if not set."
 
     (setq ores-shell-last-program program)
 
+    ;; Switch to buffer and ensure it's in ores-shell-mode BEFORE starting process
+    (with-current-buffer buffer
+      (unless (eq major-mode 'ores-shell-mode)
+        (ores-shell-mode)))  ; this sets comint variables appropriately
+
     (pop-to-buffer buffer)
 
     (unless (comint-check-proc buffer)
-      (make-comint-in-buffer "ores-shell" buffer program nil)
-      (ores-shell-mode)
+      ;; Now start the process with NO extra args (nil for STARTFILE and ARGS)
+      (make-comint-in-buffer "ores-shell" buffer program)
       (message "ORES client started. Type 'help' for available commands."))))
 
 (provide 'ores-shell)

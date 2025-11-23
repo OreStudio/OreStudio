@@ -17,16 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.accounts/domain/login_info_table_io.hpp"
+#ifndef ORES_RISK_DOMAIN_CURRENCY_VERSION_HISTORY_TABLE_HPP
+#define ORES_RISK_DOMAIN_CURRENCY_VERSION_HISTORY_TABLE_HPP
 
-#include <ostream>
-#include "ores.accounts/domain/login_info_table.hpp"
+#include <vector>
+#include "ores.risk/domain/currency_version_history.hpp"
 
-namespace ores::accounts::domain {
+namespace ores::risk::domain {
 
-std::ostream& operator<<(std::ostream& s, const std::vector<login_info>& v) {
-    s << std::endl << convert_to_table(v) << std::endl;
-    return s;
+/**
+ * @brief Converts currency version history to table format.
+ */
+std::string convert_to_table(const std::vector<currency_version_history>& v);
+
 }
 
-}
+#endif

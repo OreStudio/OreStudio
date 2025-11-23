@@ -41,10 +41,12 @@ throw_if_empty(const std::string& name, const std::string& value)
 
 account_service::account_service(utility::repository::context ctx)
     : account_repo_(ctx),
-      login_info_repo_(ctx) {
+      login_info_repo_(ctx),
+      feature_flags_repo_(ctx) {
 
     BOOST_LOG_SEV(lg(), debug) << "DML for account: " << account_repo_.sql();
-    BOOST_LOG_SEV(lg(), debug) << "DML for account: " << login_info_repo_.sql();
+    BOOST_LOG_SEV(lg(), debug) << "DML for login_info: " << login_info_repo_.sql();
+    BOOST_LOG_SEV(lg(), debug) << "DML for feature_flags: " << feature_flags_repo_.sql();
 }
 
 domain::account
@@ -100,6 +102,14 @@ account_service::create_account(const std::string& username,
 
 std::vector<domain::account> account_service::list_accounts() {
     return account_repo_.read_latest();
+}
+
+std::vector<domain::login_info> account_service::list_login_info() {
+    return login_info_repo_.read();
+}
+
+std::vector<domain::feature_flags> account_service::list_feature_flags() {
+    return feature_flags_repo_.read_latest();
 }
 
 void account_service::delete_account(const boost::uuids::uuid& account_id) {

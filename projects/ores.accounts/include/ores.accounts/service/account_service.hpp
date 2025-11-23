@@ -25,8 +25,11 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/asio/ip/address.hpp>
 #include "ores.accounts/domain/account.hpp"
+#include "ores.accounts/domain/login_info.hpp"
+#include "ores.accounts/domain/feature_flags.hpp"
 #include "ores.accounts/repository/account_repository.hpp"
 #include "ores.accounts/repository/login_info_repository.hpp"
+#include "ores.accounts/repository/feature_flags_repository.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include "ores.utility/log/make_logger.hpp"
 
@@ -83,6 +86,20 @@ public:
      */
     std::vector<domain::account> list_accounts();
 
+    /**
+     * @brief Lists all login info records in the system.
+     *
+     * @return Vector of all login info records
+     */
+    std::vector<domain::login_info> list_login_info();
+
+    /**
+     * @brief Lists all feature flags in the system.
+     *
+     * @return Vector of all feature flags
+     */
+    std::vector<domain::feature_flags> list_feature_flags();
+
 
 
     /**
@@ -126,6 +143,7 @@ public:
 private:
     repository::account_repository account_repo_;
     repository::login_info_repository login_info_repo_;
+    repository::feature_flags_repository feature_flags_repo_;
     utility::uuid::uuid_v7_generator uuid_generator_;
 };
 

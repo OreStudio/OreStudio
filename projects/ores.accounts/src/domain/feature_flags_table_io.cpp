@@ -20,22 +20,12 @@
 #include "ores.accounts/domain/feature_flags_table_io.hpp"
 
 #include <ostream>
-#include <fort.hpp>
+#include "ores.accounts/domain/feature_flags_table.hpp"
 
 namespace ores::accounts::domain {
 
 void print_feature_flags_table(std::ostream& s, const std::vector<feature_flags>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
-
-    table << fort::header << "Name" << "Description" << "Enabled"
-          << "Modified By" << fort::endr;
-
-    for (const auto& ff : v) {
-        table << ff.name << ff.description << ff.enabled
-              << ff.modified_by << fort::endr;
-    }
-    s << std::endl << table.to_string() << std::endl;
+    s << std::endl << convert_to_table(v) << std::endl;
 }
 
 std::ostream& operator<<(std::ostream& s, const std::vector<feature_flags>& v) {

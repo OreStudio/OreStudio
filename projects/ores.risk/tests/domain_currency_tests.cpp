@@ -24,6 +24,7 @@
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.risk/domain/currency_json_io.hpp" // IWYU pragma: keep.
+#include "ores.risk/domain/currency_table.hpp"
 
 namespace {
 
@@ -234,5 +235,98 @@ TEST_CASE("create_currencies_with_different_symbols", tags) {
 
         CHECK(ccy.iso_code == code);
         CHECK(ccy.symbol == symbol);
+    }
+}
+
+TEST_CASE("currency_convert_single_to_table", tags) {
+    auto lg(make_logger(test_suite));
+
+    currency ccy;
+    ccy.iso_code = "USD";
+    ccy.name = "United States Dollar";
+    ccy.numeric_code = "840";
+    ccy.symbol = "$";
+    ccy.fraction_symbol = "¢";
+    ccy.fractions_per_unit = 100;
+    ccy.rounding_type = "Closest";
+    ccy.rounding_precision = 2;
+    ccy.format = "%3% %1$.2f";
+    ccy.currency_type = "Fiat";
+    ccy.modified_by = "admin";
+    ccy.valid_from = "2025-01-01";
+    ccy.valid_to = "2099-12-31";
+
+    auto table = convert_to_table(ccy);
+
+    BOOST_LOG_SEV(lg, debug) << "Table output:" << table;
+
+    CHECK(!table.empty());
+    CHECK(table.find("USD") != std::string::npos);
+    CHECK(table.find("United States Dollar") != std::string::npos);
+}
+
+TEST_CASE("currency_convert_multiple_to_table", tags) {
+    auto lg(make_logger(test_suite));
+
+    std::vector<currency> currencies;
+    for (int i = 0; i < 3; ++i) {
+        currency ccy;
+        ccy.iso_code = std::string("XX") + std::to_string(i);
+        ccy.name = "Currency " + std::to_string(i);
+        ccy.numeric_code = std::to_string(100 + i);
+        ccy.symbol = "$" + std::to_string(i);
+        ccy.fraction_symbol = "";
+        ccy.fractions_per_unit = 100;
+        ccy.rounding_type = "Closest";
+        ccy.rounding_precision = 2;
+        ccy.format = "%3% %1$.2f";
+        ccy.currency_type = "Test";
+        ccy.modified_by = "system";
+        ccy.valid_from = "";
+        ccy.valid_to = "";
+        currencies.push_back(ccy);
+    }
+
+    auto table = convert_to_table(currencies);
+
+    BOOST_LOG_SEV(lg, debug) << "Table output:" << table;
+
+    CHECK(!table.empty());
+    CHECK(table.find("XX0") != std::string::npos);
+    CHECK(table.find("XX1") != std::string::npos);
+    CHECK(table.find("XX2") != std::string::npos);
+}
+
+TEST_CASE("currency_table_with_faker_data", tags) {
+    auto lg(make_logger(test_suite));
+
+    std::vector<currency> currencies;
+    for (int i = 0; i < 5; ++i) {
+        currency ccy;
+        auto fakerCcy = faker::finance::currency();
+
+        ccy.iso_code = fakerCcy.code;
+        ccy.name = fakerCcy.name;
+        ccy.symbol = fakerCcy.symbol;
+        ccy.numeric_code = std::to_string(faker::number::integer(1, 999));
+        ccy.fraction_symbol = "";
+        ccy.fractions_per_unit = faker::number::integer(1, 10000);
+        ccy.rounding_type = "Closest";
+        ccy.rounding_precision = faker::number::integer(0, 5);
+        ccy.format = "%3% %1$.2f";
+        ccy.currency_type = "Fiat";
+        ccy.modified_by = std::string(faker::internet::username());
+        ccy.valid_from = "";
+        ccy.valid_to = "";
+        currencies.push_back(ccy);
+    }
+
+    auto table = convert_to_table(currencies);
+
+    BOOST_LOG_SEV(lg, debug) << "Faker table output:" << table;
+
+    CHECK(!table.empty());
+    for (const auto& ccy : currencies) {
+        CHECK(table.find(ccy.iso_code) != std::string::npos);
     }
 }

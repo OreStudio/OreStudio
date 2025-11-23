@@ -25,7 +25,7 @@
 namespace ores::risk::domain {
 
 void print_currency_table(std::ostream& s, const std::vector<currency>& v) {
-    s << convert_to_table(v);
+    s << std::endl << convert_to_table(v) << std::endl;
 }
 
 std::ostream& operator<<(std::ostream& s, const std::vector<currency>& v) {

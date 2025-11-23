@@ -114,7 +114,7 @@ ores-shell> Bye!
 
 *** Auto login
    :PROPERTIES:
-   :custom_id: auto-login-id
+   :ID: CA27A829-0A1C-2C44-9AE3-D389D3898C4E
    :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
    :header-args+: :var login_args="--login-username newuser3"
    :END:
@@ -155,8 +155,7 @@ Functionality related to the accounts domain entity.
 *** Login
 
 Explicit login is discouraged as it saves your credentials to the history.
-Instead, consider using [[#auto-login-id
-][Auto login]].
+Instead, consider using [[id:CA27A829-0A1C-2C44-9AE3-D389D3898C4E][Auto login]].
 
 #+name: explicit-login
 #+begin_src ores-shell
@@ -279,6 +278,97 @@ ores-shell> Bye!
 ✓ Disconnected successfully from the server.
 #+end_example
 
+*** List Login Info
+    :PROPERTIES:
+    :header-args+: :var login_args="--login-username newuser3"
+    :END:
+
+#+name: list-login-info
+#+begin_src ores-shell
+accounts list-logins
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_CLIENT_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
+<<list-login-info>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected.
+✓ Login successful.
+  Username: 'newuser3'
+  Account ID: '019a5e49-476c-70ce-9909-3887cae700e9'
+  Admin: No
+ORE Studio Shell REPL v0.0.5
+Type 'help' for available commands, 'exit' to quit
+
+ores-shell>
++--------------------------------------+-----------------+-----------------+--------+--------+--------+---------------------+
+| Account ID                           | Last IP         | Last Attempt IP | Failed | Locked | Online | Last Login          |
++--------------------------------------+-----------------+-----------------+--------+--------+--------+---------------------+
+| 019a4439-be9e-798e-bf2f-927ca236f84c | 0.0.0.0         | 0.0.0.0         | 0      | N      | N      | 1969-12-31 23:00:00 |
+| 019a3ba6-bd11-709b-b93d-fea9403d3d39 | 127.0.0.1       | 127.0.0.1       | 0      | N      | Y      | 2025-10-31 19:03:48 |
+| 019a4431-98f8-79ae-9fc8-f6a6e77a0490 | 192.168.1.100   | 192.168.1.100   | 0      | N      | Y      | 2025-11-02 10:51:32 |
+| 019a4431-9a7d-7b3d-a1cb-b9e02d44c804 | 0.0.0.0         | 192.168.1.100   | 1      | N      | N      | 1969-12-31 23:00:00 |
+| 019a4431-9bf4-7175-ae13-146032be2718 | 0.0.0.0         | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
+| 019a4431-9d1f-7872-9a16-25af85c43286 | 0.0.0.0         | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
+| 019aa790-5f1e-7250-ba0d-e7cf78c7e04a | 0.0.0.0         | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
+| 019aa79f-2463-7bce-aebe-e48d8d565819 | 0.0.0.0         | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
+| 019aa79f-24ba-725e-be98-7cd92914e22d | 0.0.0.0         | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
+| 019aa8d3-5f61-7e8b-b6d1-7074277c0739 | 0.0.0.0         | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
+| 019aa8d3-5fb9-7a74-b16c-ff7ae9248a5b | 0.0.0.0         | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
++--------------------------------------+-----------------+-----------------+--------+--------+--------+---------------------+
+
+
+ores-shell> Bye!
+✓ Disconnected successfully from the server.
+#+end_example
+
+*** List Feature Flags
+    :PROPERTIES:
+    :header-args+: :var login_args="--login-username newuser3"
+    :END:
+
+#+name: list-feature-flags
+#+begin_src ores-shell
+accounts list-flags
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_CLIENT_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
+<<list-feature-flags>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected.
+✓ Login successful.
+  Username: 'newuser3'
+  Account ID: '019a5e49-476c-70ce-9909-3887cae700e9'
+  Admin: No
+ORE Studio Shell REPL v0.0.5
+Type 'help' for available commands, 'exit' to quit
+
+ores-shell>
++---------------+------------------+---------+-------------+
+| Name          | Description      | Enabled | Modified By |
++---------------+------------------+---------+-------------+
+| Test feature2 | Some description | 0       | ores        |
+| Test feature  | Some description | 0       | ores        |
++---------------+------------------+---------+-------------+
+
+
+ores-shell> Bye!
+✓ Disconnected successfully from the server.
+#+end_example
+
 
 
 ** Currencies
@@ -309,6 +399,7 @@ ORE Studio Shell REPL v0.0.5
 Type 'help' for available commands, 'exit' to quit
 
 ores-shell>
+
 +----------+------------------------------------------------------------+--------+----------------+----------------+-----------+-------------+---------------------+---------------------+
 | ISO Code | Name                                                       | Symbol | Type           | Fractions/Unit | Precision | Modified By | Valid From          | Valid To            |
 +----------+------------------------------------------------------------+--------+----------------+----------------+-----------+-------------+---------------------+---------------------+
@@ -493,6 +584,7 @@ ores-shell>
 | TESTC    | Test Currency 2                                            | T      | Test           | 0              | 0         | newuser3    | 2025-11-17 23:35:09 | 2025-11-17 23:35:09 |
 | BTC      | Bitcoin                                                    | ₿    | Cryptocurrency | 100000000      | 8         | ores        | 2025-11-05 17:28:10 | 2025-11-05 17:28:10 |
 +----------+------------------------------------------------------------+--------+----------------+----------------+-----------+-------------+---------------------+---------------------+
+
 
 
 ores-shell> Bye!

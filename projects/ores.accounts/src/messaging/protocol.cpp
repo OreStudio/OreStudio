@@ -375,4 +375,175 @@ std::ostream& operator<<(std::ostream& s, const delete_account_response& v) {
     return s;
 }
 
+std::vector<std::byte> list_login_info_request::serialize() const {
+    return {};
+}
+
+std::expected<list_login_info_request, comms::protocol::error_code>
+list_login_info_request::deserialize(std::span<const std::byte> data) {
+    if (!data.empty()) {
+        return std::unexpected(comms::protocol::error_code::payload_too_large);
+    }
+    return list_login_info_request{};
+}
+
+std::ostream& operator<<(std::ostream& s, const list_login_info_request& v)
+{
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> list_login_info_response::serialize() const {
+    std::vector<std::byte> buffer;
+
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(login_infos.size()));
+
+    for (const auto& li : login_infos) {
+        auto epoch = std::chrono::duration_cast<std::chrono::milliseconds>(
+            li.last_login.time_since_epoch()).count();
+        writer::write_uint32(buffer, static_cast<std::uint32_t>(epoch >> 32));
+        writer::write_uint32(buffer, static_cast<std::uint32_t>(epoch & 0xFFFFFFFF));
+        writer::write_uuid(buffer, li.account_id);
+        writer::write_uint32(buffer, static_cast<std::uint32_t>(li.failed_logins));
+        writer::write_bool(buffer, li.locked);
+        writer::write_bool(buffer, li.online);
+        writer::write_string(buffer, li.last_ip.to_string());
+        writer::write_string(buffer, li.last_attempt_ip.to_string());
+    }
+
+    return buffer;
+}
+
+std::expected<list_login_info_response, comms::protocol::error_code>
+list_login_info_response::deserialize(std::span<const std::byte> data) {
+    list_login_info_response response;
+
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) {
+        return std::unexpected(count_result.error());
+    }
+    auto count = *count_result;
+
+    response.login_infos.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        domain::login_info li;
+
+        auto high_result = reader::read_uint32(data);
+        if (!high_result) return std::unexpected(high_result.error());
+        auto low_result = reader::read_uint32(data);
+        if (!low_result) return std::unexpected(low_result.error());
+        std::uint64_t epoch = (static_cast<std::uint64_t>(*high_result) << 32) |
+                              static_cast<std::uint64_t>(*low_result);
+        li.last_login = std::chrono::system_clock::time_point(
+            std::chrono::milliseconds(epoch));
+
+        auto account_id_result = reader::read_uuid(data);
+        if (!account_id_result) return std::unexpected(account_id_result.error());
+        li.account_id = *account_id_result;
+
+        auto failed_logins_result = reader::read_uint32(data);
+        if (!failed_logins_result) return std::unexpected(failed_logins_result.error());
+        li.failed_logins = static_cast<int>(*failed_logins_result);
+
+        auto locked_result = reader::read_bool(data);
+        if (!locked_result) return std::unexpected(locked_result.error());
+        li.locked = *locked_result;
+
+        auto online_result = reader::read_bool(data);
+        if (!online_result) return std::unexpected(online_result.error());
+        li.online = *online_result;
+
+        auto last_ip_str_result = reader::read_string(data);
+        if (!last_ip_str_result) return std::unexpected(last_ip_str_result.error());
+        li.last_ip = boost::asio::ip::make_address(*last_ip_str_result);
+
+        auto last_attempt_ip_str_result = reader::read_string(data);
+        if (!last_attempt_ip_str_result) return std::unexpected(last_attempt_ip_str_result.error());
+        li.last_attempt_ip = boost::asio::ip::make_address(*last_attempt_ip_str_result);
+
+        response.login_infos.push_back(std::move(li));
+    }
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const list_login_info_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> list_feature_flags_request::serialize() const {
+    return {};
+}
+
+std::expected<list_feature_flags_request, comms::protocol::error_code>
+list_feature_flags_request::deserialize(std::span<const std::byte> data) {
+    if (!data.empty()) {
+        return std::unexpected(comms::protocol::error_code::payload_too_large);
+    }
+    return list_feature_flags_request{};
+}
+
+std::ostream& operator<<(std::ostream& s, const list_feature_flags_request& v)
+{
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> list_feature_flags_response::serialize() const {
+    std::vector<std::byte> buffer;
+
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(feature_flags.size()));
+
+    for (const auto& ff : feature_flags) {
+        writer::write_string(buffer, ff.name);
+        writer::write_bool(buffer, ff.enabled);
+        writer::write_string(buffer, ff.description);
+        writer::write_string(buffer, ff.modified_by);
+    }
+
+    return buffer;
+}
+
+std::expected<list_feature_flags_response, comms::protocol::error_code>
+list_feature_flags_response::deserialize(std::span<const std::byte> data) {
+    list_feature_flags_response response;
+
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) {
+        return std::unexpected(count_result.error());
+    }
+    auto count = *count_result;
+
+    response.feature_flags.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        domain::feature_flags ff;
+
+        auto name_result = reader::read_string(data);
+        if (!name_result) return std::unexpected(name_result.error());
+        ff.name = *name_result;
+
+        auto enabled_result = reader::read_bool(data);
+        if (!enabled_result) return std::unexpected(enabled_result.error());
+        ff.enabled = *enabled_result;
+
+        auto description_result = reader::read_string(data);
+        if (!description_result) return std::unexpected(description_result.error());
+        ff.description = *description_result;
+
+        auto modified_by_result = reader::read_string(data);
+        if (!modified_by_result) return std::unexpected(modified_by_result.error());
+        ff.modified_by = *modified_by_result;
+
+        response.feature_flags.push_back(std::move(ff));
+    }
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const list_feature_flags_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
 }

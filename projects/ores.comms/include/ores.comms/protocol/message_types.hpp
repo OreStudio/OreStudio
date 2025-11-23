@@ -58,6 +58,10 @@ enum class message_type {
     unlock_account_response = 0x2008,
     delete_account_request = 0x2009,
     delete_account_response = 0x200A,
+    list_login_info_request = 0x200B,
+    list_login_info_response = 0x200C,
+    list_feature_flags_request = 0x200D,
+    list_feature_flags_response = 0x200E,
 
     last_value
 };

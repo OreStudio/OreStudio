@@ -26,6 +26,8 @@
 #include <expected>
 #include "ores.comms/protocol/message_types.hpp"
 #include "ores.accounts/domain/account.hpp"
+#include "ores.accounts/domain/login_info.hpp"
+#include "ores.accounts/domain/feature_flags.hpp"
 
 namespace ores::accounts::messaging {
 
@@ -306,6 +308,54 @@ struct delete_account_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const delete_account_response& v);
+
+/**
+ * @brief Request to retrieve all login info records.
+ */
+struct list_login_info_request final {
+    std::vector<std::byte> serialize() const;
+    static std::expected<list_login_info_request, comms::protocol::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const list_login_info_request& v);
+
+/**
+ * @brief Response containing all login info records.
+ */
+struct list_login_info_response final {
+    std::vector<domain::login_info> login_infos;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<list_login_info_response, comms::protocol::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const list_login_info_response& v);
+
+/**
+ * @brief Request to retrieve all feature flags.
+ */
+struct list_feature_flags_request final {
+    std::vector<std::byte> serialize() const;
+    static std::expected<list_feature_flags_request, comms::protocol::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const list_feature_flags_request& v);
+
+/**
+ * @brief Response containing all feature flags.
+ */
+struct list_feature_flags_response final {
+    std::vector<domain::feature_flags> feature_flags;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<list_feature_flags_response, comms::protocol::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const list_feature_flags_response& v);
 
 }
 

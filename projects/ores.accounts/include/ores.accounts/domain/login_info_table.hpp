@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_DOMAIN_LOGIN_INFO_TABLE_IO_HPP
-#define ORES_ACCOUNTS_DOMAIN_LOGIN_INFO_TABLE_IO_HPP
+#ifndef ORES_ACCOUNTS_DOMAIN_LOGIN_INFO_TABLE_HPP
+#define ORES_ACCOUNTS_DOMAIN_LOGIN_INFO_TABLE_HPP
 
 #include <vector>
 #include "ores.accounts/domain/login_info.hpp"

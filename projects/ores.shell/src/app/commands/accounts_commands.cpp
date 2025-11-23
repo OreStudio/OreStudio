@@ -26,6 +26,8 @@
 #include <cli/cli.h>
 #include "ores.accounts/messaging/protocol.hpp"
 #include "ores.accounts/domain/account_table_io.hpp"  // IWYU pragma: keep.
+#include "ores.accounts/domain/login_info_table_io.hpp"  // IWYU pragma: keep.
+#include "ores.accounts/domain/feature_flags_table_io.hpp"  // IWYU pragma: keep.
 
 namespace ores::shell::app::commands {
 
@@ -63,6 +65,14 @@ register_commands(cli::Menu& root_menu, client_manager& client_manager) {
             std::ref(client_manager),
             std::move(account_id));
     }, "Unlock a locked account (account_id)");
+
+    accounts_menu->Insert("list-logins", [&client_manager](std::ostream& out) {
+        process_list_login_info(std::ref(out), std::ref(client_manager));
+    }, "Retrieve all login info records from the server");
+
+    accounts_menu->Insert("list-flags", [&client_manager](std::ostream& out) {
+        process_list_feature_flags(std::ref(out), std::ref(client_manager));
+    }, "Retrieve all feature flags from the server");
 
     root_menu.Insert(std::move(accounts_menu));
 }
@@ -162,6 +172,54 @@ void accounts_commands::process_create_account(std::ostream& out,
             });
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Create account exception: " << e.what();
+        out << "✗ Error: " << e.what() << std::endl;
+    }
+}
+
+void accounts_commands::
+process_list_login_info(std::ostream& out, client_manager& client_manager) {
+    try {
+        BOOST_LOG_SEV(lg(), debug) << "Initiating list login info request.";
+
+        using accounts::messaging::list_login_info_request;
+        using accounts::messaging::list_login_info_response;
+        client_manager.process_request<list_login_info_request,
+                                       list_login_info_response,
+                                       message_type::list_login_info_request>
+            (list_login_info_request{})
+            .and_then([&](const auto& response) {
+                BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
+                                          << response.login_infos.size() << " login info records.";
+
+                out << response.login_infos << std::endl;
+                return std::optional{response};
+            });
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "List login info exception: " << e.what();
+        out << "✗ Error: " << e.what() << std::endl;
+    }
+}
+
+void accounts_commands::
+process_list_feature_flags(std::ostream& out, client_manager& client_manager) {
+    try {
+        BOOST_LOG_SEV(lg(), debug) << "Initiating list feature flags request.";
+
+        using accounts::messaging::list_feature_flags_request;
+        using accounts::messaging::list_feature_flags_response;
+        client_manager.process_request<list_feature_flags_request,
+                                       list_feature_flags_response,
+                                       message_type::list_feature_flags_request>
+            (list_feature_flags_request{})
+            .and_then([&](const auto& response) {
+                BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
+                                          << response.feature_flags.size() << " feature flags.";
+
+                out << response.feature_flags << std::endl;
+                return std::optional{response};
+            });
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "List feature flags exception: " << e.what();
         out << "✗ Error: " << e.what() << std::endl;
     }
 }

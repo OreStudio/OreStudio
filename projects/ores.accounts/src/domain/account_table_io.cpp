@@ -20,25 +20,12 @@
 #include "ores.accounts/domain/account_table_io.hpp"
 
 #include <ostream>
-#include <fort.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.accounts/domain/account_table.hpp"
 
 namespace ores::accounts::domain {
 
 void print_account_table(std::ostream& s, const std::vector<account>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
-
-    table << fort::header << "ID (UUID)" << "Username" << "Email"
-          << "Admin?" << "Modified By" << "Version" << fort::endr;
-
-    for (const auto& a : v) {
-        std::string admin_status = a.is_admin ? "Y" : "N";
-        table << boost::uuids::to_string(a.id) << a.username
-              << a.email << admin_status << a.modified_by
-              << a.version << fort::endr;
-    }
-    s << std::endl << table.to_string() << std::endl;
+    s << std::endl << convert_to_table(v) << std::endl;
 }
 
 std::ostream& operator<<(std::ostream& s, const std::vector<account>& v) {

@@ -25,6 +25,7 @@
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.accounts/domain/login_info_json_io.hpp" // IWYU pragma: keep.
+#include "ores.accounts/domain/login_info_table.hpp"
 
 namespace {
 
@@ -201,5 +202,80 @@ TEST_CASE("create_multiple_random_login_infos", tags) {
         if (sut.locked) {
             CHECK(sut.failed_logins >= 3);
         }
+    }
+}
+
+TEST_CASE("login_info_convert_single_to_table", tags) {
+    auto lg(make_logger(test_suite));
+
+    login_info li;
+    li.account_id = boost::uuids::random_generator()();
+    li.last_ip = boost::asio::ip::make_address("192.168.1.100");
+    li.last_attempt_ip = boost::asio::ip::make_address("192.168.1.101");
+    li.failed_logins = 2;
+    li.locked = false;
+    li.last_login = std::chrono::system_clock::now();
+    li.online = true;
+
+    std::vector<login_info> logins = {li};
+    auto table = convert_to_table(logins);
+
+    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+
+    CHECK(!table.empty());
+    CHECK(table.find("192.168.1.100") != std::string::npos);
+    CHECK(table.find("192.168.1.101") != std::string::npos);
+}
+
+TEST_CASE("login_info_convert_multiple_to_table", tags) {
+    auto lg(make_logger(test_suite));
+
+    std::vector<login_info> logins;
+    for (int i = 0; i < 3; ++i) {
+        login_info li;
+        li.account_id = boost::uuids::random_generator()();
+        li.last_ip = boost::asio::ip::make_address("10.0.0." + std::to_string(i + 1));
+        li.last_attempt_ip = boost::asio::ip::make_address("10.0.0." + std::to_string(i + 10));
+        li.failed_logins = i;
+        li.locked = (i >= 2);
+        li.last_login = std::chrono::system_clock::now();
+        li.online = (i == 0);
+        logins.push_back(li);
+    }
+
+    auto table = convert_to_table(logins);
+
+    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+
+    CHECK(!table.empty());
+    CHECK(table.find("10.0.0.1") != std::string::npos);
+    CHECK(table.find("10.0.0.2") != std::string::npos);
+    CHECK(table.find("10.0.0.3") != std::string::npos);
+}
+
+TEST_CASE("login_info_table_with_faker_data", tags) {
+    auto lg(make_logger(test_suite));
+
+    std::vector<login_info> logins;
+    for (int i = 0; i < 5; ++i) {
+        login_info li;
+        li.account_id = boost::uuids::random_generator()();
+        li.last_ip = boost::asio::ip::make_address(faker::internet::ipv4());
+        li.last_attempt_ip = boost::asio::ip::make_address(faker::internet::ipv4());
+        li.failed_logins = faker::number::integer(0, 5);
+        li.locked = faker::datatype::boolean();
+        li.last_login = std::chrono::system_clock::now();
+        li.online = faker::datatype::boolean();
+        logins.push_back(li);
+    }
+
+    auto table = convert_to_table(logins);
+
+    BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
+
+    CHECK(!table.empty());
+    // Verify all IP addresses appear in table
+    for (const auto& li : logins) {
+        CHECK(table.find(li.last_ip.to_string()) != std::string::npos);
     }
 }

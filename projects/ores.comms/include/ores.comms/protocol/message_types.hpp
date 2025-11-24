@@ -27,7 +27,7 @@ namespace ores::comms::protocol {
  // "ORES" in ASCII
 constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 2;
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 3;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 enum class message_type {

@@ -98,6 +98,7 @@ void CurrencyController::showListWindow() {
             this, &CurrencyController::onShowCurrencyHistory);
 
     currencyListWindow_ = new DetachableMdiSubWindow();
+    currencyListWindow_->setAttribute(Qt::WA_DeleteOnClose);
     currencyListWindow_->setWidget(currencyWidget);
     currencyListWindow_->setWindowTitle("Currencies");
     currencyListWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
@@ -154,6 +155,7 @@ void CurrencyController::onAddNewRequested() {
     detailDialog->setCurrency(new_currency);
 
     auto* detailWindow = new DetachableMdiSubWindow();
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Currency");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
@@ -208,6 +210,7 @@ void CurrencyController::onShowCurrencyDetails(
 
     const QString iso_code = QString::fromStdString(currency.iso_code);
     auto* detailWindow = new DetachableMdiSubWindow();
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Currency Details: %1").arg(iso_code));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
@@ -290,6 +293,7 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
     historyWidget->loadHistory();
 
     auto* historyWindow = new DetachableMdiSubWindow();
+    historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyWidget);
     historyWindow->setWindowTitle(QString("History: %1").arg(isoCode));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(

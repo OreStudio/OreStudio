@@ -191,28 +191,13 @@ void CurrencyController::onShowCurrencyDetails(
                              << currency.iso_code;
 
     const QString isoCode = QString::fromStdString(currency.iso_code);
+    const QString windowKey = build_window_key("details", isoCode);
 
-    // Reuse existing detail window if it exists
-    if (currencyDetailWindows_.contains(isoCode)) {
-        auto existingWindow = currencyDetailWindows_[isoCode];
-        if (existingWindow) {
-            BOOST_LOG_SEV(lg(), info) << "Reusing existing detail window for: "
-                                      << currency.iso_code;
-
-            // Bring window to front
-            if (existingWindow->isDetached()) {
-                existingWindow->setVisible(true);
-                existingWindow->show();
-                existingWindow->raise();
-                existingWindow->activateWindow();
-            } else {
-                existingWindow->setVisible(true);
-                mdiArea_->setActiveSubWindow(existingWindow);
-                existingWindow->show();
-                existingWindow->raise();
-            }
-            return;
-        }
+    // Try to reuse existing window
+    if (try_reuse_window(windowKey)) {
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing detail window for: "
+                                  << currency.iso_code;
+        return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Creating new detail window for: "
@@ -244,16 +229,16 @@ void CurrencyController::onShowCurrencyDetails(
         ":/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
 
     // Track this detail window
-    currencyDetailWindows_[isoCode] = detailWindow;
+    track_window(windowKey, detailWindow);
 
     allDetachableWindows_.append(detailWindow);
     QPointer<CurrencyController> self = this;
     QPointer<DetachableMdiSubWindow> windowPtr = detailWindow;
     connect(detailWindow, &QObject::destroyed, this,
-            [self, windowPtr, isoCode]() {
+            [self, windowPtr, windowKey]() {
         if (self) {
             self->allDetachableWindows_.removeAll(windowPtr.data());
-            self->currencyDetailWindows_.remove(isoCode);
+            self->untrack_window(windowKey);
         }
     });
 
@@ -284,27 +269,13 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
         return;
     }
 
-    // Reuse existing history window if it exists
-    if (currencyHistoryWindows_.contains(isoCode)) {
-        auto existingWindow = currencyHistoryWindows_[isoCode];
-        if (existingWindow) {
-            BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                      << isoCode.toStdString();
+    const QString windowKey = build_window_key("history", isoCode);
 
-            // Bring window to front
-            if (existingWindow->isDetached()) {
-                existingWindow->setVisible(true);
-                existingWindow->show();
-                existingWindow->raise();
-                existingWindow->activateWindow();
-            } else {
-                existingWindow->setVisible(true);
-                mdiArea_->setActiveSubWindow(existingWindow);
-                existingWindow->show();
-                existingWindow->raise();
-            }
-            return;
-        }
+    // Try to reuse existing window
+    if (try_reuse_window(windowKey)) {
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
+                                  << isoCode.toStdString();
+        return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
@@ -333,16 +304,16 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
         ":/icons/ic_fluent_history_20_regular.svg", iconColor));
 
     // Track this history window
-    currencyHistoryWindows_[isoCode] = historyWindow;
+    track_window(windowKey, historyWindow);
 
     allDetachableWindows_.append(historyWindow);
     QPointer<CurrencyController> self = this;
     QPointer<DetachableMdiSubWindow> windowPtr = historyWindow;
     connect(historyWindow, &QObject::destroyed, this,
-            [self, windowPtr, isoCode]() {
+            [self, windowPtr, windowKey]() {
         if (self) {
             self->allDetachableWindows_.removeAll(windowPtr.data());
-            self->currencyHistoryWindows_.remove(isoCode);
+            self->untrack_window(windowKey);
         }
     });
 

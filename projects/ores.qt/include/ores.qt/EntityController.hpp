@@ -23,10 +23,15 @@
 #include <QObject>
 #include <QMainWindow>
 #include <QMdiArea>
+#include <QPointer>
+#include <QMap>
+#include <QString>
 #include <memory>
 #include "ores.comms/net/client.hpp"
 
 namespace ores::qt {
+
+class DetachableMdiSubWindow;
 
 /**
  * @brief Base class for entity-specific controllers.
@@ -34,6 +39,9 @@ namespace ores::qt {
  * Each entity (Currency, Account, Trade, etc.) has its own controller that
  * manages windows, dialogs, and operations specific to that entity. This keeps
  * MainWindow clean and makes it easy to add new entities.
+ *
+ * Provides generic window management functionality including window reuse,
+ * tracking, and lifecycle management using namespaced keys.
  */
 class EntityController : public QObject {
     Q_OBJECT
@@ -76,10 +84,74 @@ signals:
     void errorMessage(const QString& message);
 
 protected:
+    /**
+     * @brief Build a namespaced window key for tracking.
+     *
+     * Creates a key in the format "windowType.identifier" for consistent
+     * window tracking across different entity types.
+     *
+     * @param windowType Type of window (e.g., "details", "history")
+     * @param identifier Unique identifier (e.g., ISO code, ID)
+     * @return Namespaced key string
+     */
+    QString build_window_key(const QString& windowType,
+                             const QString& identifier) const;
+
+    /**
+     * @brief Try to reuse an existing window if it exists.
+     *
+     * Checks if a window with the given key exists in the managed windows map.
+     * If found, brings it to front (handling both detached and MDI modes).
+     *
+     * @param key Window key to look up
+     * @return true if window was found and reused, false otherwise
+     */
+    bool try_reuse_window(const QString& key);
+
+    /**
+     * @brief Bring a window to front.
+     *
+     * Handles both detached and MDI-attached windows, making the window
+     * visible, showing it, raising it, and activating it appropriately.
+     *
+     * @param window Window to bring to front
+     */
+    void bring_window_to_front(DetachableMdiSubWindow* window);
+
+    /**
+     * @brief Track a managed window.
+     *
+     * Adds the window to the managed windows map for later reuse and
+     * lifecycle management.
+     *
+     * @param key Window key for tracking
+     * @param window Window to track
+     */
+    void track_window(const QString& key, DetachableMdiSubWindow* window);
+
+    /**
+     * @brief Untrack a managed window.
+     *
+     * Removes the window from the managed windows map, typically called
+     * from the window's destroyed signal handler.
+     *
+     * @param key Window key to remove
+     */
+    void untrack_window(const QString& key);
+
     QMainWindow* mainWindow_;
     QMdiArea* mdiArea_;
     std::shared_ptr<comms::net::client> client_;
     QString username_;
+
+    /**
+     * @brief Map of all managed windows tracked by namespaced keys.
+     *
+     * Keys follow the pattern "windowType.identifier" (e.g.,
+     * "details.USD", "history.EUR"). Uses QPointer for automatic null
+     * handling when windows are destroyed externally.
+     */
+    QMap<QString, QPointer<DetachableMdiSubWindow>> managed_windows_;
 };
 
 }

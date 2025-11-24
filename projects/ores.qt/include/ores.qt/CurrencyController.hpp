@@ -157,6 +157,14 @@ private:
     QPointer<DetachableMdiSubWindow> currencyListWindow_;
 
     /**
+     * @brief Map of currency detail windows by ISO code.
+     *
+     * Tracks existing detail windows to reuse them instead of creating
+     * duplicates. Uses QPointer to handle external deletion gracefully.
+     */
+    QMap<QString, QPointer<DetachableMdiSubWindow>> currencyDetailWindows_;
+
+    /**
      * @brief Map of currency history windows by ISO code.
      *
      * Tracks existing history windows to reuse them instead of creating

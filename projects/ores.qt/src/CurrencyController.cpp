@@ -189,6 +189,34 @@ void CurrencyController::onShowCurrencyDetails(
     const risk::domain::currency& currency) {
     BOOST_LOG_SEV(lg(), info) << "Showing currency details for: "
                              << currency.iso_code;
+
+    const QString isoCode = QString::fromStdString(currency.iso_code);
+
+    // Reuse existing detail window if it exists
+    if (currencyDetailWindows_.contains(isoCode)) {
+        auto existingWindow = currencyDetailWindows_[isoCode];
+        if (existingWindow) {
+            BOOST_LOG_SEV(lg(), info) << "Reusing existing detail window for: "
+                                      << currency.iso_code;
+
+            // Bring window to front
+            if (existingWindow->isDetached()) {
+                existingWindow->setVisible(true);
+                existingWindow->show();
+                existingWindow->raise();
+                existingWindow->activateWindow();
+            } else {
+                existingWindow->setVisible(true);
+                mdiArea_->setActiveSubWindow(existingWindow);
+                existingWindow->show();
+                existingWindow->raise();
+            }
+            return;
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Creating new detail window for: "
+                              << currency.iso_code;
     const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new CurrencyDetailDialog(mainWindow_);
@@ -208,20 +236,25 @@ void CurrencyController::onShowCurrencyDetails(
 
     detailDialog->setCurrency(currency);
 
-    const QString iso_code = QString::fromStdString(currency.iso_code);
     auto* detailWindow = new DetachableMdiSubWindow();
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Currency Details: %1").arg(iso_code));
+    detailWindow->setWindowTitle(QString("Currency Details: %1").arg(isoCode));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
 
+    // Track this detail window
+    currencyDetailWindows_[isoCode] = detailWindow;
+
     allDetachableWindows_.append(detailWindow);
     QPointer<CurrencyController> self = this;
+    QPointer<DetachableMdiSubWindow> windowPtr = detailWindow;
     connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow]() {
-        if (self)
-            self->allDetachableWindows_.removeAll(detailWindow);
+            [self, windowPtr, isoCode]() {
+        if (self) {
+            self->allDetachableWindows_.removeAll(windowPtr.data());
+            self->currencyDetailWindows_.remove(isoCode);
+        }
     });
 
     mdiArea_->addSubWindow(detailWindow);

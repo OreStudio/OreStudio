@@ -148,7 +148,7 @@ std::vector<std::byte> frame::serialize() const {
         std::memcpy(result.data() + frame_header::size, payload_.data(), payload_.size());
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Serialised frame, type: " << static_cast<int>(header_with_crc.type)
+    BOOST_LOG_SEV(lg(), debug) << "Serialised frame " << header_with_crc.type
                                << ", size: " << result.size();
     return result;
 }
@@ -258,8 +258,7 @@ deserialize(const frame_header& header, std::span<const std::byte> data) {
         return std::unexpected(error_code::crc_validation_failed);
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Successfully deserialized frame, type: "
-                               << static_cast<int>(f.header_.type);
+    BOOST_LOG_SEV(lg(), debug) << "Successfully deserialized frame " << f.header_.type;
     return f;
 }
 

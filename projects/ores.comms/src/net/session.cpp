@@ -181,7 +181,7 @@ boost::asio::awaitable<void> session::process_messages() {
 
             const auto& request_frame = *frame_result;
             BOOST_LOG_SEV(lg(), debug) << "Received message type "
-                                      << std::hex << static_cast<std::uint16_t>(request_frame.header().type);
+                                      << request_frame.header().type;
 
             // Dispatch to appropriate handler
             auto remote_addr = conn_->remote_address();
@@ -239,7 +239,7 @@ boost::asio::awaitable<void> session::process_messages() {
             // Send response back to client
             co_await conn_->write_frame(response_frame);
             BOOST_LOG_SEV(lg(), debug) << "Sent response for message type "
-                                      << std::hex << static_cast<std::uint16_t>(request_frame.header().type);
+                                      << request_frame.header().type;
         }
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Exception in message processing: " << e.what();

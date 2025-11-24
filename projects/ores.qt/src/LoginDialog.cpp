@@ -71,7 +71,7 @@ LoginDialog::~LoginDialog() {
 }
 
 void LoginDialog::setupUI() {
-    BOOST_LOG_SEV(lg(), info) << "Setting up UI.";
+    BOOST_LOG_SEV(lg(), debug) << "Setting up UI.";
 
     setWindowTitle("Login to ORE Studio");
     setModal(true);
@@ -131,7 +131,7 @@ void LoginDialog::setupUI() {
 }
 
 void LoginDialog::enableForm(bool enabled) {
-    BOOST_LOG_SEV(lg(), info) << "Enable form: " << enabled;
+    BOOST_LOG_SEV(lg(), trace) << "Enable form: " << enabled;
 
     username_edit_->setEnabled(enabled);
     password_edit_->setEnabled(enabled);
@@ -141,7 +141,7 @@ void LoginDialog::enableForm(bool enabled) {
 }
 
 void LoginDialog::onLoginClicked() {
-    BOOST_LOG_SEV(lg(), info) << "On login was clicked.";
+    BOOST_LOG_SEV(lg(), trace) << "On login was clicked.";
 
     const auto username = username_edit_->text().trimmed();
     const auto password = password_edit_->text();
@@ -224,7 +224,7 @@ void LoginDialog::onLoginClicked() {
 
 void LoginDialog::
 performLogin(const std::string& username, const std::string& password) {
-    BOOST_LOG_SEV(lg(), info) << "Performing login.";
+    BOOST_LOG_SEV(lg(), debug) << "Performing login.";
 
     status_label_->setText("Authenticating...");
 
@@ -252,18 +252,18 @@ performLogin(const std::string& username, const std::string& password) {
                 std::move(payload)
             );
 
-            BOOST_LOG_SEV(lg(), info) << "Sending login request for: "
-                                      << username;
+            BOOST_LOG_SEV(lg(), debug) << "Sending login request for: "
+                                       << username;
             auto response_result = client_->send_request_sync(
                 std::move(request_frame));
 
             if (!response_result) {
-                BOOST_LOG_SEV(lg(), info) << "Error sending login request.";
+                BOOST_LOG_SEV(lg(), error) << "Error sending login request.";
                 return {false, QString("Network error: failed to send login request")};
             }
 
             // Deserialize response
-            BOOST_LOG_SEV(lg(), info) << "Received login response.";
+            BOOST_LOG_SEV(lg(), debug) << "Received login response.";
             auto response = accounts::messaging::login_response::deserialize(
                 response_result->payload()
             );

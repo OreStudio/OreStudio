@@ -75,8 +75,8 @@ boost::asio::awaitable<void> client::perform_handshake() {
     const auto& response_frame = *response_frame_result;
 
     if (response_frame.header().type != protocol::message_type::handshake_response) {
-        BOOST_LOG_SEV(lg(), error) << "Expected handshake response, got message type: "
-                                   << static_cast<int>(response_frame.header().type);
+        BOOST_LOG_SEV(lg(), error) << "Expected handshake response, got message type "
+                                   << response_frame.header().type;
         throw connection_error(std::format(
             "Unexpected message type during handshake: {}",
             static_cast<int>(response_frame.header().type)));
@@ -107,8 +107,7 @@ boost::asio::awaitable<void> client::perform_handshake() {
     }
 
     if (response.status != protocol::error_code::none) {
-        BOOST_LOG_SEV(lg(), error) << "Server reported error: "
-                                   << static_cast<int>(response.status);
+        BOOST_LOG_SEV(lg(), error) << "Server reported error " << response.status;
         throw connection_error(std::format(
             "Server rejected handshake with error code: {}",
             static_cast<int>(response.status)));
@@ -248,20 +247,18 @@ client::send_request(protocol::frame request_frame) {
             }(),
             std::vector<std::byte>(request_frame.payload()));
 
-        BOOST_LOG_SEV(lg(), trace) << "Sending request frame, type: "
-                                   << std::hex << static_cast<std::uint16_t>(request_frame.header().type);
+        BOOST_LOG_SEV(lg(), debug) << "Sending request " << request_frame.header().type;
 
         co_await conn_->write_frame(request_frame);
 
         auto response_result = co_await conn_->read_frame();
         if (!response_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to read response frame, error: "
-                                       << static_cast<int>(response_result.error());
+            BOOST_LOG_SEV(lg(), error) << "Failed to read response frame, error "
+                                       << response_result.error();
             co_return std::unexpected(response_result.error());
         }
 
-        BOOST_LOG_SEV(lg(), trace) << "Received response frame, type: "
-                                   << std::hex << static_cast<std::uint16_t>(response_result->header().type);
+        BOOST_LOG_SEV(lg(), debug) << "Received response " << response_result->header().type;
 
         co_return *response_result;
 

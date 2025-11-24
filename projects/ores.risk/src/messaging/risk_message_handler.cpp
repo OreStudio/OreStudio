@@ -33,8 +33,7 @@ boost::asio::awaitable<std::expected<std::vector<std::byte>,
 risk_message_handler::handle_message(comms::protocol::message_type type,
     std::span<const std::byte> payload, const std::string& remote_address) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Handling risk message type "
-                               << std::hex << static_cast<std::uint16_t>(type);
+    BOOST_LOG_SEV(lg(), debug) << "Handling risk message type " << type;
 
     switch (type) {
     case comms::protocol::message_type::get_currencies_request:

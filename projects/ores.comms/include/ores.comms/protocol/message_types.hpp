@@ -21,6 +21,17 @@
 #define ORES_COMMS_PROTOCOL_MESSAGE_TYPES_HPP
 
 #include <cstdint>
+#include <iomanip>
+#include <iosfwd>
+
+// Configure magic_enum to support our enum value ranges
+// Core protocol: 0x0000 - 0x0FFF
+// Risk subsystem: 0x1000 - 0x1FFF
+// Accounts subsystem: 0x2000 - 0x2FFF
+#define MAGIC_ENUM_RANGE_MIN 0
+#define MAGIC_ENUM_RANGE_MAX 0x3000
+
+#include <magic_enum/magic_enum.hpp>
 
 namespace ores::comms::protocol {
 
@@ -82,6 +93,28 @@ enum class error_code {
     invalid_request = 0x000C,
     last_value
 };
+
+/**
+ * @brief Stream output operator for message_type.
+ *
+ * Uses magic_enum to provide human-readable enum names with hex values in logs.
+ * Example: "get_currencies_request (0x1001)" instead of just "0x1001"
+ */
+inline std::ostream& operator<<(std::ostream& os, message_type mt) {
+    return os << magic_enum::enum_name(mt)
+              << " (0x" << std::hex << static_cast<std::uint16_t>(mt) << std::dec << ")";
+}
+
+/**
+ * @brief Stream output operator for error_code.
+ *
+ * Uses magic_enum to provide human-readable enum names with hex values in logs.
+ * Example: "version_mismatch (0x0001)" instead of just "0x0001"
+ */
+inline std::ostream& operator<<(std::ostream& os, error_code ec) {
+    return os << magic_enum::enum_name(ec)
+              << " (0x" << std::hex << static_cast<std::uint16_t>(ec) << std::dec << ")";
+}
 
 }
 

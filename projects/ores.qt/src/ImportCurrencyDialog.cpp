@@ -36,11 +36,13 @@ ImportCurrencyDialog::ImportCurrencyDialog(
     const std::vector<risk::domain::currency>& currencies,
     const QString& filename,
     std::shared_ptr<comms::net::client> client,
+    const QString& username,
     QWidget* parent)
     : QDialog(parent),
       currencies_(currencies),
       filename_(filename),
       client_(std::move(client)),
+      username_(username),
       importInProgress_(false),
       cancelRequested_(false) {
 
@@ -366,7 +368,11 @@ void ImportCurrencyDialog::onImportClicked() {
                 }, Qt::QueuedConnection);
 
                 try {
-                    save_currency_request request{currency};
+                    // Set modified_by to current user
+                    auto currency_to_import = currency;
+                    currency_to_import.modified_by = self->username_.toStdString();
+
+                    save_currency_request request{currency_to_import};
                     auto payload = request.serialize();
                     comms::protocol::frame request_frame(
                         comms::protocol::message_type::save_currency_request,

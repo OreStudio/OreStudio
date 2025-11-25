@@ -54,7 +54,9 @@ using comms::protocol::message_type;
 using namespace ores::utility::log;
 
 CurrencyMdiWindow::
-CurrencyMdiWindow(std::shared_ptr<comms::net::client> client, QWidget* parent)
+CurrencyMdiWindow(std::shared_ptr<comms::net::client> client,
+                  const QString& username,
+                  QWidget* parent)
     : QWidget(parent),
       verticalLayout_(new QVBoxLayout(this)),
       currencyTableView_(new QTableView(this)),
@@ -63,7 +65,8 @@ CurrencyMdiWindow(std::shared_ptr<comms::net::client> client, QWidget* parent)
       editAction_(new QAction("Edit", this)),
       deleteAction_(new QAction("Delete", this)),
       currencyModel_(new ClientCurrencyModel(client)),
-      client_(std::move(client)) {
+      client_(std::move(client)),
+      username_(username) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating currency MDI window";
 
@@ -525,7 +528,8 @@ void CurrencyMdiWindow::importFromXML() {
             .arg(currencies.size()));
 
         // Show import dialog with full preview and import capability
-        auto* dialog = new ImportCurrencyDialog(currencies, fileName, client_, this);
+        auto* dialog = new ImportCurrencyDialog(currencies, fileName, client_,
+                                                 username_, this);
 
         // Connect completion signal to refresh UI
         connect(dialog, &ImportCurrencyDialog::importCompleted,

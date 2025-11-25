@@ -69,6 +69,7 @@ public:
         const std::vector<risk::domain::currency>& currencies,
         const QString& filename,
         std::shared_ptr<comms::net::client> client,
+        const QString& username,
         QWidget* parent = nullptr);
 
     ~ImportCurrencyDialog() override;
@@ -140,6 +141,7 @@ private:
     std::vector<std::string> validation_errors_;
     QString filename_;
     std::shared_ptr<comms::net::client> client_;
+    QString username_;
 
     // UI Components
     QLabel* filenameLabel_;

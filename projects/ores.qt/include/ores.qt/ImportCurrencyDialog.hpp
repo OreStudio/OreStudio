@@ -136,6 +136,7 @@ private:
 
 private:
     std::vector<risk::domain::currency> currencies_;
+    std::vector<std::string> validation_errors_;
     QString filename_;
     std::shared_ptr<comms::net::client> client_;
 

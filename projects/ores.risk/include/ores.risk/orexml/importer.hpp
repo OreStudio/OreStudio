@@ -41,6 +41,17 @@ private:
     }
 
 public:
+    /**
+     * @brief Validates a currency against XSD schema requirements.
+     *
+     * Performs lightweight validation checking required fields per
+     * assets/xsds/currencyconfig.xsd without requiring external libraries.
+     *
+     * @param currency Currency to validate
+     * @return Empty string if valid, otherwise error message describing issues
+     */
+    static std::string validate_currency(const domain::currency& currency);
+
     static std::vector<domain::currency>
     import_currency_config(const std::filesystem::path& path);
 };

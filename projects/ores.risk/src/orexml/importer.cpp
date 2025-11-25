@@ -31,50 +31,32 @@ namespace ores::risk::orexml {
 using domain::currency;
 using namespace ores::utility::log;
 
-namespace {
-
-/**
- * @brief Validates currency against XSD schema requirements.
- *
- * Performs lightweight validation checking required fields per
- * assets/xsds/currencyconfig.xsd without requiring external libraries.
- */
-void validate_currency(const currency& c, size_t index) {
+std::string importer::validate_currency(const currency& c) {
     std::ostringstream errors;
 
     // Required fields per XSD
     if (c.name.empty())
-        errors << "  - Currency at index " << index << ": Name is required\n";
+        errors << "Name is required\n";
 
     if (c.iso_code.empty())
-        errors << "  - Currency at index " << index << ": ISOCode is required\n";
+        errors << "ISO code is required\n";
 
-    // if (c.symbol.empty())
-    //     errors << "  - Currency at index " << index << ": Symbol is required\n";
+    if (c.symbol.empty())
+        errors << "Symbol is required\n";
 
-    // if (c.fraction_symbol.empty())
-    //     errors << "  - Currency at index " << index
-    //            << ": FractionSymbol is required\n";
+    if (c.fraction_symbol.empty())
+        errors << "Fraction symbol is required\n";
 
     if (c.fractions_per_unit <= 0)
-        errors << "  - Currency at index " << index
-               << ": FractionsPerUnit must be positive integer\n";
+        errors << "Fractions per unit must be positive\n";
 
     if (c.rounding_type.empty())
-        errors << "  - Currency at index " << index
-               << ": RoundingType is required\n";
+        errors << "Rounding type is required\n";
 
     if (c.rounding_precision < 0)
-        errors << "  - Currency at index " << index
-               << ": RoundingPrecision must be non-negative integer\n";
+        errors << "Rounding precision must be non-negative\n";
 
-    const std::string error_str = errors.str();
-    if (!error_str.empty()) {
-        throw std::runtime_error(
-            "Currency validation failed:\n" + error_str);
-    }
-}
-
+    return errors.str();
 }
 
 std::vector<currency>
@@ -88,14 +70,8 @@ importer::import_currency_config(const std::filesystem::path& path) {
     CurrencyConfig ccy_cfg = CurrencyConfig::from_xml(c);
     const auto r = currency_mapper::map(ccy_cfg);
 
-    // Validate currencies against XSD requirements
-    BOOST_LOG_SEV(lg(), debug) << "Validating " << r.size()
-                               << " currencies against schema";
-    for (size_t i = 0; i < r.size(); ++i) {
-        validate_currency(r[i], i);
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Finished importing. Result: " << r;
+    BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size()
+                               << " currencies. Result: " << r;
 
     return r;
 }

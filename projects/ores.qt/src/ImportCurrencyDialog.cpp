@@ -25,6 +25,7 @@
 #include <QFileInfo>
 #include <QtConcurrent/QtConcurrent>
 #include "ores.risk/messaging/protocol.hpp"
+#include "ores.risk/orexml/importer.hpp"
 #include "ores.comms/protocol/frame.hpp"
 
 namespace ores::qt {
@@ -45,6 +46,12 @@ ImportCurrencyDialog::ImportCurrencyDialog(
     BOOST_LOG_SEV(lg(), debug) << "Creating import currency dialog for file: "
                                << filename.toStdString()
                                << " with " << currencies.size() << " currencies";
+
+    // Validate all currencies using shared validation
+    validation_errors_.reserve(currencies.size());
+    for (const auto& currency : currencies) {
+        validation_errors_.push_back(risk::orexml::importer::validate_currency(currency));
+    }
 
     setupUI();
     populateTable();
@@ -128,8 +135,13 @@ void ImportCurrencyDialog::populateTable() {
 
     currencyTable_->setRowCount(static_cast<int>(currencies_.size()));
 
+    int valid_count = 0;
+    int invalid_count = 0;
+
     for (size_t i = 0; i < currencies_.size(); ++i) {
         const auto& currency = currencies_[i];
+        const auto& validation_error = validation_errors_[i];
+        const bool is_valid = validation_error.empty();
 
         // Checkbox column
         auto* checkBoxWidget = new QWidget();
@@ -138,28 +150,65 @@ void ImportCurrencyDialog::populateTable() {
         checkBoxLayout->setAlignment(Qt::AlignCenter);
 
         auto* checkBox = new QCheckBox();
-        checkBox->setChecked(true);
         checkBox->setProperty("row", static_cast<int>(i));
         connect(checkBox, &QCheckBox::checkStateChanged,
                 this, &ImportCurrencyDialog::onCurrencyCheckChanged);
-        checkBoxLayout->addWidget(checkBox);
 
+        // If currency is invalid, disable and uncheck the checkbox
+        if (!is_valid) {
+            checkBox->setChecked(false);
+            checkBox->setEnabled(false);
+            checkBoxWidget->setToolTip(QString("Cannot import: %1")
+                .arg(QString::fromStdString(validation_error)));
+            invalid_count++;
+        } else {
+            checkBox->setChecked(true);
+            valid_count++;
+        }
+
+        checkBoxLayout->addWidget(checkBox);
         currencyTable_->setCellWidget(static_cast<int>(i), 0, checkBoxWidget);
 
         // Currency data columns
-        currencyTable_->setItem(static_cast<int>(i), 1,
-            new QTableWidgetItem(QString::fromStdString(currency.iso_code)));
-        currencyTable_->setItem(static_cast<int>(i), 2,
-            new QTableWidgetItem(QString::fromStdString(currency.name)));
-        currencyTable_->setItem(static_cast<int>(i), 3,
-            new QTableWidgetItem(QString::fromStdString(currency.symbol)));
-        currencyTable_->setItem(static_cast<int>(i), 4,
-            new QTableWidgetItem(QString::fromStdString(currency.fraction_symbol)));
-        currencyTable_->setItem(static_cast<int>(i), 5,
-            new QTableWidgetItem(QString::number(currency.fractions_per_unit)));
+        auto* isoItem = new QTableWidgetItem(
+            QString::fromStdString(currency.iso_code));
+        auto* nameItem = new QTableWidgetItem(
+            QString::fromStdString(currency.name));
+        auto* symbolItem = new QTableWidgetItem(
+            QString::fromStdString(currency.symbol));
+        auto* fractionSymbolItem = new QTableWidgetItem(
+            QString::fromStdString(currency.fraction_symbol));
+        auto* fractionsPerUnitItem = new QTableWidgetItem(
+            QString::number(currency.fractions_per_unit));
+
+        // If invalid, color the row red and add tooltips
+        if (!is_valid) {
+            const QBrush errorBrush(QColor(255, 200, 200));
+            const QString tooltip = QString("Validation errors:\n%1")
+                .arg(QString::fromStdString(validation_error));
+
+            isoItem->setBackground(errorBrush);
+            isoItem->setToolTip(tooltip);
+            nameItem->setBackground(errorBrush);
+            nameItem->setToolTip(tooltip);
+            symbolItem->setBackground(errorBrush);
+            symbolItem->setToolTip(tooltip);
+            fractionSymbolItem->setBackground(errorBrush);
+            fractionSymbolItem->setToolTip(tooltip);
+            fractionsPerUnitItem->setBackground(errorBrush);
+            fractionsPerUnitItem->setToolTip(tooltip);
+        }
+
+        currencyTable_->setItem(static_cast<int>(i), 1, isoItem);
+        currencyTable_->setItem(static_cast<int>(i), 2, nameItem);
+        currencyTable_->setItem(static_cast<int>(i), 3, symbolItem);
+        currencyTable_->setItem(static_cast<int>(i), 4, fractionSymbolItem);
+        currencyTable_->setItem(static_cast<int>(i), 5, fractionsPerUnitItem);
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Table populated successfully";
+    BOOST_LOG_SEV(lg(), debug) << "Table populated successfully - "
+                               << valid_count << " valid, "
+                               << invalid_count << " invalid currencies";
 }
 
 void ImportCurrencyDialog::updateSelectionCount() {

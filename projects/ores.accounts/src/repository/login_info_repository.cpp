@@ -36,11 +36,8 @@ using namespace ores::utility::log;
 using namespace ores::utility::repository;
 
 std::string login_info_repository::sql() {
-    const auto query = create_table<login_info_entity> | if_not_exists;
-    const auto sql = postgres::to_sql(query);
-
-    BOOST_LOG_SEV(lg(), debug) << sql;
-    return sql;
+    return generate_create_table_sql<login_info_entity>(
+        "ores.accounts.repository.login_info_repository");
 }
 
 login_info_repository::login_info_repository(context ctx)

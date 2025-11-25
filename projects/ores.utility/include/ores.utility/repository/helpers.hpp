@@ -97,6 +97,34 @@ inline auto make_timestamp(const std::string& s) {
     return r;
 }
 
+/**
+ * @brief Generates the CREATE TABLE SQL statement for a given entity type.
+ *
+ * This helper creates a sqlgen CREATE TABLE IF NOT EXISTS query for the specified
+ * entity type and converts it to SQL. The SQL is logged at debug level and returned.
+ *
+ * @tparam EntityType The database entity type for which to generate the CREATE TABLE SQL
+ * @param logger_name The name to use for logging
+ * @return The SQL string for creating the table
+ *
+ * @example
+ * std::string sql = generate_create_table_sql<account_entity>(
+ *     "ores.accounts.repository.account_repository");
+ */
+template<typename EntityType>
+std::string generate_create_table_sql(const std::string& logger_name) {
+    using namespace ores::utility::log;
+    using namespace sqlgen;
+
+    const auto query = create_table<EntityType> | if_not_exists;
+    const auto sql = postgres::to_sql(query);
+
+    auto logger = make_logger(logger_name);
+    BOOST_LOG_SEV(logger, debug) << sql;
+
+    return sql;
+}
+
 }
 
 #endif

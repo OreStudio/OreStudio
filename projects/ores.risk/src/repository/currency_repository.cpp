@@ -36,11 +36,8 @@ using namespace ores::utility::log;
 using namespace ores::utility::repository;
 
 std::string currency_repository::sql() {
-    const auto query = create_table<currency_entity> | if_not_exists;
-    const auto sql = postgres::to_sql(query);
-
-    BOOST_LOG_SEV(lg(), debug) << sql;
-    return sql;
+    return generate_create_table_sql<currency_entity>(
+        "ores.risk.repository.currency_repository");
 }
 
 void currency_repository::

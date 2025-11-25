@@ -35,11 +35,8 @@ using namespace ores::utility::log;
 using namespace ores::utility::repository;
 
 std::string account_repository::sql() {
-    const auto query = create_table<account_entity> | if_not_exists;
-    const auto sql = postgres::to_sql(query);
-
-    BOOST_LOG_SEV(lg(), debug) << sql;
-    return sql;
+    return generate_create_table_sql<account_entity>(
+        "ores.accounts.repository.account_repository");
 }
 
 account_repository::account_repository(context ctx)

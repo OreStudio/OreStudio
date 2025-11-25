@@ -48,7 +48,7 @@ using namespace ores::utility::log;
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent), ui_(new Ui::MainWindow), mdiArea_(nullptr) {
 
-    BOOST_LOG_SEV(lg(), info) << "Creating the main window.";
+    BOOST_LOG_SEV(lg(), debug) << "Creating the main window.";
     ui_->setupUi(this);
 
     mdiArea_ = new MdiAreaWithBackground(this);
@@ -126,9 +126,9 @@ MainWindow::MainWindow(QWidget* parent) :
 }
 
 void MainWindow::closeEvent(QCloseEvent* event) {
-    BOOST_LOG_SEV(lg(), info) << "MainWindow close event triggered";
-    BOOST_LOG_SEV(lg(), info) << "Closing " << allDetachableWindows_.size()
-                              << " detachable windows before main window closes";
+    BOOST_LOG_SEV(lg(), debug) << "MainWindow close event triggered";
+    BOOST_LOG_SEV(lg(), debug) << "Closing " << allDetachableWindows_.size()
+                               << " detachable windows before main window closes";
 
     // Close all detachable windows first
     // Make a copy of the list since closing windows modifies the original list
@@ -150,17 +150,17 @@ void MainWindow::closeEvent(QCloseEvent* event) {
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Closed " << closed_count
-                              << " windows, accepting close event";
+    BOOST_LOG_SEV(lg(), debug) << "Closed " << closed_count
+                               << " windows, accepting close event";
 
     // Accept the close event to allow MainWindow to close
     event->accept();
 }
 
 MainWindow::~MainWindow() {
-    BOOST_LOG_SEV(lg(), info) << "MainWindow destructor called";
-    BOOST_LOG_SEV(lg(), info) << "Closing " << allDetachableWindows_.size()
-                              << " detachable windows";
+    BOOST_LOG_SEV(lg(), debug) << "MainWindow destructor called";
+    BOOST_LOG_SEV(lg(), debug) << "Closing " << allDetachableWindows_.size()
+                               << " detachable windows";
 
     // Close and delete all detachable windows before MainWindow destruction
     // Use deleteLater() to ensure detached windows are properly destroyed
@@ -178,7 +178,7 @@ MainWindow::~MainWindow() {
             closed_count++;
         }
     }
-    BOOST_LOG_SEV(lg(), info) << "Scheduled " << closed_count << " windows for deletion";
+    BOOST_LOG_SEV(lg(), debug) << "Scheduled " << closed_count << " windows for deletion";
 
     if (client_)
         client_->disconnect();
@@ -193,11 +193,11 @@ MainWindow::~MainWindow() {
     if (io_thread_ && io_thread_->joinable())
         io_thread_->join();
 
-    BOOST_LOG_SEV(lg(), info) << "MainWindow destroyed, client disconnected.";
+    BOOST_LOG_SEV(lg(), debug) << "MainWindow destroyed, client disconnected.";
 }
 
 void MainWindow::onLoginTriggered() {
-    BOOST_LOG_SEV(lg(), info) << "Login action triggered";
+    BOOST_LOG_SEV(lg(), debug) << "Login action triggered";
 
     LoginDialog dialog(this);
     const int result = dialog.exec();
@@ -224,7 +224,7 @@ void MainWindow::onLoginTriggered() {
                 "Failed to establish server connection.");
         }
     } else
-        BOOST_LOG_SEV(lg(), info) << "Login cancelled by user.";
+        BOOST_LOG_SEV(lg(), warn) << "Login cancelled by user.";
 }
 
 void MainWindow::updateMenuState() {
@@ -249,7 +249,7 @@ void MainWindow::updateMenuState() {
 }
 
 void MainWindow::createControllers() {
-    BOOST_LOG_SEV(lg(), info) << "Creating entity controllers";
+    BOOST_LOG_SEV(lg(), debug) << "Creating entity controllers.";
 
     // Create currency controller
     currencyController_ = std::make_unique<CurrencyController>(
@@ -266,11 +266,11 @@ void MainWindow::createControllers() {
         ui_->statusbar->showMessage(message);
     });
 
-    BOOST_LOG_SEV(lg(), info) << "Entity controllers created";
+    BOOST_LOG_SEV(lg(), debug) << "Entity controllers created.";
 }
 
 void MainWindow::onDisconnectTriggered() {
-    BOOST_LOG_SEV(lg(), info) << "Disconnect action triggered";
+    BOOST_LOG_SEV(lg(), debug) << "Disconnect action triggered.";
 
     if (client_ && client_->is_connected()) {
         client_->disconnect();
@@ -313,7 +313,7 @@ void MainWindow::onAboutTriggered() {
 }
 
 void MainWindow::onDetachAllTriggered() {
-    BOOST_LOG_SEV(lg(), info) << "Detach All triggered";
+    BOOST_LOG_SEV(lg(), debug) << "Detach All triggered";
 
     for (auto* detachableWindow : allDetachableWindows_) {
         if (detachableWindow && !detachableWindow->isDetached()) {
@@ -321,7 +321,7 @@ void MainWindow::onDetachAllTriggered() {
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "All windows detached";
+    BOOST_LOG_SEV(lg(), debug) << "All windows detached.";
 }
 
 void MainWindow::onWindowMenuAboutToShow() {

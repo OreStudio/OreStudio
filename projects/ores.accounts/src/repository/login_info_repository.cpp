@@ -33,23 +33,11 @@ namespace ores::accounts::repository {
 using namespace sqlgen;
 using namespace sqlgen::literals;
 using namespace ores::utility::log;
-using ores::utility::repository::repository_exception;
-
-void login_info_repository::ensure_success(const auto result) {
-    if (!result) {
-        BOOST_LOG_SEV(lg(), severity_level::error) << result.error().what();
-        BOOST_THROW_EXCEPTION(
-            repository_exception(std::format("Repository error: {}",
-                    result.error().what())));
-    }
-}
+using namespace ores::utility::repository;
 
 std::string login_info_repository::sql() {
-    const auto query = create_table<login_info_entity> | if_not_exists;
-    const auto sql = postgres::to_sql(query);
-
-    BOOST_LOG_SEV(lg(), debug) << sql;
-    return sql;
+    return generate_create_table_sql<login_info_entity>(
+        "ores.accounts.repository.login_info_repository");
 }
 
 login_info_repository::login_info_repository(context ctx)

@@ -33,35 +33,11 @@ namespace ores::risk::repository {
 using namespace sqlgen;
 using namespace sqlgen::literals;
 using namespace ores::utility::log;
-using ores::utility::repository::repository_exception;
-
-void currency_repository::ensure_success(const auto result) {
-    if (!result) {
-        BOOST_LOG_SEV(lg(), error) << result.error().what();
-        BOOST_THROW_EXCEPTION(
-            repository_exception(std::format("Repository error: {}",
-                    result.error().what())));
-    }
-}
-
-auto currency_repository::make_timestamp(const std::string& s) {
-    const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(s);
-    if (!r) {
-        BOOST_LOG_SEV(lg(), error) << "Error converting timestamp: '" << s
-                                 << "'. Error: " << r.error().what();
-        BOOST_THROW_EXCEPTION(
-            repository_exception(
-                std::format("Timestamp conversion error: {}", s)));
-    }
-    return r;
-}
+using namespace ores::utility::repository;
 
 std::string currency_repository::sql() {
-    const auto query = create_table<currency_entity> | if_not_exists;
-    const auto sql = postgres::to_sql(query);
-
-    BOOST_LOG_SEV(lg(), debug) << sql;
-    return sql;
+    return generate_create_table_sql<currency_entity>(
+        "ores.risk.repository.currency_repository");
 }
 
 void currency_repository::
@@ -69,13 +45,10 @@ write(context ctx, const domain::currency& currency) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currency to database: "
                                << currency;
 
-    const auto r = session(ctx.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(insert(currency_mapper::map(currency)))
-        .and_then(commit);
-    ensure_success(r);
-
-    BOOST_LOG_SEV(lg(), debug) << "Finished writing currency to database.";
+    execute_write_query(ctx,
+        currency_mapper::map(currency),
+        "ores.risk.repository.currency_repository",
+        "writing currency to database");
 }
 
 void currency_repository::
@@ -83,20 +56,15 @@ write(context ctx, const std::vector<domain::currency>& currencies) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currencies to database. Count: "
                              << currencies.size();
 
-    const auto r = session(ctx.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(insert(currency_mapper::map(currencies)))
-        .and_then(commit);
-    ensure_success(r);
-
-    BOOST_LOG_SEV(lg(), debug) << "Finished writing currencies to database.";
+    execute_write_query(ctx,
+        currency_mapper::map(currencies),
+        "ores.risk.repository.currency_repository",
+        "writing currencies to database");
 }
 
 
 std::vector<domain::currency> currency_repository::read_latest(context ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currencies.";
-
-    static auto max(make_timestamp(max_timestamp));
+    static auto max(make_timestamp(MAX_TIMESTAMP));
     const auto query = sqlgen::read<std::vector<currency_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
@@ -104,11 +72,10 @@ std::vector<domain::currency> currency_repository::read_latest(context ctx) {
     const auto sql = postgres::to_sql(query);
     BOOST_LOG_SEV(lg(), debug) << "Query: " << sql;
 
-    const auto r = session(ctx.connection_pool())
-        .and_then(query);
-    ensure_success(r);
-    BOOST_LOG_SEV(lg(), debug) << "Read latest currencies. Total: " << r->size();
-    return currency_mapper::map(*r);
+    return execute_read_query<currency_entity, domain::currency>(ctx, query,
+        [](const auto& entities) { return currency_mapper::map(entities); },
+        "ores.risk.repository.currency_repository",
+        "Reading latest currencies");
 }
 
 std::vector<domain::currency>
@@ -116,15 +83,15 @@ currency_repository::read_latest(context ctx, const std::string& iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currencies. ISO code: "
                              << iso_code;
 
-    static auto max(make_timestamp(max_timestamp));
+    static auto max(make_timestamp(MAX_TIMESTAMP));
     const auto query = sqlgen::read<std::vector<currency_entity>> |
         where("iso_code"_c == iso_code && "valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
 
-    const auto r = session(ctx.connection_pool()).and_then(query);
-    ensure_success(r);
-    BOOST_LOG_SEV(lg(), debug) << "Read latest currencies. Total: " << r->size();
-    return currency_mapper::map(*r);
+    return execute_read_query<currency_entity, domain::currency>(ctx, query,
+        [](const auto& entities) { return currency_mapper::map(entities); },
+        "ores.risk.repository.currency_repository",
+        "Reading latest currencies by ISO code");
 }
 
 std::vector<domain::currency>
@@ -135,10 +102,10 @@ currency_repository::read_at_timepoint(context ctx, const std::string& as_of) {
     const auto query = sqlgen::read<std::vector<currency_entity>> |
         where("valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
 
-    const auto r = session(ctx.connection_pool()).and_then(query);
-    ensure_success(r);
-    BOOST_LOG_SEV(lg(), debug) << "Read latest currencies. Total: " << r->size();
-    return currency_mapper::map(*r);
+    return execute_read_query<currency_entity, domain::currency>(ctx, query,
+        [](const auto& entities) { return currency_mapper::map(entities); },
+        "ores.risk.repository.currency_repository",
+        "Reading currencies at timepoint");
 }
 
 std::vector<domain::currency>
@@ -150,22 +117,20 @@ currency_repository::read_at_timepoint(context ctx, const std::string& as_of,
         where("iso_code"_c == iso_code &&
             "valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
 
-    const auto r = session(ctx.connection_pool())
-        .and_then(query);
-    ensure_success(r);
-    BOOST_LOG_SEV(lg(), debug) << "Read latest currencies. Total: " << r->size();
-    return currency_mapper::map(*r);
+    return execute_read_query<currency_entity, domain::currency>(ctx, query,
+        [](const auto& entities) { return currency_mapper::map(entities); },
+        "ores.risk.repository.currency_repository",
+        "Reading currencies at timepoint by ISO code");
 }
 
 std::vector<domain::currency> currency_repository::read_all(context ctx) {
     const auto query = sqlgen::read<std::vector<currency_entity>> |
         order_by("valid_from"_c.desc());
 
-    const auto r = session(ctx.connection_pool())
-        .and_then(query);
-    ensure_success(r);
-    BOOST_LOG_SEV(lg(), debug) << "Read latest currencies. Total: " << r->size();
-    return currency_mapper::map(*r);
+    return execute_read_query<currency_entity, domain::currency>(ctx, query,
+        [](const auto& entities) { return currency_mapper::map(entities); },
+        "ores.risk.repository.currency_repository",
+        "Reading all currencies");
 }
 
 std::vector<domain::currency>
@@ -174,10 +139,10 @@ currency_repository::read_all(context ctx, const std::string& iso_code) {
         where("iso_code"_c == iso_code) |
         order_by("valid_from"_c.desc());
 
-    const auto r = session(ctx.connection_pool()).and_then(query);
-    ensure_success(r);
-    BOOST_LOG_SEV(lg(), debug) << "Read latest currencies. Total: " << r->size();
-    return currency_mapper::map(*r);
+    return execute_read_query<currency_entity, domain::currency>(ctx, query,
+        [](const auto& entities) { return currency_mapper::map(entities); },
+        "ores.risk.repository.currency_repository",
+        "Reading all currencies by ISO code");
 }
 
 void currency_repository::remove(context ctx, const std::string& iso_code) {
@@ -188,13 +153,9 @@ void currency_repository::remove(context ctx, const std::string& iso_code) {
     const auto query = sqlgen::delete_from<currency_entity> |
         where("iso_code"_c == iso_code);
 
-    const auto r = session(ctx.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(query)
-        .and_then(commit);
-    ensure_success(r);
-
-    BOOST_LOG_SEV(lg(), debug) << "Finished removing currency from database.";
+    execute_delete_query(ctx, query,
+        "ores.risk.repository.currency_repository",
+        "removing currency from database");
 }
 
 }

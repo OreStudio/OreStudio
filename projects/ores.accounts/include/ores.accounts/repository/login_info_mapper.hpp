@@ -39,12 +39,6 @@ private:
         return instance;
     }
 
-    static std::chrono::system_clock::time_point
-    timestamp_to_timepoint(const sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">& ts);
-
-    static sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
-    timepoint_to_timestamp(const std::chrono::system_clock::time_point& tp);
-
 public:
     static domain::login_info map(const login_info_entity& v);
     static login_info_entity map(const domain::login_info& v);

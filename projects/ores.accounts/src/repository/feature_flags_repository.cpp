@@ -30,35 +30,11 @@ namespace ores::accounts::repository {
 using namespace sqlgen;
 using namespace sqlgen::literals;
 using namespace ores::utility::log;
-using ores::utility::repository::repository_exception;
-
-void feature_flags_repository::ensure_success(const auto result) {
-    if (!result) {
-        BOOST_LOG_SEV(lg(), severity_level::error) << result.error().what();
-        BOOST_THROW_EXCEPTION(
-            repository_exception(std::format("Repository error: {}",
-                    result.error().what())));
-    }
-}
-
-auto feature_flags_repository::make_timestamp(const std::string& s) {
-    const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(s);
-    if (!r) {
-        BOOST_LOG_SEV(lg(), error) << "Error converting timestamp: '" << s
-                                 << "'. Error: " << r.error().what();
-        BOOST_THROW_EXCEPTION(
-            repository_exception(
-                std::format("Timestamp conversion error: {}", s)));
-    }
-    return r;
-}
+using namespace ores::utility::repository;
 
 std::string feature_flags_repository::sql() {
-    const auto query = create_table<feature_flags_entity> | if_not_exists;
-    const auto sql = postgres::to_sql(query);
-
-    BOOST_LOG_SEV(lg(), debug) << sql;
-    return sql;
+    return generate_create_table_sql<feature_flags_entity>(
+        "ores.accounts.repository.feature_flags_repository");
 }
 
 feature_flags_repository::feature_flags_repository(context ctx)
@@ -68,13 +44,10 @@ void feature_flags_repository::
 write(const domain::feature_flags& flag) {
     BOOST_LOG_SEV(lg(), debug) << "Writing feature flag to database: " << flag;
 
-    const auto r = session(ctx_.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(insert(feature_flags_mapper::map(flag)))
-        .and_then(commit);
-    ensure_success(r);
-
-    BOOST_LOG_SEV(lg(), debug) << "Finished writing feature flag to database.";
+    execute_write_query(ctx_,
+        feature_flags_mapper::map(flag),
+        "ores.accounts.repository.feature_flags_repository",
+        "writing feature flag to database");
 }
 
 void feature_flags_repository::
@@ -82,54 +55,47 @@ write(const std::vector<domain::feature_flags>& flags) {
     BOOST_LOG_SEV(lg(), debug) << "Writing feature flags to database. Count: "
                              << flags.size();
 
-    const auto r = session(ctx_.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(insert(feature_flags_mapper::map(flags)))
-        .and_then(commit);
-    ensure_success(r);
-
-    BOOST_LOG_SEV(lg(), debug) << "Finished writing feature flags to database.";
+    execute_write_query(ctx_,
+        feature_flags_mapper::map(flags),
+        "ores.accounts.repository.feature_flags_repository",
+        "writing feature flags to database");
 }
 
 std::vector<domain::feature_flags> feature_flags_repository::read_latest() {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest feature flags.";
-
-    static auto max(make_timestamp(max_timestamp));
+    static auto max(make_timestamp(MAX_TIMESTAMP));
     const auto query = sqlgen::read<std::vector<feature_flags_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
 
-    const auto r = session(ctx_.connection_pool())
-        .and_then(query);
-    ensure_success(r);
-    BOOST_LOG_SEV(lg(), debug) << "Read latest feature flags. Total: " << r->size();
-    return feature_flags_mapper::map(*r);
+    return execute_read_query<feature_flags_entity, domain::feature_flags>(ctx_, query,
+        [](const auto& entities) { return feature_flags_mapper::map(entities); },
+        "ores.accounts.repository.feature_flags_repository",
+        "Reading latest feature flags");
 }
 
 std::vector<domain::feature_flags>
 feature_flags_repository::read_latest(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest feature flag by name: " << name;
 
-    static auto max(make_timestamp(max_timestamp));
+    static auto max(make_timestamp(MAX_TIMESTAMP));
     const auto query = sqlgen::read<std::vector<feature_flags_entity>> |
         where("name"_c == name && "valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
 
-    const auto r = session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r);
-    BOOST_LOG_SEV(lg(), debug) << "Read latest feature flag. Total: " << r->size();
-    return feature_flags_mapper::map(*r);
+    return execute_read_query<feature_flags_entity, domain::feature_flags>(ctx_, query,
+        [](const auto& entities) { return feature_flags_mapper::map(entities); },
+        "ores.accounts.repository.feature_flags_repository",
+        "Reading latest feature flag by name");
 }
 
 std::vector<domain::feature_flags> feature_flags_repository::read_all() {
     const auto query = sqlgen::read<std::vector<feature_flags_entity>> |
         order_by("valid_from"_c.desc());
 
-    const auto r = session(ctx_.connection_pool())
-        .and_then(query);
-    ensure_success(r);
-    BOOST_LOG_SEV(lg(), debug) << "Read all feature flags. Total: " << r->size();
-    return feature_flags_mapper::map(*r);
+    return execute_read_query<feature_flags_entity, domain::feature_flags>(ctx_, query,
+        [](const auto& entities) { return feature_flags_mapper::map(entities); },
+        "ores.accounts.repository.feature_flags_repository",
+        "Reading all feature flags");
 }
 
 std::vector<domain::feature_flags>
@@ -141,10 +107,10 @@ feature_flags_repository::read_all(const std::string& name) {
         where("name"_c == name) |
         order_by("valid_from"_c.desc());
 
-    const auto r = session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r);
-    BOOST_LOG_SEV(lg(), debug) << "Read all feature flags. Total: " << r->size();
-    return feature_flags_mapper::map(*r);
+    return execute_read_query<feature_flags_entity, domain::feature_flags>(ctx_, query,
+        [](const auto& entities) { return feature_flags_mapper::map(entities); },
+        "ores.accounts.repository.feature_flags_repository",
+        "Reading all feature flags by name");
 }
 
 void feature_flags_repository::remove(const std::string& name) {
@@ -155,13 +121,9 @@ void feature_flags_repository::remove(const std::string& name) {
     const auto query = sqlgen::delete_from<feature_flags_entity> |
         where("name"_c == name);
 
-    const auto r = session(ctx_.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(query)
-        .and_then(commit);
-    ensure_success(r);
-
-    BOOST_LOG_SEV(lg(), debug) << "Finished removing feature flag from database.";
+    execute_delete_query(ctx_, query,
+        "ores.accounts.repository.feature_flags_repository",
+        "removing feature flag from database");
 }
 
 }

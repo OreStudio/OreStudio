@@ -1,0 +1,169 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_UTILITY_REPOSITORY_BITEMPORAL_OPERATIONS_HPP
+#define ORES_UTILITY_REPOSITORY_BITEMPORAL_OPERATIONS_HPP
+
+#include <vector>
+#include <sqlgen/postgres.hpp>
+#include "ores.utility/log/make_logger.hpp"
+#include "ores.utility/repository/context.hpp"
+#include "ores.utility/repository/helpers.hpp"
+
+namespace ores::utility::repository {
+
+/**
+ * @brief Executes a read query and maps the results to domain objects.
+ *
+ * This helper encapsulates the common pattern of:
+ * 1. Executing a query on a session
+ * 2. Ensuring success
+ * 3. Logging the result count
+ * 4. Mapping entities to domain objects
+ *
+ * @tparam EntityType The database entity type
+ * @tparam DomainType The domain model type
+ * @tparam QueryType The sqlgen query type
+ * @tparam MapperFunc The mapper function type
+ * @param ctx The repository context
+ * @param query The pre-built sqlgen query
+ * @param mapper The function to map entities to domain objects
+ * @param logger_name The name to use for logging
+ * @param operation_desc Description of the operation for logging
+ * @return A vector of domain objects
+ *
+ * @example
+ * const auto query = sqlgen::read<std::vector<account_entity>> |
+ *     where("valid_to"_c == max.value()) |
+ *     order_by("valid_from"_c.desc());
+ * return execute_read_query<account_entity, domain::account>(
+ *     ctx_, query,
+ *     [](const auto& entities) { return account_mapper::map(entities); },
+ *     "ores.accounts.repository.account_repository",
+ *     "Read latest accounts");
+ */
+template<typename EntityType, typename DomainType, typename QueryType, typename MapperFunc>
+std::vector<DomainType> execute_read_query(
+    context ctx,
+    const QueryType& query,
+    MapperFunc&& mapper,
+    const std::string& logger_name,
+    const std::string& operation_desc) {
+
+    using namespace ores::utility::log;
+    using namespace sqlgen;
+
+    auto logger = make_logger(logger_name);
+    BOOST_LOG_SEV(logger, debug) << operation_desc << ".";
+
+    const auto r = session(ctx.connection_pool()).and_then(query);
+    ensure_success(r);
+
+    BOOST_LOG_SEV(logger, debug) << operation_desc << ". Total: " << r->size();
+    return std::forward<MapperFunc>(mapper)(*r);
+}
+
+/**
+ * @brief Executes a write operation within a transaction.
+ *
+ * This helper encapsulates the common pattern of:
+ * 1. Starting a session
+ * 2. Beginning a transaction
+ * 3. Executing an insert/update query
+ * 4. Committing the transaction
+ * 5. Ensuring success
+ *
+ * @tparam EntityType The database entity type
+ * @param ctx The repository context
+ * @param entity The entity or vector of entities to write
+ * @param logger_name The name to use for logging
+ * @param operation_desc Description of the operation for logging
+ *
+ * @example
+ * execute_write_query(ctx_,
+ *     account_mapper::map(account),
+ *     "ores.accounts.repository.account_repository",
+ *     "Writing account to database");
+ */
+template<typename EntityType>
+void execute_write_query(
+    context ctx,
+    const EntityType& entity,
+    const std::string& logger_name,
+    const std::string& operation_desc) {
+
+    using namespace ores::utility::log;
+    using namespace sqlgen;
+
+    auto logger = make_logger(logger_name);
+    BOOST_LOG_SEV(logger, debug) << operation_desc << ".";
+
+    const auto r = session(ctx.connection_pool())
+        .and_then(begin_transaction)
+        .and_then(insert(entity))
+        .and_then(commit);
+    ensure_success(r);
+
+    BOOST_LOG_SEV(logger, debug) << "Finished " << operation_desc << ".";
+}
+
+/**
+ * @brief Executes a delete operation within a transaction.
+ *
+ * For bitemporal tables, this typically triggers a database function that sets
+ * valid_to = current_timestamp instead of actually deleting the record.
+ *
+ * @tparam QueryType The sqlgen delete query type
+ * @param ctx The repository context
+ * @param query The pre-built delete query
+ * @param logger_name The name to use for logging
+ * @param operation_desc Description of the operation for logging
+ *
+ * @example
+ * const auto query = sqlgen::delete_from<account_entity> |
+ *     where("id"_c == id_str);
+ * execute_delete_query(ctx_, query,
+ *     "ores.accounts.repository.account_repository",
+ *     "Removing account from database");
+ */
+template<typename QueryType>
+void execute_delete_query(
+    context ctx,
+    const QueryType& query,
+    const std::string& logger_name,
+    const std::string& operation_desc) {
+
+    using namespace ores::utility::log;
+    using namespace sqlgen;
+
+    auto logger = make_logger(logger_name);
+    BOOST_LOG_SEV(logger, debug) << operation_desc << ".";
+
+    const auto r = session(ctx.connection_pool())
+        .and_then(begin_transaction)
+        .and_then(query)
+        .and_then(commit);
+    ensure_success(r);
+
+    BOOST_LOG_SEV(logger, debug) << "Finished " << operation_desc << ".";
+}
+
+}
+
+#endif

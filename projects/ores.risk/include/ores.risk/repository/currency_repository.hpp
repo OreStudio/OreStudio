@@ -25,6 +25,8 @@
 #include <sqlgen/postgres.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
+#include "ores.utility/repository/helpers.hpp"
+#include "ores.utility/repository/bitemporal_operations.hpp"
 #include "ores.risk/domain/currency.hpp"
 
 namespace ores::risk::repository {
@@ -40,11 +42,6 @@ private:
             "ores.risk.repository.currency_repository");
         return instance;
     }
-
-    const std::string max_timestamp = "9999-12-31 23:59:59";
-
-    void ensure_success(const auto result);
-    auto make_timestamp(const std::string& s);
 
 public:
     using context = ores::utility::repository::context;

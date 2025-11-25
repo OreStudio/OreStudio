@@ -69,6 +69,7 @@ public slots:
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
+    void importFromXML();
     void exportToCSV();
     void exportToXML();
 

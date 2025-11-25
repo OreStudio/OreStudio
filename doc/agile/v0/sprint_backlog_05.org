@@ -1874,6 +1874,87 @@ Merged stories:
 
 We have it scattered around the code base.
 
+*** COMPLETED Implement basic XML import XML in Qt                     :code:
+    CLOSED: [2025-11-25 Mon]
+    :LOGBOOK:
+    CLOCK: [2025-11-25 Mon 18:55]--[2025-11-25 Mon 21:30] =>  2:35
+    :END:
+
+Implemented basic XML import functionality for currencies in the Qt application.
+Users can import ORE XML currency configuration files through a toolbar button
+in the Currency window.
+
+*Implementation Approach*: Phased implementation for currencies only, completed
+in 5 phases with review and commit points between phases.
+
+- What Was Implemented
+
+  - [X] Import XML toolbar button in Currency window (not File menu)
+  - [X] File dialog for selecting ORE XML files (*.xml filter)
+  - [X] XML parsing using existing ores.risk::orexml::importer
+  - [X] Message box preview showing up to 10 currencies with confirmation
+  - [X] Background async import to server (QtConcurrent)
+  - [X] Send each currency via save_currency_request protocol
+  - [X] Automatic UI refresh after import completes
+  - [X] Lightweight XSD validation (no external dependencies)
+  - [X] Comprehensive error handling at all stages
+  - [X] Success/failure summary with counts
+
+- Implementation Details
+
+  Phase 1: Import XML action in currencies toolbar with file dialog
+  - Added ImportXML action to CurrencyMdiWindow toolbar
+  - Uses same icon as Export XML (ic_fluent_document_code_16_regular.svg)
+  - Positioned before Export CSV/XML actions
+
+  Phase 2: Parse XML and display preview
+  - Parses XML using ores.risk::orexml::importer::import_currency_config()
+  - Shows message box with first 10 currencies (ISO code and name)
+  - User confirms or cancels import
+  - Handles empty files gracefully
+
+  Phase 3: Send currencies to server and refresh UI
+  - Background import using QtConcurrent to avoid blocking UI
+  - Iterates through currencies sending save_currency_request for each
+  - Tracks success/failure counts per currency
+  - Refreshes currency model automatically on completion
+  - Shows summary dialog with final counts
+
+  Phase 4: XSD validation (lightweight)
+  - Validates required fields: Name, ISOCode, Symbol, FractionSymbol,
+    FractionsPerUnit, RoundingType, RoundingPrecision
+  - Validates data types (positive/non-negative integers)
+  - Throws detailed exceptions listing all validation failures
+  - No external dependencies (libxml2, xerces-c)
+
+  Phase 5: Error handling and user feedback
+  - Connection check before import
+  - File selection cancellation handling
+  - XML parse error handling
+  - Validation error messages
+  - Network/server error handling
+  - Partial import failure tracking
+  - Status bar updates throughout process
+
+- Files Modified
+
+  - =projects/ores.qt/include/ores.qt/CurrencyMdiWindow.hpp=
+  - =projects/ores.qt/src/CurrencyMdiWindow.cpp=
+  - =projects/ores.risk/src/orexml/importer.cpp=
+
+- Limitations
+
+  - Preview shows only first 10 currencies in message box
+  - No progress bar during import (status shows "Importing currencies...")
+  - Cannot select which currencies to import (all or nothing)
+  - No detailed preview table
+  - No per-currency import status
+
+- Next Steps
+
+  These limitations will be addressed in follow-up story "Implement import
+  dialog for XML import in Qt".
+
 *** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
     CLOCK: [2025-11-25 Tue 18:00]--[2025-11-25 Tue 18:55] =>  0:55
@@ -1900,58 +1981,285 @@ Links:
 - [[https://www.reddit.com/r/ClaudeCode/comments/1oywsa1/claude_code_skills_activate_20_of_the_time_heres/][reddit: Claude Code skills activate 20% of the time. Here's how I got to 84%.]]
 - [[https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably][How to Make Claude Code Skills Activate Reliably]]
 
-*** Automated SQL generation                                           :code:
+*** STARTED Implement import dialog for XML import in Qt               :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-25 Tue 20:03]
+    :END:
 
-At present we are manually creating the SQL. We should be able to do it from
-sqlgen.
+Replace the current message box preview with a dedicated import dialog that
+provides better UX for importing currencies from ORE XML files.
 
-*** Missing shell functionality                                        :code:
+*Rationale*: The current basic import shows only the first 10 currencies in a
+message box and provides no progress indication during import. This story
+addresses these limitations with a proper import dialog.
 
-The job of the client is to exercise the entirety of the comms protocol, and to
-provide a way to perform CRUD operations via command line. Note:
+- Acceptance Criteria
 
-- client never access the repositories directly, it should do exactly the same as the qt client
-  would do.
-- client's only interface is the REPL.
-- client will eventually be used by AI agents.
+  - User sees a dedicated import dialog after selecting XML file
+  - Dialog shows ALL currencies in a table (not just first 10)
+  - Table displays key fields: ISO Code, Name, Symbol, Fraction Symbol,
+    Fractions Per Unit
+  - User can select/deselect individual currencies with checkboxes
+  - "Select All" / "Deselect All" buttons available
+  - Progress bar shows import progress (X of Y currencies)
+  - Status label shows current operation (e.g., "Importing GBP...")
+  - Invalid currencies are highlighted with warning icon
+  - Import button enabled only when at least one currency selected
+  - Cancel button stops import gracefully
+  - Dialog is modal (prevents concurrent imports)
 
-Client needs to have messages at the entity level:
+- Proposed Design (Option 2 from Analysis)
 
-- currencies:
-  - import currencies from ORE Format. Given a path in the filesystem, it
-    performs the import using the importer and appropriate comms messages.
-  - export currencies to ORE format. Uses comms to obtain the currencies, then
-    the exporter to convert, then dumps them into the terminal as ORE XML.
-  - list existing currencies as a table or as JSON. We need support for latest,
-    "at time point" and "all" (meaning every single version). It should be
-    possible to supply some filtering by the entity's ID (e.g.
-    =--iso-code=).
-  - delete one or more currencies. User supplies a number of entity IDs (e.g.
-    =--iso-code ABC --iso-code CDE --iso-code FGH= and so on).
-  - add a currency supplying arguments (e.g. =--iso-code= and so forth).
-  - add currencies from JSON.
-- accounts:
-  - list existing currencies as a table or as JSON. We need support for latest,
-    "at time point" and "all" (meaning every single version). It should be
-    possible to supply filtering by the entity's ID.
-  - delete one or more accounts. User supplies a list of entity IDs.
-  - add an account supplying arguments.
-  - add accounts from JSON.
-- feature flags:
-  - list existing feature flags as a table or as JSON. We need support for
-    latest, "at time point" and "all" (meaning every single version). It should
-    be possible to supply some filtering by the entity's ID
-  - delete one or more feature flags. User supplies a list of entity IDs.
-  - add feature flags supplying arguments.
-  - add feature flags from JSON.
+  Dialog Layout:
 
-Notes:
+#+begin_src ascii
+  ┌─────────────────────────────────────────────────────┐
+  │ Import Currencies from XML                      [×] │
+  ├─────────────────────────────────────────────────────┤
+  │ File: /path/to/currencies.xml                       │
+  │                                                     │
+  │ ☑ Select All (150 currencies)                       │
+  │ ┌─────────────────────────────────────────────────┐ │
+  │ │ ☑│ USD │ US Dollar        │ $ │ cent │ 100 │    │ │
+  │ │ ☑│ EUR │ Euro             │ € │ cent │ 100 │    │ │
+  │ │ ☑│ GBP │ Pound Sterling   │ £ │ pence│ 100 │    │ │
+  │ │ ☐│ XXX │ Invalid Currency │ ? │      │   0 │⚠   │ │
+  │ │ ...                                             │ │
+  │ └─────────────────────────────────────────────────┘ │
+  │                                                     │
+  │ [Progress Bar ████████░░░░░░░░] 67% (100/150)       │
+  │ Status: Importing GBP...                            │
+  │                                                     │
+  │                          [Import] [Cancel]          │
+  └─────────────────────────────────────────────────────┘
+#+end_src
 
-- update recipes with the new client commands.
+- Implementation Plan
 
-*** Add a logout message                                               :code:
+  1. Create ImportCurrencyDialog class (header and implementation)
+     - Inherits from QDialog
+     - Similar pattern to CurrencyDetailDialog
 
-At present we are just closing the socket. We should send a proper message.
+  2. Add UI components
+     - QTableWidget with columns: [Checkbox, ISO, Name, Symbol,
+       Fraction Symbol, Fractions/Unit]
+     - Header checkboxes for Select All / Deselect All
+     - QProgressBar at bottom
+     - QLabel for status text
+     - Import and Cancel QPushButtons
+
+  3. Integration with existing import flow
+     - Replace MessageBoxHelper::question() call with dialog
+     - Pass parsed currencies to dialog constructor
+     - Dialog returns selected currencies on accept
+     - Maintain existing async import with QtConcurrent
+
+  4. Progress tracking
+     - Update progress bar as each currency imports
+     - Update status label with current currency ISO code
+     - Emit signals from import thread to update UI
+
+  5. Validation display
+     - Run validation before showing dialog
+     - Mark invalid currencies with warning icon
+     - Optionally disable checkbox for invalid currencies
+     - Show tooltip with validation errors
+
+- Tasks
+
+  - [ ] Create ImportCurrencyDialog.hpp header
+  - [ ] Create ImportCurrencyDialog.cpp implementation
+  - [ ] Design and implement table widget with checkboxes
+  - [ ] Add Select All / Deselect All functionality
+  - [ ] Implement progress bar updates during import
+  - [ ] Add status label updates with current currency
+  - [ ] Integrate dialog into CurrencyMdiWindow::importFromXML()
+  - [ ] Add validation error display in table
+  - [ ] Test with large XML files (100+ currencies)
+  - [ ] Test selection/deselection functionality
+  - [ ] Test cancel during import
+  - [ ] Update UML diagrams
+
+- Benefits of This Approach
+
+  - Shows ALL currencies, not just first 10
+  - Users can review complete import before confirming
+  - Selective import (skip unwanted currencies)
+  - Clear progress indication during import
+  - Professional, modern UX
+  - Prevents concurrent imports (modal dialog)
+  - Validation errors visible before import
+  - Extensible for future features (e.g., duplicate detection UI)
+
+- Notes
+
+  - Estimated implementation time: 2-3 hours
+  - Reuses existing import logic from basic implementation
+  - No changes needed to importer or validation code
+  - Changes only in Qt UI layer (CurrencyMdiWindow and new dialog)
+
+*** Add listen/notify support                                          :code:
+
+When data changes for a given entity in the database and we have the dialog of
+that entity open, we need to make the reload button a different colour (suggest
+a colour). For this we need to listen/notify in the database and then send a
+message to the client. This requires a change at the protocol because at present
+we send a request from the client first and then expect a response. This is more
+like a callback where the handler will call a callback when a certain message is
+received. Listen code from deepseek:
+
+#+begin_src c++
+#include <sqlgen.h>
+#include <libpq-fe.h>
+#include <thread>
+#include <iostream>
+
+class TableWatcher {
+private:
+    sqlgen::Connection conn_;
+    std::thread listener_thread_;
+    bool running_;
+
+public:
+    TableWatcher(const std::string& connection_string)
+        : conn_(connection_string), running_(false) {}
+
+    void start() {
+        running_ = true;
+        listener_thread_ = std::thread(&TableWatcher::listen_loop, this);
+    }
+
+    void stop() {
+        running_ = false;
+        if (listener_thread_.joinable()) {
+            listener_thread_.join();
+        }
+    }
+
+private:
+    void listen_loop() {
+        // Get raw PGconn for async operations
+        auto raw_conn = conn_.native_handle(); // You might need to expose this
+
+        // Listen to channel
+        PGresult* res = PQexec(raw_conn, "LISTEN table_updates;");
+        if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+            PQclear(res);
+            return;
+        }
+        PQclear(res);
+
+        while (running_) {
+            // Non-blocking check for notifications
+            PQconsumeInput(raw_conn);
+
+            PGnotify* notify;
+            while ((notify = PQnotifies(raw_conn)) != nullptr) {
+                handle_notification(notify);
+                PQfreemem(notify);
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    }
+
+    void handle_notification(PGnotify* notify) {
+        std::cout << "Received notification: " << notify->relname
+                  << " - " << notify->extra << std::endl;
+
+        // Parse the extra data (usually JSON) and handle accordingly
+        // {"table": "users", "operation": "INSERT", "id": 123}
+    }
+};
+#+end_src
+
+
+*** Add version support to entities                                    :code:
+
+We need a "version" field which is incremented automatically by a trigger. It is
+used as follows:
+
+- domain entities have a version field which is loaded from database.
+- if we try to save at version =n= but current version is not =n-1=, it should
+  fail to save.
+- version is incremented automatically on save.
+- display version in UI prominently (/e.g./ next to entity key, iso code for
+  currencies) so that we can see when we reload.
+
+*** Disconnect closes currencies window                                :code:
+
+It should just disable the icons, etc.
+
+*** Add pagination support                                             :code:
+
+At present we are returning all elements from accounts, currencies etc. We need
+to implement pagination:
+
+- Add offset and limit to list_accounts_request.
+- Add total_available_count to list_accounts_response.
+
+#+begin_src c++
+std::vector<domain::account>
+account_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts with offset: "
+                               << offset << " and limit: " << limit;
+
+    static auto max(make_timestamp(max_timestamp));
+    const auto query = sqlgen::read<std::vector<account_entity>> |
+        where("valid_to"_c == max.value()) |
+        order_by("valid_from"_c.desc()) |
+        sqlgen::limit(limit) |
+        sqlgen::offset(offset);
+
+    const auto r = session(ctx_.connection_pool())
+        .and_then(query);
+    ensure_success(r);
+    BOOST_LOG_SEV(lg(), debug) << "Read latest accounts. Total: " << r->size();
+    return account_mapper::map(*r);
+}
+
+
+std::uint32_t account_repository::get_total_account_count() {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account count.";
+
+    static auto max(make_timestamp(max_timestamp));
+
+    // Select the count of records that are currently active (valid_to == max_timestamp)
+    // We expect the result to be a vector containing a single long long (the count).
+    using count_result_type = std::vector<long long>;
+    const auto query = sqlgen::select<count_result_type>(sqlgen::count("id"_c)) |
+        from<account_entity> |
+        where("valid_to"_c == max.value());
+
+    const auto r = session(ctx_.connection_pool())
+        .and_then(query);
+    ensure_success(r);
+
+    if (r->empty() || r->at(0) < 0) {
+        return 0;
+    }
+
+    const auto total_count = static_cast<std::uint32_t>(r->at(0));
+
+    BOOST_LOG_SEV(lg(), debug) << "Total active accounts found: " << total_count;
+    return total_count;
+}
+#+end_src
+
+
+Links:
+
+- [[https://readyset.io/blog/optimizing-sql-pagination-in-postgres][Optimizing SQL Pagination in Postgres]]
+
+
+
+
+#+begin_src c++
+"9999-12-31 23:59:59"
+#+end_src
+
+
+
 
 *** Implement authentication bootstrap workflow                        :code:
 
@@ -2041,6 +2349,64 @@ Links:
 
 - [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
 
+*** Add search to currencies                                           :code:
+
+It should be possible to filter the open currencies by a string. This should be
+any field. The user needs to know when the list has been filtered.
+
+*** Automated SQL generation                                           :code:
+
+At present we are manually creating the SQL. We should be able to do it from
+sqlgen.
+
+*** Missing shell functionality                                        :code:
+
+The job of the client is to exercise the entirety of the comms protocol, and to
+provide a way to perform CRUD operations via command line. Note:
+
+- client never access the repositories directly, it should do exactly the same as the qt client
+  would do.
+- client's only interface is the REPL.
+- client will eventually be used by AI agents.
+
+Client needs to have messages at the entity level:
+
+- currencies:
+  - import currencies from ORE Format. Given a path in the filesystem, it
+    performs the import using the importer and appropriate comms messages.
+  - export currencies to ORE format. Uses comms to obtain the currencies, then
+    the exporter to convert, then dumps them into the terminal as ORE XML.
+  - list existing currencies as a table or as JSON. We need support for latest,
+    "at time point" and "all" (meaning every single version). It should be
+    possible to supply some filtering by the entity's ID (e.g.
+    =--iso-code=).
+  - delete one or more currencies. User supplies a number of entity IDs (e.g.
+    =--iso-code ABC --iso-code CDE --iso-code FGH= and so on).
+  - add a currency supplying arguments (e.g. =--iso-code= and so forth).
+  - add currencies from JSON.
+- accounts:
+  - list existing currencies as a table or as JSON. We need support for latest,
+    "at time point" and "all" (meaning every single version). It should be
+    possible to supply filtering by the entity's ID.
+  - delete one or more accounts. User supplies a list of entity IDs.
+  - add an account supplying arguments.
+  - add accounts from JSON.
+- feature flags:
+  - list existing feature flags as a table or as JSON. We need support for
+    latest, "at time point" and "all" (meaning every single version). It should
+    be possible to supply some filtering by the entity's ID
+  - delete one or more feature flags. User supplies a list of entity IDs.
+  - add feature flags supplying arguments.
+  - add feature flags from JSON.
+
+Notes:
+
+- update recipes with the new client commands.
+
+*** Add a logout message                                               :code:
+
+At present we are just closing the socket. We should send a proper message.
+
 *** Split =protocol.hpp= into components                               :code:
 
 These files will become too large as we add more entities.
@@ -2061,87 +2427,6 @@ At present in the unlock test we have:
 
 This is very suspicious; a failed login should just return false or the modern
 c++ equivalent (=std::expected=?).
-
-*** Add pagination support                                             :code:
-
-At present we are returning all elements from accounts, currencies etc. We need
-to implement pagination:
-
-- Add offset and limit to list_accounts_request.
-- Add total_available_count to list_accounts_response.
-
-#+begin_src c++
-std::vector<domain::account>
-account_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts with offset: "
-                               << offset << " and limit: " << limit;
-
-    static auto max(make_timestamp(max_timestamp));
-    const auto query = sqlgen::read<std::vector<account_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("valid_from"_c.desc()) |
-        sqlgen::limit(limit) |
-        sqlgen::offset(offset);
-
-    const auto r = session(ctx_.connection_pool())
-        .and_then(query);
-    ensure_success(r);
-    BOOST_LOG_SEV(lg(), debug) << "Read latest accounts. Total: " << r->size();
-    return account_mapper::map(*r);
-}
-
-
-std::uint32_t account_repository::get_total_account_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account count.";
-
-    static auto max(make_timestamp(max_timestamp));
-
-    // Select the count of records that are currently active (valid_to == max_timestamp)
-    // We expect the result to be a vector containing a single long long (the count).
-    using count_result_type = std::vector<long long>;
-    const auto query = sqlgen::select<count_result_type>(sqlgen::count("id"_c)) |
-        from<account_entity> |
-        where("valid_to"_c == max.value());
-
-    const auto r = session(ctx_.connection_pool())
-        .and_then(query);
-    ensure_success(r);
-
-    if (r->empty() || r->at(0) < 0) {
-        return 0;
-    }
-
-    const auto total_count = static_cast<std::uint32_t>(r->at(0));
-
-    BOOST_LOG_SEV(lg(), debug) << "Total active accounts found: " << total_count;
-    return total_count;
-}
-#+end_src
-
-
-Links:
-
-- [[https://readyset.io/blog/optimizing-sql-pagination-in-postgres][Optimizing SQL Pagination in Postgres]]
-
-
-
-
-#+begin_src c++
-"9999-12-31 23:59:59"
-#+end_src
-
-
-
-
-*** Add search to currencies                                           :code:
-
-It should be possible to filter the open currencies by a string. This should be
-any field. The user needs to know when the list has been filtered.
-
-*** Implement import XML                                               :code:
-
-Users should be able to import data from ORE directly. Add option in Qt to
-import XML.
 
 *** Faker with seeds                                                   :code:
 

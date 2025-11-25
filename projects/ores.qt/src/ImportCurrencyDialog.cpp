@@ -41,7 +41,8 @@ ImportCurrencyDialog::ImportCurrencyDialog(
       currencies_(currencies),
       filename_(filename),
       client_(std::move(client)),
-      importInProgress_(false) {
+      importInProgress_(false),
+      cancelRequested_(false) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating import currency dialog for file: "
                                << filename.toStdString()
@@ -345,6 +346,13 @@ void ImportCurrencyDialog::onImportClicked() {
             int current = 0;
 
             for (const auto& currency : selected) {
+                // Check if cancellation was requested
+                if (self->cancelRequested_.load()) {
+                    BOOST_LOG_SEV(lg(), info) << "Import cancelled by user at currency "
+                                               << current << " of " << total;
+                    break;
+                }
+
                 current++;
 
                 // Update UI on main thread
@@ -404,21 +412,28 @@ void ImportCurrencyDialog::onImportClicked() {
         const int success_count = result.first;
         const int total_count = result.second;
 
-        BOOST_LOG_SEV(lg(), info)
-            << "Import completed: " << success_count
-            << " of " << total_count << " currencies imported successfully";
-
         // Hide progress bar
         progressBar_->setVisible(false);
         statusLabel_->setVisible(false);
 
         importInProgress_ = false;
 
-        // Emit completion signal
-        emit importCompleted(success_count, total_count);
+        // Check if import was cancelled
+        if (cancelRequested_.load()) {
+            BOOST_LOG_SEV(lg(), info)
+                << "Import cancelled after importing " << success_count
+                << " of " << total_count << " currencies";
 
-        // Close dialog
-        accept();
+            emit importCancelled();
+            reject();
+        } else {
+            BOOST_LOG_SEV(lg(), info)
+                << "Import completed: " << success_count
+                << " of " << total_count << " currencies imported successfully";
+
+            emit importCompleted(success_count, total_count);
+            accept();
+        }
 
         watcher->deleteLater();
     });
@@ -430,11 +445,19 @@ void ImportCurrencyDialog::onCancelClicked() {
     BOOST_LOG_SEV(lg(), debug) << "Cancel button clicked";
 
     if (importInProgress_) {
-        // TODO: Phase 2 - Cancel ongoing import
-        emit importCancelled();
-    }
+        // Signal cancellation to the import thread
+        cancelRequested_.store(true);
+        BOOST_LOG_SEV(lg(), info) << "Cancellation requested";
 
-    reject();
+        // Update UI to show cancellation in progress
+        statusLabel_->setText("Cancelling import...");
+        cancelButton_->setEnabled(false);
+
+        // The completion handler will emit importCancelled() and close the dialog
+    } else {
+        // Not importing, just close the dialog
+        reject();
+    }
 }
 
 }

@@ -28,6 +28,7 @@
 #include <QCheckBox>
 #include <QString>
 #include <QFutureWatcher>
+#include <atomic>
 #include <vector>
 #include <memory>
 #include "ores.risk/domain/currency.hpp"
@@ -151,6 +152,7 @@ private:
     QPushButton* cancelButton_;
 
     bool importInProgress_;
+    std::atomic<bool> cancelRequested_;
 };
 
 }

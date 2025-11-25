@@ -49,12 +49,12 @@ void validate_currency(const currency& c, size_t index) {
     if (c.iso_code.empty())
         errors << "  - Currency at index " << index << ": ISOCode is required\n";
 
-    if (c.symbol.empty())
-        errors << "  - Currency at index " << index << ": Symbol is required\n";
+    // if (c.symbol.empty())
+    //     errors << "  - Currency at index " << index << ": Symbol is required\n";
 
-    if (c.fraction_symbol.empty())
-        errors << "  - Currency at index " << index
-               << ": FractionSymbol is required\n";
+    // if (c.fraction_symbol.empty())
+    //     errors << "  - Currency at index " << index
+    //            << ": FractionSymbol is required\n";
 
     if (c.fractions_per_unit <= 0)
         errors << "  - Currency at index " << index

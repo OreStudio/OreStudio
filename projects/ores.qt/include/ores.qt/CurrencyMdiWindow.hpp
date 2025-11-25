@@ -47,6 +47,7 @@ private:
 
 public:
     explicit CurrencyMdiWindow(std::shared_ptr<comms::net::client> client,
+                               const QString& username,
                                QWidget* parent = nullptr);
     ~CurrencyMdiWindow() override;
 
@@ -69,6 +70,7 @@ public slots:
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
+    void importFromXML();
     void exportToCSV();
     void exportToXML();
 
@@ -93,6 +95,7 @@ private:
 
     std::unique_ptr<ClientCurrencyModel> currencyModel_;
     std::shared_ptr<comms::net::client> client_;
+    QString username_;
 };
 
 }

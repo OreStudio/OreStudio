@@ -77,7 +77,7 @@ void CurrencyController::showListWindow() {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new currencies MDI window";
     const QColor iconColor(220, 220, 220);
-    auto* currencyWidget = new CurrencyMdiWindow(client_, mainWindow_);
+    auto* currencyWidget = new CurrencyMdiWindow(client_, username_, mainWindow_);
 
     // Connect status signals
     connect(currencyWidget, &CurrencyMdiWindow::statusChanged,

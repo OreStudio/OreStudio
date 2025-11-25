@@ -20,6 +20,7 @@
 #include "ores.qt/CurrencyMdiWindow.hpp"
 
 #include <vector>
+#include <filesystem>
 #include <QtCore/QVariant>
 #include <QtCore/QTimer>
 #include <QtConcurrent>
@@ -40,10 +41,12 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/CurrencyItemDelegate.hpp"
+#include "ores.qt/ImportCurrencyDialog.hpp"
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.comms/protocol/frame.hpp"
 #include "ores.risk/csv/exporter.hpp"
 #include "ores.risk/orexml/exporter.hpp"
+#include "ores.risk/orexml/importer.hpp"
 
 namespace ores::qt {
 
@@ -51,7 +54,9 @@ using comms::protocol::message_type;
 using namespace ores::utility::log;
 
 CurrencyMdiWindow::
-CurrencyMdiWindow(std::shared_ptr<comms::net::client> client, QWidget* parent)
+CurrencyMdiWindow(std::shared_ptr<comms::net::client> client,
+                  const QString& username,
+                  QWidget* parent)
     : QWidget(parent),
       verticalLayout_(new QVBoxLayout(this)),
       currencyTableView_(new QTableView(this)),
@@ -60,7 +65,8 @@ CurrencyMdiWindow(std::shared_ptr<comms::net::client> client, QWidget* parent)
       editAction_(new QAction("Edit", this)),
       deleteAction_(new QAction("Delete", this)),
       currencyModel_(new ClientCurrencyModel(client)),
-      client_(std::move(client)) {
+      client_(std::move(client)),
+      username_(username) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating currency MDI window";
 
@@ -108,6 +114,14 @@ CurrencyMdiWindow(std::shared_ptr<comms::net::client> client, QWidget* parent)
     toolBar_->addAction(historyAction_);
 
     toolBar_->addSeparator();
+
+    auto importXMLAction = new QAction("Import XML", this);
+    importXMLAction->setIcon(IconUtils::createRecoloredIcon(
+            ":/icons/ic_fluent_document_code_16_regular.svg", iconColor));
+    importXMLAction->setToolTip("Import currencies from ORE XML");
+    connect(importXMLAction, &QAction::triggered, this,
+        &CurrencyMdiWindow::importFromXML);
+    toolBar_->addAction(importXMLAction);
 
     auto exportCSVAction = new QAction("Export CSV", this);
     exportCSVAction->setIcon(IconUtils::createRecoloredIcon(
@@ -471,6 +485,95 @@ void CurrencyMdiWindow::exportToCSV() {
         BOOST_LOG_SEV(lg(), error) << "Error exporting to CSV: " << e.what();
         MessageBoxHelper::critical(this, "Export Error",
             QString("Error during CSV export: %1").arg(e.what()));
+    }
+}
+
+void CurrencyMdiWindow::importFromXML() {
+    BOOST_LOG_SEV(lg(), debug) << "Import XML action triggered";
+
+    QString fileName = QFileDialog::getOpenFileName(
+        this,
+        "Select ORE XML File to Import",
+        QString(),
+        "ORE XML Files (*.xml);;All Files (*)"
+    );
+
+    if (fileName.isEmpty()) {
+        BOOST_LOG_SEV(lg(), debug) << "User cancelled file selection";
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Selected file for import: "
+                              << fileName.toStdString();
+    emit statusChanged("Parsing XML file...");
+
+    try {
+        // Parse the XML file using the existing importer
+        using risk::orexml::importer;
+        std::filesystem::path path(fileName.toStdString());
+        auto currencies = importer::import_currency_config(path);
+
+        if (currencies.empty()) {
+            BOOST_LOG_SEV(lg(), warn) << "No currencies found in XML file";
+            MessageBoxHelper::information(this, "No Currencies Found",
+                "The selected XML file does not contain any currencies.");
+            emit statusChanged("Import cancelled - no currencies found");
+            return;
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Parsed " << currencies.size()
+                                  << " currencies from XML";
+
+        emit statusChanged(QString("Found %1 currencies - opening import dialog...")
+            .arg(currencies.size()));
+
+        // Show import dialog with full preview and import capability
+        auto* dialog = new ImportCurrencyDialog(currencies, fileName, client_,
+                                                 username_, this);
+
+        // Connect completion signal to refresh UI
+        connect(dialog, &ImportCurrencyDialog::importCompleted,
+                this, [this](int success_count, int total_count) {
+            BOOST_LOG_SEV(lg(), info)
+                << "Import complete: " << success_count
+                << " of " << total_count << " currencies imported";
+
+            if (success_count > 0) {
+                // Refresh the currency list to show imported currencies
+                currencyModel_->refresh();
+
+                QString message = QString(
+                    "Successfully imported %1 of %2 currencies")
+                    .arg(success_count).arg(total_count);
+                emit statusChanged(message);
+                MessageBoxHelper::information(this, "Import Complete", message);
+            } else {
+                emit statusChanged("Import failed - no currencies imported");
+                MessageBoxHelper::warning(this, "Import Failed",
+                    "Failed to import currencies. Check the log for details.");
+            }
+        });
+
+        // Connect cancellation signal
+        connect(dialog, &ImportCurrencyDialog::importCancelled,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), debug) << "Import cancelled by user";
+            emit statusChanged("Import cancelled");
+        });
+
+        // Show dialog modally
+        if (dialog->exec() != QDialog::Accepted) {
+            BOOST_LOG_SEV(lg(), debug) << "User cancelled import dialog";
+            emit statusChanged("Import cancelled");
+        }
+
+        dialog->deleteLater();
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Error importing XML: " << e.what();
+        MessageBoxHelper::critical(this, "Import Error",
+            QString("Failed to import XML file:\n%1").arg(e.what()));
+        emit statusChanged("Import failed");
     }
 }
 

@@ -26,6 +26,7 @@
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
 #include "ores.utility/repository/helpers.hpp"
+#include "ores.utility/repository/bitemporal_operations.hpp"
 #include "ores.risk/domain/currency.hpp"
 
 namespace ores::risk::repository {

@@ -49,13 +49,10 @@ void account_repository::
 write(const domain::account& account) {
     BOOST_LOG_SEV(lg(), debug) << "Writing account to database: " << account;
 
-    const auto r = session(ctx_.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(insert(account_mapper::map(account)))
-        .and_then(commit);
-    ensure_success(r);
-
-    BOOST_LOG_SEV(lg(), debug) << "Finished writing account to database.";
+    execute_write_query(ctx_,
+        account_mapper::map(account),
+        "ores.accounts.repository.account_repository",
+        "writing account to database");
 }
 
 void account_repository::
@@ -63,28 +60,22 @@ write(const std::vector<domain::account>& accounts) {
     BOOST_LOG_SEV(lg(), debug) << "Writing accounts to database. Count: "
                              << accounts.size();
 
-    const auto r = session(ctx_.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(insert(account_mapper::map(accounts)))
-        .and_then(commit);
-    ensure_success(r);
-
-    BOOST_LOG_SEV(lg(), debug) << "Finished writing accounts to database.";
+    execute_write_query(ctx_,
+        account_mapper::map(accounts),
+        "ores.accounts.repository.account_repository",
+        "writing accounts to database");
 }
 
 std::vector<domain::account> account_repository::read_latest() {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts.";
-
     static auto max(make_timestamp(MAX_TIMESTAMP));
     const auto query = sqlgen::read<std::vector<account_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
 
-    const auto r = session(ctx_.connection_pool())
-        .and_then(query);
-    ensure_success(r);
-    BOOST_LOG_SEV(lg(), debug) << "Read latest accounts. Total: " << r->size();
-    return account_mapper::map(*r);
+    return execute_read_query<account_entity, domain::account>(ctx_, query,
+        [](const auto& entities) { return account_mapper::map(entities); },
+        "ores.accounts.repository.account_repository",
+        "Reading latest accounts");
 }
 
 std::vector<domain::account>
@@ -97,21 +88,20 @@ account_repository::read_latest(const boost::uuids::uuid& id) {
         where("id"_c == id_str && "valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
 
-    const auto r = session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r);
-    BOOST_LOG_SEV(lg(), debug) << "Read latest accounts. Total: " << r->size();
-    return account_mapper::map(*r);
+    return execute_read_query<account_entity, domain::account>(ctx_, query,
+        [](const auto& entities) { return account_mapper::map(entities); },
+        "ores.accounts.repository.account_repository",
+        "Reading latest accounts by ID");
 }
 
 std::vector<domain::account> account_repository::read_all() {
     const auto query = sqlgen::read<std::vector<account_entity>> |
         order_by("valid_from"_c.desc());
 
-    const auto r = session(ctx_.connection_pool())
-        .and_then(query);
-    ensure_success(r);
-    BOOST_LOG_SEV(lg(), debug) << "Read all accounts. Total: " << r->size();
-    return account_mapper::map(*r);
+    return execute_read_query<account_entity, domain::account>(ctx_, query,
+        [](const auto& entities) { return account_mapper::map(entities); },
+        "ores.accounts.repository.account_repository",
+        "Reading all accounts");
 }
 
 std::vector<domain::account>
@@ -121,10 +111,10 @@ account_repository::read_all(const boost::uuids::uuid& id) {
         where("id"_c == id_str) |
         order_by("valid_from"_c.desc());
 
-    const auto r = session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r);
-    BOOST_LOG_SEV(lg(), debug) << "Read all accounts. Total: " << r->size();
-    return account_mapper::map(*r);
+    return execute_read_query<account_entity, domain::account>(ctx_, query,
+        [](const auto& entities) { return account_mapper::map(entities); },
+        "ores.accounts.repository.account_repository",
+        "Reading all accounts by ID");
 }
 
 std::vector<domain::account>
@@ -139,10 +129,10 @@ account_repository::read_latest_by_username(const std::string& username) {
     const auto sql = postgres::to_sql(query);
     BOOST_LOG_SEV(lg(), debug) << "Query: " << sql;
 
-    const auto r = session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r);
-    BOOST_LOG_SEV(lg(), debug) << "Read latest account by username. Total: " << r->size();
-    return account_mapper::map(*r);
+    return execute_read_query<account_entity, domain::account>(ctx_, query,
+        [](const auto& entities) { return account_mapper::map(entities); },
+        "ores.accounts.repository.account_repository",
+        "Reading latest account by username");
 }
 
 void account_repository::remove(const boost::uuids::uuid& account_id) {
@@ -154,13 +144,9 @@ void account_repository::remove(const boost::uuids::uuid& account_id) {
     const auto query = sqlgen::delete_from<account_entity> |
         where("id"_c == id_str);
 
-    const auto r = session(ctx_.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(query)
-        .and_then(commit);
-    ensure_success(r);
-
-    BOOST_LOG_SEV(lg(), debug) << "Finished removing account from database.";
+    execute_delete_query(ctx_, query,
+        "ores.accounts.repository.account_repository",
+        "removing account from database");
 }
 
 }

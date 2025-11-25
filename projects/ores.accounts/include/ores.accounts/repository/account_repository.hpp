@@ -26,6 +26,7 @@
 #include <sqlgen/postgres.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
+#include "ores.utility/repository/helpers.hpp"
 #include "ores.accounts/domain/account.hpp"
 
 namespace ores::accounts::repository {
@@ -41,10 +42,6 @@ private:
             "ores.accounts.repository.account_repository");
         return instance;
     }
-
-    void ensure_success(const auto result);
-    auto make_timestamp(const std::string& s);
-    const std::string max_timestamp = "9999-12-31 23:59:59";
 
 public:
     using context = ores::utility::repository::context;

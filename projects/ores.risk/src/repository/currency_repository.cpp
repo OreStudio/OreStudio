@@ -33,28 +33,7 @@ namespace ores::risk::repository {
 using namespace sqlgen;
 using namespace sqlgen::literals;
 using namespace ores::utility::log;
-using ores::utility::repository::repository_exception;
-
-void currency_repository::ensure_success(const auto result) {
-    if (!result) {
-        BOOST_LOG_SEV(lg(), error) << result.error().what();
-        BOOST_THROW_EXCEPTION(
-            repository_exception(std::format("Repository error: {}",
-                    result.error().what())));
-    }
-}
-
-auto currency_repository::make_timestamp(const std::string& s) {
-    const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(s);
-    if (!r) {
-        BOOST_LOG_SEV(lg(), error) << "Error converting timestamp: '" << s
-                                 << "'. Error: " << r.error().what();
-        BOOST_THROW_EXCEPTION(
-            repository_exception(
-                std::format("Timestamp conversion error: {}", s)));
-    }
-    return r;
-}
+using namespace ores::utility::repository;
 
 std::string currency_repository::sql() {
     const auto query = create_table<currency_entity> | if_not_exists;
@@ -96,7 +75,7 @@ write(context ctx, const std::vector<domain::currency>& currencies) {
 std::vector<domain::currency> currency_repository::read_latest(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currencies.";
 
-    static auto max(make_timestamp(max_timestamp));
+    static auto max(make_timestamp(MAX_TIMESTAMP));
     const auto query = sqlgen::read<std::vector<currency_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
@@ -116,7 +95,7 @@ currency_repository::read_latest(context ctx, const std::string& iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currencies. ISO code: "
                              << iso_code;
 
-    static auto max(make_timestamp(max_timestamp));
+    static auto max(make_timestamp(MAX_TIMESTAMP));
     const auto query = sqlgen::read<std::vector<currency_entity>> |
         where("iso_code"_c == iso_code && "valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());

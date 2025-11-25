@@ -26,6 +26,7 @@
 #include <sqlgen/postgres.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
+#include "ores.utility/repository/helpers.hpp"
 #include "ores.accounts/domain/login_info.hpp"
 
 namespace ores::accounts::repository {
@@ -41,8 +42,6 @@ private:
             "ores.accounts.repository.login_info_repository");
         return instance;
     }
-
-    static void ensure_success(const auto result);
 
 public:
     using context = ores::utility::repository::context;

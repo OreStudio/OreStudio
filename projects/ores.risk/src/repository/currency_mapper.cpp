@@ -19,11 +19,13 @@
  */
 #include "ores.risk/repository/currency_mapper.hpp"
 
+#include "ores.utility/repository/mapper_helpers.hpp"
 #include "ores.risk/domain/currency_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::risk::repository {
 
 using namespace ores::utility::log;
+using namespace ores::utility::repository;
 
 domain::currency currency_mapper::map(const currency_entity& v) {
     BOOST_LOG_SEV(lg(), debug) << "Mapping db entity: " << v;
@@ -74,27 +76,20 @@ currency_entity currency_mapper::map(const domain::currency& v) {
 
 std::vector<domain::currency>
 currency_mapper::map(const std::vector<currency_entity>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Mapping db entities. Total: " << v.size();
-
-    std::vector<domain::currency> r;
-    r.reserve(v.size());
-    std::ranges::transform(v, std::back_inserter(r),
-        [](const auto& ve) { return map(ve); });
-
-    BOOST_LOG_SEV(lg(), debug) << "Mapped db entities.";
-    return r;
+    return map_vector<currency_entity, domain::currency>(
+        v,
+        [](const auto& ve) { return map(ve); },
+        "ores.risk.repository.currency_mapper",
+        "db entities");
 }
 
 std::vector<currency_entity>
 currency_mapper::map(const std::vector<domain::currency>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Mapping domain entities. Count: " << v.size();
-
-    std::vector<currency_entity> r;
-    r.reserve(v.size());
-    std::ranges::transform(v, std::back_inserter(r),
-        [](const auto& ve) { return map(ve); });
-    BOOST_LOG_SEV(lg(), debug) << "Mapped domain entities.";
-    return r;
+    return map_vector<domain::currency, currency_entity>(
+        v,
+        [](const auto& ve) { return map(ve); },
+        "ores.risk.repository.currency_mapper",
+        "domain entities");
 }
 
 }

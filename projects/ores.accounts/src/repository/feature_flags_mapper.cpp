@@ -20,11 +20,13 @@
 #include "ores.accounts/repository/feature_flags_mapper.hpp"
 
 #include <algorithm>
+#include "ores.utility/repository/mapper_helpers.hpp"
 #include "ores.accounts/domain/feature_flags_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::accounts::repository {
 
 using namespace ores::utility::log;
+using namespace ores::utility::repository;
 
 domain::feature_flags feature_flags_mapper::map(const feature_flags_entity& v) {
     BOOST_LOG_SEV(lg(), debug) << "Mapping db entity: " << v;
@@ -54,27 +56,20 @@ feature_flags_entity feature_flags_mapper::map(const domain::feature_flags& v) {
 
 std::vector<domain::feature_flags>
 feature_flags_mapper::map(const std::vector<feature_flags_entity>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Mapping db entities. Total: " << v.size();
-
-    std::vector<domain::feature_flags> r;
-    r.reserve(v.size());
-    std::ranges::transform(v, std::back_inserter(r),
-        [](const auto& ve) { return map(ve); });
-
-    BOOST_LOG_SEV(lg(), debug) << "Mapped db entities.";
-    return r;
+    return map_vector<feature_flags_entity, domain::feature_flags>(
+        v,
+        [](const auto& ve) { return map(ve); },
+        "ores.accounts.repository.feature_flags_mapper",
+        "db entities");
 }
 
 std::vector<feature_flags_entity>
 feature_flags_mapper::map(const std::vector<domain::feature_flags>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Mapping domain entities. Count: " << v.size();
-
-    std::vector<feature_flags_entity> r;
-    r.reserve(v.size());
-    std::ranges::transform(v, std::back_inserter(r),
-        [](const auto& ve) { return map(ve); });
-    BOOST_LOG_SEV(lg(), debug) << "Mapped domain entities.";
-    return r;
+    return map_vector<domain::feature_flags, feature_flags_entity>(
+        v,
+        [](const auto& ve) { return map(ve); },
+        "ores.accounts.repository.feature_flags_mapper",
+        "domain entities");
 }
 
 }

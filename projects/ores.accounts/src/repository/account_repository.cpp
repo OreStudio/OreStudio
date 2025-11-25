@@ -32,28 +32,7 @@ namespace ores::accounts::repository {
 using namespace sqlgen;
 using namespace sqlgen::literals;
 using namespace ores::utility::log;
-using ores::utility::repository::repository_exception;
-
-void account_repository::ensure_success(const auto result) {
-    if (!result) {
-        BOOST_LOG_SEV(lg(), severity_level::error) << result.error().what();
-        BOOST_THROW_EXCEPTION(
-            repository_exception(std::format("Repository error: {}",
-                    result.error().what())));
-    }
-}
-
-auto account_repository::make_timestamp(const std::string& s) {
-    const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(s);
-    if (!r) {
-        BOOST_LOG_SEV(lg(), error) << "Error converting timestamp: '" << s
-                                 << "'. Error: " << r.error().what();
-        BOOST_THROW_EXCEPTION(
-            repository_exception(
-                std::format("Timestamp conversion error: {}", s)));
-    }
-    return r;
-}
+using namespace ores::utility::repository;
 
 std::string account_repository::sql() {
     const auto query = create_table<account_entity> | if_not_exists;
@@ -96,7 +75,7 @@ write(const std::vector<domain::account>& accounts) {
 std::vector<domain::account> account_repository::read_latest() {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts.";
 
-    static auto max(make_timestamp(max_timestamp));
+    static auto max(make_timestamp(MAX_TIMESTAMP));
     const auto query = sqlgen::read<std::vector<account_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
@@ -112,7 +91,7 @@ std::vector<domain::account>
 account_repository::read_latest(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts. ID: " << id;
 
-    static auto max(make_timestamp(max_timestamp));
+    static auto max(make_timestamp(MAX_TIMESTAMP));
     const auto id_str = boost::lexical_cast<std::string>(id);
     const auto query = sqlgen::read<std::vector<account_entity>> |
         where("id"_c == id_str && "valid_to"_c == max.value()) |
@@ -152,7 +131,7 @@ std::vector<domain::account>
 account_repository::read_latest_by_username(const std::string& username) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by username: " << username;
 
-    static auto max(make_timestamp(max_timestamp));
+    static auto max(make_timestamp(MAX_TIMESTAMP));
     const auto query = sqlgen::read<std::vector<account_entity>> |
         where("username"_c == username && "valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());

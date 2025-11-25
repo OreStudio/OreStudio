@@ -18,50 +18,54 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-25 Tue 18:55], for Tuesday, November 25, 2025.
-|       | <75>                               |        |      |      |       |
-| Tags  | Headline                           | Time   |      |      |     % |
-|-------+------------------------------------+--------+------+------+-------|
-|       | *Total time*                       | *1:39* |      |      | 100.0 |
-|-------+------------------------------------+--------+------+------+-------|
-|       | Stories                            | 1:39   |      |      | 100.0 |
-|       | Active                             |        | 1:39 |      | 100.0 |
-| code  | Tidy-up database code              |        |      | 0:44 |  44.4 |
-| infra | OCR scan notebooks for this sprint |        |      | 0:55 |  55.6 |
+#+CAPTION: Clock summary at [2025-11-25 Tue 23:53], for Tuesday, November 25, 2025.
+|       | <75>                                         |        |      |      |       |
+| Tags  | Headline                                     | Time   |      |      |     % |
+|-------+----------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                 | *5:37* |      |      | 100.0 |
+|-------+----------------------------------------------+--------+------+------+-------|
+|       | Stories                                      | 5:37   |      |      | 100.0 |
+|       | Active                                       |        | 5:37 |      | 100.0 |
+| code  | Tidy-up database code                        |        |      | 0:44 |  13.1 |
+| code  | Implement basic XML import XML in Qt         |        |      | 2:35 |  46.0 |
+| code  | Implement import dialog for XML import in Qt |        |      | 1:23 |  24.6 |
+| infra | OCR scan notebooks for this sprint           |        |      | 0:55 |  16.3 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-25 Tue 18:55]
+#+CAPTION: Clock summary at [2025-11-25 Tue 23:53]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *45:22* |       |       | 100.0 |
+|       | *Total time*                                            | *49:20* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 45:22   |       |       | 100.0 |
-|       | Active                                                  |         | 45:22 |       | 100.0 |
-| agile | Sprint and product backlog refinement                   |         |       |  2:35 |   5.7 |
-| infra | Add AI generated sprint summary                         |         |       |  1:38 |   3.6 |
-| infra | Add skill to generate release notes                     |         |       |  0:27 |   1.0 |
-| code  | Version of =ores.qt= does not update                    |         |       |  0:54 |   2.0 |
-| code  | Minor updates to UML diagrams                           |         |       |  0:13 |   0.5 |
-| infra | Add support for project planning                        |         |       |  2:24 |   5.3 |
-| code  | Add a "detached" mode                                   |         |       |  1:18 |   2.9 |
-| code  | Merge update and create currency messages               |         |       |  1:07 |   2.5 |
-| code  | Uninformative incompatible protocol version error in qt |         |       |  1:11 |   2.6 |
+|       | Stories                                                 | 49:20   |       |       | 100.0 |
+|       | Active                                                  |         | 49:20 |       | 100.0 |
+| agile | Sprint and product backlog refinement                   |         |       |  2:35 |   5.2 |
+| infra | Add AI generated sprint summary                         |         |       |  1:38 |   3.3 |
+| infra | Add skill to generate release notes                     |         |       |  0:27 |   0.9 |
+| code  | Version of =ores.qt= does not update                    |         |       |  0:54 |   1.8 |
+| code  | Minor updates to UML diagrams                           |         |       |  0:13 |   0.4 |
+| infra | Add support for project planning                        |         |       |  2:24 |   4.9 |
+| code  | Add a "detached" mode                                   |         |       |  1:18 |   2.6 |
+| code  | Merge update and create currency messages               |         |       |  1:07 |   2.3 |
+| code  | Uninformative incompatible protocol version error in qt |         |       |  1:11 |   2.4 |
 | code  | Implement delete account                                |         |       |  0:20 |   0.7 |
-| code  | Reorganise CLI structure by entity                      |         |       |  4:43 |  10.4 |
-| code  | Update =ores.shell= with REPL commands for all entities |         |       | 13:48 |  30.4 |
-| code  | Consider renaming =client= to =repl=                    |         |       |  0:22 |   0.8 |
-| code  | Create a "request response" helper                      |         |       |  0:13 |   0.5 |
+| code  | Reorganise CLI structure by entity                      |         |       |  4:43 |   9.6 |
+| code  | Update =ores.shell= with REPL commands for all entities |         |       | 13:48 |  28.0 |
+| code  | Consider renaming =client= to =repl=                    |         |       |  0:22 |   0.7 |
+| code  | Create a "request response" helper                      |         |       |  0:13 |   0.4 |
 | code  | Update all UML diagrams after shell changes             |         |       |  0:09 |   0.3 |
-| code  | Code coverage has dipped below 70%                      |         |       |  2:05 |   4.6 |
-| code  | Opening and closing currencies does not work            |         |       |  0:39 |   1.4 |
-| code  | Delete currency only deletes single currency            |         |       |  0:30 |   1.1 |
-| code  | Update enums in message types to use magic enums        |         |       |  0:49 |   1.8 |
-| code  | Tidy-up database code                                   |         |       |  0:44 |   1.6 |
-| infra | OCR scan notebooks for this sprint                      |         |       |  8:39 |  19.1 |
-| infra | Troubleshoot skills in claude                           |         |       |  0:34 |   1.2 |
+| code  | Code coverage has dipped below 70%                      |         |       |  2:05 |   4.2 |
+| code  | Opening and closing currencies does not work            |         |       |  0:39 |   1.3 |
+| code  | Delete currency only deletes single currency            |         |       |  0:30 |   1.0 |
+| code  | Update enums in message types to use magic enums        |         |       |  0:49 |   1.7 |
+| code  | Tidy-up database code                                   |         |       |  0:44 |   1.5 |
+| code  | Implement basic XML import XML in Qt                    |         |       |  2:35 |   5.2 |
+| code  | Implement import dialog for XML import in Qt            |         |       |  1:23 |   2.8 |
+| infra | OCR scan notebooks for this sprint                      |         |       |  8:39 |  17.5 |
+| infra | Troubleshoot skills in claude                           |         |       |  0:34 |   1.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1955,35 +1959,11 @@ in 5 phases with review and commit points between phases.
   These limitations will be addressed in follow-up story "Implement import
   dialog for XML import in Qt".
 
-*** STARTED OCR scan notebooks for this sprint                        :infra:
+*** COMPLETED Implement import dialog for XML import in Qt             :code:
     :LOGBOOK:
-    CLOCK: [2025-11-25 Tue 18:00]--[2025-11-25 Tue 18:55] =>  0:55
-    CLOCK: [2025-11-24 Mon 13:01]--[2025-11-24 Mon 15:14] =>  2:13
-    CLOCK: [2025-11-23 Sun 09:25]--[2025-11-23 Sun 10:39] =>  1:14
-    CLOCK: [2025-11-22 Sat 06:45]--[2025-11-22 Sat 07:39] =>  0:54
-    CLOCK: [2025-11-21 Fri 09:00]--[2025-11-21 Fri 10:42] =>  1:42
-    CLOCK: [2025-11-20 Thu 09:20]--[2025-11-20 Thu 11:01] =>  1:41
-    :END:
-
-We need to scan all of our finance notebooks so we can use them with AI. Each
-sprint will have a story similar to this until we scan and process them all.
-
-*** STARTED Troubleshoot skills in claude                             :infra:
-    :LOGBOOK:
-    CLOCK: [2025-11-22 Sat 07:40]--[2025-11-22 Sat 08:14] =>  0:34
-    :END:
-
-We don't seem to be able to use skills reliably.
-
-Links:
-
-- [[https://code.claude.com/docs/en/skills][Claude: Agent Skills]]
-- [[https://www.reddit.com/r/ClaudeCode/comments/1oywsa1/claude_code_skills_activate_20_of_the_time_heres/][reddit: Claude Code skills activate 20% of the time. Here's how I got to 84%.]]
-- [[https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably][How to Make Claude Code Skills Activate Reliably]]
-
-*** STARTED Implement import dialog for XML import in Qt               :code:
-    :LOGBOOK:
-    CLOCK: [2025-11-25 Tue 20:03]
+    CLOCK: [2025-11-25 Tue 23:40]--[2025-11-25 Tue 23:53] =>  0:13
+    CLOCK: [2025-11-25 Tue 22:30]--[2025-11-25 Tue 22:56] =>  0:26
+    CLOCK: [2025-11-25 Tue 20:03]--[2025-11-25 Tue 20:47] =>  0:44
     :END:
 
 Replace the current message box preview with a dedicated import dialog that
@@ -2067,17 +2047,17 @@ addresses these limitations with a proper import dialog.
 
 - Tasks
 
-  - [ ] Create ImportCurrencyDialog.hpp header
-  - [ ] Create ImportCurrencyDialog.cpp implementation
-  - [ ] Design and implement table widget with checkboxes
-  - [ ] Add Select All / Deselect All functionality
-  - [ ] Implement progress bar updates during import
-  - [ ] Add status label updates with current currency
-  - [ ] Integrate dialog into CurrencyMdiWindow::importFromXML()
-  - [ ] Add validation error display in table
-  - [ ] Test with large XML files (100+ currencies)
-  - [ ] Test selection/deselection functionality
-  - [ ] Test cancel during import
+  - [X] Create ImportCurrencyDialog.hpp header
+  - [X] Create ImportCurrencyDialog.cpp implementation
+  - [X] Design and implement table widget with checkboxes
+  - [X] Add Select All / Deselect All functionality
+  - [X] Implement progress bar updates during import
+  - [X] Add status label updates with current currency
+  - [X] Integrate dialog into CurrencyMdiWindow::importFromXML()
+  - [X] Add validation error display in table
+  - [X] Test with large XML files (100+ currencies)
+  - [X] Test selection/deselection functionality
+  - [X] Implement cancel during import
   - [ ] Update UML diagrams
 
 - Benefits of This Approach
@@ -2097,6 +2077,40 @@ addresses these limitations with a proper import dialog.
   - Reuses existing import logic from basic implementation
   - No changes needed to importer or validation code
   - Changes only in Qt UI layer (CurrencyMdiWindow and new dialog)
+
+*** STARTED OCR scan notebooks for this sprint                        :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-25 Tue 18:00]--[2025-11-25 Tue 18:55] =>  0:55
+    CLOCK: [2025-11-24 Mon 13:01]--[2025-11-24 Mon 15:14] =>  2:13
+    CLOCK: [2025-11-23 Sun 09:25]--[2025-11-23 Sun 10:39] =>  1:14
+    CLOCK: [2025-11-22 Sat 06:45]--[2025-11-22 Sat 07:39] =>  0:54
+    CLOCK: [2025-11-21 Fri 09:00]--[2025-11-21 Fri 10:42] =>  1:42
+    CLOCK: [2025-11-20 Thu 09:20]--[2025-11-20 Thu 11:01] =>  1:41
+    :END:
+
+We need to scan all of our finance notebooks so we can use them with AI. Each
+sprint will have a story similar to this until we scan and process them all.
+
+*** STARTED Troubleshoot skills in claude                             :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-22 Sat 07:40]--[2025-11-22 Sat 08:14] =>  0:34
+    :END:
+
+We don't seem to be able to use skills reliably.
+
+Links:
+
+- [[https://code.claude.com/docs/en/skills][Claude: Agent Skills]]
+- [[https://www.reddit.com/r/ClaudeCode/comments/1oywsa1/claude_code_skills_activate_20_of_the_time_heres/][reddit: Claude Code skills activate 20% of the time. Here's how I got to 84%.]]
+- [[https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably][How to Make Claude Code Skills Activate Reliably]]
+
+*** Multi-threaded scenarios with comms                                :code:
+
+At present we are relying on request-response patterns: the client sends a
+request and the next frame coming in is the response. However, in the future we
+will have many dialog windows open, each of them sending requests and awaiting
+responses. It will not be possible to know what response is coming back from
+what window. We need to take this into account.
 
 *** Add listen/notify support                                          :code:
 

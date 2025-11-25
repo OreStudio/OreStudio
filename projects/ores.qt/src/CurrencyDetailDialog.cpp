@@ -323,7 +323,8 @@ void CurrencyDetailDialog::onDeleteClicked() {
                 return {false, "Client disconnected during operation."};
             }
 
-            risk::messaging::delete_currency_request request{iso_code};
+            // Create batch request with single ISO code
+            risk::messaging::delete_currency_request request{{iso_code}};
             auto payload = request.serialize();
 
             frame request_frame(message_type::delete_currency_request,
@@ -346,7 +347,13 @@ void CurrencyDetailDialog::onDeleteClicked() {
                 return {false, "Invalid server response"};
             }
 
-            return {response->success, response->message};
+            // Extract result for the single currency
+            if (response->results.empty()) {
+                BOOST_LOG_SEV(lg(), error) << "Empty results in response";
+                return {false, "Empty results in response"};
+            }
+
+            return {response->results[0].success, response->results[0].message};
         });
 
 

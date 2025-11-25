@@ -18,46 +18,51 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-23 Sun 13:23], for Sunday, November 23, 2025.
-|       | <75>                               |        |      |      |       |
-| Tags  | Headline                           | Time   |      |      |     % |
-|-------+------------------------------------+--------+------+------+-------|
-|       | *Total time*                       | *2:20* |      |      | 100.0 |
-|-------+------------------------------------+--------+------+------+-------|
-|       | Stories                            | 2:20   |      |      | 100.0 |
-|       | Active                             |        | 2:20 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint |        |      | 1:14 |  52.9 |
-| code  | Code coverage has dipped below 70% |        |      | 1:06 |  47.1 |
+#+CAPTION: Clock summary at [2025-11-24 Mon 18:31], for Monday, November 24, 2025.
+|       | <75>                                             |        |      |      |       |
+| Tags  | Headline                                         | Time   |      |      |     % |
+|-------+--------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                     | *4:11* |      |      | 100.0 |
+|-------+--------------------------------------------------+--------+------+------+-------|
+|       | Stories                                          | 4:11   |      |      | 100.0 |
+|       | Active                                           |        | 4:11 |      | 100.0 |
+| code  | Opening and closing currencies does not work     |        |      | 0:39 |  15.5 |
+| code  | Delete currency only deletes single currency     |        |      | 0:30 |  12.0 |
+| infra | OCR scan notebooks for this sprint               |        |      | 2:13 |  53.0 |
+| code  | Update enums in message types to use magic enums |        |      | 0:49 |  19.5 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-23 Sun 13:23]
+#+CAPTION: Clock summary at [2025-11-24 Mon 18:31]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *39:32* |       |       | 100.0 |
+|       | *Total time*                                            | *43:43* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 39:32   |       |       | 100.0 |
-|       | Active                                                  |         | 39:32 |       | 100.0 |
-| agile | Sprint and product backlog refinement                   |         |       |  2:35 |   6.5 |
-| infra | Add AI generated sprint summary                         |         |       |  1:38 |   4.1 |
-| infra | Add skill to generate release notes                     |         |       |  0:27 |   1.1 |
-| code  | Version of =ores.qt= does not update                    |         |       |  0:54 |   2.3 |
+|       | Stories                                                 | 43:43   |       |       | 100.0 |
+|       | Active                                                  |         | 43:43 |       | 100.0 |
+| agile | Sprint and product backlog refinement                   |         |       |  2:35 |   5.9 |
+| infra | Add AI generated sprint summary                         |         |       |  1:38 |   3.7 |
+| infra | Add skill to generate release notes                     |         |       |  0:27 |   1.0 |
+| code  | Version of =ores.qt= does not update                    |         |       |  0:54 |   2.1 |
 | code  | Minor updates to UML diagrams                           |         |       |  0:13 |   0.5 |
-| infra | Add support for project planning                        |         |       |  2:24 |   6.1 |
-| code  | Add a "detached" mode                                   |         |       |  1:18 |   3.3 |
-| code  | Merge update and create currency messages               |         |       |  1:07 |   2.8 |
-| code  | Uninformative incompatible protocol version error in qt |         |       |  1:11 |   3.0 |
+| infra | Add support for project planning                        |         |       |  2:24 |   5.5 |
+| code  | Add a "detached" mode                                   |         |       |  1:18 |   3.0 |
+| code  | Merge update and create currency messages               |         |       |  1:07 |   2.6 |
+| code  | Uninformative incompatible protocol version error in qt |         |       |  1:11 |   2.7 |
 | code  | Implement delete account                                |         |       |  0:20 |   0.8 |
-| code  | Reorganise CLI structure by entity                      |         |       |  4:43 |  11.9 |
-| code  | Update =ores.shell= with REPL commands for all entities |         |       | 13:48 |  34.9 |
-| code  | Consider renaming =client= to =repl=                    |         |       |  0:22 |   0.9 |
+| code  | Reorganise CLI structure by entity                      |         |       |  4:43 |  10.8 |
+| code  | Update =ores.shell= with REPL commands for all entities |         |       | 13:48 |  31.6 |
+| code  | Consider renaming =client= to =repl=                    |         |       |  0:22 |   0.8 |
 | code  | Create a "request response" helper                      |         |       |  0:13 |   0.5 |
-| code  | Update all UML diagrams after shell changes             |         |       |  0:09 |   0.4 |
-| infra | OCR scan notebooks for this sprint                      |         |       |  5:31 |  14.0 |
-| infra | Troubleshoot skills in claude                           |         |       |  0:34 |   1.4 |
-| code  | Code coverage has dipped below 70%                      |         |       |  2:05 |   5.3 |
+| code  | Update all UML diagrams after shell changes             |         |       |  0:09 |   0.3 |
+| code  | Code coverage has dipped below 70%                      |         |       |  2:05 |   4.8 |
+| code  | Opening and closing currencies does not work            |         |       |  0:39 |   1.5 |
+| code  | Delete currency only deletes single currency            |         |       |  0:30 |   1.1 |
+| infra | OCR scan notebooks for this sprint                      |         |       |  7:44 |  17.7 |
+| infra | Troubleshoot skills in claude                           |         |       |  0:34 |   1.3 |
+| code  | Update enums in message types to use magic enums        |         |       |  0:49 |   1.9 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1269,8 +1274,344 @@ But this is just for the sync case. We should braintstorm with the LLMs:
 
 Make sure system and component diagrams are up-to-date.
 
+*** COMPLETED Code coverage has dipped below 70%                       :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-23 Sun 12:50]--[2025-11-23 Sun 13:05] =>  0:15
+    CLOCK: [2025-11-23 Sun 10:40]--[2025-11-23 Sun 11:31] =>  0:51
+    CLOCK: [2025-11-22 Sat 20:08]--[2025-11-22 Sat 20:31] =>  0:23
+    CLOCK: [2025-11-22 Sat 20:03]--[2025-11-22 Sat 20:07] =>  0:04
+    CLOCK: [2025-11-22 Sat 09:27]--[2025-11-22 Sat 09:37] =>  0:10
+    CLOCK: [2025-11-22 Sat 08:28]--[2025-11-22 Sat 08:50] =>  0:22
+    :END:
+
+We need to keep it at 70% so we can see when we have dips.
+
+*** COMPLETED Add tests to utilities                                   :code:
+
+We should add some cursory tests to utilities.
+
+*** COMPLETED Opening and closing currencies does not work             :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-24 Mon 16:31]--[2025-11-24 Mon 17:10] =>  0:39
+    :END:
+
+We just get a black window.
+
+*** COMPLETED Delete currency only deletes single currency             :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-24 Mon 17:11]--[2025-11-24 Mon 17:41] =>  0:30
+    :END:
+
+At present we are deleting one currency at a time, sending a message for each,
+in =CurrencyMdiWindow.cpp=. We want to support batch deletion by sending a
+single message containing multiple currencies.
+
+**** Implementation Plan
+
+***** Status: COMPLETED
+
+Implementation completed. All phases (1-3) done:
+- Protocol version bumped to 3.0
+- Request/response structures updated for batch operations
+- Serialization/deserialization implemented
+- Server handler updated to process batches
+- Client code updated (CurrencyMdiWindow and CurrencyDetailDialog)
+- All code compiles successfully
+
+***** Overview
+
+Replace the current single-currency deletion approach (multiple requests in a
+loop) with a batch deletion approach (single request for multiple currencies).
+
+*Benefits*:
+- *Performance*: ~10x faster for deleting 10 currencies (1 network round-trip vs 10)
+- *Simplicity*: Client code becomes simpler (no loop, single request/response)
+- *Atomicity per currency*: Each currency deletion is independent (partial success possible)
+
+*Estimated Effort*: ~6-9 hours for complete implementation and testing (ACTUAL: ~4 hours)
+
+***** Phase 1: Protocol Layer Changes (=ores.risk/messaging=)
+
+****** Update =delete_currency_request= Structure
+
+*File*: =projects/ores.risk/include/ores.risk/messaging/protocol.hpp=
+
+*Current*:
+#+begin_src cpp
+struct delete_currency_request final {
+    std::string iso_code;  // Single currency
+};
+#+end_src
+
+*New*:
+#+begin_src cpp
+struct delete_currency_request final {
+    std::vector<std::string> iso_codes;  // Batch of currencies
+};
+#+end_src
+
+*Changes Required*:
+- [X] Update struct definition (line 154)
+- [X] Update serialization method to handle vector
+- [X] Update deserialization method to handle vector
+- [X] Update operator<< for logging
+
+****** Update =delete_currency_response= Structure
+
+*File*: =projects/ores.risk/include/ores.risk/messaging/protocol.hpp=
+
+*Current*:
+#+begin_src cpp
+struct delete_currency_response final {
+    bool success;        // Single result
+    std::string message; // Single message
+};
+#+end_src
+
+*New*:
+#+begin_src cpp
+struct delete_currency_result final {
+    std::string iso_code;
+    bool success;
+    std::string message;
+};
+
+struct delete_currency_response final {
+    std::vector<delete_currency_result> results;  // One per currency
+};
+#+end_src
+
+*Changes Required*:
+- [X] Create new =delete_currency_result= struct
+- [X] Update =delete_currency_response= to contain vector of results
+- [X] Update serialization/deserialization methods
+- [X] Update operator<< for logging
+
+****** Update Serialization Implementation
+
+*File*: =projects/ores.risk/src/messaging/protocol.cpp=
+
+*Serialization Format for Request*:
+- 4 bytes: count (number of ISO codes)
+- For each ISO code:
+  - 2 bytes: length
+  - N bytes: iso_code (UTF-8)
+
+*Serialization Format for Response*:
+- 4 bytes: count (number of results)
+- For each result:
+  - 2 bytes: iso_code length
+  - N bytes: iso_code (UTF-8)
+  - 1 byte: success (0 or 1)
+  - 2 bytes: message length
+  - N bytes: message (UTF-8)
+
+*Tasks*:
+- [X] Implement request serialization for vector
+- [X] Implement request deserialization for vector
+- [X] Implement response serialization with results vector
+- [X] Implement response deserialization with results vector
+
+***** Phase 2: Server-Side Changes (=ores.risk/messaging=)
+
+****** Update Message Handler
+
+*File*: =projects/ores.risk/src/messaging/risk_message_handler.cpp= (lines 115-144)
+
+*Current Implementation*:
+- Processes single currency
+- Single try-catch block
+- Returns single result
+
+*New Implementation*:
+#+begin_src cpp
+handle_delete_currency_request(std::span<const std::byte> payload) {
+    // Deserialize batch request
+    auto request_result = delete_currency_request::deserialize(payload);
+
+    delete_currency_response response;
+
+    // Process each currency in the batch
+    for (const auto& iso_code : request_result->iso_codes) {
+        delete_currency_result result;
+        result.iso_code = iso_code;
+
+        try {
+            currency_repo_.remove(ctx_, iso_code);
+            result.success = true;
+            result.message = "Currency deleted successfully";
+        } catch (const std::exception& e) {
+            result.success = false;
+            result.message = std::string("Failed: ") + e.what();
+        }
+
+        response.results.push_back(result);
+    }
+
+    co_return response.serialize();
+}
+#+end_src
+
+*Key Points*:
+- Loop through all ISO codes
+- Individual try-catch per currency (one failure doesn't stop others)
+- Collect all results before returning
+- Log batch operation start and individual successes/failures
+
+*Tasks*:
+- [X] Update handler to loop through iso_codes
+- [X] Add per-currency try-catch blocks
+- [X] Collect results in vector
+- [X] Update logging for batch operations
+
+***** Phase 3: Client-Side Changes (=ores.qt=)
+
+****** Update Delete Logic in CurrencyMdiWindow
+
+*File*: =projects/ores.qt/src/CurrencyMdiWindow.cpp= (lines 318-357)
+
+*Current Implementation*:
+- Loops through =iso_codes= vector
+- Sends individual request per currency
+- Collects results manually
+
+*New Implementation*:
+#+begin_src cpp
+QtConcurrent::run([self, iso_codes]() -> DeleteResult {
+    DeleteResult results;
+
+    if (!self) return {};
+
+    // Create batch request with all ISO codes
+    risk::messaging::delete_currency_request request{iso_codes};
+    auto payload = request.serialize();
+
+    comms::protocol::frame request_frame(
+        message_type::delete_currency_request,
+        0, std::move(payload)
+    );
+
+    // Send single batch request
+    auto response_result = self->client_->send_request_sync(
+        std::move(request_frame));
+
+    if (!response_result) {
+        // If network fails, mark all as failed
+        for (const auto& iso_code : iso_codes) {
+            results.push_back({iso_code,
+                {false, "Failed to communicate with server"}});
+        }
+        return results;
+    }
+
+    // Deserialize batch response
+    auto response = risk::messaging::delete_currency_response::
+        deserialize(response_result->payload());
+
+    if (!response) {
+        // If deserialize fails, mark all as failed
+        for (const auto& iso_code : iso_codes) {
+            results.push_back({iso_code,
+                {false, "Invalid server response"}});
+        }
+        return results;
+    }
+
+    // Convert batch results to expected format
+    for (const auto& result : response->results) {
+        results.push_back({result.iso_code,
+            {result.success, result.message}});
+    }
+
+    return results;
+});
+#+end_src
+
+*Changes*:
+- Remove loop - single request
+- Batch request construction
+- Handle batch response
+- Handle network/deserialization errors for entire batch
+
+*Tasks*:
+- [X] Remove for loop from =deleteSelected()=
+- [X] Update request construction for batch
+- [X] Update response handling for batch
+- [X] Update error handling for batch scenarios
+- [X] Update CurrencyDetailDialog to use batch API
+
+***** Phase 4: Testing Strategy
+
+****** Unit Tests
+
+*New File*: =projects/ores.risk.tests/src/messaging/delete_currency_batch_tests.cpp=
+
+*Test Cases*:
+- [ ] Serialization/Deserialization:
+  - [ ] Empty list
+  - [ ] Single currency
+  - [ ] Multiple currencies (2, 5, 100)
+  - [ ] Large ISO code strings
+
+- [ ] Server Handler:
+  - [ ] All currencies exist and delete successfully
+  - [ ] Some currencies don't exist (partial failure)
+  - [ ] All currencies fail
+  - [ ] Database connection error during batch
+  - [ ] Mixed success/failure scenarios
+
+****** Integration Tests
+
+*Test Scenarios*:
+- [ ] Select 1 currency and delete → verify single result
+- [ ] Select 5 currencies and delete → verify batch operation
+- [ ] Select 50 currencies → verify performance improvement
+- [ ] Delete batch with network interruption → verify error handling
+- [ ] Delete currencies where some fail (e.g., foreign key constraints)
+
+****** Performance Validation
+
+*Measure*:
+- [ ] Time to delete 1 currency (baseline)
+- [ ] Time to delete 10 currencies (old way: 10 requests vs new way: 1 request)
+- [ ] Time to delete 50 currencies
+
+*Expected Results*:
+- Network overhead reduced from O(n) to O(1)
+- Total deletion time should be ~10x faster for 10 currencies
+
+***** Phase 5: Migration Considerations
+
+****** Database Transaction Handling
+
+*Options*:
+1. *Single transaction* for entire batch
+   - Pro: All-or-nothing atomicity
+   - Con: One failure rolls back all deletions
+
+2. *Individual transactions* per currency (current approach)
+   - Pro: Partial success possible
+   - Con: No atomicity across batch
+
+*Decision*: Use Option 2 (Individual Transactions)
+- Matches current behavior
+- More user-friendly (can delete what's possible)
+- Response clearly indicates which succeeded/failed
+
+***** Implementation Order
+
+1. Protocol structures (header changes)
+2. Serialization/deserialization implementation
+3. Unit tests for protocol layer
+4. Server handler implementation
+5. Server handler tests
+6. Client implementation (CurrencyMdiWindow)
+7. Integration testing
+8. Performance validation
+
 *** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
+    CLOCK: [2025-11-24 Mon 13:01]--[2025-11-24 Mon 15:14] =>  2:13
     CLOCK: [2025-11-23 Sun 09:25]--[2025-11-23 Sun 10:39] =>  1:14
     CLOCK: [2025-11-22 Sat 06:45]--[2025-11-22 Sat 07:39] =>  0:54
     CLOCK: [2025-11-21 Fri 09:00]--[2025-11-21 Fri 10:42] =>  1:42
@@ -1293,17 +1634,12 @@ Links:
 - [[https://www.reddit.com/r/ClaudeCode/comments/1oywsa1/claude_code_skills_activate_20_of_the_time_heres/][reddit: Claude Code skills activate 20% of the time. Here's how I got to 84%.]]
 - [[https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably][How to Make Claude Code Skills Activate Reliably]]
 
-*** STARTED Code coverage has dipped below 70%                         :code:
+*** STARTED Update enums in message types to use magic enums           :code:
     :LOGBOOK:
-    CLOCK: [2025-11-23 Sun 12:50]--[2025-11-23 Sun 13:05] =>  0:15
-    CLOCK: [2025-11-23 Sun 10:40]--[2025-11-23 Sun 11:31] =>  0:51
-    CLOCK: [2025-11-22 Sat 20:08]--[2025-11-22 Sat 20:31] =>  0:23
-    CLOCK: [2025-11-22 Sat 20:03]--[2025-11-22 Sat 20:07] =>  0:04
-    CLOCK: [2025-11-22 Sat 09:27]--[2025-11-22 Sat 09:37] =>  0:10
-    CLOCK: [2025-11-22 Sat 08:28]--[2025-11-22 Sat 08:50] =>  0:22
+    CLOCK: [2025-11-24 Mon 17:42]--[2025-11-24 Mon 18:31] =>  0:49
     :END:
 
-We need to keep it at 70% so we can see when we have dips.
+At present we cannot dump these to the logs easily.
 
 *** Missing shell functionality                                        :code:
 
@@ -1352,18 +1688,6 @@ Notes:
 *** Add a logout message                                               :code:
 
 At present we are just closing the socket. We should send a proper message.
-
-*** Opening and closing currencies does not work                       :code:
-
-We just get a black window.
-
-*** Update enums in message types to use magic enums                   :code:
-
-At present we cannot dump these to the logs easily.
-
-*** Split =protocol.hpp= into components                               :code:
-
-These files will become too large as we add more entities.
 
 *** Implement authentication bootstrap workflow                        :code:
 
@@ -1464,6 +1788,10 @@ Merged stories:
 
 We have it scattered around the code base.
 
+*** Split =protocol.hpp= into components                               :code:
+
+These files will become too large as we add more entities.
+
 *** Invalid password should not throw                                  :code:
 
 At present in the unlock test we have:
@@ -1480,6 +1808,87 @@ At present in the unlock test we have:
 
 This is very suspicious; a failed login should just return false or the modern
 c++ equivalent (=std::expected=?).
+
+*** Add pagination support                                             :code:
+
+At present we are returning all elements from accounts, currencies etc. We need
+to implement pagination:
+
+- Add offset and limit to list_accounts_request.
+- Add total_available_count to list_accounts_response.
+
+#+begin_src c++
+std::vector<domain::account>
+account_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts with offset: "
+                               << offset << " and limit: " << limit;
+
+    static auto max(make_timestamp(max_timestamp));
+    const auto query = sqlgen::read<std::vector<account_entity>> |
+        where("valid_to"_c == max.value()) |
+        order_by("valid_from"_c.desc()) |
+        sqlgen::limit(limit) |
+        sqlgen::offset(offset);
+
+    const auto r = session(ctx_.connection_pool())
+        .and_then(query);
+    ensure_success(r);
+    BOOST_LOG_SEV(lg(), debug) << "Read latest accounts. Total: " << r->size();
+    return account_mapper::map(*r);
+}
+
+
+std::uint32_t account_repository::get_total_account_count() {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account count.";
+
+    static auto max(make_timestamp(max_timestamp));
+
+    // Select the count of records that are currently active (valid_to == max_timestamp)
+    // We expect the result to be a vector containing a single long long (the count).
+    using count_result_type = std::vector<long long>;
+    const auto query = sqlgen::select<count_result_type>(sqlgen::count("id"_c)) |
+        from<account_entity> |
+        where("valid_to"_c == max.value());
+
+    const auto r = session(ctx_.connection_pool())
+        .and_then(query);
+    ensure_success(r);
+
+    if (r->empty() || r->at(0) < 0) {
+        return 0;
+    }
+
+    const auto total_count = static_cast<std::uint32_t>(r->at(0));
+
+    BOOST_LOG_SEV(lg(), debug) << "Total active accounts found: " << total_count;
+    return total_count;
+}
+#+end_src
+
+
+Links:
+
+- [[https://readyset.io/blog/optimizing-sql-pagination-in-postgres][Optimizing SQL Pagination in Postgres]]
+
+
+
+
+#+begin_src c++
+"9999-12-31 23:59:59"
+#+end_src
+
+
+
+
+*** Add search to currencies                                           :code:
+
+It should be possible to filter the open currencies by a string. This should be
+any field. The user needs to know when the list has been filtered.
+
+*** Implement import XML                                               :code:
+
+Users should be able to import data from ORE directly. Add option in Qt to
+import XML.
 
 *** Faker with seeds                                                   :code:
 
@@ -1645,11 +2054,6 @@ Why Let's Encrypt doesn't work for local development
   domain.
 #+end_quote
 
-*** Add output option to repl                                          :code:
-
-It should be possible to set the "output type" or format in the shell, from json
-to table. Find the correct terminology for this.
-
 *** Use prebuilt qt                                                    :code:
 
 At present we are having problems creating an installable gui. This is because
@@ -1677,15 +2081,15 @@ Time spent doing the demo. This is the first one so it will be very basic.
 At present we can create an account and ignore the result, etc. We should be
 forced to look at the result.
 
-*** Delete currency only deletes single currency                       :code:
-
-At present we are deleting one currency at a time, sending a message for each,
-in =CurrencyMdiWindow.cpp=.
-
 *** CLI Importing needs to read from database                          :code:
 
 After we do the import into the database, we need to read the currencies again
 to get the valid from/to.
+
+*** Add output option to repl                                          :code:
+
+It should be possible to set the "output type" or format in the shell, from json
+to table. Find the correct terminology for this.
 
 *** Add more account commands                                          :code:
 
@@ -1765,77 +2169,6 @@ TEST_CASE("handle_login_request_locked_account", tags) {
 
 
 
-*** Add pagination support                                             :code:
-
-At present we are returning all elements from accounts, currencies etc. We need
-to implement pagination:
-
-- Add offset and limit to list_accounts_request.
-- Add total_available_count to list_accounts_response.
-
-#+begin_src c++
-std::vector<domain::account>
-account_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts with offset: "
-                               << offset << " and limit: " << limit;
-
-    static auto max(make_timestamp(max_timestamp));
-    const auto query = sqlgen::read<std::vector<account_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("valid_from"_c.desc()) |
-        sqlgen::limit(limit) |
-        sqlgen::offset(offset);
-
-    const auto r = session(ctx_.connection_pool())
-        .and_then(query);
-    ensure_success(r);
-    BOOST_LOG_SEV(lg(), debug) << "Read latest accounts. Total: " << r->size();
-    return account_mapper::map(*r);
-}
-
-
-std::uint32_t account_repository::get_total_account_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account count.";
-
-    static auto max(make_timestamp(max_timestamp));
-
-    // Select the count of records that are currently active (valid_to == max_timestamp)
-    // We expect the result to be a vector containing a single long long (the count).
-    using count_result_type = std::vector<long long>;
-    const auto query = sqlgen::select<count_result_type>(sqlgen::count("id"_c)) |
-        from<account_entity> |
-        where("valid_to"_c == max.value());
-
-    const auto r = session(ctx_.connection_pool())
-        .and_then(query);
-    ensure_success(r);
-
-    if (r->empty() || r->at(0) < 0) {
-        return 0;
-    }
-
-    const auto total_count = static_cast<std::uint32_t>(r->at(0));
-
-    BOOST_LOG_SEV(lg(), debug) << "Total active accounts found: " << total_count;
-    return total_count;
-}
-#+end_src
-
-
-Links:
-
-- [[https://readyset.io/blog/optimizing-sql-pagination-in-postgres][Optimizing SQL Pagination in Postgres]]
-
-
-
-
-#+begin_src c++
-"9999-12-31 23:59:59"
-#+end_src
-
-
-
-
 *** Improve error message when server is not running                   :code:
 
 At present we get:
@@ -1846,28 +2179,12 @@ Failed to connect to server: Failed to connect to server
 
 If we try again after the error, "authenticating..." shows up in red.
 
-*** Add tests to utilities                                             :code:
-
-We should add some cursory tests to utilities.
-
-
-
-*** Implement import XML                                               :code:
-
-Users should be able to import data from ORE directly. Add option in Qt to
-import XML.
-
 *** Update currency details to use tabs                                :code:
 
 We need a main tab with the currency related properties, then a "system" tab
 with temporal data which is read-only even on edit and a "image" tab with the
 image used to represent the currency. It could also contain some description or
 notes.
-
-*** Add search to currencies                                           :code:
-
-It should be possible to filter the open currencies by a string. This should be
-any field. The user needs to know when the list has been filtered.
 
 *** Server must check database connectivity on startup                 :code:
 

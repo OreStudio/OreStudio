@@ -113,17 +113,40 @@ namespace ores::risk::messaging {
 
 std::vector<std::byte> delete_currency_request::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_string(buffer, iso_code);
+
+    // Write count of ISO codes
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(iso_codes.size()));
+
+    // Write each ISO code
+    for (const auto& iso_code : iso_codes) {
+        writer::write_string(buffer, iso_code);
+    }
+
     return buffer;
 }
 
 std::expected<delete_currency_request, comms::protocol::error_code>
 delete_currency_request::deserialize(std::span<const std::byte> data) {
-    auto iso_code_result = reader::read_string(data);
-    if (!iso_code_result) {
-        return std::unexpected(iso_code_result.error());
+    delete_currency_request request;
+
+    // Read count
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) {
+        return std::unexpected(count_result.error());
     }
-    return delete_currency_request{*iso_code_result};
+    const auto count = *count_result;
+
+    // Read each ISO code
+    request.iso_codes.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        auto iso_code_result = reader::read_string(data);
+        if (!iso_code_result) {
+            return std::unexpected(iso_code_result.error());
+        }
+        request.iso_codes.push_back(*iso_code_result);
+    }
+
+    return request;
 }
 
 std::ostream& operator<<(std::ostream& s, const delete_currency_request& v) {
@@ -131,10 +154,24 @@ std::ostream& operator<<(std::ostream& s, const delete_currency_request& v) {
     return s;
 }
 
+std::ostream& operator<<(std::ostream& s, const delete_currency_result& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
 std::vector<std::byte> delete_currency_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_bool(buffer, success);
-    writer::write_string(buffer, message);
+
+    // Write count of results
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
+
+    // Write each result
+    for (const auto& result : results) {
+        writer::write_string(buffer, result.iso_code);
+        writer::write_bool(buffer, result.success);
+        writer::write_string(buffer, result.message);
+    }
+
     return buffer;
 }
 
@@ -142,17 +179,38 @@ std::expected<delete_currency_response, comms::protocol::error_code>
 delete_currency_response::deserialize(std::span<const std::byte> data) {
     delete_currency_response response;
 
-    auto success_result = reader::read_bool(data);
-    if (!success_result) {
-        return std::unexpected(success_result.error());
+    // Read count
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) {
+        return std::unexpected(count_result.error());
     }
-    response.success = *success_result;
+    const auto count = *count_result;
 
-    auto message_result = reader::read_string(data);
-    if (!message_result) {
-        return std::unexpected(message_result.error());
+    // Read each result
+    response.results.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        delete_currency_result result;
+
+        auto iso_code_result = reader::read_string(data);
+        if (!iso_code_result) {
+            return std::unexpected(iso_code_result.error());
+        }
+        result.iso_code = *iso_code_result;
+
+        auto success_result = reader::read_bool(data);
+        if (!success_result) {
+            return std::unexpected(success_result.error());
+        }
+        result.success = *success_result;
+
+        auto message_result = reader::read_string(data);
+        if (!message_result) {
+            return std::unexpected(message_result.error());
+        }
+        result.message = *message_result;
+
+        response.results.push_back(std::move(result));
     }
-    response.message = *message_result;
 
     return response;
 }

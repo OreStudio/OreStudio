@@ -148,13 +148,22 @@ struct save_currency_response final {
 std::ostream& operator<<(std::ostream& s, const save_currency_response& v);
 
 /**
- * @brief Request to delete a currency.
+ * @brief Request to delete one or more currencies.
+ *
+ * Supports batch deletion by accepting a vector of ISO codes.
+ * Each currency is processed independently - partial success is possible.
  */
 struct delete_currency_request final {
-    std::string iso_code;
+    std::vector<std::string> iso_codes;
 
     /**
      * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 4 bytes: count (number of ISO codes)
+     * - For each ISO code:
+     *   - 2 bytes: length
+     *   - N bytes: iso_code (UTF-8)
      */
     std::vector<std::byte> serialize() const;
 
@@ -168,14 +177,36 @@ struct delete_currency_request final {
 std::ostream& operator<<(std::ostream& s, const delete_currency_request& v);
 
 /**
- * @brief Response confirming currency deletion.
+ * @brief Result for a single currency deletion.
  */
-struct delete_currency_response final {
+struct delete_currency_result final {
+    std::string iso_code;
     bool success;
     std::string message;
+};
+
+std::ostream& operator<<(std::ostream& s, const delete_currency_result& v);
+
+/**
+ * @brief Response confirming currency deletion(s).
+ *
+ * Contains one result per requested currency, indicating individual
+ * success or failure. Supports partial success in batch operations.
+ */
+struct delete_currency_response final {
+    std::vector<delete_currency_result> results;
 
     /**
      * @brief Serialize response to bytes.
+     *
+     * Format:
+     * - 4 bytes: count (number of results)
+     * - For each result:
+     *   - 2 bytes: iso_code length
+     *   - N bytes: iso_code (UTF-8)
+     *   - 1 byte: success (0 or 1)
+     *   - 2 bytes: message length
+     *   - N bytes: message (UTF-8)
      */
     std::vector<std::byte> serialize() const;
 

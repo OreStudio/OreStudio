@@ -155,14 +155,6 @@ private:
      * creating a new one if it was closed.
      */
     QPointer<DetachableMdiSubWindow> currencyListWindow_;
-
-    /**
-     * @brief Map of currency history windows by ISO code.
-     *
-     * Tracks existing history windows to reuse them instead of creating
-     * duplicates. Uses QPointer to handle external deletion gracefully.
-     */
-    QMap<QString, QPointer<DetachableMdiSubWindow>> currencyHistoryWindows_;
 };
 
 }

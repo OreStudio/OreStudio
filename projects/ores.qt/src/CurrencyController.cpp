@@ -98,6 +98,7 @@ void CurrencyController::showListWindow() {
             this, &CurrencyController::onShowCurrencyHistory);
 
     currencyListWindow_ = new DetachableMdiSubWindow();
+    currencyListWindow_->setAttribute(Qt::WA_DeleteOnClose);
     currencyListWindow_->setWidget(currencyWidget);
     currencyListWindow_->setWindowTitle("Currencies");
     currencyListWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
@@ -154,6 +155,7 @@ void CurrencyController::onAddNewRequested() {
     detailDialog->setCurrency(new_currency);
 
     auto* detailWindow = new DetachableMdiSubWindow();
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Currency");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
@@ -187,6 +189,19 @@ void CurrencyController::onShowCurrencyDetails(
     const risk::domain::currency& currency) {
     BOOST_LOG_SEV(lg(), info) << "Showing currency details for: "
                              << currency.iso_code;
+
+    const QString isoCode = QString::fromStdString(currency.iso_code);
+    const QString windowKey = build_window_key("details", isoCode);
+
+    // Try to reuse existing window
+    if (try_reuse_window(windowKey)) {
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing detail window for: "
+                                  << currency.iso_code;
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Creating new detail window for: "
+                              << currency.iso_code;
     const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new CurrencyDetailDialog(mainWindow_);
@@ -206,19 +221,25 @@ void CurrencyController::onShowCurrencyDetails(
 
     detailDialog->setCurrency(currency);
 
-    const QString iso_code = QString::fromStdString(currency.iso_code);
     auto* detailWindow = new DetachableMdiSubWindow();
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Currency Details: %1").arg(iso_code));
+    detailWindow->setWindowTitle(QString("Currency Details: %1").arg(isoCode));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
 
+    // Track this detail window
+    track_window(windowKey, detailWindow);
+
     allDetachableWindows_.append(detailWindow);
     QPointer<CurrencyController> self = this;
+    QPointer<DetachableMdiSubWindow> windowPtr = detailWindow;
     connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow]() {
-        if (self)
-            self->allDetachableWindows_.removeAll(detailWindow);
+            [self, windowPtr, windowKey]() {
+        if (self) {
+            self->allDetachableWindows_.removeAll(windowPtr.data());
+            self->untrack_window(windowKey);
+        }
     });
 
     mdiArea_->addSubWindow(detailWindow);
@@ -248,27 +269,13 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
         return;
     }
 
-    // Reuse existing history window if it exists
-    if (currencyHistoryWindows_.contains(isoCode)) {
-        auto existingWindow = currencyHistoryWindows_[isoCode];
-        if (existingWindow) {
-            BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                      << isoCode.toStdString();
+    const QString windowKey = build_window_key("history", isoCode);
 
-            // Bring window to front
-            if (existingWindow->isDetached()) {
-                existingWindow->setVisible(true);
-                existingWindow->show();
-                existingWindow->raise();
-                existingWindow->activateWindow();
-            } else {
-                existingWindow->setVisible(true);
-                mdiArea_->setActiveSubWindow(existingWindow);
-                existingWindow->show();
-                existingWindow->raise();
-            }
-            return;
-        }
+    // Try to reuse existing window
+    if (try_reuse_window(windowKey)) {
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
+                                  << isoCode.toStdString();
+        return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
@@ -290,22 +297,23 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
     historyWidget->loadHistory();
 
     auto* historyWindow = new DetachableMdiSubWindow();
+    historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyWidget);
     historyWindow->setWindowTitle(QString("History: %1").arg(isoCode));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_history_20_regular.svg", iconColor));
 
     // Track this history window
-    currencyHistoryWindows_[isoCode] = historyWindow;
+    track_window(windowKey, historyWindow);
 
     allDetachableWindows_.append(historyWindow);
     QPointer<CurrencyController> self = this;
     QPointer<DetachableMdiSubWindow> windowPtr = historyWindow;
     connect(historyWindow, &QObject::destroyed, this,
-            [self, windowPtr, isoCode]() {
+            [self, windowPtr, windowKey]() {
         if (self) {
             self->allDetachableWindows_.removeAll(windowPtr.data());
-            self->currencyHistoryWindows_.remove(isoCode);
+            self->untrack_window(windowKey);
         }
     });
 

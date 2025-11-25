@@ -312,46 +312,52 @@ void CurrencyMdiWindow::deleteSelected() {
         QtConcurrent::run([self, iso_codes]() -> DeleteResult {
         DeleteResult results;
 
-        BOOST_LOG_SEV(lg(), debug) << "Making a delete currencies request.";
+        BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
+                                   << iso_codes.size() << " currencies";
         if (!self) return {};
 
-        for (const auto& iso_code : iso_codes) {
-            BOOST_LOG_SEV(lg(), debug) << "Sending delete_currency_request for: "
-                                       << iso_code;
+        // Create batch request with all ISO codes
+        risk::messaging::delete_currency_request request{iso_codes};
+        auto payload = request.serialize();
 
-            risk::messaging::delete_currency_request request{iso_code};
-            auto payload = request.serialize();
+        comms::protocol::frame request_frame(
+            message_type::delete_currency_request,
+            0, std::move(payload)
+        );
 
-            comms::protocol::frame request_frame(
-                message_type::delete_currency_request,
-                0, std::move(payload)
-            );
+        // Send single batch request
+        auto response_result = self->client_->send_request_sync(
+            std::move(request_frame));
 
-            auto response_result = self->client_->
-                send_request_sync(std::move(request_frame));
-
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send delete request for: "
-                                           << iso_code;
-                results.push_back({
-                        iso_code,
-                        { false, "Failed to communicate with server"}});
-                continue;
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
+            // If network fails, mark all as failed
+            for (const auto& iso_code : iso_codes) {
+                results.push_back({iso_code,
+                    {false, "Failed to communicate with server"}});
             }
+            return results;
+        }
 
-            BOOST_LOG_SEV(lg(), debug) << "Received delete_currency_response for: "
-                                       << iso_code;
-            auto response = risk::messaging::delete_currency_response::
-                deserialize(response_result->payload());
+        BOOST_LOG_SEV(lg(), debug) << "Received batch delete_currency_response";
+        // Deserialize batch response
+        auto response = risk::messaging::delete_currency_response::
+            deserialize(response_result->payload());
 
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response for: "
-                                           << iso_code;
-                results.push_back({iso_code, {false, "Invalid server response"}});
-                continue;
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize batch response";
+            // If deserialize fails, mark all as failed
+            for (const auto& iso_code : iso_codes) {
+                results.push_back({iso_code,
+                    {false, "Invalid server response"}});
             }
+            return results;
+        }
 
-            results.push_back({iso_code, {response->success, response->message}});
+        // Convert batch results to expected format
+        for (const auto& result : response->results) {
+            results.push_back({result.iso_code,
+                {result.success, result.message}});
         }
 
         return results;

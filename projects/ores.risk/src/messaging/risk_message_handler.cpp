@@ -33,8 +33,7 @@ boost::asio::awaitable<std::expected<std::vector<std::byte>,
 risk_message_handler::handle_message(comms::protocol::message_type type,
     std::span<const std::byte> payload, const std::string& remote_address) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Handling risk message type "
-                               << std::hex << static_cast<std::uint16_t>(type);
+    BOOST_LOG_SEV(lg(), debug) << "Handling risk message type " << type;
 
     switch (type) {
     case comms::protocol::message_type::get_currencies_request:
@@ -123,22 +122,34 @@ handle_delete_currency_request(std::span<const std::byte> payload) {
     }
 
     const auto& request = *request_result;
-    BOOST_LOG_SEV(lg(), info) << "Deleting currency: " << request.iso_code;
+    BOOST_LOG_SEV(lg(), info) << "Deleting " << request.iso_codes.size()
+                              << " currency/currencies";
 
     delete_currency_response response;
-    try {
-        // Remove currency from repository
-        currency_repo_.remove(ctx_, request.iso_code);
-        response.success = true;
-        response.message = "Currency deleted successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully deleted currency: "
-                                  << request.iso_code;
-    } catch (const std::exception& e) {
-        response.success = false;
-        response.message = std::string("Failed to delete currency: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error deleting currency "
-                                   << request.iso_code << ": " << e.what();
+
+    // Process each currency in the batch
+    for (const auto& iso_code : request.iso_codes) {
+        delete_currency_result result;
+        result.iso_code = iso_code;
+
+        try {
+            // Remove currency from repository
+            currency_repo_.remove(ctx_, iso_code);
+            result.success = true;
+            result.message = "Currency deleted successfully";
+            BOOST_LOG_SEV(lg(), info) << "Successfully deleted currency: " << iso_code;
+        } catch (const std::exception& e) {
+            result.success = false;
+            result.message = std::string("Failed to delete currency: ") + e.what();
+            BOOST_LOG_SEV(lg(), error) << "Error deleting currency "
+                                       << iso_code << ": " << e.what();
+        }
+
+        response.results.push_back(std::move(result));
     }
+
+    BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+                              << response.results.size() << " results";
 
     co_return response.serialize();
 }

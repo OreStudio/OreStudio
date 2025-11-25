@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/EntityController.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
@@ -38,6 +39,45 @@ void EntityController::setClient(std::shared_ptr<comms::net::client> client,
     const QString& username) {
     client_ = std::move(client);
     username_ = username;
+}
+
+QString EntityController::build_window_key(const QString& windowType,
+    const QString& identifier) const {
+    return QString("%1.%2").arg(windowType, identifier);
+}
+
+bool EntityController::try_reuse_window(const QString& key) {
+    if (managed_windows_.contains(key)) {
+        auto existing = managed_windows_[key];
+        if (existing) {
+            bring_window_to_front(existing);
+            return true;
+        }
+    }
+    return false;
+}
+
+void EntityController::bring_window_to_front(DetachableMdiSubWindow* window) {
+    if (window->isDetached()) {
+        window->setVisible(true);
+        window->show();
+        window->raise();
+        window->activateWindow();
+    } else {
+        window->setVisible(true);
+        mdiArea_->setActiveSubWindow(window);
+        window->show();
+        window->raise();
+    }
+}
+
+void EntityController::track_window(const QString& key,
+    DetachableMdiSubWindow* window) {
+    managed_windows_[key] = window;
+}
+
+void EntityController::untrack_window(const QString& key) {
+    managed_windows_.remove(key);
 }
 
 }

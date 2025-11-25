@@ -35,8 +35,7 @@ accounts_message_handler::handler_result
 accounts_message_handler::handle_message(message_type type,
     std::span<const std::byte> payload, const std::string& remote_address) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Handling accounts message type: "
-                               << std::hex << static_cast<std::uint16_t>(type);
+    BOOST_LOG_SEV(lg(), debug) << "Handling accounts message type " << type;
 
     switch (type) {
     case message_type::create_account_request:
@@ -54,8 +53,7 @@ accounts_message_handler::handle_message(message_type type,
     case message_type::delete_account_request:
         co_return co_await handle_delete_account_request(payload);
     default:
-        BOOST_LOG_SEV(lg(), error) << "Unknown accounts message type: "
-                                   << std::hex << static_cast<std::uint16_t>(type);
+        BOOST_LOG_SEV(lg(), error) << "Unknown accounts message type " << type;
         co_return std::unexpected(comms::protocol::error_code::invalid_message_type);
     }
 }

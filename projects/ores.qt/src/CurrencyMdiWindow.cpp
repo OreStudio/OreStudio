@@ -41,6 +41,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/CurrencyItemDelegate.hpp"
+#include "ores.qt/ImportCurrencyDialog.hpp"
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.comms/protocol/frame.hpp"
 #include "ores.risk/csv/exporter.hpp"
@@ -520,127 +521,49 @@ void CurrencyMdiWindow::importFromXML() {
         BOOST_LOG_SEV(lg(), info) << "Parsed " << currencies.size()
                                   << " currencies from XML";
 
-        // Build preview message with currency codes
-        QString previewMessage = QString("Found %1 currencies to import:\n\n")
-            .arg(currencies.size());
+        emit statusChanged(QString("Found %1 currencies - opening import dialog...")
+            .arg(currencies.size()));
 
-        for (size_t i = 0; i < currencies.size() && i < 10; ++i) {
-            previewMessage += QString("  %1 - %2\n")
-                .arg(QString::fromStdString(currencies[i].iso_code))
-                .arg(QString::fromStdString(currencies[i].name));
-        }
+        // Show import dialog with full preview and import capability
+        auto* dialog = new ImportCurrencyDialog(currencies, fileName, client_, this);
 
-        if (currencies.size() > 10) {
-            previewMessage += QString("\n  ... and %1 more\n")
-                .arg(currencies.size() - 10);
-        }
-
-        previewMessage += "\nDo you want to import these currencies?";
-
-        // Ask for confirmation
-        auto result = MessageBoxHelper::question(this,
-            "Confirm Import",
-            previewMessage);
-
-        if (result != QMessageBox::Yes) {
-            BOOST_LOG_SEV(lg(), debug) << "User cancelled import after preview";
-            emit statusChanged("Import cancelled");
-            return;
-        }
-
-        emit statusChanged("Importing currencies to server...");
-
-        // Import currencies to server using QtConcurrent
-        QPointer<CurrencyMdiWindow> self = this;
-        auto currenciesToImport = currencies; // Copy for lambda
-
-        QFuture<std::pair<int, int>> future =
-            QtConcurrent::run([self, currenciesToImport]()
-                -> std::pair<int, int> {
-                if (!self) return {0, 0};
-
-                int success_count = 0;
-                int total_count = static_cast<int>(currenciesToImport.size());
-
-                for (const auto& currency : currenciesToImport) {
-                    if (!self || !self->client_ || !self->client_->is_connected())
-                        break;
-
-                    BOOST_LOG_SEV(lg(), debug)
-                        << "Importing currency: " << currency.iso_code;
-
-                    try {
-                        using risk::messaging::save_currency_request;
-                        save_currency_request request{currency};
-                        auto payload = request.serialize();
-                        comms::protocol::frame request_frame =
-                            comms::protocol::frame(
-                                message_type::save_currency_request,
-                                0, std::move(payload));
-
-                        auto response_result =
-                            self->client_->send_request_sync(
-                                std::move(request_frame));
-
-                        if (!response_result) {
-                            BOOST_LOG_SEV(lg(), warn)
-                                << "Failed to import currency: "
-                                << currency.iso_code;
-                            continue;
-                        }
-
-                        using risk::messaging::save_currency_response;
-                        auto response = save_currency_response::
-                            deserialize(response_result->payload());
-
-                        if (response && response->success) {
-                            success_count++;
-                            BOOST_LOG_SEV(lg(), debug)
-                                << "Successfully imported: " << currency.iso_code;
-                        } else {
-                            BOOST_LOG_SEV(lg(), warn)
-                                << "Server rejected currency: "
-                                << currency.iso_code;
-                        }
-                    } catch (const std::exception& e) {
-                        BOOST_LOG_SEV(lg(), error)
-                            << "Error importing currency "
-                            << currency.iso_code << ": " << e.what();
-                    }
-                }
-
-                return {success_count, total_count};
-            });
-
-        auto* watcher = new QFutureWatcher<std::pair<int, int>>(self);
-        connect(watcher, &QFutureWatcher<std::pair<int, int>>::finished,
-            self, [self, watcher]() {
-            if (!self) return;
-
-            auto [success_count, total_count] = watcher->result();
-            watcher->deleteLater();
-
+        // Connect completion signal to refresh UI
+        connect(dialog, &ImportCurrencyDialog::importCompleted,
+                this, [this](int success_count, int total_count) {
             BOOST_LOG_SEV(lg(), info)
                 << "Import complete: " << success_count
                 << " of " << total_count << " currencies imported";
 
             if (success_count > 0) {
                 // Refresh the currency list to show imported currencies
-                self->currencyModel_->refresh();
+                currencyModel_->refresh();
 
                 QString message = QString(
                     "Successfully imported %1 of %2 currencies")
                     .arg(success_count).arg(total_count);
-                emit self->statusChanged(message);
-                MessageBoxHelper::information(self, "Import Complete", message);
+                emit statusChanged(message);
+                MessageBoxHelper::information(this, "Import Complete", message);
             } else {
-                emit self->statusChanged("Import failed - no currencies imported");
-                MessageBoxHelper::warning(self, "Import Failed",
+                emit statusChanged("Import failed - no currencies imported");
+                MessageBoxHelper::warning(this, "Import Failed",
                     "Failed to import currencies. Check the log for details.");
             }
         });
 
-        watcher->setFuture(future);
+        // Connect cancellation signal
+        connect(dialog, &ImportCurrencyDialog::importCancelled,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), debug) << "Import cancelled by user";
+            emit statusChanged("Import cancelled");
+        });
+
+        // Show dialog modally
+        if (dialog->exec() != QDialog::Accepted) {
+            BOOST_LOG_SEV(lg(), debug) << "User cancelled import dialog";
+            emit statusChanged("Import cancelled");
+        }
+
+        dialog->deleteLater();
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Error importing XML: " << e.what();

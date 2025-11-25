@@ -17,19 +17,32 @@ license: Complete terms in LICENSE.txt
 
 * When to Use This Skill
 
-Use this skill when planning architectural changes that span multiple components or affect the system's architectural layers. This includes refactoring efforts, adding cross-cutting concerns, introducing new architectural patterns, or any modification that requires understanding how changes propagate through the system.
+Use this skill when planning architectural changes that span multiple components
+or affect the system's architectural layers. This includes refactoring efforts,
+adding cross-cutting concerns, introducing new architectural patterns, or any
+modification that requires understanding how changes propagate through the
+system.
 
 * How to Use This Skill
 
-1. **Analyze current architecture** – Read the system-level diagram to understand component relationships and dependencies.
-2. **Deep-dive into affected components** – Read component-level diagrams for all potentially impacted areas.
-3. **Assess impact across tiers** – Evaluate how changes affect each architectural layer (Foundation, Infrastructure, Domain, Application).
-4. **Consider database implications** – Analyze database schema changes and migration requirements.
-5. **Plan backwards compatibility** – Design versioning strategy to maintain compatibility during migration.
-6. **Create migration plan** – Design an incremental, testable path from current to target state.
-7. **Generate TODO list** – Create a structured task list for tracking the migration.
-8. **Document architectural updates** – Plan PlantUML diagram updates to reflect the changes.
-9. **Validate plan** – Ensure each step maintains system integrity and is independently deployable.
+1. **Analyze current architecture** – Read the system-level diagram to
+   understand component relationships and dependencies.
+2. **Deep-dive into affected components** – Read component-level diagrams for
+   all potentially impacted areas.
+3. **Assess impact across tiers** – Evaluate how changes affect each
+   architectural layer (Foundation, Infrastructure, Domain, Application).
+4. **Consider database implications** – Analyze database schema changes and
+   migration requirements.
+5. **Plan backwards compatibility** – Design versioning strategy to maintain
+   compatibility during migration.
+6. **Create migration plan** – Design an incremental, testable path from current
+   to target state.
+7. **Generate TODO list** – Create a structured task list for tracking the
+   migration.
+8. **Document architectural updates** – Plan PlantUML diagram updates to reflect
+   the changes.
+9. **Validate plan** – Ensure each step maintains system integrity and is
+   independently deployable.
 
 * Detailed Instructions
 

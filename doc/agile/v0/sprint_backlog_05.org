@@ -18,54 +18,54 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-26 Wed 11:49], for Wednesday, November 26, 2025.
+#+CAPTION: Clock summary at [2025-11-26 Wed 23:30], for Wednesday, November 26, 2025.
 |       | <75>                                         |        |      |      |       |
 | Tags  | Headline                                     | Time   |      |      |     % |
 |-------+----------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                 | *1:45* |      |      | 100.0 |
+|       | *Total time*                                 | *7:38* |      |      | 100.0 |
 |-------+----------------------------------------------+--------+------+------+-------|
-|       | Stories                                      | 1:45   |      |      | 100.0 |
-|       | Active                                       |        | 1:45 |      | 100.0 |
-| code  | Implement import dialog for XML import in Qt |        |      | 0:11 |  10.5 |
-| infra | OCR scan notebooks for this sprint           |        |      | 1:25 |  81.0 |
-| code  | Add pagination support                       |        |      | 0:09 |   8.6 |
+|       | Stories                                      | 7:38   |      |      | 100.0 |
+|       | Active                                       |        | 7:38 |      | 100.0 |
+| code  | Add pagination support                       |        |      | 6:02 |  79.0 |
+| code  | Implement import dialog for XML import in Qt |        |      | 0:11 |   2.4 |
+| infra | OCR scan notebooks for this sprint           |        |      | 1:25 |  18.6 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-26 Wed 11:50]
+#+CAPTION: Clock summary at [2025-11-26 Wed 23:30]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *51:05* |       |       | 100.0 |
+|       | *Total time*                                            | *56:58* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 51:05   |       |       | 100.0 |
-|       | Active                                                  |         | 51:05 |       | 100.0 |
-| agile | Sprint and product backlog refinement                   |         |       |  2:35 |   5.1 |
-| infra | Add AI generated sprint summary                         |         |       |  1:38 |   3.2 |
-| infra | Add skill to generate release notes                     |         |       |  0:27 |   0.9 |
-| code  | Version of =ores.qt= does not update                    |         |       |  0:54 |   1.8 |
+|       | Stories                                                 | 56:58   |       |       | 100.0 |
+|       | Active                                                  |         | 56:58 |       | 100.0 |
+| agile | Sprint and product backlog refinement                   |         |       |  2:35 |   4.5 |
+| infra | Add AI generated sprint summary                         |         |       |  1:38 |   2.9 |
+| infra | Add skill to generate release notes                     |         |       |  0:27 |   0.8 |
+| code  | Version of =ores.qt= does not update                    |         |       |  0:54 |   1.6 |
 | code  | Minor updates to UML diagrams                           |         |       |  0:13 |   0.4 |
-| infra | Add support for project planning                        |         |       |  2:24 |   4.7 |
-| code  | Add a "detached" mode                                   |         |       |  1:18 |   2.5 |
-| code  | Merge update and create currency messages               |         |       |  1:07 |   2.2 |
-| code  | Uninformative incompatible protocol version error in qt |         |       |  1:11 |   2.3 |
-| code  | Implement delete account                                |         |       |  0:20 |   0.7 |
-| code  | Reorganise CLI structure by entity                      |         |       |  4:43 |   9.2 |
-| code  | Update =ores.shell= with REPL commands for all entities |         |       | 13:48 |  27.0 |
-| code  | Consider renaming =client= to =repl=                    |         |       |  0:22 |   0.7 |
+| infra | Add support for project planning                        |         |       |  2:24 |   4.2 |
+| code  | Add a "detached" mode                                   |         |       |  1:18 |   2.3 |
+| code  | Merge update and create currency messages               |         |       |  1:07 |   2.0 |
+| code  | Uninformative incompatible protocol version error in qt |         |       |  1:11 |   2.1 |
+| code  | Implement delete account                                |         |       |  0:20 |   0.6 |
+| code  | Reorganise CLI structure by entity                      |         |       |  4:43 |   8.3 |
+| code  | Update =ores.shell= with REPL commands for all entities |         |       | 13:48 |  24.2 |
+| code  | Consider renaming =client= to =repl=                    |         |       |  0:22 |   0.6 |
 | code  | Create a "request response" helper                      |         |       |  0:13 |   0.4 |
 | code  | Update all UML diagrams after shell changes             |         |       |  0:09 |   0.3 |
-| code  | Code coverage has dipped below 70%                      |         |       |  2:05 |   4.1 |
-| code  | Opening and closing currencies does not work            |         |       |  0:39 |   1.3 |
-| code  | Delete currency only deletes single currency            |         |       |  0:30 |   1.0 |
-| code  | Update enums in message types to use magic enums        |         |       |  0:49 |   1.6 |
-| code  | Tidy-up database code                                   |         |       |  0:44 |   1.4 |
-| code  | Implement basic XML import XML in Qt                    |         |       |  2:35 |   5.1 |
-| code  | Implement import dialog for XML import in Qt            |         |       |  1:34 |   3.1 |
-| infra | OCR scan notebooks for this sprint                      |         |       | 10:04 |  19.7 |
-| infra | Troubleshoot skills in claude                           |         |       |  0:34 |   1.1 |
-| code  | Add pagination support                                  |         |       |  0:09 |   0.3 |
+| code  | Code coverage has dipped below 70%                      |         |       |  2:05 |   3.7 |
+| code  | Opening and closing currencies does not work            |         |       |  0:39 |   1.1 |
+| code  | Delete currency only deletes single currency            |         |       |  0:30 |   0.9 |
+| code  | Update enums in message types to use magic enums        |         |       |  0:49 |   1.4 |
+| code  | Tidy-up database code                                   |         |       |  0:44 |   1.3 |
+| code  | Implement basic XML import XML in Qt                    |         |       |  2:35 |   4.5 |
+| code  | Add pagination support                                  |         |       |  6:02 |  10.6 |
+| code  | Implement import dialog for XML import in Qt            |         |       |  1:34 |   2.8 |
+| infra | OCR scan notebooks for this sprint                      |         |       | 10:04 |  17.7 |
+| infra | Troubleshoot skills in claude                           |         |       |  0:34 |   1.0 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1959,6 +1959,389 @@ in 5 phases with review and commit points between phases.
   These limitations will be addressed in follow-up story "Implement import
   dialog for XML import in Qt".
 
+*** COMPLETED Add pagination support                                   :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-26 Wed 22:15]--[2025-11-26 Wed 22:53] =>  0:38
+    CLOCK: [2025-11-26 Wed 20:59]--[2025-11-26 Wed 21:30] =>  0:31
+    CLOCK: [2025-11-26 Wed 15:21]--[2025-11-26 Wed 18:05] =>  2:44
+    CLOCK: [2025-11-26 Wed 14:18]--[2025-11-26 Wed 14:40] =>  0:22
+    CLOCK: [2025-11-26 Wed 13:20]--[2025-11-26 Wed 13:35] =>  0:15
+    CLOCK: [2025-11-26 Wed 11:40]--[2025-11-26 Wed 13:03] =>  1:23
+    CLOCK: [2025-11-26 Wed 11:17]--[2025-11-26 Wed 11:26] =>  0:09
+    :END:
+
+At present we are returning all elements from accounts, currencies etc. We need
+to implement pagination system-wide. This affects multiple layers of the
+architecture: repository, protocol, service, client models, and UI.
+
+- Current State :: Loading ALL records for each entity type (accounts,
+  currencies) without pagination. Works for small datasets but doesn't scale.
+
+- Scope :: Implement pagination for all entity types (accounts, currencies, and
+  future entities), not just accounts.
+
+Links:
+
+- [[https://readyset.io/blog/optimizing-sql-pagination-in-postgres][Optimizing SQL Pagination in Postgres]]
+- [[https://github.com/getml/sqlgen/issues/100][GH #100: Feature request: offset support]]
+
+**** System-Wide Impact Analysis
+
+1. Repository Layer (ores.accounts, ores.risk) - HIGH IMPACT
+
+   - Add offset and limit parameters to read_latest() methods
+   - Add get_total_count() methods for each entity repository
+   - Update SQL queries to use LIMIT and OFFSET clauses
+   - Performance: COUNT queries can be expensive on large tables
+
+2. Protocol/Messaging Layer (ores.comms, ores.accounts, ores.risk) - HIGH IMPACT
+
+   - Breaking change to wire protocol
+   - Update request messages: Add offset and limit fields
+   - Update response messages: Add total_available_count field
+   - Update serialization/deserialization logic
+
+3. Service/Handler Layer (ores.accounts, ores.risk) - MEDIUM IMPACT
+
+   - Extract pagination params from requests
+   - Pass to repository methods
+   - Include total count in responses
+   - Add validation for offset/limit (max page size, negative values)
+
+4. Client Models (ores.qt) - HIGH IMPACT
+
+   - Qt models need major refactoring for lazy loading
+   - Current: Load all data once, cache in vector
+   - New: Page-based fetching using Qt's canFetchMore/fetchMore pattern
+   - Track total available count vs loaded count
+
+5. UI Layer (ores.qt) - MEDIUM IMPACT
+
+   - Add pagination controls to MDI windows
+   - Page size selector (25, 50, 100, 200)
+   - First/Previous/Next/Last navigation
+   - "Showing X-Y of Z records" label
+
+6. CLI (ores.cli) - LOW IMPACT
+
+   - Add --offset and --limit flags to list commands
+   - Display total count in output
+
+**** Implementation Plan
+
+Strategy: Implement in phases with accounts first as a pilot, then apply learned
+patterns to currencies and future entities. This reduces risk and allows for
+iterative refinement.
+
+***** Phase 1: Repository & Database Layer (Foundation)
+
+Goal: Add pagination support to data access layer.
+
+Tasks:
+
+- [X] Update account_repository with offset/limit parameters
+- [X] Implement account_repository::get_total_account_count()
+- [X] Update currency_repository with offset/limit parameters
+- [X] Implement currency_repository::get_total_currency_count()
+- [ ] Add repository unit tests for pagination edge cases
+- [ ] Benchmark COUNT query performance on large datasets
+- [ ] Add database indexes on valid_to if needed
+
+Affected Files:
+- ores.accounts/include/ores.accounts/repository/account_repository.hpp
+- ores.accounts/src/repository/account_repository.cpp (modified)
+- ores.risk/include/ores.risk/repository/currency_repository.hpp
+- ores.risk/src/repository/currency_repository.cpp (modified)
+- ores.utility/include/ores.utility/repository/context.hpp (modified)
+- ores.utility/include/ores.utility/repository/context_factory.hpp (modified)
+- ores.utility/src/repository/context_factory.cpp (modified)
+
+Notes:
+
+- *Configuration Consolidation*: Removed duplication between
+  =context_factory::configuration= and =database_options=. The
+  =context_factory::configuration= now contains a =database_options= member
+  plus pool-specific fields (pool_size, num_attempts, wait_time_in_seconds).
+
+- *Context Enhancement*: Added a single database connection alongside the
+  connection pool in =context=. Both are created from the same credentials in
+  =context_factory::make_context()=.
+
+- *COUNT Implementation Workaround*: Implemented =get_total_account_count()= and
+  =get_total_currency_count()= using =sqlgen::select_from= with
+  =sqlgen::count().as<"count">()= through the single connection. This works
+  around the limitation where sqlgen sessions don't support SELECT FROM with
+  aggregations. See: https://github.com/getml/sqlgen/issues/99
+
+- *OFFSET Limitation*: sqlgen doesn't support OFFSET yet, so pagination queries
+  only use LIMIT. This means pagination will always return the first N records
+  regardless of the offset parameter. Added warning logs when offset is
+  non-zero. This needs to be fixed once sqlgen adds offset support.
+
+***** Phase 2: Protocol Layer (Wire Format)
+
+Goal: Update communication protocol to support pagination.
+
+Tasks:
+
+- [X] Update list_accounts_request with offset and limit fields
+- [X] Update list_accounts_response with total_available_count field
+- [X] Update get_currencies_request with offset and limit fields
+- [X] Update get_currencies_response with total_available_count field
+- [X] Update protocol serialization/deserialization
+- [ ] Add protocol unit tests for new fields
+- [ ] Document protocol changes
+
+Affected Files:
+
+- ores.accounts/include/ores.accounts/messaging/protocol.hpp (modified)
+- ores.accounts/src/messaging/protocol.cpp (modified)
+- ores.risk/include/ores.risk/messaging/protocol.hpp (modified)
+- ores.risk/src/messaging/protocol.cpp (modified)
+
+Notes:
+
+- *Request Messages*: Added =offset= (default 0) and =limit= (default 100) fields
+  to both =list_accounts_request= and =get_currencies_request=.
+
+- *Response Messages*: Added =total_available_count= field to both
+  =list_accounts_response= and =get_currencies_response= to communicate the
+  total number of available records (not just the returned page).
+
+- *Serialization*: Request messages serialize offset first, then limit.
+  Response messages serialize total_available_count first (before the vector),
+  then the paginated data.
+
+- *Protocol Version*: Bumped from 3.0 to 4.0 due to breaking changes. The new
+  pagination fields in requests and responses are not backwards compatible with
+  v3.x clients or servers. Old clients won't send offset/limit and won't expect
+  total_available_count; old servers won't understand the new fields.
+
+***** Phase 3: Service Layer (Business Logic)
+
+Goal: Wire pagination through service handlers.
+
+Tasks:
+
+- [X] Update accounts_message_handler to extract pagination params
+- [X] Call account_repository with offset/limit
+- [X] Return total_available_count in accounts response
+- [X] Update risk_message_handler to extract pagination params
+- [X] Call currency_repository with offset/limit
+- [X] Return total_available_count in currencies response
+- [X] Add validation for offset/limit values (max 1000, no negatives)
+- [ ] Add integration tests
+
+Affected Files:
+
+- ores.accounts/include/ores.accounts/service/account_service.hpp (modified)
+- ores.accounts/src/service/account_service.cpp (modified)
+- ores.accounts/src/messaging/accounts_message_handler.cpp (modified)
+- ores.risk/src/messaging/risk_message_handler.cpp (modified)
+
+Notes:
+
+- *Service Methods*: Added =list_accounts(offset, limit)= and
+  =get_total_account_count()= to =account_service=. These are thin wrappers
+  that delegate to the repository layer.
+
+- *Message Handlers*: Both =accounts_message_handler::handle_list_accounts_request=
+  and =risk_message_handler::handle_get_currencies_request= now:
+  - Extract offset and limit from the request
+  - Validate limit is between 1 and 1000 (returns =error_code::invalid_request= if not)
+  - Call the paginated repository methods
+  - Call the count method to get total available records
+  - Return both paginated data and total count in the response
+
+- *Validation*: Limit must be between 1 and 1000. Invalid values return
+  =comms::protocol::error_code::invalid_request= error code.
+
+- *Tests*: All existing tests pass (100 account test cases, 41 risk test cases).
+
+***** Phase 4: Client Models (Qt Data Layer)
+
+Goal: Implement lazy loading in Qt models.
+
+Tasks:
+
+- [ ] Refactor ClientAccountModel for page-based loading (N/A - model doesn't exist yet)
+- [ ] Implement canFetchMore() in ClientAccountModel (N/A - model doesn't exist yet)
+- [ ] Implement fetchMore() in ClientAccountModel (N/A - model doesn't exist yet)
+- [ ] Track loaded vs available records in ClientAccountModel (N/A - model doesn't exist yet)
+- [X] Refactor ClientCurrencyModel for page-based loading
+- [X] Implement canFetchMore() in ClientCurrencyModel
+- [X] Implement fetchMore() in ClientCurrencyModel
+- [X] Track loaded vs available records in ClientCurrencyModel
+- [X] Handle model refresh on non-first page
+- [ ] Add model pagination tests
+- [ ] Test scroll performance with large datasets
+
+Affected Files:
+
+- ores.qt/include/ores.qt/ClientCurrencyModel.hpp (modified)
+- ores.qt/src/ClientCurrencyModel.cpp (modified)
+
+Notes:
+
+- *ClientAccountModel*: This model doesn't exist yet in the codebase. The Qt UI
+  currently only implements currency management. Account model pagination will
+  be implemented when the Qt account management UI is added.
+
+- *Pagination Tracking*: Added =page_size_= (default 100),
+  =total_available_count_=, and =is_fetching_= fields to track pagination state.
+
+- *Lazy Loading*: Implemented Qt's standard =canFetchMore()= and =fetchMore()=
+  pattern. The model now:
+  - Loads only one page of data initially
+  - Automatically fetches more when scrolling (Qt calls =fetchMore()=)
+  - Tracks loaded vs available records to know when all data is loaded
+
+- *Refresh Behavior*: The =refresh(bool replace)= method now supports two modes:
+  - =replace=true= (default): Clears existing data and loads from offset 0
+  - =replace=false=: Appends next page to existing data (used by =fetchMore()=)
+
+- *Page Size Configuration*: Added =set_page_size()= method to configure the
+  number of records fetched per page (validates 1-1000 range).
+
+- *Data Handling*: The model appends new pages and re-sorts all data by name
+  after each fetch. Views are notified via =beginInsertRows/endInsertRows= and
+  =dataChanged= signals.
+
+- *Fetch Protection*: Added =is_fetching_= flag to prevent concurrent fetches
+  and avoid duplicate requests.
+
+***** Phase 5: UI Controls (User Interface)
+
+Goal: Add pagination UI to MDI windows.
+
+Tasks:
+
+- [ ] Design PaginationWidget component layout
+- [ ] Implement PaginationWidget with page size selector
+- [ ] Add First/Previous/Next/Last navigation buttons
+- [ ] Add "Showing X-Y of Z records" label
+- [ ] Integrate PaginationWidget into AccountMdiWindow
+- [ ] Integrate PaginationWidget into CurrencyMdiWindow
+- [ ] Wire page navigation to model refresh
+- [ ] Update status bar with pagination info
+- [ ] Add UI tests for pagination controls
+- [ ] Test edge cases (first page, last page, empty results)
+
+Affected Files:
+
+- ores.qt/include/ores.qt/PaginationWidget.hpp (new)
+- ores.qt/src/PaginationWidget.cpp (new)
+- ores.qt/src/AccountMdiWindow.cpp
+- ores.qt/src/CurrencyMdiWindow.cpp
+
+***** Phase 6: CLI Support (Command Line)
+
+Goal: Add pagination to CLI commands.
+
+Tasks:
+- [ ] Add --offset flag to account list command
+- [ ] Add --limit flag to account list command
+- [ ] Display total count in account list output
+- [ ] Add --offset flag to currency list command
+- [ ] Add --limit flag to currency list command
+- [ ] Display total count in currency list output
+- [ ] Update CLI help documentation
+
+Affected Files:
+- ores.cli/src/commands/account_commands.cpp
+- ores.cli/src/commands/currency_commands.cpp
+
+**** Reference Code Examples
+
+Account repository pagination example:
+
+#+begin_src c++
+std::vector<domain::account>
+account_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts with offset: "
+                               << offset << " and limit: " << limit;
+
+    static auto max(make_timestamp(max_timestamp));
+    const auto query = sqlgen::read<std::vector<account_entity>> |
+        where("valid_to"_c == max.value()) |
+        order_by("valid_from"_c.desc()) |
+        sqlgen::limit(limit) |
+        sqlgen::offset(offset);
+
+    const auto r = session(ctx_.connection_pool())
+        .and_then(query);
+    ensure_success(r);
+    BOOST_LOG_SEV(lg(), debug) << "Read latest accounts. Total: " << r->size();
+    return account_mapper::map(*r);
+}
+
+std::uint32_t account_repository::get_total_account_count() {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account count.";
+
+    static auto max(make_timestamp(max_timestamp));
+
+    // Select the count of records that are currently active (valid_to == max_timestamp)
+    // We expect the result to be a vector containing a single long long (the count).
+    using count_result_type = std::vector<long long>;
+    const auto query = sqlgen::select<count_result_type>(sqlgen::count("id"_c)) |
+        from<account_entity> |
+        where("valid_to"_c == max.value());
+
+    const auto r = session(ctx_.connection_pool())
+        .and_then(query);
+    ensure_success(r);
+
+    if (r->empty() || r->at(0) < 0) {
+        return 0;
+    }
+
+    const auto total_count = static_cast<std::uint32_t>(r->at(0));
+
+    BOOST_LOG_SEV(lg(), debug) << "Total active accounts found: " << total_count;
+    return total_count;
+}
+#+end_src
+
+**** Technical Considerations
+
+- Default Page Size :: 50 records (balances performance vs usability)
+- Maximum Page Size :: 1000 records (enforce to prevent abuse)
+- COUNT Performance :: Consider caching count for short periods if slow
+- Zero Offset :: Offset 0 = first page (not offset 1)
+- Empty Results :: Handle total_count=0 gracefully in UI
+- Concurrent Modifications :: Total count may change between requests
+- Sorting :: Ensure consistent sort order (valid_from DESC) for predictable
+  pagination
+- Database Indexes :: Add index on valid_to column if COUNT queries are slow
+
+***** Risks & Mitigation
+
+| Risk                            | Impact | Mitigation                              |
+|---------------------------------+--------+-----------------------------------------|
+| COUNT queries slow on large DB  | High   | Add index on valid_to, consider caching |
+| Breaking protocol changes       | High   | Version protocol if needed              |
+| Complex Qt model refactoring    | Medium | Pilot with accounts first, learn, apply |
+| User confusion with new UI      | Low    | Clear labels, sensible defaults         |
+| Inconsistent pagination results | Medium | Ensure stable sort order                |
+
+***** Testing Strategy
+
+1. Unit Tests: Repository pagination logic, protocol serialization
+2. Integration Tests: End-to-end pagination through full stack
+3. Performance Tests: Large datasets (10K, 100K, 1M records)
+4. UI Tests: Pagination controls, edge cases (first/last page)
+5. Boundary Tests: Offset beyond total, zero records, negative values
+
+***** Estimated Effort
+
+- Phase 1 (Repository): 1 day
+- Phase 2 (Protocol): 1 day
+- Phase 3 (Service): 0.5 days
+- Phase 4 (Client Models): 2 days
+- Phase 5 (UI): 1 day
+- Phase 6 (CLI): 0.5 days
+- Total: ~6 days
+
 *** STARTED Implement import dialog for XML import in Qt               :code:
     :LOGBOOK:
     CLOCK: [2025-11-26 Wed 11:05]--[2025-11-26 Wed 11:16] =>  0:11
@@ -2105,290 +2488,6 @@ Links:
 - [[https://code.claude.com/docs/en/skills][Claude: Agent Skills]]
 - [[https://www.reddit.com/r/ClaudeCode/comments/1oywsa1/claude_code_skills_activate_20_of_the_time_heres/][reddit: Claude Code skills activate 20% of the time. Here's how I got to 84%.]]
 - [[https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably][How to Make Claude Code Skills Activate Reliably]]
-
-*** STARTED Add pagination support                                     :code:
-    :LOGBOOK:
-    CLOCK: [2025-11-26 Wed 11:40]
-    CLOCK: [2025-11-26 Wed 11:17]--[2025-11-26 Wed 11:26] =>  0:09
-    :END:
-
-At present we are returning all elements from accounts, currencies etc. We need
-to implement pagination system-wide. This affects multiple layers of the
-architecture: repository, protocol, service, client models, and UI.
-
-- Current State :: Loading ALL records for each entity type (accounts,
-  currencies) without pagination. Works for small datasets but doesn't scale.
-
-- Scope :: Implement pagination for all entity types (accounts, currencies, and
-  future entities), not just accounts.
-
-Links:
-
-- [[https://readyset.io/blog/optimizing-sql-pagination-in-postgres][Optimizing SQL Pagination in Postgres]]
-
-**** System-Wide Impact Analysis
-
-1. Repository Layer (ores.accounts, ores.risk) - HIGH IMPACT
-
-   - Add offset and limit parameters to read_latest() methods
-   - Add get_total_count() methods for each entity repository
-   - Update SQL queries to use LIMIT and OFFSET clauses
-   - Performance: COUNT queries can be expensive on large tables
-
-2. Protocol/Messaging Layer (ores.comms, ores.accounts, ores.risk) - HIGH IMPACT
-
-   - Breaking change to wire protocol
-   - Update request messages: Add offset and limit fields
-   - Update response messages: Add total_available_count field
-   - Update serialization/deserialization logic
-
-3. Service/Handler Layer (ores.accounts, ores.risk) - MEDIUM IMPACT
-
-   - Extract pagination params from requests
-   - Pass to repository methods
-   - Include total count in responses
-   - Add validation for offset/limit (max page size, negative values)
-
-4. Client Models (ores.qt) - HIGH IMPACT
-
-   - Qt models need major refactoring for lazy loading
-   - Current: Load all data once, cache in vector
-   - New: Page-based fetching using Qt's canFetchMore/fetchMore pattern
-   - Track total available count vs loaded count
-
-5. UI Layer (ores.qt) - MEDIUM IMPACT
-
-   - Add pagination controls to MDI windows
-   - Page size selector (25, 50, 100, 200)
-   - First/Previous/Next/Last navigation
-   - "Showing X-Y of Z records" label
-
-6. CLI (ores.cli) - LOW IMPACT
-
-   - Add --offset and --limit flags to list commands
-   - Display total count in output
-
-**** Implementation Plan
-
-Strategy: Implement in phases with accounts first as a pilot, then apply learned
-patterns to currencies and future entities. This reduces risk and allows for
-iterative refinement.
-
-***** Phase 1: Repository & Database Layer (Foundation)
-
-Goal: Add pagination support to data access layer.
-
-Tasks:
-
-- [ ] Update account_repository with offset/limit parameters
-- [ ] Implement account_repository::get_total_account_count()
-- [ ] Update currency_repository with offset/limit parameters
-- [ ] Implement currency_repository::get_total_currency_count()
-- [ ] Add repository unit tests for pagination edge cases
-- [ ] Benchmark COUNT query performance on large datasets
-- [ ] Add database indexes on valid_to if needed
-
-Affected Files:
-- ores.accounts/include/ores.accounts/repository/account_repository.hpp
-- ores.accounts/src/repository/account_repository.cpp
-- ores.risk/include/ores.risk/repository/currency_repository.hpp
-- ores.risk/src/repository/currency_repository.cpp
-
-***** Phase 2: Protocol Layer (Wire Format)
-
-Goal: Update communication protocol to support pagination.
-
-Tasks:
-
-- [ ] Update list_accounts_request with offset and limit fields
-- [ ] Update list_accounts_response with total_available_count field
-- [ ] Update get_currencies_request with offset and limit fields
-- [ ] Update get_currencies_response with total_available_count field
-- [ ] Update protocol serialization/deserialization
-- [ ] Add protocol unit tests for new fields
-- [ ] Document protocol changes
-
-Affected Files:
-
-- ores.accounts/include/ores.accounts/messaging/protocol.hpp
-- ores.accounts/src/messaging/protocol.cpp
-- ores.risk/include/ores.risk/messaging/protocol.hpp
-- ores.risk/src/messaging/protocol.cpp
-
-***** Phase 3: Service Layer (Business Logic)
-
-Goal: Wire pagination through service handlers.
-
-Tasks:
-
-- [ ] Update accounts_message_handler to extract pagination params
-- [ ] Call account_repository with offset/limit
-- [ ] Return total_available_count in accounts response
-- [ ] Update risk_message_handler to extract pagination params
-- [ ] Call currency_repository with offset/limit
-- [ ] Return total_available_count in currencies response
-- [ ] Add validation for offset/limit values (max 1000, no negatives)
-- [ ] Add integration tests
-
-Affected Files:
-
-- ores.accounts/src/messaging/accounts_message_handler.cpp
-- ores.risk/src/messaging/risk_message_handler.cpp
-
-***** Phase 4: Client Models (Qt Data Layer)
-
-Goal: Implement lazy loading in Qt models.
-
-Tasks:
-
-- [ ] Refactor ClientAccountModel for page-based loading
-- [ ] Implement canFetchMore() in ClientAccountModel
-- [ ] Implement fetchMore() in ClientAccountModel
-- [ ] Track loaded vs available records in ClientAccountModel
-- [ ] Refactor ClientCurrencyModel for page-based loading
-- [ ] Implement canFetchMore() in ClientCurrencyModel
-- [ ] Implement fetchMore() in ClientCurrencyModel
-- [ ] Track loaded vs available records in ClientCurrencyModel
-- [ ] Handle model refresh on non-first page
-- [ ] Add model pagination tests
-- [ ] Test scroll performance with large datasets
-
-Affected Files:
-
-- ores.qt/src/ClientAccountModel.cpp
-- ores.qt/src/ClientCurrencyModel.cpp
-
-***** Phase 5: UI Controls (User Interface)
-
-Goal: Add pagination UI to MDI windows.
-
-Tasks:
-
-- [ ] Design PaginationWidget component layout
-- [ ] Implement PaginationWidget with page size selector
-- [ ] Add First/Previous/Next/Last navigation buttons
-- [ ] Add "Showing X-Y of Z records" label
-- [ ] Integrate PaginationWidget into AccountMdiWindow
-- [ ] Integrate PaginationWidget into CurrencyMdiWindow
-- [ ] Wire page navigation to model refresh
-- [ ] Update status bar with pagination info
-- [ ] Add UI tests for pagination controls
-- [ ] Test edge cases (first page, last page, empty results)
-
-Affected Files:
-
-- ores.qt/include/ores.qt/PaginationWidget.hpp (new)
-- ores.qt/src/PaginationWidget.cpp (new)
-- ores.qt/src/AccountMdiWindow.cpp
-- ores.qt/src/CurrencyMdiWindow.cpp
-
-***** Phase 6: CLI Support (Command Line)
-
-Goal: Add pagination to CLI commands.
-
-Tasks:
-- [ ] Add --offset flag to account list command
-- [ ] Add --limit flag to account list command
-- [ ] Display total count in account list output
-- [ ] Add --offset flag to currency list command
-- [ ] Add --limit flag to currency list command
-- [ ] Display total count in currency list output
-- [ ] Update CLI help documentation
-
-Affected Files:
-- ores.cli/src/commands/account_commands.cpp
-- ores.cli/src/commands/currency_commands.cpp
-
-***** Reference Code Examples
-
-Account repository pagination example:
-
-#+begin_src c++
-std::vector<domain::account>
-account_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts with offset: "
-                               << offset << " and limit: " << limit;
-
-    static auto max(make_timestamp(max_timestamp));
-    const auto query = sqlgen::read<std::vector<account_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("valid_from"_c.desc()) |
-        sqlgen::limit(limit) |
-        sqlgen::offset(offset);
-
-    const auto r = session(ctx_.connection_pool())
-        .and_then(query);
-    ensure_success(r);
-    BOOST_LOG_SEV(lg(), debug) << "Read latest accounts. Total: " << r->size();
-    return account_mapper::map(*r);
-}
-
-std::uint32_t account_repository::get_total_account_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account count.";
-
-    static auto max(make_timestamp(max_timestamp));
-
-    // Select the count of records that are currently active (valid_to == max_timestamp)
-    // We expect the result to be a vector containing a single long long (the count).
-    using count_result_type = std::vector<long long>;
-    const auto query = sqlgen::select<count_result_type>(sqlgen::count("id"_c)) |
-        from<account_entity> |
-        where("valid_to"_c == max.value());
-
-    const auto r = session(ctx_.connection_pool())
-        .and_then(query);
-    ensure_success(r);
-
-    if (r->empty() || r->at(0) < 0) {
-        return 0;
-    }
-
-    const auto total_count = static_cast<std::uint32_t>(r->at(0));
-
-    BOOST_LOG_SEV(lg(), debug) << "Total active accounts found: " << total_count;
-    return total_count;
-}
-#+end_src
-
-**** Technical Considerations
-
-- Default Page Size :: 50 records (balances performance vs usability)
-- Maximum Page Size :: 1000 records (enforce to prevent abuse)
-- COUNT Performance :: Consider caching count for short periods if slow
-- Zero Offset :: Offset 0 = first page (not offset 1)
-- Empty Results :: Handle total_count=0 gracefully in UI
-- Concurrent Modifications :: Total count may change between requests
-- Sorting :: Ensure consistent sort order (valid_from DESC) for predictable
-  pagination
-- Database Indexes :: Add index on valid_to column if COUNT queries are slow
-
-***** Risks & Mitigation
-
-| Risk                            | Impact | Mitigation                              |
-|---------------------------------+--------+-----------------------------------------|
-| COUNT queries slow on large DB  | High   | Add index on valid_to, consider caching |
-| Breaking protocol changes       | High   | Version protocol if needed              |
-| Complex Qt model refactoring    | Medium | Pilot with accounts first, learn, apply |
-| User confusion with new UI      | Low    | Clear labels, sensible defaults         |
-| Inconsistent pagination results | Medium | Ensure stable sort order                |
-
-***** Testing Strategy
-
-1. Unit Tests: Repository pagination logic, protocol serialization
-2. Integration Tests: End-to-end pagination through full stack
-3. Performance Tests: Large datasets (10K, 100K, 1M records)
-4. UI Tests: Pagination controls, edge cases (first/last page)
-5. Boundary Tests: Offset beyond total, zero records, negative values
-
-***** Estimated Effort
-
-- Phase 1 (Repository): 1 day
-- Phase 2 (Protocol): 1 day
-- Phase 3 (Service): 0.5 days
-- Phase 4 (Client Models): 2 days
-- Phase 5 (UI): 1 day
-- Phase 6 (CLI): 0.5 days
-- Total: ~6 days
 
 *** Multi-threaded scenarios with comms                                :code:
 
@@ -2581,7 +2680,9 @@ Links:
 *** Add search to currencies                                           :code:
 
 It should be possible to filter the open currencies by a string. This should be
-any field. The user needs to know when the list has been filtered.
+any field. The user needs to know when the list has been filtered. Ideally we
+should have buttons at the top per field and filter using those. It should go
+back to database rather than just filter what is available in UI.
 
 *** Automated SQL generation                                           :code:
 

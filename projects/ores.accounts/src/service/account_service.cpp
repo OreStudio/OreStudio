@@ -104,6 +104,15 @@ std::vector<domain::account> account_service::list_accounts() {
     return account_repo_.read_latest();
 }
 
+std::vector<domain::account> account_service::list_accounts(
+    std::uint32_t offset, std::uint32_t limit) {
+    return account_repo_.read_latest(offset, limit);
+}
+
+std::uint32_t account_service::get_total_account_count() {
+    return account_repo_.get_total_account_count();
+}
+
 std::vector<domain::login_info> account_service::list_login_info() {
     return login_info_repo_.read();
 }

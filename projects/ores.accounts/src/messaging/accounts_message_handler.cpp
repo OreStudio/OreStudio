@@ -93,11 +93,30 @@ handle_list_accounts_request(std::span<const std::byte> payload) {
         co_return std::unexpected(request_result.error());
     }
 
-    auto accounts = service_.list_accounts();
-    BOOST_LOG_SEV(lg(), info) << "Retrieved " << accounts.size()
-                              << " accounts.";
+    const auto& request = *request_result;
 
-    list_accounts_response response{std::move(accounts)};
+    // Validate pagination parameters
+    constexpr std::uint32_t max_limit = 1000;
+    if (request.limit == 0 || request.limit > max_limit) {
+        BOOST_LOG_SEV(lg(), warn) << "Invalid limit: " << request.limit
+                                  << ". Must be between 1 and " << max_limit;
+        co_return std::unexpected(comms::protocol::error_code::invalid_request);
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Fetching accounts with offset: "
+                               << request.offset << ", limit: " << request.limit;
+
+    // Get paginated accounts and total count
+    auto accounts = service_.list_accounts(request.offset, request.limit);
+    auto total_count = service_.get_total_account_count();
+
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << accounts.size()
+                              << " accounts (total available: " << total_count << ").";
+
+    list_accounts_response response{
+        .accounts = std::move(accounts),
+        .total_available_count = total_count
+    };
     co_return response.serialize();
 }
 

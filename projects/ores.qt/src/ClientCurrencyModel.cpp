@@ -20,6 +20,7 @@
 #include "ores.qt/ClientCurrencyModel.hpp"
 
 #include <algorithm>
+#include <unordered_set>
 #include <QtConcurrent>
 #include "ores.comms/protocol/frame.hpp"
 #include "ores.comms/protocol/message_types.hpp"
@@ -175,17 +176,35 @@ void ClientCurrencyModel::onCurrenciesLoaded() {
 
     auto result = watcher_->result();
     if (result.success) {
-        const int old_size = static_cast<int>(currencies_.size());
-        const int new_count = static_cast<int>(result.currencies.size());
-
         total_available_count_ = result.total_available_count;
+
+        // Build set of existing ISO codes for duplicate detection
+        std::unordered_set<std::string> existing_codes;
+        for (const auto& curr : currencies_) {
+            existing_codes.insert(curr.iso_code);
+        }
+
+        // Filter out duplicates from new results
+        std::vector<risk::domain::currency> new_currencies;
+        for (auto& curr : result.currencies) {
+            if (existing_codes.find(curr.iso_code) == existing_codes.end()) {
+                new_currencies.push_back(std::move(curr));
+                existing_codes.insert(curr.iso_code);
+            } else {
+                BOOST_LOG_SEV(lg(), trace) << "Skipping duplicate currency: "
+                                           << curr.iso_code;
+            }
+        }
+
+        const int old_size = static_cast<int>(currencies_.size());
+        const int new_count = static_cast<int>(new_currencies.size());
 
         if (new_count > 0) {
             // Append new data to existing currencies
             beginInsertRows(QModelIndex(), old_size, old_size + new_count - 1);
             currencies_.insert(currencies_.end(),
-                std::make_move_iterator(result.currencies.begin()),
-                std::make_move_iterator(result.currencies.end()));
+                std::make_move_iterator(new_currencies.begin()),
+                std::make_move_iterator(new_currencies.end()));
             endInsertRows();
 
             // Sort all currencies by name
@@ -199,8 +218,10 @@ void ClientCurrencyModel::onCurrenciesLoaded() {
             }
         }
 
-        BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " currencies. "
-                                  << "Total in model: " << currencies_.size()
+        BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " new currencies "
+                                  << "(received " << result.currencies.size()
+                                  << ", filtered " << (result.currencies.size() - new_count)
+                                  << " duplicates). Total in model: " << currencies_.size()
                                   << ", Total available: " << total_available_count_;
 
         emit dataLoaded();
@@ -225,10 +246,19 @@ bool ClientCurrencyModel::canFetchMore(const QModelIndex& parent) const {
     if (parent.isValid())
         return false;
 
-    // Can fetch more if we haven't loaded all available records yet
-    const bool has_more = currencies_.size() < total_available_count_;
+    // NOTE: Automatic fetch-more is disabled because sqlgen doesn't support
+    // OFFSET yet (see repository implementation). Without OFFSET, subsequent
+    // fetches return the same first N records, causing duplicates.
+    // Users can use "Load All" button to load all records in one request.
+
+    // Only allow fetching if we have loaded fewer records than requested page size
+    // This handles the initial load, but prevents auto-pagination
+    const bool has_more = currencies_.size() < page_size_ &&
+                          currencies_.size() < total_available_count_;
+
     BOOST_LOG_SEV(lg(), trace) << "canFetchMore: " << has_more
                                << " (loaded: " << currencies_.size()
+                               << ", page_size: " << page_size_
                                << ", available: " << total_available_count_ << ")";
     return has_more && !is_fetching_;
 }

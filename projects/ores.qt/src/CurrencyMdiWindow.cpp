@@ -182,9 +182,16 @@ CurrencyMdiWindow(std::shared_ptr<comms::net::client> client,
     connect(pagination_widget_, &PaginationWidget::load_all_requested,
             this, [this]() {
         BOOST_LOG_SEV(lg(), debug) << "Load all requested";
-        // Keep loading pages until all data is fetched
-        while (currencyModel_->canFetchMore(QModelIndex())) {
-            currencyModel_->fetchMore(QModelIndex());
+        const auto total = currencyModel_->total_available_count();
+        if (total > 0 && total <= 1000) {
+            emit statusChanged("Loading all currencies...");
+            // Set page size to total count and refresh
+            currencyModel_->set_page_size(total);
+            currencyModel_->refresh(true);
+        } else if (total > 1000) {
+            BOOST_LOG_SEV(lg(), warn) << "Total count " << total
+                                      << " exceeds maximum page size of 1000";
+            emit statusChanged("Cannot load all - too many records (max 1000)");
         }
     });
 

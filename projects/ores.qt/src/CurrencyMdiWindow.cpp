@@ -61,6 +61,7 @@ CurrencyMdiWindow(std::shared_ptr<comms::net::client> client,
       verticalLayout_(new QVBoxLayout(this)),
       currencyTableView_(new QTableView(this)),
       toolBar_(new QToolBar(this)),
+      pagination_widget_(new PaginationWidget(this)),
       addAction_(new QAction("Add", this)),
       editAction_(new QAction("Edit", this)),
       deleteAction_(new QAction("Delete", this)),
@@ -140,9 +141,8 @@ CurrencyMdiWindow(std::shared_ptr<comms::net::client> client,
     toolBar_->addAction(exportXMLAction);
 
     verticalLayout_->addWidget(toolBar_);
-
-
     verticalLayout_->addWidget(currencyTableView_);
+    verticalLayout_->addWidget(pagination_widget_);
 
     currencyTableView_->setObjectName("currencyTableView");
     currencyTableView_->setAlternatingRowColors(true);
@@ -170,6 +170,23 @@ CurrencyMdiWindow(std::shared_ptr<comms::net::client> client,
     connect(currencyTableView_->selectionModel(),
         &QItemSelectionModel::selectionChanged,
             this, &CurrencyMdiWindow::onSelectionChanged);
+
+    // Connect pagination widget signals
+    connect(pagination_widget_, &PaginationWidget::page_size_changed,
+            this, [this](std::uint32_t size) {
+        BOOST_LOG_SEV(lg(), debug) << "Page size changed to: " << size;
+        currencyModel_->set_page_size(size);
+        currencyModel_->refresh(true); // Reload from start with new page size
+    });
+
+    connect(pagination_widget_, &PaginationWidget::load_all_requested,
+            this, [this]() {
+        BOOST_LOG_SEV(lg(), debug) << "Load all requested";
+        // Keep loading pages until all data is fetched
+        while (currencyModel_->canFetchMore(QModelIndex())) {
+            currencyModel_->fetchMore(QModelIndex());
+        }
+    });
 
     updateActionStates();
 
@@ -202,11 +219,18 @@ void CurrencyMdiWindow::addNew() {
 }
 
 void CurrencyMdiWindow::onDataLoaded() {
-    const QString message = QString("Loaded %1 currencies")
-                              .arg(currencyModel_->rowCount());
+    const auto loaded = currencyModel_->rowCount();
+    const auto total = currencyModel_->total_available_count();
+
+    // Update pagination widget
+    pagination_widget_->update_state(loaded, total);
+
+    const QString message = QString("Loaded %1 of %2 currencies")
+                              .arg(loaded)
+                              .arg(total);
     emit statusChanged(message);
     BOOST_LOG_SEV(lg(), debug) << "Currency data loaded successfully: "
-                             << currencyModel_->rowCount() << " currencies";
+                             << loaded << " of " << total << " currencies";
 
     // Auto-select first row if data is available and nothing is selected
     if (currencyModel_->rowCount() > 0 &&

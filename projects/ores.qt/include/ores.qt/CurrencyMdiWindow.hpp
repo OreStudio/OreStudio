@@ -29,6 +29,7 @@
 #include "ores.comms/net/client.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.qt/ClientCurrencyModel.hpp"
+#include "ores.qt/PaginationWidget.hpp"
 
 namespace ores::qt {
 
@@ -87,6 +88,7 @@ private:
     QVBoxLayout* verticalLayout_;
     QTableView* currencyTableView_;
     QToolBar* toolBar_;
+    PaginationWidget* pagination_widget_;
 
     QAction* addAction_;
     QAction* editAction_;

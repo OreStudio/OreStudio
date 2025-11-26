@@ -64,8 +64,27 @@ public:
      *
      * This method initiates an async request to fetch currencies.
      * The model will emit dataChanged() when the fetch completes.
+     * When replace is true, existing data is cleared before loading.
+     * When false, new data is appended (for pagination).
+     *
+     * @param replace If true, replace existing data; if false, append.
      */
-    void refresh();
+    void refresh(bool replace = true);
+
+    /**
+     * @brief Check if more data can be fetched from the server.
+     *
+     * @return true if there are more records available on the server
+     */
+    bool canFetchMore(const QModelIndex& parent = QModelIndex()) const override;
+
+    /**
+     * @brief Fetch the next page of data from the server.
+     *
+     * This is called automatically by Qt views when scrolling approaches
+     * the end of currently loaded data.
+     */
+    void fetchMore(const QModelIndex& parent = QModelIndex()) override;
 
     /**
      * @brief Get currency at the specified row.
@@ -82,6 +101,27 @@ public:
      */
     std::vector<risk::domain::currency> getCurrencies() const;
 
+    /**
+     * @brief Get the page size used for pagination.
+     *
+     * @return The number of records fetched per page.
+     */
+    std::uint32_t page_size() const { return page_size_; }
+
+    /**
+     * @brief Set the page size for pagination.
+     *
+     * @param size The number of records to fetch per page (1-1000).
+     */
+    void set_page_size(std::uint32_t size);
+
+    /**
+     * @brief Get the total number of records available on the server.
+     *
+     * @return Total available record count.
+     */
+    std::uint32_t total_available_count() const { return total_available_count_; }
+
 signals:
     /**
      * @brief Emitted when data has been successfully loaded.
@@ -97,11 +137,20 @@ private slots:
     void onCurrenciesLoaded();
 
 private:
-    using FutureWatcherResult = std::pair<bool,
-                                          std::vector<risk::domain::currency>>;
+    struct FetchResult {
+        bool success;
+        std::vector<risk::domain::currency> currencies;
+        std::uint32_t total_available_count;
+    };
+
+    using FutureWatcherResult = FetchResult;
+
     std::shared_ptr<comms::net::client> client_;
     std::vector<risk::domain::currency> currencies_;
     QFutureWatcher<FutureWatcherResult>* watcher_;
+    std::uint32_t page_size_{100};
+    std::uint32_t total_available_count_{0};
+    bool is_fetching_{false};
 };
 
 }

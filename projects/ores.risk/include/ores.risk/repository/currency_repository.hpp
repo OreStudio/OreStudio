@@ -70,6 +70,24 @@ public:
     /**@}*/
 
     /**
+     * @brief Reads latest currencies with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @return Vector of currencies within the specified range
+     */
+    std::vector<domain::currency> read_latest(context ctx,
+                                               std::uint32_t offset,
+                                               std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active currencies.
+     * @param ctx Repository context with database connection
+     * @return Total number of currencies with valid_to == max_timestamp
+     */
+    std::uint32_t get_total_currency_count(context ctx);
+
+    /**
      * @brief Reads currencies at the supplied time point, possibly filtered by
      * ISO code.
      */

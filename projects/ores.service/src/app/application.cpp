@@ -40,13 +40,8 @@ utility::repository::context application::make_context(
             application_exception("Database configuration is required."));
     }
 
-    const auto& db(db_opts.value());
     context_factory::configuration cfg {
-        .user = db.user,
-        .password = db.password,
-        .host = db.host,
-        .database = db.database,
-        .port = db.port,
+        .database_options = db_opts.value(),
         .pool_size = 4,
         .num_attempts = 10,
         .wait_time_in_seconds = 1

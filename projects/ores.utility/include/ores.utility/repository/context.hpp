@@ -32,14 +32,20 @@ public:
     using connection_type = sqlgen::postgres::Connection;
     using connection_pool_type = sqlgen::Result<
         sqlgen::ConnectionPool<connection_type>>;
+    using single_connection_type = sqlgen::Result<
+        rfl::Ref<connection_type>>;
 
-    explicit context(connection_pool_type connection_pool)
-        : connection_pool_(std::move(connection_pool)) {}
+    explicit context(connection_pool_type connection_pool,
+                     single_connection_type single_connection)
+        : connection_pool_(std::move(connection_pool)),
+          single_connection_(std::move(single_connection)) {}
 
     connection_pool_type connection_pool() { return connection_pool_; }
+    single_connection_type single_connection() { return single_connection_; }
 
 private:
     connection_pool_type connection_pool_;
+    single_connection_type single_connection_;
 };
 
 }

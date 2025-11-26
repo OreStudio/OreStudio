@@ -26,8 +26,6 @@
 #include <sqlgen/postgres.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
-#include "ores.utility/repository/helpers.hpp"
-#include "ores.utility/repository/bitemporal_operations.hpp"
 #include "ores.accounts/domain/account.hpp"
 
 namespace ores::accounts::repository {
@@ -70,6 +68,21 @@ public:
     std::vector<domain::account> read_latest();
     std::vector<domain::account> read_latest(const boost::uuids::uuid& id);
     /**@}*/
+
+    /**
+     * @brief Reads latest accounts with pagination support.
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @return Vector of accounts within the specified range
+     */
+    std::vector<domain::account> read_latest(std::uint32_t offset,
+                                              std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active accounts.
+     * @return Total number of accounts with valid_to == max_timestamp
+     */
+    std::uint32_t get_total_account_count();
 
     /**
      * @brief Reads all accounts, possibly filtered by ID.

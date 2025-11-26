@@ -19,10 +19,11 @@
  */
 #include "ores.accounts/repository/account_repository.hpp"
 
-#include <format>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
-#include "ores.utility/repository/repository_exception.hpp"
+#include <sqlgen/postgres.hpp>
+#include "ores.utility/repository/helpers.hpp"
+#include "ores.utility/repository/bitemporal_operations.hpp"
 #include "ores.accounts/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.accounts/repository/account_entity.hpp"
 #include "ores.accounts/repository/account_mapper.hpp"
@@ -89,6 +90,58 @@ account_repository::read_latest(const boost::uuids::uuid& id) {
         [](const auto& entities) { return account_mapper::map(entities); },
         "ores.accounts.repository.account_repository",
         "Reading latest accounts by ID");
+}
+
+std::vector<domain::account>
+account_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts with offset: "
+                               << offset << " and limit: " << limit;
+
+    // TODO: sqlgen doesn't support OFFSET yet. For now, we only use LIMIT.
+    // This means pagination will not work correctly - it will always return
+    // the first N records. This needs to be fixed once sqlgen adds offset support.
+    if (offset != 0) {
+        BOOST_LOG_SEV(lg(), warn) << "OFFSET not supported by sqlgen yet. "
+                                   << "Ignoring offset parameter: " << offset;
+    }
+
+    static auto max(make_timestamp(MAX_TIMESTAMP));
+    const auto query = sqlgen::read<std::vector<account_entity>> |
+        where("valid_to"_c == max.value()) |
+        order_by("valid_from"_c.desc()) |
+        sqlgen::limit(limit);
+
+    return execute_read_query<account_entity, domain::account>(ctx_, query,
+        [](const auto& entities) { return account_mapper::map(entities); },
+        "ores.accounts.repository.account_repository",
+        "Reading latest accounts with pagination");
+}
+
+std::uint32_t account_repository::get_total_account_count() {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account count.";
+
+    static auto max(make_timestamp(MAX_TIMESTAMP));
+
+    // HACK: Using single connection instead of session because sqlgen sessions
+    // doesn't seem to support SELECT FROM with aggregations. Plain connections
+    // work fine. This is a temporary workaround until the sqlgen library is
+    // fixed. See: https://github.com/getml/sqlgen/issues/99
+    struct count_result {
+        long long count;
+    };
+
+    const auto query = sqlgen::select_from<account_entity>(
+        sqlgen::count().as<"count">()) |
+        where("valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = ctx_.single_connection()
+        .and_then(query);
+    ensure_success(r);
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active account count: " << count;
+    return count;
 }
 
 std::vector<domain::account> account_repository::read_all() {

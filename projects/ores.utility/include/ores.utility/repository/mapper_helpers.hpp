@@ -21,7 +21,6 @@
 #define ORES_UTILITY_REPOSITORY_MAPPER_HELPERS_HPP
 
 #include <vector>
-#include <ranges>
 #include <chrono>
 #include <iomanip>
 #include <sstream>

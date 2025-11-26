@@ -34,12 +34,13 @@ operator<<(std::ostream& s, const context_factory::configuration& v) {
 context context_factory::make_context(const configuration& cfg) {
     BOOST_LOG_SEV(lg(), debug) << "Creating context. Configuration: " << cfg;
 
+    const auto& db_opts = cfg.database_options;
     const auto credentials = sqlgen::postgres::Credentials {
-        .user = cfg.user,
-        .password = cfg.password.value(),
-        .host = cfg.host,
-        .dbname = cfg.database,
-        .port = cfg.port
+        .user = db_opts.user,
+        .password = db_opts.password.value(),
+        .host = db_opts.host,
+        .dbname = db_opts.database,
+        .port = db_opts.port
     };
 
     sqlgen::ConnectionPoolConfig pool_config {
@@ -48,8 +49,11 @@ context context_factory::make_context(const configuration& cfg) {
         .wait_time_in_seconds = cfg.wait_time_in_seconds
     };
 
-    context r(make_connection_pool<context::connection_type>(
-            pool_config, credentials));
+    auto pool = make_connection_pool<context::connection_type>(
+        pool_config, credentials);
+    auto single_conn = sqlgen::postgres::connect(credentials);
+
+    context r(std::move(pool), std::move(single_conn));
 
     BOOST_LOG_SEV(lg(), debug) << "Finished creating context.";
     return r;

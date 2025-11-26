@@ -47,13 +47,11 @@ using utility::repository::context_factory;
 using utility::environment::environment;
 
 context test_database_manager::make_admin_context() {
-    const auto opts = make_database_options();
+    auto opts = make_database_options();
+    opts.database = "postgres";  // Connect to admin database
+
     context_factory::configuration db_cfg{
-        .user = opts.user,
-        .password = opts.password,
-        .host = opts.host,
-        .database = "postgres",  // Connect to admin database
-        .port = opts.port,
+        .database_options = opts,
         .pool_size = 1,
         .num_attempts = 10,
         .wait_time_in_seconds = 1
@@ -65,11 +63,7 @@ context test_database_manager::make_admin_context() {
 context test_database_manager::make_context() {
     const auto opts = make_database_options();
     context_factory::configuration db_cfg{
-        .user = opts.user,
-        .password = opts.password,
-        .host = opts.host,
-        .database = opts.database,
-        .port = opts.port,
+        .database_options = opts,
         .pool_size = 4,
         .num_attempts = 10,
         .wait_time_in_seconds = 1

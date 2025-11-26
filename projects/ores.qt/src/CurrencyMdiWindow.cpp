@@ -61,6 +61,7 @@ CurrencyMdiWindow(std::shared_ptr<comms::net::client> client,
       verticalLayout_(new QVBoxLayout(this)),
       currencyTableView_(new QTableView(this)),
       toolBar_(new QToolBar(this)),
+      pagination_widget_(new PaginationWidget(this)),
       addAction_(new QAction("Add", this)),
       editAction_(new QAction("Edit", this)),
       deleteAction_(new QAction("Delete", this)),
@@ -140,15 +141,14 @@ CurrencyMdiWindow(std::shared_ptr<comms::net::client> client,
     toolBar_->addAction(exportXMLAction);
 
     verticalLayout_->addWidget(toolBar_);
-
-
     verticalLayout_->addWidget(currencyTableView_);
+    verticalLayout_->addWidget(pagination_widget_);
 
     currencyTableView_->setObjectName("currencyTableView");
     currencyTableView_->setAlternatingRowColors(true);
     currencyTableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     currencyTableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    currencyTableView_->resizeRowsToContents();
+    currencyTableView_->setWordWrap(false); // Prevent text wrapping in cells
 
     currencyTableView_->setModel(currencyModel_.get());
 
@@ -157,7 +157,11 @@ CurrencyMdiWindow(std::shared_ptr<comms::net::client> client,
 
     QHeaderView* verticalHeader(currencyTableView_->verticalHeader());
     QHeaderView* horizontalHeader(currencyTableView_->horizontalHeader());
-    verticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    // Use uniform row height instead of resizing to contents
+    verticalHeader->setDefaultSectionSize(24); // Fixed row height
+    verticalHeader->setSectionResizeMode(QHeaderView::Fixed);
+
     horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     // Connect signals
@@ -170,6 +174,29 @@ CurrencyMdiWindow(std::shared_ptr<comms::net::client> client,
     connect(currencyTableView_->selectionModel(),
         &QItemSelectionModel::selectionChanged,
             this, &CurrencyMdiWindow::onSelectionChanged);
+
+    // Connect pagination widget signals
+    connect(pagination_widget_, &PaginationWidget::page_size_changed,
+            this, [this](std::uint32_t size) {
+        BOOST_LOG_SEV(lg(), debug) << "Page size changed to: " << size;
+        currencyModel_->set_page_size(size);
+        currencyModel_->refresh(true); // Reload from start with new page size
+    });
+
+    connect(pagination_widget_, &PaginationWidget::load_all_requested,
+            this, [this]() {
+        BOOST_LOG_SEV(lg(), debug) << "Load all requested from pagination widget";
+        const auto total = currencyModel_->total_available_count();
+        if (total > 0 && total <= 1000) {
+            emit statusChanged("Loading all currencies...");
+            currencyModel_->set_page_size(total);
+            currencyModel_->refresh(true);
+        } else if (total > 1000) {
+            BOOST_LOG_SEV(lg(), warn) << "Total count " << total
+                                      << " exceeds maximum page size of 1000";
+            emit statusChanged("Cannot load all - too many records (max 1000)");
+        }
+    });
 
     updateActionStates();
 
@@ -202,11 +229,25 @@ void CurrencyMdiWindow::addNew() {
 }
 
 void CurrencyMdiWindow::onDataLoaded() {
-    const QString message = QString("Loaded %1 currencies")
-                              .arg(currencyModel_->rowCount());
+    const auto loaded = currencyModel_->rowCount();
+    const auto total = currencyModel_->total_available_count();
+
+    // Update pagination widget
+    pagination_widget_->update_state(loaded, total);
+
+    // Enable/disable Load All button based on whether there's more data
+    const bool has_more = loaded < total && total > 0 && total <= 1000;
+    BOOST_LOG_SEV(lg(), debug) << "onDataLoaded: loaded=" << loaded
+                               << ", total=" << total
+                               << ", has_more=" << has_more;
+    pagination_widget_->set_load_all_enabled(has_more);
+
+    const QString message = QString("Loaded %1 of %2 currencies")
+                              .arg(loaded)
+                              .arg(total);
     emit statusChanged(message);
     BOOST_LOG_SEV(lg(), debug) << "Currency data loaded successfully: "
-                             << currencyModel_->rowCount() << " currencies";
+                             << loaded << " of " << total << " currencies";
 
     // Auto-select first row if data is available and nothing is selected
     if (currencyModel_->rowCount() > 0 &&

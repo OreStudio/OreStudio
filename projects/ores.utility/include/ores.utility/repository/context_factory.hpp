@@ -24,6 +24,7 @@
 #include <string>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
+#include "ores.utility/database/database_options.hpp"
 
 namespace ores::utility::repository {
 
@@ -41,16 +42,8 @@ private:
 
 public:
     struct configuration {
-        /// Database user name.
-        std::string user;
-        /// Password for the user.
-        rfl::Skip<std::string> password;
-        /// Host to connect to.
-        std::string host;
-        /// Database to connect to.
-        std::string database;
-        /// Port the database is listening in on.
-        int port;
+        /// Database connection options.
+        database::database_options database_options;
         /// Number of connections in the pool.
         std::size_t pool_size;
         /// Number of retry attempts when acquiring a connection.

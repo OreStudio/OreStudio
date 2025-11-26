@@ -392,15 +392,25 @@ get_currency_history_response::deserialize(std::span<const std::byte> data) {
 
 
 std::vector<std::byte> get_currencies_request::serialize() const {
-    return {};
+    std::vector<std::byte> buffer;
+    writer::write_uint32(buffer, offset);
+    writer::write_uint32(buffer, limit);
+    return buffer;
 }
 
 std::expected<get_currencies_request, comms::protocol::error_code>
 get_currencies_request::deserialize(std::span<const std::byte> data) {
-    if (!data.empty()) {
-        return std::unexpected(comms::protocol::error_code::payload_too_large);
-    }
-    return get_currencies_request{};
+    get_currencies_request request;
+
+    auto offset_result = reader::read_uint32(data);
+    if (!offset_result) return std::unexpected(offset_result.error());
+    request.offset = *offset_result;
+
+    auto limit_result = reader::read_uint32(data);
+    if (!limit_result) return std::unexpected(limit_result.error());
+    request.limit = *limit_result;
+
+    return request;
 }
 
 std::ostream& operator<<(std::ostream& s, const get_currencies_request& v)
@@ -412,7 +422,10 @@ std::ostream& operator<<(std::ostream& s, const get_currencies_request& v)
 std::vector<std::byte> get_currencies_response::serialize() const {
     std::vector<std::byte> buffer;
 
-    // Write currency count
+    // Write total available count
+    writer::write_uint32(buffer, total_available_count);
+
+    // Write currency count in this response
     writer::write_uint32(buffer, static_cast<std::uint32_t>(currencies.size()));
 
     // Write each currency
@@ -439,7 +452,14 @@ std::expected<get_currencies_response, comms::protocol::error_code>
 get_currencies_response::deserialize(std::span<const std::byte> data) {
     get_currencies_response response;
 
-    // Read currency count
+    // Read total available count
+    auto total_result = reader::read_uint32(data);
+    if (!total_result) {
+        return std::unexpected(total_result.error());
+    }
+    response.total_available_count = *total_result;
+
+    // Read currency count in this response
     auto count_result = reader::read_uint32(data);
     if (!count_result) {
         return std::unexpected(count_result.error());

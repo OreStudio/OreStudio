@@ -20,6 +20,7 @@
 #include "ores.qt/ClientCurrencyModel.hpp"
 
 #include <algorithm>
+#include <unordered_set>
 #include <QtConcurrent>
 #include "ores.comms/protocol/frame.hpp"
 #include "ores.comms/protocol/message_types.hpp"
@@ -102,16 +103,40 @@ headerData(int section, Qt::Orientation orientation, int role) const {
     return {};
 }
 
-void ClientCurrencyModel::refresh() {
-    BOOST_LOG_SEV(lg(), debug) << "Calling refresh.";
+void ClientCurrencyModel::refresh(bool replace) {
+    BOOST_LOG_SEV(lg(), debug) << "Calling refresh (replace=" << replace << ").";
+
+    if (is_fetching_) {
+        BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring refresh request.";
+        return;
+    }
+
+    // If replacing, start from offset 0; otherwise append to existing data
+    const std::uint32_t offset = replace ? 0 : static_cast<std::uint32_t>(currencies_.size());
+
+    if (replace) {
+        // Clear existing data when replacing
+        if (!currencies_.empty()) {
+            beginResetModel();
+            currencies_.clear();
+            total_available_count_ = 0;
+            endResetModel();
+        }
+    }
+
+    is_fetching_ = true;
     QPointer<ClientCurrencyModel> self = this;
+    const std::uint32_t page_size = page_size_;
 
     QFuture<FutureWatcherResult> future =
-        QtConcurrent::run([self]() -> FutureWatcherResult {
-            BOOST_LOG_SEV(lg(), debug) << "Making a currencies request.";
-            if (!self) return {false, {}};
+        QtConcurrent::run([self, offset, page_size]() -> FutureWatcherResult {
+            BOOST_LOG_SEV(lg(), debug) << "Making a currencies request with offset="
+                                       << offset << ", limit=" << page_size;
+            if (!self) return {false, {}, 0};
 
             risk::messaging::get_currencies_request request;
+            request.offset = offset;
+            request.limit = page_size;
             auto payload = request.serialize();
 
             frame request_frame(message_type::get_currencies_request,
@@ -122,7 +147,7 @@ void ClientCurrencyModel::refresh() {
                 self->client_->send_request_sync(std::move(request_frame));
 
             if (!response_result)
-                return {false, {}};
+                return {false, {}, 0};
 
             BOOST_LOG_SEV(lg(), debug) << "Received a currencies response.";
             auto response =
@@ -131,10 +156,15 @@ void ClientCurrencyModel::refresh() {
 
             if (!response) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to deserialize currencies response";
-                return {false, {}};
+                return {false, {}, 0};
             }
 
-            return {true, std::move(response->currencies)};
+            BOOST_LOG_SEV(lg(), debug) << "Received " << response->currencies.size()
+                                       << " currencies, total available: "
+                                       << response->total_available_count;
+
+            return {true, std::move(response->currencies),
+                    response->total_available_count};
         });
 
      watcher_->setFuture(future);
@@ -142,16 +172,57 @@ void ClientCurrencyModel::refresh() {
 
 void ClientCurrencyModel::onCurrenciesLoaded() {
     BOOST_LOG_SEV(lg(), debug) << "On currencies loaded event.";
-    auto [success, currencies] = watcher_->result();
+    is_fetching_ = false;
 
-    if (success) {
-        std::ranges::sort(currencies, [](auto const& a, auto const& b) {
-            return a.name < b.name;
-        });
+    auto result = watcher_->result();
+    if (result.success) {
+        total_available_count_ = result.total_available_count;
 
-        beginResetModel();
-        currencies_ = std::move(currencies);
-        endResetModel();
+        // Build set of existing ISO codes for duplicate detection
+        std::unordered_set<std::string> existing_codes;
+        for (const auto& curr : currencies_) {
+            existing_codes.insert(curr.iso_code);
+        }
+
+        // Filter out duplicates from new results
+        std::vector<risk::domain::currency> new_currencies;
+        for (auto& curr : result.currencies) {
+            if (existing_codes.find(curr.iso_code) == existing_codes.end()) {
+                new_currencies.push_back(std::move(curr));
+                existing_codes.insert(curr.iso_code);
+            } else {
+                BOOST_LOG_SEV(lg(), trace) << "Skipping duplicate currency: "
+                                           << curr.iso_code;
+            }
+        }
+
+        const int old_size = static_cast<int>(currencies_.size());
+        const int new_count = static_cast<int>(new_currencies.size());
+
+        if (new_count > 0) {
+            // Append new data to existing currencies
+            beginInsertRows(QModelIndex(), old_size, old_size + new_count - 1);
+            currencies_.insert(currencies_.end(),
+                std::make_move_iterator(new_currencies.begin()),
+                std::make_move_iterator(new_currencies.end()));
+            endInsertRows();
+
+            // Sort all currencies by name
+            std::ranges::sort(currencies_, [](auto const& a, auto const& b) {
+                return a.name < b.name;
+            });
+
+            // Notify that all data may have changed due to sorting
+            if (old_size > 0) {
+                emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1));
+            }
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " new currencies "
+                                  << "(received " << result.currencies.size()
+                                  << ", filtered " << (result.currencies.size() - new_count)
+                                  << " duplicates). Total in model: " << currencies_.size()
+                                  << ", Total available: " << total_available_count_;
 
         emit dataLoaded();
     } else {
@@ -169,6 +240,46 @@ const risk::domain::currency* ClientCurrencyModel::getCurrency(int row) const {
 
 std::vector<risk::domain::currency> ClientCurrencyModel::getCurrencies() const {
     return currencies_;
+}
+
+bool ClientCurrencyModel::canFetchMore(const QModelIndex& parent) const {
+    if (parent.isValid())
+        return false;
+
+    // NOTE: Automatic fetch-more is disabled because sqlgen doesn't support
+    // OFFSET yet (see repository implementation). Without OFFSET, subsequent
+    // fetches return the same first N records, causing duplicates.
+    // Users can use "Load All" button to load all records in one request.
+
+    // Only allow fetching if we have loaded fewer records than requested page size
+    // This handles the initial load, but prevents auto-pagination
+    const bool has_more = currencies_.size() < page_size_ &&
+                          currencies_.size() < total_available_count_;
+
+    BOOST_LOG_SEV(lg(), trace) << "canFetchMore: " << has_more
+                               << " (loaded: " << currencies_.size()
+                               << ", page_size: " << page_size_
+                               << ", available: " << total_available_count_ << ")";
+    return has_more && !is_fetching_;
+}
+
+void ClientCurrencyModel::fetchMore(const QModelIndex& parent) {
+    if (parent.isValid() || is_fetching_)
+        return;
+
+    BOOST_LOG_SEV(lg(), debug) << "fetchMore called, loading next page.";
+    refresh(false); // false = append, don't replace
+}
+
+void ClientCurrencyModel::set_page_size(std::uint32_t size) {
+    if (size == 0 || size > 1000) {
+        BOOST_LOG_SEV(lg(), warn) << "Invalid page size: " << size
+                                  << ". Must be between 1 and 1000. Using default: 100";
+        page_size_ = 100;
+    } else {
+        page_size_ = size;
+        BOOST_LOG_SEV(lg(), info) << "Page size set to: " << page_size_;
+    }
 }
 
 }

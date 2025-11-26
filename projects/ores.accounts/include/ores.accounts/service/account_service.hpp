@@ -87,6 +87,23 @@ public:
     std::vector<domain::account> list_accounts();
 
     /**
+     * @brief Lists accounts with pagination support.
+     *
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @return Vector of accounts for the requested page
+     */
+    std::vector<domain::account> list_accounts(std::uint32_t offset,
+                                                std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active accounts.
+     *
+     * @return Total number of active accounts
+     */
+    std::uint32_t get_total_account_count();
+
+    /**
      * @brief Lists all login info records in the system.
      *
      * @return Vector of all login info records

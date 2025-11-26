@@ -98,13 +98,31 @@ handle_get_currencies_request(std::span<const std::byte> payload) {
         co_return std::unexpected(request_result.error());
     }
 
-    // Retrieve currencies from repository
-    auto currencies = currency_repo_.read_latest(ctx_);
+    const auto& request = *request_result;
+
+    // Validate pagination parameters
+    constexpr std::uint32_t max_limit = 1000;
+    if (request.limit == 0 || request.limit > max_limit) {
+        BOOST_LOG_SEV(lg(), warn) << "Invalid limit: " << request.limit
+                                  << ". Must be between 1 and " << max_limit;
+        co_return std::unexpected(comms::protocol::error_code::invalid_request);
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Fetching currencies with offset: "
+                               << request.offset << ", limit: " << request.limit;
+
+    // Retrieve paginated currencies and total count from repository
+    auto currencies = currency_repo_.read_latest(ctx_, request.offset, request.limit);
+    auto total_count = currency_repo_.get_total_currency_count(ctx_);
+
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << currencies.size()
-                              << " currencies";
+                              << " currencies (total available: " << total_count << ")";
 
     // Create and serialize response
-    get_currencies_response response{std::move(currencies)};
+    get_currencies_response response{
+        .currencies = std::move(currencies),
+        .total_available_count = total_count
+    };
     co_return response.serialize();
 }
 

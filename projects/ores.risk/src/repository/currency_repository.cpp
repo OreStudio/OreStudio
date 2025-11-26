@@ -19,11 +19,9 @@
  */
 #include "ores.risk/repository/currency_repository.hpp"
 
-#include <format>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include "ores.utility/repository/repository_exception.hpp"
 #include "ores.risk/domain/currency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.risk/repository/currency_mapper.hpp"
 #include "ores.risk/repository/currency_entity.hpp"
@@ -92,6 +90,59 @@ currency_repository::read_latest(context ctx, const std::string& iso_code) {
         [](const auto& entities) { return currency_mapper::map(entities); },
         "ores.risk.repository.currency_repository",
         "Reading latest currencies by ISO code");
+}
+
+std::vector<domain::currency>
+currency_repository::read_latest(context ctx, std::uint32_t offset,
+                                 std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest currencies with offset: "
+                               << offset << " and limit: " << limit;
+
+    // TODO: sqlgen doesn't support OFFSET yet. For now, we only use LIMIT.
+    // This means pagination will not work correctly - it will always return
+    // the first N records. This needs to be fixed once sqlgen adds offset support.
+    if (offset != 0) {
+        BOOST_LOG_SEV(lg(), warn) << "OFFSET not supported by sqlgen yet. "
+                                   << "Ignoring offset parameter: " << offset;
+    }
+
+    static auto max(make_timestamp(MAX_TIMESTAMP));
+    const auto query = sqlgen::read<std::vector<currency_entity>> |
+        where("valid_to"_c == max.value()) |
+        order_by("valid_from"_c.desc()) |
+        sqlgen::limit(limit);
+
+    return execute_read_query<currency_entity, domain::currency>(ctx, query,
+        [](const auto& entities) { return currency_mapper::map(entities); },
+        "ores.risk.repository.currency_repository",
+        "Reading latest currencies with pagination");
+}
+
+std::uint32_t currency_repository::get_total_currency_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency count";
+
+    static auto max(make_timestamp(MAX_TIMESTAMP));
+
+    // HACK: Using single connection instead of session because sqlgen sessions
+    // doesn't seem to support SELECT FROM with aggregations. Plain connections
+    // work fine. This is a temporary workaround until the sqlgen library is
+    // fixed. See: https://github.com/getml/sqlgen/issues/99
+    struct count_result {
+        long long count;
+    };
+
+    const auto query = sqlgen::select_from<currency_entity>(
+        sqlgen::count().as<"count">()) |
+        where("valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = ctx.single_connection()
+        .and_then(query);
+    ensure_success(r);
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active currency count: " << count;
+    return count;
 }
 
 std::vector<domain::currency>

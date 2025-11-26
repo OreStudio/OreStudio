@@ -19,11 +19,9 @@
  */
 #include "ores.accounts/repository/login_info_repository.hpp"
 
-#include <format>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/asio/ip/address.hpp>
-#include "ores.utility/repository/repository_exception.hpp"
 #include "ores.accounts/domain/login_info_json_io.hpp" // IWYU pragma: keep.
 #include "ores.accounts/repository/login_info_mapper.hpp"
 #include "ores.accounts/repository/login_info_entity.hpp"

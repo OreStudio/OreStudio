@@ -93,13 +93,22 @@ struct create_account_response final {
 std::ostream& operator<<(std::ostream& s, const create_account_response& v);
 
 /**
- * @brief Request to retrieve all accounts.
+ * @brief Request to retrieve accounts with pagination support.
  *
- * This request has no parameters - it retrieves all accounts in the system.
+ * Supports pagination through offset and limit parameters.
  */
 struct list_accounts_request final {
+    /// Number of records to skip (0-based)
+    std::uint32_t offset = 0;
+    /// Maximum number of records to return
+    std::uint32_t limit = 100;
+
     /**
      * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 4 bytes: offset (uint32_t)
+     * - 4 bytes: limit (uint32_t)
      */
     std::vector<std::byte> serialize() const;
 
@@ -113,16 +122,19 @@ struct list_accounts_request final {
 std::ostream& operator<<(std::ostream& s, const list_accounts_request& v);
 
 /**
- * @brief Response containing all accounts.
+ * @brief Response containing accounts with pagination metadata.
  */
 struct list_accounts_response final {
     std::vector<domain::account> accounts;
+    /// Total number of accounts available (not just in this page)
+    std::uint32_t total_available_count = 0;
 
     /**
      * @brief Serialize response to bytes.
      *
      * Format:
-     * - 4 bytes: count (number of accounts)
+     * - 4 bytes: total_available_count (uint32_t)
+     * - 4 bytes: count (number of accounts in this response)
      * - For each account:
      *   - 4 bytes: version
      *   - 2 bytes: modified_by length

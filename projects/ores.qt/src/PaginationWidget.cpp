@@ -18,13 +18,20 @@
  *
  */
 #include "ores.qt/PaginationWidget.hpp"
+#include "ores.qt/IconUtils.hpp"
 
 namespace ores::qt {
+
+using namespace ores::utility::log;
 
 PaginationWidget::PaginationWidget(QWidget* parent)
     : QWidget(parent),
       info_label_(new QLabel(this)),
       page_size_combo_(new QComboBox(this)),
+      first_button_(new QPushButton(this)),
+      prev_button_(new QPushButton(this)),
+      next_button_(new QPushButton(this)),
+      last_button_(new QPushButton(this)),
       load_all_button_(new QPushButton("Load All", this)),
       layout_(new QHBoxLayout(this)) {
 
@@ -39,13 +46,49 @@ PaginationWidget::PaginationWidget(QWidget* parent)
     page_size_combo_->addItem("500 per page", 500);
     page_size_combo_->setCurrentIndex(2); // Default to 100
 
+    // Configure navigation buttons with icons
+    const QColor disabledIconColor(100, 100, 100); // Gray for disabled state
+    const QColor iconColor(220, 220, 220);
+
+    // NOTE: Disabled until sqlgen adds OFFSET support
+    const QString disabled_tooltip =
+        "Page navigation disabled: backend doesn't support OFFSET yet.\n"
+        "Use 'Load All' to load all records at once (max 1000).";
+
+    first_button_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_previous_20_regular.svg", disabledIconColor));
+    first_button_->setToolTip("First page - " + disabled_tooltip);
+    first_button_->setEnabled(false);
+
+    prev_button_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_left_20_regular.svg", disabledIconColor));
+    prev_button_->setToolTip("Previous page - " + disabled_tooltip);
+    prev_button_->setEnabled(false);
+
+    next_button_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_right_20_regular.svg", disabledIconColor));
+    next_button_->setToolTip("Next page - " + disabled_tooltip);
+    next_button_->setEnabled(false);
+
+    last_button_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_next_20_regular.svg", disabledIconColor));
+    last_button_->setToolTip("Last page - " + disabled_tooltip);
+    last_button_->setEnabled(false);
+
     // Configure load all button
-    load_all_button_->setToolTip("Load all remaining records");
+    load_all_button_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_download_20_regular.svg", iconColor));
+    load_all_button_->setToolTip("Load all remaining records (max 1000)");
     load_all_button_->setEnabled(false);
 
     // Setup layout
     layout_->addWidget(info_label_);
     layout_->addStretch();
+    layout_->addWidget(first_button_);
+    layout_->addWidget(prev_button_);
+    layout_->addWidget(next_button_);
+    layout_->addWidget(last_button_);
+    layout_->addWidget(new QLabel("  ", this)); // Spacer
     layout_->addWidget(new QLabel("Page size:", this));
     layout_->addWidget(page_size_combo_);
     layout_->addWidget(load_all_button_);
@@ -58,6 +101,12 @@ PaginationWidget::PaginationWidget(QWidget* parent)
             this, &PaginationWidget::on_page_size_changed);
     connect(load_all_button_, &QPushButton::clicked,
             this, &PaginationWidget::on_load_all_clicked);
+
+    // Navigation buttons would connect here when OFFSET is supported
+    // connect(first_button_, &QPushButton::clicked, ...);
+    // connect(prev_button_, &QPushButton::clicked, ...);
+    // connect(next_button_, &QPushButton::clicked, ...);
+    // connect(last_button_, &QPushButton::clicked, ...);
 }
 
 void PaginationWidget::update_state(std::uint32_t loaded_count,
@@ -78,9 +127,8 @@ void PaginationWidget::update_state(std::uint32_t loaded_count,
     }
     info_label_->setText(info_text);
 
-    // Enable/disable load all button
-    const bool has_more = loaded_count < total_count && total_count > 0;
-    load_all_button_->setEnabled(has_more);
+    BOOST_LOG_SEV(lg(), debug) << "update_state: loaded=" << loaded_count
+                               << ", total=" << total_count;
 }
 
 std::uint32_t PaginationWidget::page_size() const {
@@ -95,7 +143,16 @@ void PaginationWidget::on_page_size_changed(int index) {
 }
 
 void PaginationWidget::on_load_all_clicked() {
+    BOOST_LOG_SEV(lg(), debug) << "Load all button clicked";
     emit load_all_requested();
+}
+
+void PaginationWidget::set_load_all_enabled(bool enabled) {
+    BOOST_LOG_SEV(lg(), debug) << "set_load_all_enabled(" << enabled
+                               << "), button_was_enabled=" << load_all_button_->isEnabled();
+    load_all_button_->setEnabled(enabled);
+    BOOST_LOG_SEV(lg(), debug) << "After setEnabled(" << enabled
+                               << "): button_is_enabled=" << load_all_button_->isEnabled();
 }
 
 }

@@ -148,7 +148,7 @@ CurrencyMdiWindow(std::shared_ptr<comms::net::client> client,
     currencyTableView_->setAlternatingRowColors(true);
     currencyTableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     currencyTableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    currencyTableView_->resizeRowsToContents();
+    currencyTableView_->setWordWrap(false); // Prevent text wrapping in cells
 
     currencyTableView_->setModel(currencyModel_.get());
 
@@ -157,7 +157,11 @@ CurrencyMdiWindow(std::shared_ptr<comms::net::client> client,
 
     QHeaderView* verticalHeader(currencyTableView_->verticalHeader());
     QHeaderView* horizontalHeader(currencyTableView_->horizontalHeader());
-    verticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    // Use uniform row height instead of resizing to contents
+    verticalHeader->setDefaultSectionSize(24); // Fixed row height
+    verticalHeader->setSectionResizeMode(QHeaderView::Fixed);
+
     horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     // Connect signals
@@ -181,11 +185,10 @@ CurrencyMdiWindow(std::shared_ptr<comms::net::client> client,
 
     connect(pagination_widget_, &PaginationWidget::load_all_requested,
             this, [this]() {
-        BOOST_LOG_SEV(lg(), debug) << "Load all requested";
+        BOOST_LOG_SEV(lg(), debug) << "Load all requested from pagination widget";
         const auto total = currencyModel_->total_available_count();
         if (total > 0 && total <= 1000) {
             emit statusChanged("Loading all currencies...");
-            // Set page size to total count and refresh
             currencyModel_->set_page_size(total);
             currencyModel_->refresh(true);
         } else if (total > 1000) {
@@ -231,6 +234,13 @@ void CurrencyMdiWindow::onDataLoaded() {
 
     // Update pagination widget
     pagination_widget_->update_state(loaded, total);
+
+    // Enable/disable Load All button based on whether there's more data
+    const bool has_more = loaded < total && total > 0 && total <= 1000;
+    BOOST_LOG_SEV(lg(), debug) << "onDataLoaded: loaded=" << loaded
+                               << ", total=" << total
+                               << ", has_more=" << has_more;
+    pagination_widget_->set_load_all_enabled(has_more);
 
     const QString message = QString("Loaded %1 of %2 currencies")
                               .arg(loaded)

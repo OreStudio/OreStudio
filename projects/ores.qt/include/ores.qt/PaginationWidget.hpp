@@ -25,6 +25,7 @@
 #include <QPushButton>
 #include <QComboBox>
 #include <QHBoxLayout>
+#include "ores.utility/log/make_logger.hpp"
 
 namespace ores::qt {
 
@@ -36,6 +37,13 @@ namespace ores::qt {
  */
 class PaginationWidget : public QWidget {
     Q_OBJECT
+
+private:
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger("ores.qt.pagination_widget");
+        return instance;
+    }
 
 public:
     explicit PaginationWidget(QWidget* parent = nullptr);
@@ -54,6 +62,13 @@ public:
      * @return The number of records per page
      */
     std::uint32_t page_size() const;
+
+    /**
+     * @brief Enable or disable the Load All button.
+     *
+     * @param enabled Whether to enable the button
+     */
+    void set_load_all_enabled(bool enabled);
 
 signals:
     /**
@@ -75,6 +90,10 @@ private slots:
 private:
     QLabel* info_label_;
     QComboBox* page_size_combo_;
+    QPushButton* first_button_;
+    QPushButton* prev_button_;
+    QPushButton* next_button_;
+    QPushButton* last_button_;
     QPushButton* load_all_button_;
     QHBoxLayout* layout_;
 

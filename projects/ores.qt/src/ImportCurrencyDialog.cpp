@@ -81,8 +81,12 @@ void ImportCurrencyDialog::setupUI() {
     auto* selectionLayout = new QHBoxLayout();
     selectAllCheckbox_ = new QCheckBox("Select All");
     selectAllCheckbox_->setChecked(true);
-    connect(selectAllCheckbox_, &QCheckBox::checkStateChanged,
+    // Using stateChanged for Qt 6.x compatibility (checkStateChanged added in 6.7)
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
+    connect(selectAllCheckbox_, &QCheckBox::stateChanged,
             this, &ImportCurrencyDialog::onSelectAllChanged);
+    QT_WARNING_POP
     selectionLayout->addWidget(selectAllCheckbox_);
 
     selectionCountLabel_ = new QLabel();
@@ -154,8 +158,12 @@ void ImportCurrencyDialog::populateTable() {
 
         auto* checkBox = new QCheckBox();
         checkBox->setProperty("row", static_cast<int>(i));
-        connect(checkBox, &QCheckBox::checkStateChanged,
+        // Using stateChanged for Qt 6.x compatibility (checkStateChanged added in 6.7)
+        QT_WARNING_PUSH
+        QT_WARNING_DISABLE_DEPRECATED
+        connect(checkBox, &QCheckBox::stateChanged,
                 this, &ImportCurrencyDialog::onCurrencyCheckChanged);
+        QT_WARNING_POP
 
         // If currency is invalid, disable and uncheck the checkbox
         if (!is_valid) {

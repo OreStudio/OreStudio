@@ -139,16 +139,16 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli accounts add --username admin3 --password 123 --email \
-  admin3@example.com --is-admin 1 --modified-by system ${log_args} ${db_args}
+./ores.cli accounts add --username admin8 --password 123 --email \
+  admin8@example.com --is-admin 1 --modified-by system ${log_args} ${db_args}
 #+END_SRC
 
 #+RESULTS:
 #+begin_src json
-Successfully added account: admin3 (ID: e5c1b08b-e781-45dc-880e-a3c04526737d)
+System is currently in bootstrap mode.
+Successfully added account: admin8 (ID: d9039936-bf0f-405c-a362-25f3550dad81)
+System exited bootstrap mode.
 #+end_src
-
-
 
 ** Currencies
 

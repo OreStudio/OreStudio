@@ -18,29 +18,29 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-27 Thu 17:25], for Thursday, November 27, 2025.
+#+CAPTION: Clock summary at [2025-11-27 Thu 18:00], for Thursday, November 27, 2025.
 |       | <75>                                        |        |      |      |       |
 | Tags  | Headline                                    | Time   |      |      |     % |
 |-------+---------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                | *5:16* |      |      | 100.0 |
+|       | *Total time*                                | *5:25* |      |      | 100.0 |
 |-------+---------------------------------------------+--------+------+------+-------|
-|       | Stories                                     | 5:16   |      |      | 100.0 |
-|       | Active                                      |        | 5:16 |      | 100.0 |
-| agile | Sprint and product backlog refinement       |        |      | 0:22 |   7.0 |
-| code  | Implement authentication bootstrap workflow |        |      | 3:43 |  70.6 |
-| infra | OCR scan notebooks for this sprint          |        |      | 1:11 |  22.5 |
+|       | Stories                                     | 5:25   |      |      | 100.0 |
+|       | Active                                      |        | 5:25 |      | 100.0 |
+| agile | Sprint and product backlog refinement       |        |      | 0:22 |   6.8 |
+| code  | Implement authentication bootstrap workflow |        |      | 3:52 |  71.4 |
+| infra | OCR scan notebooks for this sprint          |        |      | 1:11 |  21.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-27 Thu 17:25]
+#+CAPTION: Clock summary at [2025-11-27 Thu 18:00]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *62:38* |       |       | 100.0 |
+|       | *Total time*                                            | *62:47* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 62:38   |       |       | 100.0 |
-|       | Active                                                  |         | 62:38 |       | 100.0 |
+|       | Stories                                                 | 62:47   |       |       | 100.0 |
+|       | Active                                                  |         | 62:47 |       | 100.0 |
 | agile | Sprint and product backlog refinement                   |         |       |  3:21 |   5.3 |
 | infra | Add AI generated sprint summary                         |         |       |  1:38 |   2.6 |
 | infra | Add skill to generate release notes                     |         |       |  0:27 |   0.7 |
@@ -64,8 +64,8 @@
 | code  | Implement basic XML import XML in Qt                    |         |       |  2:35 |   4.1 |
 | code  | Add pagination support                                  |         |       |  6:02 |   9.6 |
 | code  | Implement import dialog for XML import in Qt            |         |       |  1:34 |   2.5 |
-| code  | Implement authentication bootstrap workflow             |         |       |  3:43 |   5.9 |
-| infra | OCR scan notebooks for this sprint                      |         |       | 11:15 |  18.0 |
+| code  | Implement authentication bootstrap workflow             |         |       |  3:52 |   6.2 |
+| infra | OCR scan notebooks for this sprint                      |         |       | 11:15 |  17.9 |
 | infra | Troubleshoot skills in claude                           |         |       |  0:34 |   0.9 |
 #+end:
 
@@ -2488,6 +2488,7 @@ fail.
 
 *** COMPLETED Implement authentication bootstrap workflow              :code:
     :LOGBOOK:
+    CLOCK: [2025-11-27 Thu 17:50]--[2025-11-27 Thu 17:59] =>  0:09
     CLOCK: [2025-11-27 Thu 16:37]--[2025-11-27 Thu 17:23] =>  0:46
     CLOCK: [2025-11-27 Thu 16:31]--[2025-11-27 Thu 16:37] =>  0:06
     CLOCK: [2025-11-27 Thu 13:40]--[2025-11-27 Thu 15:47] =>  2:07
@@ -2576,6 +2577,87 @@ Once the system is in **"Secure Mode"**:
   fully public).
 #+end_src
 
+Implementation Plan:
+
+**** DONE Phase 1: Domain Layer (Password & Bootstrap Services)
+     CLOSED: [2025-11-27 Thu]
+
+- [X] Create =password_policy_validator= class in =ores.accounts/security=
+  - Validates OWASP password requirements (12+ chars, mixed case, digits, special chars)
+  - Optional enforcement flag for testing
+- [X] Create =bootstrap_mode_service= class in =ores.accounts/service=
+  - Manages bootstrap mode state transitions
+  - Checks for admin account existence
+  - Uses =system.bootstrap_mode= feature flag
+- [X] Add unit tests for password validation (19 test cases)
+- [X] Create SQL migration script for bootstrap flag
+
+**** DONE Phase 2: Database Setup
+     CLOSED: [2025-11-27 Thu]
+
+- [X] Create =bootstrap_mode_setup.sql= for initializing bootstrap flag
+- [X] Create scripts for toggling password validation feature flag
+- [X] Add =system.disable_password_validation= feature flag for testing
+
+**** DONE Phase 3: Protocol Layer (Message Structures)
+     CLOSED: [2025-11-27 Thu]
+
+- [X] Bump protocol version from 4.0 to 5.0 (breaking change)
+- [X] Add message types to =message_types.hpp=:
+  - =create_initial_admin_request= (0x200F)
+  - =create_initial_admin_response= (0x2010)
+  - =bootstrap_status_request= (0x2011)
+  - =bootstrap_status_response= (0x2012)
+- [X] Add error codes:
+  - =bootstrap_mode_only= (0x000D)
+  - =bootstrap_mode_forbidden= (0x000E)
+  - =weak_password= (0x000F)
+  - =not_localhost= (0x0010)
+- [X] Implement serialization/deserialization in =protocol.cpp=
+
+**** DONE Phase 4: Service Layer (Enforcement Logic)
+     CLOSED: [2025-11-27 Thu]
+
+- [X] Add bootstrap flag to =utility::repository::context=
+  - =set_bootstrap_mode(bool)= and =is_in_bootstrap_mode()= methods
+- [X] Update =application.cpp= to set bootstrap flag at startup
+- [X] Update =accounts_message_handler= to check bootstrap mode
+  - Block all operations except bootstrap endpoints when in bootstrap mode
+  - Implement =is_localhost()= helper
+  - Implement =handle_create_initial_admin_request()=
+  - Implement =handle_bootstrap_status_request()=
+- [X] Update =risk_message_handler= to block operations in bootstrap mode
+- [X] Remove circular dependency (risk no longer depends on accounts)
+
+**** DONE Phase 5: Service Integration (Logging & Startup)
+     CLOSED: [2025-11-27 Thu]
+
+- [X] Add prominent bootstrap mode logging in =application.cpp=
+  - Warning banners when in bootstrap mode
+  - Info messages in secure mode
+  - Shutdown logging showing current mode
+- [X] Initialize bootstrap state before starting server
+
+**** DONE Phase 6: CLI Integration
+     CLOSED: [2025-11-27 Thu]
+
+- [X] Add password validation to CLI =add_account()= command
+- [X] Check feature flag for validation enforcement
+- [X] Exit bootstrap mode when first admin created via CLI
+- [X] Add clear logging of bootstrap mode transitions
+
+**** DONE Phase 7: Error Handling & User Experience
+     CLOSED: [2025-11-27 Thu]
+
+- [X] Add user-friendly error messages for bootstrap error codes in =session.cpp=
+- [X] Update Qt client to handle =error_response= frames properly
+- [X] Display meaningful messages when operations blocked in bootstrap mode
+
+Known Limitations:
+
+- Bootstrap mode flag requires service restart to take effect after admin creation
+- This will be addressed in future "Feature Flags Subsystem" story
+
 Links:
 
 - [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
@@ -2607,6 +2689,57 @@ Links:
 - [[https://code.claude.com/docs/en/skills][Claude: Agent Skills]]
 - [[https://www.reddit.com/r/ClaudeCode/comments/1oywsa1/claude_code_skills_activate_20_of_the_time_heres/][reddit: Claude Code skills activate 20% of the time. Here's how I got to 84%.]]
 - [[https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably][How to Make Claude Code Skills Activate Reliably]]
+
+*** Add screen in qt to exit bootstrap mode                            :code:
+
+As per claude:
+
+The create_initial_admin_request message type serves several important purposes
+that differentiate it from the CLI and REPL approaches:
+
+Why We Need create_initial_admin_request
+
+  1. Network-accessible bootstrap flow
+  - Allows remote initial setup from localhost without requiring shell/CLI access
+  to the server
+  - Enables a web-based "first-run" setup experience (like many web applications)
+  - The Qt client can provide a proper UI for initial admin account creation
+
+  2. Localhost-only security enforcement
+  - The endpoint enforces that it can only be called from localhost (127.0.0.1 or
+  ::1) at line
+  projects/ores.accounts/src/messaging/accounts_message_handler.cpp:320
+  - Provides network-accessible bootstrap with security guarantees
+  - Prevents remote bootstrap attacks
+
+  3. Atomic mode transition
+  - The endpoint both creates the admin AND exits bootstrap mode in a single atomic
+   operation (lines 362-367 in accounts_message_handler.cpp)
+  - Guarantees consistency - can't create admin without exiting bootstrap mode
+
+  4. Service-layer validation
+  - Goes through full service layer with password validation and business logic
+  - The CLI is essentially an "administrative backdoor" that bypasses the service
+  layer and writes directly to the database
+
+  5. Protocol-compliant workflow
+  - Clients speaking the binary protocol need a proper bootstrap endpoint
+  - REPL create_account_request is blocked in bootstrap mode (by enforcement logic)
+  - create_initial_admin_request is the only endpoint that works in bootstrap mode
+
+  The Distinction
+
+  - CLI approach: Administrative backdoor, direct database access, bypasses all
+  service logic
+  - create_initial_admin_request: Proper network-accessible bootstrap flow with
+  localhost restriction and atomic mode transition
+  - REPL create_account_request: Normal account creation, blocked in bootstrap mode
+
+  The create_initial_admin_request enables a proper "first-run experience" for
+  clients connecting via the network protocol, while maintaining security through
+  localhost-only access.
+
+
 
 *** Cli clean-ups                                                      :code:
 

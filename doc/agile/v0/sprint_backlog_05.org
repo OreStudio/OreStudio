@@ -18,58 +18,61 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-26 Wed 23:30], for Wednesday, November 26, 2025.
-|       | <75>                                         |        |      |      |       |
-| Tags  | Headline                                     | Time   |      |      |     % |
-|-------+----------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                 | *7:38* |      |      | 100.0 |
-|-------+----------------------------------------------+--------+------+------+-------|
-|       | Stories                                      | 7:38   |      |      | 100.0 |
-|       | Active                                       |        | 7:38 |      | 100.0 |
-| code  | Add pagination support                       |        |      | 6:02 |  79.0 |
-| code  | Implement import dialog for XML import in Qt |        |      | 0:11 |   2.4 |
-| infra | OCR scan notebooks for this sprint           |        |      | 1:25 |  18.6 |
+#+CAPTION: Clock summary at [2025-11-27 Thu 13:13], for Thursday, November 27, 2025.
+|       | <75>                                        |        |      |      |       |
+| Tags  | Headline                                    | Time   |      |      |     % |
+|-------+---------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                | *2:17* |      |      | 100.0 |
+|-------+---------------------------------------------+--------+------+------+-------|
+|       | Stories                                     | 2:17   |      |      | 100.0 |
+|       | Active                                      |        | 2:17 |      | 100.0 |
+| agile | Sprint and product backlog refinement       |        |      | 0:22 |  16.1 |
+| infra | OCR scan notebooks for this sprint          |        |      | 1:11 |  51.8 |
+| code  | Implement authentication bootstrap workflow |        |      | 0:44 |  32.1 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-26 Wed 23:30]
+#+CAPTION: Clock summary at [2025-11-27 Thu 13:13]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *56:58* |       |       | 100.0 |
+|       | *Total time*                                            | *59:39* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 56:58   |       |       | 100.0 |
-|       | Active                                                  |         | 56:58 |       | 100.0 |
-| agile | Sprint and product backlog refinement                   |         |       |  2:35 |   4.5 |
-| infra | Add AI generated sprint summary                         |         |       |  1:38 |   2.9 |
+|       | Stories                                                 | 59:39   |       |       | 100.0 |
+|       | Active                                                  |         | 59:39 |       | 100.0 |
+| agile | Sprint and product backlog refinement                   |         |       |  3:21 |   5.6 |
+| infra | Add AI generated sprint summary                         |         |       |  1:38 |   2.7 |
 | infra | Add skill to generate release notes                     |         |       |  0:27 |   0.8 |
-| code  | Version of =ores.qt= does not update                    |         |       |  0:54 |   1.6 |
+| code  | Version of =ores.qt= does not update                    |         |       |  0:54 |   1.5 |
 | code  | Minor updates to UML diagrams                           |         |       |  0:13 |   0.4 |
-| infra | Add support for project planning                        |         |       |  2:24 |   4.2 |
-| code  | Add a "detached" mode                                   |         |       |  1:18 |   2.3 |
-| code  | Merge update and create currency messages               |         |       |  1:07 |   2.0 |
-| code  | Uninformative incompatible protocol version error in qt |         |       |  1:11 |   2.1 |
+| infra | Add support for project planning                        |         |       |  2:24 |   4.0 |
+| code  | Add a "detached" mode                                   |         |       |  1:18 |   2.2 |
+| code  | Merge update and create currency messages               |         |       |  1:07 |   1.9 |
+| code  | Uninformative incompatible protocol version error in qt |         |       |  1:11 |   2.0 |
 | code  | Implement delete account                                |         |       |  0:20 |   0.6 |
-| code  | Reorganise CLI structure by entity                      |         |       |  4:43 |   8.3 |
-| code  | Update =ores.shell= with REPL commands for all entities |         |       | 13:48 |  24.2 |
+| code  | Reorganise CLI structure by entity                      |         |       |  4:43 |   7.9 |
+| code  | Update =ores.shell= with REPL commands for all entities |         |       | 13:48 |  23.1 |
 | code  | Consider renaming =client= to =repl=                    |         |       |  0:22 |   0.6 |
 | code  | Create a "request response" helper                      |         |       |  0:13 |   0.4 |
 | code  | Update all UML diagrams after shell changes             |         |       |  0:09 |   0.3 |
-| code  | Code coverage has dipped below 70%                      |         |       |  2:05 |   3.7 |
+| code  | Code coverage has dipped below 70%                      |         |       |  2:05 |   3.5 |
 | code  | Opening and closing currencies does not work            |         |       |  0:39 |   1.1 |
-| code  | Delete currency only deletes single currency            |         |       |  0:30 |   0.9 |
+| code  | Delete currency only deletes single currency            |         |       |  0:30 |   0.8 |
 | code  | Update enums in message types to use magic enums        |         |       |  0:49 |   1.4 |
-| code  | Tidy-up database code                                   |         |       |  0:44 |   1.3 |
-| code  | Implement basic XML import XML in Qt                    |         |       |  2:35 |   4.5 |
-| code  | Add pagination support                                  |         |       |  6:02 |  10.6 |
-| code  | Implement import dialog for XML import in Qt            |         |       |  1:34 |   2.8 |
-| infra | OCR scan notebooks for this sprint                      |         |       | 10:04 |  17.7 |
-| infra | Troubleshoot skills in claude                           |         |       |  0:34 |   1.0 |
+| code  | Tidy-up database code                                   |         |       |  0:44 |   1.2 |
+| code  | Implement basic XML import XML in Qt                    |         |       |  2:35 |   4.3 |
+| code  | Add pagination support                                  |         |       |  6:02 |  10.1 |
+| code  | Implement import dialog for XML import in Qt            |         |       |  1:34 |   2.6 |
+| infra | OCR scan notebooks for this sprint                      |         |       | 11:15 |  18.9 |
+| infra | Troubleshoot skills in claude                           |         |       |  0:34 |   0.9 |
+| code  | Implement authentication bootstrap workflow             |         |       |  0:44 |   1.2 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-11-27 Thu 12:51]--[2025-11-27 Thu 13:13] =>  0:22
+    CLOCK: [2025-11-26 Wed 23:20]--[2025-11-26 Wed 23:44] =>  0:24
     CLOCK: [2025-11-18 Tue 09:16]--[2025-11-18 Tue 09:29] =>  0:13
     CLOCK: [2025-11-17 Mon 22:11]--[2025-11-17 Mon 22:21] =>  0:10
     CLOCK: [2025-11-17 Mon 09:50]--[2025-11-17 Mon 10:16] =>  0:26
@@ -1983,7 +1986,6 @@ architecture: repository, protocol, service, client models, and UI.
 Links:
 
 - [[https://readyset.io/blog/optimizing-sql-pagination-in-postgres][Optimizing SQL Pagination in Postgres]]
-- [[https://github.com/getml/sqlgen/issues/100][GH #100: Feature request: offset support]]
 
 **** System-Wide Impact Analysis
 
@@ -2342,7 +2344,7 @@ std::uint32_t account_repository::get_total_account_count() {
 - Phase 6 (CLI): 0.5 days
 - Total: ~6 days
 
-*** STARTED Implement import dialog for XML import in Qt               :code:
+*** COMPLETED Implement import dialog for XML import in Qt             :code:
     :LOGBOOK:
     CLOCK: [2025-11-26 Wed 11:05]--[2025-11-26 Wed 11:16] =>  0:11
     CLOCK: [2025-11-25 Tue 23:40]--[2025-11-25 Tue 23:53] =>  0:13
@@ -2462,8 +2464,31 @@ addresses these limitations with a proper import dialog.
   - No changes needed to importer or validation code
   - Changes only in Qt UI layer (CurrencyMdiWindow and new dialog)
 
+*** BLOCKED Add support for offsets in pagination                      :code:
+
+At present we disabled pagination in UI because sqlgen does not support offset.
+We raised a ticket for this. When it is available and released in vcpkg, we need
+to update the code to use it.
+
+Links:
+
+- [[https://github.com/getml/sqlgen/issues/100][GH #100: Feature request: offset support]]
+
+*** COMPLETED Repl needs synchronous socket operations                 :code:
+
+*Rationale*: implemented.
+
+At present the operations on sockets are async. This is a problem with the repl
+because we issue commands out of order. For example this causes scripting to
+fail.
+
+- [[https://github.com/daniele77/cli/discussions/251][#251: Basic Scripting with Cli]]
+
+
+
 *** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
+    CLOCK: [2025-11-27 Thu 10:30]--[2025-11-27 Thu 11:41] =>  1:11
     CLOCK: [2025-11-26 Wed 09:40]--[2025-11-26 Wed 11:05] =>  1:25
     CLOCK: [2025-11-25 Tue 18:00]--[2025-11-25 Tue 18:55] =>  0:55
     CLOCK: [2025-11-24 Mon 13:01]--[2025-11-24 Mon 15:14] =>  2:13
@@ -2489,107 +2514,10 @@ Links:
 - [[https://www.reddit.com/r/ClaudeCode/comments/1oywsa1/claude_code_skills_activate_20_of_the_time_heres/][reddit: Claude Code skills activate 20% of the time. Here's how I got to 84%.]]
 - [[https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably][How to Make Claude Code Skills Activate Reliably]]
 
-*** Multi-threaded scenarios with comms                                :code:
-
-At present we are relying on request-response patterns: the client sends a
-request and the next frame coming in is the response. However, in the future we
-will have many dialog windows open, each of them sending requests and awaiting
-responses. It will not be possible to know what response is coming back from
-what window. We need to take this into account.
-
-*** Add listen/notify support                                          :code:
-
-When data changes for a given entity in the database and we have the dialog of
-that entity open, we need to make the reload button a different colour (suggest
-a colour). For this we need to listen/notify in the database and then send a
-message to the client. This requires a change at the protocol because at present
-we send a request from the client first and then expect a response. This is more
-like a callback where the handler will call a callback when a certain message is
-received. Listen code from deepseek:
-
-#+begin_src c++
-#include <sqlgen.h>
-#include <libpq-fe.h>
-#include <thread>
-#include <iostream>
-
-class TableWatcher {
-private:
-    sqlgen::Connection conn_;
-    std::thread listener_thread_;
-    bool running_;
-
-public:
-    TableWatcher(const std::string& connection_string)
-        : conn_(connection_string), running_(false) {}
-
-    void start() {
-        running_ = true;
-        listener_thread_ = std::thread(&TableWatcher::listen_loop, this);
-    }
-
-    void stop() {
-        running_ = false;
-        if (listener_thread_.joinable()) {
-            listener_thread_.join();
-        }
-    }
-
-private:
-    void listen_loop() {
-        // Get raw PGconn for async operations
-        auto raw_conn = conn_.native_handle(); // You might need to expose this
-
-        // Listen to channel
-        PGresult* res = PQexec(raw_conn, "LISTEN table_updates;");
-        if (PQresultStatus(res) != PGRES_COMMAND_OK) {
-            PQclear(res);
-            return;
-        }
-        PQclear(res);
-
-        while (running_) {
-            // Non-blocking check for notifications
-            PQconsumeInput(raw_conn);
-
-            PGnotify* notify;
-            while ((notify = PQnotifies(raw_conn)) != nullptr) {
-                handle_notification(notify);
-                PQfreemem(notify);
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        }
-    }
-
-    void handle_notification(PGnotify* notify) {
-        std::cout << "Received notification: " << notify->relname
-                  << " - " << notify->extra << std::endl;
-
-        // Parse the extra data (usually JSON) and handle accordingly
-        // {"table": "users", "operation": "INSERT", "id": 123}
-    }
-};
-#+end_src
-
-
-*** Add version support to entities                                    :code:
-
-We need a "version" field which is incremented automatically by a trigger. It is
-used as follows:
-
-- domain entities have a version field which is loaded from database.
-- if we try to save at version =n= but current version is not =n-1=, it should
-  fail to save.
-- version is incremented automatically on save.
-- display version in UI prominently (/e.g./ next to entity key, iso code for
-  currencies) so that we can see when we reload.
-
-*** Disconnect closes currencies window                                :code:
-
-It should just disable the icons, etc.
-
-*** Implement authentication bootstrap workflow                        :code:
+*** STARTED Implement authentication bootstrap workflow                :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-27 Thu 12:06]--[2025-11-27 Thu 12:50] =>  0:44
+    :END:
 
 Notes:
 
@@ -2676,6 +2604,105 @@ Once the system is in **"Secure Mode"**:
 Links:
 
 - [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
+
+*** Multi-threaded scenarios with comms                                :code:
+
+At present we are relying on request-response patterns: the client sends a
+request and the next frame coming in is the response. However, in the future we
+will have many dialog windows open, each of them sending requests and awaiting
+responses. It will not be possible to know what response is coming back from
+what window. We need to take this into account.
+
+*** Add listen/notify support                                          :code:
+
+When data changes for a given entity in the database and we have the dialog of
+that entity open, we need to make the reload button a different colour (suggest
+a colour). For this we need to listen/notify in the database and then send a
+message to the client. This requires a change at the protocol because at present
+we send a request from the client first and then expect a response. This is more
+like a callback where the handler will call a callback when a certain message is
+received. Listen code from deepseek:
+
+#+begin_src c++
+#include <sqlgen.h>
+#include <libpq-fe.h>
+#include <thread>
+#include <iostream>
+
+class TableWatcher {
+private:
+    sqlgen::Connection conn_;
+    std::thread listener_thread_;
+    bool running_;
+
+public:
+    TableWatcher(const std::string& connection_string)
+        : conn_(connection_string), running_(false) {}
+
+    void start() {
+        running_ = true;
+        listener_thread_ = std::thread(&TableWatcher::listen_loop, this);
+    }
+
+    void stop() {
+        running_ = false;
+        if (listener_thread_.joinable()) {
+            listener_thread_.join();
+        }
+    }
+
+private:
+    void listen_loop() {
+        // Get raw PGconn for async operations
+        auto raw_conn = conn_.native_handle(); // You might need to expose this
+
+        // Listen to channel
+        PGresult* res = PQexec(raw_conn, "LISTEN table_updates;");
+        if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+            PQclear(res);
+            return;
+        }
+        PQclear(res);
+
+        while (running_) {
+            // Non-blocking check for notifications
+            PQconsumeInput(raw_conn);
+
+            PGnotify* notify;
+            while ((notify = PQnotifies(raw_conn)) != nullptr) {
+                handle_notification(notify);
+                PQfreemem(notify);
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    }
+
+    void handle_notification(PGnotify* notify) {
+        std::cout << "Received notification: " << notify->relname
+                  << " - " << notify->extra << std::endl;
+
+        // Parse the extra data (usually JSON) and handle accordingly
+        // {"table": "users", "operation": "INSERT", "id": 123}
+    }
+};
+#+end_src
+
+*** Add version support to entities                                    :code:
+
+We need a "version" field which is incremented automatically by a trigger. It is
+used as follows:
+
+- domain entities have a version field which is loaded from database.
+- if we try to save at version =n= but current version is not =n-1=, it should
+  fail to save.
+- version is incremented automatically on save.
+- display version in UI prominently (/e.g./ next to entity key, iso code for
+  currencies) so that we can see when we reload.
+
+*** Disconnect closes currencies window                                :code:
+
+It should just disable the icons, etc.
 
 *** Add search to currencies                                           :code:
 

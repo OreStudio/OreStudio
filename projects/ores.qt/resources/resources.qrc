@@ -4,6 +4,8 @@
     <file>TradingStyle.qss</file>
   </qresource>
   <qresource prefix="/">
+    <file>icons/ic_fluent_arrow_download_20_regular.svg</file>
+    <file>icons/ic_fluent_arrow_download_20_filled.svg</file>
     <file>icons/ic_fluent_arrow_previous_20_regular.svg</file>
     <file>icons/ic_fluent_arrow_previous_20_filled.svg</file>
     <file>icons/ic_fluent_arrow_next_20_regular.svg</file>

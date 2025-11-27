@@ -147,7 +147,7 @@ private:
     static bool is_localhost(const std::string& remote_address);
 
     service::account_service service_;
-    service::bootstrap_mode_service bootstrap_service_;
+    utility::repository::context ctx_;
 };
 
 }

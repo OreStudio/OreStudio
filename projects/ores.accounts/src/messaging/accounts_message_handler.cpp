@@ -29,7 +29,7 @@ using namespace ores::utility::log;
 using comms::protocol::message_type;
 
 accounts_message_handler::accounts_message_handler(utility::repository::context ctx)
-    : service_(ctx), bootstrap_service_(ctx) {}
+    : service_(ctx), ctx_(ctx) {}
 
 accounts_message_handler::handler_result
 accounts_message_handler::handle_message(message_type type,
@@ -38,7 +38,7 @@ accounts_message_handler::handle_message(message_type type,
     BOOST_LOG_SEV(lg(), debug) << "Handling accounts message type " << type;
 
     // Check bootstrap mode - only allow bootstrap endpoints
-    const bool in_bootstrap = bootstrap_service_.is_in_bootstrap_mode();
+    const bool in_bootstrap = ctx_.is_in_bootstrap_mode();
     const bool is_bootstrap_endpoint =
         type == message_type::create_initial_admin_request ||
         type == message_type::bootstrap_status_request;
@@ -329,7 +329,7 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
         co_return response.serialize();
     }
 
-    if (!bootstrap_service_.is_in_bootstrap_mode()) {
+    if (!ctx_.is_in_bootstrap_mode()) {
         BOOST_LOG_SEV(lg(), warn)
             << "Rejected create_initial_admin_request: system not in bootstrap mode";
         create_initial_admin_response response{
@@ -359,7 +359,12 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
             true
         );
 
-        bootstrap_service_.exit_bootstrap_mode();
+        // Exit bootstrap mode by updating feature flag
+        service::bootstrap_mode_service bootstrap_svc(ctx_);
+        bootstrap_svc.exit_bootstrap_mode();
+
+        // Update context flag for current session
+        ctx_.set_bootstrap_mode(false);
 
         BOOST_LOG_SEV(lg(), info)
             << "Created initial admin account with ID: " << account.id
@@ -397,7 +402,7 @@ handle_bootstrap_status_request(std::span<const std::byte> payload) {
         co_return std::unexpected(request_result.error());
     }
 
-    const bool in_bootstrap = bootstrap_service_.is_in_bootstrap_mode();
+    const bool in_bootstrap = ctx_.is_in_bootstrap_mode();
 
     BOOST_LOG_SEV(lg(), debug) << "Bootstrap mode status: "
                                << (in_bootstrap ? "ACTIVE" : "INACTIVE");

@@ -24,7 +24,6 @@
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
-#include "ores.accounts/service/bootstrap_mode_service.hpp"
 
 namespace ores::risk::messaging {
 
@@ -96,7 +95,6 @@ private:
 
     utility::repository::context ctx_;
     repository::currency_repository currency_repo_;
-    accounts::service::bootstrap_mode_service bootstrap_service_;
 };
 
 }

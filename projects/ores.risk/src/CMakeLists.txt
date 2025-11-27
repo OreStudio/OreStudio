@@ -32,8 +32,7 @@ set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/ores.risk/include
-    ${CMAKE_SOURCE_DIR}/projects/ores.accounts/include)
+    ${CMAKE_SOURCE_DIR}/projects/ores.risk/include)
 
 target_link_libraries(${lib_target_name}
     PRIVATE
@@ -41,7 +40,6 @@ target_link_libraries(${lib_target_name}
         pugixml::pugixml
         Boost::boost
         ores.utility.lib
-        ores.accounts.lib
         faker-cxx::faker-cxx
         libfort::fort
    PUBLIC

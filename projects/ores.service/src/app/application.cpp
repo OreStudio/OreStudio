@@ -64,6 +64,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     bootstrap_svc.initialize_bootstrap_state();
 
     const bool in_bootstrap_mode = bootstrap_svc.is_in_bootstrap_mode();
+    ctx.set_bootstrap_mode(in_bootstrap_mode);
 
     if (in_bootstrap_mode) {
         BOOST_LOG_SEV(lg(), warn) << "================================================";

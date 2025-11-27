@@ -23,6 +23,7 @@
 #include <boost/throw_exception.hpp>
 #include "ores.risk/messaging/registrar.hpp"
 #include "ores.accounts/messaging/registrar.hpp"
+#include "ores.accounts/service/bootstrap_mode_service.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/repository/context_factory.hpp"
 #include "ores.comms/net/server.hpp"
@@ -57,13 +58,42 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Starting ORE Studio Service v" << ORES_VERSION;
 
     auto ctx = make_context(cfg.database);
+
+    // Initialize and check bootstrap mode
+    accounts::service::bootstrap_mode_service bootstrap_svc(ctx);
+    bootstrap_svc.initialize_bootstrap_state();
+
+    const bool in_bootstrap_mode = bootstrap_svc.is_in_bootstrap_mode();
+
+    if (in_bootstrap_mode) {
+        BOOST_LOG_SEV(lg(), warn) << "================================================";
+        BOOST_LOG_SEV(lg(), warn) << "!!!  SYSTEM IN BOOTSTRAP MODE  !!!";
+        BOOST_LOG_SEV(lg(), warn) << "================================================";
+        BOOST_LOG_SEV(lg(), warn) << "Security Status: INSECURE - No admin account exists";
+        BOOST_LOG_SEV(lg(), warn) << "Available Endpoints: create-initial-admin ONLY";
+        BOOST_LOG_SEV(lg(), warn) << "Access Restriction: localhost (127.0.0.1) only";
+        BOOST_LOG_SEV(lg(), warn) << "Action Required: Create initial admin account";
+        BOOST_LOG_SEV(lg(), warn) << "================================================";
+    } else {
+        BOOST_LOG_SEV(lg(), info) << "System in SECURE MODE";
+        BOOST_LOG_SEV(lg(), info) << "Authentication and authorization enforcement enabled";
+    }
+
     ores::comms::net::server srv(cfg.server);
     ores::risk::messaging::registrar::register_handlers(srv, ctx);
     ores::accounts::messaging::registrar::register_handlers(srv, ctx);
 
     co_await srv.run(io_ctx);
 
-    BOOST_LOG_SEV(lg(), info) << "ORES Service stopped normally.";
+    // Shutdown logging
+    if (bootstrap_svc.is_in_bootstrap_mode()) {
+        BOOST_LOG_SEV(lg(), warn) << "================================================";
+        BOOST_LOG_SEV(lg(), warn) << "ORES Service stopped - STILL IN BOOTSTRAP MODE";
+        BOOST_LOG_SEV(lg(), warn) << "Initial admin account was NOT created";
+        BOOST_LOG_SEV(lg(), warn) << "================================================";
+    } else {
+        BOOST_LOG_SEV(lg(), info) << "ORES Service stopped normally (SECURE MODE).";
+    }
 }
 
 }

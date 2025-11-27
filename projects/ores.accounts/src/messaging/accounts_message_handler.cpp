@@ -37,6 +37,24 @@ accounts_message_handler::handle_message(message_type type,
 
     BOOST_LOG_SEV(lg(), debug) << "Handling accounts message type " << type;
 
+    // Check bootstrap mode - only allow bootstrap endpoints
+    const bool in_bootstrap = bootstrap_service_.is_in_bootstrap_mode();
+    const bool is_bootstrap_endpoint =
+        type == message_type::create_initial_admin_request ||
+        type == message_type::bootstrap_status_request;
+
+    if (in_bootstrap && !is_bootstrap_endpoint) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Blocked operation " << type << " - system in bootstrap mode";
+        co_return std::unexpected(comms::protocol::error_code::bootstrap_mode_only);
+    }
+
+    if (!in_bootstrap && type == message_type::create_initial_admin_request) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Blocked create_initial_admin_request - system not in bootstrap mode";
+        co_return std::unexpected(comms::protocol::error_code::bootstrap_mode_forbidden);
+    }
+
     switch (type) {
     case message_type::create_account_request:
         co_return co_await handle_create_account_request(payload);

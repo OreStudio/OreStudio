@@ -26,7 +26,7 @@ namespace ores::risk::messaging {
 using namespace ores::utility::log;
 
 risk_message_handler::risk_message_handler(utility::repository::context ctx)
-    : ctx_(std::move(ctx)) {}
+    : ctx_(ctx), bootstrap_service_(ctx) {}
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      comms::protocol::error_code>>
@@ -34,6 +34,13 @@ risk_message_handler::handle_message(comms::protocol::message_type type,
     std::span<const std::byte> payload, const std::string& remote_address) {
 
     BOOST_LOG_SEV(lg(), debug) << "Handling risk message type " << type;
+
+    // Block all risk operations when in bootstrap mode
+    if (bootstrap_service_.is_in_bootstrap_mode()) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Blocked risk operation " << type << " - system in bootstrap mode";
+        co_return std::unexpected(comms::protocol::error_code::bootstrap_mode_only);
+    }
 
     switch (type) {
     case comms::protocol::message_type::get_currencies_request:

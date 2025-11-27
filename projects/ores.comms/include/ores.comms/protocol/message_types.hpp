@@ -38,7 +38,7 @@ namespace ores::comms::protocol {
  // "ORES" in ASCII
 constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 4;
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 5;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 enum class message_type {
@@ -73,6 +73,10 @@ enum class message_type {
     list_login_info_response = 0x200C,
     list_feature_flags_request = 0x200D,
     list_feature_flags_response = 0x200E,
+    create_initial_admin_request = 0x200F,
+    create_initial_admin_response = 0x2010,
+    bootstrap_status_request = 0x2011,
+    bootstrap_status_response = 0x2012,
 
     last_value
 };
@@ -91,6 +95,10 @@ enum class error_code {
     authentication_failed = 0x000A,
     authorization_failed = 0x000B,
     invalid_request = 0x000C,
+    bootstrap_mode_only = 0x000D,
+    bootstrap_mode_forbidden = 0x000E,
+    weak_password = 0x000F,
+    not_localhost = 0x0010,
     last_value
 };
 

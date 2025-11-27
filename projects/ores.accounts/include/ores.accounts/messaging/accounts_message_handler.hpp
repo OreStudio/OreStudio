@@ -24,6 +24,7 @@
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/protocol/message_handler.hpp"
 #include "ores.accounts/service/account_service.hpp"
+#include "ores.accounts/service/bootstrap_mode_service.hpp"
 
 namespace ores::accounts::messaging {
 
@@ -39,6 +40,8 @@ namespace ores::accounts::messaging {
  * - login_request: Authenticates a user and updates login tracking
  * - unlock_account_request: Unlocks a locked account
  * - delete_account_request: Deletes an account (bitemporal soft delete)
+ * - create_initial_admin_request: Creates initial admin (bootstrap mode only, localhost only)
+ * - bootstrap_status_request: Checks if system is in bootstrap mode
  */
 class accounts_message_handler final : public comms::protocol::message_handler {
 private:
@@ -118,7 +121,33 @@ private:
     handler_result
     handle_delete_account_request(std::span<const std::byte> payload);
 
+    /**
+     * @brief Handle create_initial_admin_request message.
+     *
+     * Only available in bootstrap mode and from localhost.
+     */
+    handler_result
+    handle_create_initial_admin_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle bootstrap_status_request message.
+     *
+     * Always available - returns current bootstrap mode status.
+     */
+    handler_result
+    handle_bootstrap_status_request(std::span<const std::byte> payload);
+
+    /**
+     * @brief Check if a remote address is localhost.
+     *
+     * @param remote_address The remote endpoint address
+     * @return true if the address is localhost (127.0.0.1 or ::1), false otherwise
+     */
+    static bool is_localhost(const std::string& remote_address);
+
     service::account_service service_;
+    utility::repository::context ctx_;
 };
 
 }

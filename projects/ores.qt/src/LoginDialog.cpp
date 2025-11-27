@@ -31,6 +31,7 @@
 #include <QImage>
 #include "ores.comms/protocol/frame.hpp"
 #include "ores.comms/protocol/message_types.hpp"
+#include "ores.comms/protocol/handshake.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
 
 namespace ores::qt {
@@ -262,8 +263,22 @@ performLogin(const std::string& username, const std::string& password) {
                 return {false, QString("Network error: failed to send login request")};
             }
 
-            // Deserialize response
+            // Check if response is an error
             BOOST_LOG_SEV(lg(), debug) << "Received login response.";
+            if (response_result->header().type == comms::protocol::message_type::error_response) {
+                auto error_resp = comms::protocol::error_response::deserialize(
+                    response_result->payload()
+                );
+                if (error_resp) {
+                    BOOST_LOG_SEV(lg(), warn) << "Server returned error: " << error_resp->message;
+                    return {false, QString::fromStdString(error_resp->message)};
+                } else {
+                    BOOST_LOG_SEV(lg(), warn) << "Failed to parse error response.";
+                    return {false, QString("Server error: unable to parse error details")};
+                }
+            }
+
+            // Deserialize response
             auto response = accounts::messaging::login_response::deserialize(
                 response_result->payload()
             );

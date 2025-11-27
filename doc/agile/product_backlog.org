@@ -633,14 +633,6 @@ CREATE INDEX idx_icon_tags_tag_id ON icon_tags (tag_id);
 We need to ensure we can have both light and dark themes and they work
 consistently.
 
-*** Repl needs synchronous socket operations                           :code:
-
-At present the operations on sockets are async. This is a problem with the repl
-because we issue commands out of order. For example this causes scripting to
-fail.
-
-- [[https://github.com/daniele77/cli/discussions/251][#251: Basic Scripting with Cli]]
-
 *** Setup Qt properly on Windows                                       :code:
 
 Seems like our package is still missing Qt DLLs. Use the windows tool to
@@ -1065,6 +1057,53 @@ We should remove copyrights from each file and instead have it only at the
 top-level to make maintenance easier.
 
 See [[https://github.com/OpenSourceRisk/QuantLib/blob/master/.github/workflows/copyrights.yml][=copyrights.yml=]] in QuantLib repo.
+
+*** Investigate git UIs for history display                           :infra:
+
+Links:
+
+- [[https://github.com/Murmele/Gittyup][Gittyup]]: "Gittyup is a graphical Git client designed to help you understand
+  and manage your source code history. "
+
+*** Investigate GoldenCheetah for ideas on graph displays              :code:
+
+Seems particularly useful for report overviews and headline positions.
+
+Links:
+
+- [[https://github.com/GoldenCheetah/GoldenCheetah][GH GoldenCheetah]]: "GoldenCheetah is a desktop application for cyclists and
+  triathletes and coaches."
+
+*** Add support for protocol debugging in Qt                           :code:
+
+We should add a view of all messages sent and received like the comms champ
+tools. It should be possible to record a session to file (maybe all the
+requests?) and then replay that session. You should be able to do it from the
+UI.
+
+Links:
+
+- [[https://github.com/commschamp/cc_tools_qt][GH: cc_tools_qt]]: "This project contains tool application(s), which can be used
+  to develop, monitor and debug custom binary communication protocols, that were
+  developed using the COMMS Library. All the applications are plug-in based,
+  i.e. plug-ins are used to define I/O socket, data filters, and the custom
+  protocol itself. The tools use Qt framework for GUI interfaces as well as
+  loading and managing plug-ins."
+- [[https://github.com/commschamp/cc_tools_qt/wiki/How-to-Use-CommsChampion-Tools][How to Use CommsChampion Tools]]: screenshots of the UI to explore the protocol.
+
+*** Investigate the toolbar icon style in serial studio                :code:
+
+Links:
+
+- [[https://github.com/Serial-Studio/Serial-Studio][GH Serial-Studio]]
+
+*** Investigate the graphs used in dirstat                             :code:
+
+Seems like a good way of showing deal contribution to position.
+
+Links:
+
+- [[https://github.com/shundhammer/qdirstat][GH qdirstat]]
 
 *** Consider adding clang-tidy build                                  :infra:
 

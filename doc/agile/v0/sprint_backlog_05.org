@@ -18,58 +18,61 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-26 Wed 23:30], for Wednesday, November 26, 2025.
-|       | <75>                                         |        |      |      |       |
-| Tags  | Headline                                     | Time   |      |      |     % |
-|-------+----------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                 | *7:38* |      |      | 100.0 |
-|-------+----------------------------------------------+--------+------+------+-------|
-|       | Stories                                      | 7:38   |      |      | 100.0 |
-|       | Active                                       |        | 7:38 |      | 100.0 |
-| code  | Add pagination support                       |        |      | 6:02 |  79.0 |
-| code  | Implement import dialog for XML import in Qt |        |      | 0:11 |   2.4 |
-| infra | OCR scan notebooks for this sprint           |        |      | 1:25 |  18.6 |
+#+CAPTION: Clock summary at [2025-11-27 Thu 18:00], for Thursday, November 27, 2025.
+|       | <75>                                        |        |      |      |       |
+| Tags  | Headline                                    | Time   |      |      |     % |
+|-------+---------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                | *5:25* |      |      | 100.0 |
+|-------+---------------------------------------------+--------+------+------+-------|
+|       | Stories                                     | 5:25   |      |      | 100.0 |
+|       | Active                                      |        | 5:25 |      | 100.0 |
+| agile | Sprint and product backlog refinement       |        |      | 0:22 |   6.8 |
+| code  | Implement authentication bootstrap workflow |        |      | 3:52 |  71.4 |
+| infra | OCR scan notebooks for this sprint          |        |      | 1:11 |  21.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-26 Wed 23:30]
+#+CAPTION: Clock summary at [2025-11-27 Thu 18:00]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *56:58* |       |       | 100.0 |
+|       | *Total time*                                            | *62:47* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 56:58   |       |       | 100.0 |
-|       | Active                                                  |         | 56:58 |       | 100.0 |
-| agile | Sprint and product backlog refinement                   |         |       |  2:35 |   4.5 |
-| infra | Add AI generated sprint summary                         |         |       |  1:38 |   2.9 |
-| infra | Add skill to generate release notes                     |         |       |  0:27 |   0.8 |
-| code  | Version of =ores.qt= does not update                    |         |       |  0:54 |   1.6 |
-| code  | Minor updates to UML diagrams                           |         |       |  0:13 |   0.4 |
-| infra | Add support for project planning                        |         |       |  2:24 |   4.2 |
-| code  | Add a "detached" mode                                   |         |       |  1:18 |   2.3 |
-| code  | Merge update and create currency messages               |         |       |  1:07 |   2.0 |
-| code  | Uninformative incompatible protocol version error in qt |         |       |  1:11 |   2.1 |
-| code  | Implement delete account                                |         |       |  0:20 |   0.6 |
-| code  | Reorganise CLI structure by entity                      |         |       |  4:43 |   8.3 |
-| code  | Update =ores.shell= with REPL commands for all entities |         |       | 13:48 |  24.2 |
+|       | Stories                                                 | 62:47   |       |       | 100.0 |
+|       | Active                                                  |         | 62:47 |       | 100.0 |
+| agile | Sprint and product backlog refinement                   |         |       |  3:21 |   5.3 |
+| infra | Add AI generated sprint summary                         |         |       |  1:38 |   2.6 |
+| infra | Add skill to generate release notes                     |         |       |  0:27 |   0.7 |
+| code  | Version of =ores.qt= does not update                    |         |       |  0:54 |   1.4 |
+| code  | Minor updates to UML diagrams                           |         |       |  0:13 |   0.3 |
+| infra | Add support for project planning                        |         |       |  2:24 |   3.8 |
+| code  | Add a "detached" mode                                   |         |       |  1:18 |   2.1 |
+| code  | Merge update and create currency messages               |         |       |  1:07 |   1.8 |
+| code  | Uninformative incompatible protocol version error in qt |         |       |  1:11 |   1.9 |
+| code  | Implement delete account                                |         |       |  0:20 |   0.5 |
+| code  | Reorganise CLI structure by entity                      |         |       |  4:43 |   7.5 |
+| code  | Update =ores.shell= with REPL commands for all entities |         |       | 13:48 |  22.0 |
 | code  | Consider renaming =client= to =repl=                    |         |       |  0:22 |   0.6 |
-| code  | Create a "request response" helper                      |         |       |  0:13 |   0.4 |
-| code  | Update all UML diagrams after shell changes             |         |       |  0:09 |   0.3 |
-| code  | Code coverage has dipped below 70%                      |         |       |  2:05 |   3.7 |
-| code  | Opening and closing currencies does not work            |         |       |  0:39 |   1.1 |
-| code  | Delete currency only deletes single currency            |         |       |  0:30 |   0.9 |
-| code  | Update enums in message types to use magic enums        |         |       |  0:49 |   1.4 |
-| code  | Tidy-up database code                                   |         |       |  0:44 |   1.3 |
-| code  | Implement basic XML import XML in Qt                    |         |       |  2:35 |   4.5 |
-| code  | Add pagination support                                  |         |       |  6:02 |  10.6 |
-| code  | Implement import dialog for XML import in Qt            |         |       |  1:34 |   2.8 |
-| infra | OCR scan notebooks for this sprint                      |         |       | 10:04 |  17.7 |
-| infra | Troubleshoot skills in claude                           |         |       |  0:34 |   1.0 |
+| code  | Create a "request response" helper                      |         |       |  0:13 |   0.3 |
+| code  | Update all UML diagrams after shell changes             |         |       |  0:09 |   0.2 |
+| code  | Code coverage has dipped below 70%                      |         |       |  2:05 |   3.3 |
+| code  | Opening and closing currencies does not work            |         |       |  0:39 |   1.0 |
+| code  | Delete currency only deletes single currency            |         |       |  0:30 |   0.8 |
+| code  | Update enums in message types to use magic enums        |         |       |  0:49 |   1.3 |
+| code  | Tidy-up database code                                   |         |       |  0:44 |   1.2 |
+| code  | Implement basic XML import XML in Qt                    |         |       |  2:35 |   4.1 |
+| code  | Add pagination support                                  |         |       |  6:02 |   9.6 |
+| code  | Implement import dialog for XML import in Qt            |         |       |  1:34 |   2.5 |
+| code  | Implement authentication bootstrap workflow             |         |       |  3:52 |   6.2 |
+| infra | OCR scan notebooks for this sprint                      |         |       | 11:15 |  17.9 |
+| infra | Troubleshoot skills in claude                           |         |       |  0:34 |   0.9 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-11-27 Thu 12:51]--[2025-11-27 Thu 13:13] =>  0:22
+    CLOCK: [2025-11-26 Wed 23:20]--[2025-11-26 Wed 23:44] =>  0:24
     CLOCK: [2025-11-18 Tue 09:16]--[2025-11-18 Tue 09:29] =>  0:13
     CLOCK: [2025-11-17 Mon 22:11]--[2025-11-17 Mon 22:21] =>  0:10
     CLOCK: [2025-11-17 Mon 09:50]--[2025-11-17 Mon 10:16] =>  0:26
@@ -1983,7 +1986,6 @@ architecture: repository, protocol, service, client models, and UI.
 Links:
 
 - [[https://readyset.io/blog/optimizing-sql-pagination-in-postgres][Optimizing SQL Pagination in Postgres]]
-- [[https://github.com/getml/sqlgen/issues/100][GH #100: Feature request: offset support]]
 
 **** System-Wide Impact Analysis
 
@@ -2342,7 +2344,7 @@ std::uint32_t account_repository::get_total_account_count() {
 - Phase 6 (CLI): 0.5 days
 - Total: ~6 days
 
-*** STARTED Implement import dialog for XML import in Qt               :code:
+*** COMPLETED Implement import dialog for XML import in Qt             :code:
     :LOGBOOK:
     CLOCK: [2025-11-26 Wed 11:05]--[2025-11-26 Wed 11:16] =>  0:11
     CLOCK: [2025-11-25 Tue 23:40]--[2025-11-25 Tue 23:53] =>  0:13
@@ -2462,8 +2464,207 @@ addresses these limitations with a proper import dialog.
   - No changes needed to importer or validation code
   - Changes only in Qt UI layer (CurrencyMdiWindow and new dialog)
 
+*** BLOCKED Add support for offsets in pagination                      :code:
+
+At present we disabled pagination in UI because sqlgen does not support offset.
+We raised a ticket for this. When it is available and released in vcpkg, we need
+to update the code to use it.
+
+Links:
+
+- [[https://github.com/getml/sqlgen/issues/100][GH #100: Feature request: offset support]]
+
+*** COMPLETED Repl needs synchronous socket operations                 :code:
+
+*Rationale*: implemented.
+
+At present the operations on sockets are async. This is a problem with the repl
+because we issue commands out of order. For example this causes scripting to
+fail.
+
+- [[https://github.com/daniele77/cli/discussions/251][#251: Basic Scripting with Cli]]
+
+
+
+*** COMPLETED Implement authentication bootstrap workflow              :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-27 Thu 17:50]--[2025-11-27 Thu 17:59] =>  0:09
+    CLOCK: [2025-11-27 Thu 16:37]--[2025-11-27 Thu 17:23] =>  0:46
+    CLOCK: [2025-11-27 Thu 16:31]--[2025-11-27 Thu 16:37] =>  0:06
+    CLOCK: [2025-11-27 Thu 13:40]--[2025-11-27 Thu 15:47] =>  2:07
+    CLOCK: [2025-11-27 Thu 12:06]--[2025-11-27 Thu 12:50] =>  0:44
+    :END:
+
+Notes:
+
+- when there are no accounts setup, the repl should say to the user that it
+  needs to create an admin account.
+- first account must be admin.
+- once there is an account we need to make sure the user is logged in before we
+  process most message types.
+
+Mongo message:
+
+#+begin_src logview
+2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] ** WARNING: Access control is not enabled for the database.
+2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] **          Read and write access to data and configuration is unrestricted.
+#+end_src
+
+Requirements:
+
+#+begin_src markdown
+# Authentication Bootstrapping Requirements
+
+## R1: Initial System State (Bootstrap Mode)
+
+The system **MUST** start in a special **"Bootstrap Mode"** where the only
+permitted action is the creation of the initial Administrator account.
+
+## R2: Access Control in Bootstrap Mode
+
+While the system is in Bootstrap Mode:
+
+- **R2.1: Allowed Endpoint:** The service **MUST** only expose and accept
+  requests for a single endpoint: `POST /api/v1/accounts/create-admin` (or
+  equivalent).
+- **R2.2: Local-Only Restriction:** All requests to the allowed endpoint
+  ,**MUST** originate from a **trusted local interface** (e.g., `127.0.0.1` or
+  the server's designated internal IP range). Requests from any external/public
+  IP address **MUST** be rejected.
+- **R2.3: General Endpoint Rejection:** All other API endpoints (e.g., login,
+  user creation, data access) **MUST** immediately return a $\mathbf{403}$
+  ,**Forbidden** or $\mathbf{401}$ **Unauthorized** status, along with a clear
+  message indicating the system is in setup mode.
+
+## R3: Initial Admin Account Creation
+
+The first account created through the allowed endpoint **MUST** adhere to the
+following:
+
+- **R3.1: Mandatory Admin Role:** The account **MUST** be assigned the highest
+  level of **Administrator privileges** (`is_admin: true`).
+- **R3.2: Strong Password Policy:** The request **MUST** be validated against a
+  strong password policy (e.g., minimum 12 characters, requiring a mix of case,
+  numbers, and symbols). Failure to meet this standard **MUST** result in a
+  $\mathbf{400}$ **Bad Request** error.
+- **R3.3: One-Time Execution:** The administrator creation process **MUST** only
+  be allowed to succeed **exactly once**.
+
+## R4: System State Transition
+
+Upon successful creation of the first Administrator account (R3):
+
+- **R4.1: State Change:** The system **MUST** immediately and atomically
+  transition from **"Bootstrap Mode"** to **"Secure Mode"**. This state change
+  ,**MUST** be persisted.
+- **R4.2: Bootstrap Endpoint Deactivation:** The `POST
+  /api/v1/accounts/create-admin` endpoint **MUST** be permanently disabled. Any
+  subsequent request to this endpoint **MUST** return a $\mathbf{403}$
+  ,**Forbidden** error.
+
+## R5: Secure Mode Operation
+
+Once the system is in **"Secure Mode"**:
+
+- **R5.1: General Access Control:** All operational API endpoints **MUST** now
+  enforce **full authentication and authorization**.
+- **R5.2: Mandatory Login:** All users, including the newly created
+  Administrator, **MUST** successfully complete a login process to obtain a
+  valid session token before accessing any resource.
+- **R5.3: Standard Account Creation:** The standard non-admin account creation
+  endpoint (`POST /api/v1/accounts/create`) **MUST** become available, subject
+  to any configured access controls (e.g., only open to logged-in Admins, or
+  fully public).
+#+end_src
+
+Implementation Plan:
+
+**** DONE Phase 1: Domain Layer (Password & Bootstrap Services)
+     CLOSED: [2025-11-27 Thu]
+
+- [X] Create =password_policy_validator= class in =ores.accounts/security=
+  - Validates OWASP password requirements (12+ chars, mixed case, digits, special chars)
+  - Optional enforcement flag for testing
+- [X] Create =bootstrap_mode_service= class in =ores.accounts/service=
+  - Manages bootstrap mode state transitions
+  - Checks for admin account existence
+  - Uses =system.bootstrap_mode= feature flag
+- [X] Add unit tests for password validation (19 test cases)
+- [X] Create SQL migration script for bootstrap flag
+
+**** DONE Phase 2: Database Setup
+     CLOSED: [2025-11-27 Thu]
+
+- [X] Create =bootstrap_mode_setup.sql= for initializing bootstrap flag
+- [X] Create scripts for toggling password validation feature flag
+- [X] Add =system.disable_password_validation= feature flag for testing
+
+**** DONE Phase 3: Protocol Layer (Message Structures)
+     CLOSED: [2025-11-27 Thu]
+
+- [X] Bump protocol version from 4.0 to 5.0 (breaking change)
+- [X] Add message types to =message_types.hpp=:
+  - =create_initial_admin_request= (0x200F)
+  - =create_initial_admin_response= (0x2010)
+  - =bootstrap_status_request= (0x2011)
+  - =bootstrap_status_response= (0x2012)
+- [X] Add error codes:
+  - =bootstrap_mode_only= (0x000D)
+  - =bootstrap_mode_forbidden= (0x000E)
+  - =weak_password= (0x000F)
+  - =not_localhost= (0x0010)
+- [X] Implement serialization/deserialization in =protocol.cpp=
+
+**** DONE Phase 4: Service Layer (Enforcement Logic)
+     CLOSED: [2025-11-27 Thu]
+
+- [X] Add bootstrap flag to =utility::repository::context=
+  - =set_bootstrap_mode(bool)= and =is_in_bootstrap_mode()= methods
+- [X] Update =application.cpp= to set bootstrap flag at startup
+- [X] Update =accounts_message_handler= to check bootstrap mode
+  - Block all operations except bootstrap endpoints when in bootstrap mode
+  - Implement =is_localhost()= helper
+  - Implement =handle_create_initial_admin_request()=
+  - Implement =handle_bootstrap_status_request()=
+- [X] Update =risk_message_handler= to block operations in bootstrap mode
+- [X] Remove circular dependency (risk no longer depends on accounts)
+
+**** DONE Phase 5: Service Integration (Logging & Startup)
+     CLOSED: [2025-11-27 Thu]
+
+- [X] Add prominent bootstrap mode logging in =application.cpp=
+  - Warning banners when in bootstrap mode
+  - Info messages in secure mode
+  - Shutdown logging showing current mode
+- [X] Initialize bootstrap state before starting server
+
+**** DONE Phase 6: CLI Integration
+     CLOSED: [2025-11-27 Thu]
+
+- [X] Add password validation to CLI =add_account()= command
+- [X] Check feature flag for validation enforcement
+- [X] Exit bootstrap mode when first admin created via CLI
+- [X] Add clear logging of bootstrap mode transitions
+
+**** DONE Phase 7: Error Handling & User Experience
+     CLOSED: [2025-11-27 Thu]
+
+- [X] Add user-friendly error messages for bootstrap error codes in =session.cpp=
+- [X] Update Qt client to handle =error_response= frames properly
+- [X] Display meaningful messages when operations blocked in bootstrap mode
+
+Known Limitations:
+
+- Bootstrap mode flag requires service restart to take effect after admin creation
+- This will be addressed in future "Feature Flags Subsystem" story
+
+Links:
+
+- [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
+
 *** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
+    CLOCK: [2025-11-27 Thu 10:30]--[2025-11-27 Thu 11:41] =>  1:11
     CLOCK: [2025-11-26 Wed 09:40]--[2025-11-26 Wed 11:05] =>  1:25
     CLOCK: [2025-11-25 Tue 18:00]--[2025-11-25 Tue 18:55] =>  0:55
     CLOCK: [2025-11-24 Mon 13:01]--[2025-11-24 Mon 15:14] =>  2:13
@@ -2488,6 +2689,101 @@ Links:
 - [[https://code.claude.com/docs/en/skills][Claude: Agent Skills]]
 - [[https://www.reddit.com/r/ClaudeCode/comments/1oywsa1/claude_code_skills_activate_20_of_the_time_heres/][reddit: Claude Code skills activate 20% of the time. Here's how I got to 84%.]]
 - [[https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably][How to Make Claude Code Skills Activate Reliably]]
+
+*** Add screen in qt to exit bootstrap mode                            :code:
+
+As per claude:
+
+The create_initial_admin_request message type serves several important purposes
+that differentiate it from the CLI and REPL approaches:
+
+Why We Need create_initial_admin_request
+
+  1. Network-accessible bootstrap flow
+  - Allows remote initial setup from localhost without requiring shell/CLI access
+  to the server
+  - Enables a web-based "first-run" setup experience (like many web applications)
+  - The Qt client can provide a proper UI for initial admin account creation
+
+  2. Localhost-only security enforcement
+  - The endpoint enforces that it can only be called from localhost (127.0.0.1 or
+  ::1) at line
+  projects/ores.accounts/src/messaging/accounts_message_handler.cpp:320
+  - Provides network-accessible bootstrap with security guarantees
+  - Prevents remote bootstrap attacks
+
+  3. Atomic mode transition
+  - The endpoint both creates the admin AND exits bootstrap mode in a single atomic
+   operation (lines 362-367 in accounts_message_handler.cpp)
+  - Guarantees consistency - can't create admin without exiting bootstrap mode
+
+  4. Service-layer validation
+  - Goes through full service layer with password validation and business logic
+  - The CLI is essentially an "administrative backdoor" that bypasses the service
+  layer and writes directly to the database
+
+  5. Protocol-compliant workflow
+  - Clients speaking the binary protocol need a proper bootstrap endpoint
+  - REPL create_account_request is blocked in bootstrap mode (by enforcement logic)
+  - create_initial_admin_request is the only endpoint that works in bootstrap mode
+
+  The Distinction
+
+  - CLI approach: Administrative backdoor, direct database access, bypasses all
+  service logic
+  - create_initial_admin_request: Proper network-accessible bootstrap flow with
+  localhost restriction and atomic mode transition
+  - REPL create_account_request: Normal account creation, blocked in bootstrap mode
+
+  The create_initial_admin_request enables a proper "first-run experience" for
+  clients connecting via the network protocol, while maintaining security through
+  localhost-only access.
+
+
+
+*** Cli clean-ups                                                      :code:
+
+- we still seem to support =--entity currencies=. This should now be invalid.
+- we are still exporting as JSON. We should instead allow CSV and XML exports
+  only.
+- add recipes for all commands.
+- should be able to list all admin accounts.
+- list command should support table output.
+- is admin should be a bool: =--is-admin arg (=0)=
+- add account duplicates logic. We should have a single service for this.
+- split application into entities.
+
+*** Split feature flags out of accounts                               :code::
+
+We need to use feature flags from many other subsystems. They do not belong in
+accounts.
+
+Notes from claude:
+
+Future Story: Feature Flags Subsystem
+
+What it would include:
+
+- =ores.flags= or =ores.config= component
+- Feature flag repository and service
+- Dynamic flag updates with change notification
+- Caching strategy with invalidation
+- All other components depend on this infrastructure layer
+
+Benefits:
+
+- Proper separation of concerns
+- Solves the shared state problem correctly
+- Reusable for other feature flags
+- Clear ownership
+
+Notes:
+
+- ensure we are using temporal patterns to access data; it seems we are not at
+  present since updating the flag does not generate new entries.
+- create a service to hide the complexity around flags.
+- we probably need some kind of callback mechanism so that when a feature is
+  updated we notify listeners.
 
 *** Multi-threaded scenarios with comms                                :code:
 
@@ -2572,7 +2868,6 @@ private:
 };
 #+end_src
 
-
 *** Add version support to entities                                    :code:
 
 We need a "version" field which is incremented automatically by a trigger. It is
@@ -2588,94 +2883,6 @@ used as follows:
 *** Disconnect closes currencies window                                :code:
 
 It should just disable the icons, etc.
-
-*** Implement authentication bootstrap workflow                        :code:
-
-Notes:
-
-- when there are no accounts setup, the repl should say to the user that it
-  needs to create an admin account.
-- first account must be admin.
-- once there is an account we need to make sure the user is logged in before we
-  process most message types.
-
-Mongo message:
-
-#+begin_src logview
-2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] ** WARNING: Access control is not enabled for the database.
-2020-06-09T13:26:51.391+0000 I  CONTROL  [initandlisten] **          Read and write access to data and configuration is unrestricted.
-#+end_src
-
-Requirements:
-
-#+begin_src markdown
-# Authentication Bootstrapping Requirements
-
-## R1: Initial System State (Bootstrap Mode)
-
-The system **MUST** start in a special **"Bootstrap Mode"** where the only
-permitted action is the creation of the initial Administrator account.
-
-## R2: Access Control in Bootstrap Mode
-
-While the system is in Bootstrap Mode:
-
-- **R2.1: Allowed Endpoint:** The service **MUST** only expose and accept
-  requests for a single endpoint: `POST /api/v1/accounts/create-admin` (or
-  equivalent).
-- **R2.2: Local-Only Restriction:** All requests to the allowed endpoint
-  ,**MUST** originate from a **trusted local interface** (e.g., `127.0.0.1` or
-  the server's designated internal IP range). Requests from any external/public
-  IP address **MUST** be rejected.
-- **R2.3: General Endpoint Rejection:** All other API endpoints (e.g., login,
-  user creation, data access) **MUST** immediately return a $\mathbf{403}$
-  ,**Forbidden** or $\mathbf{401}$ **Unauthorized** status, along with a clear
-  message indicating the system is in setup mode.
-
-## R3: Initial Admin Account Creation
-
-The first account created through the allowed endpoint **MUST** adhere to the
-following:
-
-- **R3.1: Mandatory Admin Role:** The account **MUST** be assigned the highest
-  level of **Administrator privileges** (`is_admin: true`).
-- **R3.2: Strong Password Policy:** The request **MUST** be validated against a
-  strong password policy (e.g., minimum 12 characters, requiring a mix of case,
-  numbers, and symbols). Failure to meet this standard **MUST** result in a
-  $\mathbf{400}$ **Bad Request** error.
-- **R3.3: One-Time Execution:** The administrator creation process **MUST** only
-  be allowed to succeed **exactly once**.
-
-## R4: System State Transition
-
-Upon successful creation of the first Administrator account (R3):
-
-- **R4.1: State Change:** The system **MUST** immediately and atomically
-  transition from **"Bootstrap Mode"** to **"Secure Mode"**. This state change
-  ,**MUST** be persisted.
-- **R4.2: Bootstrap Endpoint Deactivation:** The `POST
-  /api/v1/accounts/create-admin` endpoint **MUST** be permanently disabled. Any
-  subsequent request to this endpoint **MUST** return a $\mathbf{403}$
-  ,**Forbidden** error.
-
-## R5: Secure Mode Operation
-
-Once the system is in **"Secure Mode"**:
-
-- **R5.1: General Access Control:** All operational API endpoints **MUST** now
-  enforce **full authentication and authorization**.
-- **R5.2: Mandatory Login:** All users, including the newly created
-  Administrator, **MUST** successfully complete a login process to obtain a
-  valid session token before accessing any resource.
-- **R5.3: Standard Account Creation:** The standard non-admin account creation
-  endpoint (`POST /api/v1/accounts/create`) **MUST** become available, subject
-  to any configured access controls (e.g., only open to logged-in Admins, or
-  fully public).
-#+end_src
-
-Links:
-
-- [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
 
 *** Add search to currencies                                           :code:
 

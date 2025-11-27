@@ -29,13 +29,31 @@ using namespace ores::utility::log;
 using comms::protocol::message_type;
 
 accounts_message_handler::accounts_message_handler(utility::repository::context ctx)
-    : service_(ctx) {}
+    : service_(ctx), ctx_(ctx) {}
 
 accounts_message_handler::handler_result
 accounts_message_handler::handle_message(message_type type,
     std::span<const std::byte> payload, const std::string& remote_address) {
 
     BOOST_LOG_SEV(lg(), debug) << "Handling accounts message type " << type;
+
+    // Check bootstrap mode - only allow bootstrap endpoints
+    const bool in_bootstrap = ctx_.is_in_bootstrap_mode();
+    const bool is_bootstrap_endpoint =
+        type == message_type::create_initial_admin_request ||
+        type == message_type::bootstrap_status_request;
+
+    if (in_bootstrap && !is_bootstrap_endpoint) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Blocked operation " << type << " - system in bootstrap mode";
+        co_return std::unexpected(comms::protocol::error_code::bootstrap_mode_only);
+    }
+
+    if (!in_bootstrap && type == message_type::create_initial_admin_request) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Blocked create_initial_admin_request - system not in bootstrap mode";
+        co_return std::unexpected(comms::protocol::error_code::bootstrap_mode_forbidden);
+    }
 
     switch (type) {
     case message_type::create_account_request:
@@ -52,6 +70,10 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_unlock_account_request(payload);
     case message_type::delete_account_request:
         co_return co_await handle_delete_account_request(payload);
+    case message_type::create_initial_admin_request:
+        co_return co_await handle_create_initial_admin_request(payload, remote_address);
+    case message_type::bootstrap_status_request:
+        co_return co_await handle_bootstrap_status_request(payload);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown accounts message type " << type;
         co_return std::unexpected(comms::protocol::error_code::invalid_message_type);
@@ -280,6 +302,119 @@ handle_delete_account_request(std::span<const std::byte> payload) {
         };
         co_return response.serialize();
     }
+}
+
+bool accounts_message_handler::is_localhost(const std::string& remote_address) {
+    return remote_address == "127.0.0.1" || remote_address == "::1" ||
+        remote_address.starts_with("127.0.0.1:") ||
+        remote_address.starts_with("::1") ||
+        remote_address.starts_with("[::1]");
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_create_initial_admin_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing create_initial_admin_request from "
+                               << remote_address;
+
+    if (!is_localhost(remote_address)) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Rejected create_initial_admin_request from non-localhost: "
+            << remote_address;
+        create_initial_admin_response response{
+            .success = false,
+            .error_message = "Bootstrap endpoint only accessible from localhost",
+            .account_id = boost::uuids::nil_uuid()
+        };
+        co_return response.serialize();
+    }
+
+    if (!ctx_.is_in_bootstrap_mode()) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Rejected create_initial_admin_request: system not in bootstrap mode";
+        create_initial_admin_response response{
+            .success = false,
+            .error_message = "System not in bootstrap mode - admin account already exists",
+            .account_id = boost::uuids::nil_uuid()
+        };
+        co_return response.serialize();
+    }
+
+    auto request_result = create_initial_admin_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to deserialize create_initial_admin_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+
+    try {
+        domain::account account = service_.create_account(
+            request.username,
+            request.email,
+            request.password,
+            "bootstrap",
+            true
+        );
+
+        // Exit bootstrap mode by updating feature flag
+        service::bootstrap_mode_service bootstrap_svc(ctx_);
+        bootstrap_svc.exit_bootstrap_mode();
+
+        // Update context flag for current session
+        ctx_.set_bootstrap_mode(false);
+
+        BOOST_LOG_SEV(lg(), info)
+            << "Created initial admin account with ID: " << account.id
+            << " for username: " << account.username;
+        BOOST_LOG_SEV(lg(), info) << "System transitioned to SECURE MODE";
+
+        create_initial_admin_response response{
+            .success = true,
+            .error_message = "",
+            .account_id = account.id
+        };
+        co_return response.serialize();
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to create initial admin account: " << e.what();
+
+        create_initial_admin_response response{
+            .success = false,
+            .error_message = std::string("Failed to create admin account: ") + e.what(),
+            .account_id = boost::uuids::nil_uuid()
+        };
+        co_return response.serialize();
+    }
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_bootstrap_status_request(std::span<const std::byte> payload) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing bootstrap_status_request";
+
+    auto request_result = bootstrap_status_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to deserialize bootstrap_status_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const bool in_bootstrap = ctx_.is_in_bootstrap_mode();
+
+    BOOST_LOG_SEV(lg(), debug) << "Bootstrap mode status: "
+                               << (in_bootstrap ? "ACTIVE" : "INACTIVE");
+
+    bootstrap_status_response response{
+        .is_in_bootstrap_mode = in_bootstrap,
+        .message = in_bootstrap
+            ? "System in BOOTSTRAP MODE - awaiting initial admin account creation"
+            : "System in SECURE MODE - admin account exists"
+    };
+
+    co_return response.serialize();
 }
 
 }

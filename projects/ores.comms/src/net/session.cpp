@@ -217,6 +217,18 @@ boost::asio::awaitable<void> session::process_messages() {
                         case protocol::error_code::invalid_request:
                             error_msg = "Invalid request parameters";
                             break;
+                        case protocol::error_code::bootstrap_mode_only:
+                            error_msg = "System is in bootstrap mode. Only initial admin account creation is allowed. Please create the initial admin account from localhost.";
+                            break;
+                        case protocol::error_code::bootstrap_mode_forbidden:
+                            error_msg = "Operation not allowed - system is not in bootstrap mode";
+                            break;
+                        case protocol::error_code::weak_password:
+                            error_msg = "Password does not meet security requirements";
+                            break;
+                        case protocol::error_code::not_localhost:
+                            error_msg = "Bootstrap operations are only allowed from localhost";
+                            break;
                         default:
                             error_msg = "An error occurred processing your request";
                             break;

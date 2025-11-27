@@ -2484,7 +2484,7 @@ fail.
 
 - [[https://github.com/daniele77/cli/discussions/251][#251: Basic Scripting with Cli]]
 
-
+*** Users cannot update their passwords
 
 *** COMPLETED Implement authentication bootstrap workflow              :code:
     :LOGBOOK:

@@ -38,10 +38,12 @@
 #include "ores.utility/datetime/datetime.hpp"
 #include "ores.risk/orexml/importer.hpp"
 #include "ores.risk/orexml/exporter.hpp"
+#include "ores.accounts/security/password_policy_validator.hpp"
 #include "ores.risk/csv/exporter.hpp"
 #include "ores.risk/domain/currency_table.hpp"
 #include "ores.risk/domain/currency_json.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
+#include "ores.accounts/service/bootstrap_mode_service.hpp"
 #include "ores.accounts/domain/account_table.hpp"
 #include "ores.accounts/domain/account_json.hpp"
 #include "ores.accounts/domain/feature_flags_table.hpp"
@@ -380,9 +382,32 @@ add_account(const config::add_options& cfg) const {
     boost::uuids::random_generator gen;
     const auto account_id = gen();
 
+    // Validate password policy
+    using accounts::security::password_policy_validator;
+    using accounts::repository::feature_flags_repository;
+
+    // Check if password validation is disabled via feature flag
+    feature_flags_repository flag_repo(context_);
+    const auto disable_validation_flags =
+        flag_repo.read_latest("system.disable_password_validation");
+    const bool enforce_policy = disable_validation_flags.empty() ||
+                                !disable_validation_flags[0].enabled;
+
+    const auto validation_result =
+        password_policy_validator::validate(cfg.password.value(), enforce_policy);
+
+    if (!validation_result.is_valid) {
+        BOOST_LOG_SEV(lg(), error) << "Password validation failed: "
+                                   << validation_result.error_message;
+        output_stream_ << "Error: " << validation_result.error_message << std::endl;
+        BOOST_THROW_EXCEPTION(
+            application_exception(validation_result.error_message));
+    }
+
     // Hash the password
     using accounts::security::password_manager;
-    const auto password_hash = password_manager::create_password_hash(cfg.password.value());
+    const auto password_hash =
+        password_manager::create_password_hash(cfg.password.value());
 
     // Construct account from command-line arguments
     accounts::domain::account account;
@@ -396,13 +421,23 @@ add_account(const config::add_options& cfg) const {
     account.totp_secret = "";    // Can be set later
     account.email = cfg.email.value();
 
-    // Write to database
+    accounts::service::bootstrap_mode_service bootstrap_svc(context_);
+    bootstrap_svc.initialize_bootstrap_state();
+    if (bootstrap_svc.is_in_bootstrap_mode())
+        output_stream_ << "System is currently in bootstrap mode." << std::endl;
+
     accounts::repository::account_repository repo(context_);
     repo.write(account);
 
     output_stream_ << "Successfully added account: " << account.username
                    << " (ID: " << boost::uuids::to_string(account_id) << ")" << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Added account: " << account.username;
+
+    if (account.is_admin && bootstrap_svc.is_in_bootstrap_mode()) {
+        bootstrap_svc.exit_bootstrap_mode();
+        BOOST_LOG_SEV(lg(), info) << "Created first admin account - exiting bootstrap mode.";
+        output_stream_ << "System exited bootstrap mode." << std::endl;
+    }
 }
 
 void application::

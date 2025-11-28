@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+
+-- Feature Flags Table Drop Script
+-- Component: ores.variability
+-- Purpose: Drops feature flags table and related database objects
+
 drop trigger if exists update_feature_flags_trigger on feature_flags;
 drop function if exists update_feature_flags;
 drop table if exists feature_flags;

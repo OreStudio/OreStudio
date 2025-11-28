@@ -39,6 +39,7 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         sqlgen::sqlgen
         reflectcpp::reflectcpp
+        libfort::fort
         Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

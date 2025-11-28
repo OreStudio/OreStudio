@@ -26,10 +26,10 @@
 #include <boost/asio/ip/address.hpp>
 #include "ores.accounts/domain/account.hpp"
 #include "ores.accounts/domain/login_info.hpp"
-#include "ores.accounts/domain/feature_flags.hpp"
+#include "ores.variability/domain/feature_flags.hpp"
 #include "ores.accounts/repository/account_repository.hpp"
 #include "ores.accounts/repository/login_info_repository.hpp"
-#include "ores.accounts/repository/feature_flags_repository.hpp"
+#include "ores.variability/repository/feature_flags_repository.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include "ores.utility/log/make_logger.hpp"
 
@@ -115,7 +115,7 @@ public:
      *
      * @return Vector of all feature flags
      */
-    std::vector<domain::feature_flags> list_feature_flags();
+    std::vector<variability::domain::feature_flags> list_feature_flags();
 
 
 
@@ -160,7 +160,7 @@ public:
 private:
     repository::account_repository account_repo_;
     repository::login_info_repository login_info_repo_;
-    repository::feature_flags_repository feature_flags_repo_;
+    variability::repository::feature_flags_repository feature_flags_repo_;
     utility::uuid::uuid_v7_generator uuid_generator_;
 };
 

@@ -18,55 +18,59 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-28 Fri 14:22], for Friday, November 28, 2025.
-|       | <75>                                |        |      |      |       |
-| Tags  | Headline                            | Time   |      |      |     % |
-|-------+-------------------------------------+--------+------+------+-------|
-|       | *Total time*                        | *2:45* |      |      | 100.0 |
-|-------+-------------------------------------+--------+------+------+-------|
-|       | Stories                             | 2:45   |      |      | 100.0 |
-|       | Active                              |        | 2:45 |      | 100.0 |
-| code  | Split feature flags out of accounts |        |      | 0:55 |  33.3 |
-| infra | OCR scan notebooks for this sprint  |        |      | 1:50 |  66.7 |
+#+CAPTION: Clock summary at [2025-11-28 Fri 18:59], for Friday, November 28, 2025.
+|       | <75>                                        |        |      |      |       |
+| Tags  | Headline                                    | Time   |      |      |     % |
+|-------+---------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                | *5:09* |      |      | 100.0 |
+|-------+---------------------------------------------+--------+------+------+-------|
+|       | Stories                                     | 5:09   |      |      | 100.0 |
+|       | Active                                      |        | 5:09 |      | 100.0 |
+| code  | Split feature flags out of accounts         |        |      | 0:55 |  17.8 |
+| infra | Add links to UML diagrams                   |        |      | 1:49 |  35.3 |
+| infra | OCR scan notebooks for this sprint          |        |      | 1:50 |  35.6 |
+| code  | Inspect code coverage to understand the dip |        |      | 0:35 |  11.3 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-28 Fri 14:22]
+#+CAPTION: Clock summary at [2025-11-28 Fri 18:59]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *65:32* |       |       | 100.0 |
+|       | *Total time*                                            | *67:56* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 65:32   |       |       | 100.0 |
-|       | Active                                                  |         | 65:32 |       | 100.0 |
-| agile | Sprint and product backlog refinement                   |         |       |  3:21 |   5.1 |
-| infra | Add AI generated sprint summary                         |         |       |  1:38 |   2.5 |
+|       | Stories                                                 | 67:56   |       |       | 100.0 |
+|       | Active                                                  |         | 67:56 |       | 100.0 |
+| agile | Sprint and product backlog refinement                   |         |       |  3:21 |   4.9 |
+| infra | Add AI generated sprint summary                         |         |       |  1:38 |   2.4 |
 | infra | Add skill to generate release notes                     |         |       |  0:27 |   0.7 |
-| code  | Version of =ores.qt= does not update                    |         |       |  0:54 |   1.4 |
+| code  | Version of =ores.qt= does not update                    |         |       |  0:54 |   1.3 |
 | code  | Minor updates to UML diagrams                           |         |       |  0:13 |   0.3 |
-| infra | Add support for project planning                        |         |       |  2:24 |   3.7 |
-| code  | Add a "detached" mode                                   |         |       |  1:18 |   2.0 |
-| code  | Merge update and create currency messages               |         |       |  1:07 |   1.7 |
-| code  | Uninformative incompatible protocol version error in qt |         |       |  1:11 |   1.8 |
+| infra | Add support for project planning                        |         |       |  2:24 |   3.5 |
+| code  | Add a "detached" mode                                   |         |       |  1:18 |   1.9 |
+| code  | Merge update and create currency messages               |         |       |  1:07 |   1.6 |
+| code  | Uninformative incompatible protocol version error in qt |         |       |  1:11 |   1.7 |
 | code  | Implement delete account                                |         |       |  0:20 |   0.5 |
-| code  | Reorganise CLI structure by entity                      |         |       |  4:43 |   7.2 |
-| code  | Update =ores.shell= with REPL commands for all entities |         |       | 13:48 |  21.1 |
-| code  | Consider renaming =client= to =repl=                    |         |       |  0:22 |   0.6 |
+| code  | Reorganise CLI structure by entity                      |         |       |  4:43 |   6.9 |
+| code  | Update =ores.shell= with REPL commands for all entities |         |       | 13:48 |  20.3 |
+| code  | Consider renaming =client= to =repl=                    |         |       |  0:22 |   0.5 |
 | code  | Create a "request response" helper                      |         |       |  0:13 |   0.3 |
 | code  | Update all UML diagrams after shell changes             |         |       |  0:09 |   0.2 |
-| code  | Code coverage has dipped below 70%                      |         |       |  2:05 |   3.2 |
+| code  | Code coverage has dipped below 70%                      |         |       |  2:05 |   3.1 |
 | code  | Opening and closing currencies does not work            |         |       |  0:39 |   1.0 |
-| code  | Delete currency only deletes single currency            |         |       |  0:30 |   0.8 |
+| code  | Delete currency only deletes single currency            |         |       |  0:30 |   0.7 |
 | code  | Update enums in message types to use magic enums        |         |       |  0:49 |   1.2 |
 | code  | Tidy-up database code                                   |         |       |  0:44 |   1.1 |
-| code  | Implement basic XML import XML in Qt                    |         |       |  2:35 |   3.9 |
-| code  | Add pagination support                                  |         |       |  6:02 |   9.2 |
-| code  | Implement import dialog for XML import in Qt            |         |       |  1:34 |   2.4 |
-| code  | Implement authentication bootstrap workflow             |         |       |  3:52 |   5.9 |
-| code  | Split feature flags out of accounts                     |         |       |  0:55 |   1.4 |
-| infra | OCR scan notebooks for this sprint                      |         |       | 13:05 |  20.0 |
-| infra | Troubleshoot skills in claude                           |         |       |  0:34 |   0.9 |
+| code  | Implement basic XML import XML in Qt                    |         |       |  2:35 |   3.8 |
+| code  | Add pagination support                                  |         |       |  6:02 |   8.9 |
+| code  | Implement import dialog for XML import in Qt            |         |       |  1:34 |   2.3 |
+| code  | Implement authentication bootstrap workflow             |         |       |  3:52 |   5.7 |
+| code  | Split feature flags out of accounts                     |         |       |  0:55 |   1.3 |
+| infra | Add links to UML diagrams                               |         |       |  1:49 |   2.7 |
+| infra | OCR scan notebooks for this sprint                      |         |       | 13:05 |  19.3 |
+| infra | Troubleshoot skills in claude                           |         |       |  0:34 |   0.8 |
+| code  | Inspect code coverage to understand the dip             |         |       |  0:35 |   0.9 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -2859,6 +2863,13 @@ The =ores.variability= component can grow to include:
 - Create a service to hide complexity around flags
 - Consider callback mechanism for flag update notifications
 
+*** COMPLETED Add links to UML diagrams                               :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-28 Fri 17:10]--[2025-11-28 Fri 18:59] =>  1:49
+    :END:
+
+At present you cannot access the UML diagrams from the site.
+
 *** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
     CLOCK: [2025-11-28 Fri 09:01]--[2025-11-28 Fri 10:51] =>  1:50
@@ -2888,15 +2899,62 @@ Links:
 - [[https://www.reddit.com/r/ClaudeCode/comments/1oywsa1/claude_code_skills_activate_20_of_the_time_heres/][reddit: Claude Code skills activate 20% of the time. Here's how I got to 84%.]]
 - [[https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably][How to Make Claude Code Skills Activate Reliably]]
 
+*** STARTED Inspect code coverage to understand the dip                :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-28 Fri 15:47]--[2025-11-28 Fri 15:54] =>  0:07
+    CLOCK: [2025-11-28 Fri 14:17]--[2025-11-28 Fri 14:45] =>  0:28
+    :END:
+
+We seem to have gone below 70% again.
+
+- =projects/ores.accounts/src/domain=:
+
+| File                    | Status | Coverage | Lines not covered |
+|-------------------------+--------+----------+-------------------|
+| login_info_table_io.cpp | Zero   |    0.00% | 4/4               |
+| account_json.cpp        | Zero   |    0.00% | 4/4               |
+| account_table_io.cpp    | Zero   |    0.00% | 6/6               |
+
+- =projects/ores.comms/src/net=:
+
+| File               | Status | Coverage | Lines not covered |
+|--------------------+--------+----------+-------------------|
+| session.cpp        | Zero   |    0.00% | 153/153           |
+| server_options.cpp | Zero   |    0.00% | 3/3               |
+| server.cpp         | Zero   |    0.00% | 63/63             |
+| connection.cpp     | Zero   |    0.00% | 79/79             |
+| client_options.cpp | Zero   |    0.00% | 3/3               |
+| client.cpp         | Zero   |    0.00% | 199/199           |
+
+- =projects/ores.risk/src/domain=:
+
+| File                                  | Status | Coverage | Lines not covered |
+|---------------------------------------+--------+----------+-------------------|
+| currency_json.cpp                     | Zero   |    0.00% | 4/4               |
+| currency_version_history_json_io.cpp  | Zero   |    0.00% | 3/3               |
+| currency_version_history_table_io.cpp | Zero   |    0.00% | 4/4               |
+| currency_version_json_io.cpp          | Zero   |    0.00% | 3/3               |
+| currency_version_table_io.cpp         | Zero   |    0.00% | 4/4               |
+| currency_table_io.cpp                 | Zero   |    0.00% | 6/6               |
+
+- =projects/ores.risk/src/csv=:
+
+| File         | Status | Coverage | Lines not covered |
+|--------------+--------+----------+-------------------|
+| exporter.cpp | Zero   |    0.00% | 45/45             |
+
+- =projects/ores.variability/src/repository=:
+
+| File                         | Status | Coverage | Lines not covered |
+|------------------------------+--------+----------+-------------------|
+| feature_flags_entity.cpp     | Zero   |    0.00% | 3/3               |
+| feature_flags_mapper.cpp     | Zero   |    0.00% | 34/34             |
+| feature_flags_repository.cpp | Low    |    7.25% | 64/69             |
+
 *** Create a variability service for feature flags                     :code:
 
 We should not expose the repository directly. Instead, consumers should use a
 service interface which queries the repository as needed.
-
-*** Users cannot update their passwords                                :code:
-
-At present it is not possible to update passwords, or any other property of an
-account.
 
 *** Add screen in qt to exit bootstrap mode                            :code:
 
@@ -2948,6 +3006,11 @@ Why We Need create_initial_admin_request
   localhost-only access.
 
 
+
+*** Users cannot update their passwords                                :code:
+
+At present it is not possible to update passwords, or any other property of an
+account.
 
 *** Cli clean-ups                                                      :code:
 

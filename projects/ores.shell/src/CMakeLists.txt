@@ -44,6 +44,7 @@ target_link_libraries(${lib_target_name}
         Boost::boost
     PRIVATE
         ores.accounts.lib
+        ores.variability.lib
         ores.risk.lib
         ores.comms.lib
         cli::cli

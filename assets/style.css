@@ -290,3 +290,11 @@ footer {
     /* Ensure no vertical offset issues */
     vertical-align: middle;
 }
+
+.note {
+    background: #fff9e6;
+    border-left: 4px solid #ffeb3b;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+}

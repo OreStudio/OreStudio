@@ -17,38 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_HPP
-#define ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_HPP
+#include <catch2/catch_session.hpp>
+#include <catch2/reporters/catch_reporter_registrars.hpp>
+#include "ores.testing/logging_listener.hpp"
+#include "ores.testing/database_lifecycle_listener.hpp"
 
-#include <string>
+CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
+CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
 
-namespace ores::accounts::domain {
-
-/**
- * @brief Represents a feature flag in the domain layer.
- */
-struct feature_flags final {
-    /**
-     * @brief Flag indicating whether the feature is enabled or disabled.
-     */
-    bool enabled = false;
-
-    /**
-     * @brief Name of the feature flag, serves as the unique identifier.
-     */
-    std::string name;
-
-    /**
-     * @brief Description of what the feature flag controls.
-     */
-    std::string description;
-
-    /**
-     * @brief Username of the user who last modified this feature flag.
-     */
-    std::string modified_by;
-};
-
+int main(int argc, char* argv[]) {
+    ores::testing::logging_listener::set_test_module_name("ores.variability.tests");
+    return Catch::Session().run(argc, argv);
 }
-
-#endif

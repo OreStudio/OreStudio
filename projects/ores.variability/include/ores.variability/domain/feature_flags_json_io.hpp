@@ -17,17 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.accounts/repository/feature_flags_entity.hpp"
+#ifndef ORES_VARIABILITY_DOMAIN_FEATURE_FLAGS_JSON_IO_HPP
+#define ORES_VARIABILITY_DOMAIN_FEATURE_FLAGS_JSON_IO_HPP
 
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include <iosfwd>
+#include "ores.variability/domain/feature_flags.hpp"
 
-namespace ores::accounts::repository {
+namespace ores::variability::domain {
 
-std::ostream& operator<<(std::ostream& s, const feature_flags_entity& v) {
-    rfl::json::write(v, s);
-    return s;
+/**
+ * @brief Dumps the feature flags object to a stream in JSON format.
+ */
+std::ostream& operator<<(std::ostream& s, const feature_flags& v);
+
 }
 
-}
+#endif

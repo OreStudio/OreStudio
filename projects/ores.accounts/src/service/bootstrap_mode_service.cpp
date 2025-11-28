@@ -63,7 +63,7 @@ void bootstrap_mode_service::initialize_bootstrap_state() {
     if (flags.empty()) {
         BOOST_LOG_SEV(lg(), info) << "Bootstrap flag does not exist, creating it";
 
-        domain::feature_flags bootstrap_flag{
+        variability::domain::feature_flags bootstrap_flag{
             .enabled = !admin_exists,
             .name = BOOTSTRAP_FLAG_NAME,
             .description = "Indicates whether the system is in bootstrap mode (waiting for initial admin account)",
@@ -87,7 +87,7 @@ void bootstrap_mode_service::initialize_bootstrap_state() {
 
             feature_flags_repo_.remove(BOOTSTRAP_FLAG_NAME);
 
-            domain::feature_flags bootstrap_flag{
+            variability::domain::feature_flags bootstrap_flag{
                 .enabled = true,
                 .name = BOOTSTRAP_FLAG_NAME,
                 .description = "Indicates whether the system is in bootstrap mode (waiting for initial admin account)",
@@ -114,7 +114,7 @@ void bootstrap_mode_service::exit_bootstrap_mode() {
 
     feature_flags_repo_.remove(BOOTSTRAP_FLAG_NAME);
 
-    domain::feature_flags secure_mode_flag{
+    variability::domain::feature_flags secure_mode_flag{
         .enabled = false,
         .name = BOOTSTRAP_FLAG_NAME,
         .description = "Indicates whether the system is in bootstrap mode (waiting for initial admin account)",

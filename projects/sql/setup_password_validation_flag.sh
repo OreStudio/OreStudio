@@ -17,7 +17,9 @@
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 
-# Setup and toggle password validation feature flag
+# Password Validation Feature Flag Management
+# Component: ores.variability (used by ores.accounts)
+# Purpose: Setup and toggle password validation feature flag
 # Usage:
 #   ./setup_password_validation_flag.sh setup    - Create the flag (disabled by default)
 #   ./setup_password_validation_flag.sh disable  - Disable password validation (allow weak passwords)

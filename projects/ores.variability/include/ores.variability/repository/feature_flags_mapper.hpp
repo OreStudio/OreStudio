@@ -17,15 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_REPOSITORY_FEATURE_FLAGS_MAPPER_HPP
-#define ORES_ACCOUNTS_REPOSITORY_FEATURE_FLAGS_MAPPER_HPP
+#ifndef ORES_VARIABILITY_REPOSITORY_FEATURE_FLAGS_MAPPER_HPP
+#define ORES_VARIABILITY_REPOSITORY_FEATURE_FLAGS_MAPPER_HPP
 
 #include <vector>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.accounts/domain/feature_flags.hpp"
-#include "ores.accounts/repository/feature_flags_entity.hpp"
+#include "ores.variability/domain/feature_flags.hpp"
+#include "ores.variability/repository/feature_flags_entity.hpp"
 
-namespace ores::accounts::repository {
+namespace ores::variability::repository {
 
 /**
  * @brief Maps feature flags domain model entities to data storage layer and vice-versa.
@@ -35,7 +35,7 @@ private:
     static auto& lg() {
         using namespace ores::utility::log;
         static auto instance = make_logger(
-            "ores.accounts.repository.feature_flags_mapper");
+            "ores.variability.repository.feature_flags_mapper");
         return instance;
     }
 

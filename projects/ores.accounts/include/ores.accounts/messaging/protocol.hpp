@@ -27,7 +27,7 @@
 #include "ores.comms/protocol/message_types.hpp"
 #include "ores.accounts/domain/account.hpp"
 #include "ores.accounts/domain/login_info.hpp"
-#include "ores.accounts/domain/feature_flags.hpp"
+#include "ores.variability/domain/feature_flags.hpp"
 
 namespace ores::accounts::messaging {
 
@@ -360,7 +360,7 @@ std::ostream& operator<<(std::ostream& s, const list_feature_flags_request& v);
  * @brief Response containing all feature flags.
  */
 struct list_feature_flags_response final {
-    std::vector<domain::feature_flags> feature_flags;
+    std::vector<variability::domain::feature_flags> feature_flags;
 
     std::vector<std::byte> serialize() const;
     static std::expected<list_feature_flags_response, comms::protocol::error_code>

@@ -37,6 +37,19 @@ package "Foundation Layer" #LIGHTBLUE {
     - String: Type conversion and string manipulation
     - Environment: Variable access with type conversion
     end note
+
+    component [ores.variability] as variability #ECECEC
+
+    note right of variability
+    System variability and configuration management infrastructure:
+    - Feature Flags: Runtime toggles for controlling system features and behavior
+    - Temporal Versioning: Bitemporal tracking of configuration changes
+    - Audit Support: Tracking who changed what and when
+    - Repository Pattern: ORM-based persistence with database integration
+    - Configuration Management: Centralized storage of system settings
+    Provides clean separation between system configuration concerns and business logic.
+    Organized into: domain (core entities) and repository (ORM and persistence) namespaces.
+    end note
 }
 
 ' Infrastructure Layer
@@ -93,7 +106,7 @@ package "Domain Layer" #LIGHTYELLOW {
     - Account Lifecycle: Creation, listing, and deletion of user accounts
     - Authentication: Secure password hashing using scrypt, login tracking
     - Security: Account locking after failed login attempts, unlock capability
-    - Feature Flags: Runtime feature toggles with audit tracking
+    - Bootstrap Mode: System initialization state management using feature flags
     - Message API: Async request/response handlers (0x2000-0x2FFF)
     - Temporal Support: Version tracking with valid_from/valid_to fields
     - Test Data: Synthetic account generation for development
@@ -160,22 +173,28 @@ package "Application Layer" #LIGHTCORAL {
     end note
 }
 
+' Dependencies - Foundation Layer
+variability --> utility
+
 ' Dependencies - Infrastructure to Foundation
 comms --> utility
 testing --> utility
 
 ' Dependencies - Domain to Foundation/Infrastructure
 risk --> utility
+accounts --> variability
 accounts --> comms
 accounts --> utility
 
 ' Dependencies - Shell to Foundation/Domain/Infrastructure
 shell --> utility
+shell --> variability
 shell --> accounts
 shell --> comms
 
 ' Dependencies - Applications to all layers
 cli --> utility
+cli --> variability
 cli --> accounts
 cli --> risk
 

@@ -22,7 +22,7 @@
 #define ORES_ACCOUNTS_SERVICE_BOOTSTRAP_MODE_SERVICE_HPP
 
 #include "ores.accounts/repository/account_repository.hpp"
-#include "ores.accounts/repository/feature_flags_repository.hpp"
+#include "ores.variability/repository/feature_flags_repository.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
 
@@ -104,7 +104,7 @@ public:
 
 private:
     repository::account_repository account_repo_;
-    repository::feature_flags_repository feature_flags_repo_;
+    variability::repository::feature_flags_repository feature_flags_repo_;
     utility::repository::context ctx_;
 };
 

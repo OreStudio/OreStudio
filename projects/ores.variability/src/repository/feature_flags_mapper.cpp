@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.accounts/repository/feature_flags_mapper.hpp"
+#include "ores.variability/repository/feature_flags_mapper.hpp"
 
 #include <algorithm>
 #include "ores.utility/repository/mapper_helpers.hpp"
-#include "ores.accounts/domain/feature_flags_json_io.hpp" // IWYU pragma: keep.
+#include "ores.variability/domain/feature_flags_json_io.hpp" // IWYU pragma: keep.
 
-namespace ores::accounts::repository {
+namespace ores::variability::repository {
 
 using namespace ores::utility::log;
 using namespace ores::utility::repository;
@@ -59,7 +59,7 @@ feature_flags_mapper::map(const std::vector<feature_flags_entity>& v) {
     return map_vector<feature_flags_entity, domain::feature_flags>(
         v,
         [](const auto& ve) { return map(ve); },
-        "ores.accounts.repository.feature_flags_mapper",
+        "ores.variability.repository.feature_flags_mapper",
         "db entities");
 }
 
@@ -68,7 +68,7 @@ feature_flags_mapper::map(const std::vector<domain::feature_flags>& v) {
     return map_vector<domain::feature_flags, feature_flags_entity>(
         v,
         [](const auto& ve) { return map(ve); },
-        "ores.accounts.repository.feature_flags_mapper",
+        "ores.variability.repository.feature_flags_mapper",
         "domain entities");
 }
 

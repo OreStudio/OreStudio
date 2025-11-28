@@ -117,7 +117,7 @@ std::vector<domain::login_info> account_service::list_login_info() {
     return login_info_repo_.read();
 }
 
-std::vector<domain::feature_flags> account_service::list_feature_flags() {
+std::vector<variability::domain::feature_flags> account_service::list_feature_flags() {
     return feature_flags_repo_.read_latest();
 }
 

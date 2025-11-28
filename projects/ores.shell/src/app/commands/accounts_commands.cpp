@@ -27,7 +27,7 @@
 #include "ores.accounts/messaging/protocol.hpp"
 #include "ores.accounts/domain/account_table_io.hpp"  // IWYU pragma: keep.
 #include "ores.accounts/domain/login_info_table_io.hpp"  // IWYU pragma: keep.
-#include "ores.accounts/domain/feature_flags_table_io.hpp"  // IWYU pragma: keep.
+#include "ores.variability/domain/feature_flags_table_io.hpp"  // IWYU pragma: keep.
 
 namespace ores::shell::app::commands {
 

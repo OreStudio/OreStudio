@@ -17,15 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.accounts/repository/feature_flags_repository.hpp"
+#include "ores.variability/repository/feature_flags_repository.hpp"
 
 #include <format>
 #include "ores.utility/repository/repository_exception.hpp"
-#include "ores.accounts/domain/feature_flags_json_io.hpp" // IWYU pragma: keep.
-#include "ores.accounts/repository/feature_flags_entity.hpp"
-#include "ores.accounts/repository/feature_flags_mapper.hpp"
+#include "ores.variability/domain/feature_flags_json_io.hpp" // IWYU pragma: keep.
+#include "ores.variability/repository/feature_flags_entity.hpp"
+#include "ores.variability/repository/feature_flags_mapper.hpp"
 
-namespace ores::accounts::repository {
+namespace ores::variability::repository {
 
 using namespace sqlgen;
 using namespace sqlgen::literals;
@@ -34,7 +34,7 @@ using namespace ores::utility::repository;
 
 std::string feature_flags_repository::sql() {
     return generate_create_table_sql<feature_flags_entity>(
-        "ores.accounts.repository.feature_flags_repository");
+        "ores.variability.repository.feature_flags_repository");
 }
 
 feature_flags_repository::feature_flags_repository(context ctx)
@@ -46,7 +46,7 @@ write(const domain::feature_flags& flag) {
 
     execute_write_query(ctx_,
         feature_flags_mapper::map(flag),
-        "ores.accounts.repository.feature_flags_repository",
+        "ores.variability.repository.feature_flags_repository",
         "writing feature flag to database");
 }
 
@@ -57,7 +57,7 @@ write(const std::vector<domain::feature_flags>& flags) {
 
     execute_write_query(ctx_,
         feature_flags_mapper::map(flags),
-        "ores.accounts.repository.feature_flags_repository",
+        "ores.variability.repository.feature_flags_repository",
         "writing feature flags to database");
 }
 
@@ -69,7 +69,7 @@ std::vector<domain::feature_flags> feature_flags_repository::read_latest() {
 
     return execute_read_query<feature_flags_entity, domain::feature_flags>(ctx_, query,
         [](const auto& entities) { return feature_flags_mapper::map(entities); },
-        "ores.accounts.repository.feature_flags_repository",
+        "ores.variability.repository.feature_flags_repository",
         "Reading latest feature flags");
 }
 
@@ -84,7 +84,7 @@ feature_flags_repository::read_latest(const std::string& name) {
 
     return execute_read_query<feature_flags_entity, domain::feature_flags>(ctx_, query,
         [](const auto& entities) { return feature_flags_mapper::map(entities); },
-        "ores.accounts.repository.feature_flags_repository",
+        "ores.variability.repository.feature_flags_repository",
         "Reading latest feature flag by name");
 }
 
@@ -94,7 +94,7 @@ std::vector<domain::feature_flags> feature_flags_repository::read_all() {
 
     return execute_read_query<feature_flags_entity, domain::feature_flags>(ctx_, query,
         [](const auto& entities) { return feature_flags_mapper::map(entities); },
-        "ores.accounts.repository.feature_flags_repository",
+        "ores.variability.repository.feature_flags_repository",
         "Reading all feature flags");
 }
 
@@ -109,7 +109,7 @@ feature_flags_repository::read_all(const std::string& name) {
 
     return execute_read_query<feature_flags_entity, domain::feature_flags>(ctx_, query,
         [](const auto& entities) { return feature_flags_mapper::map(entities); },
-        "ores.accounts.repository.feature_flags_repository",
+        "ores.variability.repository.feature_flags_repository",
         "Reading all feature flags by name");
 }
 
@@ -122,7 +122,7 @@ void feature_flags_repository::remove(const std::string& name) {
         where("name"_c == name);
 
     execute_delete_query(ctx_, query,
-        "ores.accounts.repository.feature_flags_repository",
+        "ores.variability.repository.feature_flags_repository",
         "removing feature flag from database");
 }
 

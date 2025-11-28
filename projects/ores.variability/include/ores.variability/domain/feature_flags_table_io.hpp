@@ -17,20 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.accounts/domain/feature_flags_table_io.hpp"
+#ifndef ORES_VARIABILITY_DOMAIN_FEATURE_FLAGS_TABLE_IO_HPP
+#define ORES_VARIABILITY_DOMAIN_FEATURE_FLAGS_TABLE_IO_HPP
 
-#include <ostream>
-#include "ores.accounts/domain/feature_flags_table.hpp"
+#include <iosfwd>
+#include <vector>
+#include "ores.variability/domain/feature_flags.hpp"
 
-namespace ores::accounts::domain {
+namespace ores::variability::domain {
 
-void print_feature_flags_table(std::ostream& s, const std::vector<feature_flags>& v) {
-    s << std::endl << convert_to_table(v) << std::endl;
-}
-
-std::ostream& operator<<(std::ostream& s, const std::vector<feature_flags>& v) {
-    print_feature_flags_table(s, v);
-    return s;
-}
+/**
+ * @brief Dumps the feature flags object to a stream in table format.
+ */
+std::ostream& operator<<(std::ostream& s, const std::vector<feature_flags>& v);
 
 }
+
+#endif

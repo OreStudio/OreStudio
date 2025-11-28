@@ -17,22 +17,37 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_JSON_HPP
-#define ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_JSON_HPP
+#ifndef ORES_VARIABILITY_DOMAIN_FEATURE_FLAGS_HPP
+#define ORES_VARIABILITY_DOMAIN_FEATURE_FLAGS_HPP
 
 #include <string>
-#include <vector>
-#include "ores.accounts/domain/feature_flags.hpp"
 
-namespace ores::accounts::domain {
+namespace ores::variability::domain {
 
 /**
- * @brief Dumps the feature flags object to a stream in JSON format.
+ * @brief Represents a feature flag in the domain layer.
  */
-/**@{*/
-std::string convert_to_json(const feature_flags& v);
-std::string convert_to_json(const std::vector<feature_flags>& v);
-/**@}*/
+struct feature_flags final {
+    /**
+     * @brief Flag indicating whether the feature is enabled or disabled.
+     */
+    bool enabled = false;
+
+    /**
+     * @brief Name of the feature flag, serves as the unique identifier.
+     */
+    std::string name;
+
+    /**
+     * @brief Description of what the feature flag controls.
+     */
+    std::string description;
+
+    /**
+     * @brief Username of the user who last modified this feature flag.
+     */
+    std::string modified_by;
+};
 
 }
 

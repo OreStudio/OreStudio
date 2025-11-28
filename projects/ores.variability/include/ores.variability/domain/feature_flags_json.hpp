@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,11 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_VARIABILITY_DOMAIN_FEATURE_FLAGS_JSON_HPP
+#define ORES_VARIABILITY_DOMAIN_FEATURE_FLAGS_JSON_HPP
 
--- Feature Flags Table Drop Script
--- Component: ores.variability
--- Purpose: Drops feature flags table and related database objects
+#include <string>
+#include <vector>
+#include "ores.variability/domain/feature_flags.hpp"
 
-drop trigger if exists update_feature_flags_trigger on feature_flags;
-drop function if exists update_feature_flags;
-drop table if exists feature_flags;
+namespace ores::variability::domain {
+
+/**
+ * @brief Dumps the feature flags object to a stream in JSON format.
+ */
+/**@{*/
+std::string convert_to_json(const feature_flags& v);
+std::string convert_to_json(const std::vector<feature_flags>& v);
+/**@}*/
+
+}
+
+#endif

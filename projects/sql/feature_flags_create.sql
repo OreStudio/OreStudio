@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+
+-- Feature Flags Table Schema
+-- Component: ores.variability
+-- Purpose: Stores system feature flags with bitemporal validity tracking
+
 create schema if not exists oresdb;
 create extension if not exists btree_gist;
 set schema 'oresdb';

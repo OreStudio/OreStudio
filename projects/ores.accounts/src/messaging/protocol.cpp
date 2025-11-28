@@ -537,7 +537,7 @@ list_feature_flags_response::deserialize(std::span<const std::byte> data) {
 
     response.feature_flags.reserve(count);
     for (std::uint32_t i = 0; i < count; ++i) {
-        domain::feature_flags ff;
+        variability::domain::feature_flags ff;
 
         auto name_result = reader::read_string(data);
         if (!name_result) return std::unexpected(name_result.error());

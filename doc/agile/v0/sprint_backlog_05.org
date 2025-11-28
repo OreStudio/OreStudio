@@ -18,54 +18,54 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-27 Thu 18:00], for Thursday, November 27, 2025.
-|       | <75>                                        |        |      |      |       |
-| Tags  | Headline                                    | Time   |      |      |     % |
-|-------+---------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                | *5:25* |      |      | 100.0 |
-|-------+---------------------------------------------+--------+------+------+-------|
-|       | Stories                                     | 5:25   |      |      | 100.0 |
-|       | Active                                      |        | 5:25 |      | 100.0 |
-| agile | Sprint and product backlog refinement       |        |      | 0:22 |   6.8 |
-| code  | Implement authentication bootstrap workflow |        |      | 3:52 |  71.4 |
-| infra | OCR scan notebooks for this sprint          |        |      | 1:11 |  21.8 |
+#+CAPTION: Clock summary at [2025-11-28 Fri 14:22], for Friday, November 28, 2025.
+|       | <75>                                |        |      |      |       |
+| Tags  | Headline                            | Time   |      |      |     % |
+|-------+-------------------------------------+--------+------+------+-------|
+|       | *Total time*                        | *2:45* |      |      | 100.0 |
+|-------+-------------------------------------+--------+------+------+-------|
+|       | Stories                             | 2:45   |      |      | 100.0 |
+|       | Active                              |        | 2:45 |      | 100.0 |
+| code  | Split feature flags out of accounts |        |      | 0:55 |  33.3 |
+| infra | OCR scan notebooks for this sprint  |        |      | 1:50 |  66.7 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-27 Thu 18:00]
+#+CAPTION: Clock summary at [2025-11-28 Fri 14:22]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *62:47* |       |       | 100.0 |
+|       | *Total time*                                            | *65:32* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 62:47   |       |       | 100.0 |
-|       | Active                                                  |         | 62:47 |       | 100.0 |
-| agile | Sprint and product backlog refinement                   |         |       |  3:21 |   5.3 |
-| infra | Add AI generated sprint summary                         |         |       |  1:38 |   2.6 |
+|       | Stories                                                 | 65:32   |       |       | 100.0 |
+|       | Active                                                  |         | 65:32 |       | 100.0 |
+| agile | Sprint and product backlog refinement                   |         |       |  3:21 |   5.1 |
+| infra | Add AI generated sprint summary                         |         |       |  1:38 |   2.5 |
 | infra | Add skill to generate release notes                     |         |       |  0:27 |   0.7 |
 | code  | Version of =ores.qt= does not update                    |         |       |  0:54 |   1.4 |
 | code  | Minor updates to UML diagrams                           |         |       |  0:13 |   0.3 |
-| infra | Add support for project planning                        |         |       |  2:24 |   3.8 |
-| code  | Add a "detached" mode                                   |         |       |  1:18 |   2.1 |
-| code  | Merge update and create currency messages               |         |       |  1:07 |   1.8 |
-| code  | Uninformative incompatible protocol version error in qt |         |       |  1:11 |   1.9 |
+| infra | Add support for project planning                        |         |       |  2:24 |   3.7 |
+| code  | Add a "detached" mode                                   |         |       |  1:18 |   2.0 |
+| code  | Merge update and create currency messages               |         |       |  1:07 |   1.7 |
+| code  | Uninformative incompatible protocol version error in qt |         |       |  1:11 |   1.8 |
 | code  | Implement delete account                                |         |       |  0:20 |   0.5 |
-| code  | Reorganise CLI structure by entity                      |         |       |  4:43 |   7.5 |
-| code  | Update =ores.shell= with REPL commands for all entities |         |       | 13:48 |  22.0 |
+| code  | Reorganise CLI structure by entity                      |         |       |  4:43 |   7.2 |
+| code  | Update =ores.shell= with REPL commands for all entities |         |       | 13:48 |  21.1 |
 | code  | Consider renaming =client= to =repl=                    |         |       |  0:22 |   0.6 |
 | code  | Create a "request response" helper                      |         |       |  0:13 |   0.3 |
 | code  | Update all UML diagrams after shell changes             |         |       |  0:09 |   0.2 |
-| code  | Code coverage has dipped below 70%                      |         |       |  2:05 |   3.3 |
+| code  | Code coverage has dipped below 70%                      |         |       |  2:05 |   3.2 |
 | code  | Opening and closing currencies does not work            |         |       |  0:39 |   1.0 |
 | code  | Delete currency only deletes single currency            |         |       |  0:30 |   0.8 |
-| code  | Update enums in message types to use magic enums        |         |       |  0:49 |   1.3 |
-| code  | Tidy-up database code                                   |         |       |  0:44 |   1.2 |
-| code  | Implement basic XML import XML in Qt                    |         |       |  2:35 |   4.1 |
-| code  | Add pagination support                                  |         |       |  6:02 |   9.6 |
-| code  | Implement import dialog for XML import in Qt            |         |       |  1:34 |   2.5 |
-| code  | Implement authentication bootstrap workflow             |         |       |  3:52 |   6.2 |
-| infra | OCR scan notebooks for this sprint                      |         |       | 11:15 |  17.9 |
+| code  | Update enums in message types to use magic enums        |         |       |  0:49 |   1.2 |
+| code  | Tidy-up database code                                   |         |       |  0:44 |   1.1 |
+| code  | Implement basic XML import XML in Qt                    |         |       |  2:35 |   3.9 |
+| code  | Add pagination support                                  |         |       |  6:02 |   9.2 |
+| code  | Implement import dialog for XML import in Qt            |         |       |  1:34 |   2.4 |
+| code  | Implement authentication bootstrap workflow             |         |       |  3:52 |   5.9 |
+| code  | Split feature flags out of accounts                     |         |       |  0:55 |   1.4 |
+| infra | OCR scan notebooks for this sprint                      |         |       | 13:05 |  20.0 |
 | infra | Troubleshoot skills in claude                           |         |       |  0:34 |   0.9 |
 #+end:
 
@@ -2484,8 +2484,6 @@ fail.
 
 - [[https://github.com/daniele77/cli/discussions/251][#251: Basic Scripting with Cli]]
 
-*** Users cannot update their passwords
-
 *** COMPLETED Implement authentication bootstrap workflow              :code:
     :LOGBOOK:
     CLOCK: [2025-11-27 Thu 17:50]--[2025-11-27 Thu 17:59] =>  0:09
@@ -2662,8 +2660,208 @@ Links:
 
 - [[https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04][How To Secure MongoDB on Ubuntu 20.04]]
 
+*** COMPLETED Split feature flags out of accounts                      :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-28 Fri 14:00]--[2025-11-28 Fri 14:16] =>  0:16
+    CLOCK: [2025-11-28 Fri 10:51]--[2025-11-28 Fri 11:30] =>  0:39
+    :END:
+
+We need to use feature flags from many other subsystems. They do not belong in
+accounts. Feature flags represent a distinct system concern around configurability
+and variability, warranting their own dedicated component.
+
+**** Solution: Create ores.variability Component
+
+Extract feature flags from =ores.accounts= into a new =ores.variability= component
+that will house all system configurability concerns, making them available
+system-wide.
+
+**** Implementation Summary
+
+Successfully completed migration of feature flags from =ores.accounts= to new
+=ores.variability= component. All phases completed and verified.
+
+***** What Was Done
+
+- Created complete =ores.variability= component with full infrastructure
+- Migrated all feature flags code (domain, repository, tests)
+- Updated all consumers (ores.accounts, ores.shell, ores.cli)
+- Removed duplicate files from ores.accounts (996 lines)
+- Fixed CI build issues with explicit dependencies
+- All builds and tests passing
+
+***** Files Created (ores.variability)
+
+- Component structure: CMakeLists.txt, main header
+- Domain layer: 5 headers, 4 sources (feature_flags, JSON I/O, table formatting)
+- Repository layer: 3 headers, 3 sources (entity, mapper, repository)
+- Tests: main.cpp, domain_feature_flags_tests.cpp (9 test cases)
+- Documentation: Updated SQL script comments
+
+***** Files Modified
+
+- ores.accounts: bootstrap_mode_service, account_service, protocol (messaging)
+- ores.accounts: CMakeLists.txt (added ores.variability as PUBLIC dependency)
+- ores.shell: accounts_commands.cpp, CMakeLists.txt
+- ores.cli: application.cpp (includes and namespace references)
+
+***** Files Removed (ores.accounts)
+
+- 16 duplicate files removed after successful migration
+- 5 domain headers + 4 sources
+- 3 repository headers + 3 sources
+- 1 test file
+
+***** Pull Request
+
+- Branch: =feature/split_feature_flags_out_of_accounts=
+- PR #114: https://github.com/OreStudio/OreStudio/pull/114
+- 10 commits covering all phases of the migration
+
+***** Current State (After Migration)
+
+Feature flags now in =ores.variability=:
+- Domain type: =ores.variability/domain/feature_flags.hpp=
+- Repository: =ores.variability/repository/feature_flags_repository.hpp=
+- Database entity and mapper
+- JSON I/O support
+- Table formatting support
+- Comprehensive test suite (9 test cases)
+- Used by: =bootstrap_mode_service=, =account_service=, CLI commands, shell commands
+- Available system-wide via PUBLIC dependency in ores.accounts
+
+***** Implementation Plan
+
+****** DONE Phase 1: Create New ores.variability Component Structure
+
+- Create directory: =projects/ores.variability/=
+- Create standard subdirectories:
+  - =include/ores.variability/domain/=
+  - =include/ores.variability/repository/=
+  - =src/domain/=
+  - =src/repository/=
+  - =tests/=
+  - =modeling/=
+- Create =CMakeLists.txt= for the new component
+- Set up library target =ores.variability.lib= and test target =ores.variability.tests=
+- Add dependencies: sqlgen, Boost, ores.utility (for repository helpers)
+- Create =ores.variability.hpp= main header
+
+****** DONE Phase 2: Move Feature Flags Domain Type
+
+- Move =feature_flags.hpp= from =ores.accounts/domain= to =ores.variability/domain=
+- Update namespace from =ores::accounts::domain= to =ores::variability::domain=
+- Move =feature_flags_json.cpp= and =feature_flags_json_io.cpp=
+- Move corresponding header files for JSON I/O
+- Update all namespace references
+
+****** DONE Phase 3: Move Feature Flags Repository
+
+- Move =feature_flags_repository.hpp/.cpp= to =ores.variability/repository=
+- Move =feature_flags_entity.hpp/.cpp=
+- Move =feature_flags_mapper.hpp/.cpp=
+- Update namespace from =ores::accounts::repository= to =ores::variability::repository=
+- Update logging identifiers (e.g., "ores.variability.repository.feature_flags_repository")
+- Update include paths
+
+****** DONE Phase 4: Create Tests for ores.variability
+
+- Create =tests/main.cpp= with Boost.Test initialization
+- Move feature flags repository tests from accounts
+- Create =tests/domain_feature_flags_tests.cpp=
+- Create =tests/repository_feature_flags_repository_tests.cpp=
+- Update test database setup
+- Update all includes and namespaces
+
+****** DONE Phase 5: Update SQL Setup Scripts
+
+- Review SQL scripts in =projects/sql/= related to feature flags
+- Update comments/script names to reflect variability ownership
+- Consider creating =projects/sql/variability/= subdirectory
+- Update database schema documentation
+
+****** DONE Phase 6: Update ores.accounts Dependencies
+
+- Update =bootstrap_mode_service.hpp/.cpp= to use =ores::variability= namespace
+- Update all =#include= statements to use =ores.variability/domain/feature_flags.hpp=
+- Update repository header includes
+- Update =account_service= if it uses feature flags
+- Update message handlers that reference feature flags
+- Update =ores.accounts/CMakeLists.txt= to depend on =ores.variability.lib=
+
+****** DONE Phase 7: Update Build Configuration
+
+- Add =ores.variability= to root =CMakeLists.txt=
+- Configure =ores.variability/CMakeLists.txt=:
+  - Define library with all source files
+  - Link against: sqlgen, Boost::json, ores.utility.lib
+  - Set up test executable
+  - Configure install rules
+- Update =ores.accounts/CMakeLists.txt= to link against =ores.variability.lib=
+- Update =ores.service/CMakeLists.txt= if needed
+- Update =ores.cli/CMakeLists.txt= if needed
+
+****** DONE Phase 8: Update Other Components
+
+- Check if =ores.cli= needs feature flags access
+- Check if =ores.comms= protocol needs feature flags messages
+- Update other components that might benefit from feature flags
+- Update messaging protocol files if needed
+
+****** DEFERRED Phase 9: Create UML Diagrams and Documentation
+
+- Create =modeling/ores.variability.puml= with component diagram
+- Include domain model showing feature_flags structure
+- Include repository pattern diagram
+- Generate PNG from PlantUML
+- Update =doc/agile/= documentation
+- Update =CLAUDE.md= architecture section to include ores.variability
+
+****** DONE Phase 10: Build and Verify
+
+- Configure: =cmake --preset linux-clang-debug=
+- Build variability library: =cmake --build --preset linux-clang-debug --target ores.variability.lib=
+- Build variability tests: =cmake --build --preset linux-clang-debug --target ores.variability.tests=
+- Run variability tests
+- Build accounts library
+- Build and run accounts tests (especially bootstrap mode tests)
+- Build CLI and service
+- Full system build: =cmake --build --preset linux-clang-debug=
+- Run all tests: =cmake --build --preset linux-clang-release --target rat=
+
+***** Future Extensibility (ores.variability Scope)
+
+The =ores.variability= component can grow to include:
+- Configuration management: Application-level configuration settings
+- Environment-specific settings: Development, staging, production configs
+- User preferences: Per-user configurable options
+- System parameters: Runtime tunable parameters
+- A/B testing framework: Experiment configuration
+- Tenant-specific settings: Multi-tenancy configuration
+
+***** Open Questions
+
+1. Should we create CLI commands for managing feature flags?
+   - Would make it easier to toggle flags without SQL
+   - Could be added in this story or deferred
+
+2. Should feature flags be exposed via the comms protocol?
+   - Would allow Qt client to query/display system flags
+   - Might be useful for admin interfaces
+
+3. Do we want to version the variability component (e.g., v1 namespace)?
+   - Could help with future API evolution
+   - Might be premature at this stage
+
+***** Notes
+
+- Ensure we are using temporal patterns to access data
+- Create a service to hide complexity around flags
+- Consider callback mechanism for flag update notifications
+
 *** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
+    CLOCK: [2025-11-28 Fri 09:01]--[2025-11-28 Fri 10:51] =>  1:50
     CLOCK: [2025-11-27 Thu 10:30]--[2025-11-27 Thu 11:41] =>  1:11
     CLOCK: [2025-11-26 Wed 09:40]--[2025-11-26 Wed 11:05] =>  1:25
     CLOCK: [2025-11-25 Tue 18:00]--[2025-11-25 Tue 18:55] =>  0:55
@@ -2689,6 +2887,16 @@ Links:
 - [[https://code.claude.com/docs/en/skills][Claude: Agent Skills]]
 - [[https://www.reddit.com/r/ClaudeCode/comments/1oywsa1/claude_code_skills_activate_20_of_the_time_heres/][reddit: Claude Code skills activate 20% of the time. Here's how I got to 84%.]]
 - [[https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably][How to Make Claude Code Skills Activate Reliably]]
+
+*** Create a variability service for feature flags                     :code:
+
+We should not expose the repository directly. Instead, consumers should use a
+service interface which queries the repository as needed.
+
+*** Users cannot update their passwords                                :code:
+
+At present it is not possible to update passwords, or any other property of an
+account.
 
 *** Add screen in qt to exit bootstrap mode                            :code:
 
@@ -2752,38 +2960,6 @@ Why We Need create_initial_admin_request
 - is admin should be a bool: =--is-admin arg (=0)=
 - add account duplicates logic. We should have a single service for this.
 - split application into entities.
-
-*** Split feature flags out of accounts                               :code::
-
-We need to use feature flags from many other subsystems. They do not belong in
-accounts.
-
-Notes from claude:
-
-Future Story: Feature Flags Subsystem
-
-What it would include:
-
-- =ores.flags= or =ores.config= component
-- Feature flag repository and service
-- Dynamic flag updates with change notification
-- Caching strategy with invalidation
-- All other components depend on this infrastructure layer
-
-Benefits:
-
-- Proper separation of concerns
-- Solves the shared state problem correctly
-- Reusable for other feature flags
-- Clear ownership
-
-Notes:
-
-- ensure we are using temporal patterns to access data; it seems we are not at
-  present since updating the flag does not generate new entries.
-- create a service to hide the complexity around flags.
-- we probably need some kind of callback mechanism so that when a feature is
-  updated we notify listeners.
 
 *** Multi-threaded scenarios with comms                                :code:
 

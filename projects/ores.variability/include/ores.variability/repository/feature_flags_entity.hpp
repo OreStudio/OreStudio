@@ -17,19 +17,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_TABLE_HPP
-#define ORES_ACCOUNTS_DOMAIN_FEATURE_FLAGS_TABLE_HPP
+#ifndef ORES_VARIABILITY_REPOSITORY_FEATURE_FLAGS_ENTITY_HPP
+#define ORES_VARIABILITY_REPOSITORY_FEATURE_FLAGS_ENTITY_HPP
 
 #include <string>
-#include <vector>
-#include "ores.accounts/domain/feature_flags.hpp"
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
 
-namespace ores::accounts::domain {
+namespace ores::variability::repository {
 
 /**
- * @brief Converts feature flags to table format.
+ * @brief Represents a feature flag in the database.
  */
-std::string convert_to_table(const std::vector<feature_flags>& v);
+struct feature_flags_entity {
+    constexpr static const char* schema = "oresdb";
+    constexpr static const char* tablename = "feature_flags";
+
+    sqlgen::PrimaryKey<std::string> name;
+    int enabled;
+    std::string description;
+    std::string modified_by;
+    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
+    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";
+};
+
+std::ostream& operator<<(std::ostream& s, const feature_flags_entity& v);
 
 }
 

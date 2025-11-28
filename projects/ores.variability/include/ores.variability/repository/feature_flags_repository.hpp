@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_REPOSITORY_FEATURE_FLAGS_REPOSITORY_HPP
-#define ORES_ACCOUNTS_REPOSITORY_FEATURE_FLAGS_REPOSITORY_HPP
+#ifndef ORES_VARIABILITY_REPOSITORY_FEATURE_FLAGS_REPOSITORY_HPP
+#define ORES_VARIABILITY_REPOSITORY_FEATURE_FLAGS_REPOSITORY_HPP
 
 #include <string>
 #include <vector>
@@ -27,9 +27,9 @@
 #include "ores.utility/repository/context.hpp"
 #include "ores.utility/repository/helpers.hpp"
 #include "ores.utility/repository/bitemporal_operations.hpp"
-#include "ores.accounts/domain/feature_flags.hpp"
+#include "ores.variability/domain/feature_flags.hpp"
 
-namespace ores::accounts::repository {
+namespace ores::variability::repository {
 
 /**
  * @brief Reads and writes feature flags from data storage.
@@ -39,7 +39,7 @@ private:
     [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
         static auto instance = make_logger(
-            "ores.accounts.repository.feature_flags_repository");
+            "ores.variability.repository.feature_flags_repository");
         return instance;
     }
 

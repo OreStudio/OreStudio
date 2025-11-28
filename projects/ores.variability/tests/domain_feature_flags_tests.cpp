@@ -17,22 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.accounts/domain/feature_flags.hpp"
+#include "ores.variability/domain/feature_flags.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.accounts/domain/feature_flags_json_io.hpp" // IWYU pragma: keep.
-#include "ores.accounts/domain/feature_flags_table.hpp"
+#include "ores.variability/domain/feature_flags_json_io.hpp" // IWYU pragma: keep.
+#include "ores.variability/domain/feature_flags_table.hpp"
 
 namespace {
 
-const std::string test_suite("ores.accounts.tests");
+const std::string test_suite("ores.variability.tests");
 const std::string tags("[domain]");
 
 }
 
-using ores::accounts::domain::feature_flags;
+using ores::variability::domain::feature_flags;
 using namespace ores::utility::log;
 
 TEST_CASE("create_feature_flag_with_valid_fields", tags) {

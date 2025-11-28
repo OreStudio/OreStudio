@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 361A6093-D24C-9BC4-0543-6540461EDBB6
+:END:
+#+title: ORE Studio Comms Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Communications library providing client-server connectivity for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio Comms Component Diagram
+[[file:ores.comms.png][file:ores.comms.png]]
+
+Implements a custom binary protocol over SSL/TLS for secure client-server
+communication. Key features:
+
+- SSL/TLS security: All connections secured with OpenSSL
+- Binary protocol: Frame-based message exchange with headers and payloads
+- Server: Asynchronous multi-client server with session management
+- Client: Thread-safe client with both sync and async APIs
+- Handshake: Connection establishment with server/client identification
+- Message dispatching: Pluggable message handlers by subsystem range
+- Connection pooling: Maximum connection limits and active connection tracking
+- Error handling: Comprehensive error codes and std::expected-based APIs
+
+The protocol namespace defines message frames, types, handlers, and the
+message dispatcher that routes messages to registered subsystem handlers.
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

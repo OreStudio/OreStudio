@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: 00E33570-F7BE-7F94-FD83-2FDC9CB04463
+:END:
+#+title: ORE Studio Utility Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Foundation utilities used across all [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]] components.
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio Utility Component Diagram
+[[file:ores.utility.png][file:ores.utility.png]]
+
+Provides core infrastructure and helper functions that don't fit into
+domain-specific modules. Key namespaces:
+
+- database: PostgreSQL connection management with libpq integration
+- repository: Database context abstraction for ORM operations
+- log: Boost.Log integration with per-module and per-test-case logging
+- filesystem: File I/O utilities, directory operations, recursive search
+- string: Type conversion and string manipulation utilities
+- uuid: UUID v7 generation for time-ordered unique identifiers
+- environment: Environment variable access with type conversion
+
+This module has no dependencies on other ORE Studio components, making it
+the foundation layer upon which all other modules are built.
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

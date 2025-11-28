@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5
+:END:
+#+title: ORE Studio Variability Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+System [[https://masd-project.github.io/progen/docs/mde_and_variability_modeling.html#ID-3DD5C3FF-5BC2-F8A4-2A6B-4F037A78D8E6][variability]] and configuration management module for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio Variability Component Diagram
+[[file:ores.variability.png][file:ores.variability.png]]
+
+This module provides infrastructure for managing system configurability and
+runtime behavior variation. It serves as the foundation for all aspects of
+system adaptability. Key features include:
+
+- Feature flags: runtime toggles for controlling system features and behavior
+- Temporal versioning: bitemporal tracking of configuration changes
+- Configuration management: centralized storage of system settings
+- Audit support: tracking who changed what and when
+- Repository pattern: ORM-based persistence with database integration
+
+The module is designed to be a dependency for other ORE Studio components
+that need runtime configurability. It provides a clean separation between
+system configuration concerns and domain-specific business logic.
+
+The module is organized into namespaces: domain (core entities) and
+repository (ORM and persistence).
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

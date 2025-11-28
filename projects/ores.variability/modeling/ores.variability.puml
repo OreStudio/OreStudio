@@ -1,0 +1,119 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    note "System variability and configuration management module for ORE Studio.\n\nThis module provides infrastructure for managing system configurability and\nruntime behavior variation. It serves as the foundation for all aspects of\nsystem adaptability." as ores_variability_note
+    variability --- ores_variability_note
+    namespace variability #F2F2F2 {
+        namespace domain #F2F2F2 {
+            class feature_flags #F7E5FF {
+                +{field} name std::string
+                +{field} enabled bool
+                +{field} description std::string
+                +{field} modified_by std::string
+            }
+
+            note top of feature_flags
+            Represents a feature flag in the domain layer.
+
+            Fields:
+
+            - name: Name of the feature flag, serves as the unique identifier.
+            - enabled: Flag indicating whether the feature is enabled or disabled.
+            - description: Description of what the feature flag controls.
+            - modified_by: Username of the user who last modified this feature flag.
+            end note
+        }
+
+        namespace repository #F2F2F2 {
+            class feature_flags_entity <<orm>> #99CB99 {
+                +{field} name sqlgen::PrimaryKey<std::string>
+                +{field} enabled int
+                +{field} description std::string
+                +{field} modified_by std::string
+                +{field} valid_from sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
+                +{field} valid_to sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
+            }
+
+            note top of feature_flags_entity
+            Represents a feature flag in the database.
+
+            ORM Settings:
+
+            - Schema: oresdb
+            - Table: feature_flags
+
+            Fields:
+
+            - name: Primary key and feature flag name.
+            - enabled: Enabled flag.
+            - description: Feature description.
+            - modified_by: Username who modified.
+            - valid_from: Temporal validity start.
+            - valid_to: Temporal validity end.
+            end note
+
+            class feature_flags_mapper <<orm>> #99CB99 {
+                +{static} map(feature_flags_entity) domain::feature_flags
+                +{static} map(domain::feature_flags) feature_flags_entity
+                +{static} map(std::vector<feature_flags_entity>) std::vector<domain::feature_flags>
+                +{static} map(std::vector<domain::feature_flags>) std::vector<feature_flags_entity>
+            }
+
+            note top of feature_flags_mapper
+            Maps feature flags domain model entities to data storage layer and vice-versa.
+            end note
+
+            feature_flags_mapper ..> ores::variability::domain::feature_flags : uses
+            feature_flags_mapper ..> ores::variability::repository::feature_flags_entity : uses
+
+            class feature_flags_repository <<orm>> #99CB99 {
+                +feature_flags_repository(context)
+                +sql() std::string
+                +write(domain::feature_flags) void
+                +write(std::vector<domain::feature_flags>) void
+                +read_latest() std::vector<domain::feature_flags>
+                +read_latest(std::string) std::vector<domain::feature_flags>
+                +read_all() std::vector<domain::feature_flags>
+                +read_all(std::string) std::vector<domain::feature_flags>
+                +remove(std::string) void
+                -{field} ctx_ context
+            }
+
+            note top of feature_flags_repository
+            Reads and writes feature flags from data storage.
+
+            Provides methods to:
+            - Write feature flags to database
+            - Read latest feature flags (current values)
+            - Read all feature flags (full history)
+            - Remove feature flags (closes temporal validity)
+
+            Uses bitemporal versioning to track changes over time.
+            end note
+
+            feature_flags_repository ..> ores::variability::domain::feature_flags : uses
+        }
+    }
+}
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.variability.puml"
+' End:
+@enduml

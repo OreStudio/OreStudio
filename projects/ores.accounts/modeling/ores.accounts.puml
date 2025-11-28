@@ -75,24 +75,6 @@ namespace ores #F2F2F2 {
             end note
 
             login_info --> ores::accounts::domain::account
-
-            class feature_flags #F7E5FF {
-                +{field} name std::string
-                +{field} enabled bool
-                +{field} description std::string
-                +{field} modified_by std::string
-            }
-
-            note top of feature_flags
-            Represents a feature flag in the domain layer.
-
-            Fields:
-
-            - name: Name of the feature flag, serves as the unique identifier.
-            - enabled: Flag indicating whether the feature is enabled or disabled.
-            - description: Description of what the feature flag controls.
-            - modified_by: Username of the user who last modified this feature flag.
-            end note
         }
 
         namespace repository #F2F2F2 {
@@ -162,33 +144,6 @@ namespace ores #F2F2F2 {
             - online: Online status flag.
             end note
 
-            class feature_flags_entity <<orm>> #99CB99 {
-                +{field} name sqlgen::PrimaryKey<std::string>
-                +{field} enabled int
-                +{field} description std::string
-                +{field} modified_by std::string
-                +{field} valid_from sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
-                +{field} valid_to sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
-            }
-
-            note top of feature_flags_entity
-            Represents a feature flag in the database.
-
-            ORM Settings:
-
-            - Schema: oresdb
-            - Table: feature_flags
-
-            Fields:
-
-            - name: Primary key and feature flag name.
-            - enabled: Enabled flag.
-            - description: Feature description.
-            - modified_by: Username who modified.
-            - valid_from: Temporal validity start.
-            - valid_to: Temporal validity end.
-            end note
-
             class account_mapper <<orm>> #99CB99 {
                 +{static} map(account_entity) domain::account
                 +{static} map(domain::account) account_entity
@@ -218,20 +173,6 @@ namespace ores #F2F2F2 {
 
             login_info_mapper ..> ores::accounts::domain::login_info
             login_info_mapper ..> ores::accounts::repository::login_info_entity
-
-            class feature_flags_mapper <<orm>> #99CB99 {
-                +{static} map(feature_flags_entity) domain::feature_flags
-                +{static} map(domain::feature_flags) feature_flags_entity
-                +{static} map(std::vector<feature_flags_entity>) std::vector<domain::feature_flags>
-                +{static} map(std::vector<domain::feature_flags>) std::vector<feature_flags_entity>
-            }
-
-            note top of feature_flags_mapper
-            Maps feature flags domain model entities to data storage layer and vice-versa.
-            end note
-
-            feature_flags_mapper ..> ores::accounts::domain::feature_flags
-            feature_flags_mapper ..> ores::accounts::repository::feature_flags_entity
 
             class account_repository <<orm>> #99CB99 {
                 +sql() std::string

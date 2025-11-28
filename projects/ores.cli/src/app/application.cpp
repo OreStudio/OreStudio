@@ -46,10 +46,10 @@
 #include "ores.accounts/service/bootstrap_mode_service.hpp"
 #include "ores.accounts/domain/account_table.hpp"
 #include "ores.accounts/domain/account_json.hpp"
-#include "ores.accounts/domain/feature_flags_table.hpp"
-#include "ores.accounts/domain/feature_flags_json.hpp"
+#include "ores.variability/domain/feature_flags_table.hpp"
+#include "ores.variability/domain/feature_flags_json.hpp"
 #include "ores.accounts/repository/account_repository.hpp"
-#include "ores.accounts/repository/feature_flags_repository.hpp"
+#include "ores.variability/repository/feature_flags_repository.hpp"
 #include "ores.accounts/security/password_manager.hpp"
 #include "ores.cli/app/application_exception.hpp"
 
@@ -195,8 +195,8 @@ void application::
 export_feature_flags(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting feature flags.";
 
-    accounts::repository::feature_flags_repository repo(context_);
-    std::vector<accounts::domain::feature_flags> flags;
+    variability::repository::feature_flags_repository repo(context_);
+    std::vector<variability::domain::feature_flags> flags;
 
     if (!cfg.key.empty()) {
         // Export specific feature flag by name
@@ -218,9 +218,9 @@ export_feature_flags(const config::export_options& cfg) const {
     if (cfg.target_format == config::format::json ||
         cfg.target_format == config::format::table) {
         if (cfg.target_format == config::format::json) {
-            output_stream_ << accounts::domain::convert_to_json(flags) << std::endl;
+            output_stream_ << variability::domain::convert_to_json(flags) << std::endl;
         } else if (cfg.target_format == config::format::table) {
-            output_stream_ << accounts::domain::convert_to_table(flags) << std::endl;
+            output_stream_ << variability::domain::convert_to_table(flags) << std::endl;
         }
     } else {
         BOOST_THROW_EXCEPTION(
@@ -310,7 +310,7 @@ delete_account(const config::delete_options& cfg) const {
 void application::
 delete_feature_flag(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting feature flag: " << cfg.key;
-    accounts::repository::feature_flags_repository repo(context_);
+    variability::repository::feature_flags_repository repo(context_);
     repo.remove(cfg.key);
     output_stream_ << "Feature flag deleted successfully: " << cfg.key << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Deleted feature flag: " << cfg.key;
@@ -384,7 +384,7 @@ add_account(const config::add_options& cfg) const {
 
     // Validate password policy
     using accounts::security::password_policy_validator;
-    using accounts::repository::feature_flags_repository;
+    using variability::repository::feature_flags_repository;
 
     // Check if password validation is disabled via feature flag
     feature_flags_repository flag_repo(context_);
@@ -445,14 +445,14 @@ add_feature_flag(const config::add_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Adding feature flag: " << cfg.flag_name.value_or("");
 
     // Construct feature flag from command-line arguments
-    accounts::domain::feature_flags flag;
+    variability::domain::feature_flags flag;
     flag.name = cfg.flag_name.value();
     flag.description = cfg.description.value_or("");
     flag.enabled = cfg.enabled.value_or(false);
     flag.modified_by = cfg.modified_by.value();
 
     // Write to database
-    accounts::repository::feature_flags_repository repo(context_);
+    variability::repository::feature_flags_repository repo(context_);
     repo.write(flag);
 
     output_stream_ << "Successfully added feature flag: " << flag.name << std::endl;

@@ -24,8 +24,12 @@
 
 namespace ores::accounts::domain {
 
+namespace {
+
 void print_account_table(std::ostream& s, const std::vector<account>& v) {
     s << std::endl << convert_to_table(v) << std::endl;
+}
+
 }
 
 std::ostream& operator<<(std::ostream& s, const std::vector<account>& v) {

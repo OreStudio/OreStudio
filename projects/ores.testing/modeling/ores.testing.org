@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 7F58FF13-5A85-49C4-09BB-EED86B874ABB
+:END:
+#+title: ORE Studio Testing Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Testing infrastructure common to all test projects in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio Testing Component Diagram
+[[file:ores.testing.png][file:ores.testing.png]]
+
+Provides comprehensive testing utilities for ORE Studio components using Catch2.
+Key features:
+
+- Database isolation: Each test process gets a unique database for parallel
+  execution.
+- Catch2 listeners: Automatic logging and database lifecycle management
+- Logging integration: Boost.Log configured per-test-case with suite-based
+  organisation.
+- Database helpers: Table truncation and context management for tests
+- Template databases: Tests clone from oresdb_template with full schema
+- Environment-driven: Database configuration from TEST_ORES_DB_* environment
+  variables
+
+Usage: Register the listeners in each test's =main.cpp=:
+
+#+begin_src c++
+  CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
+  CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
+#+end_src
+
+The logging_listener initializes logging per test case, the
+=database_lifecycle_listener= creates/drops test databases.
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

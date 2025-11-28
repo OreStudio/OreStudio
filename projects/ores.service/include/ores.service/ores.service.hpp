@@ -34,7 +34,7 @@
  * - Concurrent connections: Supports multiple simultaneous client connections
  * - Asynchronous I/O: Built on Boost.Asio coroutines for scalable async operations
  *
- * The module is organized into namespaces: config (option parsing and
+ * The component is organized into namespaces: config (option parsing and
  * configuration), and app (application hosting and execution).
  */
 namespace ores::service {}

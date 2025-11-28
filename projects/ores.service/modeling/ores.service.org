@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 7141E32C-80E2-6B74-F273-C80DAA42D727
+:END:
+#+title: ORE Studio Service Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Main server application for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio Service Component Diagram
+[[file:ores.service.png][file:ores.service.png]]
+
+Multi-client server application hosting the ORE Studio backend services. Key
+features:
+
+- Server hosting: Runs the ORE Studio comms server with SSL/TLS
+- Subsystem integration: Registers message handlers for accounts, risk, and
+  other subsystems
+- Database access: Provides database context to all subsystems
+- Configuration: Boost program_options parser for server, database, and
+  logging configuration
+- Concurrent connections: Supports multiple simultaneous client connections
+- Asynchronous I/O: Built on Boost.Asio coroutines for scalable async operations
+
+The component is organized into namespaces: config (option parsing and
+configuration), and app (application hosting and execution).
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

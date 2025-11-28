@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: F0DAACD0-8EAB-46C4-6B53-640921E3F225
+:END:
+#+title: ORE Studio CLI Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Console tool for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]] providing low-level data management.
+
+For instructions on how to use it, see [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI Entity-Based Recipes]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio Accounts Component Diagram
+[[file:ores.cli.png][file:ores.cli.png]]
+
+Command-line interface for importing and exporting ORE data to and from the
+database. Key features:
+
+- Import: Load currencies from JSON, XML, or CSV files into the database
+- Export: Extract currencies to JSON, XML, or CSV format
+- Temporal queries: Export data as-of specific timepoints or all versions
+- Filter support: Export specific entities by key
+- Configuration: Boost program_options parser for CLI arguments
+- Database integration: Direct repository access for data operations
+
+The module is organized into namespaces: config (option parsing and
+configuration), and app (application hosting and execution).
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

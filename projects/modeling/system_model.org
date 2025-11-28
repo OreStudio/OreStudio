@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: D773166D-0C91-8CB4-3323-42166BC07687
+:END:
+#+title: System Model
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+This file documents the architecture of the [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]] system. ORE Studio
+provides a graphical interface and data management for [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine
+(ORE)]].
+
+ORE Studio is a [[https://en.cppreference.com/w/cpp/23.html][C++-23]] application providing persistent storage, graphical user
+interface, and orchestration tools for quantitative risk analysis using ORE. The
+system is built on a layered architecture with clear separation of concerns. The
+objective of this page is to describe the system architecture.
+
+
+#+attr_html: :class note
+#+begin_quote
+To operate on the system architecture, see the [[id:37b88704-7a45-4347-a80a-9d9b4ee71bef][System Architect]] skill.
+#+end_quote
+
+* System Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio System Diagram
+[[file:ores.png][file:ores.png]]
+
+The system is organized into five architectural layers:
+
+** Foundation Layer
+
+- Components: [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]], [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability]].
+- Core infrastructure: database connectivity, logging, filesystem utilities.
+- UUID generation, environment variables, string conversion.
+- No dependencies on other ORE Studio components.
+
+** Infrastructure Layer
+
+- Components: [[id:361A6093-D24C-9BC4-0543-6540461EDBB6][ores.comms]], [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]]
+- Communications: Binary protocol over SSL/TLS for client-server messaging.
+- Testing: Catch2 integration with database isolation and logging.
+- Depends on: Foundation.
+
+** Domain Layer
+
+- Components: [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.risk]], [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.accounts]].
+- *Risk*: ORE domain model with XML/CSV/JSON I/O and temporal versioning.
+- *Accounts*: User authentication, authorization, and feature flags.
+- Depends on: Foundation, Infrastructure
+
+** Application Layer
+
+- Components: [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.client]], [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]], [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]], [[id:7141E32C-80E2-6B74-F273-C80DAA42D727][ores.service]], [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]].
+- Client: REPL client.
+- CLI: Command-line import/export of currencies in multiple formats
+- Qt: Desktop GUI with MDI interface for visual data management
+- Service: Multi-client server hosting all backend services
+- Depends on: All layers
+
+* Useful Pages
+
+- To understand how we generate PlantUML diagrams see the [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Modeler]]
+  skill.
+- To understand how to add new domain types, see the [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]] skill.
+- To understand unit testing, see the [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][Unit Test Writer]] skill.
+
+* General information
+
+- For detailed component documentation, see the individual components.
+- API documentation: https://orestudio.github.io/OreStudio/doxygen/html/index.html
+- Source code: https://github.com/OreStudio/OreStudio
+- Project website: https://orestudio.github.io/OreStudio
+
+This project has no affiliation with Acadia, [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]], or
+[[https://www.quantlib.org/][QuantLib]]. See [[https://orestudio.github.io/OreStudio/doxygen/html/index.html][Doxygen documentation]] for full context.
+
+| Previous: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] |

@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: 25812E6F-7AD1-36E4-697B-EEC8015C4F1F
+:END:
+#+title: ORE Studio Qt Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Qt-based graphical user interface for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio Qt Component Diagram
+[[file:ores.qt.png][file:ores.qt.png]]
+
+Modern desktop application built with Qt 6 providing visual management of ORE
+data. Key features:
+
+- MDI interface: Multiple Document Interface with detachable windows
+- Currency management: List, create, edit, delete currencies with history tracking
+- Authentication: Login dialog with secure password handling
+- Real-time updates: Asynchronous data loading and server synchronization
+- Entity controllers: Modular controller pattern for managing entity windows
+- Custom widgets: Specialized delegates, dialogs, and UI components
+- Background logo: Customizable MDI area background
+- Connection status: Visual indication of server connectivity
+
+The application uses an entity controller pattern where MainWindow delegates
+entity-specific operations (e.g., CurrencyController) which manage their own MDI
+windows, dialogs, and data models.

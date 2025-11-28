@@ -28,7 +28,6 @@
  * - Account lifecycle: creation, listing, and deletion of user accounts
  * - Authentication: secure password hashing using scrypt, login tracking
  * - Security: account locking after failed login attempts, unlock capability
- * - Feature flags: runtime feature toggles with audit tracking
  * - Message-based API: asynchronous request/response handlers for client-server
  *   communication (subsystem range 0x2000-0x2FFF)
  * - Temporal database support: version tracking with valid_from/valid_to fields

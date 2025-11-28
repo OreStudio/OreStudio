@@ -16,5 +16,7 @@ product website.
 - [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]]: Notebooks on how to use ORE Studio.
 - [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]]: Claude code skills used in this project.
 - [[id:590DED5A-FF09-8D94-9B2B-74FC027FCFEF][Prompts]]: Set of useful prompts we've collected over time.
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][Modeling]]: UML models of the system and it's components.
+- [[https://orestudio.github.io/OreStudio/doxygen/html/index.html][Doxygen]]: Low-level C++ API documentation.
 
 | [[id:CB42DFE5-804B-E1C4-E1E3-0A6C4766609C][Ore Studio Read Me]] | [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio Main Page]] |

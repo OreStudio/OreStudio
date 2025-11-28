@@ -1,12 +1,12 @@
 :PROPERTIES:
 :ID: A1B2C3D4-E5F6-7890-ABCD-EF1234567890
+:ROAM_ALIASES: CLI
 :END:
-#+title: CLI Entity-Based Recipes
+#+title: Command Line Interface Recipes
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 
-Demonstrates all entity-based CLI commands in =ores.cli= using the new
-entity-first syntax.
+Demonstrates CLI commands in =ores.cli=.
 
 * Recipes
   :PROPERTIES:

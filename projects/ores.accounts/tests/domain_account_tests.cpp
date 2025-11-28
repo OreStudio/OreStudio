@@ -24,6 +24,7 @@
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.accounts/domain/account_json_io.hpp" // IWYU pragma: keep.
+#include "ores.accounts/domain/account_json.hpp"
 #include "ores.accounts/domain/account_table.hpp"
 
 namespace {
@@ -105,7 +106,7 @@ TEST_CASE("account_with_specific_uuid", tags) {
     CHECK(sut.username == "test.user");
 }
 
-TEST_CASE("account_serialization_to_json", tags) {
+TEST_CASE("account_insertion_operator", tags) {
     auto lg(make_logger(test_suite));
 
     account sut;
@@ -231,6 +232,61 @@ TEST_CASE("account_convert_multiple_to_table", tags) {
     CHECK(table.find("user0@example.com") != std::string::npos);
     CHECK(table.find("user1@example.com") != std::string::npos);
     CHECK(table.find("user2@example.com") != std::string::npos);
+}
+
+TEST_CASE("account_convert_single_to_json", tags) {
+    auto lg(make_logger(test_suite));
+
+    account acc;
+    acc.version = 1;
+    acc.modified_by = "admin";
+    acc.id = boost::uuids::random_generator()();
+    acc.username = "john.doe";
+    acc.password_hash = "hash123";
+    acc.password_salt = "salt456";
+    acc.totp_secret = "TOTP789";
+    acc.email = "john.doe@example.com";
+    acc.is_admin = false;
+
+    std::vector<account> accounts = {acc};
+    auto json = convert_to_json(accounts);
+
+    BOOST_LOG_SEV(lg, info) << "JSON: " << json;
+
+    CHECK(!json.empty());
+    CHECK(json.find("john.doe") != std::string::npos);
+    CHECK(json.find("john.doe@example.com") != std::string::npos);
+}
+
+TEST_CASE("account_convert_multiple_to_json", tags) {
+    auto lg(make_logger(test_suite));
+
+    std::vector<account> accounts;
+    for (int i = 0; i < 3; ++i) {
+        account acc;
+        acc.version = i + 1;
+        acc.modified_by = "system";
+        acc.id = boost::uuids::random_generator()();
+        acc.username = "user" + std::to_string(i);
+        acc.password_hash = "hash" + std::to_string(i);
+        acc.password_salt = "salt" + std::to_string(i);
+        acc.totp_secret = "TOTP" + std::to_string(i);
+        acc.email = "user" + std::to_string(i) + "@example.com";
+        acc.is_admin = (i == 0);
+        accounts.push_back(acc);
+    }
+
+    auto json = convert_to_json(accounts);
+
+    BOOST_LOG_SEV(lg, info) << "JSON: " << json;
+
+    CHECK(!json.empty());
+    CHECK(json.find("user0") != std::string::npos);
+    CHECK(json.find("user1") != std::string::npos);
+    CHECK(json.find("user2") != std::string::npos);
+    CHECK(json.find("user0@example.com") != std::string::npos);
+    CHECK(json.find("user1@example.com") != std::string::npos);
+    CHECK(json.find("user2@example.com") != std::string::npos);
 }
 
 TEST_CASE("account_convert_empty_vector_to_table", tags) {

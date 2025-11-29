@@ -35,7 +35,7 @@ handshake_request::serialize(handshake_request v) {
 
 std::expected<handshake_request, error_code>
 handshake_request::deserialize(std::span<const std::byte> data) {
-    auto result = rfl::bson::read<handshake_request>(data.data(), data.size());
+    auto result = rfl::bson::read<handshake_request>(reinterpret_cast<const char*>(data.data()), data.size());
 
     if (!result) {
         return std::unexpected(error_code::invalid_message_type);
@@ -55,7 +55,7 @@ handshake_response::serialize(handshake_response v) {
 
 std::expected<handshake_response, error_code> handshake_response::
 deserialize(std::span<const std::byte> data) {
-    auto result = rfl::bson::read<handshake_response>(data.data(), data.size());
+    auto result = rfl::bson::read<handshake_response>(reinterpret_cast<const char*>(data.data()), data.size());
 
     if (!result) {
         return std::unexpected(error_code::invalid_message_type);
@@ -75,7 +75,7 @@ handshake_ack::serialize(handshake_ack v) {
 
 std::expected<handshake_ack, error_code> handshake_ack::
 deserialize(std::span<const std::byte> data) {
-    auto result = rfl::bson::read<handshake_ack>(data.data(), data.size());
+    auto result = rfl::bson::read<handshake_ack>(reinterpret_cast<const char*>(data.data()), data.size());
 
     if (!result) {
         return std::unexpected(error_code::invalid_message_type);
@@ -95,7 +95,7 @@ error_response::serialize(error_response v) {
 
 std::expected<error_response, error_code> error_response::
 deserialize(std::span<const std::byte> data) {
-    auto result = rfl::bson::read<error_response>(data.data(), data.size());
+    auto result = rfl::bson::read<error_response>(reinterpret_cast<const char*>(data.data()), data.size());
 
     if (!result) {
         return std::unexpected(error_code::invalid_message_type);

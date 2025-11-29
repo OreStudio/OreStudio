@@ -47,3 +47,6 @@ projects/ores.utility/config/config.hpp
 
 # For now ignore the project claude directory
 .claude/
+
+# VSCode
+.vscode/

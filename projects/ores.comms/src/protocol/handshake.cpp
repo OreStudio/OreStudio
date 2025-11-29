@@ -18,122 +18,143 @@
  *
  */
 #include "ores.comms/protocol/handshake.hpp"
+
 #include <rfl.hpp>
 #include <rfl/bson.hpp>
 
 namespace ores::comms::protocol {
 
-    std::vector<std::byte> handshake_request::serialize(handshake_request v) {
-        auto bson_data = rfl::bson::write(v);
-        return {reinterpret_cast<const std::byte*>(bson_data.data()),
-                reinterpret_cast<const std::byte*>(bson_data.data()) + bson_data.size()};
+std::vector<std::byte>
+handshake_request::serialize(handshake_request v) {
+    auto bson_data = rfl::bson::write(v);
+    return {
+        reinterpret_cast<const std::byte*>(bson_data.data()),
+        reinterpret_cast<const std::byte*>(bson_data.data()) + bson_data.size()
+    };
+}
+
+std::expected<handshake_request, error_code>
+handshake_request::deserialize(std::span<const std::byte> data) {
+    auto result = rfl::bson::read<handshake_request>(reinterpret_cast<const char*>(data.data()), data.size());
+
+    if (!result) {
+        return std::unexpected(error_code::invalid_message_type);
     }
 
-    std::expected<handshake_request, error_code>
-    handshake_request::deserialize(std::span<const std::byte> data) {
-        auto result = rfl::bson::read<handshake_request>(reinterpret_cast<const char*>(data.data()),
-                                                         data.size());
+    return result.value();
+}
 
-        if (!result) {
-            return std::unexpected(error_code::invalid_message_type);
-        }
+std::vector<std::byte>
+handshake_response::serialize(handshake_response v) {
+    auto bson_data = rfl::bson::write(v);
+    return {
+        reinterpret_cast<const std::byte*>(bson_data.data()),
+        reinterpret_cast<const std::byte*>(bson_data.data()) + bson_data.size()
+    };
+}
 
-        return result.value();
+std::expected<handshake_response, error_code> handshake_response::
+deserialize(std::span<const std::byte> data) {
+    auto result = rfl::bson::read<handshake_response>(reinterpret_cast<const char*>(data.data()), data.size());
+
+    if (!result) {
+        return std::unexpected(error_code::invalid_message_type);
     }
 
-    std::vector<std::byte> handshake_response::serialize(handshake_response v) {
-        auto bson_data = rfl::bson::write(v);
-        return {reinterpret_cast<const std::byte*>(bson_data.data()),
-                reinterpret_cast<const std::byte*>(bson_data.data()) + bson_data.size()};
+    return result.value();
+}
+
+std::vector<std::byte>
+handshake_ack::serialize(handshake_ack v) {
+    auto bson_data = rfl::bson::write(v);
+    return {
+        reinterpret_cast<const std::byte*>(bson_data.data()),
+        reinterpret_cast<const std::byte*>(bson_data.data()) + bson_data.size()
+    };
+}
+
+std::expected<handshake_ack, error_code> handshake_ack::
+deserialize(std::span<const std::byte> data) {
+    auto result = rfl::bson::read<handshake_ack>(reinterpret_cast<const char*>(data.data()), data.size());
+
+    if (!result) {
+        return std::unexpected(error_code::invalid_message_type);
     }
 
-    std::expected<handshake_response, error_code>
-    handshake_response::deserialize(std::span<const std::byte> data) {
-        auto result = rfl::bson::read<handshake_response>(
-            reinterpret_cast<const char*>(data.data()), data.size());
+    return result.value();
+}
 
-        if (!result) {
-            return std::unexpected(error_code::invalid_message_type);
-        }
+std::vector<std::byte>
+error_response::serialize(error_response v) {
+    auto bson_data = rfl::bson::write(v);
+    return {
+        reinterpret_cast<const std::byte*>(bson_data.data()),
+        reinterpret_cast<const std::byte*>(bson_data.data()) + bson_data.size()
+    };
+}
 
-        return result.value();
+std::expected<error_response, error_code> error_response::
+deserialize(std::span<const std::byte> data) {
+    auto result = rfl::bson::read<error_response>(reinterpret_cast<const char*>(data.data()), data.size());
+
+    if (!result) {
+        return std::unexpected(error_code::invalid_message_type);
     }
 
-    std::vector<std::byte> handshake_ack::serialize(handshake_ack v) {
-        auto bson_data = rfl::bson::write(v);
-        return {reinterpret_cast<const std::byte*>(bson_data.data()),
-                reinterpret_cast<const std::byte*>(bson_data.data()) + bson_data.size()};
-    }
+    return result.value();
+}
 
-    std::expected<handshake_ack, error_code>
-    handshake_ack::deserialize(std::span<const std::byte> data) {
-        auto result =
-            rfl::bson::read<handshake_ack>(reinterpret_cast<const char*>(data.data()), data.size());
+// Frame creation functions
+frame create_handshake_request_frame(
+    std::uint32_t sequence,
+    const std::string& client_identifier) {
 
-        if (!result) {
-            return std::unexpected(error_code::invalid_message_type);
-        }
+    handshake_request req {
+        .client_version_major = PROTOCOL_VERSION_MAJOR,
+        .client_version_minor = PROTOCOL_VERSION_MINOR,
+        .client_identifier = client_identifier
+    };
 
-        return result.value();
-    }
+    return {message_type::handshake_request, sequence, req.serialize(req)};
+}
 
-    std::vector<std::byte> error_response::serialize(error_response v) {
-        auto bson_data = rfl::bson::write(v);
-        return {reinterpret_cast<const std::byte*>(bson_data.data()),
-                reinterpret_cast<const std::byte*>(bson_data.data()) + bson_data.size()};
-    }
+frame create_handshake_response_frame(
+    std::uint32_t sequence,
+    bool version_compatible,
+    const std::string& server_identifier,
+    error_code status) {
 
-    std::expected<error_response, error_code>
-    error_response::deserialize(std::span<const std::byte> data) {
-        auto result = rfl::bson::read<error_response>(reinterpret_cast<const char*>(data.data()),
-                                                      data.size());
+    handshake_response resp{
+        .server_version_major = PROTOCOL_VERSION_MAJOR,
+        .server_version_minor = PROTOCOL_VERSION_MINOR,
+        .version_compatible = version_compatible,
+        .server_identifier = server_identifier,
+        .status = status
+    };
 
-        if (!result) {
-            return std::unexpected(error_code::invalid_message_type);
-        }
+    return { message_type::handshake_response, sequence, resp.serialize(resp) };
+}
 
-        return result.value();
-    }
+frame create_handshake_ack_frame(
+    std::uint32_t sequence,
+    error_code status) {
 
-    // Frame creation functions
-    frame create_handshake_request_frame(std::uint32_t sequence,
-                                         const std::string& client_identifier) {
+    handshake_ack ack{status};
 
-        handshake_request req{.client_version_major = PROTOCOL_VERSION_MAJOR,
-                              .client_version_minor = PROTOCOL_VERSION_MINOR,
-                              .client_identifier = client_identifier};
+    return { message_type::handshake_ack, sequence, ack.serialize(ack) };
+}
 
-        return {message_type::handshake_request, sequence, req.serialize(req)};
-    }
+frame create_error_response_frame(
+    std::uint32_t sequence,
+    error_code code,
+    const std::string& message) {
 
-    frame create_handshake_response_frame(std::uint32_t sequence,
-                                          bool version_compatible,
-                                          const std::string& server_identifier,
-                                          error_code status) {
+    error_response err{
+        .code = code,
+        .message = message
+    };
 
-        handshake_response resp{.server_version_major = PROTOCOL_VERSION_MAJOR,
-                                .server_version_minor = PROTOCOL_VERSION_MINOR,
-                                .version_compatible = version_compatible,
-                                .server_identifier = server_identifier,
-                                .status = status};
-
-        return {message_type::handshake_response, sequence, resp.serialize(resp)};
-    }
-
-    frame create_handshake_ack_frame(std::uint32_t sequence, error_code status) {
-
-        handshake_ack ack{status};
-
-        return {message_type::handshake_ack, sequence, ack.serialize(ack)};
-    }
-
-    frame create_error_response_frame(std::uint32_t sequence,
-                                      error_code code,
-                                      const std::string& message) {
-
-        error_response err{.code = code, .message = message};
-
-        return {message_type::error_response, sequence, err.serialize(err)};
-    }
+    return { message_type::error_response, sequence, err.serialize(err) };
+}
 
 }

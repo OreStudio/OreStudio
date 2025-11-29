@@ -66,6 +66,16 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Troubleshoot skills in claude                                     :infra:
+
+We don't seem to be able to use skills reliably.
+
+Links:
+
+- [[https://code.claude.com/docs/en/skills][Claude: Agent Skills]]
+- [[https://www.reddit.com/r/ClaudeCode/comments/1oywsa1/claude_code_skills_activate_20_of_the_time_heres/][reddit: Claude Code skills activate 20% of the time. Here's how I got to 84%.]]
+- [[https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably][How to Make Claude Code Skills Activate Reliably]]
+
 *** Add entity related charts                                          :code:
 
 Have a think on things that could benefit from a graphical display at the entity

@@ -59,22 +59,29 @@ void server::setup_ssl_context() {
                               << options_.certificate_file;
 }
 
-boost::asio::awaitable<void> server::run(boost::asio::io_context& io_context) {
+boost::asio::awaitable<void> server::run(boost::asio::io_context& io_context,
+    std::function<void(std::uint16_t)> on_listening) {
     BOOST_LOG_SEV(lg(), info) << "ORES Server starting on port " << options_.port
                               << ". Identifier: " << options_.server_identifier;
     BOOST_LOG_SEV(lg(), info) << "Protocol version: "
                               << protocol::PROTOCOL_VERSION_MAJOR << "."
                               << protocol::PROTOCOL_VERSION_MINOR;
 
-    co_await accept_loop(io_context);
+    co_await accept_loop(io_context, std::move(on_listening));
 }
 
-boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_context) {
+boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_context,
+    std::function<void(std::uint16_t)> on_listening) {
     tcp::acceptor acceptor(
         co_await boost::asio::this_coro::executor,
         tcp::endpoint(tcp::v4(), options_.port));
 
-    BOOST_LOG_SEV(lg(), info) << "Server listening on port " << options_.port;
+    auto local_port = acceptor.local_endpoint().port();
+    BOOST_LOG_SEV(lg(), info) << "Server listening on port " << local_port;
+
+    if (on_listening) {
+        on_listening(local_port);
+    }
 
     while (true) {
         try {

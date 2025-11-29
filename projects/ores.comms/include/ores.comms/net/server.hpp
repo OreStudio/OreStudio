@@ -21,6 +21,7 @@
 #define ORES_COMMS_NET_SERVER_HPP
 
 #include <string>
+#include <functional>
 #include <memory>
 #include <atomic>
 #include <boost/asio/ssl.hpp>
@@ -70,14 +71,17 @@ public:
      * Accepts connections and spawns sessions until stopped.
      *
      * @param io_context The io_context to run the server on
+     * @param on_listening Optional callback invoked when server starts listening
      */
-    boost::asio::awaitable<void> run(boost::asio::io_context& io_context);
+    boost::asio::awaitable<void> run(boost::asio::io_context& io_context,
+        std::function<void(std::uint16_t)> on_listening = nullptr);
 
 private:
     /**
      * @brief Accept connections and spawn sessions.
      */
-    boost::asio::awaitable<void> accept_loop(boost::asio::io_context& io_context);
+    boost::asio::awaitable<void> accept_loop(boost::asio::io_context& io_context,
+        std::function<void(std::uint16_t)> on_listening);
 
     /**
      * @brief Create and configure SSL context.

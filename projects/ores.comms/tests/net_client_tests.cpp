@@ -113,32 +113,40 @@ TEST_CASE("test_client_server_connection", tags) {
     boost::asio::io_context io_context;
 
     ores::testing::run_coroutine_test(io_context, [&]() -> boost::asio::awaitable<void> {
-        // Configure server
+        // Configure server with port 0 (dynamic)
         ores::comms::net::server_options server_opts;
-        server_opts.port = 55556; // Use a different port to avoid conflicts
+        server_opts.port = 0;
         server_opts.certificate_file = cert_file;
         server_opts.private_key_file = key_file;
 
-        // Configure client
-        ores::comms::net::client_options client_opts;
-        client_opts.host = "localhost";
-        client_opts.port = server_opts.port;
-        client_opts.verify_certificate = false; // Self-signed cert
-
-        // Create server and client
+        // Create server
         auto server = std::make_shared<ores::comms::net::server>(server_opts);
-        auto client = std::make_shared<ores::comms::net::client>(client_opts, co_await boost::asio::this_coro::executor);
 
-        // Start server in background
+        std::uint16_t server_port = 0;
+
+        // Start server in background with callback
         boost::asio::co_spawn(co_await boost::asio::this_coro::executor,
-            [server, &io_context]() -> boost::asio::awaitable<void> {
-                co_await server->run(io_context);
+            [server, &io_context, &server_port]() -> boost::asio::awaitable<void> {
+                co_await server->run(io_context, [&](std::uint16_t port) {
+                    server_port = port;
+                });
             }, boost::asio::detached);
 
-        // Give server a moment to start accepting
+        // Wait for server to start and assign port
         boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
-        timer.expires_after(std::chrono::milliseconds(100));
-        co_await timer.async_wait(boost::asio::use_awaitable);
+        while (server_port == 0) {
+            timer.expires_after(std::chrono::milliseconds(10));
+            co_await timer.async_wait(boost::asio::use_awaitable);
+        }
+
+        // Configure client with assigned port
+        ores::comms::net::client_options client_opts;
+        client_opts.host = "localhost";
+        client_opts.port = server_port;
+        client_opts.verify_certificate = false; // Self-signed cert
+
+        // Create client
+        auto client = std::make_shared<ores::comms::net::client>(client_opts, co_await boost::asio::this_coro::executor);
 
         // Connect client
         co_await client->connect();

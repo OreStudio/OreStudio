@@ -26,7 +26,6 @@ file(GLOB_RECURSE files RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 add_executable(${tests_target_name} ${files})
-
 set_target_properties(${tests_target_name}
     PROPERTIES OUTPUT_NAME ${tests_binary_name})
 

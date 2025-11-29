@@ -20,16 +20,14 @@ set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-# Catch2 test files
-set(files main.cpp frame_tests.cpp)
+set(files "")
+file(GLOB_RECURSE files RELATIVE
+    "${CMAKE_CURRENT_SOURCE_DIR}/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}
     PROPERTIES OUTPUT_NAME ${tests_binary_name})
-
-target_include_directories(${tests_binary_name}
-    PRIVATE ${CMAKE_SOURCE_DIR}/projects/${name}/include
-    PRIVATE ${CMAKE_SOURCE_DIR}/projects/)
 
 target_link_libraries(${tests_target_name}
     PRIVATE

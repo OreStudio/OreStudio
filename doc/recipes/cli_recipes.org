@@ -1,12 +1,12 @@
 :PROPERTIES:
-:ID: 60086B77-B674-0B34-10AB-BF8AF3F8D75E
+:ID: A1B2C3D4-E5F6-7890-ABCD-EF1234567890
+:ROAM_ALIASES: CLI
 :END:
-#+title: CLI Recipes
+#+title: Command Line Interface Recipes
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 
-Demonstrates all of the functionality available on the command line tool
-=ores.cli=.
+Demonstrates commands available in [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]].
 
 * Recipes
   :PROPERTIES:
@@ -16,7 +16,7 @@ Demonstrates all of the functionality available on the command line tool
   :header-args+: :var data_dir="../../../../../projects/ores.risk/tests/test_data/currencies"
   :header-args+: :var ORES_CLI_DB_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "ores")
   :header-args+: :var db_args="--db-user ores --db-host localhost --db-port 5432 --db-database oresdb"
-  :header-args+: :var log_args="--log-enabled --log-level trace --log-directory ../log"
+  :header-args+: :var log_args="--log-enabled --log-level info"
   :END:
 
 ** General
@@ -28,11 +28,11 @@ General commands that do not exercise domain functionality.
 
 *** Help
 
-Displays the available options.
+Display global help showing all available commands.
 
 #+begin_src sh
 ./ores.cli --help
-#+END_SRC
+#+end_src
 
 #+RESULTS:
 #+begin_src text
@@ -59,18 +59,23 @@ Logging:
 
 Commands:
 
-   currencies     Manage currencies (import, export, list, delete, add).
+   import         Imports data into the system.
+   export         Exports data from the system.
+   delete         Deletes entities from the system.
+   currencies     Manage currencies (import, export, list, delete).
    accounts       Manage accounts (list, delete, add).
    feature_flags  Manage feature flags (list, delete, add).
 
-For entity and operation specific options, use: <entity> <operation> --help
+For command specific options, type <command> --help.
 #+end_src
 
 *** Version
 
+Display version information.
+
 #+begin_src sh
 ./ores.cli --version
-#+END_SRC
+#+end_src
 
 #+RESULTS:
 #+begin_src text
@@ -83,84 +88,48 @@ Build: Provider = LOCAL
 IMPORTANT: build details are NOT for security purposes.
 #+end_src
 
-** Accounts
+** Currencies
    :PROPERTIES:
-   :header-args+: :var format_args="--format json"
    :header-args+: :wrap src json
    :END:
 
-*** List
+Currency management operations using entity-based syntax.
 
-#+begin_src sh
-export ORES_CLI_DB_PASSWORD
-./ores.cli accounts list ${log_args} ${db_args} | jq .[:3]
-#+END_SRC
+*** Help
 
-#+RESULTS:
-#+begin_src json
-[
-  {
-    "version": 0,
-    "is_admin": false,
-    "id": "019aa8d3-5fb9-7a74-b16c-ff7ae9248a5b",
-    "modified_by": "ores",
-    "username": "newuser23",
-    "password_hash": "$scrypt$ln=14,r=8,p=1$e02x3YQSSIQpxJd6/KX1ww==$mQyWju2nbi4gm4SwZmjPSmxOZjhZhB1snq579a0rteTBQegRSgPkAWy8EpuuxcFl6QRXGOvYnLlXg8H+hsXgnA==",
-    "password_salt": "",
-    "totp_secret": "",
-    "email": "newuser23@example.com"
-  },
-  {
-    "version": 0,
-    "is_admin": false,
-    "id": "019aa8d3-5f61-7e8b-b6d1-7074277c0739",
-    "modified_by": "ores",
-    "username": "newuser22",
-    "password_hash": "$scrypt$ln=14,r=8,p=1$r2gRi8G1fWoVWzqYzpWFiw==$CXa3mGj4sX9K+HtUnwGPA3aYluMOYZdHCCESXil1uQ75VBJoejKvxC89YQK/rNIwVKOSN1uMBkbSWvmoWW15/A==",
-    "password_salt": "",
-    "totp_secret": "",
-    "email": "newuser22@example.com"
-  },
-  {
-    "version": 0,
-    "is_admin": false,
-    "id": "019aa79f-24ba-725e-be98-7cd92914e22d",
-    "modified_by": "ores",
-    "username": "newuser21",
-    "password_hash": "$scrypt$ln=14,r=8,p=1$3qdD9DR+RkBA6FuwB33jng==$BKNIvidvO+JfMQVPTUon40A/8locDcdw8p6GzZzMvf2WN0FdxEC+ByS5GcVqhITOsJogCvbtCXv/RasNJkcMsg==",
-    "password_salt": "",
-    "totp_secret": "",
-    "email": "newuser21@example.com"
-  }
-]
+Show available operations for currencies.
+
+#+begin_src sh :wrap src text
+./ores.cli currencies --help
 #+end_src
 
-*** Add
-
-#+begin_src sh
-export ORES_CLI_DB_PASSWORD
-./ores.cli accounts add --username admin8 --password 123 --email \
-  admin8@example.com --is-admin 1 --modified-by system ${log_args} ${db_args}
-#+END_SRC
-
 #+RESULTS:
-#+begin_src json
-System is currently in bootstrap mode.
-Successfully added account: admin8 (ID: d9039936-bf0f-405c-a362-25f3550dad81)
-System exited bootstrap mode.
-#+end_src
+#+begin_src text
+currencies - Manage currencies
 
-** Currencies
+Usage: ores.cli currencies <operation> [options]
+
+Available operations:
+  import     Import currencies from ORE XML files
+  export     Export currencies to ORE XML or CSV (external formats)
+  list       List currencies as JSON or table (internal formats)
+  delete     Delete a currency by ISO code
+  add        Add currencies from JSON files
+
+For operation-specific options, use: currencies <operation> --help
+#+end_src
 
 *** Import
-   :PROPERTIES:
-   :header-args+: :wrap src json
-   :END:
+
+Import currencies from ORE XML format.
+
+**** Import single file
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies import ${log_args} ${db_args} --target ${data_dir}/currencies_API.xml | jq .[:3]
-#+END_SRC
+./ores.cli currencies import ${db_args} ${log_args} \
+  --target ${data_dir}/currencies_API.xml | jq .[:3]
+#+end_src
 
 #+RESULTS:
 #+begin_src json
@@ -213,20 +182,108 @@ export ORES_CLI_DB_PASSWORD
 ]
 #+end_src
 
-*** Export
-
-**** XML
-     :PROPERTIES:
-     :header-args+: :var format_args="--format xml"
-     :header-args+: :wrap src xml
-     :END:
-
-***** Export latest
+**** Import multiple files
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies export ${log_args} ${db_args} ${format_args} | xmllint --format - | head -n 20
-#+END_SRC
+./ores.cli currencies import ${db_args} ${log_args} \
+  --target ${data_dir}/currencies_API.xml \
+  --target ${data_dir}/currencies_extended.xml | jq .[:5]
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "iso_code": "AED",
+    "name": "United Arab Emirates dirham",
+    "numeric_code": "784",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "",
+    "valid_from": "",
+    "valid_to": ""
+  },
+  {
+    "iso_code": "AFN",
+    "name": "Afghan afghani",
+    "numeric_code": "971",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "",
+    "valid_from": "",
+    "valid_to": ""
+  },
+  {
+    "iso_code": "ALL",
+    "name": "Albanian lek",
+    "numeric_code": "8",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "",
+    "valid_from": "",
+    "valid_to": ""
+  },
+  {
+    "iso_code": "AMD",
+    "name": "Armenian dram",
+    "numeric_code": "51",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "",
+    "valid_from": "",
+    "valid_to": ""
+  },
+  {
+    "iso_code": "ANG",
+    "name": "Netherlands Antillean guilder",
+    "numeric_code": "532",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "",
+    "valid_from": "",
+    "valid_to": ""
+  }
+]
+#+end_src
+
+*** Export
+
+Export currencies to external formats (ORE XML or CSV).
+
+**** Export all as ORE XML
+
+#+begin_src sh :wrap src xml
+export ORES_CLI_DB_PASSWORD
+./ores.cli currencies export ${db_args} ${log_args} --format xml | \
+    xmllint --format - | \
+    head -n 20
+#+end_src
 
 #+RESULTS:
 #+begin_src xml
@@ -245,212 +302,193 @@ export ORES_CLI_DB_PASSWORD
     <CurrencyType/>
   </Currency>
   <Currency>
-    <Name>United Arab Emirates dirham</Name>
-    <ISOCode>AED</ISOCode>
-    <NumericCode>784</NumericCode>
+    <Name>South African rand</Name>
+    <ISOCode>ZAR</ISOCode>
+    <NumericCode>710</NumericCode>
     <Symbol/>
     <FractionSymbol/>
 #+end_src
 
-***** Export latest by iso code
+**** Export all as CSV
 
-#+begin_src sh
+#+begin_src sh :wrap src csv
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies export ${log_args} ${db_args} ${format_args} --key 'AOA' | xmllint --format -
-#+END_SRC
+./ores.cli currencies export ${db_args} ${log_args} \
+  --format csv | head
+#+end_src
 
 #+RESULTS:
-#+begin_src xml
-<?xml version="1.0" encoding="UTF-8"?>
-<CurrencyConfig>
-  <Currency>
-    <Name>Angolan kwanza</Name>
-    <ISOCode>AOA</ISOCode>
-    <NumericCode>973</NumericCode>
-    <Symbol/>
-    <FractionSymbol/>
-    <FractionsPerUnit>100</FractionsPerUnit>
-    <RoundingType>Closest</RoundingType>
-    <RoundingPrecision>2</RoundingPrecision>
-    <Format/>
-    <CurrencyType/>
-  </Currency>
-</CurrencyConfig>
+#+begin_src csv
+iso_code,name,numeric_code,symbol,fraction_symbol,fractions_per_unit,rounding_type,rounding_precision,format,currency_type,modified_by,valid_from,valid_to
+ZWL,Zimbabwean dollar,932,"","",100,Closest,2,"","",ores,2025-11-18 15:38:26,2025-11-18 15:38:26
+ZAR,South African rand,710,"","",100,Closest,2,"","",ores,2025-11-18 15:38:26,2025-11-18 15:38:26
+ZMW,Zambian kwacha,967,"","",100,Closest,2,"","",ores,2025-11-18 15:38:26,2025-11-18 15:38:26
+AED,United Arab Emirates dirham,784,"","",100,Closest,2,"","",ores,2025-11-18 15:38:26,2025-11-18 15:38:26
+AFN,Afghan afghani,971,"","",100,Closest,2,"","",ores,2025-11-18 15:38:26,2025-11-18 15:38:26
+ALL,Albanian lek,8,"","",100,Closest,2,"","",ores,2025-11-18 15:38:26,2025-11-18 15:38:26
+AMD,Armenian dram,51,"","",100,Closest,2,"","",ores,2025-11-18 15:38:26,2025-11-18 15:38:26
+ANG,Netherlands Antillean guilder,532,"","",100,Closest,2,"","",ores,2025-11-18 15:38:26,2025-11-18 15:38:26
+AOA,Angolan kwanza,973,"","",100,Closest,2,"","",ores,2025-11-18 15:38:26,2025-11-18 15:38:26
 #+end_src
 
-***** Export at time point
+**** Export specific currency
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies export ${log_args} ${db_args} ${format_args} --as-of "2025-11-27 00:06:09" | xmllint --format - | head -n 25
-#+END_SRC
+./ores.cli currencies export ${db_args} ${log_args} \
+  --format json --key USD | jq .
+#+end_src
 
 #+RESULTS:
-#+begin_src xml
-<?xml version="1.0" encoding="UTF-8"?>
-<CurrencyConfig>
-  <Currency>
-    <Name>New Currency</Name>
-    <ISOCode>ABCDE</ISOCode>
-    <NumericCode>1234</NumericCode>
-    <Symbol/>
-    <FractionSymbol/>
-    <FractionsPerUnit>100</FractionsPerUnit>
-    <RoundingType>Closest</RoundingType>
-    <RoundingPrecision>2</RoundingPrecision>
-    <Format/>
-    <CurrencyType>major</CurrencyType>
-  </Currency>
-  <Currency>
-    <Name>Bitcoin</Name>
-    <ISOCode>BTC</ISOCode>
-    <NumericCode>0</NumericCode>
-    <Symbol>₿</Symbol>
-    <FractionSymbol>sat</FractionSymbol>
-    <FractionsPerUnit>100000000</FractionsPerUnit>
-    <RoundingType>Closest</RoundingType>
-    <RoundingPrecision>8</RoundingPrecision>
-    <Format>%3% %1$.8f</Format>
-    <CurrencyType>Cryptocurrency</CurrencyType>
+#+begin_src json
+[
+  {
+    "iso_code": "USD",
+    "name": "United States dollar",
+    "numeric_code": "840",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "ores",
+    "valid_from": "2025-11-18 15:38:26",
+    "valid_to": "2025-11-18 15:38:26"
+  }
+]
 #+end_src
 
-***** Export at time point by iso code
+**** Export all versions of a currency
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies export ${log_args} ${db_args} ${format_args} --as-of "2025-11-27 00:08:06" --key 'AOA' | xmllint --format -
-#+END_SRC
+./ores.cli currencies export ${db_args} ${log_args} \
+  --format json --key USD --all-versions | jq .[:3]
+#+end_src
 
 #+RESULTS:
-#+begin_src xml
-<?xml version="1.0" encoding="UTF-8"?>
-<CurrencyConfig>
-  <Currency>
-    <Name>Angolan kwanza 12</Name>
-    <ISOCode>AOA</ISOCode>
-    <NumericCode>973</NumericCode>
-    <Symbol>D</Symbol>
-    <FractionSymbol/>
-    <FractionsPerUnit>100</FractionsPerUnit>
-    <RoundingType>Closest</RoundingType>
-    <RoundingPrecision>2</RoundingPrecision>
-    <Format>E</Format>
-    <CurrencyType/>
-  </Currency>
-</CurrencyConfig>
+#+begin_src json
+[
+  {
+    "iso_code": "USD",
+    "name": "United States dollar",
+    "numeric_code": "840",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "ores",
+    "valid_from": "2025-11-18 15:38:26",
+    "valid_to": "2025-11-18 15:38:26"
+  },
+  {
+    "iso_code": "USD",
+    "name": "United States dollar",
+    "numeric_code": "840",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "ores",
+    "valid_from": "2025-11-18 15:38:04",
+    "valid_to": "2025-11-18 15:38:04"
+  },
+  {
+    "iso_code": "USD",
+    "name": "United States dollar",
+    "numeric_code": "840",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "ores",
+    "valid_from": "2025-11-18 15:37:08",
+    "valid_to": "2025-11-18 15:37:08"
+  }
+]
 #+end_src
 
-***** Export all by iso code
+**** Export as of specific time point
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies export ${log_args} ${db_args} ${format_args} --key 'AOA' --all-versions | xmllint --format - | head -n 25
-#+END_SRC
+./ores.cli currencies export ${db_args} ${log_args} \
+  --format json --as-of "2025-11-18 15:38:04" | jq .[:3]
+#+end_src
 
 #+RESULTS:
-#+begin_src xml
-<?xml version="1.0" encoding="UTF-8"?>
-<CurrencyConfig>
-  <Currency>
-    <Name>Angolan kwanza</Name>
-    <ISOCode>AOA</ISOCode>
-    <NumericCode>973</NumericCode>
-    <Symbol/>
-    <FractionSymbol/>
-    <FractionsPerUnit>100</FractionsPerUnit>
-    <RoundingType>Closest</RoundingType>
-    <RoundingPrecision>2</RoundingPrecision>
-    <Format/>
-    <CurrencyType/>
-  </Currency>
-  <Currency>
-    <Name>Angolan kwanza</Name>
-    <ISOCode>AOA</ISOCode>
-    <NumericCode>973</NumericCode>
-    <Symbol/>
-    <FractionSymbol/>
-    <FractionsPerUnit>100</FractionsPerUnit>
-    <RoundingType>Closest</RoundingType>
-    <RoundingPrecision>2</RoundingPrecision>
-    <Format/>
-    <CurrencyType/>
+#+begin_src json
+[
+  {
+    "iso_code": "BTC",
+    "name": "Bitcoin",
+    "numeric_code": "0",
+    "symbol": "₿",
+    "fraction_symbol": "sat",
+    "fractions_per_unit": 100000000,
+    "rounding_type": "Closest",
+    "rounding_precision": 8,
+    "format": "%3% %1$.8f",
+    "currency_type": "Cryptocurrency",
+    "modified_by": "ores",
+    "valid_from": "2025-11-05 17:28:10",
+    "valid_to": "2025-11-05 17:28:10"
+  },
+  {
+    "iso_code": "AED",
+    "name": "United Arab Emirates dirham",
+    "numeric_code": "784",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "ores",
+    "valid_from": "2025-11-18 15:37:08",
+    "valid_to": "2025-11-18 15:37:08"
+  },
+  {
+    "iso_code": "AFN",
+    "name": "Afghan afghani",
+    "numeric_code": "971",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
+    "rounding_type": "Closest",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
+    "modified_by": "ores",
+    "valid_from": "2025-11-18 15:37:08",
+    "valid_to": "2025-11-18 15:37:08"
+  }
+]
 #+end_src
 
+*** List
 
+List currencies using internal formats (JSON or table).
 
-***** Export all
+**** List all currencies as JSON
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies export ${log_args} ${db_args} ${format_args} --all-versions | xmllint --format - | head -n 50
-#+END_SRC
-
-#+RESULTS:
-#+begin_src xml
-<?xml version="1.0" encoding="UTF-8"?>
-<CurrencyConfig>
-  <Currency>
-    <Name>Rwandan franc</Name>
-    <ISOCode>RWF</ISOCode>
-    <NumericCode>646</NumericCode>
-    <Symbol/>
-    <FractionSymbol/>
-    <FractionsPerUnit>1</FractionsPerUnit>
-    <RoundingType>Closest</RoundingType>
-    <RoundingPrecision>0</RoundingPrecision>
-    <Format/>
-    <CurrencyType/>
-  </Currency>
-  <Currency>
-    <Name>Botswana pula</Name>
-    <ISOCode>BWP</ISOCode>
-    <NumericCode>72</NumericCode>
-    <Symbol/>
-    <FractionSymbol/>
-    <FractionsPerUnit>100</FractionsPerUnit>
-    <RoundingType>Closest</RoundingType>
-    <RoundingPrecision>2</RoundingPrecision>
-    <Format/>
-    <CurrencyType/>
-  </Currency>
-  <Currency>
-    <Name>South Sudanese pound</Name>
-    <ISOCode>SSP</ISOCode>
-    <NumericCode>728</NumericCode>
-    <Symbol/>
-    <FractionSymbol/>
-    <FractionsPerUnit>100</FractionsPerUnit>
-    <RoundingType>Closest</RoundingType>
-    <RoundingPrecision>2</RoundingPrecision>
-    <Format/>
-    <CurrencyType/>
-  </Currency>
-  <Currency>
-    <Name>Belarusian ruble</Name>
-    <ISOCode>BYN</ISOCode>
-    <NumericCode>933</NumericCode>
-    <Symbol/>
-    <FractionSymbol/>
-    <FractionsPerUnit>100</FractionsPerUnit>
-    <RoundingType>Closest</RoundingType>
-    <RoundingPrecision>2</RoundingPrecision>
-    <Format/>
-    <CurrencyType/>
-  </Currency>
+./ores.cli currencies list ${db_args} ${log_args} \
+  --format json | jq .[:3]
 #+end_src
-
-**** JSON
-     :PROPERTIES:
-     :header-args+: :var format_args="--format json"
-     :header-args+: :wrap src json
-     :END:
-
-***** Export latest
-
-#+begin_src sh
-export ORES_CLI_DB_PASSWORD
-./ores.cli currencies export ${log_args} ${db_args} ${format_args} | jq .
-#+END_SRC
 
 #+RESULTS:
 #+begin_src json
@@ -467,188 +505,8 @@ export ORES_CLI_DB_PASSWORD
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "AED",
-    "name": "United Arab Emirates dirham",
-    "numeric_code": "784",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "AFN",
-    "name": "Afghan afghani",
-    "numeric_code": "971",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "ALL",
-    "name": "Albanian lek",
-    "numeric_code": "8",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "AMD",
-    "name": "Armenian dram",
-    "numeric_code": "51",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "ANG",
-    "name": "Netherlands Antillean guilder",
-    "numeric_code": "532",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "AOA",
-    "name": "Angolan kwanza",
-    "numeric_code": "973",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "ARS",
-    "name": "Argentine peso",
-    "numeric_code": "32",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "AUD",
-    "name": "Australian dollar",
-    "numeric_code": "36",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "AWG",
-    "name": "Aruban florin",
-    "numeric_code": "533",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "AZN",
-    "name": "Azerbaijani manat",
-    "numeric_code": "944",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "BAM",
-    "name": "Bosnia and Herzegovina convertible mark",
-    "numeric_code": "977",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "BBD",
-    "name": "Barbados dollar",
-    "numeric_code": "52",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
+    "valid_from": "2025-11-18 15:38:26",
+    "valid_to": "2025-11-18 15:38:26"
   },
   {
     "iso_code": "ZAR",
@@ -662,8 +520,8 @@ export ORES_CLI_DB_PASSWORD
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
+    "valid_from": "2025-11-18 15:38:26",
+    "valid_to": "2025-11-18 15:38:26"
   },
   {
     "iso_code": "ZMW",
@@ -677,579 +535,45 @@ export ORES_CLI_DB_PASSWORD
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "BDT",
-    "name": "Bangladeshi taka",
-    "numeric_code": "50",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "BGN",
-    "name": "Bulgarian lev",
-    "numeric_code": "975",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "BHD",
-    "name": "Bahraini dinar",
-    "numeric_code": "48",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1000,
-    "rounding_type": "Closest",
-    "rounding_precision": 3,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "BIF",
-    "name": "Burundian franc",
-    "numeric_code": "108",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1,
-    "rounding_type": "Closest",
-    "rounding_precision": 0,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "BMD",
-    "name": "Bermudian dollar",
-    "numeric_code": "60",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "BND",
-    "name": "Brunei dollar",
-    "numeric_code": "96",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "BOB",
-    "name": "Boliviano",
-    "numeric_code": "68",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "BOV",
-    "name": "Bolivian Mvdol (funds code)",
-    "numeric_code": "984",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "BRL",
-    "name": "Brazilian real",
-    "numeric_code": "986",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "BSD",
-    "name": "Bahamian dollar",
-    "numeric_code": "44",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "BTN",
-    "name": "Bhutanese ngultrum",
-    "numeric_code": "64",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "BWP",
-    "name": "Botswana pula",
-    "numeric_code": "72",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "BYN",
-    "name": "Belarusian ruble",
-    "numeric_code": "933",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "BZD",
-    "name": "Belize dollar",
-    "numeric_code": "84",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "CAD",
-    "name": "Canadian dollar",
-    "numeric_code": "124",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "CDF",
-    "name": "Congolese franc",
-    "numeric_code": "976",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "CHE",
-    "name": "WIR euro (complementary currency)",
-    "numeric_code": "947",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "CHF",
-    "name": "Swiss franc",
-    "numeric_code": "756",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "CHW",
-    "name": "WIR franc (complementary currency)",
-    "numeric_code": "948",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "CLF",
-    "name": "Unidad de Fomento (funds code)",
-    "numeric_code": "990",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 10000,
-    "rounding_type": "Closest",
-    "rounding_precision": 4,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "CLP",
-    "name": "Chilean peso",
-    "numeric_code": "152",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1,
-    "rounding_type": "Closest",
-    "rounding_precision": 0,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "CNH",
-    "name": "Offshore Chinese Yuan traded in Hong Kong (Non-ISO)",
-    "numeric_code": "0",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "CNT",
-    "name": "Offshore Chinese Yuan traded in Taiwan (Non-ISO)",
-    "numeric_code": "0",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "CNY",
-    "name": "Chinese yuan",
-    "numeric_code": "156",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "COP",
-    "name": "Colombian peso",
-    "numeric_code": "170",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "COU",
-    "name": "Unidad de Valor Real (UVR) (funds code)",
-    "numeric_code": "970",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "CRC",
-    "name": "Costa Rican colon",
-    "numeric_code": "188",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "CUC",
-    "name": "Cuban convertible peso",
-    "numeric_code": "931",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "CUP",
-    "name": "Cuban peso",
-    "numeric_code": "192",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "CVE",
-    "name": "Cape Verdean escudo",
-    "numeric_code": "132",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "CZK",
-    "name": "Czech koruna",
-    "numeric_code": "203",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "DJF",
-    "name": "Djiboutian franc",
-    "numeric_code": "262",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1,
-    "rounding_type": "Closest",
-    "rounding_precision": 0,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "DKK",
-    "name": "Danish krone",
-    "numeric_code": "208",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "DOP",
-    "name": "Dominican peso",
-    "numeric_code": "214",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "DZD",
-    "name": "Algerian dinar",
-    "numeric_code": "12",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "EGP",
-    "name": "Egyptian pound",
-    "numeric_code": "818",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "ERN",
-    "name": "Eritrean nakfa",
-    "numeric_code": "232",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "ETB",
-    "name": "Ethiopian birr",
-    "numeric_code": "230",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
+    "valid_from": "2025-11-18 15:38:26",
+    "valid_to": "2025-11-18 15:38:26"
+  }
+]
+#+end_src
+
+**** List all currencies as table
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli currencies list ${db_args} ${log_args} \
+  --format table  | head -n 10
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+
++----------+------------------------------------------------------------+--------+----------------+----------------+-----------+-------------+---------------------+---------------------+
+| ISO Code | Name                                                       | Symbol | Type           | Fractions/Unit | Precision | Modified By | Valid From          | Valid To            |
++----------+------------------------------------------------------------+--------+----------------+----------------+-----------+-------------+---------------------+---------------------+
+| ZWL      | Zimbabwean dollar                                          |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| ZAR      | South African rand                                         |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| ZMW      | Zambian kwacha                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| AED      | United Arab Emirates dirham                                |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| AFN      | Afghan afghani                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+| ALL      | Albanian lek                                               |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
+#+end_src
+
+**** List specific currency
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli currencies list ${db_args} ${log_args} \
+  --format json --key EUR | jq .
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
   {
     "iso_code": "EUR",
     "name": "Euro",
@@ -1262,2151 +586,369 @@ export ORES_CLI_DB_PASSWORD
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "FJD",
-    "name": "Fiji dollar",
-    "numeric_code": "242",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "FKP",
-    "name": "Falkland Islands pound",
-    "numeric_code": "238",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "GBP",
-    "name": "Pound sterling",
-    "numeric_code": "826",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "GEL",
-    "name": "Georgian lari",
-    "numeric_code": "981",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "GGP",
-    "name": "Guernsey Pound (Non-ISO)",
-    "numeric_code": "0",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "GHS",
-    "name": "Ghanaian cedi",
-    "numeric_code": "936",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "GIP",
-    "name": "Gibraltar pound",
-    "numeric_code": "292",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "GMD",
-    "name": "Gambian dalasi",
-    "numeric_code": "270",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "GNF",
-    "name": "Guinean franc",
-    "numeric_code": "324",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1,
-    "rounding_type": "Closest",
-    "rounding_precision": 0,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "GTQ",
-    "name": "Guatemalan quetzal",
-    "numeric_code": "320",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "GYD",
-    "name": "Guyanese dollar",
-    "numeric_code": "328",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "HKD",
-    "name": "Hong Kong dollar",
-    "numeric_code": "344",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "HNL",
-    "name": "Honduran lempira",
-    "numeric_code": "340",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "HRK",
-    "name": "Croatian kuna",
-    "numeric_code": "191",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "HTG",
-    "name": "Haitian gourde",
-    "numeric_code": "332",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "HUF",
-    "name": "Hungarian forint",
-    "numeric_code": "348",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "IDR",
-    "name": "Indonesian rupiah",
-    "numeric_code": "360",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "ILS",
-    "name": "Israeli new shekel",
-    "numeric_code": "376",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "IMP",
-    "name": "Isle of Man Pound (Non-ISO)",
-    "numeric_code": "0",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "INR",
-    "name": "Indian rupee",
-    "numeric_code": "356",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "IQD",
-    "name": "Iraqi dinar",
-    "numeric_code": "368",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1000,
-    "rounding_type": "Closest",
-    "rounding_precision": 3,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "IRR",
-    "name": "Iranian rial",
-    "numeric_code": "364",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "ISK",
-    "name": "Icelandic krona",
-    "numeric_code": "352",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1,
-    "rounding_type": "Closest",
-    "rounding_precision": 0,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "JEP",
-    "name": "Jersey Pound (Non-ISO)",
-    "numeric_code": "0",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "JMD",
-    "name": "Jamaican dollar",
-    "numeric_code": "388",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "JOD",
-    "name": "Jordanian dinar",
-    "numeric_code": "400",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1000,
-    "rounding_type": "Closest",
-    "rounding_precision": 3,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "JPY",
-    "name": "Japanese yen",
-    "numeric_code": "392",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1,
-    "rounding_type": "Closest",
-    "rounding_precision": 0,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "KES",
-    "name": "Kenyan shilling",
-    "numeric_code": "404",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "KGS",
-    "name": "Kyrgyzstani som",
-    "numeric_code": "417",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "KHR",
-    "name": "Cambodian riel",
-    "numeric_code": "116",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "KID",
-    "name": "Kiribati dollar (Non-ISO)",
-    "numeric_code": "0",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "KMF",
-    "name": "Comoro franc",
-    "numeric_code": "174",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1,
-    "rounding_type": "Closest",
-    "rounding_precision": 0,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "KPW",
-    "name": "North Korean won",
-    "numeric_code": "408",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "KRW",
-    "name": "South Korean won",
-    "numeric_code": "410",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1,
-    "rounding_type": "Closest",
-    "rounding_precision": 0,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "KWD",
-    "name": "Kuwaiti dinar",
-    "numeric_code": "414",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1000,
-    "rounding_type": "Closest",
-    "rounding_precision": 3,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "KYD",
-    "name": "Cayman Islands dollar",
-    "numeric_code": "136",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "KZT",
-    "name": "Kazakhstani tenge",
-    "numeric_code": "398",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "LAK",
-    "name": "Lao kip",
-    "numeric_code": "418",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "LBP",
-    "name": "Lebanese pound",
-    "numeric_code": "422",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "LKR",
-    "name": "Sri Lankan rupee",
-    "numeric_code": "144",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "LRD",
-    "name": "Liberian dollar",
-    "numeric_code": "430",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "LSL",
-    "name": "Lesotho loti",
-    "numeric_code": "426",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "LYD",
-    "name": "Libyan dinar",
-    "numeric_code": "434",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1000,
-    "rounding_type": "Closest",
-    "rounding_precision": 3,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "MAD",
-    "name": "Moroccan dirham",
-    "numeric_code": "504",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "MDL",
-    "name": "Moldovan leu",
-    "numeric_code": "498",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "MGA",
-    "name": "Malagasy ariary",
-    "numeric_code": "969",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "MKD",
-    "name": "Macedonian denar",
-    "numeric_code": "807",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "MMK",
-    "name": "Myanmar kyat",
-    "numeric_code": "104",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "MNT",
-    "name": "Mongolian toegroeg",
-    "numeric_code": "496",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "MOP",
-    "name": "Macanese pataca",
-    "numeric_code": "446",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "MRU",
-    "name": "Mauritanian ouguiya",
-    "numeric_code": "929",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "MUR",
-    "name": "Mauritian rupee",
-    "numeric_code": "480",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "MVR",
-    "name": "Maldivian rufiyaa",
-    "numeric_code": "462",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "MWK",
-    "name": "Malawian kwacha",
-    "numeric_code": "454",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "MXN",
-    "name": "Mexican peso",
-    "numeric_code": "484",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "MXV",
-    "name": "Mexican Unidad de Inversion (UDI) (funds code)",
-    "numeric_code": "979",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "MYR",
-    "name": "Malaysian ringgit",
-    "numeric_code": "458",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "MZN",
-    "name": "Mozambican metical",
-    "numeric_code": "943",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "NAD",
-    "name": "Namibian dollar",
-    "numeric_code": "516",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "NGN",
-    "name": "Nigerian naira",
-    "numeric_code": "566",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "NIO",
-    "name": "Nicaraguan cordoba",
-    "numeric_code": "558",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "NOK",
-    "name": "Norwegian krone",
-    "numeric_code": "578",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "NPR",
-    "name": "Nepalese rupee",
-    "numeric_code": "524",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "NZD",
-    "name": "New Zealand dollar",
-    "numeric_code": "554",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "OMR",
-    "name": "Omani rial",
-    "numeric_code": "512",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1000,
-    "rounding_type": "Closest",
-    "rounding_precision": 3,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "PAB",
-    "name": "Panamanian balboa",
-    "numeric_code": "590",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "PEN",
-    "name": "Peruvian sol",
-    "numeric_code": "604",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "PGK",
-    "name": "Papua New Guinean kina",
-    "numeric_code": "598",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "PHP",
-    "name": "Philippine peso",
-    "numeric_code": "608",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "PKR",
-    "name": "Pakistani rupee",
-    "numeric_code": "586",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "PLN",
-    "name": "Polish z_oty",
-    "numeric_code": "985",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "PYG",
-    "name": "Paraguayan guarani",
-    "numeric_code": "600",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1,
-    "rounding_type": "Closest",
-    "rounding_precision": 0,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "QAR",
-    "name": "Qatari riyal",
-    "numeric_code": "634",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "RON",
-    "name": "Romanian leu",
-    "numeric_code": "946",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "RSD",
-    "name": "Serbian dinar",
-    "numeric_code": "941",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "RUB",
-    "name": "Russian ruble",
-    "numeric_code": "643",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "RWF",
-    "name": "Rwandan franc",
-    "numeric_code": "646",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1,
-    "rounding_type": "Closest",
-    "rounding_precision": 0,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "SAR",
-    "name": "Saudi riyal",
-    "numeric_code": "682",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "SBD",
-    "name": "Solomon Islands dollar",
-    "numeric_code": "90",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "SCR",
-    "name": "Seychelles rupee",
-    "numeric_code": "690",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "SDG",
-    "name": "Sudanese pound",
-    "numeric_code": "938",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "SEK",
-    "name": "Swedish krona/kronor",
-    "numeric_code": "752",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "SGD",
-    "name": "Singapore dollar",
-    "numeric_code": "702",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "SHP",
-    "name": "Saint Helena pound",
-    "numeric_code": "654",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "SLL",
-    "name": "Sierra Leonean leone",
-    "numeric_code": "694",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "SOS",
-    "name": "Somali shilling",
-    "numeric_code": "706",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "SRD",
-    "name": "Surinamese dollar",
-    "numeric_code": "968",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "SSP",
-    "name": "South Sudanese pound",
-    "numeric_code": "728",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "STN",
-    "name": "Sao Tome and Principe dobra",
-    "numeric_code": "930",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "SVC",
-    "name": "Salvadoran colon",
-    "numeric_code": "222",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "SYP",
-    "name": "Syrian pound",
-    "numeric_code": "760",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "SZL",
-    "name": "Swazi lilangeni",
-    "numeric_code": "748",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "THB",
-    "name": "Thai baht",
-    "numeric_code": "764",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "TJS",
-    "name": "Tajikistani somoni",
-    "numeric_code": "972",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "TMT",
-    "name": "Turkmenistan manat",
-    "numeric_code": "934",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "TND",
-    "name": "Tunisian dinar",
-    "numeric_code": "788",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1000,
-    "rounding_type": "Closest",
-    "rounding_precision": 3,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "TOP",
-    "name": "Tongan pa_anga",
-    "numeric_code": "776",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "TRY",
-    "name": "Turkish lira",
-    "numeric_code": "949",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "TTD",
-    "name": "Trinidad and Tobago dollar",
-    "numeric_code": "780",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "TWD",
-    "name": "New Taiwan dollar",
-    "numeric_code": "901",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "TZS",
-    "name": "Tanzanian shilling",
-    "numeric_code": "834",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "UAH",
-    "name": "Ukrainian hryvnia",
-    "numeric_code": "980",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "UGX",
-    "name": "Ugandan shilling",
-    "numeric_code": "800",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1,
-    "rounding_type": "Closest",
-    "rounding_precision": 0,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "USD",
-    "name": "United States dollar",
-    "numeric_code": "840",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "USN",
-    "name": "United States dollar (next day) (funds code)",
-    "numeric_code": "997",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "UYI",
-    "name": "Uruguay Peso en Unidades Indexadas (URUIURUI) (funds code)",
-    "numeric_code": "940",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1,
-    "rounding_type": "Closest",
-    "rounding_precision": 0,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "UYU",
-    "name": "Uruguayan peso",
-    "numeric_code": "858",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "UYW",
-    "name": "Unidad previsional",
-    "numeric_code": "927",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 10000,
-    "rounding_type": "Closest",
-    "rounding_precision": 4,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "UZS",
-    "name": "Uzbekistan som",
-    "numeric_code": "860",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "VES",
-    "name": "Venezuelan bolivar soberano",
-    "numeric_code": "928",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "VND",
-    "name": "Vietnamese dong",
-    "numeric_code": "704",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1,
-    "rounding_type": "Closest",
-    "rounding_precision": 0,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "VUV",
-    "name": "Vanuatu vatu",
-    "numeric_code": "548",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1,
-    "rounding_type": "Closest",
-    "rounding_precision": 0,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "WST",
-    "name": "Samoan tala",
-    "numeric_code": "882",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "XAF",
-    "name": "CFA franc BEAC",
-    "numeric_code": "950",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1,
-    "rounding_type": "Closest",
-    "rounding_precision": 0,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "XAG",
-    "name": "Silver (one troy ounce)",
-    "numeric_code": "961",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "XAU",
-    "name": "Gold (one troy ounce)",
-    "numeric_code": "959",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "XCD",
-    "name": "East Caribbean dollar",
-    "numeric_code": "951",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "XOF",
-    "name": "CFA franc BCEAO",
-    "numeric_code": "952",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1,
-    "rounding_type": "Closest",
-    "rounding_precision": 0,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "XPD",
-    "name": "Palladium (one troy ounce)",
-    "numeric_code": "964",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "XPF",
-    "name": "CFP franc (franc Pacifique)",
-    "numeric_code": "953",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1,
-    "rounding_type": "Closest",
-    "rounding_precision": 0,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "XPT",
-    "name": "Platinum (one troy ounce)",
-    "numeric_code": "962",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "XSU",
-    "name": "SUCRE",
-    "numeric_code": "994",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "XUA",
-    "name": "ADB Unit of Account",
-    "numeric_code": "965",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "YER",
-    "name": "Yemeni rial",
-    "numeric_code": "886",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "BTC",
-    "name": "Bitcoin",
-    "numeric_code": "0",
-    "symbol": "₿",
-    "fraction_symbol": "sat",
-    "fractions_per_unit": 100000000,
-    "rounding_type": "Closest",
-    "rounding_precision": 8,
-    "format": "%3% %1$.8f",
-    "currency_type": "Cryptocurrency",
-    "modified_by": "newuser3",
-    "valid_from": "2025-11-26 23:42:24",
-    "valid_to": "2025-11-26 23:42:24"
-  },
-  {
-    "iso_code": "ABCDE",
-    "name": "New Currency",
-    "numeric_code": "1234",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "major",
-    "modified_by": "test",
-    "valid_from": "2025-11-18 22:35:29",
-    "valid_to": "2025-11-18 22:35:29"
+    "valid_from": "2025-11-18 15:38:26",
+    "valid_to": "2025-11-18 15:38:26"
   }
 ]
 #+end_src
 
-***** Export latest by iso code
+*** Delete
+
+Delete a currency by ISO code.
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies export ${log_args} ${db_args} ${format_args} --key 'AOA' | jq .
-#+END_SRC
+./ores.cli currencies delete ${db_args} ${log_args} \
+  --key ZAR
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+Currency deleted successfully: ZAR
+#+end_src
+
+*** Add
+
+Add a new currency (not yet implemented).
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli currencies add ${db_args} ${log_args} --iso-code ABCDE --name "New Currency" \
+    --numeric-code 1234 --modified-by test --currency-type major
+
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Successfully added currency: ABCDE
+#+end_src
+
+** Accounts
+   :PROPERTIES:
+   :header-args+: :wrap src json
+   :END:
+
+Account management operations using entity-based syntax.
+
+*** Help
+
+Show available operations for accounts.
+
+#+begin_src sh :wrap src text
+./ores.cli accounts --help
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+accounts - Manage accounts
+
+Usage: ores.cli accounts <operation> [options]
+
+Available operations:
+  list       List accounts as JSON or table (internal formats)
+  delete     Delete an account by username or UUID
+  add        Add an account using command-line arguments
+
+For operation-specific options, use: accounts <operation> --help
+#+end_src
+
+*** List
+
+List accounts from the database.
+
+**** List all accounts
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli accounts list ${db_args} ${log_args} \
+  --format json | jq .
+#+end_src
 
 #+RESULTS:
 #+begin_src json
 [
   {
-    "iso_code": "AOA",
-    "name": "Angolan kwanza",
-    "numeric_code": "973",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
+    "version": 0,
+    "is_admin": false,
+    "id": "2c750156-40ec-4b03-aa7a-22c42c5bbd5e",
+    "modified_by": "admin",
+    "username": "testuser",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$h+P2+QkHhxkiU4inVE9HxQ==$59hnkP3B5cN8hsIHh/rCswfv7/6QntVUnLkRQGDXy62Fylamux0YkscVd5jTwOSyboUbV85wRYArLplOZxKOMw==",
+    "password_salt": "",
+    "totp_secret": "",
+    "email": "testuser@example.com"
+  },
+  {
+    "version": 0,
+    "is_admin": false,
+    "id": "c26dc10b-0e63-447d-beb2-ce442cdb75e2",
+    "modified_by": "admin",
+    "username": "admin",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$44ceH1Lhmg36u2kNxgo1Yw==$g5Ss6+hIDBTMrkO5+YHSn4OtEt77MHPnNy+2gY+wfD53ldg+mq7vZxGAuFD7DiAFfToWgr8gJ3xil4+BYlt8cg==",
+    "password_salt": "",
+    "totp_secret": "",
+    "email": "test@example.com"
+  },
+  {
+    "version": 0,
+    "is_admin": false,
+    "id": "019a5e49-476c-70ce-9909-3887cae700e9",
     "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
+    "username": "newuser3",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$aLdQ7pVcrnlHJMZXoWOV3Q==$nkk9nQs8iyTazzvRfUjyYYqO3GTAIRL5A9K/5LxdvX0QRliEWB0SDgaadXiJNhf/kw3aYH1jeVvgXJbjQkq80Q==",
+    "password_salt": "",
+    "totp_secret": "",
+    "email": "newuser3@example.com"
   }
 ]
 #+end_src
 
-***** Export at time point
+**** List specific account by username
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies export ${log_args} ${db_args} ${format_args} --as-of "2025-11-27 00:06:09" | jq .[:3]
-#+END_SRC
+./ores.cli accounts list ${db_args} ${log_args} \
+  --format json --key admin | jq .
+#+end_src
 
 #+RESULTS:
 #+begin_src json
 [
   {
-    "iso_code": "ABCDE",
-    "name": "New Currency",
-    "numeric_code": "1234",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "major",
-    "modified_by": "test",
-    "valid_from": "2025-11-18 22:35:29",
-    "valid_to": "2025-11-18 22:35:29"
-  },
-  {
-    "iso_code": "BTC",
-    "name": "Bitcoin",
-    "numeric_code": "0",
-    "symbol": "₿",
-    "fraction_symbol": "sat",
-    "fractions_per_unit": 100000000,
-    "rounding_type": "Closest",
-    "rounding_precision": 8,
-    "format": "%3% %1$.8f",
-    "currency_type": "Cryptocurrency",
-    "modified_by": "newuser3",
-    "valid_from": "2025-11-26 23:42:24",
-    "valid_to": "2025-11-26 23:42:24"
-  },
-  {
-    "iso_code": "BOB",
-    "name": "Boliviano",
-    "numeric_code": "68",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "newuser3",
-    "valid_from": "2025-11-26 23:42:24",
-    "valid_to": "2025-11-26 23:42:24"
+    "version": 0,
+    "is_admin": false,
+    "id": "c26dc10b-0e63-447d-beb2-ce442cdb75e2",
+    "modified_by": "admin",
+    "username": "admin",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$44ceH1Lhmg36u2kNxgo1Yw==$g5Ss6+hIDBTMrkO5+YHSn4OtEt77MHPnNy+2gY+wfD53ldg+mq7vZxGAuFD7DiAFfToWgr8gJ3xil4+BYlt8cg==",
+    "password_salt": "",
+    "totp_secret": "",
+    "email": "test@example.com"
   }
 ]
 #+end_src
 
-***** Export at time point by iso code
+**** List all versions of an account
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies export ${log_args} ${db_args} ${format_args} --as-of "2025-11-27 00:08:06" --key 'AOA' | jq .
-#+END_SRC
+./ores.cli accounts list ${db_args} ${log_args} \
+  --format json --key admin --all-versions | jq .
+#+end_src
 
 #+RESULTS:
 #+begin_src json
 [
   {
-    "iso_code": "AOA",
-    "name": "Angolan kwanza 12",
-    "numeric_code": "973",
-    "symbol": "D",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "E",
-    "currency_type": "",
-    "modified_by": "newuser3",
-    "valid_from": "2025-11-26 23:42:24",
-    "valid_to": "2025-11-26 23:42:24"
+    "version": 0,
+    "is_admin": false,
+    "id": "c26dc10b-0e63-447d-beb2-ce442cdb75e2",
+    "modified_by": "admin",
+    "username": "admin",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$44ceH1Lhmg36u2kNxgo1Yw==$g5Ss6+hIDBTMrkO5+YHSn4OtEt77MHPnNy+2gY+wfD53ldg+mq7vZxGAuFD7DiAFfToWgr8gJ3xil4+BYlt8cg==",
+    "password_salt": "",
+    "totp_secret": "",
+    "email": "test@example.com"
   }
 ]
 #+end_src
 
-***** Export all by iso code
+*** Delete
+
+Delete an account by username or UUID.
+
+**** Delete by username
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies export ${log_args} ${db_args} ${format_args} --key 'AOA' --all-versions | jq .[:3]
-#+END_SRC
+./ores.cli accounts delete ${db_args} ${log_args} \
+  --key testuser3
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+Account deleted successfully: 6d3dfec6-d78d-4a85-9882-3d47445090e4
+#+end_src
+
+**** Delete by UUID
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli accounts delete ${db_args} ${log_args} \
+  --key f557660a-bcf4-4916-8610-4c0b61295f57
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+Account deleted successfully: f557660a-bcf4-4916-8610-4c0b61295f57
+#+end_src
+
+*** Add
+
+Add a new account using command-line arguments.
+
+**** Add regular user account
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli accounts add ${db_args} ${log_args} \
+  --username testuser3 \
+  --email testuser3@example.com \
+  --password "SecurePassword123" \
+  --modified-by admin
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Successfully added account: testuser3 (ID: 6d3dfec6-d78d-4a85-9882-3d47445090e4)
+#+end_src
+
+**** Add admin account
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli accounts add ${db_args} ${log_args} \
+  --username adminuser \
+  --email admin@example.com \
+  --password "AdminPassword456" \
+  --is-admin true \
+  --modified-by admin
+#+end_src
+
+** Feature Flags
+   :PROPERTIES:
+   :header-args+: :wrap src json
+   :END:
+
+Feature flag management operations using entity-based syntax.
+
+*** Help
+
+Show available operations for feature flags.
+
+#+begin_src sh :wrap src text
+./ores.cli feature_flags add --help
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+ORE Studio is a User Interface for Open Source Risk Engine (ORE).
+CLI provides a command line version of the interface.
+ORE Studio is created by the ORE Studio project.
+Displaying options specific to the 'feature_flags add' command.
+For global options, type --help.
+
+Add Feature Flag Options:
+  --name arg                           Feature flag name (required)
+  --description arg                    Feature flag description
+  --enabled arg (=0)                   Whether the feature is enabled (default:
+                                       false)
+  --modified-by arg                    Username of modifier (required)
+
+Database:
+  --db-user arg (=ores)                Database user name.
+  --db-password arg                    Database password. Can also be provided
+                                       via ORES_DB_PASSWORD environment
+                                       variable.
+  --db-host arg (=localhost)           Database host.
+  --db-database arg (=oresdb)          Database name.
+  --db-port arg (=5432)                Database port.
+
+
+General:
+  -h [ --help ]                        Display usage and exit.
+  -v [ --version ]                     Output version information and exit.
+
+Logging:
+  -e [ --log-enabled ]                 Generate a log file.
+  -l [ --log-level ] arg (=info)       What level to use for logging. Valid
+                                       values: trace, debug, info, warn, error.
+  --log-to-console                     Output logging to the console, as well
+                                       as to file.
+  --log-directory arg (=log)           Where to place the log files.
+  --log-filename arg (=ores.cli.log)   Name of the log file.
+#+end_src
+
+*** List
+
+List feature flags from the database.
+
+**** List all feature flags
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli feature_flags list ${db_args} ${log_args} \
+  --format json | jq .
+#+end_src
 
 #+RESULTS:
 #+begin_src json
 [
   {
-    "iso_code": "AOA",
-    "name": "Angolan kwanza",
-    "numeric_code": "973",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
+    "enabled": false,
+    "name": "system.bootstrap_mode",
+    "description": "Indicates whether the system is in bootstrap mode (waiting for initial admin account)",
+    "modified_by": "ores"
   },
   {
-    "iso_code": "AOA",
-    "name": "Angolan kwanza",
-    "numeric_code": "973",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:20:51",
-    "valid_to": "2025-11-27 15:20:51"
-  },
-  {
-    "iso_code": "AOA",
-    "name": "Angolan kwanza",
-    "numeric_code": "973",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:20:45",
-    "valid_to": "2025-11-27 15:20:45"
+    "enabled": true,
+    "name": "system.disable_password_validation",
+    "description": "When enabled (1), disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.",
+    "modified_by": "ores"
   }
 ]
 #+end_src
 
-***** Export all
+**** List specific feature flag
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies export ${log_args} ${db_args} ${format_args} --entity currencies --all-versions | jq .[:4]
-#+END_SRC
+./ores.cli feature_flags list ${db_args} ${log_args} \
+  --format json --key "Test feature3" | jq .
+#+end_src
 
 #+RESULTS:
 #+begin_src json
 [
   {
-    "iso_code": "RWF",
-    "name": "Rwandan franc",
-    "numeric_code": "646",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 1,
-    "rounding_type": "Closest",
-    "rounding_precision": 0,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "BWP",
-    "name": "Botswana pula",
-    "numeric_code": "72",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "SSP",
-    "name": "South Sudanese pound",
-    "numeric_code": "728",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
-  },
-  {
-    "iso_code": "BYN",
-    "name": "Belarusian ruble",
-    "numeric_code": "933",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "ores",
-    "valid_from": "2025-11-27 15:24:11",
-    "valid_to": "2025-11-27 15:24:11"
+    "enabled": false,
+    "name": "Test feature3",
+    "description": "Some description",
+    "modified_by": "ores"
   }
 ]
+#+end_src
+
+*** Delete
+
+Delete a feature flag by key.
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli feature_flags delete ${db_args} ${log_args} \
+  --key "Test feature3"
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+Feature flag deleted successfully: Test feature3
+#+end_src
+
+*** Add
+
+Add a new feature flag (not yet implemented).
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli feature_flags add ${db_args} ${log_args} --name "Test feature3" \
+    --description "Some description" --enabled 0 --modified-by admin
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Successfully added feature flag: Test feature3
 #+end_src
 
 * Footer
 
 | Previous: [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] |
-
-# Local Variables:
-# eval: (whitespace-mode -1)
-# End:

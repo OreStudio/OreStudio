@@ -364,6 +364,14 @@ these crashes before we go any further.
 
 
 
+*** Add UI for log viewing                                             :code:
+
+We should be able to see the log from qt.
+
+Links:
+
+- [[https://github.com/Dingola/Qt-LogViewer/tree/main][GH: Qt-LogViewer]]
+
 *** Add support for simple log shipping                                :code:
 
 It would be very useful to be able to browse both client and server logs from

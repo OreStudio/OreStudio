@@ -2951,6 +2951,13 @@ We seem to have gone below 70% again.
 | feature_flags_mapper.cpp     | Zero   |    0.00% | 34/34             |
 | feature_flags_repository.cpp | Low    |    7.25% | 64/69             |
 
+*** STARTED Documentation fixes                                       :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-28 Fri 22:30]--[2025-11-28 Fri 23:57] =>  1:27
+    :END:
+
+Assorted fixes to documentation.
+
 *** Create a variability service for feature flags                     :code:
 
 We should not expose the repository directly. Instead, consumers should use a

@@ -22,8 +22,6 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
-#include <filesystem>
-#include <fstream>
 #include <chrono>
 
 #include "ores.comms/net/client.hpp"
@@ -92,11 +90,7 @@ tSF6X2Tz8FU6Whed2zL17v8=
 -----END PRIVATE KEY-----
 )";
 
-void write_file(const std::string& filename, const std::string& content) {
-    std::ofstream out(filename);
-    out << content;
-    out.close();
-}
+
 
 }
 
@@ -104,40 +98,45 @@ TEST_CASE("test_client_server_connection", tags) {
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
-    // Write certificates to temporary files
-    const std::string cert_file = "test_server.crt";
-    const std::string key_file = "test_server.key";
-    write_file(cert_file, server_cert);
-    write_file(key_file, server_key);
-
+    BOOST_LOG_SEV(lg, info) << "Starting test_client_server_connection";
     boost::asio::io_context io_context;
 
     ores::testing::run_coroutine_test(io_context, [&]() -> boost::asio::awaitable<void> {
-        // Configure server with port 0 (dynamic)
+        BOOST_LOG_SEV(lg, info) << "Inside test coroutine";
+        // Configure server with port 0 (dynamic) and in-memory certs
         ores::comms::net::server_options server_opts;
         server_opts.port = 0;
-        server_opts.certificate_file = cert_file;
-        server_opts.private_key_file = key_file;
+        server_opts.certificate_chain_content = server_cert;
+        server_opts.private_key_content = server_key;
+        server_opts.enable_signal_watching = false;
 
+        BOOST_LOG_SEV(lg, info) << "Creating server";
         // Create server
         auto server = std::make_shared<ores::comms::net::server>(server_opts);
 
         std::uint16_t server_port = 0;
 
+        BOOST_LOG_SEV(lg, info) << "Spawning server";
         // Start server in background with callback
         boost::asio::co_spawn(co_await boost::asio::this_coro::executor,
             [server, &io_context, &server_port]() -> boost::asio::awaitable<void> {
+                auto lg = ores::utility::log::make_logger("ores.comms.tests.server_runner");
+                BOOST_LOG_SEV(lg, info) << "Server starting run loop";
                 co_await server->run(io_context, [&](std::uint16_t port) {
                     server_port = port;
+                    BOOST_LOG_SEV(lg, info) << "Server listening on port: " << port;
                 });
+                BOOST_LOG_SEV(lg, info) << "Server run loop finished";
             }, boost::asio::detached);
 
+        BOOST_LOG_SEV(lg, info) << "Waiting for server port assignment";
         // Wait for server to start and assign port
         boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
         while (server_port == 0) {
             timer.expires_after(std::chrono::milliseconds(10));
             co_await timer.async_wait(boost::asio::use_awaitable);
         }
+        BOOST_LOG_SEV(lg, info) << "Server port assigned: " << server_port;
 
         // Configure client with assigned port
         ores::comms::net::client_options client_opts;
@@ -145,20 +144,23 @@ TEST_CASE("test_client_server_connection", tags) {
         client_opts.port = server_port;
         client_opts.verify_certificate = false; // Self-signed cert
 
+        BOOST_LOG_SEV(lg, info) << "Creating client";
         // Create client
         auto client = std::make_shared<ores::comms::net::client>(client_opts, co_await boost::asio::this_coro::executor);
 
+        BOOST_LOG_SEV(lg, info) << "Connecting client";
         // Connect client
         co_await client->connect();
 
+        BOOST_LOG_SEV(lg, info) << "Client connected";
         CHECK(client->is_connected());
 
         // Clean disconnect
         client->disconnect();
         CHECK(!client->is_connected());
+        
+        BOOST_LOG_SEV(lg, info) << "Stopping server";
+        server->stop();
+        BOOST_LOG_SEV(lg, info) << "Test finished";
     });
-
-    // Clean up files
-    std::filesystem::remove(cert_file);
-    std::filesystem::remove(key_file);
 }

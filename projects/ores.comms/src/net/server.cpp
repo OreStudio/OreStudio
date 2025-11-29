@@ -22,6 +22,8 @@
 #include <chrono>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <boost/asio/bind_cancellation_slot.hpp>
+#include <boost/asio/signal_set.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/asio/steady_timer.hpp>
@@ -43,6 +45,11 @@ void server::register_handler(protocol::message_type_range range,
     dispatcher_->register_handler(range, std::move(handler));
 }
 
+void server::stop() {
+    BOOST_LOG_SEV(lg(), info) << "Stopping server...";
+    stop_signal_.emit(boost::asio::cancellation_type::all);
+}
+
 void server::setup_ssl_context() {
     ssl_ctx_.set_options(
         ssl::context::default_workarounds |
@@ -52,11 +59,25 @@ void server::setup_ssl_context() {
         ssl::context::no_tlsv1_1 |
         ssl::context::single_dh_use);
 
-    ssl_ctx_.use_certificate_chain_file(options_.certificate_file);
-    ssl_ctx_.use_private_key_file(options_.private_key_file, ssl::context::pem);
+    if (options_.certificate_chain_content) {
+        ssl_ctx_.use_certificate_chain(
+            boost::asio::buffer(*options_.certificate_chain_content));
+        BOOST_LOG_SEV(lg(), info) << "SSL context configured with in-memory certificate";
+    } else {
+        ssl_ctx_.use_certificate_chain_file(options_.certificate_file);
+        BOOST_LOG_SEV(lg(), info) << "SSL context configured with certificate file: "
+                                  << options_.certificate_file;
+    }
 
-    BOOST_LOG_SEV(lg(), info) << "SSL context configured with certificate: "
-                              << options_.certificate_file;
+    if (options_.private_key_content) {
+        ssl_ctx_.use_private_key(
+            boost::asio::buffer(*options_.private_key_content), ssl::context::pem);
+        BOOST_LOG_SEV(lg(), info) << "SSL context configured with in-memory private key";
+    } else {
+        ssl_ctx_.use_private_key_file(options_.private_key_file, ssl::context::pem);
+        BOOST_LOG_SEV(lg(), info) << "SSL context configured with private key file: "
+                                  << options_.private_key_file;
+    }
 }
 
 boost::asio::awaitable<void> server::run(boost::asio::io_context& io_context,
@@ -67,6 +88,15 @@ boost::asio::awaitable<void> server::run(boost::asio::io_context& io_context,
                               << protocol::PROTOCOL_VERSION_MAJOR << "."
                               << protocol::PROTOCOL_VERSION_MINOR;
 
+    if (options_.enable_signal_watching) {
+        // Start listening for OS stop signals
+        boost::asio::co_spawn(io_context,
+            [this, &io_context]() -> boost::asio::awaitable<void> {
+                co_await watch_for_stop_signals(io_context);
+            },
+            boost::asio::detached
+    );
+    }
     co_await accept_loop(io_context, std::move(on_listening));
 }
 
@@ -91,12 +121,17 @@ boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_con
                                          << ") reached, waiting.";
                 boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
                 timer.expires_after(std::chrono::milliseconds(100));
-                co_await timer.async_wait(boost::asio::use_awaitable);
+                co_await timer.async_wait(
+                    boost::asio::bind_cancellation_slot(
+                        stop_signal_.slot(),
+                        boost::asio::use_awaitable));
             }
 
             // Accept new connection
             tcp::socket socket = co_await acceptor.async_accept(
-            boost::asio::use_awaitable);
+                boost::asio::bind_cancellation_slot(
+                    stop_signal_.slot(),
+                    boost::asio::use_awaitable));
             BOOST_LOG_SEV(lg(), info) << "Accepted connection from "
                                       << socket.remote_endpoint().address().to_string()
                                       << ":" << socket.remote_endpoint().port();
@@ -134,6 +169,15 @@ boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_con
             BOOST_LOG_SEV(lg(), error) << "Accept loop error: " << e.what();
         }
     }
+    BOOST_LOG_SEV(lg(), info) << "Server shut down.";
+}
+
+boost::asio::awaitable<void> 
+server::watch_for_stop_signals(boost::asio::io_context& io_context) {
+    boost::asio::signal_set signals(io_context, SIGINT, SIGTERM);
+    co_await signals.async_wait(boost::asio::use_awaitable);
+    BOOST_LOG_SEV(lg(), info) << "Received stop signal (SIGINT/SIGTERM). Shutting down...";
+    stop(); // triggers cancellation via stop_signal_
 }
 
 }

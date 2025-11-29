@@ -23,6 +23,7 @@
 #include <iosfwd>
 #include <string>
 #include <cstdint>
+#include <optional>
 
 namespace ores::comms::net {
 
@@ -50,6 +51,27 @@ struct server_options final {
      * @brief Human-readable identifier for the server instance.
      */
     std::string server_identifier = "ores-server";
+
+    /**
+     * @brief Optional content of the TLS certificate chain (PEM format).
+     *
+     * If present, this takes precedence over certificate_file.
+     */
+    std::optional<std::string> certificate_chain_content;
+
+    /**
+     * @brief Optional content of the TLS private key (PEM format).
+     *
+     * If present, this takes precedence over private_key_file.
+     */
+    std::optional<std::string> private_key_content;
+
+    /**
+     * @brief Whether to enable signal watching.
+     *
+     * If true, the server will watch for signals and handle them appropriately.
+     */
+    bool enable_signal_watching = true;  
 };
 
 std::ostream& operator<<(std::ostream& s, const server_options& v);

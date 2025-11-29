@@ -28,6 +28,7 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/cancellation_signal.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/net/server_options.hpp"
 #include "ores.comms/protocol/message_dispatcher.hpp"
@@ -76,6 +77,13 @@ public:
     boost::asio::awaitable<void> run(boost::asio::io_context& io_context,
         std::function<void(std::uint16_t)> on_listening = nullptr);
 
+    /**
+     * @brief Stop the server.
+     *
+     * Cancels the accept loop and stops accepting new connections.
+     */
+    void stop();
+
 private:
     /**
      * @brief Accept connections and spawn sessions.
@@ -88,10 +96,16 @@ private:
      */
     void setup_ssl_context();
 
+    /**
+     * @brief Watch for stop signals.
+     */
+    boost::asio::awaitable<void> watch_for_stop_signals(boost::asio::io_context& io_context);
+
     server_options options_;
     ssl::context ssl_ctx_;
     std::shared_ptr<protocol::message_dispatcher> dispatcher_;
     std::atomic<std::size_t> active_connections_{0};
+    boost::asio::cancellation_signal stop_signal_;
 };
 
 }

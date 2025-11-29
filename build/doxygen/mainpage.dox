@@ -64,7 +64,7 @@
  *
  * @section arch_section Architecture
  *
- * ORE Studio is a C++20 application built on a layered architecture. The system
+ * ORE Studio is a C++23 application built on a layered architecture. The system
  * is organized into nine components across five layers:
  *
  * - **Foundation**: ores.utility (database, logging, filesystem utilities)

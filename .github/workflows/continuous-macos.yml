@@ -37,6 +37,9 @@ on:  # yamllint disable-line rule:truthy
 jobs:
   build:
     name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+    concurrency:
+      group: ci-${{github.ref}}-${{github.job}}-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+      cancel-in-progress: true
     runs-on: macos-latest
     environment: CI
     strategy:

@@ -2467,16 +2467,6 @@ addresses these limitations with a proper import dialog.
   - No changes needed to importer or validation code
   - Changes only in Qt UI layer (CurrencyMdiWindow and new dialog)
 
-*** BLOCKED Add support for offsets in pagination                      :code:
-
-At present we disabled pagination in UI because sqlgen does not support offset.
-We raised a ticket for this. When it is available and released in vcpkg, we need
-to update the code to use it.
-
-Links:
-
-- [[https://github.com/getml/sqlgen/issues/100][GH #100: Feature request: offset support]]
-
 *** COMPLETED Repl needs synchronous socket operations                 :code:
 
 *Rationale*: implemented.
@@ -2946,8 +2936,305 @@ Links:
 
 Assorted fixes to documentation.
 
+*** BLOCKED Fix valgrind leaks for comms tests                         :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-30 Sun 11:35]--[2025-11-30 Sun 12:13] =>  0:38
+    :END:
+
+**** Valgrind report
+
+#+begin_src valgrind-leak
+<b>UMR</b> ==50817== Invalid read of size 8
+==50817==    at 0x53B6BE6: std::__atomic_base<unsigned long>::operator--() (atomic_base.h:410)
+==50817==    by 0x53A0F70: ores::comms::net::server::accept_loop(boost::asio::io_context&, std::function<void (unsigned short)>)::{lambda()#1}::operator()(ores::comms::net::server::accept_loop(boost::asio::io_context&, std::function<void (unsigned short)>)::{lambda()#1}::operator()() const::_ZZN4ores5comms3net6server11accept_loopERN5boost4asio10io_contextESt8functionIFvtEEENKUlvE_clEv.Frame*) [clone .actor] (server.cpp:155)
+==50817==    by 0x23820A: std::__n4861::coroutine_handle<void>::resume() const (coroutine:135)
+==50817==    by 0x264132: boost::asio::detail::awaitable_frame_base<boost::asio::any_io_executor>::resume() (awaitable.hpp:506)
+==50817==    by 0x2619C4: boost::asio::detail::awaitable_thread<boost::asio::any_io_executor>::pump() (awaitable.hpp:774)
+==50817==    by 0x53813BB: void boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long>::operator()<boost::system::error_code const&, unsigned long const&>(boost::system::error_code const&, unsigned long const&) (use_awaitable.hpp:135)
+==50817==    by 0x53803F3: boost::asio::detail::read_op<boost::asio::ssl::stream<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::mutable_buffer, boost::asio::mutable_buffer const*, boost::asio::detail::transfer_all_t, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long> >::operator()(boost::system::error_code, unsigned long, int) (read.hpp:415)
+==50817==    by 0x5387B3C: void boost::asio::ssl::detail::read_op<boost::asio::mutable_buffer>::call_handler<boost::asio::detail::read_op<boost::asio::ssl::stream<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::mutable_buffer, boost::asio::mutable_buffer const*, boost::asio::detail::transfer_all_t, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long> > >(boost::asio::detail::read_op<boost::asio::ssl::stream<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::mutable_buffer, boost::asio::mutable_buffer const*, boost::asio::detail::transfer_all_t, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long> >&, boost::system::error_code const&, unsigned long const&) const (read_op.hpp:60)
+==50817==    by 0x5384F03: boost::asio::ssl::detail::io_op<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor>, boost::asio::ssl::detail::read_op<boost::asio::mutable_buffer>, boost::asio::detail::read_op<boost::asio::ssl::stream<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::mutable_buffer, boost::asio::mutable_buffer const*, boost::asio::detail::transfer_all_t, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long> > >::operator()(boost::system::error_code, unsigned long, int) (io.hpp:316)
+==50817==    by 0x5393567: boost::asio::detail::binder2<boost::asio::ssl::detail::io_op<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor>, boost::asio::ssl::detail::read_op<boost::asio::mutable_buffer>, boost::asio::detail::read_op<boost::asio::ssl::stream<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::mutable_buffer, boost::asio::mutable_buffer const*, boost::asio::detail::transfer_all_t, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long> > >, boost::system::error_code, unsigned long>::operator()() (bind_handler.hpp:181)
+==50817==    by 0x539291F: void boost::asio::detail::handler_work<boost::asio::ssl::detail::io_op<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor>, boost::asio::ssl::detail::read_op<boost::asio::mutable_buffer>, boost::asio::detail::read_op<boost::asio::ssl::stream<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::mutable_buffer, boost::asio::mutable_buffer const*, boost::asio::detail::transfer_all_t, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long> > >, boost::asio::any_io_executor, void>::complete<boost::asio::detail::binder2<boost::asio::ssl::detail::io_op<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor>, boost::asio::ssl::detail::read_op<boost::asio::mutable_buffer>, boost::asio::detail::read_op<boost::asio::ssl::stream<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::mutable_buffer, boost::asio::mutable_buffer const*, boost::asio::detail::transfer_all_t, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long> > >, boost::system::error_code, unsigned long> >(boost::asio::detail::binder2<boost::asio::ssl::detail::io_op<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor>, boost::asio::ssl::detail::read_op<boost::asio::mutable_buffer>, boost::asio::detail::read_op<boost::asio::ssl::stream<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::mutable_buffer, boost::asio::mutable_buffer const*, boost::asio::detail::transfer_all_t, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long> > >, boost::system::error_code, unsigned long>&, boost::asio::ssl::detail::io_op<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor>, boost::asio::ssl::detail::read_op<boost::asio::mutable_buffer>, boost::asio::detail::read_op<boost::asio::ssl::stream<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::mutable_buffer, boost::asio::mutable_buffer const*, boost::asio::detail::transfer_all_t, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long> > >&) (handler_work.hpp:433)
+==50817==    by 0x53901C4: boost::asio::detail::reactive_socket_recv_op<boost::asio::mutable_buffer, boost::asio::ssl::detail::io_op<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor>, boost::asio::ssl::detail::read_op<boost::asio::mutable_buffer>, boost::asio::detail::read_op<boost::asio::ssl::stream<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::mutable_buffer, boost::asio::mutable_buffer const*, boost::asio::detail::transfer_all_t, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long> > >, boost::asio::any_io_executor>::do_complete(void*, boost::asio::detail::scheduler_operation*, boost::system::error_code const&, unsigned long) (reactive_socket_recv_op.hpp:151)
+==50817==    by 0x23ED07: boost::asio::detail::scheduler_operation::complete(void*, boost::system::error_code const&, unsigned long) (scheduler_operation.hpp:40)
+==50817==    by 0x246A44: boost::asio::detail::scheduler::do_run_one(boost::asio::detail::conditionally_enabled_mutex::scoped_lock&, boost::asio::detail::scheduler_thread_info&, boost::system::error_code const&) (scheduler.ipp:501)
+==50817==    by 0x245C47: boost::asio::detail::scheduler::run(boost::system::error_code&) (scheduler.ipp:217)
+==50817==    by 0x2475CC: boost::asio::io_context::run() (io_context.ipp:63)
+==50817==    by 0x23007A: void ores::testing::run_coroutine_test<CATCH2_INTERNAL_TEST_0()::{lambda()#1}>(boost::asio::io_context&, CATCH2_INTERNAL_TEST_0()::{lambda()#1}&&) (run_coroutine_test.hpp:37)
+==50817==    by 0x22EEC9: CATCH2_INTERNAL_TEST_0() (net_client_tests.cpp:104)
+==50817==    by 0x2EFA55: Catch::(anonymous namespace)::TestInvokerAsFunction::invoke() const (catch_test_registry.cpp:60)
+==50817==    by 0x2D904E: Catch::TestCaseHandle::invoke() const (catch_test_case_info.hpp:124)
+==50817==    by 0x2D78E5: Catch::RunContext::invokeActiveTestCase() (catch_run_context.cpp:661)
+==50817==    by 0x2D75D4: Catch::RunContext::runCurrentTest() (catch_run_context.cpp:619)
+==50817==    by 0x2D56A7: Catch::RunContext::runTest(Catch::TestCaseHandle const&) (catch_run_context.cpp:282)
+==50817==    by 0x27EB14: Catch::(anonymous namespace)::TestGroup::execute() (catch_session.cpp:110)
+==50817==    by 0x280412: Catch::Session::runInternal() (catch_session.cpp:379)
+==50817==    by 0x27FEF7: Catch::Session::run() (catch_session.cpp:306)
+==50817==    by 0x228E38: int Catch::Session::run<char>(int, char const* const*) (catch_session.hpp:49)
+==50817==    by 0x227921: main (main.cpp:28)
+==50817==  Address 0x8646048 is 248 bytes inside a block of size 264 free'd
+==50817==    at 0x484A61D: operator delete(void*, unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==50817==    by 0x266C69: std::__new_allocator<std::_Sp_counted_ptr_inplace<ores::comms::net::server, std::allocator<void>, (__gnu_cxx::_Lock_policy)2> >::deallocate(std::_Sp_counted_ptr_inplace<ores::comms::net::server, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>*, unsigned long) (new_allocator.h:172)
+==50817==    by 0x25E2E9: deallocate (allocator.h:210)
+==50817==    by 0x25E2E9: deallocate (alloc_traits.h:517)
+==50817==    by 0x25E2E9: std::__allocated_ptr<std::allocator<std::_Sp_counted_ptr_inplace<ores::comms::net::server, std::allocator<void>, (__gnu_cxx::_Lock_policy)2> > >::~__allocated_ptr() (allocated_ptr.h:74)
+==50817==    by 0x2770F9: std::_Sp_counted_ptr_inplace<ores::comms::net::server, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>::_M_destroy() (shared_ptr_base.h:623)
+==50817==    by 0x238057: std::_Sp_counted_base<(__gnu_cxx::_Lock_policy)2>::_M_release() (shared_ptr_base.h:347)
+==50817==    by 0x24A36C: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::~__shared_count() (shared_ptr_base.h:1071)
+==50817==    by 0x24962F: std::__shared_ptr<ores::comms::net::server, (__gnu_cxx::_Lock_policy)2>::~__shared_ptr() (shared_ptr_base.h:1524)
+==50817==    by 0x249673: std::shared_ptr<ores::comms::net::server>::~shared_ptr() (shared_ptr.h:175)
+==50817==    by 0x22AE8D: CATCH2_INTERNAL_TEST_0()::{lambda()#1}::operator()() const::{lambda()#1}::~CATCH2_INTERNAL_TEST_0() (net_client_tests.cpp:122)
+==50817==    by 0x230B05: boost::asio::detail::co_spawn_state<boost::asio::detail::detached_handler, boost::asio::any_io_executor, CATCH2_INTERNAL_TEST_0()::{lambda()#1}::operator()() const::{lambda()#1}, void>::~co_spawn_state() (co_spawn.hpp:95)
+==50817==    by 0x2329B8: boost::asio::detail::co_spawn_entry_point(boost::asio::detail::co_spawn_entry_point<boost::asio::detail::detached_handler, boost::asio::any_io_executor, CATCH2_INTERNAL_TEST_0()::{lambda()#1}::operator()() const::{lambda()#1}>(boost::asio::awaitable<void, boost::asio::any_io_executor>*, boost::asio::detail::co_spawn_state<boost::asio::detail::detached_handler, boost::asio::any_io_executor, CATCH2_INTERNAL_TEST_0()::{lambda()#1}::operator()() const::{lambda()#1}, void>)::_ZN5boost4asio6detail20co_spawn_entry_pointINS1_16detached_handlerENS0_15any_io_executorEZZL22CATCH2_INTERNAL_TEST_0vENKUlvE_clEvEUlvE_EENS0_9awaitableINS1_28awaitable_thread_entry_pointET0_EEPNS7_IvS9_EENS1_14co_spawn_stateIT_S9_T1_vEE.Frame*) [clone .actor] (co_spawn.hpp:224)
+==50817==    by 0x232D88: boost::asio::detail::co_spawn_entry_point(boost::asio::detail::co_spawn_entry_point<boost::asio::detail::detached_handler, boost::asio::any_io_executor, CATCH2_INTERNAL_TEST_0()::{lambda()#1}::operator()() const::{lambda()#1}>(boost::asio::awaitable<void, boost::asio::any_io_executor>*, boost::asio::detail::co_spawn_state<boost::asio::detail::detached_handler, boost::asio::any_io_executor, CATCH2_INTERNAL_TEST_0()::{lambda()#1}::operator()() const::{lambda()#1}, void>)::_ZN5boost4asio6detail20co_spawn_entry_pointINS1_16detached_handlerENS0_15any_io_executorEZZL22CATCH2_INTERNAL_TEST_0vENKUlvE_clEvEUlvE_EENS0_9awaitableINS1_28awaitable_thread_entry_pointET0_EEPNS7_IvS9_EENS1_14co_spawn_stateIT_S9_T1_vEE.Frame*) [clone .destroy] (co_spawn.hpp:193)
+==50817==    by 0x238251: std::__n4861::coroutine_handle<void>::destroy() const (coroutine:137)
+==50817==    by 0x253E69: boost::asio::detail::awaitable_frame_base<boost::asio::any_io_executor>::destroy() (awaitable.hpp:519)
+==50817==    by 0x25C376: boost::asio::awaitable<boost::asio::detail::awaitable_thread_entry_point, boost::asio::any_io_executor>::~awaitable() (awaitable.hpp:77)
+==50817==    by 0x261AA6: boost::asio::detail::awaitable_thread<boost::asio::any_io_executor>::pump() (awaitable.hpp:782)
+==50817==    by 0x53C55F7: void boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >::operator()<boost::system::error_code const&, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >(boost::system::error_code const&, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor>&&) (use_awaitable.hpp:135)
+==50817==    by 0x53C497E: boost::asio::result_of<boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> > (boost::system::error_code const&, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor>)>::type boost::asio::cancellation_slot_binder<boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::cancellation_slot>::operator()<boost::system::error_code const&, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >(boost::system::error_code const&, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor>&&) && (bind_cancellation_slot.hpp:364)
+==50817==    by 0x53C4152: boost::asio::detail::move_binder2<boost::asio::cancellation_slot_binder<boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::cancellation_slot>, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >::operator()() (bind_handler.hpp:522)
+==50817==    by 0x53C3845: void boost::asio::detail::handler_work<boost::asio::cancellation_slot_binder<boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::cancellation_slot>, boost::asio::any_io_executor, void>::complete<boost::asio::detail::move_binder2<boost::asio::cancellation_slot_binder<boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::cancellation_slot>, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> > >(boost::asio::detail::move_binder2<boost::asio::cancellation_slot_binder<boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::cancellation_slot>, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >&, boost::asio::cancellation_slot_binder<boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::cancellation_slot>&) (handler_work.hpp:433)
+==50817==    by 0x53C26CB: boost::asio::detail::reactive_socket_move_accept_op<boost::asio::ip::tcp, boost::asio::any_io_executor, boost::asio::cancellation_slot_binder<boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::cancellation_slot>, boost::asio::any_io_executor>::do_complete(void*, boost::asio::detail::scheduler_operation*, boost::system::error_code const&, unsigned long) (reactive_socket_accept_op.hpp:268)
+==50817==    by 0x23ED07: boost::asio::detail::scheduler_operation::complete(void*, boost::system::error_code const&, unsigned long) (scheduler_operation.hpp:40)
+==50817==    by 0x246A44: boost::asio::detail::scheduler::do_run_one(boost::asio::detail::conditionally_enabled_mutex::scoped_lock&, boost::asio::detail::scheduler_thread_info&, boost::system::error_code const&) (scheduler.ipp:501)
+==50817==    by 0x245C47: boost::asio::detail::scheduler::run(boost::system::error_code&) (scheduler.ipp:217)
+==50817==    by 0x2475CC: boost::asio::io_context::run() (io_context.ipp:63)
+==50817==    by 0x23007A: void ores::testing::run_coroutine_test<CATCH2_INTERNAL_TEST_0()::{lambda()#1}>(boost::asio::io_context&, CATCH2_INTERNAL_TEST_0()::{lambda()#1}&&) (run_coroutine_test.hpp:37)
+==50817==    by 0x22EEC9: CATCH2_INTERNAL_TEST_0() (net_client_tests.cpp:104)
+==50817==    by 0x2EFA55: Catch::(anonymous namespace)::TestInvokerAsFunction::invoke() const (catch_test_registry.cpp:60)
+==50817==    by 0x2D904E: Catch::TestCaseHandle::invoke() const (catch_test_case_info.hpp:124)
+==50817==    by 0x2D78E5: Catch::RunContext::invokeActiveTestCase() (catch_run_context.cpp:661)
+==50817==    by 0x2D75D4: Catch::RunContext::runCurrentTest() (catch_run_context.cpp:619)
+==50817==    by 0x2D56A7: Catch::RunContext::runTest(Catch::TestCaseHandle const&) (catch_run_context.cpp:282)
+==50817==    by 0x27EB14: Catch::(anonymous namespace)::TestGroup::execute() (catch_session.cpp:110)
+==50817==    by 0x280412: Catch::Session::runInternal() (catch_session.cpp:379)
+==50817==    by 0x27FEF7: Catch::Session::run() (catch_session.cpp:306)
+==50817==    by 0x228E38: int Catch::Session::run<char>(int, char const* const*) (catch_session.hpp:49)
+==50817==    by 0x227921: main (main.cpp:28)
+==50817==  Block was alloc'd at
+==50817==    at 0x4846FA3: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==50817==    by 0x266BFF: std::__new_allocator<std::_Sp_counted_ptr_inplace<ores::comms::net::server, std::allocator<void>, (__gnu_cxx::_Lock_policy)2> >::allocate(unsigned long, void const*) (new_allocator.h:151)
+==50817==    by 0x25E1B3: allocate (allocator.h:198)
+==50817==    by 0x25E1B3: allocate (alloc_traits.h:482)
+==50817==    by 0x25E1B3: std::__allocated_ptr<std::allocator<std::_Sp_counted_ptr_inplace<ores::comms::net::server, std::allocator<void>, (__gnu_cxx::_Lock_policy)2> > > std::__allocate_guarded<std::allocator<std::_Sp_counted_ptr_inplace<ores::comms::net::server, std::allocator<void>, (__gnu_cxx::_Lock_policy)2> > >(std::allocator<std::_Sp_counted_ptr_inplace<ores::comms::net::server, std::allocator<void>, (__gnu_cxx::_Lock_policy)2> >&) (allocated_ptr.h:98)
+==50817==    by 0x25B655: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::__shared_count<ores::comms::net::server, std::allocator<void>, ores::comms::net::server_options&>(ores::comms::net::server*&, std::_Sp_alloc_shared_tag<std::allocator<void> >, ores::comms::net::server_options&) (shared_ptr_base.h:969)
+==50817==    by 0x257065: std::__shared_ptr<ores::comms::net::server, (__gnu_cxx::_Lock_policy)2>::__shared_ptr<std::allocator<void>, ores::comms::net::server_options&>(std::_Sp_alloc_shared_tag<std::allocator<void> >, ores::comms::net::server_options&) (shared_ptr_base.h:1712)
+==50817==    by 0x253DB0: std::shared_ptr<ores::comms::net::server>::shared_ptr<std::allocator<void>, ores::comms::net::server_options&>(std::_Sp_alloc_shared_tag<std::allocator<void> >, ores::comms::net::server_options&) (shared_ptr.h:464)
+==50817==    by 0x24FBF3: std::shared_ptr<ores::comms::net::server> std::make_shared<ores::comms::net::server, ores::comms::net::server_options&>(ores::comms::net::server_options&) (shared_ptr.h:1010)
+==50817==    by 0x22BAE8: CATCH2_INTERNAL_TEST_0()::{lambda()#1}::operator()(CATCH2_INTERNAL_TEST_0()::{lambda()#1}::operator()() const::_ZZL22CATCH2_INTERNAL_TEST_0vENKUlvE_clEv.Frame*) [clone .actor] (net_client_tests.cpp:115)
+==50817==    by 0x23820A: std::__n4861::coroutine_handle<void>::resume() const (coroutine:135)
+==50817==    by 0x264132: boost::asio::detail::awaitable_frame_base<boost::asio::any_io_executor>::resume() (awaitable.hpp:506)
+==50817==    by 0x2619C4: boost::asio::detail::awaitable_thread<boost::asio::any_io_executor>::pump() (awaitable.hpp:774)
+==50817==    by 0x275D50: boost::asio::detail::awaitable_async_op_handler<void (), boost::asio::any_io_executor, void>::operator()() (awaitable.hpp:813)
+==50817==    by 0x274ED3: boost::asio::detail::binder0<boost::asio::detail::awaitable_async_op_handler<void (), boost::asio::any_io_executor, void> >::operator()() (bind_handler.hpp:56)
+==50817==    by 0x27522B: void boost::asio::detail::executor_function::complete<boost::asio::detail::binder0<boost::asio::detail::awaitable_async_op_handler<void (), boost::asio::any_io_executor, void> >, std::allocator<void> >(boost::asio::detail::executor_function::impl_base*, bool) (executor_function.hpp:113)
+==50817==    by 0x239A5C: boost::asio::detail::executor_function::operator()() (executor_function.hpp:61)
+==50817==    by 0x26E874: boost::asio::detail::executor_op<boost::asio::detail::executor_function, std::allocator<void>, boost::asio::detail::scheduler_operation>::do_complete(void*, boost::asio::detail::scheduler_operation*, boost::system::error_code const&, unsigned long) (executor_op.hpp:70)
+==50817==    by 0x23ED07: boost::asio::detail::scheduler_operation::complete(void*, boost::system::error_code const&, unsigned long) (scheduler_operation.hpp:40)
+==50817==    by 0x246A44: boost::asio::detail::scheduler::do_run_one(boost::asio::detail::conditionally_enabled_mutex::scoped_lock&, boost::asio::detail::scheduler_thread_info&, boost::system::error_code const&) (scheduler.ipp:501)
+==50817==    by 0x245C47: boost::asio::detail::scheduler::run(boost::system::error_code&) (scheduler.ipp:217)
+==50817==    by 0x2475CC: boost::asio::io_context::run() (io_context.ipp:63)
+==50817==    by 0x23007A: void ores::testing::run_coroutine_test<CATCH2_INTERNAL_TEST_0()::{lambda()#1}>(boost::asio::io_context&, CATCH2_INTERNAL_TEST_0()::{lambda()#1}&&) (run_coroutine_test.hpp:37)
+==50817==    by 0x22EEC9: CATCH2_INTERNAL_TEST_0() (net_client_tests.cpp:104)
+==50817==    by 0x2EFA55: Catch::(anonymous namespace)::TestInvokerAsFunction::invoke() const (catch_test_registry.cpp:60)
+==50817==    by 0x2D904E: Catch::TestCaseHandle::invoke() const (catch_test_case_info.hpp:124)
+==50817==    by 0x2D78E5: Catch::RunContext::invokeActiveTestCase() (catch_run_context.cpp:661)
+==50817==    by 0x2D75D4: Catch::RunContext::runCurrentTest() (catch_run_context.cpp:619)
+==50817==    by 0x2D56A7: Catch::RunContext::runTest(Catch::TestCaseHandle const&) (catch_run_context.cpp:282)
+==50817==    by 0x27EB14: Catch::(anonymous namespace)::TestGroup::execute() (catch_session.cpp:110)
+==50817==    by 0x280412: Catch::Session::runInternal() (catch_session.cpp:379)
+==50817==    by 0x27FEF7: Catch::Session::run() (catch_session.cpp:306)
+==50817==    by 0x228E38: int Catch::Session::run<char>(int, char const* const*) (catch_session.hpp:49)
+==50817==    by 0x227921: main (main.cpp:28)
+#+end_src
+
+**** Qwen Analysis
+
+#+begin_src markdown
+This **Valgrind error** reveals a **use-after-free** bug related to your
+`active_connections_` atomic counter:
+
+> **Invalid read of size 8**
+> `std::__atomic_base<unsigned long>::operator--()`
+> inside the session completion lambda
+> **Address is inside a block that was already freed** (the `server` object)
+
+---
+
+### 🔍 Root Cause
+
+In your `accept_loop`, you spawn sessions like this:
+
+```cpp
+boost::asio::co_spawn(
+    io_context,
+    [sess, this]() -> boost::asio::awaitable<void> {
+        co_await sess->run();
+        --active_connections_;               // ← LINE 155
+        // ...
+    },
+    boost::asio::detached);
+```
+
+The **problem**: this lambda **captures `this` by raw pointer**, but the
+,**`server` object may be destroyed before the session finishes**.
+
+In your test:
+
+1. You call `server->stop()` → accept loop exits.
+2. The `server` object (held by a `shared_ptr` in the test) **goes out of scope** when the coroutine ends.
+3. But an **active session is still running** (e.g., finishing I/O after cancellation).
+4. When that session finally completes, it executes `--active_connections_` → **reads/writes a member of a destroyed object** → **undefined behavior (UMR = Uninitialized Memory Read)**.
+
+> 💥 This is a **classic dangling pointer** issue with detached coroutines
+> capturing `this`.
+
+---
+
+### ✅ Solution: Capture server via `shared_ptr` (or use `weak_ptr`)
+
+Since you already create the server as a `shared_ptr` in your test:
+
+```cpp
+auto server = std::make_shared<ores::comms::net::server>(server_opts);
+```
+
+You should **propagate that shared ownership** into the session spawn lambda.
+
+#### 🔧 Fix the session spawn in `accept_loop`:
+
+```cpp
+// Capture a shared_ptr to the server to keep it alive
+auto self = shared_from_this();  // ← requires enable_shared_from_this
+
+boost::asio::co_spawn(
+    io_context,
+    [sess, self]() -> boost::asio::awaitable<void> {
+        co_await sess->run();
+        --self->active_connections_;  // safe: self keeps server alive
+        BOOST_LOG_SEV(self->lg(), debug) << "Session completed, active connections: "
+                                        << self->active_connections_.load();
+    },
+    boost::asio::detached);
+```
+
+---
+
+### 🛠 Step-by-Step Implementation
+
+#### 1. **Inherit from `std::enable_shared_from_this`**
+
+In `server.hpp`:
+
+```cpp
+#include <memory>
+
+namespace ores::comms::net {
+
+class server : public std::enable_shared_from_this<server> {  // ← add this
+public:
+    // ... rest unchanged ...
+```
+
+> This allows safe `shared_from_this()` calls **only if the object is owned by a `shared_ptr`**.
+
+#### 2. **Ensure server is always created via `shared_ptr`**
+
+In your **real application** and **tests**, always do:
+
+```cpp
+auto server = std::make_shared<ores::comms::net::server>(opts);
+```
+
+> Never create on stack or via `new` without shared ownership.
+
+#### 3. **Update the spawn lambda in `accept_loop`**
+
+As shown above, replace `[sess, this]` with `[sess, self]` where `self = shared_from_this()`.
+
+Full snippet:
+
+```cpp
+// Inside accept_loop, after creating sess:
+auto self = shared_from_this();  // Keep server alive until session ends
+
+boost::asio::co_spawn(
+    io_context,
+    [sess, self]() -> boost::asio::awaitable<void> {
+        co_await sess->run();
+        --self->active_connections_;
+        BOOST_LOG_SEV(self->lg(), debug) << "Session completed, active connections: "
+                                        << self->active_connections_.load();
+    },
+    boost::asio::detached);
+```
+
+---
+
+### ❓ Why does this fix it?
+
+- The session coroutine now holds a `shared_ptr<server>` (`self`).
+- The `server` object **cannot be destroyed** until all sessions complete.
+- Thus, `active_connections_` is always valid when decremented.
+- Once the last session finishes, the server’s refcount drops to zero and it’s safely destroyed.
+
+---
+
+### 🚫 Why not capture `[this]`?
+
+- `this` is a **raw pointer** → no lifetime management.
+- Detached coroutines outlive their spawning scope → **dangling pointer**.
+- `shared_from_this()` ties the server’s lifetime to its **active work** (sessions).
+
+---
+
+### ✅ Additional Safety: Session Cancellation
+
+If you’ve implemented session cancellation (via `session_stop_signal_`), sessions will terminate quickly on `server->stop()`, so the `shared_ptr` won’t live long—but it’s still **necessary for correctness**.
+
+---
+
+### 🧪 Test Impact
+
+After this change:
+- Valgrind **UMR error disappears**.
+- Server lifetime is **extended safely** until all sessions finish cleanup.
+- No behavior change in logs—just memory safety.
+
+---
+
+### ⚠️ Important: Never call `shared_from_this()` on non-shared objects
+
+If you ever construct `server` on the stack:
+
+```cpp
+ores::comms::net::server srv(opts); // BAD!
+```
+
+Then `shared_from_this()` throws `std::bad_weak_ptr`.
+
+So **enforce** that servers are always `shared_ptr`-owned (e.g., make constructors private and use a factory, or just document it).
+
+But since your test already uses `make_shared`, you’re safe.
+
+---
+
+### Summary
+
+| Problem                                 | Fix                              |
+|-----------------------------------------|----------------------------------|
+| Lambda captures `this` → use-after-free | Capture `shared_from_this()`     |
+| Server destroyed before session cleanup | Extend lifetime via `shared_ptr` |
+| Valgrind UMR on `--active_connections_` | Now accesses valid memory        |
+
+Implement `enable_shared_from_this` and capture `self`, and your test will be **memory-safe**.
+#+end_src
+
 *** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
+    CLOCK: [2025-11-30 Sun 09:46]--[2025-11-30 Sun 11:33] =>  1:47
     CLOCK: [2025-11-29 Sat 13:47]--[2025-11-29 Sat 14:56] =>  1:09
     CLOCK: [2025-11-29 Sat 07:50]--[2025-11-29 Sat 08:47] =>  0:57
     CLOCK: [2025-11-28 Fri 09:01]--[2025-11-28 Fri 10:51] =>  1:50
@@ -2964,12 +3251,10 @@ Assorted fixes to documentation.
 We need to scan all of our finance notebooks so we can use them with AI. Each
 sprint will have a story similar to this until we scan and process them all.
 
-*** Add tests for messaging handler                                    :code:
-
-We need tests in comms which create a test request and response and a test
-handler.
-
-*** Implement session cancellation                                     :code:
+*** STARTED Implement session cancellation                             :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-30 Sun 12:14]--[2025-11-30 Sun 12:35] =>  0:21
+    :END:
 
 As per qwen:
 
@@ -3162,6 +3447,29 @@ try {
 Let me know if you'd like the full code patches for `session.hpp/cpp` or help adapting this to your exact `connection`/`ssl_stream` usage!
 #+end_src
 
+
+*** STARTED Add support for offsets in pagination                      :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-30 Sun 12:35]--[2025-11-30 Sun 13:05] =>  0:30
+    :END:
+
+At present we disabled pagination in UI because sqlgen does not support offset.
+We raised a ticket for this. When it is available and released in vcpkg, we need
+to update the code to use it.
+
+Notes:
+
+- Copy the limit implementation and see if that works.
+- Raised PR: https://github.com/getml/sqlgen/pull/102
+
+Links:
+
+- [[https://github.com/getml/sqlgen/issues/100][GH #100: Feature request: offset support]]
+
+*** Add tests for messaging handler                                    :code:
+
+We need tests in comms which create a test request and response and a test
+handler.
 
 *** Create a variability service for feature flags                     :code:
 

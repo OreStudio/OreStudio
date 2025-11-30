@@ -148,13 +148,14 @@ boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_con
             ++active_connections_;
 
             // Spawn session - capture shared_ptr and active_connections reference
+            auto self = shared_from_this();
             boost::asio::co_spawn(
                 io_context,
-                [sess, this]() -> boost::asio::awaitable<void> {
+                [sess, self]() -> boost::asio::awaitable<void> {
                     co_await sess->run();
-                    --active_connections_;
+                    --self->active_connections_;
                     BOOST_LOG_SEV(lg(), debug) << "Session completed, active connections: "
-                                              << active_connections_.load();
+                                              << self->active_connections_.load();
                 },
                 boost::asio::detached);
 

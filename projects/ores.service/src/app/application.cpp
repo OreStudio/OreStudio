@@ -80,11 +80,11 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         BOOST_LOG_SEV(lg(), info) << "Authentication and authorization enforcement enabled";
     }
 
-    ores::comms::net::server srv(cfg.server);
-    ores::risk::messaging::registrar::register_handlers(srv, ctx);
-    ores::accounts::messaging::registrar::register_handlers(srv, ctx);
+    auto srv = std::make_shared<ores::comms::net::server>(cfg.server);
+    ores::risk::messaging::registrar::register_handlers(*srv, ctx);
+    ores::accounts::messaging::registrar::register_handlers(*srv, ctx);
 
-    co_await srv.run(io_ctx);
+    co_await srv->run(io_ctx);
 
     // Shutdown logging
     if (bootstrap_svc.is_in_bootstrap_mode()) {

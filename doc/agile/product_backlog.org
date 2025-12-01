@@ -66,6 +66,578 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Add tests for messaging handler                                    :code:
+
+We need tests in comms which create a test request and response and a test
+handler.
+
+*** Create a variability service for feature flags                     :code:
+
+We should not expose the repository directly. Instead, consumers should use a
+service interface which queries the repository as needed.
+
+*** Add screen in qt to exit bootstrap mode                            :code:
+
+As per claude:
+
+The create_initial_admin_request message type serves several important purposes
+that differentiate it from the CLI and REPL approaches:
+
+Why We Need create_initial_admin_request
+
+  1. Network-accessible bootstrap flow
+  - Allows remote initial setup from localhost without requiring shell/CLI access
+  to the server
+  - Enables a web-based "first-run" setup experience (like many web applications)
+  - The Qt client can provide a proper UI for initial admin account creation
+
+  2. Localhost-only security enforcement
+  - The endpoint enforces that it can only be called from localhost (127.0.0.1 or
+  ::1) at line
+  projects/ores.accounts/src/messaging/accounts_message_handler.cpp:320
+  - Provides network-accessible bootstrap with security guarantees
+  - Prevents remote bootstrap attacks
+
+  3. Atomic mode transition
+  - The endpoint both creates the admin AND exits bootstrap mode in a single atomic
+   operation (lines 362-367 in accounts_message_handler.cpp)
+  - Guarantees consistency - can't create admin without exiting bootstrap mode
+
+  4. Service-layer validation
+  - Goes through full service layer with password validation and business logic
+  - The CLI is essentially an "administrative backdoor" that bypasses the service
+  layer and writes directly to the database
+
+  5. Protocol-compliant workflow
+  - Clients speaking the binary protocol need a proper bootstrap endpoint
+  - REPL create_account_request is blocked in bootstrap mode (by enforcement logic)
+  - create_initial_admin_request is the only endpoint that works in bootstrap mode
+
+  The Distinction
+
+  - CLI approach: Administrative backdoor, direct database access, bypasses all
+  service logic
+  - create_initial_admin_request: Proper network-accessible bootstrap flow with
+  localhost restriction and atomic mode transition
+  - REPL create_account_request: Normal account creation, blocked in bootstrap mode
+
+  The create_initial_admin_request enables a proper "first-run experience" for
+  clients connecting via the network protocol, while maintaining security through
+  localhost-only access.
+
+
+
+*** Users cannot update their passwords                                :code:
+
+At present it is not possible to update passwords, or any other property of an
+account.
+
+*** Cli clean-ups                                                      :code:
+
+- we still seem to support =--entity currencies=. This should now be invalid.
+- we are still exporting as JSON. We should instead allow CSV and XML exports
+  only.
+- add recipes for all commands.
+- should be able to list all admin accounts.
+- list command should support table output.
+- is admin should be a bool: =--is-admin arg (=0)=
+- add account duplicates logic. We should have a single service for this.
+- split application into entities.
+
+*** Multi-threaded scenarios with comms                                :code:
+
+At present we are relying on request-response patterns: the client sends a
+request and the next frame coming in is the response. However, in the future we
+will have many dialog windows open, each of them sending requests and awaiting
+responses. It will not be possible to know what response is coming back from
+what window. We need to take this into account.
+
+*** Add listen/notify support                                          :code:
+
+When data changes for a given entity in the database and we have the dialog of
+that entity open, we need to make the reload button a different colour (suggest
+a colour). For this we need to listen/notify in the database and then send a
+message to the client. This requires a change at the protocol because at present
+we send a request from the client first and then expect a response. This is more
+like a callback where the handler will call a callback when a certain message is
+received. Listen code from deepseek:
+
+#+begin_src c++
+#include <sqlgen.h>
+#include <libpq-fe.h>
+#include <thread>
+#include <iostream>
+
+class TableWatcher {
+private:
+    sqlgen::Connection conn_;
+    std::thread listener_thread_;
+    bool running_;
+
+public:
+    TableWatcher(const std::string& connection_string)
+        : conn_(connection_string), running_(false) {}
+
+    void start() {
+        running_ = true;
+        listener_thread_ = std::thread(&TableWatcher::listen_loop, this);
+    }
+
+    void stop() {
+        running_ = false;
+        if (listener_thread_.joinable()) {
+            listener_thread_.join();
+        }
+    }
+
+private:
+    void listen_loop() {
+        // Get raw PGconn for async operations
+        auto raw_conn = conn_.native_handle(); // You might need to expose this
+
+        // Listen to channel
+        PGresult* res = PQexec(raw_conn, "LISTEN table_updates;");
+        if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+            PQclear(res);
+            return;
+        }
+        PQclear(res);
+
+        while (running_) {
+            // Non-blocking check for notifications
+            PQconsumeInput(raw_conn);
+
+            PGnotify* notify;
+            while ((notify = PQnotifies(raw_conn)) != nullptr) {
+                handle_notification(notify);
+                PQfreemem(notify);
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    }
+
+    void handle_notification(PGnotify* notify) {
+        std::cout << "Received notification: " << notify->relname
+                  << " - " << notify->extra << std::endl;
+
+        // Parse the extra data (usually JSON) and handle accordingly
+        // {"table": "users", "operation": "INSERT", "id": 123}
+    }
+};
+#+end_src
+
+*** Add version support to entities                                    :code:
+
+We need a "version" field which is incremented automatically by a trigger. It is
+used as follows:
+
+- domain entities have a version field which is loaded from database.
+- if we try to save at version =n= but current version is not =n-1=, it should
+  fail to save.
+- version is incremented automatically on save.
+- display version in UI prominently (/e.g./ next to entity key, iso code for
+  currencies) so that we can see when we reload.
+
+*** Disconnect closes currencies window                                :code:
+
+It should just disable the icons, etc.
+
+*** Add search to currencies                                           :code:
+
+It should be possible to filter the open currencies by a string. This should be
+any field. The user needs to know when the list has been filtered. Ideally we
+should have buttons at the top per field and filter using those. It should go
+back to database rather than just filter what is available in UI.
+
+*** Automated SQL generation                                           :code:
+
+At present we are manually creating the SQL. We should be able to do it from
+sqlgen.
+
+*** Missing shell functionality                                        :code:
+
+The job of the client is to exercise the entirety of the comms protocol, and to
+provide a way to perform CRUD operations via command line. Note:
+
+- client never access the repositories directly, it should do exactly the same as the qt client
+  would do.
+- client's only interface is the REPL.
+- client will eventually be used by AI agents.
+
+Client needs to have messages at the entity level:
+
+- currencies:
+  - import currencies from ORE Format. Given a path in the filesystem, it
+    performs the import using the importer and appropriate comms messages.
+  - export currencies to ORE format. Uses comms to obtain the currencies, then
+    the exporter to convert, then dumps them into the terminal as ORE XML.
+  - list existing currencies as a table or as JSON. We need support for latest,
+    "at time point" and "all" (meaning every single version). It should be
+    possible to supply some filtering by the entity's ID (e.g.
+    =--iso-code=).
+  - delete one or more currencies. User supplies a number of entity IDs (e.g.
+    =--iso-code ABC --iso-code CDE --iso-code FGH= and so on).
+  - add a currency supplying arguments (e.g. =--iso-code= and so forth).
+  - add currencies from JSON.
+- accounts:
+  - list existing currencies as a table or as JSON. We need support for latest,
+    "at time point" and "all" (meaning every single version). It should be
+    possible to supply filtering by the entity's ID.
+  - delete one or more accounts. User supplies a list of entity IDs.
+  - add an account supplying arguments.
+  - add accounts from JSON.
+- feature flags:
+  - list existing feature flags as a table or as JSON. We need support for
+    latest, "at time point" and "all" (meaning every single version). It should
+    be possible to supply some filtering by the entity's ID
+  - delete one or more feature flags. User supplies a list of entity IDs.
+  - add feature flags supplying arguments.
+  - add feature flags from JSON.
+
+Notes:
+
+- update recipes with the new client commands.
+
+*** Add a logout message                                               :code:
+
+At present we are just closing the socket. We should send a proper message.
+
+*** Split =protocol.hpp= into components                               :code:
+
+These files will become too large as we add more entities.
+
+*** Invalid password should not throw                                  :code:
+
+At present in the unlock test we have:
+
+#+begin_src c++
+    BOOST_LOG_SEV(lg, info) << "Locking account by failing 5 login attempts";
+    auto ip = internet::ipv4();
+    for (int i = 0; i < 5; ++i) {
+        try {
+            sut.login(account.username, "wrong_password", ip);
+        } catch (...) {}
+    }
+#+end_src
+
+This is very suspicious; a failed login should just return false or the modern
+c++ equivalent (=std::expected=?).
+
+*** Faker with seeds                                                   :code:
+
+As suggested by phi4:
+
+#+begin_quote
+Faker Usage:
+
+Randomness: Ensure that the use of faker data is appropriate for testing.
+Consider seeding the random generator for reproducibility in tests.
+#+end_quote
+
+Notes:
+
+#include "faker-cxx/generator.h"
+void setSeed(std::mt19937_64::result_type seed)
+Catch::rngSeed()
+
+
+*** Improve handling of error responses                                :code:
+
+As per Gemini code review:
+
+#+begin_src markdown
+Certainly. Point \#2 from the review of `CurrencyHistoryDialog.cpp` addressed
+the potential complexity of error checking by suggesting that relying on the
+specific response message type is **fragile**.
+
+The goal is to move from:
+
+1.  Client sends **Request A**.
+2.  Server returns **Response A** (Success) OR **Error Response** (Failure) OR
+    ,**Response B** (Unexpected success type).
+3.  Client checks: *Is the message type exactly **Response A**?*
+
+to a more robust pattern where the client checks for a generic failure response
+first.
+
+-----
+
+## 🐞 Fragile Error Check (Current Code)
+
+The current code in `loadHistory` checks for success by expecting *only* the
+specific success message type:
+
+```cpp
+// Current Fragile Logic
+if (result->header().type != comms::protocol::message_type::get_currency_history_response) {
+    onHistoryLoadError(QString("Server does not support currency history (received message type %1)")
+        .arg(static_cast<int>(result->header().type)));
+    return;
+}
+```
+
+This logic has two main problems:
+
+1.  **Hiding Server Errors:** If the server returns a generic protocol error
+    (`message_type::error_response`) because, for example, the client's session
+    timed out, the client logs a misleading message: "Server does not support
+    currency history." It should be reporting the actual error message sent by
+    the server.
+2.  **Lack of Standardization:** Every client method needs to implement its own
+    logic to handle unexpected types.
+
+-----
+
+## 🛠️ Suggested Improvement: Standardized Error Handling
+
+The improvement is to check for a generic **`error_response`** message type
+first, and report its payload/message, before attempting to deserialize the
+successful response.
+
+Assuming your system has a standard `error_response` message:
+
+```cpp
+void CurrencyHistoryDialog::handleHistoryResponse(const HistoryResult& result) {
+    if (!result) {
+        onHistoryLoadError(QString::fromStdString(result.error()));
+        return;
+    }
+
+    // 1. Check for a generic server-side error response
+    if (result->header().type == comms::protocol::message_type::error_response) {
+        // Assume error_response contains a readable message payload
+        auto error_response = risk::messaging::error_response::deserialize(result->payload());
+        if (error_response) {
+            onHistoryLoadError(QString::fromStdString(error_response->message));
+        } else {
+            onHistoryLoadError("Server returned a malformed error response.");
+        }
+        return;
+    }
+
+    // 2. Check for the specific SUCCESS response type
+    if (result->header().type == comms::protocol::message_type::get_currency_history_response) {
+        auto response = risk::messaging::get_currency_history_response::deserialize(result->payload());
+
+        if (!response || !response->success) {
+            // Handle success=false within the expected response type
+            onHistoryLoadError(QString::fromStdString(response ? response->message : "Invalid or failed history response."));
+            return;
+        }
+
+        history_ = std::move(response->history);
+        onHistoryLoaded();
+        return;
+    }
+
+    // 3. Handle truly unexpected message type
+    onHistoryLoadError(QString("Received unexpected message type %1 from server.")
+        .arg(static_cast<int>(result->header().type)));
+}
+```
+
+By standardizing the **`error_response`** type, the client can always extract
+and display the relevant server-side failure reason, leading to much clearer
+logging and user feedback.
+#+end_src
+
+*** Do not disable cert verification                                   :code:
+
+At present we've hacked cert verify to false. We should not do this. Gemini:
+
+#+begin_quote
+You cannot use Let's Encrypt for development purposes because it requires a
+public domain name that Let's Encrypt can verify, and your local development
+server is not publicly accessible. The recommended approach is to create a local
+certificate authority (CA) using a tool like mkcert to sign your certificates,
+which allows you to bypass browser warnings for local domains like localhost.
+
+Option 1: Use mkcert for local development
+
+- Install mkcert: Follow the instructions to install the mkcert tool on your
+  system.
+- Install the local CA: Run the command to install the local CA root certificate
+  into your system's trust store. This is a one-time setup.
+- Generate a local certificate: Use mkcert to generate certificates for your
+  local development domains (e.g., localhost, my-app.local). The generated
+  certificates will be signed by your trusted local CA and will not cause
+  browser warnings.
+
+Option 2: Use Let's Encrypt with a real public domain
+
+Purchase a domain: Buy a public domain name (e.g., mydomain.dev).
+
+- Use an ACME client: Use an ACME client like Certbot to automate the
+  certificate process. You can run certbot on a server that is accessible to the
+  public internet.
+- Complete the validation: The client will need to verify your ownership of the
+  domain through a DNS or HTTP challenge, which requires the domain to be
+  publicly reachable.
+- Deploy the certificate: Let's Encrypt will issue a certificate that you can
+  then deploy to your development server.
+
+Why Let's Encrypt doesn't work for local development
+
+- Let's Encrypt's primary purpose is to secure public-facing websites by
+  automatically verifying domain ownership.
+- They use ACME protocol challenges (DNS or HTTP) that require the public
+  internet to access your server at the specified domain.
+- Since your local server is not on the public internet, it cannot respond to
+  these challenges, and Let's Encrypt cannot verify your ownership of the
+  domain.
+#+end_quote
+
+*** Use prebuilt qt                                                    :code:
+
+At present we are having problems creating an installable gui. This is because
+Qt is hard to build and package from vcpkg. We should use prebuilt binaries for
+all platforms.
+
+Links:
+
+- [[https://github.com/jurplel/install-qt-action][install-qt-action]]
+
+*** Sprint Demo                                                       :infra:
+
+Time spent doing the demo. This is the first one so it will be very basic.
+
+**** Presentation
+
+***** ORE Studio v0.0.4, "Fazenda Camilunga"
+
+    Marco Craveiro
+    Moimba Software Engineering
+    Released on 16th November 2025
+
+*** Add =[[nodiscard]]= to repository operations returning data        :code:
+
+At present we can create an account and ignore the result, etc. We should be
+forced to look at the result.
+
+*** CLI Importing needs to read from database                          :code:
+
+After we do the import into the database, we need to read the currencies again
+to get the valid from/to.
+
+*** Add output option to repl                                          :code:
+
+It should be possible to set the "output type" or format in the shell, from json
+to table. Find the correct terminology for this.
+
+*** Add more account commands                                          :code:
+
+See the azeroth account commands for inspiration.
+
+Links:
+
+- [[https://www.azerothcore.org/wiki/gm-commands][GM Commands]]
+
+*** Add lock account request                                           :code:
+
+As per gemini's comments, we should have a request to lock an account.
+
+Notes:
+
+- account unlock should return boolean rather than throw.
+
+Test.
+
+#+begin_src c++
+TEST_CASE("handle_login_request_locked_account", tags) {
+    auto lg(make_logger(test_suite));
+    database_helper h;
+    h.truncate_table(database_table);
+
+    accounts_message_handler handler(h.get_context());
+    boost::asio::io_context io_context;
+
+    const auto account = generate_synthetic_account();
+    create_account_request create_req(to_create_account_request(account));
+    BOOST_LOG_SEV(lg, info) << "Create account request: " << create_req;
+
+    const auto create_payload = create_req.serialize();
+    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+        auto result = co_await handler.handle_message(
+            message_type::create_account_request,
+            create_payload, "127.0.0.1:12345");
+        REQUIRE(result.has_value());
+    });
+
+    // 2. Simulate locking the account (A dedicated lock request should exist,
+    //    but for this test, we'll assume the handler has a method/logic for it
+    //    or that the system supports a lock request message type).
+    // Assuming a lock_account_request exists or the account is locked internally.
+    unlock_account_request lock_req; // Re-use struct for simplicity, assuming a dedicated lock is handled internally
+    lock_req.account_id = create_account_response::deserialize(
+        handler.get_account_id_by_username(create_req.username)).value().account_id; // Hypothetical internal method
+    // In a real system, you'd send a dedicated lock message here.
+    // For now, we rely on a separate mechanism to put the account into a locked state.
+    // **NOTE**: For a proper test, a dedicated LOCK_ACCOUNT_REQUEST is needed.
+
+    // 3. Attempt login with valid credentials for the now-locked account
+    login_request login_req;
+    login_req.username = create_req.username;
+    login_req.password = create_req.password;
+    BOOST_LOG_SEV(lg, info) << "Attempting login for locked user: " << login_req.username;
+
+    const auto login_payload = login_req.serialize();
+
+    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+        auto result = co_await handler.handle_message(
+            message_type::login_request,
+            login_payload, "192.168.1.100:54321");
+
+        REQUIRE(result.has_value());
+        const auto response_result = login_response::deserialize(result.value());
+        REQUIRE(response_result.has_value());
+        const auto& response = response_result.value();
+        BOOST_LOG_SEV(lg, info) << "Response: " << response;
+
+        CHECK(response.success == false);
+        // Check for an explicit error message/code related to account lock.
+        CHECK(response.error_message.find("locked") != std::string::npos);
+    });
+}
+#+end_src
+
+
+
+*** Improve error message when server is not running                   :code:
+
+At present we get:
+
+#+begin_quote
+Failed to connect to server: Failed to connect to server
+#+end_quote
+
+If we try again after the error, "authenticating..." shows up in red.
+
+*** Update currency details to use tabs                                :code:
+
+We need a main tab with the currency related properties, then a "system" tab
+with temporal data which is read-only even on edit and a "image" tab with the
+image used to represent the currency. It could also contain some description or
+notes.
+
+*** Server must check database connectivity on startup                 :code:
+
+At present the server only checks connectivity to database when a user requests
+an operation. We need some kind of initial polling which puts the server in a
+mode replying to all clients: "database not available". While this is happening,
+it should keep polling the database and checking the connectivity.
+
+Ideally the server should start, but poll the DB. It should send messages to
+clients informing them of the issues with database.
+
+*** Consider adding log command line options to qt                     :code:
+
+At present we have hard-coded logging options. However, maybe users should be
+able to change the logging settings from the UI rather than having to restart
+the app and supply command line options.
+
+
+
 *** Troubleshoot skills in claude                                     :infra:
 
 We don't seem to be able to use skills reliably.

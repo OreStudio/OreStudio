@@ -28,7 +28,7 @@ jobs:
     outputs:
       should_run: ${{ steps.should_run.outputs.should_run }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.0
         with:
           submodules: true
 
@@ -63,7 +63,7 @@ jobs:
             family: linux
             compiler: clang
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.0
         with:
           ref: main
           submodules: true

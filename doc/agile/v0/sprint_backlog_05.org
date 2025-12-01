@@ -18,29 +18,29 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-01 Mon 20:33], for Monday, December 01, 2025.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *2:37* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 2:37   |      |      | 100.0 |
-|       | Active                                |        | 2:37 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint    |        |      | 1:32 |  58.6 |
-| code  | Add support for offsets in pagination |        |      | 1:05 |  41.4 |
+#+CAPTION: Clock summary at [2025-12-01 Mon 20:59], for Monday, December 01, 2025.
+|       | <75>                               |        |      |      |       |
+| Tags  | Headline                           | Time   |      |      |     % |
+|-------+------------------------------------+--------+------+------+-------|
+|       | *Total time*                       | *3:16* |      |      | 100.0 |
+|-------+------------------------------------+--------+------+------+-------|
+|       | Stories                            | 3:16   |      |      | 100.0 |
+|       | Active                             |        | 3:16 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint |        |      | 1:32 |  46.9 |
+| code  | Add support for offsets in sqlgen  |        |      | 1:44 |  53.1 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-01 Mon 20:33]
+#+CAPTION: Clock summary at [2025-12-01 Mon 20:59]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *80:10* |       |       | 100.0 |
+|       | *Total time*                                            | *80:49* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 80:10   |       |       | 100.0 |
-|       | Active                                                  |         | 80:10 |       | 100.0 |
-| agile | Sprint and product backlog refinement                   |         |       |  3:21 |   4.2 |
+|       | Stories                                                 | 80:49   |       |       | 100.0 |
+|       | Active                                                  |         | 80:49 |       | 100.0 |
+| agile | Sprint and product backlog refinement                   |         |       |  3:21 |   4.1 |
 | infra | Add AI generated sprint summary                         |         |       |  1:38 |   2.0 |
 | infra | Add skill to generate release notes                     |         |       |  0:27 |   0.6 |
 | code  | Version of =ores.qt= does not update                    |         |       |  0:54 |   1.1 |
@@ -50,8 +50,8 @@
 | code  | Merge update and create currency messages               |         |       |  1:07 |   1.4 |
 | code  | Uninformative incompatible protocol version error in qt |         |       |  1:11 |   1.5 |
 | code  | Implement delete account                                |         |       |  0:20 |   0.4 |
-| code  | Reorganise CLI structure by entity                      |         |       |  4:43 |   5.9 |
-| code  | Update =ores.shell= with REPL commands for all entities |         |       | 13:48 |  17.2 |
+| code  | Reorganise CLI structure by entity                      |         |       |  4:43 |   5.8 |
+| code  | Update =ores.shell= with REPL commands for all entities |         |       | 13:48 |  17.1 |
 | code  | Consider renaming =client= to =repl=                    |         |       |  0:22 |   0.5 |
 | code  | Create a "request response" helper                      |         |       |  0:13 |   0.3 |
 | code  | Update all UML diagrams after shell changes             |         |       |  0:09 |   0.2 |
@@ -62,16 +62,16 @@
 | code  | Tidy-up database code                                   |         |       |  0:44 |   0.9 |
 | code  | Implement basic XML import XML in Qt                    |         |       |  2:35 |   3.2 |
 | code  | Add pagination support                                  |         |       |  6:02 |   7.5 |
-| code  | Implement import dialog for XML import in Qt            |         |       |  1:34 |   2.0 |
+| code  | Implement import dialog for XML import in Qt            |         |       |  1:34 |   1.9 |
 | code  | Implement authentication bootstrap workflow             |         |       |  3:52 |   4.8 |
 | code  | Split feature flags out of accounts                     |         |       |  0:55 |   1.1 |
-| infra | Add links to UML diagrams                               |         |       |  1:49 |   2.3 |
+| infra | Add links to UML diagrams                               |         |       |  1:49 |   2.2 |
 | code  | Inspect code coverage to understand the dip             |         |       |  3:23 |   4.2 |
-| infra | Troubleshoot skills in claude                           |         |       |  0:34 |   0.7 |
 | infra | Documentation fixes                                     |         |       |  1:27 |   1.8 |
-| infra | OCR scan notebooks for this sprint                      |         |       | 18:30 |  23.1 |
+| infra | OCR scan notebooks for this sprint                      |         |       | 18:30 |  22.9 |
 | code  | Fix valgrind leaks for comms tests                      |         |       |  0:38 |   0.8 |
-| code  | Add support for offsets in pagination                   |         |       |  1:35 |   2.0 |
+| code  | Add support for offsets in sqlgen                       |         |       |  2:14 |   2.8 |
+| infra | Troubleshoot skills in claude                           |         |       |  0:34 |   0.7 |
 | code  | Implement session cancellation                          |         |       |  0:21 |   0.4 |
 #+end:
 
@@ -2919,19 +2919,6 @@ We seem to have gone below 70% again.
 | feature_flags_mapper.cpp     | Zero   |    0.00% | 34/34             |
 | feature_flags_repository.cpp | Low    |    7.25% | 64/69             |
 
-*** POSTPONED Troubleshoot skills in claude                           :infra:
-    :LOGBOOK:
-    CLOCK: [2025-11-22 Sat 07:40]--[2025-11-22 Sat 08:14] =>  0:34
-    :END:
-
-We don't seem to be able to use skills reliably.
-
-Links:
-
-- [[https://code.claude.com/docs/en/skills][Claude: Agent Skills]]
-- [[https://www.reddit.com/r/ClaudeCode/comments/1oywsa1/claude_code_skills_activate_20_of_the_time_heres/][reddit: Claude Code skills activate 20% of the time. Here's how I got to 84%.]]
-- [[https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably][How to Make Claude Code Skills Activate Reliably]]
-
 *** COMPLETED Documentation fixes                                     :infra:
     :LOGBOOK:
     CLOCK: [2025-11-28 Fri 22:30]--[2025-11-28 Fri 23:57] =>  1:27
@@ -3255,8 +3242,9 @@ But since your test already uses `make_shared`, you’re safe.
 Implement `enable_shared_from_this` and capture `self`, and your test will be **memory-safe**.
 #+end_src
 
-*** POSTPONED Add support for offsets in pagination                    :code:
+*** COMPLETED Add support for offsets in sqlgen                        :code:
     :LOGBOOK:
+    CLOCK: [2025-12-01 Mon 20:18]--[2025-12-01 Mon 20:57] =>  0:39
     CLOCK: [2025-12-01 Mon 10:56]--[2025-12-01 Mon 12:01] =>  1:05
     CLOCK: [2025-11-30 Sun 12:35]--[2025-11-30 Sun 13:05] =>  0:30
     :END:
@@ -3273,6 +3261,19 @@ Notes:
 Links:
 
 - [[https://github.com/getml/sqlgen/issues/100][GH #100: Feature request: offset support]]
+
+*** POSTPONED Troubleshoot skills in claude                           :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-22 Sat 07:40]--[2025-11-22 Sat 08:14] =>  0:34
+    :END:
+
+We don't seem to be able to use skills reliably.
+
+Links:
+
+- [[https://code.claude.com/docs/en/skills][Claude: Agent Skills]]
+- [[https://www.reddit.com/r/ClaudeCode/comments/1oywsa1/claude_code_skills_activate_20_of_the_time_heres/][reddit: Claude Code skills activate 20% of the time. Here's how I got to 84%.]]
+- [[https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably][How to Make Claude Code Skills Activate Reliably]]
 
 *** POSTPONED Implement session cancellation                           :code:
     :LOGBOOK:

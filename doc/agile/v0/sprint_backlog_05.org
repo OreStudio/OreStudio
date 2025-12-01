@@ -18,7 +18,7 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-01 Mon 20:18], for Monday, December 01, 2025.
+#+CAPTION: Clock summary at [2025-12-01 Mon 20:33], for Monday, December 01, 2025.
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
@@ -32,7 +32,7 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-01 Mon 20:18]
+#+CAPTION: Clock summary at [2025-12-01 Mon 20:33]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
@@ -2959,7 +2959,7 @@ Assorted fixes to documentation.
 We need to scan all of our finance notebooks so we can use them with AI. Each
 sprint will have a story similar to this until we scan and process them all.
 
-*** POSTPONED Fix valgrind leaks for comms tests                       :code:
+*** COMPLETED Fix valgrind leaks for comms tests                       :code:
     :LOGBOOK:
     CLOCK: [2025-11-30 Sun 11:35]--[2025-11-30 Sun 12:13] =>  0:38
     :END:

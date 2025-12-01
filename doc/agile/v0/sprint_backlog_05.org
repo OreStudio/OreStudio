@@ -236,7 +236,7 @@ print(p)
 
 [[file:sprint_backlog_05_plan.png]]
 
-[[file:sprint_backlog_05_plan.png]]
+[[file:sprint_backlog_05_resources.png]]
 
 *** COMPLETED Add AI generated sprint summary                         :infra:
     :LOGBOOK:

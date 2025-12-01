@@ -1,4 +1,4 @@
-;;; .build-tasks.el --- version_zero.org             -*- lexical-binding: t; -*-
+;;; .build-plan.el --- version_zero.org             -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2025  Marco Craveiro
 
@@ -50,7 +50,7 @@
 ;; Define only the TaskJuggler project
 (setq org-publish-project-alist
       '(
-        ("tasks"
+        ("plan"
          :base-directory "./doc/agile/v0/"
          :publishing-directory "./build/output/taskjuggler/"
          :publishing-function ores/org-publish-to-taskjuggler
@@ -64,5 +64,5 @@
 
 (message "Build complete!")
 
-(provide '.build-tasks)
-;;; .build-tasks.el ends here
+(provide '.build-plan)
+;;; .build-plan.el ends here

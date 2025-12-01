@@ -21,9 +21,9 @@
 #define ORES_COMMS_NET_SERVER_HPP
 
 #include <string>
-#include <functional>
 #include <memory>
 #include <atomic>
+#include <functional>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/awaitable.hpp>
@@ -44,7 +44,7 @@ namespace ssl = boost::asio::ssl;
  *
  * Accepts SSL connections, performs handshake, and manages client sessions.
  */
-class server final {
+class server final : public std::enable_shared_from_this<server> {
 private:
     static auto& lg() {
         using namespace ores::utility::log;

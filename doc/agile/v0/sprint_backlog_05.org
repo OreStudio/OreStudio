@@ -18,62 +18,64 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-11-28 Fri 18:59], for Friday, November 28, 2025.
-|       | <75>                                        |        |      |      |       |
-| Tags  | Headline                                    | Time   |      |      |     % |
-|-------+---------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                | *5:09* |      |      | 100.0 |
-|-------+---------------------------------------------+--------+------+------+-------|
-|       | Stories                                     | 5:09   |      |      | 100.0 |
-|       | Active                                      |        | 5:09 |      | 100.0 |
-| code  | Split feature flags out of accounts         |        |      | 0:55 |  17.8 |
-| infra | Add links to UML diagrams                   |        |      | 1:49 |  35.3 |
-| infra | OCR scan notebooks for this sprint          |        |      | 1:50 |  35.6 |
-| code  | Inspect code coverage to understand the dip |        |      | 0:35 |  11.3 |
+#+CAPTION: Clock summary at [2025-12-01 Mon 20:59], for Monday, December 01, 2025.
+|       | <75>                               |        |      |      |       |
+| Tags  | Headline                           | Time   |      |      |     % |
+|-------+------------------------------------+--------+------+------+-------|
+|       | *Total time*                       | *3:16* |      |      | 100.0 |
+|-------+------------------------------------+--------+------+------+-------|
+|       | Stories                            | 3:16   |      |      | 100.0 |
+|       | Active                             |        | 3:16 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint |        |      | 1:32 |  46.9 |
+| code  | Add support for offsets in sqlgen  |        |      | 1:44 |  53.1 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-11-28 Fri 18:59]
+#+CAPTION: Clock summary at [2025-12-01 Mon 20:59]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *67:56* |       |       | 100.0 |
+|       | *Total time*                                            | *80:49* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 67:56   |       |       | 100.0 |
-|       | Active                                                  |         | 67:56 |       | 100.0 |
-| agile | Sprint and product backlog refinement                   |         |       |  3:21 |   4.9 |
-| infra | Add AI generated sprint summary                         |         |       |  1:38 |   2.4 |
-| infra | Add skill to generate release notes                     |         |       |  0:27 |   0.7 |
-| code  | Version of =ores.qt= does not update                    |         |       |  0:54 |   1.3 |
+|       | Stories                                                 | 80:49   |       |       | 100.0 |
+|       | Active                                                  |         | 80:49 |       | 100.0 |
+| agile | Sprint and product backlog refinement                   |         |       |  3:21 |   4.1 |
+| infra | Add AI generated sprint summary                         |         |       |  1:38 |   2.0 |
+| infra | Add skill to generate release notes                     |         |       |  0:27 |   0.6 |
+| code  | Version of =ores.qt= does not update                    |         |       |  0:54 |   1.1 |
 | code  | Minor updates to UML diagrams                           |         |       |  0:13 |   0.3 |
-| infra | Add support for project planning                        |         |       |  2:24 |   3.5 |
-| code  | Add a "detached" mode                                   |         |       |  1:18 |   1.9 |
-| code  | Merge update and create currency messages               |         |       |  1:07 |   1.6 |
-| code  | Uninformative incompatible protocol version error in qt |         |       |  1:11 |   1.7 |
-| code  | Implement delete account                                |         |       |  0:20 |   0.5 |
-| code  | Reorganise CLI structure by entity                      |         |       |  4:43 |   6.9 |
-| code  | Update =ores.shell= with REPL commands for all entities |         |       | 13:48 |  20.3 |
+| infra | Add support for project planning                        |         |       |  2:24 |   3.0 |
+| code  | Add a "detached" mode                                   |         |       |  1:18 |   1.6 |
+| code  | Merge update and create currency messages               |         |       |  1:07 |   1.4 |
+| code  | Uninformative incompatible protocol version error in qt |         |       |  1:11 |   1.5 |
+| code  | Implement delete account                                |         |       |  0:20 |   0.4 |
+| code  | Reorganise CLI structure by entity                      |         |       |  4:43 |   5.8 |
+| code  | Update =ores.shell= with REPL commands for all entities |         |       | 13:48 |  17.1 |
 | code  | Consider renaming =client= to =repl=                    |         |       |  0:22 |   0.5 |
 | code  | Create a "request response" helper                      |         |       |  0:13 |   0.3 |
 | code  | Update all UML diagrams after shell changes             |         |       |  0:09 |   0.2 |
-| code  | Code coverage has dipped below 70%                      |         |       |  2:05 |   3.1 |
-| code  | Opening and closing currencies does not work            |         |       |  0:39 |   1.0 |
-| code  | Delete currency only deletes single currency            |         |       |  0:30 |   0.7 |
-| code  | Update enums in message types to use magic enums        |         |       |  0:49 |   1.2 |
-| code  | Tidy-up database code                                   |         |       |  0:44 |   1.1 |
-| code  | Implement basic XML import XML in Qt                    |         |       |  2:35 |   3.8 |
-| code  | Add pagination support                                  |         |       |  6:02 |   8.9 |
-| code  | Implement import dialog for XML import in Qt            |         |       |  1:34 |   2.3 |
-| code  | Implement authentication bootstrap workflow             |         |       |  3:52 |   5.7 |
-| code  | Split feature flags out of accounts                     |         |       |  0:55 |   1.3 |
-| infra | Add links to UML diagrams                               |         |       |  1:49 |   2.7 |
-| infra | OCR scan notebooks for this sprint                      |         |       | 13:05 |  19.3 |
-| infra | Troubleshoot skills in claude                           |         |       |  0:34 |   0.8 |
-| code  | Inspect code coverage to understand the dip             |         |       |  0:35 |   0.9 |
+| code  | Code coverage has dipped below 70%                      |         |       |  2:05 |   2.6 |
+| code  | Opening and closing currencies does not work            |         |       |  0:39 |   0.8 |
+| code  | Delete currency only deletes single currency            |         |       |  0:30 |   0.6 |
+| code  | Update enums in message types to use magic enums        |         |       |  0:49 |   1.0 |
+| code  | Tidy-up database code                                   |         |       |  0:44 |   0.9 |
+| code  | Implement basic XML import XML in Qt                    |         |       |  2:35 |   3.2 |
+| code  | Add pagination support                                  |         |       |  6:02 |   7.5 |
+| code  | Implement import dialog for XML import in Qt            |         |       |  1:34 |   1.9 |
+| code  | Implement authentication bootstrap workflow             |         |       |  3:52 |   4.8 |
+| code  | Split feature flags out of accounts                     |         |       |  0:55 |   1.1 |
+| infra | Add links to UML diagrams                               |         |       |  1:49 |   2.2 |
+| code  | Inspect code coverage to understand the dip             |         |       |  3:23 |   4.2 |
+| infra | Documentation fixes                                     |         |       |  1:27 |   1.8 |
+| infra | OCR scan notebooks for this sprint                      |         |       | 18:30 |  22.9 |
+| code  | Fix valgrind leaks for comms tests                      |         |       |  0:38 |   0.8 |
+| code  | Add support for offsets in sqlgen                       |         |       |  2:14 |   2.8 |
+| infra | Troubleshoot skills in claude                           |         |       |  0:34 |   0.7 |
+| code  | Implement session cancellation                          |         |       |  0:21 |   0.4 |
 #+end:
 
-*** STARTED Sprint and product backlog refinement                     :agile:
+*** COMPLETED Sprint and product backlog refinement                   :agile:
     :LOGBOOK:
     CLOCK: [2025-11-27 Thu 12:51]--[2025-11-27 Thu 13:13] =>  0:22
     CLOCK: [2025-11-26 Wed 23:20]--[2025-11-26 Wed 23:44] =>  0:24
@@ -234,7 +236,7 @@ print(p)
 
 [[file:sprint_backlog_05_plan.png]]
 
-[[file:sprint_backlog_05_plan.png]]
+[[file:sprint_backlog_05_resources.png]]
 
 *** COMPLETED Add AI generated sprint summary                         :infra:
     :LOGBOOK:
@@ -2468,16 +2470,6 @@ addresses these limitations with a proper import dialog.
   - No changes needed to importer or validation code
   - Changes only in Qt UI layer (CurrencyMdiWindow and new dialog)
 
-*** BLOCKED Add support for offsets in pagination                      :code:
-
-At present we disabled pagination in UI because sqlgen does not support offset.
-We raised a ticket for this. When it is available and released in vcpkg, we need
-to update the code to use it.
-
-Links:
-
-- [[https://github.com/getml/sqlgen/issues/100][GH #100: Feature request: offset support]]
-
 *** COMPLETED Repl needs synchronous socket operations                 :code:
 
 *Rationale*: implemented.
@@ -2870,40 +2862,16 @@ The =ores.variability= component can grow to include:
 
 At present you cannot access the UML diagrams from the site.
 
-*** STARTED OCR scan notebooks for this sprint                        :infra:
+*** COMPLETED Inspect code coverage to understand the dip              :code:
     :LOGBOOK:
-    CLOCK: [2025-11-28 Fri 09:01]--[2025-11-28 Fri 10:51] =>  1:50
-    CLOCK: [2025-11-27 Thu 10:30]--[2025-11-27 Thu 11:41] =>  1:11
-    CLOCK: [2025-11-26 Wed 09:40]--[2025-11-26 Wed 11:05] =>  1:25
-    CLOCK: [2025-11-25 Tue 18:00]--[2025-11-25 Tue 18:55] =>  0:55
-    CLOCK: [2025-11-24 Mon 13:01]--[2025-11-24 Mon 15:14] =>  2:13
-    CLOCK: [2025-11-23 Sun 09:25]--[2025-11-23 Sun 10:39] =>  1:14
-    CLOCK: [2025-11-22 Sat 06:45]--[2025-11-22 Sat 07:39] =>  0:54
-    CLOCK: [2025-11-21 Fri 09:00]--[2025-11-21 Fri 10:42] =>  1:42
-    CLOCK: [2025-11-20 Thu 09:20]--[2025-11-20 Thu 11:01] =>  1:41
-    :END:
-
-We need to scan all of our finance notebooks so we can use them with AI. Each
-sprint will have a story similar to this until we scan and process them all.
-
-*** STARTED Troubleshoot skills in claude                             :infra:
-    :LOGBOOK:
-    CLOCK: [2025-11-22 Sat 07:40]--[2025-11-22 Sat 08:14] =>  0:34
-    :END:
-
-We don't seem to be able to use skills reliably.
-
-Links:
-
-- [[https://code.claude.com/docs/en/skills][Claude: Agent Skills]]
-- [[https://www.reddit.com/r/ClaudeCode/comments/1oywsa1/claude_code_skills_activate_20_of_the_time_heres/][reddit: Claude Code skills activate 20% of the time. Here's how I got to 84%.]]
-- [[https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably][How to Make Claude Code Skills Activate Reliably]]
-
-*** STARTED Inspect code coverage to understand the dip                :code:
-    :LOGBOOK:
+    CLOCK: [2025-11-29 Sat 20:45]--[2025-11-29 Sat 23:16] =>  2:31
+    CLOCK: [2025-11-29 Sat 15:02]--[2025-11-29 Sat 15:19] =>  0:17
     CLOCK: [2025-11-28 Fri 15:47]--[2025-11-28 Fri 15:54] =>  0:07
     CLOCK: [2025-11-28 Fri 14:17]--[2025-11-28 Fri 14:45] =>  0:28
     :END:
+
+*Rationale*: this story took a lot longer than expected. We will revisit code
+coverage at some point in the next sprint but for now it should be good enough.
 
 We seem to have gone below 70% again.
 
@@ -2951,570 +2919,558 @@ We seem to have gone below 70% again.
 | feature_flags_mapper.cpp     | Zero   |    0.00% | 34/34             |
 | feature_flags_repository.cpp | Low    |    7.25% | 64/69             |
 
-*** Create a variability service for feature flags                     :code:
+*** COMPLETED Documentation fixes                                     :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-28 Fri 22:30]--[2025-11-28 Fri 23:57] =>  1:27
+    :END:
 
-We should not expose the repository directly. Instead, consumers should use a
-service interface which queries the repository as needed.
+Assorted fixes to documentation.
 
-*** Add screen in qt to exit bootstrap mode                            :code:
+*** COMPLETED OCR scan notebooks for this sprint                      :infra:
+    :LOGBOOK:
+    CLOCK: [2025-12-01 Mon 18:45]--[2025-12-01 Mon 20:17] =>  1:32
+    CLOCK: [2025-11-30 Sun 09:46]--[2025-11-30 Sun 11:33] =>  1:47
+    CLOCK: [2025-11-29 Sat 13:47]--[2025-11-29 Sat 14:56] =>  1:09
+    CLOCK: [2025-11-29 Sat 07:50]--[2025-11-29 Sat 08:47] =>  0:57
+    CLOCK: [2025-11-28 Fri 09:01]--[2025-11-28 Fri 10:51] =>  1:50
+    CLOCK: [2025-11-27 Thu 10:30]--[2025-11-27 Thu 11:41] =>  1:11
+    CLOCK: [2025-11-26 Wed 09:40]--[2025-11-26 Wed 11:05] =>  1:25
+    CLOCK: [2025-11-25 Tue 18:00]--[2025-11-25 Tue 18:55] =>  0:55
+    CLOCK: [2025-11-24 Mon 13:01]--[2025-11-24 Mon 15:14] =>  2:13
+    CLOCK: [2025-11-23 Sun 09:25]--[2025-11-23 Sun 10:39] =>  1:14
+    CLOCK: [2025-11-22 Sat 06:45]--[2025-11-22 Sat 07:39] =>  0:54
+    CLOCK: [2025-11-21 Fri 09:00]--[2025-11-21 Fri 10:42] =>  1:42
+    CLOCK: [2025-11-20 Thu 09:20]--[2025-11-20 Thu 11:01] =>  1:41
+    :END:
 
-As per claude:
+We need to scan all of our finance notebooks so we can use them with AI. Each
+sprint will have a story similar to this until we scan and process them all.
 
-The create_initial_admin_request message type serves several important purposes
-that differentiate it from the CLI and REPL approaches:
+*** COMPLETED Fix valgrind leaks for comms tests                       :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-30 Sun 11:35]--[2025-11-30 Sun 12:13] =>  0:38
+    :END:
 
-Why We Need create_initial_admin_request
+**** Valgrind report
 
-  1. Network-accessible bootstrap flow
-  - Allows remote initial setup from localhost without requiring shell/CLI access
-  to the server
-  - Enables a web-based "first-run" setup experience (like many web applications)
-  - The Qt client can provide a proper UI for initial admin account creation
-
-  2. Localhost-only security enforcement
-  - The endpoint enforces that it can only be called from localhost (127.0.0.1 or
-  ::1) at line
-  projects/ores.accounts/src/messaging/accounts_message_handler.cpp:320
-  - Provides network-accessible bootstrap with security guarantees
-  - Prevents remote bootstrap attacks
-
-  3. Atomic mode transition
-  - The endpoint both creates the admin AND exits bootstrap mode in a single atomic
-   operation (lines 362-367 in accounts_message_handler.cpp)
-  - Guarantees consistency - can't create admin without exiting bootstrap mode
-
-  4. Service-layer validation
-  - Goes through full service layer with password validation and business logic
-  - The CLI is essentially an "administrative backdoor" that bypasses the service
-  layer and writes directly to the database
-
-  5. Protocol-compliant workflow
-  - Clients speaking the binary protocol need a proper bootstrap endpoint
-  - REPL create_account_request is blocked in bootstrap mode (by enforcement logic)
-  - create_initial_admin_request is the only endpoint that works in bootstrap mode
-
-  The Distinction
-
-  - CLI approach: Administrative backdoor, direct database access, bypasses all
-  service logic
-  - create_initial_admin_request: Proper network-accessible bootstrap flow with
-  localhost restriction and atomic mode transition
-  - REPL create_account_request: Normal account creation, blocked in bootstrap mode
-
-  The create_initial_admin_request enables a proper "first-run experience" for
-  clients connecting via the network protocol, while maintaining security through
-  localhost-only access.
-
-
-
-*** Users cannot update their passwords                                :code:
-
-At present it is not possible to update passwords, or any other property of an
-account.
-
-*** Cli clean-ups                                                      :code:
-
-- we still seem to support =--entity currencies=. This should now be invalid.
-- we are still exporting as JSON. We should instead allow CSV and XML exports
-  only.
-- add recipes for all commands.
-- should be able to list all admin accounts.
-- list command should support table output.
-- is admin should be a bool: =--is-admin arg (=0)=
-- add account duplicates logic. We should have a single service for this.
-- split application into entities.
-
-*** Multi-threaded scenarios with comms                                :code:
-
-At present we are relying on request-response patterns: the client sends a
-request and the next frame coming in is the response. However, in the future we
-will have many dialog windows open, each of them sending requests and awaiting
-responses. It will not be possible to know what response is coming back from
-what window. We need to take this into account.
-
-*** Add listen/notify support                                          :code:
-
-When data changes for a given entity in the database and we have the dialog of
-that entity open, we need to make the reload button a different colour (suggest
-a colour). For this we need to listen/notify in the database and then send a
-message to the client. This requires a change at the protocol because at present
-we send a request from the client first and then expect a response. This is more
-like a callback where the handler will call a callback when a certain message is
-received. Listen code from deepseek:
-
-#+begin_src c++
-#include <sqlgen.h>
-#include <libpq-fe.h>
-#include <thread>
-#include <iostream>
-
-class TableWatcher {
-private:
-    sqlgen::Connection conn_;
-    std::thread listener_thread_;
-    bool running_;
-
-public:
-    TableWatcher(const std::string& connection_string)
-        : conn_(connection_string), running_(false) {}
-
-    void start() {
-        running_ = true;
-        listener_thread_ = std::thread(&TableWatcher::listen_loop, this);
-    }
-
-    void stop() {
-        running_ = false;
-        if (listener_thread_.joinable()) {
-            listener_thread_.join();
-        }
-    }
-
-private:
-    void listen_loop() {
-        // Get raw PGconn for async operations
-        auto raw_conn = conn_.native_handle(); // You might need to expose this
-
-        // Listen to channel
-        PGresult* res = PQexec(raw_conn, "LISTEN table_updates;");
-        if (PQresultStatus(res) != PGRES_COMMAND_OK) {
-            PQclear(res);
-            return;
-        }
-        PQclear(res);
-
-        while (running_) {
-            // Non-blocking check for notifications
-            PQconsumeInput(raw_conn);
-
-            PGnotify* notify;
-            while ((notify = PQnotifies(raw_conn)) != nullptr) {
-                handle_notification(notify);
-                PQfreemem(notify);
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        }
-    }
-
-    void handle_notification(PGnotify* notify) {
-        std::cout << "Received notification: " << notify->relname
-                  << " - " << notify->extra << std::endl;
-
-        // Parse the extra data (usually JSON) and handle accordingly
-        // {"table": "users", "operation": "INSERT", "id": 123}
-    }
-};
+#+begin_src valgrind-leak
+<b>UMR</b> ==50817== Invalid read of size 8
+==50817==    at 0x53B6BE6: std::__atomic_base<unsigned long>::operator--() (atomic_base.h:410)
+==50817==    by 0x53A0F70: ores::comms::net::server::accept_loop(boost::asio::io_context&, std::function<void (unsigned short)>)::{lambda()#1}::operator()(ores::comms::net::server::accept_loop(boost::asio::io_context&, std::function<void (unsigned short)>)::{lambda()#1}::operator()() const::_ZZN4ores5comms3net6server11accept_loopERN5boost4asio10io_contextESt8functionIFvtEEENKUlvE_clEv.Frame*) [clone .actor] (server.cpp:155)
+==50817==    by 0x23820A: std::__n4861::coroutine_handle<void>::resume() const (coroutine:135)
+==50817==    by 0x264132: boost::asio::detail::awaitable_frame_base<boost::asio::any_io_executor>::resume() (awaitable.hpp:506)
+==50817==    by 0x2619C4: boost::asio::detail::awaitable_thread<boost::asio::any_io_executor>::pump() (awaitable.hpp:774)
+==50817==    by 0x53813BB: void boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long>::operator()<boost::system::error_code const&, unsigned long const&>(boost::system::error_code const&, unsigned long const&) (use_awaitable.hpp:135)
+==50817==    by 0x53803F3: boost::asio::detail::read_op<boost::asio::ssl::stream<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::mutable_buffer, boost::asio::mutable_buffer const*, boost::asio::detail::transfer_all_t, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long> >::operator()(boost::system::error_code, unsigned long, int) (read.hpp:415)
+==50817==    by 0x5387B3C: void boost::asio::ssl::detail::read_op<boost::asio::mutable_buffer>::call_handler<boost::asio::detail::read_op<boost::asio::ssl::stream<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::mutable_buffer, boost::asio::mutable_buffer const*, boost::asio::detail::transfer_all_t, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long> > >(boost::asio::detail::read_op<boost::asio::ssl::stream<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::mutable_buffer, boost::asio::mutable_buffer const*, boost::asio::detail::transfer_all_t, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long> >&, boost::system::error_code const&, unsigned long const&) const (read_op.hpp:60)
+==50817==    by 0x5384F03: boost::asio::ssl::detail::io_op<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor>, boost::asio::ssl::detail::read_op<boost::asio::mutable_buffer>, boost::asio::detail::read_op<boost::asio::ssl::stream<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::mutable_buffer, boost::asio::mutable_buffer const*, boost::asio::detail::transfer_all_t, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long> > >::operator()(boost::system::error_code, unsigned long, int) (io.hpp:316)
+==50817==    by 0x5393567: boost::asio::detail::binder2<boost::asio::ssl::detail::io_op<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor>, boost::asio::ssl::detail::read_op<boost::asio::mutable_buffer>, boost::asio::detail::read_op<boost::asio::ssl::stream<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::mutable_buffer, boost::asio::mutable_buffer const*, boost::asio::detail::transfer_all_t, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long> > >, boost::system::error_code, unsigned long>::operator()() (bind_handler.hpp:181)
+==50817==    by 0x539291F: void boost::asio::detail::handler_work<boost::asio::ssl::detail::io_op<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor>, boost::asio::ssl::detail::read_op<boost::asio::mutable_buffer>, boost::asio::detail::read_op<boost::asio::ssl::stream<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::mutable_buffer, boost::asio::mutable_buffer const*, boost::asio::detail::transfer_all_t, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long> > >, boost::asio::any_io_executor, void>::complete<boost::asio::detail::binder2<boost::asio::ssl::detail::io_op<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor>, boost::asio::ssl::detail::read_op<boost::asio::mutable_buffer>, boost::asio::detail::read_op<boost::asio::ssl::stream<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::mutable_buffer, boost::asio::mutable_buffer const*, boost::asio::detail::transfer_all_t, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long> > >, boost::system::error_code, unsigned long> >(boost::asio::detail::binder2<boost::asio::ssl::detail::io_op<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor>, boost::asio::ssl::detail::read_op<boost::asio::mutable_buffer>, boost::asio::detail::read_op<boost::asio::ssl::stream<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::mutable_buffer, boost::asio::mutable_buffer const*, boost::asio::detail::transfer_all_t, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long> > >, boost::system::error_code, unsigned long>&, boost::asio::ssl::detail::io_op<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor>, boost::asio::ssl::detail::read_op<boost::asio::mutable_buffer>, boost::asio::detail::read_op<boost::asio::ssl::stream<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::mutable_buffer, boost::asio::mutable_buffer const*, boost::asio::detail::transfer_all_t, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long> > >&) (handler_work.hpp:433)
+==50817==    by 0x53901C4: boost::asio::detail::reactive_socket_recv_op<boost::asio::mutable_buffer, boost::asio::ssl::detail::io_op<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor>, boost::asio::ssl::detail::read_op<boost::asio::mutable_buffer>, boost::asio::detail::read_op<boost::asio::ssl::stream<boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::mutable_buffer, boost::asio::mutable_buffer const*, boost::asio::detail::transfer_all_t, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, unsigned long> > >, boost::asio::any_io_executor>::do_complete(void*, boost::asio::detail::scheduler_operation*, boost::system::error_code const&, unsigned long) (reactive_socket_recv_op.hpp:151)
+==50817==    by 0x23ED07: boost::asio::detail::scheduler_operation::complete(void*, boost::system::error_code const&, unsigned long) (scheduler_operation.hpp:40)
+==50817==    by 0x246A44: boost::asio::detail::scheduler::do_run_one(boost::asio::detail::conditionally_enabled_mutex::scoped_lock&, boost::asio::detail::scheduler_thread_info&, boost::system::error_code const&) (scheduler.ipp:501)
+==50817==    by 0x245C47: boost::asio::detail::scheduler::run(boost::system::error_code&) (scheduler.ipp:217)
+==50817==    by 0x2475CC: boost::asio::io_context::run() (io_context.ipp:63)
+==50817==    by 0x23007A: void ores::testing::run_coroutine_test<CATCH2_INTERNAL_TEST_0()::{lambda()#1}>(boost::asio::io_context&, CATCH2_INTERNAL_TEST_0()::{lambda()#1}&&) (run_coroutine_test.hpp:37)
+==50817==    by 0x22EEC9: CATCH2_INTERNAL_TEST_0() (net_client_tests.cpp:104)
+==50817==    by 0x2EFA55: Catch::(anonymous namespace)::TestInvokerAsFunction::invoke() const (catch_test_registry.cpp:60)
+==50817==    by 0x2D904E: Catch::TestCaseHandle::invoke() const (catch_test_case_info.hpp:124)
+==50817==    by 0x2D78E5: Catch::RunContext::invokeActiveTestCase() (catch_run_context.cpp:661)
+==50817==    by 0x2D75D4: Catch::RunContext::runCurrentTest() (catch_run_context.cpp:619)
+==50817==    by 0x2D56A7: Catch::RunContext::runTest(Catch::TestCaseHandle const&) (catch_run_context.cpp:282)
+==50817==    by 0x27EB14: Catch::(anonymous namespace)::TestGroup::execute() (catch_session.cpp:110)
+==50817==    by 0x280412: Catch::Session::runInternal() (catch_session.cpp:379)
+==50817==    by 0x27FEF7: Catch::Session::run() (catch_session.cpp:306)
+==50817==    by 0x228E38: int Catch::Session::run<char>(int, char const* const*) (catch_session.hpp:49)
+==50817==    by 0x227921: main (main.cpp:28)
+==50817==  Address 0x8646048 is 248 bytes inside a block of size 264 free'd
+==50817==    at 0x484A61D: operator delete(void*, unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==50817==    by 0x266C69: std::__new_allocator<std::_Sp_counted_ptr_inplace<ores::comms::net::server, std::allocator<void>, (__gnu_cxx::_Lock_policy)2> >::deallocate(std::_Sp_counted_ptr_inplace<ores::comms::net::server, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>*, unsigned long) (new_allocator.h:172)
+==50817==    by 0x25E2E9: deallocate (allocator.h:210)
+==50817==    by 0x25E2E9: deallocate (alloc_traits.h:517)
+==50817==    by 0x25E2E9: std::__allocated_ptr<std::allocator<std::_Sp_counted_ptr_inplace<ores::comms::net::server, std::allocator<void>, (__gnu_cxx::_Lock_policy)2> > >::~__allocated_ptr() (allocated_ptr.h:74)
+==50817==    by 0x2770F9: std::_Sp_counted_ptr_inplace<ores::comms::net::server, std::allocator<void>, (__gnu_cxx::_Lock_policy)2>::_M_destroy() (shared_ptr_base.h:623)
+==50817==    by 0x238057: std::_Sp_counted_base<(__gnu_cxx::_Lock_policy)2>::_M_release() (shared_ptr_base.h:347)
+==50817==    by 0x24A36C: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::~__shared_count() (shared_ptr_base.h:1071)
+==50817==    by 0x24962F: std::__shared_ptr<ores::comms::net::server, (__gnu_cxx::_Lock_policy)2>::~__shared_ptr() (shared_ptr_base.h:1524)
+==50817==    by 0x249673: std::shared_ptr<ores::comms::net::server>::~shared_ptr() (shared_ptr.h:175)
+==50817==    by 0x22AE8D: CATCH2_INTERNAL_TEST_0()::{lambda()#1}::operator()() const::{lambda()#1}::~CATCH2_INTERNAL_TEST_0() (net_client_tests.cpp:122)
+==50817==    by 0x230B05: boost::asio::detail::co_spawn_state<boost::asio::detail::detached_handler, boost::asio::any_io_executor, CATCH2_INTERNAL_TEST_0()::{lambda()#1}::operator()() const::{lambda()#1}, void>::~co_spawn_state() (co_spawn.hpp:95)
+==50817==    by 0x2329B8: boost::asio::detail::co_spawn_entry_point(boost::asio::detail::co_spawn_entry_point<boost::asio::detail::detached_handler, boost::asio::any_io_executor, CATCH2_INTERNAL_TEST_0()::{lambda()#1}::operator()() const::{lambda()#1}>(boost::asio::awaitable<void, boost::asio::any_io_executor>*, boost::asio::detail::co_spawn_state<boost::asio::detail::detached_handler, boost::asio::any_io_executor, CATCH2_INTERNAL_TEST_0()::{lambda()#1}::operator()() const::{lambda()#1}, void>)::_ZN5boost4asio6detail20co_spawn_entry_pointINS1_16detached_handlerENS0_15any_io_executorEZZL22CATCH2_INTERNAL_TEST_0vENKUlvE_clEvEUlvE_EENS0_9awaitableINS1_28awaitable_thread_entry_pointET0_EEPNS7_IvS9_EENS1_14co_spawn_stateIT_S9_T1_vEE.Frame*) [clone .actor] (co_spawn.hpp:224)
+==50817==    by 0x232D88: boost::asio::detail::co_spawn_entry_point(boost::asio::detail::co_spawn_entry_point<boost::asio::detail::detached_handler, boost::asio::any_io_executor, CATCH2_INTERNAL_TEST_0()::{lambda()#1}::operator()() const::{lambda()#1}>(boost::asio::awaitable<void, boost::asio::any_io_executor>*, boost::asio::detail::co_spawn_state<boost::asio::detail::detached_handler, boost::asio::any_io_executor, CATCH2_INTERNAL_TEST_0()::{lambda()#1}::operator()() const::{lambda()#1}, void>)::_ZN5boost4asio6detail20co_spawn_entry_pointINS1_16detached_handlerENS0_15any_io_executorEZZL22CATCH2_INTERNAL_TEST_0vENKUlvE_clEvEUlvE_EENS0_9awaitableINS1_28awaitable_thread_entry_pointET0_EEPNS7_IvS9_EENS1_14co_spawn_stateIT_S9_T1_vEE.Frame*) [clone .destroy] (co_spawn.hpp:193)
+==50817==    by 0x238251: std::__n4861::coroutine_handle<void>::destroy() const (coroutine:137)
+==50817==    by 0x253E69: boost::asio::detail::awaitable_frame_base<boost::asio::any_io_executor>::destroy() (awaitable.hpp:519)
+==50817==    by 0x25C376: boost::asio::awaitable<boost::asio::detail::awaitable_thread_entry_point, boost::asio::any_io_executor>::~awaitable() (awaitable.hpp:77)
+==50817==    by 0x261AA6: boost::asio::detail::awaitable_thread<boost::asio::any_io_executor>::pump() (awaitable.hpp:782)
+==50817==    by 0x53C55F7: void boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >::operator()<boost::system::error_code const&, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >(boost::system::error_code const&, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor>&&) (use_awaitable.hpp:135)
+==50817==    by 0x53C497E: boost::asio::result_of<boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> > (boost::system::error_code const&, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor>)>::type boost::asio::cancellation_slot_binder<boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::cancellation_slot>::operator()<boost::system::error_code const&, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >(boost::system::error_code const&, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor>&&) && (bind_cancellation_slot.hpp:364)
+==50817==    by 0x53C4152: boost::asio::detail::move_binder2<boost::asio::cancellation_slot_binder<boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::cancellation_slot>, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >::operator()() (bind_handler.hpp:522)
+==50817==    by 0x53C3845: void boost::asio::detail::handler_work<boost::asio::cancellation_slot_binder<boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::cancellation_slot>, boost::asio::any_io_executor, void>::complete<boost::asio::detail::move_binder2<boost::asio::cancellation_slot_binder<boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::cancellation_slot>, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> > >(boost::asio::detail::move_binder2<boost::asio::cancellation_slot_binder<boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::cancellation_slot>, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >&, boost::asio::cancellation_slot_binder<boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::cancellation_slot>&) (handler_work.hpp:433)
+==50817==    by 0x53C26CB: boost::asio::detail::reactive_socket_move_accept_op<boost::asio::ip::tcp, boost::asio::any_io_executor, boost::asio::cancellation_slot_binder<boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::any_io_executor> >, boost::asio::cancellation_slot>, boost::asio::any_io_executor>::do_complete(void*, boost::asio::detail::scheduler_operation*, boost::system::error_code const&, unsigned long) (reactive_socket_accept_op.hpp:268)
+==50817==    by 0x23ED07: boost::asio::detail::scheduler_operation::complete(void*, boost::system::error_code const&, unsigned long) (scheduler_operation.hpp:40)
+==50817==    by 0x246A44: boost::asio::detail::scheduler::do_run_one(boost::asio::detail::conditionally_enabled_mutex::scoped_lock&, boost::asio::detail::scheduler_thread_info&, boost::system::error_code const&) (scheduler.ipp:501)
+==50817==    by 0x245C47: boost::asio::detail::scheduler::run(boost::system::error_code&) (scheduler.ipp:217)
+==50817==    by 0x2475CC: boost::asio::io_context::run() (io_context.ipp:63)
+==50817==    by 0x23007A: void ores::testing::run_coroutine_test<CATCH2_INTERNAL_TEST_0()::{lambda()#1}>(boost::asio::io_context&, CATCH2_INTERNAL_TEST_0()::{lambda()#1}&&) (run_coroutine_test.hpp:37)
+==50817==    by 0x22EEC9: CATCH2_INTERNAL_TEST_0() (net_client_tests.cpp:104)
+==50817==    by 0x2EFA55: Catch::(anonymous namespace)::TestInvokerAsFunction::invoke() const (catch_test_registry.cpp:60)
+==50817==    by 0x2D904E: Catch::TestCaseHandle::invoke() const (catch_test_case_info.hpp:124)
+==50817==    by 0x2D78E5: Catch::RunContext::invokeActiveTestCase() (catch_run_context.cpp:661)
+==50817==    by 0x2D75D4: Catch::RunContext::runCurrentTest() (catch_run_context.cpp:619)
+==50817==    by 0x2D56A7: Catch::RunContext::runTest(Catch::TestCaseHandle const&) (catch_run_context.cpp:282)
+==50817==    by 0x27EB14: Catch::(anonymous namespace)::TestGroup::execute() (catch_session.cpp:110)
+==50817==    by 0x280412: Catch::Session::runInternal() (catch_session.cpp:379)
+==50817==    by 0x27FEF7: Catch::Session::run() (catch_session.cpp:306)
+==50817==    by 0x228E38: int Catch::Session::run<char>(int, char const* const*) (catch_session.hpp:49)
+==50817==    by 0x227921: main (main.cpp:28)
+==50817==  Block was alloc'd at
+==50817==    at 0x4846FA3: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==50817==    by 0x266BFF: std::__new_allocator<std::_Sp_counted_ptr_inplace<ores::comms::net::server, std::allocator<void>, (__gnu_cxx::_Lock_policy)2> >::allocate(unsigned long, void const*) (new_allocator.h:151)
+==50817==    by 0x25E1B3: allocate (allocator.h:198)
+==50817==    by 0x25E1B3: allocate (alloc_traits.h:482)
+==50817==    by 0x25E1B3: std::__allocated_ptr<std::allocator<std::_Sp_counted_ptr_inplace<ores::comms::net::server, std::allocator<void>, (__gnu_cxx::_Lock_policy)2> > > std::__allocate_guarded<std::allocator<std::_Sp_counted_ptr_inplace<ores::comms::net::server, std::allocator<void>, (__gnu_cxx::_Lock_policy)2> > >(std::allocator<std::_Sp_counted_ptr_inplace<ores::comms::net::server, std::allocator<void>, (__gnu_cxx::_Lock_policy)2> >&) (allocated_ptr.h:98)
+==50817==    by 0x25B655: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::__shared_count<ores::comms::net::server, std::allocator<void>, ores::comms::net::server_options&>(ores::comms::net::server*&, std::_Sp_alloc_shared_tag<std::allocator<void> >, ores::comms::net::server_options&) (shared_ptr_base.h:969)
+==50817==    by 0x257065: std::__shared_ptr<ores::comms::net::server, (__gnu_cxx::_Lock_policy)2>::__shared_ptr<std::allocator<void>, ores::comms::net::server_options&>(std::_Sp_alloc_shared_tag<std::allocator<void> >, ores::comms::net::server_options&) (shared_ptr_base.h:1712)
+==50817==    by 0x253DB0: std::shared_ptr<ores::comms::net::server>::shared_ptr<std::allocator<void>, ores::comms::net::server_options&>(std::_Sp_alloc_shared_tag<std::allocator<void> >, ores::comms::net::server_options&) (shared_ptr.h:464)
+==50817==    by 0x24FBF3: std::shared_ptr<ores::comms::net::server> std::make_shared<ores::comms::net::server, ores::comms::net::server_options&>(ores::comms::net::server_options&) (shared_ptr.h:1010)
+==50817==    by 0x22BAE8: CATCH2_INTERNAL_TEST_0()::{lambda()#1}::operator()(CATCH2_INTERNAL_TEST_0()::{lambda()#1}::operator()() const::_ZZL22CATCH2_INTERNAL_TEST_0vENKUlvE_clEv.Frame*) [clone .actor] (net_client_tests.cpp:115)
+==50817==    by 0x23820A: std::__n4861::coroutine_handle<void>::resume() const (coroutine:135)
+==50817==    by 0x264132: boost::asio::detail::awaitable_frame_base<boost::asio::any_io_executor>::resume() (awaitable.hpp:506)
+==50817==    by 0x2619C4: boost::asio::detail::awaitable_thread<boost::asio::any_io_executor>::pump() (awaitable.hpp:774)
+==50817==    by 0x275D50: boost::asio::detail::awaitable_async_op_handler<void (), boost::asio::any_io_executor, void>::operator()() (awaitable.hpp:813)
+==50817==    by 0x274ED3: boost::asio::detail::binder0<boost::asio::detail::awaitable_async_op_handler<void (), boost::asio::any_io_executor, void> >::operator()() (bind_handler.hpp:56)
+==50817==    by 0x27522B: void boost::asio::detail::executor_function::complete<boost::asio::detail::binder0<boost::asio::detail::awaitable_async_op_handler<void (), boost::asio::any_io_executor, void> >, std::allocator<void> >(boost::asio::detail::executor_function::impl_base*, bool) (executor_function.hpp:113)
+==50817==    by 0x239A5C: boost::asio::detail::executor_function::operator()() (executor_function.hpp:61)
+==50817==    by 0x26E874: boost::asio::detail::executor_op<boost::asio::detail::executor_function, std::allocator<void>, boost::asio::detail::scheduler_operation>::do_complete(void*, boost::asio::detail::scheduler_operation*, boost::system::error_code const&, unsigned long) (executor_op.hpp:70)
+==50817==    by 0x23ED07: boost::asio::detail::scheduler_operation::complete(void*, boost::system::error_code const&, unsigned long) (scheduler_operation.hpp:40)
+==50817==    by 0x246A44: boost::asio::detail::scheduler::do_run_one(boost::asio::detail::conditionally_enabled_mutex::scoped_lock&, boost::asio::detail::scheduler_thread_info&, boost::system::error_code const&) (scheduler.ipp:501)
+==50817==    by 0x245C47: boost::asio::detail::scheduler::run(boost::system::error_code&) (scheduler.ipp:217)
+==50817==    by 0x2475CC: boost::asio::io_context::run() (io_context.ipp:63)
+==50817==    by 0x23007A: void ores::testing::run_coroutine_test<CATCH2_INTERNAL_TEST_0()::{lambda()#1}>(boost::asio::io_context&, CATCH2_INTERNAL_TEST_0()::{lambda()#1}&&) (run_coroutine_test.hpp:37)
+==50817==    by 0x22EEC9: CATCH2_INTERNAL_TEST_0() (net_client_tests.cpp:104)
+==50817==    by 0x2EFA55: Catch::(anonymous namespace)::TestInvokerAsFunction::invoke() const (catch_test_registry.cpp:60)
+==50817==    by 0x2D904E: Catch::TestCaseHandle::invoke() const (catch_test_case_info.hpp:124)
+==50817==    by 0x2D78E5: Catch::RunContext::invokeActiveTestCase() (catch_run_context.cpp:661)
+==50817==    by 0x2D75D4: Catch::RunContext::runCurrentTest() (catch_run_context.cpp:619)
+==50817==    by 0x2D56A7: Catch::RunContext::runTest(Catch::TestCaseHandle const&) (catch_run_context.cpp:282)
+==50817==    by 0x27EB14: Catch::(anonymous namespace)::TestGroup::execute() (catch_session.cpp:110)
+==50817==    by 0x280412: Catch::Session::runInternal() (catch_session.cpp:379)
+==50817==    by 0x27FEF7: Catch::Session::run() (catch_session.cpp:306)
+==50817==    by 0x228E38: int Catch::Session::run<char>(int, char const* const*) (catch_session.hpp:49)
+==50817==    by 0x227921: main (main.cpp:28)
 #+end_src
 
-*** Add version support to entities                                    :code:
-
-We need a "version" field which is incremented automatically by a trigger. It is
-used as follows:
-
-- domain entities have a version field which is loaded from database.
-- if we try to save at version =n= but current version is not =n-1=, it should
-  fail to save.
-- version is incremented automatically on save.
-- display version in UI prominently (/e.g./ next to entity key, iso code for
-  currencies) so that we can see when we reload.
-
-*** Disconnect closes currencies window                                :code:
-
-It should just disable the icons, etc.
-
-*** Add search to currencies                                           :code:
-
-It should be possible to filter the open currencies by a string. This should be
-any field. The user needs to know when the list has been filtered. Ideally we
-should have buttons at the top per field and filter using those. It should go
-back to database rather than just filter what is available in UI.
-
-*** Automated SQL generation                                           :code:
-
-At present we are manually creating the SQL. We should be able to do it from
-sqlgen.
-
-*** Missing shell functionality                                        :code:
-
-The job of the client is to exercise the entirety of the comms protocol, and to
-provide a way to perform CRUD operations via command line. Note:
-
-- client never access the repositories directly, it should do exactly the same as the qt client
-  would do.
-- client's only interface is the REPL.
-- client will eventually be used by AI agents.
-
-Client needs to have messages at the entity level:
-
-- currencies:
-  - import currencies from ORE Format. Given a path in the filesystem, it
-    performs the import using the importer and appropriate comms messages.
-  - export currencies to ORE format. Uses comms to obtain the currencies, then
-    the exporter to convert, then dumps them into the terminal as ORE XML.
-  - list existing currencies as a table or as JSON. We need support for latest,
-    "at time point" and "all" (meaning every single version). It should be
-    possible to supply some filtering by the entity's ID (e.g.
-    =--iso-code=).
-  - delete one or more currencies. User supplies a number of entity IDs (e.g.
-    =--iso-code ABC --iso-code CDE --iso-code FGH= and so on).
-  - add a currency supplying arguments (e.g. =--iso-code= and so forth).
-  - add currencies from JSON.
-- accounts:
-  - list existing currencies as a table or as JSON. We need support for latest,
-    "at time point" and "all" (meaning every single version). It should be
-    possible to supply filtering by the entity's ID.
-  - delete one or more accounts. User supplies a list of entity IDs.
-  - add an account supplying arguments.
-  - add accounts from JSON.
-- feature flags:
-  - list existing feature flags as a table or as JSON. We need support for
-    latest, "at time point" and "all" (meaning every single version). It should
-    be possible to supply some filtering by the entity's ID
-  - delete one or more feature flags. User supplies a list of entity IDs.
-  - add feature flags supplying arguments.
-  - add feature flags from JSON.
-
-Notes:
-
-- update recipes with the new client commands.
-
-*** Add a logout message                                               :code:
-
-At present we are just closing the socket. We should send a proper message.
-
-*** Split =protocol.hpp= into components                               :code:
-
-These files will become too large as we add more entities.
-
-*** Invalid password should not throw                                  :code:
-
-At present in the unlock test we have:
-
-#+begin_src c++
-    BOOST_LOG_SEV(lg, info) << "Locking account by failing 5 login attempts";
-    auto ip = internet::ipv4();
-    for (int i = 0; i < 5; ++i) {
-        try {
-            sut.login(account.username, "wrong_password", ip);
-        } catch (...) {}
-    }
-#+end_src
-
-This is very suspicious; a failed login should just return false or the modern
-c++ equivalent (=std::expected=?).
-
-*** Faker with seeds                                                   :code:
-
-As suggested by phi4:
-
-#+begin_quote
-Faker Usage:
-
-Randomness: Ensure that the use of faker data is appropriate for testing.
-Consider seeding the random generator for reproducibility in tests.
-#+end_quote
-
-Notes:
-
-#include "faker-cxx/generator.h"
-void setSeed(std::mt19937_64::result_type seed)
-Catch::rngSeed()
-
-
-*** Improve handling of error responses                                :code:
-
-As per Gemini code review:
+**** Qwen Analysis
 
 #+begin_src markdown
-Certainly. Point \#2 from the review of `CurrencyHistoryDialog.cpp` addressed
-the potential complexity of error checking by suggesting that relying on the
-specific response message type is **fragile**.
+This **Valgrind error** reveals a **use-after-free** bug related to your
+`active_connections_` atomic counter:
 
-The goal is to move from:
+> **Invalid read of size 8**
+> `std::__atomic_base<unsigned long>::operator--()`
+> inside the session completion lambda
+> **Address is inside a block that was already freed** (the `server` object)
 
-1.  Client sends **Request A**.
-2.  Server returns **Response A** (Success) OR **Error Response** (Failure) OR
-    ,**Response B** (Unexpected success type).
-3.  Client checks: *Is the message type exactly **Response A**?*
+---
 
-to a more robust pattern where the client checks for a generic failure response
-first.
+### 🔍 Root Cause
 
------
-
-## 🐞 Fragile Error Check (Current Code)
-
-The current code in `loadHistory` checks for success by expecting *only* the
-specific success message type:
+In your `accept_loop`, you spawn sessions like this:
 
 ```cpp
-// Current Fragile Logic
-if (result->header().type != comms::protocol::message_type::get_currency_history_response) {
-    onHistoryLoadError(QString("Server does not support currency history (received message type %1)")
-        .arg(static_cast<int>(result->header().type)));
-    return;
-}
+boost::asio::co_spawn(
+    io_context,
+    [sess, this]() -> boost::asio::awaitable<void> {
+        co_await sess->run();
+        --active_connections_;               // ← LINE 155
+        // ...
+    },
+    boost::asio::detached);
 ```
 
-This logic has two main problems:
+The **problem**: this lambda **captures `this` by raw pointer**, but the
+,**`server` object may be destroyed before the session finishes**.
 
-1.  **Hiding Server Errors:** If the server returns a generic protocol error
-    (`message_type::error_response`) because, for example, the client's session
-    timed out, the client logs a misleading message: "Server does not support
-    currency history." It should be reporting the actual error message sent by
-    the server.
-2.  **Lack of Standardization:** Every client method needs to implement its own
-    logic to handle unexpected types.
+In your test:
 
------
+1. You call `server->stop()` → accept loop exits.
+2. The `server` object (held by a `shared_ptr` in the test) **goes out of scope** when the coroutine ends.
+3. But an **active session is still running** (e.g., finishing I/O after cancellation).
+4. When that session finally completes, it executes `--active_connections_` → **reads/writes a member of a destroyed object** → **undefined behavior (UMR = Uninitialized Memory Read)**.
 
-## 🛠️ Suggested Improvement: Standardized Error Handling
+> 💥 This is a **classic dangling pointer** issue with detached coroutines
+> capturing `this`.
 
-The improvement is to check for a generic **`error_response`** message type
-first, and report its payload/message, before attempting to deserialize the
-successful response.
+---
 
-Assuming your system has a standard `error_response` message:
+### ✅ Solution: Capture server via `shared_ptr` (or use `weak_ptr`)
+
+Since you already create the server as a `shared_ptr` in your test:
 
 ```cpp
-void CurrencyHistoryDialog::handleHistoryResponse(const HistoryResult& result) {
-    if (!result) {
-        onHistoryLoadError(QString::fromStdString(result.error()));
-        return;
-    }
-
-    // 1. Check for a generic server-side error response
-    if (result->header().type == comms::protocol::message_type::error_response) {
-        // Assume error_response contains a readable message payload
-        auto error_response = risk::messaging::error_response::deserialize(result->payload());
-        if (error_response) {
-            onHistoryLoadError(QString::fromStdString(error_response->message));
-        } else {
-            onHistoryLoadError("Server returned a malformed error response.");
-        }
-        return;
-    }
-
-    // 2. Check for the specific SUCCESS response type
-    if (result->header().type == comms::protocol::message_type::get_currency_history_response) {
-        auto response = risk::messaging::get_currency_history_response::deserialize(result->payload());
-
-        if (!response || !response->success) {
-            // Handle success=false within the expected response type
-            onHistoryLoadError(QString::fromStdString(response ? response->message : "Invalid or failed history response."));
-            return;
-        }
-
-        history_ = std::move(response->history);
-        onHistoryLoaded();
-        return;
-    }
-
-    // 3. Handle truly unexpected message type
-    onHistoryLoadError(QString("Received unexpected message type %1 from server.")
-        .arg(static_cast<int>(result->header().type)));
-}
+auto server = std::make_shared<ores::comms::net::server>(server_opts);
 ```
 
-By standardizing the **`error_response`** type, the client can always extract
-and display the relevant server-side failure reason, leading to much clearer
-logging and user feedback.
+You should **propagate that shared ownership** into the session spawn lambda.
+
+#### 🔧 Fix the session spawn in `accept_loop`:
+
+```cpp
+// Capture a shared_ptr to the server to keep it alive
+auto self = shared_from_this();  // ← requires enable_shared_from_this
+
+boost::asio::co_spawn(
+    io_context,
+    [sess, self]() -> boost::asio::awaitable<void> {
+        co_await sess->run();
+        --self->active_connections_;  // safe: self keeps server alive
+        BOOST_LOG_SEV(self->lg(), debug) << "Session completed, active connections: "
+                                        << self->active_connections_.load();
+    },
+    boost::asio::detached);
+```
+
+---
+
+### 🛠 Step-by-Step Implementation
+
+#### 1. **Inherit from `std::enable_shared_from_this`**
+
+In `server.hpp`:
+
+```cpp
+#include <memory>
+
+namespace ores::comms::net {
+
+class server : public std::enable_shared_from_this<server> {  // ← add this
+public:
+    // ... rest unchanged ...
+```
+
+> This allows safe `shared_from_this()` calls **only if the object is owned by a `shared_ptr`**.
+
+#### 2. **Ensure server is always created via `shared_ptr`**
+
+In your **real application** and **tests**, always do:
+
+```cpp
+auto server = std::make_shared<ores::comms::net::server>(opts);
+```
+
+> Never create on stack or via `new` without shared ownership.
+
+#### 3. **Update the spawn lambda in `accept_loop`**
+
+As shown above, replace `[sess, this]` with `[sess, self]` where `self = shared_from_this()`.
+
+Full snippet:
+
+```cpp
+// Inside accept_loop, after creating sess:
+auto self = shared_from_this();  // Keep server alive until session ends
+
+boost::asio::co_spawn(
+    io_context,
+    [sess, self]() -> boost::asio::awaitable<void> {
+        co_await sess->run();
+        --self->active_connections_;
+        BOOST_LOG_SEV(self->lg(), debug) << "Session completed, active connections: "
+                                        << self->active_connections_.load();
+    },
+    boost::asio::detached);
+```
+
+---
+
+### ❓ Why does this fix it?
+
+- The session coroutine now holds a `shared_ptr<server>` (`self`).
+- The `server` object **cannot be destroyed** until all sessions complete.
+- Thus, `active_connections_` is always valid when decremented.
+- Once the last session finishes, the server’s refcount drops to zero and it’s safely destroyed.
+
+---
+
+### 🚫 Why not capture `[this]`?
+
+- `this` is a **raw pointer** → no lifetime management.
+- Detached coroutines outlive their spawning scope → **dangling pointer**.
+- `shared_from_this()` ties the server’s lifetime to its **active work** (sessions).
+
+---
+
+### ✅ Additional Safety: Session Cancellation
+
+If you’ve implemented session cancellation (via `session_stop_signal_`), sessions will terminate quickly on `server->stop()`, so the `shared_ptr` won’t live long—but it’s still **necessary for correctness**.
+
+---
+
+### 🧪 Test Impact
+
+After this change:
+- Valgrind **UMR error disappears**.
+- Server lifetime is **extended safely** until all sessions finish cleanup.
+- No behavior change in logs—just memory safety.
+
+---
+
+### ⚠️ Important: Never call `shared_from_this()` on non-shared objects
+
+If you ever construct `server` on the stack:
+
+```cpp
+ores::comms::net::server srv(opts); // BAD!
+```
+
+Then `shared_from_this()` throws `std::bad_weak_ptr`.
+
+So **enforce** that servers are always `shared_ptr`-owned (e.g., make constructors private and use a factory, or just document it).
+
+But since your test already uses `make_shared`, you’re safe.
+
+---
+
+### Summary
+
+| Problem                                 | Fix                              |
+|-----------------------------------------|----------------------------------|
+| Lambda captures `this` → use-after-free | Capture `shared_from_this()`     |
+| Server destroyed before session cleanup | Extend lifetime via `shared_ptr` |
+| Valgrind UMR on `--active_connections_` | Now accesses valid memory        |
+
+Implement `enable_shared_from_this` and capture `self`, and your test will be **memory-safe**.
 #+end_src
 
-*** Do not disable cert verification                                   :code:
+*** COMPLETED Add support for offsets in sqlgen                        :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-01 Mon 20:18]--[2025-12-01 Mon 20:57] =>  0:39
+    CLOCK: [2025-12-01 Mon 10:56]--[2025-12-01 Mon 12:01] =>  1:05
+    CLOCK: [2025-11-30 Sun 12:35]--[2025-11-30 Sun 13:05] =>  0:30
+    :END:
 
-At present we've hacked cert verify to false. We should not do this. Gemini:
-
-#+begin_quote
-You cannot use Let's Encrypt for development purposes because it requires a
-public domain name that Let's Encrypt can verify, and your local development
-server is not publicly accessible. The recommended approach is to create a local
-certificate authority (CA) using a tool like mkcert to sign your certificates,
-which allows you to bypass browser warnings for local domains like localhost.
-
-Option 1: Use mkcert for local development
-
-- Install mkcert: Follow the instructions to install the mkcert tool on your
-  system.
-- Install the local CA: Run the command to install the local CA root certificate
-  into your system's trust store. This is a one-time setup.
-- Generate a local certificate: Use mkcert to generate certificates for your
-  local development domains (e.g., localhost, my-app.local). The generated
-  certificates will be signed by your trusted local CA and will not cause
-  browser warnings.
-
-Option 2: Use Let's Encrypt with a real public domain
-
-Purchase a domain: Buy a public domain name (e.g., mydomain.dev).
-
-- Use an ACME client: Use an ACME client like Certbot to automate the
-  certificate process. You can run certbot on a server that is accessible to the
-  public internet.
-- Complete the validation: The client will need to verify your ownership of the
-  domain through a DNS or HTTP challenge, which requires the domain to be
-  publicly reachable.
-- Deploy the certificate: Let's Encrypt will issue a certificate that you can
-  then deploy to your development server.
-
-Why Let's Encrypt doesn't work for local development
-
-- Let's Encrypt's primary purpose is to secure public-facing websites by
-  automatically verifying domain ownership.
-- They use ACME protocol challenges (DNS or HTTP) that require the public
-  internet to access your server at the specified domain.
-- Since your local server is not on the public internet, it cannot respond to
-  these challenges, and Let's Encrypt cannot verify your ownership of the
-  domain.
-#+end_quote
-
-*** Use prebuilt qt                                                    :code:
-
-At present we are having problems creating an installable gui. This is because
-Qt is hard to build and package from vcpkg. We should use prebuilt binaries for
-all platforms.
-
-Links:
-
-- [[https://github.com/jurplel/install-qt-action][install-qt-action]]
-
-*** Sprint Demo                                                       :infra:
-
-Time spent doing the demo. This is the first one so it will be very basic.
-
-**** Presentation
-
-***** ORE Studio v0.0.4, "Fazenda Camilunga"
-
-    Marco Craveiro
-    Moimba Software Engineering
-    Released on 16th November 2025
-
-*** Add =[[nodiscard]]= to repository operations returning data        :code:
-
-At present we can create an account and ignore the result, etc. We should be
-forced to look at the result.
-
-*** CLI Importing needs to read from database                          :code:
-
-After we do the import into the database, we need to read the currencies again
-to get the valid from/to.
-
-*** Add output option to repl                                          :code:
-
-It should be possible to set the "output type" or format in the shell, from json
-to table. Find the correct terminology for this.
-
-*** Add more account commands                                          :code:
-
-See the azeroth account commands for inspiration.
-
-Links:
-
-- [[https://www.azerothcore.org/wiki/gm-commands][GM Commands]]
-
-*** Add lock account request                                           :code:
-
-As per gemini's comments, we should have a request to lock an account.
+At present we disabled pagination in UI because sqlgen does not support offset.
+We raised a ticket for this. When it is available and released in vcpkg, we need
+to update the code to use it.
 
 Notes:
 
-- account unlock should return boolean rather than throw.
+- Copy the limit implementation and see if that works.
+- Raised PR: https://github.com/getml/sqlgen/pull/102
 
-Test.
+Links:
 
-#+begin_src c++
-TEST_CASE("handle_login_request_locked_account", tags) {
-    auto lg(make_logger(test_suite));
-    database_helper h;
-    h.truncate_table(database_table);
+- [[https://github.com/getml/sqlgen/issues/100][GH #100: Feature request: offset support]]
 
-    accounts_message_handler handler(h.get_context());
-    boost::asio::io_context io_context;
+*** POSTPONED Troubleshoot skills in claude                           :infra:
+    :LOGBOOK:
+    CLOCK: [2025-11-22 Sat 07:40]--[2025-11-22 Sat 08:14] =>  0:34
+    :END:
 
-    const auto account = generate_synthetic_account();
-    create_account_request create_req(to_create_account_request(account));
-    BOOST_LOG_SEV(lg, info) << "Create account request: " << create_req;
+We don't seem to be able to use skills reliably.
 
-    const auto create_payload = create_req.serialize();
-    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
-        auto result = co_await handler.handle_message(
-            message_type::create_account_request,
-            create_payload, "127.0.0.1:12345");
-        REQUIRE(result.has_value());
-    });
+Links:
 
-    // 2. Simulate locking the account (A dedicated lock request should exist,
-    //    but for this test, we'll assume the handler has a method/logic for it
-    //    or that the system supports a lock request message type).
-    // Assuming a lock_account_request exists or the account is locked internally.
-    unlock_account_request lock_req; // Re-use struct for simplicity, assuming a dedicated lock is handled internally
-    lock_req.account_id = create_account_response::deserialize(
-        handler.get_account_id_by_username(create_req.username)).value().account_id; // Hypothetical internal method
-    // In a real system, you'd send a dedicated lock message here.
-    // For now, we rely on a separate mechanism to put the account into a locked state.
-    // **NOTE**: For a proper test, a dedicated LOCK_ACCOUNT_REQUEST is needed.
+- [[https://code.claude.com/docs/en/skills][Claude: Agent Skills]]
+- [[https://www.reddit.com/r/ClaudeCode/comments/1oywsa1/claude_code_skills_activate_20_of_the_time_heres/][reddit: Claude Code skills activate 20% of the time. Here's how I got to 84%.]]
+- [[https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably][How to Make Claude Code Skills Activate Reliably]]
 
-    // 3. Attempt login with valid credentials for the now-locked account
-    login_request login_req;
-    login_req.username = create_req.username;
-    login_req.password = create_req.password;
-    BOOST_LOG_SEV(lg, info) << "Attempting login for locked user: " << login_req.username;
+*** POSTPONED Implement session cancellation                           :code:
+    :LOGBOOK:
+    CLOCK: [2025-11-30 Sun 12:14]--[2025-11-30 Sun 12:35] =>  0:21
+    :END:
 
-    const auto login_payload = login_req.serialize();
+As per qwen:
 
-    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
-        auto result = co_await handler.handle_message(
-            message_type::login_request,
-            login_payload, "192.168.1.100:54321");
+#+begin_src markdown
+Here's a **step-by-step implementation plan** to **cancel all active sessions
+when the server stops**—building cleanly on your current Asio coroutine-based
+server design.
 
-        REQUIRE(result.has_value());
-        const auto response_result = login_response::deserialize(result.value());
-        REQUIRE(response_result.has_value());
-        const auto& response = response_result.value();
-        BOOST_LOG_SEV(lg, info) << "Response: " << response;
+---
 
-        CHECK(response.success == false);
-        // Check for an explicit error message/code related to account lock.
-        CHECK(response.error_message.find("locked") != std::string::npos);
-    });
+### 🎯 Goal
+When `server::stop()` is called (e.g., via SIGINT or programmatic shutdown):
+1. **Immediately cancel** all ongoing session I/O operations (reads/writes, etc.).
+2. **Gracefully terminate** all sessions without waiting indefinitely.
+3. Preserve your existing cancellation architecture (based on `cancellation_signal`).
+
+---
+
+### ✅ High-Level Strategy
+
+Use a **hierarchical cancellation model**:
+- The **server owns a root cancellation signal**.
+- Each **session inherits a slot** from this root signal.
+- When the server stops, it **emits cancellation**, which **propagates to all sessions**.
+
+This avoids manual session tracking and leverages Asio’s built-in cancellation propagation.
+
+---
+
+## 📝 Implementation Plan
+
+### Step 1: Add a Root Cancellation Signal for Sessions
+In `server.hpp`, add:
+
+```cpp
+private:
+    boost::asio::cancellation_signal session_stop_signal_;
+```
+
+> This signal will be used to cancel **all sessions** simultaneously.
+
+---
+
+### Step 2: Expose a Cancellation Slot to Sessions
+Add a **public (or private, if sessions are friends)** method:
+
+```cpp
+public:
+    boost::asio::cancellation_slot get_session_cancellation_slot() const noexcept {
+        return session_stop_signal_.slot();
+    }
+```
+
+> Alternatively, make `session` a `friend class` and pass the slot directly in `accept_loop`.
+
+---
+
+### Step 3: Pass the Slot to Each Session
+In `accept_loop`, when creating a session:
+
+```cpp
+auto sess = std::make_shared<session>(
+    std::move(conn),
+    options_.server_identifier,
+    dispatcher_,
+    get_session_cancellation_slot()  // ← pass the slot
+);
+```
+
+> You’ll need to **update `session`’s constructor** to accept and store this slot (or a copy of it).
+
+---
+
+### Step 4: Update `session` to Use the Cancellation Slot
+In `session.hpp`:
+
+```cpp
+class session {
+public:
+    session(
+        std::unique_ptr<connection> conn,
+        std::string server_id,
+        std::shared_ptr<protocol::message_dispatcher> dispatcher,
+        boost::asio::cancellation_slot stop_slot);  // ← new parameter
+
+private:
+    boost::asio::cancellation_slot stop_slot_;
+    // ... other members
+};
+```
+
+In `session.cpp` constructor:
+
+```cpp
+session::session(
+    std::unique_ptr<connection> conn,
+    std::string server_id,
+    std::shared_ptr<protocol::message_dispatcher> dispatcher,
+    boost::asio::cancellation_slot stop_slot)
+    : conn_(std::move(conn))
+    , server_id_(std::move(server_id))
+    , dispatcher_(std::move(dispatchor))
+    , stop_slot_(std::move(stop_slot)) {
 }
+```
+
+---
+
+### Step 5: Bind Session I/O to the Cancellation Slot
+In `session::run()` or wherever you do `co_await socket.async_read(...)`:
+
+```cpp
+// Example: reading from SSL stream
+co_await conn_->ssl_stream().async_read_some(
+    buffer,
+    boost::asio::bind_cancellation_slot(
+        stop_slot_,
+        boost::asio::use_awaitable));
+```
+
+> Repeat for **all** async operations in the session (read, write, timers, etc.).
+
+This ensures that when the server emits cancellation, **all session I/O is aborted**.
+
+> 💡 Tip: If you have a session-level read/write loop, you only need to bind the **outermost** `co_await`—cancellation will propagate.
+
+---
+
+### Step 6: Update `server::stop()` to Cancel Sessions Too
+Modify your existing `stop()`:
+
+```cpp
+void server::stop() {
+    BOOST_LOG_SEV(lg(), info) << "Stopping server...";
+
+    // Cancel all sessions first
+    session_stop_signal_.emit(boost::asio::cancellation_type::all);
+
+    // Then cancel accept loop
+    stop_signal_.emit(boost::asio::cancellation_type::all);
+}
+```
+
+> Order doesn’t strictly matter, but canceling sessions first is more logical.
+
+---
+
+### Step 7: (Optional) Add Session Cleanup Logging
+In `session::run()`, catch `operation_aborted` to log graceful exit:
+
+```cpp
+try {
+    co_await /* session work */;
+} catch (const boost::system::system_error& e) {
+    if (e.code() == boost::asio::error::operation_aborted) {
+        BOOST_LOG_SEV(lg(), debug) << "Session cancelled.";
+    } else {
+        BOOST_LOG_SEV(lg(), error) << "Session error: " << e.what();
+    }
+}
+```
+
+---
+
+### ✅ Benefits of This Approach
+- **No manual session tracking** (no list of sessions to iterate over).
+- **Automatic propagation**: One `emit()` cancels everything.
+- **Safe and efficient**: Uses Asio’s native cancellation.
+- **Composable**: Works with nested coroutines inside sessions.
+
+---
+
+### 🔒 Safety Notes
+- The `session_stop_signal_` lives as long as the `server` object.
+- Sessions capture a **slot**, not a reference to the signal—safe even if the session outlives the emit (which it won’t, because you’re stopping the server).
+- No race conditions: `emit()` is thread-safe and idempotent.
+
+---
+
+### 🧪 Testing
+1. Start server, open 2 connections.
+2. Send Ctrl+C.
+3. Verify:
+   - "Stopping server..." log appears.
+   - Both sessions log "Session cancelled." (or similar).
+   - Program exits promptly.
+
+---
+
+Let me know if you'd like the full code patches for `session.hpp/cpp` or help adapting this to your exact `connection`/`ssl_stream` usage!
 #+end_src
 
-
-
-*** Improve error message when server is not running                   :code:
-
-At present we get:
-
-#+begin_quote
-Failed to connect to server: Failed to connect to server
-#+end_quote
-
-If we try again after the error, "authenticating..." shows up in red.
-
-*** Update currency details to use tabs                                :code:
-
-We need a main tab with the currency related properties, then a "system" tab
-with temporal data which is read-only even on edit and a "image" tab with the
-image used to represent the currency. It could also contain some description or
-notes.
-
-*** Server must check database connectivity on startup                 :code:
-
-At present the server only checks connectivity to database when a user requests
-an operation. We need some kind of initial polling which puts the server in a
-mode replying to all clients: "database not available". While this is happening,
-it should keep polling the database and checking the connectivity.
-
-Ideally the server should start, but poll the DB. It should send messages to
-clients informing them of the issues with database.
-
-*** Consider adding log command line options to qt                     :code:
-
-At present we have hard-coded logging options. However, maybe users should be
-able to change the logging settings from the UI rather than having to restart
-the app and supply command line options.
 
 * Footer
 

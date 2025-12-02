@@ -25,6 +25,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <cli/cli.h>
 #include "ores.accounts/messaging/protocol.hpp"
+#include "ores.variability/messaging/protocol.hpp"
 #include "ores.accounts/domain/account_table_io.hpp"  // IWYU pragma: keep.
 #include "ores.accounts/domain/login_info_table_io.hpp"  // IWYU pragma: keep.
 #include "ores.variability/domain/feature_flags_table_io.hpp"  // IWYU pragma: keep.
@@ -205,8 +206,8 @@ process_list_feature_flags(std::ostream& out, client_manager& client_manager) {
     try {
         BOOST_LOG_SEV(lg(), debug) << "Initiating list feature flags request.";
 
-        using accounts::messaging::list_feature_flags_request;
-        using accounts::messaging::list_feature_flags_response;
+        using variability::messaging::list_feature_flags_request;
+        using variability::messaging::list_feature_flags_response;
         client_manager.process_request<list_feature_flags_request,
                                        list_feature_flags_response,
                                        message_type::list_feature_flags_request>

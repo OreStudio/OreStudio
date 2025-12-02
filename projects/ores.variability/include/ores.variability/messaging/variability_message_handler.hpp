@@ -71,7 +71,6 @@ private:
     boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::protocol::error_code>>
     handle_list_feature_flags_request(std::span<const std::byte> payload);
 
-    utility::repository::context ctx_;
     repository::feature_flags_repository feature_flags_repo_;
 };
 

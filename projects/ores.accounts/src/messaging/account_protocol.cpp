@@ -63,6 +63,10 @@ create_account_request::deserialize(std::span<const std::byte> data) {
     if (!email_result) return std::unexpected(email_result.error());
     request.email = *email_result;
 
+    auto modified_by_result = reader::read_string(data);
+    if (!modified_by_result) return std::unexpected(modified_by_result.error());
+    request.modified_by = *modified_by_result;
+
     auto is_admin_result = reader::read_bool(data);
     if (!is_admin_result) return std::unexpected(is_admin_result.error());
     request.is_admin = *is_admin_result;

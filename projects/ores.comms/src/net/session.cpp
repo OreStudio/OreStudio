@@ -19,6 +19,7 @@
  */
 #include "ores.comms/net/session.hpp"
 
+#include <iostream>
 #include "ores.comms/protocol/handshake.hpp"
 
 namespace ores::comms::net {
@@ -31,14 +32,22 @@ session::session(std::unique_ptr<connection> conn, std::string server_id,
       server_id_(std::move(server_id)),
       dispatcher_(std::move(dispatcher)),
       sequence_number_(0),
-      handshake_complete_(false) {}
+      handshake_complete_(false) {
+}
+
+void session::stop() {
+    BOOST_LOG_SEV(lg(), info) << "Stopping session for " << conn_->remote_address();
+    if (conn_) {
+        conn_->close();
+    }
+}
 
 boost::asio::awaitable<void> session::run() {
     std::string remote_addr = conn_->remote_address();
     try {
         BOOST_LOG_SEV(lg(), info) << "Session started for client: " << remote_addr;
 
-        // Perform SSL handshake
+        // Perform SSL handshake with cancellation support
         co_await conn_->ssl_handshake_server();
 
         // Perform protocol handshake
@@ -53,6 +62,12 @@ boost::asio::awaitable<void> session::run() {
         // Process messages
         co_await process_messages();
 
+    } catch (const boost::system::system_error& e) {
+        if (e.code() == boost::asio::error::operation_aborted) {
+            BOOST_LOG_SEV(lg(), info) << "Session cancelled for " << remote_addr;
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Session error for " << remote_addr << ": " << e.what();
+        }
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Session error for " << remote_addr << ": " << e.what();
     }
@@ -124,7 +139,7 @@ boost::asio::awaitable<bool> session::perform_handshake() {
 
         // Read handshake acknowledgment
         BOOST_LOG_SEV(lg(), debug) << "About to read handshake acknowledgment frame from client";
-        auto ack_frame_result = co_await conn_->read_frame();
+        auto ack_frame_result = co_await conn_->read_frame(false);
         if (!ack_frame_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to read handshake ack, error code: " << static_cast<int>(ack_frame_result.error());
             co_return false;
@@ -167,7 +182,7 @@ boost::asio::awaitable<void> session::process_messages() {
     try {
         while (true) {
             // Read next message frame
-            auto frame_result = co_await conn_->read_frame();
+            auto frame_result = co_await conn_->read_frame(false);
             if (!frame_result) {
                 auto err = frame_result.error();
                 if (err == protocol::error_code::network_error) {

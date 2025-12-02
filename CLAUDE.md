@@ -2,7 +2,7 @@
 
 ## Build Commands
 
-The project is implemented in C++ 20 and uses CMake as the build system.
+The project is implemented in C++ 23 and uses CMake as the build system.
 
 - `cmake --preset linux-clang-debug` - Configure project in debug and install dependencies.
 - `cmake --build --preset linux-clang-debug` - Build project in debug.
@@ -38,7 +38,7 @@ The project is implemented in C++ 20 and uses CMake as the build system.
 
 ## Dependencies
 
-- Minimum C++ version: 20
+- Minimum C++ version: 23
 - External dependencies managed through vcpkg
 
 ## Pull Requests

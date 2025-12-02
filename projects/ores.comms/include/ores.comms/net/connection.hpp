@@ -51,13 +51,19 @@ public:
 
     /**
      * @brief Perform SSL handshake as server.
+     *
+     * @param cancel_slot Optional cancellation slot for graceful shutdown
      */
-    boost::asio::awaitable<void> ssl_handshake_server();
+    boost::asio::awaitable<void> ssl_handshake_server(
+        boost::asio::cancellation_slot cancel_slot = {});
 
     /**
      * @brief Perform SSL handshake as client.
+     *
+     * @param cancel_slot Optional cancellation slot for graceful shutdown
      */
-    boost::asio::awaitable<void> ssl_handshake_client();
+    boost::asio::awaitable<void> ssl_handshake_client(
+        boost::asio::cancellation_slot cancel_slot = {});
 
     /**
      * @brief Read a complete frame from the connection.
@@ -68,16 +74,22 @@ public:
      * @param skip_version_check If true, skips protocol version validation.
      * This is useful during handshake to allow the server to send a proper
      * version mismatch response instead of rejecting the frame immediately.
+     * @param cancel_slot Optional cancellation slot for graceful shutdown
      */
     boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
-    read_frame(bool skip_version_check = false);
+    read_frame(bool skip_version_check = false,
+        boost::asio::cancellation_slot cancel_slot = {});
 
     /**
      * @brief Write a frame to the connection.
      *
      * Serializes the frame and writes it to the socket.
+     *
+     * @param frame The frame to write
+     * @param cancel_slot Optional cancellation slot for graceful shutdown
      */
-    boost::asio::awaitable<void> write_frame(const protocol::frame& frame);
+    boost::asio::awaitable<void> write_frame(const protocol::frame& frame,
+        boost::asio::cancellation_slot cancel_slot = {});
 
     /**
      * @brief Check if the connection is open.

@@ -23,6 +23,7 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <chrono>
+#include <iostream>
 
 #include "ores.comms/net/client.hpp"
 #include "ores.comms/net/server.hpp"
@@ -162,5 +163,118 @@ TEST_CASE("test_client_server_connection", tags) {
         BOOST_LOG_SEV(lg, info) << "Stopping server";
         server->stop();
         BOOST_LOG_SEV(lg, info) << "Test finished";
+    });
+}
+
+TEST_CASE("test_session_cancellation_on_server_stop", tags) {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
+    BOOST_LOG_SEV(lg, info) << "Starting test_session_cancellation_on_server_stop";
+    boost::asio::io_context io_context;
+
+    ores::testing::run_coroutine_test(io_context, [&]() -> boost::asio::awaitable<void> {
+        BOOST_LOG_SEV(lg, info) << "Inside test coroutine";
+
+        // Configure server
+        ores::comms::net::server_options server_opts;
+        server_opts.port = 0;
+        server_opts.certificate_chain_content = server_cert;
+        server_opts.private_key_content = server_key;
+        server_opts.enable_signal_watching = false;
+
+        BOOST_LOG_SEV(lg, info) << "Creating server";
+        auto server = std::make_shared<ores::comms::net::server>(server_opts);
+
+        std::uint16_t server_port = 0;
+
+        BOOST_LOG_SEV(lg, info) << "Spawning server";
+        // Start server
+        boost::asio::co_spawn(co_await boost::asio::this_coro::executor,
+            [server, &io_context, &server_port]() -> boost::asio::awaitable<void> {
+                auto lg = ores::utility::log::make_logger("ores.comms.tests.server_runner");
+                BOOST_LOG_SEV(lg, info) << "Server starting run loop";
+                co_await server->run(io_context, [&](std::uint16_t port) {
+                    server_port = port;
+                    BOOST_LOG_SEV(lg, info) << "Server listening on port: " << port;
+                });
+                BOOST_LOG_SEV(lg, info) << "Server run loop finished";
+            }, boost::asio::detached);
+
+        BOOST_LOG_SEV(lg, info) << "Waiting for server port assignment";
+        // Wait for server to start
+        boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
+        while (server_port == 0) {
+            timer.expires_after(std::chrono::milliseconds(10));
+            co_await timer.async_wait(boost::asio::use_awaitable);
+        }
+        BOOST_LOG_SEV(lg, info) << "Server port assigned: " << server_port;
+
+        // Configure client options
+        ores::comms::net::client_options client_opts;
+        client_opts.host = "localhost";
+        client_opts.port = server_port;
+        client_opts.verify_certificate = false;
+
+        // Create multiple clients and connect them
+        constexpr int num_clients = 3;
+        std::vector<std::shared_ptr<ores::comms::net::client>> clients;
+
+        BOOST_LOG_SEV(lg, info) << "Creating and connecting " << num_clients << " clients";
+        for (int i = 0; i < num_clients; ++i) {
+            auto client = std::make_shared<ores::comms::net::client>(
+                client_opts, co_await boost::asio::this_coro::executor);
+            co_await client->connect();
+            CHECK(client->is_connected());
+            clients.push_back(client);
+            BOOST_LOG_SEV(lg, info) << "Client " << i << " connected";
+        }
+
+        // Give sessions time to fully establish
+        timer.expires_after(std::chrono::milliseconds(100));
+        co_await timer.async_wait(boost::asio::use_awaitable);
+
+        // Now stop the server - this should cancel all active sessions
+        BOOST_LOG_SEV(lg, info) << "Stopping server with " << num_clients << " active sessions";
+        server->stop();
+
+        // Give some time for cancellation to propagate and server to shut down
+        // Need sufficient time for TCP/SSL connection closure to propagate to clients
+        timer.expires_after(std::chrono::milliseconds(2000));
+        co_await timer.async_wait(boost::asio::use_awaitable);
+
+        BOOST_LOG_SEV(lg, info) << "Server stopped - verifying session cancellation";
+
+        // The key test: sessions were cancelled on the server side
+        // Clients may not immediately detect the closed connections until they
+        // attempt I/O, which is normal TCP behavior. The fact that server->stop()
+        // returned means all sessions were cancelled successfully.
+
+        // Verify clients can no longer communicate after server stops
+        BOOST_LOG_SEV(lg, info) << "Verifying clients can no longer communicate";
+        for (size_t i = 0; i < clients.size(); ++i) {
+            auto& client = clients[i];
+            BOOST_LOG_SEV(lg, info) << "Testing client " << i
+                                    << " - is_connected before request: " << client->is_connected();
+
+            // Try to send an application-level request (not handshake)
+            ores::comms::protocol::frame dummy_request{
+                ores::comms::protocol::message_type::get_currencies_request, 0, {}};
+            auto result = co_await client->send_request(dummy_request);
+
+            BOOST_LOG_SEV(lg, info) << "Client " << i << " result: "
+                                    << (result.has_value() ? "SUCCESS (unexpected!)" : "FAILED (expected)")
+                                    << " - is_connected after: " << client->is_connected();
+
+            CHECK(!result.has_value());
+            CHECK(!client->is_connected());
+        }
+
+        BOOST_LOG_SEV(lg, info) << "Test finished - server stopped cleanly with active sessions";
+
+        // Clean up clients
+        for (auto& client : clients) {
+            client->disconnect();
+        }
     });
 }

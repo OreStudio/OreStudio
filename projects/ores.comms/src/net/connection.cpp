@@ -22,6 +22,7 @@
 #include <boost/asio/read.hpp>
 #include <boost/asio/write.hpp>
 #include <boost/asio/use_awaitable.hpp>
+#include <boost/asio/bind_cancellation_slot.hpp>
 
 namespace ores::comms::net {
 
@@ -29,28 +30,31 @@ using namespace ores::utility::log;
 
 connection::connection(ssl_socket socket) : socket_(std::move(socket)) {}
 
-boost::asio::awaitable<void> connection::ssl_handshake_server() {
+boost::asio::awaitable<void> connection::ssl_handshake_server(
+    boost::asio::cancellation_slot cancel_slot) {
     co_await socket_.async_handshake(boost::asio::ssl::stream_base::server,
-        boost::asio::use_awaitable);
+        boost::asio::bind_cancellation_slot(cancel_slot, boost::asio::use_awaitable));
 }
 
-boost::asio::awaitable<void> connection::ssl_handshake_client() {
+boost::asio::awaitable<void> connection::ssl_handshake_client(
+    boost::asio::cancellation_slot cancel_slot) {
     co_await socket_.async_handshake(boost::asio::ssl::stream_base::client,
-        boost::asio::use_awaitable);
+        boost::asio::bind_cancellation_slot(cancel_slot, boost::asio::use_awaitable));
 }
 
 boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
-connection::read_frame(bool skip_version_check) {
+connection::read_frame(bool skip_version_check, boost::asio::cancellation_slot cancel_slot) {
     try {
         BOOST_LOG_SEV(lg(), debug) << "Waiting to read the next frame"
-                                 << " (skip_version_check=" << skip_version_check << ")";
+                                 << " (skip_version_check=" << skip_version_check << ")"
+                                 << " cancel_slot.is_connected=" << cancel_slot.is_connected();
 
         // Read the fixed 32-byte header first
         std::vector<std::byte> buffer(protocol::frame_header::size);
         co_await boost::asio::async_read(
             socket_,
             boost::asio::buffer(buffer),
-            boost::asio::use_awaitable);
+            boost::asio::bind_cancellation_slot(cancel_slot, boost::asio::use_awaitable));
 
         BOOST_LOG_SEV(lg(), debug) << "Read header of size: "
                                  << protocol::frame_header::size;
@@ -75,7 +79,7 @@ connection::read_frame(bool skip_version_check) {
             co_await boost::asio::async_read(socket_,
                 boost::asio::buffer(buffer.data() + protocol::frame_header::size,
                     header.payload_size),
-                boost::asio::use_awaitable);
+                boost::asio::bind_cancellation_slot(cancel_slot, boost::asio::use_awaitable));
 
             BOOST_LOG_SEV(lg(), debug) << "Read payload of size: " << header.payload_size;
         }
@@ -106,7 +110,8 @@ connection::read_frame(bool skip_version_check) {
 }
 
 boost::asio::awaitable<void>
-connection::write_frame(const protocol::frame& frame) {
+connection::write_frame(const protocol::frame& frame,
+    boost::asio::cancellation_slot cancel_slot) {
     auto data = frame.serialize();
     BOOST_LOG_SEV(lg(), debug) << "Writing frame of size " << data.size()
                              << " type: " << static_cast<int>(frame.header().type)
@@ -114,7 +119,7 @@ connection::write_frame(const protocol::frame& frame) {
     co_await boost::asio::async_write(
         socket_,
         boost::asio::buffer(data),
-        boost::asio::use_awaitable);
+        boost::asio::bind_cancellation_slot(cancel_slot, boost::asio::use_awaitable));
     BOOST_LOG_SEV(lg(), debug) << "Successfully wrote frame";
 }
 

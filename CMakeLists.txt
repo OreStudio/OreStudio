@@ -1,4 +1,4 @@
-# -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
+# -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-`
 #
 # Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
 #
@@ -39,7 +39,7 @@ message(STATUS "CMake Version: ${CMAKE_VERSION}")
 # ctest support
 enable_testing()
 
-project(OreStudio VERSION 0.0.5 LANGUAGES CXX
+project(OreStudio VERSION 0.0.6 LANGUAGES CXX
     DESCRIPTION "UI and other utilities for the Open Source Risk Engine (ORE).")
 
 # Copy all binaries into the publish directory.

@@ -46,8 +46,22 @@ void server::register_handler(protocol::message_type_range range,
 }
 
 void server::stop() {
-    BOOST_LOG_SEV(lg(), info) << "Stopping server...";
+    BOOST_LOG_SEV(lg(), info) << "Stopping server with " << active_connections_ << " active connections...";
+
+    // Stop all active sessions first
+    {
+        std::lock_guard<std::mutex> lock(sessions_mutex_);
+        BOOST_LOG_SEV(lg(), info) << "Stopping " << active_sessions_.size() << " active sessions";
+        for (auto& sess : active_sessions_) {
+            sess->stop();
+        }
+        BOOST_LOG_SEV(lg(), info) << "All sessions stopped";
+    }
+
+    // Then cancel the accept loop
+    BOOST_LOG_SEV(lg(), info) << "Emitting accept loop cancellation signal";
     stop_signal_.emit(boost::asio::cancellation_type::all);
+    BOOST_LOG_SEV(lg(), info) << "Accept loop cancellation signal emitted";
 }
 
 void server::setup_ssl_context() {
@@ -140,9 +154,15 @@ boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_con
             auto conn = std::make_unique<connection>(
                 connection::ssl_socket(std::move(socket), ssl_ctx_));
 
-            // Create session and spawn it
+            // Create session
             auto sess = std::make_shared<session>(std::move(conn),
                 options_.server_identifier, dispatcher_);
+
+            // Add to active sessions list
+            {
+                std::lock_guard<std::mutex> lock(sessions_mutex_);
+                active_sessions_.push_back(sess);
+            }
 
             // Increment active connections
             ++active_connections_;
@@ -154,6 +174,13 @@ boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_con
                 [sess, self]() -> boost::asio::awaitable<void> {
                     co_await sess->run();
                     --self->active_connections_;
+
+                    // Remove from active sessions list
+                    {
+                        std::lock_guard<std::mutex> lock(self->sessions_mutex_);
+                        self->active_sessions_.remove(sess);
+                    }
+
                     BOOST_LOG_SEV(lg(), debug) << "Session completed, active connections: "
                                               << self->active_connections_.load();
                 },

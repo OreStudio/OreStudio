@@ -255,6 +255,15 @@ client::send_request(protocol::frame request_frame) {
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to read response frame, error "
                                        << response_result.error();
+            // Mark as disconnected on read failure
+            {
+                std::lock_guard guard{state_mutex_};
+                connected_ = false;
+            }
+            if (conn_) {
+                conn_->close();
+            }
+            BOOST_LOG_SEV(lg(), warn) << "Connection lost - server may have closed the connection";
             co_return std::unexpected(response_result.error());
         }
 
@@ -262,6 +271,18 @@ client::send_request(protocol::frame request_frame) {
 
         co_return *response_result;
 
+    } catch (const boost::system::system_error& e) {
+        // Network/socket exceptions indicate connection loss
+        BOOST_LOG_SEV(lg(), error) << "Network error: " << e.what();
+        {
+            std::lock_guard guard{state_mutex_};
+            connected_ = false;
+        }
+        BOOST_LOG_SEV(lg(), warn) << "Disconnected from server due to network error";
+        if (conn_) {
+            conn_->close();
+        }
+        co_return std::unexpected(protocol::error_code::network_error);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Request exception: " << e.what();
         co_return std::unexpected(protocol::error_code::network_error);

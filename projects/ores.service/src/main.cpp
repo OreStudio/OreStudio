@@ -22,7 +22,6 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/detached.hpp>
-#include <boost/asio/signal_set.hpp>
 #include <openssl/crypto.h>
 #include "ores.service/app/host.hpp"
 #include "ores.service/config/parser_exception.hpp"
@@ -61,6 +60,8 @@ int main(int argc, char** argv) {
     int result = EXIT_FAILURE;
     boost::asio::co_spawn(io_ctx, [&]() -> boost::asio::awaitable<void> {
             result = co_await async_main(argc, argv, io_ctx);
+            // Stop io_context when application completes (success or error)
+            io_ctx.stop();
         }, boost::asio::detached);
 
     io_ctx.run();

@@ -213,7 +213,7 @@ sprint will have a story similar to this until we scan and process them all.
 
 At the end of the sprint, generate the sprint summary using the prompt.
 
-*** COMPLETED Implement session cancellation                           :code:
+*** STARTED Implement session cancellation                             :code:
     DEADLINE: <2025-12-10 Tue>
     :LOGBOOK:
     CLOCK: [2025-12-02 Tue 10:59]--[2025-12-02 Tue 12:41] =>  1:42
@@ -266,6 +266,100 @@ Acceptance criteria:
   - =projects/ores.comms/src/server.cpp= - Update accept_loop and stop()
   - =projects/ores.comms/include/ores/comms/session.hpp= - Add stop_slot_ member
   - =projects/ores.comms/src/session.cpp= - Update constructor and run()
+
+**** Code review from Gemini
+
+***** projects/ores.service/src/main.cpp
+
+- priority: high
+- Comment on lines +61 to +69:
+
+#+begin_src c++
+    // Install signal handlers to allow graceful shutdown
+    // This prevents the default SIGINT/SIGTERM handlers from terminating
+    // the process immediately, giving the server time to clean up
+    boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
+    signals.async_wait([&io_ctx](const boost::system::error_code&, int signal) {
+        std::cout << "\nReceived signal " << signal << ", initiating shutdown..." << std::endl;
+        // Don't stop io_context here - let the server's signal handler do the cleanup
+        // The server will stop the io_context when it's done
+    });
+#+end_src
+
+This new signal handler in main creates a race condition with the server's
+internal signal handler (server::watch_for_stop_signals). Both handlers wait for
+SIGINT/SIGTERM on the same io_context, but it's undefined which one will be
+invoked. If this handler in main is triggered, it only prints a message and does
+not initiate the server shutdown, which would prevent the graceful shutdown from
+occurring.
+
+The server's own signal handler is sufficient to both prevent immediate process
+termination and trigger the graceful shutdown by calling server::stop(). Relying
+on the server's handler alone will make the shutdown process more reliable.
+
+Additionally, the comment on line 68 is slightly misleading. The server's stop()
+method doesn't stop the io_context; it's stopped on line 75 after async_main
+completes, which is the correct behavior.
+
+***** projects/ores.comms/src/net/client.cpp
+
+- priority: medium
+- Comment on lines +259 to +263
+
+#+begin_src c++
+            {
+                std::lock_guard guard{state_mutex_};
+                connected_ = false;
+            }
+            BOOST_LOG_SEV(lg(), warn) << "Connection lost - server may have closed the connection";
+#+end_src
+
+To ensure the client is in a clean state after a read failure, it's good
+practice to explicitly close the connection socket. A read failure, especially
+one that results from the server closing the connection, means the connection is
+no longer viable. This change makes the error handling here consistent with the
+catch (=const boost::system::system_error& e=) block.
+
+#+begin_src c++
+            {
+                std::lock_guard guard{state_mutex_};
+                connected_ = false;
+            }
+            if (conn_) {
+                conn_->close();
+            }
+            BOOST_LOG_SEV(lg(), warn) << "Connection lost - server may have closed the connection";
+#+end_src
+
+***** projects/ores.comms/tests/net_client_tests.cpp
+
+- priority: medium
+- Comment on lines +251 to +254
+
+#+begin_src c++
+        // We can verify by attempting to send a dummy request - it should fail
+        // Note: This test primarily verifies that server->stop() successfully
+        // cancelled all sessions without hanging, which is the main goal of
+        // the session cancellation feature.
+#+end_src
+
+The comment here correctly identifies a way to strengthen this test. By adding
+an explicit check to ensure clients can no longer communicate after the server
+has been stopped, the test will more comprehensively verify the end-to-end
+behavior of the session cancellation, including the effect on the client side.
+
+#+begin_src c++
+        // We can verify by attempting to send a dummy request - it should fail.
+        BOOST_LOG_SEV(lg, info) << "Verifying clients can no longer communicate";
+        for (auto& client : clients) {
+            ores::comms::protocol::frame dummy_request{
+                ores::comms::protocol::message_type::handshake_request, 0, {}};
+            auto result = co_await client->send_request(dummy_request);
+            CHECK(!result.has_value());
+            CHECK(!client->is_connected());
+        }
+#+end_src
+
 
 **** Old implementation plan from Qwen
 
@@ -457,6 +551,16 @@ Acceptance criteria:
 
   Let me know if you'd like the full code patches for `session.hpp/cpp` or help adapting this to your exact `connection`/`ssl_stream` usage!
   #+end_src
+
+*** STARTED Experiment with simple code generation                     :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-02 Tue 16:56]
+    CLOCK: [2025-12-02 Tue 14:35]--[2025-12-02 Tue 16:05] =>  1:30
+    :END:
+
+It should be easy enough to add a simple code generator that creates the basic
+infrastructure for a domain type, so that we don't have to waste Claude Code
+tokens.
 
 *** Add tests for messaging handler                                    :code:
 

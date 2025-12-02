@@ -46,13 +46,17 @@ void server::register_handler(protocol::message_type_range range,
 }
 
 void server::stop() {
-    BOOST_LOG_SEV(lg(), info) << "Stopping server...";
+    BOOST_LOG_SEV(lg(), info) << "Stopping server with " << active_connections_ << " active connections...";
 
     // Cancel all active sessions first
+    BOOST_LOG_SEV(lg(), info) << "Emitting session cancellation signal";
     session_stop_signal_.emit(boost::asio::cancellation_type::all);
+    BOOST_LOG_SEV(lg(), info) << "Session cancellation signal emitted";
 
     // Then cancel the accept loop
+    BOOST_LOG_SEV(lg(), info) << "Emitting accept loop cancellation signal";
     stop_signal_.emit(boost::asio::cancellation_type::all);
+    BOOST_LOG_SEV(lg(), info) << "Accept loop cancellation signal emitted";
 }
 
 boost::asio::cancellation_slot server::get_session_cancellation_slot() noexcept {
@@ -149,10 +153,10 @@ boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_con
             auto conn = std::make_unique<connection>(
                 connection::ssl_socket(std::move(socket), ssl_ctx_));
 
-            // Create session and spawn it with cancellation slot
+            // Create session with reference to cancellation signal
             auto sess = std::make_shared<session>(std::move(conn),
                 options_.server_identifier, dispatcher_,
-                get_session_cancellation_slot());
+                session_stop_signal_);
 
             // Increment active connections
             ++active_connections_;

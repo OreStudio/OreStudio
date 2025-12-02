@@ -1,4 +1,4 @@
-# -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
+# -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-`
 #
 # Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
 #

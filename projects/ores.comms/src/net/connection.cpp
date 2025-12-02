@@ -46,7 +46,8 @@ boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
 connection::read_frame(bool skip_version_check, boost::asio::cancellation_slot cancel_slot) {
     try {
         BOOST_LOG_SEV(lg(), debug) << "Waiting to read the next frame"
-                                 << " (skip_version_check=" << skip_version_check << ")";
+                                 << " (skip_version_check=" << skip_version_check << ")"
+                                 << " cancel_slot.is_connected=" << cancel_slot.is_connected();
 
         // Read the fixed 32-byte header first
         std::vector<std::byte> buffer(protocol::frame_header::size);

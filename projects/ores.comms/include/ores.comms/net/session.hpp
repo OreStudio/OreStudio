@@ -53,7 +53,7 @@ public:
      */
     explicit session(std::unique_ptr<connection> conn, std::string server_id,
         std::shared_ptr<protocol::message_dispatcher> dispatcher,
-        boost::asio::cancellation_slot stop_slot);
+        boost::asio::cancellation_signal& stop_signal);
 
     /**
      * @brief Run the session.
@@ -80,6 +80,7 @@ private:
     std::unique_ptr<connection> conn_;
     std::string server_id_;
     std::shared_ptr<protocol::message_dispatcher> dispatcher_;
+    boost::asio::cancellation_signal& stop_signal_;
     boost::asio::cancellation_slot stop_slot_;
     std::uint32_t sequence_number_;
     bool handshake_complete_;

@@ -23,6 +23,7 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <chrono>
+#include <iostream>
 
 #include "ores.comms/net/client.hpp"
 #include "ores.comms/net/server.hpp"
@@ -238,7 +239,8 @@ TEST_CASE("test_session_cancellation_on_server_stop", tags) {
         server->stop();
 
         // Give some time for cancellation to propagate and server to shut down
-        timer.expires_after(std::chrono::milliseconds(500));
+        // Need sufficient time for TCP/SSL connection closure to propagate to clients
+        timer.expires_after(std::chrono::milliseconds(2000));
         co_await timer.async_wait(boost::asio::use_awaitable);
 
         BOOST_LOG_SEV(lg, info) << "Server stopped - verifying session cancellation";
@@ -248,10 +250,30 @@ TEST_CASE("test_session_cancellation_on_server_stop", tags) {
         // attempt I/O, which is normal TCP behavior. The fact that server->stop()
         // returned means all sessions were cancelled successfully.
 
-        // We can verify by attempting to send a dummy request - it should fail
-        // Note: This test primarily verifies that server->stop() successfully
-        // cancelled all sessions without hanging, which is the main goal of
-        // the session cancellation feature.
+        // Verify clients can no longer communicate after server stops
+        BOOST_LOG_SEV(lg, info) << "Verifying clients can no longer communicate";
+        std::cout << "\n=== Testing client communication after server stop ===" << std::endl;
+        for (size_t i = 0; i < clients.size(); ++i) {
+            auto& client = clients[i];
+            std::cout << "Client " << i << " - connected before: " << client->is_connected() << std::endl;
+            BOOST_LOG_SEV(lg, info) << "Testing client " << i
+                                    << " - is_connected before request: " << client->is_connected();
+
+            // Try to send an application-level request (not handshake)
+            ores::comms::protocol::frame dummy_request{
+                ores::comms::protocol::message_type::get_currencies_request, 0, {}};
+            auto result = co_await client->send_request(dummy_request);
+
+            std::cout << "Client " << i << " - result: " << (result.has_value() ? "SUCCESS" : "FAILED")
+                     << ", connected after: " << client->is_connected() << std::endl;
+            BOOST_LOG_SEV(lg, info) << "Client " << i << " result: "
+                                    << (result.has_value() ? "SUCCESS (unexpected!)" : "FAILED (expected)")
+                                    << " - is_connected after: " << client->is_connected();
+
+            CHECK(!result.has_value());
+            CHECK(!client->is_connected());
+        }
+        std::cout << "=== End of client testing ===" << std::endl;
 
         BOOST_LOG_SEV(lg, info) << "Test finished - server stopped cleanly with active sessions";
 

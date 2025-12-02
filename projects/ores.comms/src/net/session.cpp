@@ -19,6 +19,7 @@
  */
 #include "ores.comms/net/session.hpp"
 
+#include <iostream>
 #include "ores.comms/protocol/handshake.hpp"
 
 namespace ores::comms::net {
@@ -27,13 +28,31 @@ using namespace ores::utility::log;
 
 session::session(std::unique_ptr<connection> conn, std::string server_id,
     std::shared_ptr<protocol::message_dispatcher> dispatcher,
-    boost::asio::cancellation_slot stop_slot)
+    boost::asio::cancellation_signal& stop_signal)
     : conn_(std::move(conn)),
       server_id_(std::move(server_id)),
       dispatcher_(std::move(dispatcher)),
-      stop_slot_(std::move(stop_slot)),
+      stop_signal_(stop_signal),
+      stop_slot_(stop_signal_.slot()),  // Create slot from the signal
       sequence_number_(0),
-      handshake_complete_(false) {}
+      handshake_complete_(false) {
+    BOOST_LOG_SEV(lg(), debug) << "Session created - cancellation slot is_connected: "
+                               << stop_slot_.is_connected();
+
+    // Assign cancellation handler following idiomatic Boost.Asio pattern
+    stop_slot_.assign([this](boost::asio::cancellation_type type) {
+        std::cout << "!!! Session " << this << " received cancellation signal type="
+                  << static_cast<int>(type) << std::endl;
+        BOOST_LOG_SEV(lg(), info) << "Session received cancellation signal type="
+                                  << static_cast<int>(type)
+                                  << " for " << conn_->remote_address();
+        // Close the connection to cancel all pending I/O operations
+        if (conn_) {
+            conn_->close();
+        }
+    });
+    std::cout << "!!! Session " << this << " created with cancellation slot" << std::endl;
+}
 
 boost::asio::awaitable<void> session::run() {
     std::string remote_addr = conn_->remote_address();

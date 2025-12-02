@@ -1,4 +1,4 @@
-' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*'
 '
 ' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
 '
@@ -232,6 +232,26 @@ namespace ores #F2F2F2 {
             account_service o-- ores::accounts::repository::login_info_repository
             account_service ..> ores::accounts::domain::account
             account_service ..> ores::accounts::security::password_manager : uses
+
+            class bootstrap_mode_service #ECECEC {
+                +bootstrap_mode_service(utility::repository::context)
+                +is_in_bootstrap_mode() bool
+                +initialize_bootstrap_state() void
+                +exit_bootstrap_mode() void
+                -{field} account_repo_ repository::account_repository
+                -{field} feature_flags_service_ variability::service::feature_flags_service
+                -{field} ctx_ utility::repository::context
+            }
+
+            note top of bootstrap_mode_service
+            Service for managing system bootstrap mode state.
+
+            Manages a special state where only the initial administrator account can be created.
+            Uses feature flags to persist the bootstrap mode state.
+            end note
+
+            bootstrap_mode_service o-- ores::accounts::repository::account_repository
+            bootstrap_mode_service o-- ores::variability::service::feature_flags_service
         }
 
         namespace messaging #F2F2F2 {

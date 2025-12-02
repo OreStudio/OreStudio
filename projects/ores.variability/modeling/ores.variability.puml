@@ -1,6 +1,6 @@
-' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*'
 '
-' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>'
 '
 ' This program is free software; you can redistribute it and/or modify it under
 ' the terms of the GNU General Public License as published by the Free Software
@@ -109,6 +109,27 @@ namespace ores #F2F2F2 {
             end note
 
             feature_flags_repository ..> ores::variability::domain::feature_flags : uses
+        }
+
+        namespace service #F2F2F2 {
+            class feature_flags_service #ECECEC {
+                +feature_flags_service(context)
+                +get_feature_flag(std::string) std::optional<domain::feature_flags>
+                +get_all_feature_flags() std::vector<domain::feature_flags>
+                +save_feature_flag(domain::feature_flags) void
+                +delete_feature_flag(std::string) void
+                -{field} repo_ repository::feature_flags_repository
+            }
+
+            note top of feature_flags_service
+            Service for managing feature flags.
+
+            Provides high-level operations for retrieving and modifying feature flags.
+            Encapsulates the underlying repository and handles the bitemporal update logic.
+            end note
+
+            feature_flags_service o-- ores::variability::repository::feature_flags_repository
+            feature_flags_service ..> ores::variability::domain::feature_flags : uses
         }
     }
 }

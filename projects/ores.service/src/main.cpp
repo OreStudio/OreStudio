@@ -71,6 +71,8 @@ int main(int argc, char** argv) {
     int result = EXIT_FAILURE;
     boost::asio::co_spawn(io_ctx, [&]() -> boost::asio::awaitable<void> {
             result = co_await async_main(argc, argv, io_ctx);
+            // Stop io_context when application completes (success or error)
+            io_ctx.stop();
         }, boost::asio::detached);
 
     io_ctx.run();

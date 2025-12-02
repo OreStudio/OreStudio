@@ -62,7 +62,7 @@ public:
     boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::protocol::error_code>>
     handle_message(comms::protocol::message_type type,
         std::span<const std::byte> payload,
-        const std::string& remote_address) override;
+        [[maybe_unused]] const std::string& remote_address) override;
 
 private:
     /**

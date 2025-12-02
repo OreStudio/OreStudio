@@ -31,7 +31,7 @@ variability_message_handler::variability_message_handler(utility::repository::co
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      comms::protocol::error_code>>
 variability_message_handler::handle_message(comms::protocol::message_type type,
-    std::span<const std::byte> payload, const std::string& remote_address) {
+    std::span<const std::byte> payload, [[maybe_unused]] const std::string& remote_address) {
 
     BOOST_LOG_SEV(lg(), debug) << "Handling variability message type " << type;
 

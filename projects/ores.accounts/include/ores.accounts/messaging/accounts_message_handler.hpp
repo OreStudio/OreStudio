@@ -36,7 +36,6 @@ namespace ores::accounts::messaging {
  * - create_account_request: Creates a new account
  * - list_accounts_request: Retrieves all accounts from the repository
  * - list_login_info_request: Retrieves all login info records
- * - list_feature_flags_request: Retrieves all feature flags
  * - login_request: Authenticates a user and updates login tracking
  * - unlock_account_request: Unlocks a locked account
  * - delete_account_request: Deletes an account (bitemporal soft delete)
@@ -95,12 +94,6 @@ private:
      */
     handler_result
     handle_list_login_info_request(std::span<const std::byte> payload);
-
-    /**
-     * @brief Handle list_feature_flags_request message.
-     */
-    handler_result
-    handle_list_feature_flags_request(std::span<const std::byte> payload);
 
     /**
      * @brief Handle login_request message.

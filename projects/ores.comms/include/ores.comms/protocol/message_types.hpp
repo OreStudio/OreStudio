@@ -28,8 +28,9 @@
 // Core protocol: 0x0000 - 0x0FFF
 // Risk subsystem: 0x1000 - 0x1FFF
 // Accounts subsystem: 0x2000 - 0x2FFF
+// Variability subsystem: 0x3000 - 0x3FFF
 #define MAGIC_ENUM_RANGE_MIN 0
-#define MAGIC_ENUM_RANGE_MAX 0x3000
+#define MAGIC_ENUM_RANGE_MAX 0x4000
 
 #include <magic_enum/magic_enum.hpp>
 
@@ -38,7 +39,8 @@ namespace ores::comms::protocol {
  // "ORES" in ASCII
 constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 5;
+// Protocol version 6 introduces variability subsystem range (0x3000-0x3FFF)
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 6;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 enum class message_type {
@@ -71,12 +73,14 @@ enum class message_type {
     delete_account_response = 0x200A,
     list_login_info_request = 0x200B,
     list_login_info_response = 0x200C,
-    list_feature_flags_request = 0x200D,
-    list_feature_flags_response = 0x200E,
     create_initial_admin_request = 0x200F,
     create_initial_admin_response = 0x2010,
     bootstrap_status_request = 0x2011,
     bootstrap_status_response = 0x2012,
+
+    // Variability subsystem messages (0x3000 - 0x3FFF)
+    list_feature_flags_request = 0x3000,
+    list_feature_flags_response = 0x3001,
 
     last_value
 };

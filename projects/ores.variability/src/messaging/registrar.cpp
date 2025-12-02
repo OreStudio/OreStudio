@@ -17,11 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_MESSAGING_PROTOCOL_HPP
-#define ORES_ACCOUNTS_MESSAGING_PROTOCOL_HPP
+#include "ores.variability/messaging/registrar.hpp"
 
-#include "ores.accounts/messaging/account_protocol.hpp"
-#include "ores.accounts/messaging/login_protocol.hpp"
-#include "ores.accounts/messaging/bootstrap_protocol.hpp"
+#include "ores.variability/messaging/variability_message_handler.hpp"
 
-#endif
+namespace ores::variability::messaging {
+
+using namespace ores::utility::log;
+
+void registrar::register_handlers(comms::net::server& server,
+    utility::repository::context ctx) {
+    BOOST_LOG_SEV(lg(), info) << "Registering variability subsystem message handlers.";
+
+    auto handler = std::make_shared<variability_message_handler>(std::move(ctx));
+    comms::protocol::message_type_range variability_range{.min=0x3000, .max=0x3FFF};
+    server.register_handler(variability_range, std::move(handler));
+
+    BOOST_LOG_SEV(lg(), info) << "Variability subsystem message handlers registered successfully.";
+}
+
+}

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_MESSAGING_FEATURE_FLAGS_PROTOCOL_HPP
-#define ORES_ACCOUNTS_MESSAGING_FEATURE_FLAGS_PROTOCOL_HPP
+#ifndef ORES_VARIABILITY_MESSAGING_FEATURE_FLAGS_PROTOCOL_HPP
+#define ORES_VARIABILITY_MESSAGING_FEATURE_FLAGS_PROTOCOL_HPP
 
 #include <span>
 #include <iosfwd>
@@ -27,7 +27,7 @@
 #include "ores.comms/protocol/message_types.hpp"
 #include "ores.variability/domain/feature_flags.hpp"
 
-namespace ores::accounts::messaging {
+namespace ores::variability::messaging {
 
 /**
  * @brief Request to retrieve all feature flags.
@@ -44,7 +44,7 @@ std::ostream& operator<<(std::ostream& s, const list_feature_flags_request& v);
  * @brief Response containing all feature flags.
  */
 struct list_feature_flags_response final {
-    std::vector<variability::domain::feature_flags> feature_flags;
+    std::vector<domain::feature_flags> feature_flags;
 
     std::vector<std::byte> serialize() const;
     static std::expected<list_feature_flags_response, comms::protocol::error_code>

@@ -199,10 +199,6 @@ print(p)
 
 [[file:sprint_backlog_05_resources.png]]
 
-*** Add AI generated sprint summary                                   :infra:
-
-It is a bit difficult to make sense of a sprint with all the story details. We
-should use AI to make a human readable summary. Also, add a skill for this.
 *** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
     CLOCK: [2025-12-02 Tue 09:10]--[2025-12-02 Tue 10:39] =>  1:29
@@ -211,198 +207,440 @@ should use AI to make a human readable summary. Also, add a skill for this.
 We need to scan all of our finance notebooks so we can use them with AI. Each
 sprint will have a story similar to this until we scan and process them all.
 
-*** Implement session cancellation                                     :code:
+*** Add AI generated sprint summary                                   :infra:
 
-As per qwen:
+At the end of the sprint, generate the sprint summary using the prompt.
 
-#+begin_src markdown
-Here's a **step-by-step implementation plan** to **cancel all active sessions
-when the server stops**—building cleanly on your current Asio coroutine-based
-server design.
+*** STARTED Implement session cancellation                             :code:
+    DEADLINE: <2025-12-10 Tue>
+    :LOGBOOK:
+    CLOCK: [2025-12-02 Tue 10:59]
+    :END:
 
----
+When the server stops (via SIGINT or programmatic shutdown), all active
+sessions currently continue running indefinitely, preventing clean shutdown.
+The server needs to gracefully cancel all ongoing session I/O operations
+without waiting indefinitely.
 
-### 🎯 Goal
-When `server::stop()` is called (e.g., via SIGINT or programmatic shutdown):
-1. **Immediately cancel** all ongoing session I/O operations (reads/writes, etc.).
-2. **Gracefully terminate** all sessions without waiting indefinitely.
-3. Preserve your existing cancellation architecture (based on `cancellation_signal`).
+This is critical for production deployment where clean shutdown is required
+for container orchestration, service restarts, and graceful degradation scenarios.
 
----
+Acceptance criteria:
+- Server can stop cleanly with multiple active sessions running
+- All session I/O operations are cancelled when server::stop() is called
+- No indefinite hangs during shutdown process
+- Sessions log their cancellation for observability
+- Existing cancellation architecture (cancellation_signal) is preserved
+- Solution uses Asio's hierarchical cancellation model
 
-### ✅ High-Level Strategy
+- Tasks
 
-Use a **hierarchical cancellation model**:
-- The **server owns a root cancellation signal**.
-- Each **session inherits a slot** from this root signal.
-- When the server stops, it **emits cancellation**, which **propagates to all sessions**.
+  - [ ] Add root cancellation signal for sessions in server class
+  - [ ] Expose cancellation slot method in server (get_session_cancellation_slot)
+  - [ ] Pass cancellation slot to each new session in accept_loop
+  - [ ] Update session constructor to accept and store cancellation slot
+  - [ ] Bind all session I/O operations to the cancellation slot
+  - [ ] Update server::stop() to emit session cancellation signal
+  - [ ] Add session cleanup logging for operation_aborted cases
+  - [ ] Write integration test with multiple concurrent sessions
+  - [ ] Test shutdown behavior with Ctrl+C signal
+  - [ ] Verify no resource leaks during cancellation
 
-This avoids manual session tracking and leverages Asio’s built-in cancellation propagation.
+- Notes
 
----
+  Implementation approach: Use hierarchical cancellation model where server
+  owns a root cancellation signal and each session inherits a slot from this
+  root signal. When server stops, it emits cancellation which propagates to
+  all sessions automatically.
 
-## 📝 Implementation Plan
+  Benefits:
+  - No manual session tracking required
+  - Automatic propagation via Asio's native cancellation
+  - Thread-safe and idempotent
+  - Composable with nested coroutines
 
-### Step 1: Add a Root Cancellation Signal for Sessions
-In `server.hpp`, add:
+  Files likely affected:
+  - =projects/ores.comms/include/ores/comms/server.hpp= - Add session_stop_signal_
+  - =projects/ores.comms/src/server.cpp= - Update accept_loop and stop()
+  - =projects/ores.comms/include/ores/comms/session.hpp= - Add stop_slot_ member
+  - =projects/ores.comms/src/session.cpp= - Update constructor and run()
 
-```cpp
+  Detailed implementation plan from qwen:
+
+  #+begin_src markdown
+  Here's a **step-by-step implementation plan** to **cancel all active sessions
+  when the server stops**—building cleanly on your current Asio coroutine-based
+  server design.
+
+  ---
+
+  ### 🎯 Goal
+  When `server::stop()` is called (e.g., via SIGINT or programmatic shutdown):
+  1. **Immediately cancel** all ongoing session I/O operations (reads/writes, etc.).
+  2. **Gracefully terminate** all sessions without waiting indefinitely.
+  3. Preserve your existing cancellation architecture (based on `cancellation_signal`).
+
+  ---
+
+  ### ✅ High-Level Strategy
+
+  Use a **hierarchical cancellation model**:
+  - The **server owns a root cancellation signal**.
+  - Each **session inherits a slot** from this root signal.
+  - When the server stops, it **emits cancellation**, which **propagates to all sessions**.
+
+  This avoids manual session tracking and leverages Asio's built-in cancellation propagation.
+
+  ---
+
+  ## 📝 Implementation Plan
+
+  ### Step 1: Add a Root Cancellation Signal for Sessions
+  In `server.hpp`, add:
+
+  ```cpp
+  private:
+      boost::asio::cancellation_signal session_stop_signal_;
+  ```
+
+  > This signal will be used to cancel **all sessions** simultaneously.
+
+  ---
+
+  ### Step 2: Expose a Cancellation Slot to Sessions
+  Add a **public (or private, if sessions are friends)** method:
+
+  ```cpp
+  public:
+      boost::asio::cancellation_slot get_session_cancellation_slot() const noexcept {
+          return session_stop_signal_.slot();
+      }
+  ```
+
+  > Alternatively, make `session` a `friend class` and pass the slot directly in `accept_loop`.
+
+  ---
+
+  ### Step 3: Pass the Slot to Each Session
+  In `accept_loop`, when creating a session:
+
+  ```cpp
+  auto sess = std::make_shared<session>(
+      std::move(conn),
+      options_.server_identifier,
+      dispatcher_,
+      get_session_cancellation_slot()  // ← pass the slot
+  );
+  ```
+
+  > You'll need to **update `session`'s constructor** to accept and store this slot (or a copy of it).
+
+  ---
+
+  ### Step 4: Update `session` to Use the Cancellation Slot
+  In `session.hpp`:
+
+  ```cpp
+  class session {
+  public:
+      session(
+          std::unique_ptr<connection> conn,
+          std::string server_id,
+          std::shared_ptr<protocol::message_dispatcher> dispatcher,
+          boost::asio::cancellation_slot stop_slot);  // ← new parameter
+
+  private:
+      boost::asio::cancellation_slot stop_slot_;
+      // ... other members
+  };
+  ```
+
+  In `session.cpp` constructor:
+
+  ```cpp
+  session::session(
+      std::unique_ptr<connection> conn,
+      std::string server_id,
+      std::shared_ptr<protocol::message_dispatcher> dispatcher,
+      boost::asio::cancellation_slot stop_slot)
+      : conn_(std::move(conn))
+      , server_id_(std::move(server_id))
+      , dispatcher_(std::move(dispatchor))
+      , stop_slot_(std::move(stop_slot)) {
+  }
+  ```
+
+  ---
+
+  ### Step 5: Bind Session I/O to the Cancellation Slot
+  In `session::run()` or wherever you do `co_await socket.async_read(...)`:
+
+  ```cpp
+  // Example: reading from SSL stream
+  co_await conn_->ssl_stream().async_read_some(
+      buffer,
+      boost::asio::bind_cancellation_slot(
+          stop_slot_,
+          boost::asio::use_awaitable));
+  ```
+
+  > Repeat for **all** async operations in the session (read, write, timers, etc.).
+
+  This ensures that when the server emits cancellation, **all session I/O is aborted**.
+
+  > 💡 Tip: If you have a session-level read/write loop, you only need to bind the **outermost** `co_await`—cancellation will propagate.
+
+  ---
+
+  ### Step 6: Update `server::stop()` to Cancel Sessions Too
+  Modify your existing `stop()`:
+
+  ```cpp
+  void server::stop() {
+      BOOST_LOG_SEV(lg(), info) << "Stopping server...";
+
+      // Cancel all sessions first
+      session_stop_signal_.emit(boost::asio::cancellation_type::all);
+
+      // Then cancel accept loop
+      stop_signal_.emit(boost::asio::cancellation_type::all);
+  }
+  ```
+
+  > Order doesn't strictly matter, but canceling sessions first is more logical.
+
+  ---
+
+  ### Step 7: (Optional) Add Session Cleanup Logging
+  In `session::run()`, catch `operation_aborted` to log graceful exit:
+
+  ```cpp
+  try {
+      co_await /* session work */;
+  } catch (const boost::system::system_error& e) {
+      if (e.code() == boost::asio::error::operation_aborted) {
+          BOOST_LOG_SEV(lg(), debug) << "Session cancelled.";
+      } else {
+          BOOST_LOG_SEV(lg(), error) << "Session error: " << e.what();
+      }
+  }
+  ```
+
+  ---
+
+  ### ✅ Benefits of This Approach
+  - **No manual session tracking** (no list of sessions to iterate over).
+  - **Automatic propagation**: One `emit()` cancels everything.
+  - **Safe and efficient**: Uses Asio's native cancellation.
+  - **Composable**: Works with nested coroutines inside sessions.
+
+  ---
+
+  ### 🔒 Safety Notes
+  - The `session_stop_signal_` lives as long as the `server` object.
+  - Sessions capture a **slot**, not a reference to the signal—safe even if the session outlives the emit (which it won't, because you're stopping the server).
+  - No race conditions: `emit()` is thread-safe and idempotent.
+
+  ---
+
+  ### 🧪 Testing
+  1. Start server, open 2 connections.
+  2. Send Ctrl+C.
+  3. Verify:
+     - "Stopping server..." log appears.
+     - Both sessions log "Session cancelled." (or similar).
+     - Program exits promptly.
+
+  ---
+
+  Let me know if you'd like the full code patches for `session.hpp/cpp` or help adapting this to your exact `connection`/`ssl_stream` usage!
+  #+end_src
+
+
+*** Add tests for messaging handler                                    :code:
+
+We need tests in comms which create a test request and response and a test
+handler.
+
+*** Create a variability service for feature flags                     :code:
+
+We should not expose the repository directly. Instead, consumers should use a
+service interface which queries the repository as needed.
+
+*** Add screen in qt to exit bootstrap mode                            :code:
+
+As per claude:
+
+The create_initial_admin_request message type serves several important purposes
+that differentiate it from the CLI and REPL approaches:
+
+Why We Need create_initial_admin_request
+
+  1. Network-accessible bootstrap flow
+  - Allows remote initial setup from localhost without requiring shell/CLI access
+  to the server
+  - Enables a web-based "first-run" setup experience (like many web applications)
+  - The Qt client can provide a proper UI for initial admin account creation
+
+  2. Localhost-only security enforcement
+  - The endpoint enforces that it can only be called from localhost (127.0.0.1 or
+  ::1) at line
+  projects/ores.accounts/src/messaging/accounts_message_handler.cpp:320
+  - Provides network-accessible bootstrap with security guarantees
+  - Prevents remote bootstrap attacks
+
+  3. Atomic mode transition
+  - The endpoint both creates the admin AND exits bootstrap mode in a single atomic
+   operation (lines 362-367 in accounts_message_handler.cpp)
+  - Guarantees consistency - can't create admin without exiting bootstrap mode
+
+  4. Service-layer validation
+  - Goes through full service layer with password validation and business logic
+  - The CLI is essentially an "administrative backdoor" that bypasses the service
+  layer and writes directly to the database
+
+  5. Protocol-compliant workflow
+  - Clients speaking the binary protocol need a proper bootstrap endpoint
+  - REPL create_account_request is blocked in bootstrap mode (by enforcement logic)
+  - create_initial_admin_request is the only endpoint that works in bootstrap mode
+
+  The Distinction
+
+  - CLI approach: Administrative backdoor, direct database access, bypasses all
+  service logic
+  - create_initial_admin_request: Proper network-accessible bootstrap flow with
+  localhost restriction and atomic mode transition
+  - REPL create_account_request: Normal account creation, blocked in bootstrap mode
+
+  The create_initial_admin_request enables a proper "first-run experience" for
+  clients connecting via the network protocol, while maintaining security through
+  localhost-only access.
+
+
+
+*** Users cannot update their passwords                                :code:
+
+At present it is not possible to update passwords, or any other property of an
+account.
+
+*** Cli clean-ups                                                      :code:
+
+- we still seem to support =--entity currencies=. This should now be invalid.
+- we are still exporting as JSON. We should instead allow CSV and XML exports
+  only.
+- add recipes for all commands.
+- should be able to list all admin accounts.
+- list command should support table output.
+- is admin should be a bool: =--is-admin arg (=0)=
+- add account duplicates logic. We should have a single service for this.
+- split application into entities.
+
+*** Multi-threaded scenarios with comms                                :code:
+
+At present we are relying on request-response patterns: the client sends a
+request and the next frame coming in is the response. However, in the future we
+will have many dialog windows open, each of them sending requests and awaiting
+responses. It will not be possible to know what response is coming back from
+what window. We need to take this into account.
+
+*** Add listen/notify support                                          :code:
+
+When data changes for a given entity in the database and we have the dialog of
+that entity open, we need to make the reload button a different colour (suggest
+a colour). For this we need to listen/notify in the database and then send a
+message to the client. This requires a change at the protocol because at present
+we send a request from the client first and then expect a response. This is more
+like a callback where the handler will call a callback when a certain message is
+received. Listen code from deepseek:
+
+#+begin_src c++
+#include <sqlgen.h>
+#include <libpq-fe.h>
+#include <thread>
+#include <iostream>
+
+class TableWatcher {
 private:
-    boost::asio::cancellation_signal session_stop_signal_;
-```
+    sqlgen::Connection conn_;
+    std::thread listener_thread_;
+    bool running_;
 
-> This signal will be used to cancel **all sessions** simultaneously.
-
----
-
-### Step 2: Expose a Cancellation Slot to Sessions
-Add a **public (or private, if sessions are friends)** method:
-
-```cpp
 public:
-    boost::asio::cancellation_slot get_session_cancellation_slot() const noexcept {
-        return session_stop_signal_.slot();
+    TableWatcher(const std::string& connection_string)
+        : conn_(connection_string), running_(false) {}
+
+    void start() {
+        running_ = true;
+        listener_thread_ = std::thread(&TableWatcher::listen_loop, this);
     }
-```
 
-> Alternatively, make `session` a `friend class` and pass the slot directly in `accept_loop`.
-
----
-
-### Step 3: Pass the Slot to Each Session
-In `accept_loop`, when creating a session:
-
-```cpp
-auto sess = std::make_shared<session>(
-    std::move(conn),
-    options_.server_identifier,
-    dispatcher_,
-    get_session_cancellation_slot()  // ← pass the slot
-);
-```
-
-> You’ll need to **update `session`’s constructor** to accept and store this slot (or a copy of it).
-
----
-
-### Step 4: Update `session` to Use the Cancellation Slot
-In `session.hpp`:
-
-```cpp
-class session {
-public:
-    session(
-        std::unique_ptr<connection> conn,
-        std::string server_id,
-        std::shared_ptr<protocol::message_dispatcher> dispatcher,
-        boost::asio::cancellation_slot stop_slot);  // ← new parameter
+    void stop() {
+        running_ = false;
+        if (listener_thread_.joinable()) {
+            listener_thread_.join();
+        }
+    }
 
 private:
-    boost::asio::cancellation_slot stop_slot_;
-    // ... other members
+    void listen_loop() {
+        // Get raw PGconn for async operations
+        auto raw_conn = conn_.native_handle(); // You might need to expose this
+
+        // Listen to channel
+        PGresult* res = PQexec(raw_conn, "LISTEN table_updates;");
+        if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+            PQclear(res);
+            return;
+        }
+        PQclear(res);
+
+        while (running_) {
+            // Non-blocking check for notifications
+            PQconsumeInput(raw_conn);
+
+            PGnotify* notify;
+            while ((notify = PQnotifies(raw_conn)) != nullptr) {
+                handle_notification(notify);
+                PQfreemem(notify);
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    }
+
+    void handle_notification(PGnotify* notify) {
+        std::cout << "Received notification: " << notify->relname
+                  << " - " << notify->extra << std::endl;
+
+        // Parse the extra data (usually JSON) and handle accordingly
+        // {"table": "users", "operation": "INSERT", "id": 123}
+    }
 };
-```
-
-In `session.cpp` constructor:
-
-```cpp
-session::session(
-    std::unique_ptr<connection> conn,
-    std::string server_id,
-    std::shared_ptr<protocol::message_dispatcher> dispatcher,
-    boost::asio::cancellation_slot stop_slot)
-    : conn_(std::move(conn))
-    , server_id_(std::move(server_id))
-    , dispatcher_(std::move(dispatchor))
-    , stop_slot_(std::move(stop_slot)) {
-}
-```
-
----
-
-### Step 5: Bind Session I/O to the Cancellation Slot
-In `session::run()` or wherever you do `co_await socket.async_read(...)`:
-
-```cpp
-// Example: reading from SSL stream
-co_await conn_->ssl_stream().async_read_some(
-    buffer,
-    boost::asio::bind_cancellation_slot(
-        stop_slot_,
-        boost::asio::use_awaitable));
-```
-
-> Repeat for **all** async operations in the session (read, write, timers, etc.).
-
-This ensures that when the server emits cancellation, **all session I/O is aborted**.
-
-> 💡 Tip: If you have a session-level read/write loop, you only need to bind the **outermost** `co_await`—cancellation will propagate.
-
----
-
-### Step 6: Update `server::stop()` to Cancel Sessions Too
-Modify your existing `stop()`:
-
-```cpp
-void server::stop() {
-    BOOST_LOG_SEV(lg(), info) << "Stopping server...";
-
-    // Cancel all sessions first
-    session_stop_signal_.emit(boost::asio::cancellation_type::all);
-
-    // Then cancel accept loop
-    stop_signal_.emit(boost::asio::cancellation_type::all);
-}
-```
-
-> Order doesn’t strictly matter, but canceling sessions first is more logical.
-
----
-
-### Step 7: (Optional) Add Session Cleanup Logging
-In `session::run()`, catch `operation_aborted` to log graceful exit:
-
-```cpp
-try {
-    co_await /* session work */;
-} catch (const boost::system::system_error& e) {
-    if (e.code() == boost::asio::error::operation_aborted) {
-        BOOST_LOG_SEV(lg(), debug) << "Session cancelled.";
-    } else {
-        BOOST_LOG_SEV(lg(), error) << "Session error: " << e.what();
-    }
-}
-```
-
----
-
-### ✅ Benefits of This Approach
-- **No manual session tracking** (no list of sessions to iterate over).
-- **Automatic propagation**: One `emit()` cancels everything.
-- **Safe and efficient**: Uses Asio’s native cancellation.
-- **Composable**: Works with nested coroutines inside sessions.
-
----
-
-### 🔒 Safety Notes
-- The `session_stop_signal_` lives as long as the `server` object.
-- Sessions capture a **slot**, not a reference to the signal—safe even if the session outlives the emit (which it won’t, because you’re stopping the server).
-- No race conditions: `emit()` is thread-safe and idempotent.
-
----
-
-### 🧪 Testing
-1. Start server, open 2 connections.
-2. Send Ctrl+C.
-3. Verify:
-   - "Stopping server..." log appears.
-   - Both sessions log "Session cancelled." (or similar).
-   - Program exits promptly.
-
----
-
-Let me know if you'd like the full code patches for `session.hpp/cpp` or help adapting this to your exact `connection`/`ssl_stream` usage!
 #+end_src
+
+*** Add version support to entities                                    :code:
+
+We need a "version" field which is incremented automatically by a trigger. It is
+used as follows:
+
+- domain entities have a version field which is loaded from database.
+- if we try to save at version =n= but current version is not =n-1=, it should
+  fail to save.
+- version is incremented automatically on save.
+- display version in UI prominently (/e.g./ next to entity key, iso code for
+  currencies) so that we can see when we reload.
+
+*** Disconnect closes currencies window                                :code:
+
+It should just disable the icons, etc.
+
+*** Add search to currencies                                           :code:
+
+It should be possible to filter the open currencies by a string. This should be
+any field. The user needs to know when the list has been filtered. Ideally we
+should have buttons at the top per field and filter using those. It should go
+back to database rather than just filter what is available in UI.
+
 
 
 * Footer

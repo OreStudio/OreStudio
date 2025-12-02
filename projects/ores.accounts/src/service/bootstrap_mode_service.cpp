@@ -85,9 +85,7 @@ void bootstrap_mode_service::initialize_bootstrap_state() {
             BOOST_LOG_SEV(lg(), warn) << "Bootstrap flag is disabled but no admin accounts exist, this is inconsistent";
             BOOST_LOG_SEV(lg(), warn) << "Enabling bootstrap mode";
 
-                    feature_flags_service_.delete_feature_flag(BOOTSTRAP_FLAG_NAME);
-
-            variability::domain::feature_flags bootstrap_flag{
+                    variability::domain::feature_flags bootstrap_flag{
                 .enabled = true,
                 .name = BOOTSTRAP_FLAG_NAME,
                 .description = "Indicates whether the system is in bootstrap mode (waiting for initial admin account)",
@@ -111,8 +109,6 @@ void bootstrap_mode_service::exit_bootstrap_mode() {
         BOOST_LOG_SEV(lg(), debug) << "Already in secure mode, nothing to do";
         return;
     }
-
-            feature_flags_service_.delete_feature_flag(BOOTSTRAP_FLAG_NAME);
 
     variability::domain::feature_flags secure_mode_flag{
         .enabled = false,

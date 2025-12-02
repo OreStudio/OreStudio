@@ -37,8 +37,9 @@ feature_flags_service::get_feature_flag(const std::string& name) {
         return std::nullopt;
     }
 
-    // Repository guarantees only one "latest" record per name if uniqueness constraints hold,
-    // but `read_latest` returns a vector. We take the first one.
+    if (flags.size() > 1) {
+        BOOST_LOG_SEV(lg(), warn) << "Found " << flags.size() << " latest feature flags for name '" << name << "', expected 1. Using the first one.";
+    }
     return flags.front();
 }
 

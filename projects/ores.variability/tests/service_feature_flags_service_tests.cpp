@@ -22,13 +22,14 @@
 #include <catch2/catch_test_macros.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include <algorithm> // Added this include
 
 namespace {
 
 const std::string test_suite("ores.variability.tests");
 const std::string tags("[service]");
 // Corrected table name to be fully qualified
-const std::string table_name("oresdb.feature_flags"); 
+const std::string table_name("oresdb.feature_flags");
 
 }
 
@@ -37,10 +38,9 @@ using namespace ores::variability::service;
 using namespace ores::variability::domain;
 
 TEST_CASE("feature_flags_service_crud_operations", tags) {
-    auto lg(make_logger(test_suite));
-    
+
     SECTION("get_feature_flag returns nullopt for non-existent flag") {
-        ores::testing::scoped_database_helper db_helper(table_name); 
+        ores::testing::scoped_database_helper db_helper(table_name);
         feature_flags_service sut(db_helper.context());
         INFO("Initial feature flags count for this section: " << sut.get_all_feature_flags().size());
         CHECK(sut.get_all_feature_flags().empty()); // Should be empty due to db_helper
@@ -49,7 +49,7 @@ TEST_CASE("feature_flags_service_crud_operations", tags) {
     }
 
     SECTION("save_and_get_feature_flag") {
-        ores::testing::scoped_database_helper db_helper(table_name); 
+        ores::testing::scoped_database_helper db_helper(table_name);
         feature_flags_service sut(db_helper.context());
         INFO("Initial feature flags count for this section: " << sut.get_all_feature_flags().size());
         CHECK(sut.get_all_feature_flags().empty());
@@ -58,7 +58,7 @@ TEST_CASE("feature_flags_service_crud_operations", tags) {
         flag.name = "test_flag";
         flag.enabled = true;
         flag.description = "Test Description";
-        flag.modified_by = "tester"; 
+        flag.modified_by = "tester";
 
         sut.save_feature_flag(flag);
 
@@ -67,12 +67,12 @@ TEST_CASE("feature_flags_service_crud_operations", tags) {
         CHECK(result->name == "test_flag");
         CHECK(result->enabled == true);
         CHECK(result->description == "Test Description");
-        INFO("Actual modified_by: " << result->modified_by); 
-        CHECK(result->modified_by == "ores"); 
+        INFO("Actual modified_by: " << result->modified_by);
+        CHECK(result->modified_by == "ores");
     }
 
     SECTION("update_feature_flag") {
-        ores::testing::scoped_database_helper db_helper(table_name); 
+        ores::testing::scoped_database_helper db_helper(table_name);
         feature_flags_service sut(db_helper.context());
         INFO("Initial feature flags count for this section: " << sut.get_all_feature_flags().size());
         CHECK(sut.get_all_feature_flags().empty());
@@ -88,7 +88,7 @@ TEST_CASE("feature_flags_service_crud_operations", tags) {
         // Update
         flag.enabled = false;
         flag.description = "Updated Description";
-        flag.modified_by = "updater"; 
+        flag.modified_by = "updater";
         sut.save_feature_flag(flag);
 
         // Verify update
@@ -101,7 +101,7 @@ TEST_CASE("feature_flags_service_crud_operations", tags) {
     }
 
     SECTION("delete_feature_flag") {
-        ores::testing::scoped_database_helper db_helper(table_name); 
+        ores::testing::scoped_database_helper db_helper(table_name);
         feature_flags_service sut(db_helper.context());
         INFO("Initial feature flags count for this section: " << sut.get_all_feature_flags().size());
         CHECK(sut.get_all_feature_flags().empty());
@@ -120,7 +120,7 @@ TEST_CASE("feature_flags_service_crud_operations", tags) {
     }
 
     SECTION("get_all_feature_flags") {
-        ores::testing::scoped_database_helper db_helper(table_name); 
+        ores::testing::scoped_database_helper db_helper(table_name);
         feature_flags_service sut(db_helper.context());
         INFO("Initial feature flags count for this section: " << sut.get_all_feature_flags().size());
         CHECK(sut.get_all_feature_flags().empty());
@@ -138,17 +138,11 @@ TEST_CASE("feature_flags_service_crud_operations", tags) {
         sut.save_feature_flag(flag2);
 
         auto results = sut.get_all_feature_flags();
-        INFO("Actual number of flags: " << results.size()); 
+        INFO("Actual number of flags: " << results.size());
         CHECK(results.size() == 2);
-        
-        // Basic check to ensure both are present
-        bool found1 = false;
-        bool found2 = false;
-        for (const auto& f : results) {
-            if (f.name == "flag1") found1 = true;
-            if (f.name == "flag2") found2 = true;
-        }
-        CHECK(found1);
-        CHECK(found2);
+
+        // Basic check to ensure both are present using std::any_of
+        CHECK(std::any_of(results.cbegin(), results.cend(), [](const auto& f){ return f.name == "flag1"; }));
+        CHECK(std::any_of(results.cbegin(), results.cend(), [](const auto& f){ return f.name == "flag2"; }));
     }
 }

@@ -213,9 +213,11 @@ sprint will have a story similar to this until we scan and process them all.
 
 At the end of the sprint, generate the sprint summary using the prompt.
 
-*** STARTED Implement session cancellation                             :code:
+*** COMPLETED Implement session cancellation                           :code:
+    CLOSED: [2025-12-02 Tue 18:15]
     DEADLINE: <2025-12-10 Tue>
     :LOGBOOK:
+    CLOCK: [2025-12-02 Tue 16:56]--[2025-12-02 Tue 17:56] =>  1:00
     CLOCK: [2025-12-02 Tue 10:59]--[2025-12-02 Tue 12:41] =>  1:42
     :END:
 
@@ -237,41 +239,65 @@ Acceptance criteria:
 
 - Tasks
 
-  - [ ] Add root cancellation signal for sessions in server class
-  - [ ] Expose cancellation slot method in server (get_session_cancellation_slot)
-  - [ ] Pass cancellation slot to each new session in accept_loop
-  - [ ] Update session constructor to accept and store cancellation slot
-  - [ ] Bind all session I/O operations to the cancellation slot
-  - [ ] Update server::stop() to emit session cancellation signal
-  - [ ] Add session cleanup logging for operation_aborted cases
-  - [ ] Write integration test with multiple concurrent sessions
-  - [ ] Test shutdown behavior with Ctrl+C signal
-  - [ ] Verify no resource leaks during cancellation
+  - [X] Add root cancellation signal for sessions in server class
+  - [X] Expose cancellation slot method in server (get_session_cancellation_slot)
+  - [X] Pass cancellation slot to each new session in accept_loop
+  - [X] Update session constructor to accept and store cancellation slot
+  - [X] Bind all session I/O operations to the cancellation slot
+  - [X] Update server::stop() to emit session cancellation signal
+  - [X] Add session cleanup logging for operation_aborted cases
+  - [X] Write integration test with multiple concurrent sessions
+  - [X] Test shutdown behavior with Ctrl+C signal
+  - [X] Verify no resource leaks during cancellation
+  - [X] Address Gemini code review: remove redundant signal handler
+  - [X] Address Gemini code review: explicitly close connection on read failure
+  - [X] Address Gemini code review: enhance test to verify client communication fails
 
 - Notes
 
-  Implementation approach: Use hierarchical cancellation model where server
+  Original implementation approach: Use hierarchical cancellation model where server
   owns a root cancellation signal and each session inherits a slot from this
   root signal. When server stops, it emits cancellation which propagates to
   all sessions automatically.
 
-  Benefits:
-  - No manual session tracking required
-  - Automatic propagation via Asio's native cancellation
-  - Thread-safe and idempotent
-  - Composable with nested coroutines
+  **Actual implementation:** After investigation, we discovered a critical limitation
+  in Boost.Asio's cancellation API: a cancellation_signal contains exactly ONE slot
+  that holds ONE handler at a time. Multiple sessions calling slot.assign() overwrite
+  each other's handlers, causing only the last session to be cancelled.
 
-  Files likely affected:
-  - =projects/ores.comms/include/ores/comms/server.hpp= - Add session_stop_signal_
+  This was confirmed by:
+  1. Testing showed only 1/3 sessions cancelled
+  2. Deepseek "idiomatic" example segfaulted immediately
+  3. Official Boost.Asio documentation clarified the one-slot-per-signal limitation
+
+  Final solution: Explicit session management
+  - Server maintains std::list<std::shared_ptr<session>> of active sessions
+  - Mutex protects concurrent access to the sessions list
+  - Sessions added to list when created, removed when complete
+  - server::stop() explicitly calls session::stop() on each active session
+  - session::stop() closes the connection, causing pending I/O to fail
+
+  Benefits of final approach:
+  - Correct and reliable (no API misuse)
+  - Clear ownership model
+  - Thread-safe with mutex protection
+  - All 3/3 sessions properly cancelled in tests
+
+  Files modified:
+  - =projects/ores.comms/include/ores.comms/server.hpp= - Add active_sessions_ list
   - =projects/ores.comms/src/server.cpp= - Update accept_loop and stop()
-  - =projects/ores.comms/include/ores/comms/session.hpp= - Add stop_slot_ member
-  - =projects/ores.comms/src/session.cpp= - Update constructor and run()
+  - =projects/ores.comms/include/ores.comms/session.hpp= - Add stop() method
+  - =projects/ores.comms/src/session.cpp= - Implement stop(), remove slot parameters
+  - =projects/ores.service/src/main.cpp= - Remove redundant signal handler
+  - =projects/ores.comms/src/net/client.cpp= - Add explicit close on read failure
+  - =projects/ores.comms/tests/net_client_tests.cpp= - Enhanced verification test
 
 **** Code review from Gemini
 
-***** projects/ores.service/src/main.cpp
+***** COMPLETED projects/ores.service/src/main.cpp
 
 - priority: high
+- status: FIXED
 - Comment on lines +61 to +69:
 
 #+begin_src c++
@@ -301,9 +327,10 @@ Additionally, the comment on line 68 is slightly misleading. The server's stop()
 method doesn't stop the io_context; it's stopped on line 75 after async_main
 completes, which is the correct behavior.
 
-***** projects/ores.comms/src/net/client.cpp
+***** COMPLETED projects/ores.comms/src/net/client.cpp
 
 - priority: medium
+- status: FIXED
 - Comment on lines +259 to +263
 
 #+begin_src c++
@@ -331,9 +358,10 @@ catch (=const boost::system::system_error& e=) block.
             BOOST_LOG_SEV(lg(), warn) << "Connection lost - server may have closed the connection";
 #+end_src
 
-***** projects/ores.comms/tests/net_client_tests.cpp
+***** COMPLETED projects/ores.comms/tests/net_client_tests.cpp
 
 - priority: medium
+- status: FIXED
 - Comment on lines +251 to +254
 
 #+begin_src c++
@@ -554,7 +582,6 @@ behavior of the session cancellation, including the effect on the client side.
 
 *** STARTED Experiment with simple code generation                     :code:
     :LOGBOOK:
-    CLOCK: [2025-12-02 Tue 16:56]
     CLOCK: [2025-12-02 Tue 14:35]--[2025-12-02 Tue 16:05] =>  1:30
     :END:
 

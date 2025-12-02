@@ -47,7 +47,16 @@ void server::register_handler(protocol::message_type_range range,
 
 void server::stop() {
     BOOST_LOG_SEV(lg(), info) << "Stopping server...";
+
+    // Cancel all active sessions first
+    session_stop_signal_.emit(boost::asio::cancellation_type::all);
+
+    // Then cancel the accept loop
     stop_signal_.emit(boost::asio::cancellation_type::all);
+}
+
+boost::asio::cancellation_slot server::get_session_cancellation_slot() noexcept {
+    return session_stop_signal_.slot();
 }
 
 void server::setup_ssl_context() {

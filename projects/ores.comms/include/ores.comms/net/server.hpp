@@ -80,9 +80,17 @@ public:
     /**
      * @brief Stop the server.
      *
-     * Cancels the accept loop and stops accepting new connections.
+     * Cancels all active sessions and the accept loop.
      */
     void stop();
+
+    /**
+     * @brief Get cancellation slot for sessions.
+     *
+     * Returns a slot connected to the session cancellation signal.
+     * When the server stops, all sessions bound to this slot are cancelled.
+     */
+    boost::asio::cancellation_slot get_session_cancellation_slot() noexcept;
 
 private:
     /**
@@ -106,6 +114,7 @@ private:
     std::shared_ptr<protocol::message_dispatcher> dispatcher_;
     std::atomic<std::size_t> active_connections_{0};
     boost::asio::cancellation_signal stop_signal_;
+    boost::asio::cancellation_signal session_stop_signal_;
 };
 
 }

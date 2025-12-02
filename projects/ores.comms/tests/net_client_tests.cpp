@@ -252,10 +252,8 @@ TEST_CASE("test_session_cancellation_on_server_stop", tags) {
 
         // Verify clients can no longer communicate after server stops
         BOOST_LOG_SEV(lg, info) << "Verifying clients can no longer communicate";
-        std::cout << "\n=== Testing client communication after server stop ===" << std::endl;
         for (size_t i = 0; i < clients.size(); ++i) {
             auto& client = clients[i];
-            std::cout << "Client " << i << " - connected before: " << client->is_connected() << std::endl;
             BOOST_LOG_SEV(lg, info) << "Testing client " << i
                                     << " - is_connected before request: " << client->is_connected();
 
@@ -264,8 +262,6 @@ TEST_CASE("test_session_cancellation_on_server_stop", tags) {
                 ores::comms::protocol::message_type::get_currencies_request, 0, {}};
             auto result = co_await client->send_request(dummy_request);
 
-            std::cout << "Client " << i << " - result: " << (result.has_value() ? "SUCCESS" : "FAILED")
-                     << ", connected after: " << client->is_connected() << std::endl;
             BOOST_LOG_SEV(lg, info) << "Client " << i << " result: "
                                     << (result.has_value() ? "SUCCESS (unexpected!)" : "FAILED (expected)")
                                     << " - is_connected after: " << client->is_connected();
@@ -273,7 +269,6 @@ TEST_CASE("test_session_cancellation_on_server_stop", tags) {
             CHECK(!result.has_value());
             CHECK(!client->is_connected());
         }
-        std::cout << "=== End of client testing ===" << std::endl;
 
         BOOST_LOG_SEV(lg, info) << "Test finished - server stopped cleanly with active sessions";
 

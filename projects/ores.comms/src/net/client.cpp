@@ -260,6 +260,9 @@ client::send_request(protocol::frame request_frame) {
                 std::lock_guard guard{state_mutex_};
                 connected_ = false;
             }
+            if (conn_) {
+                conn_->close();
+            }
             BOOST_LOG_SEV(lg(), warn) << "Connection lost - server may have closed the connection";
             co_return std::unexpected(response_result.error());
         }

@@ -18,30 +18,32 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-02 Tue 10:58], for Tuesday, December 02, 2025.
+#+CAPTION: Clock summary at [2025-12-02 Tue 12:41], for Tuesday, December 02, 2025.
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *1:47* |      |      | 100.0 |
+|       | *Total time*                          | *3:29* |      |      | 100.0 |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 1:47   |      |      | 100.0 |
-|       | Active                                |        | 1:47 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:18 |  16.8 |
-| infra | OCR scan notebooks for this sprint    |        |      | 1:29 |  83.2 |
+|       | Stories                               | 3:29   |      |      | 100.0 |
+|       | Active                                |        | 3:29 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:18 |   8.6 |
+| infra | OCR scan notebooks for this sprint    |        |      | 1:29 |  42.6 |
+| code  | Implement session cancellation        |        |      | 1:42 |  48.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-02 Tue 10:58]
+#+CAPTION: Clock summary at [2025-12-02 Tue 12:42]
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *1:47* |      |      | 100.0 |
+|       | *Total time*                          | *3:29* |      |      | 100.0 |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 1:47   |      |      | 100.0 |
-|       | Active                                |        | 1:47 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:18 |  16.8 |
-| infra | OCR scan notebooks for this sprint    |        |      | 1:29 |  83.2 |
+|       | Stories                               | 3:29   |      |      | 100.0 |
+|       | Active                                |        | 3:29 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:18 |   8.6 |
+| infra | OCR scan notebooks for this sprint    |        |      | 1:29 |  42.6 |
+| code  | Implement session cancellation        |        |      | 1:42 |  48.8 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -211,10 +213,10 @@ sprint will have a story similar to this until we scan and process them all.
 
 At the end of the sprint, generate the sprint summary using the prompt.
 
-*** STARTED Implement session cancellation                             :code:
+*** COMPLETED Implement session cancellation                           :code:
     DEADLINE: <2025-12-10 Tue>
     :LOGBOOK:
-    CLOCK: [2025-12-02 Tue 10:59]
+    CLOCK: [2025-12-02 Tue 10:59]--[2025-12-02 Tue 12:41] =>  1:42
     :END:
 
 When the server stops (via SIGINT or programmatic shutdown), all active
@@ -265,7 +267,7 @@ Acceptance criteria:
   - =projects/ores.comms/include/ores/comms/session.hpp= - Add stop_slot_ member
   - =projects/ores.comms/src/session.cpp= - Update constructor and run()
 
-  Detailed implementation plan from qwen:
+**** Old implementation plan from Qwen
 
   #+begin_src markdown
   Here's a **step-by-step implementation plan** to **cancel all active sessions
@@ -456,11 +458,58 @@ Acceptance criteria:
   Let me know if you'd like the full code patches for `session.hpp/cpp` or help adapting this to your exact `connection`/`ssl_stream` usage!
   #+end_src
 
-
 *** Add tests for messaging handler                                    :code:
 
 We need tests in comms which create a test request and response and a test
 handler.
+
+*** Implement client heartbeat for proactive disconnect detection      :code:
+
+Currently, the client only detects server disconnections when attempting to
+send a request. If the server closes the connection (e.g., via graceful
+shutdown), the client remains unaware until the next user action. This creates
+poor user experience where the Qt application appears connected but operations
+fail unexpectedly.
+
+A heartbeat mechanism would allow the client to proactively detect when the
+server closes the connection and notify the application immediately, enabling
+proper UI updates (connection status indicators, reconnection prompts, etc.).
+
+Business value:
+- Improved user experience with immediate disconnect notifications
+- Better error handling and recovery workflows
+- Reduced user frustration from "silent" disconnections
+- Foundation for future features (connection quality monitoring, auto-reconnect)
+
+Acceptance criteria:
+- Client sends periodic heartbeat/ping messages to server (configurable interval)
+- Server responds to heartbeat messages with minimal overhead
+- Client detects failed heartbeats and marks connection as disconnected
+- Client provides callback/signal mechanism for disconnect notification
+- Qt application can register disconnect callback to update UI
+- Heartbeat can be enabled/disabled via client configuration
+- Heartbeat does not interfere with normal request/response operations
+- Logging clearly indicates heartbeat activity and failures
+
+Implementation considerations:
+- Add ping/pong message types to protocol (lightweight, no payload)
+- Use async timer in client to trigger periodic heartbeats
+- Heartbeat interval should be configurable (default: 30 seconds)
+- Server should handle ping messages in message dispatcher
+- Client should expose disconnect_callback_t for applications to register
+- Ensure thread-safe callback invocation for Qt integration
+- Consider making heartbeat optional to support existing clients
+
+Files likely affected:
+- =projects/ores.comms/include/ores.comms/protocol/messages.hpp= - Add ping/pong types
+- =projects/ores.comms/include/ores.comms/net/client.hpp= - Add callback mechanism
+- =projects/ores.comms/src/net/client.cpp= - Implement heartbeat coroutine
+- =projects/ores.comms/src/protocol/message_dispatcher.cpp= - Handle ping messages
+- =projects/ores.qt/...= - Register disconnect callback, update UI
+
+Related to completed story: "Implement session cancellation" - that story
+addresses graceful server shutdown, this story addresses client-side detection
+of that shutdown.
 
 *** Create a variability service for feature flags                     :code:
 

@@ -26,10 +26,12 @@ namespace ores::comms::net {
 using namespace ores::utility::log;
 
 session::session(std::unique_ptr<connection> conn, std::string server_id,
-    std::shared_ptr<protocol::message_dispatcher> dispatcher)
+    std::shared_ptr<protocol::message_dispatcher> dispatcher,
+    boost::asio::cancellation_slot stop_slot)
     : conn_(std::move(conn)),
       server_id_(std::move(server_id)),
       dispatcher_(std::move(dispatcher)),
+      stop_slot_(std::move(stop_slot)),
       sequence_number_(0),
       handshake_complete_(false) {}
 

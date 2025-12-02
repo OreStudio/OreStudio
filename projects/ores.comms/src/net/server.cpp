@@ -149,9 +149,10 @@ boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_con
             auto conn = std::make_unique<connection>(
                 connection::ssl_socket(std::move(socket), ssl_ctx_));
 
-            // Create session and spawn it
+            // Create session and spawn it with cancellation slot
             auto sess = std::make_shared<session>(std::move(conn),
-                options_.server_identifier, dispatcher_);
+                options_.server_identifier, dispatcher_,
+                get_session_cancellation_slot());
 
             // Increment active connections
             ++active_connections_;

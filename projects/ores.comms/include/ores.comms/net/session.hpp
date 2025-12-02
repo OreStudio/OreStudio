@@ -45,9 +45,15 @@ private:
 public:
     /**
      * @brief Construct a session from a connection.
+     *
+     * @param conn The connection to manage
+     * @param server_id Server identifier for handshake
+     * @param dispatcher Message dispatcher for handling requests
+     * @param stop_slot Cancellation slot for graceful shutdown
      */
     explicit session(std::unique_ptr<connection> conn, std::string server_id,
-        std::shared_ptr<protocol::message_dispatcher> dispatcher);
+        std::shared_ptr<protocol::message_dispatcher> dispatcher,
+        boost::asio::cancellation_slot stop_slot);
 
     /**
      * @brief Run the session.
@@ -74,6 +80,7 @@ private:
     std::unique_ptr<connection> conn_;
     std::string server_id_;
     std::shared_ptr<protocol::message_dispatcher> dispatcher_;
+    boost::asio::cancellation_slot stop_slot_;
     std::uint32_t sequence_number_;
     bool handshake_complete_;
 };

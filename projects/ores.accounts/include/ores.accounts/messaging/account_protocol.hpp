@@ -47,14 +47,14 @@ struct create_account_request final {
      * Format:
      * - 2 bytes: username length
      * - N bytes: username (UTF-8)
-     * - 2 bytes: password_hash length
-     * - N bytes: password_hash (UTF-8)
-     * - 2 bytes: password_salt length
-     * - N bytes: password_salt (UTF-8)
+     * - 2 bytes: password length
+     * - N bytes: password (UTF-8)
      * - 2 bytes: totp_secret length
      * - N bytes: totp_secret (UTF-8)
      * - 2 bytes: email length
      * - N bytes: email (UTF-8)
+     * - 2 bytes: modified_by length
+     * - N bytes: modified_by (UTF-8)
      * - 1 byte: is_admin (boolean)
      */
     std::vector<std::byte> serialize() const;

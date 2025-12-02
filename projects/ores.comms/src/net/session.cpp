@@ -40,8 +40,8 @@ boost::asio::awaitable<void> session::run() {
     try {
         BOOST_LOG_SEV(lg(), info) << "Session started for client: " << remote_addr;
 
-        // Perform SSL handshake
-        co_await conn_->ssl_handshake_server();
+        // Perform SSL handshake with cancellation support
+        co_await conn_->ssl_handshake_server(stop_slot_);
 
         // Perform protocol handshake
         bool handshake_ok = co_await perform_handshake();
@@ -55,6 +55,12 @@ boost::asio::awaitable<void> session::run() {
         // Process messages
         co_await process_messages();
 
+    } catch (const boost::system::system_error& e) {
+        if (e.code() == boost::asio::error::operation_aborted) {
+            BOOST_LOG_SEV(lg(), info) << "Session cancelled for " << remote_addr;
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Session error for " << remote_addr << ": " << e.what();
+        }
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Session error for " << remote_addr << ": " << e.what();
     }
@@ -72,7 +78,7 @@ boost::asio::awaitable<bool> session::perform_handshake() {
         // with mismatched protocol versions. This enables us to send a proper
         // handshake_response with version details instead of rejecting the frame.
         BOOST_LOG_SEV(lg(), debug) << "About to read handshake request frame from client";
-        auto frame_result = co_await conn_->read_frame(true);  // skip_version_check=true
+        auto frame_result = co_await conn_->read_frame(true, stop_slot_);  // skip_version_check=true
         if (!frame_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to read handshake request: error code "
                                       << static_cast<int>(frame_result.error());
@@ -113,7 +119,7 @@ boost::asio::awaitable<bool> session::perform_handshake() {
             version_compatible ? protocol::error_code::none : protocol::error_code::version_mismatch);
 
         BOOST_LOG_SEV(lg(), debug) << "About to send handshake response frame";
-        co_await conn_->write_frame(response_frame);
+        co_await conn_->write_frame(response_frame, stop_slot_);
         BOOST_LOG_SEV(lg(), debug) << "Sent handshake response frame";
 
         if (!version_compatible) {
@@ -126,7 +132,7 @@ boost::asio::awaitable<bool> session::perform_handshake() {
 
         // Read handshake acknowledgment
         BOOST_LOG_SEV(lg(), debug) << "About to read handshake acknowledgment frame from client";
-        auto ack_frame_result = co_await conn_->read_frame();
+        auto ack_frame_result = co_await conn_->read_frame(false, stop_slot_);
         if (!ack_frame_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to read handshake ack, error code: " << static_cast<int>(ack_frame_result.error());
             co_return false;
@@ -169,7 +175,7 @@ boost::asio::awaitable<void> session::process_messages() {
     try {
         while (true) {
             // Read next message frame
-            auto frame_result = co_await conn_->read_frame();
+            auto frame_result = co_await conn_->read_frame(false, stop_slot_);
             if (!frame_result) {
                 auto err = frame_result.error();
                 if (err == protocol::error_code::network_error) {
@@ -251,7 +257,7 @@ boost::asio::awaitable<void> session::process_messages() {
             }
 
             // Send response back to client
-            co_await conn_->write_frame(response_frame);
+            co_await conn_->write_frame(response_frame, stop_slot_);
             BOOST_LOG_SEV(lg(), debug) << "Sent response for message type "
                                       << request_frame.header().type;
         }

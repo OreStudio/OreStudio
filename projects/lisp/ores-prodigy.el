@@ -32,7 +32,7 @@
   "Return the path to the qt user interface directory."
   (let* ((pr (project-current t))
          (root (project-root pr))
-         (path (concat root "build/output/linux-clang-debug/publish")))
+         (path (concat root "build/output/linux-gcc-debug/publish")))
     path))
 
 (defun ores/setup-environment ()
@@ -58,7 +58,7 @@
   :cwd (concat (ores/path-to-publish) "/bin")
   :command (concat (ores/path-to-publish) "/bin/ores.qt")
   :tags '(ores ui debug)
-  :stop-signal 'sigkill
+  :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
@@ -66,7 +66,7 @@
   :cwd (concat (ores/path-to-publish) "/bin")
   :command (concat (ores/path-to-publish) "/bin/ores.qt")
   :tags '(ores ui release)
-  :stop-signal 'sigkill
+  :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
@@ -75,7 +75,7 @@
   :cwd (concat (ores/path-to-publish) "/bin")
   :command (concat (ores/path-to-publish) "/bin/ores.service")
   :tags '(ores debug dev-service)
-  :stop-signal 'sigkill
+  :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
@@ -84,7 +84,7 @@
   :cwd (concat (ores/path-to-publish) "/bin")
   :command (concat (ores/path-to-publish) "/bin/ores.service")
   :tags '(ores release dev-service)
-  :stop-signal 'sigkill
+  :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
 (provide 'ores-prodigy)

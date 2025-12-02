@@ -43,6 +43,16 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 6;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
+// Subsystem message type ranges
+constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
+constexpr std::uint16_t CORE_SUBSYSTEM_MAX = 0x0FFF;
+constexpr std::uint16_t RISK_SUBSYSTEM_MIN = 0x1000;
+constexpr std::uint16_t RISK_SUBSYSTEM_MAX = 0x1FFF;
+constexpr std::uint16_t ACCOUNTS_SUBSYSTEM_MIN = 0x2000;
+constexpr std::uint16_t ACCOUNTS_SUBSYSTEM_MAX = 0x2FFF;
+constexpr std::uint16_t VARIABILITY_SUBSYSTEM_MIN = 0x3000;
+constexpr std::uint16_t VARIABILITY_SUBSYSTEM_MAX = 0x3FFF;
+
 enum class message_type {
     // Core protocol messages (0x0000 - 0x0FFF)
     handshake_request = 0x0001,

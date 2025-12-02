@@ -66,7 +66,7 @@ struct create_account_request final {
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const create_account_request& V);
+std::ostream& operator<<(std::ostream& s, const create_account_request& v);
 
 /**
  * @brief Response containing the created account ID.

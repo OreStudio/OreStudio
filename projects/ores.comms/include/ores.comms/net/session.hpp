@@ -52,8 +52,7 @@ public:
      * @param stop_slot Cancellation slot for graceful shutdown
      */
     explicit session(std::unique_ptr<connection> conn, std::string server_id,
-        std::shared_ptr<protocol::message_dispatcher> dispatcher,
-        boost::asio::cancellation_signal& stop_signal);
+        std::shared_ptr<protocol::message_dispatcher> dispatcher);
 
     /**
      * @brief Run the session.
@@ -61,6 +60,13 @@ public:
      * Performs handshake and processes messages until connection closes.
      */
     boost::asio::awaitable<void> run();
+
+    /**
+     * @brief Stop the session by closing its connection.
+     *
+     * This will cause any pending I/O operations to fail and the session to end.
+     */
+    void stop();
 
 private:
     /**
@@ -80,8 +86,6 @@ private:
     std::unique_ptr<connection> conn_;
     std::string server_id_;
     std::shared_ptr<protocol::message_dispatcher> dispatcher_;
-    boost::asio::cancellation_signal& stop_signal_;
-    boost::asio::cancellation_slot stop_slot_;
     std::uint32_t sequence_number_;
     bool handshake_complete_;
 };

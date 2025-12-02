@@ -24,6 +24,8 @@
 #include <memory>
 #include <atomic>
 #include <functional>
+#include <list>
+#include <mutex>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/awaitable.hpp>
@@ -33,6 +35,10 @@
 #include "ores.comms/net/server_options.hpp"
 #include "ores.comms/protocol/message_dispatcher.hpp"
 #include "ores.comms/protocol/message_handler.hpp"
+
+namespace ores::comms::net {
+    class session; // forward declaration
+}
 
 namespace ores::comms::net {
 
@@ -80,17 +86,9 @@ public:
     /**
      * @brief Stop the server.
      *
-     * Cancels all active sessions and the accept loop.
+     * Stops all active sessions and the accept loop.
      */
     void stop();
-
-    /**
-     * @brief Get cancellation slot for sessions.
-     *
-     * Returns a slot connected to the session cancellation signal.
-     * When the server stops, all sessions bound to this slot are cancelled.
-     */
-    boost::asio::cancellation_slot get_session_cancellation_slot() noexcept;
 
 private:
     /**
@@ -114,7 +112,8 @@ private:
     std::shared_ptr<protocol::message_dispatcher> dispatcher_;
     std::atomic<std::size_t> active_connections_{0};
     boost::asio::cancellation_signal stop_signal_;
-    boost::asio::cancellation_signal session_stop_signal_;
+    std::list<std::shared_ptr<session>> active_sessions_;
+    std::mutex sessions_mutex_;
 };
 
 }

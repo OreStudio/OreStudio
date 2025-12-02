@@ -27,31 +27,19 @@ namespace ores::comms::net {
 using namespace ores::utility::log;
 
 session::session(std::unique_ptr<connection> conn, std::string server_id,
-    std::shared_ptr<protocol::message_dispatcher> dispatcher,
-    boost::asio::cancellation_signal& stop_signal)
+    std::shared_ptr<protocol::message_dispatcher> dispatcher)
     : conn_(std::move(conn)),
       server_id_(std::move(server_id)),
       dispatcher_(std::move(dispatcher)),
-      stop_signal_(stop_signal),
-      stop_slot_(stop_signal_.slot()),  // Create slot from the signal
       sequence_number_(0),
       handshake_complete_(false) {
-    BOOST_LOG_SEV(lg(), debug) << "Session created - cancellation slot is_connected: "
-                               << stop_slot_.is_connected();
+}
 
-    // Assign cancellation handler following idiomatic Boost.Asio pattern
-    stop_slot_.assign([this](boost::asio::cancellation_type type) {
-        std::cout << "!!! Session " << this << " received cancellation signal type="
-                  << static_cast<int>(type) << std::endl;
-        BOOST_LOG_SEV(lg(), info) << "Session received cancellation signal type="
-                                  << static_cast<int>(type)
-                                  << " for " << conn_->remote_address();
-        // Close the connection to cancel all pending I/O operations
-        if (conn_) {
-            conn_->close();
-        }
-    });
-    std::cout << "!!! Session " << this << " created with cancellation slot" << std::endl;
+void session::stop() {
+    BOOST_LOG_SEV(lg(), info) << "Stopping session for " << conn_->remote_address();
+    if (conn_) {
+        conn_->close();
+    }
 }
 
 boost::asio::awaitable<void> session::run() {
@@ -60,7 +48,7 @@ boost::asio::awaitable<void> session::run() {
         BOOST_LOG_SEV(lg(), info) << "Session started for client: " << remote_addr;
 
         // Perform SSL handshake with cancellation support
-        co_await conn_->ssl_handshake_server(stop_slot_);
+        co_await conn_->ssl_handshake_server();
 
         // Perform protocol handshake
         bool handshake_ok = co_await perform_handshake();
@@ -97,7 +85,7 @@ boost::asio::awaitable<bool> session::perform_handshake() {
         // with mismatched protocol versions. This enables us to send a proper
         // handshake_response with version details instead of rejecting the frame.
         BOOST_LOG_SEV(lg(), debug) << "About to read handshake request frame from client";
-        auto frame_result = co_await conn_->read_frame(true, stop_slot_);  // skip_version_check=true
+        auto frame_result = co_await conn_->read_frame(true);  // skip_version_check=true
         if (!frame_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to read handshake request: error code "
                                       << static_cast<int>(frame_result.error());
@@ -138,7 +126,7 @@ boost::asio::awaitable<bool> session::perform_handshake() {
             version_compatible ? protocol::error_code::none : protocol::error_code::version_mismatch);
 
         BOOST_LOG_SEV(lg(), debug) << "About to send handshake response frame";
-        co_await conn_->write_frame(response_frame, stop_slot_);
+        co_await conn_->write_frame(response_frame);
         BOOST_LOG_SEV(lg(), debug) << "Sent handshake response frame";
 
         if (!version_compatible) {
@@ -151,7 +139,7 @@ boost::asio::awaitable<bool> session::perform_handshake() {
 
         // Read handshake acknowledgment
         BOOST_LOG_SEV(lg(), debug) << "About to read handshake acknowledgment frame from client";
-        auto ack_frame_result = co_await conn_->read_frame(false, stop_slot_);
+        auto ack_frame_result = co_await conn_->read_frame(false);
         if (!ack_frame_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to read handshake ack, error code: " << static_cast<int>(ack_frame_result.error());
             co_return false;
@@ -194,7 +182,7 @@ boost::asio::awaitable<void> session::process_messages() {
     try {
         while (true) {
             // Read next message frame
-            auto frame_result = co_await conn_->read_frame(false, stop_slot_);
+            auto frame_result = co_await conn_->read_frame(false);
             if (!frame_result) {
                 auto err = frame_result.error();
                 if (err == protocol::error_code::network_error) {
@@ -276,7 +264,7 @@ boost::asio::awaitable<void> session::process_messages() {
             }
 
             // Send response back to client
-            co_await conn_->write_frame(response_frame, stop_slot_);
+            co_await conn_->write_frame(response_frame);
             BOOST_LOG_SEV(lg(), debug) << "Sent response for message type "
                                       << request_frame.header().type;
         }

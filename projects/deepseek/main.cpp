@@ -12,22 +12,42 @@ using asio::cancellation_type;
 using asio::cancellation_slot;
 using asio::cancellation_signal;
 
+// Global counters for testing
+std::atomic<int> sessions_created{0};
+std::atomic<int> sessions_cancelled{0};
+
 class session : public std::enable_shared_from_this<session>
 {
 public:
     session(tcp::socket socket, cancellation_signal& cancel_signal)
         : socket_(std::move(socket))
         , cancel_signal_(cancel_signal)
+        , session_id_(++sessions_created)
     {
+        std::osyncstream(std::cout)
+            << "*** Session " << session_id_ << " (ptr=" << this
+            << ") CREATED\n";
+
         // Connect this session to the global cancellation signal
         slot_ = cancel_signal_.slot();
+
+        std::osyncstream(std::cout)
+            << "*** Session " << session_id_ << " slot.is_connected()="
+            << slot_.is_connected() << "\n";
+
         slot_.assign([this](cancellation_type type) {
             handle_cancellation(type);
         });
+
+        std::osyncstream(std::cout)
+            << "*** Session " << session_id_ << " handler assigned\n";
     }
 
     ~session()
     {
+        std::osyncstream(std::cout)
+            << "*** Session " << session_id_ << " DESTROYED\n";
+
         // Clean up the slot when session is destroyed
         if (slot_.is_connected()) {
             slot_.clear();
@@ -37,23 +57,37 @@ public:
     void start()
     {
         active_ = true;
+        std::osyncstream(std::cout)
+            << "*** Session " << session_id_ << " STARTED\n";
         do_read();
     }
+
+    int session_id() const { return session_id_; }
 
 private:
     void handle_cancellation(cancellation_type type)
     {
+        std::osyncstream(std::cout)
+            << "!!! HANDLER CALLED for Session " << session_id_
+            << " type=" << static_cast<int>(type)
+            << " active=" << active_ << "\n";
+
         if (active_) {
             active_ = false;
+            ++sessions_cancelled;
+
             std::osyncstream(std::cout)
-                << "Session " << this << " received cancellation type: "
-                << static_cast<int>(type) << "\n";
+                << "!!! Session " << session_id_ << " CANCELLING (total cancelled: "
+                << sessions_cancelled.load() << ")\n";
 
             boost::system::error_code ec;
             socket_.cancel(ec);
 
             // Close the socket completely
             socket_.close(ec);
+
+            std::osyncstream(std::cout)
+                << "!!! Session " << session_id_ << " socket closed\n";
         }
     }
 
@@ -83,6 +117,7 @@ private:
     cancellation_signal& cancel_signal_;
     cancellation_slot slot_;
     bool active_{false};
+    int session_id_;
 };
 
 class server
@@ -100,10 +135,17 @@ public:
     void cancel_all_sessions()
     {
         std::osyncstream(std::cout)
-            << "Emitting cancellation to all sessions\n";
+            << "\n=== CANCELLING ALL SESSIONS ===\n"
+            << "Total sessions created: " << sessions_created.load() << "\n"
+            << "Sessions in vector: " << sessions_.size() << "\n"
+            << "About to emit cancellation signal...\n";
 
         // Emit cancellation signal - this will trigger all connected slots
         global_cancel_signal_.emit(cancellation_type::all);
+
+        std::osyncstream(std::cout)
+            << "Cancellation signal emitted\n"
+            << "Sessions cancelled so far: " << sessions_cancelled.load() << "\n";
 
         // Optional: Clear sessions list after some delay
         // Using a timer to allow graceful cleanup
@@ -111,8 +153,14 @@ public:
         timer->expires_after(std::chrono::seconds(2));
         timer->async_wait([this, timer](boost::system::error_code) {
             std::osyncstream(std::cout)
-                << "Cleaning up " << sessions_.size() << " sessions\n";
+                << "\n=== CLEANUP TIMER FIRED ===\n"
+                << "Sessions cancelled: " << sessions_cancelled.load() << "/"
+                << sessions_created.load() << "\n"
+                << "Sessions in vector: " << sessions_.size() << "\n"
+                << "Clearing sessions vector...\n";
             sessions_.clear();
+            std::osyncstream(std::cout)
+                << "=== TEST COMPLETE ===\n\n";
         });
     }
 
@@ -239,12 +287,64 @@ int main()
     // Create server with port 8080
     server s(io_context.get_executor(), 8080);
 
-    std::osyncstream(std::cout) << "Server started on port 8080\n";
-    std::osyncstream(std::cout) << "Press Ctrl+C to shutdown\n";
+    std::cout << "\n========================================\n";
+    std::cout << "Server started on port 8080\n";
+    std::cout << "Creating 3 test client connections...\n";
+    std::cout << "========================================\n\n";
+
+    // Create 3 test clients
+    auto create_test_clients = [&io_context, &s]() -> asio::awaitable<void> {
+        auto executor = co_await asio::this_coro::executor;
+
+        for (int i = 1; i <= 3; ++i) {
+            try {
+                tcp::socket socket(executor);
+                co_await socket.async_connect(
+                    tcp::endpoint(asio::ip::make_address("127.0.0.1"), 8080),
+                    asio::use_awaitable);
+
+                std::osyncstream(std::cout)
+                    << "Test client " << i << " connected\n";
+
+                // Keep socket alive by moving into a static vector
+                static std::vector<tcp::socket> sockets;
+                sockets.push_back(std::move(socket));
+            } catch (const std::exception& e) {
+                std::osyncstream(std::cout)
+                    << "Test client " << i << " failed: " << e.what() << "\n";
+            }
+        }
+
+        std::osyncstream(std::cout)
+            << "\nAll test clients connected. Waiting 1 second...\n\n";
+
+        // Wait a bit to let sessions stabilize
+        asio::steady_timer timer(executor);
+        timer.expires_after(std::chrono::seconds(1));
+        co_await timer.async_wait(asio::use_awaitable);
+
+        // Now trigger cancellation
+        s.cancel_all_sessions();
+
+        // Wait for cleanup
+        timer.expires_after(std::chrono::seconds(3));
+        co_await timer.async_wait(asio::use_awaitable);
+
+        // Stop the io_context to exit
+        io_context.stop();
+    };
+
+    asio::co_spawn(io_context, create_test_clients(), asio::detached);
 
     io_context.run();
 
-    std::osyncstream(std::cout) << "Server shutdown complete\n";
+    std::cout << "\n========================================\n";
+    std::cout << "Server shutdown complete\n";
+    std::cout << "FINAL RESULTS:\n";
+    std::cout << "  Sessions created: " << sessions_created.load() << "\n";
+    std::cout << "  Sessions cancelled: " << sessions_cancelled.load() << "\n";
+    std::cout << "========================================\n\n";
 
-    return 0;
+    // Return success if all sessions were cancelled
+    return (sessions_cancelled.load() == sessions_created.load()) ? 0 : 1;
 }

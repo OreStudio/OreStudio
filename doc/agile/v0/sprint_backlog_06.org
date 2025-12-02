@@ -18,36 +18,38 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-02 Tue 23:04], for Tuesday, December 02, 2025.
+#+CAPTION: Clock summary at [2025-12-02 Tue 23:44], for Tuesday, December 02, 2025.
 |       | <75>                                           |        |      |      |       |
 | Tags  | Headline                                       | Time   |      |      |     % |
 |-------+------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                   | *7:22* |      |      | 100.0 |
+|       | *Total time*                                   | *8:02* |      |      | 100.0 |
 |-------+------------------------------------------------+--------+------+------+-------|
-|       | Stories                                        | 7:22   |      |      | 100.0 |
-|       | Active                                         |        | 7:22 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |        |      | 0:18 |   4.1 |
-| infra | OCR scan notebooks for this sprint             |        |      | 1:29 |  20.1 |
-| code  | Implement session cancellation                 |        |      | 2:42 |  36.7 |
-| code  | Create a variability service for feature flags |        |      | 1:23 |  18.8 |
-| code  | Experiment with simple code generation         |        |      | 1:30 |  20.4 |
+|       | Stories                                        | 8:02   |      |      | 100.0 |
+|       | Active                                         |        | 8:02 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |        |      | 0:18 |   3.7 |
+| infra | OCR scan notebooks for this sprint             |        |      | 1:29 |  18.5 |
+| code  | Implement session cancellation                 |        |      | 2:42 |  33.6 |
+| code  | Create a variability service for feature flags |        |      | 1:23 |  17.2 |
+| code  | Experiment with simple code generation         |        |      | 1:30 |  18.7 |
+| code  | Add messaging to variability                   |        |      | 0:40 |   8.3 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-02 Tue 23:04]
+#+CAPTION: Clock summary at [2025-12-02 Tue 23:45]
 |       | <75>                                           |        |      |      |       |
 | Tags  | Headline                                       | Time   |      |      |     % |
 |-------+------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                   | *7:22* |      |      | 100.0 |
+|       | *Total time*                                   | *8:02* |      |      | 100.0 |
 |-------+------------------------------------------------+--------+------+------+-------|
-|       | Stories                                        | 7:22   |      |      | 100.0 |
-|       | Active                                         |        | 7:22 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |        |      | 0:18 |   4.1 |
-| infra | OCR scan notebooks for this sprint             |        |      | 1:29 |  20.1 |
-| code  | Implement session cancellation                 |        |      | 2:42 |  36.7 |
-| code  | Create a variability service for feature flags |        |      | 1:23 |  18.8 |
-| code  | Experiment with simple code generation         |        |      | 1:30 |  20.4 |
+|       | Stories                                        | 8:02   |      |      | 100.0 |
+|       | Active                                         |        | 8:02 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |        |      | 0:18 |   3.7 |
+| infra | OCR scan notebooks for this sprint             |        |      | 1:29 |  18.5 |
+| code  | Implement session cancellation                 |        |      | 2:42 |  33.6 |
+| code  | Create a variability service for feature flags |        |      | 1:23 |  17.2 |
+| code  | Experiment with simple code generation         |        |      | 1:30 |  18.7 |
+| code  | Add messaging to variability                   |        |      | 0:40 |   8.3 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -603,7 +605,7 @@ tokens.
 
 *** STARTED Add messaging to variability                               :code:
     :LOGBOOK:
-    CLOCK: [2025-12-02 Tue 23:04]
+    CLOCK: [2025-12-02 Tue 23:04]--[2025-12-02 Tue 23:44] =>  0:40
     :END:
 
 At present we left the messaging code related to feature flags in accounts.

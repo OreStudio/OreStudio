@@ -22,7 +22,6 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/detached.hpp>
-#include <boost/asio/signal_set.hpp>
 #include <openssl/crypto.h>
 #include "ores.service/app/host.hpp"
 #include "ores.service/config/parser_exception.hpp"
@@ -57,16 +56,6 @@ async_main(int argc, char** argv, boost::asio::io_context& io_ctx) {
 
 int main(int argc, char** argv) {
     boost::asio::io_context io_ctx;
-
-    // Install signal handlers to allow graceful shutdown
-    // This prevents the default SIGINT/SIGTERM handlers from terminating
-    // the process immediately, giving the server time to clean up
-    boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
-    signals.async_wait([&io_ctx](const boost::system::error_code&, int signal) {
-        std::cout << "\nReceived signal " << signal << ", initiating shutdown..." << std::endl;
-        // Don't stop io_context here - let the server's signal handler do the cleanup
-        // The server will stop the io_context when it's done
-    });
 
     int result = EXIT_FAILURE;
     boost::asio::co_spawn(io_ctx, [&]() -> boost::asio::awaitable<void> {

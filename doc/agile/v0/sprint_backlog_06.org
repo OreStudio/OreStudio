@@ -18,38 +18,34 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-02 Tue 23:44], for Tuesday, December 02, 2025.
-|       | <75>                                           |        |      |      |       |
-| Tags  | Headline                                       | Time   |      |      |     % |
-|-------+------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                   | *8:02* |      |      | 100.0 |
-|-------+------------------------------------------------+--------+------+------+-------|
-|       | Stories                                        | 8:02   |      |      | 100.0 |
-|       | Active                                         |        | 8:02 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |        |      | 0:18 |   3.7 |
-| infra | OCR scan notebooks for this sprint             |        |      | 1:29 |  18.5 |
-| code  | Implement session cancellation                 |        |      | 2:42 |  33.6 |
-| code  | Create a variability service for feature flags |        |      | 1:23 |  17.2 |
-| code  | Experiment with simple code generation         |        |      | 1:30 |  18.7 |
-| code  | Add messaging to variability                   |        |      | 0:40 |   8.3 |
+#+CAPTION: Clock summary at [2025-12-03 Wed 10:37], for Wednesday, December 03, 2025.
+|      | <75>                  |        |      |      |       |
+| Tags | Headline              | Time   |      |      |     % |
+|------+-----------------------+--------+------+------+-------|
+|      | *Total time*          | *1:26* |      |      | 100.0 |
+|------+-----------------------+--------+------+------+-------|
+|      | Stories               | 1:26   |      |      | 100.0 |
+|      | Active                |        | 1:26 |      | 100.0 |
+| code | Add tests to diagrams |        |      | 1:26 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-02 Tue 23:45]
+#+CAPTION: Clock summary at [2025-12-03 Wed 10:37]
 |       | <75>                                           |        |      |      |       |
 | Tags  | Headline                                       | Time   |      |      |     % |
 |-------+------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                   | *8:02* |      |      | 100.0 |
+|       | *Total time*                                   | *9:28* |      |      | 100.0 |
 |-------+------------------------------------------------+--------+------+------+-------|
-|       | Stories                                        | 8:02   |      |      | 100.0 |
-|       | Active                                         |        | 8:02 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |        |      | 0:18 |   3.7 |
-| infra | OCR scan notebooks for this sprint             |        |      | 1:29 |  18.5 |
-| code  | Implement session cancellation                 |        |      | 2:42 |  33.6 |
-| code  | Create a variability service for feature flags |        |      | 1:23 |  17.2 |
-| code  | Experiment with simple code generation         |        |      | 1:30 |  18.7 |
-| code  | Add messaging to variability                   |        |      | 0:40 |   8.3 |
+|       | Stories                                        | 9:28   |      |      | 100.0 |
+|       | Active                                         |        | 9:28 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |        |      | 0:18 |   3.2 |
+| infra | OCR scan notebooks for this sprint             |        |      | 1:29 |  15.7 |
+| code  | Implement session cancellation                 |        |      | 2:42 |  28.5 |
+| code  | Create a variability service for feature flags |        |      | 1:23 |  14.6 |
+| code  | Add tests to diagrams                          |        |      | 1:26 |  15.1 |
+| code  | Experiment with simple code generation         |        |      | 1:30 |  15.8 |
+| code  | Add messaging to variability                   |        |      | 0:40 |   7.0 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -594,6 +590,20 @@ behavior of the session cancellation, including the effect on the client side.
 We should not expose the repository directly. Instead, consumers should use a
 service interface which queries the repository as needed.
 
+*** COMPLETED Add tests to diagrams                                    :code:
+:LOGBOOK:
+CLOCK: [2025-12-03 Wed 10:36]--[2025-12-03 Wed 10:36] =>  0:00
+CLOCK: [2025-12-03 Wed 10:36]--[2025-12-03 Wed 10:36] =>  0:00
+CLOCK: [2025-12-03 Wed 10:36]--[2025-12-03 Wed 10:36] =>  0:00
+:END:
+
+
+    :LOGBOOK:
+    CLOCK: [2025-12-03 Wed 09:09]--[2025-12-03 Wed 10:35] =>  1:26
+    :END:
+
+It is helpful so we can see how we are doing in terms of coverage visually.
+
 *** STARTED Experiment with simple code generation                     :code:
     :LOGBOOK:
     CLOCK: [2025-12-02 Tue 14:35]--[2025-12-02 Tue 16:05] =>  1:30
@@ -672,6 +682,19 @@ to align with domain ownership.
 - Protocol v5 → v6
 - Message types changed (0x200D/0x200E → 0x3000/0x3001)
 - All clients must update
+
+*** Create handshake service in comms                                  :code:
+
+We seem to have relationships all over the place to handle handshaking. It makes
+more sense to encapsulate all of that in a handshake service that serves both
+ends of the handshake.
+
+*** Entity syntax refactor snags                                       :code:
+
+We refactored ores.cli to be "entity oriented", so that commands such as export,
+import etc belonged directly to an entity. In this case there should be no need
+to supply the entity in the command line since it is part of the command.
+However, we still see the entity enum in the code.
 
 *** Add tests for messaging handler                                    :code:
 

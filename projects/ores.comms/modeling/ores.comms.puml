@@ -59,6 +59,8 @@ namespace ores #F2F2F2 {
 
         server o-u- ores::comms::server_config
         server o-u- ores::comms::protocol::message_dispatcher
+        server o-u- ores::comms::connection
+        server o-u- ores::comms::session
 
         class client_options #F7E5FF {
             +{field} host std::string

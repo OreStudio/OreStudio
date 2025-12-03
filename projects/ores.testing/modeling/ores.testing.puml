@@ -15,13 +15,16 @@
 ' GNU Emacs; see the file COPYING. If not, write to the Free Software
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 @startuml
+
+title ores.testing Component
+
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
     note "Testing related infrastructure common to all testing projects." as ores_testing_note
     testing --- ores_testing_note
     namespace testing #F2F2F2 {
-        class database_helper #FFFACD {
+        class database_helper #ECECEC {
             +database_helper()
             +truncate_table(const std::string& table_name) : void
             +get_context() : utility::repository::context&
@@ -42,7 +45,7 @@ namespace ores #F2F2F2 {
         - get_context: Gets the database context.
         end note
 
-        class database_lifecycle_listener #FFFACD {
+        class database_lifecycle_listener #ECECEC {
             +database_lifecycle_listener(const Catch::IConfig*)
             +testRunStarting(Catch::TestRunInfo const& testRunInfo) : void
             +testRunEnded(Catch::TestRunStats const& testRunStats) : void
@@ -66,7 +69,7 @@ namespace ores #F2F2F2 {
         - testRunEnded: Called when test run ends - drops the test database.
         end note
 
-        class logging_listener #FFFACD {
+        class logging_listener #ECECEC {
             +logging_listener(const Catch::IConfig*)
             +{static} set_test_module_name(const std::string& module_name) : void
             +extract_suite_name(const Catch::TestCaseInfo& testInfo) : std::string
@@ -117,7 +120,7 @@ namespace ores #F2F2F2 {
         - sectionEnded: Called when section ends.
         end note
 
-        class test_database_manager #FFFACD {
+        class test_database_manager #ECECEC {
             +{static} make_context() : utility::repository::context
             +{static} make_database_options() : utility::database::database_options
             +{static} generate_test_database_name() : std::string

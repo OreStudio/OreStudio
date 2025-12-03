@@ -15,6 +15,9 @@
 ' GNU Emacs; see the file COPYING. If not, write to the Free Software
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 @startuml
+
+title ores.service Component
+
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
@@ -24,7 +27,7 @@ namespace ores #F2F2F2 {
         note "Contains configuration-related entities." as ores_service_config_note
         config --- ores_service_config_note
         namespace config #F2F2F2 {
-            class parser_exception #FFFACD {
+            class parser_exception <<exception>> #D6B19F {
                 +parser_exception(std::string_view message)
                 +what() const : const char*
                 -{field} message_ : std::string
@@ -34,7 +37,7 @@ namespace ores #F2F2F2 {
             A fatal error has occurred during option parsing.
             end note
 
-            class parser #FFFACD {
+            class parser #ECECEC {
                 +parse(const std::vector<std::string>& arguments, std::ostream& info, std::ostream& error) const : std::optional<options>
             }
             parser ..> ores::service::config::options
@@ -90,7 +93,7 @@ namespace ores #F2F2F2 {
         note "Contains application-related entities." as ores_service_app_note
         app --- ores_service_app_note
         namespace app #F2F2F2 {
-            class application_exception #FFFACD {
+            class application_exception <<exception>> #D6B19F {
                 +application_exception(std::string_view message)
                 +what() const : const char*
                 -{field} message_ : std::string
@@ -100,13 +103,12 @@ namespace ores #F2F2F2 {
             A fatal error has occurred whilst the application was running.
             end note
 
-            class application #FFFACD {
+            class application #ECECEC {
                 +application()
                 +application(const application&) = delete
                 +operator=(const application&) = delete : application&
                 -{method} make_context(const std::optional<utility::database::database_options>& db_opts) : utility::repository::context
                 +run(boost::asio::io_context& io_ctx, const config::options& cfg) const : boost::asio::awaitable<void>
-                -{method} lg() : auto&
             }
             application ..> ores::service::config::options
 
@@ -114,9 +116,8 @@ namespace ores #F2F2F2 {
             Entry point for the ores command line application.
             end note
 
-            class host #FFFACD {
+            class host #ECECEC {
                 +{method} execute(const std::vector<std::string>& args, std::ostream& std_output, std::ostream& error_output, boost::asio::io_context& io_ctx) : boost::asio::awaitable<int>
-                -{method} lg() : auto&
             }
 
             note top of host

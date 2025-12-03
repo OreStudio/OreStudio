@@ -24,8 +24,8 @@ and orchestration tools for Open Source Risk Engine (ORE).
 end note
 
 ' Foundation Layer
-package "Foundation Layer" #LIGHTBLUE {
-    component [ores.utility] as utility #ECECEC
+package "Foundation Layer" #F2F2F2 {
+    component [ores.utility] as utility #F7E5FF
 
     note right of utility
     Foundation utilities with no dependencies on other ORE Studio components:
@@ -38,7 +38,7 @@ package "Foundation Layer" #LIGHTBLUE {
     - Environment: Variable access with type conversion
     end note
 
-    component [ores.variability] as variability #ECECEC
+    component [ores.variability] as variability #F7E5FF
 
     note right of variability
     System variability and configuration management infrastructure:
@@ -53,8 +53,8 @@ package "Foundation Layer" #LIGHTBLUE {
 }
 
 ' Infrastructure Layer
-package "Infrastructure Layer" #LIGHTGREEN {
-    component [ores.comms] as comms #ECECEC
+package "Infrastructure Layer" #F2F2F2 {
+    component [ores.comms] as comms #F7E5FF
 
     note right of comms
     Custom binary protocol over SSL/TLS for secure client-server communication:
@@ -68,7 +68,7 @@ package "Infrastructure Layer" #LIGHTGREEN {
     - Errors: Comprehensive error codes with std::expected-based APIs
     end note
 
-    component [ores.testing] as testing #ECECEC
+    component [ores.testing] as testing #F7E5FF
 
     note right of testing
     Comprehensive testing infrastructure for all ORE Studio components:
@@ -83,8 +83,8 @@ package "Infrastructure Layer" #LIGHTGREEN {
 }
 
 ' Domain Layer
-package "Domain Layer" #LIGHTYELLOW {
-    component [ores.risk] as risk #ECECEC
+package "Domain Layer" #F2F2F2 {
+    component [ores.risk] as risk #F7E5FF
 
     note right of risk
     Core domain model for Open Risk Engine (ORE) types following ORE specifications:
@@ -99,7 +99,7 @@ package "Domain Layer" #LIGHTYELLOW {
     Organized into: domain, repository, orexml, csv, messaging, generators namespaces.
     end note
 
-    component [ores.accounts] as accounts #ECECEC
+    component [ores.accounts] as accounts #F7E5FF
 
     note right of accounts
     Comprehensive user account management with secure authentication:
@@ -115,8 +115,8 @@ package "Domain Layer" #LIGHTYELLOW {
 }
 
 ' Application Layer
-package "Application Layer" #LIGHTCORAL {
-    component [ores.shell] as shell #ECECEC
+package "Application Layer" #F2F2F2 {
+    component [ores.shell] as shell #F7E5FF
 
     note right of shell
     Interactive REPL (Read-Eval-Print Loop) shell for connecting to ORE Studio server:
@@ -130,7 +130,7 @@ package "Application Layer" #LIGHTCORAL {
     Organized into: config (configuration parsing), app (REPL, client manager, commands) namespaces.
     end note
 
-    component [ores.cli] as cli #ECECEC
+    component [ores.cli] as cli #F7E5FF
 
     note right of cli
     Command-line interface for importing and exporting ORE data:
@@ -143,7 +143,7 @@ package "Application Layer" #LIGHTCORAL {
     Organized into: config (option parsing), app (application hosting) namespaces.
     end note
 
-    component [ores.qt] as qt #ECECEC
+    component [ores.qt] as qt #F7E5FF
 
     note right of qt
     Modern desktop application built with Qt 6 for visual ORE data management:
@@ -159,7 +159,7 @@ package "Application Layer" #LIGHTCORAL {
     their own MDI windows, dialogs, and data models.
     end note
 
-    component [ores.service] as service #ECECEC
+    component [ores.service] as service #F7E5FF
 
     note right of service
     Main server application hosting all ORE Studio backend services:

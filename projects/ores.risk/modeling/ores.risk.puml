@@ -89,6 +89,9 @@ namespace ores #F2F2F2 {
             Imports domain objects from their ORE XML representation.
             end note
 
+            importer ..> ores::risk::orexml::CurrencyConfig : uses
+            importer ..> ores::risk::domain::currency : imports
+
             class currency_mapper #FFFACD {
                 +{static} map(const CurrencyElement& v) : domain::currency
                 +{static} map(const domain::currency& v) : CurrencyElement
@@ -101,6 +104,10 @@ namespace ores #F2F2F2 {
             Maps domain model entities to ORE XML and vice-versa.
             end note
 
+            currency_mapper ..> ores::risk::orexml::CurrencyElement : uses
+            currency_mapper ..> ores::risk::orexml::CurrencyConfig : uses
+            currency_mapper ..> ores::risk::domain::currency : uses
+
             class exporter #FFFACD {
                 +{static} export_currency_config(const std::vector<domain::currency>& v) : std::string
                 -{static} lg() : auto&
@@ -109,6 +116,9 @@ namespace ores #F2F2F2 {
             note top of exporter
             Exports domain objects from their ORE XML representation.
             end note
+
+            exporter ..> ores::risk::domain::currency : exports
+            exporter ..> ores::risk::orexml::CurrencyConfig : uses
         }
 
         namespace domain #F2F2F2 {
@@ -236,6 +246,9 @@ namespace ores #F2F2F2 {
             Maps domain model entities to data storage layer and vice-versa.
             end note
 
+            currency_mapper ..> ores::risk::repository::currency_entity : uses
+            currency_mapper ..> ores::risk::domain::currency : uses
+
             class currency_repository #FFFACD {
                 +sql() : std::string
                 +write(context ctx, const domain::currency& currencies) : void
@@ -257,6 +270,9 @@ namespace ores #F2F2F2 {
             note top of currency_repository
             Reads and writes currencies off of data storage.
             end note
+
+            currency_repository ..> ores::risk::domain::currency : uses
+            currency_repository ..> ores::risk::repository::currency_entity : uses
         }
 
         namespace generators #F2F2F2 {
@@ -270,6 +286,8 @@ namespace ores #F2F2F2 {
             note top of currency_generator
             Functions for generating synthetic currency data.
             end note
+
+            currency_generator ..> ores::risk::domain::currency : generates
         }
 
         namespace csv #F2F2F2 {
@@ -281,6 +299,8 @@ namespace ores #F2F2F2 {
             note top of exporter
             Exports domain objects to their CSV representation.
             end note
+
+            exporter ..> ores::risk::domain::currency : exports
         }
 
         namespace messaging #F2F2F2 {
@@ -309,6 +329,8 @@ namespace ores #F2F2F2 {
             - currencies: List of all currencies.
             end note
 
+            get_currencies_response o-- ores::risk::domain::currency
+
             class save_currency_request #F7E5FF {
                 +{field} currency : domain::currency
                 +serialize() const : std::vector<std::uint8_t>
@@ -326,6 +348,8 @@ namespace ores #F2F2F2 {
 
             - currency: The currency to save.
             end note
+
+            save_currency_request o-- ores::risk::domain::currency
 
             class save_currency_response #F7E5FF {
                 +{field} success : bool
@@ -428,6 +452,16 @@ namespace ores #F2F2F2 {
             - get_currencies_request: Retrieves all currencies from the repository
             end note
 
+            risk_message_handler o-- ores::risk::repository::currency_repository
+            risk_message_handler ..> ores::risk::messaging::get_currencies_request : uses
+            risk_message_handler ..> ores::risk::messaging::get_currencies_response : uses
+            risk_message_handler ..> ores::risk::messaging::save_currency_request : uses
+            risk_message_handler ..> ores::risk::messaging::save_currency_response : uses
+            risk_message_handler ..> ores::risk::messaging::delete_currency_request : uses
+            risk_message_handler ..> ores::risk::messaging::delete_currency_response : uses
+            risk_message_handler ..> ores::risk::messaging::get_currency_history_request : uses
+            risk_message_handler ..> ores::risk::messaging::get_currency_history_response : uses
+
             class registrar #FFFACD {
                 +{static} register_handlers(comms::server& server, utility::repository::context ctx) : void
                 -{static} lg() : auto&
@@ -439,6 +473,8 @@ namespace ores #F2F2F2 {
             Registers handlers for all risk subsystem messages (0x1000-0x1FFF).
             Must be called before server.run().
             end note
+
+            registrar ..> ores::risk::messaging::risk_message_handler : creates
         }
 
         namespace tests #F2F2F2 {
@@ -538,6 +574,9 @@ namespace ores #F2F2F2 {
             Tests cover reading currency configurations from
             various ORE XML format versions.
             end note
+
+            orexml_currency_config_tests ..> ores::risk::orexml::CurrencyConfig : tests
+            orexml_currency_config_tests ..> ores::risk::orexml::importer : tests
 
             class repository_currency_repository_tests <<test suite>> #C5E1A5 {
                 +write_single_currency() void

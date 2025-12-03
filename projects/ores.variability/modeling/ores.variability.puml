@@ -131,6 +131,67 @@ namespace ores #F2F2F2 {
             feature_flags_service o-- ores::variability::repository::feature_flags_repository
             feature_flags_service ..> ores::variability::domain::feature_flags : uses
         }
+
+        namespace messaging #F2F2F2 {
+            class list_feature_flags_request <<message>> #E1F5FF {
+                +serialize() std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte>) std::expected<list_feature_flags_request, comms::protocol::error_code>
+            }
+
+            note top of list_feature_flags_request
+            Request to retrieve all feature flags.
+
+            This request has no parameters - it retrieves all feature flags in the system.
+            end note
+
+            class list_feature_flags_response <<message>> #E1F5FF {
+                +{field} feature_flags std::vector<domain::feature_flags>
+                +serialize() std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte>) std::expected<list_feature_flags_response, comms::protocol::error_code>
+            }
+
+            note top of list_feature_flags_response
+            Response containing all feature flags.
+
+            Fields:
+
+            - feature_flags: Vector of all feature flags with current values.
+            end note
+
+            list_feature_flags_response o-- ores::variability::domain::feature_flags
+
+            class variability_message_handler #ECECEC {
+                +variability_message_handler(utility::repository::context)
+                +handle_message(comms::protocol::message_type, std::span<const std::byte>, std::string) boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::protocol::error_code>>
+                -handle_list_feature_flags_request(std::span<const std::byte>) boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::protocol::error_code>>
+                -{field} feature_flags_repo_ repository::feature_flags_repository
+            }
+
+            note top of variability_message_handler
+            Message handler for variability subsystem messages.
+
+            Processes messages in the variability subsystem range (0x3000-0x3FFF).
+            Currently handles:
+            - list_feature_flags_request: Retrieves all feature flags from the repository
+            end note
+
+            variability_message_handler o-- ores::variability::repository::feature_flags_repository
+            variability_message_handler ..> ores::variability::messaging::list_feature_flags_request : uses
+            variability_message_handler ..> ores::variability::messaging::list_feature_flags_response : uses
+
+            class registrar #ECECEC {
+                +{static} register_handlers(comms::net::server&, utility::repository::context) void
+            }
+
+            note top of registrar
+            Register variability subsystem message handlers with the server.
+
+            Registers handlers for all variability subsystem messages (0x3000-0x3FFF).
+            Must be called before server.run().
+            end note
+
+            registrar ..> ores::variability::messaging::variability_message_handler : creates
+        }
     }
 }
 

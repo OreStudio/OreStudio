@@ -176,6 +176,111 @@ end note
 generate_foo --> ores::foo::Bar : generates
 #+end_src
 
+** 10. Test suites
+
+Add test suites to provide visibility into test coverage and available tests.
+
+*** Location
+
+Test suites should be added in a =tests= namespace at the component level:
+
+#+begin_src plantuml
+namespace ores #F2F2F2 {
+    namespace component_name #F2F2F2 {
+        ' ... domain, repository, service namespaces ...
+
+        namespace tests #F2F2F2 {
+            ' test suite classes here
+        }
+    }
+}
+#+end_src
+
+*** Test suite styling
+
+| Item            | Value                                |
+|-----------------+--------------------------------------|
+| Stereotype      | =<<test suite>>=                     |
+| Colour          | =#C5E1A5= (light green)              |
+| Namespace color | =#F2F2F2= (same as other namespaces) |
+
+*** Finding test files
+
+Test files are located in =projects/COMPONENT/tests/*.cpp=. Exclude =main.cpp=.
+Use =grep= to extract test case names:
+
+#+begin_src bash
+grep -E "TEST_CASE\(|TEST_CASE_METHOD\(" projects/COMPONENT/tests/*.cpp
+#+end_src
+
+*** Test suite structure
+
+For each test file =foo_tests.cpp=, create a test suite class =foo_tests=:
+
+#+begin_src plantuml
+class domain_account_tests <<test suite>> #C5E1A5 {
+    +create_account_with_valid_fields() void
+    +create_admin_account() void
+    +account_with_specific_uuid() void
+    +account_serialization_to_json() void
+}
+
+note top of domain_account_tests
+Test suite for account domain model.
+
+Tests cover account creation, admin flags, UUIDs,
+and JSON serialization.
+end note
+
+domain_account_tests ..> ores::accounts::domain::account : tests
+#+end_src
+
+*** Test suite guidelines
+
+- *Class name*: Match test file name (e.g., =domain_account_tests.cpp= → =domain_account_tests=)
+- *Methods*: List all TEST_CASE functions as public methods with =void= return type
+- *Note*: Provide brief summary of what the test suite covers
+- *Relationships*: Use =..> : tests= dependency arrow to classes under test
+  - For protocol tests that test multiple message types, add one arrow per message class
+  - For handler/service tests, add arrow to the handler/service class
+- *No ghost types*: Avoid relationship arrows to external component types to prevent PlantUML from creating placeholder boxes
+  - Keep field declarations that reference external types (shows actual code structure)
+  - But omit the corresponding relationship arrows
+
+*** Example with multiple test suites
+
+#+begin_src plantuml
+namespace tests #F2F2F2 {
+    class domain_feature_flags_tests <<test suite>> #C5E1A5 {
+        +create_feature_flag_with_valid_fields() void
+        +feature_flag_serialization_to_json() void
+        +create_feature_flag_with_faker() void
+    }
+
+    note top of domain_feature_flags_tests
+    Test suite for feature_flags domain model.
+
+    Tests cover creation, serialization, and faker data.
+    end note
+
+    domain_feature_flags_tests ..> ores::variability::domain::feature_flags : tests
+
+    class repository_feature_flags_repository_tests <<test suite>> #C5E1A5 {
+        +write_single_feature_flag() void
+        +read_latest_feature_flags() void
+        +read_all_feature_flags() void
+    }
+
+    note top of repository_feature_flags_repository_tests
+    Test suite for feature_flags_repository.
+
+    Tests cover write, read latest, and read all operations.
+    end note
+
+    repository_feature_flags_repository_tests ..> ores::variability::repository::feature_flags_repository : tests
+}
+#+end_src
+
 * Evaluation Checklist
 
 | Check                        | How                                                     |

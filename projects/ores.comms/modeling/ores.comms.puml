@@ -109,6 +109,9 @@ namespace ores #F2F2F2 {
         client o-u- ores::comms::connection
         client ..> ores::comms::protocol::frame
         client ..> ores::comms::protocol::error_code
+        client ..> ores::comms::protocol::handshake_request : uses
+        client ..> ores::comms::protocol::handshake_response : uses
+        client ..> ores::comms::protocol::handshake_ack : uses
 
         class connection #FFFACD {
             +connection(ssl_socket socket)
@@ -152,6 +155,10 @@ namespace ores #F2F2F2 {
 
         session o-u- ores::comms::connection
         session o-u- ores::comms::protocol::message_dispatcher
+        session ..> ores::comms::protocol::handshake_request : uses
+        session ..> ores::comms::protocol::handshake_response : uses
+        session ..> ores::comms::protocol::handshake_ack : uses
+        session ..> ores::comms::protocol::error_response : uses
 
         namespace protocol #F2F2F2 {
             class result #FFFACD {

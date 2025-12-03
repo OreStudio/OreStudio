@@ -26,7 +26,7 @@
 namespace ores::accounts::messaging {
 
 using namespace ores::utility::log;
-using comms::protocol::message_type;
+using comms::messaging::message_type;
 
 accounts_message_handler::accounts_message_handler(utility::repository::context ctx)
     : service_(ctx), ctx_(ctx) {}
@@ -46,13 +46,13 @@ accounts_message_handler::handle_message(message_type type,
     if (in_bootstrap && !is_bootstrap_endpoint) {
         BOOST_LOG_SEV(lg(), warn)
             << "Blocked operation " << type << " - system in bootstrap mode";
-        co_return std::unexpected(comms::protocol::error_code::bootstrap_mode_only);
+        co_return std::unexpected(comms::messaging::error_code::bootstrap_mode_only);
     }
 
     if (!in_bootstrap && type == message_type::create_initial_admin_request) {
         BOOST_LOG_SEV(lg(), warn)
             << "Blocked create_initial_admin_request - system not in bootstrap mode";
-        co_return std::unexpected(comms::protocol::error_code::bootstrap_mode_forbidden);
+        co_return std::unexpected(comms::messaging::error_code::bootstrap_mode_forbidden);
     }
 
     switch (type) {
@@ -74,7 +74,7 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_bootstrap_status_request(payload);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown accounts message type " << type;
-        co_return std::unexpected(comms::protocol::error_code::invalid_message_type);
+        co_return std::unexpected(comms::messaging::error_code::invalid_message_type);
     }
 }
 
@@ -120,7 +120,7 @@ handle_list_accounts_request(std::span<const std::byte> payload) {
     if (request.limit == 0 || request.limit > max_limit) {
         BOOST_LOG_SEV(lg(), warn) << "Invalid limit: " << request.limit
                                   << ". Must be between 1 and " << max_limit;
-        co_return std::unexpected(comms::protocol::error_code::invalid_request);
+        co_return std::unexpected(comms::messaging::error_code::invalid_request);
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Fetching accounts with offset: "

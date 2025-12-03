@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMMS_PROTOCOL_READER_HPP
-#define ORES_COMMS_PROTOCOL_READER_HPP
+#ifndef ORES_COMMS_MESSAGING_READER_HPP
+#define ORES_COMMS_MESSAGING_READER_HPP
 
 #include <span>
 #include <vector>
@@ -26,9 +26,9 @@
 #include <cstdint>
 #include <expected>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.comms/protocol/message_types.hpp"
+#include "ores.comms/messaging/message_types.hpp"
 
-namespace ores::comms::protocol {
+namespace ores::comms::messaging {
 
 /**
  * @brief Helper to read network data.
@@ -38,13 +38,13 @@ public:
     /**
      * @brief Helper to read a 16-bit integer in network byte order.
      */
-    static std::expected<std::uint16_t, comms::protocol::error_code>
+    static std::expected<std::uint16_t, error_code>
     read_uint16(std::span<const std::byte>& data);
 
     /**
      * @brief Helper to read a 32-bit integer in network byte order.
      */
-    static std::expected<std::uint32_t, comms::protocol::error_code>
+    static std::expected<std::uint32_t, error_code>
     read_uint32(std::span<const std::byte>& data);
 
     /**
@@ -56,19 +56,19 @@ public:
     /**
      * @brief Helper to read a string with 16-bit length prefix.
      */
-    static std::expected<std::string, comms::protocol::error_code>
+    static std::expected<std::string, error_code>
     read_string(std::span<const std::byte>& data);
 
     /**
      * @brief Helper to read a UUID (16 bytes).
      */
-    static std::expected<boost::uuids::uuid, comms::protocol::error_code>
+    static std::expected<boost::uuids::uuid, error_code>
     read_uuid(std::span<const std::byte>& data);
 
     /**
      * @brief Helper to read a boolean (1 byte).
      */
-    static std::expected<bool, comms::protocol::error_code>
+    static std::expected<bool, error_code>
     read_bool(std::span<const std::byte>& data);
 };
 

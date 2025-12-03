@@ -15,6 +15,9 @@
 ' GNU Emacs; see the file COPYING. If not, write to the Free Software
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 @startuml
+
+title ores.shell Component
+
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
@@ -51,7 +54,7 @@ namespace ores #F2F2F2 {
             accustomed to normal command line applications.
             end note
 
-            struct login_options <<config>> #FFC072 {
+            struct login_options #F7E5FF {
                 +{field} username std::string
                 +{field} password std::string
             }
@@ -62,7 +65,7 @@ namespace ores #F2F2F2 {
             - password: Password to use for login
             end note
 
-            struct options <<config>> #FFC072 {
+            struct options #F7E5FF {
                 +{field} logging std::optional<utility::log::logging_options>
                 +{field} connection std::optional<comms::net::client_options>
                 +{field} login std::optional<login_options>

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.comms/protocol/frame.hpp"
+#include "ores.comms/messaging/frame.hpp"
 
 #include <span>
 #include <cstdint>
@@ -25,7 +25,7 @@
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/streaming/std_optional.hpp" // IWYU pragma: keep
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep
-#include "ores.comms/protocol/message_types.hpp"
+#include "ores.comms/messaging/message_types.hpp"
 #include <boost/asio/prefer.hpp>
 
 namespace {
@@ -33,27 +33,27 @@ namespace {
 const std::string test_suite("ores.comms.tests");
 const std::string tags("[messaging]");
 
-int message_type_as_int(ores::comms::protocol::message_type mt) {
-    return static_cast<std::underlying_type_t<ores::comms::protocol::message_type>>(mt);
+int message_type_as_int(ores::comms::messaging::message_type mt) {
+    return static_cast<std::underlying_type_t<ores::comms::messaging::message_type>>(mt);
 }
 
 // Helper function to deserialize a complete frame (header + payload)
-std::expected<ores::comms::protocol::frame, ores::comms::protocol::error_code>
+std::expected<ores::comms::messaging::frame, ores::comms::messaging::error_code>
 deserialize_frame(std::span<const std::byte> data) {
     // First deserialize the header
-    auto header_result = ores::comms::protocol::frame::deserialize_header(data);
+    auto header_result = ores::comms::messaging::frame::deserialize_header(data);
     if (!header_result) {
         return std::unexpected(header_result.error());
     }
 
     // Then deserialize the complete frame
-    return ores::comms::protocol::frame::deserialize(*header_result, data);
+    return ores::comms::messaging::frame::deserialize(*header_result, data);
 }
 
 }
 
 using namespace ores::utility::log;
-using ores::comms::protocol::message_type;
+using ores::comms::messaging::message_type;
 
 TEST_CASE("test_frame_serialization", tags) {
     auto lg(make_logger(test_suite));
@@ -65,7 +65,7 @@ TEST_CASE("test_frame_serialization", tags) {
         std::byte{0x03},
         std::byte{0x04}
     };
-    ores::comms::protocol::frame frame(
+    ores::comms::messaging::frame frame(
         message_type::handshake_request,
         123, // sequence number
         payload
@@ -114,7 +114,7 @@ TEST_CASE("test_frame_serialization_empty_payload", tags) {
 
     // Create a frame with empty payload
     std::vector<std::byte> empty_payload = {};
-    ores::comms::protocol::frame frame(
+    ores::comms::messaging::frame frame(
         message_type::handshake_response,
         456, // sequence number
         empty_payload
@@ -161,7 +161,7 @@ TEST_CASE("test_frame_serialization_large_payload", tags) {
 
     BOOST_LOG_SEV(lg, debug) << "Created large payload of size: " << large_payload.size();
 
-    ores::comms::protocol::frame frame(
+    ores::comms::messaging::frame frame(
         message_type::handshake_ack,
         789, // sequence number
         large_payload
@@ -218,7 +218,7 @@ TEST_CASE("test_frame_deserialization_invalid_data", tags) {
     CHECK(!result.has_value());
     if (!result.has_value()) {
         BOOST_LOG_SEV(lg, debug) << "Deserialization failed as expected with error code: invalid_message_type";
-        CHECK(result.error() == ores::comms::protocol::error_code::invalid_message_type);
+        CHECK(result.error() == ores::comms::messaging::error_code::invalid_message_type);
     }
 }
 
@@ -232,7 +232,7 @@ TEST_CASE("test_frame_deserialization_corrupted_data", tags) {
         std::byte{0x03},
         std::byte{0x04}
     };
-    ores::comms::protocol::frame frame(
+    ores::comms::messaging::frame frame(
         message_type::handshake_request,
         101, // sequence number
         payload
@@ -258,7 +258,7 @@ TEST_CASE("test_frame_deserialization_corrupted_data", tags) {
         CHECK(!result.has_value());
         if (!result.has_value()) {
             BOOST_LOG_SEV(lg, debug) << "Deserialization of corrupted data failed as expected";
-            CHECK(result.error() == ores::comms::protocol::error_code::invalid_message_type);
+            CHECK(result.error() == ores::comms::messaging::error_code::invalid_message_type);
         }
     }
 }
@@ -285,7 +285,7 @@ TEST_CASE("test_frame_roundtrip_multiple_message_types", tags) {
                             << " different message types";
 
     for (auto msg_type : message_types) {
-        ores::comms::protocol::frame original_frame(msg_type, 999, payload);
+        ores::comms::messaging::frame original_frame(msg_type, 999, payload);
 
         BOOST_LOG_SEV(lg, debug) << "Testing message type: "
                                 << static_cast<int>(msg_type);
@@ -330,7 +330,7 @@ TEST_CASE("test_frame_version_mismatch_strict_mode", tags) {
         std::byte{0x03}
     };
 
-    ores::comms::protocol::frame frame(
+    ores::comms::messaging::frame frame(
         message_type::handshake_request,
         1,
         payload
@@ -352,12 +352,12 @@ TEST_CASE("test_frame_version_mismatch_strict_mode", tags) {
     BOOST_LOG_SEV(lg, debug) << "Modified version to " << wrong_version;
 
     // Try to deserialize with strict version checking (default)
-    auto header_result = ores::comms::protocol::frame::deserialize_header(
+    auto header_result = ores::comms::messaging::frame::deserialize_header(
         std::span<const std::byte>(serialized));
 
     // Should fail with version_mismatch error
     REQUIRE(!header_result.has_value());
-    CHECK(header_result.error() == ores::comms::protocol::error_code::version_mismatch);
+    CHECK(header_result.error() == ores::comms::messaging::error_code::version_mismatch);
 
     BOOST_LOG_SEV(lg, debug) << "Version mismatch correctly detected in strict mode";
 }
@@ -372,7 +372,7 @@ TEST_CASE("test_frame_version_mismatch_lenient_mode", tags) {
         std::byte{0xCC}
     };
 
-    ores::comms::protocol::frame frame(
+    ores::comms::messaging::frame frame(
         message_type::handshake_request,
         42,
         payload
@@ -393,7 +393,7 @@ TEST_CASE("test_frame_version_mismatch_lenient_mode", tags) {
     BOOST_LOG_SEV(lg, debug) << "Modified version to " << wrong_version;
 
     // Try to deserialize with lenient version checking (skip_version_check=true)
-    auto header_result = ores::comms::protocol::frame::deserialize_header(
+    auto header_result = ores::comms::messaging::frame::deserialize_header(
         std::span<const std::byte>(serialized), true);
 
     // Should succeed even with mismatched version
@@ -423,7 +423,7 @@ TEST_CASE("test_frame_version_mismatch_handshake_scenario", tags) {
         std::byte{0x22}
     };
 
-    ores::comms::protocol::frame client_frame(
+    ores::comms::messaging::frame client_frame(
         message_type::handshake_request,
         1,
         payload
@@ -442,7 +442,7 @@ TEST_CASE("test_frame_version_mismatch_handshake_scenario", tags) {
     BOOST_LOG_SEV(lg, debug) << "Modified to client version " << client_version;
 
     // Server tries to read with strict mode - should fail
-    auto strict_result = ores::comms::protocol::frame::deserialize_header(
+    auto strict_result = ores::comms::messaging::frame::deserialize_header(
         std::span<const std::byte>(serialized), false);
 
     CHECK(!strict_result.has_value());
@@ -451,7 +451,7 @@ TEST_CASE("test_frame_version_mismatch_handshake_scenario", tags) {
     }
 
     // Server tries to read with lenient mode - should succeed
-    auto lenient_result = ores::comms::protocol::frame::deserialize_header(
+    auto lenient_result = ores::comms::messaging::frame::deserialize_header(
         std::span<const std::byte>(serialized), true);
 
     REQUIRE(lenient_result.has_value());

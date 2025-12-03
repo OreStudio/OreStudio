@@ -20,11 +20,11 @@
 #include "ores.risk/messaging/currency_history_protocol.hpp"
 
 #include <expected>
-#include "ores.comms/protocol/reader.hpp"
-#include "ores.comms/protocol/writer.hpp"
+#include "ores.comms/messaging/reader.hpp"
+#include "ores.comms/messaging/writer.hpp"
 
 using namespace ores::risk;
-using namespace ores::comms::protocol;
+using namespace ores::comms::messaging;
 
 namespace {
 
@@ -141,7 +141,7 @@ std::vector<std::byte> get_currency_history_request::serialize() const {
     return buffer;
 }
 
-std::expected<get_currency_history_request, comms::protocol::error_code>
+std::expected<get_currency_history_request, comms::messaging::error_code>
 get_currency_history_request::deserialize(std::span<const std::byte> data) {
     auto iso_code_result = reader::read_string(data);
     if (!iso_code_result) {
@@ -176,7 +176,7 @@ std::vector<std::byte> get_currency_history_response::serialize() const {
     return buffer;
 }
 
-std::expected<get_currency_history_response, comms::protocol::error_code>
+std::expected<get_currency_history_response, comms::messaging::error_code>
 get_currency_history_response::deserialize(std::span<const std::byte> data) {
     get_currency_history_response response;
 

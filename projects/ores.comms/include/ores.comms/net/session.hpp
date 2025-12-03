@@ -24,7 +24,7 @@
 #include <string>
 #include "ores.comms/net/connection.hpp"
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.comms/protocol/message_dispatcher.hpp"
+#include "ores.comms/messaging/message_dispatcher.hpp"
 
 namespace ores::comms::net {
 
@@ -52,7 +52,7 @@ public:
      * @param stop_slot Cancellation slot for graceful shutdown
      */
     explicit session(std::unique_ptr<connection> conn, std::string server_id,
-        std::shared_ptr<protocol::message_dispatcher> dispatcher);
+        std::shared_ptr<messaging::message_dispatcher> dispatcher);
 
     /**
      * @brief Run the session.
@@ -85,7 +85,7 @@ private:
 
     std::unique_ptr<connection> conn_;
     std::string server_id_;
-    std::shared_ptr<protocol::message_dispatcher> dispatcher_;
+    std::shared_ptr<messaging::message_dispatcher> dispatcher_;
     std::uint32_t sequence_number_;
     bool handshake_complete_;
 };

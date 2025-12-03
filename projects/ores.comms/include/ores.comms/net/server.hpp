@@ -33,8 +33,8 @@
 #include <boost/asio/cancellation_signal.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/net/server_options.hpp"
-#include "ores.comms/protocol/message_dispatcher.hpp"
-#include "ores.comms/protocol/message_handler.hpp"
+#include "ores.comms/messaging/message_dispatcher.hpp"
+#include "ores.comms/messaging/message_handler.hpp"
 
 namespace ores::comms::net {
     class session; // forward declaration
@@ -69,8 +69,8 @@ public:
      *
      * Must be called before run() to register subsystem handlers.
      */
-    void register_handler(protocol::message_type_range range,
-        std::shared_ptr<protocol::message_handler> handler);
+    void register_handler(messaging::message_type_range range,
+        std::shared_ptr<messaging::message_handler> handler);
 
     /**
      * @brief Run the server.
@@ -109,7 +109,7 @@ private:
 
     server_options options_;
     ssl::context ssl_ctx_;
-    std::shared_ptr<protocol::message_dispatcher> dispatcher_;
+    std::shared_ptr<messaging::message_dispatcher> dispatcher_;
     std::atomic<std::size_t> active_connections_{0};
     boost::asio::cancellation_signal stop_signal_;
     std::list<std::shared_ptr<session>> active_sessions_;

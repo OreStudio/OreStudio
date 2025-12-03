@@ -28,7 +28,7 @@
 namespace ores::shell::app::commands {
 
 using namespace ores::utility::log;
-using comms::protocol::message_type;
+using comms::messaging::message_type;
 
 void variability_commands::
 register_commands(cli::Menu& root_menu, client_manager& client_manager) {

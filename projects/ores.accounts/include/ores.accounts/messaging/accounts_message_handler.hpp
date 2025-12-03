@@ -22,7 +22,7 @@
 
 #include "ores.utility/repository/context.hpp"
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.comms/protocol/message_handler.hpp"
+#include "ores.comms/messaging/message_handler.hpp"
 #include "ores.accounts/service/account_service.hpp"
 #include "ores.accounts/service/bootstrap_mode_service.hpp"
 
@@ -42,7 +42,7 @@ namespace ores::accounts::messaging {
  * - create_initial_admin_request: Creates initial admin (bootstrap mode only, localhost only)
  * - bootstrap_status_request: Checks if system is in bootstrap mode
  */
-class accounts_message_handler final : public comms::protocol::message_handler {
+class accounts_message_handler final : public comms::messaging::message_handler {
 private:
     [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
@@ -60,7 +60,7 @@ public:
     explicit accounts_message_handler(utility::repository::context ctx);
 
     using handler_result = boost::asio::awaitable<
-        std::expected<std::vector<std::byte>, comms::protocol::error_code>
+        std::expected<std::vector<std::byte>, comms::messaging::error_code>
     >;
 
     /**
@@ -72,7 +72,7 @@ public:
      * @return Expected containing response payload, or error code
      */
     handler_result
-    handle_message(comms::protocol::message_type type,
+    handle_message(comms::messaging::message_type type,
         std::span<const std::byte> payload,
         const std::string& remote_address) override;
 

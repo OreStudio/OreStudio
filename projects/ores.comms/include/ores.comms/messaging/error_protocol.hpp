@@ -17,28 +17,43 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.accounts/messaging/registrar.hpp"
+#ifndef ORES_COMMS_MESSAGING_ERROR_PROTOCOL_HPP
+#define ORES_COMMS_MESSAGING_ERROR_PROTOCOL_HPP
 
-#include <memory>
-#include "ores.accounts/messaging/accounts_message_handler.hpp"
+#include <string>
+#include <vector>
+#include <cstdint>
+#include <expected>
+#include "ores.comms/messaging/frame.hpp"
 
-namespace ores::accounts::messaging {
+namespace ores::comms::messaging {
 
-using namespace ores::utility::log;
+/**
+ * @brief Error response message sent when request processing fails.
+ */
+struct error_response final {
+    error_code code;
+    std::string message;
 
-void registrar::
-register_handlers(comms::net::server& server, utility::repository::context ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Registering message handlers.";
+    /**
+     * @brief Serialize to frame payload.
+     */
+    static std::vector<std::byte> serialize(error_response v);
 
-    auto handler = std::make_shared<accounts_message_handler>(std::move(ctx));
+    /**
+     * @brief Deserialize from frame payload.
+     */
+    static std::expected<error_response, error_code> deserialize(std::span<const std::byte> data);
+};
 
-    comms::messaging::message_type_range accounts_range{
-        .min = comms::messaging::ACCOUNTS_SUBSYSTEM_MIN,
-        .max = comms::messaging::ACCOUNTS_SUBSYSTEM_MAX
-    };
-    server.register_handler(accounts_range, std::move(handler));
+/**
+ * @brief Create an error response frame.
+ */
+frame create_error_response_frame(
+    std::uint32_t sequence,
+    error_code code,
+    const std::string& message);
 
-    BOOST_LOG_SEV(lg(), debug) << "Message handlers registered successfully.";
 }
 
-}
+#endif

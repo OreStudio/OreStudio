@@ -23,7 +23,6 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <chrono>
-#include <iostream>
 
 #include "ores.comms/net/client.hpp"
 #include "ores.comms/net/server.hpp"
@@ -159,7 +158,7 @@ TEST_CASE("test_client_server_connection", tags) {
         // Clean disconnect
         client->disconnect();
         CHECK(!client->is_connected());
-        
+
         BOOST_LOG_SEV(lg, info) << "Stopping server";
         server->stop();
         BOOST_LOG_SEV(lg, info) << "Test finished";
@@ -258,8 +257,8 @@ TEST_CASE("test_session_cancellation_on_server_stop", tags) {
                                     << " - is_connected before request: " << client->is_connected();
 
             // Try to send an application-level request (not handshake)
-            ores::comms::protocol::frame dummy_request{
-                ores::comms::protocol::message_type::get_currencies_request, 0, {}};
+            ores::comms::messaging::frame dummy_request{
+                ores::comms::messaging::message_type::get_currencies_request, 0, {}};
             auto result = co_await client->send_request(dummy_request);
 
             BOOST_LOG_SEV(lg, info) << "Client " << i << " result: "

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.comms/protocol/frame.hpp"
+#include "ores.comms/messaging/frame.hpp"
 
 #include <bit>
 #include <ostream>
@@ -49,14 +49,14 @@ std::uint16_t network_to_host_16(std::uint16_t val) {
 }
 
 bool is_valid_message_type(std::uint16_t type) {
-    using ores::comms::protocol::message_type;
+    using ores::comms::messaging::message_type;
     return type >= static_cast<std::uint16_t>(message_type::handshake_request) &&
         type <= static_cast<std::uint16_t>(message_type::last_value);
 }
 
 }
 
-namespace ores::comms::protocol {
+namespace ores::comms::messaging {
 
 using namespace ores::utility::log;
 

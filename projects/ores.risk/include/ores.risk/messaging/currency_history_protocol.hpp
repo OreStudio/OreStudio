@@ -26,7 +26,7 @@
 #include <expected>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.comms/protocol/message_types.hpp"
+#include "ores.comms/messaging/message_types.hpp"
 #include "ores.risk/domain/currency_version_history.hpp"
 
 namespace ores::risk::messaging {
@@ -45,7 +45,7 @@ struct get_currency_history_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<get_currency_history_request, comms::protocol::error_code>
+    static std::expected<get_currency_history_request, comms::messaging::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -67,7 +67,7 @@ struct get_currency_history_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<get_currency_history_response, comms::protocol::error_code>
+    static std::expected<get_currency_history_response, comms::messaging::error_code>
     deserialize(std::span<const std::byte> data);
 };
 

@@ -20,11 +20,11 @@
 #include "ores.risk/messaging/currency_protocol.hpp"
 
 #include <expected>
-#include "ores.comms/protocol/reader.hpp"
-#include "ores.comms/protocol/writer.hpp"
+#include "ores.comms/messaging/reader.hpp"
+#include "ores.comms/messaging/writer.hpp"
 
 using namespace ores::risk;
-using namespace ores::comms::protocol;
+using namespace ores::comms::messaging;
 
 namespace {
 
@@ -124,7 +124,7 @@ std::vector<std::byte> delete_currency_request::serialize() const {
     return buffer;
 }
 
-std::expected<delete_currency_request, comms::protocol::error_code>
+std::expected<delete_currency_request, comms::messaging::error_code>
 delete_currency_request::deserialize(std::span<const std::byte> data) {
     delete_currency_request request;
 
@@ -174,7 +174,7 @@ std::vector<std::byte> delete_currency_response::serialize() const {
     return buffer;
 }
 
-std::expected<delete_currency_response, comms::protocol::error_code>
+std::expected<delete_currency_response, comms::messaging::error_code>
 delete_currency_response::deserialize(std::span<const std::byte> data) {
     delete_currency_response response;
 
@@ -226,7 +226,7 @@ std::vector<std::byte> get_currencies_request::serialize() const {
     return buffer;
 }
 
-std::expected<get_currencies_request, comms::protocol::error_code>
+std::expected<get_currencies_request, comms::messaging::error_code>
 get_currencies_request::deserialize(std::span<const std::byte> data) {
     get_currencies_request request;
 
@@ -276,7 +276,7 @@ std::vector<std::byte> get_currencies_response::serialize() const {
     return buffer;
 }
 
-std::expected<get_currencies_response, comms::protocol::error_code>
+std::expected<get_currencies_response, comms::messaging::error_code>
 get_currencies_response::deserialize(std::span<const std::byte> data) {
     get_currencies_response response;
 
@@ -369,7 +369,7 @@ std::vector<std::byte> save_currency_request::serialize() const {
     return buffer;
 }
 
-std::expected<save_currency_request, comms::protocol::error_code>
+std::expected<save_currency_request, comms::messaging::error_code>
 save_currency_request::deserialize(std::span<const std::byte> data) {
     auto currency_result = deserialize_currency(data);
     if (!currency_result) {
@@ -390,7 +390,7 @@ std::vector<std::byte> save_currency_response::serialize() const {
     return buffer;
 }
 
-std::expected<save_currency_response, comms::protocol::error_code>
+std::expected<save_currency_response, comms::messaging::error_code>
 save_currency_response::deserialize(std::span<const std::byte> data) {
     save_currency_response response;
 

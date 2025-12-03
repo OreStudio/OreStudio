@@ -31,12 +31,12 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.risk/messaging/protocol.hpp"
-#include "ores.comms/protocol/frame.hpp"
+#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
-using comms::protocol::frame;
-using comms::protocol::message_type;
+using comms::messaging::frame;
+using comms::messaging::message_type;
 using namespace ores::utility::log;
 using FutureResult = std::pair<bool, std::string>;
 

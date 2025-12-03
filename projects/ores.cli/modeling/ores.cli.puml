@@ -15,6 +15,9 @@
 ' GNU Emacs; see the file COPYING. If not, write to the Free Software
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 @startuml
+
+title ores.cli Component
+
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
@@ -24,7 +27,7 @@ namespace ores #F2F2F2 {
         note "Configuration related classes and structures." as ores_cli_config_note
         config --- ores_cli_config_note
         namespace config #F2F2F2 {
-            class entity <<enumeration>> #F2DAFD {
+            enum entity #F7E5FF {
                 currencies
                 accounts
                 feature_flags
@@ -34,7 +37,7 @@ namespace ores #F2F2F2 {
             List of available entities to target.
             end note
 
-            class format <<enumeration>> #F2DAFD {
+            enum format #F7E5FF {
                 json
                 xml
                 csv
@@ -152,7 +155,7 @@ namespace ores #F2F2F2 {
             options o-- ores::cli::config::delete_options
             options o-- ores::cli::config::add_options
 
-            class parser #FFFACD {
+            class parser #ECECEC {
                 +parse(arguments: const std::vector<std::string>&, info: std::ostream&, error: std::ostream&) const: std::optional<options>
             }
 
@@ -174,7 +177,7 @@ namespace ores #F2F2F2 {
             note "Entity-specific parser implementations." as entity_parsers_note
             entity_parsers --- entity_parsers_note
             namespace entity_parsers #F2F2F2 {
-                class currencies_parser #FFFACD {
+                class currencies_parser #ECECEC {
                     +{static} handle_currencies_command(has_help: bool, po: const parsed_options&, info: std::ostream&, vm: variables_map&): std::optional<options>
                 }
 
@@ -184,7 +187,7 @@ namespace ores #F2F2F2 {
 
                 currencies_parser ..> ores::cli::config::options : returns
 
-                class accounts_parser #FFFACD {
+                class accounts_parser #ECECEC {
                     +{static} handle_accounts_command(has_help: bool, po: const parsed_options&, info: std::ostream&, vm: variables_map&): std::optional<options>
                 }
 
@@ -194,7 +197,7 @@ namespace ores #F2F2F2 {
 
                 accounts_parser ..> ores::cli::config::options : returns
 
-                class feature_flags_parser #FFFACD {
+                class feature_flags_parser #ECECEC {
                     +{static} handle_feature_flags_command(has_help: bool, po: const parsed_options&, info: std::ostream&, vm: variables_map&): std::optional<options>
                 }
 
@@ -207,7 +210,7 @@ namespace ores #F2F2F2 {
 
             note "Shared parser utility functions." as parser_helpers_note
             parser_helpers --- parser_helpers_note
-            class parser_helpers <<utility>> #E6F3FF {
+            class parser_helpers #ECECEC {
                 +{static} print_help_header(s: std::ostream&): void
                 +{static} print_help_command(command_name: const std::string&, od: const options_description&, info: std::ostream&): void
                 +{static} add_common_options(base: options_description): options_description
@@ -238,7 +241,7 @@ namespace ores #F2F2F2 {
         note "Application hosting and execution classes." as ores_cli_app_note
         app --- ores_cli_app_note
         namespace app #F2F2F2 {
-            class application #FFFACD {
+            class application #ECECEC {
                 +application(output_stream: std::ostream&, db_opts: const std::optional<utility::database::database_options>&)
                 +run(cfg: const config::options&) const: void
                 -{static} lg(): auto&
@@ -257,7 +260,7 @@ namespace ores #F2F2F2 {
 
             application ..> ores::cli::config::options : uses
 
-            class host #FFFACD {
+            class host #ECECEC {
                 +{static} execute(args: const std::vector<std::string>&, std_output: std::ostream&, error_output: std::ostream&): int
                 -{static} lg(): auto&
             }

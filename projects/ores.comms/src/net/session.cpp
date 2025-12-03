@@ -19,15 +19,15 @@
  */
 #include "ores.comms/net/session.hpp"
 
-#include <iostream>
-#include "ores.comms/protocol/handshake.hpp"
+#include "ores.comms/messaging/handshake_protocol.hpp"
+#include "ores.comms/messaging/handshake_service.hpp"
 
 namespace ores::comms::net {
 
 using namespace ores::utility::log;
 
 session::session(std::unique_ptr<connection> conn, std::string server_id,
-    std::shared_ptr<protocol::message_dispatcher> dispatcher)
+    std::shared_ptr<messaging::message_dispatcher> dispatcher)
     : conn_(std::move(conn)),
       server_id_(std::move(server_id)),
       dispatcher_(std::move(dispatcher)),
@@ -77,103 +77,14 @@ boost::asio::awaitable<void> session::run() {
 }
 
 boost::asio::awaitable<bool> session::perform_handshake() {
-    try {
-        BOOST_LOG_SEV(lg(), debug) << "Starting server handshake process...";
+    bool success = co_await messaging::handshake_service::perform_server_handshake(
+        *conn_, ++sequence_number_, server_id_);
 
-        // Read handshake request from client
-        // Use lenient reading (skip_version_check=true) to allow reading frames
-        // with mismatched protocol versions. This enables us to send a proper
-        // handshake_response with version details instead of rejecting the frame.
-        BOOST_LOG_SEV(lg(), debug) << "About to read handshake request frame from client";
-        auto frame_result = co_await conn_->read_frame(true);  // skip_version_check=true
-        if (!frame_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to read handshake request: error code "
-                                      << static_cast<int>(frame_result.error());
-            co_return false;
-        }
-
-        const auto& request_frame = *frame_result;
-
-        // Verify it's a handshake request
-        if (request_frame.header().type != protocol::message_type::handshake_request) {
-            BOOST_LOG_SEV(lg(), error) << "Expected handshake request, got message type "
-                                      << static_cast<int>(request_frame.header().type);
-            co_return false;
-        }
-
-        BOOST_LOG_SEV(lg(), debug) << "Received valid handshake request frame";
-
-        // Deserialize handshake request
-        auto request_result = protocol::handshake_request::deserialize(request_frame.payload());
-        if (!request_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize handshake request";
-            co_return false;
-        }
-
-        const auto& request = *request_result;
-        BOOST_LOG_SEV(lg(), info) << "Handshake request from client '" << request.client_identifier
-                                 << "' (version " << request.client_version_major << "."
-                                 << request.client_version_minor << ")";
-
-        // Check version compatibility
-        bool version_compatible = (request.client_version_major == protocol::PROTOCOL_VERSION_MAJOR);
-
-        // Send handshake response
-        auto response_frame = protocol::create_handshake_response_frame(
-            ++sequence_number_,
-            version_compatible,
-            server_id_,
-            version_compatible ? protocol::error_code::none : protocol::error_code::version_mismatch);
-
-        BOOST_LOG_SEV(lg(), debug) << "About to send handshake response frame";
-        co_await conn_->write_frame(response_frame);
-        BOOST_LOG_SEV(lg(), debug) << "Sent handshake response frame";
-
-        if (!version_compatible) {
-            BOOST_LOG_SEV(lg(), error) << "Version mismatch: client=" << request.client_version_major
-                                      << "." << request.client_version_minor << ", server="
-                                      << protocol::PROTOCOL_VERSION_MAJOR << "."
-                                      << protocol::PROTOCOL_VERSION_MINOR;
-            co_return false;
-        }
-
-        // Read handshake acknowledgment
-        BOOST_LOG_SEV(lg(), debug) << "About to read handshake acknowledgment frame from client";
-        auto ack_frame_result = co_await conn_->read_frame(false);
-        if (!ack_frame_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to read handshake ack, error code: " << static_cast<int>(ack_frame_result.error());
-            co_return false;
-        }
-
-        const auto& ack_frame = *ack_frame_result;
-        if (ack_frame.header().type != protocol::message_type::handshake_ack) {
-            BOOST_LOG_SEV(lg(), error) << "Expected handshake ack, got message type "
-                                      << static_cast<int>(ack_frame.header().type);
-            co_return false;
-        }
-
-        BOOST_LOG_SEV(lg(), debug) << "Received valid handshake acknowledgment frame";
-
-        auto ack_result = protocol::handshake_ack::deserialize(ack_frame.payload());
-        if (!ack_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize handshake ack";
-            co_return false;
-        }
-
-        if (ack_result->status != protocol::error_code::none) {
-            BOOST_LOG_SEV(lg(), error) << "Client reported handshake error: "
-                                      << static_cast<int>(ack_result->status);
-            co_return false;
-        }
-
+    if (success) {
         handshake_complete_ = true;
-        BOOST_LOG_SEV(lg(), debug) << "Server handshake completed successfully";
-        co_return true;
-
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Handshake exception: " << e.what();
-        co_return false;
     }
+
+    co_return success;
 }
 
 boost::asio::awaitable<void> session::process_messages() {
@@ -185,7 +96,7 @@ boost::asio::awaitable<void> session::process_messages() {
             auto frame_result = co_await conn_->read_frame(false);
             if (!frame_result) {
                 auto err = frame_result.error();
-                if (err == protocol::error_code::network_error) {
+                if (err == messaging::error_code::network_error) {
                     BOOST_LOG_SEV(lg(), info) << "Client disconnected";
                 } else {
                     BOOST_LOG_SEV(lg(), error) << "Failed to read frame: "
@@ -200,7 +111,7 @@ boost::asio::awaitable<void> session::process_messages() {
 
             // Dispatch to appropriate handler
             auto remote_addr = conn_->remote_address();
-            protocol::frame response_frame{protocol::message_type::error_response, 0, {}};
+            messaging::frame response_frame{messaging::message_type::error_response, 0, {}};
 
             try {
                 auto response_result = co_await dispatcher_->dispatch(request_frame,
@@ -214,34 +125,34 @@ boost::asio::awaitable<void> session::process_messages() {
                     // Create error response with appropriate message
                     std::string error_msg;
                     switch (err) {
-                        case protocol::error_code::invalid_message_type:
+                        case messaging::error_code::invalid_message_type:
                             error_msg = "Invalid or unsupported message type";
                             break;
-                        case protocol::error_code::handler_error:
+                        case messaging::error_code::handler_error:
                             error_msg = "Request handler encountered an error";
                             break;
-                        case protocol::error_code::database_error:
+                        case messaging::error_code::database_error:
                             error_msg = "Database operation failed";
                             break;
-                        case protocol::error_code::authentication_failed:
+                        case messaging::error_code::authentication_failed:
                             error_msg = "Authentication failed";
                             break;
-                        case protocol::error_code::authorization_failed:
+                        case messaging::error_code::authorization_failed:
                             error_msg = "Authorization failed";
                             break;
-                        case protocol::error_code::invalid_request:
+                        case messaging::error_code::invalid_request:
                             error_msg = "Invalid request parameters";
                             break;
-                        case protocol::error_code::bootstrap_mode_only:
+                        case messaging::error_code::bootstrap_mode_only:
                             error_msg = "System is in bootstrap mode. Only initial admin account creation is allowed. Please create the initial admin account from localhost.";
                             break;
-                        case protocol::error_code::bootstrap_mode_forbidden:
+                        case messaging::error_code::bootstrap_mode_forbidden:
                             error_msg = "Operation not allowed - system is not in bootstrap mode";
                             break;
-                        case protocol::error_code::weak_password:
+                        case messaging::error_code::weak_password:
                             error_msg = "Password does not meet security requirements";
                             break;
-                        case protocol::error_code::not_localhost:
+                        case messaging::error_code::not_localhost:
                             error_msg = "Bootstrap operations are only allowed from localhost";
                             break;
                         default:
@@ -249,7 +160,7 @@ boost::asio::awaitable<void> session::process_messages() {
                             break;
                     }
 
-                    response_frame = protocol::create_error_response_frame(
+                    response_frame = messaging::create_error_response_frame(
                         sequence_number_, err, error_msg);
                     BOOST_LOG_SEV(lg(), debug) << "Sending error response: " << error_msg;
                 } else {
@@ -258,8 +169,8 @@ boost::asio::awaitable<void> session::process_messages() {
             } catch (const std::exception& e) {
                 // Handler threw an exception - send detailed error to client
                 BOOST_LOG_SEV(lg(), error) << "Exception in message handler: " << e.what();
-                response_frame = protocol::create_error_response_frame(
-                    sequence_number_, protocol::error_code::database_error, e.what());
+                response_frame = messaging::create_error_response_frame(
+                    sequence_number_, messaging::error_code::database_error, e.what());
                 BOOST_LOG_SEV(lg(), debug) << "Sending error response with exception details";
             }
 

@@ -43,14 +43,14 @@
 #include "ores.qt/CurrencyItemDelegate.hpp"
 #include "ores.qt/ImportCurrencyDialog.hpp"
 #include "ores.risk/messaging/protocol.hpp"
-#include "ores.comms/protocol/frame.hpp"
+#include "ores.comms/messaging/frame.hpp"
 #include "ores.risk/csv/exporter.hpp"
 #include "ores.risk/orexml/exporter.hpp"
 #include "ores.risk/orexml/importer.hpp"
 
 namespace ores::qt {
 
-using comms::protocol::message_type;
+using comms::messaging::message_type;
 using namespace ores::utility::log;
 
 CurrencyMdiWindow::
@@ -375,7 +375,7 @@ void CurrencyMdiWindow::deleteSelected() {
         risk::messaging::delete_currency_request request{iso_codes};
         auto payload = request.serialize();
 
-        comms::protocol::frame request_frame(
+        comms::messaging::frame request_frame(
             message_type::delete_currency_request,
             0, std::move(payload)
         );

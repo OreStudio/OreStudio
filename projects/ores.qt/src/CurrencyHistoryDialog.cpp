@@ -19,19 +19,19 @@
  */
 #include "ores.qt/CurrencyHistoryDialog.hpp"
 
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.risk/messaging/protocol.hpp"
-#include "ores.comms/protocol/frame.hpp"
+#include <QIcon>
+#include <QDateTime>
+#include <QScrollBar>
 #include <QtConcurrent>
 #include <QFutureWatcher>
-#include <QDateTime>
-#include <QIcon>
-#include <QScrollBar>
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.risk/messaging/protocol.hpp"
+#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
-using comms::protocol::frame;
-using comms::protocol::message_type;
+using comms::messaging::frame;
+using comms::messaging::message_type;
 using namespace ores::utility::log;
 
 const QIcon& CurrencyHistoryDialog::getHistoryIcon() const {

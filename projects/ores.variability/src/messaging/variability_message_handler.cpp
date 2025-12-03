@@ -29,24 +29,24 @@ variability_message_handler::variability_message_handler(utility::repository::co
     : feature_flags_repo_(std::move(ctx)) {}
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::protocol::error_code>>
-variability_message_handler::handle_message(comms::protocol::message_type type,
+                                     comms::messaging::error_code>>
+variability_message_handler::handle_message(comms::messaging::message_type type,
     std::span<const std::byte> payload, [[maybe_unused]] const std::string& remote_address) {
 
     BOOST_LOG_SEV(lg(), debug) << "Handling variability message type " << type;
 
     switch (type) {
-    case comms::protocol::message_type::list_feature_flags_request:
+    case comms::messaging::message_type::list_feature_flags_request:
         co_return co_await handle_list_feature_flags_request(payload);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown variability message type " << std::hex
                                    << static_cast<std::uint16_t>(type);
-        co_return std::unexpected(comms::protocol::error_code::invalid_message_type);
+        co_return std::unexpected(comms::messaging::error_code::invalid_message_type);
     }
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::protocol::error_code>>
+                                     comms::messaging::error_code>>
 variability_message_handler::
 handle_list_feature_flags_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing list_feature_flags_request.";
@@ -70,7 +70,7 @@ handle_list_feature_flags_request(std::span<const std::byte> payload) {
         co_return response.serialize();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Database error reading feature flags: " << e.what();
-        co_return std::unexpected(comms::protocol::error_code::database_error);
+        co_return std::unexpected(comms::messaging::error_code::database_error);
     }
 }
 

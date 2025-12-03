@@ -79,7 +79,8 @@ Links:
 *** BLOCKED Add support for offsets in pagination                      :code:
 
 *Rationale*: we cannot work on this story until sqlgen reviews and merges our
-PR, and releases it into vcpkg.
+PR, and releases it into vcpkg. PR now merged, awaiting release and availability
+in vcpkg.
 
 At present we disabled pagination in UI because sqlgen does not support offset.
 We implemented this feature in sqlgen. When it is released to vcpkg we should
@@ -141,10 +142,6 @@ Notes:
 *** Add a logout message                                               :code:
 
 At present we are just closing the socket. We should send a proper message.
-
-*** Split =protocol.hpp= into components                               :code:
-
-These files will become too large as we add more entities.
 
 *** Invalid password should not throw                                  :code:
 

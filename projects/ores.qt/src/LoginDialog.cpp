@@ -19,20 +19,20 @@
  */
 #include "ores.qt/LoginDialog.hpp"
 
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
+#include <QImage>
+#include <QPixmap>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
 #include <QSizePolicy>
 #include <QtConcurrent>
 #include <QFutureWatcher>
-#include <QPixmap>
-#include <QImage>
-#include "ores.comms/protocol/frame.hpp"
-#include "ores.comms/protocol/message_types.hpp"
-#include "ores.comms/protocol/handshake.hpp"
+#include "ores.comms/messaging/frame.hpp"
+#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/handshake_protocol.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 
 namespace ores::qt {
 
@@ -247,8 +247,8 @@ performLogin(const std::string& username, const std::string& password) {
             };
 
             auto payload = request.serialize();
-            comms::protocol::frame request_frame(
-                comms::protocol::message_type::login_request,
+            comms::messaging::frame request_frame(
+                comms::messaging::message_type::login_request,
                 0,
                 std::move(payload)
             );
@@ -265,8 +265,8 @@ performLogin(const std::string& username, const std::string& password) {
 
             // Check if response is an error
             BOOST_LOG_SEV(lg(), debug) << "Received login response.";
-            if (response_result->header().type == comms::protocol::message_type::error_response) {
-                auto error_resp = comms::protocol::error_response::deserialize(
+            if (response_result->header().type == comms::messaging::message_type::error_response) {
+                auto error_resp = comms::messaging::error_response::deserialize(
                     response_result->payload()
                 );
                 if (error_resp) {

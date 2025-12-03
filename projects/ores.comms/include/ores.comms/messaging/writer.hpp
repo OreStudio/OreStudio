@@ -27,7 +27,7 @@
 #include <boost/uuid/uuid_io.hpp>
 
 
-namespace ores::comms::protocol {
+namespace ores::comms::messaging {
 
 /**
  * @brief Helper to write network data.

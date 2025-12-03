@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMMS_PROTOCOL_FRAME_HPP
-#define ORES_COMMS_PROTOCOL_FRAME_HPP
+#ifndef ORES_COMMS_MESSAGING_FRAME_HPP
+#define ORES_COMMS_MESSAGING_FRAME_HPP
 
 #include <span>
 #include <array>
@@ -27,9 +27,9 @@
 #include <cstdint>
 #include <expected>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.comms/protocol/message_types.hpp"
+#include "ores.comms/messaging/message_types.hpp"
 
-namespace ores::comms::protocol {
+namespace ores::comms::messaging {
 
 constexpr size_t MAX_PAYLOAD_SIZE = 1'000'000;
 

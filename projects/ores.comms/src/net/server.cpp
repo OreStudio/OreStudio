@@ -36,12 +36,12 @@ using namespace ores::utility::log;
 server::server(server_options options)
     : options_(std::move(options)),
       ssl_ctx_(ssl::context::tlsv13),
-      dispatcher_(std::make_shared<protocol::message_dispatcher>()) {
+      dispatcher_(std::make_shared<messaging::message_dispatcher>()) {
     setup_ssl_context();
 }
 
-void server::register_handler(protocol::message_type_range range,
-    std::shared_ptr<protocol::message_handler> handler) {
+void server::register_handler(messaging::message_type_range range,
+    std::shared_ptr<messaging::message_handler> handler) {
     dispatcher_->register_handler(range, std::move(handler));
 }
 
@@ -98,9 +98,9 @@ boost::asio::awaitable<void> server::run(boost::asio::io_context& io_context,
     std::function<void(std::uint16_t)> on_listening) {
     BOOST_LOG_SEV(lg(), info) << "ORES Server starting on port " << options_.port
                               << ". Identifier: " << options_.server_identifier;
-    BOOST_LOG_SEV(lg(), info) << "Protocol version: "
-                              << protocol::PROTOCOL_VERSION_MAJOR << "."
-                              << protocol::PROTOCOL_VERSION_MINOR;
+    BOOST_LOG_SEV(lg(), info) << "Messaging version: "
+                              << messaging::PROTOCOL_VERSION_MAJOR << "."
+                              << messaging::PROTOCOL_VERSION_MINOR;
 
     if (options_.enable_signal_watching) {
         // Start listening for OS stop signals
@@ -200,7 +200,7 @@ boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_con
     BOOST_LOG_SEV(lg(), info) << "Server shut down.";
 }
 
-boost::asio::awaitable<void> 
+boost::asio::awaitable<void>
 server::watch_for_stop_signals(boost::asio::io_context& io_context) {
     boost::asio::signal_set signals(io_context, SIGINT, SIGTERM);
     co_await signals.async_wait(boost::asio::use_awaitable);

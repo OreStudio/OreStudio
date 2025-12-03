@@ -17,24 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMMS_PROTOCOL_MESSAGE_TYPES_HPP
-#define ORES_COMMS_PROTOCOL_MESSAGE_TYPES_HPP
+#ifndef ORES_COMMS_MESSAGING_MESSAGE_TYPES_HPP
+#define ORES_COMMS_MESSAGING_MESSAGE_TYPES_HPP
 
+#include <ostream>
 #include <cstdint>
-#include <iomanip>
-#include <iosfwd>
 
 // Configure magic_enum to support our enum value ranges
-// Core protocol: 0x0000 - 0x0FFF
-// Risk subsystem: 0x1000 - 0x1FFF
-// Accounts subsystem: 0x2000 - 0x2FFF
-// Variability subsystem: 0x3000 - 0x3FFF
 #define MAGIC_ENUM_RANGE_MIN 0
 #define MAGIC_ENUM_RANGE_MAX 0x4000
 
 #include <magic_enum/magic_enum.hpp>
 
-namespace ores::comms::protocol {
+namespace ores::comms::messaging {
 
  // "ORES" in ASCII
 constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;

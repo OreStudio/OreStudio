@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.comms/protocol/writer.hpp"
+#include "ores.comms/messaging/writer.hpp"
 
 #include <cstring>
 #include <expected>
 
-namespace ores::comms::protocol {
+namespace ores::comms::messaging {
 
 void writer::
 write_uint16(std::vector<std::byte>& buffer, std::uint16_t value) {

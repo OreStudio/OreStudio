@@ -25,7 +25,7 @@
 #include <vector>
 #include <expected>
 #include <boost/uuid/uuid.hpp>
-#include "ores.comms/protocol/message_types.hpp"
+#include "ores.comms/messaging/message_types.hpp"
 #include "ores.accounts/domain/account.hpp"
 
 namespace ores::accounts::messaging {
@@ -62,7 +62,7 @@ struct create_account_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<create_account_request, comms::protocol::error_code>
+    static std::expected<create_account_request, comms::messaging::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -85,7 +85,7 @@ struct create_account_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<create_account_response, comms::protocol::error_code>
+    static std::expected<create_account_response, comms::messaging::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -114,7 +114,7 @@ struct list_accounts_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<list_accounts_request, comms::protocol::error_code>
+    static std::expected<list_accounts_request, comms::messaging::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -156,7 +156,7 @@ struct list_accounts_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<list_accounts_response, comms::protocol::error_code>
+    static std::expected<list_accounts_response, comms::messaging::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -179,7 +179,7 @@ struct unlock_account_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<unlock_account_request, comms::protocol::error_code>
+    static std::expected<unlock_account_request, comms::messaging::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -205,7 +205,7 @@ struct unlock_account_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<unlock_account_response, comms::protocol::error_code>
+    static std::expected<unlock_account_response, comms::messaging::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -228,7 +228,7 @@ struct delete_account_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<delete_account_request, comms::protocol::error_code>
+    static std::expected<delete_account_request, comms::messaging::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -254,7 +254,7 @@ struct delete_account_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<delete_account_response, comms::protocol::error_code>
+    static std::expected<delete_account_response, comms::messaging::error_code>
     deserialize(std::span<const std::byte> data);
 };
 

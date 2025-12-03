@@ -23,7 +23,7 @@
 #include <memory>
 #include <optional>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.comms/protocol/handshake.hpp"
+#include "ores.comms/messaging/handshake_protocol.hpp"
 #include "ores.comms/net/client.hpp"
 #include "ores.shell/config/login_options.hpp"
 
@@ -38,7 +38,7 @@ template<typename Response>
 concept Deserialisable = requires(std::span<const std::byte> data) {
     {
         Response::deserialize(data)
-    } -> std::same_as<std::expected<Response, comms::protocol::error_code>>;
+    } -> std::same_as<std::expected<Response, comms::messaging::error_code>>;
 };
 
 
@@ -75,7 +75,7 @@ public:
 
     template <Serialialisable RequestType,
               Deserialisable ResponseType,
-              comms::protocol::message_type RequestMsgType>
+              comms::messaging::message_type RequestMsgType>
     std::optional<ResponseType> process_request(RequestType request) {
         using namespace ores::utility::log;
         if (!client_ || !client_->is_connected()) {
@@ -87,7 +87,7 @@ public:
         BOOST_LOG_SEV(lg(), debug) << "Initiating request.";
         auto payload = request.serialize();
 
-        comms::protocol::frame request_frame(RequestMsgType, 0, std::move(payload));
+        comms::messaging::frame request_frame(RequestMsgType, 0, std::move(payload));
         BOOST_LOG_SEV(lg(), debug) << "Sending request frame";
 
         auto response_result = client_->send_request_sync(std::move(request_frame));
@@ -99,9 +99,9 @@ public:
             return std::nullopt;
         }
 
-        using comms::protocol::message_type;
+        using comms::messaging::message_type;
         if (response_result->header().type == message_type::error_response) {
-            using comms::protocol::error_response;
+            using comms::messaging::error_response;
             auto err_resp = error_response::deserialize(response_result->payload());
             if (err_resp) {
                 BOOST_LOG_SEV(lg(), error) << "Server returned error: "

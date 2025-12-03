@@ -25,12 +25,12 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.comms/protocol/reader.hpp"
-#include "ores.comms/protocol/writer.hpp"
+#include "ores.comms/messaging/reader.hpp"
+#include "ores.comms/messaging/writer.hpp"
 
 namespace ores::accounts::messaging {
 
-using namespace ores::comms::protocol;
+using namespace ores::comms::messaging;
 
 std::vector<std::byte> create_account_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -43,7 +43,7 @@ std::vector<std::byte> create_account_request::serialize() const {
     return buffer;
 }
 
-std::expected<create_account_request, comms::protocol::error_code>
+std::expected<create_account_request, comms::messaging::error_code>
 create_account_request::deserialize(std::span<const std::byte> data) {
     create_account_request request;
 
@@ -86,7 +86,7 @@ std::vector<std::byte> create_account_response::serialize() const {
     return buffer;
 }
 
-std::expected<create_account_response, comms::protocol::error_code>
+std::expected<create_account_response, comms::messaging::error_code>
 create_account_response::deserialize(std::span<const std::byte> data) {
     create_account_response response;
 
@@ -110,7 +110,7 @@ std::vector<std::byte> list_accounts_request::serialize() const {
     return buffer;
 }
 
-std::expected<list_accounts_request, comms::protocol::error_code>
+std::expected<list_accounts_request, comms::messaging::error_code>
 list_accounts_request::deserialize(std::span<const std::byte> data) {
     list_accounts_request request;
 
@@ -156,7 +156,7 @@ std::vector<std::byte> list_accounts_response::serialize() const {
     return buffer;
 }
 
-std::expected<list_accounts_response, comms::protocol::error_code>
+std::expected<list_accounts_response, comms::messaging::error_code>
 list_accounts_response::deserialize(std::span<const std::byte> data) {
     list_accounts_response response;
 
@@ -232,7 +232,7 @@ std::vector<std::byte> unlock_account_request::serialize() const {
     return buffer;
 }
 
-std::expected<unlock_account_request, comms::protocol::error_code>
+std::expected<unlock_account_request, comms::messaging::error_code>
 unlock_account_request::deserialize(std::span<const std::byte> data) {
     unlock_account_request request;
 
@@ -256,7 +256,7 @@ std::vector<std::byte> unlock_account_response::serialize() const {
     return buffer;
 }
 
-std::expected<unlock_account_response, comms::protocol::error_code>
+std::expected<unlock_account_response, comms::messaging::error_code>
 unlock_account_response::deserialize(std::span<const std::byte> data) {
     unlock_account_response response;
 
@@ -283,7 +283,7 @@ std::vector<std::byte> delete_account_request::serialize() const {
     return buffer;
 }
 
-std::expected<delete_account_request, comms::protocol::error_code>
+std::expected<delete_account_request, comms::messaging::error_code>
 delete_account_request::deserialize(std::span<const std::byte> data) {
     auto account_id_result = reader::read_uuid(data);
     if (!account_id_result) {
@@ -304,7 +304,7 @@ std::vector<std::byte> delete_account_response::serialize() const {
     return buffer;
 }
 
-std::expected<delete_account_response, comms::protocol::error_code>
+std::expected<delete_account_response, comms::messaging::error_code>
 delete_account_response::deserialize(std::span<const std::byte> data) {
     delete_account_response response;
 

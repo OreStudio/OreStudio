@@ -24,10 +24,9 @@
 #include <iosfwd>
 #include <vector>
 #include <expected>
-#include <chrono>
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/uuid.hpp>
-#include "ores.comms/protocol/message_types.hpp"
+#include "ores.comms/messaging/message_types.hpp"
 #include "ores.accounts/domain/login_info.hpp"
 
 namespace ores::accounts::messaging {
@@ -53,7 +52,7 @@ struct login_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<login_request, comms::protocol::error_code>
+    static std::expected<login_request, comms::messaging::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -86,7 +85,7 @@ struct login_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<login_response, comms::protocol::error_code>
+    static std::expected<login_response, comms::messaging::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -97,7 +96,7 @@ std::ostream& operator<<(std::ostream& s, const login_response& v);
  */
 struct list_login_info_request final {
     std::vector<std::byte> serialize() const;
-    static std::expected<list_login_info_request, comms::protocol::error_code>
+    static std::expected<list_login_info_request, comms::messaging::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -110,7 +109,7 @@ struct list_login_info_response final {
     std::vector<domain::login_info> login_infos;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<list_login_info_response, comms::protocol::error_code>
+    static std::expected<list_login_info_response, comms::messaging::error_code>
     deserialize(std::span<const std::byte> data);
 };
 

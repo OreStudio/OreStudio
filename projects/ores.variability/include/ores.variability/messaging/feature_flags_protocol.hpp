@@ -24,7 +24,7 @@
 #include <iosfwd>
 #include <vector>
 #include <expected>
-#include "ores.comms/protocol/message_types.hpp"
+#include "ores.comms/messaging/message_types.hpp"
 #include "ores.variability/domain/feature_flags.hpp"
 
 namespace ores::variability::messaging {
@@ -34,7 +34,7 @@ namespace ores::variability::messaging {
  */
 struct list_feature_flags_request final {
     std::vector<std::byte> serialize() const;
-    static std::expected<list_feature_flags_request, comms::protocol::error_code>
+    static std::expected<list_feature_flags_request, comms::messaging::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -47,7 +47,7 @@ struct list_feature_flags_response final {
     std::vector<domain::feature_flags> feature_flags;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<list_feature_flags_response, comms::protocol::error_code>
+    static std::expected<list_feature_flags_response, comms::messaging::error_code>
     deserialize(std::span<const std::byte> data);
 };
 

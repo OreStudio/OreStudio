@@ -25,12 +25,12 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.comms/protocol/reader.hpp"
-#include "ores.comms/protocol/writer.hpp"
+#include "ores.comms/messaging/reader.hpp"
+#include "ores.comms/messaging/writer.hpp"
 
 namespace ores::accounts::messaging {
 
-using namespace ores::comms::protocol;
+using namespace ores::comms::messaging;
 
 std::vector<std::byte> login_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -39,7 +39,7 @@ std::vector<std::byte> login_request::serialize() const {
     return buffer;
 }
 
-std::expected<login_request, comms::protocol::error_code>
+std::expected<login_request, comms::messaging::error_code>
 login_request::deserialize(std::span<const std::byte> data) {
     login_request request;
 
@@ -70,7 +70,7 @@ std::vector<std::byte> login_response::serialize() const {
     return buffer;
 }
 
-std::expected<login_response, comms::protocol::error_code>
+std::expected<login_response, comms::messaging::error_code>
 login_response::deserialize(std::span<const std::byte> data) {
     login_response response;
 
@@ -107,10 +107,10 @@ std::vector<std::byte> list_login_info_request::serialize() const {
     return {};
 }
 
-std::expected<list_login_info_request, comms::protocol::error_code>
+std::expected<list_login_info_request, comms::messaging::error_code>
 list_login_info_request::deserialize(std::span<const std::byte> data) {
     if (!data.empty()) {
-        return std::unexpected(comms::protocol::error_code::payload_too_large);
+        return std::unexpected(comms::messaging::error_code::payload_too_large);
     }
     return list_login_info_request{};
 }
@@ -142,7 +142,7 @@ std::vector<std::byte> list_login_info_response::serialize() const {
     return buffer;
 }
 
-std::expected<list_login_info_response, comms::protocol::error_code>
+std::expected<list_login_info_response, comms::messaging::error_code>
 list_login_info_response::deserialize(std::span<const std::byte> data) {
     list_login_info_response response;
 

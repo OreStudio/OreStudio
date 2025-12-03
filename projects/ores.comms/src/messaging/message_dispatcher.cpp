@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.comms/protocol/message_dispatcher.hpp"
+#include "ores.comms/messaging/message_dispatcher.hpp"
 
-namespace ores::comms::protocol {
+namespace ores::comms::messaging {
 
 using namespace ores::utility::log;
 

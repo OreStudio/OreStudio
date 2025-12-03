@@ -42,7 +42,7 @@ boost::asio::awaitable<void> connection::ssl_handshake_client(
         boost::asio::bind_cancellation_slot(cancel_slot, boost::asio::use_awaitable));
 }
 
-boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
+boost::asio::awaitable<std::expected<messaging::frame, messaging::error_code>>
 connection::read_frame(bool skip_version_check, boost::asio::cancellation_slot cancel_slot) {
     try {
         BOOST_LOG_SEV(lg(), debug) << "Waiting to read the next frame"
@@ -50,18 +50,18 @@ connection::read_frame(bool skip_version_check, boost::asio::cancellation_slot c
                                  << " cancel_slot.is_connected=" << cancel_slot.is_connected();
 
         // Read the fixed 32-byte header first
-        std::vector<std::byte> buffer(protocol::frame_header::size);
+        std::vector<std::byte> buffer(messaging::frame_header::size);
         co_await boost::asio::async_read(
             socket_,
             boost::asio::buffer(buffer),
             boost::asio::bind_cancellation_slot(cancel_slot, boost::asio::use_awaitable));
 
         BOOST_LOG_SEV(lg(), debug) << "Read header of size: "
-                                 << protocol::frame_header::size;
+                                 << messaging::frame_header::size;
 
         // Deserialize and validate the header.
         // validates magic, version, type, reserved fields, payload size.
-        auto header_result = protocol::frame::deserialize_header(
+        auto header_result = messaging::frame::deserialize_header(
             std::span<const std::byte>(buffer), skip_version_check);
         if (!header_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to deserialize header, error: "
@@ -75,9 +75,9 @@ connection::read_frame(bool skip_version_check, boost::asio::cancellation_slot c
 
         // Read payload if any.
         if (header.payload_size > 0) {
-            buffer.resize(protocol::frame_header::size + header.payload_size);
+            buffer.resize(messaging::frame_header::size + header.payload_size);
             co_await boost::asio::async_read(socket_,
-                boost::asio::buffer(buffer.data() + protocol::frame_header::size,
+                boost::asio::buffer(buffer.data() + messaging::frame_header::size,
                     header.payload_size),
                 boost::asio::bind_cancellation_slot(cancel_slot, boost::asio::use_awaitable));
 
@@ -85,7 +85,7 @@ connection::read_frame(bool skip_version_check, boost::asio::cancellation_slot c
         }
 
         // Deserialize the complete frame (validates CRC)
-        auto frame_result = protocol::frame::deserialize(header,
+        auto frame_result = messaging::frame::deserialize(header,
             std::span<const std::byte>(buffer));
         if (!frame_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to deserialize frame, error: "
@@ -101,16 +101,16 @@ connection::read_frame(bool skip_version_check, boost::asio::cancellation_slot c
     } catch (const boost::system::system_error& e) {
         BOOST_LOG_SEV(lg(), error) << "Network error in read_frame: "
                                  << e.what();
-        co_return std::unexpected(protocol::error_code::network_error);
+        co_return std::unexpected(messaging::error_code::network_error);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Unexpected error in read_frame: "
                                  << e.what();
-        co_return std::unexpected(protocol::error_code::invalid_message_type);
+        co_return std::unexpected(messaging::error_code::invalid_message_type);
     }
 }
 
 boost::asio::awaitable<void>
-connection::write_frame(const protocol::frame& frame,
+connection::write_frame(const messaging::frame& frame,
     boost::asio::cancellation_slot cancel_slot) {
     auto data = frame.serialize();
     BOOST_LOG_SEV(lg(), debug) << "Writing frame of size " << data.size()

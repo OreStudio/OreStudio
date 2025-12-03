@@ -63,7 +63,7 @@ TEST_CASE("handle_get_currencies_request_empty", tags) {
 
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
-            comms::protocol::message_type::get_currencies_request,
+            comms::messaging::message_type::get_currencies_request,
             payload, "127.0.0.1:12345");
 
         REQUIRE(result.has_value());
@@ -101,7 +101,7 @@ TEST_CASE("handle_get_currencies_request_with_single_currency", tags) {
 
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
-            comms::protocol::message_type::get_currencies_request,
+            comms::messaging::message_type::get_currencies_request,
             payload, "127.0.0.1:12345");
 
         REQUIRE(result.has_value());
@@ -142,7 +142,7 @@ TEST_CASE("handle_get_currencies_request_with_multiple_currencies", tags) {
 
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
-            comms::protocol::message_type::get_currencies_request,
+            comms::messaging::message_type::get_currencies_request,
             payload, "127.0.0.1:12345");
 
         REQUIRE(result.has_value());
@@ -189,7 +189,7 @@ TEST_CASE("handle_get_currencies_request_with_faker", tags) {
 
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
-            comms::protocol::message_type::get_currencies_request,
+            comms::messaging::message_type::get_currencies_request,
             payload, "127.0.0.1:12345");
 
         REQUIRE(result.has_value());
@@ -243,7 +243,7 @@ TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip", tags) 
 
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
-            comms::protocol::message_type::get_currencies_request,
+            comms::messaging::message_type::get_currencies_request,
             payload, "127.0.0.1:12345");
 
         REQUIRE(result.has_value());
@@ -311,7 +311,7 @@ TEST_CASE("handle_get_currencies_request_with_unicode_symbols", tags) {
 
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
-            comms::protocol::message_type::get_currencies_request,
+            comms::messaging::message_type::get_currencies_request,
             payload, "127.0.0.1:12345");
 
         REQUIRE(result.has_value());
@@ -347,11 +347,11 @@ TEST_CASE("handle_invalid_message_type",
 
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
-            static_cast<comms::protocol::message_type>(0xFFFF),
+            static_cast<comms::messaging::message_type>(0xFFFF),
             empty_payload, "127.0.0.1:12345");
 
         CHECK(!result.has_value());
-        CHECK(result.error() == comms::protocol::error_code::invalid_message_type);
+        CHECK(result.error() == comms::messaging::error_code::invalid_message_type);
         test_completed = true;
     }, boost::asio::detached);
 

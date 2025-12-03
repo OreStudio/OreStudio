@@ -30,9 +30,9 @@ void registrar::register_handlers(comms::net::server& server,
     BOOST_LOG_SEV(lg(), info) << "Registering risk subsystem message handlers.";
 
     auto handler = std::make_shared<risk_message_handler>(std::move(ctx));
-    comms::protocol::message_type_range risk_range{
-        .min = comms::protocol::RISK_SUBSYSTEM_MIN,
-        .max = comms::protocol::RISK_SUBSYSTEM_MAX
+    comms::messaging::message_type_range risk_range{
+        .min = comms::messaging::RISK_SUBSYSTEM_MIN,
+        .max = comms::messaging::RISK_SUBSYSTEM_MAX
     };
     server.register_handler(risk_range, std::move(handler));
 

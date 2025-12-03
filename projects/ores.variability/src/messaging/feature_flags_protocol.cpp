@@ -25,21 +25,21 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.comms/protocol/reader.hpp"
-#include "ores.comms/protocol/writer.hpp"
+#include "ores.comms/messaging/reader.hpp"
+#include "ores.comms/messaging/writer.hpp"
 
 namespace ores::variability::messaging {
 
-using namespace ores::comms::protocol;
+using namespace ores::comms::messaging;
 
 std::vector<std::byte> list_feature_flags_request::serialize() const {
     return {};
 }
 
-std::expected<list_feature_flags_request, comms::protocol::error_code>
+std::expected<list_feature_flags_request, comms::messaging::error_code>
 list_feature_flags_request::deserialize(std::span<const std::byte> data) {
     if (!data.empty()) {
-        return std::unexpected(comms::protocol::error_code::payload_too_large);
+        return std::unexpected(comms::messaging::error_code::payload_too_large);
     }
     return list_feature_flags_request{};
 }
@@ -65,7 +65,7 @@ std::vector<std::byte> list_feature_flags_response::serialize() const {
     return buffer;
 }
 
-std::expected<list_feature_flags_response, comms::protocol::error_code>
+std::expected<list_feature_flags_response, comms::messaging::error_code>
 list_feature_flags_response::deserialize(std::span<const std::byte> data) {
     list_feature_flags_response response;
 

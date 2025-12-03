@@ -60,8 +60,8 @@ create_account_request to_create_account_request(const domain::account& a) {
 using namespace ores::utility::log;
 using namespace ores::accounts::generators;
 
-using ores::comms::protocol::message_type;
-using ores::comms::protocol::error_code;
+using ores::comms::messaging::message_type;
+using ores::comms::messaging::error_code;
 using ores::testing::scoped_database_helper;
 
 TEST_CASE("handle_single_create_account_request", tags) {

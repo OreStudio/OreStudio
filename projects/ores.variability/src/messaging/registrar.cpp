@@ -30,9 +30,9 @@ void registrar::register_handlers(comms::net::server& server,
     BOOST_LOG_SEV(lg(), info) << "Registering variability subsystem message handlers.";
 
     auto handler = std::make_shared<variability_message_handler>(std::move(ctx));
-    comms::protocol::message_type_range variability_range{
-        .min = comms::protocol::VARIABILITY_SUBSYSTEM_MIN,
-        .max = comms::protocol::VARIABILITY_SUBSYSTEM_MAX
+    comms::messaging::message_type_range variability_range{
+        .min = comms::messaging::VARIABILITY_SUBSYSTEM_MIN,
+        .max = comms::messaging::VARIABILITY_SUBSYSTEM_MAX
     };
     server.register_handler(variability_range, std::move(handler));
 

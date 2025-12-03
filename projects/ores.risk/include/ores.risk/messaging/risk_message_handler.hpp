@@ -20,7 +20,7 @@
 #ifndef ORES_RISK_MESSAGING_RISK_MESSAGE_HANDLER_HPP
 #define ORES_RISK_MESSAGING_RISK_MESSAGE_HANDLER_HPP
 
-#include "ores.comms/protocol/message_handler.hpp"
+#include "ores.comms/messaging/message_handler.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/context.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
@@ -34,7 +34,7 @@ namespace ores::risk::messaging {
  * Currently handles:
  * - get_currencies_request: Retrieves all currencies from the repository
  */
-class risk_message_handler final : public comms::protocol::message_handler {
+class risk_message_handler final : public comms::messaging::message_handler {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
@@ -59,8 +59,8 @@ public:
      * @param remote_address The remote endpoint address of the client connection
      * @return Expected containing response payload, or error code
      */
-    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::protocol::error_code>>
-    handle_message(comms::protocol::message_type type,
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
+    handle_message(comms::messaging::message_type type,
         std::span<const std::byte> payload,
         const std::string& remote_address) override;
 
@@ -68,7 +68,7 @@ private:
     /**
      * @brief Handle get_currencies_request message.
      */
-    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::protocol::error_code>>
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
     handle_get_currencies_request(std::span<const std::byte> payload);
 
     /**
@@ -78,19 +78,19 @@ private:
      * result in writing a new record. Database triggers handle temporal
      * versioning automatically.
      */
-    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::protocol::error_code>>
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
     handle_save_currency_request(std::span<const std::byte> payload);
 
     /**
      * @brief Handle delete_currency_request message.
      */
-    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::protocol::error_code>>
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
     handle_delete_currency_request(std::span<const std::byte> payload);
 
     /**
      * @brief Handle get_currency_history_request message.
      */
-    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::protocol::error_code>>
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
     handle_get_currency_history_request(std::span<const std::byte> payload);
 
     utility::repository::context ctx_;

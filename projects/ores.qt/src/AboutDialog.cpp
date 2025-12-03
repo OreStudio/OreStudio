@@ -21,7 +21,7 @@
 #include "ores.qt/AboutDialog.hpp"
 
 #include "ores.utility/version/version.hpp"
-#include "ores.comms/protocol/message_types.hpp"
+#include "ores.comms/messaging/message_types.hpp"
 #include <QDate>
 #include <QTime>
 #include <QPainter>
@@ -70,11 +70,11 @@ void AboutDialog::showEvent(QShowEvent* e) {
 
         logoLabel_->setPixmap(std::move(scaledLogo));
 
-        const QString text = QString("Version %1 | Build %2 | Protocol %3.%4")
+        const QString text = QString("Version %1 Build %2 Protocol %3.%4")
                                  .arg(ORES_VERSION)
                                  .arg(ORES_BUILD_INFO)
-                                 .arg(ores::comms::protocol::PROTOCOL_VERSION_MAJOR)
-                                 .arg(ores::comms::protocol::PROTOCOL_VERSION_MINOR);
+                                 .arg(ores::comms::messaging::PROTOCOL_VERSION_MAJOR)
+                                 .arg(ores::comms::messaging::PROTOCOL_VERSION_MINOR);
         logoLabel_->setTextOverlay(text);
 
         BOOST_LOG_SEV(lg(), debug) << "Scaled successfully.";

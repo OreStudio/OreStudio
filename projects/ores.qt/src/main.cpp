@@ -27,7 +27,7 @@
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/log/logging_options.hpp"
 #include "ores.utility/log/lifecycle_manager.hpp"
-#include "ores.comms/protocol/message_types.hpp"
+#include "ores.comms/messaging/message_types.hpp"
 #include "ores.qt/MainWindow.hpp"
 #include "ores.qt/SplashScreen.hpp"
 
@@ -76,11 +76,11 @@ int main(int argc, char *argv[]) {
 
     // Start progress bar animation
     const int splashDuration = 2000; // in milliseconds
-    QString buildInfo = QString("v%1 '%2' Protocol '%3.%4'")
+    QString buildInfo = QString("v%1 Build %2 Protocol %3.%4")
                             .arg(ORES_VERSION)
                             .arg(ORES_BUILD_INFO)
-                            .arg(ores::comms::protocol::PROTOCOL_VERSION_MAJOR)
-                            .arg(ores::comms::protocol::PROTOCOL_VERSION_MINOR);
+                            .arg(ores::comms::messaging::PROTOCOL_VERSION_MAJOR)
+                            .arg(ores::comms::messaging::PROTOCOL_VERSION_MINOR);
     splash.setMessage(buildInfo);
     splash.setProgressDuration(splashDuration);
 

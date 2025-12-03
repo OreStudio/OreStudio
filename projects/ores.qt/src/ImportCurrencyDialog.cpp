@@ -26,7 +26,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.risk/orexml/importer.hpp"
-#include "ores.comms/protocol/frame.hpp"
+#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -382,8 +382,8 @@ void ImportCurrencyDialog::onImportClicked() {
 
                     save_currency_request request{currency_to_import};
                     auto payload = request.serialize();
-                    comms::protocol::frame request_frame(
-                        comms::protocol::message_type::save_currency_request,
+                    comms::messaging::frame request_frame(
+                        comms::messaging::message_type::save_currency_request,
                         0, std::move(payload));
 
                     auto response_result = self->client_->send_request_sync(

@@ -17,16 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.comms/protocol/reader.hpp"
+#include "ores.comms/messaging/reader.hpp"
 
 #include <expected>
 
-namespace ores::comms::protocol {
+namespace ores::comms::messaging {
 
-std::expected<std::uint16_t, comms::protocol::error_code>
+std::expected<std::uint16_t, error_code>
 reader::read_uint16(std::span<const std::byte>& data) {
     if (data.size() < 2) {
-        return std::unexpected(comms::protocol::error_code::payload_too_large);
+        return std::unexpected(error_code::payload_too_large);
     }
     std::uint16_t value = (static_cast<std::uint16_t>(data[0]) << 8) |
                           static_cast<std::uint16_t>(data[1]);
@@ -34,10 +34,10 @@ reader::read_uint16(std::span<const std::byte>& data) {
     return value;
 }
 
-std::expected<std::uint32_t, comms::protocol::error_code>
+std::expected<std::uint32_t, error_code>
 reader::read_uint32(std::span<const std::byte>& data) {
     if (data.size() < 4) {
-        return std::unexpected(comms::protocol::error_code::payload_too_large);
+        return std::unexpected(error_code::payload_too_large);
     }
     std::uint32_t value = (static_cast<std::uint32_t>(data[0]) << 24) |
                           (static_cast<std::uint32_t>(data[1]) << 16) |
@@ -47,7 +47,7 @@ reader::read_uint32(std::span<const std::byte>& data) {
     return value;
 }
 
-std::expected<std::string, comms::protocol::error_code>
+std::expected<std::string, error_code>
 reader::read_string(std::span<const std::byte>& data) {
     auto len_result = read_uint16(data);
     if (!len_result) {
@@ -55,17 +55,17 @@ reader::read_string(std::span<const std::byte>& data) {
     }
     auto len = *len_result;
     if (data.size() < len) {
-        return std::unexpected(comms::protocol::error_code::payload_too_large);
+        return std::unexpected(error_code::payload_too_large);
     }
     std::string str(reinterpret_cast<const char*>(data.data()), len);
     data = data.subspan(len);
     return str;
 }
 
-std::expected<boost::uuids::uuid, comms::protocol::error_code>
+std::expected<boost::uuids::uuid, error_code>
 reader::read_uuid(std::span<const std::byte>& data) {
     if (data.size() < 16) {
-        return std::unexpected(comms::protocol::error_code::payload_too_large);
+        return std::unexpected(error_code::payload_too_large);
     }
     boost::uuids::uuid uuid;
     std::memcpy(
@@ -78,10 +78,10 @@ reader::read_uuid(std::span<const std::byte>& data) {
     return uuid;
 }
 
-std::expected<bool, comms::protocol::error_code>
+std::expected<bool, error_code>
 reader::read_bool(std::span<const std::byte>& data) {
     if (data.size() < 1) {
-        return std::unexpected(comms::protocol::error_code::payload_too_large);
+        return std::unexpected(error_code::payload_too_large);
     }
     bool value = std::to_integer<uint8_t>(data[0]);
     data = data.subspan(1);

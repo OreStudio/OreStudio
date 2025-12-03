@@ -29,7 +29,7 @@
 #include <boost/asio/this_coro.hpp>
 #include <boost/log/sources/record_ostream.hpp>
 #include "ores.comms/net/connection_error.hpp"
-#include "ores.comms/protocol/handshake_service.hpp"
+#include "ores.comms/messaging/handshake_service.hpp"
 
 namespace ores::comms::net {
 
@@ -52,7 +52,7 @@ boost::asio::awaitable<void> client::perform_handshake() {
         return ++sequence_number_;
     }();
 
-    co_await protocol::handshake_service::perform_client_handshake(
+    co_await messaging::handshake_service::perform_client_handshake(
         *conn_, seq, config_.client_identifier);
 
     // Update sequence number for next message (handshake uses 2 sequence numbers)
@@ -104,8 +104,8 @@ boost::asio::awaitable<void> client::connect() {
         BOOST_LOG_SEV(lg(), debug) << "SSL handshake complete.";
 
         BOOST_LOG_SEV(lg(), debug) << "Protocol version: "
-                                   << protocol::PROTOCOL_VERSION_MAJOR << "."
-                                   << protocol::PROTOCOL_VERSION_MINOR
+                                   << messaging::PROTOCOL_VERSION_MAJOR << "."
+                                   << messaging::PROTOCOL_VERSION_MINOR
                                    << " (client: " << config_.client_identifier << ")";
 
         co_await perform_handshake();
@@ -164,17 +164,17 @@ bool client::is_connected() const {
     return connected_ && conn_ && conn_->is_open();
 }
 
-boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
-client::send_request(protocol::frame request_frame) {
+boost::asio::awaitable<std::expected<messaging::frame, messaging::error_code>>
+client::send_request(messaging::frame request_frame) {
     BOOST_LOG_SEV(lg(), debug) << "Sending request.";
     if (!is_connected()) {
         BOOST_LOG_SEV(lg(), error) << "Cannot send request: not connected";
-        co_return std::unexpected(protocol::error_code::network_error);
+        co_return std::unexpected(messaging::error_code::network_error);
     }
     BOOST_LOG_SEV(lg(), trace) << "Currently connected.";
 
     try {
-        request_frame = protocol::frame(
+        request_frame = messaging::frame(
             request_frame.header().type,
             [this]() {
                 std::lock_guard guard{state_mutex_};
@@ -217,18 +217,18 @@ client::send_request(protocol::frame request_frame) {
         if (conn_) {
             conn_->close();
         }
-        co_return std::unexpected(protocol::error_code::network_error);
+        co_return std::unexpected(messaging::error_code::network_error);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Request exception: " << e.what();
-        co_return std::unexpected(protocol::error_code::network_error);
+        co_return std::unexpected(messaging::error_code::network_error);
     }
 }
 
-std::expected<protocol::frame, protocol::error_code>
-client::send_request_sync(protocol::frame request_frame) {
+std::expected<messaging::frame, messaging::error_code>
+client::send_request_sync(messaging::frame request_frame) {
     BOOST_LOG_SEV(lg(), debug) << "Starting to send request synchronously.";
 
-    using result_type = std::expected<protocol::frame, protocol::error_code>;
+    using result_type = std::expected<messaging::frame, messaging::error_code>;
 
     auto task = [this, request_frame = std::move(
             request_frame)]() mutable -> boost::asio::awaitable<result_type> {

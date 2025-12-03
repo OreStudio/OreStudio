@@ -17,16 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMMS_PROTOCOL_HANDSHAKE_HPP
-#define ORES_COMMS_PROTOCOL_HANDSHAKE_HPP
+#ifndef ORES_COMMS_MESSAGING_HANDSHAKE_PROTOCOL_HPP
+#define ORES_COMMS_MESSAGING_HANDSHAKE_PROTOCOL_HPP
 
-#include <cstdint>
-#include <expected>
 #include <string>
 #include <vector>
-#include "ores.comms/protocol/frame.hpp"
+#include <cstdint>
+#include <expected>
+#include "ores.comms/messaging/frame.hpp"
 
-namespace ores::comms::protocol {
+namespace ores::comms::messaging {
 
 /**
  * @brief Handshake request message sent by client to initiate connection.

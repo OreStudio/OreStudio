@@ -25,7 +25,7 @@
 namespace ores::shell::app {
 
 using namespace ores::utility::log;
-using comms::protocol::message_type;
+using comms::messaging::message_type;
 
 void client_manager::connect(comms::net::client_options config) {
     BOOST_LOG_SEV(lg(), info) << "Connecting to " << config.host << ":"

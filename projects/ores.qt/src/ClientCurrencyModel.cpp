@@ -22,14 +22,14 @@
 #include <algorithm>
 #include <unordered_set>
 #include <QtConcurrent>
-#include "ores.comms/protocol/frame.hpp"
-#include "ores.comms/protocol/message_types.hpp"
+#include "ores.comms/messaging/frame.hpp"
+#include "ores.comms/messaging/message_types.hpp"
 #include "ores.risk/messaging/protocol.hpp"
 
 namespace ores::qt {
 
-using comms::protocol::frame;
-using comms::protocol::message_type;
+using comms::messaging::frame;
+using comms::messaging::message_type;
 using namespace ores::utility::log;
 
 ClientCurrencyModel::

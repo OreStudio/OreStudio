@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMMS_PROTOCOL_RESULT_HPP
-#define ORES_COMMS_PROTOCOL_RESULT_HPP
+#ifndef ORES_COMMS_MESSAGING_RESULT_HPP
+#define ORES_COMMS_MESSAGING_RESULT_HPP
 
-#include <optional>
 #include <variant>
+#include <optional>
 
-namespace ores::comms::protocol {
+namespace ores::comms::messaging {
 
 /**
  * @brief Simple result type for C++20 (std::expected replacement).

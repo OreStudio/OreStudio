@@ -22,14 +22,14 @@
 #include <ostream>
 #include <functional>
 #include <cli/cli.h>
-#include "ores.comms/protocol/message_types.hpp"
-#include "ores.risk/messaging/protocol.hpp"
+#include "ores.comms/messaging/message_types.hpp"
+#include "ores.risk/messaging/currency_protocol.hpp"
 #include "ores.risk/domain/currency_table_io.hpp" // IWYU pragma: keep.
 
 namespace ores::shell::app::commands {
 
 using namespace utility::log;
-using comms::protocol::message_type;
+using comms::messaging::message_type;
 
 void currencies_commands::
 register_commands(cli::Menu& root_menu, client_manager& client_manager) {

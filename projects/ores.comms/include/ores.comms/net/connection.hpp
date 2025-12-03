@@ -23,7 +23,7 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/awaitable.hpp>
-#include "ores.comms/protocol/frame.hpp"
+#include "ores.comms/messaging/frame.hpp"
 #include "ores.utility/log/make_logger.hpp"
 
 namespace ores::comms::net {
@@ -76,7 +76,7 @@ public:
      * version mismatch response instead of rejecting the frame immediately.
      * @param cancel_slot Optional cancellation slot for graceful shutdown
      */
-    boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
+    boost::asio::awaitable<std::expected<messaging::frame, messaging::error_code>>
     read_frame(bool skip_version_check = false,
         boost::asio::cancellation_slot cancel_slot = {});
 
@@ -88,7 +88,7 @@ public:
      * @param frame The frame to write
      * @param cancel_slot Optional cancellation slot for graceful shutdown
      */
-    boost::asio::awaitable<void> write_frame(const protocol::frame& frame,
+    boost::asio::awaitable<void> write_frame(const messaging::frame& frame,
         boost::asio::cancellation_slot cancel_slot = {});
 
     /**

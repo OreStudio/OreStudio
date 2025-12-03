@@ -17,18 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMMS_PROTOCOL_MESSAGE_DISPATCHER_HPP
-#define ORES_COMMS_PROTOCOL_MESSAGE_DISPATCHER_HPP
+#ifndef ORES_COMMS_MESSAGING_MESSAGE_DISPATCHER_HPP
+#define ORES_COMMS_MESSAGING_MESSAGE_DISPATCHER_HPP
 
 #include <map>
 #include <memory>
 #include <expected>
 #include <boost/asio/awaitable.hpp>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.comms/protocol/frame.hpp"
-#include "ores.comms/protocol/message_handler.hpp"
+#include "ores.comms/messaging/frame.hpp"
+#include "ores.comms/messaging/message_handler.hpp"
 
-namespace ores::comms::protocol {
+namespace ores::comms::messaging {
 
 /**
  * @brief Dispatches incoming messages to registered subsystem handlers.
@@ -46,7 +46,7 @@ private:
     static auto& lg() {
         using namespace ores::utility::log;
         static auto instance = make_logger(
-            "ores.comms.protocol.message_dispatcher");
+            "ores.comms.messaging.message_dispatcher");
         return instance;
     }
 

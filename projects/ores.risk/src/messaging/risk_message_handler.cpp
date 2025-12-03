@@ -29,8 +29,8 @@ risk_message_handler::risk_message_handler(utility::repository::context ctx)
     : ctx_(ctx) {}
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::protocol::error_code>>
-risk_message_handler::handle_message(comms::protocol::message_type type,
+                                     comms::messaging::error_code>>
+risk_message_handler::handle_message(comms::messaging::message_type type,
     std::span<const std::byte> payload, const std::string& remote_address) {
 
     BOOST_LOG_SEV(lg(), debug) << "Handling risk message type " << type;
@@ -39,27 +39,27 @@ risk_message_handler::handle_message(comms::protocol::message_type type,
     if (ctx_.is_in_bootstrap_mode()) {
         BOOST_LOG_SEV(lg(), warn)
             << "Blocked risk operation " << type << " - system in bootstrap mode";
-        co_return std::unexpected(comms::protocol::error_code::bootstrap_mode_only);
+        co_return std::unexpected(comms::messaging::error_code::bootstrap_mode_only);
     }
 
     switch (type) {
-    case comms::protocol::message_type::get_currencies_request:
+    case comms::messaging::message_type::get_currencies_request:
         co_return co_await handle_get_currencies_request(payload);
-    case comms::protocol::message_type::save_currency_request:
+    case comms::messaging::message_type::save_currency_request:
         co_return co_await handle_save_currency_request(payload);
-    case comms::protocol::message_type::delete_currency_request:
+    case comms::messaging::message_type::delete_currency_request:
         co_return co_await handle_delete_currency_request(payload);
-    case comms::protocol::message_type::get_currency_history_request:
+    case comms::messaging::message_type::get_currency_history_request:
         co_return co_await handle_get_currency_history_request(payload);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown risk message type " << std::hex
                                    << static_cast<std::uint16_t>(type);
-        co_return std::unexpected(comms::protocol::error_code::invalid_message_type);
+        co_return std::unexpected(comms::messaging::error_code::invalid_message_type);
     }
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::protocol::error_code>>
+                                     comms::messaging::error_code>>
 risk_message_handler::
 handle_save_currency_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing save_currency_request.";
@@ -93,7 +93,7 @@ handle_save_currency_request(std::span<const std::byte> payload) {
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::protocol::error_code>>
+                                     comms::messaging::error_code>>
 risk_message_handler::
 handle_get_currencies_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing get_currencies_request.";
@@ -112,7 +112,7 @@ handle_get_currencies_request(std::span<const std::byte> payload) {
     if (request.limit == 0 || request.limit > max_limit) {
         BOOST_LOG_SEV(lg(), warn) << "Invalid limit: " << request.limit
                                   << ". Must be between 1 and " << max_limit;
-        co_return std::unexpected(comms::protocol::error_code::invalid_request);
+        co_return std::unexpected(comms::messaging::error_code::invalid_request);
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Fetching currencies with offset: "
@@ -134,7 +134,7 @@ handle_get_currencies_request(std::span<const std::byte> payload) {
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::protocol::error_code>>
+                                     comms::messaging::error_code>>
 risk_message_handler::
 handle_delete_currency_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_currency_request.";
@@ -180,7 +180,7 @@ handle_delete_currency_request(std::span<const std::byte> payload) {
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::protocol::error_code>>
+                                     comms::messaging::error_code>>
 risk_message_handler::
 handle_get_currency_history_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing get_currency_history_request.";

@@ -109,9 +109,7 @@ namespace ores #F2F2F2 {
         client o-u- ores::comms::connection
         client ..> ores::comms::protocol::frame
         client ..> ores::comms::protocol::error_code
-        client ..> ores::comms::protocol::handshake_request : uses
-        client ..> ores::comms::protocol::handshake_response : uses
-        client ..> ores::comms::protocol::handshake_ack : uses
+        client ..> ores::comms::protocol::handshake_service : uses
 
         class connection #FFFACD {
             +connection(ssl_socket socket)
@@ -155,9 +153,7 @@ namespace ores #F2F2F2 {
 
         session o-u- ores::comms::connection
         session o-u- ores::comms::protocol::message_dispatcher
-        session ..> ores::comms::protocol::handshake_request : uses
-        session ..> ores::comms::protocol::handshake_response : uses
-        session ..> ores::comms::protocol::handshake_ack : uses
+        session ..> ores::comms::protocol::handshake_service : uses
         session ..> ores::comms::protocol::error_response : uses
 
         namespace protocol #F2F2F2 {
@@ -300,6 +296,25 @@ namespace ores #F2F2F2 {
             message_dispatcher ..> ores::comms::protocol::frame
             message_dispatcher ..> ores::comms::protocol::error_code
             message_dispatcher ..> ores::comms::protocol::message_type
+
+            class handshake_service #FFFACD {
+                +{static} perform_client_handshake(net::connection& conn, std::uint32_t sequence, const std::string& client_identifier) boost::asio::awaitable<void>
+                +{static} perform_server_handshake(net::connection& conn, std::uint32_t sequence, const std::string& server_identifier) boost::asio::awaitable<bool>
+            }
+
+            note top of handshake_service
+            Service for managing protocol handshake between client and server.
+
+            Encapsulates the handshake protocol logic for both client and server sides,
+            handling the three-way handshake:
+            1. Client sends handshake_request
+            2. Server responds with handshake_response (including version compatibility)
+            3. Client sends handshake_ack to complete
+            end note
+
+            handshake_service ..> ores::comms::protocol::handshake_request : uses
+            handshake_service ..> ores::comms::protocol::handshake_response : uses
+            handshake_service ..> ores::comms::protocol::handshake_ack : uses
 
             class handshake_request #F7E5FF {
                 +{field} client_version_major std::uint16_t

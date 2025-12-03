@@ -47,19 +47,13 @@ void client::setup_ssl_context() {
 }
 
 boost::asio::awaitable<void> client::perform_handshake() {
-    std::uint32_t seq = [this]() {
+    auto sequence_generator = [this]() {
         std::lock_guard guard{state_mutex_};
         return ++sequence_number_;
-    }();
+    };
 
     co_await messaging::handshake_service::perform_client_handshake(
-        *conn_, seq, config_.client_identifier);
-
-    // Update sequence number for next message (handshake uses 2 sequence numbers)
-    {
-        std::lock_guard guard{state_mutex_};
-        ++sequence_number_;
-    }
+        *conn_, sequence_generator, config_.client_identifier);
 }
 
 client::client(client_options config)

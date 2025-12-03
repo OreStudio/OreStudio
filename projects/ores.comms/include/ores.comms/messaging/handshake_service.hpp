@@ -22,6 +22,7 @@
 
 #include <string>
 #include <cstdint>
+#include <functional>
 #include <boost/asio/awaitable.hpp>
 #include "ores.utility/log/make_logger.hpp"
 
@@ -54,13 +55,13 @@ public:
      * and sends acknowledgment.
      *
      * @param conn Connection to perform handshake on
-     * @param sequence Sequence number for request frame
+     * @param sequence_generator Function that generates sequence numbers
      * @param client_identifier Client identifier string
      * @throws connection_error if handshake fails
      */
     static boost::asio::awaitable<void> perform_client_handshake(
         net::connection& conn,
-        std::uint32_t sequence,
+        const std::function<std::uint32_t()>& sequence_generator,
         const std::string& client_identifier);
 
     /**

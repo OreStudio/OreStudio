@@ -31,11 +31,11 @@ using namespace ores::utility::log;
 
 boost::asio::awaitable<void> handshake_service::perform_client_handshake(
     net::connection& conn,
-    std::uint32_t sequence,
+    const std::function<std::uint32_t()>& sequence_generator,
     const std::string& client_identifier) {
 
     // Send handshake request
-    auto request_frame = create_handshake_request_frame(sequence, client_identifier);
+    auto request_frame = create_handshake_request_frame(sequence_generator(), client_identifier);
 
     BOOST_LOG_SEV(lg(), debug) << "About to send handshake request frame.";
     co_await conn.write_frame(request_frame);
@@ -101,7 +101,7 @@ boost::asio::awaitable<void> handshake_service::perform_client_handshake(
     }
 
     // Send handshake acknowledgment
-    auto ack_frame = create_handshake_ack_frame(sequence + 1, error_code::none);
+    auto ack_frame = create_handshake_ack_frame(sequence_generator(), error_code::none);
 
     BOOST_LOG_SEV(lg(), debug) << "About to send handshake acknowledgement frame.";
     co_await conn.write_frame(ack_frame);

@@ -24,6 +24,7 @@
 #include <memory>
 #include <string>
 #include <cstdint>
+#include <functional>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -33,6 +34,14 @@
 #include "ores.comms/net/connection.hpp"
 
 namespace ores::comms::net {
+
+/**
+ * @brief Callback invoked when client detects server disconnect.
+ *
+ * Called from the heartbeat coroutine when ping fails or times out.
+ * Should be thread-safe as it may be called from different executors.
+ */
+using disconnect_callback_t = std::function<void()>;
 
 /**
  * @brief ORES protocol client.
@@ -58,6 +67,14 @@ private:
      * @throws connection_error if handshake fails
      */
     boost::asio::awaitable<void> perform_handshake();
+
+    /**
+     * @brief Run heartbeat loop to detect disconnections.
+     *
+     * Periodically sends ping messages and waits for pong responses.
+     * Exits when cancelled or when disconnect is detected.
+     */
+    boost::asio::awaitable<void> run_heartbeat();
 
 public:
     /**
@@ -97,6 +114,16 @@ public:
     bool is_connected() const;
 
     /**
+     * @brief Set callback to be invoked when disconnect is detected.
+     *
+     * The callback will be called from the heartbeat coroutine when
+     * a ping fails or times out. It should be thread-safe.
+     *
+     * @param callback Function to call on disconnect (may be empty to disable)
+     */
+    void set_disconnect_callback(disconnect_callback_t callback);
+
+    /**
      * @brief Send a request frame and receive response frame (async version).
      *
      * Generic method for sending any request and receiving response.
@@ -129,6 +156,7 @@ private:
     std::uint32_t sequence_number_;
     bool connected_;
     mutable std::mutex state_mutex_; // Thread-safe state protection
+    disconnect_callback_t disconnect_callback_;
 };
 
 }

@@ -21,15 +21,18 @@
 
 #include <mutex>
 #include <format>
+#include <chrono>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/asio/use_future.hpp>
 #include <boost/asio/this_coro.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <boost/log/sources/record_ostream.hpp>
 #include "ores.comms/net/connection_error.hpp"
 #include "ores.comms/messaging/handshake_service.hpp"
+#include "ores.comms/messaging/heartbeat_service.hpp"
 
 namespace ores::comms::net {
 
@@ -109,6 +112,13 @@ boost::asio::awaitable<void> client::connect() {
         }
         BOOST_LOG_SEV(lg(), info) << "Successfully connected to server.";
 
+        // Start heartbeat in background
+        if (config_.heartbeat_enabled) {
+            auto exec = co_await boost::asio::this_coro::executor;
+            boost::asio::co_spawn(exec, run_heartbeat(), boost::asio::detached);
+            BOOST_LOG_SEV(lg(), debug) << "Heartbeat coroutine started";
+        }
+
     } catch (const connection_error&) {
         disconnect();
         throw;
@@ -156,6 +166,94 @@ void client::disconnect() {
 bool client::is_connected() const {
     std::lock_guard guard{state_mutex_};
     return connected_ && conn_ && conn_->is_open();
+}
+
+void client::set_disconnect_callback(disconnect_callback_t callback) {
+    std::lock_guard guard{state_mutex_};
+    disconnect_callback_ = std::move(callback);
+}
+
+boost::asio::awaitable<void> client::run_heartbeat() {
+    if (!config_.heartbeat_enabled) {
+        BOOST_LOG_SEV(lg(), debug) << "Heartbeat disabled in configuration";
+        co_return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Starting heartbeat loop with interval: "
+                               << config_.heartbeat_interval_seconds << "s";
+
+    try {
+        auto exec = co_await boost::asio::this_coro::executor;
+        boost::asio::steady_timer timer(exec);
+
+        while (is_connected()) {
+            // Wait for the configured interval
+            timer.expires_after(std::chrono::seconds(config_.heartbeat_interval_seconds));
+            co_await timer.async_wait(boost::asio::use_awaitable);
+
+            if (!is_connected()) {
+                break;
+            }
+
+            // Send ping and wait for pong
+            BOOST_LOG_SEV(lg(), trace) << "Sending heartbeat ping";
+
+            // Safely get sequence number and check if connection is still valid
+            std::uint32_t seq;
+            {
+                std::lock_guard guard{state_mutex_};
+                if (!conn_ || !connected_) {
+                    break;  // Connection closed during heartbeat
+                }
+                seq = ++sequence_number_;
+            }
+
+            bool pong_received = false;
+            try {
+                // Check connection is still valid before using it
+                {
+                    std::lock_guard guard{state_mutex_};
+                    if (!conn_ || !connected_) {
+                        break;
+                    }
+                }
+                pong_received = co_await messaging::heartbeat_service::send_ping(*conn_, seq);
+            } catch (...) {
+                // Connection error during ping
+                pong_received = false;
+            }
+
+            if (!pong_received) {
+                BOOST_LOG_SEV(lg(), warn) << "Heartbeat failed - server disconnected";
+                {
+                    std::lock_guard guard{state_mutex_};
+                    connected_ = false;
+                }
+
+                // Invoke disconnect callback if set
+                disconnect_callback_t callback;
+                {
+                    std::lock_guard guard{state_mutex_};
+                    callback = disconnect_callback_;
+                }
+                if (callback) {
+                    BOOST_LOG_SEV(lg(), debug) << "Invoking disconnect callback";
+                    callback();
+                }
+                break;
+            }
+
+            BOOST_LOG_SEV(lg(), trace) << "Heartbeat pong received";
+        }
+    } catch (const boost::system::system_error& e) {
+        if (e.code() == boost::asio::error::operation_aborted) {
+            BOOST_LOG_SEV(lg(), debug) << "Heartbeat cancelled";
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Heartbeat error: " << e.what();
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Heartbeat loop ended";
 }
 
 boost::asio::awaitable<std::expected<messaging::frame, messaging::error_code>>

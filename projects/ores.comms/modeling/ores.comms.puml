@@ -415,6 +415,48 @@ namespace ores #F2F2F2 {
                 last_value
             }
         }
+
+        namespace tests #F2F2F2 {
+            class frame_tests <<test suite>> #C5E1A5 {
+                +test_frame_serialization() void
+                +test_frame_serialization_empty_payload() void
+                +test_frame_serialization_large_payload() void
+                +test_frame_deserialization_invalid_data() void
+                +test_frame_deserialization_corrupted_data() void
+                +test_frame_roundtrip_multiple_message_types() void
+                +test_frame_version_mismatch_strict_mode() void
+                +test_frame_version_mismatch_lenient_mode() void
+                +test_frame_version_mismatch_handshake_scenario() void
+            }
+
+            note top of frame_tests
+            Test suite for protocol frame functionality.
+
+            Tests cover frame serialization/deserialization,
+            payload handling (empty/large), data corruption,
+            roundtrip validation, and version mismatch scenarios.
+            end note
+
+            frame_tests ..> ores::comms::protocol::frame : tests
+            frame_tests ..> ores::comms::protocol::frame_header : tests
+
+            class net_client_tests <<test suite>> #C5E1A5 {
+                +test_client_server_connection() void
+                +test_session_cancellation_on_server_stop() void
+            }
+
+            note top of net_client_tests
+            Test suite for client-server communication.
+
+            Tests cover client-server connection establishment,
+            handshake protocol, and session lifecycle management
+            including graceful cancellation on server shutdown.
+            end note
+
+            net_client_tests ..> ores::comms::client : tests
+            net_client_tests ..> ores::comms::server : tests
+            net_client_tests ..> ores::comms::session : tests
+        }
     }
 }
 

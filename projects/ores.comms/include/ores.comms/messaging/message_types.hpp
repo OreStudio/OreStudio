@@ -54,6 +54,8 @@ enum class message_type {
     handshake_response = 0x0002,
     handshake_ack = 0x0003,
     error_response = 0x0004,
+    ping = 0x0005,
+    pong = 0x0006,
 
     // Risk subsystem messages (0x1000 - 0x1FFF)
     get_currencies_request = 0x1001,

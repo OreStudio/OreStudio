@@ -21,6 +21,7 @@
 
 #include "ores.comms/messaging/handshake_protocol.hpp"
 #include "ores.comms/messaging/handshake_service.hpp"
+#include "ores.comms/messaging/heartbeat_service.hpp"
 
 namespace ores::comms::net {
 
@@ -108,6 +109,12 @@ boost::asio::awaitable<void> session::process_messages() {
             const auto& request_frame = *frame_result;
             BOOST_LOG_SEV(lg(), debug) << "Received message type "
                                       << request_frame.header().type;
+
+            // Handle ping messages directly (built-in protocol feature)
+            if (request_frame.header().type == messaging::message_type::ping) {
+                co_await messaging::heartbeat_service::handle_ping(*conn_, ++sequence_number_);
+                continue;  // Don't send additional response
+            }
 
             // Dispatch to appropriate handler
             auto remote_addr = conn_->remote_address();

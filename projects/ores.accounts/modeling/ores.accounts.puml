@@ -251,7 +251,6 @@ namespace ores #F2F2F2 {
             end note
 
             bootstrap_mode_service o-- ores::accounts::repository::account_repository
-            bootstrap_mode_service o-- ores::variability::service::feature_flags_service
         }
 
         namespace messaging #F2F2F2 {
@@ -478,6 +477,216 @@ namespace ores #F2F2F2 {
             end note
 
             generate_synthetic_accounts --> ores::accounts::domain::account: generates
+        }
+
+        namespace tests #F2F2F2 {
+            class domain_account_tests <<test suite>> #C5E1A5 {
+                +create_account_with_valid_fields() void
+                +create_admin_account() void
+                +account_with_specific_uuid() void
+                +account_insertion_operator() void
+                +create_account_with_faker() void
+                +create_multiple_random_accounts() void
+                +account_convert_single_to_table() void
+                +account_convert_multiple_to_table() void
+                +account_convert_single_to_json() void
+                +account_convert_multiple_to_json() void
+                +account_convert_empty_vector_to_table() void
+                +account_table_with_faker_data() void
+            }
+
+            note top of domain_account_tests
+            Test suite for account domain model.
+
+            Tests cover account creation, admin flags, UUIDs,
+            serialization (JSON/table), and faker data generation.
+            end note
+
+            domain_account_tests ..> ores::accounts::domain::account : tests
+
+            class domain_logins_tests <<test suite>> #C5E1A5 {
+                +create_login_info_with_ipv4_addresses() void
+                +create_login_info_with_ipv6_addresses() void
+                +create_locked_account_login_info() void
+                +login_info_with_failed_attempts() void
+                +login_info_serialization_to_json() void
+                +login_info_with_different_ip_versions() void
+                +create_login_info_with_faker() void
+                +create_multiple_random_login_infos() void
+                +login_info_convert_single_to_table() void
+                +login_info_convert_multiple_to_table() void
+                +login_info_table_with_faker_data() void
+            }
+
+            note top of domain_logins_tests
+            Test suite for login_info domain model.
+
+            Tests cover IPv4/IPv6 addresses, locked accounts,
+            failed attempts, JSON serialization, and table conversion.
+            end note
+
+            domain_logins_tests ..> ores::accounts::domain::login_info : tests
+
+            class messaging_accounts_message_handler_tests <<test suite>> #C5E1A5 {
+                +handle_single_create_account_request() void
+                +handle_many_create_account_requests() void
+                +handle_list_accounts_request_empty() void
+                +handle_list_accounts_request_with_accounts() void
+                +handle_login_request_with_valid_password() void
+                +handle_login_request_with_invalid_password() void
+                +handle_unlock_account_request() void
+                +handle_invalid_message_type() void
+                +handle_login_request_non_existent_user() void
+                +handle_delete_account_request_success() void
+                +handle_delete_account_request_non_existent_account() void
+            }
+
+            note top of messaging_accounts_message_handler_tests
+            Test suite for accounts_message_handler.
+
+            Tests cover all message types: create, list, login, unlock,
+            delete accounts. Includes error scenarios and edge cases.
+            end note
+
+            messaging_accounts_message_handler_tests ..> ores::accounts::messaging::accounts_message_handler : tests
+
+            class messaging_protocol_tests <<test suite>> #C5E1A5 {
+                +create_account_request_with_valid_fields() void
+                +create_account_request_with_faker() void
+                +create_account_request_serialize_deserialize() void
+                +create_account_response_with_valid_uuid() void
+                +create_account_response_serialize_deserialize() void
+                +list_accounts_request_serialize_deserialize() void
+                +list_accounts_response_with_faker() void
+                +list_accounts_response_serialize_deserialize() void
+                +login_request_with_valid_credentials() void
+                +login_request_with_faker() void
+                +login_request_serialize_deserialize() void
+                +login_response_success() void
+                +login_response_failure() void
+                +login_response_serialize_deserialize() void
+                +unlock_account_request_with_valid_uuid() void
+                +unlock_account_request_serialize_deserialize() void
+                +unlock_account_response_success() void
+                +unlock_account_response_failure() void
+                +unlock_account_response_serialize_deserialize() void
+                +create_multiple_random_login_requests() void
+                +create_multiple_random_create_account_requests() void
+                +delete_account_request_with_valid_uuid() void
+                +delete_account_request_serialize_deserialize() void
+                +delete_account_response_success() void
+                +delete_account_response_failure() void
+                +delete_account_response_serialize_deserialize() void
+            }
+
+            note top of messaging_protocol_tests
+            Test suite for messaging protocol serialization.
+
+            Tests cover all request/response message types:
+            create_account, list_accounts, login, unlock_account,
+            delete_account. Validates serialization/deserialization.
+            end note
+
+            messaging_protocol_tests ..> ores::accounts::messaging::create_account_request : tests
+            messaging_protocol_tests ..> ores::accounts::messaging::create_account_response : tests
+            messaging_protocol_tests ..> ores::accounts::messaging::list_accounts_request : tests
+            messaging_protocol_tests ..> ores::accounts::messaging::list_accounts_response : tests
+            messaging_protocol_tests ..> ores::accounts::messaging::login_request : tests
+            messaging_protocol_tests ..> ores::accounts::messaging::login_response : tests
+            messaging_protocol_tests ..> ores::accounts::messaging::unlock_account_request : tests
+            messaging_protocol_tests ..> ores::accounts::messaging::unlock_account_response : tests
+
+            class repository_account_repository_tests <<test suite>> #C5E1A5 {
+                +write_single_account() void
+                +write_multiple_accounts() void
+                +read_latest_accounts() void
+                +read_latest_account_by_id() void
+                +read_all_accounts() void
+                +read_all_accounts_by_id() void
+                +read_latest_by_username() void
+                +read_nonexistent_account_by_id() void
+                +read_nonexistent_username() void
+                +write_and_read_admin_account() void
+            }
+
+            note top of repository_account_repository_tests
+            Test suite for account_repository.
+
+            Tests cover write, read (latest/all), read by ID,
+            read by username, and non-existent account scenarios.
+            end note
+
+            repository_account_repository_tests ..> ores::accounts::repository::account_repository : tests
+
+            class security_password_manager_tests <<test suite>> #C5E1A5 {
+                +verify_password_hash_with_correct_password() void
+                +verify_password_hash_with_incorrect_password() void
+                +hash_is_not_deterministic() void
+                +invalid_hash_format_fails_verification() void
+                +empty_password_throws() void
+            }
+
+            note top of security_password_manager_tests
+            Test suite for password_manager.
+
+            Tests cover password hashing, verification,
+            non-deterministic hashing, and error scenarios.
+            end note
+
+            security_password_manager_tests ..> ores::accounts::security::password_manager : tests
+
+            class security_password_policy_validator_tests <<test suite>> #C5E1A5 {
+                +valid_password_passes_validation() void
+                +valid_password_with_all_special_chars() void
+                +password_exactly_12_chars_passes() void
+                +password_too_short_fails() void
+                +password_without_uppercase_fails() void
+                +password_without_lowercase_fails() void
+                +password_without_digit_fails() void
+                +password_without_special_char_fails() void
+                +empty_password_fails() void
+                +password_with_all_special_chars_types() void
+                +long_valid_password_passes() void
+                +password_with_spaces_passes_if_valid() void
+                +weak_password_passes_when_validation_disabled() void
+                +validation_enabled_by_default() void
+            }
+
+            note top of security_password_policy_validator_tests
+            Test suite for password policy validation.
+
+            Tests cover password length, uppercase/lowercase,
+            digits, special characters, and validation enable/disable.
+            end note
+
+            class service_account_service_tests <<test suite>> #C5E1A5 {
+                +create_account_with_valid_data() void
+                +create_account_with_admin_flag() void
+                +create_multiple_accounts() void
+                +create_account_with_empty_username_throws() void
+                +create_account_with_empty_email_throws() void
+                +create_account_with_empty_password_throws() void
+                +list_accounts_returns_empty_for_no_accounts() void
+                +list_accounts_returns_created_accounts() void
+                +login_with_valid_credentials() void
+                +login_with_invalid_password_throws() void
+                +login_with_nonexistent_username_throws() void
+                +login_with_empty_username_throws() void
+                +login_with_empty_password_throws() void
+                +account_locks_after_multiple_failed_logins() void
+                +unlock_account_successful() void
+                +unlock_nonexistent_account_throws() void
+                +login_with_different_ip_addresses() void
+            }
+
+            note top of service_account_service_tests
+            Test suite for account_service.
+
+            Tests cover account creation, listing, login, unlock,
+            validation errors, account locking, and IP tracking.
+            end note
+
+            service_account_service_tests ..> ores::accounts::service::account_service : tests
         }
     }
 }

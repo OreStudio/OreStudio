@@ -18,37 +18,37 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-03 Wed 17:29], for Wednesday, December 03, 2025.
+#+CAPTION: Clock summary at [2025-12-03 Wed 23:20], for Wednesday, December 03, 2025.
 |       | <75>                               |        |      |      |       |
 | Tags  | Headline                           | Time   |      |      |     % |
 |-------+------------------------------------+--------+------+------+-------|
-|       | *Total time*                       | *3:30* |      |      | 100.0 |
+|       | *Total time*                       | *5:37* |      |      | 100.0 |
 |-------+------------------------------------+--------+------+------+-------|
-|       | Stories                            | 3:30   |      |      | 100.0 |
-|       | Active                             |        | 3:30 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint |        |      | 1:40 |  47.6 |
-| code  | Add tests to diagrams              |        |      | 1:26 |  41.0 |
-| code  | Create handshake service in comms  |        |      | 0:24 |  11.4 |
+|       | Stories                            | 5:37   |      |      | 100.0 |
+|       | Active                             |        | 5:37 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint |        |      | 1:40 |  29.7 |
+| code  | Add tests to diagrams              |        |      | 1:26 |  25.5 |
+| code  | Create handshake service in comms  |        |      | 2:31 |  44.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-03 Wed 17:29]
+#+CAPTION: Clock summary at [2025-12-03 Wed 23:20]
 |       | <75>                                           |         |       |      |       |
 | Tags  | Headline                                       | Time    |       |      |     % |
 |-------+------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                   | *11:32* |       |      | 100.0 |
+|       | *Total time*                                   | *13:39* |       |      | 100.0 |
 |-------+------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                        | 11:32   |       |      | 100.0 |
-|       | Active                                         |         | 11:32 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |         |       | 0:18 |   2.6 |
-| infra | OCR scan notebooks for this sprint             |         |       | 3:09 |  27.3 |
-| code  | Implement session cancellation                 |         |       | 2:42 |  23.4 |
-| code  | Create a variability service for feature flags |         |       | 1:23 |  12.0 |
-| code  | Add tests to diagrams                          |         |       | 1:26 |  12.4 |
-| code  | Experiment with simple code generation         |         |       | 1:30 |  13.0 |
-| code  | Add messaging to variability                   |         |       | 0:40 |   5.8 |
-| code  | Create handshake service in comms              |         |       | 0:24 |   3.5 |
+|       | Stories                                        | 13:39   |       |      | 100.0 |
+|       | Active                                         |         | 13:39 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |         |       | 0:18 |   2.2 |
+| infra | OCR scan notebooks for this sprint             |         |       | 3:09 |  23.1 |
+| code  | Implement session cancellation                 |         |       | 2:42 |  19.8 |
+| code  | Create a variability service for feature flags |         |       | 1:23 |  10.1 |
+| code  | Add tests to diagrams                          |         |       | 1:26 |  10.5 |
+| code  | Add messaging to variability                   |         |       | 0:40 |   4.9 |
+| code  | Create handshake service in comms              |         |       | 2:31 |  18.4 |
+| code  | Experiment with simple code generation         |         |       | 1:30 |  11.0 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -608,15 +608,6 @@ CLOCK: [2025-12-03 Wed 10:36]--[2025-12-03 Wed 10:36] =>  0:00
 
 It is helpful so we can see how we are doing in terms of coverage visually.
 
-*** STARTED Experiment with simple code generation                     :code:
-    :LOGBOOK:
-    CLOCK: [2025-12-02 Tue 14:35]--[2025-12-02 Tue 16:05] =>  1:30
-    :END:
-
-It should be easy enough to add a simple code generator that creates the basic
-infrastructure for a domain type, so that we don't have to waste Claude Code
-tokens.
-
 *** COMPLETED Add messaging to variability                             :code:
     :LOGBOOK:
     CLOCK: [2025-12-02 Tue 23:04]--[2025-12-02 Tue 23:44] =>  0:40
@@ -687,14 +678,39 @@ to align with domain ownership.
 - Message types changed (0x200D/0x200E → 0x3000/0x3001)
 - All clients must update
 
+*** COMPLETED Split =protocol.hpp= into components                     :code:
+
+*Rationale*: implemented.
+
+These files will become too large as we add more entities.
+
 *** COMPLETED Create handshake service in comms                        :code:
     :LOGBOOK:
+    CLOCK: [2025-12-03 Wed 23:12]--[2025-12-03 Wed 23:20] =>  0:08
+    CLOCK: [2025-12-03 Wed 22:33]--[2025-12-03 Wed 23:10] =>  0:37
+    CLOCK: [2025-12-03 Wed 21:52]--[2025-12-03 Wed 22:11] =>  0:19
+    CLOCK: [2025-12-03 Wed 21:22]--[2025-12-03 Wed 21:51] =>  0:29
+    CLOCK: [2025-12-03 Wed 17:30]--[2025-12-03 Wed 18:04] =>  0:34
     CLOCK: [2025-12-03 Wed 17:05]--[2025-12-03 Wed 17:29] =>  0:24
     :END:
 
 We seem to have relationships all over the place to handle handshaking. It makes
 more sense to encapsulate all of that in a handshake service that serves both
 ends of the handshake.
+
+Notes:
+
+- make the uses of "messaging" and "protocol" consistent across projects.
+- document namespaces in comms.
+
+*** STARTED Experiment with simple code generation                     :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-02 Tue 14:35]--[2025-12-02 Tue 16:05] =>  1:30
+    :END:
+
+It should be easy enough to add a simple code generator that creates the basic
+infrastructure for a domain type, so that we don't have to waste Claude Code
+tokens.
 
 *** Entity syntax refactor snags                                       :code:
 

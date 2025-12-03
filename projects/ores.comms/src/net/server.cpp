@@ -200,7 +200,7 @@ boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_con
     BOOST_LOG_SEV(lg(), info) << "Server shut down.";
 }
 
-boost::asio::awaitable<void> 
+boost::asio::awaitable<void>
 server::watch_for_stop_signals(boost::asio::io_context& io_context) {
     boost::asio::signal_set signals(io_context, SIGINT, SIGTERM);
     co_await signals.async_wait(boost::asio::use_awaitable);

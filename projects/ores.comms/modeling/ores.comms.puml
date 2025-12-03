@@ -41,13 +41,13 @@ namespace ores #F2F2F2 {
 
         class server #FFFACD {
             +server(server_config config)
-            +register_handler(protocol::message_type_range range, std::shared_ptr<protocol::message_handler> handler) void
+            +register_handler(messaging::message_type_range range, std::shared_ptr<messaging::message_handler> handler) void
             +run(boost::asio::io_context& io_context) boost::asio::awaitable<void>
             -accept_loop(boost::asio::io_context& io_context) boost::asio::awaitable<void>
             -setup_ssl_context() void
             -{field} config_ server_config
             -{field} ssl_ctx_ ssl::context
-            -{field} dispatcher_ std::shared_ptr<protocol::message_dispatcher>
+            -{field} dispatcher_ std::shared_ptr<messaging::message_dispatcher>
             -{field} active_connections_ std::atomic<std::size_t>
         }
 
@@ -58,7 +58,7 @@ namespace ores #F2F2F2 {
         end note
 
         server o-u- ores::comms::server_config
-        server o-u- ores::comms::protocol::message_dispatcher
+        server o-u- ores::comms::messaging::message_dispatcher
         server o-u- ores::comms::connection
         server o-u- ores::comms::session
 
@@ -87,8 +87,8 @@ namespace ores #F2F2F2 {
             +connect_sync() bool
             +disconnect() void
             +is_connected() bool
-            +send_request(protocol::frame request_frame) boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
-            +send_request_sync(protocol::frame request_frame) std::expected<protocol::frame, protocol::error_code>
+            +send_request(messaging::frame request_frame) boost::asio::awaitable<std::expected<messaging::frame, messaging::error_code>>
+            +send_request_sync(messaging::frame request_frame) std::expected<messaging::frame, messaging::error_code>
             -perform_handshake() boost::asio::awaitable<bool>
             -setup_ssl_context() void
             -{field} config_ client_options
@@ -109,16 +109,16 @@ namespace ores #F2F2F2 {
 
         client o-u- ores::comms::client_options
         client o-u- ores::comms::connection
-        client ..> ores::comms::protocol::frame
-        client ..> ores::comms::protocol::error_code
-        client ..> ores::comms::protocol::handshake_service : uses
+        client ..> ores::comms::messaging::frame
+        client ..> ores::comms::messaging::error_code
+        client ..> ores::comms::messaging::handshake_service : uses
 
         class connection #FFFACD {
             +connection(ssl_socket socket)
             +ssl_handshake_server() boost::asio::awaitable<void>
             +ssl_handshake_client() boost::asio::awaitable<void>
-            +read_frame() boost::asio::awaitable<std::expected<protocol::frame, protocol::error_code>>
-            +write_frame(const protocol::frame& frame) boost::asio::awaitable<void>
+            +read_frame() boost::asio::awaitable<std::expected<messaging::frame, messaging::error_code>>
+            +write_frame(const messaging::frame& frame) boost::asio::awaitable<void>
             +is_open() bool
             +close() void
             +remote_address() std::string
@@ -131,17 +131,17 @@ namespace ores #F2F2F2 {
         Provides async read/write operations for protocol frames over SSL/TLS.
         end note
 
-        connection ..> ores::comms::protocol::frame
-        connection ..> ores::comms::protocol::error_code
+        connection ..> ores::comms::messaging::frame
+        connection ..> ores::comms::messaging::error_code
 
         class session #FFFACD {
-            +session(std::unique_ptr<connection> conn, std::string server_id, std::shared_ptr<protocol::message_dispatcher> dispatcher)
+            +session(std::unique_ptr<connection> conn, std::string server_id, std::shared_ptr<messaging::message_dispatcher> dispatcher)
             +run() boost::asio::awaitable<void>
             -perform_handshake() boost::asio::awaitable<bool>
             -process_messages() boost::asio::awaitable<void>
             -{field} conn_ std::unique_ptr<connection>
             -{field} server_id_ std::string
-            -{field} dispatcher_ std::shared_ptr<protocol::message_dispatcher>
+            -{field} dispatcher_ std::shared_ptr<messaging::message_dispatcher>
             -{field} sequence_number_ std::uint32_t
             -{field} handshake_complete_ bool
         }
@@ -154,11 +154,11 @@ namespace ores #F2F2F2 {
         end note
 
         session o-u- ores::comms::connection
-        session o-u- ores::comms::protocol::message_dispatcher
-        session ..> ores::comms::protocol::handshake_service : uses
-        session ..> ores::comms::protocol::error_response : uses
+        session o-u- ores::comms::messaging::message_dispatcher
+        session ..> ores::comms::messaging::handshake_service : uses
+        session ..> ores::comms::messaging::error_response : uses
 
-        namespace protocol #F2F2F2 {
+        namespace messaging #F2F2F2 {
             class result #FFFACD {
                 +result(const T& value)
                 +result(T&& value)
@@ -194,7 +194,7 @@ namespace ores #F2F2F2 {
             - max: Maximum message type value.
             end note
 
-            class message_handler #FFFACD {
+            interface message_handler #FFFACD {
                 +{abstract} handle_message(message_type type, std::span<const std::uint8_t> payload, const std::string& remote_address) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, error_code>>
             }
 
@@ -248,7 +248,7 @@ namespace ores #F2F2F2 {
             - reserved2: Reserved for future use.
             end note
 
-            frame_header ..> ores::comms::protocol::message_type
+            frame_header ..> ores::comms::messaging::message_type
 
             class frame #FFFACD {
                 +frame()
@@ -269,8 +269,8 @@ namespace ores #F2F2F2 {
             Complete frame with header and payload.
             end note
 
-            frame o-u- ores::comms::protocol::frame_header
-            frame ..> ores::comms::protocol::error_code
+            frame o-u- ores::comms::messaging::frame_header
+            frame ..> ores::comms::messaging::error_code
 
             class message_dispatcher #FFFACD {
                 +message_dispatcher()
@@ -293,11 +293,11 @@ namespace ores #F2F2F2 {
             during initialization before concurrent access begins.
             end note
 
-            message_dispatcher o-u- ores::comms::protocol::message_type_range
-            message_dispatcher o-u- ores::comms::protocol::message_handler
-            message_dispatcher ..> ores::comms::protocol::frame
-            message_dispatcher ..> ores::comms::protocol::error_code
-            message_dispatcher ..> ores::comms::protocol::message_type
+            message_dispatcher o-u- ores::comms::messaging::message_type_range
+            message_dispatcher o-u- ores::comms::messaging::message_handler
+            message_dispatcher ..> ores::comms::messaging::frame
+            message_dispatcher ..> ores::comms::messaging::error_code
+            message_dispatcher ..> ores::comms::messaging::message_type
 
             class handshake_service #FFFACD {
                 +{static} perform_client_handshake(net::connection& conn, std::uint32_t sequence, const std::string& client_identifier) boost::asio::awaitable<void>
@@ -314,9 +314,9 @@ namespace ores #F2F2F2 {
             3. Client sends handshake_ack to complete
             end note
 
-            handshake_service ..> ores::comms::protocol::handshake_request : uses
-            handshake_service ..> ores::comms::protocol::handshake_response : uses
-            handshake_service ..> ores::comms::protocol::handshake_ack : uses
+            handshake_service ..> ores::comms::messaging::handshake_request : uses
+            handshake_service ..> ores::comms::messaging::handshake_response : uses
+            handshake_service ..> ores::comms::messaging::handshake_ack : uses
 
             class handshake_request #F7E5FF {
                 +{field} client_version_major std::uint16_t
@@ -336,7 +336,7 @@ namespace ores #F2F2F2 {
             - client_identifier: Client identifier string.
             end note
 
-            handshake_request ..> ores::comms::protocol::error_code
+            handshake_request ..> ores::comms::messaging::error_code
 
             class handshake_response #F7E5FF {
                 +{field} server_version_major std::uint16_t
@@ -360,7 +360,7 @@ namespace ores #F2F2F2 {
             - status: Error code indicating handshake status.
             end note
 
-            handshake_response ..> ores::comms::protocol::error_code
+            handshake_response ..> ores::comms::messaging::error_code
 
             class handshake_ack #F7E5FF {
                 +{field} status error_code
@@ -376,7 +376,7 @@ namespace ores #F2F2F2 {
             - status: Error code indicating acknowledgment status.
             end note
 
-            handshake_ack ..> ores::comms::protocol::error_code
+            handshake_ack ..> ores::comms::messaging::error_code
 
             class error_response #F7E5FF {
                 +{field} code error_code
@@ -394,7 +394,7 @@ namespace ores #F2F2F2 {
             - message: Human-readable error message.
             end note
 
-            error_response ..> ores::comms::protocol::error_code
+            error_response ..> ores::comms::messaging::error_code
 
             enum message_type {
                 handshake_request
@@ -461,8 +461,8 @@ namespace ores #F2F2F2 {
             roundtrip validation, and version mismatch scenarios.
             end note
 
-            frame_tests ..> ores::comms::protocol::frame : tests
-            frame_tests ..> ores::comms::protocol::frame_header : tests
+            frame_tests ..> ores::comms::messaging::frame : tests
+            frame_tests ..> ores::comms::messaging::frame_header : tests
 
             class net_client_tests <<test suite>> #C5E1A5 {
                 +test_client_server_connection() void

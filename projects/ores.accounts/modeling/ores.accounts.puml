@@ -262,7 +262,7 @@ namespace ores #F2F2F2 {
                 +{field} modified_by std::string
                 +{field} is_admin bool
                 +serialize() std::vector<std::uint8_t>
-                +{static} deserialize(std::span<const std::uint8_t>) std::expected<create_account_request, comms::protocol::error_code>
+                +{static} deserialize(std::span<const std::uint8_t>) std::expected<create_account_request, comms::messaging::error_code>
             }
 
             note top of create_account_request
@@ -281,7 +281,7 @@ namespace ores #F2F2F2 {
             class create_account_response <<message>> #E1F5FF {
                 +{field} account_id boost::uuids::uuid
                 +serialize() std::vector<std::uint8_t>
-                +{static} deserialize(std::span<const std::uint8_t>) std::expected<create_account_response, comms::protocol::error_code>
+                +{static} deserialize(std::span<const std::uint8_t>) std::expected<create_account_response, comms::messaging::error_code>
             }
 
             note top of create_account_response
@@ -294,7 +294,7 @@ namespace ores #F2F2F2 {
 
             class list_accounts_request <<message>> #E1F5FF {
                 +serialize() std::vector<std::uint8_t>
-                +{static} deserialize(std::span<const std::uint8_t>) std::expected<list_accounts_request, comms::protocol::error_code>
+                +{static} deserialize(std::span<const std::uint8_t>) std::expected<list_accounts_request, comms::messaging::error_code>
             }
 
             note top of list_accounts_request
@@ -306,7 +306,7 @@ namespace ores #F2F2F2 {
             class list_accounts_response <<message>> #E1F5FF {
                 +{field} accounts std::vector<domain::account>
                 +serialize() std::vector<std::uint8_t>
-                +{static} deserialize(std::span<const std::uint8_t>) std::expected<list_accounts_response, comms::protocol::error_code>
+                +{static} deserialize(std::span<const std::uint8_t>) std::expected<list_accounts_response, comms::messaging::error_code>
             }
 
             note top of list_accounts_response
@@ -323,7 +323,7 @@ namespace ores #F2F2F2 {
                 +{field} username std::string
                 +{field} password std::string
                 +serialize() std::vector<std::uint8_t>
-                +{static} deserialize(std::span<const std::uint8_t>) std::expected<login_request, comms::protocol::error_code>
+                +{static} deserialize(std::span<const std::uint8_t>) std::expected<login_request, comms::messaging::error_code>
             }
 
             note top of login_request
@@ -342,7 +342,7 @@ namespace ores #F2F2F2 {
                 +{field} username std::string
                 +{field} is_admin bool
                 +serialize() std::vector<std::uint8_t>
-                +{static} deserialize(std::span<const std::uint8_t>) std::expected<login_response, comms::protocol::error_code>
+                +{static} deserialize(std::span<const std::uint8_t>) std::expected<login_response, comms::messaging::error_code>
             }
 
             note top of login_response
@@ -360,7 +360,7 @@ namespace ores #F2F2F2 {
             class unlock_account_request <<message>> #E1F5FF {
                 +{field} account_id boost::uuids::uuid
                 +serialize() std::vector<std::uint8_t>
-                +{static} deserialize(std::span<const std::uint8_t>) std::expected<unlock_account_request, comms::protocol::error_code>
+                +{static} deserialize(std::span<const std::uint8_t>) std::expected<unlock_account_request, comms::messaging::error_code>
             }
 
             note top of unlock_account_request
@@ -375,7 +375,7 @@ namespace ores #F2F2F2 {
                 +{field} success bool
                 +{field} error_message std::string
                 +serialize() std::vector<std::uint8_t>
-                +{static} deserialize(std::span<const std::uint8_t>) std::expected<unlock_account_response, comms::protocol::error_code>
+                +{static} deserialize(std::span<const std::uint8_t>) std::expected<unlock_account_response, comms::messaging::error_code>
             }
 
             note top of unlock_account_response
@@ -389,11 +389,11 @@ namespace ores #F2F2F2 {
 
             class accounts_message_handler #ECECEC {
                 +accounts_message_handler(utility::repository::context)
-                +handle_message(comms::protocol::message_type, std::span<const std::uint8_t>, std::string) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
-                -handle_create_account_request(std::span<const std::uint8_t>) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
-                -handle_list_accounts_request(std::span<const std::uint8_t>) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
-                -handle_login_request(std::span<const std::uint8_t>, std::string) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
-                -handle_unlock_account_request(std::span<const std::uint8_t>) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::protocol::error_code>>
+                +handle_message(comms::messaging::message_type, std::span<const std::uint8_t>, std::string) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::messaging::error_code>>
+                -handle_create_account_request(std::span<const std::uint8_t>) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::messaging::error_code>>
+                -handle_list_accounts_request(std::span<const std::uint8_t>) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::messaging::error_code>>
+                -handle_login_request(std::span<const std::uint8_t>, std::string) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::messaging::error_code>>
+                -handle_unlock_account_request(std::span<const std::uint8_t>) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::messaging::error_code>>
                 -{field} ctx_ utility::repository::context
                 -{field} account_repo_ repository::account_repository
                 -{field} login_info_repo_ repository::login_info_repository

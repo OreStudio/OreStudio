@@ -135,7 +135,7 @@ namespace ores #F2F2F2 {
         namespace messaging #F2F2F2 {
             class list_feature_flags_request <<message>> #E1F5FF {
                 +serialize() std::vector<std::byte>
-                +{static} deserialize(std::span<const std::byte>) std::expected<list_feature_flags_request, comms::protocol::error_code>
+                +{static} deserialize(std::span<const std::byte>) std::expected<list_feature_flags_request, comms::messaging::error_code>
             }
 
             note top of list_feature_flags_request
@@ -147,7 +147,7 @@ namespace ores #F2F2F2 {
             class list_feature_flags_response <<message>> #E1F5FF {
                 +{field} feature_flags std::vector<domain::feature_flags>
                 +serialize() std::vector<std::byte>
-                +{static} deserialize(std::span<const std::byte>) std::expected<list_feature_flags_response, comms::protocol::error_code>
+                +{static} deserialize(std::span<const std::byte>) std::expected<list_feature_flags_response, comms::messaging::error_code>
             }
 
             note top of list_feature_flags_response
@@ -162,8 +162,8 @@ namespace ores #F2F2F2 {
 
             class variability_message_handler #ECECEC {
                 +variability_message_handler(utility::repository::context)
-                +handle_message(comms::protocol::message_type, std::span<const std::byte>, std::string) boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::protocol::error_code>>
-                -handle_list_feature_flags_request(std::span<const std::byte>) boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::protocol::error_code>>
+                +handle_message(comms::messaging::message_type, std::span<const std::byte>, std::string) boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
+                -handle_list_feature_flags_request(std::span<const std::byte>) boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
                 -{field} feature_flags_repo_ repository::feature_flags_repository
             }
 

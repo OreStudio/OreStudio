@@ -23,6 +23,7 @@
 #include <boost/throw_exception.hpp>
 #include "ores.risk/messaging/registrar.hpp"
 #include "ores.accounts/messaging/registrar.hpp"
+#include "ores.variability/messaging/registrar.hpp"
 #include "ores.accounts/service/bootstrap_mode_service.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/repository/context_factory.hpp"
@@ -83,6 +84,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     auto srv = std::make_shared<ores::comms::net::server>(cfg.server);
     ores::risk::messaging::registrar::register_handlers(*srv, ctx);
     ores::accounts::messaging::registrar::register_handlers(*srv, ctx);
+    ores::variability::messaging::registrar::register_handlers(*srv, ctx);
 
     co_await srv->run(io_ctx);
 

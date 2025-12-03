@@ -278,6 +278,54 @@ namespace ores #F2F2F2 {
             A fatal error has occurred whilst the application was running.
             end note
         }
+
+        namespace tests #F2F2F2 {
+            class app_application_import_tests <<test suite>> #C5E1A5 {
+                +import_currencies_from_test_file() void
+                +import_currencies_from_multiple_files() void
+                +import_and_query_specific_currency() void
+                +import_currencies_with_empty_database() void
+                +import_currencies_verify_all_fields() void
+                +import_currencies_from_api_test_file() void
+            }
+
+            note top of app_application_import_tests
+            Test suite for application import functionality.
+
+            Tests cover importing currencies from XML files,
+            handling multiple files, verifying field accuracy,
+            and querying imported data.
+            end note
+
+            app_application_import_tests ..> ores::cli::app::application : tests
+
+            class parser_tests <<test suite>> #C5E1A5 {
+                +test_help_option() void
+                +test_version_option() void
+                +test_import_help() void
+                +test_export_help() void
+                +test_logging_options() void
+                +test_import_basic() void
+                +test_import_multiple_targets() void
+                +test_export_basic() void
+                +test_export_full_options() void
+                +test_invalid_command() void
+                +test_missing_required_import_args() void
+                +test_missing_required_export_args() void
+                +test_import_with_logging() void
+                +test_export_with_logging() void
+            }
+
+            note top of parser_tests
+            Test suite for command-line parser.
+
+            Tests cover help/version flags, import/export commands,
+            logging options, error handling, and argument validation.
+            end note
+
+            parser_tests ..> ores::cli::config::parser : tests
+            parser_tests ..> ores::cli::config::options : tests
+        }
     }
 }
 

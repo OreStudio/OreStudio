@@ -372,6 +372,144 @@ namespace ores #F2F2F2 {
 
         namespace rfl #F2F2F2 {
         }
+
+        namespace tests #F2F2F2 {
+            class convert_base32_converter_tests <<test suite>> #C5E1A5 {
+                +base32_encode_empty_input() void
+                +base32_encode_single_byte() void
+                +base32_encode_hello() void
+                +base32_encode_foobar() void
+                +base32_encode_various_lengths() void
+                +base32_encode_binary_data() void
+                +base32_encode_all_zeros() void
+                +base32_encode_alphabet_coverage() void
+            }
+
+            note top of convert_base32_converter_tests
+            Test suite for base32 encoding functionality.
+
+            Tests cover empty input, single byte, text strings,
+            various length inputs, binary data, and alphabet coverage.
+            end note
+
+            class convert_base64_converter_tests <<test suite>> #C5E1A5 {
+                +base64_encode_empty_input() void
+                +base64_encode_hello() void
+                +base64_encode_hello_world() void
+                +base64_decode_hello() void
+                +base64_roundtrip_conversion() void
+                +base64_encode_binary_data() void
+                +base64_roundtrip_binary_data() void
+                +base64_decode_empty_throws() void
+                +base64_encode_various_lengths() void
+                +base64_encode_long_text() void
+                +base64_encode_all_zeros() void
+                +base64_encode_all_ones() void
+            }
+
+            note top of convert_base64_converter_tests
+            Test suite for base64 encoding/decoding functionality.
+
+            Tests cover encoding, decoding, roundtrip conversions,
+            binary data, various length inputs, and error handling.
+            end note
+
+            class faker_internet_tests <<test suite>> #C5E1A5 {
+                +internet_endpoint_format() void
+                +internet_endpoint_port_range() void
+                +internet_endpoint_unique_values() void
+                +internet_ipv4_is_valid() void
+                +internet_ipv4_to_string_format() void
+                +internet_ipv4_octets_in_range() void
+                +internet_ipv4_unique_values() void
+                +internet_ipv4_can_create_address() void
+                +internet_endpoint_multiple_calls() void
+                +internet_ipv4_not_unspecified() void
+            }
+
+            note top of faker_internet_tests
+            Test suite for faker internet data generation.
+
+            Tests cover endpoint generation (format, port range),
+            IPv4 generation (validation, format, uniqueness),
+            and address creation.
+            end note
+
+            class faker_totp_tests <<test suite>> #C5E1A5 {
+                +totp_secret_default_size() void
+                +totp_secret_custom_size_10() void
+                +totp_secret_custom_size_5() void
+                +totp_secret_custom_size_32() void
+                +totp_secret_is_valid_base32() void
+                +totp_secret_generates_unique_values() void
+                +totp_secret_different_sizes_produce_different_lengths() void
+                +totp_secret_standard_size_16() void
+                +totp_secret_very_small_size() void
+                +totp_secret_multiple_calls_different_results() void
+            }
+
+            note top of faker_totp_tests
+            Test suite for faker TOTP secret generation.
+
+            Tests cover default and custom secret sizes, base32
+            validation, uniqueness, and multiple generation calls.
+            end note
+
+            class string_converter_tests <<test suite>> #C5E1A5 {
+                +string_to_int_valid_decimal() void
+                +string_to_int_negative_number() void
+                +string_to_int_zero() void
+                +string_to_int_hexadecimal() void
+                +string_to_int_hex_lowercase() void
+                +string_to_int_binary() void
+                +string_to_int_octal() void
+                +string_to_int_max_int() void
+                +string_to_int_min_int() void
+                +string_to_int_invalid_empty_string() void
+                +string_to_int_invalid_non_numeric() void
+                +string_to_int_partial_parse_stops_at_invalid() void
+                +string_to_int_invalid_whitespace() void
+                +string_to_int_out_of_range_overflow() void
+                +string_to_int_out_of_range_underflow() void
+                +string_to_int_different_bases() void
+                +string_to_int_partial_parse_binary() void
+                +string_to_int_partial_parse_hex() void
+                +string_to_int_large_hex_value() void
+                +string_to_int_negative_hex() void
+            }
+
+            note top of string_converter_tests
+            Test suite for string converter functionality.
+
+            Tests cover decimal, hexadecimal, binary, and octal
+            conversions, boundary values, error handling,
+            and different number bases.
+            end note
+
+            string_converter_tests ..> ores::utility::string::converter : tests
+
+            class uuid_uuid_v7_generator_tests <<test suite>> #C5E1A5 {
+                +generate_uuid_v7_is_not_nil() void
+                +generate_multiple_unique_uuids() void
+                +uuid_v7_has_correct_version() void
+                +uuid_v7_has_correct_variant() void
+                +uuid_v7_preserves_time_ordering() void
+                +uuid_v7_string_format_is_valid() void
+                +uuid_v7_timestamp_extraction() void
+                +generate_batch_of_time_ordered_uuids() void
+                +uuid_v7_format_components() void
+            }
+
+            note top of uuid_uuid_v7_generator_tests
+            Test suite for UUID v7 generator.
+
+            Tests cover UUID generation, uniqueness, version/variant
+            validation, time ordering, string format, and timestamp
+            extraction.
+            end note
+
+            uuid_uuid_v7_generator_tests ..> ores::utility::uuid::uuid_v7_generator : tests
+        }
     }
 }
 

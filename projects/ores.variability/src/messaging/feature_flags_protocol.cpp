@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.accounts/messaging/feature_flags_protocol.hpp"
+#include "ores.variability/messaging/feature_flags_protocol.hpp"
 
 #include <expected>
 #include <boost/uuid/uuid_io.hpp>
@@ -28,7 +28,7 @@
 #include "ores.comms/protocol/reader.hpp"
 #include "ores.comms/protocol/writer.hpp"
 
-namespace ores::accounts::messaging {
+namespace ores::variability::messaging {
 
 using namespace ores::comms::protocol;
 
@@ -77,7 +77,7 @@ list_feature_flags_response::deserialize(std::span<const std::byte> data) {
 
     response.feature_flags.reserve(count);
     for (std::uint32_t i = 0; i < count; ++i) {
-        variability::domain::feature_flags ff;
+        domain::feature_flags ff;
 
         auto name_result = reader::read_string(data);
         if (!name_result) return std::unexpected(name_result.error());

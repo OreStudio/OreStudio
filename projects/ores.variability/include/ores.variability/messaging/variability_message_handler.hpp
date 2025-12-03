@@ -1,0 +1,79 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_VARIABILITY_MESSAGING_VARIABILITY_MESSAGE_HANDLER_HPP
+#define ORES_VARIABILITY_MESSAGING_VARIABILITY_MESSAGE_HANDLER_HPP
+
+#include "ores.comms/protocol/message_handler.hpp"
+#include "ores.utility/log/make_logger.hpp"
+#include "ores.utility/repository/context.hpp"
+#include "ores.variability/repository/feature_flags_repository.hpp"
+
+namespace ores::variability::messaging {
+
+/**
+ * @brief Message handler for variability subsystem messages.
+ *
+ * Processes messages in the variability subsystem range (0x3000-0x3FFF).
+ * Currently handles:
+ * - list_feature_flags_request: Retrieves all feature flags from the repository
+ */
+class variability_message_handler final : public comms::protocol::message_handler {
+private:
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger(
+            "ores.variability.messaging.variability_message_handler");
+        return instance;
+    }
+
+public:
+    /**
+     * @brief Construct a variability message handler.
+     *
+     * @param ctx Database context for repository access
+     */
+    explicit variability_message_handler(utility::repository::context ctx);
+
+    /**
+     * @brief Handle a variability subsystem message.
+     *
+     * @param type The message type (must be in range 0x3000-0x3FFF)
+     * @param payload The message payload
+     * @param remote_address The remote endpoint address of the client connection
+     * @return Expected containing response payload, or error code
+     */
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::protocol::error_code>>
+    handle_message(comms::protocol::message_type type,
+        std::span<const std::byte> payload,
+        [[maybe_unused]] const std::string& remote_address) override;
+
+private:
+    /**
+     * @brief Handle list_feature_flags_request message.
+     */
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::protocol::error_code>>
+    handle_list_feature_flags_request(std::span<const std::byte> payload);
+
+    repository::feature_flags_repository feature_flags_repo_;
+};
+
+}
+
+#endif

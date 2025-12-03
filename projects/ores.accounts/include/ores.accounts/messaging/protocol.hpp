@@ -22,7 +22,6 @@
 
 #include "ores.accounts/messaging/account_protocol.hpp"
 #include "ores.accounts/messaging/login_protocol.hpp"
-#include "ores.accounts/messaging/feature_flags_protocol.hpp"
 #include "ores.accounts/messaging/bootstrap_protocol.hpp"
 
 #endif

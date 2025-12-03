@@ -112,16 +112,6 @@ public:
      * @param client_manager Manager for client connectivity.
      */
     static void process_list_login_info(std::ostream& out, client_manager& client_manager);
-
-    /**
-     * @brief Process a list feature flags request.
-     *
-     * Retrieves all feature flags from the server and displays them.
-     *
-     * @param out Output stream for results
-     * @param client_manager Manager for client connectivity.
-     */
-    static void process_list_feature_flags(std::ostream& out, client_manager& client_manager);
 };
 
 }

@@ -32,7 +32,10 @@ register_handlers(comms::net::server& server, utility::repository::context ctx) 
 
     auto handler = std::make_shared<accounts_message_handler>(std::move(ctx));
 
-    comms::protocol::message_type_range accounts_range{.min=0x2000, .max=0x2FFF};
+    comms::protocol::message_type_range accounts_range{
+        .min = comms::protocol::ACCOUNTS_SUBSYSTEM_MIN,
+        .max = comms::protocol::ACCOUNTS_SUBSYSTEM_MAX
+    };
     server.register_handler(accounts_range, std::move(handler));
 
     BOOST_LOG_SEV(lg(), debug) << "Message handlers registered successfully.";

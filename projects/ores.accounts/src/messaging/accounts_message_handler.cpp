@@ -62,8 +62,6 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_list_accounts_request(payload);
     case message_type::list_login_info_request:
         co_return co_await handle_list_login_info_request(payload);
-    case message_type::list_feature_flags_request:
-        co_return co_await handle_list_feature_flags_request(payload);
     case message_type::login_request:
         co_return co_await handle_login_request(payload, remote_address);
     case message_type::unlock_account_request:
@@ -158,25 +156,6 @@ handle_list_login_info_request(std::span<const std::byte> payload) {
                               << " login info records.";
 
     list_login_info_response response{std::move(login_infos)};
-    co_return response.serialize();
-}
-
-accounts_message_handler::handler_result
-accounts_message_handler::
-handle_list_feature_flags_request(std::span<const std::byte> payload) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing list_feature_flags_request.";
-
-    auto request_result = list_feature_flags_request::deserialize(payload);
-    if (!request_result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize list_feature_flags_request.";
-        co_return std::unexpected(request_result.error());
-    }
-
-    auto feature_flags = service_.list_feature_flags();
-    BOOST_LOG_SEV(lg(), info) << "Retrieved " << feature_flags.size()
-                              << " feature flags.";
-
-    list_feature_flags_response response{std::move(feature_flags)};
     co_return response.serialize();
 }
 

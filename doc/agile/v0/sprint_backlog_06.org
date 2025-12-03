@@ -18,32 +18,34 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-02 Tue 12:41], for Tuesday, December 02, 2025.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *3:29* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 3:29   |      |      | 100.0 |
-|       | Active                                |        | 3:29 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:18 |   8.6 |
-| infra | OCR scan notebooks for this sprint    |        |      | 1:29 |  42.6 |
-| code  | Implement session cancellation        |        |      | 1:42 |  48.8 |
+#+CAPTION: Clock summary at [2025-12-03 Wed 10:37], for Wednesday, December 03, 2025.
+|      | <75>                  |        |      |      |       |
+| Tags | Headline              | Time   |      |      |     % |
+|------+-----------------------+--------+------+------+-------|
+|      | *Total time*          | *1:26* |      |      | 100.0 |
+|------+-----------------------+--------+------+------+-------|
+|      | Stories               | 1:26   |      |      | 100.0 |
+|      | Active                |        | 1:26 |      | 100.0 |
+| code | Add tests to diagrams |        |      | 1:26 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-02 Tue 12:42]
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *3:29* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 3:29   |      |      | 100.0 |
-|       | Active                                |        | 3:29 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:18 |   8.6 |
-| infra | OCR scan notebooks for this sprint    |        |      | 1:29 |  42.6 |
-| code  | Implement session cancellation        |        |      | 1:42 |  48.8 |
+#+CAPTION: Clock summary at [2025-12-03 Wed 10:37]
+|       | <75>                                           |        |      |      |       |
+| Tags  | Headline                                       | Time   |      |      |     % |
+|-------+------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                   | *9:28* |      |      | 100.0 |
+|-------+------------------------------------------------+--------+------+------+-------|
+|       | Stories                                        | 9:28   |      |      | 100.0 |
+|       | Active                                         |        | 9:28 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |        |      | 0:18 |   3.2 |
+| infra | OCR scan notebooks for this sprint             |        |      | 1:29 |  15.7 |
+| code  | Implement session cancellation                 |        |      | 2:42 |  28.5 |
+| code  | Create a variability service for feature flags |        |      | 1:23 |  14.6 |
+| code  | Add tests to diagrams                          |        |      | 1:26 |  15.1 |
+| code  | Experiment with simple code generation         |        |      | 1:30 |  15.8 |
+| code  | Add messaging to variability                   |        |      | 0:40 |   7.0 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -580,6 +582,28 @@ behavior of the session cancellation, including the effect on the client side.
   Let me know if you'd like the full code patches for `session.hpp/cpp` or help adapting this to your exact `connection`/`ssl_stream` usage!
   #+end_src
 
+*** COMPLETED Create a variability service for feature flags           :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-02 Tue 21:40]--[2025-12-02 Tue 23:03] =>  1:23
+    :END:
+
+We should not expose the repository directly. Instead, consumers should use a
+service interface which queries the repository as needed.
+
+*** COMPLETED Add tests to diagrams                                    :code:
+:LOGBOOK:
+CLOCK: [2025-12-03 Wed 10:36]--[2025-12-03 Wed 10:36] =>  0:00
+CLOCK: [2025-12-03 Wed 10:36]--[2025-12-03 Wed 10:36] =>  0:00
+CLOCK: [2025-12-03 Wed 10:36]--[2025-12-03 Wed 10:36] =>  0:00
+:END:
+
+
+    :LOGBOOK:
+    CLOCK: [2025-12-03 Wed 09:09]--[2025-12-03 Wed 10:35] =>  1:26
+    :END:
+
+It is helpful so we can see how we are doing in terms of coverage visually.
+
 *** STARTED Experiment with simple code generation                     :code:
     :LOGBOOK:
     CLOCK: [2025-12-02 Tue 14:35]--[2025-12-02 Tue 16:05] =>  1:30
@@ -588,6 +612,89 @@ behavior of the session cancellation, including the effect on the client side.
 It should be easy enough to add a simple code generator that creates the basic
 infrastructure for a domain type, so that we don't have to waste Claude Code
 tokens.
+
+*** STARTED Add messaging to variability                               :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-02 Tue 23:04]--[2025-12-02 Tue 23:44] =>  0:40
+    :END:
+
+At present we left the messaging code related to feature flags in accounts.
+
+**** Implementation Plan
+
+Move feature flags messaging infrastructure from ores.accounts to ores.variability
+to align with domain ownership.
+
+**Strategy:**
+- Bump protocol from v5 to v6 (breaking change)
+- Assign variability subsystem range 0x3000-0x3FFF
+- Move feature flags messages from 0x200D/0x200E to 0x3000/0x3001
+- Use linux-gcc-debug preset (clang has issues)
+
+**Tasks:**
+
+- [ ] Update protocol version and message types
+  - Change protocol_version_major from 5 to 6
+  - Add variability range 0x3000-0x3FFF
+  - Move feature flags to 0x3000/0x3001
+  - Remove old 0x200D/0x200E codes
+  - File: =projects/ores.comms/include/ores.comms/protocol/message_types.hpp=
+
+- [ ] Create variability messaging infrastructure
+  - Create =projects/ores.variability/include/ores.variability/messaging/= directory
+  - Create =projects/ores.variability/src/messaging/= directory
+  - Move feature_flags_protocol.hpp/cpp from accounts to variability
+  - Update namespace to =ores::variability::messaging=
+  - Update message type references to 0x3000/0x3001
+  - Create variability_message_handler.hpp/cpp
+  - Create registrar.hpp/cpp with range {0x3000, 0x3FFF}
+  - Create protocol.hpp aggregation header
+
+- [ ] Update CMake dependencies
+  - Add =ores.comms.lib= to variability dependencies (PUBLIC)
+  - Add =ores.variability.lib= to service dependencies
+  - Files: =projects/ores.variability/src/CMakeLists.txt=, =projects/ores.service/src/CMakeLists.txt=
+
+- [ ] Remove feature flags from accounts
+  - Remove feature flags includes from account_service.hpp
+  - Remove list_feature_flags() method from account_service
+  - Remove feature_flags_repo_ member from account_service
+  - Remove feature flags handler from accounts_message_handler
+  - Remove feature_flags_protocol.hpp include from protocol.hpp
+  - Delete moved protocol files from accounts
+  - Files: account_service.hpp/cpp, accounts_message_handler.hpp/cpp, protocol.hpp
+
+- [ ] Register variability handlers
+  - Add variability registrar include to application.cpp
+  - Call =ores::variability::messaging::registrar::register_handlers()=
+  - File: =projects/ores.service/src/app/application.cpp=
+
+- [ ] Update documentation
+  - Add variability to CLAUDE.md architecture section
+
+- [ ] Build and verify
+  - Build: =cmake --build --preset linux-gcc-debug=
+  - Test runtime with message type 0x3000
+  - Run all tests
+  - Update any tests referencing old protocol version
+
+**Breaking Changes:**
+- Protocol v5 → v6
+- Message types changed (0x200D/0x200E → 0x3000/0x3001)
+- All clients must update
+
+*** Create handshake service in comms                                  :code:
+
+We seem to have relationships all over the place to handle handshaking. It makes
+more sense to encapsulate all of that in a handshake service that serves both
+ends of the handshake.
+
+*** Entity syntax refactor snags                                       :code:
+
+We refactored ores.cli to be "entity oriented", so that commands such as export,
+import etc belonged directly to an entity. In this case there should be no need
+to supply the entity in the command line since it is part of the command.
+However, we still see the entity enum in the code.
 
 *** Add tests for messaging handler                                    :code:
 
@@ -641,11 +748,6 @@ Files likely affected:
 Related to completed story: "Implement session cancellation" - that story
 addresses graceful server shutdown, this story addresses client-side detection
 of that shutdown.
-
-*** Create a variability service for feature flags                     :code:
-
-We should not expose the repository directly. Instead, consumers should use a
-service interface which queries the repository as needed.
 
 *** Add screen in qt to exit bootstrap mode                            :code:
 

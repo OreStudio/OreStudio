@@ -17,26 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.risk/messaging/registrar.hpp"
+#include "ores.variability/messaging/registrar.hpp"
 
-#include "ores.risk/messaging/risk_message_handler.hpp"
+#include "ores.variability/messaging/variability_message_handler.hpp"
 
-namespace ores::risk::messaging {
+namespace ores::variability::messaging {
 
 using namespace ores::utility::log;
 
 void registrar::register_handlers(comms::net::server& server,
     utility::repository::context ctx) {
-    BOOST_LOG_SEV(lg(), info) << "Registering risk subsystem message handlers.";
+    BOOST_LOG_SEV(lg(), info) << "Registering variability subsystem message handlers.";
 
-    auto handler = std::make_shared<risk_message_handler>(std::move(ctx));
-    comms::protocol::message_type_range risk_range{
-        .min = comms::protocol::RISK_SUBSYSTEM_MIN,
-        .max = comms::protocol::RISK_SUBSYSTEM_MAX
+    auto handler = std::make_shared<variability_message_handler>(std::move(ctx));
+    comms::protocol::message_type_range variability_range{
+        .min = comms::protocol::VARIABILITY_SUBSYSTEM_MIN,
+        .max = comms::protocol::VARIABILITY_SUBSYSTEM_MAX
     };
-    server.register_handler(risk_range, std::move(handler));
+    server.register_handler(variability_range, std::move(handler));
 
-    BOOST_LOG_SEV(lg(), info) << "Risk subsystem message handlers registered successfully.";
+    BOOST_LOG_SEV(lg(), info) << "Variability subsystem message handlers registered successfully.";
 }
 
 }

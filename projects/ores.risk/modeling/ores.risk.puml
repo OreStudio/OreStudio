@@ -89,6 +89,9 @@ namespace ores #F2F2F2 {
             Imports domain objects from their ORE XML representation.
             end note
 
+            importer ..> ores::risk::orexml::CurrencyConfig : uses
+            importer ..> ores::risk::domain::currency : imports
+
             class currency_mapper #FFFACD {
                 +{static} map(const CurrencyElement& v) : domain::currency
                 +{static} map(const domain::currency& v) : CurrencyElement
@@ -101,6 +104,10 @@ namespace ores #F2F2F2 {
             Maps domain model entities to ORE XML and vice-versa.
             end note
 
+            currency_mapper ..> ores::risk::orexml::CurrencyElement : uses
+            currency_mapper ..> ores::risk::orexml::CurrencyConfig : uses
+            currency_mapper ..> ores::risk::domain::currency : uses
+
             class exporter #FFFACD {
                 +{static} export_currency_config(const std::vector<domain::currency>& v) : std::string
                 -{static} lg() : auto&
@@ -109,6 +116,9 @@ namespace ores #F2F2F2 {
             note top of exporter
             Exports domain objects from their ORE XML representation.
             end note
+
+            exporter ..> ores::risk::domain::currency : exports
+            exporter ..> ores::risk::orexml::CurrencyConfig : uses
         }
 
         namespace domain #F2F2F2 {
@@ -236,6 +246,9 @@ namespace ores #F2F2F2 {
             Maps domain model entities to data storage layer and vice-versa.
             end note
 
+            currency_mapper ..> ores::risk::repository::currency_entity : uses
+            currency_mapper ..> ores::risk::domain::currency : uses
+
             class currency_repository #FFFACD {
                 +sql() : std::string
                 +write(context ctx, const domain::currency& currencies) : void
@@ -257,6 +270,9 @@ namespace ores #F2F2F2 {
             note top of currency_repository
             Reads and writes currencies off of data storage.
             end note
+
+            currency_repository ..> ores::risk::domain::currency : uses
+            currency_repository ..> ores::risk::repository::currency_entity : uses
         }
 
         namespace generators #F2F2F2 {
@@ -270,6 +286,8 @@ namespace ores #F2F2F2 {
             note top of currency_generator
             Functions for generating synthetic currency data.
             end note
+
+            currency_generator ..> ores::risk::domain::currency : generates
         }
 
         namespace csv #F2F2F2 {
@@ -281,6 +299,8 @@ namespace ores #F2F2F2 {
             note top of exporter
             Exports domain objects to their CSV representation.
             end note
+
+            exporter ..> ores::risk::domain::currency : exports
         }
 
         namespace messaging #F2F2F2 {
@@ -309,6 +329,8 @@ namespace ores #F2F2F2 {
             - currencies: List of all currencies.
             end note
 
+            get_currencies_response o-- ores::risk::domain::currency
+
             class save_currency_request #F7E5FF {
                 +{field} currency : domain::currency
                 +serialize() const : std::vector<std::uint8_t>
@@ -326,6 +348,8 @@ namespace ores #F2F2F2 {
 
             - currency: The currency to save.
             end note
+
+            save_currency_request o-- ores::risk::domain::currency
 
             class save_currency_response #F7E5FF {
                 +{field} success : bool
@@ -428,6 +452,16 @@ namespace ores #F2F2F2 {
             - get_currencies_request: Retrieves all currencies from the repository
             end note
 
+            risk_message_handler o-- ores::risk::repository::currency_repository
+            risk_message_handler ..> ores::risk::messaging::get_currencies_request : uses
+            risk_message_handler ..> ores::risk::messaging::get_currencies_response : uses
+            risk_message_handler ..> ores::risk::messaging::save_currency_request : uses
+            risk_message_handler ..> ores::risk::messaging::save_currency_response : uses
+            risk_message_handler ..> ores::risk::messaging::delete_currency_request : uses
+            risk_message_handler ..> ores::risk::messaging::delete_currency_response : uses
+            risk_message_handler ..> ores::risk::messaging::get_currency_history_request : uses
+            risk_message_handler ..> ores::risk::messaging::get_currency_history_response : uses
+
             class registrar #FFFACD {
                 +{static} register_handlers(comms::server& server, utility::repository::context ctx) : void
                 -{static} lg() : auto&
@@ -439,6 +473,131 @@ namespace ores #F2F2F2 {
             Registers handlers for all risk subsystem messages (0x1000-0x1FFF).
             Must be called before server.run().
             end note
+
+            registrar ..> ores::risk::messaging::risk_message_handler : creates
+        }
+
+        namespace tests #F2F2F2 {
+            class domain_currency_tests <<test suite>> #C5E1A5 {
+                +create_currency_with_valid_fields() void
+                +create_currency_with_faker() void
+                +create_multiple_random_currencies() void
+                +create_currency_with_high_precision() void
+                +create_currency_with_no_fractions() void
+                +create_currency_with_three_decimal_places() void
+                +create_currencies_with_different_symbols() void
+                +currency_convert_single_to_table() void
+                +currency_convert_multiple_to_table() void
+                +currency_table_with_faker_data() void
+            }
+
+            note top of domain_currency_tests
+            Test suite for currency domain model.
+
+            Tests cover currency creation, precision levels,
+            decimal places, symbols, and table conversion.
+            end note
+
+            domain_currency_tests ..> ores::risk::domain::currency : tests
+
+            class domain_currency_version_tests <<test suite>> #C5E1A5 {
+                +create_currency_version_with_valid_fields() void
+                +create_currency_version_with_faker() void
+                +currency_version_convert_multiple_to_table() void
+                +currency_version_table_with_faker_data() void
+                +create_currency_version_history_with_valid_fields() void
+                +currency_version_history_convert_multiple_to_table() void
+                +currency_version_history_table_with_faker_data() void
+            }
+
+            note top of domain_currency_version_tests
+            Test suite for currency_version domain model.
+
+            Tests cover version creation, history tracking,
+            and table conversion with faker data.
+            end note
+
+            domain_currency_version_tests ..> ores::risk::domain::currency_version : tests
+
+            class messaging_protocol_tests <<test suite>> #C5E1A5 {
+                +get_currencies_request_serialize_deserialize() void
+                +get_currencies_response_empty() void
+                +get_currencies_response_with_single_currency() void
+                +get_currencies_response_serialize_deserialize() void
+                +get_currencies_response_large_dataset() void
+                +get_currencies_response_with_special_characters() void
+                +get_currencies_response_with_empty_fields() void
+            }
+
+            note top of messaging_protocol_tests
+            Test suite for messaging protocol serialization.
+
+            Tests cover get_currencies request/response messages,
+            serialization/deserialization, and edge cases.
+            end note
+
+            messaging_protocol_tests ..> ores::risk::messaging::get_currencies_request : tests
+            messaging_protocol_tests ..> ores::risk::messaging::get_currencies_response : tests
+
+            class messaging_risk_message_handler_tests <<test suite>> #C5E1A5 {
+                +handle_get_currencies_request_empty() void
+                +handle_get_currencies_request_with_single_currency() void
+                +handle_get_currencies_request_with_multiple_currencies() void
+                +handle_get_currencies_request_with_faker() void
+                +handle_get_currencies_request_verify_serialization_roundtrip() void
+                +handle_get_currencies_request_with_unicode_symbols() void
+                +handle_invalid_message_type() void
+            }
+
+            note top of messaging_risk_message_handler_tests
+            Test suite for risk_message_handler.
+
+            Tests cover currency retrieval scenarios: empty,
+            single, multiple, faker data, and error cases.
+            end note
+
+            messaging_risk_message_handler_tests ..> ores::risk::messaging::risk_message_handler : tests
+
+            class orexml_currency_config_tests <<test suite>> #C5E1A5 {
+                +read_currency_config_from_simple_xml() void
+                +read_currency_config_from_currencies_xml() void
+                +read_currency_config_from_currencies_01_xml() void
+                +read_currency_config_from_currencies_41_xml() void
+                +read_currency_config_from_currencies_42_xml() void
+                +read_currency_config_from_currencies_62_xml() void
+                +read_currency_config_from_currencies_API_xml() void
+            }
+
+            note top of orexml_currency_config_tests
+            Test suite for ORE XML currency configuration.
+
+            Tests cover reading currency configurations from
+            various ORE XML format versions.
+            end note
+
+            orexml_currency_config_tests ..> ores::risk::orexml::CurrencyConfig : tests
+            orexml_currency_config_tests ..> ores::risk::orexml::importer : tests
+
+            class repository_currency_repository_tests <<test suite>> #C5E1A5 {
+                +write_single_currency() void
+                +write_multiple_currencies() void
+                +read_latest_currencies() void
+                +read_latest_currency_by_iso_code() void
+                +read_all_currencies() void
+                +read_all_currencies_multiple_versions() void
+                +read_nonexistent_iso_code() void
+                +write_and_read_currency_with_unicode_symbols() void
+                +write_and_read_currency_with_no_fractions() void
+            }
+
+            note top of repository_currency_repository_tests
+            Test suite for currency_repository.
+
+            Tests cover write, read (latest/all), ISO code lookup,
+            versioning, and Unicode symbol handling.
+            end note
+
+            repository_currency_repository_tests ..> ores::risk::repository::currency_repository : tests
         }
     }
 }

@@ -192,6 +192,34 @@ namespace ores #F2F2F2 {
 
             registrar ..> ores::variability::messaging::variability_message_handler : creates
         }
+
+        namespace tests #F2F2F2 {
+            class domain_feature_flags_tests <<test suite>> #C5E1A5 {
+                +create_feature_flag_with_valid_fields() void
+                +create_disabled_feature_flag() void
+                +feature_flag_serialization_to_json() void
+                +create_feature_flag_with_faker() void
+                +create_multiple_random_feature_flags() void
+                +create_system_feature_flags() void
+                +feature_flags_convert_single_to_table() void
+                +feature_flags_convert_multiple_to_table() void
+                +feature_flags_table_with_faker_data() void
+            }
+
+            note top of domain_feature_flags_tests
+            Test suite for feature_flags domain model.
+
+            Tests cover:
+            - Feature flag creation with valid/invalid data
+            - Enabled and disabled feature flags
+            - JSON serialization
+            - Faker-generated test data
+            - Table conversion and formatting
+            - Multiple feature flags handling
+            end note
+
+            domain_feature_flags_tests ..> ores::variability::domain::feature_flags : tests
+        }
     }
 }
 

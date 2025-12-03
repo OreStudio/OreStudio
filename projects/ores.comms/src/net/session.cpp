@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include "ores.comms/protocol/handshake.hpp"
+#include "ores.comms/protocol/handshake_service.hpp"
 
 namespace ores::comms::net {
 
@@ -77,103 +78,14 @@ boost::asio::awaitable<void> session::run() {
 }
 
 boost::asio::awaitable<bool> session::perform_handshake() {
-    try {
-        BOOST_LOG_SEV(lg(), debug) << "Starting server handshake process...";
+    bool success = co_await protocol::handshake_service::perform_server_handshake(
+        *conn_, ++sequence_number_, server_id_);
 
-        // Read handshake request from client
-        // Use lenient reading (skip_version_check=true) to allow reading frames
-        // with mismatched protocol versions. This enables us to send a proper
-        // handshake_response with version details instead of rejecting the frame.
-        BOOST_LOG_SEV(lg(), debug) << "About to read handshake request frame from client";
-        auto frame_result = co_await conn_->read_frame(true);  // skip_version_check=true
-        if (!frame_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to read handshake request: error code "
-                                      << static_cast<int>(frame_result.error());
-            co_return false;
-        }
-
-        const auto& request_frame = *frame_result;
-
-        // Verify it's a handshake request
-        if (request_frame.header().type != protocol::message_type::handshake_request) {
-            BOOST_LOG_SEV(lg(), error) << "Expected handshake request, got message type "
-                                      << static_cast<int>(request_frame.header().type);
-            co_return false;
-        }
-
-        BOOST_LOG_SEV(lg(), debug) << "Received valid handshake request frame";
-
-        // Deserialize handshake request
-        auto request_result = protocol::handshake_request::deserialize(request_frame.payload());
-        if (!request_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize handshake request";
-            co_return false;
-        }
-
-        const auto& request = *request_result;
-        BOOST_LOG_SEV(lg(), info) << "Handshake request from client '" << request.client_identifier
-                                 << "' (version " << request.client_version_major << "."
-                                 << request.client_version_minor << ")";
-
-        // Check version compatibility
-        bool version_compatible = (request.client_version_major == protocol::PROTOCOL_VERSION_MAJOR);
-
-        // Send handshake response
-        auto response_frame = protocol::create_handshake_response_frame(
-            ++sequence_number_,
-            version_compatible,
-            server_id_,
-            version_compatible ? protocol::error_code::none : protocol::error_code::version_mismatch);
-
-        BOOST_LOG_SEV(lg(), debug) << "About to send handshake response frame";
-        co_await conn_->write_frame(response_frame);
-        BOOST_LOG_SEV(lg(), debug) << "Sent handshake response frame";
-
-        if (!version_compatible) {
-            BOOST_LOG_SEV(lg(), error) << "Version mismatch: client=" << request.client_version_major
-                                      << "." << request.client_version_minor << ", server="
-                                      << protocol::PROTOCOL_VERSION_MAJOR << "."
-                                      << protocol::PROTOCOL_VERSION_MINOR;
-            co_return false;
-        }
-
-        // Read handshake acknowledgment
-        BOOST_LOG_SEV(lg(), debug) << "About to read handshake acknowledgment frame from client";
-        auto ack_frame_result = co_await conn_->read_frame(false);
-        if (!ack_frame_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to read handshake ack, error code: " << static_cast<int>(ack_frame_result.error());
-            co_return false;
-        }
-
-        const auto& ack_frame = *ack_frame_result;
-        if (ack_frame.header().type != protocol::message_type::handshake_ack) {
-            BOOST_LOG_SEV(lg(), error) << "Expected handshake ack, got message type "
-                                      << static_cast<int>(ack_frame.header().type);
-            co_return false;
-        }
-
-        BOOST_LOG_SEV(lg(), debug) << "Received valid handshake acknowledgment frame";
-
-        auto ack_result = protocol::handshake_ack::deserialize(ack_frame.payload());
-        if (!ack_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize handshake ack";
-            co_return false;
-        }
-
-        if (ack_result->status != protocol::error_code::none) {
-            BOOST_LOG_SEV(lg(), error) << "Client reported handshake error: "
-                                      << static_cast<int>(ack_result->status);
-            co_return false;
-        }
-
+    if (success) {
         handshake_complete_ = true;
-        BOOST_LOG_SEV(lg(), debug) << "Server handshake completed successfully";
-        co_return true;
-
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Handshake exception: " << e.what();
-        co_return false;
     }
+
+    co_return success;
 }
 
 boost::asio::awaitable<void> session::process_messages() {

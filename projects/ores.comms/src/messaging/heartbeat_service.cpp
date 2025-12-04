@@ -40,32 +40,4 @@ boost::asio::awaitable<void> heartbeat_service::handle_ping(
     BOOST_LOG_SEV(lg(), trace) << "Sent pong response";
 }
 
-boost::asio::awaitable<bool> heartbeat_service::send_ping(
-    net::connection& conn,
-    std::uint32_t sequence) {
-
-    BOOST_LOG_SEV(lg(), trace) << "Sending ping";
-
-    auto ping_frame = create_ping_frame(sequence);
-    co_await conn.write_frame(ping_frame);
-
-    BOOST_LOG_SEV(lg(), trace) << "Waiting for pong response";
-    auto response_result = co_await conn.read_frame();
-
-    if (!response_result) {
-        BOOST_LOG_SEV(lg(), debug) << "Failed to read pong response";
-        co_return false;
-    }
-
-    const auto& response_frame = *response_result;
-    if (response_frame.header().type != message_type::pong) {
-        BOOST_LOG_SEV(lg(), warn) << "Expected pong, got message type "
-                                  << response_frame.header().type;
-        co_return false;
-    }
-
-    BOOST_LOG_SEV(lg(), trace) << "Received pong response";
-    co_return true;
-}
-
 }

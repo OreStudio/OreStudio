@@ -30,10 +30,11 @@ namespace ores::comms::net { class connection; }
 namespace ores::comms::messaging {
 
 /**
- * @brief Service for handling heartbeat (ping/pong) protocol.
+ * @brief Service for handling heartbeat (ping/pong) protocol on the server.
  *
- * Provides lightweight connection liveness checking through ping/pong
- * messages. Follows the same pattern as handshake_service for consistency.
+ * Provides server-side handling of ping messages by sending pong responses.
+ * Client-side heartbeat is handled by the client's message loop using
+ * correlation IDs for response matching.
  */
 class heartbeat_service final {
 private:
@@ -55,17 +56,6 @@ public:
         net::connection& conn,
         std::uint32_t sequence,
         std::uint32_t correlation_id);
-
-    /**
-     * @brief Send ping and wait for pong response (client-side).
-     *
-     * @param conn Connection to perform ping/pong on
-     * @param sequence Sequence number for ping frame
-     * @return true if pong received, false on timeout/error
-     */
-    static boost::asio::awaitable<bool> send_ping(
-        net::connection& conn,
-        std::uint32_t sequence);
 };
 
 }

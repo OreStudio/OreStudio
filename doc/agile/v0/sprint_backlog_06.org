@@ -736,19 +736,10 @@ It should be easy enough to add a simple code generator that creates the basic
 infrastructure for a domain type, so that we don't have to waste Claude Code
 tokens.
 
-*** Entity syntax refactor snags                                       :code:
-
-We refactored ores.cli to be "entity oriented", so that commands such as export,
-import etc belonged directly to an entity. In this case there should be no need
-to supply the entity in the command line since it is part of the command.
-However, we still see the entity enum in the code.
-
-*** Add tests for messaging handler                                    :code:
-
-We need tests in comms which create a test request and response and a test
-handler.
-
-*** Implement client heartbeat for proactive disconnect detection      :code:
+*** STARTED Implement client heartbeat for disconnect detection        :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-03 Wed 23:21]
+    :END:
 
 Currently, the client only detects server disconnections when attempting to
 send a request. If the server closes the connection (e.g., via graceful
@@ -795,6 +786,22 @@ Files likely affected:
 Related to completed story: "Implement session cancellation" - that story
 addresses graceful server shutdown, this story addresses client-side detection
 of that shutdown.
+
+*** Entity syntax refactor snags                                       :code:
+
+We refactored ores.cli to be "entity oriented", so that commands such as export,
+import etc belonged directly to an entity. In this case there should be no need
+to supply the entity in the command line since it is part of the command.
+However, we still see the entity enum in the code.
+
+*** Add tests for messaging handler                                    :code:
+
+We need tests in comms which create a test request and response and a test
+handler.
+
+*** Add retry algorithm to client                                      :code:
+
+It would be nice to reconnect automatically.
 
 *** Add screen in qt to exit bootstrap mode                            :code:
 

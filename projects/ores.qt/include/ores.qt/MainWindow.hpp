@@ -189,6 +189,15 @@ private:
      */
     void createControllers();
 
+    /**
+     * @brief Performs common cleanup when disconnecting from server.
+     *
+     * Disconnects the client, stops the IO thread, closes all entity windows,
+     * resets controllers, and clears client infrastructure. Called by both
+     * manual disconnect and automatic disconnect detection.
+     */
+    void performDisconnectCleanup();
+
 private:
     /** @brief Auto-generated UI elements from MainWindow.ui */
     Ui::MainWindow* ui_;

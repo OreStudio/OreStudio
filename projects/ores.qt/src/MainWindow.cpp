@@ -290,33 +290,7 @@ void MainWindow::onDisconnectTriggered() {
     BOOST_LOG_SEV(lg(), debug) << "Disconnect action triggered.";
 
     if (client_ && client_->is_connected()) {
-        client_->disconnect();
-
-        // Reset work guard to allow IO context to finish
-        work_guard_.reset();
-
-        // Stop IO context and join thread
-        if (io_context_) {
-            io_context_->stop();
-        }
-
-        if (io_thread_ && io_thread_->joinable()) {
-            io_thread_->join();
-        }
-
-        // Close all windows managed by controllers
-        if (currencyController_)
-            currencyController_->closeAllWindows();
-
-        // Reset controllers
-        currencyController_.reset();
-
-        // Clear client infrastructure
-        client_.reset();
-        io_thread_.reset();
-        io_context_.reset();
-
-        updateMenuState();
+        performDisconnectCleanup();
 
         BOOST_LOG_SEV(lg(), info) << "Disconnected from server";
         ui_->statusbar->showMessage(
@@ -327,46 +301,52 @@ void MainWindow::onDisconnectTriggered() {
 void MainWindow::onServerDisconnectedDetected() {
     BOOST_LOG_SEV(lg(), warn) << "Server disconnect detected - cleaning up";
 
-    // Perform the same cleanup as manual disconnect
     if (client_) {
-        client_->disconnect();
-
-        // Reset work guard to allow IO context to finish
-        work_guard_.reset();
-
-        // Stop IO context and join thread
-        if (io_context_) {
-            io_context_->stop();
-        }
-
-        if (io_thread_ && io_thread_->joinable()) {
-            io_thread_->join();
-        }
-
-        // Close all windows managed by controllers
-        if (currencyController_)
-            currencyController_->closeAllWindows();
-
-        // Reset controllers
-        currencyController_.reset();
-
-        // Clear client infrastructure
-        client_.reset();
-        io_thread_.reset();
-        io_context_.reset();
+        performDisconnectCleanup();
 
         BOOST_LOG_SEV(lg(), warn) << "Server connection lost";
         ui_->statusbar->showMessage(
             "Server connection lost - disconnected automatically", 10000);
 
-        // Flash the disconnect icon to draw attention, then ensure it stays disconnected
-        // Start with 8 flashes (4 cycles) over 2 seconds
+        // Flash the disconnect icon to draw attention
         flashIconCount_ = 8;
         flashIconTimer_.start(250);
-
-        // Also update menu state to disable connection-dependent actions
-        updateMenuState();
     }
+}
+
+void MainWindow::performDisconnectCleanup() {
+    // Disconnect client
+    if (client_) {
+        client_->disconnect();
+    }
+
+    // Reset work guard to allow IO context to finish
+    work_guard_.reset();
+
+    // Stop IO context and join thread
+    if (io_context_) {
+        io_context_->stop();
+    }
+
+    if (io_thread_ && io_thread_->joinable()) {
+        io_thread_->join();
+    }
+
+    // Close all windows managed by controllers
+    if (currencyController_) {
+        currencyController_->closeAllWindows();
+    }
+
+    // Reset controllers
+    currencyController_.reset();
+
+    // Clear client infrastructure
+    client_.reset();
+    io_thread_.reset();
+    io_context_.reset();
+
+    // Update UI state
+    updateMenuState();
 }
 
 void MainWindow::onFlashIconTick() {

@@ -19,6 +19,7 @@
  */
 #include "ores.qt/MainWindow.hpp"
 
+#include <functional>
 #include <QDebug>
 #include <QTableView>
 #include <QTimer>
@@ -99,6 +100,10 @@ MainWindow::MainWindow(QWidget* parent) :
         &MainWindow::onDetachAllTriggered);
     connect(ui_->menuWindow, &QMenu::aboutToShow, this,
         &MainWindow::onWindowMenuAboutToShow);
+
+    // Connect server disconnect detection signal
+    connect(this, &MainWindow::serverDisconnectedDetected, this,
+        &MainWindow::onServerDisconnectedDetected, Qt::QueuedConnection);
 
     // Connect Currencies action to controller
     connect(ui_->CurrenciesAction, &QAction::triggered, this, [this]() {
@@ -213,6 +218,14 @@ void MainWindow::onLoginTriggered() {
         if (client_ && client_->is_connected()) {
             BOOST_LOG_SEV(lg(), info) << "Successfully connected and authenticated.";
 
+            // Set up disconnect callback for proactive server disconnect detection
+            client_->set_disconnect_callback([this]() {
+                BOOST_LOG_SEV(lg(), warn) << "Server disconnect detected by heartbeat";
+                // Emit signal to handle disconnect on main thread (thread-safe)
+                emit serverDisconnectedDetected();
+            });
+            BOOST_LOG_SEV(lg(), debug) << "Heartbeat disconnect callback registered";
+
             // Create entity controllers after successful login
             createControllers();
 
@@ -304,6 +317,63 @@ void MainWindow::onDisconnectTriggered() {
         BOOST_LOG_SEV(lg(), info) << "Disconnected from server";
         ui_->statusbar->showMessage(
             "Successfully disconnected from the server.");
+    }
+}
+
+void MainWindow::onServerDisconnectedDetected() {
+    BOOST_LOG_SEV(lg(), warn) << "Server disconnect detected - cleaning up";
+
+    // Perform the same cleanup as manual disconnect
+    if (client_) {
+        client_->disconnect();
+
+        // Reset work guard to allow IO context to finish
+        work_guard_.reset();
+
+        // Stop IO context and join thread
+        if (io_context_) {
+            io_context_->stop();
+        }
+
+        if (io_thread_ && io_thread_->joinable()) {
+            io_thread_->join();
+        }
+
+        // Close all windows managed by controllers
+        if (currencyController_)
+            currencyController_->closeAllWindows();
+
+        // Reset controllers
+        currencyController_.reset();
+
+        // Clear client infrastructure
+        client_.reset();
+        io_thread_.reset();
+        io_context_.reset();
+
+        updateMenuState();
+
+        BOOST_LOG_SEV(lg(), warn) << "Server connection lost";
+        ui_->statusbar->showMessage(
+            "Server connection lost - disconnected automatically", 10000);
+
+        // Flash the disconnect icon to draw attention
+        std::function<void(int)> flashIcon = [this, &flashIcon](int count) {
+            if (count <= 0) return;
+
+            // Alternate between disconnected and connected icons
+            bool showDisconnected = (count % 2 == 1);
+            const QIcon& icon = showDisconnected ? disconnectedIcon_ : connectedIcon_;
+            connectionStatusIconLabel_->setPixmap(icon.pixmap(16, 16));
+
+            // Schedule next flash
+            QTimer::singleShot(300, this, [this, &flashIcon, count]() {
+                flashIcon(count - 1);
+            });
+        };
+
+        // Flash 6 times (3 cycles) over 1.8 seconds
+        flashIcon(6);
     }
 }
 

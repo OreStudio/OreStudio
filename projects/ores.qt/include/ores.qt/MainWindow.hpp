@@ -108,6 +108,16 @@ protected:
      */
     void closeEvent(QCloseEvent* event) override;
 
+signals:
+    /**
+     * @brief Emitted when server disconnect is detected by heartbeat.
+     *
+     * This signal is emitted from the client's disconnect callback (which runs
+     * on the IO thread) and is connected to onServerDisconnectedDetected() slot
+     * to safely handle the disconnect on the main thread.
+     */
+    void serverDisconnectedDetected();
+
 private slots:
     /**
      * @brief Handles login action from menu/toolbar.
@@ -134,6 +144,15 @@ private slots:
      * @brief Detaches all MDI windows to separate floating windows.
      */
     void onDetachAllTriggered();
+
+    /**
+     * @brief Handles automatic server disconnect detection from heartbeat.
+     *
+     * Called when the client's heartbeat mechanism detects that the server
+     * has stopped responding. Performs the same cleanup as onDisconnectTriggered
+     * but with a different user message indicating the disconnect was unexpected.
+     */
+    void onServerDisconnectedDetected();
 
     /**
      * @brief Updates the Window menu with the list of currently open windows.

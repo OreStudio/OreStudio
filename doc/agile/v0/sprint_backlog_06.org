@@ -847,30 +847,30 @@ responses to requests.
   - Configurable default timeout
   - Can be added later when needed
 
-- [ ] 5. Refactor =send_request()=
+- [X] 5. Refactor =send_request()=
   - Generate correlation_id
   - Register in pending_requests_map
   - Post write to strand
   - =co_await= response channel
 
-- [ ] 6. Refactor =run_heartbeat()= to use new infrastructure
+- [X] 6. Refactor =run_heartbeat()= to use new infrastructure
   - Use unified request/response pattern
   - Timeout triggers disconnect callback
 
-- [ ] 7. Update server to echo =correlation_id=
+- [X] 7. Update server to echo =correlation_id=
   - Ping handler returns pong with same correlation_id
   - All response handlers copy correlation_id from request
 
-- [ ] 8.1 Add notification callback type
+- [-] 8.1 Add notification callback type (deferred to listen/notify story)
   - =notification_callback_t= for server-push messages
 
-- [ ] 8.2 Keep =disconnect_callback_t=
+- [X] 8.2 Keep =disconnect_callback_t=
   - Invoked by message loop on connection loss
 
-- [ ] 9.1 Start message loop on connect
+- [X] 9.1 Start message loop on connect
   - =co_spawn= the =run_message_loop()= after connection
 
-- [ ] 9.2 Clean shutdown
+- [X] 9.2 Clean shutdown
   - Cancel message loop, fail pending requests, invoke disconnect callback
 
 - [ ] 10.1 Update existing tests

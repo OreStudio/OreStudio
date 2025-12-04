@@ -56,12 +56,13 @@ message_dispatcher::dispatch(const frame& request_frame, std::uint32_t sequence,
         co_return std::unexpected(result.error());
     }
 
-    // Create response frame
+    // Create response frame with correlation_id from request
     auto response_type = get_response_type(msg_type);
-    frame response_frame(response_type, sequence, std::move(*result));
+    auto correlation_id = request_frame.correlation_id();
+    frame response_frame(response_type, sequence, correlation_id, std::move(*result));
 
     BOOST_LOG_SEV(lg(), debug) << "Successfully dispatched message, response type "
-                               << response_type;
+                               << response_type << " correlation_id=" << correlation_id;
 
     co_return response_frame;
 }

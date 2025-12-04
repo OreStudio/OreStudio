@@ -34,7 +34,7 @@
 #include <boost/log/sources/record_ostream.hpp>
 #include "ores.comms/net/connection_error.hpp"
 #include "ores.comms/messaging/handshake_service.hpp"
-#include "ores.comms/messaging/heartbeat_service.hpp"
+#include "ores.comms/messaging/heartbeat_protocol.hpp"
 
 namespace ores::comms::net {
 
@@ -124,9 +124,15 @@ boost::asio::awaitable<void> client::connect() {
         }
         BOOST_LOG_SEV(lg(), info) << "Successfully connected to server.";
 
+        // Start message loop in background (single reader for all responses)
+        // Only needed when using correlation-based request/response or heartbeat
+        if (config_.heartbeat_enabled) {
+            boost::asio::co_spawn(exec, run_message_loop(), boost::asio::detached);
+            BOOST_LOG_SEV(lg(), debug) << "Message loop started";
+        }
+
         // Start heartbeat in background
         if (config_.heartbeat_enabled) {
-            auto exec = co_await boost::asio::this_coro::executor;
             boost::asio::co_spawn(exec, run_heartbeat(), boost::asio::detached);
             BOOST_LOG_SEV(lg(), info) << "Heartbeat enabled with interval: "
                                        << config_.heartbeat_interval_seconds << "s";
@@ -169,12 +175,31 @@ void client::connect_sync() {
 }
 
 void client::disconnect() {
-    std::lock_guard guard{state_mutex_};
-    if (conn_) {
-        conn_->close();
-        conn_.reset();
+    BOOST_LOG_SEV(lg(), debug) << "Disconnecting from server";
+
+    // First mark as disconnected to stop the message loop
+    {
+        std::lock_guard guard{state_mutex_};
+        connected_ = false;
     }
-    connected_ = false;
+
+    // Close the connection (this will cancel pending async operations)
+    // Note: We don't reset the unique_ptr here because the message loop
+    // may still be awaiting on the connection. The close will cause pending
+    // reads to fail, and the message loop will exit gracefully.
+    {
+        std::lock_guard guard{state_mutex_};
+        if (conn_) {
+            conn_->close();
+            // Don't reset conn_ here - let the message loop handle cleanup
+        }
+    }
+
+    // Fail all pending requests so waiting coroutines can complete
+    if (pending_requests_) {
+        pending_requests_->fail_all(messaging::error_code::network_error);
+    }
+
     BOOST_LOG_SEV(lg(), info) << "Disconnected from server";
 }
 
@@ -210,51 +235,49 @@ boost::asio::awaitable<void> client::run_heartbeat() {
                 break;
             }
 
-            // Send ping and wait for pong
+            // Send ping and wait for pong using new infrastructure
             BOOST_LOG_SEV(lg(), trace) << "Sending heartbeat ping";
 
-            // Safely get sequence number and check if connection is still valid
+            // Get sequence and correlation ID
             std::uint32_t seq;
             {
                 std::lock_guard guard{state_mutex_};
                 if (!conn_ || !connected_) {
-                    break;  // Connection closed during heartbeat
+                    break;
                 }
                 seq = ++sequence_number_;
             }
+            auto corr_id = next_correlation_id();
 
-            bool pong_received = false;
+            // Register pending request before sending
+            auto channel = pending_requests_->register_request(corr_id);
+
+            // Create and send ping frame via write strand
+            auto ping_frame = messaging::create_ping_frame(seq, corr_id);
             try {
-                // Check connection is still valid before using it
-                {
-                    std::lock_guard guard{state_mutex_};
-                    if (!conn_ || !connected_) {
-                        break;
-                    }
-                }
-                pong_received = co_await messaging::heartbeat_service::send_ping(*conn_, seq);
+                co_await write_frame(ping_frame);
             } catch (...) {
-                // Connection error during ping
-                pong_received = false;
+                pending_requests_->remove(corr_id);
+                BOOST_LOG_SEV(lg(), warn) << "Failed to send ping";
+                break;
             }
 
-            if (!pong_received) {
-                BOOST_LOG_SEV(lg(), warn) << "Heartbeat failed - server disconnected";
-                {
-                    std::lock_guard guard{state_mutex_};
-                    connected_ = false;
-                }
+            BOOST_LOG_SEV(lg(), trace) << "Waiting for pong response (correlation_id="
+                                       << corr_id << ")";
 
-                // Invoke disconnect callback if set
-                disconnect_callback_t callback;
-                {
-                    std::lock_guard guard{state_mutex_};
-                    callback = disconnect_callback_;
-                }
-                if (callback) {
-                    BOOST_LOG_SEV(lg(), debug) << "Invoking disconnect callback";
-                    callback();
-                }
+            // Wait for response from message loop
+            auto response_result = co_await channel->get();
+
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), warn) << "Heartbeat failed - no pong received";
+                // The message loop handles disconnect callback when it exits
+                break;
+            }
+
+            const auto& response = *response_result;
+            if (response.header().type != messaging::message_type::pong) {
+                BOOST_LOG_SEV(lg(), warn) << "Heartbeat: expected pong, got "
+                                          << response.header().type;
                 break;
             }
 
@@ -280,24 +303,62 @@ client::send_request(messaging::frame request_frame) {
     }
     BOOST_LOG_SEV(lg(), trace) << "Currently connected.";
 
-    try {
-        request_frame = messaging::frame(
-            request_frame.header().type,
-            [this]() {
-                std::lock_guard guard{state_mutex_};
-                return ++sequence_number_;
-            }(),
+    // Get sequence number
+    std::uint32_t seq;
+    {
+        std::lock_guard guard{state_mutex_};
+        seq = ++sequence_number_;
+    }
+
+    // If message loop is running, use correlation-based request/response
+    if (message_loop_running_) {
+        auto corr_id = next_correlation_id();
+        auto channel = pending_requests_->register_request(corr_id);
+
+        // Create frame with correlation ID
+        auto frame_to_send = messaging::frame(
+            request_frame.header().type, seq, corr_id,
             std::vector<std::byte>(request_frame.payload()));
 
-        BOOST_LOG_SEV(lg(), debug) << "Sending request " << request_frame.header().type;
+        BOOST_LOG_SEV(lg(), debug) << "Sending request " << frame_to_send.header().type
+                                   << " (correlation_id=" << corr_id << ")";
 
-        co_await conn_->write_frame(request_frame);
+        try {
+            co_await write_frame(frame_to_send);
+        } catch (const std::exception& e) {
+            pending_requests_->remove(corr_id);
+            BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << e.what();
+            co_return std::unexpected(messaging::error_code::network_error);
+        }
+
+        // Wait for response via pending_requests (message loop delivers it)
+        auto response_result = co_await channel->get();
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Request failed: " << response_result.error();
+            co_return std::unexpected(response_result.error());
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "Received response "
+                                   << response_result->header().type;
+        co_return *response_result;
+    }
+
+    // Message loop not running - use direct read/write
+    try {
+        auto frame_to_send = messaging::frame(
+            request_frame.header().type, seq,
+            std::vector<std::byte>(request_frame.payload()));
+
+        BOOST_LOG_SEV(lg(), debug) << "Sending request (direct) "
+                                   << frame_to_send.header().type;
+
+        co_await conn_->write_frame(frame_to_send);
 
         auto response_result = co_await conn_->read_frame();
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to read response frame, error "
                                        << response_result.error();
-            // Mark as disconnected on read failure
             {
                 std::lock_guard guard{state_mutex_};
                 connected_ = false;
@@ -305,22 +366,20 @@ client::send_request(messaging::frame request_frame) {
             if (conn_) {
                 conn_->close();
             }
-            BOOST_LOG_SEV(lg(), warn) << "Connection lost - server may have closed the connection";
+            BOOST_LOG_SEV(lg(), warn) << "Connection lost";
             co_return std::unexpected(response_result.error());
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Received response " << response_result->header().type;
-
+        BOOST_LOG_SEV(lg(), debug) << "Received response "
+                                   << response_result->header().type;
         co_return *response_result;
 
     } catch (const boost::system::system_error& e) {
-        // Network/socket exceptions indicate connection loss
         BOOST_LOG_SEV(lg(), error) << "Network error: " << e.what();
         {
             std::lock_guard guard{state_mutex_};
             connected_ = false;
         }
-        BOOST_LOG_SEV(lg(), warn) << "Disconnected from server due to network error";
         if (conn_) {
             conn_->close();
         }
@@ -377,8 +436,22 @@ boost::asio::awaitable<void> client::run_message_loop() {
 
     try {
         while (is_connected()) {
+            // Safely get connection pointer under lock
+            connection* conn_ptr = nullptr;
+            {
+                std::lock_guard guard{state_mutex_};
+                if (conn_) {
+                    conn_ptr = conn_.get();
+                }
+            }
+
+            if (!conn_ptr) {
+                BOOST_LOG_SEV(lg(), debug) << "Connection gone, exiting message loop";
+                break;
+            }
+
             // Read the next frame
-            auto frame_result = co_await conn_->read_frame();
+            auto frame_result = co_await conn_ptr->read_frame();
 
             if (!frame_result) {
                 BOOST_LOG_SEV(lg(), warn) << "Message loop read error: "

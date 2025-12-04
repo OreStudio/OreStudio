@@ -65,14 +65,14 @@ pong::deserialize(std::span<const std::byte> data) {
 }
 
 // Frame creation functions
-frame create_ping_frame(std::uint32_t sequence) {
+frame create_ping_frame(std::uint32_t sequence, std::uint32_t correlation_id) {
     ping p{};
-    return {message_type::ping, sequence, p.serialize(p)};
+    return {message_type::ping, sequence, correlation_id, p.serialize(p)};
 }
 
-frame create_pong_frame(std::uint32_t sequence) {
+frame create_pong_frame(std::uint32_t sequence, std::uint32_t correlation_id) {
     pong p{};
-    return {message_type::pong, sequence, p.serialize(p)};
+    return {message_type::pong, sequence, correlation_id, p.serialize(p)};
 }
 
 }

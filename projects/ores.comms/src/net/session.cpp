@@ -112,7 +112,8 @@ boost::asio::awaitable<void> session::process_messages() {
 
             // Handle ping messages directly (built-in protocol feature)
             if (request_frame.header().type == messaging::message_type::ping) {
-                co_await messaging::heartbeat_service::handle_ping(*conn_, ++sequence_number_);
+                co_await messaging::heartbeat_service::handle_ping(
+                    *conn_, ++sequence_number_, request_frame.correlation_id());
                 continue;  // Don't send additional response
             }
 

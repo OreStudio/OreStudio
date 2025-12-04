@@ -66,12 +66,12 @@ struct pong final {
 /**
  * @brief Create a ping frame.
  */
-frame create_ping_frame(std::uint32_t sequence);
+frame create_ping_frame(std::uint32_t sequence, std::uint32_t correlation_id = 0);
 
 /**
  * @brief Create a pong frame.
  */
-frame create_pong_frame(std::uint32_t sequence);
+frame create_pong_frame(std::uint32_t sequence, std::uint32_t correlation_id = 0);
 
 }
 

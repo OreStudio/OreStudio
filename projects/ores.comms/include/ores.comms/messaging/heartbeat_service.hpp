@@ -49,10 +49,12 @@ public:
      *
      * @param conn Connection to send pong response on
      * @param sequence Sequence number for pong frame
+     * @param correlation_id Correlation ID to echo back in pong
      */
     static boost::asio::awaitable<void> handle_ping(
         net::connection& conn,
-        std::uint32_t sequence);
+        std::uint32_t sequence,
+        std::uint32_t correlation_id);
 
     /**
      * @brief Send ping and wait for pong response (client-side).

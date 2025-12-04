@@ -28,11 +28,13 @@ using namespace ores::utility::log;
 
 boost::asio::awaitable<void> heartbeat_service::handle_ping(
     net::connection& conn,
-    std::uint32_t sequence) {
+    std::uint32_t sequence,
+    std::uint32_t correlation_id) {
 
-    BOOST_LOG_SEV(lg(), trace) << "Received ping, sending pong response";
+    BOOST_LOG_SEV(lg(), trace) << "Received ping, sending pong response"
+                               << " correlation_id=" << correlation_id;
 
-    auto pong_frame = create_pong_frame(sequence);
+    auto pong_frame = create_pong_frame(sequence, correlation_id);
     co_await conn.write_frame(pong_frame);
 
     BOOST_LOG_SEV(lg(), trace) << "Sent pong response";

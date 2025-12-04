@@ -116,7 +116,10 @@ boost::asio::awaitable<void> client::connect() {
         if (config_.heartbeat_enabled) {
             auto exec = co_await boost::asio::this_coro::executor;
             boost::asio::co_spawn(exec, run_heartbeat(), boost::asio::detached);
-            BOOST_LOG_SEV(lg(), debug) << "Heartbeat coroutine started";
+            BOOST_LOG_SEV(lg(), info) << "Heartbeat enabled with interval: "
+                                       << config_.heartbeat_interval_seconds << "s";
+        } else {
+            BOOST_LOG_SEV(lg(), info) << "Heartbeat disabled";
         }
 
     } catch (const connection_error&) {

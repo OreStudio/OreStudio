@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMMS_MESSAGING_HANDSHAKE_SERVICE_HPP
-#define ORES_COMMS_MESSAGING_HANDSHAKE_SERVICE_HPP
+#ifndef ORES_COMMS_SERVICE_HANDSHAKE_SERVICE_HPP
+#define ORES_COMMS_SERVICE_HANDSHAKE_SERVICE_HPP
 
 #include <string>
 #include <cstdint>
@@ -28,7 +28,7 @@
 
 namespace ores::comms::net { class connection; }
 
-namespace ores::comms::messaging {
+namespace ores::comms::service {
 
 /**
  * @brief Service for managing protocol handshake between client and server.
@@ -43,7 +43,7 @@ class handshake_service final {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.comms.messaging.handshake_service");
+        static auto instance = make_logger("ores.comms.service.handshake_service");
         return instance;
     }
 

@@ -33,7 +33,7 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/log/sources/record_ostream.hpp>
 #include "ores.comms/net/connection_error.hpp"
-#include "ores.comms/messaging/handshake_service.hpp"
+#include "ores.comms/service/handshake_service.hpp"
 #include "ores.comms/messaging/heartbeat_protocol.hpp"
 
 namespace ores::comms::net {
@@ -57,7 +57,7 @@ boost::asio::awaitable<void> client::perform_handshake() {
         return ++sequence_number_;
     };
 
-    co_await messaging::handshake_service::perform_client_handshake(
+    co_await service::handshake_service::perform_client_handshake(
         *conn_, sequence_generator, config_.client_identifier);
 }
 

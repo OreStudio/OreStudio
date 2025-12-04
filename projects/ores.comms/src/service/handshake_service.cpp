@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.comms/messaging/handshake_service.hpp"
+#include "ores.comms/service/handshake_service.hpp"
 
 #include <format>
 #include "ores.comms/net/connection.hpp"
@@ -25,7 +25,18 @@
 #include "ores.comms/messaging/handshake_protocol.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 
-namespace ores::comms::messaging {
+namespace ores::comms::service {
+
+using messaging::message_type;
+using messaging::error_code;
+using messaging::handshake_request;
+using messaging::handshake_response;
+using messaging::handshake_ack;
+using messaging::create_handshake_request_frame;
+using messaging::create_handshake_response_frame;
+using messaging::create_handshake_ack_frame;
+using messaging::PROTOCOL_VERSION_MAJOR;
+using messaging::PROTOCOL_VERSION_MINOR;
 
 using namespace ores::utility::log;
 

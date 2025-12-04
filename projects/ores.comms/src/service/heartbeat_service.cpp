@@ -17,12 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.comms/messaging/heartbeat_service.hpp"
+#include "ores.comms/service/heartbeat_service.hpp"
 
 #include "ores.comms/net/connection.hpp"
 #include "ores.comms/messaging/heartbeat_protocol.hpp"
 
-namespace ores::comms::messaging {
+namespace ores::comms::service {
+
+using messaging::create_pong_frame;
 
 using namespace ores::utility::log;
 

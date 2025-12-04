@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMMS_MESSAGING_HEARTBEAT_SERVICE_HPP
-#define ORES_COMMS_MESSAGING_HEARTBEAT_SERVICE_HPP
+#ifndef ORES_COMMS_SERVICE_HEARTBEAT_SERVICE_HPP
+#define ORES_COMMS_SERVICE_HEARTBEAT_SERVICE_HPP
 
 #include <cstdint>
 #include <boost/asio/awaitable.hpp>
@@ -27,7 +27,7 @@
 
 namespace ores::comms::net { class connection; }
 
-namespace ores::comms::messaging {
+namespace ores::comms::service {
 
 /**
  * @brief Service for handling heartbeat (ping/pong) protocol on the server.
@@ -40,7 +40,7 @@ class heartbeat_service final {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.comms.messaging.heartbeat_service");
+        static auto instance = make_logger("ores.comms.service.heartbeat_service");
         return instance;
     }
 

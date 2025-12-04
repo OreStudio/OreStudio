@@ -76,6 +76,18 @@ client::client(client_options config)
     pending_requests_ = std::make_unique<pending_request_map>(executor_);
 }
 
+client::~client() {
+    // Ensure disconnect is called to stop any running coroutines
+    disconnect();
+
+    // Explicitly destroy resources that depend on the executor/io_context
+    // before the io_context is destroyed. This prevents use-after-free when
+    // the strand tries to deallocate through an invalid executor.
+    pending_requests_.reset();
+    write_strand_.reset();
+    conn_.reset();
+}
+
 client::client(client_options config, boost::asio::any_io_executor executor)
     : config_(std::move(config)), executor_(std::move(executor)),
       ssl_ctx_(boost::asio::ssl::context::tlsv13_client),

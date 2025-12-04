@@ -117,6 +117,14 @@ public:
     explicit client(client_options config, boost::asio::any_io_executor executor);
 
     /**
+     * @brief Destructor.
+     *
+     * Ensures proper cleanup order - strand and pending requests must be
+     * destroyed before the io_context they reference.
+     */
+    ~client();
+
+    /**
      * @brief Connect to server and perform handshake (async version).
      *
      * @throws connection_error if connection or handshake fails

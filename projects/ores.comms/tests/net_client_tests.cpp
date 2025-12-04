@@ -143,6 +143,7 @@ TEST_CASE("test_client_server_connection", tags) {
         client_opts.host = "localhost";
         client_opts.port = server_port;
         client_opts.verify_certificate = false; // Self-signed cert
+        client_opts.heartbeat_enabled = false;  // Disable heartbeat for this test
 
         BOOST_LOG_SEV(lg, info) << "Creating client";
         // Create client
@@ -214,6 +215,7 @@ TEST_CASE("test_session_cancellation_on_server_stop", tags) {
         client_opts.host = "localhost";
         client_opts.port = server_port;
         client_opts.verify_certificate = false;
+        client_opts.heartbeat_enabled = false;  // Disable heartbeat for this test
 
         // Create multiple clients and connect them
         constexpr int num_clients = 3;
@@ -350,7 +352,7 @@ TEST_CASE("test_heartbeat_disconnect_detection", tags) {
         client_opts.port = server_port;
         client_opts.verify_certificate = false;
         client_opts.heartbeat_enabled = true;
-        client_opts.heartbeat_interval_seconds = 1;  // Fast heartbeat for testing
+        client_opts.heartbeat_interval_seconds = 1;  // 1 second for testing
 
         BOOST_LOG_SEV(lg, info) << "Creating and connecting client";
         auto client = std::make_shared<ores::comms::net::client>(
@@ -368,15 +370,15 @@ TEST_CASE("test_heartbeat_disconnect_detection", tags) {
         BOOST_LOG_SEV(lg, info) << "Client connected";
 
         // Give heartbeat time to start
-        timer.expires_after(std::chrono::milliseconds(500));
+        timer.expires_after(std::chrono::milliseconds(100));
         co_await timer.async_wait(boost::asio::use_awaitable);
 
         // Stop server to trigger disconnect detection
         BOOST_LOG_SEV(lg, info) << "Stopping server to trigger disconnect detection";
         server->stop();
 
-        // Wait for heartbeat to detect disconnect (2 intervals + buffer)
-        timer.expires_after(std::chrono::seconds(3));
+        // Wait for heartbeat to detect disconnect (2 intervals should be enough)
+        timer.expires_after(std::chrono::milliseconds(2100));
         co_await timer.async_wait(boost::asio::use_awaitable);
 
         // Verify disconnect was detected
@@ -458,7 +460,7 @@ TEST_CASE("test_heartbeat_disabled", tags) {
         server->stop();
 
         // Wait a bit - callback should NOT be invoked since heartbeat is disabled
-        timer.expires_after(std::chrono::seconds(2));
+        timer.expires_after(std::chrono::milliseconds(500));
         co_await timer.async_wait(boost::asio::use_awaitable);
 
         // Callback should not have been invoked

@@ -21,17 +21,20 @@
 #define ORES_COMMS_NET_CLIENT_HPP
 
 #include <mutex>
+#include <atomic>
 #include <memory>
 #include <string>
 #include <cstdint>
 #include <functional>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/ssl.hpp>
+#include <boost/asio/strand.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_context.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/net/client_options.hpp"
 #include "ores.comms/net/connection.hpp"
+#include "ores.comms/net/pending_request_map.hpp"
 
 namespace ores::comms::net {
 
@@ -75,6 +78,30 @@ private:
      * Exits when cancelled or when disconnect is detected.
      */
     boost::asio::awaitable<void> run_heartbeat();
+
+    /**
+     * @brief Run the message loop that reads all incoming frames.
+     *
+     * Single reader coroutine that dispatches frames by type:
+     * - Response/pong: completes pending request via correlation ID
+     * - Notification: invokes notification callback (future)
+     * - Error: fails pending request
+     */
+    boost::asio::awaitable<void> run_message_loop();
+
+    /**
+     * @brief Write a frame through the write strand.
+     *
+     * Serializes all writes to prevent interleaving.
+     *
+     * @param f The frame to write
+     */
+    boost::asio::awaitable<void> write_frame(const messaging::frame& f);
+
+    /**
+     * @brief Generate the next correlation ID.
+     */
+    std::uint32_t next_correlation_id();
 
 public:
     /**
@@ -157,6 +184,12 @@ private:
     bool connected_;
     mutable std::mutex state_mutex_; // Thread-safe state protection
     disconnect_callback_t disconnect_callback_;
+
+    // New infrastructure for unified message loop
+    std::unique_ptr<boost::asio::strand<boost::asio::any_io_executor>> write_strand_;
+    std::unique_ptr<pending_request_map> pending_requests_;
+    std::atomic<std::uint32_t> correlation_id_counter_{1};
+    bool message_loop_running_{false};
 };
 
 }

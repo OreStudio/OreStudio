@@ -24,7 +24,9 @@
 #include <chrono>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/detached.hpp>
+#include <boost/asio/dispatch.hpp>
 #include <boost/asio/co_spawn.hpp>
+#include <boost/asio/bind_executor.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/asio/use_future.hpp>
 #include <boost/asio/this_coro.hpp>
@@ -67,6 +69,11 @@ client::client(client_options config)
       sequence_number_(0), connected_(false) {
     BOOST_LOG_SEV(lg(), info) << "Client options: " << config_;
     setup_ssl_context();
+
+    // Initialize write strand and pending request map
+    write_strand_ = std::make_unique<boost::asio::strand<boost::asio::any_io_executor>>(
+        boost::asio::make_strand(executor_));
+    pending_requests_ = std::make_unique<pending_request_map>(executor_);
 }
 
 client::client(client_options config, boost::asio::any_io_executor executor)
@@ -75,6 +82,11 @@ client::client(client_options config, boost::asio::any_io_executor executor)
       sequence_number_(0), connected_(false) {
     BOOST_LOG_SEV(lg(), info) << "Client options: " << config_;
     setup_ssl_context();
+
+    // Initialize write strand and pending request map
+    write_strand_ = std::make_unique<boost::asio::strand<boost::asio::any_io_executor>>(
+        boost::asio::make_strand(executor_));
+    pending_requests_ = std::make_unique<pending_request_map>(executor_);
 }
 
 boost::asio::awaitable<void> client::connect() {
@@ -344,6 +356,94 @@ client::send_request_sync(messaging::frame request_frame) {
     auto r = future.get();
     BOOST_LOG_SEV(lg(), debug) << "Completed synchronous connect successfully.";
     return r;
+}
+
+std::uint32_t client::next_correlation_id() {
+    return correlation_id_counter_.fetch_add(1, std::memory_order_relaxed);
+}
+
+boost::asio::awaitable<void> client::write_frame(const messaging::frame& f) {
+    // Execute write on the strand to serialize all writes
+    co_await boost::asio::dispatch(
+        boost::asio::bind_executor(*write_strand_, boost::asio::use_awaitable));
+
+    // Now we're on the strand - safe to write
+    co_await conn_->write_frame(f);
+}
+
+boost::asio::awaitable<void> client::run_message_loop() {
+    BOOST_LOG_SEV(lg(), debug) << "Starting message loop";
+    message_loop_running_ = true;
+
+    try {
+        while (is_connected()) {
+            // Read the next frame
+            auto frame_result = co_await conn_->read_frame();
+
+            if (!frame_result) {
+                BOOST_LOG_SEV(lg(), warn) << "Message loop read error: "
+                                          << frame_result.error();
+                break;
+            }
+
+            const auto& frame = *frame_result;
+            const auto msg_type = frame.header().type;
+            const auto corr_id = frame.correlation_id();
+
+            BOOST_LOG_SEV(lg(), trace) << "Message loop received " << msg_type
+                                       << " correlation_id=" << corr_id;
+
+            // Dispatch by message type
+            switch (msg_type) {
+            case messaging::message_type::pong:
+            case messaging::message_type::error_response:
+                // Response types - complete pending request
+                if (!pending_requests_->complete(corr_id, frame)) {
+                    BOOST_LOG_SEV(lg(), warn) << "No pending request for " << msg_type
+                                              << " correlation_id=" << corr_id;
+                }
+                break;
+
+            default:
+                // All other responses (including domain-specific responses)
+                if (!pending_requests_->complete(corr_id, frame)) {
+                    BOOST_LOG_SEV(lg(), warn) << "Unexpected message type " << msg_type
+                                              << " or no pending request for correlation_id="
+                                              << corr_id;
+                }
+                break;
+            }
+        }
+    } catch (const boost::system::system_error& e) {
+        if (e.code() == boost::asio::error::operation_aborted) {
+            BOOST_LOG_SEV(lg(), debug) << "Message loop cancelled";
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Message loop error: " << e.what();
+        }
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Message loop exception: " << e.what();
+    }
+
+    // Mark as disconnected and fail all pending requests
+    {
+        std::lock_guard guard{state_mutex_};
+        connected_ = false;
+    }
+    pending_requests_->fail_all(messaging::error_code::network_error);
+
+    // Invoke disconnect callback
+    disconnect_callback_t callback;
+    {
+        std::lock_guard guard{state_mutex_};
+        callback = disconnect_callback_;
+    }
+    if (callback) {
+        BOOST_LOG_SEV(lg(), debug) << "Message loop invoking disconnect callback";
+        callback();
+    }
+
+    message_loop_running_ = false;
+    BOOST_LOG_SEV(lg(), debug) << "Message loop ended";
 }
 
 }

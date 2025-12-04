@@ -829,22 +829,23 @@ responses to requests.
   - =fail(correlation_id, error)= - called on timeout/disconnect
   - =fail_all(error)= - called on connection loss
 
-- [ ] 3.1 Add write strand to client
+- [X] 3.1 Add write strand to client
   - =asio::strand<asio::any_io_executor> write_strand_=
   - Initialize in constructor
 
-- [ ] 3.2 Create =post_write()= helper
+- [X] 3.2 Create =write_frame()= helper
   - Posts write operation to strand
   - Returns awaitable that completes when write is done
 
-- [ ] 4.1 Implement =run_message_loop()= coroutine
+- [X] 4.1 Implement =run_message_loop()= coroutine
   - Single reader, loops reading frames
   - Dispatches by message type (response/pong → complete, notification → callback)
   - On read error → =fail_all()=, set disconnected
 
-- [ ] 4.2 Add centralized timeout handling
+- [ ] 4.2 Add centralized timeout handling (deferred)
   - Read with timeout using =asio::steady_timer=
   - Configurable default timeout
+  - Can be added later when needed
 
 - [ ] 5. Refactor =send_request()=
   - Generate correlation_id

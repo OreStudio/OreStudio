@@ -1079,28 +1079,6 @@ all of the necessary SQL as well as a script to do it.
 Or maybe we should do everything from within sqlgen and generate the scripts for
 the cases where we need manual work in database.
 
-*** Add support for feature flags                                      :code:
-
-We need a way to know if we are in bootstrap mode or not. Implement a generic
-mechanism for feature flags.
-
-Example chrome flag:
-
-#+begin_quote
-Temporarily unexpire M139 flags.
-
-Temporarily unexpire flags that expired as of M139. These flags will be removed
-soon. – Mac, Windows, Linux, ChromeOS, Android
-
-#temporary-unexpire-flags-m139
-#+end_quote
-
-Components:
-
-- name: human readable
-- description
-- id
-
 *** Remove postgres passwords from github workflows                    :code:
 
 As a quick hack we added the dev passwords to the workflows. We should really

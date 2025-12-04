@@ -703,6 +703,30 @@ Notes:
 - make the uses of "messaging" and "protocol" consistent across projects.
 - document namespaces in comms.
 
+*** COMPLETED Add support for feature flags                            :code:
+
+*Rationale*: implemented.
+
+We need a way to know if we are in bootstrap mode or not. Implement a generic
+mechanism for feature flags.
+
+Example chrome flag:
+
+#+begin_quote
+Temporarily unexpire M139 flags.
+
+Temporarily unexpire flags that expired as of M139. These flags will be removed
+soon. – Mac, Windows, Linux, ChromeOS, Android
+
+#temporary-unexpire-flags-m139
+#+end_quote
+
+Components:
+
+- name: human readable
+- description
+- id
+
 *** STARTED Experiment with simple code generation                     :code:
     :LOGBOOK:
     CLOCK: [2025-12-02 Tue 14:35]--[2025-12-02 Tue 16:05] =>  1:30

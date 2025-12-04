@@ -22,6 +22,7 @@
 
 #include <QMainWindow>
 #include <QLabel>
+#include <QTimer>
 #include <memory>
 #include <thread>
 #include <boost/asio/io_context.hpp>
@@ -162,6 +163,14 @@ private slots:
      */
     void onWindowMenuAboutToShow();
 
+    /**
+     * @brief Handles a single tick of the disconnect icon flash animation.
+     *
+     * Alternates the connection status icon between connected and disconnected
+     * states, decrementing the flash counter until complete.
+     */
+    void onFlashIconTick();
+
 private:
     /**
      * @brief Updates menu and toolbar action states based on connection status.
@@ -229,6 +238,12 @@ private:
 
     /** @brief Username of currently logged-in user */
     std::string username_;
+
+    /** @brief Timer for disconnect icon flash animation */
+    QTimer flashIconTimer_;
+
+    /** @brief Remaining flash count for disconnect animation */
+    int flashIconCount_{0};
 };
 
 }

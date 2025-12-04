@@ -105,6 +105,10 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(this, &MainWindow::serverDisconnectedDetected, this,
         &MainWindow::onServerDisconnectedDetected, Qt::QueuedConnection);
 
+    // Connect flash icon timer for disconnect animation
+    connect(&flashIconTimer_, &QTimer::timeout, this,
+        &MainWindow::onFlashIconTick);
+
     // Connect Currencies action to controller
     connect(ui_->CurrenciesAction, &QAction::triggered, this, [this]() {
         if (currencyController_)
@@ -356,30 +360,29 @@ void MainWindow::onServerDisconnectedDetected() {
             "Server connection lost - disconnected automatically", 10000);
 
         // Flash the disconnect icon to draw attention, then ensure it stays disconnected
-        std::function<void(int)> flashIcon = [this, &flashIcon](int count) {
-            if (count <= 0) {
-                // Final state: ensure icon is set to disconnected
-                connectionStatusIconLabel_->setPixmap(disconnectedIcon_.pixmap(16, 16));
-                return;
-            }
-
-            // Alternate between disconnected and connected icons
-            bool showDisconnected = (count % 2 == 1);
-            const QIcon& icon = showDisconnected ? disconnectedIcon_ : connectedIcon_;
-            connectionStatusIconLabel_->setPixmap(icon.pixmap(16, 16));
-
-            // Schedule next flash
-            QTimer::singleShot(250, this, [this, &flashIcon, count]() {
-                flashIcon(count - 1);
-            });
-        };
-
-        // Flash 8 times (4 cycles) over 2 seconds, then stay disconnected
-        flashIcon(8);
+        // Start with 8 flashes (4 cycles) over 2 seconds
+        flashIconCount_ = 8;
+        flashIconTimer_.start(250);
 
         // Also update menu state to disable connection-dependent actions
         updateMenuState();
     }
+}
+
+void MainWindow::onFlashIconTick() {
+    if (flashIconCount_ <= 0) {
+        // Animation complete - stop timer and ensure icon is disconnected
+        flashIconTimer_.stop();
+        connectionStatusIconLabel_->setPixmap(disconnectedIcon_.pixmap(16, 16));
+        return;
+    }
+
+    // Alternate between disconnected and connected icons
+    bool showDisconnected = (flashIconCount_ % 2 == 1);
+    const QIcon& icon = showDisconnected ? disconnectedIcon_ : connectedIcon_;
+    connectionStatusIconLabel_->setPixmap(icon.pixmap(16, 16));
+
+    --flashIconCount_;
 }
 
 void MainWindow::onAboutTriggered() {

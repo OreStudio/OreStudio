@@ -73,6 +73,8 @@ namespace ores #F2F2F2 {
             +{field} port std::uint16_t
             +{field} client_identifier std::string
             +{field} verify_certificate bool
+            +{field} heartbeat_enabled bool
+            +{field} heartbeat_interval_seconds std::uint32_t
         }
 
         note top of client_options
@@ -84,6 +86,8 @@ namespace ores #F2F2F2 {
         - port: Port to connect to.
         - client_identifier: Client identifier to send in handshake.
         - verify_certificate: Whether to verify server certificate.
+        - heartbeat_enabled: Enable heartbeat for disconnect detection (default: true).
+        - heartbeat_interval_seconds: Heartbeat interval in seconds (default: 30).
         end note
 
         class client #ECECEC {
@@ -93,9 +97,11 @@ namespace ores #F2F2F2 {
             +connect_sync() bool
             +disconnect() void
             +is_connected() bool
+            +set_disconnect_callback(disconnect_callback_t callback) void
             +send_request(messaging::frame request_frame) boost::asio::awaitable<std::expected<messaging::frame, messaging::error_code>>
             +send_request_sync(messaging::frame request_frame) std::expected<messaging::frame, messaging::error_code>
             -perform_handshake() boost::asio::awaitable<bool>
+            -run_heartbeat() boost::asio::awaitable<void>
             -setup_ssl_context() void
             -{field} config_ client_options
             -{field} io_ctx_ std::unique_ptr<boost::asio::io_context>
@@ -105,12 +111,14 @@ namespace ores #F2F2F2 {
             -{field} sequence_number_ std::uint32_t
             -{field} connected_ bool
             -{field} state_mutex_ std::mutex
+            -{field} disconnect_callback_ disconnect_callback_t
         }
 
         note top of client
         ORES protocol client.
 
         Connects to server via SSL, performs handshake, and manages communication.
+        Supports optional heartbeat for proactive disconnect detection.
         end note
 
         client o-u- ores::comms::client_options
@@ -118,6 +126,7 @@ namespace ores #F2F2F2 {
         client ..> ores::comms::messaging::frame
         client ..> ores::comms::messaging::error_code
         client ..> ores::comms::messaging::handshake_service : uses
+        client ..> ores::comms::messaging::heartbeat_service : uses
 
         class connection #ECECEC {
             +connection(ssl_socket socket)
@@ -162,6 +171,7 @@ namespace ores #F2F2F2 {
         session o-u- ores::comms::connection
         session o-u- ores::comms::messaging::message_dispatcher
         session ..> ores::comms::messaging::handshake_service : uses
+        session ..> ores::comms::messaging::heartbeat_service : uses
         session ..> ores::comms::messaging::error_response : uses
 
         namespace messaging #F2F2F2 {
@@ -324,6 +334,48 @@ namespace ores #F2F2F2 {
             handshake_service ..> ores::comms::messaging::handshake_response : uses
             handshake_service ..> ores::comms::messaging::handshake_ack : uses
 
+            class heartbeat_service #ECECEC {
+                +{static} handle_ping(net::connection& conn, std::uint32_t sequence) boost::asio::awaitable<void>
+                +{static} send_ping(net::connection& conn, std::uint32_t sequence) boost::asio::awaitable<bool>
+            }
+
+            note top of heartbeat_service
+            Service for managing heartbeat (ping/pong) protocol.
+
+            Provides lightweight connection liveness checking through ping/pong
+            messages. Server handles incoming pings and responds with pongs.
+            Client can send pings to detect server disconnections proactively.
+            end note
+
+            heartbeat_service ..> ores::comms::messaging::ping : uses
+            heartbeat_service ..> ores::comms::messaging::pong : uses
+
+            class ping <<message>> #E1F5FF {
+                +{static} serialize(ping v) std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t> data) std::expected<ping, error_code>
+            }
+
+            note top of ping
+            Ping message sent by client to check connection liveness.
+
+            Lightweight keepalive message with no payload.
+            end note
+
+            ping ..> ores::comms::messaging::error_code
+
+            class pong <<message>> #E1F5FF {
+                +{static} serialize(pong v) std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t> data) std::expected<pong, error_code>
+            }
+
+            note top of pong
+            Pong message sent by server in response to ping.
+
+            Lightweight response message confirming connection is alive.
+            end note
+
+            pong ..> ores::comms::messaging::error_code
+
             class handshake_request <<message>> #E1F5FF {
                 +{field} client_version_major std::uint16_t
                 +{field} client_version_minor std::uint16_t
@@ -407,6 +459,8 @@ namespace ores #F2F2F2 {
                 handshake_response
                 handshake_ack
                 error_response
+                ping
+                pong
                 get_currencies_request
                 get_currencies_response
                 save_currency_request
@@ -473,14 +527,18 @@ namespace ores #F2F2F2 {
             class net_client_tests <<test suite>> #C5E1A5 {
                 +test_client_server_connection() void
                 +test_session_cancellation_on_server_stop() void
+                +test_heartbeat_configuration() void
+                +test_heartbeat_disconnect_detection() void
+                +test_heartbeat_disabled() void
             }
 
             note top of net_client_tests
             Test suite for client-server communication.
 
             Tests cover client-server connection establishment,
-            handshake protocol, and session lifecycle management
-            including graceful cancellation on server shutdown.
+            handshake protocol, session lifecycle management
+            including graceful cancellation on server shutdown,
+            and heartbeat functionality for disconnect detection.
             end note
 
             net_client_tests ..> ores::comms::client : tests

@@ -351,15 +351,17 @@ void MainWindow::onServerDisconnectedDetected() {
         io_thread_.reset();
         io_context_.reset();
 
-        updateMenuState();
-
         BOOST_LOG_SEV(lg(), warn) << "Server connection lost";
         ui_->statusbar->showMessage(
             "Server connection lost - disconnected automatically", 10000);
 
-        // Flash the disconnect icon to draw attention
+        // Flash the disconnect icon to draw attention, then ensure it stays disconnected
         std::function<void(int)> flashIcon = [this, &flashIcon](int count) {
-            if (count <= 0) return;
+            if (count <= 0) {
+                // Final state: ensure icon is set to disconnected
+                connectionStatusIconLabel_->setPixmap(disconnectedIcon_.pixmap(16, 16));
+                return;
+            }
 
             // Alternate between disconnected and connected icons
             bool showDisconnected = (count % 2 == 1);
@@ -367,13 +369,16 @@ void MainWindow::onServerDisconnectedDetected() {
             connectionStatusIconLabel_->setPixmap(icon.pixmap(16, 16));
 
             // Schedule next flash
-            QTimer::singleShot(300, this, [this, &flashIcon, count]() {
+            QTimer::singleShot(250, this, [this, &flashIcon, count]() {
                 flashIcon(count - 1);
             });
         };
 
-        // Flash 6 times (3 cycles) over 1.8 seconds
-        flashIcon(6);
+        // Flash 8 times (4 cycles) over 2 seconds, then stay disconnected
+        flashIcon(8);
+
+        // Also update menu state to disable connection-dependent actions
+        updateMenuState();
     }
 }
 

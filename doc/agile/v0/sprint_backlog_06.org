@@ -18,37 +18,36 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-03 Wed 23:20], for Wednesday, December 03, 2025.
-|       | <75>                               |        |      |      |       |
-| Tags  | Headline                           | Time   |      |      |     % |
-|-------+------------------------------------+--------+------+------+-------|
-|       | *Total time*                       | *5:37* |      |      | 100.0 |
-|-------+------------------------------------+--------+------+------+-------|
-|       | Stories                            | 5:37   |      |      | 100.0 |
-|       | Active                             |        | 5:37 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint |        |      | 1:40 |  29.7 |
-| code  | Add tests to diagrams              |        |      | 1:26 |  25.5 |
-| code  | Create handshake service in comms  |        |      | 2:31 |  44.8 |
+#+CAPTION: Clock summary at [2025-12-04 Thu 00:23], for Thursday, December 04, 2025.
+|      | <75>                                                |        |      |      |       |
+| Tags | Headline                                            | Time   |      |      |     % |
+|------+-----------------------------------------------------+--------+------+------+-------|
+|      | *Total time*                                        | *0:23* |      |      | 100.0 |
+|------+-----------------------------------------------------+--------+------+------+-------|
+|      | Stories                                             | 0:23   |      |      | 100.0 |
+|      | Active                                              |        | 0:23 |      | 100.0 |
+| code | Implement client heartbeat for disconnect detection |        |      | 0:23 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-03 Wed 23:20]
-|       | <75>                                           |         |       |      |       |
-| Tags  | Headline                                       | Time    |       |      |     % |
-|-------+------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                   | *13:39* |       |      | 100.0 |
-|-------+------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                        | 13:39   |       |      | 100.0 |
-|       | Active                                         |         | 13:39 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |         |       | 0:18 |   2.2 |
-| infra | OCR scan notebooks for this sprint             |         |       | 3:09 |  23.1 |
-| code  | Implement session cancellation                 |         |       | 2:42 |  19.8 |
-| code  | Create a variability service for feature flags |         |       | 1:23 |  10.1 |
-| code  | Add tests to diagrams                          |         |       | 1:26 |  10.5 |
-| code  | Add messaging to variability                   |         |       | 0:40 |   4.9 |
-| code  | Create handshake service in comms              |         |       | 2:31 |  18.4 |
-| code  | Experiment with simple code generation         |         |       | 1:30 |  11.0 |
+#+CAPTION: Clock summary at [2025-12-04 Thu 00:23]
+|       | <75>                                                |         |       |      |       |
+| Tags  | Headline                                            | Time    |       |      |     % |
+|-------+-----------------------------------------------------+---------+-------+------+-------|
+|       | *Total time*                                        | *14:41* |       |      | 100.0 |
+|-------+-----------------------------------------------------+---------+-------+------+-------|
+|       | Stories                                             | 14:41   |       |      | 100.0 |
+|       | Active                                              |         | 14:41 |      | 100.0 |
+| agile | Sprint and product backlog refinement               |         |       | 0:18 |   2.0 |
+| infra | OCR scan notebooks for this sprint                  |         |       | 3:09 |  21.5 |
+| code  | Implement session cancellation                      |         |       | 2:42 |  18.4 |
+| code  | Create a variability service for feature flags      |         |       | 1:23 |   9.4 |
+| code  | Add tests to diagrams                               |         |       | 1:26 |   9.8 |
+| code  | Add messaging to variability                        |         |       | 0:40 |   4.5 |
+| code  | Create handshake service in comms                   |         |       | 2:31 |  17.1 |
+| code  | Experiment with simple code generation              |         |       | 1:30 |  10.2 |
+| code  | Implement client heartbeat for disconnect detection |         |       | 1:02 |   7.0 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -738,7 +737,7 @@ tokens.
 
 *** STARTED Implement client heartbeat for disconnect detection        :code:
     :LOGBOOK:
-    CLOCK: [2025-12-03 Wed 23:21]
+    CLOCK: [2025-12-03 Wed 23:21]--[2025-12-04 Thu 00:23] =>  1:02
     :END:
 
 Currently, the client only detects server disconnections when attempting to

@@ -72,11 +72,13 @@ MainWindow::MainWindow(QWidget* parent) :
     mdiArea_->setBackgroundLogo(":/images/ore-studio-background.png");
 
     const QColor iconColor(220, 220, 220); // Light gray for dark theme
-    connectedIcon_ = IconUtils::IconUtils::createRecoloredIcon(
+    const QColor connectedColor(100, 200, 100); // Green for connected
+    const QColor disconnectedColor(200, 100, 100); // Red for disconnected
+    connectedIcon_ = IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_plug_connected_20_filled.svg",
-        iconColor);
-    disconnectedIcon_ = IconUtils::IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_plug_disconnected_20_filled.svg", iconColor);
+        connectedColor);
+    disconnectedIcon_ = IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_plug_disconnected_20_filled.svg", disconnectedColor);
 
     ui_->ActionConnect->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_plug_connected_20_filled.svg", iconColor));

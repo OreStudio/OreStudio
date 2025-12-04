@@ -497,19 +497,18 @@ boost::asio::awaitable<void> client::run_message_loop() {
         BOOST_LOG_SEV(lg(), error) << "Message loop exception: " << e.what();
     }
 
-    // Mark as disconnected and fail all pending requests
-    {
-        std::lock_guard guard{state_mutex_};
-        connected_ = false;
-    }
-    pending_requests_->fail_all(messaging::error_code::network_error);
-
-    // Invoke disconnect callback
+    // Mark as disconnected and get callback
     disconnect_callback_t callback;
     {
         std::lock_guard guard{state_mutex_};
+        connected_ = false;
         callback = disconnect_callback_;
     }
+
+    // Fail all pending requests
+    pending_requests_->fail_all(messaging::error_code::network_error);
+
+    // Invoke disconnect callback outside of lock
     if (callback) {
         BOOST_LOG_SEV(lg(), debug) << "Message loop invoking disconnect callback";
         callback();

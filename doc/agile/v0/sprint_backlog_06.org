@@ -806,23 +806,23 @@ responses to requests.
 
 ***** Tasks
 
-- [ ] 1.1 Add =correlation_id= to frame structure
+- [X] 1.1 Add =correlation_id= to frame structure
   - Add =uint32_t correlation_id= field to =protocol::frame=
   - Update frame serialization/deserialization
   - Bump protocol version if needed
 
-- [ ] 1.2 Update message types if needed
-  - Verify ping/pong exist
-  - Add notification message type category (for future use)
+- [X] 1.2 Update message types if needed
+  - Verify ping/pong exist (confirmed: 0x0005, 0x0006)
+  - Notification types deferred until listen/notify implementation
 
-- [ ] 2.1 Create =response_channel= class
+- [X] 2.1 Create =response_channel= class
   - Single-value async channel using Boost.Asio primitives
   - =set_value(frame)= - producer side (reader loop)
   - =set_error(error_code)= - for timeouts/disconnects
   - =awaitable<expected<frame, error_code>> get()= - consumer side
   - Use =asio::steady_timer= as signaling primitive
 
-- [ ] 2.2 Create =pending_request_map= class
+- [X] 2.2 Create =pending_request_map= class
   - Thread-safe map: =correlation_id= → =response_channel=
   - =register(correlation_id)= → =response_channel&=
   - =complete(correlation_id, frame)= - called by reader

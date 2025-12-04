@@ -25,48 +25,59 @@ namespace ores #F2F2F2 {
     note "Communications library providing client-server connectivity for ORE Studio.\n\n Implements a custom binary protocol over SSL/TLS for secure client-server communication." as ores_comms_note
     comms --- ores_comms_note
     namespace comms #F2F2F2 {
-        class server_config #F7E5FF {
-            +{field} port std::uint16_t
-            +{field} max_connections std::uint32_t
-            +{field} certificate_file std::string
-            +{field} private_key_file std::string
-            +{field} server_identifier std::string
-        }
+        namespace net #F2F2F2 {
+            class server_options #F7E5FF {
+                +{field} port std::uint16_t
+                +{field} max_connections std::uint32_t
+                +{field} certificate_file std::string
+                +{field} private_key_file std::string
+                +{field} server_identifier std::string
+                +{field} certificate_chain_content std::optional<std::string>
+                +{field} private_key_content std::optional<std::string>
+                +{field} enable_signal_watching bool
+            }
 
-        note top of server_config
-        Configuration for the server.
+            note top of server_options
+            Configuration for the server.
 
-        Fields:
+            Fields:
 
-        - port: Server port number.
-        - max_connections: Maximum number of concurrent connections.
-        - certificate_file: Path to the SSL certificate file.
-        - private_key_file: Path to the SSL private key file.
-        - server_identifier: Server identifier string sent in handshake.
-        end note
+            - port: Server port number.
+            - max_connections: Maximum number of concurrent connections.
+            - certificate_file: Path to the SSL certificate file.
+            - private_key_file: Path to the SSL private key file.
+            - server_identifier: Server identifier string sent in handshake.
+            - certificate_chain_content: Optional certificate chain content (takes precedence over file).
+            - private_key_content: Optional private key content (takes precedence over file).
+            - enable_signal_watching: Whether to enable signal watching.
+            end note
 
-        class server #ECECEC {
-            +server(server_config config)
-            +register_handler(messaging::message_type_range range, std::shared_ptr<messaging::message_handler> handler) void
-            +run(boost::asio::io_context& io_context) boost::asio::awaitable<void>
-            -accept_loop(boost::asio::io_context& io_context) boost::asio::awaitable<void>
-            -setup_ssl_context() void
-            -{field} config_ server_config
-            -{field} ssl_ctx_ ssl::context
-            -{field} dispatcher_ std::shared_ptr<messaging::message_dispatcher>
-            -{field} active_connections_ std::atomic<std::size_t>
-        }
+            class server #ECECEC {
+                +server(server_options options)
+                +register_handler(messaging::message_type_range range, std::shared_ptr<messaging::message_handler> handler) void
+                +run(boost::asio::io_context& io_context, std::function<void(std::uint16_t)> on_listening) boost::asio::awaitable<void>
+                +stop() void
+                -accept_loop(boost::asio::io_context& io_context, std::function<void(std::uint16_t)> on_listening) boost::asio::awaitable<void>
+                -setup_ssl_context() void
+                -watch_for_stop_signals(boost::asio::io_context& io_context) boost::asio::awaitable<void>
+                -{field} options_ server_options
+                -{field} ssl_ctx_ ssl::context
+                -{field} dispatcher_ std::shared_ptr<messaging::message_dispatcher>
+                -{field} active_connections_ std::atomic<std::size_t>
+                -{field} stop_signal_ boost::asio::cancellation_signal
+                -{field} active_sessions_ std::list<std::shared_ptr<session>>
+                -{field} sessions_mutex_ std::mutex
+            }
 
-        note top of server
-        ORES protocol server.
+            note top of server
+            ORES protocol server.
 
-        Accepts SSL connections, performs handshake, and manages client sessions.
-        end note
+            Accepts SSL connections, performs handshake, and manages client sessions.
+            end note
 
-        server o-u- ores::comms::server_config
-        server o-u- ores::comms::messaging::message_dispatcher
-        server o-u- ores::comms::connection
-        server o-u- ores::comms::session
+            server o-u- ores::comms::net::server_options
+            server o-u- ores::comms::messaging::message_dispatcher
+            server o-u- ores::comms::net::session
 
         class client_options #F7E5FF {
             +{field} host std::string
@@ -130,14 +141,14 @@ namespace ores #F2F2F2 {
         heartbeat for proactive disconnect detection.
         end note
 
-        client o-u- ores::comms::client_options
-        client o-u- ores::comms::connection
-        client o-u- ores::comms::pending_request_map
-        client ..> ores::comms::messaging::frame
-        client ..> ores::comms::messaging::error_code
-        client ..> ores::comms::service::handshake_service : uses
-        client ..> ores::comms::messaging::ping : uses
-        client ..> ores::comms::messaging::pong : uses
+            client o-u- ores::comms::net::client_options
+            client o-u- ores::comms::net::connection
+            client o-u- ores::comms::net::pending_request_map
+            client ..> ores::comms::messaging::frame
+            client ..> ores::comms::messaging::error_code
+            client ..> ores::comms::service::handshake_service : uses
+            client ..> ores::comms::messaging::ping : uses
+            client ..> ores::comms::messaging::pong : uses
 
         class pending_request_map #ECECEC {
             +pending_request_map(boost::asio::any_io_executor executor)
@@ -162,9 +173,9 @@ namespace ores #F2F2F2 {
         looks up the channel by correlation ID and delivers the response.
         end note
 
-        pending_request_map o-u- ores::comms::response_channel
-        pending_request_map ..> ores::comms::messaging::frame
-        pending_request_map ..> ores::comms::messaging::error_code
+            pending_request_map o-u- ores::comms::net::response_channel
+            pending_request_map ..> ores::comms::messaging::frame
+            pending_request_map ..> ores::comms::messaging::error_code
 
         class response_channel #ECECEC {
             +response_channel(boost::asio::any_io_executor executor)
@@ -188,10 +199,10 @@ namespace ores #F2F2F2 {
         by the producer (message loop).
         end note
 
-        response_channel ..> ores::comms::messaging::frame
-        response_channel ..> ores::comms::messaging::error_code
+            response_channel ..> ores::comms::messaging::frame
+            response_channel ..> ores::comms::messaging::error_code
 
-        class connection #ECECEC {
+            class connection #ECECEC {
             +connection(ssl_socket socket)
             +ssl_handshake_server() boost::asio::awaitable<void>
             +ssl_handshake_client() boost::asio::awaitable<void>
@@ -209,10 +220,10 @@ namespace ores #F2F2F2 {
         Provides async read/write operations for protocol frames over SSL/TLS.
         end note
 
-        connection ..> ores::comms::messaging::frame
-        connection ..> ores::comms::messaging::error_code
+            connection ..> ores::comms::messaging::frame
+            connection ..> ores::comms::messaging::error_code
 
-        class session #ECECEC {
+            class session #ECECEC {
             +session(std::unique_ptr<connection> conn, std::string server_id, std::shared_ptr<messaging::message_dispatcher> dispatcher)
             +run() boost::asio::awaitable<void>
             -perform_handshake() boost::asio::awaitable<bool>
@@ -231,11 +242,12 @@ namespace ores #F2F2F2 {
         handshake, message processing, and cleanup.
         end note
 
-        session o-u- ores::comms::connection
-        session o-u- ores::comms::messaging::message_dispatcher
-        session ..> ores::comms::service::handshake_service : uses
-        session ..> ores::comms::service::heartbeat_service : uses
-        session ..> ores::comms::messaging::error_response : uses
+            session o-u- ores::comms::net::connection
+            session o-u- ores::comms::messaging::message_dispatcher
+            session ..> ores::comms::service::handshake_service : uses
+            session ..> ores::comms::service::heartbeat_service : uses
+            session ..> ores::comms::messaging::error_response : uses
+        }
 
         namespace messaging #F2F2F2 {
             class result #ECECEC {
@@ -605,9 +617,9 @@ namespace ores #F2F2F2 {
             and heartbeat functionality for disconnect detection.
             end note
 
-            net_client_tests ..> ores::comms::client : tests
-            net_client_tests ..> ores::comms::server : tests
-            net_client_tests ..> ores::comms::session : tests
+            net_client_tests ..> ores::comms::net::client : tests
+            net_client_tests ..> ores::comms::net::server : tests
+            net_client_tests ..> ores::comms::net::session : tests
         }
     }
 }

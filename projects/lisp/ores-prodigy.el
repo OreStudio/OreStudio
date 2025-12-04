@@ -32,7 +32,7 @@
   "Return the path to the qt user interface directory."
   (let* ((pr (project-current t))
          (root (project-root pr))
-         (path (concat root "build/output/linux-gcc-debug/publish")))
+         (path (concat root "build/output/linux-clang-debug/publish")))
     path))
 
 (defun ores/setup-environment ()

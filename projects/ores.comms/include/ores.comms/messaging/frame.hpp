@@ -37,16 +37,17 @@ constexpr size_t MAX_PAYLOAD_SIZE = 1'000'000;
  * @brief Frame header structure for the ORES protocol.
  *
  * Frame layout (32 bytes header):
- * +0:  magic (4 bytes)       - Protocol identifier (0x4F524553 = "ORES")
+ * +0:  magic (4 bytes)         - Protocol identifier (0x4F524553 = "ORES")
  * +4:  version_major (2 bytes) - Protocol major version
  * +6:  version_minor (2 bytes) - Protocol minor version
- * +8:  type (2 bytes)        - Message type
- * +10: reserved1 (2 bytes)   - Reserved for future use
- * +12: payload_size (4 bytes) - Size of payload in bytes
- * +16: sequence (4 bytes)    - Sequence number for ordering
- * +20: crc (4 bytes)         - CRC32 checksum of header + payload
- * +24: reserved2 (8 bytes)   - Reserved for future use
- * +32: payload (N bytes)     - Message payload
+ * +8:  type (2 bytes)          - Message type
+ * +10: reserved1 (2 bytes)     - Reserved for future use
+ * +12: payload_size (4 bytes)  - Size of payload in bytes
+ * +16: sequence (4 bytes)      - Sequence number for ordering
+ * +20: crc (4 bytes)           - CRC32 checksum of header + payload
+ * +24: correlation_id (4 bytes)- Matches requests to responses
+ * +28: reserved2 (4 bytes)     - Reserved for future use
+ * +32: payload (N bytes)       - Message payload
  */
 struct frame_header final {
     std::uint32_t magic;
@@ -57,7 +58,8 @@ struct frame_header final {
     std::uint32_t payload_size;
     std::uint32_t sequence;
     std::uint32_t crc;
-    std::array<std::uint8_t, 8> reserved2;
+    std::uint32_t correlation_id;
+    std::array<std::uint8_t, 4> reserved2;
 
     static constexpr size_t size = 32;
 };
@@ -76,6 +78,13 @@ private:
 public:
     frame();
     frame(message_type type, std::uint32_t sequence, std::vector<std::byte> payload);
+    frame(message_type type, std::uint32_t sequence, std::uint32_t correlation_id,
+        std::vector<std::byte> payload);
+
+    /**
+     * @brief Get the correlation ID for request/response matching.
+     */
+    std::uint32_t correlation_id() const { return header_.correlation_id; }
 
     /**
      * @brief Get the frame header.

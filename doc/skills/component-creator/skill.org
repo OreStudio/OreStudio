@@ -216,7 +216,7 @@ set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/${lib_target_name}/include)
+    ${CMAKE_SOURCE_DIR}/projects/${name}/include)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
@@ -412,6 +412,8 @@ To make sure the project compiles, we need to add some basic infrastructure.
  ,*/
 #ifndef ORES_COMPONENT_DOMAIN_STUB_HPP
 #define ORES_COMPONENT_DOMAIN_STUB_HPP
+
+#include <string>
 
 namespace ores::COMPONENT::domain {
 

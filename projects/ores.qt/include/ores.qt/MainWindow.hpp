@@ -24,10 +24,7 @@
 #include <QLabel>
 #include <QTimer>
 #include <memory>
-#include <thread>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/executor_work_guard.hpp>
-#include "ores.comms/net/client.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.qt/MdiAreaWithBackground.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ui_MainWindow.h"
@@ -88,17 +85,13 @@ public:
 
     /**
      * @brief Destroys the main window.
-     *
-     * Ensures all detachable windows are properly disconnected, closes the
-     * client connection, and cleans up the IO context thread.
      */
     ~MainWindow() override;
 
     /**
-     * @brief Get the connected client instance.
-     * @return Shared pointer to the client, or nullptr if not connected.
+     * @brief Get the client manager.
      */
-    std::shared_ptr<comms::net::client> getClient() const { return client_; }
+    ClientManager* getClientManager() const { return clientManager_; }
 
 protected:
     /**
@@ -108,16 +101,6 @@ protected:
      * the main window closes, so the application can terminate cleanly.
      */
     void closeEvent(QCloseEvent* event) override;
-
-signals:
-    /**
-     * @brief Emitted when server disconnect is detected by heartbeat.
-     *
-     * This signal is emitted from the client's disconnect callback (which runs
-     * on the IO thread) and is connected to onServerDisconnectedDetected() slot
-     * to safely handle the disconnect on the main thread.
-     */
-    void serverDisconnectedDetected();
 
 private slots:
     /**
@@ -130,9 +113,6 @@ private slots:
 
     /**
      * @brief Handles disconnect action from menu/toolbar.
-     *
-     * Closes all entity windows, destroys controllers, disconnects the client,
-     * and stops the IO context thread.
      */
     void onDisconnectTriggered();
 
@@ -147,29 +127,12 @@ private slots:
     void onDetachAllTriggered();
 
     /**
-     * @brief Handles automatic server disconnect detection from heartbeat.
-     *
-     * Called when the client's heartbeat mechanism detects that the server
-     * has stopped responding. Performs the same cleanup as onDisconnectTriggered
-     * but with a different user message indicating the disconnect was unexpected.
-     */
-    void onServerDisconnectedDetected();
-
-    /**
      * @brief Updates the Window menu with the list of currently open windows.
      *
      * Called just before the Window menu is displayed. Removes old window list
      * items and adds current windows, indicating which are detached.
      */
     void onWindowMenuAboutToShow();
-
-    /**
-     * @brief Handles a single tick of the disconnect icon flash animation.
-     *
-     * Alternates the connection status icon between connected and disconnected
-     * states, decrementing the flash counter until complete.
-     */
-    void onFlashIconTick();
 
 private:
     /**
@@ -191,10 +154,6 @@ private:
 
     /**
      * @brief Performs common cleanup when disconnecting from server.
-     *
-     * Disconnects the client, stops the IO thread, closes all entity windows,
-     * resets controllers, and clears client infrastructure. Called by both
-     * manual disconnect and automatic disconnect detection.
      */
     void performDisconnectCleanup();
 
@@ -231,28 +190,11 @@ private:
      */
     std::unique_ptr<CurrencyController> currencyController_;
 
-    // Client infrastructure
-    /** @brief Boost ASIO IO context for async network operations */
-    std::unique_ptr<boost::asio::io_context> io_context_;
-
-    /** @brief Work guard preventing IO context from exiting when idle */
-    std::unique_ptr<boost::asio::executor_work_guard<
-        boost::asio::io_context::executor_type>> work_guard_;
-
-    /** @brief Thread running the IO context for network operations */
-    std::unique_ptr<std::thread> io_thread_;
-
-    /** @brief Client connection to the server */
-    std::shared_ptr<comms::net::client> client_;
+    /** @brief Client manager handling network connection and IO context */
+    ClientManager* clientManager_;
 
     /** @brief Username of currently logged-in user */
     std::string username_;
-
-    /** @brief Timer for disconnect icon flash animation */
-    QTimer flashIconTimer_;
-
-    /** @brief Remaining flash count for disconnect animation */
-    int flashIconCount_{0};
 };
 
 }

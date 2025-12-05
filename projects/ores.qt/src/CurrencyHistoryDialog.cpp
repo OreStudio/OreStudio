@@ -40,9 +40,9 @@ const QIcon& CurrencyHistoryDialog::getHistoryIcon() const {
 }
 
 CurrencyHistoryDialog::CurrencyHistoryDialog(QString iso_code,
-    std::shared_ptr<comms::net::client> client, QWidget* parent)
+    ClientManager* clientManager, QWidget* parent)
     : QWidget(parent), ui_(new Ui::CurrencyHistoryDialog),
-      client_(std::move(client)), isoCode_(std::move(iso_code)) {
+      clientManager_(clientManager), isoCode_(std::move(iso_code)) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating currency history widget for: "
                               << isoCode_.toStdString();
@@ -96,7 +96,10 @@ void CurrencyHistoryDialog::loadHistory() {
     QPointer<CurrencyHistoryDialog> self = this;
     QFuture<HistoryResult> future =
         QtConcurrent::run([self, frame = std::move(request_frame)]() mutable -> HistoryResult {
-        auto response_result = self->client_->send_request_sync(std::move(frame));
+        if (!self->clientManager_ || !self->clientManager_->isConnected()) {
+             return std::unexpected("Disconnected from server");
+        }
+        auto response_result = self->clientManager_->sendRequest(std::move(frame));
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Could not obtain currency history: "
                                        << "Failed to communicate with server.";

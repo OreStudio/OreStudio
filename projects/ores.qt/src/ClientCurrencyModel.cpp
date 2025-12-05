@@ -33,8 +33,8 @@ using comms::messaging::message_type;
 using namespace ores::utility::log;
 
 ClientCurrencyModel::
-ClientCurrencyModel(std::shared_ptr<comms::net::client> client, QObject* parent)
-    : QAbstractTableModel(parent), client_(std::move(client)),
+ClientCurrencyModel(ClientManager* clientManager, QObject* parent)
+    : QAbstractTableModel(parent), clientManager_(clientManager),
       watcher_(new QFutureWatcher<FutureWatcherResult>(this)) {
 
     connect(watcher_,
@@ -111,6 +111,15 @@ void ClientCurrencyModel::refresh(bool replace) {
         return;
     }
 
+    // If not connected, we can't fetch.
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        // If replacing, we might want to clear the model to show "offline/empty"
+        // or keep stale data. Let's keep stale data but maybe emit error?
+        // For now, just log and return.
+        BOOST_LOG_SEV(lg(), warn) << "Cannot refresh currency model: disconnected.";
+        return;
+    }
+
     // If replacing, start from offset 0; otherwise append to existing data
     const std::uint32_t offset = replace ? 0 : static_cast<std::uint32_t>(currencies_.size());
 
@@ -143,11 +152,15 @@ void ClientCurrencyModel::refresh(bool replace) {
                 0, std::move(payload));
 
             // Send request synchronously (on background thread)
+            // ClientManager handles connection check, but we checked before spawning too.
             auto response_result =
-                self->client_->send_request_sync(std::move(request_frame));
+                self->clientManager_->sendRequest(std::move(request_frame));
 
-            if (!response_result)
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send request: "
+                                           << response_result.error();
                 return {false, {}, 0};
+            }
 
             BOOST_LOG_SEV(lg(), debug) << "Received a currencies response.";
             auto response =

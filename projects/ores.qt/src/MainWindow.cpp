@@ -47,7 +47,8 @@ namespace ores::qt {
 using namespace ores::utility::log;
 
 MainWindow::MainWindow(QWidget* parent) :
-    QMainWindow(parent), ui_(new Ui::MainWindow), mdiArea_(nullptr) {
+    QMainWindow(parent), ui_(new Ui::MainWindow), mdiArea_(nullptr),
+    clientManager_(new ClientManager(this)) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating the main window.";
     ui_->setupUi(this);
@@ -103,15 +104,16 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->menuWindow, &QMenu::aboutToShow, this,
         &MainWindow::onWindowMenuAboutToShow);
 
-    // Connect server disconnect detection signal
-    connect(this, &MainWindow::serverDisconnectedDetected, this,
-        &MainWindow::onServerDisconnectedDetected, Qt::QueuedConnection);
-
-    // Connect flash icon timer for disconnect animation
-    connect(&flashIconTimer_, &QTimer::timeout, this,
-        &MainWindow::onFlashIconTick);
+    // Connect ClientManager signals
+    connect(clientManager_, &ClientManager::connected, this, &MainWindow::updateMenuState);
+    connect(clientManager_, &ClientManager::disconnected, this, &MainWindow::updateMenuState);
+    connect(clientManager_, &ClientManager::disconnected, this, [this]() {
+        ui_->statusbar->showMessage("Disconnected from server.", 5000);
+    });
 
     // Connect Currencies action to controller
+    // Controller is created immediately but will check connection status
+    createControllers();
     connect(ui_->CurrenciesAction, &QAction::triggered, this, [this]() {
         if (currencyController_)
             currencyController_->showListWindow();
@@ -138,8 +140,6 @@ MainWindow::MainWindow(QWidget* parent) :
 
 void MainWindow::closeEvent(QCloseEvent* event) {
     BOOST_LOG_SEV(lg(), debug) << "MainWindow close event triggered";
-    BOOST_LOG_SEV(lg(), debug) << "Closing " << allDetachableWindows_.size()
-                               << " detachable windows before main window closes";
 
     // Close all detachable windows first
     // Make a copy of the list since closing windows modifies the original list
@@ -149,108 +149,55 @@ void MainWindow::closeEvent(QCloseEvent* event) {
             windowsCopy.append(window);
     }
 
-    int closed_count = 0;
     for (auto window : windowsCopy) {
         if (window) {
-            QString title = window->windowTitle();
-            bool is_detached = window->isDetached();
-            BOOST_LOG_SEV(lg(), debug) << "Closing window: " << title.toStdString()
-                                       << " (detached=" << is_detached << ")";
             window->close();
-            closed_count++;
         }
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Closed " << closed_count
-                               << " windows, accepting close event";
-
-    // Accept the close event to allow MainWindow to close
     event->accept();
 }
 
 MainWindow::~MainWindow() {
     BOOST_LOG_SEV(lg(), debug) << "MainWindow destructor called";
-    BOOST_LOG_SEV(lg(), debug) << "Closing " << allDetachableWindows_.size()
-                               << " detachable windows";
-
-    // Close and delete all detachable windows before MainWindow destruction
-    // Use deleteLater() to ensure detached windows are properly destroyed
-    int closed_count = 0;
-    for (auto* window : allDetachableWindows_) {
-        if (window) {
-            QString title = window->windowTitle();
-            bool is_detached = window->isDetached();
-            BOOST_LOG_SEV(lg(), debug) << "Destroying window: " << title.toStdString()
-                                       << " (detached=" << is_detached << ")";
-            disconnect(window, &QObject::destroyed, this, nullptr);
-            window->setAttribute(Qt::WA_DeleteOnClose);
-            window->close();
-            window->deleteLater();
-            closed_count++;
-        }
+    // ClientManager and Controllers are children, so they will be destroyed automatically.
+    // However, we want to ensure windows are closed properly.
+    // No manual deletion loop needed as ClientManager ensures IO context lives long enough
+    // for normal Qt object destruction if we just let it happen.
+    // But explicitly disconnecting client is good practice.
+    if (clientManager_) {
+        clientManager_->disconnect();
     }
-    BOOST_LOG_SEV(lg(), debug) << "Scheduled " << closed_count << " windows for deletion";
-
-    if (client_)
-        client_->disconnect();
-
-    // Reset work guard to allow IO context to finish
-    work_guard_.reset();
-
-    // Stop IO context and join thread
-    if (io_context_)
-        io_context_->stop();
-
-    if (io_thread_ && io_thread_->joinable())
-        io_thread_->join();
-
-    BOOST_LOG_SEV(lg(), debug) << "MainWindow destroyed, client disconnected.";
 }
 
 void MainWindow::onLoginTriggered() {
     BOOST_LOG_SEV(lg(), debug) << "Login action triggered";
 
-    LoginDialog dialog(this);
+    LoginDialog dialog(clientManager_, this);
     const int result = dialog.exec();
 
     if (result == QDialog::Accepted) {
-        // Transfer ownership of client infrastructure from dialog
-        client_ = dialog.getClient();
         username_ = dialog.getUsername();
-        io_context_ = dialog.takeIOContext();
-        work_guard_ = dialog.takeWorkGuard();
-        io_thread_ = dialog.takeIOThread();
-
-        if (client_ && client_->is_connected()) {
-            BOOST_LOG_SEV(lg(), info) << "Successfully connected and authenticated.";
-
-            // Set up disconnect callback for proactive server disconnect detection
-            client_->set_disconnect_callback([this]() {
-                BOOST_LOG_SEV(lg(), warn) << "Server disconnect detected by heartbeat";
-                // Emit signal to handle disconnect on main thread (thread-safe)
-                emit serverDisconnectedDetected();
-            });
-            BOOST_LOG_SEV(lg(), debug) << "Heartbeat disconnect callback registered";
-
-            // Create entity controllers after successful login
-            createControllers();
-
-            updateMenuState();
-            ui_->statusbar->showMessage("Successfully connected and logged in.");
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Client is not properly connected after login.";
-            MessageBoxHelper::critical(this, "Connection Error",
-                "Failed to establish server connection.");
+        
+        // Update controllers with new username if needed
+        if (currencyController_) {
+            currencyController_->setUsername(QString::fromStdString(username_));
         }
-    } else
+        
+        BOOST_LOG_SEV(lg(), info) << "Successfully connected and authenticated.";
+        ui_->statusbar->showMessage("Successfully connected and logged in.");
+    } else {
         BOOST_LOG_SEV(lg(), warn) << "Login cancelled by user.";
+    }
 }
 
 void MainWindow::updateMenuState() {
-    const bool isConnected = client_ && client_->is_connected();
+    const bool isConnected = clientManager_ && clientManager_->isConnected();
 
     // Enable/disable menu actions based on connection state
-    ui_->CurrenciesAction->setEnabled(isConnected);
+    // We allow opening windows even if disconnected (they will show offline state)
+    // But for now, let's keep it simple and enable them.
+    ui_->CurrenciesAction->setEnabled(true);
 
     // Enable/disable connect and disconnect actions
     ui_->ActionConnect->setEnabled(!isConnected);
@@ -258,10 +205,10 @@ void MainWindow::updateMenuState() {
 
     // Update connection status icon in status bar
     if (isConnected) {
-        // Use 16x16 for status bar
         connectionStatusIconLabel_->setPixmap(connectedIcon_.pixmap(16, 16));
-    } else
+    } else {
         connectionStatusIconLabel_->setPixmap(disconnectedIcon_.pixmap(16, 16));
+    }
 
     BOOST_LOG_SEV(lg(), debug) << "Menu state updated. Connected: "
                                << isConnected;
@@ -271,8 +218,9 @@ void MainWindow::createControllers() {
     BOOST_LOG_SEV(lg(), debug) << "Creating entity controllers.";
 
     // Create currency controller
+    // It now takes ClientManager instead of client shared_ptr
     currencyController_ = std::make_unique<CurrencyController>(
-        this, mdiArea_, client_, QString::fromStdString(username_),
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
         allDetachableWindows_, this);
 
     // Connect controller signals to status bar
@@ -290,81 +238,13 @@ void MainWindow::createControllers() {
 
 void MainWindow::onDisconnectTriggered() {
     BOOST_LOG_SEV(lg(), debug) << "Disconnect action triggered.";
-
-    if (client_ && client_->is_connected()) {
-        performDisconnectCleanup();
-
-        BOOST_LOG_SEV(lg(), info) << "Disconnected from server";
-        ui_->statusbar->showMessage(
-            "Successfully disconnected from the server.");
-    }
-}
-
-void MainWindow::onServerDisconnectedDetected() {
-    BOOST_LOG_SEV(lg(), warn) << "Server disconnect detected - cleaning up";
-
-    if (client_) {
-        performDisconnectCleanup();
-
-        BOOST_LOG_SEV(lg(), warn) << "Server connection lost";
-        ui_->statusbar->showMessage(
-            "Server connection lost - disconnected automatically", 10000);
-
-        // Flash the disconnect icon to draw attention
-        flashIconCount_ = 8;
-        flashIconTimer_.start(250);
-    }
+    performDisconnectCleanup();
 }
 
 void MainWindow::performDisconnectCleanup() {
-    // Disconnect client
-    if (client_) {
-        client_->disconnect();
+    if (clientManager_) {
+        clientManager_->disconnect();
     }
-
-    // Reset work guard to allow IO context to finish
-    work_guard_.reset();
-
-    // Stop IO context and join thread
-    if (io_context_) {
-        io_context_->stop();
-    }
-
-    if (io_thread_ && io_thread_->joinable()) {
-        io_thread_->join();
-    }
-
-    // Close all windows managed by controllers
-    if (currencyController_) {
-        currencyController_->closeAllWindows();
-    }
-
-    // Reset controllers
-    currencyController_.reset();
-
-    // Clear client infrastructure
-    client_.reset();
-    io_thread_.reset();
-    io_context_.reset();
-
-    // Update UI state
-    updateMenuState();
-}
-
-void MainWindow::onFlashIconTick() {
-    if (flashIconCount_ <= 0) {
-        // Animation complete - stop timer and ensure icon is disconnected
-        flashIconTimer_.stop();
-        connectionStatusIconLabel_->setPixmap(disconnectedIcon_.pixmap(16, 16));
-        return;
-    }
-
-    // Alternate between disconnected and connected icons
-    bool showDisconnected = (flashIconCount_ % 2 == 1);
-    const QIcon& icon = showDisconnected ? disconnectedIcon_ : connectedIcon_;
-    connectionStatusIconLabel_->setPixmap(icon.pixmap(16, 16));
-
-    --flashIconCount_;
 }
 
 void MainWindow::onAboutTriggered() {

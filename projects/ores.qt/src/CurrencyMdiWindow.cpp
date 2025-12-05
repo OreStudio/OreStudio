@@ -54,7 +54,7 @@ using comms::messaging::message_type;
 using namespace ores::utility::log;
 
 CurrencyMdiWindow::
-CurrencyMdiWindow(std::shared_ptr<comms::net::client> client,
+CurrencyMdiWindow(ClientManager* clientManager,
                   const QString& username,
                   QWidget* parent)
     : QWidget(parent),
@@ -65,8 +65,8 @@ CurrencyMdiWindow(std::shared_ptr<comms::net::client> client,
       addAction_(new QAction("Add", this)),
       editAction_(new QAction("Edit", this)),
       deleteAction_(new QAction("Delete", this)),
-      currencyModel_(new ClientCurrencyModel(client)),
-      client_(std::move(client)),
+      currencyModel_(std::make_unique<ClientCurrencyModel>(clientManager)),
+      clientManager_(clientManager),
       username_(username) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating currency MDI window";
@@ -198,11 +198,23 @@ CurrencyMdiWindow(std::shared_ptr<comms::net::client> client,
         }
     });
 
+    // Connect connection state signals
+    if (clientManager_) {
+        connect(clientManager_, &ClientManager::connected, this, &CurrencyMdiWindow::onConnectionStateChanged);
+        connect(clientManager_, &ClientManager::disconnected, this, &CurrencyMdiWindow::onConnectionStateChanged);
+    }
+
     updateActionStates();
 
     emit statusChanged("Loading currencies...");
 
-    currencyModel_->refresh();
+    // Initial load
+    if (clientManager_->isConnected()) {
+        currencyModel_->refresh();
+    } else {
+        emit statusChanged("Disconnected - Offline");
+        toolBar_->setEnabled(false);
+    }
 }
 
 CurrencyMdiWindow::~CurrencyMdiWindow() {
@@ -217,8 +229,25 @@ CurrencyMdiWindow::~CurrencyMdiWindow() {
     }
 }
 
+void CurrencyMdiWindow::onConnectionStateChanged() {
+    const bool connected = clientManager_ && clientManager_->isConnected();
+    toolBar_->setEnabled(connected);
+    
+    if (connected) {
+        emit statusChanged("Connected");
+        // Optionally auto-refresh on reconnect?
+        // currencyModel_->refresh(); 
+    } else {
+        emit statusChanged("Disconnected - Offline");
+    }
+}
+
 void CurrencyMdiWindow::reload() {
     BOOST_LOG_SEV(lg(), debug) << "Reload requested";
+    if (!clientManager_->isConnected()) {
+        emit statusChanged("Cannot reload - Disconnected");
+        return;
+    }
     emit statusChanged("Reloading currencies...");
     currencyModel_->refresh();
 }
@@ -324,6 +353,11 @@ void CurrencyMdiWindow::deleteSelected() {
         return;
     }
 
+    if (!clientManager_->isConnected()) {
+         MessageBoxHelper::warning(this, "Disconnected", "Cannot delete currency while disconnected.");
+         return;
+    }
+
     std::vector<std::string> iso_codes;
     for (const auto& index : selected) {
         const auto* currency = currencyModel_
@@ -363,13 +397,14 @@ void CurrencyMdiWindow::deleteSelected() {
 
     QPointer<CurrencyMdiWindow> self = this;
     using DeleteResult = std::vector<std::pair<std::string, std::pair<bool, std::string>>>;
-    QFuture<DeleteResult> future =
-        QtConcurrent::run([self, iso_codes]() -> DeleteResult {
+    
+    // Capture iso_codes by value
+    auto task = [self, iso_codes]() -> DeleteResult {
         DeleteResult results;
-
+        if (!self) return {};
+        
         BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
                                    << iso_codes.size() << " currencies";
-        if (!self) return {};
 
         // Create batch request with all ISO codes
         risk::messaging::delete_currency_request request{iso_codes};
@@ -380,8 +415,8 @@ void CurrencyMdiWindow::deleteSelected() {
             0, std::move(payload)
         );
 
-        // Send single batch request
-        auto response_result = self->client_->send_request_sync(
+        // Send single batch request via ClientManager
+        auto response_result = self->clientManager_->sendRequest(
             std::move(request_frame));
 
         if (!response_result) {
@@ -416,7 +451,7 @@ void CurrencyMdiWindow::deleteSelected() {
         }
 
         return results;
-    });
+    };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
     connect(watcher, &QFutureWatcher<DeleteResult>::finished,
@@ -472,6 +507,8 @@ void CurrencyMdiWindow::deleteSelected() {
         }
     });
 
+    // Run async
+    QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 
@@ -532,6 +569,11 @@ void CurrencyMdiWindow::exportToCSV() {
 void CurrencyMdiWindow::importFromXML() {
     BOOST_LOG_SEV(lg(), debug) << "Import XML action triggered";
 
+    if (!clientManager_->isConnected()) {
+         MessageBoxHelper::warning(this, "Disconnected", "Cannot import currencies while disconnected.");
+         return;
+    }
+
     QString fileName = QFileDialog::getOpenFileName(
         this,
         "Select ORE XML File to Import",
@@ -569,7 +611,8 @@ void CurrencyMdiWindow::importFromXML() {
             .arg(currencies.size()));
 
         // Show import dialog with full preview and import capability
-        auto* dialog = new ImportCurrencyDialog(currencies, fileName, client_,
+        // Assuming ImportCurrencyDialog is updated to take ClientManager
+        auto* dialog = new ImportCurrencyDialog(currencies, fileName, clientManager_,
                                                  username_, this);
 
         // Connect completion signal to refresh UI

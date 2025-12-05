@@ -24,6 +24,7 @@
 #include <QHeaderView>
 #include <QFileInfo>
 #include <QtConcurrent/QtConcurrent>
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.risk/orexml/importer.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -35,13 +36,13 @@ using namespace ores::utility::log;
 ImportCurrencyDialog::ImportCurrencyDialog(
     const std::vector<risk::domain::currency>& currencies,
     const QString& filename,
-    std::shared_ptr<comms::net::client> client,
+    ClientManager* clientManager,
     const QString& username,
     QWidget* parent)
     : QDialog(parent),
       currencies_(currencies),
       filename_(filename),
-      client_(std::move(client)),
+      clientManager_(clientManager),
       username_(username),
       importInProgress_(false),
       cancelRequested_(false) {
@@ -323,6 +324,13 @@ void ImportCurrencyDialog::onCurrencyCheckChanged() {
 void ImportCurrencyDialog::onImportClicked() {
     BOOST_LOG_SEV(lg(), debug) << "Import button clicked";
 
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Import cancelled: client disconnected";
+        MessageBoxHelper::warning(this, "Disconnected",
+            "Cannot import currencies while disconnected.");
+        return;
+    }
+
     importInProgress_ = true;
 
     // Disable UI during import
@@ -386,7 +394,7 @@ void ImportCurrencyDialog::onImportClicked() {
                         comms::messaging::message_type::save_currency_request,
                         0, std::move(payload));
 
-                    auto response_result = self->client_->send_request_sync(
+                    auto response_result = self->clientManager_->sendRequest(
                         std::move(request_frame));
 
                     if (!response_result) {

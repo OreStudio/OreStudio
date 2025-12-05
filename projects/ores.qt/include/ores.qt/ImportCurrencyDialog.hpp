@@ -32,7 +32,7 @@
 #include <vector>
 #include <memory>
 #include "ores.risk/domain/currency.hpp"
-#include "ores.comms/net/client.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.utility/log/make_logger.hpp"
 
 namespace ores::qt {
@@ -62,13 +62,13 @@ public:
      * @brief Constructs the import dialog.
      * @param currencies Currencies parsed from XML file
      * @param filename Path to the XML file being imported
-     * @param client Client connection for sending currencies to server
+     * @param clientManager Client manager for sending currencies to server
      * @param parent Parent widget
      */
     explicit ImportCurrencyDialog(
         const std::vector<risk::domain::currency>& currencies,
         const QString& filename,
-        std::shared_ptr<comms::net::client> client,
+        ClientManager* clientManager,
         const QString& username,
         QWidget* parent = nullptr);
 
@@ -140,7 +140,7 @@ private:
     std::vector<risk::domain::currency> currencies_;
     std::vector<std::string> validation_errors_;
     QString filename_;
-    std::shared_ptr<comms::net::client> client_;
+    ClientManager* clientManager_;
     QString username_;
 
     // UI Components

@@ -25,7 +25,7 @@
 #include <QAction>
 #include <memory>
 #include "ores.risk/domain/currency.hpp"
-#include "ores.comms/net/client.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.utility/log/make_logger.hpp"
 
 
@@ -51,7 +51,7 @@ public:
     explicit CurrencyDetailDialog(QWidget* parent = nullptr);
     ~CurrencyDetailDialog() override;
 
-    void setClient(std::shared_ptr<comms::net::client> client);
+    void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
 
     void setCurrency(const risk::domain::currency& currency);
@@ -85,7 +85,7 @@ private:
     QAction* saveAction_;
     QAction* deleteAction_;
 
-    std::shared_ptr<comms::net::client> client_;
+    ClientManager* clientManager_;
     risk::domain::currency currentCurrency_;
     static constexpr const char* max_timestamp = "9999-12-31 23:59:59";
 };

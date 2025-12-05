@@ -26,7 +26,7 @@
 #include <QToolBar>
 #include <QLabel>
 #include <memory>
-#include "ores.comms/net/client.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.qt/ClientCurrencyModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
@@ -47,7 +47,7 @@ private:
     }
 
 public:
-    explicit CurrencyMdiWindow(std::shared_ptr<comms::net::client> client,
+    explicit CurrencyMdiWindow(ClientManager* clientManager,
                                const QString& username,
                                QWidget* parent = nullptr);
     ~CurrencyMdiWindow() override;
@@ -80,6 +80,7 @@ private slots:
     void onLoadError(const QString& error_message);
     void onRowDoubleClicked(const QModelIndex& index);
     void onSelectionChanged();
+    void onConnectionStateChanged();
 
 private:
     void updateActionStates();
@@ -96,7 +97,7 @@ private:
     QAction* historyAction_;
 
     std::unique_ptr<ClientCurrencyModel> currencyModel_;
-    std::shared_ptr<comms::net::client> client_;
+    ClientManager* clientManager_;
     QString username_;
 };
 

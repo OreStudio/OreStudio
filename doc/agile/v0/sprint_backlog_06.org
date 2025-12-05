@@ -18,36 +18,36 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-04 Thu 00:23], for Thursday, December 04, 2025.
+#+CAPTION: Clock summary at [2025-12-05 Fri 00:03], for Friday, December 05, 2025.
 |      | <75>                                                |        |      |      |       |
 | Tags | Headline                                            | Time   |      |      |     % |
 |------+-----------------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                        | *0:23* |      |      | 100.0 |
+|      | *Total time*                                        | *0:03* |      |      | 100.0 |
 |------+-----------------------------------------------------+--------+------+------+-------|
-|      | Stories                                             | 0:23   |      |      | 100.0 |
-|      | Active                                              |        | 0:23 |      | 100.0 |
-| code | Implement client heartbeat for disconnect detection |        |      | 0:23 | 100.0 |
+|      | Stories                                             | 0:03   |      |      | 100.0 |
+|      | Active                                              |        | 0:03 |      | 100.0 |
+| code | Implement client heartbeat for disconnect detection |        |      | 0:03 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-04 Thu 00:23]
+#+CAPTION: Clock summary at [2025-12-05 Fri 00:03]
 |       | <75>                                                |         |       |      |       |
 | Tags  | Headline                                            | Time    |       |      |     % |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                        | *14:41* |       |      | 100.0 |
+|       | *Total time*                                        | *18:57* |       |      | 100.0 |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                             | 14:41   |       |      | 100.0 |
-|       | Active                                              |         | 14:41 |      | 100.0 |
-| agile | Sprint and product backlog refinement               |         |       | 0:18 |   2.0 |
-| infra | OCR scan notebooks for this sprint                  |         |       | 3:09 |  21.5 |
-| code  | Implement session cancellation                      |         |       | 2:42 |  18.4 |
-| code  | Create a variability service for feature flags      |         |       | 1:23 |   9.4 |
-| code  | Add tests to diagrams                               |         |       | 1:26 |   9.8 |
-| code  | Add messaging to variability                        |         |       | 0:40 |   4.5 |
-| code  | Create handshake service in comms                   |         |       | 2:31 |  17.1 |
-| code  | Experiment with simple code generation              |         |       | 1:30 |  10.2 |
-| code  | Implement client heartbeat for disconnect detection |         |       | 1:02 |   7.0 |
+|       | Stories                                             | 18:57   |       |      | 100.0 |
+|       | Active                                              |         | 18:57 |      | 100.0 |
+| agile | Sprint and product backlog refinement               |         |       | 0:18 |   1.6 |
+| infra | OCR scan notebooks for this sprint                  |         |       | 3:09 |  16.6 |
+| code  | Implement session cancellation                      |         |       | 2:42 |  14.2 |
+| code  | Create a variability service for feature flags      |         |       | 1:23 |   7.3 |
+| code  | Add tests to diagrams                               |         |       | 1:26 |   7.6 |
+| code  | Add messaging to variability                        |         |       | 0:40 |   3.5 |
+| code  | Create handshake service in comms                   |         |       | 2:31 |  13.3 |
+| code  | Implement client heartbeat for disconnect detection |         |       | 5:18 |  28.0 |
+| code  | Experiment with simple code generation              |         |       | 1:30 |   7.9 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -726,18 +726,11 @@ Components:
 - description
 - id
 
-*** STARTED Experiment with simple code generation                     :code:
+*** COMPLETED Implement client heartbeat for disconnect detection      :code:
     :LOGBOOK:
-    CLOCK: [2025-12-02 Tue 14:35]--[2025-12-02 Tue 16:05] =>  1:30
-    :END:
-
-It should be easy enough to add a simple code generator that creates the basic
-infrastructure for a domain type, so that we don't have to waste Claude Code
-tokens.
-
-*** STARTED Implement client heartbeat for disconnect detection        :code:
-    :LOGBOOK:
-    CLOCK: [2025-12-04 Thu 06:53]
+    CLOCK: [2025-12-04 Thu 21:10]--[2025-12-05 Fri 00:03] =>  2:53
+    CLOCK: [2025-12-04 Thu 10:00]--[2025-12-04 Thu 10:45] =>  0:45
+    CLOCK: [2025-12-04 Thu 06:53]--[2025-12-04 Thu 07:23] =>  0:30
     CLOCK: [2025-12-04 Thu 00:24]--[2025-12-04 Thu 00:32] =>  0:08
     CLOCK: [2025-12-03 Wed 23:21]--[2025-12-04 Thu 00:23] =>  1:02
     :END:
@@ -881,6 +874,15 @@ responses to requests.
   - Heartbeat timeout triggers disconnect
   - Write serialization
 
+*** STARTED Experiment with simple code generation                     :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-02 Tue 14:35]--[2025-12-02 Tue 16:05] =>  1:30
+    :END:
+
+It should be easy enough to add a simple code generator that creates the basic
+infrastructure for a domain type, so that we don't have to waste Claude Code
+tokens.
+
 *** Entity syntax refactor snags                                       :code:
 
 We refactored ores.cli to be "entity oriented", so that commands such as export,
@@ -892,6 +894,11 @@ However, we still see the entity enum in the code.
 
 We need tests in comms which create a test request and response and a test
 handler.
+
+*** Add sound assets                                                   :code:
+
+We need to be able to associate sounds to certain events such as disconnect,
+connect etc. Users need to be able to choose their own sounds.
 
 *** Add retry algorithm to client                                      :code:
 

@@ -20,16 +20,12 @@
 #ifndef ORES_QT_LOGINDIALOG_HPP
 #define ORES_QT_LOGINDIALOG_HPP
 
-#include <memory>
-#include <thread>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/executor_work_guard.hpp>
 #include <QLabel>
 #include <QDialog>
 #include <QLineEdit>
 #include <QSpinBox>
 #include <QPushButton>
-#include "ores.comms/net/client.hpp"
+#include "ores.qt/ClientManager.hpp"
 
 namespace ores::qt {
 
@@ -37,7 +33,7 @@ namespace ores::qt {
  * @brief Dialog for user authentication and server connection.
  *
  * Presents a login form with username, password, server host, and port fields.
- * Handles async connection to the ores.comms server and performs login.
+ * Delegates connection and login logic to the provided ClientManager.
  */
 class LoginDialog : public QDialog {
     Q_OBJECT
@@ -50,14 +46,13 @@ private:
     }
 
 public:
-    explicit LoginDialog(QWidget* parent = nullptr);
-    ~LoginDialog() override;
-
     /**
-     * @brief Get the connected client instance.
-     * @return Shared pointer to the connected client, or nullptr if login failed.
+     * @brief Construct LoginDialog.
+     * @param clientManager Pointer to the application's client manager.
+     * @param parent Parent widget.
      */
-    std::shared_ptr<comms::net::client> getClient() const { return client_; }
+    explicit LoginDialog(ClientManager* clientManager, QWidget* parent = nullptr);
+    ~LoginDialog() override;
 
     /**
      * @brief Get the logged-in username.
@@ -65,45 +60,16 @@ public:
      */
     std::string getUsername() const { return username_edit_->text().toStdString(); }
 
-    /**
-     * @brief Get the IO context for async operations.
-     * @return Unique pointer to the IO context.
-     */
-    std::unique_ptr<boost::asio::io_context> takeIOContext() {
-        return std::move(io_context_);
-    }
-
-    /**
-     * @brief Get the IO thread for async operations.
-     * @return Unique pointer to the IO thread.
-     */
-    std::unique_ptr<std::thread> takeIOThread() {
-        return std::move(io_thread_);
-    }
-
-    /**
-     * @brief Get the work guard for the IO context.
-     * @return Unique pointer to the work guard.
-     */
-    std::unique_ptr<boost::asio::executor_work_guard<
-        boost::asio::io_context::executor_type>>
-    takeWorkGuard() {
-        return std::move(work_guard_);
-    }
-
 private slots:
     void onLoginClicked();
-    void onConnectionResult(bool success, const QString& error_message);
     void onLoginResult(bool success, const QString& error_message);
 
 signals:
-    void connectionCompleted(bool success, const QString& error_message);
     void loginCompleted(bool success, const QString& error_message);
 
 private:
     void setupUI();
     void enableForm(bool enabled);
-    void performLogin(const std::string& username, const std::string& password);
 
 private:
     // UI components
@@ -115,12 +81,8 @@ private:
     QPushButton* cancel_button_;
     QLabel* status_label_;
 
-    // Client infrastructure
-    std::unique_ptr<boost::asio::io_context> io_context_;
-    std::unique_ptr<boost::asio::executor_work_guard<
-        boost::asio::io_context::executor_type>> work_guard_;
-    std::unique_ptr<std::thread> io_thread_;
-    std::shared_ptr<comms::net::client> client_;
+    // Dependencies
+    ClientManager* clientManager_;
 };
 
 }

@@ -42,7 +42,7 @@ using FutureResult = std::pair<bool, std::string>;
 
 CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     : QWidget(parent), ui_(new Ui::CurrencyDetailDialog), isDirty_(false),
-      isAddMode_(false) {
+      isAddMode_(false), clientManager_(nullptr) {
 
     ui_->setupUi(this);
 
@@ -106,8 +106,8 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     updateSaveResetButtonState();
 }
 
-void CurrencyDetailDialog::setClient(std::shared_ptr<comms::net::client> client) {
-    client_ = std::move(client);
+void CurrencyDetailDialog::setClientManager(ClientManager* clientManager) {
+    clientManager_ = clientManager;
 }
 
 void CurrencyDetailDialog::setUsername(const std::string& username) {
@@ -189,7 +189,7 @@ void CurrencyDetailDialog::save() {
 }
 
 void CurrencyDetailDialog::onSaveClicked() {
-    if (!client_ || !client_->is_connected()) {
+    if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Save clicked but client not connected.";
         emit errorMessage("Not connected to server. Please login.");
         return;
@@ -207,9 +207,6 @@ void CurrencyDetailDialog::onSaveClicked() {
                 BOOST_LOG_SEV(lg(), debug) << "Sending save currency request for: "
                                            << currency.iso_code;
 
-                if (!self->client_ || !self->client_->is_connected())
-                    return {false, "Client disconnected during save request."};
-
                 // Use single save_currency message for both create and update
                 risk::messaging::save_currency_request request{currency};
                 auto payload = request.serialize();
@@ -217,7 +214,7 @@ void CurrencyDetailDialog::onSaveClicked() {
                     0, std::move(payload));
 
                 auto response_result =
-                    self->client_->send_request_sync(std::move(request_frame));
+                    self->clientManager_->sendRequest(std::move(request_frame));
 
                 if (!response_result)
                     return {false, "Failed to communicate with server"};
@@ -289,7 +286,7 @@ void CurrencyDetailDialog::onResetClicked() {
 }
 
 void CurrencyDetailDialog::onDeleteClicked() {
-    if (!client_ || !client_->is_connected()) {
+    if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Delete clicked but client not connected.";
         emit errorMessage("Not connected to server. Please login.");
         return;
@@ -318,11 +315,6 @@ void CurrencyDetailDialog::onDeleteClicked() {
             BOOST_LOG_SEV(lg(), debug) << "Sending delete currency request for: "
                                        << iso_code;
 
-            if (!self->client_ || !self->client_->is_connected()) {
-                BOOST_LOG_SEV(lg(), error) << "Client disconnected during operation.";
-                return {false, "Client disconnected during operation."};
-            }
-
             // Create batch request with single ISO code
             risk::messaging::delete_currency_request request{{iso_code}};
             auto payload = request.serialize();
@@ -331,7 +323,7 @@ void CurrencyDetailDialog::onDeleteClicked() {
                     0, std::move(payload));
 
             auto response_result =
-                self->client_->send_request_sync(std::move(request_frame));
+                self->clientManager_->sendRequest(std::move(request_frame));
 
             if (!response_result) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to communicate with server.";

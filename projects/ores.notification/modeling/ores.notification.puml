@@ -24,7 +24,46 @@ namespace ores #F2F2F2 {
     note "Notification service for real-time updates." as ores_notification_note
     notification --- ores_notification_note
     namespace notification #F2F2F2 {
+        namespace domain #F2F2F2 {
+            struct notification <<json_io>> <<table_io>> #F7E5FF {
+                -{field} entity std::string
+                -{field} timestamp std::chrono::system_clock::time_point
+            }
+            note top of notification
+            Represents a notification about a change to an entity.
+            - entity: Fully qualified name of the entity (e.g., "ores.risk.currency").
+            - timestamp: When the change occurred (UTC).
 
+            JSON I/O: std::ostream& operator<<(std::ostream&, const notification&)
+            Table I/O: std::ostream& operator<<(std::ostream&, const std::vector<notification>&)
+            end note
+        }
+
+        namespace generators #F2F2F2 {
+            class notification_generator <<generator>> #D89EF1 {
+                +{static} generate() domain::notification
+                +{static} generate_set(size_t n) std::vector<domain::notification>
+            }
+            note top of notification_generator
+            Generates random notification instances.
+            end note
+        }
+
+        namespace tests #F2F2F2 {
+            class notification_tests <<test suite>> #C5E1A5 {
+                +notification_json_serialization() void
+                +notification_table_serialization() void
+                +notification_generator() void
+            }
+            note top of notification_tests
+            Test suite for the notification domain type,
+            including JSON/table serialization and generator functionality.
+            end note
+        }
+
+        ' Relationships
+        ores::notification::generators::notification_generator --> ores::notification::domain::notification : generates
+        ores::notification::tests::notification_tests ..> ores::notification::domain::notification : tests
     }
 }
 

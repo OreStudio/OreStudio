@@ -17,23 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.notification/domain/stub.hpp"
+#ifndef ORES_NOTIFICATION_GENERATORS_NOTIFICATION_GENERATOR_HPP
+#define ORES_NOTIFICATION_GENERATORS_NOTIFICATION_GENERATOR_HPP
 
-#include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.notification/domain/notification.hpp"
+#include <vector>
 
-namespace {
+namespace ores::notification::generators {
 
-const std::string test_suite("ores.notification.tests");
-const std::string tags("[domain]");
+/**
+ * @brief Generates random notification instances for testing.
+ */
+class notification_generator final {
+public:
+    /**
+     * @brief Generates a single random notification.
+     */
+    static ores::notification::domain::notification generate();
+
+    /**
+     * @brief Generates a vector of random notifications.
+     */
+    static std::vector<ores::notification::domain::notification> generate_set(size_t n);
+};
 
 }
 
-using namespace ores::notification::domain;
-using namespace ores::utility::log;
-
-TEST_CASE("create_stub", tags) {
-    auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, warn) << stub_function();
-}
+#endif

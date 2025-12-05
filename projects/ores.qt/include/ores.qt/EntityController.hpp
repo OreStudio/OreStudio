@@ -23,135 +23,112 @@
 #include <QObject>
 #include <QMainWindow>
 #include <QMdiArea>
-#include <QPointer>
-#include <QMap>
 #include <QString>
+#include <QMap>
 #include <memory>
-#include "ores.comms/net/client.hpp"
+#include "ores.qt/ClientManager.hpp"
 
 namespace ores::qt {
 
 class DetachableMdiSubWindow;
 
 /**
- * @brief Base class for entity-specific controllers.
+ * @brief Abstract base class for entity controllers.
  *
- * Each entity (Currency, Account, Trade, etc.) has its own controller that
- * manages windows, dialogs, and operations specific to that entity. This keeps
- * MainWindow clean and makes it easy to add new entities.
- *
- * Provides generic window management functionality including window reuse,
- * tracking, and lifecycle management using namespaced keys.
+ * Entity controllers manage the lifecycle of windows related to specific data
+ * entities (like currencies, accounts, etc.). This base class provides common
+ * functionality for managing windows, tracking them for reuse, and handling the
+ * client connection.
  */
 class EntityController : public QObject {
     Q_OBJECT
 
 public:
-    explicit EntityController(
+    /**
+     * @brief Constructs an entity controller.
+     * @param mainWindow Parent main window.
+     * @param mdiArea MDI area for displaying windows.
+     * @param clientManager Client manager for network operations.
+     * @param username Currently logged in user.
+     * @param parent QObject parent.
+     */
+    EntityController(
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
-        std::shared_ptr<comms::net::client> client,
+        ClientManager* clientManager,
         const QString& username,
         QObject* parent = nullptr);
 
-     ~EntityController() override = default;
+    virtual ~EntityController() = default;
 
     /**
-     * @brief Show the main list window for this entity.
+     * @brief Updates the client manager and username (e.g. after re-login).
+     */
+    void setClientManager(ClientManager* clientManager, const QString& username);
+    
+    /**
+     * @brief Updates just the username.
+     */
+    void setUsername(const QString& username) { username_ = username; }
+
+    /**
+     * @brief Shows the main list window for this entity.
+     * Must be implemented by derived classes.
      */
     virtual void showListWindow() = 0;
 
     /**
-     * @brief Set the client connection (e.g., after reconnecting).
-     */
-    virtual void setClient(std::shared_ptr<comms::net::client> client,
-                           const QString& username);
-
-    /**
-     * @brief Close all windows managed by this controller.
+     * @brief Closes all windows managed by this controller.
+     * Must be implemented by derived classes.
      */
     virtual void closeAllWindows() = 0;
 
 signals:
-    /**
-     * @brief Emitted when a status message should be shown.
-     */
+    /** @brief Emitted when a status message should be shown to the user. */
     void statusMessage(const QString& message);
 
-    /**
-     * @brief Emitted when an error message should be shown.
-     */
+    /** @brief Emitted when an error message should be shown to the user. */
     void errorMessage(const QString& message);
 
 protected:
     /**
-     * @brief Build a namespaced window key for tracking.
-     *
-     * Creates a key in the format "windowType.identifier" for consistent
-     * window tracking across different entity types.
-     *
-     * @param windowType Type of window (e.g., "details", "history")
-     * @param identifier Unique identifier (e.g., ISO code, ID)
-     * @return Namespaced key string
+     * @brief Generates a unique key for tracking windows.
+     * @param windowType Type of window (e.g., "details", "history").
+     * @param identifier Unique ID of the entity (e.g., ISO code).
+     * @return A string key for the window map.
      */
-    QString build_window_key(const QString& windowType,
-                             const QString& identifier) const;
+    QString build_window_key(const QString& windowType, const QString& identifier) const;
 
     /**
-     * @brief Try to reuse an existing window if it exists.
-     *
-     * Checks if a window with the given key exists in the managed windows map.
-     * If found, brings it to front (handling both detached and MDI modes).
-     *
-     * @param key Window key to look up
-     * @return true if window was found and reused, false otherwise
+     * @brief Tries to reuse an existing window if one exists for the key.
+     * @param key Unique window key.
+     * @return true if window was found and activated, false otherwise.
      */
     bool try_reuse_window(const QString& key);
 
     /**
-     * @brief Bring a window to front.
-     *
-     * Handles both detached and MDI-attached windows, making the window
-     * visible, showing it, raising it, and activating it appropriately.
-     *
-     * @param window Window to bring to front
+     * @brief Activates the specified window, handling detached state.
      */
     void bring_window_to_front(DetachableMdiSubWindow* window);
 
     /**
-     * @brief Track a managed window.
-     *
-     * Adds the window to the managed windows map for later reuse and
-     * lifecycle management.
-     *
-     * @param key Window key for tracking
-     * @param window Window to track
+     * @brief Registers a window for tracking.
      */
     void track_window(const QString& key, DetachableMdiSubWindow* window);
 
     /**
-     * @brief Untrack a managed window.
-     *
-     * Removes the window from the managed windows map, typically called
-     * from the window's destroyed signal handler.
-     *
-     * @param key Window key to remove
+     * @brief Unregisters a window from tracking.
      */
     void untrack_window(const QString& key);
 
+protected:
     QMainWindow* mainWindow_;
     QMdiArea* mdiArea_;
-    std::shared_ptr<comms::net::client> client_;
+    ClientManager* clientManager_;
     QString username_;
 
-    /**
-     * @brief Map of all managed windows tracked by namespaced keys.
-     *
-     * Keys follow the pattern "windowType.identifier" (e.g.,
-     * "details.USD", "history.EUR"). Uses QPointer for automatic null
-     * handling when windows are destroyed externally.
-     */
-    QMap<QString, QPointer<DetachableMdiSubWindow>> managed_windows_;
+    /** @brief Map of active windows indexed by unique key. */
+    QMap<QString, DetachableMdiSubWindow*> managed_windows_;
 };
 
 }

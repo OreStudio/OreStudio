@@ -69,6 +69,7 @@ frame::frame() : header_{}, payload_{} {
     header_.payload_size = 0;
     header_.sequence = 0;
     header_.crc = 0;
+    header_.correlation_id = 0;
     header_.reserved2.fill(0);
 }
 
@@ -84,6 +85,23 @@ frame::frame(message_type type,
     header_.payload_size = static_cast<std::uint32_t>(payload_.size());
     header_.sequence = sequence;
     header_.crc = 0; // Will be calculated during serialization
+    header_.correlation_id = 0;
+    header_.reserved2.fill(0);
+}
+
+frame::frame(message_type type, std::uint32_t sequence,
+    std::uint32_t correlation_id, std::vector<std::byte> payload) :
+    header_{}, payload_(std::move(payload)) {
+
+    header_.magic = PROTOCOL_MAGIC;
+    header_.version_major = PROTOCOL_VERSION_MAJOR;
+    header_.version_minor = PROTOCOL_VERSION_MINOR;
+    header_.type = type;
+    header_.reserved1 = 0;
+    header_.payload_size = static_cast<std::uint32_t>(payload_.size());
+    header_.sequence = sequence;
+    header_.crc = 0; // Will be calculated during serialization
+    header_.correlation_id = correlation_id;
     header_.reserved2.fill(0);
 }
 
@@ -114,6 +132,7 @@ void frame::serialize_header(frame_header header, std::span<std::byte> buffer) c
     write32(header.payload_size);
     write32(header.sequence);
     write32(header.crc);
+    write32(header.correlation_id);
     std::memcpy(buffer.data() + offset, header.reserved2.data(),
         header.reserved2.size());
 }
@@ -193,6 +212,7 @@ frame::deserialize_header(std::span<const std::byte> data, bool skip_version_che
     header.payload_size = read32();
     header.sequence = read32();
     header.crc = read32();
+    header.correlation_id = read32();
 
     std::memcpy(header.reserved2.data(), data.data() + offset, header.reserved2.size());
     offset += header.reserved2.size();

@@ -143,6 +143,7 @@ TEST_CASE("test_client_server_connection", tags) {
         client_opts.host = "localhost";
         client_opts.port = server_port;
         client_opts.verify_certificate = false; // Self-signed cert
+        client_opts.heartbeat_enabled = false;  // Disable heartbeat for this test
 
         BOOST_LOG_SEV(lg, info) << "Creating client";
         // Create client
@@ -214,6 +215,7 @@ TEST_CASE("test_session_cancellation_on_server_stop", tags) {
         client_opts.host = "localhost";
         client_opts.port = server_port;
         client_opts.verify_certificate = false;
+        client_opts.heartbeat_enabled = false;  // Disable heartbeat for this test
 
         // Create multiple clients and connect them
         constexpr int num_clients = 3;
@@ -275,5 +277,196 @@ TEST_CASE("test_session_cancellation_on_server_stop", tags) {
         for (auto& client : clients) {
             client->disconnect();
         }
+    });
+}
+
+TEST_CASE("test_heartbeat_configuration", tags) {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
+    BOOST_LOG_SEV(lg, info) << "Starting test_heartbeat_configuration";
+
+    // Test default configuration
+    ores::comms::net::client_options default_opts;
+    CHECK(default_opts.heartbeat_enabled == true);
+    CHECK(default_opts.heartbeat_interval_seconds == 30);
+
+    // Test disabled configuration
+    ores::comms::net::client_options disabled_opts;
+    disabled_opts.heartbeat_enabled = false;
+    CHECK(disabled_opts.heartbeat_enabled == false);
+
+    // Test custom interval
+    ores::comms::net::client_options custom_opts;
+    custom_opts.heartbeat_interval_seconds = 60;
+    CHECK(custom_opts.heartbeat_interval_seconds == 60);
+
+    BOOST_LOG_SEV(lg, info) << "Test finished";
+}
+
+TEST_CASE("test_heartbeat_disconnect_detection", tags) {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
+    BOOST_LOG_SEV(lg, info) << "Starting test_heartbeat_disconnect_detection";
+    boost::asio::io_context io_context;
+
+    ores::testing::run_coroutine_test(io_context, [&]() -> boost::asio::awaitable<void> {
+        BOOST_LOG_SEV(lg, info) << "Inside test coroutine";
+
+        // Configure server
+        ores::comms::net::server_options server_opts;
+        server_opts.port = 0;
+        server_opts.certificate_chain_content = server_cert;
+        server_opts.private_key_content = server_key;
+        server_opts.enable_signal_watching = false;
+
+        BOOST_LOG_SEV(lg, info) << "Creating server";
+        auto server = std::make_shared<ores::comms::net::server>(server_opts);
+
+        std::uint16_t server_port = 0;
+
+        BOOST_LOG_SEV(lg, info) << "Spawning server";
+        boost::asio::co_spawn(co_await boost::asio::this_coro::executor,
+            [server, &io_context, &server_port]() -> boost::asio::awaitable<void> {
+                auto lg = ores::utility::log::make_logger("ores.comms.tests.server_runner");
+                BOOST_LOG_SEV(lg, info) << "Server starting run loop";
+                co_await server->run(io_context, [&](std::uint16_t port) {
+                    server_port = port;
+                    BOOST_LOG_SEV(lg, info) << "Server listening on port: " << port;
+                });
+                BOOST_LOG_SEV(lg, info) << "Server run loop finished";
+            }, boost::asio::detached);
+
+        BOOST_LOG_SEV(lg, info) << "Waiting for server port assignment";
+        boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
+        while (server_port == 0) {
+            timer.expires_after(std::chrono::milliseconds(10));
+            co_await timer.async_wait(boost::asio::use_awaitable);
+        }
+        BOOST_LOG_SEV(lg, info) << "Server port assigned: " << server_port;
+
+        // Configure client with fast heartbeat for testing
+        ores::comms::net::client_options client_opts;
+        client_opts.host = "localhost";
+        client_opts.port = server_port;
+        client_opts.verify_certificate = false;
+        client_opts.heartbeat_enabled = true;
+        client_opts.heartbeat_interval_seconds = 1;  // 1 second for testing
+
+        BOOST_LOG_SEV(lg, info) << "Creating and connecting client";
+        auto client = std::make_shared<ores::comms::net::client>(
+            client_opts, co_await boost::asio::this_coro::executor);
+
+        // Track disconnect callback
+        bool callback_invoked = false;
+        client->set_disconnect_callback([&callback_invoked, &lg]() {
+            BOOST_LOG_SEV(lg, info) << "Disconnect callback invoked!";
+            callback_invoked = true;
+        });
+
+        co_await client->connect();
+        CHECK(client->is_connected());
+        BOOST_LOG_SEV(lg, info) << "Client connected";
+
+        // Give heartbeat time to start
+        timer.expires_after(std::chrono::milliseconds(100));
+        co_await timer.async_wait(boost::asio::use_awaitable);
+
+        // Stop server to trigger disconnect detection
+        BOOST_LOG_SEV(lg, info) << "Stopping server to trigger disconnect detection";
+        server->stop();
+
+        // Wait for heartbeat to detect disconnect (2 intervals should be enough)
+        timer.expires_after(std::chrono::milliseconds(2100));
+        co_await timer.async_wait(boost::asio::use_awaitable);
+
+        // Verify disconnect was detected
+        BOOST_LOG_SEV(lg, info) << "Callback invoked: " << callback_invoked;
+        CHECK(callback_invoked);
+        CHECK(!client->is_connected());
+
+        BOOST_LOG_SEV(lg, info) << "Test finished - disconnect detected via heartbeat";
+        client->disconnect();
+    });
+}
+
+TEST_CASE("test_heartbeat_disabled", tags) {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
+    BOOST_LOG_SEV(lg, info) << "Starting test_heartbeat_disabled";
+    boost::asio::io_context io_context;
+
+    ores::testing::run_coroutine_test(io_context, [&]() -> boost::asio::awaitable<void> {
+        BOOST_LOG_SEV(lg, info) << "Inside test coroutine";
+
+        // Configure server
+        ores::comms::net::server_options server_opts;
+        server_opts.port = 0;
+        server_opts.certificate_chain_content = server_cert;
+        server_opts.private_key_content = server_key;
+        server_opts.enable_signal_watching = false;
+
+        BOOST_LOG_SEV(lg, info) << "Creating server";
+        auto server = std::make_shared<ores::comms::net::server>(server_opts);
+
+        std::uint16_t server_port = 0;
+
+        BOOST_LOG_SEV(lg, info) << "Spawning server";
+        boost::asio::co_spawn(co_await boost::asio::this_coro::executor,
+            [server, &io_context, &server_port]() -> boost::asio::awaitable<void> {
+                auto lg = ores::utility::log::make_logger("ores.comms.tests.server_runner");
+                BOOST_LOG_SEV(lg, info) << "Server starting run loop";
+                co_await server->run(io_context, [&](std::uint16_t port) {
+                    server_port = port;
+                    BOOST_LOG_SEV(lg, info) << "Server listening on port: " << port;
+                });
+                BOOST_LOG_SEV(lg, info) << "Server run loop finished";
+            }, boost::asio::detached);
+
+        BOOST_LOG_SEV(lg, info) << "Waiting for server port assignment";
+        boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
+        while (server_port == 0) {
+            timer.expires_after(std::chrono::milliseconds(10));
+            co_await timer.async_wait(boost::asio::use_awaitable);
+        }
+        BOOST_LOG_SEV(lg, info) << "Server port assigned: " << server_port;
+
+        // Configure client with heartbeat disabled
+        ores::comms::net::client_options client_opts;
+        client_opts.host = "localhost";
+        client_opts.port = server_port;
+        client_opts.verify_certificate = false;
+        client_opts.heartbeat_enabled = false;  // Disable heartbeat
+
+        BOOST_LOG_SEV(lg, info) << "Creating and connecting client with heartbeat disabled";
+        auto client = std::make_shared<ores::comms::net::client>(
+            client_opts, co_await boost::asio::this_coro::executor);
+
+        // Callback should not be invoked since heartbeat is disabled
+        bool callback_invoked = false;
+        client->set_disconnect_callback([&callback_invoked, &lg]() {
+            BOOST_LOG_SEV(lg, info) << "Disconnect callback invoked (unexpected)!";
+            callback_invoked = true;
+        });
+
+        co_await client->connect();
+        CHECK(client->is_connected());
+        BOOST_LOG_SEV(lg, info) << "Client connected";
+
+        // Stop server
+        BOOST_LOG_SEV(lg, info) << "Stopping server";
+        server->stop();
+
+        // Wait a bit - callback should NOT be invoked since heartbeat is disabled
+        timer.expires_after(std::chrono::milliseconds(500));
+        co_await timer.async_wait(boost::asio::use_awaitable);
+
+        // Callback should not have been invoked
+        CHECK(!callback_invoked);
+
+        BOOST_LOG_SEV(lg, info) << "Test finished - heartbeat was disabled as expected";
+        client->disconnect();
     });
 }

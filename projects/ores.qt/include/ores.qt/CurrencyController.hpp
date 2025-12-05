@@ -64,7 +64,7 @@ public:
      *
      * @param mainWindow Parent main window (for dialog ownership)
      * @param mdiArea MDI area where windows will be displayed
-     * @param client Shared client connection for server communication
+     * @param clientManager Client manager for network operations
      * @param username Username of logged-in user (for audit trails)
      * @param allDetachableWindows Reference to MainWindow's window list
      * for detach/reattach operations
@@ -73,7 +73,7 @@ public:
     explicit CurrencyController(
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
-        std::shared_ptr<comms::net::client> client,
+        ClientManager* clientManager,
         const QString& username,
         QList<DetachableMdiSubWindow*>& allDetachableWindows,
         QObject* parent = nullptr);

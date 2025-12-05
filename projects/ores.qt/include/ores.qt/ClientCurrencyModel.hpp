@@ -24,7 +24,7 @@
 #include <vector>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
-#include "ores.comms/net/client.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.risk/domain/currency.hpp"
 
@@ -48,7 +48,7 @@ private:
     }
 
 public:
-    explicit ClientCurrencyModel(std::shared_ptr<comms::net::client> client,
+    explicit ClientCurrencyModel(ClientManager* clientManager,
                                    QObject* parent = nullptr);
     ~ClientCurrencyModel() override = default;
 
@@ -145,7 +145,7 @@ private:
 
     using FutureWatcherResult = FetchResult;
 
-    std::shared_ptr<comms::net::client> client_;
+    ClientManager* clientManager_;
     std::vector<risk::domain::currency> currencies_;
     QFutureWatcher<FutureWatcherResult>* watcher_;
     std::uint32_t page_size_{100};

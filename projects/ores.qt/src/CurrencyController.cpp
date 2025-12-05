@@ -34,11 +34,11 @@ using namespace ores::utility::log;
 CurrencyController::CurrencyController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
-    std::shared_ptr<comms::net::client> client,
+    ClientManager* clientManager,
     const QString& username,
     QList<DetachableMdiSubWindow*>& allDetachableWindows,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, client, username, parent),
+    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
       allDetachableWindows_(allDetachableWindows),
       currencyListWindow_(nullptr) {
     BOOST_LOG_SEV(lg(), debug) << "Currency controller created";
@@ -49,12 +49,11 @@ CurrencyController::~CurrencyController() {
 }
 
 void CurrencyController::showListWindow() {
-    if (!client_ || !client_->is_connected()) {
-        BOOST_LOG_SEV(lg(), warn) << "Currencies action triggered but not connected";
-        MessageBoxHelper::warning(mainWindow_, "Not Connected",
-            "Please login first to view currencies.");
-        return;
-    }
+    // We allow showing window even if disconnected (it will show empty or cached data + offline status)
+    // But for now let's keep the check if strictly required, or just warn.
+    // The user requirement is "windows stay open".
+    // Let's allow opening it, but the window itself should handle disconnected state.
+    // For now, simply passing the clientManager is enough.
 
     // Reuse existing window if it exists
     if (currencyListWindow_) {
@@ -77,7 +76,8 @@ void CurrencyController::showListWindow() {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new currencies MDI window";
     const QColor iconColor(220, 220, 220);
-    auto* currencyWidget = new CurrencyMdiWindow(client_, username_, mainWindow_);
+    // Assuming CurrencyMdiWindow is updated to take ClientManager*
+    auto* currencyWidget = new CurrencyMdiWindow(clientManager_, username_, mainWindow_);
 
     // Connect status signals
     connect(currencyWidget, &CurrencyMdiWindow::statusChanged,
@@ -127,6 +127,11 @@ void CurrencyController::showListWindow() {
 }
 
 void CurrencyController::closeAllWindows() {
+    // We no longer close windows on disconnect!
+    // But we might close them if the controller itself is destroyed (e.g. app exit)
+    // The base class doesn't enforce closing.
+    // MainWindow calls this on disconnect? It should NOT anymore.
+    // But if we do need to close them:
     if (currencyListWindow_) {
         currencyListWindow_->close();
     }
@@ -137,9 +142,10 @@ void CurrencyController::onAddNewRequested() {
     const QColor iconColor(220, 220, 220);
     risk::domain::currency new_currency;
 
+    // Assuming CurrencyDetailDialog updated to take ClientManager*
     auto* detailDialog = new CurrencyDetailDialog(mainWindow_);
-    if (client_) {
-        detailDialog->setClient(client_);
+    if (clientManager_) {
+        detailDialog->setClientManager(clientManager_);
         detailDialog->setUsername(username_.toStdString());
     }
 
@@ -205,8 +211,8 @@ void CurrencyController::onShowCurrencyDetails(
     const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new CurrencyDetailDialog(mainWindow_);
-    if (client_) {
-        detailDialog->setClient(client_);
+    if (clientManager_) {
+        detailDialog->setClientManager(clientManager_);
         detailDialog->setUsername(username_.toStdString());
     }
 
@@ -263,12 +269,6 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
     BOOST_LOG_SEV(lg(), info) << "Showing currency history for: "
                              << isoCode.toStdString();
 
-    if (!client_ || !client_->is_connected()) {
-        MessageBoxHelper::warning(mainWindow_, "Not Connected",
-            "Please ensure you are still connected to view currency history.");
-        return;
-    }
-
     const QString windowKey = build_window_key("history", isoCode);
 
     // Try to reuse existing window
@@ -282,7 +282,8 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
                               << isoCode.toStdString();
     const QColor iconColor(220, 220, 220);
 
-    auto* historyWidget = new CurrencyHistoryDialog(isoCode, client_,
+    // Assuming CurrencyHistoryDialog updated to take ClientManager*
+    auto* historyWidget = new CurrencyHistoryDialog(isoCode, clientManager_,
                                                      mainWindow_);
 
     connect(historyWidget, &CurrencyHistoryDialog::statusChanged,

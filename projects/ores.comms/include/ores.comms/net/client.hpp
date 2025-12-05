@@ -21,18 +21,30 @@
 #define ORES_COMMS_NET_CLIENT_HPP
 
 #include <mutex>
+#include <atomic>
 #include <memory>
 #include <string>
 #include <cstdint>
+#include <functional>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/ssl.hpp>
+#include <boost/asio/strand.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_context.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/net/client_options.hpp"
 #include "ores.comms/net/connection.hpp"
+#include "ores.comms/net/pending_request_map.hpp"
 
 namespace ores::comms::net {
+
+/**
+ * @brief Callback invoked when client detects server disconnect.
+ *
+ * Called from the heartbeat coroutine when ping fails or times out.
+ * Should be thread-safe as it may be called from different executors.
+ */
+using disconnect_callback_t = std::function<void()>;
 
 /**
  * @brief ORES protocol client.
@@ -59,6 +71,38 @@ private:
      */
     boost::asio::awaitable<void> perform_handshake();
 
+    /**
+     * @brief Run heartbeat loop to detect disconnections.
+     *
+     * Periodically sends ping messages and waits for pong responses.
+     * Exits when cancelled or when disconnect is detected.
+     */
+    boost::asio::awaitable<void> run_heartbeat();
+
+    /**
+     * @brief Run the message loop that reads all incoming frames.
+     *
+     * Single reader coroutine that dispatches frames by type:
+     * - Response/pong: completes pending request via correlation ID
+     * - Notification: invokes notification callback (future)
+     * - Error: fails pending request
+     */
+    boost::asio::awaitable<void> run_message_loop();
+
+    /**
+     * @brief Write a frame through the write strand.
+     *
+     * Serializes all writes to prevent interleaving.
+     *
+     * @param f The frame to write
+     */
+    boost::asio::awaitable<void> write_frame(const messaging::frame& f);
+
+    /**
+     * @brief Generate the next correlation ID.
+     */
+    std::uint32_t next_correlation_id();
+
 public:
     /**
      * @brief Construct client with configuration.
@@ -71,6 +115,14 @@ public:
      * @brief Construct client with configuration and executor.
      */
     explicit client(client_options config, boost::asio::any_io_executor executor);
+
+    /**
+     * @brief Destructor.
+     *
+     * Ensures proper cleanup order - strand and pending requests must be
+     * destroyed before the io_context they reference.
+     */
+    ~client();
 
     /**
      * @brief Connect to server and perform handshake (async version).
@@ -95,6 +147,16 @@ public:
      * @brief Check if client is connected.
      */
     bool is_connected() const;
+
+    /**
+     * @brief Set callback to be invoked when disconnect is detected.
+     *
+     * The callback will be called from the heartbeat coroutine when
+     * a ping fails or times out. It should be thread-safe.
+     *
+     * @param callback Function to call on disconnect (may be empty to disable)
+     */
+    void set_disconnect_callback(disconnect_callback_t callback);
 
     /**
      * @brief Send a request frame and receive response frame (async version).
@@ -129,6 +191,13 @@ private:
     std::uint32_t sequence_number_;
     bool connected_;
     mutable std::mutex state_mutex_; // Thread-safe state protection
+    disconnect_callback_t disconnect_callback_;
+
+    // New infrastructure for unified message loop
+    std::unique_ptr<boost::asio::strand<boost::asio::any_io_executor>> write_strand_;
+    std::unique_ptr<pending_request_map> pending_requests_;
+    std::atomic<std::uint32_t> correlation_id_counter_{1};
+    bool message_loop_running_{false};
 };
 
 }

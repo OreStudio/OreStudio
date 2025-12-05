@@ -34,8 +34,10 @@ namespace ores::comms::messaging {
  // "ORES" in ASCII
 constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 
-// Protocol version 6 introduces variability subsystem range (0x3000-0x3FFF)
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 6;
+// Protocol version 7 adds correlation_id field to frame header for
+// request/response matching, enabling concurrent operations and server-push
+// notifications.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 7;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
@@ -54,6 +56,8 @@ enum class message_type {
     handshake_response = 0x0002,
     handshake_ack = 0x0003,
     error_response = 0x0004,
+    ping = 0x0005,
+    pong = 0x0006,
 
     // Risk subsystem messages (0x1000 - 0x1FFF)
     get_currencies_request = 0x1001,

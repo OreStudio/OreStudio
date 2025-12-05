@@ -25,7 +25,7 @@
 #include <QWidget>
 #include <QString>
 #include <QVector>
-#include "ores.comms/net/client.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.risk/domain/currency_version.hpp"
 #include "ores.risk/domain/currency_version_history.hpp"
 #include "ores.utility/log/make_logger.hpp"
@@ -54,7 +54,7 @@ private:
 
 public:
     explicit CurrencyHistoryDialog(QString iso_code,
-        std::shared_ptr<comms::net::client> client,
+        ClientManager* clientManager,
         QWidget* parent = nullptr);
     ~CurrencyHistoryDialog() override;
 
@@ -86,7 +86,7 @@ private:
         const risk::domain::currency_version& previous);
 
     std::unique_ptr<Ui::CurrencyHistoryDialog> ui_;
-    std::shared_ptr<comms::net::client> client_;
+    ClientManager* clientManager_;
     QString isoCode_;
     risk::domain::currency_version_history history_;
 };

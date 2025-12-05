@@ -25,19 +25,19 @@ namespace ores::qt {
 EntityController::EntityController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
-    std::shared_ptr<comms::net::client> client,
+    ClientManager* clientManager,
     const QString& username,
     QObject* parent)
     : QObject(parent),
       mainWindow_(mainWindow),
       mdiArea_(mdiArea),
-      client_(std::move(client)),
+      clientManager_(clientManager),
       username_(username) {
 }
 
-void EntityController::setClient(std::shared_ptr<comms::net::client> client,
+void EntityController::setClientManager(ClientManager* clientManager,
     const QString& username) {
-    client_ = std::move(client);
+    clientManager_ = clientManager;
     username_ = username;
 }
 

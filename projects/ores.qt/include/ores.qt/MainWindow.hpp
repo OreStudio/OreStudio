@@ -22,11 +22,9 @@
 
 #include <QMainWindow>
 #include <QLabel>
+#include <QTimer>
 #include <memory>
-#include <thread>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/executor_work_guard.hpp>
-#include "ores.comms/net/client.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.qt/MdiAreaWithBackground.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ui_MainWindow.h"
@@ -87,17 +85,13 @@ public:
 
     /**
      * @brief Destroys the main window.
-     *
-     * Ensures all detachable windows are properly disconnected, closes the
-     * client connection, and cleans up the IO context thread.
      */
     ~MainWindow() override;
 
     /**
-     * @brief Get the connected client instance.
-     * @return Shared pointer to the client, or nullptr if not connected.
+     * @brief Get the client manager.
      */
-    std::shared_ptr<comms::net::client> getClient() const { return client_; }
+    ClientManager* getClientManager() const { return clientManager_; }
 
 protected:
     /**
@@ -119,9 +113,6 @@ private slots:
 
     /**
      * @brief Handles disconnect action from menu/toolbar.
-     *
-     * Closes all entity windows, destroys controllers, disconnects the client,
-     * and stops the IO context thread.
      */
     void onDisconnectTriggered();
 
@@ -161,6 +152,11 @@ private:
      */
     void createControllers();
 
+    /**
+     * @brief Performs common cleanup when disconnecting from server.
+     */
+    void performDisconnectCleanup();
+
 private:
     /** @brief Auto-generated UI elements from MainWindow.ui */
     Ui::MainWindow* ui_;
@@ -194,19 +190,8 @@ private:
      */
     std::unique_ptr<CurrencyController> currencyController_;
 
-    // Client infrastructure
-    /** @brief Boost ASIO IO context for async network operations */
-    std::unique_ptr<boost::asio::io_context> io_context_;
-
-    /** @brief Work guard preventing IO context from exiting when idle */
-    std::unique_ptr<boost::asio::executor_work_guard<
-        boost::asio::io_context::executor_type>> work_guard_;
-
-    /** @brief Thread running the IO context for network operations */
-    std::unique_ptr<std::thread> io_thread_;
-
-    /** @brief Client connection to the server */
-    std::shared_ptr<comms::net::client> client_;
+    /** @brief Client manager handling network connection and IO context */
+    ClientManager* clientManager_;
 
     /** @brief Username of currently logged-in user */
     std::string username_;

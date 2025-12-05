@@ -49,6 +49,22 @@ struct client_options final {
      * @brief Whether to verify the server's certificate.
      */
     bool verify_certificate = true;
+
+    /**
+     * @brief Whether to enable heartbeat (ping/pong) for connection monitoring.
+     *
+     * When enabled, the client will periodically send ping messages to the
+     * server to detect disconnections proactively.
+     */
+    bool heartbeat_enabled = true;
+
+    /**
+     * @brief Interval between heartbeat pings in seconds.
+     *
+     * Default is 30 seconds. Lower values provide faster disconnect detection
+     * but increase network traffic.
+     */
+    std::uint32_t heartbeat_interval_seconds = 30;
 };
 
 std::ostream& operator<<(std::ostream& s, const client_options& v);

@@ -94,7 +94,7 @@ connection::read_frame(bool skip_version_check, boost::asio::cancellation_slot c
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Successfully deserialized frame, type: "
-                                 << static_cast<int>(frame_result->header().type)
+                                 << frame_result->header().type
                                  << " total size: " << buffer.size();
         co_return frame_result;
 
@@ -114,7 +114,7 @@ connection::write_frame(const messaging::frame& frame,
     boost::asio::cancellation_slot cancel_slot) {
     auto data = frame.serialize();
     BOOST_LOG_SEV(lg(), debug) << "Writing frame of size " << data.size()
-                             << " type: " << static_cast<int>(frame.header().type)
+                             << " type: " << frame.header().type
                              << " sequence: " << frame.header().sequence;
     co_await boost::asio::async_write(
         socket_,

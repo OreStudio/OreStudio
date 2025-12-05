@@ -17,41 +17,45 @@
 ** Active
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
-#+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-05 Fri 00:03], for Friday, December 05, 2025.
-|      | <75>                                                |        |      |      |       |
-| Tags | Headline                                            | Time   |      |      |     % |
-|------+-----------------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                        | *0:03* |      |      | 100.0 |
-|------+-----------------------------------------------------+--------+------+------+-------|
-|      | Stories                                             | 0:03   |      |      | 100.0 |
-|      | Active                                              |        | 0:03 |      | 100.0 |
-| code | Implement client heartbeat for disconnect detection |        |      | 0:03 | 100.0 |
+#+CAPTION: Clock summary at [2025-12-05 Fri 10:49], for Friday, December 05, 2025.
+|       | <75>                                                |        |      |      |       |
+| Tags  | Headline                                            | Time   |      |      |     % |
+|-------+-----------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                        | *2:10* |      |      | 100.0 |
+|-------+-----------------------------------------------------+--------+------+------+-------|
+|       | Stories                                             | 2:10   |      |      | 100.0 |
+|       | Active                                              |        | 2:10 |      | 100.0 |
+| agile | Sprint and product backlog refinement               |        |      | 0:11 |   8.5 |
+| infra | OCR scan notebooks for this sprint                  |        |      | 1:33 |  71.5 |
+| code  | Implement client heartbeat for disconnect detection |        |      | 0:03 |   2.3 |
+| code  | Pressing disconnect crashes client                  |        |      | 0:23 |  17.7 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-05 Fri 00:03]
+#+CAPTION: Clock summary at [2025-12-05 Fri 10:49]
 |       | <75>                                                |         |       |      |       |
 | Tags  | Headline                                            | Time    |       |      |     % |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                        | *18:57* |       |      | 100.0 |
+|       | *Total time*                                        | *21:04* |       |      | 100.0 |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                             | 18:57   |       |      | 100.0 |
-|       | Active                                              |         | 18:57 |      | 100.0 |
-| agile | Sprint and product backlog refinement               |         |       | 0:18 |   1.6 |
-| infra | OCR scan notebooks for this sprint                  |         |       | 3:09 |  16.6 |
-| code  | Implement session cancellation                      |         |       | 2:42 |  14.2 |
-| code  | Create a variability service for feature flags      |         |       | 1:23 |   7.3 |
-| code  | Add tests to diagrams                               |         |       | 1:26 |   7.6 |
-| code  | Add messaging to variability                        |         |       | 0:40 |   3.5 |
-| code  | Create handshake service in comms                   |         |       | 2:31 |  13.3 |
-| code  | Implement client heartbeat for disconnect detection |         |       | 5:18 |  28.0 |
-| code  | Experiment with simple code generation              |         |       | 1:30 |   7.9 |
+|       | Stories                                             | 21:04   |       |      | 100.0 |
+|       | Active                                              |         | 21:04 |      | 100.0 |
+| agile | Sprint and product backlog refinement               |         |       | 0:29 |   2.3 |
+| infra | OCR scan notebooks for this sprint                  |         |       | 4:42 |  22.3 |
+| code  | Implement session cancellation                      |         |       | 2:42 |  12.8 |
+| code  | Create a variability service for feature flags      |         |       | 1:23 |   6.6 |
+| code  | Add tests to diagrams                               |         |       | 1:26 |   6.8 |
+| code  | Add messaging to variability                        |         |       | 0:40 |   3.2 |
+| code  | Create handshake service in comms                   |         |       | 2:31 |  11.9 |
+| code  | Implement client heartbeat for disconnect detection |         |       | 5:18 |  25.2 |
+| code  | Pressing disconnect crashes client                  |         |       | 0:23 |   1.8 |
+| code  | Experiment with simple code generation              |         |       | 1:30 |   7.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-12-05 Fri 00:04]--[2025-12-05 Fri 00:15] =>  0:11
     CLOCK: [2025-12-02 Tue 10:54]--[2025-12-02 Tue 10:58] =>  0:04
     CLOCK: [2025-12-02 Tue 10:40]--[2025-12-02 Tue 10:54] =>  0:14
     :END:
@@ -207,6 +211,8 @@ print(p)
 
 *** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
+    CLOCK: [2025-12-05 Fri 10:18]--[2025-12-05 Fri 10:45] =>  0:27
+    CLOCK: [2025-12-05 Fri 09:11]--[2025-12-05 Fri 10:17] =>  1:06
     CLOCK: [2025-12-03 Wed 12:00]--[2025-12-03 Wed 13:40] =>  1:40
     CLOCK: [2025-12-02 Tue 09:10]--[2025-12-02 Tue 10:39] =>  1:29
     :END:
@@ -874,6 +880,32 @@ responses to requests.
   - Heartbeat timeout triggers disconnect
   - Write serialization
 
+*** COMPLETED Multi-threaded scenarios with comms                      :code:
+
+*Rationale*: Handled as part of heartbeat work.
+
+At present we are relying on request-response patterns: the client sends a
+request and the next frame coming in is the response. However, in the future we
+will have many dialog windows open, each of them sending requests and awaiting
+responses. It will not be possible to know what response is coming back from
+what window. We need to take this into account.
+
+*** COMPLETED Disconnect closes currencies window                      :code:
+
+*Rationale*: Handled as part of heartbeat work.
+
+It should just disable the icons, etc.
+
+*** COMPLETED Pressing disconnect crashes client                       :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-05 Fri 10:48]--[2025-12-05 Fri 10:49] =>  0:01
+    CLOCK: [2025-12-05 Fri 08:55]--[2025-12-05 Fri 09:10] =>  0:15
+    CLOCK: [2025-12-05 Fri 07:49]--[2025-12-05 Fri 07:56] =>  0:07
+    :END:
+
+We need to debug this crash. Disconnect works as a disconnect from the server
+side. Works sometimes, sometimes crashes.
+
 *** STARTED Experiment with simple code generation                     :code:
     :LOGBOOK:
     CLOCK: [2025-12-02 Tue 14:35]--[2025-12-02 Tue 16:05] =>  1:30
@@ -882,6 +914,201 @@ responses to requests.
 It should be easy enough to add a simple code generator that creates the basic
 infrastructure for a domain type, so that we don't have to waste Claude Code
 tokens.
+
+*** Add listen/notify support                                          :code:
+
+When data changes for a given entity in the database and we have the dialog of
+that entity open, we need to make the reload button a different colour (suggest
+a colour). For this we need to listen/notify in the database and then send a
+message to the client. This requires a change at the protocol because at present
+we send a request from the client first and then expect a response. This is more
+like a callback where the handler will call a callback when a certain message is
+received. Listen code from deepseek:
+
+#+begin_src c++
+#include <sqlgen.h>
+#include <libpq-fe.h>
+#include <thread>
+#include <iostream>
+
+class TableWatcher {
+private:
+    sqlgen::Connection conn_;
+    std::thread listener_thread_;
+    bool running_;
+
+public:
+    TableWatcher(const std::string& connection_string)
+        : conn_(connection_string), running_(false) {}
+
+    void start() {
+        running_ = true;
+        listener_thread_ = std::thread(&TableWatcher::listen_loop, this);
+    }
+
+    void stop() {
+        running_ = false;
+        if (listener_thread_.joinable()) {
+            listener_thread_.join();
+        }
+    }
+
+private:
+    void listen_loop() {
+        // Get raw PGconn for async operations
+        auto raw_conn = conn_.native_handle(); // You might need to expose this
+
+        // Listen to channel
+        PGresult* res = PQexec(raw_conn, "LISTEN table_updates;");
+        if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+            PQclear(res);
+            return;
+        }
+        PQclear(res);
+
+        while (running_) {
+            // Non-blocking check for notifications
+            PQconsumeInput(raw_conn);
+
+            PGnotify* notify;
+            while ((notify = PQnotifies(raw_conn)) != nullptr) {
+                handle_notification(notify);
+                PQfreemem(notify);
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    }
+
+    void handle_notification(PGnotify* notify) {
+        std::cout << "Received notification: " << notify->relname
+                  << " - " << notify->extra << std::endl;
+
+        // Parse the extra data (usually JSON) and handle accordingly
+        // {"table": "users", "operation": "INSERT", "id": 123}
+    }
+};
+#+end_src
+
+*** Currencies displays when not connected                             :code:
+
+At present we can display currencies even before we connect. This is probably ok
+but we should at least state we are not connected. Alternatively it should be
+disabled.
+
+*** Entity syntax refactor snags                                       :code:
+
+We refactored ores.cli to be "entity oriented", so that commands such as export,
+import etc belonged directly to an entity. In this case there should be no need
+to supply the entity in the command line since it is part of the command.
+However, we still see the entity enum in the code.
+
+*** Add tests for messaging handler                                    :code:
+
+We need tests in comms which create a test request and response and a test
+handler.
+
+*** Add sound assets                                                   :code:
+
+We need to be able to associate sounds to certain events such as disconnect,
+connect etc. Users need to be able to choose their own sounds.
+
+*** Add retry algorithm to client                                      :code:
+
+It would be nice to reconnect automatically.
+
+*** Add screen in qt to exit bootstrap mode                            :code:
+
+- move service to service directory.
+- follow the "_protocol" convention for file names with messages.
+
+**** Session: Address race condition review comment
+
+The heartbeat implementation has a critical race condition where =run_heartbeat()=
+and =send_request()= can execute concurrently, leading to two independent
+request-response cycles on the same socket without synchronization. This also
+needs to support future "listen/notify" server-push notifications.
+
+**Solution:** Unified message loop with correlation IDs - single reader dispatches
+incoming frames by type, writes serialized via strand, correlation IDs match
+responses to requests.
+
+***** Tasks
+
+- [X] 1.1 Add =correlation_id= to frame structure
+  - Add =uint32_t correlation_id= field to =protocol::frame=
+  - Update frame serialization/deserialization
+  - Bump protocol version if needed
+
+- [X] 1.2 Update message types if needed
+  - Verify ping/pong exist (confirmed: 0x0005, 0x0006)
+  - Notification types deferred until listen/notify implementation
+
+- [X] 2.1 Create =response_channel= class
+  - Single-value async channel using Boost.Asio primitives
+  - =set_value(frame)= - producer side (reader loop)
+  - =set_error(error_code)= - for timeouts/disconnects
+  - =awaitable<expected<frame, error_code>> get()= - consumer side
+  - Use =asio::steady_timer= as signaling primitive
+
+- [X] 2.2 Create =pending_request_map= class
+  - Thread-safe map: =correlation_id= → =response_channel=
+  - =register(correlation_id)= → =response_channel&=
+  - =complete(correlation_id, frame)= - called by reader
+  - =fail(correlation_id, error)= - called on timeout/disconnect
+  - =fail_all(error)= - called on connection loss
+
+- [X] 3.1 Add write strand to client
+  - =asio::strand<asio::any_io_executor> write_strand_=
+  - Initialize in constructor
+
+- [X] 3.2 Create =write_frame()= helper
+  - Posts write operation to strand
+  - Returns awaitable that completes when write is done
+
+- [X] 4.1 Implement =run_message_loop()= coroutine
+  - Single reader, loops reading frames
+  - Dispatches by message type (response/pong → complete, notification → callback)
+  - On read error → =fail_all()=, set disconnected
+
+- [ ] 4.2 Add centralized timeout handling (deferred)
+  - Read with timeout using =asio::steady_timer=
+  - Configurable default timeout
+  - Can be added later when needed
+
+- [X] 5. Refactor =send_request()=
+  - Generate correlation_id
+  - Register in pending_requests_map
+  - Post write to strand
+  - =co_await= response channel
+
+- [X] 6. Refactor =run_heartbeat()= to use new infrastructure
+  - Use unified request/response pattern
+  - Timeout triggers disconnect callback
+
+- [X] 7. Update server to echo =correlation_id=
+  - Ping handler returns pong with same correlation_id
+  - All response handlers copy correlation_id from request
+
+- [-] 8.1 Add notification callback type (deferred to listen/notify story)
+  - =notification_callback_t= for server-push messages
+
+- [X] 8.2 Keep =disconnect_callback_t=
+  - Invoked by message loop on connection loss
+
+- [X] 9.1 Start message loop on connect
+  - =co_spawn= the =run_message_loop()= after connection
+
+- [X] 9.2 Clean shutdown
+  - Cancel message loop, fail pending requests, invoke disconnect callback
+
+- [ ] 10.1 Update existing tests
+
+- [ ] 10.2 Add new tests
+  - Concurrent requests with correlation IDs
+  - Request timeout handling
+  - Heartbeat timeout triggers disconnect
+  - Write serialization
 
 *** Entity syntax refactor snags                                       :code:
 
@@ -972,89 +1199,6 @@ account.
 - add account duplicates logic. We should have a single service for this.
 - split application into entities.
 
-*** Multi-threaded scenarios with comms                                :code:
-
-At present we are relying on request-response patterns: the client sends a
-request and the next frame coming in is the response. However, in the future we
-will have many dialog windows open, each of them sending requests and awaiting
-responses. It will not be possible to know what response is coming back from
-what window. We need to take this into account.
-
-*** Add listen/notify support                                          :code:
-
-When data changes for a given entity in the database and we have the dialog of
-that entity open, we need to make the reload button a different colour (suggest
-a colour). For this we need to listen/notify in the database and then send a
-message to the client. This requires a change at the protocol because at present
-we send a request from the client first and then expect a response. This is more
-like a callback where the handler will call a callback when a certain message is
-received. Listen code from deepseek:
-
-#+begin_src c++
-#include <sqlgen.h>
-#include <libpq-fe.h>
-#include <thread>
-#include <iostream>
-
-class TableWatcher {
-private:
-    sqlgen::Connection conn_;
-    std::thread listener_thread_;
-    bool running_;
-
-public:
-    TableWatcher(const std::string& connection_string)
-        : conn_(connection_string), running_(false) {}
-
-    void start() {
-        running_ = true;
-        listener_thread_ = std::thread(&TableWatcher::listen_loop, this);
-    }
-
-    void stop() {
-        running_ = false;
-        if (listener_thread_.joinable()) {
-            listener_thread_.join();
-        }
-    }
-
-private:
-    void listen_loop() {
-        // Get raw PGconn for async operations
-        auto raw_conn = conn_.native_handle(); // You might need to expose this
-
-        // Listen to channel
-        PGresult* res = PQexec(raw_conn, "LISTEN table_updates;");
-        if (PQresultStatus(res) != PGRES_COMMAND_OK) {
-            PQclear(res);
-            return;
-        }
-        PQclear(res);
-
-        while (running_) {
-            // Non-blocking check for notifications
-            PQconsumeInput(raw_conn);
-
-            PGnotify* notify;
-            while ((notify = PQnotifies(raw_conn)) != nullptr) {
-                handle_notification(notify);
-                PQfreemem(notify);
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        }
-    }
-
-    void handle_notification(PGnotify* notify) {
-        std::cout << "Received notification: " << notify->relname
-                  << " - " << notify->extra << std::endl;
-
-        // Parse the extra data (usually JSON) and handle accordingly
-        // {"table": "users", "operation": "INSERT", "id": 123}
-    }
-};
-#+end_src
-
 *** Add version support to entities                                    :code:
 
 We need a "version" field which is incremented automatically by a trigger. It is
@@ -1066,10 +1210,6 @@ used as follows:
 - version is incremented automatically on save.
 - display version in UI prominently (/e.g./ next to entity key, iso code for
   currencies) so that we can see when we reload.
-
-*** Disconnect closes currencies window                                :code:
-
-It should just disable the icons, etc.
 
 *** Add search to currencies                                           :code:
 

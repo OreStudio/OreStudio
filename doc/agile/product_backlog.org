@@ -86,6 +86,18 @@ At present we disabled pagination in UI because sqlgen does not support offset.
 We implemented this feature in sqlgen. When it is released to vcpkg we should
 update our code to use it.
 
+Remember also this:
+
+#+begin_src c++
+    // HACK: Using single connection instead of session because sqlgen sessions
+    // doesn't seem to support SELECT FROM with aggregations. Plain connections
+    // work fine. This is a temporary workaround until the sqlgen library is
+    // fixed. See: https://github.com/getml/sqlgen/issues/99
+    struct count_result {
+        long long count;
+    };
+#+end_src
+
 Links:
 
 - [[https://github.com/getml/sqlgen/issues/100][GH #100: Feature request: offset support]]

@@ -26,19 +26,53 @@ namespace ores #F2F2F2 {
 
     namespace qt #F2F2F2 {
 
+        ' Client Manager
+        class ClientManager #ECECEC {
+            +ClientManager(QObject* parent)
+            +~ClientManager()
+            +connectAndLogin(const std::string& host, std::uint16_t port, const std::string& username, const std::string& password) std::pair<bool, QString>
+            +disconnect() void
+            +isConnected() bool
+            +sendRequest(comms::messaging::frame request) std::expected<comms::messaging::frame, comms::messaging::error_code>
+            +getClient() std::shared_ptr<comms::net::client>
+            +getExecutor() boost::asio::any_io_executor
+            -setupIO() void
+            -cleanupIO() void
+            -{field} io_context_ std::unique_ptr<boost::asio::io_context>
+            -{field} work_guard_ std::unique_ptr<boost::asio::executor_work_guard>
+            -{field} io_thread_ std::unique_ptr<std::thread>
+            -{field} client_ std::shared_ptr<comms::net::client>
+        }
+        note top of ClientManager
+        Manages the lifecycle of the network client and IO context.
+
+        Maintains a persistent IO context/thread while allowing the client
+        connection to be established and torn down repeatedly. Signals changes
+        in connection state to allow UI components to update accordingly
+        without closing.
+
+        - io_context_: Boost ASIO IO context (persistent)
+        - work_guard_: Work guard for IO context
+        - io_thread_: Thread running IO context
+        - client_: Transient client connection
+
+        Signals: connected(), disconnected(), connectionError(QString)
+        end note
+
         ' Main Window
         class MainWindow #ECECEC {
             +MainWindow(QWidget* parent)
             +~MainWindow()
-            +getClient() std::shared_ptr<comms::client>
+            +getClientManager() ClientManager*
+            #closeEvent(QCloseEvent* event) void
             -onLoginTriggered() void
             -onDisconnectTriggered() void
             -onAboutTriggered() void
             -onDetachAllTriggered() void
-            -onReattachAllTriggered() void
             -onWindowMenuAboutToShow() void
             -updateMenuState() void
             -createControllers() void
+            -performDisconnectCleanup() void
             -{field} ui_ Ui::MainWindow*
             -{field} mdiArea_ MdiAreaWithBackground*
             -{field} connectionStatusIconLabel_ QLabel*
@@ -46,10 +80,7 @@ namespace ores #F2F2F2 {
             -{field} connectedIcon_ QIcon
             -{field} disconnectedIcon_ QIcon
             -{field} currencyController_ std::unique_ptr<CurrencyController>
-            -{field} io_context_ std::unique_ptr<boost::asio::io_context>
-            -{field} work_guard_ std::unique_ptr<boost::asio::executor_work_guard>
-            -{field} io_thread_ std::unique_ptr<std::thread>
-            -{field} client_ std::shared_ptr<comms::client>
+            -{field} clientManager_ ClientManager*
             -{field} username_ std::string
         }
         note top of MainWindow
@@ -62,10 +93,7 @@ namespace ores #F2F2F2 {
         - connectedIcon_: Connected state icon
         - disconnectedIcon_: Disconnected state icon
         - currencyController_: Currency operations controller
-        - io_context_: Boost ASIO IO context
-        - work_guard_: Work guard for IO context
-        - io_thread_: Thread running IO context
-        - client_: Client connection to server
+        - clientManager_: Manages client lifecycle
         - username_: Logged-in username
         end note
 
@@ -106,16 +134,16 @@ namespace ores #F2F2F2 {
 
         ' Entity Controller Pattern
         class EntityController #ECECEC {
-            +EntityController(QMainWindow* mainWindow, QMdiArea* mdiArea, std::shared_ptr<comms::client> client, const QString& username, QObject* parent)
+            +EntityController(QMainWindow* mainWindow, QMdiArea* mdiArea, ClientManager* clientManager, const QString& username, QObject* parent)
             +~EntityController()
             +{abstract} showListWindow() void
-            +setClient(std::shared_ptr<comms::client> client, const QString& username) void
+            +setClientManager(ClientManager* clientManager, const QString& username) void
             +{abstract} closeAllWindows() void
             #statusMessage(const QString& message)
             #errorMessage(const QString& message)
             #{field} mainWindow_ QMainWindow*
             #{field} mdiArea_ QMdiArea*
-            #{field} client_ std::shared_ptr<comms::client>
+            #{field} clientManager_ ClientManager*
             #{field} username_ QString
         }
         note top of EntityController
@@ -123,12 +151,12 @@ namespace ores #F2F2F2 {
 
         - mainWindow_: Parent main window
         - mdiArea_: MDI area for windows
-        - client_: Shared client connection
+        - clientManager_: Client manager for network operations
         - username_: Logged-in username
         end note
 
         class CurrencyController #ECECEC {
-            +CurrencyController(QMainWindow* mainWindow, QMdiArea* mdiArea, std::shared_ptr<comms::client> client, const QString& username, QList<DetachableMdiSubWindow*>& allDetachableWindows, QObject* parent)
+            +CurrencyController(QMainWindow* mainWindow, QMdiArea* mdiArea, ClientManager* clientManager, const QString& username, QList<DetachableMdiSubWindow*>& allDetachableWindows, QObject* parent)
             +~CurrencyController()
             +showListWindow() void
             +closeAllWindows() void
@@ -147,7 +175,7 @@ namespace ores #F2F2F2 {
 
         ' Currency Windows
         class CurrencyMdiWindow #ECECEC {
-            +CurrencyMdiWindow(std::shared_ptr<comms::client> client, QWidget* parent)
+            +CurrencyMdiWindow(ClientManager* clientManager, QWidget* parent)
             +~CurrencyMdiWindow()
             +currencyModel() ClientCurrencyModel*
             +sizeHint() QSize
@@ -171,7 +199,7 @@ namespace ores #F2F2F2 {
             -{field} deleteAction_ QAction*
             -{field} historyAction_ QAction*
             -{field} currencyModel_ std::unique_ptr<ClientCurrencyModel>
-            -{field} client_ std::shared_ptr<comms::client>
+            -{field} clientManager_ ClientManager*
         }
         note top of CurrencyMdiWindow
         MDI window for displaying currencies.
@@ -184,11 +212,11 @@ namespace ores #F2F2F2 {
         - deleteAction_: Delete currency action
         - historyAction_: View history action
         - currencyModel_: Currency data model
-        - client_: Client connection
+        - clientManager_: Client manager
         end note
 
         class ClientCurrencyModel #ECECEC {
-            +ClientCurrencyModel(std::shared_ptr<comms::client> client, QObject* parent)
+            +ClientCurrencyModel(ClientManager* clientManager, QObject* parent)
             +~ClientCurrencyModel()
             +rowCount(const QModelIndex& parent) int
             +columnCount(const QModelIndex& parent) int
@@ -198,14 +226,14 @@ namespace ores #F2F2F2 {
             +getCurrency(int row) const risk::domain::currency*
             +getCurrencies() std::vector<risk::domain::currency>
             -onCurrenciesLoaded() void
-            -{field} client_ std::shared_ptr<comms::client>
+            -{field} clientManager_ ClientManager*
             -{field} currencies_ std::vector<risk::domain::currency>
             -{field} watcher_ QFutureWatcher<FutureWatcherResult>*
         }
         note top of ClientCurrencyModel
         Model for displaying currencies fetched from the server via client.
 
-        - client_: Client connection
+        - clientManager_: Client manager
         - currencies_: Currency data
         - watcher_: Future watcher for async loading
         end note
@@ -213,7 +241,7 @@ namespace ores #F2F2F2 {
         class CurrencyDetailDialog #ECECEC {
             +CurrencyDetailDialog(QWidget* parent)
             +~CurrencyDetailDialog()
-            +setClient(std::shared_ptr<comms::client> client) void
+            +setClientManager(ClientManager* clientManager) void
             +setUsername(const std::string& username) void
             +setCurrency(const risk::domain::currency& currency) void
             +getCurrency() risk::domain::currency
@@ -231,7 +259,7 @@ namespace ores #F2F2F2 {
             -{field} toolBar_ QToolBar*
             -{field} saveAction_ QAction*
             -{field} deleteAction_ QAction*
-            -{field} client_ std::shared_ptr<comms::client>
+            -{field} clientManager_ ClientManager*
             -{field} currentCurrency_ risk::domain::currency
         }
         note top of CurrencyDetailDialog
@@ -244,12 +272,12 @@ namespace ores #F2F2F2 {
         - toolBar_: Toolbar with actions
         - saveAction_: Save action
         - deleteAction_: Delete action
-        - client_: Client connection
+        - clientManager_: Client manager
         - currentCurrency_: Current currency being edited
         end note
 
         class CurrencyHistoryDialog #ECECEC {
-            +CurrencyHistoryDialog(QString iso_code, std::shared_ptr<comms::client> client, QWidget* parent)
+            +CurrencyHistoryDialog(QString iso_code, ClientManager* clientManager, QWidget* parent)
             +~CurrencyHistoryDialog()
             +loadHistory() void
             +sizeHint() QSize
@@ -260,7 +288,7 @@ namespace ores #F2F2F2 {
             -displayFullDetailsTab(int version_index) void
             -calculateDiff(const risk::domain::currency_version& current, const risk::domain::currency_version& previous) DiffResult
             -{field} ui_ std::unique_ptr<Ui::CurrencyHistoryDialog>
-            -{field} client_ std::shared_ptr<comms::client>
+            -{field} clientManager_ ClientManager*
             -{field} isoCode_ QString
             -{field} history_ risk::domain::currency_version_history
         }
@@ -268,20 +296,16 @@ namespace ores #F2F2F2 {
         Widget for displaying currency version history.
 
         - ui_: Auto-generated UI elements
-        - client_: Client connection
+        - clientManager_: Client manager
         - isoCode_: ISO code of currency
         - history_: Version history data
         end note
 
         ' Dialogs
         class LoginDialog #ECECEC {
-            +LoginDialog(QWidget* parent)
+            +LoginDialog(ClientManager* clientManager, QWidget* parent)
             +~LoginDialog()
-            +getClient() std::shared_ptr<comms::client>
             +getUsername() std::string
-            +takeIOContext() std::unique_ptr<boost::asio::io_context>
-            +takeIOThread() std::unique_ptr<std::thread>
-            +takeWorkGuard() std::unique_ptr<boost::asio::executor_work_guard>
             -onLoginClicked() void
             -onConnectionResult(bool success, const QString& error_message) void
             -onLoginResult(bool success, const QString& error_message) void
@@ -295,10 +319,7 @@ namespace ores #F2F2F2 {
             -{field} login_button_ QPushButton*
             -{field} cancel_button_ QPushButton*
             -{field} status_label_ QLabel*
-            -{field} io_context_ std::unique_ptr<boost::asio::io_context>
-            -{field} work_guard_ std::unique_ptr<boost::asio::executor_work_guard>
-            -{field} io_thread_ std::unique_ptr<std::thread>
-            -{field} client_ std::shared_ptr<comms::client>
+            -{field} clientManager_ ClientManager*
         }
         note top of LoginDialog
         Dialog for user authentication and server connection.
@@ -310,10 +331,7 @@ namespace ores #F2F2F2 {
         - login_button_: Login button
         - cancel_button_: Cancel button
         - status_label_: Status message label
-        - io_context_: Boost ASIO IO context
-        - work_guard_: Work guard for IO context
-        - io_thread_: Thread running IO context
-        - client_: Client connection
+        - clientManager_: Client manager
         end note
 
         class AboutDialog #ECECEC {
@@ -404,17 +422,24 @@ namespace ores #F2F2F2 {
         ores::qt::MainWindow *-- ores::qt::MdiAreaWithBackground
         ores::qt::MainWindow o-- ores::qt::DetachableMdiSubWindow
         ores::qt::MainWindow *-- ores::qt::CurrencyController
+        ores::qt::MainWindow *-- ores::qt::ClientManager
 
         ' Relationships - Entity Controller Pattern
         ores::qt::CurrencyController -up-|> ores::qt::EntityController
         ores::qt::CurrencyController o-- ores::qt::DetachableMdiSubWindow
+        ores::qt::EntityController o-- ores::qt::ClientManager
 
         ' Relationships - Currency Components
         ores::qt::CurrencyMdiWindow *-- ores::qt::ClientCurrencyModel
         ores::qt::CurrencyMdiWindow ..> ores::qt::CurrencyItemDelegate : uses
+        ores::qt::CurrencyMdiWindow o-- ores::qt::ClientManager
+        ores::qt::ClientCurrencyModel o-- ores::qt::ClientManager
+        ores::qt::CurrencyDetailDialog o-- ores::qt::ClientManager
+        ores::qt::CurrencyHistoryDialog o-- ores::qt::ClientManager
 
         ' Relationships - Dialogs
         ores::qt::AboutDialog *-- ores::qt::LogoLabel
+        ores::qt::LoginDialog o-- ores::qt::ClientManager
 
         ' Relationships - MainWindow uses
         ores::qt::MainWindow ..> ores::qt::LoginDialog : uses

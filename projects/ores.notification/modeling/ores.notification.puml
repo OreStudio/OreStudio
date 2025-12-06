@@ -1,0 +1,98 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*'
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+
+title ores.notification Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    note "Notification service for real-time updates." as ores_notification_note
+    notification --- ores_notification_note
+    namespace notification #F2F2F2 {
+        namespace domain #F2F2F2 {
+            struct notification <<json_io>> <<table_io>> #F7E5FF {
+                -{field} entity std::string
+                -{field} timestamp std::chrono::system_clock::time_point
+            }
+            note top of notification
+            Represents a notification about a change to an entity.
+            - entity: Fully qualified name of the entity (e.g., "ores.risk.currency").
+            - timestamp: When the change occurred (UTC).
+
+            JSON I/O: std::ostream& operator<<(std::ostream&, const notification&)
+            Table I/O: std::ostream& operator<<(std::ostream&, const std::vector<notification>&)
+            end note
+        }
+
+        namespace generators #F2F2F2 {
+            class notification_generator <<generator>> #D89EF1 {
+                +{static} generate() domain::notification
+                +{static} generate_set(size_t n) std::vector<domain::notification>
+            }
+            note top of notification_generator
+            Generates random notification instances.
+            end note
+        }
+
+        namespace tests #F2F2F2 {
+            class notification_tests <<test suite>> #C5E1A5 {
+                +notification_json_serialization() void
+                +notification_table_serialization() void
+                +notification_generator() void
+            }
+            note top of notification_tests
+            Test suite for the notification domain type,
+            including JSON/table serialization and generator functionality.
+            end note
+        }
+
+        namespace service #F2F2F2 {
+            class postgres_listener_service #ECECEC {
+                +postgres_listener_service(std::string connection_string, notification_callback_t callback)
+                +~postgres_listener_service()
+                +start() void
+                +stop() void
+                +subscribe(const std::string& channel_name) void
+                -listen_loop() void
+                -handle_notification(PGnotify* notify) void
+                -{field} connection_string_ std::string
+                -{field} conn_ sqlgen::Connection
+                -{field} listener_thread_ std::thread
+                -{field} running_ std::atomic<bool>
+                -{field} notification_callback_ notification_callback_t
+                -{field} subscribed_channels_ std::vector<std::string>
+            }
+            note top of postgres_listener_service
+            Manages a dedicated PostgreSQL connection to listen for NOTIFY events.
+            Runs a separate thread to continuously listen and dispatches
+            parsed domain::notification objects via callback.
+            end note
+
+            postgres_listener_service ..> domain::notification : uses
+        }
+
+        ' Relationships
+        ores::notification::generators::notification_generator --> ores::notification::domain::notification : generates
+        ores::notification::tests::notification_tests ..> ores::notification::domain::notification : tests
+    }
+}
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.notification.puml"
+' End:
+@enduml

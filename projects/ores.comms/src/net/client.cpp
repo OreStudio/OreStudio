@@ -518,7 +518,9 @@ boost::asio::awaitable<void> client::run_message_loop() {
     }
 
     // Fail all pending requests
-    pending_requests_->fail_all(messaging::error_code::network_error);
+    if (pending_requests_) {
+        pending_requests_->fail_all(messaging::error_code::network_error);
+    }
 
     // Invoke disconnect callback outside of lock
     if (callback) {

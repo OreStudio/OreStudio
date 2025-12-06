@@ -81,3 +81,10 @@ name: unit-test-writer
 description: Generate Catch2 unit tests following ORE Studio conventions.
 license: Complete terms in LICENSE.txt
 location: doc/skills/unit-test-writer/skill.org
+
+# Skill: Component Creator
+
+name: component-creator
+description: Guide for creating new components that follow our project structure..
+license: Complete terms in LICENSE.txt
+location: doc/skills/component-creator/skill.org

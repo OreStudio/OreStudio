@@ -18,39 +18,40 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-06 Sat 00:26], for Saturday, December 06, 2025.
-|      | <75>                      |        |      |      |       |
-| Tags | Headline                  | Time   |      |      |     % |
-|------+---------------------------+--------+------+------+-------|
-|      | *Total time*              | *0:26* |      |      | 100.0 |
-|------+---------------------------+--------+------+------+-------|
-|      | Stories                   | 0:26   |      |      | 100.0 |
-|      | Active                    |        | 0:26 |      | 100.0 |
-| code | Add listen/notify support |        |      | 0:26 | 100.0 |
+#+CAPTION: Clock summary at [2025-12-06 Sat 23:49], for Saturday, December 06, 2025.
+|       | <75>                               |        |      |      |       |
+| Tags  | Headline                           | Time   |      |      |     % |
+|-------+------------------------------------+--------+------+------+-------|
+|       | *Total time*                       | *1:19* |      |      | 100.0 |
+|-------+------------------------------------+--------+------+------+-------|
+|       | Stories                            | 1:19   |      |      | 100.0 |
+|       | Active                             |        | 1:19 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint |        |      | 0:18 |  22.8 |
+| code  | Add listen/notify support          |        |      | 1:01 |  77.2 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-06 Sat 00:26]
+#+CAPTION: Clock summary at [2025-12-06 Sat 23:49]
 |       | <75>                                                |         |       |      |       |
 | Tags  | Headline                                            | Time    |       |      |     % |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                        | *27:53* |       |      | 100.0 |
+|       | *Total time*                                        | *28:46* |       |      | 100.0 |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                             | 27:53   |       |      | 100.0 |
-|       | Active                                              |         | 27:53 |      | 100.0 |
+|       | Stories                                             | 28:46   |       |      | 100.0 |
+|       | Active                                              |         | 28:46 |      | 100.0 |
 | agile | Sprint and product backlog refinement               |         |       | 0:29 |   1.7 |
-| infra | OCR scan notebooks for this sprint                  |         |       | 4:42 |  16.9 |
-| code  | Implement session cancellation                      |         |       | 2:42 |   9.7 |
-| code  | Create a variability service for feature flags      |         |       | 1:23 |   5.0 |
-| code  | Add tests to diagrams                               |         |       | 1:26 |   5.1 |
-| code  | Add messaging to variability                        |         |       | 0:40 |   2.4 |
-| code  | Create handshake service in comms                   |         |       | 2:31 |   9.0 |
-| code  | Implement client heartbeat for disconnect detection |         |       | 5:18 |  19.0 |
-| code  | Pressing disconnect crashes client                  |         |       | 0:23 |   1.4 |
-| infra | Create a component creator skill                    |         |       | 0:42 |   2.5 |
-| code  | Experiment with simple code generation              |         |       | 1:30 |   5.4 |
-| code  | Add listen/notify support                           |         |       | 6:07 |  21.9 |
+| infra | OCR scan notebooks for this sprint                  |         |       | 5:00 |  17.4 |
+| code  | Implement session cancellation                      |         |       | 2:42 |   9.4 |
+| code  | Create a variability service for feature flags      |         |       | 1:23 |   4.8 |
+| code  | Add tests to diagrams                               |         |       | 1:26 |   5.0 |
+| code  | Add messaging to variability                        |         |       | 0:40 |   2.3 |
+| code  | Create handshake service in comms                   |         |       | 2:31 |   8.7 |
+| code  | Implement client heartbeat for disconnect detection |         |       | 5:18 |  18.4 |
+| code  | Pressing disconnect crashes client                  |         |       | 0:23 |   1.3 |
+| infra | Create a component creator skill                    |         |       | 0:42 |   2.4 |
+| code  | Experiment with simple code generation              |         |       | 1:30 |   5.2 |
+| code  | Add listen/notify support                           |         |       | 6:42 |  23.3 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -211,6 +212,7 @@ print(p)
 
 *** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
+    CLOCK: [2025-12-06 Sat 22:55]--[2025-12-06 Sat 23:13] =>  0:18
     CLOCK: [2025-12-05 Fri 10:18]--[2025-12-05 Fri 10:45] =>  0:27
     CLOCK: [2025-12-05 Fri 09:11]--[2025-12-05 Fri 10:17] =>  1:06
     CLOCK: [2025-12-03 Wed 12:00]--[2025-12-03 Wed 13:40] =>  1:40
@@ -924,6 +926,7 @@ tokens.
 
 *** STARTED Add listen/notify support                                  :code:
     :LOGBOOK:
+    CLOCK: [2025-12-06 Sat 23:14]--[2025-12-06 Sat 23:49] =>  0:35
     CLOCK: [2025-12-05 Fri 23:48]--[2025-12-06 Sat 00:26] =>  0:38
     CLOCK: [2025-12-05 Fri 23:00]--[2025-12-05 Fri 23:47] =>  0:47
     CLOCK: [2025-12-05 Fri 17:31]--[2025-12-05 Fri 18:35] =>  1:04
@@ -942,10 +945,163 @@ we send a request from the client first and then expect a response. This is more
 like a callback where the handler will call a callback when a certain message is
 received.
 
+Notes:
+
+- need to save the session on the listener to acquire the connection.
+
 Links:
 
 - [[https://github.com/getml/sqlgen/issues/104][Using sqlgen with LISTEN/NOTIFY #104]]
 - [[https://github.com/getml/sqlgen/pull/105][Experimental implementation of listen / notify #105]]
+
+Notes:
+
+- Rename service to =ores.events= or maybe =ores.eventing=. Qwen:
+
+#+begin_quote
+The term "notification" strongly implies passive alerts (e.g., “you have a
+message”) or user-facing banners/toasts. But your subsystem is far more
+powerful:
+
+- It’s a real-time event distribution fabric,
+- It carries domain events (TradeUpdated, FxPriceChanged, ReportCompleted),
+- It enables reactive data synchronization, UI auto-refresh, and system-to-system coordination.
+
+Calling it notification may:
+
+- Understate its role,
+- Confuse it with UI toast systems or email-style alerts,
+- Imply it’s only for “out-of-band” signals, not core data flow.
+#+end_quote
+
+**** Revised requirements from Qwen
+
+#+begin_src markdown
+### 📜 **End-to-End Application Message Bus Specification**
+
+#### **1. Overall Principle**
+
+The system shall support **real-time, typed, parameterized event delivery** from
+a **central C++23 service** to **multiple client applications** (Qt UI, REPL,
+Wt, grid engines, etc.) over an existing **bespoke binary protocol**. The design
+must be **agnostic to event origins** and **decoupled from any specific UI
+framework**.
+
+---
+
+#### **2. Service Responsibilities**
+
+The **central service** shall act as a **unified event broker** and must:
+
+- **Aggregate events from arbitrary internal sources**, including but not
+  limited to:
+  - PostgreSQL `LISTEN/NOTIFY`,
+  - Background job completion (e.g., report generation),
+  - Grid computation results,
+  - Scheduled tasks,
+  - User or system-triggered domain events.
+
+- **Normalize all events** into a uniform model consisting of:
+  - `event_type`: a stable, logical string identifier (e.g., `"fx_price"`,
+    `"report_completed"`),
+  - `key`: a string that identifies the specific entity or scope (e.g.,
+    `"EUR/USD"`, `"report_123"`),
+  - `payload`: a binary-serialized representation of the event data (using the
+    existing serialization format).
+
+- **Maintain per-client subscription state**, tracking which clients are
+  subscribed to which `(event_type, key)` pairs.
+
+- **Filter and deliver** only relevant events to each connected client:
+  - When a new event is produced internally, the service forwards it **only** to
+    clients subscribed to its `(event_type, key)`.
+  - Delivery uses the existing **binary protocol frame format**.
+
+- **Support dynamic subscription management** via two new protocol message
+  types:
+  - `SUBSCRIBE(event_type: string, key: string)` → register interest,
+  - `UNSUBSCRIBE(event_type: string, key: string)` → remove interest.
+
+- **Ensure no event source leaks into the protocol**—PostgreSQL is an
+  implementation detail invisible to clients.
+
+---
+
+#### **3. Client Responsibilities**
+
+Each **client process** shall provide a **local, in-process message bus** that:
+
+- Offers a **type-safe C++23 API** for subscribing to domain events:
+  ```cpp
+  auto sub = bus.subscribe<ReportCompleted>("report_123", handler);
+  ```
+
+- **Maps event types to logical names** via a user-defined trait:
+  ```cpp
+  template<> struct event_traits<ReportCompleted> {
+      static constexpr const char* name = "report_completed";
+  };
+  ```
+
+- **Automatically manages remote subscriptions**:
+  - On the **first subscription** to a given `(event_type, key)`, sends a
+    `SUBSCRIBE` message to the service.
+  - On the **last unsubscription**, sends an `UNSUBSCRIBE`.
+
+- **Delivers incoming notifications** to all matching local subscribers:
+  - Uses **Boost.Asio executors** to support asynchronous, thread-safe delivery.
+  - Does **not assume a UI framework**—subscribers provide their own execution
+    context.
+
+- Supports **RAII-based lifetime management**: subscriptions are automatically
+  cleaned up when the subscription object is destroyed.
+
+- Is **header-only, portable, and coroutine-friendly**, using only C++23 and Boost.Asio.
+
+---
+
+#### **4. Protocol Contract (Client ↔ Service)**
+
+The **only coupling** between client and service is the **binary protocol**,
+which must support:
+
+| Message Type   | Direction        | Purpose                                     |
+|----------------|------------------|---------------------------------------------|
+| `SUBSCRIBE`    | Client → Service | Express interest in `(event_type, key)`     |
+| `UNSUBSCRIBE`  | Client → Service | Revoke interest                             |
+| `NOTIFICATION` | Service → Client | Deliver event: `(event_type, key, payload)` |
+
+- The `payload` must be deserializable into the corresponding C++ event struct
+  using the **existing serialization mechanism** (e.g., your
+  `serialize()`/`deserialize()` functions).
+
+- The protocol must be **backward-compatible** and **extensible** to new event
+  types without breaking existing clients.
+
+---
+
+#### **5. Non-Functional Requirements**
+
+- **Decoupling**: No UI framework (Qt, Wt, etc.) or event source (PostgreSQL,
+  etc.) dependencies in the core bus logic.
+- **Efficiency**: Support hundreds of concurrent subscriptions with low
+  overhead; high-frequency events (e.g., FX) must not overwhelm the system.
+- **Safety**: Thread-safe publishing and subscription; no dangling callbacks.
+- **Evolvability**: Adding a new event type requires only:
+  - A C++ struct,
+  - A `event_traits` specialization,
+  - Service-side event production (no bus or protocol changes).
+
+---
+
+This specification ensures you can **start with PostgreSQL-driven
+notifications** today and **seamlessly integrate grid engines, async reports, or
+external event streams** tomorrow—without redesigning your messaging layer.
+
+Let me know if this captures your intent, and we can proceed to **design the
+interfaces** or **draft the protocol extensions**.
+#+end_src
+
 
 **** Architectural Plan
 

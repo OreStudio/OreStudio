@@ -18,40 +18,40 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-06 Sat 23:49], for Saturday, December 06, 2025.
+#+CAPTION: Clock summary at [2025-12-08 Mon 23:07], for Monday, December 08, 2025.
 |       | <75>                               |        |      |      |       |
 | Tags  | Headline                           | Time   |      |      |     % |
 |-------+------------------------------------+--------+------+------+-------|
-|       | *Total time*                       | *1:19* |      |      | 100.0 |
+|       | *Total time*                       | *5:09* |      |      | 100.0 |
 |-------+------------------------------------+--------+------+------+-------|
-|       | Stories                            | 1:19   |      |      | 100.0 |
-|       | Active                             |        | 1:19 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint |        |      | 0:18 |  22.8 |
-| code  | Add listen/notify support          |        |      | 1:01 |  77.2 |
+|       | Stories                            | 5:09   |      |      | 100.0 |
+|       | Active                             |        | 5:09 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint |        |      | 2:27 |  47.6 |
+| code  | Add listen/notify support          |        |      | 2:42 |  52.4 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-06 Sat 23:49]
-|       | <75>                                                |         |       |      |       |
-| Tags  | Headline                                            | Time    |       |      |     % |
-|-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                        | *28:46* |       |      | 100.0 |
-|-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                             | 28:46   |       |      | 100.0 |
-|       | Active                                              |         | 28:46 |      | 100.0 |
-| agile | Sprint and product backlog refinement               |         |       | 0:29 |   1.7 |
-| infra | OCR scan notebooks for this sprint                  |         |       | 5:00 |  17.4 |
-| code  | Implement session cancellation                      |         |       | 2:42 |   9.4 |
-| code  | Create a variability service for feature flags      |         |       | 1:23 |   4.8 |
-| code  | Add tests to diagrams                               |         |       | 1:26 |   5.0 |
-| code  | Add messaging to variability                        |         |       | 0:40 |   2.3 |
-| code  | Create handshake service in comms                   |         |       | 2:31 |   8.7 |
-| code  | Implement client heartbeat for disconnect detection |         |       | 5:18 |  18.4 |
-| code  | Pressing disconnect crashes client                  |         |       | 0:23 |   1.3 |
-| infra | Create a component creator skill                    |         |       | 0:42 |   2.4 |
-| code  | Experiment with simple code generation              |         |       | 1:30 |   5.2 |
-| code  | Add listen/notify support                           |         |       | 6:42 |  23.3 |
+#+CAPTION: Clock summary at [2025-12-08 Mon 23:07]
+|       | <75>                                                |         |       |       |       |
+| Tags  | Headline                                            | Time    |       |       |     % |
+|-------+-----------------------------------------------------+---------+-------+-------+-------|
+|       | *Total time*                                        | *37:48* |       |       | 100.0 |
+|-------+-----------------------------------------------------+---------+-------+-------+-------|
+|       | Stories                                             | 37:48   |       |       | 100.0 |
+|       | Active                                              |         | 37:48 |       | 100.0 |
+| agile | Sprint and product backlog refinement               |         |       |  0:29 |   1.3 |
+| infra | OCR scan notebooks for this sprint                  |         |       |  9:19 |  24.6 |
+| code  | Implement session cancellation                      |         |       |  2:42 |   7.1 |
+| code  | Create a variability service for feature flags      |         |       |  1:23 |   3.7 |
+| code  | Add tests to diagrams                               |         |       |  1:26 |   3.8 |
+| code  | Add messaging to variability                        |         |       |  0:40 |   1.8 |
+| code  | Create handshake service in comms                   |         |       |  2:31 |   6.7 |
+| code  | Implement client heartbeat for disconnect detection |         |       |  5:18 |  14.0 |
+| code  | Pressing disconnect crashes client                  |         |       |  0:23 |   1.0 |
+| infra | Create a component creator skill                    |         |       |  0:42 |   1.9 |
+| code  | Experiment with simple code generation              |         |       |  1:30 |   4.0 |
+| code  | Add listen/notify support                           |         |       | 11:25 |  30.2 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -212,6 +212,11 @@ print(p)
 
 *** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
+    CLOCK: [2025-12-08 Mon 19:21]--[2025-12-08 Mon 20:13] =>  0:52
+    CLOCK: [2025-12-08 Mon 17:01]--[2025-12-08 Mon 18:36] =>  1:35
+    CLOCK: [2025-12-07 Sun 20:34]--[2025-12-07 Sun 21:38] =>  1:04
+    CLOCK: [2025-12-07 Sun 11:50]--[2025-12-07 Sun 12:03] =>  0:13
+    CLOCK: [2025-12-07 Sun 07:25]--[2025-12-07 Sun 08:00] =>  0:35
     CLOCK: [2025-12-06 Sat 22:55]--[2025-12-06 Sat 23:13] =>  0:18
     CLOCK: [2025-12-05 Fri 10:18]--[2025-12-05 Fri 10:45] =>  0:27
     CLOCK: [2025-12-05 Fri 09:11]--[2025-12-05 Fri 10:17] =>  1:06
@@ -926,6 +931,11 @@ tokens.
 
 *** STARTED Add listen/notify support                                  :code:
     :LOGBOOK:
+    CLOCK: [2025-12-08 Mon 22:31]--[2025-12-08 Mon 23:06] =>  0:35
+    CLOCK: [2025-12-08 Mon 22:02]--[2025-12-08 Mon 22:21] =>  0:19
+    CLOCK: [2025-12-08 Mon 20:14]--[2025-12-08 Mon 22:02] =>  1:48
+    CLOCK: [2025-12-07 Sun 22:18]--[2025-12-07 Sun 23:40] =>  1:22
+    CLOCK: [2025-12-07 Sun 21:39]--[2025-12-07 Sun 22:18] =>  0:39
     CLOCK: [2025-12-06 Sat 23:14]--[2025-12-06 Sat 23:49] =>  0:35
     CLOCK: [2025-12-05 Fri 23:48]--[2025-12-06 Sat 00:26] =>  0:38
     CLOCK: [2025-12-05 Fri 23:00]--[2025-12-05 Fri 23:47] =>  0:47
@@ -937,7 +947,7 @@ tokens.
     CLOCK: [2025-12-05 Fri 10:50]--[2025-12-05 Fri 11:50] =>  1:00
     :END:
 
-3When data changes for a given entity in the database and we have the dialog of
+When data changes for a given entity in the database and we have the dialog of
 that entity open, we need to make the reload button a different colour (suggest
 a colour). For this we need to listen/notify in the database and then send a
 message to the client. This requires a change at the protocol because at present
@@ -947,15 +957,20 @@ received.
 
 Notes:
 
-- need to save the session on the listener to acquire the connection.
-
-Links:
-
-- [[https://github.com/getml/sqlgen/issues/104][Using sqlgen with LISTEN/NOTIFY #104]]
-- [[https://github.com/getml/sqlgen/pull/105][Experimental implementation of listen / notify #105]]
-
-Notes:
-
+- need to save the session on the listener to acquire the connection. Actually
+  this is not a very good idea as we are not really using the pool properly.
+- we need reconnect logic to handle cases where the DB connection is down. In
+  addition, we need to be able to notify the client. There needs to be an event
+  type for this. The listener needs to periodically check the status of the DB
+  connection; if down, attempt to reconnect, notify listeners that connection is
+  down. On reconnect we need to re-listen to all the topics we had subscribed
+  before.
+- when we map application level events to low-level DB events, these should
+  really live inside each component. These follow the same pattern as
+  "messaging" in namespace "eventing".
+- we need a bridge which listens to socket events and connects to remote event
+  bus to distribute the events.
+- Postgres listener is an adaptor of some kind.
 - Rename service to =ores.events= or maybe =ores.eventing=. Qwen:
 
 #+begin_quote
@@ -973,6 +988,11 @@ Calling it notification may:
 - Confuse it with UI toast systems or email-style alerts,
 - Imply it’s only for “out-of-band” signals, not core data flow.
 #+end_quote
+
+Links:
+
+- [[https://github.com/getml/sqlgen/issues/104][Using sqlgen with LISTEN/NOTIFY #104]]
+- [[https://github.com/getml/sqlgen/pull/105][Experimental implementation of listen / notify #105]]
 
 **** Revised requirements from Qwen
 
@@ -1250,6 +1270,63 @@ private:
     }
 };
 #+end_src
+
+*** Move context to database                                           :code:
+
+We have a number of classes in repository when they are general database
+entities: context, context factory etc. We should just leave the repository
+specific code in that namespace.
+
+*** Create faker for past timepoint                                    :code:
+
+We have helper code in currency that needs to be moved to utility:
+
+#+begin_src c++
+std::string fake_datetime_string() {
+    // Define range: e.g., years 1970 to 2038 (avoid 9999 unless needed)
+    using namespace std::chrono;
+    static thread_local std::mt19937_64 rng{std::random_device{}()};
+
+    // Unix time range: 0 = 1970-01-01, max ~2106 for 32-bit, but we use 64-bit
+    const auto min_time = sys_days{year{1970}/1/1}.time_since_epoch();
+    const auto max_time = sys_days{year{2038}/12/31}.time_since_epoch() + 24h - 1s;
+
+    std::uniform_int_distribution<std::int64_t> dist(
+        min_time.count(),
+        max_time.count()
+    );
+
+    auto tp = sys_seconds{seconds{dist(rng)}};
+
+    // Format as "YYYY-MM-DD HH:MM:SS"
+    return std::format("{:%Y-%m-%d %H:%M:%S}", tp);
+}
+#+end_src
+
+Use this code in eventing.
+
+*** Remove bootstrap mode from context                                 :code:
+
+We still have:
+
+#+begin_src c++
+    /**
+     * @brief Set the bootstrap mode flag.
+     *
+     * Should be called during application initialization after checking bootstrap state.
+     */
+    void set_bootstrap_mode(bool mode) { bootstrap_mode_ = mode; }
+
+    /**
+     * @brief Check if the system is in bootstrap mode.
+     *
+     * @return true if system is in bootstrap mode (no admin accounts exist), false otherwise
+     */
+    bool is_in_bootstrap_mode() const { return bootstrap_mode_; }
+#+end_src
+
+This was temporary until variability was introduced. Check if is still in use
+and if not remove it.
 
 *** Currencies displays when not connected                             :code:
 

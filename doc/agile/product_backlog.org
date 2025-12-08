@@ -66,6 +66,29 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Mine dexter for ideas                                              :code:
+
+#+begin_quote
+Dexter is an autonomous financial research agent that thinks, plans, and learns
+as it works. It performs analysis using task planning, self-reflection, and
+real-time market data. Think Claude Code, but built specifically for financial
+research.
+#+end_quote
+
+Links:
+
+- [[https://github.com/virattt/dexter][GH dexter]]
+
+*** Add support for PDF generation                                     :code:
+
+A lot of legal documents require PDF support. This story keeps track of useful
+PDF libraries.
+
+Links:
+
+- [[https://github.com/libharu/libharu][GH libharu]]: "Haru is a free, cross platform, open-sourced software library for
+  generating PDF. It supports the following features."
+
 *** Troubleshoot skills in claude                                     :infra:
 
 We don't seem to be able to use skills reliably.

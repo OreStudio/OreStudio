@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/repository/context_factory.hpp"
+#include "ores.utility/database/context_factory.hpp"
 
 #include <rfl/json.hpp>
 
-namespace ores::utility::repository {
+namespace ores::utility::database {
 
 using namespace ores::utility::log;
 

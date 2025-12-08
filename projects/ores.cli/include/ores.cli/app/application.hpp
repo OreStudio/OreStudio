@@ -25,7 +25,7 @@
 #include <optional>
 #include <filesystem>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/repository/context.hpp"
+#include "ores.utility/database/context.hpp"
 #include "ores.utility/database/database_options.hpp"
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
@@ -53,7 +53,7 @@ public:
     application& operator=(const application&) = delete;
 
 private:
-    static utility::repository::context
+    static utility::database::context
     make_context(const std::optional<utility::database::database_options>& db_opts);
     void import_currencies(const std::vector<std::filesystem::path> files) const;
     void import_data(const std::optional<config::import_options>& ocfg) const;
@@ -82,7 +82,7 @@ public:
     void run(const config::options& cfg) const;
 
 private:
-    utility::repository::context context_;
+    utility::database::context context_;
     std::ostream& output_stream_;
 };
 

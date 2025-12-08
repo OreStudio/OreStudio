@@ -31,26 +31,26 @@
 #include <sqlgen/postgres.hpp>
 #include <magic_enum/magic_enum.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.cli/config/export_options.hpp"
-#include "ores.utility/streaming/std_vector.hpp"
-#include "ores.utility/repository/context_factory.hpp"
+#include "ores.utility/streaming/std_vector.hpp"  // IWYU pragma: keep.
+#include "ores.utility/database/context_factory.hpp"
 #include "ores.utility/database/database_options.hpp"
 #include "ores.utility/datetime/datetime.hpp"
 #include "ores.risk/orexml/importer.hpp"
 #include "ores.risk/orexml/exporter.hpp"
-#include "ores.accounts/security/password_policy_validator.hpp"
 #include "ores.risk/csv/exporter.hpp"
 #include "ores.risk/domain/currency_table.hpp"
 #include "ores.risk/domain/currency_json.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
 #include "ores.accounts/service/bootstrap_mode_service.hpp"
-#include "ores.accounts/domain/account_table.hpp"
 #include "ores.accounts/domain/account_json.hpp"
-#include "ores.variability/domain/feature_flags_table.hpp"
-#include "ores.variability/domain/feature_flags_json.hpp"
-#include "ores.accounts/repository/account_repository.hpp"
-#include "ores.variability/repository/feature_flags_repository.hpp"
+#include "ores.accounts/domain/account_table.hpp"
 #include "ores.accounts/security/password_manager.hpp"
+#include "ores.accounts/repository/account_repository.hpp"
+#include "ores.accounts/security/password_policy_validator.hpp"
+#include "ores.variability/domain/feature_flags_json.hpp"
+#include "ores.variability/domain/feature_flags_table.hpp"
+#include "ores.variability/repository/feature_flags_repository.hpp"
+#include "ores.cli/config/export_options.hpp"
 #include "ores.cli/app/application_exception.hpp"
 
 namespace ores::cli::app {
@@ -63,9 +63,9 @@ using ores::risk::domain::currency;
 using risk::repository::currency_repository;
 using connection = sqlgen::Result<rfl::Ref<sqlgen::postgres::Connection>>;
 
-utility::repository::context application::make_context(
+utility::database::context application::make_context(
     const std::optional<utility::database::database_options>& db_opts) {
-    using utility::repository::context_factory;
+    using utility::database::context_factory;
 
     if (!db_opts.has_value()) {
         BOOST_THROW_EXCEPTION(

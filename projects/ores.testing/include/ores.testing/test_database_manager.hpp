@@ -22,7 +22,7 @@
 
 #include <string>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/repository/context.hpp"
+#include "ores.utility/database/context.hpp"
 #include "ores.utility/database/database_options.hpp"
 
 namespace ores::testing {
@@ -50,13 +50,13 @@ private:
      *
      * This is needed for admin operations like CREATE/DROP DATABASE.
      */
-    static utility::repository::context make_admin_context();
+    static utility::database::context make_admin_context();
 
   public:
     /**
      * @brief Creates a database context from environment variables.
      */
-    static utility::repository::context make_context();
+    static utility::database::context make_context();
 
     /**
      * @brief Creates database options from environment variables.

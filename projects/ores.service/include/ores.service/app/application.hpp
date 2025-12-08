@@ -23,7 +23,7 @@
 #include <optional>
 #include <boost/asio/awaitable.hpp>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/repository/context.hpp"
+#include "ores.utility/database/context.hpp"
 #include "ores.utility/database/database_options.hpp"
 #include "ores.service/config/options.hpp"
 
@@ -46,7 +46,7 @@ public:
     application& operator=(const application&) = delete;
 
 private:
-    static utility::repository::context
+    static utility::database::context
     make_context(const std::optional<utility::database::database_options>& db_opts);
 
 public:

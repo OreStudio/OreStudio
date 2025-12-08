@@ -26,7 +26,7 @@
 #include <vector>
 
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/repository/context.hpp"
+#include "ores.utility/database/context.hpp"
 #include "ores.variability/domain/feature_flags.hpp"
 #include "ores.variability/repository/feature_flags_repository.hpp"
 
@@ -53,7 +53,7 @@ public:
      *
      * @param ctx The database context to be used by the repository.
      */
-    explicit feature_flags_service(utility::repository::context ctx);
+    explicit feature_flags_service(utility::database::context ctx);
 
     /**
      * @brief Retrieves a single feature flag by name.

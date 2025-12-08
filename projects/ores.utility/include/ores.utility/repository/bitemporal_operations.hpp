@@ -23,7 +23,7 @@
 #include <vector>
 #include <sqlgen/postgres.hpp>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/repository/context.hpp"
+#include "ores.utility/database/context.hpp"
 #include "ores.utility/repository/helpers.hpp"
 
 namespace ores::utility::repository {
@@ -59,12 +59,8 @@ namespace ores::utility::repository {
  *     "Read latest accounts");
  */
 template<typename EntityType, typename DomainType, typename QueryType, typename MapperFunc>
-std::vector<DomainType> execute_read_query(
-    context ctx,
-    const QueryType& query,
-    MapperFunc&& mapper,
-    const std::string& logger_name,
-    const std::string& operation_desc) {
+std::vector<DomainType> execute_read_query(database::context ctx, const QueryType& query,
+    MapperFunc&& mapper, const std::string& logger_name, const std::string& operation_desc) {
 
     using namespace ores::utility::log;
     using namespace sqlgen;
@@ -102,11 +98,8 @@ std::vector<DomainType> execute_read_query(
  *     "Writing account to database");
  */
 template<typename EntityType>
-void execute_write_query(
-    context ctx,
-    const EntityType& entity,
-    const std::string& logger_name,
-    const std::string& operation_desc) {
+void execute_write_query(database::context ctx, const EntityType& entity,
+    const std::string& logger_name, const std::string& operation_desc) {
 
     using namespace ores::utility::log;
     using namespace sqlgen;
@@ -143,11 +136,8 @@ void execute_write_query(
  *     "Removing account from database");
  */
 template<typename QueryType>
-void execute_delete_query(
-    context ctx,
-    const QueryType& query,
-    const std::string& logger_name,
-    const std::string& operation_desc) {
+void execute_delete_query(database::context ctx, const QueryType& query,
+    const std::string& logger_name, const std::string& operation_desc) {
 
     using namespace ores::utility::log;
     using namespace sqlgen;

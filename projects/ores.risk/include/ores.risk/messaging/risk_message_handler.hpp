@@ -22,7 +22,7 @@
 
 #include "ores.comms/messaging/message_handler.hpp"
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/repository/context.hpp"
+#include "ores.utility/database/context.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
 
 namespace ores::risk::messaging {
@@ -49,7 +49,7 @@ public:
      *
      * @param ctx Database context for repository access
      */
-    explicit risk_message_handler(utility::repository::context ctx);
+    explicit risk_message_handler(utility::database::context ctx);
 
     /**
      * @brief Handle a risk subsystem message.
@@ -93,7 +93,7 @@ private:
     boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
     handle_get_currency_history_request(std::span<const std::byte> payload);
 
-    utility::repository::context ctx_;
+    utility::database::context ctx_;
     repository::currency_repository currency_repo_;
 };
 

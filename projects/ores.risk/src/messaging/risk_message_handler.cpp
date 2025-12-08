@@ -25,7 +25,7 @@ namespace ores::risk::messaging {
 
 using namespace ores::utility::log;
 
-risk_message_handler::risk_message_handler(utility::repository::context ctx)
+risk_message_handler::risk_message_handler(utility::database::context ctx)
     : ctx_(ctx) {}
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,

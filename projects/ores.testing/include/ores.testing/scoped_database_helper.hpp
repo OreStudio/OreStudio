@@ -37,7 +37,7 @@ public:
     /**
      * @brief Gets the database context.
      */
-    utility::repository::context& context() { return  helper_.context(); }
+    utility::database::context& context() { return  helper_.context(); }
 
 private:
     database_helper helper_;

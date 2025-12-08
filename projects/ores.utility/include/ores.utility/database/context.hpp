@@ -17,15 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_REPOSITORY_CONTEXT_HPP
-#define ORES_UTILITY_REPOSITORY_CONTEXT_HPP
+#ifndef ORES_UTILITY_DATABASE_CONTEXT_HPP
+#define ORES_UTILITY_DATABASE_CONTEXT_HPP
 
 #include <sqlgen/postgres.hpp>
 
-namespace ores::utility::repository {
+namespace ores::utility::database {
 
 /**
- * @brief Context for the operations on a repository.
+ * @brief Context for the operations on a postgres database.
  */
 class context {
 public:

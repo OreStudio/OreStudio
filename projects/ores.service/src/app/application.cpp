@@ -26,16 +26,16 @@
 #include "ores.variability/messaging/registrar.hpp"
 #include "ores.accounts/service/bootstrap_mode_service.hpp"
 #include "ores.utility/version/version.hpp"
-#include "ores.utility/repository/context_factory.hpp"
+#include "ores.utility/database/context_factory.hpp"
 #include "ores.comms/net/server.hpp"
 #include "ores.service/app/application_exception.hpp"
 
 namespace ores::service::app {
 using namespace ores::utility::log;
 
-utility::repository::context application::make_context(
+utility::database::context application::make_context(
     const std::optional<utility::database::database_options>& db_opts) {
-    using utility::repository::context_factory;
+    using utility::database::context_factory;
 
     if (!db_opts.has_value()) {
         BOOST_THROW_EXCEPTION(

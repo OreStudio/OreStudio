@@ -17,19 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_NOTIFICATION_DOMAIN_NOTIFICATION_TABLE_IO_HPP
-#define ORES_NOTIFICATION_DOMAIN_NOTIFICATION_TABLE_IO_HPP
+#ifndef ORES_EVENTING_DOMAIN_ENTITY_CHANGE_EVENT_HPP
+#define ORES_EVENTING_DOMAIN_ENTITY_CHANGE_EVENT_HPP
 
-#include <iosfwd>
-#include <vector>
-#include "ores.notification/domain/notification.hpp"
+#include <string>
+#include <chrono>
 
-namespace ores::notification::domain {
+namespace ores::eventing::domain {
 
 /**
- * @brief Dumps the notification objects to a stream in table format.
+ * @brief Represents a low-level notification about a change to an entity at the
+ * repository level.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<notification>& v);
+struct entity_change_event final {
+    /**
+     * @brief The fully qualified name of the entity that changed (e.g.,
+     * "ores.risk.currency").
+     */
+    std::string entity;
+
+    /**
+     * @brief The timestamp of when the change occurred (in UTC).
+     */
+    std::chrono::system_clock::time_point timestamp;
+};
 
 }
 

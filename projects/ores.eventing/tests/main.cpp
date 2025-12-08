@@ -17,29 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_NOTIFICATION_DOMAIN_NOTIFICATION_HPP
-#define ORES_NOTIFICATION_DOMAIN_NOTIFICATION_HPP
+#include <openssl/crypto.h>
+#include <boost/scope_exit.hpp>
+#include <catch2/catch_session.hpp>
+#include <catch2/reporters/catch_reporter_registrars.hpp>
+#include "ores.testing/logging_listener.hpp"
+#include "ores.testing/database_lifecycle_listener.hpp"
 
-#include <string>
-#include <chrono>
+CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
+CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
 
-namespace ores::notification::domain {
+int main(int argc, char* argv[]) {
+    BOOST_SCOPE_EXIT(void) {
+        OPENSSL_cleanup();
+    } BOOST_SCOPE_EXIT_END
 
-/**
- * @brief Represents a notification about a change to an entity.
- */
-struct notification final {
-    /**
-     * @brief The fully qualified name of the entity that changed (e.g., "ores.risk.currency").
-     */
-    std::string entity;
-
-    /**
-     * @brief The timestamp of when the change occurred (in UTC).
-     */
-    std::chrono::system_clock::time_point timestamp;
-};
-
+    ores::testing::logging_listener::set_test_module_name("ores.eventing.tests");
+    return Catch::Session().run(argc, argv);
 }
-
-#endif

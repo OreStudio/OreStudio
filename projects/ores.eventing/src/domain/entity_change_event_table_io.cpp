@@ -17,19 +17,29 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_NOTIFICATION_DOMAIN_NOTIFICATION_JSON_IO_HPP
-#define ORES_NOTIFICATION_DOMAIN_NOTIFICATION_JSON_IO_HPP
+#include "ores.eventing/domain/entity_change_event_table_io.hpp"
 
-#include <iosfwd>
-#include "ores.notification/domain/notification.hpp"
+#include <fort.hpp>
+#include "ores.utility/datetime/datetime.hpp"
 
-namespace ores::notification::domain {
+namespace ores::eventing::domain {
 
-/**
- * @brief Dumps the notification object to a stream in JSON format.
- */
-std::ostream& operator<<(std::ostream& s, const notification& v);
+std::ostream& operator<<(std::ostream& s, const std::vector<entity_change_event>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
 
+    table << fort::header
+          << "Entity" << "Timestamp" << fort::endr;
+
+    for (const auto& item : v) {
+        using utility::datetime::datetime;
+        auto timestamp_str = datetime::format_time_point(item.timestamp,
+                "%Y-%m-%d %H:%M:%S");
+
+        table << item.entity << timestamp_str << fort::endr;
+    }
+
+    return s << table.to_string();
 }
 
-#endif
+}

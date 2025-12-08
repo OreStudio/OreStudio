@@ -17,21 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <openssl/crypto.h>
-#include <boost/scope_exit.hpp>
-#include <catch2/catch_session.hpp>
-#include <catch2/reporters/catch_reporter_registrars.hpp>
-#include "ores.testing/logging_listener.hpp"
-#include "ores.testing/database_lifecycle_listener.hpp"
+#ifndef ORES_EVENTING_DOMAIN_ENTITY_CHANGE_EVENT_TABLE_IO_HPP
+#define ORES_EVENTING_DOMAIN_ENTITY_CHANGE_EVENT_TABLE_IO_HPP
 
-CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
-CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
+#include <iosfwd>
+#include <vector>
+#include "ores.eventing/domain/entity_change_event.hpp"
 
-int main(int argc, char* argv[]) {
-    BOOST_SCOPE_EXIT(void) {
-        OPENSSL_cleanup();
-    } BOOST_SCOPE_EXIT_END
+namespace ores::eventing::domain {
 
-    ores::testing::logging_listener::set_test_module_name("ores.notification.tests");
-    return Catch::Session().run(argc, argv);
+/**
+ * @brief Dumps the entity change event objects to a stream in table format.
+ */
+std::ostream& operator<<(std::ostream& s, const std::vector<entity_change_event>& v);
+
 }
+
+#endif

@@ -17,29 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_NOTIFICATION_GENERATORS_NOTIFICATION_GENERATOR_HPP
-#define ORES_NOTIFICATION_GENERATORS_NOTIFICATION_GENERATOR_HPP
+#ifndef ORES_EVENTING_DOMAIN_ENTITY_CHANGE_EVENT_JSON_IO_HPP
+#define ORES_EVENTING_DOMAIN_ENTITY_CHANGE_EVENT_JSON_IO_HPP
 
-#include "ores.notification/domain/notification.hpp"
-#include <vector>
+#include <iosfwd>
+#include "ores.eventing/domain/entity_change_event.hpp"
 
-namespace ores::notification::generators {
+namespace ores::eventing::domain {
 
 /**
- * @brief Generates random notification instances for testing.
+ * @brief Dumps the entity change event object to a stream in JSON format.
  */
-class notification_generator final {
-public:
-    /**
-     * @brief Generates a single random notification.
-     */
-    static ores::notification::domain::notification generate();
-
-    /**
-     * @brief Generates a vector of random notifications.
-     */
-    static std::vector<ores::notification::domain::notification> generate_set(size_t n);
-};
+std::ostream& operator<<(std::ostream& s, const entity_change_event& v);
 
 }
 

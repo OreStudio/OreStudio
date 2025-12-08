@@ -17,29 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.notification/domain/notification_table_io.hpp"
+#ifndef ORES_EVENTING_GENERATORS_ENTITY_CHANGE_EVENT_GENERATOR_HPP
+#define ORES_EVENTING_GENERATORS_ENTITY_CHANGE_EVENT_GENERATOR_HPP
 
-#include <fort.hpp>
-#include "ores.utility/datetime/datetime.hpp"
+#include "ores.eventing/domain/entity_change_event.hpp"
+#include <vector>
 
-namespace ores::notification::domain {
+namespace ores::eventing::generators {
 
-std::ostream& operator<<(std::ostream& s, const std::vector<notification>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
+/**
+ * @brief Generates random entity change event instances for testing.
+ */
+class entity_change_event_generator final {
+public:
+    /**
+     * @brief Generates a single random entity change event.
+     */
+    static domain::entity_change_event generate();
 
-    table << fort::header
-          << "Entity" << "Timestamp" << fort::endr;
+    /**
+     * @brief Generates a vector of random entity change event.
+     */
+    static std::vector<domain::entity_change_event> generate_set(size_t n);
+};
 
-    for (const auto& item : v) {
-        using utility::datetime::datetime;
-        auto timestamp_str = datetime::format_time_point(item.timestamp,
-                "%Y-%m-%d %H:%M:%S");
-
-        table << item.entity << timestamp_str << fort::endr;
-    }
-
-    return s << table.to_string();
 }
 
-}
+#endif

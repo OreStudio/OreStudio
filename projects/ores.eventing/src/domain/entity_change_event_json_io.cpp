@@ -17,15 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.notification/domain/notification_json_io.hpp"
+#include "ores.eventing/domain/entity_change_event_json_io.hpp"
 
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 
-namespace ores::notification::domain {
+namespace ores::eventing::domain {
 
-std::ostream& operator<<(std::ostream& s, const notification& v) {
+std::ostream& operator<<(std::ostream& s, const entity_change_event& v) {
     rfl::json::write(v, s);
     return s;
 }

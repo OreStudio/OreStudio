@@ -36,12 +36,15 @@ public:
         rfl::Ref<connection_type>>;
 
     explicit context(connection_pool_type connection_pool,
-                     single_connection_type single_connection)
-        : connection_pool_(std::move(connection_pool)),
-          single_connection_(std::move(single_connection)) {}
+                     single_connection_type single_connection,
+                     sqlgen::postgres::Credentials credentials)
+    : connection_pool_(std::move(connection_pool)),
+      single_connection_(std::move(single_connection)),
+      credentials_(std::move(credentials)) {}
 
     connection_pool_type connection_pool() { return connection_pool_; }
     single_connection_type single_connection() { return single_connection_; }
+    const sqlgen::postgres::Credentials& credentials() const { return credentials_; }
 
     /**
      * @brief Set the bootstrap mode flag.
@@ -60,7 +63,9 @@ public:
 private:
     connection_pool_type connection_pool_;
     single_connection_type single_connection_;
+    const sqlgen::postgres::Credentials credentials_;
     bool bootstrap_mode_ = false;
+
 };
 
 }

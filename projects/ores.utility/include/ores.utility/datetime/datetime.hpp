@@ -39,7 +39,7 @@ public:
      */
     static std::string format_time_point(
         const std::chrono::system_clock::time_point& tp,
-        const std::string& format);
+        const std::string& format = "%Y-%m-%d %H:%M:%S");
 };
 
 }

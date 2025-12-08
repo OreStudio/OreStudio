@@ -24,7 +24,7 @@ with CRUD operations.
 * How to use this skill
 
 1. Gather information about the domain type (name, fields, project location).
-2. Follow the detailed instructions to create all required components in order.
+2. Follow the detailed instructions to create all required artefacts in order.
 3. Build and test the new domain type.
 
 * Detailed instructions
@@ -36,12 +36,13 @@ The following sections describe the step-by-step process for creating a complete
 Before starting, gather the following information from the user:
 
 - *Domain type name*: the name of the new type (e.g., =currency=, =account=).
-- *Project location*: which project the domain type belongs to (e.g., =ores.risk=, =ores.accounts=).
+- *Component location*: which component the domain type belongs to (e.g.,
+  =ores.risk=, =ores.accounts=).
 - *Fields*: list of fields with their types and descriptions.
 
 ** Step 1: Create the domain class definition
 
-Create the header file under =projects/PROJECT/include/PROJECT/domain/TYPE_NAME.hpp=.
+Create the header file under =projects/COMPONENT/include/COMPONENT/domain/TYPE_NAME.hpp=.
 
 The domain class should:
 
@@ -59,7 +60,7 @@ The domain class should:
 Example structure:
 
 #+begin_src cpp
-namespace ores::PROJECT::domain {
+namespace ores::COMPONENT::domain {
 
 /**
  * @brief Brief description of the domain type.
@@ -80,16 +81,16 @@ struct TYPE_NAME final {
 
 Create two files for JSON serialization:
 
-1. Header: =projects/PROJECT/include/PROJECT/domain/TYPE_NAME_json_io.hpp=
-2. Implementation: =projects/PROJECT/src/domain/TYPE_NAME_json_io.cpp=
+1. Header: =projects/COMPONENT/include/COMPONENT/domain/TYPE_NAME_json_io.hpp=
+2. Implementation: =projects/COMPONENT/src/domain/TYPE_NAME_json_io.cpp=
 
 The header should declare:
 
 #+begin_src cpp
 #include <iosfwd>
-#include "PROJECT/domain/TYPE_NAME.hpp"
+#include "COMPONENT/domain/TYPE_NAME.hpp"
 
-namespace ores::PROJECT::domain {
+namespace ores::COMPONENT::domain {
 
 /**
  * @brief Dumps the TYPE_NAME object to a stream in JSON format.
@@ -110,17 +111,17 @@ The implementation should:
 
 Create two files for table output:
 
-1. Header: =projects/PROJECT/include/PROJECT/domain/TYPE_NAME_table_io.hpp=
-2. Implementation: =projects/PROJECT/src/domain/TYPE_NAME_table_io.cpp=
+1. Header: =projects/COMPONENT/include/COMPONENT/domain/TYPE_NAME_table_io.hpp=
+2. Implementation: =projects/COMPONENT/src/domain/TYPE_NAME_table_io.cpp=
 
 The header should declare:
 
 #+begin_src cpp
 #include <iosfwd>
 #include <vector>
-#include "PROJECT/domain/TYPE_NAME.hpp"
+#include "COMPONENT/domain/TYPE_NAME.hpp"
 
-namespace ores::PROJECT::domain {
+namespace ores::COMPONENT::domain {
 
 /**
  * @brief Dumps the TYPE_NAME object to a stream in table format.
@@ -148,8 +149,8 @@ The implementation should:
 
 Create two files for test data generation:
 
-1. Header: =projects/PROJECT/include/PROJECT/generators/TYPE_NAME_generator.hpp=
-2. Implementation: =projects/PROJECT/src/generators/TYPE_NAME_generator.cpp=
+1. Header: =projects/COMPONENT/include/COMPONENT/generators/TYPE_NAME_generator.hpp=
+2. Implementation: =projects/COMPONENT/src/generators/TYPE_NAME_generator.cpp=
 
 The generator class should:
 
@@ -163,10 +164,10 @@ The generator class should:
 
 Create the database entity and mapper for ORM support:
 
-1. Entity header: =projects/PROJECT/include/PROJECT/repository/TYPE_NAME_entity.hpp=
-2. Entity implementation: =projects/PROJECT/src/repository/TYPE_NAME_entity.cpp=
-3. Mapper header: =projects/PROJECT/include/PROJECT/repository/TYPE_NAME_mapper.hpp=
-4. Mapper implementation: =projects/PROJECT/src/repository/TYPE_NAME_mapper.cpp=
+1. Entity header: =projects/COMPONENT/include/COMPONENT/repository/TYPE_NAME_entity.hpp=
+2. Entity implementation: =projects/COMPONENT/src/repository/TYPE_NAME_entity.cpp=
+3. Mapper header: =projects/COMPONENT/include/COMPONENT/repository/TYPE_NAME_mapper.hpp=
+4. Mapper implementation: =projects/COMPONENT/src/repository/TYPE_NAME_mapper.cpp=
 
 One domain class does not always map to a single entity. Entities reflect
 database tables. Clarify with the user how domain classes should be mapped to
@@ -189,8 +190,8 @@ The mapper should:
 
 Create the repository class:
 
-1. Header: =projects/PROJECT/include/PROJECT/repository/TYPE_NAME_repository.hpp=
-2. Implementation: =projects/PROJECT/src/repository/TYPE_NAME_repository.cpp=
+1. Header: =projects/COMPONENT/include/COMPONENT/repository/TYPE_NAME_repository.hpp=
+2. Implementation: =projects/COMPONENT/src/repository/TYPE_NAME_repository.cpp=
 
 The repository should provide:
 
@@ -217,7 +218,7 @@ Implementation details:
 
 ** Step 7: Update CMakeLists.txt
 
-The CMakeLists.txt in =projects/PROJECT/src/CMakeLists.txt= will use
+The CMakeLists.txt in =projects/COMPONENT/src/CMakeLists.txt= will use
 =GLOB_RECURSE= to pick up all =*.cpp= files automatically so do not add new
 files.
 
@@ -231,7 +232,7 @@ Ensure the following dependencies are linked:
 
 ** Step 8: Create tests
 
-Create comprehensive tests for the new domain type under =projects/PROJECT.tests/=:
+Create comprehensive tests for the new domain type under =projects/COMPONENT.tests/=:
 
 1. Domain tests: test JSON and table serialization
 2. Generator tests: verify generator produces valid instances
@@ -250,14 +251,14 @@ cmake --preset linux-clang-debug
 2. Build the project:
 
 #+begin_src sh
-cmake --build --preset linux-clang-debug --target PROJECT.lib
+cmake --build --preset linux-clang-debug --target COMPONENT.lib
 #+end_src
 
 3. Build and run tests:
 
 #+begin_src sh
-cmake --build --preset linux-clang-debug --target PROJECT.tests
-./build/output/linux-clang-debug/publish/bin/PROJECT.tests
+cmake --build --preset linux-clang-debug --target COMPONENT.tests
+./build/output/linux-clang-debug/publish/bin/COMPONENT.tests
 #+end_src
 
 * Common patterns and conventions

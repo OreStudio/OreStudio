@@ -20,7 +20,7 @@
 #ifndef ORES_ACCOUNTS_MESSAGING_ACCOUNTS_MESSAGE_HANDLER_HPP
 #define ORES_ACCOUNTS_MESSAGING_ACCOUNTS_MESSAGE_HANDLER_HPP
 
-#include "ores.utility/repository/context.hpp"
+#include "ores.utility/database/context.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/messaging/message_handler.hpp"
 #include "ores.accounts/service/account_service.hpp"
@@ -57,7 +57,7 @@ public:
      *
      * @param ctx Database context for repository access
      */
-    explicit accounts_message_handler(utility::repository::context ctx);
+    explicit accounts_message_handler(utility::database::context ctx);
 
     using handler_result = boost::asio::awaitable<
         std::expected<std::vector<std::byte>, comms::messaging::error_code>
@@ -140,7 +140,7 @@ private:
     static bool is_localhost(const std::string& remote_address);
 
     service::account_service service_;
-    utility::repository::context ctx_;
+    utility::database::context ctx_;
 };
 
 }

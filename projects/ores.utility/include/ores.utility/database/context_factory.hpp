@@ -17,26 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_REPOSITORY_CONTEXT_FACTORY_HPP
-#define ORES_UTILITY_REPOSITORY_CONTEXT_FACTORY_HPP
+#ifndef ORES_UTILITY_DATABASE_CONTEXT_FACTORY_HPP
+#define ORES_UTILITY_DATABASE_CONTEXT_FACTORY_HPP
 
 #include <iosfwd>
 #include <string>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/repository/context.hpp"
+#include "ores.utility/database/context.hpp"
 #include "ores.utility/database/database_options.hpp"
 
-namespace ores::utility::repository {
+namespace ores::utility::database {
 
 /**
- * @brief Generates a new repository context.
+ * @brief Generates a new database context.
  */
 class context_factory {
 private:
     static auto& lg() {
         using namespace ores::utility::log;
         static auto instance = make_logger(
-            "ores.utility.repository.context_factory");
+            "ores.utility.database.context_factory");
         return instance;
     }
 
@@ -57,7 +57,6 @@ public:
 
 std::ostream&
 operator<<(std::ostream& s, const context_factory::configuration& v);
-
 
 }
 

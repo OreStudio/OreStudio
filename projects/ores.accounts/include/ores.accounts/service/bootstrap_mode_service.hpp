@@ -24,7 +24,7 @@
 #include "ores.accounts/repository/account_repository.hpp"
 #include "ores.variability/service/feature_flags_service.hpp"
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/repository/context.hpp"
+#include "ores.utility/database/context.hpp"
 
 namespace ores::accounts::service {
 
@@ -57,14 +57,14 @@ private:
     static constexpr const char* BOOTSTRAP_FLAG_NAME = "system.bootstrap_mode";
 
 public:
-    using context = ores::utility::repository::context;
+    using context = ores::utility::database::context;
 
     /**
      * @brief Constructs a bootstrap_mode_service with required repositories.
      *
      * @param ctx The database context for repository access
      */
-    explicit bootstrap_mode_service(utility::repository::context ctx);
+    explicit bootstrap_mode_service(utility::database::context ctx);
 
     /**
      * @brief Checks if the system is currently in bootstrap mode.
@@ -105,7 +105,7 @@ public:
 private:
     repository::account_repository account_repo_;
     variability::service::feature_flags_service feature_flags_service_;
-    utility::repository::context ctx_;
+    utility::database::context ctx_;
 };
 
 }

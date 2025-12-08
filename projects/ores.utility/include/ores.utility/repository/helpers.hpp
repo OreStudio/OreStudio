@@ -28,7 +28,6 @@
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/repository/repository_exception.hpp"
 
-
 namespace ores::utility::repository {
 
 /**

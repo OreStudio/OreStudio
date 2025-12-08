@@ -19,8 +19,7 @@
  */
 #include "ores.variability/repository/feature_flags_repository.hpp"
 
-#include <format>
-#include "ores.utility/repository/repository_exception.hpp"
+#include "ores.utility/repository/bitemporal_operations.hpp"
 #include "ores.variability/domain/feature_flags_json_io.hpp" // IWYU pragma: keep.
 #include "ores.variability/repository/feature_flags_entity.hpp"
 #include "ores.variability/repository/feature_flags_mapper.hpp"

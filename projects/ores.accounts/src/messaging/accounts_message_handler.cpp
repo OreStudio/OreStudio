@@ -28,7 +28,7 @@ namespace ores::accounts::messaging {
 using namespace ores::utility::log;
 using comms::messaging::message_type;
 
-accounts_message_handler::accounts_message_handler(utility::repository::context ctx)
+accounts_message_handler::accounts_message_handler(utility::database::context ctx)
     : service_(ctx), ctx_(ctx) {}
 
 accounts_message_handler::handler_result

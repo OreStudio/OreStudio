@@ -18,40 +18,47 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-05 Fri 00:03], for Friday, December 05, 2025.
-|      | <75>                                                |        |      |      |       |
-| Tags | Headline                                            | Time   |      |      |     % |
-|------+-----------------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                        | *0:03* |      |      | 100.0 |
-|------+-----------------------------------------------------+--------+------+------+-------|
-|      | Stories                                             | 0:03   |      |      | 100.0 |
-|      | Active                                              |        | 0:03 |      | 100.0 |
-| code | Implement client heartbeat for disconnect detection |        |      | 0:03 | 100.0 |
+#+CAPTION: Clock summary at [2025-12-08 Mon 23:30], for Monday, December 08, 2025.
+|       | <75>                               |        |      |      |       |
+| Tags  | Headline                           | Time   |      |      |     % |
+|-------+------------------------------------+--------+------+------+-------|
+|       | *Total time*                       | *5:29* |      |      | 100.0 |
+|-------+------------------------------------+--------+------+------+-------|
+|       | Stories                            | 5:29   |      |      | 100.0 |
+|       | Active                             |        | 5:29 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint |        |      | 2:27 |  44.7 |
+| code  | Add listen/notify support          |        |      | 2:42 |  49.2 |
+| code  | Move context to database           |        |      | 0:20 |   6.1 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-05 Fri 00:03]
-|       | <75>                                                |         |       |      |       |
-| Tags  | Headline                                            | Time    |       |      |     % |
-|-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                        | *18:57* |       |      | 100.0 |
-|-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                             | 18:57   |       |      | 100.0 |
-|       | Active                                              |         | 18:57 |      | 100.0 |
-| agile | Sprint and product backlog refinement               |         |       | 0:18 |   1.6 |
-| infra | OCR scan notebooks for this sprint                  |         |       | 3:09 |  16.6 |
-| code  | Implement session cancellation                      |         |       | 2:42 |  14.2 |
-| code  | Create a variability service for feature flags      |         |       | 1:23 |   7.3 |
-| code  | Add tests to diagrams                               |         |       | 1:26 |   7.6 |
-| code  | Add messaging to variability                        |         |       | 0:40 |   3.5 |
-| code  | Create handshake service in comms                   |         |       | 2:31 |  13.3 |
-| code  | Implement client heartbeat for disconnect detection |         |       | 5:18 |  28.0 |
-| code  | Experiment with simple code generation              |         |       | 1:30 |   7.9 |
+#+CAPTION: Clock summary at [2025-12-08 Mon 23:30]
+|       | <75>                                                |         |       |       |       |
+| Tags  | Headline                                            | Time    |       |       |     % |
+|-------+-----------------------------------------------------+---------+-------+-------+-------|
+|       | *Total time*                                        | *38:08* |       |       | 100.0 |
+|-------+-----------------------------------------------------+---------+-------+-------+-------|
+|       | Stories                                             | 38:08   |       |       | 100.0 |
+|       | Active                                              |         | 38:08 |       | 100.0 |
+| agile | Sprint and product backlog refinement               |         |       |  0:29 |   1.3 |
+| infra | OCR scan notebooks for this sprint                  |         |       |  9:19 |  24.4 |
+| code  | Implement session cancellation                      |         |       |  2:42 |   7.1 |
+| code  | Create a variability service for feature flags      |         |       |  1:23 |   3.6 |
+| code  | Add tests to diagrams                               |         |       |  1:26 |   3.8 |
+| code  | Add messaging to variability                        |         |       |  0:40 |   1.7 |
+| code  | Create handshake service in comms                   |         |       |  2:31 |   6.6 |
+| code  | Implement client heartbeat for disconnect detection |         |       |  5:18 |  13.9 |
+| code  | Pressing disconnect crashes client                  |         |       |  0:23 |   1.0 |
+| infra | Create a component creator skill                    |         |       |  0:42 |   1.8 |
+| code  | Add listen/notify support                           |         |       | 11:25 |  29.9 |
+| code  | Move context to database                            |         |       |  0:20 |   0.9 |
+| code  | Experiment with simple code generation              |         |       |  1:30 |   3.9 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-12-05 Fri 00:04]--[2025-12-05 Fri 00:15] =>  0:11
     CLOCK: [2025-12-02 Tue 10:54]--[2025-12-02 Tue 10:58] =>  0:04
     CLOCK: [2025-12-02 Tue 10:40]--[2025-12-02 Tue 10:54] =>  0:14
     :END:
@@ -207,6 +214,14 @@ print(p)
 
 *** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
+    CLOCK: [2025-12-08 Mon 19:21]--[2025-12-08 Mon 20:13] =>  0:52
+    CLOCK: [2025-12-08 Mon 17:01]--[2025-12-08 Mon 18:36] =>  1:35
+    CLOCK: [2025-12-07 Sun 20:34]--[2025-12-07 Sun 21:38] =>  1:04
+    CLOCK: [2025-12-07 Sun 11:50]--[2025-12-07 Sun 12:03] =>  0:13
+    CLOCK: [2025-12-07 Sun 07:25]--[2025-12-07 Sun 08:00] =>  0:35
+    CLOCK: [2025-12-06 Sat 22:55]--[2025-12-06 Sat 23:13] =>  0:18
+    CLOCK: [2025-12-05 Fri 10:18]--[2025-12-05 Fri 10:45] =>  0:27
+    CLOCK: [2025-12-05 Fri 09:11]--[2025-12-05 Fri 10:17] =>  1:06
     CLOCK: [2025-12-03 Wed 12:00]--[2025-12-03 Wed 13:40] =>  1:40
     CLOCK: [2025-12-02 Tue 09:10]--[2025-12-02 Tue 10:39] =>  1:29
     :END:
@@ -874,6 +889,393 @@ responses to requests.
   - Heartbeat timeout triggers disconnect
   - Write serialization
 
+*** COMPLETED Multi-threaded scenarios with comms                      :code:
+
+*Rationale*: Handled as part of heartbeat work.
+
+At present we are relying on request-response patterns: the client sends a
+request and the next frame coming in is the response. However, in the future we
+will have many dialog windows open, each of them sending requests and awaiting
+responses. It will not be possible to know what response is coming back from
+what window. We need to take this into account.
+
+*** COMPLETED Disconnect closes currencies window                      :code:
+
+*Rationale*: Handled as part of heartbeat work.
+
+It should just disable the icons, etc.
+
+*** COMPLETED Pressing disconnect crashes client                       :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-05 Fri 10:48]--[2025-12-05 Fri 10:49] =>  0:01
+    CLOCK: [2025-12-05 Fri 08:55]--[2025-12-05 Fri 09:10] =>  0:15
+    CLOCK: [2025-12-05 Fri 07:49]--[2025-12-05 Fri 07:56] =>  0:07
+    :END:
+
+We need to debug this crash. Disconnect works as a disconnect from the server
+side. Works sometimes, sometimes crashes.
+
+*** COMPLETED Create a component creator skill                        :infra:
+    :LOGBOOK:
+    CLOCK: [2025-12-05 Fri 11:51]--[2025-12-05 Fri 12:33] =>  0:42
+    :END:
+
+It is painful to have to create components. Teach LLMs how to do it.
+
+*** CANCELLED Add listen/notify support                                :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-08 Mon 22:31]--[2025-12-08 Mon 23:06] =>  0:35
+    CLOCK: [2025-12-08 Mon 22:02]--[2025-12-08 Mon 22:21] =>  0:19
+    CLOCK: [2025-12-08 Mon 20:14]--[2025-12-08 Mon 22:02] =>  1:48
+    CLOCK: [2025-12-07 Sun 22:18]--[2025-12-07 Sun 23:40] =>  1:22
+    CLOCK: [2025-12-07 Sun 21:39]--[2025-12-07 Sun 22:18] =>  0:39
+    CLOCK: [2025-12-06 Sat 23:14]--[2025-12-06 Sat 23:49] =>  0:35
+    CLOCK: [2025-12-05 Fri 23:48]--[2025-12-06 Sat 00:26] =>  0:38
+    CLOCK: [2025-12-05 Fri 23:00]--[2025-12-05 Fri 23:47] =>  0:47
+    CLOCK: [2025-12-05 Fri 17:31]--[2025-12-05 Fri 18:35] =>  1:04
+    CLOCK: [2025-12-05 Fri 13:47]--[2025-12-05 Fri 16:03] =>  2:16
+    CLOCK: [2025-12-05 Fri 13:25]--[2025-12-05 Fri 13:30] =>  0:05
+    CLOCK: [2025-12-05 Fri 12:37]--[2025-12-05 Fri 12:51] =>  0:14
+    CLOCK: [2025-12-05 Fri 12:33]--[2025-12-05 Fri 12:36] =>  0:03
+    CLOCK: [2025-12-05 Fri 10:50]--[2025-12-05 Fri 11:50] =>  1:00
+    :END:
+
+*Rationale*: this story is a very large epic and we need to break it down into
+more manageable pieces.
+
+When data changes for a given entity in the database and we have the dialog of
+that entity open, we need to make the reload button a different colour (suggest
+a colour). For this we need to listen/notify in the database and then send a
+message to the client. This requires a change at the protocol because at present
+we send a request from the client first and then expect a response. This is more
+like a callback where the handler will call a callback when a certain message is
+received.
+
+Notes:
+
+- need to save the session on the listener to acquire the connection. Actually
+  this is not a very good idea as we are not really using the pool properly.
+- we need reconnect logic to handle cases where the DB connection is down. In
+  addition, we need to be able to notify the client. There needs to be an event
+  type for this. The listener needs to periodically check the status of the DB
+  connection; if down, attempt to reconnect, notify listeners that connection is
+  down. On reconnect we need to re-listen to all the topics we had subscribed
+  before.
+- when we map application level events to low-level DB events, these should
+  really live inside each component. These follow the same pattern as
+  "messaging" in namespace "eventing".
+- we need a bridge which listens to socket events and connects to remote event
+  bus to distribute the events.
+- Postgres listener is an adaptor of some kind.
+- Rename service to =ores.events= or maybe =ores.eventing=. Qwen:
+
+#+begin_quote
+The term "notification" strongly implies passive alerts (e.g., “you have a
+message”) or user-facing banners/toasts. But your subsystem is far more
+powerful:
+
+- It’s a real-time event distribution fabric,
+- It carries domain events (TradeUpdated, FxPriceChanged, ReportCompleted),
+- It enables reactive data synchronization, UI auto-refresh, and system-to-system coordination.
+
+Calling it notification may:
+
+- Understate its role,
+- Confuse it with UI toast systems or email-style alerts,
+- Imply it’s only for “out-of-band” signals, not core data flow.
+#+end_quote
+
+Links:
+
+- [[https://github.com/getml/sqlgen/issues/104][Using sqlgen with LISTEN/NOTIFY #104]]
+- [[https://github.com/getml/sqlgen/pull/105][Experimental implementation of listen / notify #105]]
+
+**** Revised requirements from Qwen
+
+#+begin_src markdown
+### 📜 **End-to-End Application Message Bus Specification**
+
+#### **1. Overall Principle**
+
+The system shall support **real-time, typed, parameterized event delivery** from
+a **central C++23 service** to **multiple client applications** (Qt UI, REPL,
+Wt, grid engines, etc.) over an existing **bespoke binary protocol**. The design
+must be **agnostic to event origins** and **decoupled from any specific UI
+framework**.
+
+---
+
+#### **2. Service Responsibilities**
+
+The **central service** shall act as a **unified event broker** and must:
+
+- **Aggregate events from arbitrary internal sources**, including but not
+  limited to:
+  - PostgreSQL `LISTEN/NOTIFY`,
+  - Background job completion (e.g., report generation),
+  - Grid computation results,
+  - Scheduled tasks,
+  - User or system-triggered domain events.
+
+- **Normalize all events** into a uniform model consisting of:
+  - `event_type`: a stable, logical string identifier (e.g., `"fx_price"`,
+    `"report_completed"`),
+  - `key`: a string that identifies the specific entity or scope (e.g.,
+    `"EUR/USD"`, `"report_123"`),
+  - `payload`: a binary-serialized representation of the event data (using the
+    existing serialization format).
+
+- **Maintain per-client subscription state**, tracking which clients are
+  subscribed to which `(event_type, key)` pairs.
+
+- **Filter and deliver** only relevant events to each connected client:
+  - When a new event is produced internally, the service forwards it **only** to
+    clients subscribed to its `(event_type, key)`.
+  - Delivery uses the existing **binary protocol frame format**.
+
+- **Support dynamic subscription management** via two new protocol message
+  types:
+  - `SUBSCRIBE(event_type: string, key: string)` → register interest,
+  - `UNSUBSCRIBE(event_type: string, key: string)` → remove interest.
+
+- **Ensure no event source leaks into the protocol**—PostgreSQL is an
+  implementation detail invisible to clients.
+
+---
+
+#### **3. Client Responsibilities**
+
+Each **client process** shall provide a **local, in-process message bus** that:
+
+- Offers a **type-safe C++23 API** for subscribing to domain events:
+  ```cpp
+  auto sub = bus.subscribe<ReportCompleted>("report_123", handler);
+  ```
+
+- **Maps event types to logical names** via a user-defined trait:
+  ```cpp
+  template<> struct event_traits<ReportCompleted> {
+      static constexpr const char* name = "report_completed";
+  };
+  ```
+
+- **Automatically manages remote subscriptions**:
+  - On the **first subscription** to a given `(event_type, key)`, sends a
+    `SUBSCRIBE` message to the service.
+  - On the **last unsubscription**, sends an `UNSUBSCRIBE`.
+
+- **Delivers incoming notifications** to all matching local subscribers:
+  - Uses **Boost.Asio executors** to support asynchronous, thread-safe delivery.
+  - Does **not assume a UI framework**—subscribers provide their own execution
+    context.
+
+- Supports **RAII-based lifetime management**: subscriptions are automatically
+  cleaned up when the subscription object is destroyed.
+
+- Is **header-only, portable, and coroutine-friendly**, using only C++23 and Boost.Asio.
+
+---
+
+#### **4. Protocol Contract (Client ↔ Service)**
+
+The **only coupling** between client and service is the **binary protocol**,
+which must support:
+
+| Message Type   | Direction        | Purpose                                     |
+|----------------|------------------|---------------------------------------------|
+| `SUBSCRIBE`    | Client → Service | Express interest in `(event_type, key)`     |
+| `UNSUBSCRIBE`  | Client → Service | Revoke interest                             |
+| `NOTIFICATION` | Service → Client | Deliver event: `(event_type, key, payload)` |
+
+- The `payload` must be deserializable into the corresponding C++ event struct
+  using the **existing serialization mechanism** (e.g., your
+  `serialize()`/`deserialize()` functions).
+
+- The protocol must be **backward-compatible** and **extensible** to new event
+  types without breaking existing clients.
+
+---
+
+#### **5. Non-Functional Requirements**
+
+- **Decoupling**: No UI framework (Qt, Wt, etc.) or event source (PostgreSQL,
+  etc.) dependencies in the core bus logic.
+- **Efficiency**: Support hundreds of concurrent subscriptions with low
+  overhead; high-frequency events (e.g., FX) must not overwhelm the system.
+- **Safety**: Thread-safe publishing and subscription; no dangling callbacks.
+- **Evolvability**: Adding a new event type requires only:
+  - A C++ struct,
+  - A `event_traits` specialization,
+  - Service-side event production (no bus or protocol changes).
+
+---
+
+This specification ensures you can **start with PostgreSQL-driven
+notifications** today and **seamlessly integrate grid engines, async reports, or
+external event streams** tomorrow—without redesigning your messaging layer.
+
+Let me know if this captures your intent, and we can proceed to **design the
+interfaces** or **draft the protocol extensions**.
+#+end_src
+
+
+**** Architectural Plan
+
+We will implement a *subscription-based model* to support scaling to many
+entities. A dedicated component =ores.notification= will handle the database
+listening and subscription management, keeping =ores.comms= focused on
+transport.
+
+***** 1. Database Layer (Postgres)
+
+- *Mechanism:* Postgres =TRIGGER= on =INSERT/UPDATE/DELETE= for entities.
+- *Channels:* One channel per entity (e.g., =ores_currencies=).
+- *Payload:* A simple JSON indicating the entity name and the timestamp of the change (roughly corresponding to `valid_to` of the affected row). No IDs are needed in the notification payload. Clients will be responsible for refreshing the data, potentially querying the database for changes since the provided timestamp.
+
+***** 2. ores.notification (New Component)
+
+- *Responsibility:* Manages database listeners and client subscriptions.
+- *PostgresListener:*
+  - Manages a dedicated connection for =LISTEN/NOTIFY=.
+  - Runs a dedicated thread to poll/wait for notifications.
+  - Parses incoming JSON payloads.
+- *SubscriptionManager:*
+  - Maintains a map of =Topic -> List<SessionID>=.
+  - Handles =subscribe= and =unsubscribe= logic.
+  - Dispatches notifications to relevant sessions via the Server.
+
+***** 3. ores.comms (Protocol)
+
+- *New Message Types:*
+  - =SubscribeRequest { topic: string }=
+  - =SubscribeResponse { success: bool }=
+  - =NotificationMessage { topic: string, payload: string (JSON) }=
+- *Protocol Version:* Bump to v7 (breaking change).
+
+***** 4. ores.service (Wiring)
+
+- Initializes =NotificationService= (from =ores.notification=).
+- Connects the service to the =Server= instance.
+- Registers the =SubscribeRequest= handler.
+
+***** 5. Client Layer (Qt)
+
+- *ClientManager:* Exposes =subscribe(topic)= and =notificationReceived= signal.
+- *UI Controllers:*
+  - Subscribe to relevant topics when windows are opened.
+  - Unsubscribe (optionally) when closed.
+  - *UX:* Visual indicator (e.g., "Reload" button turns orange/red or a badge
+    appears) rather than auto-reloading, avoiding jarring UI shifts.
+
+**** Tasks
+
+***** COMPLETED Database Infrastructure
+
+  - Create a migration to add =LISTEN/NOTIFY= triggers for =currencies=.
+  - Define the simplified JSON payload structure for triggers (entity name, timestamp).
+
+***** STARTED Component Creation: ores.notification
+
+  - Create scaffolding for =ores.notification= (CMakeLists, file structure).
+  - Implement =PostgresListener= using =sqlgen= (or extend =sqlgen= if needed
+    for raw handle).
+  - Implement =SubscriptionManager=.
+
+***** Protocol Updates (ores.comms)
+
+  - Bump protocol version to v7.
+  - Add =SubscribeRequest=, =SubscribeResponse=, =NotificationMessage= types.
+  - Update serialization logic for the simplified =NotificationMessage= payload.
+
+***** Server Integration (ores.service)
+
+  - Wire =ores.notification= into the application startup.
+  - Implement the handler for =SubscribeRequest=.
+  - enable broadcasting from =SubscriptionManager= to =Server= sessions.
+
+***** Client Implementation (ores.qt)
+
+  - Update =ClientManager= to handle unsolicited =NotificationMessage= frames.
+  - Add =subscribe()= method to =ClientManager=.
+  - Update =CurrencyController= to subscribe to "currencies".
+  - Update =CurrencyMdiWindow= to show "Stale Data" indicator on notification.
+
+**** Listen code from deepseek
+
+#+begin_src c++
+#include <sqlgen.h>
+#include <libpq-fe.h>
+#include <thread>
+#include <iostream>
+
+class TableWatcher {
+private:
+    sqlgen::Connection conn_;
+    std::thread listener_thread_;
+    bool running_;
+
+public:
+    TableWatcher(const std::string& connection_string)
+        : conn_(connection_string), running_(false) {}
+
+    void start() {
+        running_ = true;
+        listener_thread_ = std::thread(&TableWatcher::listen_loop, this);
+    }
+
+    void stop() {
+        running_ = false;
+        if (listener_thread_.joinable()) {
+            listener_thread_.join();
+        }
+    }
+
+private:
+    void listen_loop() {
+        // Get raw PGconn for async operations
+        auto raw_conn = conn_.native_handle(); // You might need to expose this
+
+        // Listen to channel
+        PGresult* res = PQexec(raw_conn, "LISTEN table_updates;");
+        if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+            PQclear(res);
+            return;
+        }
+        PQclear(res);
+
+        while (running_) {
+            // Non-blocking check for notifications
+            PQconsumeInput(raw_conn);
+
+            PGnotify* notify;
+            while ((notify = PQnotifies(raw_conn)) != nullptr) {
+                handle_notification(notify);
+                PQfreemem(notify);
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    }
+
+    void handle_notification(PGnotify* notify) {
+        std::cout << "Received notification: " << notify->relname
+                  << " - " << notify->extra << std::endl;
+
+        // Parse the extra data (usually JSON) and handle accordingly
+        // {"table": "users", "operation": "INSERT", "id": 123}
+    }
+};
+#+end_src
+
+*** COMPLETED Move context to database                                 :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-08 Mon 23:09]--[2025-12-08 Mon 23:29] =>  0:20
+    :END:
+
+We have a number of classes in repository when they are general database
+entities: context, context factory etc. We should just leave the repository
+specific code in that namespace.
+
 *** STARTED Experiment with simple code generation                     :code:
     :LOGBOOK:
     CLOCK: [2025-12-02 Tue 14:35]--[2025-12-02 Tue 16:05] =>  1:30
@@ -882,6 +1284,181 @@ responses to requests.
 It should be easy enough to add a simple code generator that creates the basic
 infrastructure for a domain type, so that we don't have to waste Claude Code
 tokens.
+
+*** Create faker for past timepoint                                    :code:
+
+We have helper code in currency that needs to be moved to utility:
+
+#+begin_src c++
+std::string fake_datetime_string() {
+    // Define range: e.g., years 1970 to 2038 (avoid 9999 unless needed)
+    using namespace std::chrono;
+    static thread_local std::mt19937_64 rng{std::random_device{}()};
+
+    // Unix time range: 0 = 1970-01-01, max ~2106 for 32-bit, but we use 64-bit
+    const auto min_time = sys_days{year{1970}/1/1}.time_since_epoch();
+    const auto max_time = sys_days{year{2038}/12/31}.time_since_epoch() + 24h - 1s;
+
+    std::uniform_int_distribution<std::int64_t> dist(
+        min_time.count(),
+        max_time.count()
+    );
+
+    auto tp = sys_seconds{seconds{dist(rng)}};
+
+    // Format as "YYYY-MM-DD HH:MM:SS"
+    return std::format("{:%Y-%m-%d %H:%M:%S}", tp);
+}
+#+end_src
+
+Use this code in eventing.
+
+*** Remove bootstrap mode from context                                 :code:
+
+We still have:
+
+#+begin_src c++
+    /**
+     * @brief Set the bootstrap mode flag.
+     *
+     * Should be called during application initialization after checking bootstrap state.
+     */
+    void set_bootstrap_mode(bool mode) { bootstrap_mode_ = mode; }
+
+    /**
+     * @brief Check if the system is in bootstrap mode.
+     *
+     * @return true if system is in bootstrap mode (no admin accounts exist), false otherwise
+     */
+    bool is_in_bootstrap_mode() const { return bootstrap_mode_; }
+#+end_src
+
+This was temporary until variability was introduced. Check if is still in use
+and if not remove it.
+
+*** Currencies displays when not connected                             :code:
+
+At present we can display currencies even before we connect. This is probably ok
+but we should at least state we are not connected. Alternatively it should be
+disabled.
+
+*** Saving a new currency should close window                          :code:
+
+At present when we enter a new currency and press save the currency stays there.
+
+*** Entity syntax refactor snags                                       :code:
+
+We refactored ores.cli to be "entity oriented", so that commands such as export,
+import etc belonged directly to an entity. In this case there should be no need
+to supply the entity in the command line since it is part of the command.
+However, we still see the entity enum in the code.
+
+*** Add tests for messaging handler                                    :code:
+
+We need tests in comms which create a test request and response and a test
+handler.
+
+*** Add sound assets                                                   :code:
+
+We need to be able to associate sounds to certain events such as disconnect,
+connect etc. Users need to be able to choose their own sounds.
+
+*** Add retry algorithm to client                                      :code:
+
+It would be nice to reconnect automatically.
+
+*** Add screen in qt to exit bootstrap mode                            :code:
+
+- move service to service directory.
+- follow the "_protocol" convention for file names with messages.
+
+**** Session: Address race condition review comment
+
+The heartbeat implementation has a critical race condition where =run_heartbeat()=
+and =send_request()= can execute concurrently, leading to two independent
+request-response cycles on the same socket without synchronization. This also
+needs to support future "listen/notify" server-push notifications.
+
+**Solution:** Unified message loop with correlation IDs - single reader dispatches
+incoming frames by type, writes serialized via strand, correlation IDs match
+responses to requests.
+
+***** Tasks
+
+- [X] 1.1 Add =correlation_id= to frame structure
+  - Add =uint32_t correlation_id= field to =protocol::frame=
+  - Update frame serialization/deserialization
+  - Bump protocol version if needed
+
+- [X] 1.2 Update message types if needed
+  - Verify ping/pong exist (confirmed: 0x0005, 0x0006)
+  - Notification types deferred until listen/notify implementation
+
+- [X] 2.1 Create =response_channel= class
+  - Single-value async channel using Boost.Asio primitives
+  - =set_value(frame)= - producer side (reader loop)
+  - =set_error(error_code)= - for timeouts/disconnects
+  - =awaitable<expected<frame, error_code>> get()= - consumer side
+  - Use =asio::steady_timer= as signaling primitive
+
+- [X] 2.2 Create =pending_request_map= class
+  - Thread-safe map: =correlation_id= → =response_channel=
+  - =register(correlation_id)= → =response_channel&=
+  - =complete(correlation_id, frame)= - called by reader
+  - =fail(correlation_id, error)= - called on timeout/disconnect
+  - =fail_all(error)= - called on connection loss
+
+- [X] 3.1 Add write strand to client
+  - =asio::strand<asio::any_io_executor> write_strand_=
+  - Initialize in constructor
+
+- [X] 3.2 Create =write_frame()= helper
+  - Posts write operation to strand
+  - Returns awaitable that completes when write is done
+
+- [X] 4.1 Implement =run_message_loop()= coroutine
+  - Single reader, loops reading frames
+  - Dispatches by message type (response/pong → complete, notification → callback)
+  - On read error → =fail_all()=, set disconnected
+
+- [ ] 4.2 Add centralized timeout handling (deferred)
+  - Read with timeout using =asio::steady_timer=
+  - Configurable default timeout
+  - Can be added later when needed
+
+- [X] 5. Refactor =send_request()=
+  - Generate correlation_id
+  - Register in pending_requests_map
+  - Post write to strand
+  - =co_await= response channel
+
+- [X] 6. Refactor =run_heartbeat()= to use new infrastructure
+  - Use unified request/response pattern
+  - Timeout triggers disconnect callback
+
+- [X] 7. Update server to echo =correlation_id=
+  - Ping handler returns pong with same correlation_id
+  - All response handlers copy correlation_id from request
+
+- [-] 8.1 Add notification callback type (deferred to listen/notify story)
+  - =notification_callback_t= for server-push messages
+
+- [X] 8.2 Keep =disconnect_callback_t=
+  - Invoked by message loop on connection loss
+
+- [X] 9.1 Start message loop on connect
+  - =co_spawn= the =run_message_loop()= after connection
+
+- [X] 9.2 Clean shutdown
+  - Cancel message loop, fail pending requests, invoke disconnect callback
+
+- [ ] 10.1 Update existing tests
+
+- [ ] 10.2 Add new tests
+  - Concurrent requests with correlation IDs
+  - Request timeout handling
+  - Heartbeat timeout triggers disconnect
+  - Write serialization
 
 *** Entity syntax refactor snags                                       :code:
 
@@ -972,89 +1549,6 @@ account.
 - add account duplicates logic. We should have a single service for this.
 - split application into entities.
 
-*** Multi-threaded scenarios with comms                                :code:
-
-At present we are relying on request-response patterns: the client sends a
-request and the next frame coming in is the response. However, in the future we
-will have many dialog windows open, each of them sending requests and awaiting
-responses. It will not be possible to know what response is coming back from
-what window. We need to take this into account.
-
-*** Add listen/notify support                                          :code:
-
-When data changes for a given entity in the database and we have the dialog of
-that entity open, we need to make the reload button a different colour (suggest
-a colour). For this we need to listen/notify in the database and then send a
-message to the client. This requires a change at the protocol because at present
-we send a request from the client first and then expect a response. This is more
-like a callback where the handler will call a callback when a certain message is
-received. Listen code from deepseek:
-
-#+begin_src c++
-#include <sqlgen.h>
-#include <libpq-fe.h>
-#include <thread>
-#include <iostream>
-
-class TableWatcher {
-private:
-    sqlgen::Connection conn_;
-    std::thread listener_thread_;
-    bool running_;
-
-public:
-    TableWatcher(const std::string& connection_string)
-        : conn_(connection_string), running_(false) {}
-
-    void start() {
-        running_ = true;
-        listener_thread_ = std::thread(&TableWatcher::listen_loop, this);
-    }
-
-    void stop() {
-        running_ = false;
-        if (listener_thread_.joinable()) {
-            listener_thread_.join();
-        }
-    }
-
-private:
-    void listen_loop() {
-        // Get raw PGconn for async operations
-        auto raw_conn = conn_.native_handle(); // You might need to expose this
-
-        // Listen to channel
-        PGresult* res = PQexec(raw_conn, "LISTEN table_updates;");
-        if (PQresultStatus(res) != PGRES_COMMAND_OK) {
-            PQclear(res);
-            return;
-        }
-        PQclear(res);
-
-        while (running_) {
-            // Non-blocking check for notifications
-            PQconsumeInput(raw_conn);
-
-            PGnotify* notify;
-            while ((notify = PQnotifies(raw_conn)) != nullptr) {
-                handle_notification(notify);
-                PQfreemem(notify);
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        }
-    }
-
-    void handle_notification(PGnotify* notify) {
-        std::cout << "Received notification: " << notify->relname
-                  << " - " << notify->extra << std::endl;
-
-        // Parse the extra data (usually JSON) and handle accordingly
-        // {"table": "users", "operation": "INSERT", "id": 123}
-    }
-};
-#+end_src
-
 *** Add version support to entities                                    :code:
 
 We need a "version" field which is incremented automatically by a trigger. It is
@@ -1066,10 +1560,6 @@ used as follows:
 - version is incremented automatically on save.
 - display version in UI prominently (/e.g./ next to entity key, iso code for
   currencies) so that we can see when we reload.
-
-*** Disconnect closes currencies window                                :code:
-
-It should just disable the icons, etc.
 
 *** Add search to currencies                                           :code:
 

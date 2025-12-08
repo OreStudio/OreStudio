@@ -48,7 +48,7 @@ private:
     static void throw_if_empty(const std::string& name, const std::string& value);
 
 public:
-    using context = ores::utility::repository::context;
+    using context = ores::utility::database::context;
 
     /**
      * @brief Constructs an account_service with required repositories and
@@ -57,7 +57,7 @@ public:
      * @param account_repo The repository for managing account data.
      * @param login_info_repo The repository for managing login tracking data.
      */
-    explicit account_service(utility::repository::context ctx);
+    explicit account_service(utility::database::context ctx);
 
     /**
      * @brief Creates a new account with the provided details.

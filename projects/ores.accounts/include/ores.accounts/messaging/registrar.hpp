@@ -22,7 +22,7 @@
 
 #include "ores.comms/net/server.hpp"
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/repository/context.hpp"
+#include "ores.utility/database/context.hpp"
 
 namespace ores::accounts::messaging {
 
@@ -46,7 +46,7 @@ private:
 
 public:
     static void register_handlers(comms::net::server& server,
-        utility::repository::context ctx);
+        utility::database::context ctx);
 };
 
 }

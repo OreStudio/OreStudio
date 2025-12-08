@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/repository/context_factory.hpp"
+#include "ores.utility/database/context_factory.hpp"
 
 #include <rfl/json.hpp>
 
-namespace ores::utility::repository {
+namespace ores::utility::database {
 
 using namespace ores::utility::log;
 
@@ -53,7 +53,7 @@ context context_factory::make_context(const configuration& cfg) {
         pool_config, credentials);
     auto single_conn = sqlgen::postgres::connect(credentials);
 
-    context r(std::move(pool), std::move(single_conn));
+    context r(std::move(pool), std::move(single_conn), credentials);
 
     BOOST_LOG_SEV(lg(), debug) << "Finished creating context.";
     return r;

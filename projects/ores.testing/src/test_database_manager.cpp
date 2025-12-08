@@ -24,7 +24,7 @@
 #include <stdexcept>
 #include <boost/log/attributes/scoped_attribute.hpp>
 #include "ores.utility/environment/environment.hpp"
-#include "ores.utility/repository/context_factory.hpp"
+#include "ores.utility/database/context_factory.hpp"
 
 #ifdef _WIN32
 #include <process.h>
@@ -42,8 +42,8 @@ const std::string prefix = "ORES_TEST_DB_";
 namespace ores::testing {
 
 using namespace ores::utility::log;
-using utility::repository::context;
-using utility::repository::context_factory;
+using utility::database::context;
+using utility::database::context_factory;
 using utility::environment::environment;
 
 context test_database_manager::make_admin_context() {

@@ -37,9 +37,12 @@ namespace ores::shell::app::commands {
  */
 class accounts_commands {
 private:
+    inline static std::string_view logger_name =
+        "ores.shell.app.commands.accounts_commands";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.shell.app.commands.connection");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

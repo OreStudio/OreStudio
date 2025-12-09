@@ -40,9 +40,12 @@ class DetachableMdiSubWindow : public QMdiSubWindow {
     Q_OBJECT
 
 private:
+    inline static std::string_view logger_name =
+        "ores.qt.detachable_mdi_sub_window";
+
     [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.qt.detachable_mdi_sub_window");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

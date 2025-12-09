@@ -20,7 +20,6 @@
 #ifndef ORES_QT_CLIENT_CURRENCY_MODEL_HPP
 #define ORES_QT_CLIENT_CURRENCY_MODEL_HPP
 
-#include <memory>
 #include <vector>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
@@ -40,10 +39,12 @@ class ClientCurrencyModel final : public QAbstractTableModel {
     Q_OBJECT
 
 private:
+    inline static std::string_view logger_name =
+        "ores.qt.client_currency_model";
+
     [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger(
-            "ores.qt.client_currency_model");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

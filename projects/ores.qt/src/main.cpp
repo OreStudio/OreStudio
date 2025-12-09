@@ -33,8 +33,10 @@
 
 namespace {
 
+inline static std::string_view logger_name = "ores.qt.main";
+
 using namespace ores::utility::log;
-auto lg(make_logger("main"));
+auto lg(make_logger(logger_name));
 
 const std::string product_version("Qt UI for ORE Studio v" ORES_VERSION);
 

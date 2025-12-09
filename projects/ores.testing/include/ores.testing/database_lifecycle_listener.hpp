@@ -22,6 +22,7 @@
 
 #include <string>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
+#include "ores.utility/log/make_logger.hpp"
 
 namespace ores::testing {
 
@@ -33,6 +34,16 @@ namespace ores::testing {
  * actually executed, not during test discovery.
  */
 class database_lifecycle_listener : public Catch::EventListenerBase {
+private:
+    inline static std::string_view logger_name =
+        "ores.testing.database_lifecycle_listener";
+
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
 public:
     using Catch::EventListenerBase::EventListenerBase;
 

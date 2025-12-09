@@ -821,6 +821,11 @@ these crashes before we go any further.
 
 We should be able to see the log from qt.
 
+Notes:
+
+- it should be possible to change the log level from the UI for both the Qt app
+  and the service.
+
 Links:
 
 - [[https://github.com/Dingola/Qt-LogViewer/tree/main][GH: Qt-LogViewer]]

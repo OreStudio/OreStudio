@@ -40,9 +40,12 @@ namespace ores::cli::app {
  */
 class application final {
 private:
+    inline static std::string_view logger_name =
+        "ores.cli.application";
+
     [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.cli.application");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

@@ -38,10 +38,12 @@ namespace ores::variability::service {
  */
 class feature_flags_service {
 private:
+    inline static std::string_view logger_name =
+        "ores.variability.service.feature_flags_service";
+
     [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance =
-            make_logger("ores.variability.service.feature_flags_service");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

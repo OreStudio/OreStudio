@@ -32,10 +32,12 @@ namespace ores::variability::repository {
  */
 class feature_flags_mapper {
 private:
+    inline static std::string_view logger_name =
+        "ores.variability.repository.feature_flags_mapper";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger(
-            "ores.variability.repository.feature_flags_mapper");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

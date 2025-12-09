@@ -111,7 +111,7 @@ inline auto make_timestamp(const std::string& s) {
  *     "ores.accounts.repository.account_repository");
  */
 template<typename EntityType>
-std::string generate_create_table_sql(const std::string& logger_name) {
+std::string generate_create_table_sql(const std::string_view& logger_name) {
     using namespace ores::utility::log;
     using namespace sqlgen;
 

@@ -21,6 +21,7 @@
 #define ORES_UTILITY_REPOSITORY_BITEMPORAL_OPERATIONS_HPP
 
 #include <vector>
+#include <string_view>
 #include <sqlgen/postgres.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/database/context.hpp"
@@ -60,7 +61,7 @@ namespace ores::utility::repository {
  */
 template<typename EntityType, typename DomainType, typename QueryType, typename MapperFunc>
 std::vector<DomainType> execute_read_query(database::context ctx, const QueryType& query,
-    MapperFunc&& mapper, const std::string& logger_name, const std::string& operation_desc) {
+    MapperFunc&& mapper, const std::string_view& logger_name, const std::string& operation_desc) {
 
     using namespace ores::utility::log;
     using namespace sqlgen;
@@ -99,7 +100,7 @@ std::vector<DomainType> execute_read_query(database::context ctx, const QueryTyp
  */
 template<typename EntityType>
 void execute_write_query(database::context ctx, const EntityType& entity,
-    const std::string& logger_name, const std::string& operation_desc) {
+    const std::string_view& logger_name, const std::string& operation_desc) {
 
     using namespace ores::utility::log;
     using namespace sqlgen;
@@ -137,7 +138,7 @@ void execute_write_query(database::context ctx, const EntityType& entity,
  */
 template<typename QueryType>
 void execute_delete_query(database::context ctx, const QueryType& query,
-    const std::string& logger_name, const std::string& operation_desc) {
+    const std::string_view& logger_name, const std::string& operation_desc) {
 
     using namespace ores::utility::log;
     using namespace sqlgen;

@@ -19,6 +19,7 @@
  */
 
 #include "ores.accounts/service/bootstrap_mode_service.hpp"
+
 #include <algorithm>
 
 namespace ores::accounts::service {
@@ -54,7 +55,7 @@ void bootstrap_mode_service::initialize_bootstrap_state() {
     auto flag_opt = feature_flags_service_.get_feature_flag(BOOTSTRAP_FLAG_NAME);
     auto accounts = account_repo_.read_latest();
 
-    bool admin_exists = std::any_of(accounts.begin(), accounts.end(),
+    bool admin_exists = std::ranges::any_of(accounts,
         [](const domain::account& acc) { return acc.is_admin; });
 
     BOOST_LOG_SEV(lg(), debug) << "Total accounts: " << accounts.size();

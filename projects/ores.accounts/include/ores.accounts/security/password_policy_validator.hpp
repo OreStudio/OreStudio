@@ -28,14 +28,14 @@ namespace ores::accounts::security {
 /**
  * @brief Validates passwords against a security policy.
  *
- * The password_policy_validator class enforces a strong password policy
- * based on OWASP recommendations. Passwords must meet minimum length
- * and complexity requirements including uppercase, lowercase, numeric,
- * and special character constraints.
+ * The password_policy_validator class enforces a strong password policy based
+ * on OWASP recommendations. Passwords must meet minimum length and complexity
+ * requirements including uppercase, lowercase, numeric, and special character
+ * constraints.
  *
- * For TESTING/DEVELOPMENT environments, password validation can be disabled
- * via the feature flag "system.disable_password_validation" in the database.
- * This should NEVER be enabled in production environments.
+ * For TESTING/DEVELOPMENT environments, password validation can be disabled via
+ * the feature flag "system.disable_password_validation" in the database. This
+ * should NEVER be enabled in production environments.
  */
 class password_policy_validator {
 public:
@@ -58,8 +58,10 @@ public:
      * - At least one special symbol from: !@#$%^&*()_+-=[]{}|;:,.<>?
      *
      * @param password The plaintext password to validate.
-     * @param enforce_policy If false, validation is skipped (for testing/development only).
-     * @return validation_result containing is_valid flag and error message if invalid.
+     * @param enforce_policy If false, validation is skipped (for
+     * testing/development only).
+     * @return validation_result containing is_valid flag and error message if
+     * invalid.
      */
     static validation_result validate(const std::string& password,
                                       bool enforce_policy = true);

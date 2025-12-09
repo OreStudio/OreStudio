@@ -38,10 +38,12 @@ namespace ores::accounts::service {
  */
 class account_service {
 private:
+   inline static std::string_view logger_name =
+        "ores.accounts.service.account_service";
+
     [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger(
-            "ores.accounts.service.account_service");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

@@ -36,8 +36,7 @@ using namespace ores::utility::log;
 using namespace ores::utility::repository;
 
 std::string account_repository::sql() {
-    return generate_create_table_sql<account_entity>(
-        "ores.accounts.repository.account_repository");
+    return generate_create_table_sql<account_entity>(logger_name);
 }
 
 account_repository::account_repository(context ctx)
@@ -88,8 +87,7 @@ account_repository::read_latest(const boost::uuids::uuid& id) {
 
     return execute_read_query<account_entity, domain::account>(ctx_, query,
         [](const auto& entities) { return account_mapper::map(entities); },
-        "ores.accounts.repository.account_repository",
-        "Reading latest accounts by ID");
+        logger_name, "Reading latest accounts by ID.");
 }
 
 std::vector<domain::account>
@@ -113,8 +111,7 @@ account_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
 
     return execute_read_query<account_entity, domain::account>(ctx_, query,
         [](const auto& entities) { return account_mapper::map(entities); },
-        "ores.accounts.repository.account_repository",
-        "Reading latest accounts with pagination");
+        logger_name, "Reading latest accounts with pagination.");
 }
 
 std::uint32_t account_repository::get_total_account_count() {
@@ -150,8 +147,7 @@ std::vector<domain::account> account_repository::read_all() {
 
     return execute_read_query<account_entity, domain::account>(ctx_, query,
         [](const auto& entities) { return account_mapper::map(entities); },
-        "ores.accounts.repository.account_repository",
-        "Reading all accounts");
+        logger_name, "Reading all accounts.");
 }
 
 std::vector<domain::account>
@@ -163,8 +159,7 @@ account_repository::read_all(const boost::uuids::uuid& id) {
 
     return execute_read_query<account_entity, domain::account>(ctx_, query,
         [](const auto& entities) { return account_mapper::map(entities); },
-        "ores.accounts.repository.account_repository",
-        "Reading all accounts by ID");
+        logger_name, "Reading all accounts by ID");
 }
 
 std::vector<domain::account>
@@ -181,8 +176,7 @@ account_repository::read_latest_by_username(const std::string& username) {
 
     return execute_read_query<account_entity, domain::account>(ctx_, query,
         [](const auto& entities) { return account_mapper::map(entities); },
-        "ores.accounts.repository.account_repository",
-        "Reading latest account by username");
+        logger_name, "Reading latest account by username");
 }
 
 void account_repository::remove(const boost::uuids::uuid& account_id) {
@@ -194,9 +188,7 @@ void account_repository::remove(const boost::uuids::uuid& account_id) {
     const auto query = sqlgen::delete_from<account_entity> |
         where("id"_c == id_str);
 
-    execute_delete_query(ctx_, query,
-        "ores.accounts.repository.account_repository",
-        "removing account from database");
+    execute_delete_query(ctx_, query, logger_name, "removing account from database");
 }
 
 }

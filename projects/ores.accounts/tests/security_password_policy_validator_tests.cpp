@@ -24,7 +24,7 @@
 
 namespace {
 
-const std::string test_suite("ores.accounts.tests");
+const std::string_view test_suite("ores.accounts.tests");
 const std::string tags("[security]");
 
 }

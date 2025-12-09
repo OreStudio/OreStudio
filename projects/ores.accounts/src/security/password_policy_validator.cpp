@@ -17,26 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 #include "ores.accounts/security/password_policy_validator.hpp"
-#include <algorithm>
+
+#include <format>
 #include <cctype>
 
 namespace ores::accounts::security {
 
-password_policy_validator::validation_result
-password_policy_validator::validate(const std::string& password, bool enforce_policy) {
-    // If policy enforcement is disabled (for testing/development), skip validation
-    if (!enforce_policy) {
-        return validation_result{true, ""};
-    }
+password_policy_validator::validation_result password_policy_validator::
+validate(const std::string& password, bool enforce_policy) {
+    validation_result result { .is_valid = true, .error_message = "" };
 
-    validation_result result{true, ""};
+    /*
+     * If policy enforcement is disabled - for testing or development for
+     * example - skip validation.
+     */
+    if (!enforce_policy)
+        return result;
 
     if (password.length() < MIN_LENGTH) {
         result.is_valid = false;
-        result.error_message = "Password must be at least " +
-            std::to_string(MIN_LENGTH) + " characters long";
+        result.error_message =
+            std::format("Password must be at least {} characters long", MIN_LENGTH);
         return result;
     }
 
@@ -73,8 +75,9 @@ password_policy_validator::validate(const std::string& password, bool enforce_po
 
     if (!has_special) {
         result.is_valid = false;
-        result.error_message = "Password must contain at least one special character (" +
-            std::string(SPECIAL_CHARS) + ")";
+        result.error_message =
+            std::format("Password must contain at least one special character ({})",
+                SPECIAL_CHARS);
         return result;
     }
 

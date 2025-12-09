@@ -22,6 +22,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/asio/ip/address.hpp>
+#include "ores.utility/repository/helpers.hpp"
 #include "ores.accounts/domain/login_info_json_io.hpp" // IWYU pragma: keep.
 #include "ores.accounts/repository/login_info_mapper.hpp"
 #include "ores.accounts/repository/login_info_entity.hpp"
@@ -34,8 +35,7 @@ using namespace ores::utility::log;
 using namespace ores::utility::repository;
 
 std::string login_info_repository::sql() {
-    return generate_create_table_sql<login_info_entity>(
-        "ores.accounts.repository.login_info_repository");
+    return generate_create_table_sql<login_info_entity>(logger_name);
 }
 
 login_info_repository::login_info_repository(context ctx)

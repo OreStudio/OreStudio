@@ -16,21 +16,21 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 @startuml
 
-title ores.notification Component
+title ores.eventing Component
 
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
-    note "Notification service for real-time updates." as ores_notification_note
-    notification --- ores_notification_note
-    namespace notification #F2F2F2 {
+    note "Eventing service for real-time updates." as ores_eventing_note
+    eventing --- ores_eventing_note
+    namespace eventing #F2F2F2 {
         namespace domain #F2F2F2 {
-            struct notification <<json_io>> <<table_io>> #F7E5FF {
+            struct eventing <<json_io>> <<table_io>> #F7E5FF {
                 -{field} entity std::string
                 -{field} timestamp std::chrono::system_clock::time_point
             }
-            note top of notification
-            Represents a notification about a change to an entity.
+            note top of eventing
+            Represents a eventing about a change to an entity.
             - entity: Fully qualified name of the entity (e.g., "ores.risk.currency").
             - timestamp: When the change occurred (UTC).
 

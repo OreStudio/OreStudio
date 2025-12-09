@@ -36,9 +36,11 @@ namespace ores::comms::net {
  */
 class session final {
 private:
+    inline static std::string_view logger_name = "ores.comms.net.session";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.comms.session");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

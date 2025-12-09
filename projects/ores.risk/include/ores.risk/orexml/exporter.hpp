@@ -32,10 +32,11 @@ namespace ores::risk::orexml {
  */
 class exporter {
 private:
+    inline static std::string_view logger_name = "ores.risk.orexml.exporter";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger(
-            "ores.risk.orexml.exporter");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

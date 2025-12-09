@@ -35,13 +35,13 @@ namespace ores::comms::net {
 /**
  * @brief Single-value async channel for delivering a response frame.
  *
- * Used by the message loop to deliver responses to waiting coroutines.
- * Each channel can hold exactly one response (or error). The consumer
- * calls get() which blocks until set_value() or set_error() is called
- * by the producer (message loop).
+ * Used by the message loop to deliver responses to waiting co-routines. Each
+ * channel can hold exactly one response (or error). The consumer calls get()
+ * which blocks until set_value() or set_error() is called by the producer
+ * (message loop).
  *
- * Uses a steady_timer as the signaling primitive - a common Boost.Asio
- * pattern for implementing async channels without std::experimental features.
+ * Uses a steady_timer as the signaling primitive - a common Boost.Asio pattern
+ * for implementing async channels without std::experimental features.
  */
 class response_channel final {
 public:

@@ -44,9 +44,12 @@ concept Deserialisable = requires(std::span<const std::byte> data) {
 
 class client_manager final {
 private:
+    inline static std::string_view logger_name =
+        "ores.shell.app.client_manager";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.shell.app.client_manager");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

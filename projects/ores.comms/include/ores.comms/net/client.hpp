@@ -23,9 +23,9 @@
 #include <mutex>
 #include <atomic>
 #include <memory>
-#include <string>
 #include <cstdint>
 #include <functional>
+#include <string_view>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/strand.hpp>
@@ -53,9 +53,11 @@ using disconnect_callback_t = std::function<void()>;
  */
 class client final {
 private:
+    inline static std::string_view logger_name = "ores.comms.net.client";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.comms.client");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

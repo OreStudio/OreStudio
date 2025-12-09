@@ -20,22 +20,11 @@
 #include "ores.testing/database_lifecycle_listener.hpp"
 
 #include <boost/log/attributes/scoped_attribute.hpp>
-#include "ores.utility/log/make_logger.hpp"
 #include "ores.testing/test_database_manager.hpp"
 
 namespace ores::testing {
 
 using namespace ores::utility::log;
-
-namespace {
-
-auto& lg() {
-    static auto instance = make_logger(
-        "ores.utility.test.database_lifecycle_listener");
-    return instance;
-}
-
-}
 
 void database_lifecycle_listener::
 testRunStarting(Catch::TestRunInfo const& /*testRunInfo*/) {

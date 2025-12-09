@@ -27,7 +27,7 @@
 
 namespace {
 
-const std::string test_suite("ores.variability.tests");
+const std::string_view test_suite("ores.variability.tests");
 const std::string tags("[domain]");
 
 }

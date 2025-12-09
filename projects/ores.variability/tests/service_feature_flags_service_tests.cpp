@@ -26,9 +26,8 @@
 
 namespace {
 
-const std::string test_suite("ores.variability.tests");
+const std::string_view test_suite("ores.variability.tests");
 const std::string tags("[service]");
-// Corrected table name to be fully qualified
 const std::string table_name("oresdb.feature_flags");
 
 }
@@ -38,6 +37,7 @@ using namespace ores::variability::service;
 using namespace ores::variability::domain;
 
 TEST_CASE("feature_flags_service_crud_operations", tags) {
+    auto lg(make_logger(test_suite));
 
     SECTION("get_feature_flag returns nullopt for non-existent flag") {
         ores::testing::scoped_database_helper db_helper(table_name);
@@ -142,7 +142,9 @@ TEST_CASE("feature_flags_service_crud_operations", tags) {
         CHECK(results.size() == 2);
 
         // Basic check to ensure both are present using std::any_of
-        CHECK(std::any_of(results.cbegin(), results.cend(), [](const auto& f){ return f.name == "flag1"; }));
-        CHECK(std::any_of(results.cbegin(), results.cend(), [](const auto& f){ return f.name == "flag2"; }));
+        CHECK(std::ranges::any_of(results, [](const auto& f) {
+            return f.name == "flag1"; }));
+        CHECK(std::ranges::any_of(results, [](const auto& f) {
+            return f.name == "flag2"; }));
     }
 }

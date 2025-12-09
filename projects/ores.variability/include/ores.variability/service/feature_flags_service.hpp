@@ -17,14 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 #ifndef ORES_VARIABILITY_SERVICE_FEATURE_FLAGS_SERVICE_HPP
 #define ORES_VARIABILITY_SERVICE_FEATURE_FLAGS_SERVICE_HPP
 
-#include <optional>
 #include <string>
 #include <vector>
-
+#include <optional>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/database/context.hpp"
 #include "ores.variability/domain/feature_flags.hpp"
@@ -40,10 +38,12 @@ namespace ores::variability::service {
  */
 class feature_flags_service {
 private:
+    inline static std::string_view logger_name =
+        "ores.variability.service.feature_flags_service";
+
     [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance =
-            make_logger("ores.variability.service.feature_flags_service");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 
@@ -96,6 +96,6 @@ private:
     repository::feature_flags_repository repo_;
 };
 
-} // namespace ores::variability::service
+}
 
 #endif

@@ -31,9 +31,12 @@ namespace ores::testing {
  */
 class database_helper {
 private:
+    inline static std::string_view logger_name =
+        "ores.testing.database_helper";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.utility.test.database_helper");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

@@ -23,7 +23,6 @@
 #include <cstdint>
 #include <boost/asio/awaitable.hpp>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::comms::net { class connection; }
 
@@ -38,9 +37,12 @@ namespace ores::comms::service {
  */
 class heartbeat_service final {
 private:
+    inline static std::string_view logger_name =
+        "ores.comms.service.heartbeat_service";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.comms.service.heartbeat_service");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

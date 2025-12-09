@@ -24,12 +24,8 @@
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
 #include <magic_enum/magic_enum.hpp>
-#include "ores.cli/config/format.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/log/logging_configuration.hpp"
-#include "ores.utility/database/database_configuration.hpp"
-#include "ores.utility/program_options/environment_mapper_factory.hpp"
-#include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 #include "ores.cli/config/entity_parsers/currencies_parser.hpp"
 #include "ores.cli/config/entity_parsers/accounts_parser.hpp"
@@ -66,11 +62,7 @@ using boost::program_options::parsed_options;
 using boost::program_options::options_description;
 using boost::program_options::positional_options_description;
 
-using ores::cli::config::entity;
-using ores::cli::config::format;
 using ores::cli::config::options;
-using ores::cli::config::import_options;
-using ores::cli::config::export_options;
 using ores::cli::config::parser_exception;
 namespace entity_parsers = ores::cli::config::entity_parsers;
 

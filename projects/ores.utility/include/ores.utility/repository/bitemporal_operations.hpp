@@ -60,18 +60,17 @@ namespace ores::utility::repository {
  */
 template<typename EntityType, typename DomainType, typename QueryType, typename MapperFunc>
 std::vector<DomainType> execute_read_query(database::context ctx, const QueryType& query,
-    MapperFunc&& mapper, const std::string& logger_name, const std::string& operation_desc) {
+    MapperFunc&& mapper, utility::log::logger_t& lg, const std::string& operation_desc) {
 
     using namespace ores::utility::log;
     using namespace sqlgen;
 
-    auto logger = make_logger(logger_name);
-    BOOST_LOG_SEV(logger, debug) << operation_desc << ".";
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
 
     const auto r = session(ctx.connection_pool()).and_then(query);
-    ensure_success(r);
+    ensure_success(r, lg);
 
-    BOOST_LOG_SEV(logger, debug) << operation_desc << ". Total: " << r->size();
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". Total: " << r->size();
     return std::forward<MapperFunc>(mapper)(*r);
 }
 
@@ -99,21 +98,20 @@ std::vector<DomainType> execute_read_query(database::context ctx, const QueryTyp
  */
 template<typename EntityType>
 void execute_write_query(database::context ctx, const EntityType& entity,
-    const std::string& logger_name, const std::string& operation_desc) {
+    utility::log::logger_t& lg, const std::string& operation_desc) {
 
     using namespace ores::utility::log;
     using namespace sqlgen;
 
-    auto logger = make_logger(logger_name);
-    BOOST_LOG_SEV(logger, debug) << operation_desc << ".";
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
 
     const auto r = session(ctx.connection_pool())
         .and_then(begin_transaction)
         .and_then(insert(entity))
         .and_then(commit);
-    ensure_success(r);
+    ensure_success(r, lg);
 
-    BOOST_LOG_SEV(logger, debug) << "Finished " << operation_desc << ".";
+    BOOST_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
 }
 
 /**
@@ -137,21 +135,20 @@ void execute_write_query(database::context ctx, const EntityType& entity,
  */
 template<typename QueryType>
 void execute_delete_query(database::context ctx, const QueryType& query,
-    const std::string& logger_name, const std::string& operation_desc) {
+    utility::log::logger_t& lg, const std::string& operation_desc) {
 
     using namespace ores::utility::log;
     using namespace sqlgen;
 
-    auto logger = make_logger(logger_name);
-    BOOST_LOG_SEV(logger, debug) << operation_desc << ".";
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
 
     const auto r = session(ctx.connection_pool())
         .and_then(begin_transaction)
         .and_then(query)
         .and_then(commit);
-    ensure_success(r);
+    ensure_success(r, lg);
 
-    BOOST_LOG_SEV(logger, debug) << "Finished " << operation_desc << ".";
+    BOOST_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
 }
 
 }

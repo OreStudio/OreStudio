@@ -41,9 +41,12 @@ namespace ores::comms::service {
  */
 class handshake_service final {
 private:
+    inline static std::string_view logger_name =
+        "ores.comms.service.handshake_service";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.comms.service.handshake_service");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

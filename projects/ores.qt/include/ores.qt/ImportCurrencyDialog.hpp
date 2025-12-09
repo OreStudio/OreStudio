@@ -20,17 +20,16 @@
 #ifndef ORES_QT_IMPORT_CURRENCY_DIALOG_HPP
 #define ORES_QT_IMPORT_CURRENCY_DIALOG_HPP
 
-#include <QDialog>
-#include <QTableWidget>
-#include <QProgressBar>
-#include <QLabel>
-#include <QPushButton>
-#include <QCheckBox>
-#include <QString>
-#include <QFutureWatcher>
 #include <atomic>
 #include <vector>
-#include <memory>
+#include <QString>
+#include <QDialog>
+#include <QLabel>
+#include <QCheckBox>
+#include <QPushButton>
+#include <QTableWidget>
+#include <QProgressBar>
+#include <QFutureWatcher>
 #include "ores.risk/domain/currency.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.utility/log/make_logger.hpp"
@@ -51,9 +50,12 @@ class ImportCurrencyDialog final : public QDialog {
     Q_OBJECT
 
 private:
+    inline static std::string_view logger_name =
+        "ores.qt.import_currency_dialog";
+
     [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.qt.import_currency_dialog");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

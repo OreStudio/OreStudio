@@ -21,7 +21,7 @@
 #define ORES_UTILITY_DATABASE_CONTEXT_FACTORY_HPP
 
 #include <iosfwd>
-#include <string>
+#include <string_view>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/database/context.hpp"
 #include "ores.utility/database/database_options.hpp"
@@ -33,10 +33,12 @@ namespace ores::utility::database {
  */
 class context_factory {
 private:
+    inline static std::string_view logger_name =
+        "ores.utility.database.context_factory";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger(
-            "ores.utility.database.context_factory");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

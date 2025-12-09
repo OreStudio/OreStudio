@@ -39,9 +39,12 @@ class PaginationWidget : public QWidget {
     Q_OBJECT
 
 private:
+    inline static std::string_view logger_name =
+        "ores.qt.pagination_widget";
+
     [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.qt.pagination_widget");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

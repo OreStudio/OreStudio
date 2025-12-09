@@ -52,9 +52,12 @@ class CurrencyController : public EntityController {
     Q_OBJECT
 
 private:
+    inline static std::string_view logger_name =
+        "ores.qt.currency_controller";
+
     [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.qt.currency_controller");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

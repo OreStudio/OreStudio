@@ -24,6 +24,7 @@
 #include <QIcon>
 #include <QColor>
 #include <QString>
+#include "ores.utility/log/make_logger.hpp"
 
 namespace ores::qt {
 
@@ -31,6 +32,15 @@ namespace ores::qt {
  * @brief Utility class for icon manipulation operations.
  */
 class IconUtils {
+private:
+    inline static std::string_view logger_name = "ores.qt.icon_utils";
+
+    static auto& lg() {
+        using namespace ores::utility::log;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
 public:
     /**
      * @brief Creates a recolored version of an SVG icon.

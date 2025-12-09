@@ -22,20 +22,10 @@
 
 #include <QImage>
 #include <QPixmap>
-#include "ores.utility/log/make_logger.hpp"
 
 namespace ores::qt {
 
 using namespace ores::utility::log;
-
-namespace {
-
-auto& lg() {
-    static auto instance = make_logger("ores.qt.icon_utils");
-    return instance;
-}
-
-}
 
 QIcon IconUtils::createRecoloredIcon(const QString& svgPath, const QColor& color) {
     QIcon originalIcon(svgPath);

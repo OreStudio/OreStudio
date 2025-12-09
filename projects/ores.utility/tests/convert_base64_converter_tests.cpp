@@ -24,7 +24,7 @@
 
 namespace {
 
-const std::string test_suite("ores.utility.tests");
+const std::string_view test_suite("ores.utility.tests");
 const std::string tags("[convert]");
 
 }

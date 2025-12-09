@@ -821,6 +821,11 @@ these crashes before we go any further.
 
 We should be able to see the log from qt.
 
+Notes:
+
+- it should be possible to change the log level from the UI for both the Qt app
+  and the service.
+
 Links:
 
 - [[https://github.com/Dingola/Qt-LogViewer/tree/main][GH: Qt-LogViewer]]
@@ -1654,7 +1659,11 @@ At present feature flags are global. However, we may want to enable a feature
 for a subset of the population. Analysis:
 
 #+begin_src markdown
-To support **gradual rollout (ramping)** of features—e.g., enabling a feature for 10% of users, then 50%, then 100%—you need to extend your feature flag system beyond a simple boolean toggle. The current temporal table design (`feature_flags` with validity periods) is great for time-based control, but **not sufficient for user-based targeting**.
+To support **gradual rollout (ramping)** of features—e.g., enabling a feature
+for 10% of users, then 50%, then 100%—you need to extend your feature flag
+system beyond a simple boolean toggle. The current temporal table design
+(`feature_flags` with validity periods) is great for time-based control, but
+,**not sufficient for user-based targeting**.
 
 Here’s a practical, scalable approach that integrates well with your C++23/Qt/PostgreSQL stack:
 

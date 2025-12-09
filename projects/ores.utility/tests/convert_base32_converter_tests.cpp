@@ -24,7 +24,7 @@
 
 namespace {
 
-const std::string test_suite("ores.utility.tests");
+const std::string_view test_suite("ores.utility.tests");
 const std::string tags("[convert]");
 
 }
@@ -93,12 +93,12 @@ TEST_CASE("base32_encode_various_lengths", tags) {
     };
 
     std::vector<test_case> tests = {
-        {"f", "MY"},
-        {"fo", "MZXQ"},
-        {"foo", "MZXW6"},
-        {"foob", "MZXW6YQ"},
-        {"fooba", "MZXW6YTB"},
-        {"foobar", "MZXW6YTBOI"}
+        {.input="f", .expected="MY"},
+        {.input="fo", .expected="MZXQ"},
+        {.input="foo", .expected="MZXW6"},
+        {.input="foob", .expected="MZXW6YQ"},
+        {.input="fooba", .expected="MZXW6YTB"},
+        {.input="foobar", .expected="MZXW6YTBOI"}
     };
 
     for (const auto& tc : tests) {

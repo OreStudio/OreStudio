@@ -37,10 +37,12 @@ namespace ores::variability::messaging {
  */
 class registrar {
 private:
+    inline static std::string_view logger_name =
+        "ores.variability.messaging.registrar";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger(
-            "ores.variability.messaging.registrar");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

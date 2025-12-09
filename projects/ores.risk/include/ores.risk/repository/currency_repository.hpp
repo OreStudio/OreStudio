@@ -25,8 +25,6 @@
 #include <sqlgen/postgres.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/database/context.hpp"
-#include "ores.utility/repository/helpers.hpp"
-#include "ores.utility/repository/bitemporal_operations.hpp"
 #include "ores.risk/domain/currency.hpp"
 
 namespace ores::risk::repository {
@@ -36,10 +34,12 @@ namespace ores::risk::repository {
  */
 class currency_repository {
 private:
+    inline static std::string_view logger_name =
+        "ores.risk.repository.currency_repository";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger(
-            "ores.risk.repository.currency_repository");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

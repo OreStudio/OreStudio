@@ -33,9 +33,11 @@ class SplashScreen : public QSplashScreen
     Q_OBJECT
 
 private:
+    inline static std::string_view logger_name = "ores.qt.splash_screen";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.qt.splash_screen");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

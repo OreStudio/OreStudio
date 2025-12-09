@@ -43,10 +43,12 @@ namespace ores::comms::messaging {
  */
 class message_dispatcher final {
 private:
+    inline static std::string_view logger_name =
+        "ores.comms.messaging.message_dispatcher";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger(
-            "ores.comms.messaging.message_dispatcher");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

@@ -26,7 +26,7 @@
 
 namespace {
 
-const std::string test_suite("ores.utility.tests");
+const std::string_view test_suite("ores.utility.tests");
 const std::string tags("[string]");
 
 }
@@ -194,15 +194,14 @@ TEST_CASE("string_to_int_different_bases", tags) {
         int expected;
     };
 
-    std::vector<test_case> tests = {
-        {"100", 10, 100},
-        {"100", 2, 4},
-        {"100", 8, 64},
-        {"100", 16, 256},
-        {"1A", 16, 26},
-        {"77", 8, 63},
-        {"11111111", 2, 255}
-    };
+    auto placeholder = "100";
+    std::vector<test_case> tests = {{.input = "100", .base = 10, .expected = 100},
+                                    {.input=placeholder, .base=2, .expected=4},
+                                    {.input="100", .base=8, .expected=64},
+                                    {.input="100", .base=16, .expected=256},
+                                    {.input="1A", .base=16, .expected=26},
+                                    {.input="77", .base=8, .expected=63},
+                                    {.input="11111111", .base=2, .expected=255}};
 
     for (const auto& tc : tests) {
         auto result = converter::string_to_int(tc.input, tc.base);

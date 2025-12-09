@@ -32,10 +32,12 @@ namespace ores::accounts::repository {
  */
 class login_info_mapper {
 private:
+    inline static std::string_view logger_name =
+        "ores.accounts.repository.login_info_mapper";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger(
-            "ores.accounts.repository.login_info_mapper");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

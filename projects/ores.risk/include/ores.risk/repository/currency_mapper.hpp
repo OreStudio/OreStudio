@@ -31,10 +31,12 @@ namespace ores::risk::repository {
  */
 class currency_mapper {
 private:
+    inline static std::string_view logger_name =
+        "ores.risk.repository.currency_mapper";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger(
-            "ores.risk.repository.currency_mapper");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

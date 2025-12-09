@@ -32,10 +32,11 @@ namespace ores::risk::orexml {
  */
 class currency_mapper {
 private:
+    inline static std::string_view logger_name = "ores.risk.orexml.currency_mapper";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger(
-            "ores.risk.orexml.currency_mapper");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

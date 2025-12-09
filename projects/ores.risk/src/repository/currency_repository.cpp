@@ -22,6 +22,8 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include "ores.utility/repository/helpers.hpp"
+#include "ores.utility/repository/bitemporal_operations.hpp"
 #include "ores.risk/domain/currency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.risk/repository/currency_mapper.hpp"
 #include "ores.risk/repository/currency_entity.hpp"
@@ -34,8 +36,7 @@ using namespace ores::utility::log;
 using namespace ores::utility::repository;
 
 std::string currency_repository::sql() {
-    return generate_create_table_sql<currency_entity>(
-        "ores.risk.repository.currency_repository");
+    return generate_create_table_sql<currency_entity>(logger_name);
 }
 
 void currency_repository::
@@ -45,8 +46,7 @@ write(context ctx, const domain::currency& currency) {
 
     execute_write_query(ctx,
         currency_mapper::map(currency),
-        "ores.risk.repository.currency_repository",
-        "writing currency to database");
+        logger_name, "Writing currency to database.");
 }
 
 void currency_repository::
@@ -56,8 +56,7 @@ write(context ctx, const std::vector<domain::currency>& currencies) {
 
     execute_write_query(ctx,
         currency_mapper::map(currencies),
-        "ores.risk.repository.currency_repository",
-        "writing currencies to database");
+        logger_name, "Writing currencies to database.");
 }
 
 
@@ -72,8 +71,7 @@ std::vector<domain::currency> currency_repository::read_latest(context ctx) {
 
     return execute_read_query<currency_entity, domain::currency>(ctx, query,
         [](const auto& entities) { return currency_mapper::map(entities); },
-        "ores.risk.repository.currency_repository",
-        "Reading latest currencies");
+        logger_name, "Reading latest currencies");
 }
 
 std::vector<domain::currency>
@@ -88,8 +86,7 @@ currency_repository::read_latest(context ctx, const std::string& iso_code) {
 
     return execute_read_query<currency_entity, domain::currency>(ctx, query,
         [](const auto& entities) { return currency_mapper::map(entities); },
-        "ores.risk.repository.currency_repository",
-        "Reading latest currencies by ISO code");
+        logger_name, "Reading latest currencies by ISO code.");
 }
 
 std::vector<domain::currency>
@@ -114,8 +111,7 @@ currency_repository::read_latest(context ctx, std::uint32_t offset,
 
     return execute_read_query<currency_entity, domain::currency>(ctx, query,
         [](const auto& entities) { return currency_mapper::map(entities); },
-        "ores.risk.repository.currency_repository",
-        "Reading latest currencies with pagination");
+        logger_name, "Reading latest currencies with pagination.");
 }
 
 std::uint32_t currency_repository::get_total_currency_count(context ctx) {
@@ -155,8 +151,7 @@ currency_repository::read_at_timepoint(context ctx, const std::string& as_of) {
 
     return execute_read_query<currency_entity, domain::currency>(ctx, query,
         [](const auto& entities) { return currency_mapper::map(entities); },
-        "ores.risk.repository.currency_repository",
-        "Reading currencies at timepoint");
+        logger_name, "Reading currencies at timepoint.");
 }
 
 std::vector<domain::currency>
@@ -170,8 +165,7 @@ currency_repository::read_at_timepoint(context ctx, const std::string& as_of,
 
     return execute_read_query<currency_entity, domain::currency>(ctx, query,
         [](const auto& entities) { return currency_mapper::map(entities); },
-        "ores.risk.repository.currency_repository",
-        "Reading currencies at timepoint by ISO code");
+        logger_name, "Reading currencies at timepoint by ISO code.");
 }
 
 std::vector<domain::currency> currency_repository::read_all(context ctx) {
@@ -180,8 +174,7 @@ std::vector<domain::currency> currency_repository::read_all(context ctx) {
 
     return execute_read_query<currency_entity, domain::currency>(ctx, query,
         [](const auto& entities) { return currency_mapper::map(entities); },
-        "ores.risk.repository.currency_repository",
-        "Reading all currencies");
+        logger_name, "Reading all currencies.");
 }
 
 std::vector<domain::currency>
@@ -192,8 +185,7 @@ currency_repository::read_all(context ctx, const std::string& iso_code) {
 
     return execute_read_query<currency_entity, domain::currency>(ctx, query,
         [](const auto& entities) { return currency_mapper::map(entities); },
-        "ores.risk.repository.currency_repository",
-        "Reading all currencies by ISO code");
+        logger_name, "Reading all currencies by ISO code");
 }
 
 void currency_repository::remove(context ctx, const std::string& iso_code) {
@@ -204,9 +196,8 @@ void currency_repository::remove(context ctx, const std::string& iso_code) {
     const auto query = sqlgen::delete_from<currency_entity> |
         where("iso_code"_c == iso_code);
 
-    execute_delete_query(ctx, query,
-        "ores.risk.repository.currency_repository",
-        "removing currency from database");
+    execute_delete_query(ctx, query, logger_name,
+        "Removing currency from database.");
 }
 
 }

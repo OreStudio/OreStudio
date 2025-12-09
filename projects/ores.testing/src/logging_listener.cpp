@@ -39,7 +39,7 @@ namespace {
 struct test_logging_context {
     std::unique_ptr<ores::utility::log::lifecycle_manager> lifecycle_manager;
     std::optional<boost::log::sources::severity_channel_logger_mt<
-        ores::utility::log::severity_level, std::string>> logger;
+        ores::utility::log::severity_level, std::string_view>> logger;
 };
 
 thread_local test_logging_context current_test_context;

@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 #ifndef ORES_ACCOUNTS_SERVICE_BOOTSTRAP_MODE_SERVICE_HPP
 #define ORES_ACCOUNTS_SERVICE_BOOTSTRAP_MODE_SERVICE_HPP
 
@@ -47,10 +46,12 @@ namespace ores::accounts::service {
  */
 class bootstrap_mode_service {
 private:
+    inline static std::string_view logger_name =
+        "ores.accounts.service.bootstrap_mode_service";
+
     [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger(
-            "ores.accounts.service.bootstrap_mode_service");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

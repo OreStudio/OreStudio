@@ -85,9 +85,8 @@ inline auto make_timestamp(const std::string& s, utility::log::logger_t& lg) {
 
     const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(s);
     if (!r) {
-        auto logger = make_logger("ores.utility.repository.helpers");
         BOOST_LOG_SEV(lg, error) << "Error converting timestamp: '" << s
-                                     << "'. Error: " << r.error().what();
+                                 << "'. Error: " << r.error().what();
         BOOST_THROW_EXCEPTION(
             repository_exception(
                 std::format("Timestamp conversion error: {}", s)));

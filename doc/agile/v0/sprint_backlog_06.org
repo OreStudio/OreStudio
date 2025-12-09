@@ -18,44 +18,44 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-09 Tue 19:48], for Tuesday, December 09, 2025.
+#+CAPTION: Clock summary at [2025-12-09 Tue 20:46], for Tuesday, December 09, 2025.
 |       | <75>                               |        |      |      |       |
 | Tags  | Headline                           | Time   |      |      |     % |
 |-------+------------------------------------+--------+------+------+-------|
-|       | *Total time*                       | *5:19* |      |      | 100.0 |
+|       | *Total time*                       | *6:06* |      |      | 100.0 |
 |-------+------------------------------------+--------+------+------+-------|
-|       | Stories                            | 5:19   |      |      | 100.0 |
-|       | Active                             |        | 5:19 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint |        |      | 1:40 |  31.3 |
-| code  | Use =std::string_view= for loggers |        |      | 3:05 |  58.0 |
-| code  | Remove bootstrap mode from context |        |      | 0:34 |  10.7 |
+|       | Stories                            | 6:06   |      |      | 100.0 |
+|       | Active                             |        | 6:06 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint |        |      | 1:40 |  27.3 |
+| code  | Use =std::string_view= for loggers |        |      | 3:14 |  53.0 |
+| code  | Remove bootstrap mode from context |        |      | 1:12 |  19.7 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-09 Tue 19:48]
+#+CAPTION: Clock summary at [2025-12-09 Tue 20:46]
 |       | <75>                                                |         |       |       |       |
 | Tags  | Headline                                            | Time    |       |       |     % |
 |-------+-----------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                        | *43:48* |       |       | 100.0 |
+|       | *Total time*                                        | *44:35* |       |       | 100.0 |
 |-------+-----------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                             | 43:48   |       |       | 100.0 |
-|       | Active                                              |         | 43:48 |       | 100.0 |
+|       | Stories                                             | 44:35   |       |       | 100.0 |
+|       | Active                                              |         | 44:35 |       | 100.0 |
 | agile | Sprint and product backlog refinement               |         |       |  0:29 |   1.1 |
-| infra | OCR scan notebooks for this sprint                  |         |       | 10:59 |  25.1 |
-| code  | Implement session cancellation                      |         |       |  2:42 |   6.2 |
-| code  | Create a variability service for feature flags      |         |       |  1:23 |   3.2 |
-| code  | Add tests to diagrams                               |         |       |  1:26 |   3.3 |
+| infra | OCR scan notebooks for this sprint                  |         |       | 10:59 |  24.6 |
+| code  | Implement session cancellation                      |         |       |  2:42 |   6.1 |
+| code  | Create a variability service for feature flags      |         |       |  1:23 |   3.1 |
+| code  | Add tests to diagrams                               |         |       |  1:26 |   3.2 |
 | code  | Add messaging to variability                        |         |       |  0:40 |   1.5 |
-| code  | Create handshake service in comms                   |         |       |  2:31 |   5.7 |
-| code  | Implement client heartbeat for disconnect detection |         |       |  5:18 |  12.1 |
+| code  | Create handshake service in comms                   |         |       |  2:31 |   5.6 |
+| code  | Implement client heartbeat for disconnect detection |         |       |  5:18 |  11.9 |
 | code  | Pressing disconnect crashes client                  |         |       |  0:23 |   0.9 |
 | infra | Create a component creator skill                    |         |       |  0:42 |   1.6 |
-| code  | Add listen/notify support                           |         |       | 11:25 |  26.1 |
-| code  | Move context to database                            |         |       |  0:20 |   0.8 |
-| code  | Use =std::string_view= for loggers                  |         |       |  3:05 |   7.0 |
+| code  | Add listen/notify support                           |         |       | 11:25 |  25.6 |
+| code  | Move context to database                            |         |       |  0:20 |   0.7 |
+| code  | Use =std::string_view= for loggers                  |         |       |  3:14 |   7.3 |
 | code  | Experiment with simple code generation              |         |       |  1:30 |   3.4 |
-| code  | Remove bootstrap mode from context                  |         |       |  0:55 |   2.1 |
+| code  | Remove bootstrap mode from context                  |         |       |  1:33 |   3.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1282,6 +1282,7 @@ specific code in that namespace.
 
 *** COMPLETED Use =std::string_view= for loggers                       :code:
     :LOGBOOK:
+    CLOCK: [2025-12-09 Tue 19:58]--[2025-12-09 Tue 20:07] =>  0:09
     CLOCK: [2025-12-09 Tue 19:21]--[2025-12-09 Tue 19:48] =>  0:27
     CLOCK: [2025-12-09 Tue 18:45]--[2025-12-09 Tue 19:20] =>  0:35
     CLOCK: [2025-12-09 Tue 16:27]--[2025-12-09 Tue 18:30] =>  2:03
@@ -1290,6 +1291,43 @@ specific code in that namespace.
 We are using =std::string= for no good reason other than historical precedent.
 Before we create too much code relying on this pattern, update the code to use
 string views.
+
+Gemini description:
+
+#+begin_quote
+This pull request introduces a significant refactoring of the logging
+infrastructure across the entire project. The primary goal is to enhance
+performance by transitioning from =std::string= to =std::string_view= for logger
+names, thereby minimizing string copies. This change is systematically applied
+to logger declarations and usage in a wide array of components. Additionally,
+the PR incorporates several modern C++ idioms, refines documentation, and cleans
+up redundant header inclusions, contributing to a more efficient and
+maintainable codebase.
+
+Highlights
+
+- *Logging Optimization*: Replaced =std::string= with =std::string_view= for
+  logger names across the codebase to improve performance by avoiding
+  unnecessary string allocations and copies. This involved updating the
+  =make_logger= function signature and modifying numerous class-level logger
+  instantiations.
+- *Modern C++ Refactoring*: Updated repository helper functions
+  (=execute_read_query=, =execute_write_query=, =ensure_success=,
+  =make_timestamp=, =generate_create_table_sql=) to accept a logger instance
+  directly (=utility::log::logger_t&=) instead of a string literal for the
+  logger name, streamlining logging calls. Also, adopted =std::ranges::any_of=
+  in some areas for more modern C++ range-based algorithms.
+- *Codebase Cleanup*: Removed various unused header includes across multiple
+  projects (=ores.cli=, =ores.comms=, =ores.qt=, =ores.shell=,
+  =ores.variability=) to reduce compilation times and improve code clarity.
+- *Documentation and Sprint Updates*: Updated product and sprint backlog
+  documentation (=doc/agile/product_backlog.org=,
+  =doc/agile/v0/sprint_backlog_06.org=) to reflect new logging features and
+  progress on development tasks.
+- *Conceptual Renaming*: Renamed =ores.eventing/modeling/ores.notification.puml=
+  to =ores.eventing/modeling/ores.eventing.puml= and updated its content to
+  align with 'eventing' terminology.
+#+end_quote
 
 Notes:
 
@@ -1306,6 +1344,7 @@ tokens.
 
 *** STARTED Remove bootstrap mode from context                         :code:
     :LOGBOOK:
+    CLOCK: [2025-12-09 Tue 20:08]--[2025-12-09 Tue 20:46] =>  0:38
     CLOCK: [2025-12-09 Tue 15:58]--[2025-12-09 Tue 16:26] =>  0:28
     CLOCK: [2025-12-09 Tue 15:19]--[2025-12-09 Tue 15:25] =>  0:06
     CLOCK: [2025-12-08 Mon 23:30]--[2025-12-08 Mon 23:51] =>  0:21

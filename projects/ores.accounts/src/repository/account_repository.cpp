@@ -36,7 +36,7 @@ using namespace ores::utility::log;
 using namespace ores::utility::repository;
 
 std::string account_repository::sql() {
-    return generate_create_table_sql<account_entity>(logger_name);
+    return generate_create_table_sql<account_entity>(lg());
 }
 
 account_repository::account_repository(context ctx)
@@ -46,40 +46,35 @@ void account_repository::
 write(const domain::account& account) {
     BOOST_LOG_SEV(lg(), debug) << "Writing account to database: " << account;
 
-    execute_write_query(ctx_,
-        account_mapper::map(account),
-        "ores.accounts.repository.account_repository",
-        "writing account to database");
+    execute_write_query(ctx_, account_mapper::map(account),
+        lg(), "writing account to database");
 }
 
 void account_repository::
 write(const std::vector<domain::account>& accounts) {
     BOOST_LOG_SEV(lg(), debug) << "Writing accounts to database. Count: "
-                             << accounts.size();
+                               << accounts.size();
 
-    execute_write_query(ctx_,
-        account_mapper::map(accounts),
-        "ores.accounts.repository.account_repository",
-        "writing accounts to database");
+    execute_write_query(ctx_, account_mapper::map(accounts),
+        lg(), "writing accounts to database");
 }
 
 std::vector<domain::account> account_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP));
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<account_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
 
     return execute_read_query<account_entity, domain::account>(ctx_, query,
         [](const auto& entities) { return account_mapper::map(entities); },
-        "ores.accounts.repository.account_repository",
-        "Reading latest accounts");
+        lg(), "Reading latest accounts");
 }
 
 std::vector<domain::account>
 account_repository::read_latest(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts. ID: " << id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP));
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto id_str = boost::lexical_cast<std::string>(id);
     const auto query = sqlgen::read<std::vector<account_entity>> |
         where("id"_c == id_str && "valid_to"_c == max.value()) |
@@ -87,7 +82,7 @@ account_repository::read_latest(const boost::uuids::uuid& id) {
 
     return execute_read_query<account_entity, domain::account>(ctx_, query,
         [](const auto& entities) { return account_mapper::map(entities); },
-        logger_name, "Reading latest accounts by ID.");
+        lg(), "Reading latest accounts by ID.");
 }
 
 std::vector<domain::account>
@@ -103,7 +98,7 @@ account_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
                                    << "Ignoring offset parameter: " << offset;
     }
 
-    static auto max(make_timestamp(MAX_TIMESTAMP));
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<account_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc()) |
@@ -111,13 +106,13 @@ account_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
 
     return execute_read_query<account_entity, domain::account>(ctx_, query,
         [](const auto& entities) { return account_mapper::map(entities); },
-        logger_name, "Reading latest accounts with pagination.");
+        lg(), "Reading latest accounts with pagination.");
 }
 
 std::uint32_t account_repository::get_total_account_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account count.";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP));
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     // HACK: Using single connection instead of session because sqlgen sessions
     // doesn't seem to support SELECT FROM with aggregations. Plain connections
@@ -134,7 +129,7 @@ std::uint32_t account_repository::get_total_account_count() {
 
     const auto r = ctx_.single_connection()
         .and_then(query);
-    ensure_success(r);
+    ensure_success(r, lg());
 
     const auto count = static_cast<std::uint32_t>(r->count);
     BOOST_LOG_SEV(lg(), debug) << "Total active account count: " << count;
@@ -147,7 +142,7 @@ std::vector<domain::account> account_repository::read_all() {
 
     return execute_read_query<account_entity, domain::account>(ctx_, query,
         [](const auto& entities) { return account_mapper::map(entities); },
-        logger_name, "Reading all accounts.");
+        lg(), "Reading all accounts.");
 }
 
 std::vector<domain::account>
@@ -159,14 +154,14 @@ account_repository::read_all(const boost::uuids::uuid& id) {
 
     return execute_read_query<account_entity, domain::account>(ctx_, query,
         [](const auto& entities) { return account_mapper::map(entities); },
-        logger_name, "Reading all accounts by ID");
+        lg(), "Reading all accounts by ID.");
 }
 
 std::vector<domain::account>
 account_repository::read_latest_by_username(const std::string& username) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by username: " << username;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP));
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<account_entity>> |
         where("username"_c == username && "valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
@@ -176,7 +171,7 @@ account_repository::read_latest_by_username(const std::string& username) {
 
     return execute_read_query<account_entity, domain::account>(ctx_, query,
         [](const auto& entities) { return account_mapper::map(entities); },
-        logger_name, "Reading latest account by username");
+        lg(), "Reading latest account by username");
 }
 
 void account_repository::remove(const boost::uuids::uuid& account_id) {
@@ -188,7 +183,7 @@ void account_repository::remove(const boost::uuids::uuid& account_id) {
     const auto query = sqlgen::delete_from<account_entity> |
         where("id"_c == id_str);
 
-    execute_delete_query(ctx_, query, logger_name, "removing account from database");
+    execute_delete_query(ctx_, query, lg(), "removing account from database");
 }
 
 }

@@ -27,13 +27,12 @@
 
 namespace ores::utility::log {
 
-inline boost::log::sources::
-severity_channel_logger_mt<severity_level, std::string_view>
-make_logger(std::string_view component_name) {
+using logger_t = boost::log::sources::severity_channel_logger_mt<
+    severity_level, std::string_view>;
+
+inline logger_t make_logger(std::string_view component_name) {
     using namespace boost::log;
-    return boost::log::sources::
-        severity_channel_logger_mt<severity_level, std::string_view>(
-            keywords::channel = component_name);
+    return logger_t(keywords::channel = component_name);
 }
 
 }

@@ -55,12 +55,11 @@ inline constexpr const char* MAX_TIMESTAMP = "9999-12-31 23:59:59";
  * ensure_success(result); // Throws if query failed
  */
 template<typename T>
-void ensure_success(const T& result) {
+void ensure_success(const T& result, utility::log::logger_t& lg) {
     using namespace ores::utility::log;
 
     if (!result) {
-        auto logger = make_logger("ores.utility.repository.helpers");
-        BOOST_LOG_SEV(logger, severity_level::error) << result.error().what();
+        BOOST_LOG_SEV(lg, severity_level::error) << result.error().what();
         BOOST_THROW_EXCEPTION(
             repository_exception(std::format("Repository error: {}",
                     result.error().what())));
@@ -81,13 +80,13 @@ void ensure_success(const T& result) {
  * @example
  * auto ts = make_timestamp("2025-11-25 12:30:45");
  */
-inline auto make_timestamp(const std::string& s) {
+inline auto make_timestamp(const std::string& s, utility::log::logger_t& lg) {
     using namespace ores::utility::log;
 
     const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(s);
     if (!r) {
         auto logger = make_logger("ores.utility.repository.helpers");
-        BOOST_LOG_SEV(logger, error) << "Error converting timestamp: '" << s
+        BOOST_LOG_SEV(lg, error) << "Error converting timestamp: '" << s
                                      << "'. Error: " << r.error().what();
         BOOST_THROW_EXCEPTION(
             repository_exception(
@@ -111,15 +110,14 @@ inline auto make_timestamp(const std::string& s) {
  *     "ores.accounts.repository.account_repository");
  */
 template<typename EntityType>
-std::string generate_create_table_sql(const std::string_view& logger_name) {
+std::string generate_create_table_sql(utility::log::logger_t& lg) {
     using namespace ores::utility::log;
     using namespace sqlgen;
 
     const auto query = create_table<EntityType> | if_not_exists;
     const auto sql = postgres::to_sql(query);
 
-    auto logger = make_logger(logger_name);
-    BOOST_LOG_SEV(logger, debug) << sql;
+    BOOST_LOG_SEV(lg, debug) << sql;
 
     return sql;
 }

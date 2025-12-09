@@ -30,7 +30,7 @@ namespace ores::utility::string {
  */
 class converter {
 private:
-    inline static std::string_view logger_name = "ores.utility.connection";
+    inline static std::string_view logger_name = "ores.utility.string.converter";
 
     static auto& lg() {
         using namespace ores::utility::log;

@@ -35,7 +35,7 @@ using namespace ores::utility::log;
 using namespace ores::utility::repository;
 
 std::string login_info_repository::sql() {
-    return generate_create_table_sql<login_info_entity>(logger_name);
+    return generate_create_table_sql<login_info_entity>(lg());
 }
 
 login_info_repository::login_info_repository(context ctx)
@@ -50,7 +50,7 @@ write(const std::vector<domain::login_info>& login_infos) {
         .and_then(begin_transaction)
         .and_then(insert(login_info_mapper::map(login_infos)))
         .and_then(commit);
-    ensure_success(r);
+    ensure_success(r, lg());
 
     BOOST_LOG_SEV(lg(), debug) << "Finished writing login_info to database.";
 }
@@ -74,7 +74,7 @@ update(const domain::login_info& login_info) {
         .and_then(begin_transaction)
         .and_then(query)
         .and_then(commit);
-    ensure_success(r);
+    ensure_success(r, lg());
 
     BOOST_LOG_SEV(lg(), debug) << "Finished updating login_info.";
 }
@@ -86,7 +86,7 @@ std::vector<domain::login_info> login_info_repository::read() {
 
     const auto r = session(ctx_.connection_pool())
         .and_then(query);
-    ensure_success(r);
+    ensure_success(r, lg());
     BOOST_LOG_SEV(lg(), debug) << "Read all login_info. Total: " << r->size();
     return login_info_mapper::map(*r);
 }
@@ -102,7 +102,7 @@ login_info_repository::read(const boost::uuids::uuid& account_id) {
         where("account_id"_c == account_id_str);
 
     const auto r = session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r);
+    ensure_success(r, lg());
     BOOST_LOG_SEV(lg(), debug) << "Read login_info. Total: " << r->size();
     return login_info_mapper::map(*r);
 }

@@ -33,7 +33,7 @@
 
 namespace {
 
-const std::string test_suite("ores.comms.tests");
+const std::string_view test_suite("ores.comms.tests");
 const std::string tags("[networking]");
 
 // Embedded self-signed certificate and private key for testing

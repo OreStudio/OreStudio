@@ -30,7 +30,7 @@
 
 namespace {
 
-const std::string test_suite("ores.comms.tests");
+const std::string_view test_suite("ores.comms.tests");
 const std::string tags("[messaging]");
 
 int message_type_as_int(ores::comms::messaging::message_type mt) {

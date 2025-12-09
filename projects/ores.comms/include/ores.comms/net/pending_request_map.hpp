@@ -42,9 +42,12 @@ namespace ores::comms::net {
  */
 class pending_request_map final {
 private:
+  inline static std::string_view logger_name =
+      "ores.comms.net.pending_request_map";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.comms.net.pending_request_map");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

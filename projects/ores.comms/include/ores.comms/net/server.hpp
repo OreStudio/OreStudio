@@ -20,12 +20,12 @@
 #ifndef ORES_COMMS_NET_SERVER_HPP
 #define ORES_COMMS_NET_SERVER_HPP
 
-#include <string>
+#include <list>
+#include <mutex>
 #include <memory>
 #include <atomic>
 #include <functional>
-#include <list>
-#include <mutex>
+#include <string_view>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/awaitable.hpp>
@@ -52,9 +52,12 @@ namespace ssl = boost::asio::ssl;
  */
 class server final : public std::enable_shared_from_this<server> {
 private:
+    inline static std::string_view logger_name =
+        "ores.comms.net.server";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.comms.server");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

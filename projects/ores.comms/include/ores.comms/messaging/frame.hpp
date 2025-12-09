@@ -69,9 +69,11 @@ struct frame_header final {
  */
 class frame final {
 private:
+    inline static std::string_view logger_name = "ores.comms.messaging.frame";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.comms.protocol.frame");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

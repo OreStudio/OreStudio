@@ -33,9 +33,11 @@ namespace ores::service::app {
  */
 class host {
 private:
+    inline static std::string_view logger_name = "ores.service.app.host";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.service.app.host");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

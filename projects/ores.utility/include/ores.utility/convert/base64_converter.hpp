@@ -32,10 +32,12 @@ namespace ores::utility::converter {
  */
 class base64_converter {
 private:
+    inline static std::string_view logger_name =
+        "ores.utility.converter.base64_converter";
+
     [[nodiscard]] static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger(
-            "ores.utility.converter.base64_converter");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

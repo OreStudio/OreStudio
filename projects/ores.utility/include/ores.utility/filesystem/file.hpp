@@ -33,9 +33,12 @@ namespace ores::utility::filesystem {
 
 class file final {
 private:
+    inline static std::string_view logger_name =
+        "ores.utility.filesystem.file";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.utility.filesystem.file");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

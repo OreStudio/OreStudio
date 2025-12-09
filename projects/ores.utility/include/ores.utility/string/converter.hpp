@@ -30,9 +30,11 @@ namespace ores::utility::string {
  */
 class converter {
 private:
+    inline static std::string_view logger_name = "ores.utility.connection";
+
     static auto& lg() {
         using namespace ores::utility::log;
-        static auto instance = make_logger("ores.comms.connection");
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

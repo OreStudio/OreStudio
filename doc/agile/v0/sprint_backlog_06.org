@@ -18,42 +18,41 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-08 Mon 23:30], for Monday, December 08, 2025.
+#+CAPTION: Clock summary at [2025-12-09 Tue 15:19], for Tuesday, December 09, 2025.
 |       | <75>                               |        |      |      |       |
 | Tags  | Headline                           | Time   |      |      |     % |
 |-------+------------------------------------+--------+------+------+-------|
-|       | *Total time*                       | *5:29* |      |      | 100.0 |
+|       | *Total time*                       | *1:40* |      |      | 100.0 |
 |-------+------------------------------------+--------+------+------+-------|
-|       | Stories                            | 5:29   |      |      | 100.0 |
-|       | Active                             |        | 5:29 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint |        |      | 2:27 |  44.7 |
-| code  | Add listen/notify support          |        |      | 2:42 |  49.2 |
-| code  | Move context to database           |        |      | 0:20 |   6.1 |
+|       | Stories                            | 1:40   |      |      | 100.0 |
+|       | Active                             |        | 1:40 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint |        |      | 1:40 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-08 Mon 23:30]
+#+CAPTION: Clock summary at [2025-12-09 Tue 15:19]
 |       | <75>                                                |         |       |       |       |
 | Tags  | Headline                                            | Time    |       |       |     % |
 |-------+-----------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                        | *38:08* |       |       | 100.0 |
+|       | *Total time*                                        | *40:09* |       |       | 100.0 |
 |-------+-----------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                             | 38:08   |       |       | 100.0 |
-|       | Active                                              |         | 38:08 |       | 100.0 |
-| agile | Sprint and product backlog refinement               |         |       |  0:29 |   1.3 |
-| infra | OCR scan notebooks for this sprint                  |         |       |  9:19 |  24.4 |
-| code  | Implement session cancellation                      |         |       |  2:42 |   7.1 |
-| code  | Create a variability service for feature flags      |         |       |  1:23 |   3.6 |
-| code  | Add tests to diagrams                               |         |       |  1:26 |   3.8 |
+|       | Stories                                             | 40:09   |       |       | 100.0 |
+|       | Active                                              |         | 40:09 |       | 100.0 |
+| agile | Sprint and product backlog refinement               |         |       |  0:29 |   1.2 |
+| infra | OCR scan notebooks for this sprint                  |         |       | 10:59 |  27.4 |
+| code  | Implement session cancellation                      |         |       |  2:42 |   6.7 |
+| code  | Create a variability service for feature flags      |         |       |  1:23 |   3.4 |
+| code  | Add tests to diagrams                               |         |       |  1:26 |   3.6 |
 | code  | Add messaging to variability                        |         |       |  0:40 |   1.7 |
-| code  | Create handshake service in comms                   |         |       |  2:31 |   6.6 |
-| code  | Implement client heartbeat for disconnect detection |         |       |  5:18 |  13.9 |
+| code  | Create handshake service in comms                   |         |       |  2:31 |   6.3 |
+| code  | Implement client heartbeat for disconnect detection |         |       |  5:18 |  13.2 |
 | code  | Pressing disconnect crashes client                  |         |       |  0:23 |   1.0 |
-| infra | Create a component creator skill                    |         |       |  0:42 |   1.8 |
-| code  | Add listen/notify support                           |         |       | 11:25 |  29.9 |
-| code  | Move context to database                            |         |       |  0:20 |   0.9 |
-| code  | Experiment with simple code generation              |         |       |  1:30 |   3.9 |
+| infra | Create a component creator skill                    |         |       |  0:42 |   1.7 |
+| code  | Add listen/notify support                           |         |       | 11:25 |  28.4 |
+| code  | Move context to database                            |         |       |  0:20 |   0.8 |
+| code  | Experiment with simple code generation              |         |       |  1:30 |   3.7 |
+| code  | Remove bootstrap mode from context                  |         |       |  0:21 |   0.9 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -214,6 +213,8 @@ print(p)
 
 *** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
+    CLOCK: [2025-12-09 Tue 09:23]--[2025-12-09 Tue 10:47] =>  1:24
+    CLOCK: [2025-12-09 Tue 07:41]--[2025-12-09 Tue 07:57] =>  0:16
     CLOCK: [2025-12-08 Mon 19:21]--[2025-12-08 Mon 20:13] =>  0:52
     CLOCK: [2025-12-08 Mon 17:01]--[2025-12-08 Mon 18:36] =>  1:35
     CLOCK: [2025-12-07 Sun 20:34]--[2025-12-07 Sun 21:38] =>  1:04
@@ -1285,6 +1286,96 @@ It should be easy enough to add a simple code generator that creates the basic
 infrastructure for a domain type, so that we don't have to waste Claude Code
 tokens.
 
+*** STARTED Remove bootstrap mode from context                         :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-09 Tue 15:58]--[2025-12-09 Tue 16:26] =>  0:28
+    CLOCK: [2025-12-09 Tue 15:19]--[2025-12-09 Tue 15:25] =>  0:06
+    CLOCK: [2025-12-08 Mon 23:30]--[2025-12-08 Mon 23:51] =>  0:21
+    :END:
+
+We still have:
+
+#+begin_src c++
+    /**
+     * @brief Set the bootstrap mode flag.
+     *
+     * Should be called during application initialization after checking bootstrap state.
+     */
+    void set_bootstrap_mode(bool mode) { bootstrap_mode_ = mode; }
+
+    /**
+     * @brief Check if the system is in bootstrap mode.
+     *
+     * @return true if system is in bootstrap mode (no admin accounts exist), false otherwise
+     */
+    bool is_in_bootstrap_mode() const { return bootstrap_mode_; }
+#+end_src
+
+This was temporary until variability was introduced. Check if is still in use
+and if not remove it.
+
+Notes:
+
+- the problem is that we created the variability feature flags service, but it
+  is not at the right level of abstraction for determining if a feature is
+  enabled or not. As we did for the messaging, we need a list of features
+  hard-coded into a class whenever a feature cuts across components.
+
+**** Qwen terminology analysis
+
+#+begin_quote
+Based on the content of the page *[MDE and Variability
+Modeling](https://masd-project.github.io/progen/docs/mde_and_variability_modeling.html)*,
+which discusses **feature-oriented modeling**, **variability**, and **software
+product lines**, a class that centrally holds all feature flags in your system
+should reflect its role as the **source of variability decisions** or the
+**feature configuration** for a given product or runtime instance.
+
+Given your context—C++23, event-driven architecture, and a preference for clear,
+structured, domain-aligned naming—here are a few well-motivated options:
+
+### Recommended Names
+
+1. **`FeatureConfiguration`**
+
+– Clear, concise, and emphasizes that this class captures the *current
+  selection* of features (i.e., a configuration derived from the variability
+  model).
+
+2. **`FeatureSet`**
+
+– Suggests a collection of enabled/disabled features; simple and idiomatic in C++.
+
+3. **`VariabilityContext`**
+
+– Aligns closely with MDE terminology from the page; useful if you treat feature
+  activation as part of a broader runtime or build-time context.
+
+4. **`ProductFeatures`**
+
+– Emphasizes the product-line aspect ("product" as in software product line),
+  which matches your use of *progen* for product generation.
+
+5. **`FeatureProfile`**
+
+– Implies a named or predefined combination of features (e.g., “debug profile”,
+  “lite profile”), supporting gradual rollouts or user segments.
+
+### Best Fit for Your System
+
+Given your emphasis on **product generation**, **modularity**, and **runtime
+feature control** (e.g., testing with 10% of users), **`FeatureConfiguration`**
+is likely the strongest choice:
+
+- It avoids overloading “profile” (which may imply performance).
+- It’s more precise than “set” (which is purely structural).
+- It aligns with variability modeling concepts while remaining intuitive to C++
+  developers.
+
+You might place it in a dedicated namespace like `system::features` or
+`app::config`.
+#+end_quote
+
 *** Create faker for past timepoint                                    :code:
 
 We have helper code in currency that needs to be moved to utility:
@@ -1312,29 +1403,6 @@ std::string fake_datetime_string() {
 #+end_src
 
 Use this code in eventing.
-
-*** Remove bootstrap mode from context                                 :code:
-
-We still have:
-
-#+begin_src c++
-    /**
-     * @brief Set the bootstrap mode flag.
-     *
-     * Should be called during application initialization after checking bootstrap state.
-     */
-    void set_bootstrap_mode(bool mode) { bootstrap_mode_ = mode; }
-
-    /**
-     * @brief Check if the system is in bootstrap mode.
-     *
-     * @return true if system is in bootstrap mode (no admin accounts exist), false otherwise
-     */
-    bool is_in_bootstrap_mode() const { return bootstrap_mode_; }
-#+end_src
-
-This was temporary until variability was introduced. Check if is still in use
-and if not remove it.
 
 *** Currencies displays when not connected                             :code:
 

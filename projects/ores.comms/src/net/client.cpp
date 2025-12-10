@@ -325,11 +325,11 @@ void client::connect_with_retry_sync() {
 }
 
 boost::asio::awaitable<void> client::run_reconnect_loop() {
-    if (reconnect_loop_running_) {
+    bool expected = false;
+    if (!reconnect_loop_running_.compare_exchange_strong(expected, true)) {
         BOOST_LOG_SEV(lg(), debug) << "Reconnect loop already running";
         co_return;
     }
-    reconnect_loop_running_ = true;
 
     BOOST_LOG_SEV(lg(), info) << "Starting reconnection loop";
 
@@ -456,11 +456,11 @@ boost::asio::awaitable<void> client::run_heartbeat() {
         co_return;
     }
 
-    if (heartbeat_loop_running_) {
+    bool expected = false;
+    if (!heartbeat_loop_running_.compare_exchange_strong(expected, true)) {
         BOOST_LOG_SEV(lg(), debug) << "Heartbeat loop already running";
         co_return;
     }
-    heartbeat_loop_running_ = true;
 
     BOOST_LOG_SEV(lg(), debug) << "Starting heartbeat loop with interval: "
                                << config_.heartbeat_interval_seconds << "s";
@@ -685,8 +685,13 @@ boost::asio::awaitable<void> client::write_frame(const messaging::frame& f) {
 }
 
 boost::asio::awaitable<void> client::run_message_loop() {
+    bool expected = false;
+    if (!message_loop_running_.compare_exchange_strong(expected, true)) {
+        BOOST_LOG_SEV(lg(), debug) << "Message loop already running";
+        co_return;
+    }
+
     BOOST_LOG_SEV(lg(), debug) << "Starting message loop";
-    message_loop_running_ = true;
 
     try {
         while (is_connected()) {

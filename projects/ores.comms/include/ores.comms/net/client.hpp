@@ -264,9 +264,9 @@ private:
     std::unique_ptr<boost::asio::strand<boost::asio::any_io_executor>> write_strand_;
     std::unique_ptr<pending_request_map> pending_requests_;
     std::atomic<std::uint32_t> correlation_id_counter_{1};
-    bool message_loop_running_{false};
-    bool reconnect_loop_running_{false};
-    bool heartbeat_loop_running_{false};
+    std::atomic<bool> message_loop_running_{false};
+    std::atomic<bool> reconnect_loop_running_{false};
+    std::atomic<bool> heartbeat_loop_running_{false};
 };
 
 }

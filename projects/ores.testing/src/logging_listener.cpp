@@ -39,12 +39,12 @@ namespace {
  * @brief Thread-local storage for the current test logger and lifecycle manager.
  */
 struct test_logging_context {
-    std::unique_ptr<lifecycle_manager> lifecycle_manager;
+    std::unique_ptr<lifecycle_manager> lifecycle_mgr;
     std::optional<logger_t> logger;
 };
 
 thread_local test_logging_context current_test_context;
-std::string_view component_name = "catch2";
+inline std::string_view component_name = "catch2";
 
 // Global variable to store the test module name, set from main function
 std::string test_module_name = "ores.tests"; // default fallback
@@ -131,7 +131,7 @@ void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
     cfg.output_to_console = false;
 
     // Initialize logging lifecycle manager with options
-    current_test_context.lifecycle_manager =
+    current_test_context.lifecycle_mgr =
         std::make_unique<lifecycle_manager>(std::optional<logging_options>{cfg});
 
     // Create logger for this test
@@ -172,7 +172,7 @@ void logging_listener::testCaseEnded(Catch::TestCaseStats const& testCaseStats) 
 
     // Clean up logging context
     current_test_context.logger.reset();
-    current_test_context.lifecycle_manager.reset();
+    current_test_context.lifecycle_mgr.reset();
 }
 
 void logging_listener::assertionEnded(Catch::AssertionStats const& assertionStats) {

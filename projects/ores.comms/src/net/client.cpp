@@ -149,17 +149,17 @@ boost::asio::awaitable<void> client::perform_connection() {
 
     // Start message loop in background (single reader for all responses)
     // Only needed when using correlation-based request/response or heartbeat
-    if (config_.heartbeat_enabled) {
+    if (config_.heartbeat_enabled && !message_loop_running_) {
         boost::asio::co_spawn(exec, run_message_loop(), boost::asio::detached);
         BOOST_LOG_SEV(lg(), debug) << "Message loop started";
     }
 
-    // Start heartbeat in background
-    if (config_.heartbeat_enabled) {
+    // Start heartbeat in background (only if not already running)
+    if (config_.heartbeat_enabled && !heartbeat_loop_running_) {
         boost::asio::co_spawn(exec, run_heartbeat(), boost::asio::detached);
         BOOST_LOG_SEV(lg(), info) << "Heartbeat enabled with interval: "
                                    << config_.heartbeat_interval_seconds << "s";
-    } else {
+    } else if (!config_.heartbeat_enabled) {
         BOOST_LOG_SEV(lg(), info) << "Heartbeat disabled";
     }
 }
@@ -456,6 +456,12 @@ boost::asio::awaitable<void> client::run_heartbeat() {
         co_return;
     }
 
+    if (heartbeat_loop_running_) {
+        BOOST_LOG_SEV(lg(), debug) << "Heartbeat loop already running";
+        co_return;
+    }
+    heartbeat_loop_running_ = true;
+
     BOOST_LOG_SEV(lg(), debug) << "Starting heartbeat loop with interval: "
                                << config_.heartbeat_interval_seconds << "s";
 
@@ -528,6 +534,7 @@ boost::asio::awaitable<void> client::run_heartbeat() {
         }
     }
 
+    heartbeat_loop_running_ = false;
     BOOST_LOG_SEV(lg(), debug) << "Heartbeat loop ended";
 }
 

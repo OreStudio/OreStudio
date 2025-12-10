@@ -266,6 +266,7 @@ private:
     std::atomic<std::uint32_t> correlation_id_counter_{1};
     bool message_loop_running_{false};
     bool reconnect_loop_running_{false};
+    bool heartbeat_loop_running_{false};
 };
 
 }

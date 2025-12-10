@@ -18,44 +18,45 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-09 Tue 20:46], for Tuesday, December 09, 2025.
-|       | <75>                               |        |      |      |       |
-| Tags  | Headline                           | Time   |      |      |     % |
-|-------+------------------------------------+--------+------+------+-------|
-|       | *Total time*                       | *6:06* |      |      | 100.0 |
-|-------+------------------------------------+--------+------+------+-------|
-|       | Stories                            | 6:06   |      |      | 100.0 |
-|       | Active                             |        | 6:06 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint |        |      | 1:40 |  27.3 |
-| code  | Use =std::string_view= for loggers |        |      | 3:14 |  53.0 |
-| code  | Remove bootstrap mode from context |        |      | 1:12 |  19.7 |
+#+CAPTION: Clock summary at [2025-12-10 Wed 17:57], for Wednesday, December 10, 2025.
+|       | <75>                                             |        |      |      |       |
+| Tags  | Headline                                         | Time   |      |      |     % |
+|-------+--------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                     | *5:05* |      |      | 100.0 |
+|-------+--------------------------------------------------+--------+------+------+-------|
+|       | Stories                                          | 5:05   |      |      | 100.0 |
+|       | Active                                           |        | 5:05 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint               |        |      | 2:01 |  39.7 |
+| code  | Fix issues with logging after string_view change |        |      | 0:53 |  17.4 |
+| code  | Remove bootstrap mode from context               |        |      | 2:11 |  43.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-09 Tue 20:46]
+#+CAPTION: Clock summary at [2025-12-10 Wed 17:57]
 |       | <75>                                                |         |       |       |       |
 | Tags  | Headline                                            | Time    |       |       |     % |
 |-------+-----------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                        | *44:35* |       |       | 100.0 |
+|       | *Total time*                                        | *51:00* |       |       | 100.0 |
 |-------+-----------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                             | 44:35   |       |       | 100.0 |
-|       | Active                                              |         | 44:35 |       | 100.0 |
-| agile | Sprint and product backlog refinement               |         |       |  0:29 |   1.1 |
-| infra | OCR scan notebooks for this sprint                  |         |       | 10:59 |  24.6 |
-| code  | Implement session cancellation                      |         |       |  2:42 |   6.1 |
-| code  | Create a variability service for feature flags      |         |       |  1:23 |   3.1 |
-| code  | Add tests to diagrams                               |         |       |  1:26 |   3.2 |
-| code  | Add messaging to variability                        |         |       |  0:40 |   1.5 |
-| code  | Create handshake service in comms                   |         |       |  2:31 |   5.6 |
-| code  | Implement client heartbeat for disconnect detection |         |       |  5:18 |  11.9 |
-| code  | Pressing disconnect crashes client                  |         |       |  0:23 |   0.9 |
-| infra | Create a component creator skill                    |         |       |  0:42 |   1.6 |
-| code  | Add listen/notify support                           |         |       | 11:25 |  25.6 |
+|       | Stories                                             | 51:00   |       |       | 100.0 |
+|       | Active                                              |         | 51:00 |       | 100.0 |
+| agile | Sprint and product backlog refinement               |         |       |  0:29 |   0.9 |
+| infra | OCR scan notebooks for this sprint                  |         |       | 13:00 |  25.5 |
+| code  | Implement session cancellation                      |         |       |  2:42 |   5.3 |
+| code  | Create a variability service for feature flags      |         |       |  1:23 |   2.7 |
+| code  | Add tests to diagrams                               |         |       |  1:26 |   2.8 |
+| code  | Add messaging to variability                        |         |       |  0:40 |   1.3 |
+| code  | Create handshake service in comms                   |         |       |  2:31 |   4.9 |
+| code  | Implement client heartbeat for disconnect detection |         |       |  5:18 |  10.4 |
+| code  | Pressing disconnect crashes client                  |         |       |  0:23 |   0.8 |
+| infra | Create a component creator skill                    |         |       |  0:42 |   1.4 |
+| code  | Add listen/notify support                           |         |       | 11:25 |  22.4 |
 | code  | Move context to database                            |         |       |  0:20 |   0.7 |
-| code  | Use =std::string_view= for loggers                  |         |       |  3:14 |   7.3 |
-| code  | Experiment with simple code generation              |         |       |  1:30 |   3.4 |
-| code  | Remove bootstrap mode from context                  |         |       |  1:33 |   3.5 |
+| code  | Use =std::string_view= for loggers                  |         |       |  3:14 |   6.3 |
+| code  | Fix issues with logging after string_view change    |         |       |  0:53 |   1.7 |
+| code  | Remove bootstrap mode from context                  |         |       |  5:04 |   9.9 |
+| code  | Experiment with simple code generation              |         |       |  1:30 |   2.9 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -216,6 +217,7 @@ print(p)
 
 *** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
+    CLOCK: [2025-12-10 Wed 09:06]--[2025-12-10 Wed 11:07] =>  2:01
     CLOCK: [2025-12-09 Tue 09:23]--[2025-12-09 Tue 10:47] =>  1:24
     CLOCK: [2025-12-09 Tue 07:41]--[2025-12-09 Tue 07:57] =>  0:16
     CLOCK: [2025-12-08 Mon 19:21]--[2025-12-08 Mon 20:13] =>  0:52
@@ -1333,17 +1335,22 @@ Notes:
 
 - rename protocol tests.
 
-*** STARTED Experiment with simple code generation                     :code:
+*** COMPLETED Fix issues with logging after string_view change         :code:
     :LOGBOOK:
-    CLOCK: [2025-12-02 Tue 14:35]--[2025-12-02 Tue 16:05] =>  1:30
+    CLOCK: [2025-12-10 Wed 15:51]--[2025-12-10 Wed 15:54] =>  0:03
+    CLOCK: [2025-12-10 Wed 15:00]--[2025-12-10 Wed 15:50] =>  0:50
     :END:
 
-It should be easy enough to add a simple code generator that creates the basic
-infrastructure for a domain type, so that we don't have to waste Claude Code
-tokens.
+It seems the component is now blank. The test logging is also not very
+sensible, using the tags as the component name.
 
-*** STARTED Remove bootstrap mode from context                         :code:
+*** COMPLETED Remove bootstrap mode from context                       :code:
     :LOGBOOK:
+    CLOCK: [2025-12-10 Wed 17:26]--[2025-12-10 Wed 17:56] =>  0:30
+    CLOCK: [2025-12-10 Wed 15:54]--[2025-12-10 Wed 17:02] =>  1:08
+    CLOCK: [2025-12-10 Wed 13:00]--[2025-12-10 Wed 13:33] =>  0:33
+    CLOCK: [2025-12-09 Tue 22:23]--[2025-12-09 Tue 23:20] =>  0:57
+    CLOCK: [2025-12-09 Tue 20:47]--[2025-12-09 Tue 21:10] =>  0:23
     CLOCK: [2025-12-09 Tue 20:08]--[2025-12-09 Tue 20:46] =>  0:38
     CLOCK: [2025-12-09 Tue 15:58]--[2025-12-09 Tue 16:26] =>  0:28
     CLOCK: [2025-12-09 Tue 15:19]--[2025-12-09 Tue 15:25] =>  0:06
@@ -1432,6 +1439,38 @@ is likely the strongest choice:
 You might place it in a dedicated namespace like `system::features` or
 `app::config`.
 #+end_quote
+
+*** STARTED Experiment with simple code generation                     :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-02 Tue 14:35]--[2025-12-02 Tue 16:05] =>  1:30
+    :END:
+
+It should be easy enough to add a simple code generator that creates the basic
+infrastructure for a domain type, so that we don't have to waste Claude Code
+tokens.
+
+*** Remove enum exception                                              :code:
+
+We should use logic error instead:
+
+#+begin_src c++
+throw std::logic_error("Definition for system_flag not found.");
+#+end_src
+
+Or perhaps =out_of_range=.
+
+Links:
+
+- [[https://en.cppreference.com/w/cpp/error/logic_error.html][std::logic_error]]: "Defines a type of object to be thrown as exception. It
+  reports errors that are a consequence of faulty logic within the program such
+  as violating logical preconditions or class invariants and may be preventable.
+  No standard library components throw this exception directly, but the
+  exception types =std::invalid_argument=, =std::domain_error=,
+  =std::length_error=, =std::out_of_range=, =std::future_error=, and
+  =std::experimental::bad_optional_access= are derived from =std::logic_error=."
+- [[https://en.cppreference.com/w/cpp/error/out_of_range.html][std::out_of_range]]: "Defines a type of object to be thrown as exception. It
+  reports errors that are consequence of attempt to access elements out of
+  defined range."
 
 *** Create faker for past timepoint                                    :code:
 

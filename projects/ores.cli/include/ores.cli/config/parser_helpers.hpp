@@ -24,6 +24,10 @@
 #include <vector>
 #include <iosfwd>
 #include <boost/program_options.hpp>
+#include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/format.hpp"
+#include "ores.cli/config/export_options.hpp"
+#include "ores.cli/config/delete_options.hpp"
 
 namespace ores::cli::config::parser_helpers {
 
@@ -62,6 +66,33 @@ void print_entity_help(const std::string& entity_name,
     const std::string& description,
     const std::vector<std::pair<std::string, std::string>>& operations,
     std::ostream& info);
+
+/**
+ * @brief Creates the options related to exporting/listing.
+ */
+boost::program_options::options_description make_export_options_description();
+
+/**
+ * @brief Creates the options related to deleting entities.
+ */
+boost::program_options::options_description make_delete_options_description();
+
+/**
+ * @brief Reads format from the variables map.
+ */
+format read_format(const boost::program_options::variables_map& vm);
+
+/**
+ * @brief Reads the export configuration from the variables map.
+ */
+export_options read_export_options(
+    const boost::program_options::variables_map& vm, entity e);
+
+/**
+ * @brief Reads the delete configuration from the variables map.
+ */
+delete_options read_delete_options(
+    const boost::program_options::variables_map& vm, entity e);
 
 }
 

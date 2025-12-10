@@ -191,18 +191,15 @@ public:
                                    << static_cast<std::uint16_t>(type)
                                    << " from " << remote_address;
 
-        auto type_value = static_cast<std::uint16_t>(type);
-
-        if (type_value == static_cast<std::uint16_t>(test_message_type::test_request)) {
-            co_return handle_test_request(payload);
+        switch (static_cast<test_message_type>(type)) {
+            case test_message_type::test_request:
+                co_return handle_test_request(payload);
+            case test_message_type::echo_request:
+                co_return handle_echo_request(payload);
+            default:
+                BOOST_LOG_SEV(lg(), error) << "Unknown message type: " << static_cast<std::uint16_t>(type);
+                co_return std::unexpected(ores::comms::messaging::error_code::invalid_message_type);
         }
-
-        if (type_value == static_cast<std::uint16_t>(test_message_type::echo_request)) {
-            co_return handle_echo_request(payload);
-        }
-
-        BOOST_LOG_SEV(lg(), error) << "Unknown message type: " << type_value;
-        co_return std::unexpected(ores::comms::messaging::error_code::invalid_message_type);
     }
 
 private:

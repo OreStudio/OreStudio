@@ -67,7 +67,7 @@ struct test_request final {
     }
 
     static std::expected<test_request, ores::comms::messaging::error_code>
-    deserialize(std::span<const std::byte> data) {
+    deserialize(std::span<const std::byte>& data) {
         auto value_result = ores::comms::messaging::reader::read_uint32(data);
         if (!value_result) {
             return std::unexpected(value_result.error());
@@ -101,7 +101,7 @@ struct test_response final {
     }
 
     static std::expected<test_response, ores::comms::messaging::error_code>
-    deserialize(std::span<const std::byte> data) {
+    deserialize(std::span<const std::byte>& data) {
         auto success_result = ores::comms::messaging::reader::read_bool(data);
         if (!success_result) {
             return std::unexpected(success_result.error());
@@ -134,7 +134,7 @@ struct echo_request final {
     }
 
     static std::expected<echo_request, ores::comms::messaging::error_code>
-    deserialize(std::span<const std::byte> data) {
+    deserialize(std::span<const std::byte>& data) {
         auto data_result = ores::comms::messaging::reader::read_string(data);
         if (!data_result) {
             return std::unexpected(data_result.error());
@@ -156,7 +156,7 @@ struct echo_response final {
     }
 
     static std::expected<echo_response, ores::comms::messaging::error_code>
-    deserialize(std::span<const std::byte> data) {
+    deserialize(std::span<const std::byte>& data) {
         auto data_result = ores::comms::messaging::reader::read_string(data);
         if (!data_result) {
             return std::unexpected(data_result.error());

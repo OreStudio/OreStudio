@@ -23,7 +23,6 @@
 #include <iomanip>
 #include <ostream>
 #include <algorithm>
-#include <magic_enum/magic_enum.hpp>
 #include "ores.utility/log/logging_configuration.hpp"
 #include "ores.utility/database/database_configuration.hpp"
 #include "ores.cli/config/parser_exception.hpp"
@@ -61,12 +60,6 @@ add_common_options(boost::program_options::options_description base) {
     boost::program_options::options_description r;
     r.add(base).add(db_desc).add(log_desc);
     return r;
-}
-
-void force_entity(boost::program_options::variables_map& vm, entity e) {
-    const auto entity_name = std::string(magic_enum::enum_name(e));
-    vm.insert(std::make_pair("entity",
-        boost::program_options::variable_value(entity_name, false)));
 }
 
 void validate_operation(const std::string& entity_name,

@@ -50,11 +50,9 @@ using ores::cli::config::export_options;
 using ores::cli::config::parser_exception;
 using ores::cli::config::parser_helpers::print_help_command;
 using ores::cli::config::parser_helpers::add_common_options;
-using ores::cli::config::parser_helpers::force_entity;
 using ores::cli::config::parser_helpers::validate_operation;
 using ores::cli::config::parser_helpers::print_entity_help;
 
-const std::string entity_arg("entity");
 const std::string export_as_of_arg("as-of");
 const std::string export_key_arg("key");
 const std::string export_all_versions_arg("all-versions");
@@ -75,9 +73,6 @@ const std::vector<std::string> allowed_operations{
 options_description make_export_options_description() {
     options_description r("Export");
     r.add_options()
-        ("entity",
-            value<std::string>(),
-            "Entity to export, e.g. 'currency_config', etc.")
         ("as-of", value<std::string>(),
             "Time point from which to dump data. If not supplied, defaults to latest.")
         ("key", value<std::string>(), "Key to filter data by.")
@@ -93,9 +88,6 @@ options_description make_export_options_description() {
 options_description make_delete_options_description() {
     options_description r("Delete");
     r.add_options()
-        ("entity",
-            value<std::string>(),
-            "Entity to delete, e.g. 'accounts', etc.")
         ("key", value<std::string>(), "Key to identify the entity (e.g., account ID or username).");
 
     return r;
@@ -127,22 +119,6 @@ options_description make_add_account_options_description() {
 }
 
 /**
- * @brief Reads entity from the variables map.
- */
-entity read_entity(const variables_map& vm) {
-    if (vm.count(entity_arg) == 0)
-        BOOST_THROW_EXCEPTION(parser_exception("Must supply entity."));
-
-    const auto s(vm[entity_arg].as<std::string>());
-    auto e = magic_enum::enum_cast<entity>(s);
-    if (e.has_value())
-        return e.value();
-
-    BOOST_THROW_EXCEPTION(
-        parser_exception("Invalid or unsupported entity: '" + s + "'"));
-}
-
-/**
  * @brief Reads format from the variables map.
  */
 format read_format(const variables_map& vm) {
@@ -161,10 +137,10 @@ format read_format(const variables_map& vm) {
 /**
  * @brief Reads the export configuration from the variables map.
  */
-export_options read_export_options(const variables_map& vm) {
+export_options read_export_options(const variables_map& vm, entity e) {
     export_options r;
 
-    r.target_entity = read_entity(vm);
+    r.target_entity = e;
     r.target_format = read_format(vm);
     r.all_versions = vm.count(export_all_versions_arg) != 0;
 
@@ -180,10 +156,10 @@ export_options read_export_options(const variables_map& vm) {
 /**
  * @brief Reads the delete configuration from the variables map.
  */
-ores::cli::config::delete_options read_delete_options(const variables_map& vm) {
+ores::cli::config::delete_options read_delete_options(const variables_map& vm, entity e) {
     ores::cli::config::delete_options r;
 
-    r.target_entity = read_entity(vm);
+    r.target_entity = e;
 
     if (vm.count(delete_key_arg) == 0) {
         BOOST_THROW_EXCEPTION(
@@ -280,8 +256,7 @@ handle_accounts_command(bool has_help,
         }
         store(command_line_parser(o).options(d).run(), vm);
         store(parse_environment(d, name_mapper), vm);
-        force_entity(vm, entity::accounts);
-        r.exporting = read_export_options(vm);
+        r.exporting = read_export_options(vm, entity::accounts);
     } else if (operation == delete_command_name) {
         auto d = add_common_options(make_delete_options_description());
         if (has_help) {
@@ -290,8 +265,7 @@ handle_accounts_command(bool has_help,
         }
         store(command_line_parser(o).options(d).run(), vm);
         store(parse_environment(d, name_mapper), vm);
-        force_entity(vm, entity::accounts);
-        r.deleting = read_delete_options(vm);
+        r.deleting = read_delete_options(vm, entity::accounts);
     } else if (operation == add_command_name) {
         auto d = add_common_options(make_add_account_options_description());
         if (has_help) {
@@ -300,7 +274,6 @@ handle_accounts_command(bool has_help,
         }
         store(command_line_parser(o).options(d).run(), vm);
         store(parse_environment(d, name_mapper), vm);
-        force_entity(vm, entity::accounts);
         r.adding = read_add_account_options(vm);
     }
 

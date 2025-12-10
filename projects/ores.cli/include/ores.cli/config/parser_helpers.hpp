@@ -24,7 +24,6 @@
 #include <vector>
 #include <iosfwd>
 #include <boost/program_options.hpp>
-#include "ores.cli/config/entity.hpp"
 
 namespace ores::cli::config::parser_helpers {
 
@@ -48,11 +47,6 @@ void print_help_command(const std::string& command_name,
  */
 boost::program_options::options_description
 add_common_options(boost::program_options::options_description base);
-
-/**
- * @brief Forces the entity value into the variables_map.
- */
-void force_entity(boost::program_options::variables_map& vm, entity e);
 
 /**
  * @brief Validates that an operation is in the list of allowed operations.

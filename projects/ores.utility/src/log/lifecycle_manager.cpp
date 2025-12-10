@@ -19,6 +19,7 @@
  */
 #include "ores.utility/log/lifecycle_manager.hpp"
 
+#include <string_view>
 #include <boost/make_shared.hpp>
 #include <boost/core/null_deleter.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -72,7 +73,7 @@ lifecycle_manager::make_file_sink(std::filesystem::path path,
         % expressions::format_date_time<boost::posix_time::ptime>(
             time_stamp_attr, time_stamp_format)
         % expressions::attr<severity_level>(severity_attr)
-        % expressions::attr<std::string>(channel_attr)
+        % expressions::attr<std::string_view>(channel_attr)
         % expressions::smessage);
     return sink;
 }
@@ -106,7 +107,7 @@ make_console_sink(const severity_level severity, std::string tag) {
         % expressions::format_date_time<boost::posix_time::ptime>(
             time_stamp_attr, time_stamp_format)
         % expressions::attr<severity_level>(severity_attr)
-        % expressions::attr<std::string>(channel_attr)
+        % expressions::attr<std::string_view>(channel_attr)
         % expressions::smessage);
 
     std::cout << "Initialised logging." <<std::endl;

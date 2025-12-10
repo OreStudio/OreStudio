@@ -28,8 +28,9 @@ namespace ores::accounts::messaging {
 using namespace ores::utility::log;
 using comms::messaging::message_type;
 
-accounts_message_handler::accounts_message_handler(utility::database::context ctx)
-    : service_(ctx), ctx_(ctx) {}
+accounts_message_handler::accounts_message_handler(utility::database::context ctx,
+    std::shared_ptr<variability::service::system_flags_service> system_flags)
+    : service_(ctx), ctx_(ctx), system_flags_(std::move(system_flags)) {}
 
 accounts_message_handler::handler_result
 accounts_message_handler::handle_message(message_type type,
@@ -38,7 +39,7 @@ accounts_message_handler::handle_message(message_type type,
     BOOST_LOG_SEV(lg(), debug) << "Handling accounts message type " << type;
 
     // Check bootstrap mode - only allow bootstrap endpoints
-    const bool in_bootstrap = ctx_.is_in_bootstrap_mode();
+    const bool in_bootstrap = system_flags_->is_bootstrap_mode_enabled();
     const bool is_bootstrap_endpoint =
         type == message_type::create_initial_admin_request ||
         type == message_type::bootstrap_status_request;
@@ -308,7 +309,7 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
         co_return response.serialize();
     }
 
-    if (!ctx_.is_in_bootstrap_mode()) {
+    if (!system_flags_->is_bootstrap_mode_enabled()) {
         BOOST_LOG_SEV(lg(), warn)
             << "Rejected create_initial_admin_request: system not in bootstrap mode";
         create_initial_admin_response response{
@@ -338,12 +339,8 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
             true
         );
 
-        // Exit bootstrap mode by updating feature flag
-        service::bootstrap_mode_service bootstrap_svc(ctx_);
-        bootstrap_svc.exit_bootstrap_mode();
-
-        // Update context flag for current session
-        ctx_.set_bootstrap_mode(false);
+        // Exit bootstrap mode - updates database and shared cache
+        system_flags_->set_bootstrap_mode(false, "system");
 
         BOOST_LOG_SEV(lg(), info)
             << "Created initial admin account with ID: " << account.id
@@ -381,7 +378,7 @@ handle_bootstrap_status_request(std::span<const std::byte> payload) {
         co_return std::unexpected(request_result.error());
     }
 
-    const bool in_bootstrap = ctx_.is_in_bootstrap_mode();
+    const bool in_bootstrap = system_flags_->is_bootstrap_mode_enabled();
 
     BOOST_LOG_SEV(lg(), debug) << "Bootstrap mode status: "
                                << (in_bootstrap ? "ACTIVE" : "INACTIVE");

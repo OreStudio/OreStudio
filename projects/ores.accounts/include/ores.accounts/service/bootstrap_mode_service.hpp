@@ -21,7 +21,7 @@
 #define ORES_ACCOUNTS_SERVICE_BOOTSTRAP_MODE_SERVICE_HPP
 
 #include "ores.accounts/repository/account_repository.hpp"
-#include "ores.variability/service/feature_flags_service.hpp"
+#include "ores.variability/service/system_flags_service.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/database/context.hpp"
 
@@ -54,8 +54,6 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
-
-    static constexpr const char* BOOTSTRAP_FLAG_NAME = "system.bootstrap_mode";
 
 public:
     using context = ores::utility::database::context;
@@ -105,7 +103,7 @@ public:
 
 private:
     repository::account_repository account_repo_;
-    variability::service::feature_flags_service feature_flags_service_;
+    variability::service::system_flags_service system_flags_service_;
     utility::database::context ctx_;
 };
 

@@ -20,9 +20,11 @@
 #ifndef ORES_RISK_MESSAGING_RISK_MESSAGE_HANDLER_HPP
 #define ORES_RISK_MESSAGING_RISK_MESSAGE_HANDLER_HPP
 
+#include <memory>
 #include "ores.comms/messaging/message_handler.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/database/context.hpp"
+#include "ores.variability/service/system_flags_service.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
 
 namespace ores::risk::messaging {
@@ -50,8 +52,10 @@ public:
      * @brief Construct a risk message handler.
      *
      * @param ctx Database context for repository access
+     * @param system_flags Shared system flags service for flag access
      */
-    explicit risk_message_handler(utility::database::context ctx);
+    risk_message_handler(utility::database::context ctx,
+        std::shared_ptr<variability::service::system_flags_service> system_flags);
 
     /**
      * @brief Handle a risk subsystem message.
@@ -96,6 +100,7 @@ private:
     handle_get_currency_history_request(std::span<const std::byte> payload);
 
     utility::database::context ctx_;
+    std::shared_ptr<variability::service::system_flags_service> system_flags_;
     repository::currency_repository currency_repo_;
 };
 

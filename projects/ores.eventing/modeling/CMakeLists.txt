@@ -15,7 +15,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.notification")
+set(name "ores.eventing")
 
 set(diagram_target generate_${name}_diagram)
 add_custom_target(${diagram_target}

@@ -20,11 +20,12 @@
 #ifndef ORES_ACCOUNTS_MESSAGING_ACCOUNTS_MESSAGE_HANDLER_HPP
 #define ORES_ACCOUNTS_MESSAGING_ACCOUNTS_MESSAGE_HANDLER_HPP
 
+#include <memory>
 #include "ores.utility/database/context.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/messaging/message_handler.hpp"
 #include "ores.accounts/service/account_service.hpp"
-#include "ores.accounts/service/bootstrap_mode_service.hpp"
+#include "ores.variability/service/system_flags_service.hpp"
 
 namespace ores::accounts::messaging {
 
@@ -56,8 +57,10 @@ public:
      * @brief Construct an accounts message handler.
      *
      * @param ctx Database context for repository access
+     * @param system_flags Shared system flags service for flag access
      */
-    explicit accounts_message_handler(utility::database::context ctx);
+    accounts_message_handler(utility::database::context ctx,
+        std::shared_ptr<variability::service::system_flags_service> system_flags);
 
     using handler_result = boost::asio::awaitable<
         std::expected<std::vector<std::byte>, comms::messaging::error_code>
@@ -141,6 +144,7 @@ private:
 
     service::account_service service_;
     utility::database::context ctx_;
+    std::shared_ptr<variability::service::system_flags_service> system_flags_;
 };
 
 }

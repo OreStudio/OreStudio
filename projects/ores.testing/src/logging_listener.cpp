@@ -31,18 +31,20 @@
 #include "ores.utility/log/lifecycle_manager.hpp"
 #include "ores.utility/log/logging_options.hpp"
 
+using namespace ores::utility::log;
+
 namespace {
 
 /**
  * @brief Thread-local storage for the current test logger and lifecycle manager.
  */
 struct test_logging_context {
-    std::unique_ptr<ores::utility::log::lifecycle_manager> lifecycle_manager;
-    std::optional<boost::log::sources::severity_channel_logger_mt<
-        ores::utility::log::severity_level, std::string_view>> logger;
+    std::unique_ptr<lifecycle_manager> lifecycle_mgr;
+    std::optional<logger_t> logger;
 };
 
 thread_local test_logging_context current_test_context;
+inline std::string_view component_name = "catch2";
 
 // Global variable to store the test module name, set from main function
 std::string test_module_name = "ores.tests"; // default fallback
@@ -98,7 +100,7 @@ void logging_listener::testRunStarting(Catch::TestRunInfo const& /*testRunInfo*/
     // Build logging options for test suite level logging
     std::filesystem::path log_dir = std::filesystem::path("..") / "log" / module;
 
-    ores::utility::log::logging_options cfg;
+    logging_options cfg;
     cfg.output_directory = log_dir;
     cfg.filename = module;
     cfg.severity = "trace";
@@ -106,8 +108,8 @@ void logging_listener::testRunStarting(Catch::TestRunInfo const& /*testRunInfo*/
     cfg.tag = "TestSuite";
 
     // Initialize logging lifecycle manager with options
-    lifecycle_manager_ = std::make_shared<utility::log::lifecycle_manager>(
-        std::optional<ores::utility::log::logging_options>{cfg});
+    lifecycle_manager_ = std::make_shared<lifecycle_manager>(
+        std::optional<logging_options>{cfg});
 }
 
 void logging_listener::testRunEnded(Catch::TestRunStats const& testRunStats) {
@@ -122,106 +124,90 @@ void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
 
     // Build logging options
     std::filesystem::path log_dir = std::filesystem::path("..") / "log" / module / suite;
-    ores::utility::log::logging_options cfg;
+    logging_options cfg;
     cfg.output_directory = log_dir;
     cfg.filename = test_name;
     cfg.severity = "trace";
     cfg.output_to_console = false;
 
     // Initialize logging lifecycle manager with options
-    current_test_context.lifecycle_manager =
-        std::make_unique<ores::utility::log::lifecycle_manager>(
-            std::optional<ores::utility::log::logging_options>{cfg});
+    current_test_context.lifecycle_mgr =
+        std::make_unique<lifecycle_manager>(std::optional<logging_options>{cfg});
 
     // Create logger for this test
-    current_test_context.logger.emplace(
-        ores::utility::log::make_logger(suite));
+    current_test_context.logger.emplace(make_logger(component_name));
 
     // Log test case start
-    using ores::utility::log::severity_level;
-    BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::info)
-        << "Test case starting: " << testInfo.name;
+    auto& lg = current_test_context.logger.value();
+    BOOST_LOG_SEV(lg, info) << "Test case starting: " << testInfo.name;
     if (!testInfo.tags.empty()) {
         std::ostringstream tags;
         tags << "  Tags: ";
-        for (const auto& tag : testInfo.tags) {
+        for (const auto& tag : testInfo.tags)
             tags << tag.original << " ";
-        }
-        BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::debug)
-            << tags.str();
+
+        BOOST_LOG_SEV(lg, debug) << tags.str();
     }
 }
 
 void logging_listener::testCaseEnded(Catch::TestCaseStats const& testCaseStats) {
     if (!current_test_context.logger.has_value()) return;
 
-    using ores::utility::log::severity_level;
     const auto& totals = testCaseStats.totals;
 
-    auto log_level = totals.assertions.allOk() ? severity_level::info : severity_level::error;
-    BOOST_LOG_SEV(current_test_context.logger.value(), log_level)
-        << "Test case ended: " << testCaseStats.testInfo->name
-        << " - " << (totals.assertions.allOk() ? "PASSED" : "FAILED");
+    auto log_level = totals.assertions.allOk() ? info : error;
+    auto& lg = current_test_context.logger.value();
+    BOOST_LOG_SEV(lg, log_level) << "Test case ended: " << testCaseStats.testInfo->name
+                                 << " - " << (totals.assertions.allOk() ? "PASSED" : "FAILED");
 
-    BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::info)
-        << "  Assertions: " << totals.assertions.passed << " passed, "
-        << totals.assertions.failed << " failed, "
-        << totals.assertions.total() << " total";
+    BOOST_LOG_SEV(lg, info) << "  Assertions: " << totals.assertions.passed << " passed, "
+                            << totals.assertions.failed << " failed, "
+                            << totals.assertions.total() << " total";
 
-    if (testCaseStats.stdOut.size() > 0) {
-        BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::debug)
-            << "  Standard output:\n" << testCaseStats.stdOut;
-    }
-    if (testCaseStats.stdErr.size() > 0) {
-        BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::debug)
-            << "  Standard error:\n" << testCaseStats.stdErr;
-    }
+    if (testCaseStats.stdOut.size() > 0)
+        BOOST_LOG_SEV(lg, debug) << "  Standard output:\n" << testCaseStats.stdOut;
+
+    if (testCaseStats.stdErr.size() > 0)
+        BOOST_LOG_SEV(lg, debug) << "  Standard error:\n" << testCaseStats.stdErr;
 
     // Clean up logging context
     current_test_context.logger.reset();
-    current_test_context.lifecycle_manager.reset();
+    current_test_context.lifecycle_mgr.reset();
 }
 
 void logging_listener::assertionEnded(Catch::AssertionStats const& assertionStats) {
     if (!current_test_context.logger.has_value()) return;
 
-    using ores::utility::log::severity_level;
     const auto& result = assertionStats.assertionResult;
+    auto& lg = current_test_context.logger.value();
 
-    if (result.isOk()) {
-        BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::trace)
-            << "Assertion passed: " << result.getExpression();
-    } else {
-        BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::error)
-            << "Assertion failed: " << result.getExpression()
-            << " at " << result.getSourceInfo().file << ":" << result.getSourceInfo().line;
-        if (result.hasMessage()) {
-            BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::error)
-                << "  Message: " << result.getMessage();
-        }
-        if (result.hasExpandedExpression()) {
-            BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::error)
-                << "  Expanded: " << result.getExpandedExpression();
-        }
+    if (result.isOk())
+        BOOST_LOG_SEV(lg, trace) << "Assertion passed: " << result.getExpression();
+    else {
+        BOOST_LOG_SEV(lg, error) << "Assertion failed: " << result.getExpression() << " at "
+                                 << result.getSourceInfo().file << ":"
+                                 << result.getSourceInfo().line;
+        if (result.hasMessage())
+            BOOST_LOG_SEV(lg, error) << "  Message: " << result.getMessage();
+
+        if (result.hasExpandedExpression())
+            BOOST_LOG_SEV(lg, error) << "  Expanded: " << result.getExpandedExpression();
     }
 }
 
 void logging_listener::sectionStarting(Catch::SectionInfo const& sectionInfo) {
     if (!current_test_context.logger.has_value()) return;
 
-    using ores::utility::log::severity_level;
-    BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::debug)
-        << "Section starting: " << sectionInfo.name;
+    auto& lg = current_test_context.logger.value();
+    BOOST_LOG_SEV(lg, debug) << "Section starting: " << sectionInfo.name;
 }
 
 void logging_listener::sectionEnded(Catch::SectionStats const& sectionStats) {
     if (!current_test_context.logger.has_value()) return;
 
-    using ores::utility::log::severity_level;
-    BOOST_LOG_SEV(current_test_context.logger.value(), severity_level::debug)
-        << "Section ended: " << sectionStats.sectionInfo.name
-        << " (assertions: " << sectionStats.assertions.total() << ")";
+    auto& lg = current_test_context.logger.value();
+    BOOST_LOG_SEV(lg, debug) << "Section ended: " << sectionStats.sectionInfo.name
+                             << " (assertions: " << sectionStats.assertions.total() << ")";
 }
-
 
 }

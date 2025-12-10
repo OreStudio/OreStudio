@@ -28,97 +28,57 @@ using namespace ores::utility::log;
 
 bootstrap_mode_service::bootstrap_mode_service(utility::database::context ctx)
     : account_repo_(ctx),
-      feature_flags_service_(ctx),
+      system_flags_service_(ctx),
       ctx_(ctx) {
-
     BOOST_LOG_SEV(lg(), debug) << "DML for account: " << account_repo_.sql();
-
 }
 
 bool bootstrap_mode_service::is_in_bootstrap_mode() {
     BOOST_LOG_SEV(lg(), debug) << "Checking bootstrap mode status";
 
-    auto flag_opt = feature_flags_service_.get_feature_flag(BOOTSTRAP_FLAG_NAME);
-    if (!flag_opt.has_value()) {
-        BOOST_LOG_SEV(lg(), warn) << "Bootstrap flag not found, assuming secure mode";
-        return false;
-    }
-
-    const bool in_bootstrap = flag_opt->enabled;
-    BOOST_LOG_SEV(lg(), debug) << "Bootstrap mode: " << (in_bootstrap ? "true" : "false");
+    const bool in_bootstrap = system_flags_service_.is_bootstrap_mode_enabled();
+    BOOST_LOG_SEV(lg(), debug) << "Bootstrap mode: "
+        << (in_bootstrap ? "true" : "false");
     return in_bootstrap;
 }
 
 void bootstrap_mode_service::initialize_bootstrap_state() {
     BOOST_LOG_SEV(lg(), info) << "Initializing bootstrap mode state";
 
-    auto flag_opt = feature_flags_service_.get_feature_flag(BOOTSTRAP_FLAG_NAME);
     auto accounts = account_repo_.read_latest();
-
     bool admin_exists = std::ranges::any_of(accounts,
         [](const domain::account& acc) { return acc.is_admin; });
 
     BOOST_LOG_SEV(lg(), debug) << "Total accounts: " << accounts.size();
-    BOOST_LOG_SEV(lg(), debug) << "Admin exists: " << (admin_exists ? "true" : "false");
+    BOOST_LOG_SEV(lg(), debug) << "Admin exists: "
+        << (admin_exists ? "true" : "false");
 
-    if (!flag_opt.has_value()) {
-        BOOST_LOG_SEV(lg(), info) << "Bootstrap flag does not exist, creating it";
+    const bool flag_enabled = system_flags_service_.is_bootstrap_mode_enabled();
+    BOOST_LOG_SEV(lg(), debug) << "Bootstrap flag enabled: "
+        << (flag_enabled ? "true" : "false");
 
-        variability::domain::feature_flags bootstrap_flag{
-            .enabled = !admin_exists,
-            .name = BOOTSTRAP_FLAG_NAME,
-            .description = "Indicates whether the system is in bootstrap mode (waiting for initial admin account)",
-            .modified_by = "system"
-        };
-
-        feature_flags_service_.save_feature_flag(bootstrap_flag);
-        BOOST_LOG_SEV(lg(), info) << "Created bootstrap flag with enabled="
-                                  << (bootstrap_flag.enabled ? "true" : "false");
-    } else {
-        const bool flag_enabled = flag_opt->enabled;
-        BOOST_LOG_SEV(lg(), debug) << "Bootstrap flag exists with enabled="
-                                   << (flag_enabled ? "true" : "false");
-
-        if (flag_enabled && admin_exists) {
-            BOOST_LOG_SEV(lg(), warn) << "Bootstrap flag is enabled but admin accounts exist, correcting state";
-            exit_bootstrap_mode();
-        } else if (!flag_enabled && !admin_exists) {
-            BOOST_LOG_SEV(lg(), warn) << "Bootstrap flag is disabled but no admin accounts exist, this is inconsistent";
-            BOOST_LOG_SEV(lg(), warn) << "Enabling bootstrap mode";
-
-                    variability::domain::feature_flags bootstrap_flag{
-                .enabled = true,
-                .name = BOOTSTRAP_FLAG_NAME,
-                .description = "Indicates whether the system is in bootstrap mode (waiting for initial admin account)",
-                .modified_by = "system"
-            };
-            feature_flags_service_.save_feature_flag(bootstrap_flag);
-        }
+    if (flag_enabled && admin_exists) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Bootstrap flag is enabled but admin accounts exist, "
+            << "correcting state";
+        exit_bootstrap_mode();
+    } else if (!flag_enabled && !admin_exists) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Bootstrap flag is disabled but no admin accounts exist, "
+            << "this is inconsistent. Enabling bootstrap mode";
+        system_flags_service_.set_bootstrap_mode(true, "system");
     }
 }
 
 void bootstrap_mode_service::exit_bootstrap_mode() {
     BOOST_LOG_SEV(lg(), info) << "Exiting bootstrap mode";
 
-    auto flag_opt = feature_flags_service_.get_feature_flag(BOOTSTRAP_FLAG_NAME);
-    if (!flag_opt.has_value()) {
-        BOOST_LOG_SEV(lg(), warn) << "Bootstrap flag does not exist, cannot exit bootstrap mode";
-        return;
-    }
-
-    if (!flag_opt->enabled) {
+    if (!system_flags_service_.is_bootstrap_mode_enabled()) {
         BOOST_LOG_SEV(lg(), debug) << "Already in secure mode, nothing to do";
         return;
     }
 
-    variability::domain::feature_flags secure_mode_flag{
-        .enabled = false,
-        .name = BOOTSTRAP_FLAG_NAME,
-        .description = "Indicates whether the system is in bootstrap mode (waiting for initial admin account)",
-        .modified_by = "system"
-    };
-
-    feature_flags_service_.save_feature_flag(secure_mode_flag);
+    system_flags_service_.set_bootstrap_mode(false, "system");
     BOOST_LOG_SEV(lg(), info) << "Successfully exited bootstrap mode";
 }
 

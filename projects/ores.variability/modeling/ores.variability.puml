@@ -42,6 +42,72 @@ namespace ores #F2F2F2 {
             - description: Description of what the feature flag controls.
             - modified_by: Username of the user who last modified this feature flag.
             end note
+
+            enum system_flag <<enum>> #F7E5FF {
+                bootstrap_mode
+                user_signups
+            }
+
+            note top of system_flag
+            Enumeration of well-known system flags.
+
+            System flags are compile-time known feature flags that control
+            core system behavior. Flag names use "system." prefix followed
+            by enum name (e.g., system.bootstrap_mode).
+
+            Values:
+
+            - bootstrap_mode: System waiting for initial admin (default: enabled)
+            - user_signups: User self-registration allowed (default: disabled)
+            end note
+
+            class system_flag_definition #F7E5FF {
+                +{field} flag system_flag
+                +{field} default_enabled bool
+                +{field} description std::string_view
+            }
+
+            note top of system_flag_definition
+            Metadata for a system flag including default state and description.
+            end note
+
+            system_flag_definition o-- system_flag
+
+            class system_flags <<utility>> #F7E5FF {
+                +{static} system_flag_definitions std::array<system_flag_definition>
+                +{static} to_flag_name(system_flag) std::string
+                +{static} from_flag_name(std::string_view) std::optional<system_flag>
+                +{static} get_definition(system_flag) system_flag_definition
+            }
+
+            note top of system_flags
+            Utility functions for system flag conversion and lookup.
+
+            - system_flag_definitions: Compile-time manifest of all system flags
+            - to_flag_name: Converts enum to database name (e.g., "system.bootstrap_mode")
+            - from_flag_name: Parses database name to enum
+            - get_definition: Gets flag metadata including defaults
+            end note
+
+            system_flags ..> system_flag : uses
+            system_flags ..> system_flag_definition : uses
+
+            class system_flags_cache <<pod>> #F7E5FF {
+                +{field} bootstrap_mode bool
+                +{field} user_signups bool
+            }
+
+            note top of system_flags_cache
+            POD struct for caching system flag values.
+
+            Stores the current state of all system flags for
+            fast, lockless access without database queries.
+            Updated via system_flags_service::refresh().
+
+            Default values match system_flag_definitions:
+            - bootstrap_mode: true (enabled)
+            - user_signups: false (disabled)
+            end note
         }
 
         namespace repository #F2F2F2 {
@@ -133,6 +199,63 @@ namespace ores #F2F2F2 {
 
             feature_flags_service o-- ores::variability::repository::feature_flags_repository
             feature_flags_service ..> ores::variability::domain::feature_flags : uses
+
+            class system_flags_service #ECECEC {
+                +system_flags_service(context)
+                +refresh() void
+                +cache() const domain::system_flags_cache&
+                +is_enabled(domain::system_flag) bool
+                +set_enabled(domain::system_flag, bool, std::string_view) void
+                +is_bootstrap_mode_enabled() bool
+                +set_bootstrap_mode(bool, std::string_view) void
+                +is_user_signups_enabled() bool
+                +set_user_signups(bool, std::string_view) void
+                -update_cache(domain::system_flag, bool) void
+                -{field} feature_flags_service_ feature_flags_service
+                -{field} cache_ domain::system_flags_cache
+            }
+
+            note top of system_flags_service
+            Service for accessing well-known system flags with type-safe methods.
+
+            Provides typed interface for querying and modifying system flags.
+            Maintains an in-memory cache for fast access. Cache must be
+            refreshed explicitly via refresh() after external changes.
+
+            Methods:
+
+            - refresh(): Reload all flags from database into cache
+            - cache(): Get const reference to cached flag values
+            - is_enabled/set_enabled: Generic flag access by enum
+            - Convenience methods: is_bootstrap_mode_enabled, set_bootstrap_mode, etc.
+
+            Cache is updated on set operations and must be shared via
+            std::shared_ptr for multi-component access.
+            end note
+
+            system_flags_service o-- feature_flags_service
+            system_flags_service o-- ores::variability::domain::system_flags_cache
+            system_flags_service ..> ores::variability::domain::system_flag : uses
+
+            class flag_initializer #ECECEC {
+                +flag_initializer(context)
+                +ensure_system_flags_exist() std::size_t
+                -{field} feature_flags_service_ feature_flags_service
+            }
+
+            note top of flag_initializer
+            Initializes system flags in the database at startup.
+
+            Ensures all well-known system flags exist with default values.
+            Called early during service startup, before any component queries
+            system flags. Only creates missing flags - does not overwrite
+            existing values.
+
+            Returns the number of flags created (0 if all existed).
+            end note
+
+            flag_initializer o-- feature_flags_service
+            flag_initializer ..> ores::variability::domain::system_flag_definition : uses
         }
 
         namespace messaging #F2F2F2 {
@@ -222,6 +345,65 @@ namespace ores #F2F2F2 {
             end note
 
             domain_feature_flags_tests ..> ores::variability::domain::feature_flags : tests
+
+            class domain_system_flags_tests <<test suite>> #C5E1A5 {
+                +to_flag_name_converts_bootstrap_mode() void
+                +to_flag_name_converts_user_signups() void
+                +from_flag_name_parses_valid_flags() void
+                +from_flag_name_returns_nullopt_for_invalid() void
+                +roundtrip_conversion_for_all_system_flags() void
+                +get_definition_returns_correct_defaults() void
+                +system_flag_definitions_contains_all_enum_values() void
+            }
+
+            note top of domain_system_flags_tests
+            Test suite for system_flag domain types.
+
+            Tests cover:
+            - Flag name conversion (to_flag_name, from_flag_name)
+            - Roundtrip conversion for all enum values
+            - Default value verification
+            - Manifest completeness
+            end note
+
+            domain_system_flags_tests ..> ores::variability::domain::system_flag : tests
+            domain_system_flags_tests ..> ores::variability::domain::system_flags : tests
+
+            class service_system_flags_service_tests <<test suite>> #C5E1A5 {
+                +default_values_when_flag_not_in_database() void
+                +set_and_get_operations() void
+                +update_existing_flags() void
+                +multiple_flags_independent() void
+            }
+
+            note top of service_system_flags_service_tests
+            Test suite for system_flags_service.
+
+            Tests cover:
+            - Default value behavior when flags don't exist
+            - Set and get operations
+            - Update/toggle operations
+            - Independence between flags
+            end note
+
+            service_system_flags_service_tests ..> ores::variability::service::system_flags_service : tests
+
+            class service_flag_initializer_tests <<test suite>> #C5E1A5 {
+                +creates_all_system_flags() void
+                +preserves_existing_flags() void
+                +idempotent_initialization() void
+            }
+
+            note top of service_flag_initializer_tests
+            Test suite for flag_initializer.
+
+            Tests cover:
+            - Creates all flags when database is empty
+            - Preserves existing flag values
+            - Idempotent behavior (multiple runs safe)
+            end note
+
+            service_flag_initializer_tests ..> ores::variability::service::flag_initializer : tests
         }
     }
 }

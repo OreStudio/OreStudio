@@ -21,78 +21,60 @@ title ores.eventing Component
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
-    note "Eventing service for real-time updates." as ores_eventing_note
+    note "Eventing component for entity change notifications." as ores_eventing_note
     eventing --- ores_eventing_note
+
     namespace eventing #F2F2F2 {
         namespace domain #F2F2F2 {
-            struct eventing <<json_io>> <<table_io>> #F7E5FF {
-                -{field} entity std::string
-                -{field} timestamp std::chrono::system_clock::time_point
+            struct entity_change_event #F7E5FF {
+                +{field} entity std::string
+                +{field} timestamp std::chrono::system_clock::time_point
             }
-            note top of eventing
-            Represents a eventing about a change to an entity.
-            - entity: Fully qualified name of the entity (e.g., "ores.risk.currency").
-            - timestamp: When the change occurred (UTC).
 
-            JSON I/O: std::ostream& operator<<(std::ostream&, const notification&)
-            Table I/O: std::ostream& operator<<(std::ostream&, const std::vector<notification>&)
+            note top of entity_change_event
+            Represents a low-level notification about a change
+            to an entity at the repository level.
+
+            - entity: Fully qualified name of the entity
+              (e.g., "ores.risk.currency").
+            - timestamp: When the change occurred (UTC).
             end note
         }
 
         namespace generators #F2F2F2 {
-            class notification_generator <<generator>> #D89EF1 {
-                +{static} generate() domain::notification
-                +{static} generate_set(size_t n) std::vector<domain::notification>
+            class entity_change_event_generator <<generator>> #D89EF1 {
+                +{static} generate() domain::entity_change_event
+                +{static} generate_set(size_t n) std::vector<domain::entity_change_event>
             }
-            note top of notification_generator
-            Generates random notification instances.
+
+            note top of entity_change_event_generator
+            Generates random entity change event instances for testing.
             end note
         }
 
         namespace tests #F2F2F2 {
-            class notification_tests <<test suite>> #C5E1A5 {
-                +notification_json_serialization() void
-                +notification_table_serialization() void
-                +notification_generator() void
+            class entity_change_event_tests <<test suite>> #C5E1A5 {
+                +entity_change_event_json_serialization() void
+                +entity_change_event_table_serialization() void
+                +entity_change_event_generator() void
             }
-            note top of notification_tests
-            Test suite for the notification domain type,
-            including JSON/table serialization and generator functionality.
-            end note
-        }
 
-        namespace service #F2F2F2 {
-            class postgres_listener_service #ECECEC {
-                +postgres_listener_service(std::string connection_string, notification_callback_t callback)
-                +~postgres_listener_service()
-                +start() void
-                +stop() void
-                +subscribe(const std::string& channel_name) void
-                -listen_loop() void
-                -handle_notification(PGnotify* notify) void
-                -{field} connection_string_ std::string
-                -{field} conn_ sqlgen::Connection
-                -{field} listener_thread_ std::thread
-                -{field} running_ std::atomic<bool>
-                -{field} notification_callback_ notification_callback_t
-                -{field} subscribed_channels_ std::vector<std::string>
-            }
-            note top of postgres_listener_service
-            Manages a dedicated PostgreSQL connection to listen for NOTIFY events.
-            Runs a separate thread to continuously listen and dispatches
-            parsed domain::notification objects via callback.
-            end note
+            note top of entity_change_event_tests
+            Test suite for entity_change_event domain type.
 
-            postgres_listener_service ..> domain::notification : uses
+            Tests cover JSON serialization, table serialization,
+            and generator functionality.
+            end note
         }
 
         ' Relationships
-        ores::notification::generators::notification_generator --> ores::notification::domain::notification : generates
-        ores::notification::tests::notification_tests ..> ores::notification::domain::notification : tests
+        ores::eventing::generators::entity_change_event_generator --> ores::eventing::domain::entity_change_event : generates
+        ores::eventing::tests::entity_change_event_tests ..> ores::eventing::domain::entity_change_event : tests
+        ores::eventing::tests::entity_change_event_tests ..> ores::eventing::generators::entity_change_event_generator : tests
     }
 }
 
 ' Local Variables:
-' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.notification.puml"
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.eventing.puml"
 ' End:
 @enduml

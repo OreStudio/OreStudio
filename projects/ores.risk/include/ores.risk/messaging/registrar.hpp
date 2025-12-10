@@ -20,9 +20,11 @@
 #ifndef ORES_RISK_MESSAGING_REGISTRAR_HPP
 #define ORES_RISK_MESSAGING_REGISTRAR_HPP
 
+#include <memory>
 #include "ores.comms/net/server.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/database/context.hpp"
+#include "ores.variability/service/system_flags_service.hpp"
 
 namespace ores::risk::messaging {
 
@@ -34,6 +36,7 @@ namespace ores::risk::messaging {
  *
  * @param server The server to register handlers with
  * @param ctx Database context for repository access
+ * @param system_flags Shared system flags service for flag access
  */
 class registrar {
 private:
@@ -48,7 +51,8 @@ private:
 
 public:
     static void register_handlers(comms::net::server& server,
-        utility::database::context ctx);
+        utility::database::context ctx,
+        std::shared_ptr<variability::service::system_flags_service> system_flags);
 };
 
 }

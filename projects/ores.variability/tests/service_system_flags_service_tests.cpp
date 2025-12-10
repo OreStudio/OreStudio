@@ -171,3 +171,65 @@ TEST_CASE("system_flags_service_multiple_flags_independent", tags) {
         CHECK(sut.is_user_signups_enabled() == true);
     }
 }
+
+TEST_CASE("system_flags_service_refresh", tags) {
+    auto lg(make_logger(test_suite));
+
+    SECTION("refresh loads flags from database") {
+        ores::testing::scoped_database_helper db_helper(table_name);
+
+        // First service writes to database
+        {
+            system_flags_service writer(db_helper.context());
+            writer.set_bootstrap_mode(false, "writer");
+            writer.set_user_signups(true, "writer");
+        }
+
+        // Second service should see defaults initially, then DB values after refresh
+        system_flags_service reader(db_helper.context());
+
+        // Before refresh - returns POD defaults
+        CHECK(reader.is_bootstrap_mode_enabled() == true);
+        CHECK(reader.is_user_signups_enabled() == false);
+
+        // After refresh - returns database values
+        reader.refresh();
+        CHECK(reader.is_bootstrap_mode_enabled() == false);
+        CHECK(reader.is_user_signups_enabled() == true);
+    }
+}
+
+TEST_CASE("system_flags_service_cache_accessor", tags) {
+    auto lg(make_logger(test_suite));
+
+    SECTION("cache returns current flag values") {
+        ores::testing::scoped_database_helper db_helper(table_name);
+        system_flags_service sut(db_helper.context());
+
+        // Set some values
+        sut.set_bootstrap_mode(false, "test");
+        sut.set_user_signups(true, "test");
+
+        // Access via cache()
+        const auto& cache = sut.cache();
+        CHECK(cache.bootstrap_mode == false);
+        CHECK(cache.user_signups == true);
+    }
+
+    SECTION("cache reflects refresh") {
+        ores::testing::scoped_database_helper db_helper(table_name);
+
+        // Write values with one service
+        {
+            system_flags_service writer(db_helper.context());
+            writer.set_bootstrap_mode(false, "writer");
+        }
+
+        // Read with another service
+        system_flags_service reader(db_helper.context());
+        reader.refresh();
+
+        const auto& cache = reader.cache();
+        CHECK(cache.bootstrap_mode == false);
+    }
+}

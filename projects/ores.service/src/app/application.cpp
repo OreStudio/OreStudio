@@ -25,6 +25,7 @@
 #include "ores.accounts/messaging/registrar.hpp"
 #include "ores.variability/messaging/registrar.hpp"
 #include "ores.variability/service/flag_initializer.hpp"
+#include "ores.variability/service/system_flags_service.hpp"
 #include "ores.accounts/service/bootstrap_mode_service.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/database/context_factory.hpp"
@@ -65,12 +66,18 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     variability::service::flag_initializer flag_init(ctx);
     flag_init.ensure_system_flags_exist();
 
+    // Create shared system flags service and refresh cache from database
+    auto system_flags = std::make_shared<variability::service::system_flags_service>(ctx);
+    system_flags->refresh();
+
     // Initialize and check bootstrap mode
     accounts::service::bootstrap_mode_service bootstrap_svc(ctx);
     bootstrap_svc.initialize_bootstrap_state();
 
-    const bool in_bootstrap_mode = bootstrap_svc.is_in_bootstrap_mode();
-    ctx.set_bootstrap_mode(in_bootstrap_mode);
+    // Refresh system flags cache after bootstrap state initialization
+    system_flags->refresh();
+
+    const bool in_bootstrap_mode = system_flags->is_bootstrap_mode_enabled();
 
     if (in_bootstrap_mode) {
         BOOST_LOG_SEV(lg(), warn) << "================================================";
@@ -87,14 +94,14 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     }
 
     auto srv = std::make_shared<ores::comms::net::server>(cfg.server);
-    ores::risk::messaging::registrar::register_handlers(*srv, ctx);
-    ores::accounts::messaging::registrar::register_handlers(*srv, ctx);
+    ores::risk::messaging::registrar::register_handlers(*srv, ctx, system_flags);
+    ores::accounts::messaging::registrar::register_handlers(*srv, ctx, system_flags);
     ores::variability::messaging::registrar::register_handlers(*srv, ctx);
 
     co_await srv->run(io_ctx);
 
     // Shutdown logging
-    if (bootstrap_svc.is_in_bootstrap_mode()) {
+    if (system_flags->is_bootstrap_mode_enabled()) {
         BOOST_LOG_SEV(lg(), warn) << "================================================";
         BOOST_LOG_SEV(lg(), warn) << "ORES Service stopped - STILL IN BOOTSTRAP MODE";
         BOOST_LOG_SEV(lg(), warn) << "Initial admin account was NOT created";

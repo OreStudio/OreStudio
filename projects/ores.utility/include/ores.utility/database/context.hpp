@@ -46,25 +46,10 @@ public:
     single_connection_type single_connection() { return single_connection_; }
     const sqlgen::postgres::Credentials& credentials() const { return credentials_; }
 
-    /**
-     * @brief Set the bootstrap mode flag.
-     *
-     * Should be called during application initialization after checking bootstrap state.
-     */
-    void set_bootstrap_mode(bool mode) { bootstrap_mode_ = mode; }
-
-    /**
-     * @brief Check if the system is in bootstrap mode.
-     *
-     * @return true if system is in bootstrap mode (no admin accounts exist), false otherwise
-     */
-    bool is_in_bootstrap_mode() const { return bootstrap_mode_; }
-
 private:
     connection_pool_type connection_pool_;
     single_connection_type single_connection_;
     const sqlgen::postgres::Credentials credentials_;
-    bool bootstrap_mode_ = false;
 
 };
 

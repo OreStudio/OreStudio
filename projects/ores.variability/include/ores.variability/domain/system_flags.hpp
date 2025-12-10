@@ -22,9 +22,10 @@
 
 #include <array>
 #include <string>
-#include <string_view>
-#include <optional>
 #include <ostream>
+#include <optional>
+#include <stdexcept>
+#include <string_view>
 #include <magic_enum/magic_enum.hpp>
 
 namespace ores::variability::domain {
@@ -33,7 +34,7 @@ namespace ores::variability::domain {
  * @brief Enumeration of well-known system flags.
  *
  * System flags are compile-time known feature flags that control core system
- * behavior. Unlike dynamic feature flags which can be created at runtime,
+ * behaviour. Unlike dynamic feature flags which can be created at runtime,
  * system flags have predefined names, descriptions, and default values.
  *
  * The flag names in the database use the "system." prefix followed by the
@@ -77,13 +78,13 @@ struct system_flag_definition {
  * manifest to ensure all system flags exist in the database at startup.
  */
 inline constexpr std::array system_flag_definitions = {
-    system_flag_definition{
+    system_flag_definition {
         .flag = system_flag::bootstrap_mode,
         .default_enabled = true,
         .description = "Indicates whether the system is in bootstrap mode "
         "(waiting for initial admin account)."
     },
-    system_flag_definition{
+    system_flag_definition {
         .flag = system_flag::user_signups,
         .default_enabled = false,
         .description = "Controls whether user self-registration is allowed."
@@ -125,15 +126,14 @@ inline constexpr std::array system_flag_definitions = {
  * @param flag The system flag to look up.
  * @return The flag definition containing default state and description.
  */
-[[nodiscard]] inline const system_flag_definition& get_definition(system_flag flag) {
+[[nodiscard]] inline const system_flag_definition&
+get_definition(system_flag flag) {
     for (const auto& def : system_flag_definitions) {
-        if (def.flag == flag) {
+        if (def.flag == flag)
             return def;
-        }
     }
-    // This should never happen for valid enum values
-    static const system_flag_definition empty{};
-    return empty;
+    // This should never happen for valid enum values.
+    throw std::logic_error("Definition for system_flag not found.");
 }
 
 /**

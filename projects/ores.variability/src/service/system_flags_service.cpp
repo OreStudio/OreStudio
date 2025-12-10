@@ -27,22 +27,36 @@ using namespace ores::utility::log;
 system_flags_service::system_flags_service(utility::database::context ctx)
     : feature_flags_service_(std::move(ctx)) {}
 
-bool system_flags_service::is_enabled(domain::system_flag flag) {
-    const auto flag_name = domain::to_flag_name(flag);
-    BOOST_LOG_SEV(lg(), debug) << "Checking system flag: " << flag_name;
+void system_flags_service::refresh() {
+    BOOST_LOG_SEV(lg(), debug) << "Refreshing system flags cache from database";
 
-    auto flag_opt = feature_flags_service_.get_feature_flag(flag_name);
-    if (!flag_opt.has_value()) {
-        const auto& def = domain::get_definition(flag);
-        BOOST_LOG_SEV(lg(), debug) << "System flag " << flag_name
-            << " not found, using default: "
-            << (def.default_enabled ? "true" : "false");
-        return def.default_enabled;
+    for (const auto& def : domain::system_flag_definitions) {
+        const auto flag_name = domain::to_flag_name(def.flag);
+        auto flag_opt = feature_flags_service_.get_feature_flag(flag_name);
+
+        bool enabled = flag_opt.has_value() ? flag_opt->enabled : def.default_enabled;
+        update_cache(def.flag, enabled);
+
+        BOOST_LOG_SEV(lg(), debug) << "Cached " << flag_name << " = "
+            << (enabled ? "enabled" : "disabled");
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "System flag " << flag_name << " is "
-        << (flag_opt->enabled ? "enabled" : "disabled");
-    return flag_opt->enabled;
+    BOOST_LOG_SEV(lg(), info) << "System flags cache refreshed";
+}
+
+const domain::system_flags_cache& system_flags_service::cache() const {
+    return cache_;
+}
+
+bool system_flags_service::is_enabled(domain::system_flag flag) const {
+    switch (flag) {
+    case domain::system_flag::bootstrap_mode:
+        return cache_.bootstrap_mode;
+    case domain::system_flag::user_signups:
+        return cache_.user_signups;
+    }
+    // Should never reach here for valid enum values
+    return false;
 }
 
 void system_flags_service::set_enabled(domain::system_flag flag, bool enabled,
@@ -62,10 +76,11 @@ void system_flags_service::set_enabled(domain::system_flag flag, bool enabled,
     };
 
     feature_flags_service_.save_feature_flag(ff);
+    update_cache(flag, enabled);
 }
 
-bool system_flags_service::is_bootstrap_mode_enabled() {
-    return is_enabled(domain::system_flag::bootstrap_mode);
+bool system_flags_service::is_bootstrap_mode_enabled() const {
+    return cache_.bootstrap_mode;
 }
 
 void system_flags_service::set_bootstrap_mode(bool enabled,
@@ -73,13 +88,24 @@ void system_flags_service::set_bootstrap_mode(bool enabled,
     set_enabled(domain::system_flag::bootstrap_mode, enabled, modified_by);
 }
 
-bool system_flags_service::is_user_signups_enabled() {
-    return is_enabled(domain::system_flag::user_signups);
+bool system_flags_service::is_user_signups_enabled() const {
+    return cache_.user_signups;
 }
 
 void system_flags_service::set_user_signups(bool enabled,
     std::string_view modified_by) {
     set_enabled(domain::system_flag::user_signups, enabled, modified_by);
+}
+
+void system_flags_service::update_cache(domain::system_flag flag, bool enabled) {
+    switch (flag) {
+    case domain::system_flag::bootstrap_mode:
+        cache_.bootstrap_mode = enabled;
+        break;
+    case domain::system_flag::user_signups:
+        cache_.user_signups = enabled;
+        break;
+    }
 }
 
 }

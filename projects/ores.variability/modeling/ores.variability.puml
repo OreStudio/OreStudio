@@ -91,6 +91,23 @@ namespace ores #F2F2F2 {
 
             system_flags ..> system_flag : uses
             system_flags ..> system_flag_definition : uses
+
+            class system_flags_cache <<pod>> #F7E5FF {
+                +{field} bootstrap_mode bool
+                +{field} user_signups bool
+            }
+
+            note top of system_flags_cache
+            POD struct for caching system flag values.
+
+            Stores the current state of all system flags for
+            fast, lockless access without database queries.
+            Updated via system_flags_service::refresh().
+
+            Default values match system_flag_definitions:
+            - bootstrap_mode: true (enabled)
+            - user_signups: false (disabled)
+            end note
         }
 
         namespace repository #F2F2F2 {
@@ -185,29 +202,39 @@ namespace ores #F2F2F2 {
 
             class system_flags_service #ECECEC {
                 +system_flags_service(context)
+                +refresh() void
+                +cache() const domain::system_flags_cache&
                 +is_enabled(domain::system_flag) bool
                 +set_enabled(domain::system_flag, bool, std::string_view) void
                 +is_bootstrap_mode_enabled() bool
                 +set_bootstrap_mode(bool, std::string_view) void
                 +is_user_signups_enabled() bool
                 +set_user_signups(bool, std::string_view) void
+                -update_cache(domain::system_flag, bool) void
                 -{field} feature_flags_service_ feature_flags_service
+                -{field} cache_ domain::system_flags_cache
             }
 
             note top of system_flags_service
             Service for accessing well-known system flags with type-safe methods.
 
             Provides typed interface for querying and modifying system flags.
-            Returns default values from system_flag_definitions when flag
-            doesn't exist in database. Wraps feature_flags_service internally.
+            Maintains an in-memory cache for fast access. Cache must be
+            refreshed explicitly via refresh() after external changes.
 
-            Convenience methods:
+            Methods:
 
-            - is_bootstrap_mode_enabled/set_bootstrap_mode
-            - is_user_signups_enabled/set_user_signups
+            - refresh(): Reload all flags from database into cache
+            - cache(): Get const reference to cached flag values
+            - is_enabled/set_enabled: Generic flag access by enum
+            - Convenience methods: is_bootstrap_mode_enabled, set_bootstrap_mode, etc.
+
+            Cache is updated on set operations and must be shared via
+            std::shared_ptr for multi-component access.
             end note
 
             system_flags_service o-- feature_flags_service
+            system_flags_service o-- ores::variability::domain::system_flags_cache
             system_flags_service ..> ores::variability::domain::system_flag : uses
 
             class flag_initializer #ECECEC {

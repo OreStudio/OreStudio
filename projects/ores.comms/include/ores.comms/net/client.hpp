@@ -23,6 +23,7 @@
 #include <mutex>
 #include <atomic>
 #include <memory>
+#include <iosfwd>
 #include <cstdint>
 #include <functional>
 #include <string_view>
@@ -37,6 +38,18 @@
 #include "ores.comms/net/pending_request_map.hpp"
 
 namespace ores::comms::net {
+
+/**
+ * @brief Connection state for the client.
+ */
+enum class connection_state {
+    disconnected,   ///< Not connected to server
+    connecting,     ///< Initial connection in progress
+    connected,      ///< Connected and ready for requests
+    reconnecting    ///< Lost connection, attempting to reconnect
+};
+
+std::ostream& operator<<(std::ostream& s, connection_state v);
 
 /**
  * @brief Callback invoked when client detects server disconnect.
@@ -92,6 +105,29 @@ private:
     boost::asio::awaitable<void> run_message_loop();
 
     /**
+     * @brief Run the reconnection loop after disconnect.
+     *
+     * Attempts to reconnect using exponential backoff with jitter.
+     * Spawned automatically when auto_reconnect is enabled.
+     */
+    boost::asio::awaitable<void> run_reconnect_loop();
+
+    /**
+     * @brief Perform a single connection attempt.
+     *
+     * Core connection logic extracted for reuse in connect() and reconnect.
+     */
+    boost::asio::awaitable<void> perform_connection();
+
+    /**
+     * @brief Calculate backoff delay for a retry attempt.
+     *
+     * @param attempt The attempt number (0-based)
+     * @return Delay with exponential backoff and jitter applied
+     */
+    std::chrono::milliseconds calculate_backoff(std::uint32_t attempt) const;
+
+    /**
      * @brief Write a frame through the write strand.
      *
      * Serializes all writes to prevent interleaving.
@@ -129,6 +165,8 @@ public:
     /**
      * @brief Connect to server and perform handshake (async version).
      *
+     * Single attempt connection without retries.
+     *
      * @throws connection_error if connection or handshake fails
      */
     boost::asio::awaitable<void> connect();
@@ -136,9 +174,29 @@ public:
     /**
      * @brief Connect to server and perform handshake (blocking version).
      *
+     * Single attempt connection without retries.
+     *
      * @throws connection_error if connection or handshake fails
      */
     void connect_sync();
+
+    /**
+     * @brief Connect to server with retry (async version).
+     *
+     * Attempts connection with exponential backoff according to retry_options.
+     *
+     * @throws connection_error if all retry attempts fail
+     */
+    boost::asio::awaitable<void> connect_with_retry();
+
+    /**
+     * @brief Connect to server with retry (blocking version).
+     *
+     * Attempts connection with exponential backoff according to retry_options.
+     *
+     * @throws connection_error if all retry attempts fail
+     */
+    void connect_with_retry_sync();
 
     /**
      * @brief Disconnect from server.
@@ -147,8 +205,15 @@ public:
 
     /**
      * @brief Check if client is connected.
+     *
+     * Returns true only when in the connected state, not during reconnection.
      */
     bool is_connected() const;
+
+    /**
+     * @brief Get the current connection state.
+     */
+    connection_state get_state() const;
 
     /**
      * @brief Set callback to be invoked when disconnect is detected.
@@ -191,15 +256,16 @@ private:
     boost::asio::ssl::context ssl_ctx_;
     std::unique_ptr<connection> conn_;
     std::uint32_t sequence_number_;
-    bool connected_;
+    connection_state state_;
     mutable std::mutex state_mutex_; // Thread-safe state protection
     disconnect_callback_t disconnect_callback_;
 
-    // New infrastructure for unified message loop
+    // Infrastructure for unified message loop
     std::unique_ptr<boost::asio::strand<boost::asio::any_io_executor>> write_strand_;
     std::unique_ptr<pending_request_map> pending_requests_;
     std::atomic<std::uint32_t> correlation_id_counter_{1};
     bool message_loop_running_{false};
+    bool reconnect_loop_running_{false};
 };
 
 }

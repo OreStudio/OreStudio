@@ -22,9 +22,54 @@
 
 #include <iosfwd>
 #include <string>
+#include <chrono>
 #include <cstdint>
 
 namespace ores::comms::net {
+
+/**
+ * @brief Configuration for client retry and reconnection behavior.
+ */
+struct retry_options final {
+    /**
+     * @brief Maximum number of connection attempts before giving up.
+     *
+     * Set to 0 to disable retries (single attempt only).
+     */
+    std::uint32_t max_attempts{5};
+
+    /**
+     * @brief Base delay for exponential backoff.
+     *
+     * The actual delay is calculated as: base_delay * 2^attempt
+     */
+    std::chrono::milliseconds base_delay{100};
+
+    /**
+     * @brief Maximum delay between retry attempts.
+     *
+     * Caps the exponential backoff to prevent excessively long waits.
+     */
+    std::chrono::milliseconds max_delay{30000};
+
+    /**
+     * @brief Jitter factor for randomizing retry delays.
+     *
+     * A value of 0.2 means ±20% random variation. This helps prevent
+     * thundering herd when multiple clients reconnect simultaneously.
+     */
+    double jitter_factor{0.2};
+
+    /**
+     * @brief Whether to automatically reconnect after disconnect.
+     *
+     * When enabled, the client will attempt to reconnect using exponential
+     * backoff when the connection is lost (detected via heartbeat or read error).
+     */
+    bool auto_reconnect{true};
+};
+
+std::ostream& operator<<(std::ostream& s, const retry_options& v);
 
 /**
  * @brief Configuration for the client.
@@ -65,6 +110,11 @@ struct client_options final {
      * but increase network traffic.
      */
     std::uint32_t heartbeat_interval_seconds = 30;
+
+    /**
+     * @brief Retry and reconnection options.
+     */
+    retry_options retry;
 };
 
 std::ostream& operator<<(std::ostream& s, const client_options& v);

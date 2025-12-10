@@ -25,6 +25,11 @@
 
 namespace ores::comms::net {
 
+std::ostream& operator<<(std::ostream& s, const retry_options& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
 std::ostream& operator<<(std::ostream& s, const client_options& v) {
     rfl::json::write(v, s);
     return s;

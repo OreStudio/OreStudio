@@ -620,6 +620,31 @@ namespace ores #F2F2F2 {
             net_client_tests ..> ores::comms::net::client : tests
             net_client_tests ..> ores::comms::net::server : tests
             net_client_tests ..> ores::comms::net::session : tests
+
+            class message_handler_tests <<test suite>> #C5E1A5 {
+                +test_request_serialization_roundtrip() void
+                +test_response_serialization_roundtrip() void
+                +test_handler_processes_test_request() void
+                +test_handler_processes_echo_request() void
+                +test_handler_rejects_invalid_message_type() void
+                +test_dispatcher_with_registered_handler() void
+                +test_dispatcher_without_handler_returns_error() void
+                +test_dispatcher_preserves_correlation_id() void
+                +test_handler_table_driven_values() void
+                +test_echo_request_various_payloads() void
+            }
+
+            note top of message_handler_tests
+            Test suite for message handler infrastructure.
+
+            Tests cover test request/response serialization,
+            message handler processing, dispatcher registration
+            and dispatch, correlation ID preservation, and
+            table-driven value testing.
+            end note
+
+            message_handler_tests ..> ores::comms::messaging::message_handler : tests
+            message_handler_tests ..> ores::comms::messaging::message_dispatcher : tests
         }
     }
 }

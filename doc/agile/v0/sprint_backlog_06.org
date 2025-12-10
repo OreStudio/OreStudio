@@ -3,8 +3,8 @@
 :END:
 #+title: Sprint Backlog 06
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
-#+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED
-#+tags: { code(c) infra(i) analysis(n) agile(a) }
+#+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED#
++tags: { code(c) infra(i) analysis(n) agile(a) }
 #+startup: inlineimages
 
 * Sprint Mission
@@ -18,45 +18,47 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-10 Wed 17:57], for Wednesday, December 10, 2025.
+#+CAPTION: Clock summary at [2025-12-10 Wed 23:51], for Wednesday, December 10, 2025.
 |       | <75>                                             |        |      |      |       |
 | Tags  | Headline                                         | Time   |      |      |     % |
 |-------+--------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                     | *5:05* |      |      | 100.0 |
+|       | *Total time*                                     | *6:51* |      |      | 100.0 |
 |-------+--------------------------------------------------+--------+------+------+-------|
-|       | Stories                                          | 5:05   |      |      | 100.0 |
-|       | Active                                           |        | 5:05 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint               |        |      | 2:01 |  39.7 |
-| code  | Fix issues with logging after string_view change |        |      | 0:53 |  17.4 |
-| code  | Remove bootstrap mode from context               |        |      | 2:11 |  43.0 |
+|       | Stories                                          | 6:51   |      |      | 100.0 |
+|       | Active                                           |        | 6:51 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint               |        |      | 2:01 |  29.4 |
+| code  | Fix issues with logging after string_view change |        |      | 0:53 |  12.9 |
+| code  | Remove bootstrap mode from context               |        |      | 3:43 |  54.3 |
+| code  | Add tests for messaging handler                  |        |      | 0:14 |   3.4 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-10 Wed 17:57]
+#+CAPTION: Clock summary at [2025-12-10 Wed 23:51]
 |       | <75>                                                |         |       |       |       |
 | Tags  | Headline                                            | Time    |       |       |     % |
 |-------+-----------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                        | *51:00* |       |       | 100.0 |
+|       | *Total time*                                        | *52:46* |       |       | 100.0 |
 |-------+-----------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                             | 51:00   |       |       | 100.0 |
-|       | Active                                              |         | 51:00 |       | 100.0 |
+|       | Stories                                             | 52:46   |       |       | 100.0 |
+|       | Active                                              |         | 52:46 |       | 100.0 |
 | agile | Sprint and product backlog refinement               |         |       |  0:29 |   0.9 |
-| infra | OCR scan notebooks for this sprint                  |         |       | 13:00 |  25.5 |
-| code  | Implement session cancellation                      |         |       |  2:42 |   5.3 |
-| code  | Create a variability service for feature flags      |         |       |  1:23 |   2.7 |
-| code  | Add tests to diagrams                               |         |       |  1:26 |   2.8 |
+| infra | OCR scan notebooks for this sprint                  |         |       | 13:00 |  24.6 |
+| code  | Implement session cancellation                      |         |       |  2:42 |   5.1 |
+| code  | Create a variability service for feature flags      |         |       |  1:23 |   2.6 |
+| code  | Add tests to diagrams                               |         |       |  1:26 |   2.7 |
 | code  | Add messaging to variability                        |         |       |  0:40 |   1.3 |
-| code  | Create handshake service in comms                   |         |       |  2:31 |   4.9 |
-| code  | Implement client heartbeat for disconnect detection |         |       |  5:18 |  10.4 |
-| code  | Pressing disconnect crashes client                  |         |       |  0:23 |   0.8 |
-| infra | Create a component creator skill                    |         |       |  0:42 |   1.4 |
-| code  | Add listen/notify support                           |         |       | 11:25 |  22.4 |
-| code  | Move context to database                            |         |       |  0:20 |   0.7 |
-| code  | Use =std::string_view= for loggers                  |         |       |  3:14 |   6.3 |
+| code  | Create handshake service in comms                   |         |       |  2:31 |   4.8 |
+| code  | Implement client heartbeat for disconnect detection |         |       |  5:18 |  10.0 |
+| code  | Pressing disconnect crashes client                  |         |       |  0:23 |   0.7 |
+| infra | Create a component creator skill                    |         |       |  0:42 |   1.3 |
+| code  | Add listen/notify support                           |         |       | 11:25 |  21.6 |
+| code  | Move context to database                            |         |       |  0:20 |   0.6 |
+| code  | Use =std::string_view= for loggers                  |         |       |  3:14 |   6.1 |
 | code  | Fix issues with logging after string_view change    |         |       |  0:53 |   1.7 |
-| code  | Remove bootstrap mode from context                  |         |       |  5:04 |   9.9 |
-| code  | Experiment with simple code generation              |         |       |  1:30 |   2.9 |
+| code  | Remove bootstrap mode from context                  |         |       |  6:36 |  12.5 |
+| code  | Add tests for messaging handler                     |         |       |  0:14 |   0.4 |
+| code  | Experiment with simple code generation              |         |       |  1:30 |   2.8 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1346,6 +1348,8 @@ sensible, using the tags as the component name.
 
 *** COMPLETED Remove bootstrap mode from context                       :code:
     :LOGBOOK:
+    CLOCK: [2025-12-10 Wed 22:58]--[2025-12-10 Wed 23:35] =>  0:37
+    CLOCK: [2025-12-10 Wed 22:02]--[2025-12-10 Wed 22:57] =>  0:55
     CLOCK: [2025-12-10 Wed 17:26]--[2025-12-10 Wed 17:56] =>  0:30
     CLOCK: [2025-12-10 Wed 15:54]--[2025-12-10 Wed 17:02] =>  1:08
     CLOCK: [2025-12-10 Wed 13:00]--[2025-12-10 Wed 13:33] =>  0:33
@@ -1440,6 +1444,14 @@ You might place it in a dedicated namespace like `system::features` or
 `app::config`.
 #+end_quote
 
+*** COMPLETED Add tests for messaging handler                          :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-10 Wed 23:36]--[2025-12-10 Wed 23:50] =>  0:14
+    :END:
+
+We need tests in comms which create a test request and response and a test
+handler.
+
 *** STARTED Experiment with simple code generation                     :code:
     :LOGBOOK:
     CLOCK: [2025-12-02 Tue 14:35]--[2025-12-02 Tue 16:05] =>  1:30
@@ -1516,11 +1528,6 @@ We refactored ores.cli to be "entity oriented", so that commands such as export,
 import etc belonged directly to an entity. In this case there should be no need
 to supply the entity in the command line since it is part of the command.
 However, we still see the entity enum in the code.
-
-*** Add tests for messaging handler                                    :code:
-
-We need tests in comms which create a test request and response and a test
-handler.
 
 *** Add sound assets                                                   :code:
 

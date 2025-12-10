@@ -79,6 +79,42 @@ namespace ores #F2F2F2 {
             server o-u- ores::comms::messaging::message_dispatcher
             server o-u- ores::comms::net::session
 
+        class retry_options #F7E5FF {
+            +{field} max_attempts std::uint32_t
+            +{field} base_delay std::chrono::milliseconds
+            +{field} max_delay std::chrono::milliseconds
+            +{field} jitter_factor double
+            +{field} auto_reconnect bool
+        }
+
+        note top of retry_options
+        Configuration for client retry and reconnection behavior.
+
+        Fields:
+
+        - max_attempts: Maximum connection attempts before giving up (0 = no retries).
+        - base_delay: Base delay for exponential backoff.
+        - max_delay: Maximum delay between retry attempts.
+        - jitter_factor: Randomization factor (0.2 = ±20%) to prevent thundering herd.
+        - auto_reconnect: Whether to automatically reconnect after disconnect.
+        end note
+
+        enum connection_state #F2DAFD {
+            disconnected
+            connecting
+            connected
+            reconnecting
+        }
+
+        note top of connection_state
+        Connection state for the client.
+
+        - disconnected: Not connected to server.
+        - connecting: Initial connection in progress.
+        - connected: Connected and ready for requests.
+        - reconnecting: Lost connection, attempting to reconnect.
+        end note
+
         class client_options #F7E5FF {
             +{field} host std::string
             +{field} port std::uint16_t
@@ -86,6 +122,7 @@ namespace ores #F2F2F2 {
             +{field} verify_certificate bool
             +{field} heartbeat_enabled bool
             +{field} heartbeat_interval_seconds std::uint32_t
+            +{field} retry retry_options
         }
 
         note top of client_options
@@ -99,21 +136,31 @@ namespace ores #F2F2F2 {
         - verify_certificate: Whether to verify server certificate.
         - heartbeat_enabled: Enable heartbeat for disconnect detection (default: true).
         - heartbeat_interval_seconds: Heartbeat interval in seconds (default: 30).
+        - retry: Retry and reconnection options.
         end note
+
+        client_options o-- ores::comms::net::retry_options
 
         class client #ECECEC {
             +client(client_options config)
             +client(client_options config, boost::asio::any_io_executor executor)
+            +~client()
             +connect() boost::asio::awaitable<void>
             +connect_sync() void
+            +connect_with_retry() boost::asio::awaitable<void>
+            +connect_with_retry_sync() void
             +disconnect() void
             +is_connected() bool
+            +get_state() connection_state
             +set_disconnect_callback(disconnect_callback_t callback) void
             +send_request(messaging::frame request_frame) boost::asio::awaitable<std::expected<messaging::frame, messaging::error_code>>
             +send_request_sync(messaging::frame request_frame) std::expected<messaging::frame, messaging::error_code>
             -perform_handshake() boost::asio::awaitable<void>
+            -perform_connection() boost::asio::awaitable<void>
             -run_heartbeat() boost::asio::awaitable<void>
             -run_message_loop() boost::asio::awaitable<void>
+            -run_reconnect_loop() boost::asio::awaitable<void>
+            -calculate_backoff(std::uint32_t attempt) std::chrono::milliseconds
             -write_frame(const messaging::frame& f) boost::asio::awaitable<void>
             -next_correlation_id() std::uint32_t
             -setup_ssl_context() void
@@ -123,13 +170,15 @@ namespace ores #F2F2F2 {
             -{field} ssl_ctx_ boost::asio::ssl::context
             -{field} conn_ std::unique_ptr<connection>
             -{field} sequence_number_ std::uint32_t
-            -{field} connected_ bool
+            -{field} state_ connection_state
             -{field} state_mutex_ std::mutex
             -{field} disconnect_callback_ disconnect_callback_t
             -{field} write_strand_ std::unique_ptr<boost::asio::strand<boost::asio::any_io_executor>>
             -{field} pending_requests_ std::unique_ptr<pending_request_map>
             -{field} correlation_id_counter_ std::atomic<std::uint32_t>
-            -{field} message_loop_running_ bool
+            -{field} message_loop_running_ std::atomic<bool>
+            -{field} reconnect_loop_running_ std::atomic<bool>
+            -{field} heartbeat_loop_running_ std::atomic<bool>
         }
 
         note top of client
@@ -139,11 +188,15 @@ namespace ores #F2F2F2 {
         Uses a unified message loop for reading all incoming frames and matching
         responses to pending requests via correlation IDs. Supports optional
         heartbeat for proactive disconnect detection.
+
+        Features exponential backoff with jitter for connection retries and
+        automatic reconnection when connection is lost.
         end note
 
             client o-u- ores::comms::net::client_options
             client o-u- ores::comms::net::connection
             client o-u- ores::comms::net::pending_request_map
+            client o-u- ores::comms::net::connection_state
             client ..> ores::comms::messaging::frame
             client ..> ores::comms::messaging::error_code
             client ..> ores::comms::service::handshake_service : uses

@@ -23,6 +23,7 @@
 #include <format>
 #include <chrono>
 #include <random>
+#include <thread>
 #include <iostream>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/detached.hpp>
@@ -228,7 +229,17 @@ std::chrono::milliseconds client::calculate_backoff(std::uint32_t attempt) const
 
     // Apply jitter (±jitter_factor)
     if (config_.retry.jitter_factor > 0.0) {
-        static thread_local std::mt19937 rng{std::random_device{}()};
+        // Use robust seed combining multiple entropy sources to avoid
+        // synchronized retry intervals on platforms with weak random_device
+        static thread_local std::mt19937 rng = []() {
+            std::random_device rd;
+            auto seed = static_cast<std::uint64_t>(rd()) ^
+                static_cast<std::uint64_t>(
+                    std::chrono::high_resolution_clock::now().time_since_epoch().count()) ^
+                static_cast<std::uint64_t>(
+                    std::hash<std::thread::id>{}(std::this_thread::get_id()));
+            return std::mt19937(static_cast<std::uint32_t>(seed));
+        }();
         std::uniform_real_distribution<double> dist(
             1.0 - config_.retry.jitter_factor,
             1.0 + config_.retry.jitter_factor);

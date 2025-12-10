@@ -32,6 +32,7 @@
 #include "ores.accounts/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.accounts/generators/account_generator.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
+#include "ores.variability/service/system_flags_service.hpp"
 
 using namespace ores::accounts;
 using namespace ores::accounts::messaging;
@@ -55,6 +56,11 @@ create_account_request to_create_account_request(const domain::account& a) {
     return r;
 }
 
+std::shared_ptr<ores::variability::service::system_flags_service>
+make_system_flags(ores::utility::database::context& ctx) {
+    return std::make_shared<ores::variability::service::system_flags_service>(ctx);
+}
+
 }
 
 using namespace ores::utility::log;
@@ -68,7 +74,8 @@ TEST_CASE("handle_single_create_account_request", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
-    accounts_message_handler sut(h.context());
+    auto system_flags = make_system_flags(h.context());
+    accounts_message_handler sut(h.context(), system_flags);
 
     const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
@@ -99,7 +106,8 @@ TEST_CASE("handle_many_create_account_requests", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
-    accounts_message_handler sut(h.context());
+    auto system_flags = make_system_flags(h.context());
+    accounts_message_handler sut(h.context(), system_flags);
     auto accounts = generate_synthetic_accounts(5);
 
     boost::asio::io_context io_ctx;
@@ -131,7 +139,8 @@ TEST_CASE("handle_list_accounts_request_empty", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
-    accounts_message_handler sut(h.context());
+    auto system_flags = make_system_flags(h.context());
+    accounts_message_handler sut(h.context(), system_flags);
 
     list_accounts_request rq;
     BOOST_LOG_SEV(lg, info) << "Request: " << rq;
@@ -159,7 +168,8 @@ TEST_CASE("handle_list_accounts_request_with_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
-    accounts_message_handler sut(h.context());
+    auto system_flags = make_system_flags(h.context());
+    accounts_message_handler sut(h.context(), system_flags);
 
     const int account_count = 5;
     auto accounts =
@@ -205,7 +215,8 @@ TEST_CASE("handle_login_request_with_valid_password", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
-    accounts_message_handler sut(h.context());
+    auto system_flags = make_system_flags(h.context());
+    accounts_message_handler sut(h.context(), system_flags);
 
     const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
@@ -253,7 +264,8 @@ TEST_CASE("handle_login_request_with_invalid_password", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
-    accounts_message_handler sut(h.context());
+    auto system_flags = make_system_flags(h.context());
+    accounts_message_handler sut(h.context(), system_flags);
 
     const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
@@ -300,7 +312,8 @@ TEST_CASE("handle_unlock_account_request", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
-    accounts_message_handler sut(h.context());
+    auto system_flags = make_system_flags(h.context());
+    accounts_message_handler sut(h.context(), system_flags);
 
     // Create an account first
     const auto account = generate_synthetic_account();
@@ -353,7 +366,8 @@ TEST_CASE("handle_invalid_message_type", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
-    accounts_message_handler sut(h.context());
+    auto system_flags = make_system_flags(h.context());
+    accounts_message_handler sut(h.context(), system_flags);
 
     std::vector<std::byte> empty_payload;
     boost::asio::io_context io_ctx;
@@ -371,7 +385,8 @@ TEST_CASE("handle_login_request_non_existent_user", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
-    accounts_message_handler sut(h.context());
+    auto system_flags = make_system_flags(h.context());
+    accounts_message_handler sut(h.context(), system_flags);
 
     login_request lrq;
     lrq.username = "non_existent_user_" +
@@ -404,7 +419,8 @@ TEST_CASE("handle_delete_account_request_success", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
-    accounts_message_handler sut(h.context());
+    auto system_flags = make_system_flags(h.context());
+    accounts_message_handler sut(h.context(), system_flags);
 
     // Create an account first
     const auto account = generate_synthetic_account();
@@ -456,7 +472,8 @@ TEST_CASE("handle_delete_account_request_non_existent_account", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
-    accounts_message_handler sut(h.context());
+    auto system_flags = make_system_flags(h.context());
+    accounts_message_handler sut(h.context(), system_flags);
 
     // Try to delete a non-existent account
     delete_account_request drq;

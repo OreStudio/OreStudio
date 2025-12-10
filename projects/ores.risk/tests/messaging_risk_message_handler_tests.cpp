@@ -31,12 +31,21 @@
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
 #include "ores.risk/generators/currency_generator.hpp"
+#include "ores.variability/service/system_flags_service.hpp"
 
 namespace {
 
 const std::string_view test_suite("ores.risk.tests");
 const std::string database_table("oresdb.currencies");
 const std::string tags("[messaging][handler]");
+
+std::shared_ptr<ores::variability::service::system_flags_service>
+make_system_flags(ores::utility::database::context& ctx) {
+    auto flags = std::make_shared<ores::variability::service::system_flags_service>(ctx);
+    // Disable bootstrap mode so tests can proceed
+    flags->set_bootstrap_mode(false, "test");
+    return flags;
+}
 
 }
 
@@ -51,7 +60,8 @@ TEST_CASE("handle_get_currencies_request_empty", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
-    risk_message_handler handler(h.context());
+    auto system_flags = make_system_flags(h.context());
+    risk_message_handler handler(h.context(), system_flags);
 
     get_currencies_request req;
     BOOST_LOG_SEV(lg, debug) << "Request: " << req;
@@ -89,7 +99,8 @@ TEST_CASE("handle_get_currencies_request_with_single_currency", tags) {
     repo.write(h.context(), {ccy});
     BOOST_LOG_SEV(lg, debug) << "Created test currency: " << ccy;
 
-    risk_message_handler handler(h.context());
+    auto system_flags = make_system_flags(h.context());
+    risk_message_handler handler(h.context(), system_flags);
 
     get_currencies_request req;
     BOOST_LOG_SEV(lg, debug) << "Request: " << req;
@@ -130,7 +141,8 @@ TEST_CASE("handle_get_currencies_request_with_multiple_currencies", tags) {
     BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
     repo.write(h.context(), currencies);
 
-    risk_message_handler handler(h.context());
+    auto system_flags = make_system_flags(h.context());
+    risk_message_handler handler(h.context(), system_flags);
 
     get_currencies_request req;
     BOOST_LOG_SEV(lg, debug) << "Request: " << req;
@@ -177,7 +189,8 @@ TEST_CASE("handle_get_currencies_request_with_faker", tags) {
     risk::repository::currency_repository repo;
     repo.write(h.context(), currencies);
 
-    risk_message_handler handler(h.context());
+    auto system_flags = make_system_flags(h.context());
+    risk_message_handler handler(h.context(), system_flags);
 
     get_currencies_request req;
     BOOST_LOG_SEV(lg, debug) << "Request: " << req;
@@ -231,7 +244,8 @@ TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip", tags) 
     repo.write(h.context(), {original_ccy});
     BOOST_LOG_SEV(lg, debug) << "Created test currency: " << original_ccy;
 
-    risk_message_handler handler(h.context());
+    auto system_flags = make_system_flags(h.context());
+    risk_message_handler handler(h.context(), system_flags);
 
     get_currencies_request req;
     BOOST_LOG_SEV(lg, debug) << "Request: " << req;
@@ -299,7 +313,8 @@ TEST_CASE("handle_get_currencies_request_with_unicode_symbols", tags) {
     repo.write(h.context(), currencies);
     BOOST_LOG_SEV(lg, debug) << "Currencies written to db.";
 
-    risk_message_handler handler(h.context());
+    auto system_flags = make_system_flags(h.context());
+    risk_message_handler handler(h.context(), system_flags);
 
     get_currencies_request req;
     BOOST_LOG_SEV(lg, debug) << "Request: " << req;
@@ -338,7 +353,8 @@ TEST_CASE("handle_invalid_message_type",
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
-    risk_message_handler handler(h.context());
+    auto system_flags = make_system_flags(h.context());
+    risk_message_handler handler(h.context(), system_flags);
 
     std::vector<std::byte> empty_payload;
 

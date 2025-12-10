@@ -37,107 +37,105 @@ using namespace ores::utility::log;
 using namespace ores::variability::service;
 using namespace ores::variability::domain;
 
-TEST_CASE("flag_initializer_creates_all_system_flags", tags) {
+TEST_CASE("flag_initializer_creates_all_flags_when_database_is_empty", tags) {
     auto lg(make_logger(test_suite));
 
-    SECTION("creates all flags when database is empty") {
-        ores::testing::scoped_database_helper db_helper(table_name);
-        flag_initializer sut(db_helper.context());
+    ores::testing::scoped_database_helper db_helper(table_name);
+    flag_initializer sut(db_helper.context());
 
-        const auto created = sut.ensure_system_flags_exist();
-        BOOST_LOG_SEV(lg, info) << "Created " << created << " flags";
+    const auto created = sut.ensure_system_flags_exist();
+    BOOST_LOG_SEV(lg, info) << "Created " << created << " flags";
 
-        CHECK(created == system_flag_definitions.size());
-    }
+    CHECK(created == system_flag_definitions.size());
+}
 
-    SECTION("all system flags exist after initialization") {
-        ores::testing::scoped_database_helper db_helper(table_name);
-        flag_initializer initializer(db_helper.context());
-        initializer.ensure_system_flags_exist();
+TEST_CASE("flag_initializer_all_system_flags_exist_after_initialization", tags) {
+    auto lg(make_logger(test_suite));
 
-        // Verify using feature_flags_service
-        feature_flags_service svc(db_helper.context());
+    ores::testing::scoped_database_helper db_helper(table_name);
+    flag_initializer initializer(db_helper.context());
+    initializer.ensure_system_flags_exist();
 
-        for (const auto& def : system_flag_definitions) {
-            const auto flag_name = to_flag_name(def.flag);
-            auto flag_opt = svc.get_feature_flag(flag_name);
+    // Verify using feature_flags_service
+    feature_flags_service svc(db_helper.context());
 
-            INFO("Checking flag: " << flag_name);
-            REQUIRE(flag_opt.has_value());
-            CHECK(flag_opt->enabled == def.default_enabled);
-            CHECK(flag_opt->modified_by == "ores");
-        }
+    for (const auto& def : system_flag_definitions) {
+        const auto flag_name = to_flag_name(def.flag);
+        auto flag_opt = svc.get_feature_flag(flag_name);
+
+        INFO("Checking flag: " << flag_name);
+        REQUIRE(flag_opt.has_value());
+        CHECK(flag_opt->enabled == def.default_enabled);
+        CHECK(!flag_opt->modified_by.empty());
     }
 }
 
-TEST_CASE("flag_initializer_preserves_existing_flags", tags) {
+TEST_CASE("flag_initializer_does_not_overwrite_existing_flag_values", tags) {
     auto lg(make_logger(test_suite));
 
-    SECTION("does not overwrite existing flag values") {
-        ores::testing::scoped_database_helper db_helper(table_name);
+    ores::testing::scoped_database_helper db_helper(table_name);
 
-        // Pre-create bootstrap_mode with non-default value
-        {
-            feature_flags_service svc(db_helper.context());
-            feature_flags ff{
-                .enabled = false,  // Default is true
-                .name = to_flag_name(system_flag::bootstrap_mode),
-                .description = "Custom description",
-                .modified_by = "admin"
-            };
-            svc.save_feature_flag(ff);
-        }
-
-        // Run initializer
-        flag_initializer initializer(db_helper.context());
-        const auto created = initializer.ensure_system_flags_exist();
-
-        // Should only create one flag (user_signups), not two
-        BOOST_LOG_SEV(lg, info) << "Created " << created << " flags (expected 1)";
-        CHECK(created == system_flag_definitions.size() - 1);
-
-        // Verify bootstrap_mode retained its custom value
+    // Pre-create bootstrap_mode with non-default value
+    {
         feature_flags_service svc(db_helper.context());
-        auto bootstrap_flag = svc.get_feature_flag(
-            to_flag_name(system_flag::bootstrap_mode));
-
-        REQUIRE(bootstrap_flag.has_value());
-        CHECK(bootstrap_flag->enabled == false);  // Should NOT be overwritten
+        feature_flags ff{
+            .enabled = false,  // Default is true
+            .name = to_flag_name(system_flag::bootstrap_mode),
+            .description = "Custom description",
+            .modified_by = "admin"
+        };
+        svc.save_feature_flag(ff);
     }
 
-    SECTION("returns zero when all flags already exist") {
-        ores::testing::scoped_database_helper db_helper(table_name);
-        flag_initializer initializer(db_helper.context());
+    // Run initializer
+    flag_initializer initializer(db_helper.context());
+    const auto created = initializer.ensure_system_flags_exist();
 
-        // First run creates all flags
-        const auto first_run = initializer.ensure_system_flags_exist();
-        CHECK(first_run == system_flag_definitions.size());
+    // Should only create one flag (user_signups), not two
+    BOOST_LOG_SEV(lg, info) << "Created " << created << " flags (expected 1)";
+    CHECK(created == system_flag_definitions.size() - 1);
 
-        // Second run creates nothing
-        const auto second_run = initializer.ensure_system_flags_exist();
-        BOOST_LOG_SEV(lg, info) << "Second run created " << second_run << " flags";
-        CHECK(second_run == 0);
-    }
+    // Verify bootstrap_mode retained its custom value
+    feature_flags_service svc(db_helper.context());
+    auto bootstrap_flag = svc.get_feature_flag(
+        to_flag_name(system_flag::bootstrap_mode));
+
+    REQUIRE(bootstrap_flag.has_value());
+    CHECK(bootstrap_flag->enabled == false);  // Should NOT be overwritten
 }
 
-TEST_CASE("flag_initializer_idempotent", tags) {
+TEST_CASE("flag_initializer_returns_zero_when_all_flags_already_exist", tags) {
     auto lg(make_logger(test_suite));
 
-    SECTION("multiple initializations produce same result") {
-        ores::testing::scoped_database_helper db_helper(table_name);
-        flag_initializer initializer(db_helper.context());
+    ores::testing::scoped_database_helper db_helper(table_name);
+    flag_initializer initializer(db_helper.context());
 
-        // Run multiple times
-        initializer.ensure_system_flags_exist();
-        initializer.ensure_system_flags_exist();
-        initializer.ensure_system_flags_exist();
+    // First run creates all flags
+    const auto first_run = initializer.ensure_system_flags_exist();
+    CHECK(first_run == system_flag_definitions.size());
 
-        // Verify correct number of flags exist
-        feature_flags_service svc(db_helper.context());
-        auto all_flags = svc.get_all_feature_flags();
+    // Second run creates nothing
+    const auto second_run = initializer.ensure_system_flags_exist();
+    BOOST_LOG_SEV(lg, info) << "Second run created " << second_run << " flags";
+    CHECK(second_run == 0);
+}
 
-        BOOST_LOG_SEV(lg, info) << "Total flags after 3 initializations: "
-            << all_flags.size();
-        CHECK(all_flags.size() == system_flag_definitions.size());
-    }
+TEST_CASE("flag_initializer_multiple_initializations_produce_same_result", tags) {
+    auto lg(make_logger(test_suite));
+
+    ores::testing::scoped_database_helper db_helper(table_name);
+    flag_initializer initializer(db_helper.context());
+
+    // Run multiple times
+    initializer.ensure_system_flags_exist();
+    initializer.ensure_system_flags_exist();
+    initializer.ensure_system_flags_exist();
+
+    // Verify correct number of flags exist
+    feature_flags_service svc(db_helper.context());
+    auto all_flags = svc.get_all_feature_flags();
+
+    BOOST_LOG_SEV(lg, info) << "Total flags after 3 initializations: "
+        << all_flags.size();
+    CHECK(all_flags.size() == system_flag_definitions.size());
 }

@@ -47,7 +47,7 @@ std::size_t flag_initializer::ensure_system_flags_exist() {
             << " with default value: "
             << (def.default_enabled ? "enabled" : "disabled");
 
-        domain::feature_flags ff{
+        domain::feature_flags ff {
             .enabled = def.default_enabled,
             .name = flag_name,
             .description = std::string(def.description),

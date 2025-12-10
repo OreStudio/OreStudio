@@ -259,6 +259,9 @@ boost::asio::awaitable<void> client::connect_with_retry() {
     std::exception_ptr last_exception;
 
     for (std::uint32_t attempt = 0; attempt < max_attempts; ++attempt) {
+        bool should_retry = false;
+        std::chrono::milliseconds retry_delay{0};
+
         try {
             BOOST_LOG_SEV(lg(), info) << "Connection attempt " << (attempt + 1)
                                       << " of " << max_attempts;
@@ -271,11 +274,16 @@ boost::asio::awaitable<void> client::connect_with_retry() {
 
             // Don't wait after the last attempt
             if (attempt + 1 < max_attempts) {
-                auto delay = calculate_backoff(attempt);
-                BOOST_LOG_SEV(lg(), info) << "Retrying in " << delay.count() << "ms";
-                timer.expires_after(delay);
-                co_await timer.async_wait(boost::asio::use_awaitable);
+                retry_delay = calculate_backoff(attempt);
+                should_retry = true;
             }
+        }
+
+        // Wait outside catch block (co_await cannot be in catch handler)
+        if (should_retry) {
+            BOOST_LOG_SEV(lg(), info) << "Retrying in " << retry_delay.count() << "ms";
+            timer.expires_after(retry_delay);
+            co_await timer.async_wait(boost::asio::use_awaitable);
         }
     }
 
@@ -339,6 +347,9 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
             }
         }
 
+        bool should_retry = false;
+        std::chrono::milliseconds retry_delay{0};
+
         try {
             BOOST_LOG_SEV(lg(), info) << "Reconnection attempt " << (attempt + 1)
                                       << " of " << max_attempts;
@@ -353,20 +364,25 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
 
             // Don't wait after the last attempt
             if (attempt + 1 < max_attempts) {
-                auto delay = calculate_backoff(attempt);
-                BOOST_LOG_SEV(lg(), info) << "Retrying reconnection in "
-                                          << delay.count() << "ms";
-                timer.expires_after(delay);
+                retry_delay = calculate_backoff(attempt);
+                should_retry = true;
+            }
+        }
 
-                try {
-                    co_await timer.async_wait(boost::asio::use_awaitable);
-                } catch (const boost::system::system_error& te) {
-                    if (te.code() == boost::asio::error::operation_aborted) {
-                        BOOST_LOG_SEV(lg(), debug) << "Reconnect timer cancelled";
-                        break;
-                    }
-                    throw;
+        // Wait outside catch block (co_await cannot be in catch handler)
+        if (should_retry) {
+            BOOST_LOG_SEV(lg(), info) << "Retrying reconnection in "
+                                      << retry_delay.count() << "ms";
+            timer.expires_after(retry_delay);
+
+            try {
+                co_await timer.async_wait(boost::asio::use_awaitable);
+            } catch (const boost::system::system_error& te) {
+                if (te.code() == boost::asio::error::operation_aborted) {
+                    BOOST_LOG_SEV(lg(), debug) << "Reconnect timer cancelled";
+                    break;
                 }
+                throw;
             }
         }
     }

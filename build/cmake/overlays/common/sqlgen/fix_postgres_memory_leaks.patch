@@ -1,5 +1,5 @@
 diff --git a/include/sqlgen/postgres/Connection.hpp b/include/sqlgen/postgres/Connection.hpp
-index af50b10..1bbffcb 100644
+index af50b10..63b0c91 100644
 --- sqlgen-0.4.0/include/sqlgen/postgres/Connection.hpp
 +++ sqlgen-0.4.0/include/sqlgen/postgres/Connection.hpp
 @@ -27,6 +27,18 @@
@@ -33,7 +33,7 @@ index af50b10..1bbffcb 100644
 +
 +  rfl::Result<Nothing> notify(const std::string& channel, const std::string& payload = "") noexcept;
 +
-+  bool Connection::consume_input() noexcept;
++  bool consume_input() noexcept;
 +
   private:
    Result<Nothing> insert_impl(
@@ -48,7 +48,7 @@ index af50b10..1bbffcb 100644
    ConnPtr conn_;
 
 diff --git a/src/sqlgen/postgres/Connection.cpp b/src/sqlgen/postgres/Connection.cpp
-index 6b33ad2..050eedf 100644
+index 6b33ad2..dcd446d 100644
 --- sqlgen-0.4.0/src/sqlgen/postgres/Connection.cpp
 +++ sqlgen-0.4.0/src/sqlgen/postgres/Connection.cpp
 @@ -33,8 +33,11 @@ Result<Nothing> Connection::end_write() {
@@ -171,7 +171,7 @@ index 6b33ad2..050eedf 100644
 +}
 +
 +bool Connection::consume_input() noexcept {
-+  return PQconsumeInput(conn_) == 1;
++  return PQconsumeInput(conn_.get()) == 1;
 +}
 +
 +bool Connection::is_valid_channel_name(const std::string& s) const noexcept {

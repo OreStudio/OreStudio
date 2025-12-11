@@ -32,9 +32,12 @@
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.eventing/service/postgres_event_source.hpp"
 #include "ores.eventing/service/registrar.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/database/context_factory.hpp"
 #include "ores.comms/net/server.hpp"
+#include "ores.comms/service/subscription_manager.hpp"
+#include "ores.comms/service/subscription_handler.hpp"
 #include "ores.service/app/application_exception.hpp"
 
 namespace ores::service::app {
@@ -113,10 +116,39 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     // Start the event source to begin listening for database notifications
     event_source.start();
 
-    auto srv = std::make_shared<ores::comms::net::server>(cfg.server);
+    // Create subscription manager for client notifications
+    auto subscription_mgr = std::make_shared<comms::service::subscription_manager>();
+
+    // Bridge event bus to subscription manager - when domain events occur,
+    // notify all clients subscribed to those event types
+    auto currency_sub = event_bus.subscribe<risk::domain::events::currency_changed_event>(
+        [&subscription_mgr](const risk::domain::events::currency_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                risk::domain::events::currency_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp);
+        });
+
+    auto account_sub = event_bus.subscribe<accounts::domain::events::account_changed_event>(
+        [&subscription_mgr](const accounts::domain::events::account_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                accounts::domain::events::account_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp);
+        });
+
+    // Create server with subscription manager
+    auto srv = std::make_shared<ores::comms::net::server>(cfg.server, subscription_mgr);
+
+    // Register subsystem handlers
     ores::risk::messaging::registrar::register_handlers(*srv, ctx, system_flags);
     ores::accounts::messaging::registrar::register_handlers(*srv, ctx, system_flags);
     ores::variability::messaging::registrar::register_handlers(*srv, ctx);
+
+    // Register subscription handler for subscribe/unsubscribe messages
+    auto subscription_handler =
+        std::make_shared<comms::service::subscription_handler>(subscription_mgr);
+    srv->register_handler(
+        {comms::messaging::CORE_SUBSYSTEM_MIN, comms::messaging::CORE_SUBSYSTEM_MAX},
+        subscription_handler);
 
     co_await srv->run(io_ctx);
 

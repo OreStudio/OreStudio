@@ -36,9 +36,8 @@
 #include "ores.comms/messaging/message_dispatcher.hpp"
 #include "ores.comms/messaging/message_handler.hpp"
 
-namespace ores::comms::net {
-    class session; // forward declaration
-}
+namespace ores::comms::net { class session; }
+namespace ores::comms::service { class subscription_manager; }
 
 namespace ores::comms::net {
 
@@ -64,8 +63,12 @@ private:
 public:
     /**
      * @brief Construct server with configuration.
+     *
+     * @param options Server options including port, SSL config, etc.
+     * @param subscription_mgr Optional subscription manager for event notifications.
      */
-    explicit server(server_options options);
+    explicit server(server_options options,
+        std::shared_ptr<service::subscription_manager> subscription_mgr = nullptr);
 
     /**
      * @brief Register a message handler for a range of message types.
@@ -113,6 +116,7 @@ private:
     server_options options_;
     ssl::context ssl_ctx_;
     std::shared_ptr<messaging::message_dispatcher> dispatcher_;
+    std::shared_ptr<service::subscription_manager> subscription_mgr_;
     std::atomic<std::size_t> active_connections_{0};
     boost::asio::cancellation_signal stop_signal_;
     std::list<std::shared_ptr<session>> active_sessions_;

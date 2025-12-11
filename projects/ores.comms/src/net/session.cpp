@@ -20,27 +20,50 @@
 #include "ores.comms/net/session.hpp"
 
 #include "ores.comms/messaging/handshake_protocol.hpp"
+#include "ores.comms/messaging/subscription_protocol.hpp"
 #include "ores.comms/service/handshake_service.hpp"
 #include "ores.comms/service/heartbeat_service.hpp"
+#include "ores.comms/service/subscription_manager.hpp"
 
 namespace ores::comms::net {
 
 using namespace ores::utility::log;
 
 session::session(std::unique_ptr<connection> conn, std::string server_id,
-    std::shared_ptr<messaging::message_dispatcher> dispatcher)
+    std::shared_ptr<messaging::message_dispatcher> dispatcher,
+    std::shared_ptr<service::subscription_manager> subscription_mgr)
     : conn_(std::move(conn)),
       server_id_(std::move(server_id)),
       dispatcher_(std::move(dispatcher)),
+      subscription_mgr_(std::move(subscription_mgr)),
       sequence_number_(0),
       handshake_complete_(false) {
 }
 
 void session::stop() {
     BOOST_LOG_SEV(lg(), info) << "Stopping session for " << conn_->remote_address();
+    active_ = false;
     if (conn_) {
         conn_->close();
     }
+}
+
+bool session::queue_notification(const std::string& event_type,
+    std::chrono::system_clock::time_point timestamp) {
+    if (!active_) {
+        BOOST_LOG_SEV(lg(), debug)
+            << "Cannot queue notification - session not active";
+        return false;
+    }
+
+    {
+        std::lock_guard lock(notification_mutex_);
+        pending_notifications_.push({event_type, timestamp});
+    }
+
+    BOOST_LOG_SEV(lg(), debug)
+        << "Queued notification for event type '" << event_type << "'";
+    return true;
 }
 
 boost::asio::awaitable<void> session::run() {
@@ -60,6 +83,10 @@ boost::asio::awaitable<void> session::run() {
 
         BOOST_LOG_SEV(lg(), info) << "Handshake complete for client: " << remote_addr;
 
+        // Mark session as active and register with subscription manager
+        active_ = true;
+        register_with_subscription_manager();
+
         // Process messages
         co_await process_messages();
 
@@ -72,6 +99,10 @@ boost::asio::awaitable<void> session::run() {
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Session error for " << remote_addr << ": " << e.what();
     }
+
+    // Mark as inactive and unregister
+    active_ = false;
+    unregister_from_subscription_manager();
 
     conn_->close();
     BOOST_LOG_SEV(lg(), info) << "Session ended for client: " << remote_addr;
@@ -93,6 +124,9 @@ boost::asio::awaitable<void> session::process_messages() {
 
     try {
         while (true) {
+            // Send any pending notifications before waiting for next message
+            co_await send_pending_notifications();
+
             // Read next message frame
             auto frame_result = co_await conn_->read_frame(false);
             if (!frame_result) {
@@ -196,6 +230,86 @@ boost::asio::awaitable<void> session::process_messages() {
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Exception in message processing: " << e.what();
     }
+}
+
+boost::asio::awaitable<void> session::send_pending_notifications() {
+    std::vector<pending_notification> to_send;
+
+    {
+        std::lock_guard lock(notification_mutex_);
+        while (!pending_notifications_.empty()) {
+            to_send.push_back(std::move(pending_notifications_.front()));
+            pending_notifications_.pop();
+        }
+    }
+
+    if (to_send.empty()) {
+        co_return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug)
+        << "Sending " << to_send.size() << " pending notification(s)";
+
+    for (const auto& notification : to_send) {
+        try {
+            messaging::notification_message msg{
+                .event_type = notification.event_type,
+                .timestamp = notification.timestamp
+            };
+
+            auto payload = msg.serialize();
+            messaging::frame frame{
+                messaging::message_type::notification,
+                ++sequence_number_,
+                std::move(payload)
+            };
+
+            co_await conn_->write_frame(frame);
+
+            BOOST_LOG_SEV(lg(), info)
+                << "Sent notification for event type '" << notification.event_type
+                << "' to " << conn_->remote_address();
+
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to send notification for event type '"
+                << notification.event_type << "': " << e.what();
+        }
+    }
+}
+
+void session::register_with_subscription_manager() {
+    if (!subscription_mgr_) {
+        BOOST_LOG_SEV(lg(), debug)
+            << "No subscription manager configured - skipping registration";
+        return;
+    }
+
+    auto remote_addr = conn_->remote_address();
+    BOOST_LOG_SEV(lg(), info)
+        << "Registering session '" << remote_addr
+        << "' with subscription manager";
+
+    // Create a weak reference to this session to avoid preventing destruction
+    // Note: This is safe because we unregister before the session is destroyed
+    subscription_mgr_->register_session(remote_addr,
+        [this](const std::string& event_type,
+               std::chrono::system_clock::time_point timestamp) {
+            return queue_notification(event_type, timestamp);
+        });
+}
+
+void session::unregister_from_subscription_manager() {
+    if (!subscription_mgr_) {
+        return;
+    }
+
+    auto remote_addr = conn_->remote_address();
+    BOOST_LOG_SEV(lg(), info)
+        << "Unregistering session '" << remote_addr
+        << "' from subscription manager";
+
+    subscription_mgr_->unregister_session(remote_addr);
 }
 
 }

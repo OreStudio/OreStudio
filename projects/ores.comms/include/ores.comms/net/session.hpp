@@ -20,11 +20,17 @@
 #ifndef ORES_COMMS_NET_SESSION_HPP
 #define ORES_COMMS_NET_SESSION_HPP
 
+#include <mutex>
+#include <queue>
+#include <atomic>
 #include <memory>
 #include <string>
+#include <chrono>
 #include "ores.comms/net/connection.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/messaging/message_dispatcher.hpp"
+
+namespace ores::comms::service { class subscription_manager; }
 
 namespace ores::comms::net {
 
@@ -46,15 +52,24 @@ private:
 
 public:
     /**
+     * @brief Pending notification to be sent to client.
+     */
+    struct pending_notification {
+        std::string event_type;
+        std::chrono::system_clock::time_point timestamp;
+    };
+
+    /**
      * @brief Construct a session from a connection.
      *
      * @param conn The connection to manage
      * @param server_id Server identifier for handshake
      * @param dispatcher Message dispatcher for handling requests
-     * @param stop_slot Cancellation slot for graceful shutdown
+     * @param subscription_mgr Optional subscription manager for event notifications
      */
     explicit session(std::unique_ptr<connection> conn, std::string server_id,
-        std::shared_ptr<messaging::message_dispatcher> dispatcher);
+        std::shared_ptr<messaging::message_dispatcher> dispatcher,
+        std::shared_ptr<service::subscription_manager> subscription_mgr = nullptr);
 
     /**
      * @brief Run the session.
@@ -70,6 +85,19 @@ public:
      */
     void stop();
 
+    /**
+     * @brief Queue a notification to be sent to this session's client.
+     *
+     * Thread-safe. The notification will be sent on the next iteration of
+     * the message processing loop.
+     *
+     * @param event_type The event type that occurred.
+     * @param timestamp The timestamp of the event.
+     * @return true if queued successfully, false if session is not active.
+     */
+    bool queue_notification(const std::string& event_type,
+        std::chrono::system_clock::time_point timestamp);
+
 private:
     /**
      * @brief Perform handshake with client.
@@ -80,16 +108,37 @@ private:
 
     /**
      * @brief Process messages from client after handshake.
-     *
-     * Placeholder for future message handling.
      */
     boost::asio::awaitable<void> process_messages();
+
+    /**
+     * @brief Send any pending notifications to the client.
+     *
+     * Drains the notification queue and sends each as a notification message.
+     */
+    boost::asio::awaitable<void> send_pending_notifications();
+
+    /**
+     * @brief Register this session with the subscription manager.
+     */
+    void register_with_subscription_manager();
+
+    /**
+     * @brief Unregister this session from the subscription manager.
+     */
+    void unregister_from_subscription_manager();
 
     std::unique_ptr<connection> conn_;
     std::string server_id_;
     std::shared_ptr<messaging::message_dispatcher> dispatcher_;
+    std::shared_ptr<service::subscription_manager> subscription_mgr_;
     std::uint32_t sequence_number_;
     bool handshake_complete_;
+    std::atomic<bool> active_{false};
+
+    // Thread-safe notification queue
+    mutable std::mutex notification_mutex_;
+    std::queue<pending_notification> pending_notifications_;
 };
 
 }

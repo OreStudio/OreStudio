@@ -176,6 +176,9 @@ namespace ores #F2F2F2 {
             -{field} state_ connection_state
             -{field} state_mutex_ std::mutex
             -{field} disconnect_callback_ disconnect_callback_t
+            -{field} reconnecting_callback_ reconnecting_callback_t
+            -{field} reconnected_callback_ reconnected_callback_t
+            -{field} notification_callback_ notification_callback_t
             -{field} write_strand_ std::unique_ptr<boost::asio::strand<boost::asio::any_io_executor>>
             -{field} pending_requests_ std::unique_ptr<pending_request_map>
             -{field} correlation_id_counter_ std::atomic<std::uint32_t>
@@ -194,6 +197,8 @@ namespace ores #F2F2F2 {
 
         Features exponential backoff with jitter for connection retries and
         automatic reconnection when connection is lost.
+
+        Supports server-push notifications via notification_callback.
         end note
 
             client o-u- ores::comms::net::client_options
@@ -205,6 +210,7 @@ namespace ores #F2F2F2 {
             client ..> ores::comms::service::handshake_service : uses
             client ..> ores::comms::messaging::ping : uses
             client ..> ores::comms::messaging::pong : uses
+            client ..> ores::comms::messaging::notification_message : uses
 
         class pending_request_map #ECECEC {
             +pending_request_map(boost::asio::any_io_executor executor)
@@ -777,6 +783,39 @@ namespace ores #F2F2F2 {
             subscription_handler ..> ores::comms::messaging::subscribe_response : uses
             subscription_handler ..> ores::comms::messaging::unsubscribe_request : uses
             subscription_handler ..> ores::comms::messaging::unsubscribe_response : uses
+
+            class remote_event_adapter #ECECEC {
+                +remote_event_adapter(std::shared_ptr<net::client> client)
+                +~remote_event_adapter()
+                +subscribe(const std::string& event_type) boost::asio::awaitable<bool>
+                +unsubscribe(const std::string& event_type) boost::asio::awaitable<bool>
+                +is_subscribed(const std::string& event_type) bool
+                +get_subscriptions() std::set<std::string>
+                +resubscribe_all() boost::asio::awaitable<std::size_t>
+                +set_notification_callback(notification_callback_t callback) void
+                -on_notification(const std::string& event_type, std::chrono::system_clock::time_point timestamp) void
+                -{field} client_ std::shared_ptr<net::client>
+                -{field} mutex_ std::mutex
+                -{field} subscriptions_ std::set<std::string>
+                -{field} user_callback_ notification_callback_t
+            }
+
+            note top of remote_event_adapter
+            Adapts remote server subscriptions to local notification callbacks.
+
+            Bridges client-side event handling and server-side subscription
+            management by:
+            - Sending SUBSCRIBE/UNSUBSCRIBE protocol messages
+            - Tracking active subscriptions locally
+            - Supporting re-subscription after reconnect
+            - Forwarding notifications to registered callbacks
+            end note
+
+            remote_event_adapter o-- ores::comms::net::client
+            remote_event_adapter ..> ores::comms::messaging::subscribe_request : uses
+            remote_event_adapter ..> ores::comms::messaging::subscribe_response : uses
+            remote_event_adapter ..> ores::comms::messaging::unsubscribe_request : uses
+            remote_event_adapter ..> ores::comms::messaging::unsubscribe_response : uses
         }
 
         namespace tests #F2F2F2 {

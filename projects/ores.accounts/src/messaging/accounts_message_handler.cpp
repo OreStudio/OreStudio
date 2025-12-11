@@ -252,6 +252,18 @@ handle_lock_account_request(std::span<const std::byte> payload) {
     const auto& request = *request_result;
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
+    // Check if requester has admin privileges
+    if (!service_.is_admin(request.requester_account_id)) {
+        BOOST_LOG_SEV(lg(), warn) << "Lock account denied: requester "
+                                  << boost::uuids::to_string(request.requester_account_id)
+                                  << " is not an admin";
+        lock_account_response response{
+            .success = false,
+            .error_message = "Admin privileges required to lock accounts"
+        };
+        co_return response.serialize();
+    }
+
     bool success = service_.lock_account(request.account_id);
 
     if (success) {
@@ -281,6 +293,18 @@ handle_unlock_account_request(std::span<const std::byte> payload) {
 
     const auto& request = *request_result;
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+
+    // Check if requester has admin privileges
+    if (!service_.is_admin(request.requester_account_id)) {
+        BOOST_LOG_SEV(lg(), warn) << "Unlock account denied: requester "
+                                  << boost::uuids::to_string(request.requester_account_id)
+                                  << " is not an admin";
+        unlock_account_response response{
+            .success = false,
+            .error_message = "Admin privileges required to unlock accounts"
+        };
+        co_return response.serialize();
+    }
 
     bool success = service_.unlock_account(request.account_id);
 

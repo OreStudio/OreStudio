@@ -229,6 +229,7 @@ std::ostream& operator<<(std::ostream& s, const list_accounts_response& v)
 std::vector<std::byte> unlock_account_request::serialize() const {
     std::vector<std::byte> buffer;
     writer::write_uuid(buffer, account_id);
+    writer::write_uuid(buffer, requester_account_id);
     return buffer;
 }
 
@@ -239,6 +240,10 @@ unlock_account_request::deserialize(std::span<const std::byte> data) {
     auto account_id_result = reader::read_uuid(data);
     if (!account_id_result) return std::unexpected(account_id_result.error());
     request.account_id = *account_id_result;
+
+    auto requester_account_id_result = reader::read_uuid(data);
+    if (!requester_account_id_result) return std::unexpected(requester_account_id_result.error());
+    request.requester_account_id = *requester_account_id_result;
 
     return request;
 }
@@ -331,6 +336,7 @@ std::ostream& operator<<(std::ostream& s, const delete_account_response& v) {
 std::vector<std::byte> lock_account_request::serialize() const {
     std::vector<std::byte> buffer;
     writer::write_uuid(buffer, account_id);
+    writer::write_uuid(buffer, requester_account_id);
     return buffer;
 }
 
@@ -341,6 +347,10 @@ lock_account_request::deserialize(std::span<const std::byte> data) {
     auto account_id_result = reader::read_uuid(data);
     if (!account_id_result) return std::unexpected(account_id_result.error());
     request.account_id = *account_id_result;
+
+    auto requester_account_id_result = reader::read_uuid(data);
+    if (!requester_account_id_result) return std::unexpected(requester_account_id_result.error());
+    request.requester_account_id = *requester_account_id_result;
 
     return request;
 }

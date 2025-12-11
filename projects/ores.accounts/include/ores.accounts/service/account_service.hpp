@@ -169,6 +169,14 @@ public:
      */
     void logout(const boost::uuids::uuid& account_id);
 
+    /**
+     * @brief Checks if an account has admin privileges.
+     *
+     * @param account_id The ID of the account to check
+     * @return true if the account exists and has admin privileges, false otherwise
+     */
+    bool is_admin(const boost::uuids::uuid& account_id);
+
 private:
     repository::account_repository account_repo_;
     repository::login_info_repository login_info_repo_;

@@ -301,4 +301,18 @@ void account_service::logout(const boost::uuids::uuid& account_id) {
     login_info_repo_.update(login_info);
 }
 
+bool account_service::is_admin(const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Checking admin status for account: "
+                               << boost::uuids::to_string(account_id);
+
+    auto accounts = account_repo_.read_latest(account_id);
+    if (accounts.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Account not found: "
+                                  << boost::uuids::to_string(account_id);
+        return false;
+    }
+
+    return accounts[0].is_admin;
+}
+
 }

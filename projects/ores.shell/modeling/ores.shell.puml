@@ -227,6 +227,7 @@ namespace ores #F2F2F2 {
                     +{static} process_create_account(out: std::ostream&, session: comms::net::client_session&, username: std::string, password: std::string, totp_secret: std::string, email: std::string, is_admin: bool): void
                     +{static} process_list_accounts(out: std::ostream&, session: comms::net::client_session&): void
                     +{static} process_login(out: std::ostream&, session: comms::net::client_session&, username: std::string, password: std::string): void
+                    +{static} process_lock_account(out: std::ostream&, session: comms::net::client_session&, account_id: std::string): void
                     +{static} process_unlock_account(out: std::ostream&, session: comms::net::client_session&, account_id: std::string): void
                     +{static} process_list_login_info(out: std::ostream&, session: comms::net::client_session&): void
                     +{static} process_logout(out: std::ostream&, session: comms::net::client_session&): void
@@ -236,6 +237,7 @@ namespace ores #F2F2F2 {
 
                 note top of accounts_commands
                 Manages commands related to accounts.
+                Lock and unlock operations require admin privileges.
 
                 The bootstrap command creates the initial admin account
                 when the system is in bootstrap mode.

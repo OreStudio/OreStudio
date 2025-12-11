@@ -99,9 +99,22 @@ public:
         std::string username, std::string password);
 
     /**
+     * @brief Process a lock account request.
+     *
+     * Locks an account by account ID. Requires admin privileges.
+     *
+     * @param out Output stream for results
+     * @param session Client session for connectivity.
+     * @param account_id Account ID UUID as a string.
+     */
+    static void process_lock_account(std::ostream& out,
+        comms::net::client_session& session,
+        std::string account_id);
+
+    /**
      * @brief Process an unlock account request.
      *
-     * Unlocks a locked account by account ID.
+     * Unlocks a locked account by account ID. Requires admin privileges.
      *
      * @param out Output stream for results
      * @param session Client session for connectivity.

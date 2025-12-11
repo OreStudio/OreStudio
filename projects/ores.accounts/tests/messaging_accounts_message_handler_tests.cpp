@@ -326,7 +326,30 @@ TEST_CASE("handle_unlock_account_request", tags) {
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     accounts_message_handler sut(h.context(), system_flags, sessions);
 
-    // Create an account first
+    // Create an admin account first (to be the requester)
+    auto admin_account = generate_synthetic_account();
+    admin_account.is_admin = true;
+    BOOST_LOG_SEV(lg, info) << "Admin account: " << admin_account;
+
+    create_account_request admin_rq(to_create_account_request(admin_account));
+    admin_rq.is_admin = true;
+    BOOST_LOG_SEV(lg, info) << "Admin request: " << admin_rq;
+
+    boost::uuids::uuid admin_id;
+    boost::asio::io_context io_ctx;
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::create_account_request,
+            admin_rq.serialize(), internet::endpoint());
+        REQUIRE(r.has_value());
+
+        const auto response_result =
+            create_account_response::deserialize(r.value());
+        REQUIRE(response_result.has_value());
+        admin_id = response_result.value().account_id;
+    });
+
+    // Create a regular account
     const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
@@ -336,7 +359,6 @@ TEST_CASE("handle_unlock_account_request", tags) {
     const auto create_payload = ca_rq.serialize();
 
     boost::uuids::uuid account_id;
-    boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::create_account_request,
@@ -349,9 +371,10 @@ TEST_CASE("handle_unlock_account_request", tags) {
         account_id = response_result.value().account_id;
     });
 
-    // Attempt to unlock the account
+    // Attempt to unlock the account (using admin as requester)
     unlock_account_request urq;
     urq.account_id = account_id;
+    urq.requester_account_id = admin_id;
     BOOST_LOG_SEV(lg, info) << "Unlock request: " << urq;
 
     const auto unlock_payload = urq.serialize();
@@ -369,6 +392,63 @@ TEST_CASE("handle_unlock_account_request", tags) {
 
         CHECK(rp.success == true);
         CHECK(rp.error_message.empty());
+    });
+}
+
+TEST_CASE("handle_unlock_account_request_non_admin", tags) {
+    using namespace ores::utility::log;
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h(database_table);
+    auto system_flags = make_system_flags(h.context());
+    accounts_message_handler sut(h.context(), system_flags);
+
+    // Create two regular (non-admin) accounts
+    const auto account1 = generate_synthetic_account();
+    create_account_request ca_rq1(to_create_account_request(account1));
+
+    boost::uuids::uuid account1_id;
+    boost::asio::io_context io_ctx;
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::create_account_request,
+            ca_rq1.serialize(), internet::endpoint());
+        REQUIRE(r.has_value());
+        account1_id = create_account_response::deserialize(r.value()).value().account_id;
+    });
+
+    const auto account2 = generate_synthetic_account();
+    create_account_request ca_rq2(to_create_account_request(account2));
+
+    boost::uuids::uuid account2_id;
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::create_account_request,
+            ca_rq2.serialize(), internet::endpoint());
+        REQUIRE(r.has_value());
+        account2_id = create_account_response::deserialize(r.value()).value().account_id;
+    });
+
+    // Try to unlock account2 using non-admin account1 as requester
+    unlock_account_request urq;
+    urq.account_id = account2_id;
+    urq.requester_account_id = account1_id;
+    BOOST_LOG_SEV(lg, info) << "Unlock request (non-admin): " << urq;
+
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::unlock_account_request,
+            urq.serialize(), internet::endpoint());
+
+        REQUIRE(r.has_value());
+        const auto response_result =
+            unlock_account_response::deserialize(r.value());
+        REQUIRE(response_result.has_value());
+        const auto& rp = response_result.value();
+        BOOST_LOG_SEV(lg, info) << "Response: " << rp;
+
+        CHECK(rp.success == false);
+        CHECK(rp.error_message.find("Admin") != std::string::npos);
     });
 }
 
@@ -522,7 +602,24 @@ TEST_CASE("handle_lock_account_request", tags) {
     auto system_flags = make_system_flags(h.context());
     accounts_message_handler sut(h.context(), system_flags);
 
-    // Create an account first
+    // Create an admin account first (to be the requester)
+    auto admin_account = generate_synthetic_account();
+    admin_account.is_admin = true;
+
+    create_account_request admin_rq(to_create_account_request(admin_account));
+    admin_rq.is_admin = true;
+
+    boost::uuids::uuid admin_id;
+    boost::asio::io_context io_ctx;
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::create_account_request,
+            admin_rq.serialize(), internet::endpoint());
+        REQUIRE(r.has_value());
+        admin_id = create_account_response::deserialize(r.value()).value().account_id;
+    });
+
+    // Create a regular account to lock
     const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
@@ -532,7 +629,6 @@ TEST_CASE("handle_lock_account_request", tags) {
     const auto create_payload = ca_rq.serialize();
 
     boost::uuids::uuid account_id;
-    boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::create_account_request,
@@ -545,9 +641,10 @@ TEST_CASE("handle_lock_account_request", tags) {
         account_id = response_result.value().account_id;
     });
 
-    // Lock the account
+    // Lock the account (using admin as requester)
     lock_account_request lrq;
     lrq.account_id = account_id;
+    lrq.requester_account_id = admin_id;
     BOOST_LOG_SEV(lg, info) << "Lock request: " << lrq;
 
     const auto lock_payload = lrq.serialize();
@@ -575,7 +672,24 @@ TEST_CASE("handle_login_request_locked_account", tags) {
     auto system_flags = make_system_flags(h.context());
     accounts_message_handler sut(h.context(), system_flags);
 
-    // 1. Create an account
+    // 1. Create an admin account (to be the requester for locking)
+    auto admin_account = generate_synthetic_account();
+    admin_account.is_admin = true;
+
+    create_account_request admin_rq(to_create_account_request(admin_account));
+    admin_rq.is_admin = true;
+
+    boost::uuids::uuid admin_id;
+    boost::asio::io_context io_ctx;
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::create_account_request,
+            admin_rq.serialize(), internet::endpoint());
+        REQUIRE(r.has_value());
+        admin_id = create_account_response::deserialize(r.value()).value().account_id;
+    });
+
+    // 2. Create a regular account
     const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
@@ -585,7 +699,6 @@ TEST_CASE("handle_login_request_locked_account", tags) {
     const auto create_payload = ca_rq.serialize();
 
     boost::uuids::uuid account_id;
-    boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::create_account_request,
@@ -598,9 +711,10 @@ TEST_CASE("handle_login_request_locked_account", tags) {
         account_id = response_result.value().account_id;
     });
 
-    // 2. Lock the account using lock_account_request
+    // 3. Lock the account using lock_account_request (as admin)
     lock_account_request lock_rq;
     lock_rq.account_id = account_id;
+    lock_rq.requester_account_id = admin_id;
     BOOST_LOG_SEV(lg, info) << "Lock account request: " << lock_rq;
 
     const auto lock_payload = lock_rq.serialize();
@@ -616,7 +730,7 @@ TEST_CASE("handle_login_request_locked_account", tags) {
         CHECK(response_result.value().success == true);
     });
 
-    // 3. Attempt login with valid credentials for the now-locked account
+    // 4. Attempt login with valid credentials for the now-locked account
     login_request login_rq;
     login_rq.username = ca_rq.username;
     login_rq.password = ca_rq.password;

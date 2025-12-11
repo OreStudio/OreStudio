@@ -55,9 +55,33 @@ std::ostream& operator<<(std::ostream& s, connection_state v);
  * @brief Callback invoked when client detects server disconnect.
  *
  * Called from the heartbeat coroutine when ping fails or times out.
- * Should be thread-safe as it may be called from different executors.
+ * The callback is invoked on the client's internal executor and should not
+ * perform blocking operations. Any UI updates must be dispatched to the
+ * appropriate UI thread.
  */
 using disconnect_callback_t = std::function<void()>;
+
+/**
+ * @brief Callback invoked when client starts reconnection attempts.
+ *
+ * Called when connection is lost and auto-reconnect is enabled.
+ * Allows UI to show reconnecting state to the user.
+ * The callback is invoked on the client's internal executor and should not
+ * perform blocking operations. Any UI updates must be dispatched to the
+ * appropriate UI thread.
+ */
+using reconnecting_callback_t = std::function<void()>;
+
+/**
+ * @brief Callback invoked when client successfully reconnects.
+ *
+ * Called after auto-reconnect succeeds.
+ * Allows UI to restore connected state display.
+ * The callback is invoked on the client's internal executor and should not
+ * perform blocking operations. Any UI updates must be dispatched to the
+ * appropriate UI thread.
+ */
+using reconnected_callback_t = std::function<void()>;
 
 /**
  * @brief ORES protocol client.
@@ -226,6 +250,26 @@ public:
     void set_disconnect_callback(disconnect_callback_t callback);
 
     /**
+     * @brief Set callback to be invoked when reconnection starts.
+     *
+     * The callback will be called when auto-reconnect begins after
+     * connection loss. It should be thread-safe.
+     *
+     * @param callback Function to call on reconnection start (may be empty to disable)
+     */
+    void set_reconnecting_callback(reconnecting_callback_t callback);
+
+    /**
+     * @brief Set callback to be invoked when reconnection succeeds.
+     *
+     * The callback will be called after auto-reconnect successfully
+     * restores the connection. It should be thread-safe.
+     *
+     * @param callback Function to call on reconnection success (may be empty to disable)
+     */
+    void set_reconnected_callback(reconnected_callback_t callback);
+
+    /**
      * @brief Send a request frame and receive response frame (async version).
      *
      * Generic method for sending any request and receiving response.
@@ -259,6 +303,8 @@ private:
     connection_state state_;
     mutable std::mutex state_mutex_; // Thread-safe state protection
     disconnect_callback_t disconnect_callback_;
+    reconnecting_callback_t reconnecting_callback_;
+    reconnected_callback_t reconnected_callback_;
 
     // Infrastructure for unified message loop
     std::unique_ptr<boost::asio::strand<boost::asio::any_io_executor>> write_strand_;

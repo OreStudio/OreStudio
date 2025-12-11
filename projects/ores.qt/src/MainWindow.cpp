@@ -75,11 +75,14 @@ MainWindow::MainWindow(QWidget* parent) :
     const QColor iconColor(220, 220, 220); // Light gray for dark theme
     const QColor connectedColor(100, 200, 100); // Green for connected
     const QColor disconnectedColor(200, 100, 100); // Red for disconnected
+    const QColor reconnectingColor(230, 180, 80); // Orange/yellow for reconnecting
     connectedIcon_ = IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_plug_connected_20_filled.svg",
         connectedColor);
     disconnectedIcon_ = IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_plug_disconnected_20_filled.svg", disconnectedColor);
+    reconnectingIcon_ = IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_plug_disconnected_20_filled.svg", reconnectingColor);
 
     ui_->ActionConnect->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_plug_connected_20_filled.svg", iconColor));
@@ -109,6 +112,14 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(clientManager_, &ClientManager::disconnected, this, &MainWindow::updateMenuState);
     connect(clientManager_, &ClientManager::disconnected, this, [this]() {
         ui_->statusbar->showMessage("Disconnected from server.", 5000);
+    });
+    connect(clientManager_, &ClientManager::reconnecting, this, [this]() {
+        connectionStatusIconLabel_->setPixmap(reconnectingIcon_.pixmap(16, 16));
+        ui_->statusbar->showMessage("Reconnecting to server...");
+    });
+    connect(clientManager_, &ClientManager::reconnected, this, [this]() {
+        connectionStatusIconLabel_->setPixmap(connectedIcon_.pixmap(16, 16));
+        ui_->statusbar->showMessage("Reconnected to server.", 5000);
     });
 
     // Connect Currencies action to controller

@@ -183,6 +183,9 @@ private:
     /** @brief Icon displayed in status bar when disconnected from server */
     QIcon disconnectedIcon_;
 
+    /** @brief Icon displayed in status bar when reconnecting to server */
+    QIcon reconnectingIcon_;
+
     // Entity controllers
     /**
      * @brief Controller managing all currency-related windows and operations.

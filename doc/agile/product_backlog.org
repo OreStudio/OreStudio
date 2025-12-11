@@ -174,10 +174,6 @@ Notes:
 
 - update recipes with the new client commands.
 
-*** Add a logout message                                               :code:
-
-At present we are just closing the socket. We should send a proper message.
-
 *** Invalid password should not throw                                  :code:
 
 At present in the unlock test we have:

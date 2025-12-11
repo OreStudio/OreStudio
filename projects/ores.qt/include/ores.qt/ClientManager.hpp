@@ -104,6 +104,8 @@ public:
 signals:
     void connected();
     void disconnected();
+    void reconnecting();
+    void reconnected();
     void connectionError(const QString& message);
 
 private:

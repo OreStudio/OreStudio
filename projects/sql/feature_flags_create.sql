@@ -28,6 +28,7 @@ set schema 'oresdb';
 
 create table if not exists "oresdb"."feature_flags" (
     "name" text not null,
+    "version" integer not null,
     "enabled" integer not null default 0,
     "description" text,
     "modified_by" text not null,
@@ -41,18 +42,49 @@ create table if not exists "oresdb"."feature_flags" (
     check ("valid_from" < "valid_to")
 );
 
+-- Unique constraint on version for current records ensures version uniqueness per entity
+create unique index if not exists feature_flags_version_unique_idx
+on "oresdb"."feature_flags" (name, version)
+where valid_to = '9999-12-31 23:59:59'::timestamptz;
+
 create or replace function update_feature_flags()
 returns trigger as $$
+declare
+    current_version integer;
 begin
-    update "oresdb"."feature_flags"
-    set valid_to = current_timestamp
+    -- Get the current version of the existing record (if any)
+    select version into current_version
+    from "oresdb"."feature_flags"
     where name = new.name
-    and valid_to = '9999-12-31 23:59:59'::timestamptz
-    and valid_from < current_timestamp;
+    and valid_to = '9999-12-31 23:59:59'::timestamptz;
+
+    if found then
+        -- Existing record: check version for optimistic locking
+        if new.version != current_version then
+            raise exception 'Version conflict: expected version %, but current version is %',
+                new.version, current_version
+                using errcode = 'P0002';
+        end if;
+        -- Increment version for the new record
+        new.version = current_version + 1;
+
+        -- Close the existing record
+        update "oresdb"."feature_flags"
+        set valid_to = current_timestamp
+        where name = new.name
+        and valid_to = '9999-12-31 23:59:59'::timestamptz
+        and valid_from < current_timestamp;
+    else
+        -- New record: set initial version
+        new.version = 1;
+    end if;
 
     new.valid_from = current_timestamp;
     new.valid_to = '9999-12-31 23:59:59'::timestamptz;
-    new.modified_by = current_user;
+    -- Don't override modified_by if already set by application
+    if new.modified_by is null or new.modified_by = '' then
+        new.modified_by = current_user;
+    end if;
 
     return new;
 end;

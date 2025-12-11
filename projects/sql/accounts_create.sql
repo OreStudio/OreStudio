@@ -52,14 +52,42 @@ create unique index if not exists accounts_email_unique_idx
 on "oresdb"."accounts" (email)
 where valid_to = '9999-12-31 23:59:59'::timestamptz;
 
+-- Unique constraint on version for current records ensures version uniqueness per entity
+create unique index if not exists accounts_version_unique_idx
+on "oresdb"."accounts" (id, version)
+where valid_to = '9999-12-31 23:59:59'::timestamptz;
+
 create or replace function update_accounts()
 returns trigger as $$
+declare
+    current_version integer;
 begin
-    update "oresdb"."accounts"
-    set valid_to = current_timestamp
+    -- Get the current version of the existing record (if any)
+    select version into current_version
+    from "oresdb"."accounts"
     where id = new.id
-    and valid_to = '9999-12-31 23:59:59'::timestamptz
-    and valid_from < current_timestamp;
+    and valid_to = '9999-12-31 23:59:59'::timestamptz;
+
+    if found then
+        -- Existing record: check version for optimistic locking
+        if new.version != current_version then
+            raise exception 'Version conflict: expected version %, but current version is %',
+                new.version, current_version
+                using errcode = 'P0002';
+        end if;
+        -- Increment version for the new record
+        new.version = current_version + 1;
+
+        -- Close the existing record
+        update "oresdb"."accounts"
+        set valid_to = current_timestamp
+        where id = new.id
+        and valid_to = '9999-12-31 23:59:59'::timestamptz
+        and valid_from < current_timestamp;
+    else
+        -- New record: set initial version
+        new.version = 1;
+    end if;
 
     new.valid_from = current_timestamp;
     new.valid_to = '9999-12-31 23:59:59'::timestamptz;

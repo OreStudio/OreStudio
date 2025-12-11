@@ -31,6 +31,7 @@ domain::currency currency_mapper::map(const currency_entity& v) {
     BOOST_LOG_SEV(lg(), debug) << "Mapping db entity: " << v;
 
     domain::currency r;
+    r.version = v.version;
     r.iso_code = v.iso_code.value();
     r.name = v.name;
     r.numeric_code = v.numeric_code;
@@ -53,6 +54,7 @@ currency_entity currency_mapper::map(const domain::currency& v) {
 
     currency_entity r;
     r.iso_code = v.iso_code;
+    r.version = v.version;
     r.name = v.name;
     r.numeric_code = v.numeric_code;
     r.symbol = v.symbol;

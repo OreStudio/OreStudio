@@ -23,6 +23,7 @@
 #include <iosfwd>
 #include <string>
 #include <rfl.hpp>
+#include <sqlgen/postgres.hpp>
 
 namespace ores::utility::database {
 
@@ -53,6 +54,14 @@ struct database_options final {
 };
 
 std::ostream& operator<<(std::ostream& s, const database_options& v);
+
+/**
+ * @brief Converts database_options to sqlgen::postgres::Credentials.
+ *
+ * @param opts The database options to convert.
+ * @return The corresponding sqlgen credentials.
+ */
+sqlgen::postgres::Credentials to_credentials(const database_options& opts);
 
 }
 

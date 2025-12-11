@@ -94,9 +94,8 @@ TEST_CASE("postgres_listener_service_lifecycle", tags) {
     };
 
     database_helper h;
-    const auto& credentials = h.context().credentials();
 
-    postgres_listener_service listener(credentials, callback);
+    postgres_listener_service listener(h.context(), callback);
     listener.start();
 
     // Give thread a moment to start and initialise
@@ -132,7 +131,7 @@ TEST_CASE("postgres_listener_service_notification_reception", tags) {
     database_helper h;
     const auto& credentials = h.context().credentials();
 
-    postgres_listener_service listener(credentials, callback);
+    postgres_listener_service listener(h.context(), callback);
     listener.start();
     listener.subscribe(channel_name);
 
@@ -168,7 +167,7 @@ TEST_CASE("postgres_listener_service_no_notification_without_subscribe", tags) {
     database_helper h;
     const auto& credentials = h.context().credentials();
 
-    postgres_listener_service listener(credentials, callback);
+    postgres_listener_service listener(h.context(), callback);
     listener.start();
 
     // Give listener thread a moment to start
@@ -209,7 +208,7 @@ TEST_CASE("postgres_listener_service_subscribe_before_start", tags) {
     database_helper h;
     const auto& credentials = h.context().credentials();
 
-    postgres_listener_service listener(credentials, callback);
+    postgres_listener_service listener(h.context(), callback);
 
     // Subscribe BEFORE starting
     listener.subscribe(channel_name);
@@ -253,9 +252,8 @@ TEST_CASE("postgres_listener_service_notify_method", tags) {
     };
 
     database_helper h;
-    const auto& credentials = h.context().credentials();
 
-    postgres_listener_service listener(credentials, callback);
+    postgres_listener_service listener(h.context(), callback);
     listener.subscribe(channel_name);
     listener.start();
 

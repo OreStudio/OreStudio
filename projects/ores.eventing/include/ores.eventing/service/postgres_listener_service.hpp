@@ -29,6 +29,7 @@
 #include <libpq-fe.h>
 #include <sqlgen/postgres.hpp>
 #include "ores.utility/log/make_logger.hpp"
+#include "ores.utility/database/context.hpp"
 #include "ores.eventing/domain/entity_change_event.hpp"
 
 namespace ores::eventing::service {
@@ -67,13 +68,13 @@ public:
      * @brief Constructs a postgres_listener_service.
      *
      * Creates a dedicated PostgreSQL connection for listening using the
-     * provided credentials.
+     * credentials from the provided database context.
      *
-     * @param credentials The PostgreSQL credentials for the connection.
+     * @param ctx The database context containing connection credentials.
      * @param callback The callback function to be invoked when a notification
      *        is received.
      */
-    explicit postgres_listener_service(sqlgen::postgres::Credentials credentials,
+    explicit postgres_listener_service(utility::database::context ctx,
         notification_callback_t callback);
 
     /**
@@ -165,7 +166,7 @@ private:
     void handle_notification(PGnotify* pg_notify);
 
 private:
-    sqlgen::postgres::Credentials credentials_;
+    utility::database::context ctx_;
     notification_callback_t notification_callback_;
 
     mutable std::mutex mutex_;              ///< Protects connection and channels

@@ -31,9 +31,9 @@ namespace ores::eventing::service {
 using namespace ores::utility::log;
 
 postgres_listener_service::postgres_listener_service(
-    sqlgen::postgres::Credentials credentials,
+    utility::database::context ctx,
     notification_callback_t callback)
-    : credentials_(std::move(credentials)),
+    : ctx_(std::move(ctx)),
       notification_callback_(std::move(callback)),
       connection_(nullptr),
       running_(false) {
@@ -65,7 +65,7 @@ bool postgres_listener_service::open_connection() {
         return true;
     }
 
-    const auto conn_str = build_connection_string(credentials_);
+    const auto conn_str = build_connection_string(ctx_.credentials());
     BOOST_LOG_SEV(lg(), debug) << "Opening dedicated listener connection.";
 
     connection_ = PQconnectdb(conn_str.c_str());

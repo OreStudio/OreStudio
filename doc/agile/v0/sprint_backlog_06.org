@@ -18,31 +18,31 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-11 Thu 10:26], for Thursday, December 11, 2025.
+#+CAPTION: Clock summary at [2025-12-11 Thu 10:28], for Thursday, December 11, 2025.
 |       | <75>                                                    |        |      |      |       |
 | Tags  | Headline                                                | Time   |      |      |     % |
 |-------+---------------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                            | *4:06* |      |      | 100.0 |
+|       | *Total time*                                            | *4:08* |      |      | 100.0 |
 |-------+---------------------------------------------------------+--------+------+------+-------|
-|       | Stories                                                 | 4:06   |      |      | 100.0 |
-|       | Active                                                  |        | 4:06 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint                      |        |      | 1:23 |  33.7 |
-| code  | Add retry algorithm to client                           |        |      | 1:52 |  45.5 |
+|       | Stories                                                 | 4:08   |      |      | 100.0 |
+|       | Active                                                  |        | 4:08 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint                      |        |      | 1:23 |  33.5 |
+| code  | Add retry algorithm to client                           |        |      | 1:52 |  45.2 |
 | code  | Fix valgrind leaks after string view changes to logging |        |      | 0:07 |   2.8 |
 | code  | Remove enum exception                                   |        |      | 0:20 |   8.1 |
-| code  | Entity syntax refactor snags                            |        |      | 0:24 |   9.8 |
+| code  | Entity syntax refactor snags                            |        |      | 0:26 |  10.5 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-11 Thu 10:26]
+#+CAPTION: Clock summary at [2025-12-11 Thu 10:28]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *57:01* |       |       | 100.0 |
+|       | *Total time*                                            | *57:03* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 57:01   |       |       | 100.0 |
-|       | Active                                                  |         | 57:01 |       | 100.0 |
+|       | Stories                                                 | 57:03   |       |       | 100.0 |
+|       | Active                                                  |         | 57:03 |       | 100.0 |
 | agile | Sprint and product backlog refinement                   |         |       |  0:29 |   0.8 |
 | infra | OCR scan notebooks for this sprint                      |         |       | 14:23 |  25.2 |
 | code  | Implement session cancellation                          |         |       |  2:42 |   4.7 |
@@ -62,7 +62,7 @@
 | code  | Add retry algorithm to client                           |         |       |  1:52 |   3.3 |
 | code  | Fix valgrind leaks after string view changes to logging |         |       |  0:07 |   0.2 |
 | code  | Remove enum exception                                   |         |       |  0:20 |   0.6 |
-| code  | Entity syntax refactor snags                            |         |       |  0:33 |   1.0 |
+| code  | Entity syntax refactor snags                            |         |       |  0:35 |   1.0 |
 | code  | Experiment with simple code generation                  |         |       |  1:30 |   2.6 |
 #+end:
 
@@ -1556,8 +1556,9 @@ Links:
   reports errors that are consequence of attempt to access elements out of
   defined range."
 
-*** STARTED Entity syntax refactor snags                               :code:
+*** COMPLETED Entity syntax refactor snags                             :code:
     :LOGBOOK:
+    CLOCK: [2025-12-11 Thu 10:26]--[2025-12-11 Thu 10:33] =>  0:07
     CLOCK: [2025-12-11 Thu 01:42]--[2025-12-11 Thu 02:01] =>  0:19
     CLOCK: [2025-12-10 Wed 23:51]--[2025-12-11 Thu 00:05] =>  0:14
     :END:
@@ -1571,14 +1572,58 @@ Notes:
 
 - this is not quite done yet. We need to split =add_options=.
 
-*** STARTED Experiment with simple code generation                     :code:
+*** CANCELLED Experiment with simple code generation                   :code:
     :LOGBOOK:
     CLOCK: [2025-12-02 Tue 14:35]--[2025-12-02 Tue 16:05] =>  1:30
     :END:
 
+*Rationale*: Claude code is now good enough.
+
 It should be easy enough to add a simple code generator that creates the basic
 infrastructure for a domain type, so that we don't have to waste Claude Code
 tokens.
+
+*** STARTED Add a logout message                                       :code:
+
+At present we are just closing the socket. We should send a proper message. The
+server should close the connection when receiving this message.
+
+*** STARTED Create faker for past timepoint                            :code:
+
+We have helper code in currency that needs to be moved to utility:
+
+#+begin_src c++
+std::string fake_datetime_string() {
+    // Define range: e.g., years 1970 to 2038 (avoid 9999 unless needed)
+    using namespace std::chrono;
+    static thread_local std::mt19937_64 rng{std::random_device{}()};
+
+    // Unix time range: 0 = 1970-01-01, max ~2106 for 32-bit, but we use 64-bit
+    const auto min_time = sys_days{year{1970}/1/1}.time_since_epoch();
+    const auto max_time = sys_days{year{2038}/12/31}.time_since_epoch() + 24h - 1s;
+
+    std::uniform_int_distribution<std::int64_t> dist(
+        min_time.count(),
+        max_time.count()
+    );
+
+    auto tp = sys_seconds{seconds{dist(rng)}};
+
+    // Format as "YYYY-MM-DD HH:MM:SS"
+    return std::format("{:%Y-%m-%d %H:%M:%S}", tp);
+}
+#+end_src
+
+Use this code in eventing.
+
+*** STARTED Add postgres listener                                      :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-11 Thu 10:34]
+    :END:
+
+It is not very clear how events will be distributed into the client but we
+should at least be able to implement a simple listener and get it to work with
+patched sqlgen.
 
 *** Add system tray support                                            :code:
 
@@ -1606,39 +1651,6 @@ oresdb=> select * from login_info;
 
 Also, we need a login timestamp and a logout timestamp so we can measure session
 duration.
-
-*** Add a logout message                                               :code:
-
-At present we are just closing the socket. We should send a proper message. The
-server should close the connection when receiving this message.
-
-*** Create faker for past timepoint                                    :code:
-
-We have helper code in currency that needs to be moved to utility:
-
-#+begin_src c++
-std::string fake_datetime_string() {
-    // Define range: e.g., years 1970 to 2038 (avoid 9999 unless needed)
-    using namespace std::chrono;
-    static thread_local std::mt19937_64 rng{std::random_device{}()};
-
-    // Unix time range: 0 = 1970-01-01, max ~2106 for 32-bit, but we use 64-bit
-    const auto min_time = sys_days{year{1970}/1/1}.time_since_epoch();
-    const auto max_time = sys_days{year{2038}/12/31}.time_since_epoch() + 24h - 1s;
-
-    std::uniform_int_distribution<std::int64_t> dist(
-        min_time.count(),
-        max_time.count()
-    );
-
-    auto tp = sys_seconds{seconds{dist(rng)}};
-
-    // Format as "YYYY-MM-DD HH:MM:SS"
-    return std::format("{:%Y-%m-%d %H:%M:%S}", tp);
-}
-#+end_src
-
-Use this code in eventing.
 
 *** Currencies displays when not connected                             :code:
 

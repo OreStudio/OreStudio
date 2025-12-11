@@ -18,48 +18,50 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-11 Thu 10:05], for Thursday, December 11, 2025.
+#+CAPTION: Clock summary at [2025-12-11 Thu 10:26], for Thursday, December 11, 2025.
 |       | <75>                                                    |        |      |      |       |
 | Tags  | Headline                                                | Time   |      |      |     % |
 |-------+---------------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                            | *3:46* |      |      | 100.0 |
+|       | *Total time*                                            | *4:06* |      |      | 100.0 |
 |-------+---------------------------------------------------------+--------+------+------+-------|
-|       | Stories                                                 | 3:46   |      |      | 100.0 |
-|       | Active                                                  |        | 3:46 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint                      |        |      | 1:23 |  36.7 |
-| code  | Add retry algorithm to client                           |        |      | 1:52 |  49.6 |
-| code  | Fix valgrind leaks after string view changes to logging |        |      | 0:07 |   3.1 |
-| code  | Entity syntax refactor snags                            |        |      | 0:24 |  10.6 |
+|       | Stories                                                 | 4:06   |      |      | 100.0 |
+|       | Active                                                  |        | 4:06 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint                      |        |      | 1:23 |  33.7 |
+| code  | Add retry algorithm to client                           |        |      | 1:52 |  45.5 |
+| code  | Fix valgrind leaks after string view changes to logging |        |      | 0:07 |   2.8 |
+| code  | Remove enum exception                                   |        |      | 0:20 |   8.1 |
+| code  | Entity syntax refactor snags                            |        |      | 0:24 |   9.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-11 Thu 10:05]
+#+CAPTION: Clock summary at [2025-12-11 Thu 10:26]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *56:41* |       |       | 100.0 |
+|       | *Total time*                                            | *57:01* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 56:41   |       |       | 100.0 |
-|       | Active                                                  |         | 56:41 |       | 100.0 |
-| agile | Sprint and product backlog refinement                   |         |       |  0:29 |   0.9 |
-| infra | OCR scan notebooks for this sprint                      |         |       | 14:23 |  25.4 |
-| code  | Implement session cancellation                          |         |       |  2:42 |   4.8 |
+|       | Stories                                                 | 57:01   |       |       | 100.0 |
+|       | Active                                                  |         | 57:01 |       | 100.0 |
+| agile | Sprint and product backlog refinement                   |         |       |  0:29 |   0.8 |
+| infra | OCR scan notebooks for this sprint                      |         |       | 14:23 |  25.2 |
+| code  | Implement session cancellation                          |         |       |  2:42 |   4.7 |
 | code  | Create a variability service for feature flags          |         |       |  1:23 |   2.4 |
 | code  | Add tests to diagrams                                   |         |       |  1:26 |   2.5 |
 | code  | Add messaging to variability                            |         |       |  0:40 |   1.2 |
 | code  | Create handshake service in comms                       |         |       |  2:31 |   4.4 |
-| code  | Implement client heartbeat for disconnect detection     |         |       |  5:18 |   9.4 |
+| code  | Implement client heartbeat for disconnect detection     |         |       |  5:18 |   9.3 |
 | code  | Pressing disconnect crashes client                      |         |       |  0:23 |   0.7 |
 | infra | Create a component creator skill                        |         |       |  0:42 |   1.2 |
-| code  | Add listen/notify support                               |         |       | 11:25 |  20.1 |
+| code  | Add listen/notify support                               |         |       | 11:25 |  20.0 |
 | code  | Move context to database                                |         |       |  0:20 |   0.6 |
 | code  | Use =std::string_view= for loggers                      |         |       |  3:14 |   5.7 |
-| code  | Fix issues with logging after string_view change        |         |       |  0:53 |   1.6 |
+| code  | Fix issues with logging after string_view change        |         |       |  0:53 |   1.5 |
 | code  | Remove bootstrap mode from context                      |         |       |  6:36 |  11.6 |
 | code  | Add tests for messaging handler                         |         |       |  0:14 |   0.4 |
 | code  | Add retry algorithm to client                           |         |       |  1:52 |   3.3 |
 | code  | Fix valgrind leaks after string view changes to logging |         |       |  0:07 |   0.2 |
+| code  | Remove enum exception                                   |         |       |  0:20 |   0.6 |
 | code  | Entity syntax refactor snags                            |         |       |  0:33 |   1.0 |
 | code  | Experiment with simple code generation                  |         |       |  1:30 |   2.6 |
 #+end:
@@ -1528,6 +1530,32 @@ Notes:
 }
 #+end_src
 
+*** COMPLETED Remove enum exception                                    :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-11 Thu 10:06]--[2025-12-11 Thu 10:26] =>  0:20
+    :END:
+
+We should use logic error instead:
+
+#+begin_src c++
+throw std::logic_error("Definition for system_flag not found.");
+#+end_src
+
+Or perhaps =out_of_range=.
+
+Links:
+
+- [[https://en.cppreference.com/w/cpp/error/logic_error.html][std::logic_error]]: "Defines a type of object to be thrown as exception. It
+  reports errors that are a consequence of faulty logic within the program such
+  as violating logical preconditions or class invariants and may be preventable.
+  No standard library components throw this exception directly, but the
+  exception types =std::invalid_argument=, =std::domain_error=,
+  =std::length_error=, =std::out_of_range=, =std::future_error=, and
+  =std::experimental::bad_optional_access= are derived from =std::logic_error=."
+- [[https://en.cppreference.com/w/cpp/error/out_of_range.html][std::out_of_range]]: "Defines a type of object to be thrown as exception. It
+  reports errors that are consequence of attempt to access elements out of
+  defined range."
+
 *** STARTED Entity syntax refactor snags                               :code:
     :LOGBOOK:
     CLOCK: [2025-12-11 Thu 01:42]--[2025-12-11 Thu 02:01] =>  0:19
@@ -1583,29 +1611,6 @@ duration.
 
 At present we are just closing the socket. We should send a proper message. The
 server should close the connection when receiving this message.
-
-*** Remove enum exception                                              :code:
-
-We should use logic error instead:
-
-#+begin_src c++
-throw std::logic_error("Definition for system_flag not found.");
-#+end_src
-
-Or perhaps =out_of_range=.
-
-Links:
-
-- [[https://en.cppreference.com/w/cpp/error/logic_error.html][std::logic_error]]: "Defines a type of object to be thrown as exception. It
-  reports errors that are a consequence of faulty logic within the program such
-  as violating logical preconditions or class invariants and may be preventable.
-  No standard library components throw this exception directly, but the
-  exception types =std::invalid_argument=, =std::domain_error=,
-  =std::length_error=, =std::out_of_range=, =std::future_error=, and
-  =std::experimental::bad_optional_access= are derived from =std::logic_error=."
-- [[https://en.cppreference.com/w/cpp/error/out_of_range.html][std::out_of_range]]: "Defines a type of object to be thrown as exception. It
-  reports errors that are consequence of attempt to access elements out of
-  defined range."
 
 *** Create faker for past timepoint                                    :code:
 

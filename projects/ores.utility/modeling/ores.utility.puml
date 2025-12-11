@@ -152,23 +152,6 @@ namespace ores #F2F2F2 {
             end note
         }
 
-        namespace exception #F2F2F2 {
-            class invalid_enum_value <<exception>> #D6B19F {
-            }
-
-            note top of invalid_enum_value
-            The exception thrown when an enum has an unexpected value.
-
-            This exception should be thrown only when:
-
-            - the current value of an enumeration is not part of its domain, .e.g. an
-            int was cast into an enumeration with a value which is not valid; or
-
-            - a given valid value on an enumeration is not supported in a given
-            context.
-            end note
-        }
-
         namespace log #F2F2F2 {
             enum severity_level {
                 trace

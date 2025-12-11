@@ -26,10 +26,12 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <QtWidgets/QWidget>
+#include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QTableView>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QPushButton>
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <QUrl>
@@ -140,7 +142,11 @@ CurrencyMdiWindow(ClientManager* clientManager,
         &CurrencyMdiWindow::exportToXML);
     toolBar_->addAction(exportXMLAction);
 
+    // Setup stale indicator (initially hidden)
+    setupStaleIndicator();
+
     verticalLayout_->addWidget(toolBar_);
+    verticalLayout_->addWidget(staleIndicator_);
     verticalLayout_->addWidget(currencyTableView_);
     verticalLayout_->addWidget(pagination_widget_);
 
@@ -249,6 +255,7 @@ void CurrencyMdiWindow::reload() {
         return;
     }
     emit statusChanged("Reloading currencies...");
+    clearStaleIndicator();
     currencyModel_->refresh();
 }
 
@@ -740,6 +747,56 @@ void CurrencyMdiWindow::updateActionStates() {
     editAction_->setEnabled(hasSelection);
     deleteAction_->setEnabled(hasSelection);
     historyAction_->setEnabled(hasSelection);
+}
+
+void CurrencyMdiWindow::setupStaleIndicator() {
+    staleIndicator_ = new QWidget(this);
+    auto* layout = new QHBoxLayout(staleIndicator_);
+    layout->setContentsMargins(8, 4, 8, 4);
+
+    // Warning icon
+    auto* iconLabel = new QLabel(staleIndicator_);
+    iconLabel->setText("⚠️");
+    layout->addWidget(iconLabel);
+
+    // Message
+    staleLabel_ = new QLabel("Data may be out of date. Click Reload to refresh.", staleIndicator_);
+    staleLabel_->setStyleSheet("color: #FFA500; font-weight: bold;");
+    layout->addWidget(staleLabel_);
+
+    layout->addStretch();
+
+    // Reload button
+    auto* reloadButton = new QPushButton("Reload Now", staleIndicator_);
+    reloadButton->setStyleSheet(
+        "QPushButton { background-color: #2196F3; color: white; padding: 4px 12px; "
+        "border-radius: 4px; } "
+        "QPushButton:hover { background-color: #1976D2; }");
+    connect(reloadButton, &QPushButton::clicked, this, &CurrencyMdiWindow::reload);
+    layout->addWidget(reloadButton);
+
+    // Style the indicator bar
+    staleIndicator_->setStyleSheet(
+        "background-color: #FFF3E0; border: 1px solid #FFB74D; border-radius: 4px;");
+
+    // Initially hidden
+    staleIndicator_->setVisible(false);
+}
+
+void CurrencyMdiWindow::markAsStale() {
+    if (!isStale_) {
+        isStale_ = true;
+        staleIndicator_->setVisible(true);
+        BOOST_LOG_SEV(lg(), info) << "Currency data marked as stale";
+    }
+}
+
+void CurrencyMdiWindow::clearStaleIndicator() {
+    if (isStale_) {
+        isStale_ = false;
+        staleIndicator_->setVisible(false);
+        BOOST_LOG_SEV(lg(), debug) << "Stale indicator cleared";
+    }
 }
 
 }

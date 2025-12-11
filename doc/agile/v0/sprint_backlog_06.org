@@ -1733,10 +1733,10 @@ subscription protocol management).
 
 ***** Phase 7: Qt Integration
 
-- [ ] Add =notificationReceived= signal to =ClientManager=
-- [ ] Wire notification callback to Qt signal
-- [ ] Update =CurrencyController= to subscribe to currency changes
-- [ ] Add visual indicator for stale data in =CurrencyMdiWindow=
+- [X] Add =notificationReceived= signal to =ClientManager=
+- [X] Wire notification callback to Qt signal
+- [X] Update =CurrencyController= to subscribe to currency changes
+- [X] Add visual indicator for stale data in =CurrencyMdiWindow=
 
 
 *** Use events in comms and accounts                                   :code:

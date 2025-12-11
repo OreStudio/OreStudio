@@ -21,6 +21,9 @@
 
 #include <QtConcurrent>
 #include <QFuture>
+#include <QTimeZone>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/use_future.hpp>
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.comms/messaging/handshake_protocol.hpp"
@@ -161,6 +164,24 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
         client_ = new_client;
         logged_in_account_id_ = response->account_id;
         BOOST_LOG_SEV(lg(), info) << "Login successful, account_id stored";
+
+        // Create event adapter for subscriptions
+        event_adapter_ = std::make_unique<comms::service::remote_event_adapter>(client_);
+        event_adapter_->set_notification_callback(
+            [this](const std::string& event_type,
+                   std::chrono::system_clock::time_point timestamp) {
+                BOOST_LOG_SEV(lg(), debug) << "Received notification for " << event_type;
+                // Convert to Qt types and emit on main thread
+                auto qEventType = QString::fromStdString(event_type);
+                auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    timestamp.time_since_epoch()).count();
+                auto qTimestamp = QDateTime::fromMSecsSinceEpoch(msecs, QTimeZone::UTC);
+
+                QMetaObject::invokeMethod(this, [this, qEventType, qTimestamp]() {
+                    emit notificationReceived(qEventType, qTimestamp);
+                }, Qt::QueuedConnection);
+            });
+
         emit connected();
         return {true, QString()};
 
@@ -176,6 +197,9 @@ void ClientManager::disconnect() {
 
         // Send logout request before disconnecting
         logout();
+
+        // Clean up event adapter before disconnecting
+        event_adapter_.reset();
 
         // The server closes the connection after logout, but we call disconnect
         // to ensure proper cleanup on the client side
@@ -247,6 +271,54 @@ ClientManager::sendRequest(comms::messaging::frame request) {
         return std::unexpected(comms::messaging::error_code::network_error);
     }
     return client_->send_request_sync(std::move(request));
+}
+
+bool ClientManager::subscribeToEvent(const std::string& eventType) {
+    if (!event_adapter_) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot subscribe: no event adapter";
+        return false;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Subscribing to event: " << eventType;
+
+    try {
+        // Run subscribe coroutine synchronously via io_context
+        auto task = [this, eventType]() -> boost::asio::awaitable<bool> {
+            co_return co_await event_adapter_->subscribe(eventType);
+        };
+
+        auto future = boost::asio::co_spawn(
+            io_context_->get_executor(), task(), boost::asio::use_future);
+
+        return future.get();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Subscribe failed: " << e.what();
+        return false;
+    }
+}
+
+bool ClientManager::unsubscribeFromEvent(const std::string& eventType) {
+    if (!event_adapter_) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot unsubscribe: no event adapter";
+        return false;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Unsubscribing from event: " << eventType;
+
+    try {
+        // Run unsubscribe coroutine synchronously via io_context
+        auto task = [this, eventType]() -> boost::asio::awaitable<bool> {
+            co_return co_await event_adapter_->unsubscribe(eventType);
+        };
+
+        auto future = boost::asio::co_spawn(
+            io_context_->get_executor(), task(), boost::asio::use_future);
+
+        return future.get();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Unsubscribe failed: " << e.what();
+        return false;
+    }
 }
 
 }

@@ -22,6 +22,7 @@
 
 #include <QPointer>
 #include <QList>
+#include <QDateTime>
 #include "ores.qt/EntityController.hpp"
 #include "ores.risk/domain/currency.hpp"
 #include "ores.utility/log/make_logger.hpp"
@@ -139,6 +140,17 @@ private slots:
      * @param isoCode ISO code of the currency to show history for
      */
     void onShowCurrencyHistory(const QString& isoCode);
+
+    /**
+     * @brief Handles currency change notifications from the server.
+     *
+     * Called when a notification is received indicating currencies have changed.
+     * Marks the currency list window as stale to indicate data needs refreshing.
+     *
+     * @param eventType The event type name
+     * @param timestamp When the event occurred
+     */
+    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp);
 
 private:
     /**

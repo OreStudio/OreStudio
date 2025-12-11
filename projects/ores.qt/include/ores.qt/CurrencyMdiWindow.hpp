@@ -78,6 +78,22 @@ public slots:
     void exportToCSV();
     void exportToXML();
 
+    /**
+     * @brief Mark the data as stale (changed on server).
+     *
+     * Shows a visual indicator that data may be out of date and
+     * should be refreshed. Called when a currency change notification
+     * is received from the server.
+     */
+    void markAsStale();
+
+    /**
+     * @brief Clear the stale indicator.
+     *
+     * Called after data is reloaded to indicate data is fresh.
+     */
+    void clearStaleIndicator();
+
 private slots:
     void onDataLoaded();
     void onLoadError(const QString& error_message);
@@ -87,12 +103,17 @@ private slots:
 
 private:
     void updateActionStates();
+    void setupStaleIndicator();
 
 private:
     QVBoxLayout* verticalLayout_;
     QTableView* currencyTableView_;
     QToolBar* toolBar_;
     PaginationWidget* pagination_widget_;
+
+    // Stale data indicator
+    QWidget* staleIndicator_;
+    QLabel* staleLabel_;
 
     QAction* addAction_;
     QAction* editAction_;
@@ -102,6 +123,7 @@ private:
     std::unique_ptr<ClientCurrencyModel> currencyModel_;
     ClientManager* clientManager_;
     QString username_;
+    bool isStale_{false};
 };
 
 }

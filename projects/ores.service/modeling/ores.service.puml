@@ -113,8 +113,26 @@ namespace ores #F2F2F2 {
             application ..> ores::service::config::options
 
             note top of application
-            Entry point for the ores command line application.
+            Entry point for the ores service application.
+
+            Orchestrates:
+            - Database context and system flag initialization
+            - Event bus and postgres_event_source setup
+            - Subscription manager for client notifications
+            - Server startup with all subsystem handlers
+
+            Event flow:
+            1. PostgreSQL NOTIFY triggers -> postgres_event_source
+            2. postgres_event_source -> event_bus (typed domain events)
+            3. event_bus -> subscription_manager (via callbacks)
+            4. subscription_manager -> client sessions (server-push)
             end note
+
+            application ..> ores::eventing::service::event_bus : creates
+            application ..> ores::eventing::service::postgres_event_source : creates
+            application ..> ores::comms::service::subscription_manager : creates
+            application ..> ores::comms::service::subscription_handler : creates
+            application ..> ores::comms::net::server : creates
 
             class host #ECECEC {
                 +{method} execute(const std::vector<std::string>& args, std::ostream& std_output, std::ostream& error_output, boost::asio::io_context& io_ctx) : boost::asio::awaitable<int>

@@ -102,12 +102,13 @@ void postgres_listener_service::start() {
 }
 
 void postgres_listener_service::stop() {
-    if (!running_.exchange(false)) {
+    if (running_.exchange(false)) {
+        BOOST_LOG_SEV(lg(), info) << "Stopping listener thread.";
+    } else {
         BOOST_LOG_SEV(lg(), debug) << "Listener not running or already stopped.";
-        return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Stopping listener thread.";
+    // Always join if joinable, even if thread terminated on its own due to error
     if (listener_thread_.joinable()) {
         listener_thread_.join();
     }

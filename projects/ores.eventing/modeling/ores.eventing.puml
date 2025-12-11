@@ -49,16 +49,14 @@ namespace ores #F2F2F2 {
                 +stop() void
                 +subscribe(const std::string& channel_name) void
                 +notify(const std::string& channel_name, const std::string& payload) void
-                -{static} build_connection_string(const sqlgen::postgres::Credentials& credentials) std::string
                 -open_connection() bool
-                -close_connection() void
                 -issue_pending_listens() void
                 -listen_loop() void
-                -handle_notification(PGnotify* pg_notify) void
+                -handle_notification(const sqlgen::postgres::Notification& notification) void
                 -{field} ctx_ utility::database::context
                 -{field} notification_callback_ notification_callback_t
                 -{field} mutex_ std::mutex
-                -{field} connection_ PGconn*
+                -{field} connection_ std::optional<rfl::Ref<sqlgen::postgres::Connection>>
                 -{field} subscribed_channels_ std::vector<std::string>
                 -{field} listener_thread_ std::thread
                 -{field} running_ std::atomic<bool>

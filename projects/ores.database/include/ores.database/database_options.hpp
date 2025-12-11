@@ -17,15 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_DATABASE_DATABASE_OPTIONS_HPP
-#define ORES_UTILITY_DATABASE_DATABASE_OPTIONS_HPP
+#ifndef ORES_DATABASE_DATABASE_OPTIONS_HPP
+#define ORES_DATABASE_DATABASE_OPTIONS_HPP
 
 #include <iosfwd>
 #include <string>
 #include <rfl.hpp>
 #include <sqlgen/postgres.hpp>
 
-namespace ores::utility::database {
+namespace ores::database {
 
 /**
  * @brief Configuration for database connection.

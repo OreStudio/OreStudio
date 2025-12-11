@@ -27,7 +27,7 @@
 #include "ores.service/config/parser_exception.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/log/logging_configuration.hpp"
-#include "ores.utility/database/database_configuration.hpp"
+#include "ores.database/database_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
 namespace {
 
@@ -58,7 +58,7 @@ using ores::service::config::parser_exception;
  * @brief Creates the option descriptions.
  */
 options_description make_options_description() {
-    using ores::utility::database::database_configuration;
+    using ores::database::database_configuration;
     using ores::utility::log::logging_configuration;
 
     options_description god("General");
@@ -143,7 +143,7 @@ server_options read_server_configuration(const variables_map& vm) {
  */
 std::optional<options>
 parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
-    using ores::utility::database::database_configuration;
+    using ores::database::database_configuration;
 
     const auto od(make_options_description());
     using ores::utility::program_options::environment_mapper_factory;

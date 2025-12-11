@@ -24,7 +24,7 @@
 #include <vector>
 #include <optional>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/database/context.hpp"
+#include "ores.database/context.hpp"
 #include "ores.variability/domain/feature_flags.hpp"
 #include "ores.variability/repository/feature_flags_repository.hpp"
 

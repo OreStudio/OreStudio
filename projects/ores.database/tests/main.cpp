@@ -17,37 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SERVICE_CONFIG_OPTIONS_HPP
-#define ORES_SERVICE_CONFIG_OPTIONS_HPP
+#include <openssl/crypto.h>
+#include <boost/scope_exit.hpp>
+#include <catch2/catch_session.hpp>
+#include <catch2/reporters/catch_reporter_registrars.hpp>
+#include "ores.testing/logging_listener.hpp"
+#include "ores.testing/database_lifecycle_listener.hpp"
 
-#include <iosfwd>
-#include <optional>
-#include "ores.utility/log/logging_options.hpp"
-#include "ores.database/database_options.hpp"
-#include "ores.comms/net/server_options.hpp"
+CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
+CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
 
-namespace ores::service::config {
+int main(int argc, char* argv[]) {
+    BOOST_SCOPE_EXIT(void) {
+        OPENSSL_cleanup();
+    } BOOST_SCOPE_EXIT_END
 
-/**
- * @brief All of the configuration options required by the service.
- */
-struct options final {
-    /**
-     * @brief Configuration options related to logging, if any.
-     */
-    std::optional<ores::utility::log::logging_options> logging;
-    /**
-     * @brief Configuration related to server operations.
-     */
-    comms::net::server_options server;
-    /**
-     * @brief Configuration related to database operations.
-     */
-    ores::database::database_options database;
-};
-
-std::ostream& operator<<(std::ostream& s, const options& v);
-
+    ores::testing::logging_listener::set_test_module_name("ores.database.tests");
+    return Catch::Session().run(argc, argv);
 }
-
-#endif

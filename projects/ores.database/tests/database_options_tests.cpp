@@ -17,37 +17,38 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SERVICE_CONFIG_OPTIONS_HPP
-#define ORES_SERVICE_CONFIG_OPTIONS_HPP
-
-#include <iosfwd>
-#include <optional>
-#include "ores.utility/log/logging_options.hpp"
 #include "ores.database/database_options.hpp"
-#include "ores.comms/net/server_options.hpp"
 
-namespace ores::service::config {
+#include <catch2/catch_test_macros.hpp>
+#include "ores.utility/log/make_logger.hpp"
 
-/**
- * @brief All of the configuration options required by the service.
- */
-struct options final {
-    /**
-     * @brief Configuration options related to logging, if any.
-     */
-    std::optional<ores::utility::log::logging_options> logging;
-    /**
-     * @brief Configuration related to server operations.
-     */
-    comms::net::server_options server;
-    /**
-     * @brief Configuration related to database operations.
-     */
-    ores::database::database_options database;
-};
+namespace {
 
-std::ostream& operator<<(std::ostream& s, const options& v);
+const std::string test_suite("ores.database.tests");
+const std::string tags("[database]");
 
 }
 
-#endif
+using namespace ores::database;
+using namespace ores::utility::log;
+
+TEST_CASE("database_options_to_credentials", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_options opts;
+    opts.host = "localhost";
+    opts.port = 5432;
+    opts.database = "test_db";
+    opts.user = "test_user";
+    opts.password = "test_pass";
+
+    auto creds = to_credentials(opts);
+
+    REQUIRE(creds.host == "localhost");
+    REQUIRE(creds.port == 5432);
+    REQUIRE(creds.dbname == "test_db");
+    REQUIRE(creds.user == "test_user");
+    REQUIRE(creds.password == "test_pass");
+
+    BOOST_LOG_SEV(lg, info) << "Database options to credentials test passed";
+}

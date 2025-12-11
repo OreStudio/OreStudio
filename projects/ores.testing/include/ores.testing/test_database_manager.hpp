@@ -22,8 +22,8 @@
 
 #include <string>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/database/context.hpp"
-#include "ores.utility/database/database_options.hpp"
+#include "ores.database/context.hpp"
+#include "ores.database/database_options.hpp"
 
 namespace ores::testing {
 

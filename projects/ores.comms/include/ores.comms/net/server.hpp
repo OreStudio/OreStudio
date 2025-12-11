@@ -107,6 +107,17 @@ public:
      */
     void stop();
 
+    /**
+     * @brief Broadcast database status to all connected clients.
+     *
+     * Sends a database_status_notification to all active sessions,
+     * regardless of their subscription status.
+     *
+     * @param available Whether the database is available.
+     * @param error_message Error message if unavailable, empty otherwise.
+     */
+    void broadcast_database_status(bool available, const std::string& error_message);
+
 private:
     /**
      * @brief Accept connections and spawn sessions.

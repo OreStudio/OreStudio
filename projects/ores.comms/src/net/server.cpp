@@ -68,6 +68,41 @@ void server::stop() {
     BOOST_LOG_SEV(lg(), info) << "Accept loop cancellation signal emitted";
 }
 
+void server::broadcast_database_status(bool available, const std::string& error_message) {
+    std::vector<std::shared_ptr<session>> sessions_copy;
+
+    {
+        std::lock_guard<std::mutex> lock(sessions_mutex_);
+        sessions_copy.reserve(active_sessions_.size());
+        for (const auto& sess : active_sessions_) {
+            sessions_copy.push_back(sess);
+        }
+    }
+
+    if (sessions_copy.empty()) {
+        BOOST_LOG_SEV(lg(), debug)
+            << "No active sessions to broadcast database status";
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info)
+        << "Broadcasting database status (available=" << available
+        << ") to " << sessions_copy.size() << " session(s)";
+
+    auto timestamp = std::chrono::system_clock::now();
+    std::size_t success_count = 0;
+
+    for (const auto& sess : sessions_copy) {
+        if (sess->queue_database_status(available, error_message, timestamp)) {
+            ++success_count;
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), info)
+        << "Database status broadcast queued for "
+        << success_count << "/" << sessions_copy.size() << " sessions";
+}
+
 void server::setup_ssl_context() {
     ssl_ctx_.set_options(
         ssl::context::default_workarounds |

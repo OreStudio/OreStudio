@@ -24,7 +24,7 @@
 #include <stdexcept>
 #include <boost/log/attributes/scoped_attribute.hpp>
 #include "ores.utility/environment/environment.hpp"
-#include "ores.utility/database/context_factory.hpp"
+#include "ores.database/context_factory.hpp"
 
 #ifdef _WIN32
 #include <process.h>

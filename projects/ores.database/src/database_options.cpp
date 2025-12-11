@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/database/database_options.hpp"
+#include "ores.database/database_options.hpp"
 
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 
-namespace ores::utility::database {
+namespace ores::database {
 
 std::ostream& operator<<(std::ostream& s, const database_options& v) {
     rfl::json::write(v, s);

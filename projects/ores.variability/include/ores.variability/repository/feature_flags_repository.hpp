@@ -24,7 +24,7 @@
 #include <vector>
 #include <sqlgen/postgres.hpp>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/database/context.hpp"
+#include "ores.database/context.hpp"
 #include "ores.variability/domain/feature_flags.hpp"
 
 namespace ores::variability::repository {
@@ -44,7 +44,7 @@ private:
     }
 
 public:
-    using context = ores::utility::database::context;
+    using context = ores::database::context;
 
     explicit feature_flags_repository(context ctx);
 

@@ -21,7 +21,7 @@
 #define ORES_ACCOUNTS_MESSAGING_ACCOUNTS_MESSAGE_HANDLER_HPP
 
 #include <memory>
-#include "ores.utility/database/context.hpp"
+#include "ores.database/context.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/messaging/message_handler.hpp"
 #include "ores.comms/service/auth_session_service.hpp"

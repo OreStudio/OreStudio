@@ -17,16 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_DATABASE_CONTEXT_FACTORY_HPP
-#define ORES_UTILITY_DATABASE_CONTEXT_FACTORY_HPP
+#ifndef ORES_DATABASE_CONTEXT_FACTORY_HPP
+#define ORES_DATABASE_CONTEXT_FACTORY_HPP
 
 #include <iosfwd>
 #include <string_view>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/database/context.hpp"
-#include "ores.utility/database/database_options.hpp"
+#include "ores.database/context.hpp"
+#include "ores.database/database_options.hpp"
 
-namespace ores::utility::database {
+namespace ores::database {
 
 /**
  * @brief Generates a new database context.

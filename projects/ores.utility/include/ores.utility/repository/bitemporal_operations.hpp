@@ -23,7 +23,7 @@
 #include <vector>
 #include <sqlgen/postgres.hpp>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/database/context.hpp"
+#include "ores.database/context.hpp"
 #include "ores.utility/repository/helpers.hpp"
 
 namespace ores::utility::repository {

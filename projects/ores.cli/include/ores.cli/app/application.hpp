@@ -25,8 +25,8 @@
 #include <optional>
 #include <filesystem>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/database/context.hpp"
-#include "ores.utility/database/database_options.hpp"
+#include "ores.database/context.hpp"
+#include "ores.database/database_options.hpp"
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
 #include "ores.cli/config/export_options.hpp"

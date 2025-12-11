@@ -74,6 +74,9 @@ enum class message_type {
     unsubscribe_response = 0x0013,
     notification = 0x0014,
 
+    // System status notifications (0x0020 - 0x002F)
+    database_status_notification = 0x0020,
+
     // Risk subsystem messages (0x1000 - 0x1FFF)
     get_currencies_request = 0x1001,
     get_currencies_response = 0x1002,
@@ -129,6 +132,7 @@ enum class error_code {
     bootstrap_mode_forbidden = 0x000E,
     weak_password = 0x000F,
     not_localhost = 0x0010,
+    database_unavailable = 0x0011,
     last_value
 };
 

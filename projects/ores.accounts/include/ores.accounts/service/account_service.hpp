@@ -50,7 +50,7 @@ private:
     static void throw_if_empty(const std::string& name, const std::string& value);
 
 public:
-    using context = ores::utility::database::context;
+    using context = ores::database::context;
 
     /**
      * @brief Constructs an account_service with required repositories and

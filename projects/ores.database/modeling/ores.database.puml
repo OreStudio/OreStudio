@@ -1,0 +1,63 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*'
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+
+title ores.database Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    note "Database connectivity and health monitoring.\nProvides connection pooling, context management,\nand database health monitoring services." as ores_database_note
+    database --- ores_database_note
+    namespace database #F2F2F2 {
+        class context {
+            + connection_pool()
+            + single_connection()
+            + credentials()
+        }
+
+        class context_factory {
+            + {static} make_context(configuration) : context
+        }
+
+        class database_options {
+            + host : string
+            + port : int
+            + database : string
+            + user : string
+            + password : string
+        }
+
+        class health_monitor {
+            + is_available() : bool
+            + last_error() : string
+            + check_health() : bool
+            + run(io_context) : awaitable<void>
+            + stop()
+            + set_status_change_callback(callback)
+        }
+
+        context_factory ..> context : creates
+        context_factory ..> database_options : uses
+        health_monitor ..> database_options : uses
+    }
+}
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.database.puml"
+' End:
+@enduml

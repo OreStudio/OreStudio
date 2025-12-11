@@ -33,8 +33,8 @@
 #include <magic_enum/magic_enum.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp"  // IWYU pragma: keep.
-#include "ores.utility/database/context_factory.hpp"
-#include "ores.utility/database/database_options.hpp"
+#include "ores.database/context_factory.hpp"
+#include "ores.database/database_options.hpp"
 #include "ores.utility/datetime/datetime.hpp"
 #include "ores.risk/orexml/importer.hpp"
 #include "ores.risk/orexml/exporter.hpp"

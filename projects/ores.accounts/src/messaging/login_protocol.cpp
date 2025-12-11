@@ -200,4 +200,61 @@ std::ostream& operator<<(std::ostream& s, const list_login_info_response& v) {
     return s;
 }
 
+std::vector<std::byte> logout_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_uuid(buffer, account_id);
+    return buffer;
+}
+
+std::expected<logout_request, comms::messaging::error_code>
+logout_request::deserialize(std::span<const std::byte> data) {
+    logout_request request;
+
+    auto account_id_result = reader::read_uuid(data);
+    if (!account_id_result) return std::unexpected(account_id_result.error());
+    request.account_id = *account_id_result;
+
+    if (!data.empty()) {
+        return std::unexpected(comms::messaging::error_code::payload_too_large);
+    }
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const logout_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> logout_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    return buffer;
+}
+
+std::expected<logout_response, comms::messaging::error_code>
+logout_response::deserialize(std::span<const std::byte> data) {
+    logout_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
+
+    if (!data.empty()) {
+        return std::unexpected(comms::messaging::error_code::payload_too_large);
+    }
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const logout_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
 }

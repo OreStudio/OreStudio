@@ -21,10 +21,12 @@
 #define ORES_QT_CLIENT_MANAGER_HPP
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <thread>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <QObject>
 #include "ores.comms/net/client.hpp"
 #include "ores.utility/log/make_logger.hpp"
@@ -71,9 +73,19 @@ public:
         const std::string& password);
 
     /**
-     * @brief Disconnect from the server.
+     * @brief Logout the current user and disconnect from the server.
+     *
+     * Sends a logout request to mark the user as offline before disconnecting.
      */
     void disconnect();
+
+    /**
+     * @brief Logout the current user without disconnecting.
+     *
+     * Sends a logout request to the server to mark the user as offline.
+     * @return true if logout was successful, false otherwise
+     */
+    bool logout();
 
     /**
      * @brief Check if currently connected.
@@ -121,6 +133,9 @@ private:
 
     // Transient client
     std::shared_ptr<comms::net::client> client_;
+
+    // Logged-in account tracking
+    std::optional<boost::uuids::uuid> logged_in_account_id_;
 };
 
 }

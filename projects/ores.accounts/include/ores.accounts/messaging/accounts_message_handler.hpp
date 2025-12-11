@@ -38,6 +38,7 @@ namespace ores::accounts::messaging {
  * - list_accounts_request: Retrieves all accounts from the repository
  * - list_login_info_request: Retrieves all login info records
  * - login_request: Authenticates a user and updates login tracking
+ * - logout_request: Logs out a user and marks them as offline
  * - unlock_account_request: Unlocks a locked account
  * - delete_account_request: Deletes an account (bitemporal soft delete)
  * - create_initial_admin_request: Creates initial admin (bootstrap mode only, localhost only)
@@ -133,6 +134,14 @@ private:
      */
     handler_result
     handle_bootstrap_status_request(std::span<const std::byte> payload);
+
+    /**
+     * @brief Handle logout_request message.
+     *
+     * Sets the user's online status to false.
+     */
+    handler_result
+    handle_logout_request(std::span<const std::byte> payload);
 
     /**
      * @brief Check if a remote address is localhost.

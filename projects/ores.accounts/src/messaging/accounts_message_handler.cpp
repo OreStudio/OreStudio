@@ -65,6 +65,8 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_list_login_info_request(payload);
     case message_type::login_request:
         co_return co_await handle_login_request(payload, remote_address);
+    case message_type::logout_request:
+        co_return co_await handle_logout_request(payload);
     case message_type::unlock_account_request:
         co_return co_await handle_unlock_account_request(payload);
     case message_type::delete_account_request:
@@ -391,6 +393,42 @@ handle_bootstrap_status_request(std::span<const std::byte> payload) {
     };
 
     co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_logout_request(std::span<const std::byte> payload) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing logout_request";
+
+    auto request_result = logout_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize logout_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+
+    try {
+        service_.logout(request.account_id);
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully logged out account: "
+                                  << boost::uuids::to_string(request.account_id);
+
+        logout_response response{
+            .success = true,
+            .message = "Logged out successfully"
+        };
+        co_return response.serialize();
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to logout account: " << e.what();
+
+        logout_response response{
+            .success = false,
+            .message = e.what()
+        };
+        co_return response.serialize();
+    }
 }
 
 }

@@ -69,6 +69,10 @@ register_commands(cli::Menu& root_menu, client_manager& client_manager) {
         process_list_login_info(std::ref(out), std::ref(client_manager));
     }, "Retrieve all login info records from the server");
 
+    accounts_menu->Insert("logout", [&client_manager](std::ostream& out) {
+        process_logout(std::ref(out), std::ref(client_manager));
+    }, "Logout the current user");
+
     root_menu.Insert(std::move(accounts_menu));
 }
 
@@ -193,6 +197,12 @@ process_list_login_info(std::ostream& out, client_manager& client_manager) {
         BOOST_LOG_SEV(lg(), error) << "List login info exception: " << e.what();
         out << "✗ Error: " << e.what() << std::endl;
     }
+}
+
+void accounts_commands::
+process_logout(std::ostream& /*out*/, client_manager& client_manager) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing logout request.";
+    client_manager.logout();
 }
 
 }

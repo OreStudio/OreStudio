@@ -115,6 +115,16 @@ public:
      * @param client_manager Manager for client connectivity.
      */
     static void process_list_login_info(std::ostream& out, client_manager& client_manager);
+
+    /**
+     * @brief Process a logout request.
+     *
+     * Logs out the currently logged-in user.
+     *
+     * @param out Output stream for results
+     * @param client_manager Manager for client connectivity.
+     */
+    static void process_logout(std::ostream& out, client_manager& client_manager);
 };
 
 }

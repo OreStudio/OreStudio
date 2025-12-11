@@ -115,6 +115,58 @@ struct list_login_info_response final {
 
 std::ostream& operator<<(std::ostream& s, const list_login_info_response& v);
 
+/**
+ * @brief Request to logout the current user.
+ *
+ * The server will set login_info.online to false for the specified account
+ * and close the connection after sending the response.
+ */
+struct logout_request final {
+    boost::uuids::uuid account_id;
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 16 bytes: account_id (UUID)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<logout_request, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const logout_request& v);
+
+/**
+ * @brief Response indicating logout result.
+ */
+struct logout_response final {
+    bool success = false;
+    std::string message;
+
+    /**
+     * @brief Serialize response to bytes.
+     *
+     * Format:
+     * - 1 byte: success (boolean)
+     * - 2 bytes: message length
+     * - N bytes: message (UTF-8)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize response from bytes.
+     */
+    static std::expected<logout_response, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const logout_response& v);
+
 }
 
 #endif

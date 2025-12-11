@@ -186,6 +186,12 @@ boost::asio::awaitable<void> session::process_messages() {
             co_await conn_->write_frame(response_frame);
             BOOST_LOG_SEV(lg(), debug) << "Sent response for message type "
                                       << request_frame.header().type;
+
+            // Close connection after logout
+            if (request_frame.header().type == messaging::message_type::logout_request) {
+                BOOST_LOG_SEV(lg(), info) << "Logout completed, closing connection";
+                co_return;
+            }
         }
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Exception in message processing: " << e.what();

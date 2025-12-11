@@ -65,6 +65,7 @@ The system is organized into five architectural layers:
 
 * Useful Pages
 
+- To understand the binary protocol, see the [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][Protocol Reference]].
 - To understand how we generate PlantUML diagrams see the [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Modeler]]
   skill.
 - To understand how to add new domain types, see the [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]] skill.

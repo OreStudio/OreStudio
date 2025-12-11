@@ -1633,6 +1633,93 @@ std::string fake_datetime_string() {
 
 Use this code in eventing.
 
+*** STARTED Implement the event bus                                    :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-11 Thu 13:55]
+    :END:
+
+Implement an in-process typed pub/sub event bus that decouples event sources
+(e.g., PostgreSQL listener) from event sinks (e.g., subscription manager, UI
+controllers). The event bus is the foundation for the notification system,
+enabling components to publish and subscribe to domain events without direct
+coupling.
+
+The design follows the principle that most components are either *event sources*
+(one-way: external → bus) or *event sinks* (one-way: bus → external). Only the
+client-side socket bridge qualifies as a true *adapter* (bidirectional with
+subscription protocol management).
+
+**** Architecture
+
+- *event_bus*: Pure in-process typed pub/sub mechanism in =ores.eventing=.
+- *Event sources*: Components that observe external state and publish to the bus
+  (e.g., =postgres_event_source= wrapping =postgres_listener_service=).
+- *Event sinks*: Components that subscribe and perform side effects (e.g.,
+  =subscription_manager= forwarding to sessions).
+- *Domain events*: Each component owns its events (e.g.,
+  =ores::risk::domain::events::currency_changed_event=).
+
+**** Tasks
+
+***** Phase 1: Core Event Bus
+
+- [ ] Create =event_bus= class in =ores.eventing/service=
+  - Thread-safe publish/subscribe
+  - Type-erased internal storage with typed API
+  - RAII subscription handles
+- [ ] Create =subscription= class for lifetime management
+- [ ] Add unit tests for event_bus
+
+***** Phase 2: Domain Events
+
+- [ ] Create =events= namespace in =ores.risk/domain= with =currency_changed_event=
+- [ ] Create =events= namespace in =ores.accounts/domain= with =user_changed_event=
+- [ ] Define =event_traits= template for event type → string mapping
+
+***** Phase 3: Event Source Integration
+
+- [ ] Create =postgres_event_source= class
+  - Wraps =postgres_listener_service=
+  - Maps =entity_change_event= to typed domain events
+  - Publishes to event_bus
+- [ ] Add registrar pattern for event source registration
+- [ ] Wire postgres_event_source in service startup
+
+***** Phase 4: Protocol Messages
+
+- [ ] Add notification message types to =message_types.hpp=
+  - =subscribe_request= (0x0010)
+  - =subscribe_response= (0x0011)
+  - =unsubscribe_request= (0x0012)
+  - =unsubscribe_response= (0x0013)
+  - =notification= (0x0014)
+- [ ] Create serialization for subscribe/notification payloads
+
+***** Phase 5: Server-Side Subscription Management
+
+- [ ] Create =subscription_manager= service
+  - Tracks (event_type, key) → set of session_ids
+  - Thread-safe subscribe/unsubscribe
+  - Session cleanup on disconnect
+- [ ] Create notification message handler
+- [ ] Subscribe to event_bus and forward to interested sessions
+- [ ] Wire subscription_manager in service startup
+
+***** Phase 6: Client Integration
+
+- [ ] Handle notification frames in client =run_message_loop()=
+- [ ] Add =notification_callback_t= to client
+- [ ] Create =remote_event_adapter= for client-side subscriptions
+  - Maps local subscribe → SUBSCRIBE protocol message
+  - Maps incoming NOTIFICATION → local bus publish
+
+***** Phase 7: Qt Integration
+
+- [ ] Add =notificationReceived= signal to =ClientManager=
+- [ ] Wire notification callback to Qt signal
+- [ ] Update =CurrencyController= to subscribe to currency changes
+- [ ] Add visual indicator for stale data in =CurrencyMdiWindow=
+
 *** Add system tray support                                            :code:
 
 We need to be able to show notifications to users in the system tray - or

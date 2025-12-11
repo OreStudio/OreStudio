@@ -42,6 +42,44 @@ namespace ores #F2F2F2 {
         }
 
         namespace service #F2F2F2 {
+            class subscription #ECECEC {
+                +subscription()
+                +subscription(unsubscribe_fn fn)
+                +~subscription()
+                +is_active() bool
+                +unsubscribe() void
+                -{field} unsubscribe_ std::function<void()>
+            }
+
+            note top of subscription
+            RAII handle for managing event subscriptions.
+            Automatically unsubscribes when destroyed.
+            Can be moved but not copied.
+            end note
+
+            class event_bus #ECECEC {
+                +subscribe<Event>(handler) subscription
+                +publish<Event>(event) void
+                +subscriber_count<Event>() std::size_t
+                -unsubscribe(type_idx, id) void
+                -{field} mutex_ std::mutex
+                -{field} subscribers_ subscriber_map
+                -{field} next_subscriber_id_ subscriber_id
+            }
+
+            note top of event_bus
+            A typed, thread-safe, in-process publish/subscribe
+            event bus.
+
+            Provides decoupled communication between components.
+            Publishers emit events without knowing subscribers,
+            and subscribers receive events without knowing
+            publishers.
+
+            All operations are thread-safe. Callbacks are invoked
+            synchronously during publish().
+            end note
+
             class postgres_listener_service #ECECEC {
                 +postgres_listener_service(utility::database::context ctx, notification_callback_t callback)
                 +~postgres_listener_service()
@@ -76,6 +114,8 @@ namespace ores #F2F2F2 {
             separate from any connection pool, as LISTEN/NOTIFY
             requires a persistent connection.
             end note
+
+            ores::eventing::service::event_bus --> ores::eventing::service::subscription : returns
         }
 
         namespace generators #F2F2F2 {
@@ -118,6 +158,28 @@ namespace ores #F2F2F2 {
             notification reception, subscription behavior,
             and the notify method.
             end note
+
+            class service_event_bus_tests <<test suite>> #C5E1A5 {
+                +event_bus_subscribe_and_publish() void
+                +event_bus_multiple_subscribers() void
+                +event_bus_different_event_types() void
+                +event_bus_unsubscribe_on_destruction() void
+                +event_bus_manual_unsubscribe() void
+                +event_bus_subscription_move() void
+                +event_bus_no_subscribers() void
+                +event_bus_empty_event() void
+                +event_bus_handler_exception_does_not_break_other_handlers() void
+                +event_bus_thread_safety() void
+                +event_bus_concurrent_subscribe_unsubscribe() void
+            }
+
+            note top of service_event_bus_tests
+            Test suite for event_bus.
+
+            Tests cover subscribe/publish, multiple subscribers,
+            type isolation, RAII unsubscription, move semantics,
+            exception handling, and thread safety.
+            end note
         }
 
         ' Relationships
@@ -126,6 +188,8 @@ namespace ores #F2F2F2 {
         ores::eventing::tests::entity_change_event_tests ..> ores::eventing::domain::entity_change_event : tests
         ores::eventing::tests::entity_change_event_tests ..> ores::eventing::generators::entity_change_event_generator : tests
         ores::eventing::tests::service_postgres_listener_service_tests ..> ores::eventing::service::postgres_listener_service : tests
+        ores::eventing::tests::service_event_bus_tests ..> ores::eventing::service::event_bus : tests
+        ores::eventing::tests::service_event_bus_tests ..> ores::eventing::service::subscription : tests
     }
 }
 

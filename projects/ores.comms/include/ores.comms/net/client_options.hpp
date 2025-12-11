@@ -43,14 +43,14 @@ struct retry_options final {
      *
      * The actual delay is calculated as: base_delay * 2^attempt
      */
-    std::chrono::milliseconds base_delay{100};
+    std::chrono::milliseconds base_delay{10 * 100};
 
     /**
      * @brief Maximum delay between retry attempts.
      *
      * Caps the exponential backoff to prevent excessively long waits.
      */
-    std::chrono::milliseconds max_delay{30000};
+    std::chrono::milliseconds max_delay{60 * 1000};
 
     /**
      * @brief Jitter factor for randomizing retry delays.

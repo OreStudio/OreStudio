@@ -28,7 +28,7 @@ namespace ores::utility::faker {
 /**
  * @brief Generates fake datetime values for testing purposes.
  */
-class datetime {
+class datetime final {
 public:
     /**
      * @brief Generates a random past datetime as a time_point.

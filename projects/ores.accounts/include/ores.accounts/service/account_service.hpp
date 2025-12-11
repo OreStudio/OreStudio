@@ -137,16 +137,27 @@ public:
         const std::string& password, const boost::asio::ip::address& ip_address);
 
     /**
+     * @brief Locks an account, preventing login.
+     *
+     * This method sets the account's locked status to true, preventing
+     * the user from logging in until the account is unlocked.
+     *
+     * @param account_id The ID of the account to lock
+     * @return true if the account was locked successfully, false otherwise
+     */
+    bool lock_account(const boost::uuids::uuid& account_id);
+
+    /**
      * @brief Unlocks an account that has been locked due to failed login
-     * attempts.
+     * attempts or manual locking.
      *
      * This method resets the account's locked status and clears the failed
      * login counter, allowing the user to attempt to login again.
      *
      * @param account_id The ID of the account to unlock
-     * @throws std::invalid_argument If account does not exist
+     * @return true if the account was unlocked successfully, false otherwise
      */
-    void unlock_account(const boost::uuids::uuid& account_id);
+    bool unlock_account(const boost::uuids::uuid& account_id);
 
     /**
      * @brief Logs out a user by setting their online status to false.

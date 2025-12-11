@@ -514,3 +514,128 @@ TEST_CASE("handle_delete_account_request_non_existent_account", tags) {
         CHECK(rp.message.find("does not exist") != std::string::npos);
     });
 }
+
+TEST_CASE("handle_lock_account_request", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h(database_table);
+    auto system_flags = make_system_flags(h.context());
+    accounts_message_handler sut(h.context(), system_flags);
+
+    // Create an account first
+    const auto account = generate_synthetic_account();
+    BOOST_LOG_SEV(lg, info) << "Account: " << account;
+
+    create_account_request ca_rq(to_create_account_request(account));
+    BOOST_LOG_SEV(lg, info) << "Request: " << ca_rq;
+
+    const auto create_payload = ca_rq.serialize();
+
+    boost::uuids::uuid account_id;
+    boost::asio::io_context io_ctx;
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::create_account_request,
+            create_payload, internet::endpoint());
+        REQUIRE(r.has_value());
+
+        const auto response_result =
+            create_account_response::deserialize(r.value());
+        REQUIRE(response_result.has_value());
+        account_id = response_result.value().account_id;
+    });
+
+    // Lock the account
+    lock_account_request lrq;
+    lrq.account_id = account_id;
+    BOOST_LOG_SEV(lg, info) << "Lock request: " << lrq;
+
+    const auto lock_payload = lrq.serialize();
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::lock_account_request,
+            lock_payload, internet::endpoint());
+
+        REQUIRE(r.has_value());
+        const auto response_result =
+            lock_account_response::deserialize(r.value());
+        REQUIRE(response_result.has_value());
+        const auto& rp = response_result.value();
+        BOOST_LOG_SEV(lg, info) << "Response: " << rp;
+
+        CHECK(rp.success == true);
+        CHECK(rp.error_message.empty());
+    });
+}
+
+TEST_CASE("handle_login_request_locked_account", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h(database_table);
+    auto system_flags = make_system_flags(h.context());
+    accounts_message_handler sut(h.context(), system_flags);
+
+    // 1. Create an account
+    const auto account = generate_synthetic_account();
+    BOOST_LOG_SEV(lg, info) << "Account: " << account;
+
+    create_account_request ca_rq(to_create_account_request(account));
+    BOOST_LOG_SEV(lg, info) << "Create account request: " << ca_rq;
+
+    const auto create_payload = ca_rq.serialize();
+
+    boost::uuids::uuid account_id;
+    boost::asio::io_context io_ctx;
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::create_account_request,
+            create_payload, internet::endpoint());
+        REQUIRE(r.has_value());
+
+        const auto response_result =
+            create_account_response::deserialize(r.value());
+        REQUIRE(response_result.has_value());
+        account_id = response_result.value().account_id;
+    });
+
+    // 2. Lock the account using lock_account_request
+    lock_account_request lock_rq;
+    lock_rq.account_id = account_id;
+    BOOST_LOG_SEV(lg, info) << "Lock account request: " << lock_rq;
+
+    const auto lock_payload = lock_rq.serialize();
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::lock_account_request,
+            lock_payload, internet::endpoint());
+
+        REQUIRE(r.has_value());
+        const auto response_result =
+            lock_account_response::deserialize(r.value());
+        REQUIRE(response_result.has_value());
+        CHECK(response_result.value().success == true);
+    });
+
+    // 3. Attempt login with valid credentials for the now-locked account
+    login_request login_rq;
+    login_rq.username = ca_rq.username;
+    login_rq.password = ca_rq.password;
+    BOOST_LOG_SEV(lg, info) << "Attempting login for locked user: "
+                            << login_rq.username;
+
+    const auto login_payload = login_rq.serialize();
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::login_request,
+            login_payload, "192.168.1.100:54321");
+
+        REQUIRE(r.has_value());
+        const auto response_result = login_response::deserialize(r.value());
+        REQUIRE(response_result.has_value());
+        const auto& response = response_result.value();
+        BOOST_LOG_SEV(lg, info) << "Response: " << response;
+
+        CHECK(response.success == false);
+        CHECK(response.error_message.find("locked") != std::string::npos);
+    });
+}

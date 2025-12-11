@@ -260,6 +260,55 @@ struct delete_account_response final {
 
 std::ostream& operator<<(std::ostream& s, const delete_account_response& v);
 
+/**
+ * @brief Request to lock an account.
+ */
+struct lock_account_request final {
+    boost::uuids::uuid account_id;
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 16 bytes: account_id (UUID)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<lock_account_request, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const lock_account_request& v);
+
+/**
+ * @brief Response indicating whether lock operation succeeded.
+ */
+struct lock_account_response final {
+    bool success = false;
+    std::string error_message;
+
+    /**
+     * @brief Serialize response to bytes.
+     *
+     * Format:
+     * - 1 byte: success (boolean)
+     * - 2 bytes: error_message length
+     * - N bytes: error_message (UTF-8)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize response from bytes.
+     */
+    static std::expected<lock_account_response, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const lock_account_response& v);
+
 }
 
 #endif

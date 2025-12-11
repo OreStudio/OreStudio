@@ -40,6 +40,7 @@ namespace ores::accounts::messaging {
  * - list_login_info_request: Retrieves all login info records
  * - login_request: Authenticates a user and updates login tracking
  * - logout_request: Logs out a user and marks them as offline
+ * - lock_account_request: Locks an account preventing login
  * - unlock_account_request: Unlocks a locked account
  * - delete_account_request: Deletes an account (bitemporal soft delete)
  * - create_initial_admin_request: Creates initial admin (bootstrap mode only, localhost only)
@@ -119,13 +120,18 @@ private:
         const std::string& remote_address);
 
     /**
+     * @brief Handle lock_account_request message.
+     */
+    handler_result
+    handle_lock_account_request(std::span<const std::byte> payload);
+
+    /**
      * @brief Handle unlock_account_request message.
      *
      * Requires authentication. Only admin users can unlock accounts.
      */
     handler_result
-    handle_unlock_account_request(std::span<const std::byte> payload,
-        const std::string& remote_address);
+    handle_unlock_account_request(std::span<const std::byte> payload);
 
     /**
      * @brief Handle delete_account_request message.
@@ -133,8 +139,7 @@ private:
      * Requires authentication. Only admin users can delete accounts.
      */
     handler_result
-    handle_delete_account_request(std::span<const std::byte> payload,
-        const std::string& remote_address);
+    handle_delete_account_request(std::span<const std::byte> payload);
 
     /**
      * @brief Handle create_initial_admin_request message.

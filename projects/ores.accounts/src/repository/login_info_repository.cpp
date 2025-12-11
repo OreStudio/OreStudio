@@ -22,8 +22,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/asio/ip/address.hpp>
-#include "ores.utility/repository/helpers.hpp"
-#include "ores.utility/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.accounts/domain/login_info_json_io.hpp" // IWYU pragma: keep.
 #include "ores.accounts/repository/login_info_mapper.hpp"
 #include "ores.accounts/repository/login_info_entity.hpp"
@@ -32,8 +32,8 @@ namespace ores::accounts::repository {
 
 using namespace sqlgen;
 using namespace sqlgen::literals;
-using namespace ores::utility::log;
-using namespace ores::utility::repository;
+using namespace ores::database::log;
+using namespace ores::database::repository;
 
 std::string login_info_repository::sql() {
     return generate_create_table_sql<login_info_entity>(lg());

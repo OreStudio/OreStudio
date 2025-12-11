@@ -21,13 +21,13 @@
 
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
-#include "ores.utility/repository/mapper_helpers.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.accounts/domain/login_info_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::accounts::repository {
 
-using namespace ores::utility::log;
-using namespace ores::utility::repository;
+using namespace ores::database::log;
+using namespace ores::database::repository;
 
 domain::login_info login_info_mapper::map(const login_info_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
@@ -56,7 +56,7 @@ login_info_entity login_info_mapper::map(const domain::login_info& v) {
     r.last_attempt_ip = v.last_attempt_ip.to_string();
     r.failed_logins = v.failed_logins;
     r.locked = v.locked ;
-    r.last_login = timepoint_to_timestamp(v.last_login);
+    r.last_login = timepoint_to_timestamp(v.last_login, lg());
     r.online = v.online;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
@@ -68,7 +68,7 @@ login_info_mapper::map(const std::vector<login_info_entity>& v) {
     return map_vector<login_info_entity, domain::login_info>(
         v,
         [](const auto& ve) { return map(ve); },
-        "ores.accounts.repository.login_info_mapper",
+        lg(),
         "db entities");
 }
 
@@ -77,7 +77,7 @@ login_info_mapper::map(const std::vector<domain::login_info>& v) {
     return map_vector<domain::login_info, login_info_entity>(
         v,
         [](const auto& ve) { return map(ve); },
-        "ores.accounts.repository.login_info_mapper",
+        lg(),
         "domain entities");
 }
 

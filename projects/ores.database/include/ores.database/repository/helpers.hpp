@@ -17,18 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_REPOSITORY_HELPERS_HPP
-#define ORES_UTILITY_REPOSITORY_HELPERS_HPP
+#ifndef ORES_DATABASE_REPOSITORY_HELPERS_HPP
+#define ORES_DATABASE_REPOSITORY_HELPERS_HPP
 
 #include <string>
 #include <format>
 #include <boost/exception/diagnostic_information.hpp>
 #include <sqlgen/postgres.hpp>
-#include "ores.utility/log/severity_level.hpp"
-#include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/repository/repository_exception.hpp"
+#include "ores.database/log_helper.hpp"
+#include "ores.database/repository/repository_exception.hpp"
 
-namespace ores::utility::repository {
+namespace ores::database::repository {
 
 /**
  * @brief Maximum timestamp used for bitemporal records (represents "infinity").
@@ -55,11 +54,11 @@ inline constexpr const char* MAX_TIMESTAMP = "9999-12-31 23:59:59";
  * ensure_success(result); // Throws if query failed
  */
 template<typename T>
-void ensure_success(const T& result, utility::log::logger_t& lg) {
-    using namespace ores::utility::log;
+void ensure_success(const T& result, log::logger_t& lg) {
+    using namespace ores::database::log;
 
     if (!result) {
-        BOOST_LOG_SEV(lg, severity_level::error) << result.error().what();
+        BOOST_LOG_SEV(lg, error) << result.error().what();
         BOOST_THROW_EXCEPTION(
             repository_exception(std::format("Repository error: {}",
                     result.error().what())));
@@ -80,8 +79,8 @@ void ensure_success(const T& result, utility::log::logger_t& lg) {
  * @example
  * auto ts = make_timestamp("2025-11-25 12:30:45");
  */
-inline auto make_timestamp(const std::string& s, utility::log::logger_t& lg) {
-    using namespace ores::utility::log;
+inline auto make_timestamp(const std::string& s, log::logger_t& lg) {
+    using namespace ores::database::log;
 
     const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(s);
     if (!r) {
@@ -109,8 +108,8 @@ inline auto make_timestamp(const std::string& s, utility::log::logger_t& lg) {
  *     "ores.accounts.repository.account_repository");
  */
 template<typename EntityType>
-std::string generate_create_table_sql(utility::log::logger_t& lg) {
-    using namespace ores::utility::log;
+std::string generate_create_table_sql(log::logger_t& lg) {
+    using namespace ores::database::log;
     using namespace sqlgen;
 
     const auto query = create_table<EntityType> | if_not_exists;

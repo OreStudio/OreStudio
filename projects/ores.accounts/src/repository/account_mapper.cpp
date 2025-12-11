@@ -21,13 +21,13 @@
 
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
-#include "ores.utility/repository/mapper_helpers.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.accounts/domain/account_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::accounts::repository {
 
-using namespace ores::utility::log;
-using namespace ores::utility::repository;
+using namespace ores::database::log;
+using namespace ores::database::repository;
 
 domain::account account_mapper::map(const account_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
@@ -70,7 +70,7 @@ account_mapper::map(const std::vector<account_entity>& v) {
     return map_vector<account_entity, domain::account>(
         v,
         [](const auto& ve) { return map(ve); },
-        "ores.accounts.repository.account_mapper",
+        lg(),
         "db entities");
 }
 
@@ -79,7 +79,7 @@ account_mapper::map(const std::vector<domain::account>& v) {
     return map_vector<domain::account, account_entity>(
         v,
         [](const auto& ve) { return map(ve); },
-        "ores.accounts.repository.account_mapper",
+        lg(),
         "domain entities");
 }
 

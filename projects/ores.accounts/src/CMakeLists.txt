@@ -40,6 +40,7 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         ores.comms.lib
         ores.utility.lib
+        ores.database.lib
         sqlgen::sqlgen
         reflectcpp::reflectcpp
         faker-cxx::faker-cxx

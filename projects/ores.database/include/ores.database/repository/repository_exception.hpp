@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_REPOSITORY_REPOSITORY_EXCEPTION_HPP
-#define ORES_UTILITY_REPOSITORY_REPOSITORY_EXCEPTION_HPP
+#ifndef ORES_DATABASE_REPOSITORY_REPOSITORY_EXCEPTION_HPP
+#define ORES_DATABASE_REPOSITORY_REPOSITORY_EXCEPTION_HPP
 
 #include <string>
 #include <boost/exception/info.hpp>
 
-namespace ores::utility::repository {
+namespace ores::database::repository {
 
 /**
  * @brief A fatal error has occurred whilst reading or writing to the

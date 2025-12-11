@@ -17,16 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_REPOSITORY_BITEMPORAL_OPERATIONS_HPP
-#define ORES_UTILITY_REPOSITORY_BITEMPORAL_OPERATIONS_HPP
+#ifndef ORES_DATABASE_REPOSITORY_BITEMPORAL_OPERATIONS_HPP
+#define ORES_DATABASE_REPOSITORY_BITEMPORAL_OPERATIONS_HPP
 
 #include <vector>
 #include <sqlgen/postgres.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.database/log_helper.hpp"
 #include "ores.database/context.hpp"
-#include "ores.utility/repository/helpers.hpp"
+#include "ores.database/repository/helpers.hpp"
 
-namespace ores::utility::repository {
+namespace ores::database::repository {
 
 /**
  * @brief Executes a read query and maps the results to domain objects.
@@ -59,10 +59,10 @@ namespace ores::utility::repository {
  *     "Read latest accounts");
  */
 template<typename EntityType, typename DomainType, typename QueryType, typename MapperFunc>
-std::vector<DomainType> execute_read_query(database::context ctx, const QueryType& query,
-    MapperFunc&& mapper, utility::log::logger_t& lg, const std::string& operation_desc) {
+std::vector<DomainType> execute_read_query(context ctx, const QueryType& query,
+    MapperFunc&& mapper, log::logger_t& lg, const std::string& operation_desc) {
 
-    using namespace ores::utility::log;
+    using namespace ores::database::log;
     using namespace sqlgen;
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
@@ -97,10 +97,10 @@ std::vector<DomainType> execute_read_query(database::context ctx, const QueryTyp
  *     "Writing account to database");
  */
 template<typename EntityType>
-void execute_write_query(database::context ctx, const EntityType& entity,
-    utility::log::logger_t& lg, const std::string& operation_desc) {
+void execute_write_query(context ctx, const EntityType& entity,
+    log::logger_t& lg, const std::string& operation_desc) {
 
-    using namespace ores::utility::log;
+    using namespace ores::database::log;
     using namespace sqlgen;
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
@@ -134,10 +134,10 @@ void execute_write_query(database::context ctx, const EntityType& entity,
  *     "Removing account from database");
  */
 template<typename QueryType>
-void execute_delete_query(database::context ctx, const QueryType& query,
-    utility::log::logger_t& lg, const std::string& operation_desc) {
+void execute_delete_query(context ctx, const QueryType& query,
+    log::logger_t& lg, const std::string& operation_desc) {
 
-    using namespace ores::utility::log;
+    using namespace ores::database::log;
     using namespace sqlgen;
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ".";

@@ -41,11 +41,9 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.database.lib
         OpenSSL::SSL
         Boost::log
         Boost::program_options
-        sqlgen::sqlgen
     PRIVATE
         faker-cxx::faker-cxx
         reflectcpp::reflectcpp

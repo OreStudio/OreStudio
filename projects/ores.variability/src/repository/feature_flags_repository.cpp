@@ -19,7 +19,7 @@
  */
 #include "ores.variability/repository/feature_flags_repository.hpp"
 
-#include "ores.utility/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.variability/domain/feature_flags_json_io.hpp" // IWYU pragma: keep.
 #include "ores.variability/repository/feature_flags_entity.hpp"
 #include "ores.variability/repository/feature_flags_mapper.hpp"
@@ -28,8 +28,8 @@ namespace ores::variability::repository {
 
 using namespace sqlgen;
 using namespace sqlgen::literals;
-using namespace ores::utility::log;
-using namespace ores::utility::repository;
+using namespace ores::database::log;
+using namespace ores::database::repository;
 
 std::string feature_flags_repository::sql() {
     return generate_create_table_sql<feature_flags_entity>(lg());

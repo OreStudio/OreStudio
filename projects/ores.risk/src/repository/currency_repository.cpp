@@ -22,8 +22,8 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include "ores.utility/repository/helpers.hpp"
-#include "ores.utility/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.risk/domain/currency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.risk/repository/currency_mapper.hpp"
 #include "ores.risk/repository/currency_entity.hpp"
@@ -32,8 +32,8 @@ namespace ores::risk::repository {
 
 using namespace sqlgen;
 using namespace sqlgen::literals;
-using namespace ores::utility::log;
-using namespace ores::utility::repository;
+using namespace ores::database::log;
+using namespace ores::database::repository;
 
 std::string currency_repository::sql() {
     return generate_create_table_sql<currency_entity>(lg());

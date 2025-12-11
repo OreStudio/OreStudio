@@ -479,6 +479,10 @@ add_data(const std::optional<config::add_options>& ocfg) const {
             add_account(opts);
         } else if constexpr (std::is_same_v<T, config::add_feature_flag_options>) {
             add_feature_flag(opts);
+        } else {
+            []<bool flag = false>() {
+                static_assert(flag, "unhandled type in std::visit for add_data");
+            }();
         }
     }, cfg);
 }

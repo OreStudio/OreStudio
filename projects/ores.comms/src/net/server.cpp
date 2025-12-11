@@ -159,7 +159,8 @@ boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_con
 
             // Create session with subscription manager
             auto sess = std::make_shared<session>(std::move(conn),
-                options_.server_identifier, dispatcher_, subscription_mgr_);
+                options_.server_identifier, dispatcher_,
+                io_context.get_executor(), subscription_mgr_);
 
             // Add to active sessions list
             {

@@ -26,6 +26,8 @@
 #include <memory>
 #include <string>
 #include <chrono>
+#include <boost/asio/steady_timer.hpp>
+#include <boost/asio/strand.hpp>
 #include "ores.comms/net/connection.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/messaging/message_dispatcher.hpp"
@@ -65,10 +67,12 @@ public:
      * @param conn The connection to manage
      * @param server_id Server identifier for handshake
      * @param dispatcher Message dispatcher for handling requests
+     * @param io_executor The executor to use for async operations
      * @param subscription_mgr Optional subscription manager for event notifications
      */
     explicit session(std::unique_ptr<connection> conn, std::string server_id,
         std::shared_ptr<messaging::message_dispatcher> dispatcher,
+        boost::asio::any_io_executor io_executor,
         std::shared_ptr<service::subscription_manager> subscription_mgr = nullptr);
 
     /**
@@ -112,9 +116,18 @@ private:
     boost::asio::awaitable<void> process_messages();
 
     /**
-     * @brief Send any pending notifications to the client.
+     * @brief Run the notification writer coroutine.
+     *
+     * Waits for notifications to be queued and sends them immediately.
+     * Runs concurrently with the message processing loop.
+     */
+    boost::asio::awaitable<void> run_notification_writer();
+
+    /**
+     * @brief Send all pending notifications to the client.
      *
      * Drains the notification queue and sends each as a notification message.
+     * Must be called while holding the write strand.
      */
     boost::asio::awaitable<void> send_pending_notifications();
 
@@ -135,6 +148,12 @@ private:
     std::uint32_t sequence_number_;
     bool handshake_complete_;
     std::atomic<bool> active_{false};
+
+    // Strand for serializing write operations
+    boost::asio::strand<boost::asio::any_io_executor> write_strand_;
+
+    // Timer used as async signal for notification availability
+    boost::asio::steady_timer notification_signal_;
 
     // Thread-safe notification queue
     mutable std::mutex notification_mutex_;

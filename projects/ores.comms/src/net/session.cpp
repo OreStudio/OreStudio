@@ -19,11 +19,15 @@
  */
 #include "ores.comms/net/session.hpp"
 
+#include <boost/asio/redirect_error.hpp>
+#include <boost/asio/experimental/awaitable_operators.hpp>
 #include "ores.comms/messaging/handshake_protocol.hpp"
 #include "ores.comms/messaging/subscription_protocol.hpp"
 #include "ores.comms/service/handshake_service.hpp"
 #include "ores.comms/service/heartbeat_service.hpp"
 #include "ores.comms/service/subscription_manager.hpp"
+
+using namespace boost::asio::experimental::awaitable_operators;
 
 namespace ores::comms::net {
 
@@ -31,13 +35,18 @@ using namespace ores::utility::log;
 
 session::session(std::unique_ptr<connection> conn, std::string server_id,
     std::shared_ptr<messaging::message_dispatcher> dispatcher,
+    boost::asio::any_io_executor io_executor,
     std::shared_ptr<service::subscription_manager> subscription_mgr)
     : conn_(std::move(conn)),
       server_id_(std::move(server_id)),
       dispatcher_(std::move(dispatcher)),
       subscription_mgr_(std::move(subscription_mgr)),
       sequence_number_(0),
-      handshake_complete_(false) {
+      handshake_complete_(false),
+      write_strand_(boost::asio::make_strand(io_executor)),
+      notification_signal_(io_executor) {
+    // Set timer to "never expire" initially - it will be cancelled to signal
+    notification_signal_.expires_at(std::chrono::steady_clock::time_point::max());
 }
 
 void session::stop() {
@@ -60,6 +69,10 @@ bool session::queue_notification(const std::string& event_type,
         std::lock_guard lock(notification_mutex_);
         pending_notifications_.push({event_type, timestamp});
     }
+
+    // Signal the notification writer by cancelling the timer
+    // This will wake up the waiting coroutine immediately
+    notification_signal_.cancel();
 
     BOOST_LOG_SEV(lg(), debug)
         << "Queued notification for event type '" << event_type << "'";
@@ -87,8 +100,9 @@ boost::asio::awaitable<void> session::run() {
         active_ = true;
         register_with_subscription_manager();
 
-        // Process messages
-        co_await process_messages();
+        // Run message processing and notification writer concurrently.
+        // When either completes (e.g., client disconnects), both will stop.
+        co_await (process_messages() || run_notification_writer());
 
     } catch (const boost::system::system_error& e) {
         if (e.code() == boost::asio::error::operation_aborted) {
@@ -103,6 +117,9 @@ boost::asio::awaitable<void> session::run() {
     // Mark as inactive and unregister
     active_ = false;
     unregister_from_subscription_manager();
+
+    // Cancel the notification signal to ensure writer coroutine exits
+    notification_signal_.cancel();
 
     conn_->close();
     BOOST_LOG_SEV(lg(), info) << "Session ended for client: " << remote_addr;
@@ -123,10 +140,7 @@ boost::asio::awaitable<void> session::process_messages() {
     BOOST_LOG_SEV(lg(), debug) << "Starting message processing loop";
 
     try {
-        while (true) {
-            // Send any pending notifications before waiting for next message
-            co_await send_pending_notifications();
-
+        while (active_) {
             // Read next message frame
             auto frame_result = co_await conn_->read_frame(false);
             if (!frame_result) {
@@ -230,6 +244,39 @@ boost::asio::awaitable<void> session::process_messages() {
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Exception in message processing: " << e.what();
     }
+}
+
+boost::asio::awaitable<void> session::run_notification_writer() {
+    BOOST_LOG_SEV(lg(), debug) << "Starting notification writer coroutine";
+
+    try {
+        while (active_) {
+            // Wait for notification signal (timer cancellation)
+            boost::system::error_code ec;
+            co_await notification_signal_.async_wait(
+                boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+
+            // Check if we should exit
+            if (!active_) {
+                break;
+            }
+
+            // Timer was cancelled (signalled) or expired - send pending notifications
+            if (ec == boost::asio::error::operation_aborted) {
+                // Reset timer for next wait
+                notification_signal_.expires_at(
+                    std::chrono::steady_clock::time_point::max());
+
+                // Send all pending notifications
+                co_await send_pending_notifications();
+            }
+        }
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Exception in notification writer: " << e.what();
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Notification writer coroutine ended";
 }
 
 boost::asio::awaitable<void> session::send_pending_notifications() {

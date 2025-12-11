@@ -29,6 +29,7 @@ on:  # yamllint disable-line rule:truthy
     tags:
       - '*'
   pull_request:
+    types: [ready_for_review]
     branches:
       - main
     paths-ignore:

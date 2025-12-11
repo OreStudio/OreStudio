@@ -15,21 +15,13 @@
 #
 # yamllint disable rule:line-length
 ---
-name: Continuous MacOS
+name: Canary Linux
 
 env:
   VCPKG_BINARY_SOURCES: 'clear;default'
 
 on:  # yamllint disable-line rule:truthy
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - 'docs/**'
-    tags:
-      - '*'
   pull_request:
-    types: [ready_for_review]
     branches:
       - main
     paths-ignore:
@@ -37,21 +29,12 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
   build:
-    name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+    name: linux-gcc-debug
     concurrency:
-      group: ci-${{github.ref}}-${{github.job}}-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+      group: canary-${{github.ref}}-${{github.job}}
       cancel-in-progress: true
-    runs-on: macos-latest
+    runs-on: ubuntu-24.04
     environment: CI
-    strategy:
-      fail-fast: false
-      matrix:
-        name: [macos-clang]
-        buildtype: [debug, release]
-        include:
-          - name: macos-clang
-            family: macos
-            compiler: clang
     steps:
       - uses: actions/checkout@v6.0.1
         with:
@@ -61,8 +44,11 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.20
         with:
           variant: sccache
-          key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+          key: linux-gcc-debug
           max-size: 1000M
+
+      - name: Install dev packages
+        run: ./build/scripts/install_debian_packages.sh
 
       - name: Setup postgres
         uses: ikalnytskyi/action-setup-postgres@v8
@@ -92,23 +78,17 @@ jobs:
 
       - name: Run CTest workflow
         run: |
-          brew install autoconf automake libtool autoconf-archive
-          export VCPKG_DISABLE_SYSTEM_PACKAGE_CHECK=1
+          export PATH=${PATH}:/usr/sbin
+          export ZIC=1
           export ORES_BUILD_PROVIDER="github"
           export ORES_BUILD_COMMIT="${GITHUB_SHA}"
           export ORES_BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
           export ORES_BUILD_TIMESTAMP=`date "+%Y/%m/%d %H:%M:%S"`
           export ORES_TEST_DB_PASSWORD=ahV6aehuij6eingohsiajaiT0
-          export preset=${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
-          export cmake_args="build_group=Continuous,preset=${preset}"
+          export preset=linux-gcc-debug
+          export cmake_args="build_group=Canary,preset=${preset},code_coverage=1"
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
       - name: Dump test details
         run: |
-           cat ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/publish/bin/test-results-*.xml
-
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v5.0.0
-        with:
-          name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
-          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/packages/OreStudio-0.0.6-Darwin.dmg
+           cat ./build/output/linux-gcc-debug/publish/bin/test-results-*.xml

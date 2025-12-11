@@ -18,47 +18,50 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-11 Thu 01:41], for Thursday, December 11, 2025.
-|      | <75>                          |        |      |      |       |
-| Tags | Headline                      | Time   |      |      |     % |
-|------+-------------------------------+--------+------+------+-------|
-|      | *Total time*                  | *1:36* |      |      | 100.0 |
-|------+-------------------------------+--------+------+------+-------|
-|      | Stories                       | 1:36   |      |      | 100.0 |
-|      | Active                        |        | 1:36 |      | 100.0 |
-| code | Add retry algorithm to client |        |      | 1:31 |  94.8 |
-| code | Entity syntax refactor snags  |        |      | 0:05 |   5.2 |
+#+CAPTION: Clock summary at [2025-12-11 Thu 10:05], for Thursday, December 11, 2025.
+|       | <75>                                                    |        |      |      |       |
+| Tags  | Headline                                                | Time   |      |      |     % |
+|-------+---------------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                            | *3:46* |      |      | 100.0 |
+|-------+---------------------------------------------------------+--------+------+------+-------|
+|       | Stories                                                 | 3:46   |      |      | 100.0 |
+|       | Active                                                  |        | 3:46 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint                      |        |      | 1:23 |  36.7 |
+| code  | Add retry algorithm to client                           |        |      | 1:52 |  49.6 |
+| code  | Fix valgrind leaks after string view changes to logging |        |      | 0:07 |   3.1 |
+| code  | Entity syntax refactor snags                            |        |      | 0:24 |  10.6 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-11 Thu 01:42]
-|       | <75>                                                |         |       |       |       |
-| Tags  | Headline                                            | Time    |       |       |     % |
-|-------+-----------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                        | *54:31* |       |       | 100.0 |
-|-------+-----------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                             | 54:31   |       |       | 100.0 |
-|       | Active                                              |         | 54:31 |       | 100.0 |
-| agile | Sprint and product backlog refinement               |         |       |  0:29 |   0.9 |
-| infra | OCR scan notebooks for this sprint                  |         |       | 13:00 |  23.8 |
-| code  | Implement session cancellation                      |         |       |  2:42 |   5.0 |
-| code  | Create a variability service for feature flags      |         |       |  1:23 |   2.5 |
-| code  | Add tests to diagrams                               |         |       |  1:26 |   2.6 |
-| code  | Add messaging to variability                        |         |       |  0:40 |   1.2 |
-| code  | Create handshake service in comms                   |         |       |  2:31 |   4.6 |
-| code  | Implement client heartbeat for disconnect detection |         |       |  5:18 |   9.7 |
-| code  | Pressing disconnect crashes client                  |         |       |  0:23 |   0.7 |
-| infra | Create a component creator skill                    |         |       |  0:42 |   1.3 |
-| code  | Add listen/notify support                           |         |       | 11:25 |  20.9 |
-| code  | Move context to database                            |         |       |  0:20 |   0.6 |
-| code  | Use =std::string_view= for loggers                  |         |       |  3:14 |   5.9 |
-| code  | Fix issues with logging after string_view change    |         |       |  0:53 |   1.6 |
-| code  | Remove bootstrap mode from context                  |         |       |  6:36 |  12.1 |
-| code  | Add tests for messaging handler                     |         |       |  0:14 |   0.4 |
-| code  | Add retry algorithm to client                       |         |       |  1:31 |   2.8 |
-| code  | Entity syntax refactor snags                        |         |       |  0:14 |   0.4 |
-| code  | Experiment with simple code generation              |         |       |  1:30 |   2.8 |
+#+CAPTION: Clock summary at [2025-12-11 Thu 10:05]
+|       | <75>                                                    |         |       |       |       |
+| Tags  | Headline                                                | Time    |       |       |     % |
+|-------+---------------------------------------------------------+---------+-------+-------+-------|
+|       | *Total time*                                            | *56:41* |       |       | 100.0 |
+|-------+---------------------------------------------------------+---------+-------+-------+-------|
+|       | Stories                                                 | 56:41   |       |       | 100.0 |
+|       | Active                                                  |         | 56:41 |       | 100.0 |
+| agile | Sprint and product backlog refinement                   |         |       |  0:29 |   0.9 |
+| infra | OCR scan notebooks for this sprint                      |         |       | 14:23 |  25.4 |
+| code  | Implement session cancellation                          |         |       |  2:42 |   4.8 |
+| code  | Create a variability service for feature flags          |         |       |  1:23 |   2.4 |
+| code  | Add tests to diagrams                                   |         |       |  1:26 |   2.5 |
+| code  | Add messaging to variability                            |         |       |  0:40 |   1.2 |
+| code  | Create handshake service in comms                       |         |       |  2:31 |   4.4 |
+| code  | Implement client heartbeat for disconnect detection     |         |       |  5:18 |   9.4 |
+| code  | Pressing disconnect crashes client                      |         |       |  0:23 |   0.7 |
+| infra | Create a component creator skill                        |         |       |  0:42 |   1.2 |
+| code  | Add listen/notify support                               |         |       | 11:25 |  20.1 |
+| code  | Move context to database                                |         |       |  0:20 |   0.6 |
+| code  | Use =std::string_view= for loggers                      |         |       |  3:14 |   5.7 |
+| code  | Fix issues with logging after string_view change        |         |       |  0:53 |   1.6 |
+| code  | Remove bootstrap mode from context                      |         |       |  6:36 |  11.6 |
+| code  | Add tests for messaging handler                         |         |       |  0:14 |   0.4 |
+| code  | Add retry algorithm to client                           |         |       |  1:52 |   3.3 |
+| code  | Fix valgrind leaks after string view changes to logging |         |       |  0:07 |   0.2 |
+| code  | Entity syntax refactor snags                            |         |       |  0:33 |   1.0 |
+| code  | Experiment with simple code generation                  |         |       |  1:30 |   2.6 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -219,6 +222,7 @@ print(p)
 
 *** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
+    CLOCK: [2025-12-11 Thu 08:12]--[2025-12-11 Thu 09:35] =>  1:23
     CLOCK: [2025-12-10 Wed 09:06]--[2025-12-10 Wed 11:07] =>  2:01
     CLOCK: [2025-12-09 Tue 09:23]--[2025-12-09 Tue 10:47] =>  1:24
     CLOCK: [2025-12-09 Tue 07:41]--[2025-12-09 Tue 07:57] =>  0:16
@@ -1454,6 +1458,7 @@ handler.
 
 *** COMPLETED Add retry algorithm to client                            :code:
     :LOGBOOK:
+    CLOCK: [2025-12-11 Thu 09:36]--[2025-12-11 Thu 09:57] =>  0:21
     CLOCK: [2025-12-11 Thu 00:29]--[2025-12-11 Thu 01:41] =>  1:12
     CLOCK: [2025-12-11 Thu 00:09]--[2025-12-11 Thu 00:28] =>  0:19
     :END:
@@ -1466,8 +1471,66 @@ Notes:
 - reconnects successfully but UI feedback is not quite right: we do not show
   we are disconnected, etc.
 
+*** COMPLETED Fix valgrind leaks after string view changes to logging  :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-11 Thu 09:58]--[2025-12-11 Thu 10:05] =>  0:07
+    :END:
+
+#+begin_src valgrind-suppression
+<b>MPK</b> ==50939== 24 bytes in 1 blocks are still reachable in loss record 4 of 17
+==50939==    at 0x4846FA3: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==50939==    by 0x581927B: boost::detail::shared_count::shared_count<boost::detail::thread_data_base>(boost::detail::thread_data_base*) (shared_count.hpp:146)
+==50939==    by 0x5817F4B: void boost::detail::sp_pointer_construct<boost::detail::thread_data_base, boost::detail::thread_data_base>(boost::shared_ptr<boost::detail::thread_data_base>*, boost::detail::thread_data_base*, boost::detail::shared_count&) (shared_ptr.hpp:205)
+==50939==    by 0x5816F76: boost::shared_ptr<boost::detail::thread_data_base>::shared_ptr<boost::detail::thread_data_base>(boost::detail::thread_data_base*) (shared_ptr.hpp:283)
+==50939==    by 0x5815723: void boost::shared_ptr<boost::detail::thread_data_base>::reset<boost::detail::thread_data_base>(boost::detail::thread_data_base*) (shared_ptr.hpp:519)
+==50939==    by 0x580FF74: boost::detail::make_external_thread_data() (thread.cpp:236)
+==50939==    by 0x580FFA7: boost::detail::get_or_make_current_thread_data() (thread.cpp:247)
+==50939==    by 0x5811498: boost::detail::add_thread_exit_function(boost::detail::thread_exit_function_base*) (thread.cpp:710)
+==50939==    by 0x562D68B: void boost::this_thread::at_thread_exit<boost::log::v2s_mt_posix::sources::aux::get_severity_level()::{lambda()#1}>(boost::log::v2s_mt_posix::sources::aux::get_severity_level()::{lambda()#1}) (thread.hpp:856)
+==50939==    by 0x562D601: boost::log::v2s_mt_posix::sources::aux::get_severity_level() (severity_level.cpp:67)
+==50939==    by 0x4A05A9: boost::log::v2s_mt_posix::sources::aux::severity_level<ores::utility::log::severity_level>::set_value(ores::utility::log::severity_level) (severity_feature.hpp:136)
+==50939==    by 0x49E8EE: boost::log::v2s_mt_posix::record boost::log::v2s_mt_posix::sources::basic_severity_logger<boost::log::v2s_mt_posix::sources::basic_channel_logger<boost::log::v2s_mt_posix::sources::basic_logger<char, boost::log::v2s_mt_posix::sources::severity_channel_logger_mt<ores::utility::log::severity_level, std::basic_string_view<char, std::char_traits<char> > >, boost::log::v2s_mt_posix::sources::multi_thread_model<boost::log::v2s_mt_posix::aux::light_rw_mutex> >, std::basic_string_view<char, std::char_traits<char> > >, ores::utility::log::severity_level>::open_record_unlocked<boost::parameter::aux::tagged_argument_list_of_1<boost::parameter::aux::tagged_argument<boost::log::v2s_mt_posix::keywords::tag::severity, ores::utility::log::severity_level const> > >(boost::parameter::aux::tagged_argument_list_of_1<boost::parameter::aux::tagged_argument<boost::log::v2s_mt_posix::keywords::tag::severity, ores::utility::log::severity_level const> > const&) (severity_feature.hpp:255)
+==50939==    by 0x49CED4: boost::log::v2s_mt_posix::record boost::log::v2s_mt_posix::sources::basic_composite_logger<char, boost::log::v2s_mt_posix::sources::severity_channel_logger_mt<ores::utility::log::severity_level, std::basic_string_view<char, std::char_traits<char> > >, boost::log::v2s_mt_posix::sources::multi_thread_model<boost::log::v2s_mt_posix::aux::light_rw_mutex>, boost::log::v2s_mt_posix::sources::features<boost::log::v2s_mt_posix::sources::severity<ores::utility::log::severity_level>, boost::log::v2s_mt_posix::sources::channel<std::basic_string_view<char, std::char_traits<char> > > > >::open_record<boost::parameter::aux::tagged_argument_list_of_1<boost::parameter::aux::tagged_argument<boost::log::v2s_mt_posix::keywords::tag::severity, ores::utility::log::severity_level const> > >(boost::parameter::aux::tagged_argument_list_of_1<boost::parameter::aux::tagged_argument<boost::log::v2s_mt_posix::keywords::tag::severity, ores::utility::log::severity_level const> > const&) (basic_logger.hpp:463)
+==50939==    by 0x48CB6B9: ores::testing::database_lifecycle_listener::testRunStarting(Catch::TestRunInfo const&) (database_lifecycle_listener.cpp:33)
+==50939==    by 0x5E0AC0: Catch::MultiReporter::testRunStarting(Catch::TestRunInfo const&) (catch_reporter_multi.cpp:89)
+==50939==    by 0x59D153: Catch::RunContext::RunContext(Catch::IConfig const*, Catch::Detail::unique_ptr<Catch::IEventListener>&&) (catch_run_context.cpp:216)
+==50939==    by 0x547BAE: Catch::(anonymous namespace)::TestGroup::TestGroup(Catch::Detail::unique_ptr<Catch::IEventListener>&&, Catch::Config const*) (catch_session.cpp:81)
+==50939==    by 0x549921: Catch::Session::runInternal() (catch_session.cpp:378)
+==50939==    by 0x54941F: Catch::Session::run() (catch_session.cpp:306)
+==50939==    by 0x5268E4: int Catch::Session::run<char>(int, char const* const*) (catch_session.hpp:49)
+==50939==    by 0x52619E: main (main.cpp:36)
+==50939==
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   fun:_ZN5boost6detail12shared_countC1INS0_16thread_data_baseEEEPT_
+   fun:_ZN5boost6detail20sp_pointer_constructINS0_16thread_data_baseES2_EEvPNS_10shared_ptrIT_EEPT0_RNS0_12shared_countE
+   fun:_ZN5boost10shared_ptrINS_6detail16thread_data_baseEEC1IS2_EEPT_
+   fun:_ZN5boost10shared_ptrINS_6detail16thread_data_baseEE5resetIS2_EEvPT_
+   fun:_ZN5boost6detail25make_external_thread_dataEv
+   fun:_ZN5boost6detail31get_or_make_current_thread_dataEv
+   fun:_ZN5boost6detail24add_thread_exit_functionEPNS0_25thread_exit_function_baseE
+   fun:_ZN5boost11this_thread14at_thread_exitIZNS_3log12v2s_mt_posix7sources3aux18get_severity_levelEvEUlvE_EEvT_
+   fun:_ZN5boost3log12v2s_mt_posix7sources3aux18get_severity_levelEv
+   fun:_ZN5boost3log12v2s_mt_posix7sources3aux14severity_levelIN4ores7utility3log14severity_levelEE9set_valueES8_
+   fun:_ZN5boost3log12v2s_mt_posix7sources21basic_severity_loggerINS2_20basic_channel_loggerINS2_12basic_loggerIcNS2_26severity_channel_logger_mtIN4ores7utility3log14severity_levelESt17basic_string_viewIcSt11char_traitsIcEEEENS2_18multi_thread_modelINS1_3aux14light_rw_mutexEEEEESE_EESA_E20open_record_unlockedINS_9parameter3aux25tagged_argument_list_of_1INSP_15tagged_argumentINS1_8keywords3tag8severityEKSA_EEEEEENS1_6recordERKT_
+   fun:_ZN5boost3log12v2s_mt_posix7sources22basic_composite_loggerIcNS2_26severity_channel_logger_mtIN4ores7utility3log14severity_levelESt17basic_string_viewIcSt11char_traitsIcEEEENS2_18multi_thread_modelINS1_3aux14light_rw_mutexEEENS2_8featuresIJNS2_8severityIS8_EENS2_7channelISC_EEEEEE11open_recordINS_9parameter3aux25tagged_argument_list_of_1INSR_15tagged_argumentINS1_8keywords3tag8severityEKS8_EEEEEENS1_6recordERKT_
+   fun:_ZN4ores7testing27database_lifecycle_listener15testRunStartingERKN5Catch11TestRunInfoE
+   fun:_ZN5Catch13MultiReporter15testRunStartingERKNS_11TestRunInfoE
+   fun:_ZN5Catch10RunContextC1EPKNS_7IConfigEONS_6Detail10unique_ptrINS_14IEventListenerEEE
+   fun:_ZN5Catch12_GLOBAL__N_19TestGroupC1EONS_6Detail10unique_ptrINS_14IEventListenerEEEPKNS_6ConfigE
+   fun:_ZN5Catch7Session11runInternalEv
+   fun:_ZN5Catch7Session3runEv
+   fun:_ZN5Catch7Session3runIcEEiiPKPKT_
+   fun:main
+}
+#+end_src
+
 *** STARTED Entity syntax refactor snags                               :code:
     :LOGBOOK:
+    CLOCK: [2025-12-11 Thu 01:42]--[2025-12-11 Thu 02:01] =>  0:19
     CLOCK: [2025-12-10 Wed 23:51]--[2025-12-11 Thu 00:05] =>  0:14
     :END:
 
@@ -1582,13 +1645,6 @@ disabled.
 
 At present when we enter a new currency and press save the currency stays there.
 
-*** Entity syntax refactor snags                                       :code:
-
-We refactored ores.cli to be "entity oriented", so that commands such as export,
-import etc belonged directly to an entity. In this case there should be no need
-to supply the entity in the command line since it is part of the command.
-However, we still see the entity enum in the code.
-
 *** Add sound assets                                                   :code:
 
 We need to be able to associate sounds to certain events such as disconnect,
@@ -1691,16 +1747,6 @@ responses to requests.
 
 We need tests in comms which create a test request and response and a test
 handler.
-
-*** Add sound assets                                                   :code:
-
-We need to be able to associate sounds to certain events such as disconnect,
-connect etc. Users need to be able to choose their own sounds.
-
-*** Add retry algorithm to client                                      :code:
-
-It would be nice to reconnect automatically.
-
 *** Add screen in qt to exit bootstrap mode                            :code:
 
 As per claude:

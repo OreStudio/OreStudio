@@ -39,6 +39,46 @@ The protocol is organized into subsystems, each with its own message range:
 | [[id:D3C4E5F6-A7B8-9012-CDEF-123456789012][Accounts]] | 0x2000-0x2FFF | ores.accounts | 20 |
 | [[id:E4D5F6A7-B8C9-0123-DEFA-234567890123][Variability]] | 0x3000-0x3FFF | ores.variability | 2 |
 
+* Session Lifecycle
+
+The following diagram illustrates the session lifecycle for authentication
+and account management operations.
+
+#+attr_html: :width 100%
+#+caption: Session Lifecycle - Authentication and Account Management
+[[file:protocol.session.png][file:protocol.session.png]]
+
+** Connection Establishment
+
+1. Client establishes SSL/TLS connection to server
+2. Three-way handshake:
+   - Client sends =handshake_request= with protocol version
+   - Server responds with =handshake_response= indicating compatibility
+   - Client sends =handshake_ack= to complete
+
+** Authentication
+
+1. Client sends =login_request= with credentials
+2. Server validates against account service
+3. On success, server stores session context (remote_addr -> account_id)
+4. Server returns =login_response= with account info and admin status
+
+** Authenticated Operations
+
+Admin-only operations (lock/unlock account) use server-side session tracking:
+
+1. Client sends request (e.g., =lock_account_request=)
+2. Server looks up requester's account_id from session context
+3. Server verifies admin privileges via account service
+4. If authorized, operation proceeds; otherwise error returned
+
+** Session Termination
+
+1. Client sends =logout_request=
+2. Server clears session context
+3. Server updates login_info (online=false)
+4. Connection closed
+
 * Error Codes
 
 | Code | Name |

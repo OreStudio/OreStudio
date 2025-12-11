@@ -1,0 +1,130 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51
+' Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+
+title Session Lifecycle - Authentication and Account Management
+
+skinparam backgroundColor #FEFEFE
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam sequenceParticipant underline
+
+actor "Client" as C
+participant "Server" as S
+database "Session\nContext" as SC
+database "Account\nService" as AS
+
+== Connection Establishment ==
+
+C -> S: SSL/TLS Connect
+activate S
+S --> C: SSL Handshake Complete
+
+C -> S: handshake_request\n(client_version, client_id)
+S -> S: Check version compatibility
+alt Version Compatible
+    S --> C: handshake_response\n(server_version, compatible=true)
+    C -> S: handshake_ack(status=none)
+else Version Incompatible
+    S --> C: handshake_response\n(compatible=false, status=version_mismatch)
+    S -> C !!: Connection Closed
+end
+
+== Authentication ==
+
+C -> S: login_request\n(username, password)
+S -> AS: Validate credentials
+activate AS
+
+alt Valid Credentials
+    AS -> AS: Check account locked?
+    alt Account Locked
+        AS --> S: Account locked
+        S --> C: login_response\n(success=false, error="Account locked")
+    else Account Active
+        AS --> S: Account valid
+        deactivate AS
+        S -> SC: Store session\n(remote_addr -> account_id)
+        activate SC
+        S --> C: login_response\n(success=true, account_id, is_admin)
+        note right: Session established
+    end
+else Invalid Credentials
+    AS -> AS: Increment failed attempts
+    AS --> S: Auth failed
+    deactivate AS
+    S --> C: login_response\n(success=false, error="Invalid credentials")
+end
+
+== Authenticated Operations (Admin) ==
+
+group Lock Account [Requires Admin]
+    C -> S: lock_account_request\n(target_account_id)
+    S -> SC: Get requester from session
+    SC --> S: requester_account_id
+
+    alt No Session
+        S --> C: error_response\n(authentication_failed, "Not authenticated")
+    else Has Session
+        S -> AS: is_admin(requester_id)?
+        AS --> S: admin check result
+
+        alt Is Admin
+            S -> AS: lock_account(target_id)
+            AS --> S: Account locked
+            S --> C: lock_account_response\n(success=true)
+        else Not Admin
+            S --> C: lock_account_response\n(success=false, "Admin required")
+        end
+    end
+end
+
+group Unlock Account [Requires Admin]
+    C -> S: unlock_account_request\n(target_account_id)
+    S -> SC: Get requester from session
+    SC --> S: requester_account_id
+
+    alt No Session
+        S --> C: error_response\n(authentication_failed, "Not authenticated")
+    else Has Session
+        S -> AS: is_admin(requester_id)?
+        AS --> S: admin check result
+
+        alt Is Admin
+            S -> AS: unlock_account(target_id)
+            AS --> S: Account unlocked
+            S --> C: unlock_account_response\n(success=true)
+        else Not Admin
+            S --> C: unlock_account_response\n(success=false, "Admin required")
+        end
+    end
+end
+
+== Session Termination ==
+
+C -> S: logout_request\n(account_id)
+S -> SC: Clear session\n(remote_addr)
+deactivate SC
+S -> AS: Update login_info\n(online=false)
+S --> C: logout_response\n(success=true)
+S -> C !!: Connection Closed
+deactivate S
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -jar /usr/share/plantuml/plantuml.jar protocol.session.puml"
+' End:
+@enduml

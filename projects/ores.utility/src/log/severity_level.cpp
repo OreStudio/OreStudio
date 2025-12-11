@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/exception/invalid_enum_value.hpp"
+#include <stdexcept>
 
 #include "ores.utility/log/severity_level.hpp"
 
@@ -41,9 +41,7 @@ severity_level to_severity_level(const std::string& s) {
     if (s == error_level)
         return severity_level::error;
 
-    using ores::utility::exception::invalid_enum_value;
-    BOOST_THROW_EXCEPTION(
-        invalid_enum_value("Invalid or unexpected severity level: " + s));
+    throw std::invalid_argument("Invalid or unexpected severity level: " + s);
 }
 
 }

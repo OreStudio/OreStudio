@@ -30,7 +30,7 @@ std::chrono::system_clock::time_point datetime::past_timepoint() {
     static thread_local std::mt19937_64 rng{std::random_device{}()};
 
     const auto min_time = sys_days{year{1970}/1/1}.time_since_epoch();
-    const auto max_time = sys_days{year{2038}/12/31}.time_since_epoch() + 24h - 1s;
+    const auto max_time = sys_days{year{2039}/1/1}.time_since_epoch() - 1s;
 
     std::uniform_int_distribution<std::int64_t> dist(
         min_time.count(),

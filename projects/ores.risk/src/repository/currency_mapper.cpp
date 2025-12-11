@@ -28,7 +28,7 @@ using namespace ores::utility::log;
 using namespace ores::utility::repository;
 
 domain::currency currency_mapper::map(const currency_entity& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Mapping db entity: " << v;
+    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::currency r;
     r.version = v.version;

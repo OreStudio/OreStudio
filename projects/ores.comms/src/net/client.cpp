@@ -38,6 +38,7 @@
 #include "ores.comms/net/connection_error.hpp"
 #include "ores.comms/service/handshake_service.hpp"
 #include "ores.comms/messaging/heartbeat_protocol.hpp"
+#include "ores.comms/messaging/subscription_protocol.hpp"
 
 namespace ores::comms::net {
 
@@ -483,6 +484,11 @@ void client::set_reconnected_callback(reconnected_callback_t callback) {
     reconnected_callback_ = std::move(callback);
 }
 
+void client::set_notification_callback(notification_callback_t callback) {
+    std::lock_guard guard{state_mutex_};
+    notification_callback_ = std::move(callback);
+}
+
 boost::asio::awaitable<void> client::run_heartbeat() {
     if (!config_.heartbeat_enabled) {
         BOOST_LOG_SEV(lg(), debug) << "Heartbeat disabled in configuration";
@@ -768,6 +774,36 @@ boost::asio::awaitable<void> client::run_message_loop() {
                                               << " correlation_id=" << corr_id;
                 }
                 break;
+
+            case messaging::message_type::notification: {
+                // Server-push notification - invoke callback if registered
+                BOOST_LOG_SEV(lg(), debug) << "Received notification from server";
+
+                auto notification_result = messaging::notification_message::deserialize(
+                    frame.payload());
+
+                if (notification_result) {
+                    notification_callback_t callback;
+                    {
+                        std::lock_guard guard{state_mutex_};
+                        callback = notification_callback_;
+                    }
+
+                    if (callback) {
+                        BOOST_LOG_SEV(lg(), debug) << "Invoking notification callback for "
+                                                   << notification_result->event_type;
+                        callback(notification_result->event_type,
+                                 notification_result->timestamp);
+                    } else {
+                        BOOST_LOG_SEV(lg(), trace) << "No notification callback registered, "
+                                                   << "ignoring notification for "
+                                                   << notification_result->event_type;
+                    }
+                } else {
+                    BOOST_LOG_SEV(lg(), warn) << "Failed to deserialize notification message";
+                }
+                break;
+            }
 
             default:
                 // All other responses (including domain-specific responses)

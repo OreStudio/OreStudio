@@ -1724,11 +1724,12 @@ subscription protocol management).
 
 ***** Phase 6: Client Integration
 
-- [ ] Handle notification frames in client =run_message_loop()=
-- [ ] Add =notification_callback_t= to client
-- [ ] Create =remote_event_adapter= for client-side subscriptions
+- [X] Handle notification frames in client =run_message_loop()=
+- [X] Add =notification_callback_t= to client
+- [X] Create =remote_event_adapter= for client-side subscriptions
   - Maps local subscribe → SUBSCRIBE protocol message
-  - Maps incoming NOTIFICATION → local bus publish
+  - Maps incoming NOTIFICATION → callback invocation
+  - Supports re-subscription after reconnect
 
 ***** Phase 7: Qt Integration
 

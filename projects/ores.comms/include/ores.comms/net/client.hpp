@@ -84,6 +84,21 @@ using reconnecting_callback_t = std::function<void()>;
 using reconnected_callback_t = std::function<void()>;
 
 /**
+ * @brief Callback invoked when client receives a notification from server.
+ *
+ * Called when the server pushes a notification for a subscribed event type.
+ * The callback is invoked on the client's internal executor and should not
+ * perform blocking operations. Any UI updates must be dispatched to the
+ * appropriate UI thread.
+ *
+ * @param event_type The fully qualified event type name (e.g., "ores.risk.currency_changed_event")
+ * @param timestamp When the event occurred (UTC)
+ */
+using notification_callback_t = std::function<void(
+    const std::string& event_type,
+    std::chrono::system_clock::time_point timestamp)>;
+
+/**
  * @brief ORES protocol client.
  *
  * Connects to server via SSL, performs handshake, and manages communication.
@@ -270,6 +285,16 @@ public:
     void set_reconnected_callback(reconnected_callback_t callback);
 
     /**
+     * @brief Set callback to be invoked when a notification is received.
+     *
+     * The callback will be called when the server pushes a notification
+     * for an event type the client is subscribed to. It should be thread-safe.
+     *
+     * @param callback Function to call on notification (may be empty to disable)
+     */
+    void set_notification_callback(notification_callback_t callback);
+
+    /**
      * @brief Send a request frame and receive response frame (async version).
      *
      * Generic method for sending any request and receiving response.
@@ -305,6 +330,7 @@ private:
     disconnect_callback_t disconnect_callback_;
     reconnecting_callback_t reconnecting_callback_;
     reconnected_callback_t reconnected_callback_;
+    notification_callback_t notification_callback_;
 
     // Infrastructure for unified message loop
     std::unique_ptr<boost::asio::strand<boost::asio::any_io_executor>> write_strand_;

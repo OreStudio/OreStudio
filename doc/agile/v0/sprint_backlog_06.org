@@ -1635,7 +1635,8 @@ Use this code in eventing.
 
 *** STARTED Implement the event bus                                    :code:
     :LOGBOOK:
-    CLOCK: [2025-12-11 Thu 13:55]
+    CLOCK: [2025-12-11 Thu 14:43]
+    CLOCK: [2025-12-11 Thu 13:55]--[2025-12-11 Thu 14:25] =>  0:30
     :END:
 
 Implement an in-process typed pub/sub event bus that decouples event sources
@@ -1687,13 +1688,13 @@ subscription protocol management).
 
 ***** Phase 4: Protocol Messages
 
-- [ ] Add notification message types to =message_types.hpp=
+- [X] Add notification message types to =message_types.hpp=
   - =subscribe_request= (0x0010)
   - =subscribe_response= (0x0011)
   - =unsubscribe_request= (0x0012)
   - =unsubscribe_response= (0x0013)
   - =notification= (0x0014)
-- [ ] Create serialization for subscribe/notification payloads
+- [X] Create serialization for subscribe/notification payloads
 
 ***** Phase 5: Server-Side Subscription Management
 

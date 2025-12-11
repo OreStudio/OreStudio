@@ -59,6 +59,13 @@ enum class message_type {
     ping = 0x0005,
     pong = 0x0006,
 
+    // Subscription/Notification messages (0x0010 - 0x001F)
+    subscribe_request = 0x0010,
+    subscribe_response = 0x0011,
+    unsubscribe_request = 0x0012,
+    unsubscribe_response = 0x0013,
+    notification = 0x0014,
+
     // Risk subsystem messages (0x1000 - 0x1FFF)
     get_currencies_request = 0x1001,
     get_currencies_response = 0x1002,

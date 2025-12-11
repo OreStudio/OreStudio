@@ -47,6 +47,12 @@ public:
         std::uint32_t value);
 
     /**
+     * @brief Helper to write a 64-bit integer in network byte order.
+     */
+    static void write_int64(std::vector<std::byte>& buffer,
+        std::int64_t value);
+
+    /**
      * @brief Helper to write a string with 16-bit length prefix.
      */
     static void write_string(std::vector<std::byte>& buffer,

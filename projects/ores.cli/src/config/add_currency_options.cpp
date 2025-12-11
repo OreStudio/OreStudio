@@ -17,32 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ADD_OPTIONS_HPP
-#define ORES_CLI_CONFIG_ADD_OPTIONS_HPP
-
-#include <iosfwd>
-#include <variant>
 #include "ores.cli/config/add_currency_options.hpp"
-#include "ores.cli/config/add_account_options.hpp"
-#include "ores.cli/config/add_feature_flag_options.hpp"
+
+#include <ostream>
 
 namespace ores::cli::config {
 
-/**
- * @brief Variant type holding entity-specific add options.
- *
- * This design allows each entity type to have its own dedicated options struct
- * with strongly-typed required fields, while maintaining a unified interface
- * for the add operation. Use std::visit to dispatch to entity-specific handlers.
- */
-using add_options = std::variant<
-    add_currency_options,
-    add_account_options,
-    add_feature_flag_options
->;
+std::ostream& operator<<(std::ostream& s, const add_currency_options& v) {
+    s << "{ iso_code: " << v.iso_code
+      << ", name: " << v.name
+      << ", modified_by: " << v.modified_by;
 
-std::ostream& operator<<(std::ostream& s, const add_options& v);
+    if (v.numeric_code) s << ", numeric_code: " << *v.numeric_code;
+    if (v.symbol) s << ", symbol: " << *v.symbol;
+    if (v.fraction_symbol) s << ", fraction_symbol: " << *v.fraction_symbol;
+    if (v.fractions_per_unit) s << ", fractions_per_unit: " << *v.fractions_per_unit;
+    if (v.rounding_type) s << ", rounding_type: " << *v.rounding_type;
+    if (v.rounding_precision) s << ", rounding_precision: " << *v.rounding_precision;
+    if (v.format) s << ", format: " << *v.format;
+    if (v.currency_type) s << ", currency_type: " << *v.currency_type;
 
+    s << " }";
+    return s;
 }
 
-#endif
+}

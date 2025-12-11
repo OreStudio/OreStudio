@@ -17,32 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ADD_OPTIONS_HPP
-#define ORES_CLI_CONFIG_ADD_OPTIONS_HPP
-
-#include <iosfwd>
-#include <variant>
-#include "ores.cli/config/add_currency_options.hpp"
 #include "ores.cli/config/add_account_options.hpp"
-#include "ores.cli/config/add_feature_flag_options.hpp"
+
+#include <ostream>
 
 namespace ores::cli::config {
 
-/**
- * @brief Variant type holding entity-specific add options.
- *
- * This design allows each entity type to have its own dedicated options struct
- * with strongly-typed required fields, while maintaining a unified interface
- * for the add operation. Use std::visit to dispatch to entity-specific handlers.
- */
-using add_options = std::variant<
-    add_currency_options,
-    add_account_options,
-    add_feature_flag_options
->;
+std::ostream& operator<<(std::ostream& s, const add_account_options& v) {
+    s << "{ username: " << v.username
+      << ", email: " << v.email
+      << ", password: [REDACTED]"
+      << ", modified_by: " << v.modified_by;
 
-std::ostream& operator<<(std::ostream& s, const add_options& v);
+    if (v.is_admin) s << ", is_admin: " << (*v.is_admin ? "true" : "false");
 
+    s << " }";
+    return s;
 }
 
-#endif
+}

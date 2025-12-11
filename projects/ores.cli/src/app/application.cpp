@@ -22,6 +22,7 @@
 
 #include <chrono>
 #include <optional>
+#include <type_traits>
 #include <boost/lexical_cast.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -51,6 +52,9 @@
 #include "ores.variability/domain/feature_flags_table.hpp"
 #include "ores.variability/repository/feature_flags_repository.hpp"
 #include "ores.cli/config/export_options.hpp"
+#include "ores.cli/config/add_currency_options.hpp"
+#include "ores.cli/config/add_account_options.hpp"
+#include "ores.cli/config/add_feature_flag_options.hpp"
 #include "ores.cli/app/application_exception.hpp"
 
 namespace ores::cli::app {
@@ -342,13 +346,13 @@ delete_data(const std::optional<config::delete_options>& ocfg) const {
 }
 
 void application::
-add_currency(const config::add_options& cfg) const {
-    BOOST_LOG_SEV(lg(), info) << "Adding currency: " << cfg.iso_code.value_or("");
+add_currency(const config::add_currency_options& cfg) const {
+    BOOST_LOG_SEV(lg(), info) << "Adding currency: " << cfg.iso_code;
 
     // Construct currency from command-line arguments
     risk::domain::currency currency;
-    currency.iso_code = cfg.iso_code.value();
-    currency.name = cfg.name.value();
+    currency.iso_code = cfg.iso_code;
+    currency.name = cfg.name;
     currency.numeric_code = cfg.numeric_code.value_or("0");
     currency.symbol = cfg.symbol.value_or("");
     currency.fraction_symbol = cfg.fraction_symbol.value_or("");
@@ -357,7 +361,7 @@ add_currency(const config::add_options& cfg) const {
     currency.rounding_precision = cfg.rounding_precision.value_or(2);
     currency.format = cfg.format.value_or("");
     currency.currency_type = cfg.currency_type.value_or("");
-    currency.modified_by = cfg.modified_by.value();
+    currency.modified_by = cfg.modified_by;
 
     // Set timestamps to current time
     const auto now = std::chrono::system_clock::now();
@@ -375,8 +379,8 @@ add_currency(const config::add_options& cfg) const {
 }
 
 void application::
-add_account(const config::add_options& cfg) const {
-    BOOST_LOG_SEV(lg(), info) << "Adding account: " << cfg.username.value_or("");
+add_account(const config::add_account_options& cfg) const {
+    BOOST_LOG_SEV(lg(), info) << "Adding account: " << cfg.username;
 
     // Generate UUID for the account
     boost::uuids::random_generator gen;
@@ -394,7 +398,7 @@ add_account(const config::add_options& cfg) const {
                                 !disable_validation_flags[0].enabled;
 
     const auto validation_result =
-        password_policy_validator::validate(cfg.password.value(), enforce_policy);
+        password_policy_validator::validate(cfg.password, enforce_policy);
 
     if (!validation_result.is_valid) {
         BOOST_LOG_SEV(lg(), error) << "Password validation failed: "
@@ -407,19 +411,19 @@ add_account(const config::add_options& cfg) const {
     // Hash the password
     using accounts::security::password_manager;
     const auto password_hash =
-        password_manager::create_password_hash(cfg.password.value());
+        password_manager::create_password_hash(cfg.password);
 
     // Construct account from command-line arguments
     accounts::domain::account account;
     account.version = 0;
     account.is_admin = cfg.is_admin.value_or(false);
     account.id = account_id;
-    account.modified_by = cfg.modified_by.value();
-    account.username = cfg.username.value();
+    account.modified_by = cfg.modified_by;
+    account.username = cfg.username;
     account.password_hash = password_hash;
     account.password_salt = "";  // Not used - hash contains salt
     account.totp_secret = "";    // Can be set later
-    account.email = cfg.email.value();
+    account.email = cfg.email;
 
     accounts::service::bootstrap_mode_service bootstrap_svc(context_);
     bootstrap_svc.initialize_bootstrap_state();
@@ -441,15 +445,15 @@ add_account(const config::add_options& cfg) const {
 }
 
 void application::
-add_feature_flag(const config::add_options& cfg) const {
-    BOOST_LOG_SEV(lg(), info) << "Adding feature flag: " << cfg.flag_name.value_or("");
+add_feature_flag(const config::add_feature_flag_options& cfg) const {
+    BOOST_LOG_SEV(lg(), info) << "Adding feature flag: " << cfg.flag_name;
 
     // Construct feature flag from command-line arguments
     variability::domain::feature_flags flag;
-    flag.name = cfg.flag_name.value();
+    flag.name = cfg.flag_name;
     flag.description = cfg.description.value_or("");
     flag.enabled = cfg.enabled.value_or(false);
-    flag.modified_by = cfg.modified_by.value();
+    flag.modified_by = cfg.modified_by;
 
     // Write to database
     variability::repository::feature_flags_repository repo(context_);
@@ -467,21 +471,16 @@ add_data(const std::optional<config::add_options>& ocfg) const {
     }
 
     const auto& cfg(ocfg.value());
-    switch (cfg.target_entity) {
-        case config::entity::currencies:
-            add_currency(cfg);
-            break;
-        case config::entity::accounts:
-            add_account(cfg);
-            break;
-        case config::entity::feature_flags:
-            add_feature_flag(cfg);
-            break;
-        default:
-            BOOST_THROW_EXCEPTION(
-                application_exception(std::format("Add not supported for entity: {}",
-                        magic_enum::enum_name(cfg.target_entity))));
-    }
+    std::visit([this](const auto& opts) {
+        using T = std::decay_t<decltype(opts)>;
+        if constexpr (std::is_same_v<T, config::add_currency_options>) {
+            add_currency(opts);
+        } else if constexpr (std::is_same_v<T, config::add_account_options>) {
+            add_account(opts);
+        } else if constexpr (std::is_same_v<T, config::add_feature_flag_options>) {
+            add_feature_flag(opts);
+        }
+    }, cfg);
 }
 
 }

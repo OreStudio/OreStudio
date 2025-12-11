@@ -24,6 +24,7 @@
 #include "ores.cli/config/parser_helpers.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 #include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/add_feature_flag_options.hpp"
 #include "ores.utility/database/database_configuration.hpp"
 #include "ores.utility/log/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
@@ -86,10 +87,9 @@ options_description make_add_feature_flag_options_description() {
 /**
  * @brief Reads the add configuration from the variables map for feature flags.
  */
-ores::cli::config::add_options read_add_feature_flag_options(const variables_map& vm) {
-    ores::cli::config::add_options r;
-
-    r.target_entity = entity::feature_flags;
+ores::cli::config::add_feature_flag_options
+read_add_feature_flag_options(const variables_map& vm) {
+    ores::cli::config::add_feature_flag_options r;
 
     if (vm.count("modified-by") == 0) {
         BOOST_THROW_EXCEPTION(

@@ -41,6 +41,7 @@ target_link_libraries(${lib_target_name}
         ores.accounts.lib
         ores.risk.lib
         ores.variability.lib
+        ores.eventing.lib
         ores.comms.lib
         ores.utility.lib
         reflectcpp::reflectcpp

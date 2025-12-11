@@ -1678,12 +1678,12 @@ subscription protocol management).
 
 ***** Phase 3: Event Source Integration
 
-- [ ] Create =postgres_event_source= class
+- [X] Create =postgres_event_source= class
   - Wraps =postgres_listener_service=
   - Maps =entity_change_event= to typed domain events
   - Publishes to event_bus
-- [ ] Add registrar pattern for event source registration
-- [ ] Wire postgres_event_source in service startup
+- [X] Add registrar pattern for event source registration
+- [X] Wire postgres_event_source in service startup
 
 ***** Phase 4: Protocol Messages
 

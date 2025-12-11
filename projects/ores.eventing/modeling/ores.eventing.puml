@@ -115,7 +115,41 @@ namespace ores #F2F2F2 {
             requires a persistent connection.
             end note
 
+            class postgres_event_source #ECECEC {
+                +postgres_event_source(utility::database::context ctx, event_bus& bus)
+                +~postgres_event_source()
+                +register_mapping<Event>(entity_name, channel_name) void
+                +start() void
+                +stop() void
+                -on_entity_change(entity_change_event& e) void
+                -{field} bus_ event_bus&
+                -{field} listener_ postgres_listener_service
+                -{field} entity_mappings_ std::unordered_map<std::string, entity_mapping>
+            }
+
+            note top of postgres_event_source
+            Event source that bridges PostgreSQL LISTEN/NOTIFY
+            to the event bus.
+
+            Wraps postgres_listener_service and translates
+            low-level entity_change_event notifications into
+            typed domain events that are published to the
+            event bus.
+            end note
+
+            class registrar #ECECEC {
+                +{static} register_mapping<Event>(source, entity_name, channel_name) void
+            }
+
+            note top of registrar
+            Helper class for registering entity-to-event
+            mappings with the postgres event source.
+            end note
+
             ores::eventing::service::event_bus --> ores::eventing::service::subscription : returns
+            ores::eventing::service::postgres_event_source --> ores::eventing::service::event_bus : publishes to
+            ores::eventing::service::postgres_event_source --> ores::eventing::service::postgres_listener_service : wraps
+            ores::eventing::service::registrar ..> ores::eventing::service::postgres_event_source : configures
         }
 
         namespace generators #F2F2F2 {

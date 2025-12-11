@@ -22,11 +22,16 @@
 
 #include <boost/throw_exception.hpp>
 #include "ores.risk/messaging/registrar.hpp"
+#include "ores.risk/domain/events/currency_changed_event.hpp"
 #include "ores.accounts/messaging/registrar.hpp"
+#include "ores.accounts/domain/events/account_changed_event.hpp"
 #include "ores.variability/messaging/registrar.hpp"
 #include "ores.variability/service/flag_initializer.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.accounts/service/bootstrap_mode_service.hpp"
+#include "ores.eventing/service/event_bus.hpp"
+#include "ores.eventing/service/postgres_event_source.hpp"
+#include "ores.eventing/service/registrar.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/database/context_factory.hpp"
 #include "ores.comms/net/server.hpp"
@@ -93,12 +98,30 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         BOOST_LOG_SEV(lg(), info) << "Authentication and authorization enforcement enabled";
     }
 
+    // Initialize the event bus and event sources
+    eventing::service::event_bus event_bus;
+    eventing::service::postgres_event_source event_source(ctx, event_bus);
+
+    // Register entity-to-event mappings for each component
+    eventing::service::registrar::register_mapping<
+        risk::domain::events::currency_changed_event>(
+        event_source, "ores.risk.currency", "ores_currencies");
+    eventing::service::registrar::register_mapping<
+        accounts::domain::events::account_changed_event>(
+        event_source, "ores.accounts.account", "ores_accounts");
+
+    // Start the event source to begin listening for database notifications
+    event_source.start();
+
     auto srv = std::make_shared<ores::comms::net::server>(cfg.server);
     ores::risk::messaging::registrar::register_handlers(*srv, ctx, system_flags);
     ores::accounts::messaging::registrar::register_handlers(*srv, ctx, system_flags);
     ores::variability::messaging::registrar::register_handlers(*srv, ctx);
 
     co_await srv->run(io_ctx);
+
+    // Stop the event source
+    event_source.stop();
 
     // Shutdown logging
     if (system_flags->is_bootstrap_mode_enabled()) {

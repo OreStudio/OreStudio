@@ -24,7 +24,8 @@
 #include <QTableView>
 #include <QVBoxLayout>
 #include <QToolBar>
-#include <QLabel>
+#include <QIcon>
+#include <QTimer>
 #include <memory>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.utility/log/make_logger.hpp"
@@ -78,6 +79,22 @@ public slots:
     void exportToCSV();
     void exportToXML();
 
+    /**
+     * @brief Mark the data as stale (changed on server).
+     *
+     * Shows a visual indicator that data may be out of date and
+     * should be refreshed. Called when a currency change notification
+     * is received from the server.
+     */
+    void markAsStale();
+
+    /**
+     * @brief Clear the stale indicator.
+     *
+     * Called after data is reloaded to indicate data is fresh.
+     */
+    void clearStaleIndicator();
+
 private slots:
     void onDataLoaded();
     void onLoadError(const QString& error_message);
@@ -87,12 +104,23 @@ private slots:
 
 private:
     void updateActionStates();
+    void setupReloadAction();
+    void startPulseAnimation();
+    void stopPulseAnimation();
 
 private:
     QVBoxLayout* verticalLayout_;
     QTableView* currencyTableView_;
     QToolBar* toolBar_;
     PaginationWidget* pagination_widget_;
+
+    // Reload action with stale indicator
+    QAction* reloadAction_;
+    QIcon normalReloadIcon_;
+    QIcon staleReloadIcon_;
+    QTimer* pulseTimer_;
+    bool pulseState_{false};
+    int pulseCount_{0};
 
     QAction* addAction_;
     QAction* editAction_;
@@ -102,6 +130,7 @@ private:
     std::unique_ptr<ClientCurrencyModel> currencyModel_;
     ClientManager* clientManager_;
     QString username_;
+    bool isStale_{false};
 };
 
 }

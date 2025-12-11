@@ -48,6 +48,12 @@ public:
     read_uint32(std::span<const std::byte>& data);
 
     /**
+     * @brief Helper to read a 64-bit integer in network byte order.
+     */
+    static std::expected<std::int64_t, error_code>
+    read_int64(std::span<const std::byte>& data);
+
+    /**
      * @brief Helper to write a UUID (16 bytes).
      */
     static void write_uuid(std::vector<std::byte>& buffer,

@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <unistd.h>
 #include <QApplication>
 #include <QFile>
 #include <QIcon>
@@ -43,7 +44,7 @@ const std::string product_version("Qt UI for ORE Studio v" ORES_VERSION);
 ores::utility::log::logging_options createLoggingConfiguration() {
     // FIXME: read this from command line
     ores::utility::log::logging_options r;
-    r.filename = "ores.qt.log";
+    r.filename = "ores.qt." + std::to_string(getpid()) + ".log";
     r.output_to_console = false;
     r.output_directory = "../log";
     r.severity = "debug";

@@ -26,10 +26,12 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <QtWidgets/QWidget>
+#include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QTableView>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QPushButton>
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <QUrl>
@@ -62,6 +64,8 @@ CurrencyMdiWindow(ClientManager* clientManager,
       currencyTableView_(new QTableView(this)),
       toolBar_(new QToolBar(this)),
       pagination_widget_(new PaginationWidget(this)),
+      reloadAction_(new QAction("Reload", this)),
+      pulseTimer_(new QTimer(this)),
       addAction_(new QAction("Add", this)),
       editAction_(new QAction("Edit", this)),
       deleteAction_(new QAction("Delete", this)),
@@ -75,13 +79,9 @@ CurrencyMdiWindow(ClientManager* clientManager,
     toolBar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     const QColor iconColor(220, 220, 220);
 
-    auto reloadAction = new QAction("Reload", this);
-    reloadAction->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
-    reloadAction->setToolTip("Reload currencies from server");
-    connect(reloadAction, &QAction::triggered, this,
-        &CurrencyMdiWindow::reload);
-    toolBar_->addAction(reloadAction);
+    // Setup reload action with normal and stale icons
+    setupReloadAction();
+    toolBar_->addAction(reloadAction_);
 
     toolBar_->addSeparator();
 
@@ -249,6 +249,7 @@ void CurrencyMdiWindow::reload() {
         return;
     }
     emit statusChanged("Reloading currencies...");
+    clearStaleIndicator();
     currencyModel_->refresh();
 }
 
@@ -740,6 +741,62 @@ void CurrencyMdiWindow::updateActionStates() {
     editAction_->setEnabled(hasSelection);
     deleteAction_->setEnabled(hasSelection);
     historyAction_->setEnabled(hasSelection);
+}
+
+void CurrencyMdiWindow::setupReloadAction() {
+    const QColor normalColor(220, 220, 220);
+    const QColor staleColor(255, 165, 0);  // Orange/amber for stale indicator
+
+    normalReloadIcon_ = IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", normalColor);
+    staleReloadIcon_ = IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", staleColor);
+
+    reloadAction_->setIcon(normalReloadIcon_);
+    reloadAction_->setToolTip("Reload currencies from server");
+    connect(reloadAction_, &QAction::triggered, this, &CurrencyMdiWindow::reload);
+
+    // Setup pulse animation timer
+    connect(pulseTimer_, &QTimer::timeout, this, [this]() {
+        pulseState_ = !pulseState_;
+        reloadAction_->setIcon(pulseState_ ? staleReloadIcon_ : normalReloadIcon_);
+
+        pulseCount_++;
+        // Stop pulsing after 6 cycles (3 seconds) but keep stale icon
+        if (pulseCount_ >= 6) {
+            pulseTimer_->stop();
+            reloadAction_->setIcon(staleReloadIcon_);
+        }
+    });
+}
+
+void CurrencyMdiWindow::startPulseAnimation() {
+    pulseCount_ = 0;
+    pulseState_ = false;
+    pulseTimer_->start(500);  // Toggle every 500ms
+}
+
+void CurrencyMdiWindow::stopPulseAnimation() {
+    pulseTimer_->stop();
+    reloadAction_->setIcon(normalReloadIcon_);
+}
+
+void CurrencyMdiWindow::markAsStale() {
+    if (!isStale_) {
+        isStale_ = true;
+        reloadAction_->setToolTip("Data changed on server - click to reload");
+        startPulseAnimation();
+        BOOST_LOG_SEV(lg(), info) << "Currency data marked as stale";
+    }
+}
+
+void CurrencyMdiWindow::clearStaleIndicator() {
+    if (isStale_) {
+        isStale_ = false;
+        stopPulseAnimation();
+        reloadAction_->setToolTip("Reload currencies from server");
+        BOOST_LOG_SEV(lg(), debug) << "Stale indicator cleared";
+    }
 }
 
 }

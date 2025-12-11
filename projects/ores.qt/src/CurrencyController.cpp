@@ -26,10 +26,18 @@
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.risk/domain/events/currency_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::utility::log;
+
+namespace {
+    // Event type name for currency changes
+    constexpr std::string_view currency_event_name =
+        eventing::domain::event_traits<risk::domain::events::currency_changed_event>::name;
+}
 
 CurrencyController::CurrencyController(
     QMainWindow* mainWindow,
@@ -42,10 +50,42 @@ CurrencyController::CurrencyController(
       allDetachableWindows_(allDetachableWindows),
       currencyListWindow_(nullptr) {
     BOOST_LOG_SEV(lg(), debug) << "Currency controller created";
+
+    // Connect to notification signal from ClientManager
+    if (clientManager_) {
+        connect(clientManager_, &ClientManager::notificationReceived,
+                this, &CurrencyController::onNotificationReceived);
+
+        // Subscribe to events when connected (event adapter only available after login)
+        connect(clientManager_, &ClientManager::connected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Subscribing to currency change events";
+            clientManager_->subscribeToEvent(std::string{currency_event_name});
+        });
+
+        // Re-subscribe after reconnection
+        connect(clientManager_, &ClientManager::reconnected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to currency change events after reconnect";
+            clientManager_->subscribeToEvent(std::string{currency_event_name});
+        });
+
+        // If already connected, subscribe now
+        if (clientManager_->isConnected()) {
+            BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to currency change events";
+            clientManager_->subscribeToEvent(std::string{currency_event_name});
+        }
+    }
 }
 
 CurrencyController::~CurrencyController() {
     BOOST_LOG_SEV(lg(), debug) << "Currency controller destroyed";
+
+    // Unsubscribe from currency change events
+    if (clientManager_) {
+        BOOST_LOG_SEV(lg(), debug) << "Unsubscribing from currency change events";
+        clientManager_->unsubscribeFromEvent(std::string{currency_event_name});
+    }
 }
 
 void CurrencyController::showListWindow() {
@@ -332,6 +372,27 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
         historyWindow->move(parentPos.x() + 30, parentPos.y() + 30);
     } else {
         historyWindow->show();
+    }
+}
+
+void CurrencyController::onNotificationReceived(
+    const QString& eventType, const QDateTime& timestamp) {
+    // Check if this is a currency change event
+    if (eventType != QString::fromStdString(std::string{currency_event_name})) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Received currency change notification at "
+                              << timestamp.toString(Qt::ISODate).toStdString();
+
+    // If the currency list window is open, mark it as stale
+    if (currencyListWindow_) {
+        auto* currencyWidget = qobject_cast<CurrencyMdiWindow*>(
+            currencyListWindow_->widget());
+        if (currencyWidget) {
+            currencyWidget->markAsStale();
+            BOOST_LOG_SEV(lg(), debug) << "Marked currency window as stale";
+        }
     }
 }
 

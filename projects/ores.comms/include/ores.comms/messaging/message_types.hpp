@@ -37,8 +37,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Protocol version 7 adds correlation_id field to frame header for
 // request/response matching, enabling concurrent operations and server-push
 // notifications.
+//
+// Version 7.1 adds subscription protocol messages (subscribe_request,
+// subscribe_response, unsubscribe_request, unsubscribe_response, notification)
+// for server-push event notifications.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 7;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -58,6 +62,13 @@ enum class message_type {
     error_response = 0x0004,
     ping = 0x0005,
     pong = 0x0006,
+
+    // Subscription/Notification messages (0x0010 - 0x001F)
+    subscribe_request = 0x0010,
+    subscribe_response = 0x0011,
+    unsubscribe_request = 0x0012,
+    unsubscribe_response = 0x0013,
+    notification = 0x0014,
 
     // Risk subsystem messages (0x1000 - 0x1FFF)
     get_currencies_request = 0x1001,

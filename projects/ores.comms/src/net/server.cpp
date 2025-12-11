@@ -28,15 +28,18 @@
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include "ores.comms/net/session.hpp"
+#include "ores.comms/service/subscription_manager.hpp"
 
 namespace ores::comms::net {
 
 using namespace ores::utility::log;
 
-server::server(server_options options)
+server::server(server_options options,
+    std::shared_ptr<service::subscription_manager> subscription_mgr)
     : options_(std::move(options)),
       ssl_ctx_(ssl::context::tlsv13),
-      dispatcher_(std::make_shared<messaging::message_dispatcher>()) {
+      dispatcher_(std::make_shared<messaging::message_dispatcher>()),
+      subscription_mgr_(std::move(subscription_mgr)) {
     setup_ssl_context();
 }
 
@@ -154,9 +157,10 @@ boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_con
             auto conn = std::make_unique<connection>(
                 connection::ssl_socket(std::move(socket), ssl_ctx_));
 
-            // Create session
+            // Create session with subscription manager
             auto sess = std::make_shared<session>(std::move(conn),
-                options_.server_identifier, dispatcher_);
+                options_.server_identifier, dispatcher_,
+                io_context.get_executor(), subscription_mgr_);
 
             // Add to active sessions list
             {

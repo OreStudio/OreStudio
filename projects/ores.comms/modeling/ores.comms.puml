@@ -53,7 +53,7 @@ namespace ores #F2F2F2 {
             end note
 
             class server #ECECEC {
-                +server(server_options options)
+                +server(server_options options, std::shared_ptr<service::subscription_manager> subscription_mgr)
                 +register_handler(messaging::message_type_range range, std::shared_ptr<messaging::message_handler> handler) void
                 +run(boost::asio::io_context& io_context, std::function<void(std::uint16_t)> on_listening) boost::asio::awaitable<void>
                 +stop() void
@@ -63,6 +63,7 @@ namespace ores #F2F2F2 {
                 -{field} options_ server_options
                 -{field} ssl_ctx_ ssl::context
                 -{field} dispatcher_ std::shared_ptr<messaging::message_dispatcher>
+                -{field} subscription_mgr_ std::shared_ptr<service::subscription_manager>
                 -{field} active_connections_ std::atomic<std::size_t>
                 -{field} stop_signal_ boost::asio::cancellation_signal
                 -{field} active_sessions_ std::list<std::shared_ptr<session>>
@@ -73,11 +74,13 @@ namespace ores #F2F2F2 {
             ORES protocol server.
 
             Accepts SSL connections, performs handshake, and manages client sessions.
+            Supports server-push notifications via optional subscription_manager.
             end note
 
             server o-u- ores::comms::net::server_options
             server o-u- ores::comms::messaging::message_dispatcher
             server o-u- ores::comms::net::session
+            server o-u- ores::comms::service::subscription_manager
 
         class retry_options #F7E5FF {
             +{field} max_attempts std::uint32_t
@@ -173,6 +176,9 @@ namespace ores #F2F2F2 {
             -{field} state_ connection_state
             -{field} state_mutex_ std::mutex
             -{field} disconnect_callback_ disconnect_callback_t
+            -{field} reconnecting_callback_ reconnecting_callback_t
+            -{field} reconnected_callback_ reconnected_callback_t
+            -{field} notification_callback_ notification_callback_t
             -{field} write_strand_ std::unique_ptr<boost::asio::strand<boost::asio::any_io_executor>>
             -{field} pending_requests_ std::unique_ptr<pending_request_map>
             -{field} correlation_id_counter_ std::atomic<std::uint32_t>
@@ -191,6 +197,8 @@ namespace ores #F2F2F2 {
 
         Features exponential backoff with jitter for connection retries and
         automatic reconnection when connection is lost.
+
+        Supports server-push notifications via notification_callback.
         end note
 
             client o-u- ores::comms::net::client_options
@@ -202,6 +210,7 @@ namespace ores #F2F2F2 {
             client ..> ores::comms::service::handshake_service : uses
             client ..> ores::comms::messaging::ping : uses
             client ..> ores::comms::messaging::pong : uses
+            client ..> ores::comms::messaging::notification_message : uses
 
         class pending_request_map #ECECEC {
             +pending_request_map(boost::asio::any_io_executor executor)
@@ -277,15 +286,24 @@ namespace ores #F2F2F2 {
             connection ..> ores::comms::messaging::error_code
 
             class session #ECECEC {
-            +session(std::unique_ptr<connection> conn, std::string server_id, std::shared_ptr<messaging::message_dispatcher> dispatcher)
+            +session(std::unique_ptr<connection> conn, std::string server_id, std::shared_ptr<messaging::message_dispatcher> dispatcher, std::shared_ptr<service::subscription_manager> subscription_mgr)
             +run() boost::asio::awaitable<void>
+            +stop() void
+            +queue_notification(const std::string& event_type, std::chrono::system_clock::time_point timestamp) void
             -perform_handshake() boost::asio::awaitable<bool>
             -process_messages() boost::asio::awaitable<void>
+            -send_pending_notifications() boost::asio::awaitable<void>
+            -register_with_subscription_manager() void
+            -unregister_from_subscription_manager() void
             -{field} conn_ std::unique_ptr<connection>
             -{field} server_id_ std::string
             -{field} dispatcher_ std::shared_ptr<messaging::message_dispatcher>
+            -{field} subscription_mgr_ std::shared_ptr<service::subscription_manager>
             -{field} sequence_number_ std::uint32_t
             -{field} handshake_complete_ bool
+            -{field} active_ std::atomic<bool>
+            -{field} notification_mutex_ std::mutex
+            -{field} pending_notifications_ std::queue<pending_notification>
         }
 
         note top of session
@@ -293,13 +311,16 @@ namespace ores #F2F2F2 {
 
         Manages the lifecycle of a single client connection, including
         handshake, message processing, and cleanup.
+        Supports server-push notifications for subscribed events.
         end note
 
             session o-u- ores::comms::net::connection
             session o-u- ores::comms::messaging::message_dispatcher
+            session o-u- ores::comms::service::subscription_manager
             session ..> ores::comms::service::handshake_service : uses
             session ..> ores::comms::service::heartbeat_service : uses
             session ..> ores::comms::messaging::error_response : uses
+            session ..> ores::comms::messaging::notification_message : uses
         }
 
         namespace messaging #F2F2F2 {
@@ -547,6 +568,93 @@ namespace ores #F2F2F2 {
 
             error_response ..> ores::comms::messaging::error_code
 
+            class subscribe_request <<message>> #E1F5FF {
+                +{field} event_type std::string
+                +{static} serialize(subscribe_request v) std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) std::expected<subscribe_request, error_code>
+            }
+
+            note top of subscribe_request
+            Request to subscribe to notifications for a specific event type.
+
+            Fields:
+
+            - event_type: The fully qualified event type name to subscribe to
+              (e.g., "ores.risk.currency_changed_event").
+            end note
+
+            subscribe_request ..> ores::comms::messaging::error_code
+
+            class subscribe_response <<message>> #E1F5FF {
+                +{field} success bool
+                +{field} message std::string
+                +{static} serialize(subscribe_response v) std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) std::expected<subscribe_response, error_code>
+            }
+
+            note top of subscribe_response
+            Response to a subscribe request.
+
+            Fields:
+
+            - success: Whether the subscription was successful.
+            - message: Human-readable status message.
+            end note
+
+            subscribe_response ..> ores::comms::messaging::error_code
+
+            class unsubscribe_request <<message>> #E1F5FF {
+                +{field} event_type std::string
+                +{static} serialize(unsubscribe_request v) std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) std::expected<unsubscribe_request, error_code>
+            }
+
+            note top of unsubscribe_request
+            Request to unsubscribe from notifications for a specific event type.
+
+            Fields:
+
+            - event_type: The fully qualified event type name to unsubscribe from.
+            end note
+
+            unsubscribe_request ..> ores::comms::messaging::error_code
+
+            class unsubscribe_response <<message>> #E1F5FF {
+                +{field} success bool
+                +{field} message std::string
+                +{static} serialize(unsubscribe_response v) std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) std::expected<unsubscribe_response, error_code>
+            }
+
+            note top of unsubscribe_response
+            Response to an unsubscribe request.
+
+            Fields:
+
+            - success: Whether the unsubscription was successful.
+            - message: Human-readable status message.
+            end note
+
+            unsubscribe_response ..> ores::comms::messaging::error_code
+
+            class notification_message <<message>> #E1F5FF {
+                +{field} event_type std::string
+                +{field} timestamp std::chrono::system_clock::time_point
+                +{static} serialize(notification_message v) std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) std::expected<notification_message, error_code>
+            }
+
+            note top of notification_message
+            Server-push notification sent when a subscribed event occurs.
+
+            Fields:
+
+            - event_type: The fully qualified event type name.
+            - timestamp: When the event occurred (UTC).
+            end note
+
+            notification_message ..> ores::comms::messaging::error_code
+
             enum message_type {
                 handshake_request
                 handshake_response
@@ -554,6 +662,11 @@ namespace ores #F2F2F2 {
                 error_response
                 ping
                 pong
+                subscribe_request
+                subscribe_response
+                unsubscribe_request
+                unsubscribe_response
+                notification_message
                 get_currencies_request
                 get_currencies_response
                 save_currency_request
@@ -562,8 +675,6 @@ namespace ores #F2F2F2 {
                 delete_currency_response
                 get_currency_history_request
                 get_currency_history_response
-                save_currency_request
-                save_currency_response
                 create_account_request
                 create_account_response
                 list_accounts_request
@@ -627,6 +738,84 @@ namespace ores #F2F2F2 {
 
             heartbeat_service ..> ores::comms::messaging::ping : uses
             heartbeat_service ..> ores::comms::messaging::pong : uses
+
+            class subscription_manager #ECECEC {
+                +register_session(const std::string& session_id, notification_callback callback) void
+                +unregister_session(const std::string& session_id) void
+                +subscribe(const std::string& session_id, const std::string& event_type) bool
+                +unsubscribe(const std::string& session_id, const std::string& event_type) bool
+                +notify(const std::string& event_type, std::chrono::system_clock::time_point timestamp) std::size_t
+                +subscriber_count(const std::string& event_type) std::size_t
+                +session_count() std::size_t
+                +get_subscriptions(const std::string& session_id) std::vector<std::string>
+                -{field} mutex_ std::mutex
+                -{field} sessions_ std::unordered_map<session_id, session_info>
+                -{field} subscriptions_ std::unordered_map<event_type, session_set>
+            }
+
+            note top of subscription_manager
+            Manages client subscriptions for server-push notifications.
+
+            Tracks which sessions are subscribed to which event types.
+            When an event occurs, notifies all subscribed sessions via
+            their registered callbacks.
+
+            Thread-safe: all operations are protected by mutex.
+            end note
+
+            class subscription_handler #ECECEC {
+                +subscription_handler(std::shared_ptr<subscription_manager> manager)
+                +handle_message(messaging::message_type type, std::span<const std::byte> payload, const std::string& remote_address) boost::asio::awaitable<std::expected<std::vector<std::byte>, messaging::error_code>>
+                -{field} manager_ std::shared_ptr<subscription_manager>
+            }
+
+            note top of subscription_handler
+            Message handler for subscription protocol messages.
+
+            Handles subscribe_request and unsubscribe_request messages
+            from clients, delegating to subscription_manager for state
+            management.
+            end note
+
+            subscription_handler --|> ores::comms::messaging::message_handler
+            subscription_handler o-- ores::comms::service::subscription_manager
+            subscription_handler ..> ores::comms::messaging::subscribe_request : uses
+            subscription_handler ..> ores::comms::messaging::subscribe_response : uses
+            subscription_handler ..> ores::comms::messaging::unsubscribe_request : uses
+            subscription_handler ..> ores::comms::messaging::unsubscribe_response : uses
+
+            class remote_event_adapter #ECECEC {
+                +remote_event_adapter(std::shared_ptr<net::client> client)
+                +~remote_event_adapter()
+                +subscribe(const std::string& event_type) boost::asio::awaitable<bool>
+                +unsubscribe(const std::string& event_type) boost::asio::awaitable<bool>
+                +is_subscribed(const std::string& event_type) bool
+                +get_subscriptions() std::set<std::string>
+                +resubscribe_all() boost::asio::awaitable<std::size_t>
+                +set_notification_callback(notification_callback_t callback) void
+                -on_notification(const std::string& event_type, std::chrono::system_clock::time_point timestamp) void
+                -{field} client_ std::shared_ptr<net::client>
+                -{field} mutex_ std::mutex
+                -{field} subscriptions_ std::set<std::string>
+                -{field} user_callback_ notification_callback_t
+            }
+
+            note top of remote_event_adapter
+            Adapts remote server subscriptions to local notification callbacks.
+
+            Bridges client-side event handling and server-side subscription
+            management by:
+            - Sending SUBSCRIBE/UNSUBSCRIBE protocol messages
+            - Tracking active subscriptions locally
+            - Supporting re-subscription after reconnect
+            - Forwarding notifications to registered callbacks
+            end note
+
+            remote_event_adapter o-- ores::comms::net::client
+            remote_event_adapter ..> ores::comms::messaging::subscribe_request : uses
+            remote_event_adapter ..> ores::comms::messaging::subscribe_response : uses
+            remote_event_adapter ..> ores::comms::messaging::unsubscribe_request : uses
+            remote_event_adapter ..> ores::comms::messaging::unsubscribe_response : uses
         }
 
         namespace tests #F2F2F2 {
@@ -698,6 +887,50 @@ namespace ores #F2F2F2 {
 
             message_handler_tests ..> ores::comms::messaging::message_handler : tests
             message_handler_tests ..> ores::comms::messaging::message_dispatcher : tests
+
+            class subscription_manager_tests <<test suite>> #C5E1A5 {
+                +test_subscription_manager_starts_empty() void
+                +test_subscription_manager_register_unregister_sessions() void
+                +test_subscription_manager_subscribe_unsubscribe() void
+                +test_subscription_manager_notify_subscribers() void
+                +test_subscription_manager_multiple_sessions() void
+                +test_subscription_manager_exception_handling() void
+            }
+
+            note top of subscription_manager_tests
+            Test suite for subscription_manager.
+
+            Tests cover session registration, subscription
+            management, notification dispatch, multiple sessions,
+            and exception handling.
+            end note
+
+            subscription_manager_tests ..> ores::comms::service::subscription_manager : tests
+
+            class subscription_protocol_tests <<test suite>> #C5E1A5 {
+                +test_subscribe_request_roundtrip() void
+                +test_subscribe_response_roundtrip() void
+                +test_unsubscribe_request_roundtrip() void
+                +test_unsubscribe_response_roundtrip() void
+                +test_notification_message_roundtrip() void
+                +test_subscription_handler_subscribe() void
+                +test_subscription_handler_unsubscribe() void
+            }
+
+            note top of subscription_protocol_tests
+            Test suite for subscription protocol messages
+            and handler.
+
+            Tests cover message serialization roundtrips
+            and subscription_handler processing.
+            end note
+
+            subscription_protocol_tests ..> ores::comms::messaging::subscribe_request : tests
+            subscription_protocol_tests ..> ores::comms::messaging::subscribe_response : tests
+            subscription_protocol_tests ..> ores::comms::messaging::unsubscribe_request : tests
+            subscription_protocol_tests ..> ores::comms::messaging::unsubscribe_response : tests
+            subscription_protocol_tests ..> ores::comms::messaging::notification_message : tests
+            subscription_protocol_tests ..> ores::comms::service::subscription_handler : tests
         }
     }
 }

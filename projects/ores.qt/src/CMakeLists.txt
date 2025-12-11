@@ -34,6 +34,7 @@ target_link_libraries(${exe_binary_name} PRIVATE
     ores.risk.lib
     ores.comms.lib
     ores.accounts.lib
+    ores.eventing.lib
     ores.utility.lib
     Qt6::Core
     Qt6::Gui

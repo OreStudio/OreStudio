@@ -20,6 +20,7 @@
 #ifndef ORES_QT_CLIENT_MANAGER_HPP
 #define ORES_QT_CLIENT_MANAGER_HPP
 
+#include <chrono>
 #include <memory>
 #include <optional>
 #include <string>
@@ -28,7 +29,9 @@
 #include <boost/asio/executor_work_guard.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <QObject>
+#include <QDateTime>
 #include "ores.comms/net/client.hpp"
+#include "ores.comms/service/remote_event_adapter.hpp"
 #include "ores.utility/log/make_logger.hpp"
 
 namespace ores::qt {
@@ -113,12 +116,40 @@ public:
         return io_context_->get_executor();
     }
 
+    /**
+     * @brief Subscribe to server-push notifications for an event type.
+     *
+     * This method is non-blocking - the subscription request is sent
+     * asynchronously and any errors are logged.
+     *
+     * @param eventType The event type to subscribe to (e.g., "ores.risk.currency_changed_event")
+     */
+    void subscribeToEvent(const std::string& eventType);
+
+    /**
+     * @brief Unsubscribe from server-push notifications for an event type.
+     *
+     * This method is non-blocking - the unsubscription request is sent
+     * asynchronously and any errors are logged.
+     *
+     * @param eventType The event type to unsubscribe from
+     */
+    void unsubscribeFromEvent(const std::string& eventType);
+
 signals:
     void connected();
     void disconnected();
     void reconnecting();
     void reconnected();
     void connectionError(const QString& message);
+
+    /**
+     * @brief Emitted when a notification is received from the server.
+     *
+     * @param eventType The event type name (e.g., "ores.risk.currency_changed_event")
+     * @param timestamp When the event occurred
+     */
+    void notificationReceived(const QString& eventType, const QDateTime& timestamp);
 
 private:
     void setupIO();
@@ -133,6 +164,9 @@ private:
 
     // Transient client
     std::shared_ptr<comms::net::client> client_;
+
+    // Remote event adapter for subscriptions
+    std::unique_ptr<comms::service::remote_event_adapter> event_adapter_;
 
     // Logged-in account tracking
     std::optional<boost::uuids::uuid> logged_in_account_id_;

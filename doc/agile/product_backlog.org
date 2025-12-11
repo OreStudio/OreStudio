@@ -400,76 +400,6 @@ Links:
 
 - [[https://www.azerothcore.org/wiki/gm-commands][GM Commands]]
 
-*** Add lock account request                                           :code:
-
-As per gemini's comments, we should have a request to lock an account.
-
-Notes:
-
-- account unlock should return boolean rather than throw.
-
-Test.
-
-#+begin_src c++
-TEST_CASE("handle_login_request_locked_account", tags) {
-    auto lg(make_logger(test_suite));
-    database_helper h;
-    h.truncate_table(database_table);
-
-    accounts_message_handler handler(h.get_context());
-    boost::asio::io_context io_context;
-
-    const auto account = generate_synthetic_account();
-    create_account_request create_req(to_create_account_request(account));
-    BOOST_LOG_SEV(lg, info) << "Create account request: " << create_req;
-
-    const auto create_payload = create_req.serialize();
-    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
-        auto result = co_await handler.handle_message(
-            message_type::create_account_request,
-            create_payload, "127.0.0.1:12345");
-        REQUIRE(result.has_value());
-    });
-
-    // 2. Simulate locking the account (A dedicated lock request should exist,
-    //    but for this test, we'll assume the handler has a method/logic for it
-    //    or that the system supports a lock request message type).
-    // Assuming a lock_account_request exists or the account is locked internally.
-    unlock_account_request lock_req; // Re-use struct for simplicity, assuming a dedicated lock is handled internally
-    lock_req.account_id = create_account_response::deserialize(
-        handler.get_account_id_by_username(create_req.username)).value().account_id; // Hypothetical internal method
-    // In a real system, you'd send a dedicated lock message here.
-    // For now, we rely on a separate mechanism to put the account into a locked state.
-    // **NOTE**: For a proper test, a dedicated LOCK_ACCOUNT_REQUEST is needed.
-
-    // 3. Attempt login with valid credentials for the now-locked account
-    login_request login_req;
-    login_req.username = create_req.username;
-    login_req.password = create_req.password;
-    BOOST_LOG_SEV(lg, info) << "Attempting login for locked user: " << login_req.username;
-
-    const auto login_payload = login_req.serialize();
-
-    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
-        auto result = co_await handler.handle_message(
-            message_type::login_request,
-            login_payload, "192.168.1.100:54321");
-
-        REQUIRE(result.has_value());
-        const auto response_result = login_response::deserialize(result.value());
-        REQUIRE(response_result.has_value());
-        const auto& response = response_result.value();
-        BOOST_LOG_SEV(lg, info) << "Response: " << response;
-
-        CHECK(response.success == false);
-        // Check for an explicit error message/code related to account lock.
-        CHECK(response.error_message.find("locked") != std::string::npos);
-    });
-}
-#+end_src
-
-
-
 *** Improve error message when server is not running                   :code:
 
 At present we get:
@@ -486,16 +416,6 @@ We need a main tab with the currency related properties, then a "system" tab
 with temporal data which is read-only even on edit and a "image" tab with the
 image used to represent the currency. It could also contain some description or
 notes.
-
-*** Server must check database connectivity on startup                 :code:
-
-At present the server only checks connectivity to database when a user requests
-an operation. We need some kind of initial polling which puts the server in a
-mode replying to all clients: "database not available". While this is happening,
-it should keep polling the database and checking the connectivity.
-
-Ideally the server should start, but poll the DB. It should send messages to
-clients informing them of the issues with database.
 
 *** Consider adding log command line options to qt                     :code:
 
@@ -877,17 +797,9 @@ std::vector<domain::account_summary>.
 Change list_accounts_response::accounts to use a non-sensitive type like
 std::vector<domain::account_summary>.
 #+end_quote
-*** When you maximise currencies merge toolbars                        :code:
+*** Merge toolbars when you maximise currencies                        :code:
 
 At present we end up with two tool bars, one below the other.
-
-*** Add a version attribute to entities                                :code:
-
-At present we are relying only on bitemporal for version control. However it is
-much easier to check a version number. It should just be a linear attribute
-which is updated whenever we insert into the entity table. If the user attempts
-to update an entity but the current version is smaller than the latest version
-we should error. Make version unique.
 
 *** Local versus remote connectivity                                   :code:
 
@@ -897,11 +809,6 @@ complexity of having to have a server is not helpful. In addition, they may not
 even require a full blown postgres - sqlite is enough. It should be possible to
 setup a connection to a database in this manner. Ideally the client should
 support both at the same time.
-
-*** Add a delete all button which deletes all currencies               :code:
-
-It is useful especially in test environments to be able to delete all entities
-before a re-import.
 
 *** History should have a revert button                                :code:
 
@@ -938,11 +845,6 @@ Make the reload button blue when there are changes.
 Notes:
 
 - history windows should also have the notification.
-
-*** Notification of server restarts                                    :code:
-
-Whenever we lose connection to the server the UI needs to tell the user and
-change to disconnected.
 
 *** Add a generic tagging system                                       :code:
 
@@ -1019,76 +921,6 @@ Examples:
   both "countries" and "currencies" labels so that when we want to select a flag
   as the image for a currency, we could ask for all images labelled
   "currencies". The labelling can be done by pretty much anyone.
-
-*** Add flags for currencies                                           :code:
-
-Add flags for the currencies. Need database support. Display them in the
-currencies dialog.
-
-Actually it is better to have a generic mechanism to upload an SVG and maybe tag
-it with an identifier. Then we could have a way to associate a currency with one
-of the available SVGs. The currency dialog could have a tab where users can
-select the SVG from a list. We can then have a table with SVG for currency which
-remembers these. This provides a generic solution for all cases where we have
-some kind of asset and an associated image.
-
-SQL:
-
-#+begin_src sql
--- Ensure you have the necessary extension for generating random UUIDs
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
--- 1. icons table: Stores the SVG data
-CREATE TABLE icons (
-    -- Primary key using UUID (GUID)
-    icon_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-    -- Unique key used by the application (e.g., 'usd_flag', 'btc_symbol')
-    key VARCHAR(100) UNIQUE NOT NULL,
-
-    -- The entire SVG content stored as plain text
-    svg_data TEXT NOT NULL,
-
-    -- Optional timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Index the 'key' column for faster lookups
-CREATE INDEX idx_icons_key ON icons (key);
-
----
-
--- 2. tags table: Stores the list of available categories
-CREATE TABLE tags (
-    -- Primary key remains SERIAL as tags are usually created centrally
-    tag_id SERIAL PRIMARY KEY,
-
-    -- The name of the tag (e.g., 'currency', 'flag', 'commodity')
-    name VARCHAR(50) UNIQUE NOT NULL
-);
-
--- Index the 'name' column for quick lookups and joins
-CREATE INDEX idx_tags_name ON tags (name);
-
----
-
--- 3. icon_tags table: Junction table for the many-to-many relationship
-CREATE TABLE icon_tags (
-    -- Foreign key to the icons table (now a UUID)
-    icon_id UUID NOT NULL REFERENCES icons(icon_id) ON DELETE CASCADE,
-
-    -- Foreign key to the tags table (remains INTEGER)
-    tag_id INTEGER NOT NULL REFERENCES tags(tag_id) ON DELETE CASCADE,
-
-    -- Ensures that each icon/tag combination can only exist once
-    PRIMARY KEY (icon_id, tag_id)
-);
-
--- Optional: Create a separate index for lookups by tag
-CREATE INDEX idx_icon_tags_tag_id ON icon_tags (tag_id);
-#+end_src
-
 
 *** Light system theme results in mix of dark and light                :code:
 
@@ -1321,10 +1153,6 @@ Links:
 Links:
 
 - [[https://justatheory.com/2012/04/postgres-use-timestamptz/][Always Use TIMESTAMP WITH TIME ZONE]]
-
-*** Fix gemini cli action                                              :code:
-
-The action to review PRs using gemini is failing.
 
 *** Add support for JWT                                                :code:
 

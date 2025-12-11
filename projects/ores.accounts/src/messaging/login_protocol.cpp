@@ -245,6 +245,10 @@ logout_response::deserialize(std::span<const std::byte> data) {
     if (!message_result) return std::unexpected(message_result.error());
     response.message = *message_result;
 
+    if (!data.empty()) {
+        return std::unexpected(comms::messaging::error_code::payload_too_large);
+    }
+
     return response;
 }
 

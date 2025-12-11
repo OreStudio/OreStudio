@@ -200,12 +200,9 @@ process_list_login_info(std::ostream& out, client_manager& client_manager) {
 }
 
 void accounts_commands::
-process_logout(std::ostream& out, client_manager& client_manager) {
+process_logout(std::ostream& /*out*/, client_manager& client_manager) {
     BOOST_LOG_SEV(lg(), debug) << "Processing logout request.";
-    const bool success = client_manager.logout();
-    if (!success) {
-        out << "✗ No active session to logout from." << std::endl;
-    }
+    client_manager.logout();
 }
 
 }

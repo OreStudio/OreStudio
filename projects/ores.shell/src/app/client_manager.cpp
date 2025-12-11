@@ -180,14 +180,17 @@ bool client_manager::login(std::string username, std::string password) {
 bool client_manager::logout() {
     if (!client_ || !client_->is_connected()) {
         BOOST_LOG_SEV(lg(), debug) << "Not connected, nothing to logout.";
+        output_ << "✗ Not connected. Cannot logout." << std::endl;
         return false;
     }
 
     if (!logged_in_account_id_) {
         BOOST_LOG_SEV(lg(), debug) << "No logged-in account, skipping logout.";
+        output_ << "✗ Not logged in. Cannot logout." << std::endl;
         return false;
     }
 
+    bool success = false;
     try {
         BOOST_LOG_SEV(lg(), debug) << "Creating logout request for account: "
                                    << *logged_in_account_id_;
@@ -202,8 +205,7 @@ bool client_manager::logout() {
             BOOST_LOG_SEV(lg(), info) << "Logout successful for account: "
                                       << *logged_in_account_id_;
             output_ << "✓ Logout successful." << std::endl;
-            logged_in_account_id_ = std::nullopt;
-            return true;
+            success = true;
         } else if (result) {
             BOOST_LOG_SEV(lg(), warn) << "Logout failed: " << result->message;
             output_ << "✗ Logout failed: " << result->message << std::endl;
@@ -214,7 +216,7 @@ bool client_manager::logout() {
     }
 
     logged_in_account_id_ = std::nullopt;
-    return false;
+    return success;
 }
 
 void client_manager::disconnect() {

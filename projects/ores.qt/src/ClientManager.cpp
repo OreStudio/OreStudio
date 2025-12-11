@@ -176,7 +176,7 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
                 auto qEventType = QString::fromStdString(event_type);
                 auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(
                     timestamp.time_since_epoch()).count();
-                auto qTimestamp = QDateTime::fromMSecsSinceEpoch(msecs, QTimeZone::UTC);
+                auto qTimestamp = QDateTime::fromMSecsSinceEpoch(msecs, QTimeZone::utc());
 
                 QMetaObject::invokeMethod(this, [this, qEventType, qTimestamp]() {
                     emit notificationReceived(qEventType, qTimestamp);

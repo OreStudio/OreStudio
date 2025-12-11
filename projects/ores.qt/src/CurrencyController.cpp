@@ -56,9 +56,25 @@ CurrencyController::CurrencyController(
         connect(clientManager_, &ClientManager::notificationReceived,
                 this, &CurrencyController::onNotificationReceived);
 
-        // Subscribe to currency change events
-        BOOST_LOG_SEV(lg(), info) << "Subscribing to currency change events";
-        clientManager_->subscribeToEvent(std::string{currency_event_name});
+        // Subscribe to events when connected (event adapter only available after login)
+        connect(clientManager_, &ClientManager::connected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Subscribing to currency change events";
+            clientManager_->subscribeToEvent(std::string{currency_event_name});
+        });
+
+        // Re-subscribe after reconnection
+        connect(clientManager_, &ClientManager::reconnected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to currency change events after reconnect";
+            clientManager_->subscribeToEvent(std::string{currency_event_name});
+        });
+
+        // If already connected, subscribe now
+        if (clientManager_->isConnected()) {
+            BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to currency change events";
+            clientManager_->subscribeToEvent(std::string{currency_event_name});
+        }
     }
 }
 

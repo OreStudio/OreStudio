@@ -19,39 +19,10 @@
  */
 #include "ores.risk/generators/currency_generator.hpp"
 
-#include <chrono>
-#include <format>
-#include <random>
 #include <unordered_set>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/string_generator.hpp>
 #include <faker-cxx/finance.h>
-
-namespace {
-
-std::string fake_datetime_string() {
-    // Define range: e.g., years 1970 to 2038 (avoid 9999 unless needed)
-    using namespace std::chrono;
-    static thread_local std::mt19937_64 rng{std::random_device{}()};
-
-    // Unix time range: 0 = 1970-01-01, max ~2106 for 32-bit, but we use 64-bit
-    const auto min_time = sys_days{year{1970}/1/1}.time_since_epoch();
-    const auto max_time = sys_days{year{2038}/12/31}.time_since_epoch() + 24h - 1s;
-
-    std::uniform_int_distribution<std::int64_t> dist(
-        min_time.count(),
-        max_time.count()
-    );
-
-    auto tp = sys_seconds{seconds{dist(rng)}};
-
-    // Format as "YYYY-MM-DD HH:MM:SS"
-    return std::format("{:%Y-%m-%d %H:%M:%S}", tp);
-}
-
-}
+#include "ores.utility/faker/datetime.hpp"
 
 namespace ores::risk::generators {
 
@@ -70,7 +41,7 @@ domain::currency generate_synthetic_currency() {
     r.format = "%3% %1$.2f";
     r.currency_type = "Fiat";
     r.modified_by = std::string(faker::internet::username());
-    r.valid_from = fake_datetime_string();
+    r.valid_from = utility::faker::datetime::past_string();
     r.valid_to = "9999-12-31 23:59:59";
 
     return r;
@@ -90,7 +61,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .modified_by = std::string(faker::internet::username()),
-        .valid_from = fake_datetime_string(),
+        .valid_from = utility::faker::datetime::past_string(),
         .valid_to = "9999-12-31 23:59:59"
     });
 
@@ -106,7 +77,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .modified_by = std::string(faker::internet::username()),
-        .valid_from = fake_datetime_string(),
+        .valid_from = utility::faker::datetime::past_string(),
         .valid_to = "9999-12-31 23:59:59"
     });
 
@@ -122,7 +93,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .modified_by = std::string(faker::internet::username()),
-        .valid_from = fake_datetime_string(),
+        .valid_from = utility::faker::datetime::past_string(),
         .valid_to = "9999-12-31 23:59:59"
     });
 
@@ -137,7 +108,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .modified_by = std::string(faker::internet::username()),
-        .valid_from = fake_datetime_string(),
+        .valid_from = utility::faker::datetime::past_string(),
         .valid_to = "9999-12-31 23:59:59"
     });
 
@@ -153,7 +124,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .modified_by = std::string(faker::internet::username()),
-        .valid_from = fake_datetime_string(),
+        .valid_from = utility::faker::datetime::past_string(),
         .valid_to = "9999-12-31 23:59:59"
     });
 
@@ -169,7 +140,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .modified_by = std::string(faker::internet::username()),
-        .valid_from = fake_datetime_string(),
+        .valid_from = utility::faker::datetime::past_string(),
         .valid_to = "9999-12-31 23:59:59"
     });
 
@@ -185,7 +156,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .modified_by = std::string(faker::internet::username()),
-        .valid_from = fake_datetime_string(),
+        .valid_from = utility::faker::datetime::past_string(),
         .valid_to = "9999-12-31 23:59:59"
     });
     return r;

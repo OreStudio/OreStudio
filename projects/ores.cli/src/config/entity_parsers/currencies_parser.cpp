@@ -25,6 +25,7 @@
 #include "ores.cli/config/parser_helpers.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 #include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/add_currency_options.hpp"
 #include "ores.utility/database/database_configuration.hpp"
 #include "ores.utility/log/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
@@ -148,10 +149,9 @@ import_options read_import_options(const variables_map& vm, entity e) {
 /**
  * @brief Reads the add configuration from the variables map for currencies.
  */
-ores::cli::config::add_options read_add_currency_options(const variables_map& vm) {
-    ores::cli::config::add_options r;
-
-    r.target_entity = entity::currencies;
+ores::cli::config::add_currency_options
+read_add_currency_options(const variables_map& vm) {
+    ores::cli::config::add_currency_options r;
 
     if (vm.count("modified-by") == 0) {
         BOOST_THROW_EXCEPTION(

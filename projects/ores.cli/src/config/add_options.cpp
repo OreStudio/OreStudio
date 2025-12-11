@@ -20,38 +20,11 @@
 #include "ores.cli/config/add_options.hpp"
 
 #include <ostream>
-#include <magic_enum/magic_enum.hpp>
 
 namespace ores::cli::config {
 
 std::ostream& operator<<(std::ostream& s, const add_options& v) {
-    s << "{ target_entity: " << magic_enum::enum_name(v.target_entity);
-
-    // Print currency fields if present
-    if (v.iso_code) s << ", iso_code: " << *v.iso_code;
-    if (v.name) s << ", name: " << *v.name;
-    if (v.numeric_code) s << ", numeric_code: " << *v.numeric_code;
-    if (v.symbol) s << ", symbol: " << *v.symbol;
-    if (v.fraction_symbol) s << ", fraction_symbol: " << *v.fraction_symbol;
-    if (v.fractions_per_unit) s << ", fractions_per_unit: " << *v.fractions_per_unit;
-    if (v.rounding_type) s << ", rounding_type: " << *v.rounding_type;
-    if (v.rounding_precision) s << ", rounding_precision: " << *v.rounding_precision;
-    if (v.format) s << ", format: " << *v.format;
-    if (v.currency_type) s << ", currency_type: " << *v.currency_type;
-    if (v.modified_by) s << ", modified_by: " << *v.modified_by;
-
-    // Print account fields if present
-    if (v.username) s << ", username: " << *v.username;
-    if (v.email) s << ", email: " << *v.email;
-    if (v.password) s << ", password: [REDACTED]";
-    if (v.is_admin) s << ", is_admin: " << (*v.is_admin ? "true" : "false");
-
-    // Print feature flag fields if present
-    if (v.flag_name) s << ", flag_name: " << *v.flag_name;
-    if (v.description) s << ", description: " << *v.description;
-    if (v.enabled) s << ", enabled: " << (*v.enabled ? "true" : "false");
-
-    s << " }";
+    std::visit([&s](const auto& opts) { s << opts; }, v);
     return s;
 }
 

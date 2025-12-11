@@ -51,7 +51,7 @@ int ClientCurrencyModel::rowCount(const QModelIndex& parent) const {
 int ClientCurrencyModel::columnCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
-    return 10; // Match the original model's column count
+    return 11; // Match the original model's column count + version
 }
 
 QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
@@ -75,6 +75,7 @@ QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
     case 7: return currency.rounding_precision;
     case 8: return QString::fromStdString(currency.format);
     case 9: return QString::fromStdString(currency.currency_type);
+    case 10: return currency.version;
     default: return {};
     }
 }
@@ -96,6 +97,7 @@ headerData(int section, Qt::Orientation orientation, int role) const {
         case 7: return tr("Rounding precision");
         case 8: return tr("Format");
         case 9: return tr("Currency Type");
+        case 10: return tr("Version");
         default: return {};
         }
     }

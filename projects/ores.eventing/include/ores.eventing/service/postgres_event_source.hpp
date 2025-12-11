@@ -103,18 +103,24 @@ public:
     template<typename Event>
     void register_mapping(const std::string& entity_name,
                           const std::string& channel_name) {
-        BOOST_LOG_SEV(lg(), utility::log::debug)
-            << "Registering mapping: entity='" << entity_name
-            << "' -> channel='" << channel_name << "'";
+        using namespace ores::utility::log;
+        BOOST_LOG_SEV(lg(), info)
+            << "Registering entity-to-event mapping: entity='" << entity_name
+            << "', channel='" << channel_name << "'";
 
         entity_mappings_[entity_name] = entity_mapping{
             .channel_name = channel_name,
-            .publisher = [this](std::chrono::system_clock::time_point ts) {
+            .publisher = [this, entity_name](std::chrono::system_clock::time_point ts) {
+                using namespace ores::utility::log;
+                BOOST_LOG_SEV(lg(), info)
+                    << "Publishing domain event for entity: " << entity_name;
                 bus_.publish(Event{ts});
             }
         };
 
         listener_.subscribe(channel_name);
+        BOOST_LOG_SEV(lg(), debug)
+            << "Subscribed to PostgreSQL channel: " << channel_name;
     }
 
     /**

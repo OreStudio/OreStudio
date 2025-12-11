@@ -27,6 +27,7 @@
 #include <typeindex>
 #include <functional>
 #include <unordered_map>
+#include <boost/core/demangle.hpp>
 #include "ores.utility/log/make_logger.hpp"
 
 namespace ores::eventing::service {
@@ -154,19 +155,22 @@ public:
      */
     template<typename Event>
     [[nodiscard]] subscription subscribe(std::function<void(const Event&)> handler) {
+        using namespace ores::utility::log;
         std::lock_guard lock(mutex_);
 
         const auto type_idx = std::type_index(typeid(Event));
         const auto id = next_subscriber_id_++;
+        const auto type_name = boost::core::demangle(type_idx.name());
 
         subscribers_[type_idx].push_back({id, std::move(handler)});
 
-        BOOST_LOG_SEV(lg(), utility::log::debug)
-            << "Subscriber " << id << " registered for event type: "
-            << type_idx.name();
+        const auto count = subscribers_[type_idx].size();
+        BOOST_LOG_SEV(lg(), info)
+            << "Subscriber " << id << " subscribed to event type '"
+            << type_name << "' (total subscribers: " << count << ")";
 
-        return subscription([this, type_idx, id]() {
-            unsubscribe(type_idx, id);
+        return subscription([this, type_idx, id, type_name]() {
+            unsubscribe(type_idx, id, type_name);
         });
     }
 
@@ -182,16 +186,19 @@ public:
      */
     template<typename Event>
     void publish(const Event& event) {
+        using namespace ores::utility::log;
         std::vector<std::function<void(const Event&)>> handlers_copy;
+        const auto type_idx = std::type_index(typeid(Event));
+        const auto type_name = boost::core::demangle(type_idx.name());
 
         {
             std::lock_guard lock(mutex_);
 
-            const auto type_idx = std::type_index(typeid(Event));
             auto it = subscribers_.find(type_idx);
             if (it == subscribers_.end()) {
-                BOOST_LOG_SEV(lg(), utility::log::debug)
-                    << "No subscribers for event type: " << type_idx.name();
+                BOOST_LOG_SEV(lg(), debug)
+                    << "No subscribers for event type '" << type_name
+                    << "' - event will not be delivered";
                 return;
             }
 
@@ -203,24 +210,32 @@ public:
                             entry.handler);
                     handlers_copy.push_back(handler);
                 } catch (const std::bad_any_cast& e) {
-                    BOOST_LOG_SEV(lg(), utility::log::error)
+                    BOOST_LOG_SEV(lg(), error)
                         << "Type mismatch for subscriber " << entry.id
-                        << ": " << e.what();
+                        << " on event type '" << type_name << "': " << e.what();
                 }
             }
         }
 
-        BOOST_LOG_SEV(lg(), utility::log::debug)
-            << "Publishing event to " << handlers_copy.size() << " subscribers";
+        BOOST_LOG_SEV(lg(), info)
+            << "Publishing event type '" << type_name << "' to "
+            << handlers_copy.size() << " subscriber(s)";
 
+        std::size_t success_count = 0;
         for (const auto& handler : handlers_copy) {
             try {
                 handler(event);
+                ++success_count;
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), utility::log::error)
-                    << "Exception in event handler: " << e.what();
+                BOOST_LOG_SEV(lg(), error)
+                    << "Exception in event handler for '" << type_name
+                    << "': " << e.what();
             }
         }
+
+        BOOST_LOG_SEV(lg(), debug)
+            << "Event '" << type_name << "' delivery complete: "
+            << success_count << "/" << handlers_copy.size() << " handlers succeeded";
     }
 
     /**
@@ -242,11 +257,16 @@ public:
     }
 
 private:
-    void unsubscribe(std::type_index type_idx, subscriber_id id) {
+    void unsubscribe(std::type_index type_idx, subscriber_id id,
+                     const std::string& type_name) {
+        using namespace ores::utility::log;
         std::lock_guard lock(mutex_);
 
         auto it = subscribers_.find(type_idx);
         if (it == subscribers_.end()) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Unsubscribe called for subscriber " << id
+                << " but no subscribers exist for event type '" << type_name << "'";
             return;
         }
 
@@ -256,12 +276,20 @@ private:
         });
 
         if (removed > 0) {
-            BOOST_LOG_SEV(lg(), utility::log::debug)
-                << "Subscriber " << id << " unsubscribed from event type: "
-                << type_idx.name();
+            const auto remaining = list.size();
+            BOOST_LOG_SEV(lg(), info)
+                << "Subscriber " << id << " unsubscribed from event type '"
+                << type_name << "' (remaining subscribers: " << remaining << ")";
+        } else {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Unsubscribe called for subscriber " << id
+                << " but it was not found in event type '" << type_name << "'";
         }
 
         if (list.empty()) {
+            BOOST_LOG_SEV(lg(), debug)
+                << "No more subscribers for event type '" << type_name
+                << "' - removing from map";
             subscribers_.erase(it);
         }
     }

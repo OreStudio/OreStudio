@@ -50,23 +50,27 @@ void postgres_event_source::stop() {
 }
 
 void postgres_event_source::on_entity_change(const domain::entity_change_event& e) {
-    BOOST_LOG_SEV(lg(), debug) << "Received entity change event for: " << e.entity;
+    BOOST_LOG_SEV(lg(), info)
+        << "Received PostgreSQL notification for entity: " << e.entity;
 
     auto it = entity_mappings_.find(e.entity);
     if (it == entity_mappings_.end()) {
         BOOST_LOG_SEV(lg(), warn)
-            << "No mapping registered for entity: " << e.entity;
+            << "No event mapping registered for entity: " << e.entity
+            << " - notification will be ignored";
         return;
     }
 
     BOOST_LOG_SEV(lg(), debug)
-        << "Publishing typed event for entity: " << e.entity;
+        << "Dispatching to registered publisher for entity: " << e.entity;
 
     try {
         it->second.publisher(e.timestamp);
+        BOOST_LOG_SEV(lg(), debug)
+            << "Successfully published event for entity: " << e.entity;
     } catch (const std::exception& ex) {
         BOOST_LOG_SEV(lg(), error)
-            << "Exception publishing event for entity '" << e.entity
+            << "Exception while publishing event for entity '" << e.entity
             << "': " << ex.what();
     }
 }

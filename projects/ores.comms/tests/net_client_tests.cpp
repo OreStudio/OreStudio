@@ -353,6 +353,7 @@ TEST_CASE("test_heartbeat_disconnect_detection", tags) {
         client_opts.verify_certificate = false;
         client_opts.heartbeat_enabled = true;
         client_opts.heartbeat_interval_seconds = 1;  // 1 second for testing
+        client_opts.retry.auto_reconnect = false;  // Disable auto-reconnect for this test
 
         BOOST_LOG_SEV(lg, info) << "Creating and connecting client";
         auto client = std::make_shared<ores::comms::net::client>(

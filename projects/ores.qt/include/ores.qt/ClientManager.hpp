@@ -32,6 +32,7 @@
 #include <QDateTime>
 #include "ores.comms/net/client.hpp"
 #include "ores.comms/service/remote_event_adapter.hpp"
+#include "ores.eventing/service/event_bus.hpp"
 #include "ores.utility/log/make_logger.hpp"
 
 namespace ores::qt {
@@ -57,7 +58,8 @@ private:
     }
 
 public:
-    explicit ClientManager(QObject* parent = nullptr);
+    explicit ClientManager(eventing::service::event_bus& event_bus,
+                           QObject* parent = nullptr);
     ~ClientManager() override;
 
     /**
@@ -170,6 +172,13 @@ private:
 
     // Logged-in account tracking
     std::optional<boost::uuids::uuid> logged_in_account_id_;
+
+    // Event bus for publishing connection events
+    eventing::service::event_bus& event_bus_;
+
+    // Connection details for event publishing
+    std::string connected_host_;
+    std::uint16_t connected_port_{0};
 };
 
 }

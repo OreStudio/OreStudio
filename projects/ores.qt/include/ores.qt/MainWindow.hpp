@@ -23,9 +23,13 @@
 #include <QMainWindow>
 #include <QLabel>
 #include <QTimer>
+#include <QSystemTrayIcon>
+#include <QMenu>
 #include <memory>
+#include <vector>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/MdiAreaWithBackground.hpp"
+#include "ores.eventing/service/event_bus.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ui_MainWindow.h"
 
@@ -200,6 +204,18 @@ private:
 
     /** @brief Username of currently logged-in user */
     std::string username_;
+
+    /** @brief System tray icon for notifications */
+    QSystemTrayIcon* systemTrayIcon_;
+
+    /** @brief Context menu for the system tray icon */
+    QMenu* trayContextMenu_;
+
+    /** @brief Event bus for decoupled event handling */
+    eventing::service::event_bus eventBus_;
+
+    /** @brief Subscriptions to keep alive for event handling */
+    std::vector<eventing::service::subscription> eventSubscriptions_;
 };
 
 }

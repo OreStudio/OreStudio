@@ -41,6 +41,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/AboutDialog.hpp"
+#include "ores.qt/events/connection_events.hpp"
 
 namespace ores::qt {
 
@@ -48,7 +49,8 @@ using namespace ores::utility::log;
 
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent), ui_(new Ui::MainWindow), mdiArea_(nullptr),
-    clientManager_(new ClientManager(this)) {
+    clientManager_(new ClientManager(eventBus_, this)),
+    systemTrayIcon_(nullptr), trayContextMenu_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating the main window.";
     ui_->setupUi(this);
@@ -132,6 +134,108 @@ MainWindow::MainWindow(QWidget* parent) :
 
     // Initially disable data-related actions until logged in
     updateMenuState();
+
+    // Initialize system tray
+    if (QSystemTrayIcon::isSystemTrayAvailable()) {
+        BOOST_LOG_SEV(lg(), debug) << "System tray is available, initializing...";
+
+        systemTrayIcon_ = new QSystemTrayIcon(this);
+        systemTrayIcon_->setIcon(QIcon(":/images/modern-icon.png"));
+        systemTrayIcon_->setToolTip("ORE Studio");
+
+        // Create context menu for the tray icon
+        trayContextMenu_ = new QMenu(this);
+        trayContextMenu_->addAction(ui_->ActionConnect);
+        trayContextMenu_->addAction(ui_->ActionDisconnect);
+        trayContextMenu_->addSeparator();
+        auto* showAction = trayContextMenu_->addAction("Show Window");
+        connect(showAction, &QAction::triggered, this, [this]() {
+            show();
+            raise();
+            activateWindow();
+        });
+        auto* quitAction = trayContextMenu_->addAction("Quit");
+        connect(quitAction, &QAction::triggered, qApp, &QApplication::quit);
+
+        systemTrayIcon_->setContextMenu(trayContextMenu_);
+        systemTrayIcon_->show();
+
+        // Connect tray icon activation to show window
+        connect(systemTrayIcon_, &QSystemTrayIcon::activated, this,
+            [this](QSystemTrayIcon::ActivationReason reason) {
+                if (reason == QSystemTrayIcon::Trigger ||
+                    reason == QSystemTrayIcon::DoubleClick) {
+                    show();
+                    raise();
+                    activateWindow();
+                }
+            });
+
+        // Subscribe to connection events for tray notifications
+        eventSubscriptions_.push_back(
+            eventBus_.subscribe<events::connected_event>(
+                [this](const events::connected_event& e) {
+                    if (systemTrayIcon_) {
+                        QString message = QString("Connected to %1:%2")
+                            .arg(QString::fromStdString(e.host))
+                            .arg(e.port);
+                        QMetaObject::invokeMethod(this, [this, message]() {
+                            systemTrayIcon_->showMessage(
+                                "ORE Studio",
+                                message,
+                                QSystemTrayIcon::Information,
+                                3000);
+                        }, Qt::QueuedConnection);
+                    }
+                }));
+
+        eventSubscriptions_.push_back(
+            eventBus_.subscribe<events::disconnected_event>(
+                [this](const events::disconnected_event&) {
+                    if (systemTrayIcon_) {
+                        QMetaObject::invokeMethod(this, [this]() {
+                            systemTrayIcon_->showMessage(
+                                "ORE Studio",
+                                "Disconnected from server",
+                                QSystemTrayIcon::Warning,
+                                3000);
+                        }, Qt::QueuedConnection);
+                    }
+                }));
+
+        eventSubscriptions_.push_back(
+            eventBus_.subscribe<events::reconnecting_event>(
+                [this](const events::reconnecting_event&) {
+                    if (systemTrayIcon_) {
+                        QMetaObject::invokeMethod(this, [this]() {
+                            systemTrayIcon_->showMessage(
+                                "ORE Studio",
+                                "Reconnecting to server...",
+                                QSystemTrayIcon::Information,
+                                2000);
+                        }, Qt::QueuedConnection);
+                    }
+                }));
+
+        eventSubscriptions_.push_back(
+            eventBus_.subscribe<events::reconnected_event>(
+                [this](const events::reconnected_event&) {
+                    if (systemTrayIcon_) {
+                        QMetaObject::invokeMethod(this, [this]() {
+                            systemTrayIcon_->showMessage(
+                                "ORE Studio",
+                                "Reconnected to server",
+                                QSystemTrayIcon::Information,
+                                3000);
+                        }, Qt::QueuedConnection);
+                    }
+                }));
+
+        BOOST_LOG_SEV(lg(), info) << "System tray initialized with "
+                                  << eventSubscriptions_.size() << " event subscriptions";
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "System tray is not available on this system";
+    }
 
     // Set window size and center on screen
     resize(1400, 900);

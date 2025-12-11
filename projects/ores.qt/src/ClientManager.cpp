@@ -29,13 +29,15 @@
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.comms/messaging/handshake_protocol.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
+#include "ores.qt/events/connection_events.hpp"
 
 namespace ores::qt {
 
 using namespace ores::utility::log;
 
-ClientManager::ClientManager(QObject* parent)
-    : QObject(parent) {
+ClientManager::ClientManager(eventing::service::event_bus& event_bus,
+                             QObject* parent)
+    : QObject(parent), event_bus_(event_bus) {
     BOOST_LOG_SEV(lg(), debug) << "ClientManager created";
     setupIO();
 }
@@ -106,6 +108,10 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
         // Set up disconnect callback
         new_client->set_disconnect_callback([this]() {
             BOOST_LOG_SEV(lg(), warn) << "Client detected disconnect";
+            // Publish event to bus (thread-safe)
+            event_bus_.publish(events::disconnected_event{
+                .timestamp = std::chrono::system_clock::now()
+            });
             // Emit signal on main thread via meta-object system
             QMetaObject::invokeMethod(this, "disconnected", Qt::QueuedConnection);
         });
@@ -113,6 +119,10 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
         // Set up reconnecting callback
         new_client->set_reconnecting_callback([this]() {
             BOOST_LOG_SEV(lg(), info) << "Client attempting to reconnect";
+            // Publish event to bus (thread-safe)
+            event_bus_.publish(events::reconnecting_event{
+                .timestamp = std::chrono::system_clock::now()
+            });
             // Emit signal on main thread via meta-object system
             QMetaObject::invokeMethod(this, "reconnecting", Qt::QueuedConnection);
         });
@@ -120,6 +130,10 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
         // Set up reconnected callback
         new_client->set_reconnected_callback([this]() {
             BOOST_LOG_SEV(lg(), info) << "Client reconnected successfully";
+            // Publish event to bus (thread-safe)
+            event_bus_.publish(events::reconnected_event{
+                .timestamp = std::chrono::system_clock::now()
+            });
             // Emit signal on main thread via meta-object system
             QMetaObject::invokeMethod(this, "reconnected", Qt::QueuedConnection);
         });
@@ -164,6 +178,8 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
         // Success - swap in new client and store account_id
         client_ = new_client;
         logged_in_account_id_ = response->account_id;
+        connected_host_ = host;
+        connected_port_ = port;
         BOOST_LOG_SEV(lg(), info) << "Login successful, account_id stored";
 
         // Create event adapter for subscriptions
@@ -183,6 +199,12 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
                 }, Qt::QueuedConnection);
             });
 
+        // Publish connected event to bus
+        event_bus_.publish(events::connected_event{
+            .timestamp = std::chrono::system_clock::now(),
+            .host = host,
+            .port = port
+        });
         emit connected();
         return {true, QString()};
 
@@ -206,6 +228,11 @@ void ClientManager::disconnect() {
         // to ensure proper cleanup on the client side
         client_->disconnect();
         client_.reset();
+
+        // Publish disconnected event to bus
+        event_bus_.publish(events::disconnected_event{
+            .timestamp = std::chrono::system_clock::now()
+        });
         emit disconnected();
     }
 }

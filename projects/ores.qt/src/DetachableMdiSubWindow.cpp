@@ -19,6 +19,9 @@
  */
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 
+#include <iomanip>
+#include <sstream>
+
 #include <QMouseEvent>
 #include <QContextMenuEvent>
 #include <QMenu>

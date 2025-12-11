@@ -20,6 +20,7 @@
 #include "ores.utility/database/context_factory.hpp"
 
 #include <rfl/json.hpp>
+#include "ores.utility/database/database_options.hpp"
 
 namespace ores::utility::database {
 
@@ -34,14 +35,7 @@ operator<<(std::ostream& s, const context_factory::configuration& v) {
 context context_factory::make_context(const configuration& cfg) {
     BOOST_LOG_SEV(lg(), debug) << "Creating context. Configuration: " << cfg;
 
-    const auto& db_opts = cfg.database_options;
-    const auto credentials = sqlgen::postgres::Credentials {
-        .user = db_opts.user,
-        .password = db_opts.password.value(),
-        .host = db_opts.host,
-        .dbname = db_opts.database,
-        .port = db_opts.port
-    };
+    const auto credentials = to_credentials(cfg.database_options);
 
     sqlgen::ConnectionPoolConfig pool_config {
         .size = cfg.pool_size,

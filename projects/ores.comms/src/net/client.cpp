@@ -367,6 +367,18 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
             co_await perform_connection();
 
             BOOST_LOG_SEV(lg(), info) << "Reconnection successful";
+
+            // Invoke reconnected callback to notify UI
+            reconnected_callback_t reconnected_cb;
+            {
+                std::lock_guard guard{state_mutex_};
+                reconnected_cb = reconnected_callback_;
+            }
+            if (reconnected_cb) {
+                BOOST_LOG_SEV(lg(), debug) << "Invoking reconnected callback";
+                reconnected_cb();
+            }
+
             reconnect_loop_running_ = false;
             co_return;
         } catch (const std::exception& e) {
@@ -459,6 +471,16 @@ connection_state client::get_state() const {
 void client::set_disconnect_callback(disconnect_callback_t callback) {
     std::lock_guard guard{state_mutex_};
     disconnect_callback_ = std::move(callback);
+}
+
+void client::set_reconnecting_callback(reconnecting_callback_t callback) {
+    std::lock_guard guard{state_mutex_};
+    reconnecting_callback_ = std::move(callback);
+}
+
+void client::set_reconnected_callback(reconnected_callback_t callback) {
+    std::lock_guard guard{state_mutex_};
+    reconnected_callback_ = std::move(callback);
 }
 
 boost::asio::awaitable<void> client::run_heartbeat() {
@@ -776,6 +798,7 @@ boost::asio::awaitable<void> client::run_message_loop() {
 
     // Check if we should attempt auto-reconnect
     bool should_reconnect = false;
+    reconnecting_callback_t reconnecting_cb;
     {
         std::lock_guard guard{state_mutex_};
         // Only auto-reconnect if we were connected (not explicitly disconnected)
@@ -784,6 +807,7 @@ boost::asio::awaitable<void> client::run_message_loop() {
             config_.retry.max_attempts > 0) {
             state_ = connection_state::reconnecting;
             should_reconnect = true;
+            reconnecting_cb = reconnecting_callback_;
             BOOST_LOG_SEV(lg(), info) << "Connection lost, will attempt auto-reconnect";
         } else if (state_ != connection_state::disconnected) {
             // Not auto-reconnecting, mark as disconnected
@@ -792,6 +816,11 @@ boost::asio::awaitable<void> client::run_message_loop() {
     }
 
     if (should_reconnect) {
+        // Invoke reconnecting callback to notify UI
+        if (reconnecting_cb) {
+            BOOST_LOG_SEV(lg(), debug) << "Invoking reconnecting callback";
+            reconnecting_cb();
+        }
         // Spawn reconnect loop - it will invoke disconnect callback if all retries fail
         auto exec = co_await boost::asio::this_coro::executor;
         boost::asio::co_spawn(exec, run_reconnect_loop(), boost::asio::detached);

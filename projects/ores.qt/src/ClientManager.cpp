@@ -102,10 +102,22 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
         // Set up disconnect callback
         new_client->set_disconnect_callback([this]() {
             BOOST_LOG_SEV(lg(), warn) << "Client detected disconnect";
-            // Emit signal on main thread via meta-object system?
-            // No, signals are thread-safe but slot invocation depends on connection type.
-            // We'll rely on QObject thread affinity.
+            // Emit signal on main thread via meta-object system
             QMetaObject::invokeMethod(this, "disconnected", Qt::QueuedConnection);
+        });
+
+        // Set up reconnecting callback
+        new_client->set_reconnecting_callback([this]() {
+            BOOST_LOG_SEV(lg(), info) << "Client attempting to reconnect";
+            // Emit signal on main thread via meta-object system
+            QMetaObject::invokeMethod(this, "reconnecting", Qt::QueuedConnection);
+        });
+
+        // Set up reconnected callback
+        new_client->set_reconnected_callback([this]() {
+            BOOST_LOG_SEV(lg(), info) << "Client reconnected successfully";
+            // Emit signal on main thread via meta-object system
+            QMetaObject::invokeMethod(this, "reconnected", Qt::QueuedConnection);
         });
 
         // Perform Login

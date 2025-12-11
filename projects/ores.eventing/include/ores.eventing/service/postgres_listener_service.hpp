@@ -25,8 +25,8 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <optional>
 #include <functional>
-#include <libpq-fe.h>
 #include <sqlgen/postgres.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.utility/database/context.hpp"
@@ -124,22 +124,11 @@ public:
 
 private:
     /**
-     * @brief Builds a libpq connection string from credentials.
-     */
-    static std::string build_connection_string(
-        const sqlgen::postgres::Credentials& credentials);
-
-    /**
      * @brief Opens the dedicated PostgreSQL connection.
      *
      * @return true if connection was successful, false otherwise.
      */
     bool open_connection();
-
-    /**
-     * @brief Closes the dedicated PostgreSQL connection.
-     */
-    void close_connection();
 
     /**
      * @brief Issues LISTEN commands for all subscribed channels.
@@ -157,20 +146,20 @@ private:
     void listen_loop();
 
     /**
-     * @brief Handles a received PostgreSQL notification.
+     * @brief Handles a received sqlgen notification.
      *
      * Parses the payload and invokes the notification callback.
      *
-     * @param pg_notify A pointer to the PGnotify structure.
+     * @param notification The sqlgen Notification object.
      */
-    void handle_notification(PGnotify* pg_notify);
+    void handle_notification(const sqlgen::postgres::Notification& notification);
 
 private:
     utility::database::context ctx_;
     notification_callback_t notification_callback_;
 
     mutable std::mutex mutex_;              ///< Protects connection and channels
-    PGconn* connection_;                    ///< Dedicated libpq connection
+    std::optional<rfl::Ref<sqlgen::postgres::Connection>> connection_;
     std::vector<std::string> subscribed_channels_;
 
     std::thread listener_thread_;

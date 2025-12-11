@@ -21,12 +21,10 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <sqlgen/postgres.hpp>
-#include <libpq-fe.h>
 #include <chrono>
 #include <future>
 #include <thread>
 #include <string>
-#include <sstream>
 #include "ores.testing/database_helper.hpp"
 
 #include "ores.eventing/domain/entity_change_event.hpp"
@@ -38,20 +36,6 @@ const std::string test_suite("ores.eventing.service.tests");
 const std::string tags("[service]");
 
 /**
- * @brief Builds a libpq connection string from credentials.
- */
-std::string build_connection_string(
-    const sqlgen::postgres::Credentials& credentials) {
-    std::ostringstream oss;
-    oss << "host=" << credentials.host
-        << " port=" << credentials.port
-        << " dbname=" << credentials.dbname
-        << " user=" << credentials.user
-        << " password=" << credentials.password;
-    return oss.str();
-}
-
-/**
  * @brief Sends a NOTIFY on a channel using a separate connection.
  *
  * This simulates an external process sending a notification.
@@ -59,22 +43,11 @@ std::string build_connection_string(
 void send_notify(const sqlgen::postgres::Credentials& credentials,
                  const std::string& channel_name,
                  const std::string& payload) {
-    const auto conn_str = build_connection_string(credentials);
-    PGconn* conn = PQconnectdb(conn_str.c_str());
-    REQUIRE(PQstatus(conn) == CONNECTION_OK);
+    auto conn_result = sqlgen::postgres::connect(credentials);
+    REQUIRE(conn_result);
 
-    // Escape the payload
-    char* escaped = PQescapeLiteral(conn, payload.c_str(), payload.size());
-    REQUIRE(escaped != nullptr);
-
-    std::string command = "NOTIFY " + channel_name + ", " + escaped + ";";
-    PQfreemem(escaped);
-
-    PGresult* res = PQexec(conn, command.c_str());
-    REQUIRE(PQresultStatus(res) == PGRES_COMMAND_OK);
-    PQclear(res);
-
-    PQfinish(conn);
+    auto result = (*conn_result)->notify(channel_name, payload);
+    REQUIRE(result);
 }
 
 }

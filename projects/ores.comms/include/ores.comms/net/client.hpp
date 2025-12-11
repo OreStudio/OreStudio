@@ -55,7 +55,9 @@ std::ostream& operator<<(std::ostream& s, connection_state v);
  * @brief Callback invoked when client detects server disconnect.
  *
  * Called from the heartbeat coroutine when ping fails or times out.
- * Should be thread-safe as it may be called from different executors.
+ * The callback is invoked on the client's internal executor and should not
+ * perform blocking operations. Any UI updates must be dispatched to the
+ * appropriate UI thread.
  */
 using disconnect_callback_t = std::function<void()>;
 
@@ -64,7 +66,9 @@ using disconnect_callback_t = std::function<void()>;
  *
  * Called when connection is lost and auto-reconnect is enabled.
  * Allows UI to show reconnecting state to the user.
- * Should be thread-safe as it may be called from different executors.
+ * The callback is invoked on the client's internal executor and should not
+ * perform blocking operations. Any UI updates must be dispatched to the
+ * appropriate UI thread.
  */
 using reconnecting_callback_t = std::function<void()>;
 
@@ -73,7 +77,9 @@ using reconnecting_callback_t = std::function<void()>;
  *
  * Called after auto-reconnect succeeds.
  * Allows UI to restore connected state display.
- * Should be thread-safe as it may be called from different executors.
+ * The callback is invoked on the client's internal executor and should not
+ * perform blocking operations. Any UI updates must be dispatched to the
+ * appropriate UI thread.
  */
 using reconnected_callback_t = std::function<void()>;
 

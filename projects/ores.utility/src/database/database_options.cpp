@@ -30,4 +30,14 @@ std::ostream& operator<<(std::ostream& s, const database_options& v) {
     return s;
 }
 
+sqlgen::postgres::Credentials to_credentials(const database_options& opts) {
+    return sqlgen::postgres::Credentials {
+        .user = opts.user,
+        .password = opts.password.value_or(""),
+        .host = opts.host,
+        .dbname = opts.database,
+        .port = opts.port
+    };
+}
+
 }

@@ -22,6 +22,9 @@
 #include <mutex>
 #include <format>
 #include <chrono>
+#include <random>
+#include <thread>
+#include <iostream>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/dispatch.hpp>
@@ -39,6 +42,16 @@
 namespace ores::comms::net {
 
 using namespace ores::utility::log;
+
+std::ostream& operator<<(std::ostream& s, connection_state v) {
+    switch (v) {
+    case connection_state::disconnected: s << "disconnected"; break;
+    case connection_state::connecting: s << "connecting"; break;
+    case connection_state::connected: s << "connected"; break;
+    case connection_state::reconnecting: s << "reconnecting"; break;
+    }
+    return s;
+}
 
 void client::setup_ssl_context() {
     if (config_.verify_certificate) {
@@ -66,7 +79,7 @@ client::client(client_options config)
       io_ctx_(std::make_unique<boost::asio::io_context>()),
       executor_(io_ctx_->get_executor()),
       ssl_ctx_(boost::asio::ssl::context::tlsv13_client),
-      sequence_number_(0), connected_(false) {
+      sequence_number_(0), state_(connection_state::disconnected) {
     BOOST_LOG_SEV(lg(), info) << "Client options: " << config_;
     setup_ssl_context();
 
@@ -91,7 +104,7 @@ client::~client() {
 client::client(client_options config, boost::asio::any_io_executor executor)
     : config_(std::move(config)), executor_(std::move(executor)),
       ssl_ctx_(boost::asio::ssl::context::tlsv13_client),
-      sequence_number_(0), connected_(false) {
+      sequence_number_(0), state_(connection_state::disconnected) {
     BOOST_LOG_SEV(lg(), info) << "Client options: " << config_;
     setup_ssl_context();
 
@@ -101,63 +114,80 @@ client::client(client_options config, boost::asio::any_io_executor executor)
     pending_requests_ = std::make_unique<pending_request_map>(executor_);
 }
 
+boost::asio::awaitable<void> client::perform_connection() {
+    BOOST_LOG_SEV(lg(), info) << "Connecting to " << config_.host
+                              << ":" << config_.port;
+
+    auto exec = co_await boost::asio::this_coro::executor;
+    boost::asio::ip::tcp::resolver resolver(exec);
+    auto endpoints = co_await resolver.async_resolve(
+        config_.host,
+        std::to_string(config_.port),
+        boost::asio::use_awaitable);
+
+    boost::asio::ip::tcp::socket socket(exec);
+    co_await boost::asio::async_connect(socket, endpoints,
+        boost::asio::use_awaitable);
+
+    BOOST_LOG_SEV(lg(), debug) << "TCP connection established.";
+
+    conn_ = std::make_unique<connection>(
+        connection::ssl_socket(std::move(socket), ssl_ctx_));
+    co_await conn_->ssl_handshake_client();
+    BOOST_LOG_SEV(lg(), debug) << "SSL handshake complete.";
+
+    BOOST_LOG_SEV(lg(), debug) << "Protocol version: "
+                               << messaging::PROTOCOL_VERSION_MAJOR << "."
+                               << messaging::PROTOCOL_VERSION_MINOR
+                               << " (client: " << config_.client_identifier << ")";
+
+    co_await perform_handshake();
+    {
+        std::lock_guard guard{state_mutex_};
+        state_ = connection_state::connected;
+    }
+    BOOST_LOG_SEV(lg(), info) << "Successfully connected to server.";
+
+    // Start message loop in background (single reader for all responses)
+    // Only needed when using correlation-based request/response or heartbeat
+    if (config_.heartbeat_enabled && !message_loop_running_) {
+        boost::asio::co_spawn(exec, run_message_loop(), boost::asio::detached);
+        BOOST_LOG_SEV(lg(), debug) << "Message loop started";
+    }
+
+    // Start heartbeat in background (only if not already running)
+    if (config_.heartbeat_enabled && !heartbeat_loop_running_) {
+        boost::asio::co_spawn(exec, run_heartbeat(), boost::asio::detached);
+        BOOST_LOG_SEV(lg(), info) << "Heartbeat enabled with interval: "
+                                   << config_.heartbeat_interval_seconds << "s";
+    } else if (!config_.heartbeat_enabled) {
+        BOOST_LOG_SEV(lg(), info) << "Heartbeat disabled";
+    }
+}
+
 boost::asio::awaitable<void> client::connect() {
+    {
+        std::lock_guard guard{state_mutex_};
+        if (state_ != connection_state::disconnected) {
+            throw connection_error("Client is already connected or connecting");
+        }
+        state_ = connection_state::connecting;
+    }
+
     try {
-        BOOST_LOG_SEV(lg(), info) << "Connecting to " << config_.host
-                                  << ":" << config_.port;
-
-        auto exec = co_await boost::asio::this_coro::executor;
-        boost::asio::ip::tcp::resolver resolver(exec);
-        auto endpoints = co_await resolver.async_resolve(
-            config_.host,
-            std::to_string(config_.port),
-            boost::asio::use_awaitable);
-
-        boost::asio::ip::tcp::socket socket(exec);
-        co_await boost::asio::async_connect(socket, endpoints,
-            boost::asio::use_awaitable);
-
-        BOOST_LOG_SEV(lg(), debug) << "TCP connection established.";
-
-        conn_ = std::make_unique<connection>(
-            connection::ssl_socket(std::move(socket), ssl_ctx_));
-        co_await conn_->ssl_handshake_client();
-        BOOST_LOG_SEV(lg(), debug) << "SSL handshake complete.";
-
-        BOOST_LOG_SEV(lg(), debug) << "Protocol version: "
-                                   << messaging::PROTOCOL_VERSION_MAJOR << "."
-                                   << messaging::PROTOCOL_VERSION_MINOR
-                                   << " (client: " << config_.client_identifier << ")";
-
-        co_await perform_handshake();
+        co_await perform_connection();
+    } catch (const connection_error&) {
         {
             std::lock_guard guard{state_mutex_};
-            connected_ = true;
+            state_ = connection_state::disconnected;
         }
-        BOOST_LOG_SEV(lg(), info) << "Successfully connected to server.";
-
-        // Start message loop in background (single reader for all responses)
-        // Only needed when using correlation-based request/response or heartbeat
-        if (config_.heartbeat_enabled) {
-            boost::asio::co_spawn(exec, run_message_loop(), boost::asio::detached);
-            BOOST_LOG_SEV(lg(), debug) << "Message loop started";
-        }
-
-        // Start heartbeat in background
-        if (config_.heartbeat_enabled) {
-            boost::asio::co_spawn(exec, run_heartbeat(), boost::asio::detached);
-            BOOST_LOG_SEV(lg(), info) << "Heartbeat enabled with interval: "
-                                       << config_.heartbeat_interval_seconds << "s";
-        } else {
-            BOOST_LOG_SEV(lg(), info) << "Heartbeat disabled";
-        }
-
-    } catch (const connection_error&) {
-        disconnect();
         throw;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Connection error: " << e.what();
-        disconnect();
+        {
+            std::lock_guard guard{state_mutex_};
+            state_ = connection_state::disconnected;
+        }
         throw connection_error(
             std::format("Failed to connect to server: {}", e.what()));
     }
@@ -186,13 +216,214 @@ void client::connect_sync() {
     BOOST_LOG_SEV(lg(), debug) << "Completed synchronous connect successfully.";
 }
 
+std::chrono::milliseconds client::calculate_backoff(std::uint32_t attempt) const {
+    using namespace std::chrono;
+
+    // Exponential backoff: base * 2^attempt
+    auto delay = config_.retry.base_delay * (1 << std::min(attempt, 20u));
+
+    // Cap at max delay
+    if (delay > config_.retry.max_delay) {
+        delay = config_.retry.max_delay;
+    }
+
+    // Apply jitter (±jitter_factor)
+    if (config_.retry.jitter_factor > 0.0) {
+        // Use robust seed combining multiple entropy sources to avoid
+        // synchronized retry intervals on platforms with weak random_device
+        static thread_local std::mt19937 rng = []() {
+            std::random_device rd;
+            auto seed = static_cast<std::uint64_t>(rd()) ^
+                static_cast<std::uint64_t>(
+                    std::chrono::high_resolution_clock::now().time_since_epoch().count()) ^
+                static_cast<std::uint64_t>(
+                    std::hash<std::thread::id>{}(std::this_thread::get_id()));
+            return std::mt19937(static_cast<std::uint32_t>(seed));
+        }();
+        std::uniform_real_distribution<double> dist(
+            1.0 - config_.retry.jitter_factor,
+            1.0 + config_.retry.jitter_factor);
+        delay = duration_cast<milliseconds>(delay * dist(rng));
+    }
+
+    return delay;
+}
+
+boost::asio::awaitable<void> client::connect_with_retry() {
+    const auto max_attempts = config_.retry.max_attempts;
+    if (max_attempts == 0) {
+        // No retries configured, just do single attempt
+        co_await connect();
+        co_return;
+    }
+
+    {
+        std::lock_guard guard{state_mutex_};
+        if (state_ != connection_state::disconnected) {
+            throw connection_error("Client is already connected or connecting");
+        }
+        state_ = connection_state::connecting;
+    }
+
+    auto exec = co_await boost::asio::this_coro::executor;
+    boost::asio::steady_timer timer(exec);
+    std::exception_ptr last_exception;
+
+    for (std::uint32_t attempt = 0; attempt < max_attempts; ++attempt) {
+        bool should_retry = false;
+        std::chrono::milliseconds retry_delay{0};
+
+        try {
+            BOOST_LOG_SEV(lg(), info) << "Connection attempt " << (attempt + 1)
+                                      << " of " << max_attempts;
+            co_await perform_connection();
+            co_return;  // Success
+        } catch (const std::exception& e) {
+            last_exception = std::current_exception();
+            BOOST_LOG_SEV(lg(), warn) << "Connection attempt " << (attempt + 1)
+                                      << " failed: " << e.what();
+
+            // Don't wait after the last attempt
+            if (attempt + 1 < max_attempts) {
+                retry_delay = calculate_backoff(attempt);
+                should_retry = true;
+            }
+        }
+
+        // Wait outside catch block (co_await cannot be in catch handler)
+        if (should_retry) {
+            BOOST_LOG_SEV(lg(), info) << "Retrying in " << retry_delay.count() << "ms";
+            timer.expires_after(retry_delay);
+            co_await timer.async_wait(boost::asio::use_awaitable);
+        }
+    }
+
+    // All attempts failed
+    {
+        std::lock_guard guard{state_mutex_};
+        state_ = connection_state::disconnected;
+    }
+
+    BOOST_LOG_SEV(lg(), error) << "All " << max_attempts
+                               << " connection attempts failed";
+    if (last_exception) {
+        std::rethrow_exception(last_exception);
+    }
+    throw connection_error("All connection attempts failed");
+}
+
+void client::connect_with_retry_sync() {
+    BOOST_LOG_SEV(lg(), debug) << "Starting to connect with retry synchronously.";
+
+    auto task = [this]() -> boost::asio::awaitable<void> {
+        BOOST_LOG_SEV(lg(), trace) << "connect_with_retry_sync: task started.";
+        co_await connect_with_retry();
+        BOOST_LOG_SEV(lg(), trace) << "connect_with_retry_sync: task completed.";
+    };
+
+    BOOST_LOG_SEV(lg(), trace) << "connect_with_retry_sync: spawning task with use_future.";
+    auto future = boost::asio::co_spawn(executor_, task(), boost::asio::use_future);
+
+    if (io_ctx_) {
+        BOOST_LOG_SEV(lg(), trace) << "connect_with_retry_sync: running io_context.";
+        io_ctx_->run();
+        io_ctx_->restart();
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "connect_with_retry_sync: getting result from future.";
+    future.get();
+    BOOST_LOG_SEV(lg(), debug) << "Completed synchronous connect with retry successfully.";
+}
+
+boost::asio::awaitable<void> client::run_reconnect_loop() {
+    bool expected = false;
+    if (!reconnect_loop_running_.compare_exchange_strong(expected, true)) {
+        BOOST_LOG_SEV(lg(), debug) << "Reconnect loop already running";
+        co_return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Starting reconnection loop";
+
+    const auto max_attempts = config_.retry.max_attempts;
+    auto exec = co_await boost::asio::this_coro::executor;
+    boost::asio::steady_timer timer(exec);
+
+    for (std::uint32_t attempt = 0; attempt < max_attempts; ++attempt) {
+        // Check if we should still try to reconnect
+        {
+            std::lock_guard guard{state_mutex_};
+            if (state_ != connection_state::reconnecting) {
+                BOOST_LOG_SEV(lg(), debug) << "Reconnect cancelled, state changed";
+                break;
+            }
+        }
+
+        bool should_retry = false;
+        std::chrono::milliseconds retry_delay{0};
+
+        try {
+            BOOST_LOG_SEV(lg(), info) << "Reconnection attempt " << (attempt + 1)
+                                      << " of " << max_attempts;
+            co_await perform_connection();
+
+            BOOST_LOG_SEV(lg(), info) << "Reconnection successful";
+            reconnect_loop_running_ = false;
+            co_return;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Reconnection attempt " << (attempt + 1)
+                                      << " failed: " << e.what();
+
+            // Don't wait after the last attempt
+            if (attempt + 1 < max_attempts) {
+                retry_delay = calculate_backoff(attempt);
+                should_retry = true;
+            }
+        }
+
+        // Wait outside catch block (co_await cannot be in catch handler)
+        if (should_retry) {
+            BOOST_LOG_SEV(lg(), info) << "Retrying reconnection in "
+                                      << retry_delay.count() << "ms";
+            timer.expires_after(retry_delay);
+
+            try {
+                co_await timer.async_wait(boost::asio::use_awaitable);
+            } catch (const boost::system::system_error& te) {
+                if (te.code() == boost::asio::error::operation_aborted) {
+                    BOOST_LOG_SEV(lg(), debug) << "Reconnect timer cancelled";
+                    break;
+                }
+                throw;
+            }
+        }
+    }
+
+    // All reconnection attempts failed
+    BOOST_LOG_SEV(lg(), error) << "All reconnection attempts failed";
+
+    disconnect_callback_t callback;
+    {
+        std::lock_guard guard{state_mutex_};
+        state_ = connection_state::disconnected;
+        callback = disconnect_callback_;
+    }
+
+    // Invoke disconnect callback only after all retries exhausted
+    if (callback) {
+        BOOST_LOG_SEV(lg(), debug) << "Invoking disconnect callback after reconnect failure";
+        callback();
+    }
+
+    reconnect_loop_running_ = false;
+}
+
 void client::disconnect() {
     BOOST_LOG_SEV(lg(), debug) << "Disconnecting from server";
 
-    // First mark as disconnected to stop the message loop
+    // First mark as disconnected to stop the message loop and reconnect loop
     {
         std::lock_guard guard{state_mutex_};
-        connected_ = false;
+        state_ = connection_state::disconnected;
     }
 
     // Close the connection (this will cancel pending async operations)
@@ -217,7 +448,12 @@ void client::disconnect() {
 
 bool client::is_connected() const {
     std::lock_guard guard{state_mutex_};
-    return connected_ && conn_ && conn_->is_open();
+    return state_ == connection_state::connected && conn_ && conn_->is_open();
+}
+
+connection_state client::get_state() const {
+    std::lock_guard guard{state_mutex_};
+    return state_;
 }
 
 void client::set_disconnect_callback(disconnect_callback_t callback) {
@@ -228,6 +464,12 @@ void client::set_disconnect_callback(disconnect_callback_t callback) {
 boost::asio::awaitable<void> client::run_heartbeat() {
     if (!config_.heartbeat_enabled) {
         BOOST_LOG_SEV(lg(), debug) << "Heartbeat disabled in configuration";
+        co_return;
+    }
+
+    bool expected = false;
+    if (!heartbeat_loop_running_.compare_exchange_strong(expected, true)) {
+        BOOST_LOG_SEV(lg(), debug) << "Heartbeat loop already running";
         co_return;
     }
 
@@ -254,7 +496,7 @@ boost::asio::awaitable<void> client::run_heartbeat() {
             std::uint32_t seq;
             {
                 std::lock_guard guard{state_mutex_};
-                if (!conn_ || !connected_) {
+                if (!conn_ || state_ != connection_state::connected) {
                     break;
                 }
                 seq = ++sequence_number_;
@@ -303,15 +545,26 @@ boost::asio::awaitable<void> client::run_heartbeat() {
         }
     }
 
+    heartbeat_loop_running_ = false;
     BOOST_LOG_SEV(lg(), debug) << "Heartbeat loop ended";
 }
 
 boost::asio::awaitable<std::expected<messaging::frame, messaging::error_code>>
 client::send_request(messaging::frame request_frame) {
     BOOST_LOG_SEV(lg(), debug) << "Sending request.";
-    if (!is_connected()) {
-        BOOST_LOG_SEV(lg(), error) << "Cannot send request: not connected";
-        co_return std::unexpected(messaging::error_code::network_error);
+
+    // Check connection state - fail immediately if not connected
+    {
+        std::lock_guard guard{state_mutex_};
+        if (state_ == connection_state::reconnecting) {
+            BOOST_LOG_SEV(lg(), warn) << "Cannot send request: reconnecting";
+            co_return std::unexpected(messaging::error_code::network_error);
+        }
+        if (state_ != connection_state::connected) {
+            BOOST_LOG_SEV(lg(), error) << "Cannot send request: not connected (state="
+                                       << state_ << ")";
+            co_return std::unexpected(messaging::error_code::network_error);
+        }
     }
     BOOST_LOG_SEV(lg(), trace) << "Currently connected.";
 
@@ -373,7 +626,7 @@ client::send_request(messaging::frame request_frame) {
                                        << response_result.error();
             {
                 std::lock_guard guard{state_mutex_};
-                connected_ = false;
+                state_ = connection_state::disconnected;
             }
             if (conn_) {
                 conn_->close();
@@ -390,7 +643,7 @@ client::send_request(messaging::frame request_frame) {
         BOOST_LOG_SEV(lg(), error) << "Network error: " << e.what();
         {
             std::lock_guard guard{state_mutex_};
-            connected_ = false;
+            state_ = connection_state::disconnected;
         }
         if (conn_) {
             conn_->close();
@@ -443,8 +696,13 @@ boost::asio::awaitable<void> client::write_frame(const messaging::frame& f) {
 }
 
 boost::asio::awaitable<void> client::run_message_loop() {
+    bool expected = false;
+    if (!message_loop_running_.compare_exchange_strong(expected, true)) {
+        BOOST_LOG_SEV(lg(), debug) << "Message loop already running";
+        co_return;
+    }
+
     BOOST_LOG_SEV(lg(), debug) << "Starting message loop";
-    message_loop_running_ = true;
 
     try {
         while (is_connected()) {
@@ -509,26 +767,47 @@ boost::asio::awaitable<void> client::run_message_loop() {
         BOOST_LOG_SEV(lg(), error) << "Message loop exception: " << e.what();
     }
 
-    // Mark as disconnected and get callback
-    disconnect_callback_t callback;
-    {
-        std::lock_guard guard{state_mutex_};
-        connected_ = false;
-        callback = disconnect_callback_;
-    }
-
-    // Fail all pending requests
+    // Fail all pending requests so waiting coroutines don't hang
     if (pending_requests_) {
         pending_requests_->fail_all(messaging::error_code::network_error);
     }
 
-    // Invoke disconnect callback outside of lock
-    if (callback) {
-        BOOST_LOG_SEV(lg(), debug) << "Message loop invoking disconnect callback";
-        callback();
+    message_loop_running_ = false;
+
+    // Check if we should attempt auto-reconnect
+    bool should_reconnect = false;
+    {
+        std::lock_guard guard{state_mutex_};
+        // Only auto-reconnect if we were connected (not explicitly disconnected)
+        if (state_ == connection_state::connected &&
+            config_.retry.auto_reconnect &&
+            config_.retry.max_attempts > 0) {
+            state_ = connection_state::reconnecting;
+            should_reconnect = true;
+            BOOST_LOG_SEV(lg(), info) << "Connection lost, will attempt auto-reconnect";
+        } else if (state_ != connection_state::disconnected) {
+            // Not auto-reconnecting, mark as disconnected
+            state_ = connection_state::disconnected;
+        }
     }
 
-    message_loop_running_ = false;
+    if (should_reconnect) {
+        // Spawn reconnect loop - it will invoke disconnect callback if all retries fail
+        auto exec = co_await boost::asio::this_coro::executor;
+        boost::asio::co_spawn(exec, run_reconnect_loop(), boost::asio::detached);
+    } else {
+        // No auto-reconnect, invoke callback immediately if set
+        disconnect_callback_t callback;
+        {
+            std::lock_guard guard{state_mutex_};
+            callback = disconnect_callback_;
+        }
+        if (callback) {
+            BOOST_LOG_SEV(lg(), debug) << "Message loop invoking disconnect callback";
+            callback();
+        }
+    }
+
     BOOST_LOG_SEV(lg(), debug) << "Message loop ended";
 }
 

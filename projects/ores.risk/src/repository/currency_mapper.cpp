@@ -46,11 +46,11 @@ domain::currency currency_mapper::map(const currency_entity& v) {
     r.valid_from = v.valid_from.has_value() ? v.valid_from->str() : "";
     r.valid_to = v.valid_to.has_value() ? v.valid_from->str() : "";
 
-    BOOST_LOG_SEV(lg(), debug) << "Mapped db entity. Result: " << r;
+    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 currency_entity currency_mapper::map(const domain::currency& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Mapping domain entity: " << v;
+    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     currency_entity r;
     r.iso_code = v.iso_code;
@@ -72,7 +72,7 @@ currency_entity currency_mapper::map(const domain::currency& v) {
     if (!v.valid_to.empty())
         r.valid_to = v.valid_to;
 
-    BOOST_LOG_SEV(lg(), debug) << "Mapped domain entity. Result: " << r;
+    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

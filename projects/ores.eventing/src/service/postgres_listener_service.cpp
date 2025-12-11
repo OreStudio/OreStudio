@@ -181,7 +181,15 @@ void postgres_listener_service::listen_loop() {
                 break;
             }
 
-            // Get any pending notifications
+            // Consume any available input from the server
+            if (!(*connection_)->consume_input()) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Connection error while consuming input.";
+                running_ = false;
+                break;
+            }
+
+            // Process any pending notifications
             auto notifications = (*connection_)->get_notifications();
             for (const auto& notification : notifications) {
                 handle_notification(notification);
@@ -189,7 +197,6 @@ void postgres_listener_service::listen_loop() {
         }
 
         // Sleep briefly before checking again
-        // TODO: Consider using select/poll on native_socket() for efficiency
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 

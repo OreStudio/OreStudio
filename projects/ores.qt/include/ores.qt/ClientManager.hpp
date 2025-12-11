@@ -119,18 +119,22 @@ public:
     /**
      * @brief Subscribe to server-push notifications for an event type.
      *
+     * This method is non-blocking - the subscription request is sent
+     * asynchronously and any errors are logged.
+     *
      * @param eventType The event type to subscribe to (e.g., "ores.risk.currency_changed_event")
-     * @return true if subscription succeeded, false otherwise
      */
-    bool subscribeToEvent(const std::string& eventType);
+    void subscribeToEvent(const std::string& eventType);
 
     /**
      * @brief Unsubscribe from server-push notifications for an event type.
      *
+     * This method is non-blocking - the unsubscription request is sent
+     * asynchronously and any errors are logged.
+     *
      * @param eventType The event type to unsubscribe from
-     * @return true if unsubscription succeeded, false otherwise
      */
-    bool unsubscribeFromEvent(const std::string& eventType);
+    void unsubscribeFromEvent(const std::string& eventType);
 
 signals:
     void connected();

@@ -23,6 +23,7 @@
 #include <QFuture>
 #include <QTimeZone>
 #include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
 #include <boost/asio/use_future.hpp>
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
@@ -273,52 +274,50 @@ ClientManager::sendRequest(comms::messaging::frame request) {
     return client_->send_request_sync(std::move(request));
 }
 
-bool ClientManager::subscribeToEvent(const std::string& eventType) {
+void ClientManager::subscribeToEvent(const std::string& eventType) {
     if (!event_adapter_) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot subscribe: no event adapter";
-        return false;
+        return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Subscribing to event: " << eventType;
 
-    try {
-        // Run subscribe coroutine synchronously via io_context
-        auto task = [this, eventType]() -> boost::asio::awaitable<bool> {
-            co_return co_await event_adapter_->subscribe(eventType);
-        };
+    // Run subscribe coroutine asynchronously to avoid blocking the GUI thread
+    auto task = [this, eventType]() -> boost::asio::awaitable<void> {
+        try {
+            if (!co_await event_adapter_->subscribe(eventType)) {
+                BOOST_LOG_SEV(lg(), error) << "Subscription failed for " << eventType;
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Subscribe failed with exception: " << e.what();
+        }
+    };
 
-        auto future = boost::asio::co_spawn(
-            io_context_->get_executor(), task(), boost::asio::use_future);
-
-        return future.get();
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Subscribe failed: " << e.what();
-        return false;
-    }
+    boost::asio::co_spawn(
+        io_context_->get_executor(), std::move(task), boost::asio::detached);
 }
 
-bool ClientManager::unsubscribeFromEvent(const std::string& eventType) {
+void ClientManager::unsubscribeFromEvent(const std::string& eventType) {
     if (!event_adapter_) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot unsubscribe: no event adapter";
-        return false;
+        return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Unsubscribing from event: " << eventType;
 
-    try {
-        // Run unsubscribe coroutine synchronously via io_context
-        auto task = [this, eventType]() -> boost::asio::awaitable<bool> {
-            co_return co_await event_adapter_->unsubscribe(eventType);
-        };
+    // Run unsubscribe coroutine asynchronously to avoid blocking the GUI thread
+    auto task = [this, eventType]() -> boost::asio::awaitable<void> {
+        try {
+            if (!co_await event_adapter_->unsubscribe(eventType)) {
+                BOOST_LOG_SEV(lg(), error) << "Unsubscription failed for " << eventType;
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Unsubscribe failed with exception: " << e.what();
+        }
+    };
 
-        auto future = boost::asio::co_spawn(
-            io_context_->get_executor(), task(), boost::asio::use_future);
-
-        return future.get();
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Unsubscribe failed: " << e.what();
-        return false;
-    }
+    boost::asio::co_spawn(
+        io_context_->get_executor(), std::move(task), boost::asio::detached);
 }
 
 }

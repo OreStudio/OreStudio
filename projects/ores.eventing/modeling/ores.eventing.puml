@@ -41,6 +41,45 @@ namespace ores #F2F2F2 {
             end note
         }
 
+        namespace service #F2F2F2 {
+            class postgres_listener_service #ECECEC {
+                +postgres_listener_service(utility::database::context ctx, notification_callback_t callback)
+                +~postgres_listener_service()
+                +start() void
+                +stop() void
+                +subscribe(const std::string& channel_name) void
+                +notify(const std::string& channel_name, const std::string& payload) void
+                -{static} build_connection_string(const sqlgen::postgres::Credentials& credentials) std::string
+                -open_connection() bool
+                -close_connection() void
+                -issue_pending_listens() void
+                -listen_loop() void
+                -handle_notification(PGnotify* pg_notify) void
+                -{field} ctx_ utility::database::context
+                -{field} notification_callback_ notification_callback_t
+                -{field} mutex_ std::mutex
+                -{field} connection_ PGconn*
+                -{field} subscribed_channels_ std::vector<std::string>
+                -{field} listener_thread_ std::thread
+                -{field} running_ std::atomic<bool>
+            }
+
+            note top of postgres_listener_service
+            Manages a dedicated PostgreSQL connection to listen
+            for NOTIFY events.
+
+            Runs a separate thread to continuously listen for
+            asynchronous notifications on configured channels.
+            When a notification is received, it parses the payload
+            into a domain::entity_change_event object and dispatches
+            it via a callback.
+
+            The service maintains its own dedicated connection
+            separate from any connection pool, as LISTEN/NOTIFY
+            requires a persistent connection.
+            end note
+        }
+
         namespace generators #F2F2F2 {
             class entity_change_event_generator <<generator>> #D89EF1 {
                 +{static} generate() domain::entity_change_event
@@ -65,12 +104,30 @@ namespace ores #F2F2F2 {
             Tests cover JSON serialization, table serialization,
             and generator functionality.
             end note
+
+            class service_postgres_listener_service_tests <<test suite>> #C5E1A5 {
+                +postgres_listener_service_lifecycle() void
+                +postgres_listener_service_notification_reception() void
+                +postgres_listener_service_no_notification_without_subscribe() void
+                +postgres_listener_service_subscribe_before_start() void
+                +postgres_listener_service_notify_method() void
+            }
+
+            note top of service_postgres_listener_service_tests
+            Test suite for postgres_listener_service.
+
+            Tests cover service lifecycle (start/stop),
+            notification reception, subscription behavior,
+            and the notify method.
+            end note
         }
 
         ' Relationships
+        ores::eventing::service::postgres_listener_service --> ores::eventing::domain::entity_change_event : dispatches
         ores::eventing::generators::entity_change_event_generator --> ores::eventing::domain::entity_change_event : generates
         ores::eventing::tests::entity_change_event_tests ..> ores::eventing::domain::entity_change_event : tests
         ores::eventing::tests::entity_change_event_tests ..> ores::eventing::generators::entity_change_event_generator : tests
+        ores::eventing::tests::service_postgres_listener_service_tests ..> ores::eventing::service::postgres_listener_service : tests
     }
 }
 

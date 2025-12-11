@@ -214,6 +214,10 @@ logout_request::deserialize(std::span<const std::byte> data) {
     if (!account_id_result) return std::unexpected(account_id_result.error());
     request.account_id = *account_id_result;
 
+    if (!data.empty()) {
+        return std::unexpected(comms::messaging::error_code::payload_too_large);
+    }
+
     return request;
 }
 

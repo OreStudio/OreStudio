@@ -70,7 +70,8 @@ begin
 
     if found then
         -- Existing record: check version for optimistic locking
-        if new.version != current_version then
+        -- Version 0 is a special "force overwrite" sentinel used by imports
+        if new.version != 0 and new.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
                 new.version, current_version
                 using errcode = 'P0002';

@@ -310,11 +310,9 @@ TEST_CASE("unlock_account_request_with_valid_uuid", tags) {
 
     unlock_account_request rq;
     rq.account_id = boost::uuids::random_generator()();
-    rq.requester_account_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, info) << "Request: " << rq;
 
     CHECK(!rq.account_id.is_nil());
-    CHECK(!rq.requester_account_id.is_nil());
 }
 
 TEST_CASE("unlock_account_request_serialize_deserialize", tags) {
@@ -322,7 +320,6 @@ TEST_CASE("unlock_account_request_serialize_deserialize", tags) {
 
     unlock_account_request e;
     e.account_id = boost::uuids::random_generator()();
-    e.requester_account_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -333,7 +330,6 @@ TEST_CASE("unlock_account_request_serialize_deserialize", tags) {
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
     CHECK(a.account_id == e.account_id);
-    CHECK(a.requester_account_id == e.requester_account_id);
 }
 
 TEST_CASE("unlock_account_response_success", tags) {
@@ -384,11 +380,9 @@ TEST_CASE("lock_account_request_with_valid_uuid", tags) {
 
     lock_account_request rq;
     rq.account_id = boost::uuids::random_generator()();
-    rq.requester_account_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, info) << "Request: " << rq;
 
     CHECK(!rq.account_id.is_nil());
-    CHECK(!rq.requester_account_id.is_nil());
 }
 
 TEST_CASE("lock_account_request_serialize_deserialize", tags) {
@@ -396,7 +390,6 @@ TEST_CASE("lock_account_request_serialize_deserialize", tags) {
 
     lock_account_request e;
     e.account_id = boost::uuids::random_generator()();
-    e.requester_account_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -407,7 +400,6 @@ TEST_CASE("lock_account_request_serialize_deserialize", tags) {
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
     CHECK(a.account_id == e.account_id);
-    CHECK(a.requester_account_id == e.requester_account_id);
 }
 
 TEST_CASE("lock_account_response_success", tags) {

@@ -229,23 +229,14 @@ std::ostream& operator<<(std::ostream& s, const list_accounts_response& v)
 std::vector<std::byte> unlock_account_request::serialize() const {
     std::vector<std::byte> buffer;
     writer::write_uuid(buffer, account_id);
-    writer::write_uuid(buffer, requester_account_id);
     return buffer;
 }
 
 std::expected<unlock_account_request, comms::messaging::error_code>
 unlock_account_request::deserialize(std::span<const std::byte> data) {
-    unlock_account_request request;
-
     auto account_id_result = reader::read_uuid(data);
     if (!account_id_result) return std::unexpected(account_id_result.error());
-    request.account_id = *account_id_result;
-
-    auto requester_account_id_result = reader::read_uuid(data);
-    if (!requester_account_id_result) return std::unexpected(requester_account_id_result.error());
-    request.requester_account_id = *requester_account_id_result;
-
-    return request;
+    return unlock_account_request{*account_id_result};
 }
 
 std::ostream& operator<<(std::ostream& s, const unlock_account_request& v)
@@ -336,23 +327,14 @@ std::ostream& operator<<(std::ostream& s, const delete_account_response& v) {
 std::vector<std::byte> lock_account_request::serialize() const {
     std::vector<std::byte> buffer;
     writer::write_uuid(buffer, account_id);
-    writer::write_uuid(buffer, requester_account_id);
     return buffer;
 }
 
 std::expected<lock_account_request, comms::messaging::error_code>
 lock_account_request::deserialize(std::span<const std::byte> data) {
-    lock_account_request request;
-
     auto account_id_result = reader::read_uuid(data);
     if (!account_id_result) return std::unexpected(account_id_result.error());
-    request.account_id = *account_id_result;
-
-    auto requester_account_id_result = reader::read_uuid(data);
-    if (!requester_account_id_result) return std::unexpected(requester_account_id_result.error());
-    request.requester_account_id = *requester_account_id_result;
-
-    return request;
+    return lock_account_request{*account_id_result};
 }
 
 std::ostream& operator<<(std::ostream& s, const lock_account_request& v)

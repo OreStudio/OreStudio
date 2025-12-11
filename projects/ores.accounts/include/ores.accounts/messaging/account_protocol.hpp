@@ -165,18 +165,17 @@ std::ostream& operator<<(std::ostream& s, const list_accounts_response& v);
 /**
  * @brief Request to unlock a locked account.
  *
- * Requires admin privileges - requester must be an admin user.
+ * Requires admin privileges - the server verifies the requester's identity
+ * from the session context.
  */
 struct unlock_account_request final {
     boost::uuids::uuid account_id;
-    boost::uuids::uuid requester_account_id;
 
     /**
      * @brief Serialize request to bytes.
      *
      * Format:
      * - 16 bytes: account_id (UUID)
-     * - 16 bytes: requester_account_id (UUID)
      */
     std::vector<std::byte> serialize() const;
 
@@ -267,18 +266,17 @@ std::ostream& operator<<(std::ostream& s, const delete_account_response& v);
 /**
  * @brief Request to lock an account.
  *
- * Requires admin privileges - requester must be an admin user.
+ * Requires admin privileges - the server verifies the requester's identity
+ * from the session context.
  */
 struct lock_account_request final {
     boost::uuids::uuid account_id;
-    boost::uuids::uuid requester_account_id;
 
     /**
      * @brief Serialize request to bytes.
      *
      * Format:
      * - 16 bytes: account_id (UUID)
-     * - 16 bytes: requester_account_id (UUID)
      */
     std::vector<std::byte> serialize() const;
 

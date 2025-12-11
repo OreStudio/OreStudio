@@ -70,9 +70,9 @@ accounts_message_handler::handle_message(message_type type,
     case message_type::logout_request:
         co_return co_await handle_logout_request(payload, remote_address);
     case message_type::lock_account_request:
-        co_return co_await handle_lock_account_request(payload);
+        co_return co_await handle_lock_account_request(payload, remote_address);
     case message_type::unlock_account_request:
-        co_return co_await handle_unlock_account_request(payload);
+        co_return co_await handle_unlock_account_request(payload, remote_address);
     case message_type::delete_account_request:
         co_return co_await handle_delete_account_request(payload);
     case message_type::create_initial_admin_request:
@@ -240,8 +240,10 @@ handle_login_request(std::span<const std::byte> payload,
 }
 
 accounts_message_handler::handler_result accounts_message_handler::
-handle_lock_account_request(std::span<const std::byte> payload) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing lock_account_request";
+handle_lock_account_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing lock_account_request from "
+                               << remote_address;
 
     auto request_result = lock_account_request::deserialize(payload);
     if (!request_result) {
@@ -252,10 +254,22 @@ handle_lock_account_request(std::span<const std::byte> payload) {
     const auto& request = *request_result;
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
+    // Get the requester's session from shared session service
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "Lock account denied: no active session for "
+                                  << remote_address;
+        lock_account_response response{
+            .success = false,
+            .error_message = "Authentication required to lock accounts"
+        };
+        co_return response.serialize();
+    }
+
     // Check if requester has admin privileges
-    if (!service_.is_admin(request.requester_account_id)) {
+    if (!session->is_admin) {
         BOOST_LOG_SEV(lg(), warn) << "Lock account denied: requester "
-                                  << boost::uuids::to_string(request.requester_account_id)
+                                  << boost::uuids::to_string(session->account_id)
                                   << " is not an admin";
         lock_account_response response{
             .success = false,
@@ -282,8 +296,10 @@ handle_lock_account_request(std::span<const std::byte> payload) {
 }
 
 accounts_message_handler::handler_result accounts_message_handler::
-handle_unlock_account_request(std::span<const std::byte> payload) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing unlock_account_request";
+handle_unlock_account_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing unlock_account_request from "
+                               << remote_address;
 
     auto request_result = unlock_account_request::deserialize(payload);
     if (!request_result) {
@@ -294,10 +310,22 @@ handle_unlock_account_request(std::span<const std::byte> payload) {
     const auto& request = *request_result;
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
+    // Get the requester's session from shared session service
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "Unlock account denied: no active session for "
+                                  << remote_address;
+        unlock_account_response response{
+            .success = false,
+            .error_message = "Authentication required to unlock accounts"
+        };
+        co_return response.serialize();
+    }
+
     // Check if requester has admin privileges
-    if (!service_.is_admin(request.requester_account_id)) {
+    if (!session->is_admin) {
         BOOST_LOG_SEV(lg(), warn) << "Unlock account denied: requester "
-                                  << boost::uuids::to_string(request.requester_account_id)
+                                  << boost::uuids::to_string(session->account_id)
                                   << " is not an admin";
         unlock_account_response response{
             .success = false,

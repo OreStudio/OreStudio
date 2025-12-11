@@ -121,9 +121,12 @@ private:
 
     /**
      * @brief Handle lock_account_request message.
+     *
+     * Uses session context to determine requester identity for authorization.
      */
     handler_result
-    handle_lock_account_request(std::span<const std::byte> payload);
+    handle_lock_account_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
 
     /**
      * @brief Handle unlock_account_request message.
@@ -131,7 +134,8 @@ private:
      * Requires authentication. Only admin users can unlock accounts.
      */
     handler_result
-    handle_unlock_account_request(std::span<const std::byte> payload);
+    handle_unlock_account_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
 
     /**
      * @brief Handle delete_account_request message.

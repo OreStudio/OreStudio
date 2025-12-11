@@ -17,13 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
--- Feature Flags Table Schema
--- Component: ores.variability
--- Purpose: Stores system feature flags with bitemporal validity tracking
-
-create schema if not exists oresdb;
-create extension if not exists btree_gist;
 set schema 'oresdb';
 
 create table if not exists "oresdb"."feature_flags" (
@@ -95,8 +88,3 @@ create or replace trigger update_feature_flags_trigger
 before insert on "oresdb"."feature_flags"
 for each row
 execute function update_feature_flags();
-
--- insert into feature_flags (name, enabled, description)
--- values
---     ('system.security.secure_mode', 0, 'If true, the system enforces full authentication and authorisation.')
--- on conflict (name, tstzrange(valid_from, valid_to)) do nothing;

@@ -31,10 +31,7 @@ grant all privileges on database oresdb_template to ores;
 \c oresdb_template
 
 -- Run all schema creation scripts
-\ir ./accounts_create.sql
-\ir ./currencies_create.sql
-\ir ./feature_flags_create.sql
-\ir ./login_info_create.sql
+\ir ./create_all.sql
 
 -- Mark database as template to prevent accidental direct connections
 -- NOTE: This requires superuser privileges, so it's commented out

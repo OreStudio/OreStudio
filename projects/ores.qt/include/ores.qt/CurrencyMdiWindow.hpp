@@ -24,7 +24,8 @@
 #include <QTableView>
 #include <QVBoxLayout>
 #include <QToolBar>
-#include <QLabel>
+#include <QIcon>
+#include <QTimer>
 #include <memory>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.utility/log/make_logger.hpp"
@@ -103,7 +104,9 @@ private slots:
 
 private:
     void updateActionStates();
-    void setupStaleIndicator();
+    void setupReloadAction();
+    void startPulseAnimation();
+    void stopPulseAnimation();
 
 private:
     QVBoxLayout* verticalLayout_;
@@ -111,9 +114,13 @@ private:
     QToolBar* toolBar_;
     PaginationWidget* pagination_widget_;
 
-    // Stale data indicator
-    QWidget* staleIndicator_;
-    QLabel* staleLabel_;
+    // Reload action with stale indicator
+    QAction* reloadAction_;
+    QIcon normalReloadIcon_;
+    QIcon staleReloadIcon_;
+    QTimer* pulseTimer_;
+    bool pulseState_{false};
+    int pulseCount_{0};
 
     QAction* addAction_;
     QAction* editAction_;

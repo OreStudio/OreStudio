@@ -1,0 +1,382 @@
+:PROPERTIES:
+:ID: f8a12c4e-9b3d-4e5f-a1c2-8d7e6f5a4b3c
+:END:
+#+title: Binary Protocol Developer
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+#+begin_export markdown
+---
+name: binary-protocol-developer
+description: Guide for extending and modifying the ORE Studio binary messaging protocol.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When you need to add new message types, modify existing protocol messages, or
+make any changes to the binary messaging protocol used for client-server
+communication in ORE Studio.
+
+* How to use this skill
+
+1. Determine if your change is breaking (major version bump) or backward
+   compatible (minor version bump).
+2. Follow the detailed instructions to add or modify protocol messages.
+3. Update the protocol version appropriately.
+4. Build and test the changes.
+
+* Detailed instructions
+
+** Understanding the protocol architecture
+
+The ORE Studio binary protocol is organized into subsystems, each with a
+dedicated message type range:
+
+| Subsystem     | Range           | Example                          |
+|---------------+-----------------+----------------------------------|
+| Core          | 0x0000 - 0x0FFF | handshake, error, ping/pong      |
+| Risk          | 0x1000 - 0x1FFF | currencies, currency history     |
+| Accounts      | 0x2000 - 0x2FFF | login, accounts, lock/unlock     |
+| Variability   | 0x3000 - 0x3FFF | feature flags                    |
+
+Protocol definitions are located in:
+
+- =projects/ores.comms/include/ores.comms/messaging/message_types.hpp= - Message
+  type enum and protocol version
+- =projects/COMPONENT/include/COMPONENT/messaging/*_protocol.hpp= - Protocol
+  structs for each subsystem
+
+** Step 1: Determine version impact
+
+Before making changes, understand the versioning requirements:
+
+*** Major version bump (breaking change)
+
+Bump the major version and reset minor to 0 when:
+
+- Removing fields from existing request/response structs
+- Changing the order of serialized fields
+- Changing field types in a way that changes wire format
+- Removing message types
+- Changing the semantics of existing fields
+
+*** Minor version bump (backward compatible)
+
+Bump the minor version when:
+
+- Adding new message types
+- Adding new optional fields to the end of existing structs
+- Adding new subsystems
+
+** Step 2: Update message types enum
+
+Add new message types to =message_types.hpp=:
+
+#+begin_src cpp
+// In projects/ores.comms/include/ores.comms/messaging/message_types.hpp
+
+enum class message_type {
+    // ... existing types ...
+
+    // Accounts subsystem messages (0x2000 - 0x2FFF)
+    your_new_request = 0x2015,   // Use next available hex value
+    your_new_response = 0x2016,
+
+    last_value
+};
+#+end_src
+
+*** Naming conventions for message types
+
+- Request/response pairs: =action_request= / =action_response=
+- Use snake_case for all enum values
+- Requests end with =_request=, responses end with =_response=
+- Use verbs that describe the action: =create_=, =list_=, =delete_=, =get_=,
+  =update_=, =lock_=, =unlock_=
+
+** Step 3: Create protocol structs
+
+Create request and response structs in the appropriate protocol header.
+
+*** File organization
+
+Protocol files are named by feature:
+
+- =projects/COMPONENT/include/COMPONENT/messaging/FEATURE_protocol.hpp=
+- =projects/COMPONENT/src/messaging/FEATURE_protocol.cpp=
+
+For example:
+- =account_protocol.hpp= - Account CRUD operations
+- =login_protocol.hpp= - Authentication operations
+- =bootstrap_protocol.hpp= - Initial admin setup
+
+*** Struct naming conventions
+
+- Struct names match the enum value exactly: =lock_account_request=,
+  =lock_account_response=
+- Use =final= keyword on all protocol structs
+- Requests contain input data, responses contain results
+
+*** Request struct pattern
+
+#+begin_src cpp
+/**
+ * @brief Request to perform action on resource.
+ *
+ * Describe authorization requirements if any.
+ */
+struct action_resource_request final {
+    boost::uuids::uuid resource_id;  // Primary identifier
+    // Additional fields as needed
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 16 bytes: resource_id (UUID)
+     * - N bytes: additional fields...
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<action_resource_request, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const action_resource_request& v);
+#+end_src
+
+*** Response struct pattern
+
+#+begin_src cpp
+/**
+ * @brief Response indicating operation result.
+ */
+struct action_resource_response final {
+    bool success = false;
+    std::string error_message;  // Empty on success
+    // Additional result fields as needed
+
+    /**
+     * @brief Serialize response to bytes.
+     *
+     * Format:
+     * - 1 byte: success (boolean)
+     * - 2 bytes: error_message length
+     * - N bytes: error_message (UTF-8)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize response from bytes.
+     */
+    static std::expected<action_resource_response, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const action_resource_response& v);
+#+end_src
+
+** Step 4: Implement serialization
+
+Use the reader/writer utilities for consistent serialization:
+
+#+begin_src cpp
+#include "ores.comms/messaging/reader.hpp"
+#include "ores.comms/messaging/writer.hpp"
+
+std::vector<std::byte> action_resource_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_uuid(buffer, resource_id);
+    writer::write_string(buffer, some_string);
+    writer::write_bool(buffer, some_flag);
+    writer::write_uint32(buffer, some_number);
+    return buffer;
+}
+
+std::expected<action_resource_request, comms::messaging::error_code>
+action_resource_request::deserialize(std::span<const std::byte> data) {
+    action_resource_request request;
+
+    auto id_result = reader::read_uuid(data);
+    if (!id_result) return std::unexpected(id_result.error());
+    request.resource_id = *id_result;
+
+    auto str_result = reader::read_string(data);
+    if (!str_result) return std::unexpected(str_result.error());
+    request.some_string = *str_result;
+
+    // Continue for all fields...
+
+    return request;
+}
+#+end_src
+
+*** Field serialization formats
+
+| C++ Type                    | Wire Format                        | Writer/Reader          |
+|-----------------------------+------------------------------------+------------------------|
+| =bool=                      | 1 byte (0x00/0x01)                 | write_bool/read_bool   |
+| =std::uint16_t=             | 2 bytes big-endian                 | write_uint16/read_uint16 |
+| =std::uint32_t=             | 4 bytes big-endian                 | write_uint32/read_uint32 |
+| =boost::uuids::uuid=        | 16 bytes raw                       | write_uuid/read_uuid   |
+| =std::string=               | 2 bytes length + N bytes UTF-8     | write_string/read_string |
+| =std::vector<T>=            | 4 bytes count + N * sizeof(T)      | Custom implementation  |
+
+*** Important serialization rules
+
+1. Fields must be serialized in declaration order
+2. Document the wire format in the =serialize()= method's doxygen comment
+3. Deserialization must read fields in the same order as serialization
+4. Always check for errors during deserialization
+5. Use =std::unexpected= to propagate errors
+
+** Step 5: Add JSON output support
+
+For debugging and logging, implement the stream operator using reflect-cpp:
+
+#+begin_src cpp
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp"
+
+std::ostream& operator<<(std::ostream& s, const action_resource_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+#+end_src
+
+** Step 6: Create message handler
+
+Add a handler method to the appropriate message handler class:
+
+#+begin_src cpp
+// In COMPONENT_message_handler.hpp
+
+handler_result
+handle_action_resource_request(std::span<const std::byte> payload,
+    const std::string& remote_address);
+
+// In COMPONENT_message_handler.cpp
+
+case message_type::action_resource_request:
+    co_return co_await handle_action_resource_request(payload, remote_address);
+#+end_src
+
+** Step 7: Update protocol version
+
+After making changes, update the version in =message_types.hpp=:
+
+#+begin_src cpp
+// Breaking change: bump major, reset minor
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 8;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
+
+// Backward compatible: bump minor only
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 8;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
+#+end_src
+
+Add a comment documenting what changed:
+
+#+begin_src cpp
+// Version 8.0 removes requester_account_id from lock_account_request and
+// unlock_account_request. Authorization is now handled via server-side session
+// tracking instead of client-provided identity. This is a breaking change.
+#+end_src
+
+** Step 8: Write tests
+
+Create tests in =projects/COMPONENT/tests/messaging_protocol_tests.cpp=:
+
+#+begin_src cpp
+TEST_CASE("action_resource_request_serialize_deserialize", tags) {
+    auto lg(make_logger(test_suite));
+
+    action_resource_request e;
+    e.resource_id = boost::uuids::random_generator()();
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+
+    const auto serialized = e.serialize();
+    const auto r = action_resource_request::deserialize(serialized);
+
+    REQUIRE(r.has_value());
+    const auto& a = r.value();
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
+
+    CHECK(a.resource_id == e.resource_id);
+}
+#+end_src
+
+** Step 9: Update umbrella protocol header
+
+Add the new protocol header to the subsystem's umbrella header:
+
+#+begin_src cpp
+// In projects/COMPONENT/include/COMPONENT/messaging/protocol.hpp
+#include "COMPONENT/messaging/FEATURE_protocol.hpp"
+#+end_src
+
+* Security considerations
+
+** Never trust client-provided identity
+
+The requester's identity should be determined from server-side session context,
+not from fields in the request. This prevents identity forgery attacks.
+
+** Authorization checks
+
+Always perform authorization checks in the message handler, not in the client.
+The server is the authority for access control decisions.
+
+** Sensitive data
+
+Never include passwords or secrets in plain text in protocol messages. Use
+secure hashing and proper authentication flows.
+
+* Common patterns and conventions
+
+** Error handling
+
+- Use =std::expected= for all deserialization results
+- Return =comms::messaging::error_code= for failures
+- Provide meaningful error messages in response structs
+
+** Logging
+
+- Log requests at =debug= level on receipt
+- Log successful operations at =info= level
+- Log failures at =warn= or =error= level
+
+** Code organization
+
+- Keep protocol structs separate from service logic
+- Use mappers to convert between protocol types and domain types
+- Group related message types in the same protocol file
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

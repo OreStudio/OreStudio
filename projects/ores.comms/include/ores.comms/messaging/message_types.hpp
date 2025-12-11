@@ -48,8 +48,11 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 //
 // Version 7.3 adds database_status_notification message for server-push
 // database health status updates, and database_unavailable error code.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 7;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 3;
+// Version 8.0 removes requester_account_id from lock_account_request and
+// unlock_account_request. Authorization is now handled via server-side session
+// tracking instead of client-provided identity. This is a breaking change.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 8;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

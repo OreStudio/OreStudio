@@ -18,45 +18,45 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-11 Thu 00:28], for Thursday, December 11, 2025.
+#+CAPTION: Clock summary at [2025-12-11 Thu 01:41], for Thursday, December 11, 2025.
 |      | <75>                          |        |      |      |       |
 | Tags | Headline                      | Time   |      |      |     % |
 |------+-------------------------------+--------+------+------+-------|
-|      | *Total time*                  | *0:24* |      |      | 100.0 |
+|      | *Total time*                  | *1:36* |      |      | 100.0 |
 |------+-------------------------------+--------+------+------+-------|
-|      | Stories                       | 0:24   |      |      | 100.0 |
-|      | Active                        |        | 0:24 |      | 100.0 |
-| code | Add retry algorithm to client |        |      | 0:19 |  79.2 |
-| code | Entity syntax refactor snags  |        |      | 0:05 |  20.8 |
+|      | Stories                       | 1:36   |      |      | 100.0 |
+|      | Active                        |        | 1:36 |      | 100.0 |
+| code | Add retry algorithm to client |        |      | 1:31 |  94.8 |
+| code | Entity syntax refactor snags  |        |      | 0:05 |   5.2 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-11 Thu 00:28]
+#+CAPTION: Clock summary at [2025-12-11 Thu 01:42]
 |       | <75>                                                |         |       |       |       |
 | Tags  | Headline                                            | Time    |       |       |     % |
 |-------+-----------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                        | *53:19* |       |       | 100.0 |
+|       | *Total time*                                        | *54:31* |       |       | 100.0 |
 |-------+-----------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                             | 53:19   |       |       | 100.0 |
-|       | Active                                              |         | 53:19 |       | 100.0 |
+|       | Stories                                             | 54:31   |       |       | 100.0 |
+|       | Active                                              |         | 54:31 |       | 100.0 |
 | agile | Sprint and product backlog refinement               |         |       |  0:29 |   0.9 |
-| infra | OCR scan notebooks for this sprint                  |         |       | 13:00 |  24.4 |
-| code  | Implement session cancellation                      |         |       |  2:42 |   5.1 |
-| code  | Create a variability service for feature flags      |         |       |  1:23 |   2.6 |
-| code  | Add tests to diagrams                               |         |       |  1:26 |   2.7 |
-| code  | Add messaging to variability                        |         |       |  0:40 |   1.3 |
-| code  | Create handshake service in comms                   |         |       |  2:31 |   4.7 |
-| code  | Implement client heartbeat for disconnect detection |         |       |  5:18 |   9.9 |
+| infra | OCR scan notebooks for this sprint                  |         |       | 13:00 |  23.8 |
+| code  | Implement session cancellation                      |         |       |  2:42 |   5.0 |
+| code  | Create a variability service for feature flags      |         |       |  1:23 |   2.5 |
+| code  | Add tests to diagrams                               |         |       |  1:26 |   2.6 |
+| code  | Add messaging to variability                        |         |       |  0:40 |   1.2 |
+| code  | Create handshake service in comms                   |         |       |  2:31 |   4.6 |
+| code  | Implement client heartbeat for disconnect detection |         |       |  5:18 |   9.7 |
 | code  | Pressing disconnect crashes client                  |         |       |  0:23 |   0.7 |
 | infra | Create a component creator skill                    |         |       |  0:42 |   1.3 |
-| code  | Add listen/notify support                           |         |       | 11:25 |  21.4 |
+| code  | Add listen/notify support                           |         |       | 11:25 |  20.9 |
 | code  | Move context to database                            |         |       |  0:20 |   0.6 |
-| code  | Use =std::string_view= for loggers                  |         |       |  3:14 |   6.1 |
-| code  | Fix issues with logging after string_view change    |         |       |  0:53 |   1.7 |
-| code  | Remove bootstrap mode from context                  |         |       |  6:36 |  12.4 |
+| code  | Use =std::string_view= for loggers                  |         |       |  3:14 |   5.9 |
+| code  | Fix issues with logging after string_view change    |         |       |  0:53 |   1.6 |
+| code  | Remove bootstrap mode from context                  |         |       |  6:36 |  12.1 |
 | code  | Add tests for messaging handler                     |         |       |  0:14 |   0.4 |
-| code  | Add retry algorithm to client                       |         |       |  0:19 |   0.6 |
+| code  | Add retry algorithm to client                       |         |       |  1:31 |   2.8 |
 | code  | Entity syntax refactor snags                        |         |       |  0:14 |   0.4 |
 | code  | Experiment with simple code generation              |         |       |  1:30 |   2.8 |
 #+end:
@@ -1452,8 +1452,9 @@ You might place it in a dedicated namespace like `system::features` or
 We need tests in comms which create a test request and response and a test
 handler.
 
-*** STARTED Add retry algorithm to client                              :code:
+*** COMPLETED Add retry algorithm to client                            :code:
     :LOGBOOK:
+    CLOCK: [2025-12-11 Thu 00:29]--[2025-12-11 Thu 01:41] =>  1:12
     CLOCK: [2025-12-11 Thu 00:09]--[2025-12-11 Thu 00:28] =>  0:19
     :END:
 
@@ -1477,7 +1478,7 @@ However, we still see the entity enum in the code.
 
 Notes:
 
-- this is not quite done yet. We need to slit =add_options=.
+- this is not quite done yet. We need to split =add_options=.
 
 *** STARTED Experiment with simple code generation                     :code:
     :LOGBOOK:
@@ -1487,6 +1488,38 @@ Notes:
 It should be easy enough to add a simple code generator that creates the basic
 infrastructure for a domain type, so that we don't have to waste Claude Code
 tokens.
+
+*** Add system tray support                                            :code:
+
+We need to be able to show notifications to users in the system tray - or
+whatever is the idiomatic way of doing this.
+
+Links:
+
+- [[https://doc.qt.io/archives/qt-5.15/qtwidgets-desktop-systray-example.html][System Tray Icon Example]]
+
+*** Data in login info looks spurious                                  :code:
+
+We see stuff like this:
+
+#+begin_src
+oresdb=> select * from login_info;
+              account_id              |     last_ip     | last_attempt_ip | failed_logins | locked |       last_login       | online
+--------------------------------------+-----------------+-----------------+---------------+--------+------------------------+--------
+ 019a4439-be9e-798e-bf2f-927ca236f84c | 0.0.0.0         | 0.0.0.0         |             0 |      0 | 1969-12-31 23:00:00+01 |      0
+ 019a3ba6-bd11-709b-b93d-fea9403d3d39 | 127.0.0.1       | 127.0.0.1       |             0 |      0 | 2025-10-31 19:03:48+00 |      1
+ 019a4431-98f8-79ae-9fc8-f6a6e77a0490 | 192.168.1.100   | 192.168.1.100   |             0 |      0 | 2025-11-02 10:51:32+00 |      1
+ 019a4431-9a7d-7b3d-a1cb-b9e02d44c804 | 0.0.0.0         | 192.168.1.100   |             1 |      0 | 1969-12-31 23:00:00+01 |      0
+
+#+end_src
+
+Also, we need a login timestamp and a logout timestamp so we can measure session
+duration.
+
+*** Add a logout message                                               :code:
+
+At present we are just closing the socket. We should send a proper message. The
+server should close the connection when receiving this message.
 
 *** Remove enum exception                                              :code:
 

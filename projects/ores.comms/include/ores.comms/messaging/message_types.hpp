@@ -37,8 +37,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Protocol version 7 adds correlation_id field to frame header for
 // request/response matching, enabling concurrent operations and server-push
 // notifications.
+//
+// Version 7.1 adds subscription protocol messages (subscribe_request,
+// subscribe_response, unsubscribe_request, unsubscribe_response, notification)
+// for server-push event notifications.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 7;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

@@ -1663,18 +1663,18 @@ subscription protocol management).
 
 ***** Phase 1: Core Event Bus
 
-- [ ] Create =event_bus= class in =ores.eventing/service=
+- [X] Create =event_bus= class in =ores.eventing/service=
   - Thread-safe publish/subscribe
   - Type-erased internal storage with typed API
   - RAII subscription handles
-- [ ] Create =subscription= class for lifetime management
-- [ ] Add unit tests for event_bus
+- [X] Create =subscription= class for lifetime management
+- [X] Add unit tests for event_bus
 
 ***** Phase 2: Domain Events
 
-- [ ] Create =events= namespace in =ores.risk/domain= with =currency_changed_event=
-- [ ] Create =events= namespace in =ores.accounts/domain= with =user_changed_event=
-- [ ] Define =event_traits= template for event type → string mapping
+- [X] Create =events= namespace in =ores.risk/domain= with =currency_changed_event=
+- [X] Create =events= namespace in =ores.accounts/domain= with =account_changed_event=
+- [X] Define =event_traits= template for event type → string mapping
 
 ***** Phase 3: Event Source Integration
 
@@ -1719,6 +1719,14 @@ subscription protocol management).
 - [ ] Wire notification callback to Qt signal
 - [ ] Update =CurrencyController= to subscribe to currency changes
 - [ ] Add visual indicator for stale data in =CurrencyMdiWindow=
+
+
+*** Use events in comms and accounts                                   :code:
+
+Now we have an event bus, we should create events for:
+
+- connect, disconnect, retry
+- login, logout
 
 *** Add system tray support                                            :code:
 

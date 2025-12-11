@@ -237,4 +237,31 @@ void account_service::unlock_account(const boost::uuids::uuid& account_id) {
     login_info_repo_.update(login_info);
 }
 
+void account_service::logout(const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Logging out account: "
+                               << boost::uuids::to_string(account_id);
+
+    auto accounts = account_repo_.read_latest(account_id);
+    if (accounts.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Attempted to logout non-existent account: "
+                                  << boost::uuids::to_string(account_id);
+        throw std::invalid_argument("Account does not exist");
+    }
+
+    auto login_info_vec = login_info_repo_.read(account_id);
+    if (login_info_vec.empty()) {
+        BOOST_LOG_SEV(lg(), error) << "Login tracking not found for account: "
+                                   << boost::uuids::to_string(account_id);
+        throw std::runtime_error("Login tracking information missing");
+    }
+
+    auto login_info = login_info_vec[0];
+    login_info.online = false;
+
+    BOOST_LOG_SEV(lg(), info) << "Account logged out: "
+                              << boost::uuids::to_string(account_id);
+
+    login_info_repo_.update(login_info);
+}
+
 }

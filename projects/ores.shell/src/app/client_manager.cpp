@@ -156,6 +156,8 @@ bool client_manager::login(std::string username, std::string password) {
                                               << response.username
                                               << " ID: " << response.account_id;
 
+                    logged_in_account_id_ = response.account_id;
+
                     output_ << "✓ Login successful." << std::endl
                             << "  Username: '" << response.username << "'" << std::endl
                             << "  Account ID: '" << response.account_id << "'" << std::endl
@@ -175,6 +177,46 @@ bool client_manager::login(std::string username, std::string password) {
     return false;
 }
 
+bool client_manager::logout() {
+    if (!client_ || !client_->is_connected()) {
+        BOOST_LOG_SEV(lg(), debug) << "Not connected, nothing to logout.";
+        return false;
+    }
+
+    if (!logged_in_account_id_) {
+        BOOST_LOG_SEV(lg(), debug) << "No logged-in account, skipping logout.";
+        return false;
+    }
+
+    try {
+        BOOST_LOG_SEV(lg(), debug) << "Creating logout request for account: "
+                                   << *logged_in_account_id_;
+
+        using accounts::messaging::logout_request;
+        using accounts::messaging::logout_response;
+        auto result = process_request<logout_request, logout_response,
+            message_type::logout_request>(
+            logout_request{.account_id = *logged_in_account_id_});
+
+        if (result && result->success) {
+            BOOST_LOG_SEV(lg(), info) << "Logout successful for account: "
+                                      << *logged_in_account_id_;
+            output_ << "✓ Logout successful." << std::endl;
+            logged_in_account_id_ = std::nullopt;
+            return true;
+        } else if (result) {
+            BOOST_LOG_SEV(lg(), warn) << "Logout failed: " << result->message;
+            output_ << "✗ Logout failed: " << result->message << std::endl;
+        }
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Logout exception: " << e.what();
+        output_ << "✗ Logout error: " << e.what() << std::endl;
+    }
+
+    logged_in_account_id_ = std::nullopt;
+    return false;
+}
+
 void client_manager::disconnect() {
     if (!client_) {
         BOOST_LOG_SEV(lg(), warn) << "No client instance.";
@@ -183,9 +225,15 @@ void client_manager::disconnect() {
 
     if (!client_->is_connected()) {
         BOOST_LOG_SEV(lg(), debug) << "Already disconnected.";
+        logged_in_account_id_ = std::nullopt;
         return;
     }
 
+    // Send logout message before disconnecting
+    logout();
+
+    // The server closes the connection after logout, but we call disconnect
+    // to ensure proper cleanup on the client side
     client_->disconnect();
     BOOST_LOG_SEV(lg(), info) << "Disconnected from server.";
     output_ << "✓ Disconnected successfully from the server." << std::endl;

@@ -148,6 +148,16 @@ public:
      */
     void unlock_account(const boost::uuids::uuid& account_id);
 
+    /**
+     * @brief Logs out a user by setting their online status to false.
+     *
+     * This method updates the login_info table to mark the user as offline.
+     *
+     * @param account_id The ID of the account to log out
+     * @throws std::invalid_argument If account does not exist
+     */
+    void logout(const boost::uuids::uuid& account_id);
+
 private:
     repository::account_repository account_repo_;
     repository::login_info_repository login_info_repo_;

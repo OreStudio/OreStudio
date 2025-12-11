@@ -22,6 +22,7 @@
 
 #include <memory>
 #include <optional>
+#include <boost/uuid/uuid.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/messaging/handshake_protocol.hpp"
 #include "ores.comms/net/client.hpp"
@@ -132,6 +133,7 @@ public:
 
     bool connect(std::string host, std::string port, std::string identifier);
     bool login(std::string username, std::string password);
+    bool logout();
     void disconnect();
 
 private:
@@ -139,6 +141,7 @@ private:
     const std::optional<comms::net::client_options> connection_config_;
     const std::optional<config::login_options> login_config_;
     std::shared_ptr<comms::net::client> client_;
+    std::optional<boost::uuids::uuid> logged_in_account_id_;
 };
 
 }

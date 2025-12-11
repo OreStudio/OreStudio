@@ -82,6 +82,8 @@ enum class message_type {
     delete_account_response = 0x200A,
     list_login_info_request = 0x200B,
     list_login_info_response = 0x200C,
+    logout_request = 0x200D,
+    logout_response = 0x200E,
     create_initial_admin_request = 0x200F,
     create_initial_admin_response = 0x2010,
     bootstrap_status_request = 0x2011,

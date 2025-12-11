@@ -220,6 +220,7 @@ namespace ores #F2F2F2 {
                 +list_accounts(context) std::vector<domain::account>
                 +delete_account(context, boost::uuids::uuid) void
                 +login(context, std::string, std::string, boost::asio::ip::address) domain::account
+                +logout(context, boost::uuids::uuid) void
                 +unlock_account(context, boost::uuids::uuid) void
                 -{static} throw_if_empty(std::string, std::string) void
                 -{field} account_repo_ repository::account_repository
@@ -390,6 +391,36 @@ namespace ores #F2F2F2 {
             - error_message: Error message if unlock failed.
             end note
 
+            class logout_request <<message>> #E1F5FF {
+                +{field} account_id boost::uuids::uuid
+                +serialize() std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t>) std::expected<logout_request, comms::messaging::error_code>
+            }
+
+            note top of logout_request
+            Request to logout a user.
+
+            Fields:
+
+            - account_id: ID of account to logout.
+            end note
+
+            class logout_response <<message>> #E1F5FF {
+                +{field} success bool
+                +{field} message std::string
+                +serialize() std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t>) std::expected<logout_response, comms::messaging::error_code>
+            }
+
+            note top of logout_response
+            Response indicating logout result.
+
+            Fields:
+
+            - success: Logout success flag.
+            - message: Message (error if failed, confirmation if succeeded).
+            end note
+
             class accounts_message_handler #ECECEC {
                 +accounts_message_handler(utility::repository::context)
                 +handle_message(comms::messaging::message_type, std::span<const std::uint8_t>, std::string) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::messaging::error_code>>
@@ -410,6 +441,7 @@ namespace ores #F2F2F2 {
             - create_account_request: Creates a new account
             - list_accounts_request: Retrieves all accounts from the repository
             - login_request: Authenticates a user and updates login tracking
+            - logout_request: Logs out a user and marks them as offline
             - unlock_account_request: Unlocks a locked account
             end note
 
@@ -424,6 +456,8 @@ namespace ores #F2F2F2 {
             accounts_message_handler ..> ores::accounts::messaging::login_response : uses
             accounts_message_handler ..> ores::accounts::messaging::unlock_account_request : uses
             accounts_message_handler ..> ores::accounts::messaging::unlock_account_response : uses
+            accounts_message_handler ..> ores::accounts::messaging::logout_request : uses
+            accounts_message_handler ..> ores::accounts::messaging::logout_response : uses
 
             class registrar #ECECEC {
                 +{static} register_handlers(comms::server&, utility::repository::context) void
@@ -580,13 +614,18 @@ namespace ores #F2F2F2 {
                 +delete_account_response_success() void
                 +delete_account_response_failure() void
                 +delete_account_response_serialize_deserialize() void
+                +logout_request_with_valid_uuid() void
+                +logout_request_serialize_deserialize() void
+                +logout_response_success() void
+                +logout_response_failure() void
+                +logout_response_serialize_deserialize() void
             }
 
             note top of messaging_protocol_tests
             Test suite for messaging protocol serialization.
 
             Tests cover all request/response message types:
-            create_account, list_accounts, login, unlock_account,
+            create_account, list_accounts, login, logout, unlock_account,
             delete_account. Validates serialization/deserialization.
             end note
 
@@ -596,6 +635,8 @@ namespace ores #F2F2F2 {
             messaging_protocol_tests ..> ores::accounts::messaging::list_accounts_response : tests
             messaging_protocol_tests ..> ores::accounts::messaging::login_request : tests
             messaging_protocol_tests ..> ores::accounts::messaging::login_response : tests
+            messaging_protocol_tests ..> ores::accounts::messaging::logout_request : tests
+            messaging_protocol_tests ..> ores::accounts::messaging::logout_response : tests
             messaging_protocol_tests ..> ores::accounts::messaging::unlock_account_request : tests
             messaging_protocol_tests ..> ores::accounts::messaging::unlock_account_response : tests
 

@@ -23,6 +23,7 @@
 #include <iomanip>
 #include <ostream>
 #include <algorithm>
+#include <boost/throw_exception.hpp>
 #include <magic_enum/magic_enum.hpp>
 #include "ores.utility/log/logging_configuration.hpp"
 #include "ores.utility/database/database_configuration.hpp"
@@ -32,6 +33,11 @@ namespace ores::cli::config::parser_helpers {
 
 namespace {
 const std::string indent("   ");
+const std::string export_as_of_arg("as-of");
+const std::string export_key_arg("key");
+const std::string export_all_versions_arg("all-versions");
+const std::string export_format_arg("format");
+const std::string delete_key_arg("key");
 }
 
 void print_help_header(std::ostream& s) {
@@ -61,12 +67,6 @@ add_common_options(boost::program_options::options_description base) {
     boost::program_options::options_description r;
     r.add(base).add(db_desc).add(log_desc);
     return r;
-}
-
-void force_entity(boost::program_options::variables_map& vm, entity e) {
-    const auto entity_name = std::string(magic_enum::enum_name(e));
-    vm.insert(std::make_pair("entity",
-        boost::program_options::variable_value(entity_name, false)));
 }
 
 void validate_operation(const std::string& entity_name,
@@ -104,6 +104,77 @@ void print_entity_help(const std::string& entity_name,
 
     info << std::endl << "For operation-specific options, use: "
          << entity_name << " <operation> --help" << std::endl;
+}
+
+boost::program_options::options_description make_export_options_description() {
+    using boost::program_options::options_description;
+    using boost::program_options::value;
+
+    options_description r("Export");
+    r.add_options()
+        ("as-of", value<std::string>(),
+            "Time point from which to dump data. If not supplied, defaults to latest.")
+        ("key", value<std::string>(), "Key to filter data by.")
+        ("all-versions", "If supplied, retrieves all versions.")
+        ("format", value<std::string>(), "Format to export data in, e.g. xml or json.");
+
+    return r;
+}
+
+boost::program_options::options_description make_delete_options_description() {
+    using boost::program_options::options_description;
+    using boost::program_options::value;
+
+    options_description r("Delete");
+    r.add_options()
+        ("key", value<std::string>(), "Key to identify the entity (e.g., account ID or username).");
+
+    return r;
+}
+
+format read_format(const boost::program_options::variables_map& vm) {
+    if (vm.count(export_format_arg) == 0)
+        return format::json;
+
+    const auto s(vm[export_format_arg].as<std::string>());
+    auto f = magic_enum::enum_cast<format>(s);
+    if (f.has_value())
+        return f.value();
+
+    BOOST_THROW_EXCEPTION(
+        parser_exception("Invalid or unsupported format: '" + s + "'"));
+}
+
+export_options read_export_options(
+    const boost::program_options::variables_map& vm, entity e) {
+    export_options r;
+
+    r.target_entity = e;
+    r.target_format = read_format(vm);
+    r.all_versions = vm.count(export_all_versions_arg) != 0;
+
+    if (vm.count(export_as_of_arg) != 0)
+        r.as_of = vm[export_as_of_arg].as<std::string>();
+
+    if (vm.count(export_key_arg) != 0)
+        r.key = vm[export_key_arg].as<std::string>();
+
+    return r;
+}
+
+delete_options read_delete_options(
+    const boost::program_options::variables_map& vm, entity e) {
+    delete_options r;
+
+    r.target_entity = e;
+
+    if (vm.count(delete_key_arg) == 0) {
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply --key argument for delete command."));
+    }
+    r.key = vm[delete_key_arg].as<std::string>();
+
+    return r;
 }
 
 }

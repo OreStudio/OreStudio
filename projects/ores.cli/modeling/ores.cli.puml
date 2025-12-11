@@ -214,14 +214,26 @@ namespace ores #F2F2F2 {
                 +{static} print_help_header(s: std::ostream&): void
                 +{static} print_help_command(command_name: const std::string&, od: const options_description&, info: std::ostream&): void
                 +{static} add_common_options(base: options_description): options_description
-                +{static} force_entity(vm: variables_map&, e: entity): void
                 +{static} validate_operation(entity_name: const std::string&, operation: const std::string&, allowed_operations: const std::vector<std::string>&): void
                 +{static} print_entity_help(entity_name: const std::string&, description: const std::string&, operations: const std::vector<std::pair<std::string, std::string>>&, info: std::ostream&): void
+                +{static} make_export_options_description(): options_description
+                +{static} make_delete_options_description(): options_description
+                +{static} read_format(vm: const variables_map&): format
+                +{static} read_export_options(vm: const variables_map&, e: entity): export_options
+                +{static} read_delete_options(vm: const variables_map&, e: entity): delete_options
             }
 
             note top of parser_helpers
             Shared utility functions used by all entity parsers.
+
+            Includes common option descriptions and read functions
+            for export and delete operations to reduce code duplication.
             end note
+
+            parser_helpers ..> ores::cli::config::export_options : creates
+            parser_helpers ..> ores::cli::config::delete_options : creates
+            parser_helpers ..> ores::cli::config::format : uses
+            parser_helpers ..> ores::cli::config::entity : uses
 
             currencies_parser ..> parser_helpers : uses
             accounts_parser ..> parser_helpers : uses

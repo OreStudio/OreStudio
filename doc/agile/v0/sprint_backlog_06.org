@@ -1452,6 +1452,20 @@ You might place it in a dedicated namespace like `system::features` or
 We need tests in comms which create a test request and response and a test
 handler.
 
+*** STARTED Entity syntax refactor snags                               :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-10 Wed 23:51]--[2025-12-11 Thu 00:05] =>  0:14
+    :END:
+
+We refactored ores.cli to be "entity oriented", so that commands such as export,
+import etc belonged directly to an entity. In this case there should be no need
+to supply the entity in the command line since it is part of the command.
+However, we still see the entity enum in the code.
+
+Notes:
+
+- this is not quite done yet. We need to slit =add_options=.
+
 *** STARTED Experiment with simple code generation                     :code:
     :LOGBOOK:
     CLOCK: [2025-12-02 Tue 14:35]--[2025-12-02 Tue 16:05] =>  1:30
@@ -1630,13 +1644,6 @@ responses to requests.
   - Request timeout handling
   - Heartbeat timeout triggers disconnect
   - Write serialization
-
-*** Entity syntax refactor snags                                       :code:
-
-We refactored ores.cli to be "entity oriented", so that commands such as export,
-import etc belonged directly to an entity. In this case there should be no need
-to supply the entity in the command line since it is part of the command.
-However, we still see the entity enum in the code.
 
 *** Add tests for messaging handler                                    :code:
 

@@ -288,6 +288,9 @@ Use appropriate tags for test categorization:
 6. **Faker Data**: Use faker-cxx for realistic random test data
 7. **Multiple Cases**: Test both happy paths and edge cases
 8. **Batch Operations**: Test both single and multiple entity operations for repositories
+9. **No SECTION**: Do not use Catch2 =SECTION= blocks. Create separate =TEST_CASE= for
+   each scenario instead. SECTIONs make it harder to identify which test failed in
+   the logs because the test case name alone doesn't indicate the failing section.
 
 * Artefacts                                                        :noexport:
 

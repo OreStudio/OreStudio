@@ -288,6 +288,20 @@ lines. PlantUML tends to arrange classes horizontally by default, which can
 result in diagrams with poor aspect ratios (e.g., 5:1). Layout groupings help
 achieve ratios closer to 2:1 or even 1:1.
 
+*** Layout engine selection
+
+The default GraphViz engine sometimes has issues with =together= blocks, causing
+classes to appear outside their namespaces. If this occurs, try the Smetana
+engine by adding this pragma after =@startuml=:
+
+#+begin_src plantuml
+@startuml
+!pragma layout smetana
+#+end_src
+
+Use the default engine when it renders correctly, and switch to Smetana only
+when needed.
+
 *** Together blocks
 
 Use =together= blocks to group related classes that should be rendered near each

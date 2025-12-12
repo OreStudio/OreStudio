@@ -16,7 +16,7 @@ Demonstrates commands available in [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][or
   :header-args+: :var data_dir="../../../../../projects/ores.risk/tests/test_data/currencies"
   :header-args+: :var ORES_CLI_DB_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "ores")
   :header-args+: :var db_args="--db-user ores --db-host localhost --db-port 5432 --db-database oresdb"
-  :header-args+: :var log_args="--log-enabled --log-level info"
+  :header-args+: :var log_args="--log-enabled --log-level debug --log-directory ../log"
   :END:
 
 ** General
@@ -59,14 +59,11 @@ Logging:
 
 Commands:
 
-   import         Imports data into the system.
-   export         Exports data from the system.
-   delete         Deletes entities from the system.
-   currencies     Manage currencies (import, export, list, delete).
+   currencies     Manage currencies (import, export, list, delete, add).
    accounts       Manage accounts (list, delete, add).
    feature_flags  Manage feature flags (list, delete, add).
 
-For command specific options, type <command> --help.
+For entity and operation specific options, use: <entity> <operation> --help
 #+end_src
 
 *** Version
@@ -79,7 +76,7 @@ Display version information.
 
 #+RESULTS:
 #+begin_src text
-CLI for ORE Studio v0.0.5
+CLI for ORE Studio v0.0.6
 Copyright (C) 2025 Marco Craveiro.
 License GPLv3: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
@@ -110,11 +107,11 @@ currencies - Manage currencies
 Usage: ores.cli currencies <operation> [options]
 
 Available operations:
-  import     Import currencies from ORE XML files
-  export     Export currencies to ORE XML or CSV (external formats)
-  list       List currencies as JSON or table (internal formats)
-  delete     Delete a currency by ISO code
-  add        Add currencies from JSON files
+   import         Import currencies from ORE XML files
+   export         Export currencies to ORE XML or CSV (external formats)
+   list           List currencies as JSON or table (internal formats)
+   delete         Delete a currency by ISO code
+   add            Add currencies from JSON files
 
 For operation-specific options, use: currencies <operation> --help
 #+end_src
@@ -128,58 +125,12 @@ Import currencies from ORE XML format.
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
 ./ores.cli currencies import ${db_args} ${log_args} \
-  --target ${data_dir}/currencies_API.xml | jq .[:3]
+  --target ${data_dir}/currencies_API.xml
 #+end_src
 
 #+RESULTS:
 #+begin_src json
-[
-  {
-    "iso_code": "AED",
-    "name": "United Arab Emirates dirham",
-    "numeric_code": "784",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "",
-    "valid_from": "",
-    "valid_to": ""
-  },
-  {
-    "iso_code": "AFN",
-    "name": "Afghan afghani",
-    "numeric_code": "971",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "",
-    "valid_from": "",
-    "valid_to": ""
-  },
-  {
-    "iso_code": "ALL",
-    "name": "Albanian lek",
-    "numeric_code": "8",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "",
-    "valid_from": "",
-    "valid_to": ""
-  }
-]
+"currencies_API.xml": Imported a total of 178 currencies.
 #+end_src
 
 **** Import multiple files
@@ -188,88 +139,13 @@ export ORES_CLI_DB_PASSWORD
 export ORES_CLI_DB_PASSWORD
 ./ores.cli currencies import ${db_args} ${log_args} \
   --target ${data_dir}/currencies_API.xml \
-  --target ${data_dir}/currencies_extended.xml | jq .[:5]
+  --target ${data_dir}/currencies_42.xml
 #+end_src
 
 #+RESULTS:
 #+begin_src json
-[
-  {
-    "iso_code": "AED",
-    "name": "United Arab Emirates dirham",
-    "numeric_code": "784",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "",
-    "valid_from": "",
-    "valid_to": ""
-  },
-  {
-    "iso_code": "AFN",
-    "name": "Afghan afghani",
-    "numeric_code": "971",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "",
-    "valid_from": "",
-    "valid_to": ""
-  },
-  {
-    "iso_code": "ALL",
-    "name": "Albanian lek",
-    "numeric_code": "8",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "",
-    "valid_from": "",
-    "valid_to": ""
-  },
-  {
-    "iso_code": "AMD",
-    "name": "Armenian dram",
-    "numeric_code": "51",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "",
-    "valid_from": "",
-    "valid_to": ""
-  },
-  {
-    "iso_code": "ANG",
-    "name": "Netherlands Antillean guilder",
-    "numeric_code": "532",
-    "symbol": "",
-    "fraction_symbol": "",
-    "fractions_per_unit": 100,
-    "rounding_type": "Closest",
-    "rounding_precision": 2,
-    "format": "",
-    "currency_type": "",
-    "modified_by": "",
-    "valid_from": "",
-    "valid_to": ""
-  }
-]
+"currencies_API.xml": Imported a total of 178 currencies.
+"currencies_42.xml": Imported a total of 2 currencies.
 #+end_src
 
 *** Export
@@ -290,22 +166,22 @@ export ORES_CLI_DB_PASSWORD
 <?xml version="1.0" encoding="UTF-8"?>
 <CurrencyConfig>
   <Currency>
-    <Name>Zimbabwean dollar</Name>
-    <ISOCode>ZWL</ISOCode>
-    <NumericCode>932</NumericCode>
-    <Symbol/>
+    <Name>Papua New Guinean kina</Name>
+    <ISOCode>PGK</ISOCode>
+    <NumericCode>598</NumericCode>
+    <Symbol>K</Symbol>
     <FractionSymbol/>
     <FractionsPerUnit>100</FractionsPerUnit>
     <RoundingType>Closest</RoundingType>
     <RoundingPrecision>2</RoundingPrecision>
-    <Format/>
+    <Format>%3% %1$.2f</Format>
     <CurrencyType/>
   </Currency>
   <Currency>
-    <Name>South African rand</Name>
-    <ISOCode>ZAR</ISOCode>
-    <NumericCode>710</NumericCode>
-    <Symbol/>
+    <Name>Somali shilling</Name>
+    <ISOCode>SOS</ISOCode>
+    <NumericCode>706</NumericCode>
+    <Symbol>K</Symbol>
     <FractionSymbol/>
 #+end_src
 
@@ -320,15 +196,15 @@ export ORES_CLI_DB_PASSWORD
 #+RESULTS:
 #+begin_src csv
 iso_code,name,numeric_code,symbol,fraction_symbol,fractions_per_unit,rounding_type,rounding_precision,format,currency_type,modified_by,valid_from,valid_to
-ZWL,Zimbabwean dollar,932,"","",100,Closest,2,"","",ores,2025-11-18 15:38:26,2025-11-18 15:38:26
-ZAR,South African rand,710,"","",100,Closest,2,"","",ores,2025-11-18 15:38:26,2025-11-18 15:38:26
-ZMW,Zambian kwacha,967,"","",100,Closest,2,"","",ores,2025-11-18 15:38:26,2025-11-18 15:38:26
-AED,United Arab Emirates dirham,784,"","",100,Closest,2,"","",ores,2025-11-18 15:38:26,2025-11-18 15:38:26
-AFN,Afghan afghani,971,"","",100,Closest,2,"","",ores,2025-11-18 15:38:26,2025-11-18 15:38:26
-ALL,Albanian lek,8,"","",100,Closest,2,"","",ores,2025-11-18 15:38:26,2025-11-18 15:38:26
-AMD,Armenian dram,51,"","",100,Closest,2,"","",ores,2025-11-18 15:38:26,2025-11-18 15:38:26
-ANG,Netherlands Antillean guilder,532,"","",100,Closest,2,"","",ores,2025-11-18 15:38:26,2025-11-18 15:38:26
-AOA,Angolan kwanza,973,"","",100,Closest,2,"","",ores,2025-11-18 15:38:26,2025-11-18 15:38:26
+PGK,Papua New Guinean kina,598,K,"",100,Closest,2,%3% %1$.2f,"",ores,2025-12-11 23:45:39,2025-12-11 23:45:39
+SOS,Somali shilling,706,K,"",100,Closest,2,%3% %1$.2f,"",ores,2025-12-11 23:45:39,2025-12-11 23:45:39
+ALL,Albanian lek,8,"","",100,Closest,2,"","",ores,2025-12-11 23:45:39,2025-12-11 23:45:39
+AMD,Armenian dram,51,"","",100,Closest,2,"","",ores,2025-12-11 23:45:39,2025-12-11 23:45:39
+ANG,Netherlands Antillean guilder,532,"","",100,Closest,2,"","",ores,2025-12-11 23:45:39,2025-12-11 23:45:39
+AOA,Angolan kwanza,973,"","",100,Closest,2,"","",ores,2025-12-11 23:45:39,2025-12-11 23:45:39
+ARS,Argentine peso,32,"","",100,Closest,2,"","",ores,2025-12-11 23:45:39,2025-12-11 23:45:39
+AUD,Australian dollar,36,"","",100,Closest,2,"","",ores,2025-12-11 23:45:39,2025-12-11 23:45:39
+AWG,Aruban florin,533,"","",100,Closest,2,"","",ores,2025-12-11 23:45:39,2025-12-11 23:45:39
 #+end_src
 
 **** Export specific currency
@@ -343,6 +219,7 @@ export ORES_CLI_DB_PASSWORD
 #+begin_src json
 [
   {
+    "version": 15,
     "iso_code": "USD",
     "name": "United States dollar",
     "numeric_code": "840",
@@ -354,8 +231,8 @@ export ORES_CLI_DB_PASSWORD
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-11-18 15:38:26",
-    "valid_to": "2025-11-18 15:38:26"
+    "valid_from": "2025-12-11 23:45:39",
+    "valid_to": "2025-12-11 23:45:39"
   }
 ]
 #+end_src
@@ -372,6 +249,7 @@ export ORES_CLI_DB_PASSWORD
 #+begin_src json
 [
   {
+    "version": 15,
     "iso_code": "USD",
     "name": "United States dollar",
     "numeric_code": "840",
@@ -383,10 +261,11 @@ export ORES_CLI_DB_PASSWORD
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-11-18 15:38:26",
-    "valid_to": "2025-11-18 15:38:26"
+    "valid_from": "2025-12-11 23:45:39",
+    "valid_to": "2025-12-11 23:45:39"
   },
   {
+    "version": 14,
     "iso_code": "USD",
     "name": "United States dollar",
     "numeric_code": "840",
@@ -398,10 +277,11 @@ export ORES_CLI_DB_PASSWORD
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-11-18 15:38:04",
-    "valid_to": "2025-11-18 15:38:04"
+    "valid_from": "2025-12-11 23:44:52",
+    "valid_to": "2025-12-11 23:44:52"
   },
   {
+    "version": 13,
     "iso_code": "USD",
     "name": "United States dollar",
     "numeric_code": "840",
@@ -413,8 +293,8 @@ export ORES_CLI_DB_PASSWORD
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-11-18 15:37:08",
-    "valid_to": "2025-11-18 15:37:08"
+    "valid_from": "2025-12-11 23:36:31",
+    "valid_to": "2025-12-11 23:36:31"
   }
 ]
 #+end_src
@@ -424,28 +304,30 @@ export ORES_CLI_DB_PASSWORD
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
 ./ores.cli currencies export ${db_args} ${log_args} \
-  --format json --as-of "2025-11-18 15:38:04" | jq .[:3]
+  --format json --as-of "2025-12-11 23:44:52" | jq .[:3]
 #+end_src
 
 #+RESULTS:
 #+begin_src json
 [
   {
-    "iso_code": "BTC",
-    "name": "Bitcoin",
-    "numeric_code": "0",
-    "symbol": "₿",
-    "fraction_symbol": "sat",
-    "fractions_per_unit": 100000000,
+    "version": 13,
+    "iso_code": "MVR",
+    "name": "Maldivian rufiyaa",
+    "numeric_code": "462",
+    "symbol": "",
+    "fraction_symbol": "",
+    "fractions_per_unit": 100,
     "rounding_type": "Closest",
-    "rounding_precision": 8,
-    "format": "%3% %1$.8f",
-    "currency_type": "Cryptocurrency",
+    "rounding_precision": 2,
+    "format": "",
+    "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-11-05 17:28:10",
-    "valid_to": "2025-11-05 17:28:10"
+    "valid_from": "2025-12-11 23:36:31",
+    "valid_to": "2025-12-11 23:36:31"
   },
   {
+    "version": 13,
     "iso_code": "AED",
     "name": "United Arab Emirates dirham",
     "numeric_code": "784",
@@ -457,10 +339,11 @@ export ORES_CLI_DB_PASSWORD
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-11-18 15:37:08",
-    "valid_to": "2025-11-18 15:37:08"
+    "valid_from": "2025-12-11 23:36:31",
+    "valid_to": "2025-12-11 23:36:31"
   },
   {
+    "version": 13,
     "iso_code": "AFN",
     "name": "Afghan afghani",
     "numeric_code": "971",
@@ -472,8 +355,8 @@ export ORES_CLI_DB_PASSWORD
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-11-18 15:37:08",
-    "valid_to": "2025-11-18 15:37:08"
+    "valid_from": "2025-12-11 23:36:31",
+    "valid_to": "2025-12-11 23:36:31"
   }
 ]
 #+end_src
@@ -494,39 +377,42 @@ export ORES_CLI_DB_PASSWORD
 #+begin_src json
 [
   {
-    "iso_code": "ZWL",
-    "name": "Zimbabwean dollar",
-    "numeric_code": "932",
-    "symbol": "",
+    "version": 26,
+    "iso_code": "PGK",
+    "name": "Papua New Guinean kina",
+    "numeric_code": "598",
+    "symbol": "K",
     "fraction_symbol": "",
     "fractions_per_unit": 100,
     "rounding_type": "Closest",
     "rounding_precision": 2,
-    "format": "",
+    "format": "%3% %1$.2f",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-11-18 15:38:26",
-    "valid_to": "2025-11-18 15:38:26"
+    "valid_from": "2025-12-11 23:45:39",
+    "valid_to": "2025-12-11 23:45:39"
   },
   {
-    "iso_code": "ZAR",
-    "name": "South African rand",
-    "numeric_code": "710",
-    "symbol": "",
+    "version": 26,
+    "iso_code": "SOS",
+    "name": "Somali shilling",
+    "numeric_code": "706",
+    "symbol": "K",
     "fraction_symbol": "",
     "fractions_per_unit": 100,
     "rounding_type": "Closest",
     "rounding_precision": 2,
-    "format": "",
+    "format": "%3% %1$.2f",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-11-18 15:38:26",
-    "valid_to": "2025-11-18 15:38:26"
+    "valid_from": "2025-12-11 23:45:39",
+    "valid_to": "2025-12-11 23:45:39"
   },
   {
-    "iso_code": "ZMW",
-    "name": "Zambian kwacha",
-    "numeric_code": "967",
+    "version": 15,
+    "iso_code": "ALL",
+    "name": "Albanian lek",
+    "numeric_code": "8",
     "symbol": "",
     "fraction_symbol": "",
     "fractions_per_unit": 100,
@@ -535,8 +421,8 @@ export ORES_CLI_DB_PASSWORD
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-11-18 15:38:26",
-    "valid_to": "2025-11-18 15:38:26"
+    "valid_from": "2025-12-11 23:45:39",
+    "valid_to": "2025-12-11 23:45:39"
   }
 ]
 #+end_src
@@ -552,15 +438,15 @@ export ORES_CLI_DB_PASSWORD
 #+RESULTS:
 #+begin_src text
 
-+----------+------------------------------------------------------------+--------+----------------+----------------+-----------+-------------+---------------------+---------------------+
-| ISO Code | Name                                                       | Symbol | Type           | Fractions/Unit | Precision | Modified By | Valid From          | Valid To            |
-+----------+------------------------------------------------------------+--------+----------------+----------------+-----------+-------------+---------------------+---------------------+
-| ZWL      | Zimbabwean dollar                                          |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
-| ZAR      | South African rand                                         |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
-| ZMW      | Zambian kwacha                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
-| AED      | United Arab Emirates dirham                                |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
-| AFN      | Afghan afghani                                             |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
-| ALL      | Albanian lek                                               |        |                | 100            | 2         | ores        | 2025-11-18 15:38:26 | 2025-11-18 15:38:26 |
++----------+---------+------------------------------------------------------------+--------+------+----------------+-----------+-------------+---------------------+---------------------+
+| ISO Code | Version | Name                                                       | Symbol | Type | Fractions/Unit | Precision | Modified By | Valid From          | Valid To            |
++----------+---------+------------------------------------------------------------+--------+------+----------------+-----------+-------------+---------------------+---------------------+
+| PGK      | 26      | Papua New Guinean kina                                     | K      |      | 100            | 2         | ores        | 2025-12-11 23:45:39 | 2025-12-11 23:45:39 |
+| SOS      | 26      | Somali shilling                                            | K      |      | 100            | 2         | ores        | 2025-12-11 23:45:39 | 2025-12-11 23:45:39 |
+| ALL      | 15      | Albanian lek                                               |        |      | 100            | 2         | ores        | 2025-12-11 23:45:39 | 2025-12-11 23:45:39 |
+| AMD      | 15      | Armenian dram                                              |        |      | 100            | 2         | ores        | 2025-12-11 23:45:39 | 2025-12-11 23:45:39 |
+| ANG      | 15      | Netherlands Antillean guilder                              |        |      | 100            | 2         | ores        | 2025-12-11 23:45:39 | 2025-12-11 23:45:39 |
+| AOA      | 15      | Angolan kwanza                                             |        |      | 100            | 2         | ores        | 2025-12-11 23:45:39 | 2025-12-11 23:45:39 |
 #+end_src
 
 **** List specific currency
@@ -575,6 +461,7 @@ export ORES_CLI_DB_PASSWORD
 #+begin_src json
 [
   {
+    "version": 15,
     "iso_code": "EUR",
     "name": "Euro",
     "numeric_code": "978",
@@ -586,8 +473,8 @@ export ORES_CLI_DB_PASSWORD
     "format": "",
     "currency_type": "",
     "modified_by": "ores",
-    "valid_from": "2025-11-18 15:38:26",
-    "valid_to": "2025-11-18 15:38:26"
+    "valid_from": "2025-12-11 23:45:39",
+    "valid_to": "2025-12-11 23:45:39"
   }
 ]
 #+end_src
@@ -609,18 +496,27 @@ Currency deleted successfully: ZAR
 
 *** Add
 
-Add a new currency (not yet implemented).
+Add a new currency.
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
 ./ores.cli currencies add ${db_args} ${log_args} --iso-code ABCDE --name "New Currency" \
     --numeric-code 1234 --modified-by test --currency-type major
-
+./ores.cli currencies list ${db_args} ${log_args} \
+  --format table --key ABCDE
 #+end_src
 
 #+RESULTS:
 #+begin_src text
 Successfully added currency: ABCDE
+
++----------+---------+--------------+--------+-------+----------------+-----------+-------------+---------------------+---------------------+
+| ISO Code | Version | Name         | Symbol | Type  | Fractions/Unit | Precision | Modified By | Valid From          | Valid To            |
++----------+---------+--------------+--------+-------+----------------+-----------+-------------+---------------------+---------------------+
+| ABCDE    | 2       | New Currency |        | major | 100            | 2         | test        | 2025-12-11 23:51:36 | 2025-12-11 23:51:36 |
++----------+---------+--------------+--------+-------+----------------+-----------+-------------+---------------------+---------------------+
+
+
 #+end_src
 
 ** Accounts
@@ -645,9 +541,9 @@ accounts - Manage accounts
 Usage: ores.cli accounts <operation> [options]
 
 Available operations:
-  list       List accounts as JSON or table (internal formats)
-  delete     Delete an account by username or UUID
-  add        Add an account using command-line arguments
+   list           List accounts as JSON or table (internal formats)
+   delete         Delete an account by username or UUID
+   add            Add an account using command-line arguments
 
 For operation-specific options, use: accounts <operation> --help
 #+end_src
@@ -668,37 +564,26 @@ export ORES_CLI_DB_PASSWORD
 #+begin_src json
 [
   {
-    "version": 0,
-    "is_admin": false,
-    "id": "2c750156-40ec-4b03-aa7a-22c42c5bbd5e",
+    "version": 1,
+    "is_admin": true,
+    "id": "1ba0b8a3-9668-4a70-80fd-6d9d9efcda9d",
     "modified_by": "admin",
-    "username": "testuser",
-    "password_hash": "$scrypt$ln=14,r=8,p=1$h+P2+QkHhxkiU4inVE9HxQ==$59hnkP3B5cN8hsIHh/rCswfv7/6QntVUnLkRQGDXy62Fylamux0YkscVd5jTwOSyboUbV85wRYArLplOZxKOMw==",
+    "username": "adminuser",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$Ivga7n7Xz+PjF2rkDa5iVw==$+izU4e5BT57qFYdpiF6c2Ln1pRVEh8RH+nZkZ8MOHrWxDvTEjemC4yq34RiOrgzqaYGeX8QdjiEKBS5sQS614w==",
     "password_salt": "",
     "totp_secret": "",
-    "email": "testuser@example.com"
+    "email": "admin@example.com"
   },
   {
-    "version": 0,
+    "version": 1,
     "is_admin": false,
-    "id": "c26dc10b-0e63-447d-beb2-ce442cdb75e2",
+    "id": "8fc423ce-3cdd-4a28-9227-bcc7f53a7db8",
     "modified_by": "admin",
-    "username": "admin",
-    "password_hash": "$scrypt$ln=14,r=8,p=1$44ceH1Lhmg36u2kNxgo1Yw==$g5Ss6+hIDBTMrkO5+YHSn4OtEt77MHPnNy+2gY+wfD53ldg+mq7vZxGAuFD7DiAFfToWgr8gJ3xil4+BYlt8cg==",
-    "password_salt": "",
-    "totp_secret": "",
-    "email": "test@example.com"
-  },
-  {
-    "version": 0,
-    "is_admin": false,
-    "id": "019a5e49-476c-70ce-9909-3887cae700e9",
-    "modified_by": "ores",
     "username": "newuser3",
-    "password_hash": "$scrypt$ln=14,r=8,p=1$aLdQ7pVcrnlHJMZXoWOV3Q==$nkk9nQs8iyTazzvRfUjyYYqO3GTAIRL5A9K/5LxdvX0QRliEWB0SDgaadXiJNhf/kw3aYH1jeVvgXJbjQkq80Q==",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$E5kaqVuxH87dRfFzHiqH+Q==$Cl8Oh+jIyzz+NemXt8pM0ayJcdjOUkpayOkuA0YFsP61hpzS8r61o++/z72acp2Xtsgsfv9t/qriPlCSGJ6Wwg==",
     "password_salt": "",
     "totp_secret": "",
-    "email": "newuser3@example.com"
+    "email": "testuser3@example.com"
   }
 ]
 #+end_src
@@ -708,22 +593,22 @@ export ORES_CLI_DB_PASSWORD
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
 ./ores.cli accounts list ${db_args} ${log_args} \
-  --format json --key admin | jq .
+  --format json --key adminuser | jq .
 #+end_src
 
 #+RESULTS:
 #+begin_src json
 [
   {
-    "version": 0,
-    "is_admin": false,
-    "id": "c26dc10b-0e63-447d-beb2-ce442cdb75e2",
+    "version": 1,
+    "is_admin": true,
+    "id": "1ba0b8a3-9668-4a70-80fd-6d9d9efcda9d",
     "modified_by": "admin",
-    "username": "admin",
-    "password_hash": "$scrypt$ln=14,r=8,p=1$44ceH1Lhmg36u2kNxgo1Yw==$g5Ss6+hIDBTMrkO5+YHSn4OtEt77MHPnNy+2gY+wfD53ldg+mq7vZxGAuFD7DiAFfToWgr8gJ3xil4+BYlt8cg==",
+    "username": "adminuser",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$Ivga7n7Xz+PjF2rkDa5iVw==$+izU4e5BT57qFYdpiF6c2Ln1pRVEh8RH+nZkZ8MOHrWxDvTEjemC4yq34RiOrgzqaYGeX8QdjiEKBS5sQS614w==",
     "password_salt": "",
     "totp_secret": "",
-    "email": "test@example.com"
+    "email": "admin@example.com"
   }
 ]
 #+end_src
@@ -733,22 +618,22 @@ export ORES_CLI_DB_PASSWORD
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
 ./ores.cli accounts list ${db_args} ${log_args} \
-  --format json --key admin --all-versions | jq .
+  --format json --key adminuser --all-versions | jq .
 #+end_src
 
 #+RESULTS:
 #+begin_src json
 [
   {
-    "version": 0,
-    "is_admin": false,
-    "id": "c26dc10b-0e63-447d-beb2-ce442cdb75e2",
+    "version": 1,
+    "is_admin": true,
+    "id": "1ba0b8a3-9668-4a70-80fd-6d9d9efcda9d",
     "modified_by": "admin",
-    "username": "admin",
-    "password_hash": "$scrypt$ln=14,r=8,p=1$44ceH1Lhmg36u2kNxgo1Yw==$g5Ss6+hIDBTMrkO5+YHSn4OtEt77MHPnNy+2gY+wfD53ldg+mq7vZxGAuFD7DiAFfToWgr8gJ3xil4+BYlt8cg==",
+    "username": "adminuser",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$Ivga7n7Xz+PjF2rkDa5iVw==$+izU4e5BT57qFYdpiF6c2Ln1pRVEh8RH+nZkZ8MOHrWxDvTEjemC4yq34RiOrgzqaYGeX8QdjiEKBS5sQS614w==",
     "password_salt": "",
     "totp_secret": "",
-    "email": "test@example.com"
+    "email": "admin@example.com"
   }
 ]
 #+end_src
@@ -762,12 +647,12 @@ Delete an account by username or UUID.
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
 ./ores.cli accounts delete ${db_args} ${log_args} \
-  --key testuser3
+  --key newuser4
 #+end_src
 
 #+RESULTS:
 #+begin_src json
-Account deleted successfully: 6d3dfec6-d78d-4a85-9882-3d47445090e4
+Account deleted successfully: 3b6efad4-039f-4dd4-8e0d-6209a08f8148
 #+end_src
 
 **** Delete by UUID
@@ -775,12 +660,12 @@ Account deleted successfully: 6d3dfec6-d78d-4a85-9882-3d47445090e4
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
 ./ores.cli accounts delete ${db_args} ${log_args} \
-  --key f557660a-bcf4-4916-8610-4c0b61295f57
+  --key 9dec6b76-f982-47c3-bb11-58b62ca5c0d1
 #+end_src
 
 #+RESULTS:
 #+begin_src json
-Account deleted successfully: f557660a-bcf4-4916-8610-4c0b61295f57
+Account deleted successfully: 9dec6b76-f982-47c3-bb11-58b62ca5c0d1
 #+end_src
 
 *** Add
@@ -792,15 +677,15 @@ Add a new account using command-line arguments.
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
 ./ores.cli accounts add ${db_args} ${log_args} \
-  --username testuser3 \
-  --email testuser3@example.com \
-  --password "SecurePassword123" \
+  --username newuser4 \
+  --email testuser4@example.com \
+  --password "Secure-Password-123" \
   --modified-by admin
 #+end_src
 
 #+RESULTS:
 #+begin_src text
-Successfully added account: testuser3 (ID: 6d3dfec6-d78d-4a85-9882-3d47445090e4)
+Successfully added account: newuser4 (ID: 9dec6b76-f982-47c3-bb11-58b62ca5c0d1)
 #+end_src
 
 **** Add admin account
@@ -810,9 +695,16 @@ export ORES_CLI_DB_PASSWORD
 ./ores.cli accounts add ${db_args} ${log_args} \
   --username adminuser \
   --email admin@example.com \
-  --password "AdminPassword456" \
+  --password "Admin-Password-456" \
   --is-admin true \
   --modified-by admin
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+System is currently in bootstrap mode.
+Successfully added account: adminuser (ID: 1ba0b8a3-9668-4a70-80fd-6d9d9efcda9d)
+System exited bootstrap mode.
 #+end_src
 
 ** Feature Flags
@@ -838,83 +730,100 @@ ORE Studio is created by the ORE Studio project.
 Displaying options specific to the 'feature_flags add' command.
 For global options, type --help.
 
+
 Add Feature Flag Options:
-  --name arg                           Feature flag name (required)
-  --description arg                    Feature flag description
-  --enabled arg (=0)                   Whether the feature is enabled (default:
-                                       false)
-  --modified-by arg                    Username of modifier (required)
+  --name arg                          Feature flag name (required)
+  --description arg                   Feature flag description
+  --enabled arg (=0)                  Whether the feature is enabled (default:
+                                      false)
+  --modified-by arg                   Username of modifier (required)
 
 Database:
-  --db-user arg (=ores)                Database user name.
-  --db-password arg                    Database password. Can also be provided
-                                       via ORES_DB_PASSWORD environment
-                                       variable.
-  --db-host arg (=localhost)           Database host.
-  --db-database arg (=oresdb)          Database name.
-  --db-port arg (=5432)                Database port.
-
-
-General:
-  -h [ --help ]                        Display usage and exit.
-  -v [ --version ]                     Output version information and exit.
+  --db-user arg (=ores)               Database user name.
+  --db-password arg                   Database password. Can also be provided
+                                      via ORES_DB_PASSWORD environment
+                                      variable.
+  --db-host arg (=localhost)          Database host.
+  --db-database arg (=oresdb)         Database name.
+  --db-port arg (=5432)               Database port.
 
 Logging:
-  -e [ --log-enabled ]                 Generate a log file.
-  -l [ --log-level ] arg (=info)       What level to use for logging. Valid
-                                       values: trace, debug, info, warn, error.
-  --log-to-console                     Output logging to the console, as well
-                                       as to file.
-  --log-directory arg (=log)           Where to place the log files.
-  --log-filename arg (=ores.cli.log)   Name of the log file.
+  -e [ --log-enabled ]                Generate a log file.
+  -l [ --log-level ] arg (=info)      What level to use for logging. Valid
+                                      values: trace, debug, info, warn, error.
+  --log-to-console                    Output logging to the console, as well as
+                                      to file.
+  --log-directory arg (=log)          Where to place the log files.
+  --log-filename arg (=ores.cli.log)  Name of the log file.
 #+end_src
 
 *** List
 
 List feature flags from the database.
 
-**** List all feature flags
+**** List all feature flags as JSON
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli feature_flags list ${db_args} ${log_args} \
-  --format json | jq .
+./ores.cli feature_flags list ${db_args} ${log_args} --format json | jq .
 #+end_src
 
 #+RESULTS:
 #+begin_src json
 [
   {
+    "version": 1,
     "enabled": false,
     "name": "system.bootstrap_mode",
-    "description": "Indicates whether the system is in bootstrap mode (waiting for initial admin account)",
-    "modified_by": "ores"
+    "description": "Indicates whether the system is in bootstrap mode (waiting for initial admin account).",
+    "modified_by": "system"
   },
   {
-    "enabled": true,
+    "version": 1,
+    "enabled": false,
     "name": "system.disable_password_validation",
     "description": "When enabled (1), disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.",
-    "modified_by": "ores"
+    "modified_by": "system"
   }
 ]
 #+end_src
+
+**** List all feature flags as table
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli feature_flags list ${db_args} ${log_args} --format table
+#+end_src
+
+#+RESULTS:
+#+begin_src json
++------------------------------------+---------+----------------------------------------------------------------------------------------+---------+-------------+
+| Name                               | Version | Description                                                                            | Enabled | Modified By |
++------------------------------------+---------+----------------------------------------------------------------------------------------+---------+-------------+
+| system.bootstrap_mode              | 1       | Indicates whether the system is in bootstrap mode (waiting for initial admin account). | 0       | system      |
+| system.disable_password_validation | 1       | When enabled (1), disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.   | 0       | system      |
++------------------------------------+---------+----------------------------------------------------------------------------------------+---------+-------------+
+
+#+end_src
+
 
 **** List specific feature flag
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
 ./ores.cli feature_flags list ${db_args} ${log_args} \
-  --format json --key "Test feature3" | jq .
+  --format json --key "system.bootstrap_mode" | jq .
 #+end_src
 
 #+RESULTS:
 #+begin_src json
 [
   {
+    "version": 1,
     "enabled": false,
-    "name": "Test feature3",
-    "description": "Some description",
-    "modified_by": "ores"
+    "name": "system.bootstrap_mode",
+    "description": "Indicates whether the system is in bootstrap mode (waiting for initial admin account).",
+    "modified_by": "system"
   }
 ]
 #+end_src

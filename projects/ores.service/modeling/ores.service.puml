@@ -27,6 +27,27 @@ namespace ores #F2F2F2 {
         note "Contains configuration-related entities." as ores_service_config_note
         config --- ores_service_config_note
         namespace config #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class parser_exception
+                class parser
+            }
+
+            together {
+                class server_options
+                class options
+            }
+
+            parser_exception -[hidden]down- parser
+            server_options -[hidden]down- options
+
+            '
+            ' Class definitions
+            '
+
             class parser_exception <<exception>> #D6B19F {
                 +parser_exception(std::string_view message)
                 +what() const : const char*
@@ -93,6 +114,23 @@ namespace ores #F2F2F2 {
         note "Contains application-related entities." as ores_service_app_note
         app --- ores_service_app_note
         namespace app #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class application_exception
+                class application
+                class host
+            }
+
+            application_exception -[hidden]down- application
+            application -[hidden]down- host
+
+            '
+            ' Class definitions
+            '
+
             class application_exception <<exception>> #D6B19F {
                 +application_exception(std::string_view message)
                 +what() const : const char*

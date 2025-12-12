@@ -23,6 +23,21 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace utility #F2F2F2 {
         namespace string #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class conversion_error
+                class converter
+            }
+
+            conversion_error -[hidden]down- converter
+
+            '
+            ' Class definitions
+            '
+
             class conversion_error <<exception>> #D6B19F {
             }
 
@@ -47,6 +62,23 @@ namespace ores #F2F2F2 {
         }
 
         namespace filesystem #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class file_not_found
+                class io_error
+                class file
+            }
+
+            file_not_found -[hidden]down- io_error
+            io_error -[hidden]down- file
+
+            '
+            ' Class definitions
+            '
+
             class file_not_found <<exception>> #D6B19F {
             }
 
@@ -153,6 +185,31 @@ namespace ores #F2F2F2 {
         }
 
         namespace log #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                enum severity_level
+                class lifecycle_manager
+            }
+
+            together {
+                struct logging_options
+                class logging_options_validator
+                class logging_configuration
+                class logging_exception
+            }
+
+            severity_level -[hidden]down- lifecycle_manager
+            logging_options -[hidden]down- logging_options_validator
+            logging_options_validator -[hidden]down- logging_configuration
+            logging_configuration -[hidden]down- logging_exception
+
+            '
+            ' Class definitions
+            '
+
             enum severity_level {
                 trace
                 debug
@@ -252,6 +309,25 @@ namespace ores #F2F2F2 {
         }
 
         namespace repository #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class context
+                class repository_exception
+                class context_factory
+                struct configuration
+            }
+
+            context -[hidden]down- repository_exception
+            repository_exception -[hidden]down- context_factory
+            context_factory -[hidden]down- configuration
+
+            '
+            ' Class definitions
+            '
+
             class context #ECECEC {
                 +connection_pool() connection_pool_type
             }
@@ -360,6 +436,34 @@ namespace ores #F2F2F2 {
         }
 
         namespace tests #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            ' Group: Converter tests
+            together {
+                class convert_base32_converter_tests
+                class convert_base64_converter_tests
+                class string_converter_tests
+            }
+
+            ' Group: Other tests
+            together {
+                class faker_internet_tests
+                class faker_totp_tests
+                class uuid_uuid_v7_generator_tests
+            }
+
+            ' Stack vertically
+            convert_base32_converter_tests -[hidden]down- convert_base64_converter_tests
+            convert_base64_converter_tests -[hidden]down- string_converter_tests
+            faker_internet_tests -[hidden]down- faker_totp_tests
+            faker_totp_tests -[hidden]down- uuid_uuid_v7_generator_tests
+
+            '
+            ' Class definitions
+            '
+
             class convert_base32_converter_tests <<test suite>> #C5E1A5 {
                 +base32_encode_empty_input() void
                 +base32_encode_single_byte() void

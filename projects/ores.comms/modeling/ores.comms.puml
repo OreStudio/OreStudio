@@ -26,6 +26,43 @@ namespace ores #F2F2F2 {
     comms --- ores_comms_note
     namespace comms #F2F2F2 {
         namespace net #F2F2F2 {
+            '
+            ' Layout groupings for better diagram structure
+            '
+
+            ' Group: Server classes
+            together {
+                class server_options
+                class server
+                class session
+            }
+
+            ' Group: Client classes
+            together {
+                class client_options
+                class retry_options
+                class connection_state
+                class client
+            }
+
+            ' Group: Connection infrastructure
+            together {
+                class connection
+                class pending_request_map
+                class response_channel
+            }
+
+            ' Hidden relationships to stack related classes vertically
+            server_options -[hidden]down- server
+            server -[hidden]down- session
+            client_options -[hidden]down- client
+            retry_options -[hidden]down- connection_state
+            pending_request_map -[hidden]down- response_channel
+
+            '
+            ' Class definitions
+            '
+
             class server_options #F7E5FF {
                 +{field} port std::uint16_t
                 +{field} max_connections std::uint32_t
@@ -328,6 +365,84 @@ namespace ores #F2F2F2 {
         }
 
         namespace messaging #F2F2F2 {
+            '
+            ' Layout groupings for better diagram structure
+            '
+
+            ' Group: Infrastructure classes (Row 1)
+            together {
+                class result
+                class message_type_range
+                class message_handler
+                class message_dispatcher
+            }
+
+            ' Group: Frame classes (Row 2)
+            together {
+                class frame_header
+                class frame
+            }
+
+            ' Group: Heartbeat messages (Row 3)
+            together {
+                class ping
+                class pong
+            }
+
+            ' Group: Handshake messages (Row 3)
+            together {
+                class handshake_request
+                class handshake_response
+                class handshake_ack
+            }
+
+            ' Group: Subscribe messages (Row 4)
+            together {
+                class subscribe_request
+                class subscribe_response
+            }
+
+            ' Group: Unsubscribe messages (Row 4)
+            together {
+                class unsubscribe_request
+                class unsubscribe_response
+            }
+
+            ' Group: Error and notification (Row 5)
+            together {
+                class error_response
+                class notification_message
+            }
+
+            ' Group: Enums (Row 6)
+            together {
+                enum message_type
+                enum error_code
+            }
+
+            ' Hidden relationships to stack request/response pairs vertically
+            ping -[hidden]down- pong
+            handshake_request -[hidden]down- handshake_response
+            handshake_response -[hidden]down- handshake_ack
+            subscribe_request -[hidden]down- subscribe_response
+            unsubscribe_request -[hidden]down- unsubscribe_response
+            frame_header -[hidden]down- frame
+            message_type -[hidden]down- error_code
+
+            ' Hidden relationships to create row structure
+            result -[hidden]down- frame_header
+            frame -[hidden]down- ping
+            frame -[hidden]down- handshake_request
+            pong -[hidden]down- subscribe_request
+            handshake_ack -[hidden]down- unsubscribe_request
+            subscribe_response -[hidden]down- error_response
+            unsubscribe_response -[hidden]down- notification_message
+            error_response -[hidden]down- message_type
+
+            '
+            ' Class definitions
+            '
+
             class result #ECECEC {
                 +result(const T& value)
                 +result(T&& value)
@@ -714,6 +829,39 @@ namespace ores #F2F2F2 {
         }
 
         namespace service #F2F2F2 {
+            '
+            ' Layout groupings for better diagram structure
+            '
+
+            ' Group: Authentication classes
+            together {
+                class session_info
+                class auth_session_service
+            }
+
+            ' Group: Protocol services
+            together {
+                class handshake_service
+                class heartbeat_service
+            }
+
+            ' Group: Subscription classes
+            together {
+                class subscription_manager
+                class subscription_handler
+                class remote_event_adapter
+            }
+
+            ' Hidden relationships to stack related classes vertically
+            session_info -[hidden]down- auth_session_service
+            handshake_service -[hidden]down- heartbeat_service
+            subscription_manager -[hidden]down- subscription_handler
+            subscription_handler -[hidden]down- remote_event_adapter
+
+            '
+            ' Class definitions
+            '
+
             class session_info #F7E5FF {
                 +{field} account_id boost::uuids::uuid
                 +{field} is_admin bool
@@ -874,6 +1022,35 @@ namespace ores #F2F2F2 {
         }
 
         namespace tests #F2F2F2 {
+            '
+            ' Layout groupings for better diagram structure
+            '
+
+            ' Group: Protocol tests
+            together {
+                class frame_tests
+                class message_handler_tests
+            }
+
+            ' Group: Networking tests
+            together {
+                class net_client_tests
+            }
+
+            ' Group: Subscription tests
+            together {
+                class subscription_manager_tests
+                class subscription_protocol_tests
+            }
+
+            ' Hidden relationships to stack related classes vertically
+            frame_tests -[hidden]down- message_handler_tests
+            subscription_manager_tests -[hidden]down- subscription_protocol_tests
+
+            '
+            ' Class definitions
+            '
+
             class frame_tests <<test suite>> #C5E1A5 {
                 +test_frame_serialization() void
                 +test_frame_serialization_empty_payload() void

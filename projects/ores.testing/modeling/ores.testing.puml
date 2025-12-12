@@ -24,6 +24,31 @@ namespace ores #F2F2F2 {
     note "Testing related infrastructure common to all testing projects." as ores_testing_note
     testing --- ores_testing_note
     namespace testing #F2F2F2 {
+        '
+        ' Layout groupings
+        '
+
+        ' Group: Database utilities
+        together {
+            class database_helper
+            class database_lifecycle_listener
+            class test_database_manager
+        }
+
+        ' Group: Logging
+        together {
+            class logging_listener
+        }
+
+        ' Stack vertically
+        database_helper -[hidden]down- database_lifecycle_listener
+        database_lifecycle_listener -[hidden]down- test_database_manager
+        test_database_manager -[hidden]down- logging_listener
+
+        '
+        ' Class definitions
+        '
+
         class database_helper #ECECEC {
             +database_helper()
             +truncate_table(const std::string& table_name) : void

@@ -27,6 +27,33 @@ namespace ores #F2F2F2 {
         note "Provides XML serialisation support for the ORE domain model types\nusing native ORE XML." as ores_risk_orexml_note
         orexml --- ores_risk_orexml_note
         namespace orexml #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            ' Group: Currency XML types
+            together {
+                class CurrencyElement
+                class CurrencyConfig
+            }
+
+            ' Group: Import/Export/Mapping
+            together {
+                class importer
+                class currency_mapper
+                class exporter
+            }
+
+            ' Stack vertically
+            CurrencyElement -[hidden]down- CurrencyConfig
+            importer -[hidden]down- currency_mapper
+            currency_mapper -[hidden]down- exporter
+            CurrencyConfig -[hidden]down- importer
+
+            '
+            ' Class definitions
+            '
+
             class parsing_error <<exception>> #D6B19F {
                 +parsing_error(std::string_view message)
                 +what() const : const char*
@@ -122,6 +149,23 @@ namespace ores #F2F2F2 {
         }
 
         namespace domain #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class currency
+                class currency_version
+                class currency_version_history
+            }
+
+            currency -[hidden]down- currency_version
+            currency_version -[hidden]down- currency_version_history
+
+            '
+            ' Class definitions
+            '
+
             class currency #F7E5FF {
                 +{field} iso_code : std::string
                 +{field} name : std::string
@@ -198,6 +242,23 @@ namespace ores #F2F2F2 {
         }
 
         namespace repository #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class currency_entity
+                class currency_mapper
+                class currency_repository
+            }
+
+            currency_entity -[hidden]down- currency_mapper
+            currency_mapper -[hidden]down- currency_repository
+
+            '
+            ' Class definitions
+            '
+
             class currency_entity <<orm>> #99CB99 {
                 +{field} iso_code : sqlgen::PrimaryKey<std::string>
                 +{field} name : std::string
@@ -301,6 +362,57 @@ namespace ores #F2F2F2 {
         }
 
         namespace messaging #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            ' Group: Get currencies messages
+            together {
+                class get_currencies_request
+                class get_currencies_response
+            }
+
+            ' Group: Save currency messages
+            together {
+                class save_currency_request
+                class save_currency_response
+            }
+
+            ' Group: Delete currency messages
+            together {
+                class delete_currency_request
+                class delete_currency_response
+            }
+
+            ' Group: Get currency history messages
+            together {
+                class get_currency_history_request
+                class get_currency_history_response
+            }
+
+            ' Group: Handler infrastructure
+            together {
+                class risk_message_handler
+                class registrar
+            }
+
+            ' Stack request/response pairs vertically
+            get_currencies_request -[hidden]down- get_currencies_response
+            save_currency_request -[hidden]down- save_currency_response
+            delete_currency_request -[hidden]down- delete_currency_response
+            get_currency_history_request -[hidden]down- get_currency_history_response
+            risk_message_handler -[hidden]down- registrar
+
+            ' Create row structure
+            get_currencies_response -[hidden]down- save_currency_request
+            save_currency_response -[hidden]down- delete_currency_request
+            delete_currency_response -[hidden]down- get_currency_history_request
+            get_currency_history_response -[hidden]down- risk_message_handler
+
+            '
+            ' Class definitions
+            '
+
             class get_currencies_request <<message>> #E1F5FF {
                 +serialize() const : std::vector<std::uint8_t>
                 +{static} deserialize(std::span<const std::uint8_t> data) : std::expected<get_currencies_request, comms::messaging::error_code>
@@ -473,6 +585,37 @@ namespace ores #F2F2F2 {
         }
 
         namespace tests #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            ' Group: Domain tests
+            together {
+                class domain_currency_tests
+                class domain_currency_version_tests
+            }
+
+            ' Group: Messaging tests
+            together {
+                class messaging_protocol_tests
+                class messaging_risk_message_handler_tests
+            }
+
+            ' Group: Other tests
+            together {
+                class orexml_currency_config_tests
+                class repository_currency_repository_tests
+            }
+
+            ' Stack related tests vertically
+            domain_currency_tests -[hidden]down- domain_currency_version_tests
+            messaging_protocol_tests -[hidden]down- messaging_risk_message_handler_tests
+            orexml_currency_config_tests -[hidden]down- repository_currency_repository_tests
+
+            '
+            ' Class definitions
+            '
+
             class domain_currency_tests <<test suite>> #C5E1A5 {
                 +create_currency_with_valid_fields() void
                 +create_currency_with_faker() void

@@ -25,6 +25,21 @@ namespace ores #F2F2F2 {
     accounts --- ores_accounts_note
     namespace accounts #F2F2F2 {
         namespace domain #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class account
+                class login_info
+            }
+
+            account -[hidden]down- login_info
+
+            '
+            ' Class definitions
+            '
+
             class account #F7E5FF {
                 +{field} version int
                 +{field} modified_by std::string
@@ -81,6 +96,36 @@ namespace ores #F2F2F2 {
         }
 
         namespace repository #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            ' Group: Account persistence
+            together {
+                class account_entity
+                class account_mapper
+                class account_repository
+            }
+
+            ' Group: Login info persistence
+            together {
+                class login_info_entity
+                class login_info_mapper
+                class login_info_repository
+            }
+
+            ' Stack account classes vertically
+            account_entity -[hidden]down- account_mapper
+            account_mapper -[hidden]down- account_repository
+
+            ' Stack login_info classes vertically
+            login_info_entity -[hidden]down- login_info_mapper
+            login_info_mapper -[hidden]down- login_info_repository
+
+            '
+            ' Class definitions
+            '
+
             class account_entity <<orm>> #99CB99 {
                 +{field} id sqlgen::PrimaryKey<std::string>
                 +{field} version int
@@ -258,6 +303,65 @@ namespace ores #F2F2F2 {
         }
 
         namespace messaging #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            ' Group: Create account messages
+            together {
+                class create_account_request
+                class create_account_response
+            }
+
+            ' Group: List accounts messages
+            together {
+                class list_accounts_request
+                class list_accounts_response
+            }
+
+            ' Group: Login messages
+            together {
+                class login_request
+                class login_response
+            }
+
+            ' Group: Logout messages
+            together {
+                class logout_request
+                class logout_response
+            }
+
+            ' Group: Unlock account messages
+            together {
+                class unlock_account_request
+                class unlock_account_response
+            }
+
+            ' Group: Handler infrastructure
+            together {
+                class accounts_message_handler
+                class registrar
+            }
+
+            ' Stack request/response pairs vertically
+            create_account_request -[hidden]down- create_account_response
+            list_accounts_request -[hidden]down- list_accounts_response
+            login_request -[hidden]down- login_response
+            logout_request -[hidden]down- logout_response
+            unlock_account_request -[hidden]down- unlock_account_response
+            accounts_message_handler -[hidden]down- registrar
+
+            ' Create row structure
+            create_account_response -[hidden]down- list_accounts_request
+            list_accounts_response -[hidden]down- login_request
+            login_response -[hidden]down- logout_request
+            logout_response -[hidden]down- unlock_account_request
+            unlock_account_response -[hidden]down- accounts_message_handler
+
+            '
+            ' Class definitions
+            '
+
             class create_account_request <<message>> #E1F5FF {
                 +{field} username std::string
                 +{field} password std::string
@@ -522,6 +626,44 @@ namespace ores #F2F2F2 {
         }
 
         namespace tests #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            ' Group: Domain tests
+            together {
+                class domain_account_tests
+                class domain_logins_tests
+            }
+
+            ' Group: Messaging tests
+            together {
+                class messaging_accounts_message_handler_tests
+                class messaging_protocol_tests
+            }
+
+            ' Group: Repository and service tests
+            together {
+                class repository_account_repository_tests
+                class service_account_service_tests
+            }
+
+            ' Group: Security tests
+            together {
+                class security_password_manager_tests
+                class security_password_policy_validator_tests
+            }
+
+            ' Stack related tests vertically
+            domain_account_tests -[hidden]down- domain_logins_tests
+            messaging_accounts_message_handler_tests -[hidden]down- messaging_protocol_tests
+            repository_account_repository_tests -[hidden]down- service_account_service_tests
+            security_password_manager_tests -[hidden]down- security_password_policy_validator_tests
+
+            '
+            ' Class definitions
+            '
+
             class domain_account_tests <<test suite>> #C5E1A5 {
                 +create_account_with_valid_fields() void
                 +create_admin_account() void

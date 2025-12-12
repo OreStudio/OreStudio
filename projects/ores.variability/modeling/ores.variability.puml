@@ -25,6 +25,32 @@ namespace ores #F2F2F2 {
     variability --- ores_variability_note
     namespace variability #F2F2F2 {
         namespace domain #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            ' Group: Feature flags
+            together {
+                class feature_flags
+            }
+
+            ' Group: System flags
+            together {
+                enum system_flag
+                class system_flag_definition
+                class system_flags
+                class system_flags_cache
+            }
+
+            ' Stack system flag types vertically
+            system_flag -[hidden]down- system_flag_definition
+            system_flag_definition -[hidden]down- system_flags
+            system_flags -[hidden]down- system_flags_cache
+
+            '
+            ' Class definitions
+            '
+
             class feature_flags #F7E5FF {
                 +{field} name std::string
                 +{field} enabled bool
@@ -111,6 +137,23 @@ namespace ores #F2F2F2 {
         }
 
         namespace repository #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class feature_flags_entity
+                class feature_flags_mapper
+                class feature_flags_repository
+            }
+
+            feature_flags_entity -[hidden]down- feature_flags_mapper
+            feature_flags_mapper -[hidden]down- feature_flags_repository
+
+            '
+            ' Class definitions
+            '
+
             class feature_flags_entity <<orm>> #99CB99 {
                 +{field} name sqlgen::PrimaryKey<std::string>
                 +{field} enabled int
@@ -181,6 +224,23 @@ namespace ores #F2F2F2 {
         }
 
         namespace service #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class feature_flags_service
+                class system_flags_service
+                class flag_initializer
+            }
+
+            feature_flags_service -[hidden]down- system_flags_service
+            system_flags_service -[hidden]down- flag_initializer
+
+            '
+            ' Class definitions
+            '
+
             class feature_flags_service #ECECEC {
                 +feature_flags_service(context)
                 +get_feature_flag(std::string) std::optional<domain::feature_flags>
@@ -259,6 +319,31 @@ namespace ores #F2F2F2 {
         }
 
         namespace messaging #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            ' Group: Request/response pair
+            together {
+                class list_feature_flags_request
+                class list_feature_flags_response
+            }
+
+            ' Group: Handler infrastructure
+            together {
+                class variability_message_handler
+                class registrar
+            }
+
+            ' Stack vertically
+            list_feature_flags_request -[hidden]down- list_feature_flags_response
+            list_feature_flags_response -[hidden]down- variability_message_handler
+            variability_message_handler -[hidden]down- registrar
+
+            '
+            ' Class definitions
+            '
+
             class list_feature_flags_request <<message>> #E1F5FF {
                 +serialize() std::vector<std::byte>
                 +{static} deserialize(std::span<const std::byte>) std::expected<list_feature_flags_request, comms::messaging::error_code>
@@ -320,6 +405,30 @@ namespace ores #F2F2F2 {
         }
 
         namespace tests #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            ' Group: Domain tests
+            together {
+                class domain_feature_flags_tests
+                class domain_system_flags_tests
+            }
+
+            ' Group: Service tests
+            together {
+                class service_system_flags_service_tests
+                class service_flag_initializer_tests
+            }
+
+            ' Stack vertically
+            domain_feature_flags_tests -[hidden]down- domain_system_flags_tests
+            service_system_flags_service_tests -[hidden]down- service_flag_initializer_tests
+
+            '
+            ' Class definitions
+            '
+
             class domain_feature_flags_tests <<test suite>> #C5E1A5 {
                 +create_feature_flag_with_valid_fields() void
                 +create_disabled_feature_flag() void

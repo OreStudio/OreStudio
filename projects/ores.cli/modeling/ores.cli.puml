@@ -27,6 +27,45 @@ namespace ores #F2F2F2 {
         note "Configuration related classes and structures." as ores_cli_config_note
         config --- ores_cli_config_note
         namespace config #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            ' Group: Enums
+            together {
+                enum entity
+                enum format
+            }
+
+            ' Group: Options structs
+            together {
+                class import_options
+                class export_options
+                class delete_options
+                class add_options
+                class options
+            }
+
+            ' Group: Parsers
+            together {
+                class parser
+                class parser_helpers
+                class parser_exception
+            }
+
+            ' Stack vertically
+            entity -[hidden]down- format
+            import_options -[hidden]down- export_options
+            export_options -[hidden]down- delete_options
+            delete_options -[hidden]down- add_options
+            add_options -[hidden]down- options
+            parser -[hidden]down- parser_helpers
+            parser_helpers -[hidden]down- parser_exception
+
+            '
+            ' Class definitions
+            '
+
             enum entity #F7E5FF {
                 currencies
                 accounts
@@ -253,6 +292,23 @@ namespace ores #F2F2F2 {
         note "Application hosting and execution classes." as ores_cli_app_note
         app --- ores_cli_app_note
         namespace app #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class application
+                class host
+                class application_exception
+            }
+
+            application -[hidden]down- host
+            host -[hidden]down- application_exception
+
+            '
+            ' Class definitions
+            '
+
             class application #ECECEC {
                 +application(output_stream: std::ostream&, db_opts: const std::optional<utility::database::database_options>&)
                 +run(cfg: const config::options&) const: void
@@ -295,6 +351,21 @@ namespace ores #F2F2F2 {
         }
 
         namespace tests #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class app_application_import_tests
+                class parser_tests
+            }
+
+            app_application_import_tests -[hidden]down- parser_tests
+
+            '
+            ' Class definitions
+            '
+
             class app_application_import_tests <<test suite>> #C5E1A5 {
                 +import_currencies_from_test_file() void
                 +import_currencies_from_multiple_files() void

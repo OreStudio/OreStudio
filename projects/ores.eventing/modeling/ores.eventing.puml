@@ -26,6 +26,14 @@ namespace ores #F2F2F2 {
 
     namespace eventing #F2F2F2 {
         namespace domain #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            '
+            ' Class definitions
+            '
+
             struct entity_change_event #F7E5FF {
                 +{field} entity std::string
                 +{field} timestamp std::chrono::system_clock::time_point
@@ -42,6 +50,32 @@ namespace ores #F2F2F2 {
         }
 
         namespace service #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            ' Group: Core event bus
+            together {
+                class subscription
+                class event_bus
+            }
+
+            ' Group: Postgres integration
+            together {
+                class postgres_listener_service
+                class postgres_event_source
+                class registrar
+            }
+
+            ' Stack vertically
+            subscription -[hidden]down- event_bus
+            postgres_listener_service -[hidden]down- postgres_event_source
+            postgres_event_source -[hidden]down- registrar
+
+            '
+            ' Class definitions
+            '
+
             class subscription #ECECEC {
                 +subscription()
                 +subscription(unsubscribe_fn fn)
@@ -164,6 +198,23 @@ namespace ores #F2F2F2 {
         }
 
         namespace tests #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class entity_change_event_tests
+                class service_postgres_listener_service_tests
+                class service_event_bus_tests
+            }
+
+            entity_change_event_tests -[hidden]down- service_postgres_listener_service_tests
+            service_postgres_listener_service_tests -[hidden]down- service_event_bus_tests
+
+            '
+            ' Class definitions
+            '
+
             class entity_change_event_tests <<test suite>> #C5E1A5 {
                 +entity_change_event_json_serialization() void
                 +entity_change_event_table_serialization() void

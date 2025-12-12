@@ -25,6 +25,74 @@ namespace ores #F2F2F2 {
     qt --- ores_qt_note
 
     namespace qt #F2F2F2 {
+        '
+        ' Layout groupings
+        '
+
+        ' Group: Core infrastructure
+        together {
+            class ClientManager
+            class MainWindow
+        }
+
+        ' Group: MDI infrastructure
+        together {
+            class MdiAreaWithBackground
+            class DetachableMdiSubWindow
+        }
+
+        ' Group: Entity Controller Pattern
+        together {
+            class EntityController
+            class CurrencyController
+        }
+
+        ' Group: Currency Windows
+        together {
+            class CurrencyMdiWindow
+            class ClientCurrencyModel
+            class CurrencyDetailDialog
+            class CurrencyHistoryDialog
+        }
+
+        ' Group: Dialogs
+        together {
+            class LoginDialog
+            class AboutDialog
+            class SplashScreen
+        }
+
+        ' Group: Helpers
+        together {
+            class CurrencyItemDelegate
+            class MessageBoxHelper
+            class IconUtils
+            class LogoLabel
+        }
+
+        ' Stack vertically within groups
+        ClientManager -[hidden]down- MainWindow
+        MdiAreaWithBackground -[hidden]down- DetachableMdiSubWindow
+        EntityController -[hidden]down- CurrencyController
+        CurrencyMdiWindow -[hidden]down- ClientCurrencyModel
+        ClientCurrencyModel -[hidden]down- CurrencyDetailDialog
+        CurrencyDetailDialog -[hidden]down- CurrencyHistoryDialog
+        LoginDialog -[hidden]down- AboutDialog
+        AboutDialog -[hidden]down- SplashScreen
+        CurrencyItemDelegate -[hidden]down- MessageBoxHelper
+        MessageBoxHelper -[hidden]down- IconUtils
+        IconUtils -[hidden]down- LogoLabel
+
+        ' Create row structure between groups
+        MainWindow -[hidden]down- MdiAreaWithBackground
+        DetachableMdiSubWindow -[hidden]down- EntityController
+        CurrencyController -[hidden]down- CurrencyMdiWindow
+        CurrencyHistoryDialog -[hidden]down- LoginDialog
+        SplashScreen -[hidden]down- CurrencyItemDelegate
+
+        '
+        ' Class definitions
+        '
 
         ' Client Manager
         class ClientManager #ECECEC {

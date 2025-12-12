@@ -51,10 +51,14 @@
 #include "ores.variability/domain/feature_flags_json.hpp"
 #include "ores.variability/domain/feature_flags_table.hpp"
 #include "ores.variability/repository/feature_flags_repository.hpp"
+#include "ores.accounts/domain/login_info_json.hpp"
+#include "ores.accounts/domain/login_info_table.hpp"
+#include "ores.accounts/repository/login_info_repository.hpp"
 #include "ores.cli/config/export_options.hpp"
 #include "ores.cli/config/add_currency_options.hpp"
 #include "ores.cli/config/add_account_options.hpp"
 #include "ores.cli/config/add_feature_flag_options.hpp"
+#include "ores.cli/config/add_login_info_options.hpp"
 #include "ores.cli/app/application_exception.hpp"
 
 namespace ores::cli::app {
@@ -237,6 +241,40 @@ export_feature_flags(const config::export_options& cfg) const {
 }
 
 void application::
+export_login_info(const config::export_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting login info.";
+
+    accounts::repository::login_info_repository repo(context_);
+    std::vector<accounts::domain::login_info> infos;
+
+    if (!cfg.key.empty()) {
+        // Export specific login info by account ID
+        try {
+            const auto account_id = boost::lexical_cast<boost::uuids::uuid>(cfg.key);
+            infos = repo.read(account_id);
+        } catch (const boost::bad_lexical_cast&) {
+            BOOST_THROW_EXCEPTION(
+                application_exception(std::format("Invalid account ID: {}", cfg.key)));
+        }
+    } else {
+        // Export all login info records
+        infos = repo.read();
+    }
+
+    // Output in the requested format
+    if (cfg.target_format == config::format::json) {
+        output_stream_ << accounts::domain::convert_to_json(infos) << std::endl;
+    } else if (cfg.target_format == config::format::table) {
+        output_stream_ << accounts::domain::convert_to_table(infos) << std::endl;
+    } else {
+        BOOST_THROW_EXCEPTION(
+            application_exception("Only JSON and table formats are supported for login info"));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << infos.size() << " login info record(s).";
+}
+
+void application::
 export_data(const std::optional<config::export_options>& ocfg) const {
     if (!ocfg.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "No dumping configuration found.";
@@ -253,6 +291,9 @@ export_data(const std::optional<config::export_options>& ocfg) const {
             break;
         case config::entity::feature_flags:
             export_feature_flags(cfg);
+            break;
+        case config::entity::login_info:
+            export_login_info(cfg);
             break;
         default:
             BOOST_THROW_EXCEPTION(
@@ -323,6 +364,27 @@ delete_feature_flag(const config::delete_options& cfg) const {
 }
 
 void application::
+delete_login_info(const config::delete_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Deleting login info for account: " << cfg.key;
+    accounts::repository::login_info_repository repo(context_);
+
+    // Parse as UUID
+    boost::uuids::uuid account_id;
+    try {
+        account_id = boost::lexical_cast<boost::uuids::uuid>(cfg.key);
+    } catch (const boost::bad_lexical_cast&) {
+        BOOST_THROW_EXCEPTION(
+            application_exception(std::format("Invalid account ID: {}", cfg.key)));
+    }
+
+    repo.remove(account_id);
+    output_stream_ << "Login info deleted successfully for account: "
+                   << boost::uuids::to_string(account_id) << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Deleted login info for account: "
+                              << boost::uuids::to_string(account_id);
+}
+
+void application::
 delete_data(const std::optional<config::delete_options>& ocfg) const {
     if (!ocfg.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "No deletion configuration found.";
@@ -339,6 +401,9 @@ delete_data(const std::optional<config::delete_options>& ocfg) const {
             break;
         case config::entity::feature_flags:
             delete_feature_flag(cfg);
+            break;
+        case config::entity::login_info:
+            delete_login_info(cfg);
             break;
         default:
             BOOST_THROW_EXCEPTION(
@@ -466,6 +531,37 @@ add_feature_flag(const config::add_feature_flag_options& cfg) const {
 }
 
 void application::
+add_login_info(const config::add_login_info_options& cfg) const {
+    BOOST_LOG_SEV(lg(), info) << "Adding login info for account: " << cfg.account_id;
+
+    // Parse account ID
+    boost::uuids::uuid account_id;
+    try {
+        account_id = boost::lexical_cast<boost::uuids::uuid>(cfg.account_id);
+    } catch (const boost::bad_lexical_cast&) {
+        BOOST_THROW_EXCEPTION(
+            application_exception(std::format("Invalid account ID: {}", cfg.account_id)));
+    }
+
+    // Construct login info from command-line arguments
+    accounts::domain::login_info record;
+    record.account_id = account_id;
+    record.locked = cfg.locked.value_or(false);
+    record.failed_logins = cfg.failed_logins.value_or(0);
+    record.online = false;
+    record.last_login = std::chrono::system_clock::now();
+
+    // Write to database
+    accounts::repository::login_info_repository repo(context_);
+    repo.write({record});
+
+    output_stream_ << "Successfully added login info for account: "
+                   << boost::uuids::to_string(account_id) << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added login info for account: "
+                              << boost::uuids::to_string(account_id);
+}
+
+void application::
 add_data(const std::optional<config::add_options>& ocfg) const {
     if (!ocfg.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "No add configuration found.";
@@ -481,6 +577,8 @@ add_data(const std::optional<config::add_options>& ocfg) const {
             add_account(opts);
         } else if constexpr (std::is_same_v<T, config::add_feature_flag_options>) {
             add_feature_flag(opts);
+        } else if constexpr (std::is_same_v<T, config::add_login_info_options>) {
+            add_login_info(opts);
         } else {
             []<bool flag = false>() {
                 static_assert(flag, "unhandled type in std::visit for add_data");

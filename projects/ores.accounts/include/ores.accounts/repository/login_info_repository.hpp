@@ -72,6 +72,11 @@ public:
     std::vector<domain::login_info> read(const boost::uuids::uuid& account_id);
     /**@}*/
 
+    /**
+     * @brief Removes login information for a specific account.
+     */
+    void remove(const boost::uuids::uuid& account_id);
+
 private:
     context ctx_;
 };

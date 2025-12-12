@@ -71,6 +71,7 @@ namespace ores #F2F2F2 {
                 currencies
                 accounts
                 feature_flags
+                login_info
             }
 
             note top of entity
@@ -154,6 +155,9 @@ namespace ores #F2F2F2 {
                 +{field} flag_name std::optional<std::string>
                 +{field} description std::optional<std::string>
                 +{field} enabled std::optional<bool>
+                +{field} account_id std::optional<std::string>
+                +{field} locked std::optional<bool>
+                +{field} failed_logins std::optional<int>
             }
 
             note top of add_options
@@ -213,6 +217,7 @@ namespace ores #F2F2F2 {
             parser ..> ores::cli::config::entity_parsers::currencies_parser : delegates
             parser ..> ores::cli::config::entity_parsers::accounts_parser : delegates
             parser ..> ores::cli::config::entity_parsers::feature_flags_parser : delegates
+            parser ..> ores::cli::config::entity_parsers::login_info_parser : delegates
 
             note "Entity-specific parser implementations." as entity_parsers_note
             entity_parsers --- entity_parsers_note
@@ -246,6 +251,16 @@ namespace ores #F2F2F2 {
                 end note
 
                 feature_flags_parser ..> ores::cli::config::options : returns
+
+                class login_info_parser #ECECEC {
+                    +{static} handle_login_info_command(has_help: bool, po: const parsed_options&, info: std::ostream&, vm: variables_map&): std::optional<options>
+                }
+
+                note top of login_info_parser
+                Handles parsing of login-info entity commands (list, delete, add).
+                end note
+
+                login_info_parser ..> ores::cli::config::options : returns
             }
 
             note "Shared parser utility functions." as parser_helpers_note
@@ -278,6 +293,7 @@ namespace ores #F2F2F2 {
             currencies_parser ..> parser_helpers : uses
             accounts_parser ..> parser_helpers : uses
             feature_flags_parser ..> parser_helpers : uses
+            login_info_parser ..> parser_helpers : uses
 
             class parser_exception <<exception>> #D6B19F {
                 +parser_exception(message: std::string_view)
@@ -318,8 +334,21 @@ namespace ores #F2F2F2 {
                 -import_currencies(files: const std::vector<std::filesystem::path>) const: void
                 -import_data(ocfg: const std::optional<config::import_options>&) const: void
                 -export_currencies(cfg: const config::export_options&) const: void
+                -export_accounts(cfg: const config::export_options&) const: void
+                -export_feature_flags(cfg: const config::export_options&) const: void
+                -export_login_info(cfg: const config::export_options&) const: void
                 -export_data(ocfg: const std::optional<config::export_options>&) const: void
-                -{field} context_ utility::repository::context
+                -delete_currency(cfg: const config::delete_options&) const: void
+                -delete_account(cfg: const config::delete_options&) const: void
+                -delete_feature_flag(cfg: const config::delete_options&) const: void
+                -delete_login_info(cfg: const config::delete_options&) const: void
+                -delete_data(ocfg: const std::optional<config::delete_options>&) const: void
+                -add_currency(cfg: const config::add_currency_options&) const: void
+                -add_account(cfg: const config::add_account_options&) const: void
+                -add_feature_flag(cfg: const config::add_feature_flag_options&) const: void
+                -add_login_info(cfg: const config::add_login_info_options&) const: void
+                -add_data(ocfg: const std::optional<config::add_options>&) const: void
+                -{field} context_ utility::database::context
                 -{field} output_stream_ std::ostream&
             }
 

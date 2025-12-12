@@ -17,21 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ENTITY_HPP
-#define ORES_CLI_CONFIG_ENTITY_HPP
+#include "ores.accounts/domain/login_info_json.hpp"
 
-namespace ores::cli::config {
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 
-/**
- * @brief List of available entities to target.
- */
-enum class entity {
-    currencies,
-    accounts,
-    feature_flags,
-    login_info
-};
+namespace ores::accounts::domain {
 
+std::string convert_to_json(const login_info& v) {
+    return rfl::json::write(v);
 }
 
-#endif
+std::string convert_to_json(const std::vector<login_info>& v) {
+    return rfl::json::write(v);
+}
+
+}

@@ -17,33 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ADD_OPTIONS_HPP
-#define ORES_CLI_CONFIG_ADD_OPTIONS_HPP
+#ifndef ORES_CLI_CONFIG_ENTITY_PARSERS_LOGIN_INFO_PARSER_HPP
+#define ORES_CLI_CONFIG_ENTITY_PARSERS_LOGIN_INFO_PARSER_HPP
 
+#include <optional>
 #include <iosfwd>
-#include <variant>
-#include "ores.cli/config/add_currency_options.hpp"
-#include "ores.cli/config/add_account_options.hpp"
-#include "ores.cli/config/add_feature_flag_options.hpp"
-#include "ores.cli/config/add_login_info_options.hpp"
+#include <boost/program_options.hpp>
+#include "ores.cli/config/options.hpp"
 
-namespace ores::cli::config {
+namespace ores::cli::config::entity_parsers {
 
 /**
- * @brief Variant type holding entity-specific add options.
- *
- * This design allows each entity type to have its own dedicated options struct
- * with strongly-typed required fields, while maintaining a unified interface
- * for the add operation. Use std::visit to dispatch to entity-specific handlers.
+ * @brief Handles parsing of login-info entity commands.
  */
-using add_options = std::variant<
-    add_currency_options,
-    add_account_options,
-    add_feature_flag_options,
-    add_login_info_options
->;
-
-std::ostream& operator<<(std::ostream& s, const add_options& v);
+std::optional<options>
+handle_login_info_command(bool has_help,
+    const boost::program_options::parsed_options& po,
+    std::ostream& info,
+    boost::program_options::variables_map& vm);
 
 }
 

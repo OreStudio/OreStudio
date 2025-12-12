@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.cli/config/entity_parsers/feature_flags_parser.hpp"
+#include "ores.cli/config/entity_parsers/login_info_parser.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
 #include "ores.cli/config/parser_helpers.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 #include "ores.cli/config/entity.hpp"
-#include "ores.cli/config/add_feature_flag_options.hpp"
+#include "ores.cli/config/add_login_info_options.hpp"
 #include "ores.utility/database/database_configuration.hpp"
 #include "ores.utility/log/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
@@ -63,52 +63,43 @@ const std::vector<std::string> allowed_operations{
 };
 
 /**
- * @brief Creates the options related to adding feature flags.
+ * @brief Creates the options related to adding login info.
  */
-options_description make_add_feature_flag_options_description() {
-    options_description r("Add Feature Flag Options");
+options_description make_add_login_info_options_description() {
+    options_description r("Add Login Info Options");
     r.add_options()
-        ("name",
+        ("account-id",
             value<std::string>(),
-            "Feature flag name (required)")
-        ("description",
-            value<std::string>()->default_value(""),
-            "Feature flag description")
-        ("enabled",
+            "Account ID (UUID) for the login info (required)")
+        ("locked",
             value<bool>()->default_value(false),
-            "Whether the feature is enabled (default: false)")
-        ("modified-by",
-            value<std::string>(),
-            "Username of modifier (required)");
+            "Whether the account is locked (default: false)")
+        ("failed-logins",
+            value<int>()->default_value(0),
+            "Number of failed login attempts (default: 0)");
 
     return r;
 }
 
 /**
- * @brief Reads the add configuration from the variables map for feature flags.
+ * @brief Reads the add configuration from the variables map for login info.
  */
-ores::cli::config::add_feature_flag_options
-read_add_feature_flag_options(const variables_map& vm) {
-    ores::cli::config::add_feature_flag_options r;
+ores::cli::config::add_login_info_options
+read_add_login_info_options(const variables_map& vm) {
+    ores::cli::config::add_login_info_options r;
 
-    if (vm.count("modified-by") == 0) {
+    // Login info requires account-id
+    if (vm.count("account-id") == 0) {
         BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --modified-by for add command."));
+            parser_exception("Must supply --account-id for add login-info command."));
     }
-    r.modified_by = vm["modified-by"].as<std::string>();
+    r.account_id = vm["account-id"].as<std::string>();
 
-    // Feature flag-specific required fields
-    if (vm.count("name") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --name for add feature flag command."));
-    }
-    r.flag_name = vm["name"].as<std::string>();
-
-    // Optional feature flag fields with defaults
-    if (vm.count("description") != 0)
-        r.description = vm["description"].as<std::string>();
-    if (vm.count("enabled") != 0)
-        r.enabled = vm["enabled"].as<bool>();
+    // Optional fields with defaults
+    if (vm.count("locked") != 0)
+        r.locked = vm["locked"].as<bool>();
+    if (vm.count("failed-logins") != 0)
+        r.failed_logins = vm["failed-logins"].as<int>();
 
     return r;
 }
@@ -116,7 +107,7 @@ read_add_feature_flag_options(const variables_map& vm) {
 }
 
 std::optional<options>
-handle_feature_flags_command(bool has_help,
+handle_login_info_command(bool has_help,
     const parsed_options& po,
     std::ostream& info,
     variables_map& vm) {
@@ -125,27 +116,27 @@ handle_feature_flags_command(bool has_help,
     auto o(collect_unrecognized(po.options, include_positional));
     o.erase(o.begin()); // Remove command name
 
-    // Show help for feature-flags command if requested with no operation
+    // Show help for login-info command if requested with no operation
     if (has_help && o.empty()) {
         const std::vector<std::pair<std::string, std::string>> operations = {
-            {"list", "List feature flags as JSON or table (internal formats)"},
-            {"delete", "Delete a feature flag by key"},
-            {"add", "Add a new feature flag"}
+            {"list", "List login info records as JSON or table"},
+            {"delete", "Delete a login info record by account ID"},
+            {"add", "Add a new login info record"}
         };
-        print_entity_help("feature-flags", "Manage feature flags", operations, info);
+        print_entity_help("login-info", "Manage login tracking information", operations, info);
         return {};
     }
 
     if (o.empty()) {
         BOOST_THROW_EXCEPTION(parser_exception(
-            "feature-flags command requires an operation (list, delete, add)"));
+            "login-info command requires an operation (list, delete, add)"));
     }
 
     const auto operation = o.front();
     o.erase(o.begin()); // Remove operation from args
 
     // Validate operation
-    validate_operation("feature-flags", operation, allowed_operations);
+    validate_operation("login-info", operation, allowed_operations);
 
     options r;
     using ores::utility::program_options::environment_mapper_factory;
@@ -154,30 +145,30 @@ handle_feature_flags_command(bool has_help,
     if (operation == list_command_name) {
         auto d = add_common_options(make_export_options_description());
         if (has_help) {
-            print_help_command("feature-flags list", d, info);
+            print_help_command("login-info list", d, info);
             return {};
         }
         store(command_line_parser(o).options(d).run(), vm);
         store(parse_environment(d, name_mapper), vm);
-        r.exporting = read_export_options(vm, entity::feature_flags);
+        r.exporting = read_export_options(vm, entity::login_info);
     } else if (operation == delete_command_name) {
         auto d = add_common_options(make_delete_options_description());
         if (has_help) {
-            print_help_command("feature-flags delete", d, info);
+            print_help_command("login-info delete", d, info);
             return {};
         }
         store(command_line_parser(o).options(d).run(), vm);
         store(parse_environment(d, name_mapper), vm);
-        r.deleting = read_delete_options(vm, entity::feature_flags);
+        r.deleting = read_delete_options(vm, entity::login_info);
     } else if (operation == add_command_name) {
-        auto d = add_common_options(make_add_feature_flag_options_description());
+        auto d = add_common_options(make_add_login_info_options_description());
         if (has_help) {
-            print_help_command("feature-flags add", d, info);
+            print_help_command("login-info add", d, info);
             return {};
         }
         store(command_line_parser(o).options(d).run(), vm);
         store(parse_environment(d, name_mapper), vm);
-        r.adding = read_add_feature_flag_options(vm);
+        r.adding = read_add_login_info_options(vm);
     }
 
     // Read common options

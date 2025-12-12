@@ -17,33 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ADD_OPTIONS_HPP
-#define ORES_CLI_CONFIG_ADD_OPTIONS_HPP
+#ifndef ORES_CLI_CONFIG_ADD_LOGIN_INFO_OPTIONS_HPP
+#define ORES_CLI_CONFIG_ADD_LOGIN_INFO_OPTIONS_HPP
 
 #include <iosfwd>
-#include <variant>
-#include "ores.cli/config/add_currency_options.hpp"
-#include "ores.cli/config/add_account_options.hpp"
-#include "ores.cli/config/add_feature_flag_options.hpp"
-#include "ores.cli/config/add_login_info_options.hpp"
+#include <string>
+#include <optional>
 
 namespace ores::cli::config {
 
 /**
- * @brief Variant type holding entity-specific add options.
- *
- * This design allows each entity type to have its own dedicated options struct
- * with strongly-typed required fields, while maintaining a unified interface
- * for the add operation. Use std::visit to dispatch to entity-specific handlers.
+ * @brief Configuration for adding a login_info entity via command-line arguments.
  */
-using add_options = std::variant<
-    add_currency_options,
-    add_account_options,
-    add_feature_flag_options,
-    add_login_info_options
->;
+struct add_login_info_options final {
+    std::string account_id;
+    std::optional<bool> locked;
+    std::optional<int> failed_logins;
+};
 
-std::ostream& operator<<(std::ostream& s, const add_options& v);
+std::ostream& operator<<(std::ostream& s, const add_login_info_options& v);
 
 }
 

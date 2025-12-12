@@ -145,11 +145,10 @@ TEST_CASE("read_all_accounts_by_id", tags) {
     // Write multiple versions of the same account
     auto acc1 = generate_synthetic_account();
     const auto test_id = acc1.id;
-    acc1.version = 1;
     BOOST_LOG_SEV(lg, debug) << "Account 1: " << acc1;
 
     auto acc2 = acc1;
-    acc2.version = 2;
+    acc2.version = 1;
     acc2.email = "test.versions.v2@test.com";
     BOOST_LOG_SEV(lg, debug) << "Account 2: " << acc2;
 

@@ -35,7 +35,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-ORE Studio Shell REPL v0.0.5
+ORE Studio Shell REPL v0.0.6
 Type 'help' for available commands, 'exit' to quit
 
 ores-shell> Commands available:
@@ -54,6 +54,8 @@ ores-shell> Commands available:
  - currencies
 	(menu)
  - accounts
+	(menu)
+ - variability
 	(menu)
 ores-shell> Bye!
 #+end_example
@@ -81,10 +83,11 @@ EOF
 #+RESULTS:
 #+begin_example
 ✓ Connected.
-ORE Studio Shell REPL v0.0.5
+ORE Studio Shell REPL v0.0.6
 Type 'help' for available commands, 'exit' to quit
 
 ores-shell> Bye!
+✗ Not logged in. Cannot logout.
 ✓ Disconnected successfully from the server.
 #+end_example
 
@@ -104,11 +107,12 @@ EOF
 
 #+RESULTS:
 #+begin_example
-ORE Studio Shell REPL v0.0.5
+ORE Studio Shell REPL v0.0.6
 Type 'help' for available commands, 'exit' to quit
 
 ores-shell> ✓ Connected.
 ores-shell> Bye!
+✗ Not logged in. Cannot logout.
 ✓ Disconnected successfully from the server.
 #+end_example
 
@@ -134,14 +138,12 @@ EOF
 #+RESULTS:
 #+begin_example
 ✓ Connected.
-✓ Login successful.
-  Username: 'newuser3'
-  Account ID: '019a5e49-476c-70ce-9909-3887cae700e9'
-  Admin: No
-ORE Studio Shell REPL v0.0.5
+✗ Login failed: Login tracking information missing
+ORE Studio Shell REPL v0.0.6
 Type 'help' for available commands, 'exit' to quit
 
 ores-shell> Bye!
+✗ Not logged in. Cannot logout.
 ✓ Disconnected successfully from the server.
 #+end_example
 
@@ -190,8 +192,8 @@ ores-shell> Bye!
 
 #+name: create-account
 #+begin_src ores-shell :exports none
-accounts create newuser22 123 567 newuser22@example.com 1
-accounts create newuser23 123 567 newuser23@example.com 1
+accounts create newuser24 123 567 newuser24@example.com 1
+accounts create newuser25 123 567 newuser25@example.com 1
 exit
 #+end_src
 
@@ -205,16 +207,18 @@ EOF
 #+RESULTS:
 #+begin_example
 ✓ Connected.
-✓ Login successful.
-  Username: 'newuser3'
-  Account ID: '019a5e49-476c-70ce-9909-3887cae700e9'
-  Admin: No
-ORE Studio Shell REPL v0.0.5
+✗ Login failed: Login tracking information missing
+ORE Studio Shell REPL v0.0.6
 Type 'help' for available commands, 'exit' to quit
 
-ores-shell> ✓ Account created with ID: 019aa8d3-5f61-7e8b-b6d1-7074277c0739
-ores-shell> ✓ Account created with ID: 019aa8d3-5fb9-7a74-b16c-ff7ae9248a5b
+ores-shell> ✗ Error: Repository error: Executing INSERT failed: ERROR:  duplicate key value violates unique constraint "accounts_username_unique_idx"
+DETAIL:  Key (username)=(newuser24) already exists.
+
+ores-shell> ✗ Error: Repository error: Executing INSERT failed: ERROR:  duplicate key value violates unique constraint "accounts_username_unique_idx"
+DETAIL:  Key (username)=(newuser25) already exists.
+
 ores-shell> Bye!
+✗ Not logged in. Cannot logout.
 ✓ Disconnected successfully from the server.
 #+end_example
 

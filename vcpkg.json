@@ -23,6 +23,7 @@
         "boost-uuid",
         "boost-crc",
         "boost-scope-exit",
+        "boost-process",
         "cli",
         "faker-cxx",
         "catch2",

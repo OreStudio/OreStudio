@@ -22,7 +22,7 @@
 
 #include <memory>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.shell/app/client_manager.hpp"
+#include "ores.comms/net/client_session.hpp"
 
 namespace cli {
 
@@ -54,9 +54,9 @@ public:
     /**
      * @brief Construct a REPL instance with configuration.
      *
-     * @param client_manager Reference to a client manager.
+     * @param session Reference to a client session.
      */
-    explicit repl(client_manager& client_manager_);
+    explicit repl(comms::net::client_session& session);
 
     repl(const repl&) = delete;
     repl& operator=(const repl&) = delete;
@@ -85,7 +85,7 @@ private:
      * @brief Display the welcome message.
      */
     void display_welcome() const;
-    client_manager& client_manager_;
+    comms::net::client_session& session_;
 };
 
 }

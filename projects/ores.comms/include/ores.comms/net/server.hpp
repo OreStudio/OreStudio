@@ -37,7 +37,7 @@
 #include "ores.comms/messaging/message_handler.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 
-namespace ores::comms::net { class session; }
+namespace ores::comms::net { class server_session; }
 namespace ores::comms::service { class subscription_manager; }
 
 namespace ores::comms::net {
@@ -131,7 +131,7 @@ private:
     std::shared_ptr<service::subscription_manager> subscription_mgr_;
     std::atomic<std::size_t> active_connections_{0};
     boost::asio::cancellation_signal stop_signal_;
-    std::list<std::shared_ptr<session>> active_sessions_;
+    std::list<std::shared_ptr<server_session>> active_sessions_;
     std::mutex sessions_mutex_;
 };
 

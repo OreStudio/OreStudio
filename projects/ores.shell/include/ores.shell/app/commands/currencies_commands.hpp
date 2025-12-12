@@ -21,7 +21,7 @@
 #define ORES_SHELL_APP_COMMANDS_CURRENCIES_COMMANDS_HPP
 
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.shell/app/client_manager.hpp"
+#include "ores.comms/net/client_session.hpp"
 
 namespace cli {
 
@@ -51,7 +51,8 @@ public:
      *
      * Creates the currencies submenu and adds currency operations.
      */
-    static void register_commands(cli::Menu& root_menu, client_manager& client_manager);
+    static void register_commands(cli::Menu& root_menu,
+        comms::net::client_session& session);
 
     /**
      * @brief Process a get currencies request.
@@ -59,8 +60,10 @@ public:
      * Retrieves all currencies from the server and displays them.
      *
      * @param out Output stream for results
+     * @param session Client session for connectivity.
      */
-    static void process_get_currencies(std::ostream& out, client_manager& client_manager);
+    static void process_get_currencies(std::ostream& out,
+        comms::net::client_session& session);
 };
 
 }

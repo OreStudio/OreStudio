@@ -22,7 +22,7 @@
 
 #include <string>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.shell/app/client_manager.hpp"
+#include "ores.comms/net/client_session.hpp"
 
 namespace cli {
 
@@ -53,9 +53,10 @@ public:
      * Adds connect and disconnect commands to the root menu.
      *
      * @param root The root menu to add commands to
-     * @param client_manager Manager for client connectivity.
+     * @param session Client session for connectivity.
      */
-    static void register_commands(cli::Menu& root, client_manager& client_manager);
+    static void register_commands(cli::Menu& root,
+        comms::net::client_session& session);
 
     /**
      * @brief Process a connection request.
@@ -64,12 +65,13 @@ public:
      * and existing connection cleanup.
      *
      * @param out Output stream for user feedback.
-     * @param client_manager Manager for client connectivity.
+     * @param session Client session for connectivity.
      * @param host New host (empty to keep current).
      * @param port New port (empty to keep current).
      * @param identifier New client identifier (empty to keep current).
      */
-    static void process_connect(std::ostream& out, client_manager& client_manager,
+    static void process_connect(std::ostream& out,
+        comms::net::client_session& session,
         std::string host, std::string port, std::string identifier);
 
     /**
@@ -78,9 +80,10 @@ public:
      * Cleanly disconnects from the server if connected.
      *
      * @param out Output stream for user feedback.
-     * @param client_manager Manager for client connectivity.
+     * @param session Client session for connectivity.
      */
-    static void process_disconnect(std::ostream& out, client_manager& client_manager);
+    static void process_disconnect(std::ostream& out,
+        comms::net::client_session& session);
 };
 
 }

@@ -27,7 +27,7 @@
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/asio/steady_timer.hpp>
-#include "ores.comms/net/session.hpp"
+#include "ores.comms/net/server_session.hpp"
 #include "ores.comms/service/subscription_manager.hpp"
 
 namespace ores::comms::net {
@@ -159,7 +159,7 @@ boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_con
                 connection::ssl_socket(std::move(socket), ssl_ctx_));
 
             // Create session with subscription manager
-            auto sess = std::make_shared<session>(std::move(conn),
+            auto sess = std::make_shared<server_session>(std::move(conn),
                 options_.server_identifier, dispatcher_,
                 io_context.get_executor(), subscription_mgr_);
 

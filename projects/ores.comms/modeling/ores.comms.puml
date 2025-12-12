@@ -34,7 +34,7 @@ namespace ores #F2F2F2 {
             together {
                 class server_options
                 class server
-                class session
+                class server_session
             }
 
             ' Group: Client classes
@@ -54,7 +54,7 @@ namespace ores #F2F2F2 {
 
             ' Hidden relationships to stack related classes vertically
             server_options -[hidden]down- server
-            server -[hidden]down- session
+            server -[hidden]down- server_session
             client_options -[hidden]down- client
             retry_options -[hidden]down- connection_state
             pending_request_map -[hidden]down- response_channel
@@ -105,7 +105,7 @@ namespace ores #F2F2F2 {
                 -{field} subscription_mgr_ std::shared_ptr<service::subscription_manager>
                 -{field} active_connections_ std::atomic<std::size_t>
                 -{field} stop_signal_ boost::asio::cancellation_signal
-                -{field} active_sessions_ std::list<std::shared_ptr<session>>
+                -{field} active_sessions_ std::list<std::shared_ptr<server_session>>
                 -{field} sessions_mutex_ std::mutex
             }
 
@@ -119,7 +119,7 @@ namespace ores #F2F2F2 {
 
             server o-u- ores::comms::net::server_options
             server o-u- ores::comms::messaging::message_dispatcher
-            server o-u- ores::comms::net::session
+            server o-u- ores::comms::net::server_session
             server o-u- ores::comms::service::subscription_manager
             server o-u- ores::comms::service::auth_session_service
 
@@ -326,8 +326,8 @@ namespace ores #F2F2F2 {
             connection ..> ores::comms::messaging::frame
             connection ..> ores::comms::messaging::error_code
 
-            class session #ECECEC {
-            +session(std::unique_ptr<connection> conn, std::string server_id, std::shared_ptr<messaging::message_dispatcher> dispatcher, std::shared_ptr<service::subscription_manager> subscription_mgr)
+            class server_session #ECECEC {
+            +server_session(std::unique_ptr<connection> conn, std::string server_id, std::shared_ptr<messaging::message_dispatcher> dispatcher, std::shared_ptr<service::subscription_manager> subscription_mgr)
             +run() boost::asio::awaitable<void>
             +stop() void
             +queue_notification(const std::string& event_type, std::chrono::system_clock::time_point timestamp) void
@@ -347,7 +347,7 @@ namespace ores #F2F2F2 {
             -{field} pending_notifications_ std::queue<pending_notification>
         }
 
-        note top of session
+        note top of server_session
         Represents a client session on the server side.
 
         Manages the lifecycle of a single client connection, including
@@ -355,13 +355,87 @@ namespace ores #F2F2F2 {
         Supports server-push notifications for subscribed events.
         end note
 
-            session o-u- ores::comms::net::connection
-            session o-u- ores::comms::messaging::message_dispatcher
-            session o-u- ores::comms::service::subscription_manager
-            session ..> ores::comms::service::handshake_service : uses
-            session ..> ores::comms::service::heartbeat_service : uses
-            session ..> ores::comms::messaging::error_response : uses
-            session ..> ores::comms::messaging::notification_message : uses
+            server_session o-u- ores::comms::net::connection
+            server_session o-u- ores::comms::messaging::message_dispatcher
+            server_session o-u- ores::comms::service::subscription_manager
+            server_session ..> ores::comms::service::handshake_service : uses
+            server_session ..> ores::comms::service::heartbeat_service : uses
+            server_session ..> ores::comms::messaging::error_response : uses
+            server_session ..> ores::comms::messaging::notification_message : uses
+
+            class client_session_info #F7E5FF {
+                +{field} account_id boost::uuids::uuid
+                +{field} username std::string
+                +{field} is_admin bool
+            }
+
+            note top of client_session_info
+            Information about the current client session.
+
+            Fields:
+
+            - account_id: Unique identifier of the authenticated account.
+            - username: Username of the authenticated user.
+            - is_admin: Whether the session has admin privileges.
+            end note
+
+            enum client_session_error #F2DAFD {
+                not_connected
+                not_logged_in
+                not_admin
+                request_failed
+                server_error
+            }
+
+            note top of client_session_error
+            Error codes for client session operations.
+
+            - not_connected: Client is not connected to server.
+            - not_logged_in: User is not logged in.
+            - not_admin: User lacks admin privileges.
+            - request_failed: Request failed to send or receive.
+            - server_error: Server returned an error response.
+            end note
+
+            class client_session #ECECEC {
+                +client_session()
+                +~client_session()
+                +connect(options: client_options) std::expected<void, client_session_error>
+                +disconnect() void
+                +is_connected() bool
+                +is_logged_in() bool
+                +is_admin() bool
+                +set_session_info(info: client_session_info) void
+                +clear_session_info() void
+                +process_request<RequestType, ResponseType, RequestMsgType>(request: RequestType) std::expected<ResponseType, client_session_error>
+                +process_authenticated_request<RequestType, ResponseType, RequestMsgType>(request: RequestType) std::expected<ResponseType, client_session_error>
+                +process_admin_request<RequestType, ResponseType, RequestMsgType>(request: RequestType) std::expected<ResponseType, client_session_error>
+                -{static} lg() auto&
+                -{field} client_ std::shared_ptr<client>
+                -{field} session_info_ std::optional<client_session_info>
+            }
+
+            note top of client_session
+            Auth-aware client wrapper for ORE Studio.
+
+            Provides a high-level interface for client-server communication with
+            built-in authentication state management. Shared between shell and qt
+            applications.
+
+            Template methods:
+            - process_request: Send any request without auth checks.
+            - process_authenticated_request: Requires login before sending.
+            - process_admin_request: Requires admin privileges before sending.
+
+            Session state is managed externally via set_session_info/clear_session_info
+            to avoid circular dependencies with domain-specific login types.
+            end note
+
+            client_session o-- ores::comms::net::client
+            client_session o-- ores::comms::net::client_session_info
+            client_session ..> ores::comms::net::client_session_error
+            client_session ..> ores::comms::messaging::frame
+            client_session ..> ores::comms::messaging::error_response
         }
 
         namespace messaging #F2F2F2 {
@@ -1093,7 +1167,7 @@ namespace ores #F2F2F2 {
 
             net_client_tests ..> ores::comms::net::client : tests
             net_client_tests ..> ores::comms::net::server : tests
-            net_client_tests ..> ores::comms::net::session : tests
+            net_client_tests ..> ores::comms::net::server_session : tests
 
             class message_handler_tests <<test suite>> #C5E1A5 {
                 +test_request_serialization_roundtrip() void

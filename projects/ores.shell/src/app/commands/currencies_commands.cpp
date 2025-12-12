@@ -30,39 +30,39 @@ namespace ores::shell::app::commands {
 
 using namespace utility::log;
 using comms::messaging::message_type;
+using comms::net::client_session;
 
 void currencies_commands::
-register_commands(cli::Menu& root_menu, client_manager& client_manager) {
+register_commands(cli::Menu& root_menu, client_session& session) {
     auto currencies_menu =
         std::make_unique<cli::Menu>("currencies");
 
-    currencies_menu->Insert("get", [&client_manager](std::ostream& out) {
-        process_get_currencies(std::ref(out), std::ref(client_manager));
+    currencies_menu->Insert("get", [&session](std::ostream& out) {
+        process_get_currencies(std::ref(out), std::ref(session));
     }, "Retrieve all currencies from the server");
 
     root_menu.Insert(std::move(currencies_menu));
 }
 
 void currencies_commands::
-process_get_currencies(std::ostream& out, client_manager& client_manager) {
-    try {
-        BOOST_LOG_SEV(lg(), debug) << "Initiating get currencies request.";
+process_get_currencies(std::ostream& out, client_session& session) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get currencies request.";
 
-        using risk::messaging::get_currencies_request;
-        using risk::messaging::get_currencies_response;
-        client_manager.process_request<get_currencies_request,
-                                       get_currencies_response,
-                                       message_type::get_currencies_request>
-            (get_currencies_request{})
-            .and_then([&](const auto& response) {
-                out << response.currencies << std::endl;
-                return std::optional{response};
-            });
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Get currencies exception: " << e.what();
-        out << "✗ Error: " << e.what() << std::endl;
+    using risk::messaging::get_currencies_request;
+    using risk::messaging::get_currencies_response;
+    auto result = session.process_request<get_currencies_request,
+                                          get_currencies_response,
+                                          message_type::get_currencies_request>
+        (get_currencies_request{});
+
+    if (!result) {
+        out << "✗ " << to_string(result.error()) << std::endl;
+        return;
     }
 
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
+                              << result->currencies.size() << " currencies.";
+    out << result->currencies << std::endl;
 }
 
 }

@@ -21,7 +21,7 @@
 #define ORES_SHELL_APP_COMMANDS_VARIABILITY_COMMANDS_HPP
 
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.shell/app/client_manager.hpp"
+#include "ores.comms/net/client_session.hpp"
 
 namespace cli {
 
@@ -54,7 +54,8 @@ public:
      *
      * Creates the variability submenu and adds variability operations.
      */
-    static void register_commands(cli::Menu& root_menu, client_manager& client_manager);
+    static void register_commands(cli::Menu& root_menu,
+        comms::net::client_session& session);
 
     /**
      * @brief Process a list feature flags request.
@@ -62,9 +63,10 @@ public:
      * Retrieves all feature flags from the server and displays them.
      *
      * @param out Output stream for results
-     * @param client_manager Manager for client connectivity.
+     * @param session Client session for connectivity.
      */
-    static void process_list_feature_flags(std::ostream& out, client_manager& client_manager);
+    static void process_list_feature_flags(std::ostream& out,
+        comms::net::client_session& session);
 };
 
 }

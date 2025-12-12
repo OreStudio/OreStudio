@@ -117,13 +117,11 @@ namespace ores #F2F2F2 {
                 class host
                 class application
                 class repl
-                class client_manager
             }
 
             ' Stack vertically
             host -[hidden]down- application
             application -[hidden]down- repl
-            repl -[hidden]down- client_manager
 
             '
             ' Class definitions
@@ -148,17 +146,20 @@ namespace ores #F2F2F2 {
 
             note top of application
             Entry point for the ores client application.
+
+            Creates a client_session and handles auto-connect/auto-login
+            based on provided configuration.
             - connection_config_: optional connection configuration
             - login_config_: optional login configuration
             end note
 
             class repl #ECECEC {
-                +repl(client_manager: client_manager&)
+                +repl(session: comms::net::client_session&)
                 +run(): void
                 -{static} lg(): auto&
                 -setup_menus(): std::unique_ptr<::cli::Cli>
                 -display_welcome() const: void
-                -{field} client_manager_ client_manager&
+                -{field} session_ comms::net::client_session&
             }
 
             note top of repl
@@ -166,37 +167,12 @@ namespace ores #F2F2F2 {
 
             Provides a command-line interface for interacting with the ORE Studio server,
             including commands for connection management and data retrieval.
-            - client_manager_: reference to client manager
+            - session_: reference to client session from comms
             end note
 
-            class client_manager #ECECEC {
-                +client_manager(out: std::ostream&, connection_config: std::optional<comms::net::client_options>, login_config: std::optional<config::login_options>)
-                +~client_manager()
-                +process_request<RequestType, ResponseType, RequestMsgType>(request: RequestType): std::optional<ResponseType>
-                +connect(host: std::string, port: std::string, identifier: std::string): bool
-                +login(username: std::string, password: std::string): bool
-                +disconnect(): void
-                -{static} lg(): auto&
-                -connect(config: comms::net::client_options): void
-                -auto_connect(): bool
-                -auto_login(): bool
-                -{field} output_ std::ostream&
-                -{field} connection_config_ const std::optional<comms::net::client_options>
-                -{field} login_config_ const std::optional<config::login_options>
-                -{field} client_ std::shared_ptr<comms::net::client>
-            }
-
-            note top of client_manager
-            Manages client connection lifecycle and request processing.
-            - output_: output stream reference
-            - connection_config_: optional connection configuration
-            - login_config_: optional login configuration
-            - client_: shared pointer to the client
-            end note
-
-            ores::shell::app::repl o-- ores::shell::app::client_manager
             ores::shell::app::application ..> ores::shell::app::repl : creates
-            ores::shell::app::application ..> ores::shell::app::client_manager : creates
+            ores::shell::app::application ..> ores::comms::net::client_session : creates
+            ores::shell::app::repl o-- ores::comms::net::client_session
 
             note "Command handlers for the REPL." as ores_shell_commands_note
             commands --- ores_shell_commands_note
@@ -210,19 +186,21 @@ namespace ores #F2F2F2 {
                     class connection_commands
                     class currencies_commands
                     class accounts_commands
+                    class variability_commands
                 }
 
                 connection_commands -[hidden]down- currencies_commands
                 currencies_commands -[hidden]down- accounts_commands
+                accounts_commands -[hidden]down- variability_commands
 
                 '
                 ' Class definitions
                 '
 
                 class connection_commands #ECECEC {
-                    +{static} register_commands(root: cli::Menu&, client_manager: client_manager&): void
-                    +{static} process_connect(out: std::ostream&, client_manager: client_manager&, host: std::string, port: std::string, identifier: std::string): void
-                    +{static} process_disconnect(out: std::ostream&, client_manager: client_manager&): void
+                    +{static} register_commands(root: cli::Menu&, session: comms::net::client_session&): void
+                    +{static} process_connect(out: std::ostream&, session: comms::net::client_session&, host: std::string, port: std::string, identifier: std::string): void
+                    +{static} process_disconnect(out: std::ostream&, session: comms::net::client_session&): void
                     -{static} lg(): auto&
                 }
 
@@ -231,8 +209,8 @@ namespace ores #F2F2F2 {
                 end note
 
                 class currencies_commands #ECECEC {
-                    +{static} register_commands(root_menu: cli::Menu&, client_manager: client_manager&): void
-                    +{static} process_get_currencies(out: std::ostream&, client_manager: client_manager&): void
+                    +{static} register_commands(root_menu: cli::Menu&, session: comms::net::client_session&): void
+                    +{static} process_get_currencies(out: std::ostream&, session: comms::net::client_session&): void
                     -{static} lg(): auto&
                 }
 
@@ -241,11 +219,13 @@ namespace ores #F2F2F2 {
                 end note
 
                 class accounts_commands #ECECEC {
-                    +{static} register_commands(root_menu: cli::Menu&, client_manager: client_manager&): void
-                    +{static} process_create_account(out: std::ostream&, client_manager: client_manager&, username: std::string, password: std::string, totp_secret: std::string, email: std::string, is_admin: bool): void
-                    +{static} process_list_accounts(out: std::ostream&, client_manager: client_manager&): void
-                    +{static} process_login(client_manager: client_manager&, username: std::string, password: std::string): void
-                    +{static} process_unlock_account(out: std::ostream&, client_manager: client_manager&, account_id: std::string): void
+                    +{static} register_commands(root_menu: cli::Menu&, session: comms::net::client_session&): void
+                    +{static} process_create_account(out: std::ostream&, session: comms::net::client_session&, username: std::string, password: std::string, totp_secret: std::string, email: std::string, is_admin: bool): void
+                    +{static} process_list_accounts(out: std::ostream&, session: comms::net::client_session&): void
+                    +{static} process_login(out: std::ostream&, session: comms::net::client_session&, username: std::string, password: std::string): void
+                    +{static} process_unlock_account(out: std::ostream&, session: comms::net::client_session&, account_id: std::string): void
+                    +{static} process_list_login_info(out: std::ostream&, session: comms::net::client_session&): void
+                    +{static} process_logout(out: std::ostream&, session: comms::net::client_session&): void
                     -{static} lg(): auto&
                 }
 
@@ -253,9 +233,23 @@ namespace ores #F2F2F2 {
                 Manages commands related to accounts.
                 end note
 
-                ores::shell::app::commands::connection_commands ..> ores::shell::app::client_manager : uses
-                ores::shell::app::commands::currencies_commands ..> ores::shell::app::client_manager : uses
-                ores::shell::app::commands::accounts_commands ..> ores::shell::app::client_manager : uses
+                class variability_commands #ECECEC {
+                    +{static} register_commands(root_menu: cli::Menu&, session: comms::net::client_session&): void
+                    +{static} process_list_feature_flags(out: std::ostream&, session: comms::net::client_session&): void
+                    -{static} lg(): auto&
+                }
+
+                note top of variability_commands
+                Manages commands related to variability subsystem.
+
+                Handles feature flags, configuration toggles, and other
+                variability-related operations.
+                end note
+
+                ores::shell::app::commands::connection_commands ..> ores::comms::net::client_session : uses
+                ores::shell::app::commands::currencies_commands ..> ores::comms::net::client_session : uses
+                ores::shell::app::commands::accounts_commands ..> ores::comms::net::client_session : uses
+                ores::shell::app::commands::variability_commands ..> ores::comms::net::client_session : uses
             }
         }
     }

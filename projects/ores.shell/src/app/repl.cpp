@@ -34,8 +34,8 @@ namespace ores::shell::app {
 
 using namespace ores::utility::log;
 
-repl::repl(client_manager& client_manager)
-    : client_manager_(client_manager) {
+repl::repl(comms::net::client_session& session)
+    : session_(session) {
     BOOST_LOG_SEV(lg(), info) << "REPL created.";
 }
 
@@ -55,10 +55,10 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
         std::make_unique<cli::Menu>("ores-shell");
 
     using namespace commands;
-    connection_commands::register_commands(*root, client_manager_);
-    currencies_commands::register_commands(*root, client_manager_);
-    accounts_commands::register_commands(*root, client_manager_);
-    variability_commands::register_commands(*root, client_manager_);
+    connection_commands::register_commands(*root, session_);
+    currencies_commands::register_commands(*root, session_);
+    accounts_commands::register_commands(*root, session_);
+    variability_commands::register_commands(*root, session_);
 
     auto cli_instance =
         std::make_unique<cli::Cli>(std::move(root));

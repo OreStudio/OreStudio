@@ -37,6 +37,10 @@ void client_manager::connect(comms::net::client_options config) {
         client_->disconnect();
     }
 
+    // Disable heartbeat for shell - it's synchronous request-response, no need
+    // for background threads. If the server dies, the next request will fail.
+    config.heartbeat_enabled = false;
+
     client_ = std::make_shared<comms::net::client>(config);
     client_->connect_sync();
 

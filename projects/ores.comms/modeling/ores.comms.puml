@@ -55,6 +55,7 @@ namespace ores #F2F2F2 {
             class server #ECECEC {
                 +server(server_options options, std::shared_ptr<service::subscription_manager> subscription_mgr)
                 +register_handler(messaging::message_type_range range, std::shared_ptr<messaging::message_handler> handler) void
+                +sessions() std::shared_ptr<service::auth_session_service>
                 +run(boost::asio::io_context& io_context, std::function<void(std::uint16_t)> on_listening) boost::asio::awaitable<void>
                 +stop() void
                 -accept_loop(boost::asio::io_context& io_context, std::function<void(std::uint16_t)> on_listening) boost::asio::awaitable<void>
@@ -62,6 +63,7 @@ namespace ores #F2F2F2 {
                 -watch_for_stop_signals(boost::asio::io_context& io_context) boost::asio::awaitable<void>
                 -{field} options_ server_options
                 -{field} ssl_ctx_ ssl::context
+                -{field} sessions_ std::shared_ptr<service::auth_session_service>
                 -{field} dispatcher_ std::shared_ptr<messaging::message_dispatcher>
                 -{field} subscription_mgr_ std::shared_ptr<service::subscription_manager>
                 -{field} active_connections_ std::atomic<std::size_t>
@@ -75,12 +77,14 @@ namespace ores #F2F2F2 {
 
             Accepts SSL connections, performs handshake, and manages client sessions.
             Supports server-push notifications via optional subscription_manager.
+            Owns the auth_session_service for centralized authorization.
             end note
 
             server o-u- ores::comms::net::server_options
             server o-u- ores::comms::messaging::message_dispatcher
             server o-u- ores::comms::net::session
             server o-u- ores::comms::service::subscription_manager
+            server o-u- ores::comms::service::auth_session_service
 
         class retry_options #F7E5FF {
             +{field} max_attempts std::uint32_t
@@ -438,21 +442,25 @@ namespace ores #F2F2F2 {
             frame ..> ores::comms::messaging::error_code
 
             class message_dispatcher #ECECEC {
-                +message_dispatcher()
+                +message_dispatcher(std::shared_ptr<service::auth_session_service> sessions)
                 +register_handler(message_type_range range, std::shared_ptr<message_handler> handler) void
                 +dispatch(const frame& request_frame, std::uint32_t sequence, const std::string& remote_address) boost::asio::awaitable<std::expected<frame, error_code>>
                 -find_handler(message_type type) message_handler*
                 -get_response_type(message_type request_type) message_type
                 -{field} handlers_ std::map<message_type_range, std::shared_ptr<message_handler>>
+                -{field} sessions_ std::shared_ptr<service::auth_session_service>
             }
 
             note top of message_dispatcher
             Dispatches incoming messages to registered subsystem handlers.
 
             The dispatcher maintains a registry of message handlers for different
-            message type ranges. When a message arrives, it routes it to the appropriate
-            handler based on the message type, and converts the handler's response
-            back into a frame.
+            message type ranges. When a message arrives, it:
+            1. Checks authorization via auth_session_service before routing
+            2. Routes to the appropriate handler based on message type
+            3. Converts the handler's response back into a frame
+
+            Authorization is centralized here so handlers don't duplicate auth logic.
 
             Thread-safety: This class is not thread-safe. Registration should happen
             during initialization before concurrent access begins.
@@ -460,6 +468,7 @@ namespace ores #F2F2F2 {
 
             message_dispatcher o-u- ores::comms::messaging::message_type_range
             message_dispatcher o-u- ores::comms::messaging::message_handler
+            message_dispatcher o-u- ores::comms::service::auth_session_service
             message_dispatcher ..> ores::comms::messaging::frame
             message_dispatcher ..> ores::comms::messaging::error_code
             message_dispatcher ..> ores::comms::messaging::message_type
@@ -705,6 +714,52 @@ namespace ores #F2F2F2 {
         }
 
         namespace service #F2F2F2 {
+            class session_info #F7E5FF {
+                +{field} account_id boost::uuids::uuid
+                +{field} is_admin bool
+            }
+
+            note top of session_info
+            Information about an authenticated session.
+
+            Fields:
+
+            - account_id: Unique identifier of the authenticated account.
+            - is_admin: Whether the session has admin privileges.
+            end note
+
+            class auth_session_service #ECECEC {
+                +get_session(std::string) std::optional<session_info>
+                +is_authenticated(std::string) bool
+                +is_admin(std::string) bool
+                +store_session(std::string, session_info) void
+                +remove_session(std::string) void
+                +clear_all_sessions() void
+                +authorize_request(messaging::message_type, std::string) std::expected<void, messaging::error_code>
+                -{static} requires_authentication(messaging::message_type) bool
+                -{static} requires_admin(messaging::message_type) bool
+                -{field} session_mutex_ std::mutex
+                -{field} sessions_ std::map<std::string, session_info>
+            }
+
+            note top of auth_session_service
+            Centralized session management service.
+
+            Tracks authenticated sessions by remote address. This service is shared
+            across all message handlers to provide consistent authorization checks.
+
+            Thread-safety: All public methods are thread-safe.
+
+            Authorization logic:
+            - Some messages don't require authentication (login, bootstrap, ping/pong)
+            - Some messages require authentication
+            - Some messages require admin privileges
+            end note
+
+            auth_session_service o-- ores::comms::service::session_info
+            auth_session_service ..> ores::comms::messaging::message_type
+            auth_session_service ..> ores::comms::messaging::error_code
+
             class handshake_service #ECECEC {
                 +{static} perform_client_handshake(net::connection& conn, const std::function<std::uint32_t()>& sequence_generator, const std::string& client_identifier) boost::asio::awaitable<void>
                 +{static} perform_server_handshake(net::connection& conn, std::uint32_t sequence, const std::string& server_identifier) boost::asio::awaitable<bool>

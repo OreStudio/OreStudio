@@ -24,7 +24,7 @@
 #include "ores.utility/database/context.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/messaging/message_handler.hpp"
-#include "ores.comms/service/session_service.hpp"
+#include "ores.comms/service/auth_session_service.hpp"
 #include "ores.accounts/service/account_service.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 
@@ -60,11 +60,11 @@ public:
      *
      * @param ctx Database context for repository access
      * @param system_flags Shared system flags service for flag access
-     * @param sessions Shared session service for authentication
+     * @param sessions Shared auth session service for authentication
      */
     accounts_message_handler(utility::database::context ctx,
         std::shared_ptr<variability::service::system_flags_service> system_flags,
-        std::shared_ptr<comms::service::session_service> sessions);
+        std::shared_ptr<comms::service::auth_session_service> sessions);
 
     using handler_result = boost::asio::awaitable<
         std::expected<std::vector<std::byte>, comms::messaging::error_code>
@@ -173,7 +173,7 @@ private:
     service::account_service service_;
     utility::database::context ctx_;
     std::shared_ptr<variability::service::system_flags_service> system_flags_;
-    std::shared_ptr<comms::service::session_service> sessions_;
+    std::shared_ptr<comms::service::auth_session_service> sessions_;
 };
 
 }

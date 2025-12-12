@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMMS_SERVICE_SESSION_SERVICE_HPP
-#define ORES_COMMS_SERVICE_SESSION_SERVICE_HPP
+#ifndef ORES_COMMS_SERVICE_AUTH_SESSION_SERVICE_HPP
+#define ORES_COMMS_SERVICE_AUTH_SESSION_SERVICE_HPP
 
 #include <map>
 #include <mutex>
@@ -39,17 +39,17 @@ struct session_info {
 };
 
 /**
- * @brief Centralized session management service.
+ * @brief Centralized authentication session management service.
  *
  * Tracks authenticated sessions by remote address. This service is shared
  * across all message handlers to provide consistent authorization checks.
  *
  * Thread-safety: All public methods are thread-safe.
  */
-class session_service final {
+class auth_session_service final {
 private:
     inline static std::string_view logger_name =
-        "ores.comms.service.session_service";
+        "ores.comms.service.auth_session_service";
 
     static auto& lg() {
         using namespace ores::utility::log;
@@ -58,7 +58,7 @@ private:
     }
 
 public:
-    session_service() = default;
+    auth_session_service() = default;
 
     /**
      * @brief Get session for a remote address.

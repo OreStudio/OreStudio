@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.comms/service/session_service.hpp"
+#include "ores.comms/service/auth_session_service.hpp"
 
 #include <boost/uuid/uuid_io.hpp>
 
@@ -26,7 +26,7 @@ namespace ores::comms::service {
 using namespace ores::utility::log;
 
 std::optional<session_info>
-session_service::get_session(const std::string& remote_address) const {
+auth_session_service::get_session(const std::string& remote_address) const {
     std::lock_guard lock(session_mutex_);
     auto it = sessions_.find(remote_address);
     if (it != sessions_.end()) {
@@ -35,12 +35,12 @@ session_service::get_session(const std::string& remote_address) const {
     return std::nullopt;
 }
 
-bool session_service::is_authenticated(const std::string& remote_address) const {
+bool auth_session_service::is_authenticated(const std::string& remote_address) const {
     std::lock_guard lock(session_mutex_);
     return sessions_.contains(remote_address);
 }
 
-bool session_service::is_admin(const std::string& remote_address) const {
+bool auth_session_service::is_admin(const std::string& remote_address) const {
     std::lock_guard lock(session_mutex_);
     auto it = sessions_.find(remote_address);
     if (it != sessions_.end()) {
@@ -49,7 +49,7 @@ bool session_service::is_admin(const std::string& remote_address) const {
     return false;
 }
 
-void session_service::store_session(const std::string& remote_address,
+void auth_session_service::store_session(const std::string& remote_address,
     session_info session) {
     std::lock_guard lock(session_mutex_);
     BOOST_LOG_SEV(lg(), info) << "Storing session for " << remote_address
@@ -58,7 +58,7 @@ void session_service::store_session(const std::string& remote_address,
     sessions_[remote_address] = std::move(session);
 }
 
-void session_service::remove_session(const std::string& remote_address) {
+void auth_session_service::remove_session(const std::string& remote_address) {
     std::lock_guard lock(session_mutex_);
     auto it = sessions_.find(remote_address);
     if (it != sessions_.end()) {
@@ -68,14 +68,14 @@ void session_service::remove_session(const std::string& remote_address) {
     }
 }
 
-void session_service::clear_all_sessions() {
+void auth_session_service::clear_all_sessions() {
     std::lock_guard lock(session_mutex_);
     BOOST_LOG_SEV(lg(), info) << "Clearing all sessions (count="
                               << sessions_.size() << ")";
     sessions_.clear();
 }
 
-bool session_service::requires_authentication(messaging::message_type type) {
+bool auth_session_service::requires_authentication(messaging::message_type type) {
     using messaging::message_type;
 
     // Messages that do NOT require authentication
@@ -98,7 +98,7 @@ bool session_service::requires_authentication(messaging::message_type type) {
     }
 }
 
-bool session_service::requires_admin(messaging::message_type type) {
+bool auth_session_service::requires_admin(messaging::message_type type) {
     using messaging::message_type;
 
     // Messages that require admin privileges
@@ -117,7 +117,7 @@ bool session_service::requires_admin(messaging::message_type type) {
 }
 
 std::expected<void, messaging::error_code>
-session_service::authorize_request(messaging::message_type type,
+auth_session_service::authorize_request(messaging::message_type type,
     const std::string& remote_address) const {
 
     // Check if authentication is required

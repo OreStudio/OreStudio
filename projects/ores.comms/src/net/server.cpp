@@ -38,7 +38,7 @@ server::server(server_options options,
     std::shared_ptr<service::subscription_manager> subscription_mgr)
     : options_(std::move(options)),
       ssl_ctx_(ssl::context::tlsv13),
-      sessions_(std::make_shared<service::session_service>()),
+      sessions_(std::make_shared<service::auth_session_service>()),
       dispatcher_(std::make_shared<messaging::message_dispatcher>(sessions_)),
       subscription_mgr_(std::move(subscription_mgr)) {
     setup_ssl_context();

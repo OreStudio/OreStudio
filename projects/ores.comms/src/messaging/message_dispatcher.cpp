@@ -24,7 +24,7 @@ namespace ores::comms::messaging {
 using namespace ores::utility::log;
 
 message_dispatcher::message_dispatcher(
-    std::shared_ptr<service::session_service> sessions)
+    std::shared_ptr<service::auth_session_service> sessions)
     : sessions_(std::move(sessions)) {}
 
 void message_dispatcher::register_handler(message_type_range range,

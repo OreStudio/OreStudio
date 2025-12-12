@@ -30,7 +30,7 @@ using comms::messaging::message_type;
 
 accounts_message_handler::accounts_message_handler(utility::database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
-    std::shared_ptr<comms::service::session_service> sessions)
+    std::shared_ptr<comms::service::auth_session_service> sessions)
     : service_(ctx), ctx_(ctx), system_flags_(std::move(system_flags)),
       sessions_(std::move(sessions)) {}
 

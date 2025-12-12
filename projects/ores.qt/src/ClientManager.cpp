@@ -29,7 +29,7 @@
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.comms/messaging/handshake_protocol.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
-#include "ores.qt/events/connection_events.hpp"
+#include "ores.comms/domain/events/connection_events.hpp"
 
 namespace ores::qt {
 
@@ -109,7 +109,7 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
         new_client->set_disconnect_callback([this]() {
             BOOST_LOG_SEV(lg(), warn) << "Client detected disconnect";
             // Publish event to bus (thread-safe)
-            event_bus_.publish(events::disconnected_event{
+            event_bus_.publish(comms::domain::events::disconnected_event{
                 .timestamp = std::chrono::system_clock::now()
             });
             // Emit signal on main thread via meta-object system
@@ -120,7 +120,7 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
         new_client->set_reconnecting_callback([this]() {
             BOOST_LOG_SEV(lg(), info) << "Client attempting to reconnect";
             // Publish event to bus (thread-safe)
-            event_bus_.publish(events::reconnecting_event{
+            event_bus_.publish(comms::domain::events::reconnecting_event{
                 .timestamp = std::chrono::system_clock::now()
             });
             // Emit signal on main thread via meta-object system
@@ -131,7 +131,7 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
         new_client->set_reconnected_callback([this]() {
             BOOST_LOG_SEV(lg(), info) << "Client reconnected successfully";
             // Publish event to bus (thread-safe)
-            event_bus_.publish(events::reconnected_event{
+            event_bus_.publish(comms::domain::events::reconnected_event{
                 .timestamp = std::chrono::system_clock::now()
             });
             // Emit signal on main thread via meta-object system
@@ -200,7 +200,7 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
             });
 
         // Publish connected event to bus
-        event_bus_.publish(events::connected_event{
+        event_bus_.publish(comms::domain::events::connected_event{
             .timestamp = std::chrono::system_clock::now(),
             .host = host,
             .port = port
@@ -230,7 +230,7 @@ void ClientManager::disconnect() {
         client_.reset();
 
         // Publish disconnected event to bus
-        event_bus_.publish(events::disconnected_event{
+        event_bus_.publish(comms::domain::events::disconnected_event{
             .timestamp = std::chrono::system_clock::now()
         });
         emit disconnected();

@@ -17,17 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_EVENTS_CONNECTION_EVENTS_HPP
-#define ORES_QT_EVENTS_CONNECTION_EVENTS_HPP
+#ifndef ORES_COMMS_DOMAIN_EVENTS_CONNECTION_EVENTS_HPP
+#define ORES_COMMS_DOMAIN_EVENTS_CONNECTION_EVENTS_HPP
 
 #include <chrono>
 #include <string>
 #include "ores.eventing/domain/event_traits.hpp"
 
-namespace ores::qt::events {
+namespace ores::comms::domain::events {
 
 /**
- * @brief Event published when successfully connected to the server.
+ * @brief Event published when successfully connected to a server.
  */
 struct connected_event final {
     std::chrono::system_clock::time_point timestamp;
@@ -61,23 +61,23 @@ struct reconnected_event final {
 namespace ores::eventing::domain {
 
 template<>
-struct event_traits<ores::qt::events::connected_event> {
-    static constexpr std::string_view name = "ores.qt.connected";
+struct event_traits<ores::comms::domain::events::connected_event> {
+    static constexpr std::string_view name = "ores.comms.connected";
 };
 
 template<>
-struct event_traits<ores::qt::events::disconnected_event> {
-    static constexpr std::string_view name = "ores.qt.disconnected";
+struct event_traits<ores::comms::domain::events::disconnected_event> {
+    static constexpr std::string_view name = "ores.comms.disconnected";
 };
 
 template<>
-struct event_traits<ores::qt::events::reconnecting_event> {
-    static constexpr std::string_view name = "ores.qt.reconnecting";
+struct event_traits<ores::comms::domain::events::reconnecting_event> {
+    static constexpr std::string_view name = "ores.comms.reconnecting";
 };
 
 template<>
-struct event_traits<ores::qt::events::reconnected_event> {
-    static constexpr std::string_view name = "ores.qt.reconnected";
+struct event_traits<ores::comms::domain::events::reconnected_event> {
+    static constexpr std::string_view name = "ores.comms.reconnected";
 };
 
 }

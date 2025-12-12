@@ -94,6 +94,9 @@ client::~client() {
     // Ensure disconnect is called to stop any running coroutines
     disconnect();
 
+    // Release work guard to allow io_context to complete when all work is done
+    work_guard_.reset();
+
     // Stop io_context to allow background thread to complete
     if (io_ctx_) {
         io_ctx_->stop();
@@ -218,10 +221,12 @@ void client::connect_sync() {
     auto future = boost::asio::co_spawn(executor_, task(), boost::asio::use_future);
 
     // Start io_context in background thread if we own it and it's not already running.
-    // This allows the message loop and heartbeat coroutines to continue running
-    // after connect_sync() returns.
+    // The work guard keeps io_context alive for subsequent sync operations.
     if (io_ctx_ && !io_thread_) {
-        BOOST_LOG_SEV(lg(), trace) << "connect_sync: starting io_context in background thread.";
+        BOOST_LOG_SEV(lg(), trace) << "connect_sync: creating work guard and starting io_context thread.";
+        work_guard_ = std::make_unique<
+            boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
+                io_ctx_->get_executor());
         io_thread_ = std::make_unique<std::thread>([this]() {
             BOOST_LOG_SEV(lg(), trace) << "io_thread: starting io_context.run().";
             io_ctx_->run();
@@ -343,10 +348,12 @@ void client::connect_with_retry_sync() {
     auto future = boost::asio::co_spawn(executor_, task(), boost::asio::use_future);
 
     // Start io_context in background thread if we own it and it's not already running.
-    // This allows the message loop and heartbeat coroutines to continue running
-    // after connect_with_retry_sync() returns.
+    // The work guard keeps io_context alive for subsequent sync operations.
     if (io_ctx_ && !io_thread_) {
-        BOOST_LOG_SEV(lg(), trace) << "connect_with_retry_sync: starting io_context in background thread.";
+        BOOST_LOG_SEV(lg(), trace) << "connect_with_retry_sync: creating work guard and starting io_context thread.";
+        work_guard_ = std::make_unique<
+            boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
+                io_ctx_->get_executor());
         io_thread_ = std::make_unique<std::thread>([this]() {
             BOOST_LOG_SEV(lg(), trace) << "io_thread: starting io_context.run().";
             io_ctx_->run();
@@ -722,14 +729,12 @@ client::send_request_sync(messaging::frame request_frame) {
 
     BOOST_LOG_SEV(lg(), trace) << "send_request_sync: spawning task with use_future";
     auto future = boost::asio::co_spawn(executor_, task(), boost::asio::use_future);
-    if (io_ctx_) {
-        io_ctx_->run();
-        io_ctx_->restart();
-    }
 
+    // io_context is already running in background thread (started by connect_sync)
+    // Just wait for the future to complete.
     BOOST_LOG_SEV(lg(), debug) << "send_request_sync: getting result from future.";
     auto r = future.get();
-    BOOST_LOG_SEV(lg(), debug) << "Completed synchronous connect successfully.";
+    BOOST_LOG_SEV(lg(), debug) << "Completed synchronous send request successfully.";
     return r;
 }
 

@@ -341,6 +341,7 @@ private:
     std::atomic<bool> reconnect_loop_running_{false};
     std::atomic<bool> heartbeat_loop_running_{false};
     std::unique_ptr<std::thread> io_thread_; // Background thread for io_context
+    std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> work_guard_;
 };
 
 }

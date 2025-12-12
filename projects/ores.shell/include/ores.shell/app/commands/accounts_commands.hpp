@@ -132,6 +132,22 @@ public:
      */
     static void process_logout(std::ostream& out,
         comms::net::client_session& session);
+
+    /**
+     * @brief Process a bootstrap request.
+     *
+     * Creates the initial administrator account when the system is in bootstrap
+     * mode. This command is only available when no admin accounts exist.
+     *
+     * @param out Output stream for results
+     * @param session Client session for connectivity.
+     * @param username Admin account username
+     * @param password Admin account password
+     * @param email Admin account email
+     */
+    static void process_bootstrap(std::ostream& out,
+        comms::net::client_session& session,
+        std::string username, std::string password, std::string email);
 };
 
 }

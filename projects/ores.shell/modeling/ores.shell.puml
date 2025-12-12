@@ -226,11 +226,15 @@ namespace ores #F2F2F2 {
                     +{static} process_unlock_account(out: std::ostream&, session: comms::net::client_session&, account_id: std::string): void
                     +{static} process_list_login_info(out: std::ostream&, session: comms::net::client_session&): void
                     +{static} process_logout(out: std::ostream&, session: comms::net::client_session&): void
+                    +{static} process_bootstrap(out: std::ostream&, session: comms::net::client_session&, username: std::string, password: std::string, email: std::string): void
                     -{static} lg(): auto&
                 }
 
                 note top of accounts_commands
                 Manages commands related to accounts.
+
+                The bootstrap command creates the initial admin account
+                when the system is in bootstrap mode.
                 end note
 
                 class variability_commands #ECECEC {

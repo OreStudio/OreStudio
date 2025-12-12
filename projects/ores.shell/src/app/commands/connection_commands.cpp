@@ -22,11 +22,41 @@
 #include <ostream>
 #include <functional>
 #include <cli/cli.h>
+#include "ores.comms/messaging/message_types.hpp"
+#include "ores.accounts/messaging/bootstrap_protocol.hpp"
 
 namespace ores::shell::app::commands {
 
 using namespace ores::utility::log;
 using comms::net::client_session;
+
+namespace {
+
+void check_bootstrap_status(client_session& session, std::ostream& out) {
+    using accounts::messaging::bootstrap_status_request;
+    using accounts::messaging::bootstrap_status_response;
+    using comms::messaging::message_type;
+
+    auto result = session.process_request<bootstrap_status_request,
+                                          bootstrap_status_response,
+                                          message_type::bootstrap_status_request>
+        (bootstrap_status_request{});
+
+    if (!result) {
+        // Silently ignore errors - bootstrap check is optional
+        return;
+    }
+
+    const auto& response = *result;
+    if (response.is_in_bootstrap_mode) {
+        out << std::endl;
+        out << "⚠ WARNING: System is in BOOTSTRAP MODE" << std::endl;
+        out << "  " << response.message << std::endl;
+        out << std::endl;
+    }
+}
+
+} // anonymous namespace
 
 void connection_commands::
 register_commands(cli::Menu& root_menu, client_session& session) {
@@ -71,6 +101,9 @@ process_connect(std::ostream& out, client_session& session,
     auto result = session.connect(std::move(config));
     if (result) {
         out << "✓ Connected to " << config.host << ":" << config.port << std::endl;
+
+        // Check bootstrap status after successful connection
+        check_bootstrap_status(session, out);
     } else {
         out << "✗ Connection failed: "
             << comms::net::to_string(result.error()) << std::endl;

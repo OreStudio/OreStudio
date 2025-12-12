@@ -22,7 +22,8 @@
 
 #include <iostream>
 #include "ores.comms/net/client_session.hpp"
-#include "ores.accounts/messaging/protocol.hpp"
+#include "ores.accounts/messaging/login_protocol.hpp"
+#include "ores.accounts/messaging/bootstrap_protocol.hpp"
 #include "ores.shell/app/repl.hpp"
 
 namespace ores::shell::app {
@@ -103,6 +104,31 @@ bool auto_login(client_session& session, std::ostream& out,
     return true;
 }
 
+void check_bootstrap_status(client_session& session, std::ostream& out) {
+    using accounts::messaging::bootstrap_status_request;
+    using accounts::messaging::bootstrap_status_response;
+    using comms::messaging::message_type;
+
+    auto result = session.process_request<bootstrap_status_request,
+                                          bootstrap_status_response,
+                                          message_type::bootstrap_status_request>
+        (bootstrap_status_request{});
+
+    if (!result) {
+        // Silently ignore errors - bootstrap check is optional
+        return;
+    }
+
+    const auto& response = *result;
+    if (response.is_in_bootstrap_mode) {
+        out << std::endl;
+        out << "⚠ WARNING: System is in BOOTSTRAP MODE" << std::endl;
+        out << "  " << response.message << std::endl;
+        out << "  Use 'bootstrap <username> <password> <email>' to create the initial admin account." << std::endl;
+        out << std::endl;
+    }
+}
+
 } // anonymous namespace
 
 void application::run() const {
@@ -117,8 +143,11 @@ void application::run() const {
                                        << "Attempting auto-connect and auto-login.";
 
             bool connected = auto_connect(session, std::cout, connection_config_);
-            if (connected && login_config_) {
-                auto_login(session, std::cout, *login_config_);
+            if (connected) {
+                check_bootstrap_status(session, std::cout);
+                if (login_config_) {
+                    auto_login(session, std::cout, *login_config_);
+                }
             }
         }
 

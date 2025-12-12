@@ -25,6 +25,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <cli/cli.h>
 #include "ores.accounts/messaging/protocol.hpp"
+#include "ores.accounts/messaging/bootstrap_protocol.hpp"
 #include "ores.accounts/domain/account_table_io.hpp"  // IWYU pragma: keep.
 #include "ores.accounts/domain/login_info_table_io.hpp"  // IWYU pragma: keep.
 
@@ -76,6 +77,13 @@ register_commands(cli::Menu& root_menu, client_session& session) {
     }, "Logout the current user");
 
     root_menu.Insert(std::move(accounts_menu));
+
+    // Bootstrap command at root level (doesn't require authentication)
+    root_menu.Insert("bootstrap", [&session](std::ostream& out,
+            std::string username, std::string password, std::string email) {
+        process_bootstrap(std::ref(out), std::ref(session),
+            std::move(username), std::move(password), std::move(email));
+    }, "Create initial admin account (username password email) - only works in bootstrap mode");
 }
 
 void accounts_commands::
@@ -249,6 +257,41 @@ process_logout(std::ostream& out, client_session& session) {
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Logout failed: " << response.message;
         out << "✗ Logout failed: " << response.message << std::endl;
+    }
+}
+
+void accounts_commands::
+process_bootstrap(std::ostream& out, client_session& session,
+    std::string username, std::string password, std::string email) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating bootstrap request for user: "
+                               << username;
+
+    using accounts::messaging::create_initial_admin_request;
+    using accounts::messaging::create_initial_admin_response;
+    auto result = session.process_request<create_initial_admin_request,
+                                          create_initial_admin_response,
+                                          message_type::create_initial_admin_request>
+        (create_initial_admin_request{
+            .username = std::move(username),
+            .password = std::move(password),
+            .email = std::move(email)
+        });
+
+    if (!result) {
+        out << "✗ " << to_string(result.error()) << std::endl;
+        return;
+    }
+
+    const auto& response = *result;
+    if (response.success) {
+        BOOST_LOG_SEV(lg(), info) << "Bootstrap successful. Admin account ID: "
+                                  << response.account_id;
+        out << "✓ Initial admin account created successfully!" << std::endl;
+        out << "  Account ID: " << response.account_id << std::endl;
+        out << "  You can now login with the credentials provided." << std::endl;
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "Bootstrap failed: " << response.error_message;
+        out << "✗ Bootstrap failed: " << response.error_message << std::endl;
     }
 }
 

@@ -18,58 +18,53 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-11 Thu 16:33], for Thursday, December 11, 2025.
-|       | <75>                                                    |        |      |      |       |
-| Tags  | Headline                                                | Time   |      |      |     % |
-|-------+---------------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                            | *8:53* |      |      | 100.0 |
-|-------+---------------------------------------------------------+--------+------+------+-------|
-|       | Stories                                                 | 8:53   |      |      | 100.0 |
-|       | Active                                                  |        | 8:53 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint                      |        |      | 1:23 |  15.6 |
-| code  | Add retry algorithm to client                           |        |      | 1:52 |  21.0 |
-| code  | Fix valgrind leaks after string view changes to logging |        |      | 0:07 |   1.3 |
-| code  | Remove enum exception                                   |        |      | 0:20 |   3.8 |
-| code  | Entity syntax refactor snags                            |        |      | 0:31 |   5.8 |
-| code  | Add postgres listener                                   |        |      | 1:59 |  22.3 |
-| code  | Add a logout message                                    |        |      | 0:22 |   4.1 |
-| code  | Implement the event bus                                 |        |      | 2:19 |  26.1 |
+#+CAPTION: Clock summary at [2025-12-12 Fri 00:54], for Friday, December 12, 2025.
+|      | <75>                                    |        |      |      |       |
+| Tags | Headline                                | Time   |      |      |     % |
+|------+-----------------------------------------+--------+------+------+-------|
+|      | *Total time*                            | *0:53* |      |      | 100.0 |
+|------+-----------------------------------------+--------+------+------+-------|
+|      | Stories                                 | 0:53   |      |      | 100.0 |
+|      | Active                                  |        | 0:53 |      | 100.0 |
+| code | Retest all recipes after latest changes |        |      | 0:53 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-11 Thu 16:33]
+#+CAPTION: Clock summary at [2025-12-12 Fri 00:54]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *61:48* |       |       | 100.0 |
+|       | *Total time*                                            | *65:43* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 61:48   |       |       | 100.0 |
-|       | Active                                                  |         | 61:48 |       | 100.0 |
-| agile | Sprint and product backlog refinement                   |         |       |  0:29 |   0.8 |
-| infra | OCR scan notebooks for this sprint                      |         |       | 14:23 |  23.3 |
-| code  | Implement session cancellation                          |         |       |  2:42 |   4.4 |
-| code  | Create a variability service for feature flags          |         |       |  1:23 |   2.2 |
-| code  | Add tests to diagrams                                   |         |       |  1:26 |   2.3 |
-| code  | Add messaging to variability                            |         |       |  0:40 |   1.1 |
-| code  | Create handshake service in comms                       |         |       |  2:31 |   4.1 |
-| code  | Implement client heartbeat for disconnect detection     |         |       |  5:18 |   8.6 |
+|       | Stories                                                 | 65:43   |       |       | 100.0 |
+|       | Active                                                  |         | 65:43 |       | 100.0 |
+| agile | Sprint and product backlog refinement                   |         |       |  0:29 |   0.7 |
+| infra | OCR scan notebooks for this sprint                      |         |       | 14:23 |  21.9 |
+| code  | Implement session cancellation                          |         |       |  2:42 |   4.1 |
+| code  | Create a variability service for feature flags          |         |       |  1:23 |   2.1 |
+| code  | Add tests to diagrams                                   |         |       |  1:26 |   2.2 |
+| code  | Add messaging to variability                            |         |       |  0:40 |   1.0 |
+| code  | Create handshake service in comms                       |         |       |  2:31 |   3.8 |
+| code  | Implement client heartbeat for disconnect detection     |         |       |  5:18 |   8.1 |
 | code  | Pressing disconnect crashes client                      |         |       |  0:23 |   0.6 |
 | infra | Create a component creator skill                        |         |       |  0:42 |   1.1 |
-| code  | Add listen/notify support                               |         |       | 11:25 |  18.5 |
+| code  | Add listen/notify support                               |         |       | 11:25 |  17.4 |
 | code  | Move context to database                                |         |       |  0:20 |   0.5 |
-| code  | Use =std::string_view= for loggers                      |         |       |  3:14 |   5.2 |
-| code  | Fix issues with logging after string_view change        |         |       |  0:53 |   1.4 |
-| code  | Remove bootstrap mode from context                      |         |       |  6:36 |  10.7 |
+| code  | Use =std::string_view= for loggers                      |         |       |  3:14 |   4.9 |
+| code  | Fix issues with logging after string_view change        |         |       |  0:53 |   1.3 |
+| code  | Remove bootstrap mode from context                      |         |       |  6:36 |  10.0 |
 | code  | Add tests for messaging handler                         |         |       |  0:14 |   0.4 |
-| code  | Add retry algorithm to client                           |         |       |  1:52 |   3.0 |
+| code  | Add retry algorithm to client                           |         |       |  1:52 |   2.8 |
 | code  | Fix valgrind leaks after string view changes to logging |         |       |  0:07 |   0.2 |
 | code  | Remove enum exception                                   |         |       |  0:20 |   0.5 |
-| code  | Entity syntax refactor snags                            |         |       |  0:40 |   1.1 |
-| code  | Experiment with simple code generation                  |         |       |  1:30 |   2.4 |
-| code  | Add postgres listener                                   |         |       |  1:59 |   3.2 |
+| code  | Entity syntax refactor snags                            |         |       |  0:40 |   1.0 |
+| code  | Experiment with simple code generation                  |         |       |  1:30 |   2.3 |
+| code  | Add postgres listener                                   |         |       |  1:59 |   3.0 |
 | code  | Add a logout message                                    |         |       |  0:22 |   0.6 |
-| code  | Implement the event bus                                 |         |       |  2:19 |   3.7 |
+| code  | Implement the event bus                                 |         |       |  2:33 |   3.9 |
+| code  | Add a version attribute to entities                     |         |       |  1:20 |   2.0 |
+| code  | Retest all recipes after latest changes                 |         |       |  2:21 |   3.6 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1484,7 +1479,7 @@ Notes:
     CLOCK: [2025-12-11 Thu 09:58]--[2025-12-11 Thu 10:05] =>  0:07
     :END:
 
-#+begin_src valgrind-suppression
+#+begin_src fundamental
 <b>MPK</b> ==50939== 24 bytes in 1 blocks are still reachable in loss record 4 of 17
 ==50939==    at 0x4846FA3: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
 ==50939==    by 0x581927B: boost::detail::shared_count::shared_count<boost::detail::thread_data_base>(boost::detail::thread_data_base*) (shared_count.hpp:146)
@@ -1743,6 +1738,60 @@ subscription protocol management).
 
 
 
+*** STARTED Add a version attribute to entities                        :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-11 Thu 21:10]--[2025-12-11 Thu 22:30] =>  1:20
+    :END:
+
+At present we are relying only on bitemporal for version control. However it is
+much easier to check a version number. It should just be a linear attribute
+which is updated whenever we insert into the entity table. If the user attempts
+to update an entity but the current version is smaller than the latest version
+we should error. Make version unique.
+
+*** STARTED Retest all recipes after latest changes                    :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-12 Fri 00:46]--[2025-12-12 Fri 00:54] =>  0:08
+    CLOCK: [2025-12-11 Thu 22:32]--[2025-12-12 Fri 00:45] =>  2:13
+    :END:
+
+We have done a lot of changes across the board and we need to make sure we did
+not break any of the existing functionality. Start with a clean database, create
+accounts, import currencies etc. - exercise all functionality and make sure it
+all works as expected.
+
+Notes:
+
+- Created a new account but cannot login. Error: "Login failed: Login tracking
+  information missing". Create account should have handled this? We are doing a
+  raw write to repo.
+- can we notify/listen from shell? should be possible, just tell user of news on
+  next command.
+- "✗ Not logged in. Cannot logout." if not logged in, don't try to logout.
+
+*** Add =system.disable_password_validation= to manifest               :code:
+
+This flag was dropped with all of the refactorings.
+
+*** Unsubscribe before logout                                          :code:
+
+On logout we see the following:
+
+#+begin_src logview
+2025-12-11 22:45:54.559906 [INFO] [ores.accounts.messaging.accounts_message_handler] Successfully logged out account: 019a5e49-476c-70ce-9909-3887cae700e9
+2025-12-11 22:45:54.559940 [DEBUG] [ores.comms.messaging.message_dispatcher] Successfully dispatched message, response type logout_response (0x200e) correlation_id=763
+2025-12-11 22:45:54.559978 [DEBUG] [ores.comms.messaging.frame] Serialised frame logout_response (0x200e), size: 58
+2025-12-11 22:45:54.560005 [DEBUG] [ores.comms.net.connection] Writing frame of size 58 type: logout_response (0x200e) sequence: 767
+2025-12-11 22:45:54.560083 [DEBUG] [ores.comms.net.connection] Successfully wrote frame
+2025-12-11 22:45:54.560113 [DEBUG] [ores.comms.net.session] Sent response for message type logout_request (0x200d)
+2025-12-11 22:45:54.560137 [INFO] [ores.comms.net.session] Logout completed, closing connection
+2025-12-11 22:45:54.560200 [ERROR] [ores.comms.net.session] Exception in notification writer: co_await: Operation canceled [system:125]
+2025-12-11 22:45:54.560233 [DEBUG] [ores.comms.net.session] Notification writer coroutine ended
+2025-12-11 22:45:54.560281 [INFO] [ores.comms.net.session] Unregistering session '127.0.0.1:38366' from subscription manager
+#+end_src
+
+We should probably unsubscribe before we logout.
+
 *** Log with session id                                                :code:
 
 When we have a lot of clients all connecting we can't really see who is doing
@@ -1873,15 +1922,6 @@ it should keep polling the database and checking the connectivity.
 
 Ideally the server should start, but poll the DB. It should send messages to
 clients informing them of the issues with database.
-
-
-*** Add a version attribute to entities                                :code:
-
-At present we are relying only on bitemporal for version control. However it is
-much easier to check a version number. It should just be a linear attribute
-which is updated whenever we insert into the entity table. If the user attempts
-to update an entity but the current version is smaller than the latest version
-we should error. Make version unique.
 
 
 *** Add flags for currencies                                           :code:

@@ -94,12 +94,14 @@ application::application(std::ostream& output_stream,
 
 void application::
 import_currencies(const std::vector<std::filesystem::path> files) const {
+    currency_repository rp;
+
     for (const auto& f : files) {
         BOOST_LOG_SEV(lg(), debug) << "Processing file: " << f;
         auto ccys(ore_importer::import_currency_config(f));
-        currency_repository rp;
         rp.write(context_, ccys);
-        output_stream_ << ccys << std::endl;
+        output_stream_ << f.filename() << ": Imported a total of "
+                       << ccys.size() << " currencies." << std::endl;
     }
 }
 

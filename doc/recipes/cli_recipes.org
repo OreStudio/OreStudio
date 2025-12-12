@@ -6,7 +6,7 @@
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 
-Demonstrates commands available in [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]].
+Demonstrates commands available in the [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ORE Studio CLI Component]].
 
 * Recipes
   :PROPERTIES:
@@ -61,7 +61,8 @@ Commands:
 
    currencies     Manage currencies (import, export, list, delete, add).
    accounts       Manage accounts (list, delete, add).
-   feature_flags  Manage feature flags (list, delete, add).
+   feature-flags  Manage feature flags (list, delete, add).
+   login-info     View login tracking information (list).
 
 For entity and operation specific options, use: <entity> <operation> --help
 #+end_src
@@ -90,7 +91,7 @@ IMPORTANT: build details are NOT for security purposes.
    :header-args+: :wrap src json
    :END:
 
-Currency management operations using entity-based syntax.
+Currency management operations from the [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ORE Studio Risk Component]].
 
 *** Help
 
@@ -524,7 +525,7 @@ Successfully added currency: ABCDE
    :header-args+: :wrap src json
    :END:
 
-Account management operations using entity-based syntax.
+Account management operations from the [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ORE Studio Accounts Component]].
 
 *** Help
 
@@ -552,7 +553,7 @@ For operation-specific options, use: accounts <operation> --help
 
 List accounts from the database.
 
-**** List all accounts
+**** List all as JSON
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
@@ -565,27 +566,34 @@ export ORES_CLI_DB_PASSWORD
 [
   {
     "version": 1,
-    "is_admin": true,
-    "id": "1ba0b8a3-9668-4a70-80fd-6d9d9efcda9d",
-    "modified_by": "admin",
-    "username": "adminuser",
-    "password_hash": "$scrypt$ln=14,r=8,p=1$Ivga7n7Xz+PjF2rkDa5iVw==$+izU4e5BT57qFYdpiF6c2Ln1pRVEh8RH+nZkZ8MOHrWxDvTEjemC4yq34RiOrgzqaYGeX8QdjiEKBS5sQS614w==",
-    "password_salt": "",
-    "totp_secret": "",
-    "email": "admin@example.com"
-  },
-  {
-    "version": 1,
     "is_admin": false,
-    "id": "8fc423ce-3cdd-4a28-9227-bcc7f53a7db8",
+    "id": "e7bddd23-c004-4652-99e1-8d4ff5856fe1",
     "modified_by": "admin",
-    "username": "newuser3",
-    "password_hash": "$scrypt$ln=14,r=8,p=1$E5kaqVuxH87dRfFzHiqH+Q==$Cl8Oh+jIyzz+NemXt8pM0ayJcdjOUkpayOkuA0YFsP61hpzS8r61o++/z72acp2Xtsgsfv9t/qriPlCSGJ6Wwg==",
+    "username": "newuser5",
+    "password_hash": "$scrypt$ln=14,r=8,p=1$/hbMzxNC7PoCaMsu9FfYPg==$n6DPA0bUTHzF3X7cc0ZHB0A1ALpvhbN3Y95fybA3ZXnDWqOXjiBiv7WnCdhQkj5g4QGvh0mjG5oGYq7m07ySDg==",
     "password_salt": "",
     "totp_secret": "",
-    "email": "testuser3@example.com"
+    "email": "newuser5@example.com"
   }
 ]
+#+end_src
+
+**** List all as table
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli accounts list ${db_args} ${log_args} \
+  --format table
+#+end_src
+
+#+RESULTS:
+#+begin_src json
++--------------------------------------+----------+----------------------+--------+-------------+---------+
+| ID (UUID)                            | Username | Email                | Admin? | Modified By | Version |
++--------------------------------------+----------+----------------------+--------+-------------+---------+
+| e7bddd23-c004-4652-99e1-8d4ff5856fe1 | newuser5 | newuser5@example.com | N      | admin       | 1       |
++--------------------------------------+----------+----------------------+--------+-------------+---------+
+
 #+end_src
 
 **** List specific account by username
@@ -677,15 +685,16 @@ Add a new account using command-line arguments.
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
 ./ores.cli accounts add ${db_args} ${log_args} \
-  --username newuser4 \
-  --email testuser4@example.com \
+  --username newuser5 \
+  --email newuser5@example.com \
   --password "Secure-Password-123" \
   --modified-by admin
 #+end_src
 
 #+RESULTS:
 #+begin_src text
-Successfully added account: newuser4 (ID: 9dec6b76-f982-47c3-bb11-58b62ca5c0d1)
+System is currently in bootstrap mode.
+Successfully added account: newuser5 (ID: e7bddd23-c004-4652-99e1-8d4ff5856fe1)
 #+end_src
 
 **** Add admin account
@@ -693,33 +702,25 @@ Successfully added account: newuser4 (ID: 9dec6b76-f982-47c3-bb11-58b62ca5c0d1)
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
 ./ores.cli accounts add ${db_args} ${log_args} \
-  --username adminuser \
-  --email admin@example.com \
-  --password "Admin-Password-456" \
-  --is-admin true \
-  --modified-by admin
+  --username adminuser2 --email adminuser2@example.com \
+  --password "Admin-Password-456" --is-admin --modified-by admin
 #+end_src
 
 #+RESULTS:
 #+begin_src text
-System is currently in bootstrap mode.
-Successfully added account: adminuser (ID: 1ba0b8a3-9668-4a70-80fd-6d9d9efcda9d)
-System exited bootstrap mode.
+Successfully added account: adminuser2 (ID: 6ca39d5f-4ffe-4a6d-a0b4-fd68488b2d8f)
 #+end_src
 
-** Feature Flags
-   :PROPERTIES:
-   :header-args+: :wrap src json
-   :END:
+** Login Info
 
-Feature flag management operations using entity-based syntax.
+Login info operations.
 
 *** Help
 
 Show available operations for feature flags.
 
 #+begin_src sh :wrap src text
-./ores.cli feature_flags add --help
+./ores.cli login-info add --help
 #+end_src
 
 #+RESULTS:
@@ -727,16 +728,17 @@ Show available operations for feature flags.
 ORE Studio is a User Interface for Open Source Risk Engine (ORE).
 CLI provides a command line version of the interface.
 ORE Studio is created by the ORE Studio project.
-Displaying options specific to the 'feature_flags add' command.
+Displaying options specific to the 'login-info add' command.
 For global options, type --help.
 
 
-Add Feature Flag Options:
-  --name arg                          Feature flag name (required)
-  --description arg                   Feature flag description
-  --enabled arg (=0)                  Whether the feature is enabled (default:
+Add Login Info Options:
+  --account-id arg                    Account ID (UUID) for the login info
+                                      (required)
+  --locked arg (=0)                   Whether the account is locked (default:
                                       false)
-  --modified-by arg                   Username of modifier (required)
+  --failed-logins arg (=0)            Number of failed login attempts (default:
+                                      0)
 
 Database:
   --db-user arg (=ores)               Database user name.
@@ -761,11 +763,136 @@ Logging:
 
 List feature flags from the database.
 
-**** List all feature flags as JSON
+**** List all as JSON
 
-#+begin_src sh
+#+begin_src sh :wrap src json
 export ORES_CLI_DB_PASSWORD
-./ores.cli feature_flags list ${db_args} ${log_args} --format json | jq .
+./ores.cli login-info list ${db_args} ${log_args} --format json | jq .
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "last_login": "2025-12-12 16:07:21.000000000Z",
+    "account_id": "e7bddd23-c004-4652-99e1-8d4ff5856fe1",
+    "failed_logins": 0,
+    "locked": false,
+    "online": false,
+    "last_ip": "0.0.0.0",
+    "last_attempt_ip": "0.0.0.0"
+  }
+]
+#+end_src
+
+**** List all as table
+
+#+begin_src sh :wrap src org
+export ORES_CLI_DB_PASSWORD
+./ores.cli login-info list ${db_args} ${log_args} --format table
+#+end_src
+
+#+RESULTS:
+#+begin_src org
++--------------------------------------+---------+-----------------+--------+--------+--------+---------------------+
+| Account ID                           | Last IP | Last Attempt IP | Failed | Locked | Online | Last Login          |
++--------------------------------------+---------+-----------------+--------+--------+--------+---------------------+
+| 019b1008-6da1-733c-a6e6-e942eaab2ed6 | 0.0.0.0 | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
+| 019b1008-6eda-7675-b494-2464a4681cca | 0.0.0.0 | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
+| 019b11ba-9d4d-7292-9a51-a632d59fb27b | 0.0.0.0 | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
+| 019b11ba-9de8-7ade-bd73-6a71c7fb1cd7 | 0.0.0.0 | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
+| 019b1240-2049-704f-9ec7-105120a57e51 | 0.0.0.0 | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
+| 019b1240-2131-7010-8d39-ea31f00a9714 | 0.0.0.0 | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
++--------------------------------------+---------+-----------------+--------+--------+--------+---------------------+
+
+#+end_src
+
+**** List specific feature flag
+
+#+begin_src sh :wrap src json
+export ORES_CLI_DB_PASSWORD
+./ores.cli login-info list ${db_args} ${log_args} \
+  --format json --key "019b1008-6da1-733c-a6e6-e942eaab2ed6" | jq .
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "last_login": "1969-12-31 23:00:00.000000000Z",
+    "account_id": "019b1008-6da1-733c-a6e6-e942eaab2ed6",
+    "failed_logins": 0,
+    "locked": false,
+    "online": false,
+    "last_ip": "0.0.0.0",
+    "last_attempt_ip": "0.0.0.0"
+  }
+]
+#+end_src
+
+*** Delete
+
+Delete a feature flag by key.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli login-info delete ${db_args} ${log_args} \
+  --key "Test feature3"
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+#+end_src
+
+*** Add
+
+Add a new feature flag (not yet implemented).
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli login-info add ${db_args} ${log_args} --account-id "e7bddd23-c004-4652-99e1-8d4ff5856fe1"
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Successfully added login info for account: e7bddd23-c004-4652-99e1-8d4ff5856fe1
+#+end_src
+
+** Feature Flags
+
+Feature flag management from the [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ORE Studio Variability Component]].
+
+*** Help
+
+Show available operations for feature flags.
+
+#+begin_src sh :wrap src text
+./ores.cli feature-flags --help
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+feature-flags - Manage feature flags
+
+Usage: ores.cli feature-flags <operation> [options]
+
+Available operations:
+   list           List feature flags as JSON or table (internal formats)
+   delete         Delete a feature flag by key
+   add            Add a new feature flag
+
+For operation-specific options, use: feature-flags <operation> --help
+#+end_src
+
+*** List
+
+List feature flags from the database.
+
+**** List as JSON
+
+#+begin_src sh :wrap src json
+export ORES_CLI_DB_PASSWORD
+./ores.cli feature-flags list ${db_args} ${log_args} --format json | jq .
 #+end_src
 
 #+RESULTS:
@@ -781,6 +908,13 @@ export ORES_CLI_DB_PASSWORD
   {
     "version": 1,
     "enabled": false,
+    "name": "system.user_signups",
+    "description": "Controls whether user self-registration is allowed.",
+    "modified_by": "system"
+  },
+  {
+    "version": 1,
+    "enabled": false,
     "name": "system.disable_password_validation",
     "description": "When enabled (1), disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.",
     "modified_by": "system"
@@ -788,30 +922,30 @@ export ORES_CLI_DB_PASSWORD
 ]
 #+end_src
 
-**** List all feature flags as table
+**** List all as table
 
-#+begin_src sh
+#+begin_src sh :wrap src org
 export ORES_CLI_DB_PASSWORD
-./ores.cli feature_flags list ${db_args} ${log_args} --format table
+./ores.cli feature-flags list ${db_args} ${log_args} --format table
 #+end_src
 
 #+RESULTS:
-#+begin_src json
+#+begin_src org
 +------------------------------------+---------+----------------------------------------------------------------------------------------+---------+-------------+
 | Name                               | Version | Description                                                                            | Enabled | Modified By |
 +------------------------------------+---------+----------------------------------------------------------------------------------------+---------+-------------+
 | system.bootstrap_mode              | 1       | Indicates whether the system is in bootstrap mode (waiting for initial admin account). | 0       | system      |
+| system.user_signups                | 1       | Controls whether user self-registration is allowed.                                    | 0       | system      |
 | system.disable_password_validation | 1       | When enabled (1), disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.   | 0       | system      |
 +------------------------------------+---------+----------------------------------------------------------------------------------------+---------+-------------+
 
 #+end_src
 
+**** List specific entity
 
-**** List specific feature flag
-
-#+begin_src sh
+#+begin_src sh :wrap src json
 export ORES_CLI_DB_PASSWORD
-./ores.cli feature_flags list ${db_args} ${log_args} \
+./ores.cli feature-flags list ${db_args} ${log_args} \
   --format json --key "system.bootstrap_mode" | jq .
 #+end_src
 
@@ -828,34 +962,34 @@ export ORES_CLI_DB_PASSWORD
 ]
 #+end_src
 
-*** Delete
-
-Delete a feature flag by key.
-
-#+begin_src sh
-export ORES_CLI_DB_PASSWORD
-./ores.cli feature_flags delete ${db_args} ${log_args} \
-  --key "Test feature3"
-#+end_src
-
-#+RESULTS:
-#+begin_src json
-Feature flag deleted successfully: Test feature3
-#+end_src
-
 *** Add
 
-Add a new feature flag (not yet implemented).
+Add a new feature flag.
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli feature_flags add ${db_args} ${log_args} --name "Test feature3" \
+./ores.cli feature-flags add ${db_args} ${log_args} --name "Test feature3" \
     --description "Some description" --enabled 0 --modified-by admin
 #+end_src
 
 #+RESULTS:
 #+begin_src text
 Successfully added feature flag: Test feature3
+#+end_src
+
+*** Delete
+
+Delete a feature flag by key.
+
+#+begin_src sh  :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli feature-flags delete ${db_args} ${log_args} \
+  --key "Test feature3"
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Feature flag deleted successfully: Test feature3
 #+end_src
 
 * Footer

@@ -35,6 +35,7 @@
 #include "ores.comms/net/server_options.hpp"
 #include "ores.comms/messaging/message_dispatcher.hpp"
 #include "ores.comms/messaging/message_handler.hpp"
+#include "ores.comms/service/session_service.hpp"
 
 namespace ores::comms::net { class session; }
 namespace ores::comms::service { class subscription_manager; }
@@ -79,6 +80,16 @@ public:
         std::shared_ptr<messaging::message_handler> handler);
 
     /**
+     * @brief Get the shared session service.
+     *
+     * Use this to pass the session service to handlers that need it
+     * (e.g., accounts_message_handler for login/logout management).
+     */
+    [[nodiscard]] std::shared_ptr<service::session_service> sessions() const {
+        return sessions_;
+    }
+
+    /**
      * @brief Run the server.
      *
      * Accepts connections and spawns sessions until stopped.
@@ -115,6 +126,7 @@ private:
 
     server_options options_;
     ssl::context ssl_ctx_;
+    std::shared_ptr<service::session_service> sessions_;
     std::shared_ptr<messaging::message_dispatcher> dispatcher_;
     std::shared_ptr<service::subscription_manager> subscription_mgr_;
     std::atomic<std::size_t> active_connections_{0};

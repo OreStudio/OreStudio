@@ -78,6 +78,11 @@ register_commands(cli::Menu& root_menu, client_manager& client_manager) {
 
 void accounts_commands::
 process_list_accounts(std::ostream& out, client_manager& client_manager) {
+    if (!client_manager.is_logged_in()) {
+        out << "✗ Not logged in. Please login first." << std::endl;
+        return;
+    }
+
     try {
         BOOST_LOG_SEV(lg(), debug) << "Initiating list account request.";
 
@@ -108,6 +113,11 @@ void accounts_commands::process_login(client_manager& client_manager, std::strin
 void accounts_commands::
 process_unlock_account(std::ostream& out, client_manager& client_manager,
     std::string account_id) {
+    if (!client_manager.is_logged_in()) {
+        out << "✗ Not logged in. Please login first." << std::endl;
+        return;
+    }
+
     try {
         BOOST_LOG_SEV(lg(), debug) << "Creating unlock account request for ID: "
                                    << account_id;
@@ -148,6 +158,11 @@ void accounts_commands::process_create_account(std::ostream& out,
     client_manager& client_manager, std::string username,
     std::string password, std::string totp_secret, std::string email,
     bool is_admin) {
+    if (!client_manager.is_logged_in()) {
+        out << "✗ Not logged in. Please login first." << std::endl;
+        return;
+    }
+
     try {
         BOOST_LOG_SEV(lg(), debug) << "Initiating create account request.";
 
@@ -177,6 +192,11 @@ void accounts_commands::process_create_account(std::ostream& out,
 
 void accounts_commands::
 process_list_login_info(std::ostream& out, client_manager& client_manager) {
+    if (!client_manager.is_logged_in()) {
+        out << "✗ Not logged in. Please login first." << std::endl;
+        return;
+    }
+
     try {
         BOOST_LOG_SEV(lg(), debug) << "Initiating list login info request.";
 

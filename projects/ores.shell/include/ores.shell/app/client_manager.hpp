@@ -136,6 +136,15 @@ public:
     bool logout();
     void disconnect();
 
+    /**
+     * @brief Check if a user is currently logged in.
+     *
+     * @return true if a user is logged in, false otherwise.
+     */
+    [[nodiscard]] bool is_logged_in() const noexcept {
+        return logged_in_account_id_.has_value();
+    }
+
 private:
     std::ostream& output_;
     const std::optional<comms::net::client_options> connection_config_;

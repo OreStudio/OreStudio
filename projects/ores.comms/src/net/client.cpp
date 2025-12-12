@@ -94,6 +94,17 @@ client::~client() {
     // Ensure disconnect is called to stop any running coroutines
     disconnect();
 
+    // Stop io_context to allow background thread to complete
+    if (io_ctx_) {
+        io_ctx_->stop();
+    }
+
+    // Wait for io_thread to finish
+    if (io_thread_ && io_thread_->joinable()) {
+        io_thread_->join();
+    }
+    io_thread_.reset();
+
     // Explicitly destroy resources that depend on the executor/io_context
     // before the io_context is destroyed. This prevents use-after-free when
     // the strand tries to deallocate through an invalid executor.
@@ -206,10 +217,16 @@ void client::connect_sync() {
     BOOST_LOG_SEV(lg(), trace) << "connect_sync: spawning task with use_future.";
     auto future = boost::asio::co_spawn(executor_, task(), boost::asio::use_future);
 
-    if (io_ctx_) {
-        BOOST_LOG_SEV(lg(), trace) << "connect_sync: running io_context.";
-        io_ctx_->run();
-        io_ctx_->restart();
+    // Start io_context in background thread if we own it and it's not already running.
+    // This allows the message loop and heartbeat coroutines to continue running
+    // after connect_sync() returns.
+    if (io_ctx_ && !io_thread_) {
+        BOOST_LOG_SEV(lg(), trace) << "connect_sync: starting io_context in background thread.";
+        io_thread_ = std::make_unique<std::thread>([this]() {
+            BOOST_LOG_SEV(lg(), trace) << "io_thread: starting io_context.run().";
+            io_ctx_->run();
+            BOOST_LOG_SEV(lg(), trace) << "io_thread: io_context.run() completed.";
+        });
     }
 
     BOOST_LOG_SEV(lg(), debug) << "connect_sync: getting result from future.";
@@ -325,10 +342,16 @@ void client::connect_with_retry_sync() {
     BOOST_LOG_SEV(lg(), trace) << "connect_with_retry_sync: spawning task with use_future.";
     auto future = boost::asio::co_spawn(executor_, task(), boost::asio::use_future);
 
-    if (io_ctx_) {
-        BOOST_LOG_SEV(lg(), trace) << "connect_with_retry_sync: running io_context.";
-        io_ctx_->run();
-        io_ctx_->restart();
+    // Start io_context in background thread if we own it and it's not already running.
+    // This allows the message loop and heartbeat coroutines to continue running
+    // after connect_with_retry_sync() returns.
+    if (io_ctx_ && !io_thread_) {
+        BOOST_LOG_SEV(lg(), trace) << "connect_with_retry_sync: starting io_context in background thread.";
+        io_thread_ = std::make_unique<std::thread>([this]() {
+            BOOST_LOG_SEV(lg(), trace) << "io_thread: starting io_context.run().";
+            io_ctx_->run();
+            BOOST_LOG_SEV(lg(), trace) << "io_thread: io_context.run() completed.";
+        });
     }
 
     BOOST_LOG_SEV(lg(), debug) << "connect_with_retry_sync: getting result from future.";

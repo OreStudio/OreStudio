@@ -32,6 +32,7 @@
 #include "ores.accounts/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.accounts/generators/account_generator.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
+#include "ores.comms/service/auth_session_service.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 
 using namespace ores::accounts;
@@ -78,7 +79,8 @@ TEST_CASE("handle_single_create_account_request", tags) {
 
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
-    accounts_message_handler sut(h.context(), system_flags);
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    accounts_message_handler sut(h.context(), system_flags, sessions);
 
     const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
@@ -110,7 +112,8 @@ TEST_CASE("handle_many_create_account_requests", tags) {
 
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
-    accounts_message_handler sut(h.context(), system_flags);
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    accounts_message_handler sut(h.context(), system_flags, sessions);
     auto accounts = generate_synthetic_accounts(5);
 
     boost::asio::io_context io_ctx;
@@ -143,7 +146,8 @@ TEST_CASE("handle_list_accounts_request_empty", tags) {
 
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
-    accounts_message_handler sut(h.context(), system_flags);
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    accounts_message_handler sut(h.context(), system_flags, sessions);
 
     list_accounts_request rq;
     BOOST_LOG_SEV(lg, info) << "Request: " << rq;
@@ -172,7 +176,8 @@ TEST_CASE("handle_list_accounts_request_with_accounts", tags) {
 
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
-    accounts_message_handler sut(h.context(), system_flags);
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    accounts_message_handler sut(h.context(), system_flags, sessions);
 
     const int account_count = 5;
     auto accounts =
@@ -219,7 +224,8 @@ TEST_CASE("handle_login_request_with_valid_password", tags) {
 
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
-    accounts_message_handler sut(h.context(), system_flags);
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    accounts_message_handler sut(h.context(), system_flags, sessions);
 
     const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
@@ -268,7 +274,8 @@ TEST_CASE("handle_login_request_with_invalid_password", tags) {
 
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
-    accounts_message_handler sut(h.context(), system_flags);
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    accounts_message_handler sut(h.context(), system_flags, sessions);
 
     const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
@@ -316,7 +323,8 @@ TEST_CASE("handle_unlock_account_request", tags) {
 
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
-    accounts_message_handler sut(h.context(), system_flags);
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    accounts_message_handler sut(h.context(), system_flags, sessions);
 
     // Create an account first
     const auto account = generate_synthetic_account();
@@ -370,7 +378,8 @@ TEST_CASE("handle_invalid_message_type", tags) {
 
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
-    accounts_message_handler sut(h.context(), system_flags);
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    accounts_message_handler sut(h.context(), system_flags, sessions);
 
     std::vector<std::byte> empty_payload;
     boost::asio::io_context io_ctx;
@@ -389,7 +398,8 @@ TEST_CASE("handle_login_request_non_existent_user", tags) {
 
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
-    accounts_message_handler sut(h.context(), system_flags);
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    accounts_message_handler sut(h.context(), system_flags, sessions);
 
     login_request lrq;
     lrq.username = "non_existent_user_" +
@@ -423,7 +433,8 @@ TEST_CASE("handle_delete_account_request_success", tags) {
 
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
-    accounts_message_handler sut(h.context(), system_flags);
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    accounts_message_handler sut(h.context(), system_flags, sessions);
 
     // Create an account first
     const auto account = generate_synthetic_account();
@@ -476,7 +487,8 @@ TEST_CASE("handle_delete_account_request_non_existent_account", tags) {
 
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
-    accounts_message_handler sut(h.context(), system_flags);
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    accounts_message_handler sut(h.context(), system_flags, sessions);
 
     // Try to delete a non-existent account
     delete_account_request drq;

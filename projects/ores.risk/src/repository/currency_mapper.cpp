@@ -28,9 +28,10 @@ using namespace ores::utility::log;
 using namespace ores::utility::repository;
 
 domain::currency currency_mapper::map(const currency_entity& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Mapping db entity: " << v;
+    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::currency r;
+    r.version = v.version;
     r.iso_code = v.iso_code.value();
     r.name = v.name;
     r.numeric_code = v.numeric_code;
@@ -45,14 +46,15 @@ domain::currency currency_mapper::map(const currency_entity& v) {
     r.valid_from = v.valid_from.has_value() ? v.valid_from->str() : "";
     r.valid_to = v.valid_to.has_value() ? v.valid_from->str() : "";
 
-    BOOST_LOG_SEV(lg(), debug) << "Mapped db entity. Result: " << r;
+    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 currency_entity currency_mapper::map(const domain::currency& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Mapping domain entity: " << v;
+    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     currency_entity r;
     r.iso_code = v.iso_code;
+    r.version = v.version;
     r.name = v.name;
     r.numeric_code = v.numeric_code;
     r.symbol = v.symbol;
@@ -70,7 +72,7 @@ currency_entity currency_mapper::map(const domain::currency& v) {
     if (!v.valid_to.empty())
         r.valid_to = v.valid_to;
 
-    BOOST_LOG_SEV(lg(), debug) << "Mapped domain entity. Result: " << r;
+    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

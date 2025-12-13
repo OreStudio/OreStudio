@@ -29,41 +29,39 @@ namespace ores::shell::app::commands {
 
 using namespace ores::utility::log;
 using comms::messaging::message_type;
+using comms::net::client_session;
 
 void variability_commands::
-register_commands(cli::Menu& root_menu, client_manager& client_manager) {
+register_commands(cli::Menu& root_menu, client_session& session) {
     auto variability_menu =
         std::make_unique<cli::Menu>("variability");
 
-    variability_menu->Insert("list-flags", [&client_manager](std::ostream& out) {
-        process_list_feature_flags(std::ref(out), std::ref(client_manager));
+    variability_menu->Insert("list-flags", [&session](std::ostream& out) {
+        process_list_feature_flags(std::ref(out), std::ref(session));
     }, "Retrieve all feature flags from the server");
 
     root_menu.Insert(std::move(variability_menu));
 }
 
 void variability_commands::
-process_list_feature_flags(std::ostream& out, client_manager& client_manager) {
-    try {
-        BOOST_LOG_SEV(lg(), debug) << "Initiating list feature flags request.";
+process_list_feature_flags(std::ostream& out, client_session& session) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating list feature flags request.";
 
-        using variability::messaging::list_feature_flags_request;
-        using variability::messaging::list_feature_flags_response;
-        client_manager.process_request<list_feature_flags_request,
-                                       list_feature_flags_response,
-                                       message_type::list_feature_flags_request>
-            (list_feature_flags_request{})
-            .and_then([&](const auto& response) {
-                BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                                          << response.feature_flags.size() << " feature flags.";
+    using variability::messaging::list_feature_flags_request;
+    using variability::messaging::list_feature_flags_response;
+    auto result = session.process_request<list_feature_flags_request,
+                                          list_feature_flags_response,
+                                          message_type::list_feature_flags_request>
+        (list_feature_flags_request{});
 
-                out << response.feature_flags << std::endl;
-                return std::optional{response};
-            });
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "List feature flags exception: " << e.what();
-        out << "✗ Error: " << e.what() << std::endl;
+    if (!result) {
+        out << "✗ " << to_string(result.error()) << std::endl;
+        return;
     }
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
+                              << result->feature_flags.size() << " feature flags.";
+    out << result->feature_flags << std::endl;
 }
 
 }

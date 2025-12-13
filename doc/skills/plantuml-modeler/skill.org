@@ -281,6 +281,122 @@ namespace tests #F2F2F2 {
 }
 #+end_src
 
+** 11. Layout groupings
+
+Use layout groupings to make diagrams more "square" rather than long horizontal
+lines. PlantUML tends to arrange classes horizontally by default, which can
+result in diagrams with poor aspect ratios (e.g., 5:1). Layout groupings help
+achieve ratios closer to 2:1 or even 1:1.
+
+*** Layout engine selection
+
+The default GraphViz engine sometimes has issues with =together= blocks, causing
+classes to appear outside their namespaces. If this occurs, try the Smetana
+engine by adding this pragma after =@startuml=:
+
+#+begin_src plantuml
+@startuml
+!pragma layout smetana
+#+end_src
+
+Use the default engine when it renders correctly, and switch to Smetana only
+when needed.
+
+*** Together blocks
+
+Use =together= blocks to group related classes that should be rendered near each
+other:
+
+#+begin_src plantuml
+' Group: Request/Response pairs
+together {
+    class login_request
+    class login_response
+}
+
+' Group: Entity/Mapper/Repository chain
+together {
+    class account_entity
+    class account_mapper
+    class account_repository
+}
+#+end_src
+
+*** Hidden relationships
+
+Use hidden relationships to force vertical stacking within or between groups:
+
+#+begin_src plantuml
+' Stack request above response
+login_request -[hidden]down- login_response
+
+' Stack entity chain vertically
+account_entity -[hidden]down- account_mapper
+account_mapper -[hidden]down- account_repository
+
+' Create row structure between groups
+result -[hidden]down- frame_header
+frame -[hidden]down- ping
+#+end_src
+
+*** Common grouping patterns
+
+| Pattern                   | Classes to group                           |
+|---------------------------+--------------------------------------------|
+| Request/Response pairs    | =foo_request=, =foo_response=              |
+| Handshake sequence        | =handshake_request=, =_response=, =_ack=   |
+| Entity/Mapper/Repository  | =foo_entity=, =foo_mapper=, =foo_repository= |
+| Infrastructure classes    | =result=, =message_type_range=, =handler=  |
+| Config/Options            | =parser=, =parser_exception=, =options=    |
+| Test suites               | Group related test suite classes           |
+
+*** Structure within namespace
+
+Place layout groupings at the *top* of each namespace block, before class
+definitions:
+
+#+begin_src plantuml
+namespace messaging #F2F2F2 {
+    '
+    ' Layout groupings
+    '
+
+    ' Group: Infrastructure classes
+    together {
+        class result
+        class message_type_range
+        class message_handler
+    }
+
+    ' Group: Heartbeat messages
+    together {
+        class ping
+        class pong
+    }
+
+    ' Hidden relationships for vertical stacking
+    ping -[hidden]down- pong
+    result -[hidden]down- frame_header
+
+    '
+    ' Class definitions
+    '
+
+    class result #ECECEC {
+        ...
+    }
+}
+#+end_src
+
+*** Guidelines
+
+- Add =together= blocks for logically related classes (2-4 classes per group)
+- Use =-[hidden]down-= between classes in the same group for vertical stacking
+- Use =-[hidden]down-= between groups to create row structure
+- Place all groupings and hidden relationships before class definitions
+- Use blank comment lines (='=) to separate sections visually
+- Aim for aspect ratios between 2:1 and 3:1 for readability
+
 * Evaluation Checklist
 
 | Check                        | How                                                     |

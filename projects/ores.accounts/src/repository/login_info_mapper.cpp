@@ -30,7 +30,7 @@ using namespace ores::utility::log;
 using namespace ores::utility::repository;
 
 domain::login_info login_info_mapper::map(const login_info_entity& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Mapping db entity: " << v;
+    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::login_info r;
     using boost::uuids::uuid;
@@ -43,12 +43,12 @@ domain::login_info login_info_mapper::map(const login_info_entity& v) {
     r.last_login = timestamp_to_timepoint(v.last_login);
     r.online = v.online != 0 ? true : false;
 
-    BOOST_LOG_SEV(lg(), debug) << "Mapped db entity. Result: " << r;
+    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 login_info_entity login_info_mapper::map(const domain::login_info& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Mapping domain entity: " << v;
+    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     login_info_entity r;
     r.account_id = boost::lexical_cast<std::string>(v.account_id);
@@ -59,7 +59,7 @@ login_info_entity login_info_mapper::map(const domain::login_info& v) {
     r.last_login = timepoint_to_timestamp(v.last_login);
     r.online = v.online;
 
-    BOOST_LOG_SEV(lg(), debug) << "Mapped domain entity. Result: " << r;
+    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

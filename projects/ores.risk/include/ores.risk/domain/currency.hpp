@@ -29,6 +29,11 @@ namespace ores::risk::domain {
  */
 struct currency final {
     /**
+     * @brief Version number for optimistic locking and change tracking.
+     */
+    int version = 0;
+
+    /**
      * @brief ISO 4217 alphabetic code (e.g., "USD").
      */
     std::string iso_code;

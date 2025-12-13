@@ -26,6 +26,43 @@ namespace ores #F2F2F2 {
     comms --- ores_comms_note
     namespace comms #F2F2F2 {
         namespace net #F2F2F2 {
+            '
+            ' Layout groupings for better diagram structure
+            '
+
+            ' Group: Server classes
+            together {
+                class server_options
+                class server
+                class server_session
+            }
+
+            ' Group: Client classes
+            together {
+                class client_options
+                class retry_options
+                class connection_state
+                class client
+            }
+
+            ' Group: Connection infrastructure
+            together {
+                class connection
+                class pending_request_map
+                class response_channel
+            }
+
+            ' Hidden relationships to stack related classes vertically
+            server_options -[hidden]down- server
+            server -[hidden]down- server_session
+            client_options -[hidden]down- client
+            retry_options -[hidden]down- connection_state
+            pending_request_map -[hidden]down- response_channel
+
+            '
+            ' Class definitions
+            '
+
             class server_options #F7E5FF {
                 +{field} port std::uint16_t
                 +{field} max_connections std::uint32_t
@@ -55,6 +92,7 @@ namespace ores #F2F2F2 {
             class server #ECECEC {
                 +server(server_options options, std::shared_ptr<service::subscription_manager> subscription_mgr)
                 +register_handler(messaging::message_type_range range, std::shared_ptr<messaging::message_handler> handler) void
+                +sessions() std::shared_ptr<service::auth_session_service>
                 +run(boost::asio::io_context& io_context, std::function<void(std::uint16_t)> on_listening) boost::asio::awaitable<void>
                 +stop() void
                 -accept_loop(boost::asio::io_context& io_context, std::function<void(std::uint16_t)> on_listening) boost::asio::awaitable<void>
@@ -62,11 +100,12 @@ namespace ores #F2F2F2 {
                 -watch_for_stop_signals(boost::asio::io_context& io_context) boost::asio::awaitable<void>
                 -{field} options_ server_options
                 -{field} ssl_ctx_ ssl::context
+                -{field} sessions_ std::shared_ptr<service::auth_session_service>
                 -{field} dispatcher_ std::shared_ptr<messaging::message_dispatcher>
                 -{field} subscription_mgr_ std::shared_ptr<service::subscription_manager>
                 -{field} active_connections_ std::atomic<std::size_t>
                 -{field} stop_signal_ boost::asio::cancellation_signal
-                -{field} active_sessions_ std::list<std::shared_ptr<session>>
+                -{field} active_sessions_ std::list<std::shared_ptr<server_session>>
                 -{field} sessions_mutex_ std::mutex
             }
 
@@ -75,12 +114,14 @@ namespace ores #F2F2F2 {
 
             Accepts SSL connections, performs handshake, and manages client sessions.
             Supports server-push notifications via optional subscription_manager.
+            Owns the auth_session_service for centralized authorization.
             end note
 
             server o-u- ores::comms::net::server_options
             server o-u- ores::comms::messaging::message_dispatcher
-            server o-u- ores::comms::net::session
+            server o-u- ores::comms::net::server_session
             server o-u- ores::comms::service::subscription_manager
+            server o-u- ores::comms::service::auth_session_service
 
         class retry_options #F7E5FF {
             +{field} max_attempts std::uint32_t
@@ -285,8 +326,8 @@ namespace ores #F2F2F2 {
             connection ..> ores::comms::messaging::frame
             connection ..> ores::comms::messaging::error_code
 
-            class session #ECECEC {
-            +session(std::unique_ptr<connection> conn, std::string server_id, std::shared_ptr<messaging::message_dispatcher> dispatcher, std::shared_ptr<service::subscription_manager> subscription_mgr)
+            class server_session #ECECEC {
+            +server_session(std::unique_ptr<connection> conn, std::string server_id, std::shared_ptr<messaging::message_dispatcher> dispatcher, std::shared_ptr<service::subscription_manager> subscription_mgr)
             +run() boost::asio::awaitable<void>
             +stop() void
             +queue_notification(const std::string& event_type, std::chrono::system_clock::time_point timestamp) void
@@ -306,7 +347,7 @@ namespace ores #F2F2F2 {
             -{field} pending_notifications_ std::queue<pending_notification>
         }
 
-        note top of session
+        note top of server_session
         Represents a client session on the server side.
 
         Manages the lifecycle of a single client connection, including
@@ -314,16 +355,168 @@ namespace ores #F2F2F2 {
         Supports server-push notifications for subscribed events.
         end note
 
-            session o-u- ores::comms::net::connection
-            session o-u- ores::comms::messaging::message_dispatcher
-            session o-u- ores::comms::service::subscription_manager
-            session ..> ores::comms::service::handshake_service : uses
-            session ..> ores::comms::service::heartbeat_service : uses
-            session ..> ores::comms::messaging::error_response : uses
-            session ..> ores::comms::messaging::notification_message : uses
+            server_session o-u- ores::comms::net::connection
+            server_session o-u- ores::comms::messaging::message_dispatcher
+            server_session o-u- ores::comms::service::subscription_manager
+            server_session ..> ores::comms::service::handshake_service : uses
+            server_session ..> ores::comms::service::heartbeat_service : uses
+            server_session ..> ores::comms::messaging::error_response : uses
+            server_session ..> ores::comms::messaging::notification_message : uses
+
+            class client_session_info #F7E5FF {
+                +{field} account_id boost::uuids::uuid
+                +{field} username std::string
+                +{field} is_admin bool
+            }
+
+            note top of client_session_info
+            Information about the current client session.
+
+            Fields:
+
+            - account_id: Unique identifier of the authenticated account.
+            - username: Username of the authenticated user.
+            - is_admin: Whether the session has admin privileges.
+            end note
+
+            enum client_session_error #F2DAFD {
+                not_connected
+                not_logged_in
+                not_admin
+                request_failed
+                server_error
+            }
+
+            note top of client_session_error
+            Error codes for client session operations.
+
+            - not_connected: Client is not connected to server.
+            - not_logged_in: User is not logged in.
+            - not_admin: User lacks admin privileges.
+            - request_failed: Request failed to send or receive.
+            - server_error: Server returned an error response.
+            end note
+
+            class client_session #ECECEC {
+                +client_session()
+                +~client_session()
+                +connect(options: client_options) std::expected<void, client_session_error>
+                +disconnect() void
+                +is_connected() bool
+                +is_logged_in() bool
+                +is_admin() bool
+                +set_session_info(info: client_session_info) void
+                +clear_session_info() void
+                +process_request<RequestType, ResponseType, RequestMsgType>(request: RequestType) std::expected<ResponseType, client_session_error>
+                +process_authenticated_request<RequestType, ResponseType, RequestMsgType>(request: RequestType) std::expected<ResponseType, client_session_error>
+                +process_admin_request<RequestType, ResponseType, RequestMsgType>(request: RequestType) std::expected<ResponseType, client_session_error>
+                -{static} lg() auto&
+                -{field} client_ std::shared_ptr<client>
+                -{field} session_info_ std::optional<client_session_info>
+            }
+
+            note top of client_session
+            Auth-aware client wrapper for ORE Studio.
+
+            Provides a high-level interface for client-server communication with
+            built-in authentication state management. Shared between shell and qt
+            applications.
+
+            Template methods:
+            - process_request: Send any request without auth checks.
+            - process_authenticated_request: Requires login before sending.
+            - process_admin_request: Requires admin privileges before sending.
+
+            Session state is managed externally via set_session_info/clear_session_info
+            to avoid circular dependencies with domain-specific login types.
+            end note
+
+            client_session o-- ores::comms::net::client
+            client_session o-- ores::comms::net::client_session_info
+            client_session ..> ores::comms::net::client_session_error
+            client_session ..> ores::comms::messaging::frame
+            client_session ..> ores::comms::messaging::error_response
         }
 
         namespace messaging #F2F2F2 {
+            '
+            ' Layout groupings for better diagram structure
+            '
+
+            ' Group: Infrastructure classes (Row 1)
+            together {
+                class result
+                class message_type_range
+                class message_handler
+                class message_dispatcher
+            }
+
+            ' Group: Frame classes (Row 2)
+            together {
+                class frame_header
+                class frame
+            }
+
+            ' Group: Heartbeat messages (Row 3)
+            together {
+                class ping
+                class pong
+            }
+
+            ' Group: Handshake messages (Row 3)
+            together {
+                class handshake_request
+                class handshake_response
+                class handshake_ack
+            }
+
+            ' Group: Subscribe messages (Row 4)
+            together {
+                class subscribe_request
+                class subscribe_response
+            }
+
+            ' Group: Unsubscribe messages (Row 4)
+            together {
+                class unsubscribe_request
+                class unsubscribe_response
+            }
+
+            ' Group: Error and notification (Row 5)
+            together {
+                class error_response
+                class notification_message
+            }
+
+            ' Group: Enums (Row 6)
+            together {
+                enum message_type
+                enum error_code
+            }
+
+            ' Hidden relationships to stack request/response pairs vertically
+            ping -[hidden]down- pong
+            handshake_request -[hidden]down- handshake_response
+            handshake_response -[hidden]down- handshake_ack
+            subscribe_request -[hidden]down- subscribe_response
+            unsubscribe_request -[hidden]down- unsubscribe_response
+            frame_header -[hidden]down- frame
+            message_type -[hidden]down- error_code
+
+            ' Hidden relationships to create row structure
+            result -[hidden]down- frame_header
+            frame -[hidden]down- ping
+            frame -[hidden]down- handshake_request
+            pong -[hidden]down- subscribe_request
+            handshake_ack -[hidden]down- unsubscribe_request
+            subscribe_response -[hidden]down- error_response
+            unsubscribe_response -[hidden]down- notification_message
+            error_response -[hidden]down- message_type
+
+            '
+            ' Class definitions
+            '
+
             class result #ECECEC {
                 +result(const T& value)
                 +result(T&& value)
@@ -438,21 +631,25 @@ namespace ores #F2F2F2 {
             frame ..> ores::comms::messaging::error_code
 
             class message_dispatcher #ECECEC {
-                +message_dispatcher()
+                +message_dispatcher(std::shared_ptr<service::auth_session_service> sessions)
                 +register_handler(message_type_range range, std::shared_ptr<message_handler> handler) void
                 +dispatch(const frame& request_frame, std::uint32_t sequence, const std::string& remote_address) boost::asio::awaitable<std::expected<frame, error_code>>
                 -find_handler(message_type type) message_handler*
                 -get_response_type(message_type request_type) message_type
                 -{field} handlers_ std::map<message_type_range, std::shared_ptr<message_handler>>
+                -{field} sessions_ std::shared_ptr<service::auth_session_service>
             }
 
             note top of message_dispatcher
             Dispatches incoming messages to registered subsystem handlers.
 
             The dispatcher maintains a registry of message handlers for different
-            message type ranges. When a message arrives, it routes it to the appropriate
-            handler based on the message type, and converts the handler's response
-            back into a frame.
+            message type ranges. When a message arrives, it:
+            1. Checks authorization via auth_session_service before routing
+            2. Routes to the appropriate handler based on message type
+            3. Converts the handler's response back into a frame
+
+            Authorization is centralized here so handlers don't duplicate auth logic.
 
             Thread-safety: This class is not thread-safe. Registration should happen
             during initialization before concurrent access begins.
@@ -460,6 +657,7 @@ namespace ores #F2F2F2 {
 
             message_dispatcher o-u- ores::comms::messaging::message_type_range
             message_dispatcher o-u- ores::comms::messaging::message_handler
+            message_dispatcher o-u- ores::comms::service::auth_session_service
             message_dispatcher ..> ores::comms::messaging::frame
             message_dispatcher ..> ores::comms::messaging::error_code
             message_dispatcher ..> ores::comms::messaging::message_type
@@ -705,6 +903,85 @@ namespace ores #F2F2F2 {
         }
 
         namespace service #F2F2F2 {
+            '
+            ' Layout groupings for better diagram structure
+            '
+
+            ' Group: Authentication classes
+            together {
+                class session_info
+                class auth_session_service
+            }
+
+            ' Group: Protocol services
+            together {
+                class handshake_service
+                class heartbeat_service
+            }
+
+            ' Group: Subscription classes
+            together {
+                class subscription_manager
+                class subscription_handler
+                class remote_event_adapter
+            }
+
+            ' Hidden relationships to stack related classes vertically
+            session_info -[hidden]down- auth_session_service
+            handshake_service -[hidden]down- heartbeat_service
+            subscription_manager -[hidden]down- subscription_handler
+            subscription_handler -[hidden]down- remote_event_adapter
+
+            '
+            ' Class definitions
+            '
+
+            class session_info #F7E5FF {
+                +{field} account_id boost::uuids::uuid
+                +{field} is_admin bool
+            }
+
+            note top of session_info
+            Information about an authenticated session.
+
+            Fields:
+
+            - account_id: Unique identifier of the authenticated account.
+            - is_admin: Whether the session has admin privileges.
+            end note
+
+            class auth_session_service #ECECEC {
+                +get_session(std::string) std::optional<session_info>
+                +is_authenticated(std::string) bool
+                +is_admin(std::string) bool
+                +store_session(std::string, session_info) void
+                +remove_session(std::string) void
+                +clear_all_sessions() void
+                +authorize_request(messaging::message_type, std::string) std::expected<void, messaging::error_code>
+                -{static} requires_authentication(messaging::message_type) bool
+                -{static} requires_admin(messaging::message_type) bool
+                -{field} session_mutex_ std::mutex
+                -{field} sessions_ std::map<std::string, session_info>
+            }
+
+            note top of auth_session_service
+            Centralized session management service.
+
+            Tracks authenticated sessions by remote address. This service is shared
+            across all message handlers to provide consistent authorization checks.
+
+            Thread-safety: All public methods are thread-safe.
+
+            Authorization logic:
+            - Some messages don't require authentication (login, bootstrap, ping/pong)
+            - Some messages require authentication
+            - Some messages require admin privileges
+            end note
+
+            auth_session_service o-- ores::comms::service::session_info
+            auth_session_service ..> ores::comms::messaging::message_type
+            auth_session_service ..> ores::comms::messaging::error_code
+
             class handshake_service #ECECEC {
                 +{static} perform_client_handshake(net::connection& conn, const std::function<std::uint32_t()>& sequence_generator, const std::string& client_identifier) boost::asio::awaitable<void>
                 +{static} perform_server_handshake(net::connection& conn, std::uint32_t sequence, const std::string& server_identifier) boost::asio::awaitable<bool>
@@ -819,6 +1096,35 @@ namespace ores #F2F2F2 {
         }
 
         namespace tests #F2F2F2 {
+            '
+            ' Layout groupings for better diagram structure
+            '
+
+            ' Group: Protocol tests
+            together {
+                class frame_tests
+                class message_handler_tests
+            }
+
+            ' Group: Networking tests
+            together {
+                class net_client_tests
+            }
+
+            ' Group: Subscription tests
+            together {
+                class subscription_manager_tests
+                class subscription_protocol_tests
+            }
+
+            ' Hidden relationships to stack related classes vertically
+            frame_tests -[hidden]down- message_handler_tests
+            subscription_manager_tests -[hidden]down- subscription_protocol_tests
+
+            '
+            ' Class definitions
+            '
+
             class frame_tests <<test suite>> #C5E1A5 {
                 +test_frame_serialization() void
                 +test_frame_serialization_empty_payload() void
@@ -861,7 +1167,7 @@ namespace ores #F2F2F2 {
 
             net_client_tests ..> ores::comms::net::client : tests
             net_client_tests ..> ores::comms::net::server : tests
-            net_client_tests ..> ores::comms::net::session : tests
+            net_client_tests ..> ores::comms::net::server_session : tests
 
             class message_handler_tests <<test suite>> #C5E1A5 {
                 +test_request_serialization_roundtrip() void

@@ -169,41 +169,55 @@
      </property>
      <layout class="QFormLayout" name="formLayout_4">
       <item row="0" column="0">
-       <widget class="QLabel" name="labelModifiedBy">
+       <widget class="QLabel" name="labelVersion">
         <property name="text">
-         <string>Modified By:</string>
+         <string>Version:</string>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="modifiedByEdit">
+       <widget class="QLineEdit" name="versionEdit">
         <property name="readOnly">
          <bool>true</bool>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="labelValidFrom">
+       <widget class="QLabel" name="labelModifiedBy">
         <property name="text">
-         <string>Valid From:</string>
+         <string>Modified By:</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="validFromEdit">
+       <widget class="QLineEdit" name="modifiedByEdit">
         <property name="readOnly">
          <bool>true</bool>
         </property>
        </widget>
       </item>
       <item row="2" column="0">
+       <widget class="QLabel" name="labelValidFrom">
+        <property name="text">
+         <string>Valid From:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="validFromEdit">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
        <widget class="QLabel" name="labelValidTo">
         <property name="text">
          <string>Valid To:</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="3" column="1">
        <widget class="QLineEdit" name="validToEdit">
         <property name="readOnly">
          <bool>true</bool>

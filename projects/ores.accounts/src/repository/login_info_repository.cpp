@@ -23,6 +23,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/asio/ip/address.hpp>
 #include "ores.utility/repository/helpers.hpp"
+#include "ores.utility/repository/bitemporal_operations.hpp"
 #include "ores.accounts/domain/login_info_json_io.hpp" // IWYU pragma: keep.
 #include "ores.accounts/repository/login_info_mapper.hpp"
 #include "ores.accounts/repository/login_info_entity.hpp"
@@ -105,6 +106,20 @@ login_info_repository::read(const boost::uuids::uuid& account_id) {
     ensure_success(r, lg());
     BOOST_LOG_SEV(lg(), debug) << "Read login_info. Total: " << r->size();
     return login_info_mapper::map(*r);
+}
+
+void login_info_repository::remove(const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing login_info for account: "
+                               << account_id;
+
+    const auto account_id_str =
+        boost::lexical_cast<std::string>(account_id);
+    const auto query = sqlgen::delete_from<login_info_entity> |
+        where("account_id"_c == account_id_str);
+
+    execute_delete_query(ctx_, query, lg(), "removing login_info from database");
+
+    BOOST_LOG_SEV(lg(), debug) << "Finished removing login_info.";
 }
 
 }

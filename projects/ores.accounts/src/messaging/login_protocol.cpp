@@ -201,28 +201,19 @@ std::ostream& operator<<(std::ostream& s, const list_login_info_response& v) {
 }
 
 std::vector<std::byte> logout_request::serialize() const {
-    std::vector<std::byte> buffer;
-    writer::write_uuid(buffer, account_id);
-    return buffer;
+    // Empty payload - session context provides account info
+    return {};
 }
 
 std::expected<logout_request, comms::messaging::error_code>
 logout_request::deserialize(std::span<const std::byte> data) {
-    logout_request request;
-
-    auto account_id_result = reader::read_uuid(data);
-    if (!account_id_result) return std::unexpected(account_id_result.error());
-    request.account_id = *account_id_result;
-
-    if (!data.empty()) {
-        return std::unexpected(comms::messaging::error_code::payload_too_large);
-    }
-
-    return request;
+    // Ignore any payload data - request is empty
+    (void)data;
+    return logout_request{};
 }
 
-std::ostream& operator<<(std::ostream& s, const logout_request& v) {
-    rfl::json::write(v, s);
+std::ostream& operator<<(std::ostream& s, const logout_request&) {
+    s << "logout_request{}";
     return s;
 }
 

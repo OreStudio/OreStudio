@@ -125,27 +125,27 @@ handle_feature_flags_command(bool has_help,
     auto o(collect_unrecognized(po.options, include_positional));
     o.erase(o.begin()); // Remove command name
 
-    // Show help for feature_flags command if requested with no operation
+    // Show help for feature-flags command if requested with no operation
     if (has_help && o.empty()) {
         const std::vector<std::pair<std::string, std::string>> operations = {
             {"list", "List feature flags as JSON or table (internal formats)"},
             {"delete", "Delete a feature flag by key"},
             {"add", "Add a new feature flag"}
         };
-        print_entity_help("feature_flags", "Manage feature flags", operations, info);
+        print_entity_help("feature-flags", "Manage feature flags", operations, info);
         return {};
     }
 
     if (o.empty()) {
         BOOST_THROW_EXCEPTION(parser_exception(
-            "feature_flags command requires an operation (list, delete, add)"));
+            "feature-flags command requires an operation (list, delete, add)"));
     }
 
     const auto operation = o.front();
     o.erase(o.begin()); // Remove operation from args
 
     // Validate operation
-    validate_operation("feature_flags", operation, allowed_operations);
+    validate_operation("feature-flags", operation, allowed_operations);
 
     options r;
     using ores::utility::program_options::environment_mapper_factory;
@@ -154,7 +154,7 @@ handle_feature_flags_command(bool has_help,
     if (operation == list_command_name) {
         auto d = add_common_options(make_export_options_description());
         if (has_help) {
-            print_help_command("feature_flags list", d, info);
+            print_help_command("feature-flags list", d, info);
             return {};
         }
         store(command_line_parser(o).options(d).run(), vm);
@@ -163,7 +163,7 @@ handle_feature_flags_command(bool has_help,
     } else if (operation == delete_command_name) {
         auto d = add_common_options(make_delete_options_description());
         if (has_help) {
-            print_help_command("feature_flags delete", d, info);
+            print_help_command("feature-flags delete", d, info);
             return {};
         }
         store(command_line_parser(o).options(d).run(), vm);
@@ -172,7 +172,7 @@ handle_feature_flags_command(bool has_help,
     } else if (operation == add_command_name) {
         auto d = add_common_options(make_add_feature_flag_options_description());
         if (has_help) {
-            print_help_command("feature_flags add", d, info);
+            print_help_command("feature-flags add", d, info);
             return {};
         }
         store(command_line_parser(o).options(d).run(), vm);

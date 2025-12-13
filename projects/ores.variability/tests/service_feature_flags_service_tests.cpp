@@ -36,115 +36,116 @@ using namespace ores::utility::log;
 using namespace ores::variability::service;
 using namespace ores::variability::domain;
 
-TEST_CASE("feature_flags_service_crud_operations", tags) {
+TEST_CASE("feature_flags_service_get_returns_nullopt_for_non_existent_flag", tags) {
     auto lg(make_logger(test_suite));
+    ores::testing::scoped_database_helper db_helper(table_name);
+    feature_flags_service sut(db_helper.context());
+    INFO("Initial feature flags count: " << sut.get_all_feature_flags().size());
+    CHECK(sut.get_all_feature_flags().empty());
+    auto result = sut.get_feature_flag("non_existent_flag");
+    CHECK(!result.has_value());
+}
 
-    SECTION("get_feature_flag returns nullopt for non-existent flag") {
-        ores::testing::scoped_database_helper db_helper(table_name);
-        feature_flags_service sut(db_helper.context());
-        INFO("Initial feature flags count for this section: " << sut.get_all_feature_flags().size());
-        CHECK(sut.get_all_feature_flags().empty()); // Should be empty due to db_helper
-        auto result = sut.get_feature_flag("non_existent_flag");
-        CHECK(!result.has_value());
-    }
+TEST_CASE("feature_flags_service_save_and_get_feature_flag", tags) {
+    auto lg(make_logger(test_suite));
+    ores::testing::scoped_database_helper db_helper(table_name);
+    feature_flags_service sut(db_helper.context());
+    INFO("Initial feature flags count: " << sut.get_all_feature_flags().size());
+    CHECK(sut.get_all_feature_flags().empty());
 
-    SECTION("save_and_get_feature_flag") {
-        ores::testing::scoped_database_helper db_helper(table_name);
-        feature_flags_service sut(db_helper.context());
-        INFO("Initial feature flags count for this section: " << sut.get_all_feature_flags().size());
-        CHECK(sut.get_all_feature_flags().empty());
+    feature_flags flag;
+    flag.name = "test_flag";
+    flag.enabled = true;
+    flag.description = "Test Description";
+    flag.modified_by = "tester";
 
-        feature_flags flag;
-        flag.name = "test_flag";
-        flag.enabled = true;
-        flag.description = "Test Description";
-        flag.modified_by = "tester";
+    sut.save_feature_flag(flag);
 
-        sut.save_feature_flag(flag);
+    auto result = sut.get_feature_flag("test_flag");
+    REQUIRE(result.has_value());
+    CHECK(result->name == "test_flag");
+    CHECK(result->enabled == true);
+    CHECK(result->description == "Test Description");
+    INFO("Actual modified_by: " << result->modified_by);
+    CHECK(result->modified_by == "tester");
+}
 
-        auto result = sut.get_feature_flag("test_flag");
-        REQUIRE(result.has_value());
-        CHECK(result->name == "test_flag");
-        CHECK(result->enabled == true);
-        CHECK(result->description == "Test Description");
-        INFO("Actual modified_by: " << result->modified_by);
-        CHECK(result->modified_by == "ores");
-    }
+TEST_CASE("feature_flags_service_update_feature_flag", tags) {
+    auto lg(make_logger(test_suite));
+    ores::testing::scoped_database_helper db_helper(table_name);
+    feature_flags_service sut(db_helper.context());
+    INFO("Initial feature flags count: " << sut.get_all_feature_flags().size());
+    CHECK(sut.get_all_feature_flags().empty());
 
-    SECTION("update_feature_flag") {
-        ores::testing::scoped_database_helper db_helper(table_name);
-        feature_flags_service sut(db_helper.context());
-        INFO("Initial feature flags count for this section: " << sut.get_all_feature_flags().size());
-        CHECK(sut.get_all_feature_flags().empty());
+    // Initial save
+    feature_flags flag;
+    flag.name = "update_flag";
+    flag.enabled = true;
+    flag.description = "Initial Description";
+    flag.modified_by = "tester";
+    sut.save_feature_flag(flag);
 
-        // Initial save
-        feature_flags flag;
-        flag.name = "update_flag";
-        flag.enabled = true;
-        flag.description = "Initial Description";
-        flag.modified_by = "tester";
-        sut.save_feature_flag(flag);
+    // Update
+    flag.enabled = false;
+    flag.description = "Updated Description";
+    flag.modified_by = "updater";
+    sut.save_feature_flag(flag);
 
-        // Update
-        flag.enabled = false;
-        flag.description = "Updated Description";
-        flag.modified_by = "updater";
-        sut.save_feature_flag(flag);
+    // Verify update
+    auto result = sut.get_feature_flag("update_flag");
+    REQUIRE(result.has_value());
+    CHECK(result->enabled == false);
+    CHECK(result->description == "Updated Description");
+    INFO("Actual modified_by after update: " << result->modified_by);
+    CHECK(result->modified_by == "updater");
+}
 
-        // Verify update
-        auto result = sut.get_feature_flag("update_flag");
-        REQUIRE(result.has_value());
-        CHECK(result->enabled == false);
-        CHECK(result->description == "Updated Description");
-        INFO("Actual modified_by after update: " << result->modified_by);
-        CHECK(result->modified_by == "ores");
-    }
+TEST_CASE("feature_flags_service_delete_feature_flag", tags) {
+    auto lg(make_logger(test_suite));
+    ores::testing::scoped_database_helper db_helper(table_name);
+    feature_flags_service sut(db_helper.context());
+    INFO("Initial feature flags count: " << sut.get_all_feature_flags().size());
+    CHECK(sut.get_all_feature_flags().empty());
 
-    SECTION("delete_feature_flag") {
-        ores::testing::scoped_database_helper db_helper(table_name);
-        feature_flags_service sut(db_helper.context());
-        INFO("Initial feature flags count for this section: " << sut.get_all_feature_flags().size());
-        CHECK(sut.get_all_feature_flags().empty());
+    feature_flags flag;
+    flag.name = "delete_flag";
+    flag.enabled = true;
+    flag.modified_by = "deleter";
+    sut.save_feature_flag(flag);
 
-        feature_flags flag;
-        flag.name = "delete_flag";
-        flag.enabled = true;
-        flag.modified_by = "deleter";
-        sut.save_feature_flag(flag);
+    REQUIRE(sut.get_feature_flag("delete_flag").has_value());
 
-        REQUIRE(sut.get_feature_flag("delete_flag").has_value());
+    sut.delete_feature_flag("delete_flag");
 
-        sut.delete_feature_flag("delete_flag");
+    CHECK(!sut.get_feature_flag("delete_flag").has_value());
+}
 
-        CHECK(!sut.get_feature_flag("delete_flag").has_value());
-    }
+TEST_CASE("feature_flags_service_get_all_feature_flags", tags) {
+    auto lg(make_logger(test_suite));
+    ores::testing::scoped_database_helper db_helper(table_name);
+    feature_flags_service sut(db_helper.context());
+    INFO("Initial feature flags count: " << sut.get_all_feature_flags().size());
+    CHECK(sut.get_all_feature_flags().empty());
 
-    SECTION("get_all_feature_flags") {
-        ores::testing::scoped_database_helper db_helper(table_name);
-        feature_flags_service sut(db_helper.context());
-        INFO("Initial feature flags count for this section: " << sut.get_all_feature_flags().size());
-        CHECK(sut.get_all_feature_flags().empty());
+    feature_flags flag1;
+    flag1.name = "flag1";
+    flag1.enabled = true;
+    flag1.modified_by = "tester";
+    sut.save_feature_flag(flag1);
 
-        feature_flags flag1;
-        flag1.name = "flag1";
-        flag1.enabled = true;
-        flag1.modified_by = "tester";
-        sut.save_feature_flag(flag1);
+    feature_flags flag2;
+    flag2.name = "flag2";
+    flag2.enabled = false;
+    flag2.modified_by = "tester";
+    sut.save_feature_flag(flag2);
 
-        feature_flags flag2;
-        flag2.name = "flag2";
-        flag2.enabled = false;
-        flag2.modified_by = "tester";
-        sut.save_feature_flag(flag2);
+    auto results = sut.get_all_feature_flags();
+    INFO("Actual number of flags: " << results.size());
+    CHECK(results.size() == 2);
 
-        auto results = sut.get_all_feature_flags();
-        INFO("Actual number of flags: " << results.size());
-        CHECK(results.size() == 2);
-
-        // Basic check to ensure both are present using std::any_of
-        CHECK(std::ranges::any_of(results, [](const auto& f) {
-            return f.name == "flag1"; }));
-        CHECK(std::ranges::any_of(results, [](const auto& f) {
-            return f.name == "flag2"; }));
-    }
+    // Basic check to ensure both are present using std::any_of
+    CHECK(std::ranges::any_of(results, [](const auto& f) {
+        return f.name == "flag1"; }));
+    CHECK(std::ranges::any_of(results, [](const auto& f) {
+        return f.name == "flag2"; }));
 }

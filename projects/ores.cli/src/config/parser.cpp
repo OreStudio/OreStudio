@@ -30,6 +30,7 @@
 #include "ores.cli/config/entity_parsers/currencies_parser.hpp"
 #include "ores.cli/config/entity_parsers/accounts_parser.hpp"
 #include "ores.cli/config/entity_parsers/feature_flags_parser.hpp"
+#include "ores.cli/config/entity_parsers/login_info_parser.hpp"
 
 namespace {
 
@@ -47,8 +48,11 @@ const std::string currencies_command_desc("Manage currencies (import, export, li
 const std::string accounts_command_name("accounts");
 const std::string accounts_command_desc("Manage accounts (list, delete, add).");
 
-const std::string feature_flags_command_name("feature_flags");
+const std::string feature_flags_command_name("feature-flags");
 const std::string feature_flags_command_desc("Manage feature flags (list, delete, add).");
+
+const std::string login_info_command_name("login-info");
+const std::string login_info_command_desc("View login tracking information (list).");
 
 const std::string operation_arg("operation");
 
@@ -117,13 +121,14 @@ void validate_command_name(const std::string& command_name) {
     const bool is_valid_command_name(
         command_name == currencies_command_name ||
         command_name == accounts_command_name ||
-        command_name == feature_flags_command_name);
+        command_name == feature_flags_command_name ||
+        command_name == login_info_command_name);
 
     if (!is_valid_command_name)
     {
         BOOST_THROW_EXCEPTION(parser_exception(
                 std::format("Invalid or unsupported command: {}. "
-                    "Available commands: currencies, accounts, feature_flags",
+                    "Available commands: currencies, accounts, feature-flags, login-info",
                     command_name)));
     }
 }
@@ -161,6 +166,7 @@ void print_help(const options_description& od, std::ostream& info) {
     lambda(currencies_command_name, currencies_command_desc);
     lambda(accounts_command_name, accounts_command_desc);
     lambda(feature_flags_command_name, feature_flags_command_desc);
+    lambda(login_info_command_name, login_info_command_desc);
 
     info << std::endl << "For entity and operation specific options, use: <entity> <operation> --help"
          << std::endl;
@@ -229,6 +235,8 @@ handle_command(const std::string& command_name, const bool has_help,
         return entity_parsers::handle_accounts_command(has_help, po, info, vm);
     } else if (command_name == feature_flags_command_name) {
         return entity_parsers::handle_feature_flags_command(has_help, po, info, vm);
+    } else if (command_name == login_info_command_name) {
+        return entity_parsers::handle_login_info_command(has_help, po, info, vm);
     }
 
     // Unreachable - all commands handled above

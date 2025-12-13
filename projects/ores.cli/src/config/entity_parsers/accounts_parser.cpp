@@ -34,6 +34,7 @@ namespace ores::cli::config::entity_parsers {
 namespace {
 
 using boost::program_options::value;
+using boost::program_options::bool_switch;
 using boost::program_options::variables_map;
 using boost::program_options::parsed_options;
 using boost::program_options::options_description;
@@ -78,8 +79,8 @@ options_description make_add_account_options_description() {
             value<std::string>(),
             "Account password (required)")
         ("is-admin",
-            value<bool>()->default_value(false),
-            "Whether the account has admin privileges (default: false)")
+            bool_switch()->default_value(false),
+            "Grant admin privileges to the account")
         ("modified-by",
             value<std::string>(),
             "Username of modifier (required)");
@@ -119,9 +120,8 @@ read_add_account_options(const variables_map& vm) {
     }
     r.password = vm["password"].as<std::string>();
 
-    // Optional account fields with defaults
-    if (vm.count("is-admin") != 0)
-        r.is_admin = vm["is-admin"].as<bool>();
+    // Optional account fields - bool_switch always provides a value
+    r.is_admin = vm["is-admin"].as<bool>();
 
     return r;
 }

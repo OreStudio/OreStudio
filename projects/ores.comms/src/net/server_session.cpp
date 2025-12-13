@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.comms/net/session.hpp"
+#include "ores.comms/net/server_session.hpp"
 
 #include <boost/asio/redirect_error.hpp>
 #include <boost/asio/experimental/awaitable_operators.hpp>
@@ -33,7 +33,7 @@ namespace ores::comms::net {
 
 using namespace ores::utility::log;
 
-session::session(std::unique_ptr<connection> conn, std::string server_id,
+server_session::server_session(std::unique_ptr<connection> conn, std::string server_id,
     std::shared_ptr<messaging::message_dispatcher> dispatcher,
     boost::asio::any_io_executor io_executor,
     std::shared_ptr<service::subscription_manager> subscription_mgr)
@@ -49,15 +49,20 @@ session::session(std::unique_ptr<connection> conn, std::string server_id,
     notification_signal_.expires_at(std::chrono::steady_clock::time_point::max());
 }
 
-void session::stop() {
+void server_session::stop() {
     BOOST_LOG_SEV(lg(), info) << "Stopping session for " << conn_->remote_address();
     active_ = false;
+
+    // Cancel notification signal to wake up the notification writer coroutine
+    // so it can exit gracefully before we close the connection
+    notification_signal_.cancel();
+
     if (conn_) {
         conn_->close();
     }
 }
 
-bool session::queue_notification(const std::string& event_type,
+bool server_session::queue_notification(const std::string& event_type,
     std::chrono::system_clock::time_point timestamp) {
     if (!active_) {
         BOOST_LOG_SEV(lg(), debug)
@@ -79,7 +84,7 @@ bool session::queue_notification(const std::string& event_type,
     return true;
 }
 
-boost::asio::awaitable<void> session::run() {
+boost::asio::awaitable<void> server_session::run() {
     std::string remote_addr = conn_->remote_address();
     try {
         BOOST_LOG_SEV(lg(), info) << "Session started for client: " << remote_addr;
@@ -125,7 +130,7 @@ boost::asio::awaitable<void> session::run() {
     BOOST_LOG_SEV(lg(), info) << "Session ended for client: " << remote_addr;
 }
 
-boost::asio::awaitable<bool> session::perform_handshake() {
+boost::asio::awaitable<bool> server_session::perform_handshake() {
     bool success = co_await service::handshake_service::perform_server_handshake(
         *conn_, ++sequence_number_, server_id_);
 
@@ -136,7 +141,7 @@ boost::asio::awaitable<bool> session::perform_handshake() {
     co_return success;
 }
 
-boost::asio::awaitable<void> session::process_messages() {
+boost::asio::awaitable<void> server_session::process_messages() {
     BOOST_LOG_SEV(lg(), debug) << "Starting message processing loop";
 
     try {
@@ -238,6 +243,8 @@ boost::asio::awaitable<void> session::process_messages() {
             // Close connection after logout
             if (request_frame.header().type == messaging::message_type::logout_request) {
                 BOOST_LOG_SEV(lg(), info) << "Logout completed, closing connection";
+                active_ = false;
+                notification_signal_.cancel();
                 co_return;
             }
         }
@@ -246,7 +253,7 @@ boost::asio::awaitable<void> session::process_messages() {
     }
 }
 
-boost::asio::awaitable<void> session::run_notification_writer() {
+boost::asio::awaitable<void> server_session::run_notification_writer() {
     BOOST_LOG_SEV(lg(), debug) << "Starting notification writer coroutine";
 
     try {
@@ -272,14 +279,20 @@ boost::asio::awaitable<void> session::run_notification_writer() {
             }
         }
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Exception in notification writer: " << e.what();
+        // Operation canceled is expected during session shutdown
+        if (active_) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Exception in notification writer: " << e.what();
+        } else {
+            BOOST_LOG_SEV(lg(), debug)
+                << "Notification writer interrupted during shutdown: " << e.what();
+        }
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Notification writer coroutine ended";
 }
 
-boost::asio::awaitable<void> session::send_pending_notifications() {
+boost::asio::awaitable<void> server_session::send_pending_notifications() {
     std::vector<pending_notification> to_send;
 
     {
@@ -325,7 +338,7 @@ boost::asio::awaitable<void> session::send_pending_notifications() {
     }
 }
 
-void session::register_with_subscription_manager() {
+void server_session::register_with_subscription_manager() {
     if (!subscription_mgr_) {
         BOOST_LOG_SEV(lg(), debug)
             << "No subscription manager configured - skipping registration";
@@ -346,7 +359,7 @@ void session::register_with_subscription_manager() {
         });
 }
 
-void session::unregister_from_subscription_manager() {
+void server_session::unregister_from_subscription_manager() {
     if (!subscription_mgr_) {
         return;
     }

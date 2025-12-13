@@ -17,11 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
--- Drop existing main database if it exists
--- DROP DATABASE IF EXISTS oresdb;
-
 -- Create main database from template
 -- This provides a fast way to get a fully-configured database
 -- with all schemas, tables, functions, and extensions
 create database oresdb with template = oresdb_template;
+create schema if not exists oresdb;
+create extension if not exists btree_gist;

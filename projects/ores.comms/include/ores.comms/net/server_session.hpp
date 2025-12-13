@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMMS_NET_SESSION_HPP
-#define ORES_COMMS_NET_SESSION_HPP
+#ifndef ORES_COMMS_NET_SERVER_SESSION_HPP
+#define ORES_COMMS_NET_SERVER_SESSION_HPP
 
 #include <mutex>
 #include <queue>
@@ -42,9 +42,9 @@ namespace ores::comms::net {
  * Manages the lifecycle of a single client connection, including
  * handshake, message processing, and cleanup.
  */
-class session final {
+class server_session final {
 private:
-    inline static std::string_view logger_name = "ores.comms.net.session";
+    inline static std::string_view logger_name = "ores.comms.net.server_session";
 
     static auto& lg() {
         using namespace ores::utility::log;
@@ -70,7 +70,7 @@ public:
      * @param io_executor The executor to use for async operations
      * @param subscription_mgr Optional subscription manager for event notifications
      */
-    explicit session(std::unique_ptr<connection> conn, std::string server_id,
+    explicit server_session(std::unique_ptr<connection> conn, std::string server_id,
         std::shared_ptr<messaging::message_dispatcher> dispatcher,
         boost::asio::any_io_executor io_executor,
         std::shared_ptr<service::subscription_manager> subscription_mgr = nullptr);

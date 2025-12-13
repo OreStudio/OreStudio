@@ -32,7 +32,7 @@ void registrar::register_handlers(comms::net::server& server,
     BOOST_LOG_SEV(lg(), debug) << "Registering message handlers.";
 
     auto handler = std::make_shared<accounts_message_handler>(
-        std::move(ctx), std::move(system_flags));
+        std::move(ctx), std::move(system_flags), server.sessions());
 
     comms::messaging::message_type_range accounts_range{
         .min = comms::messaging::ACCOUNTS_SUBSYSTEM_MIN,

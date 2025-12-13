@@ -29,6 +29,11 @@ namespace ores::variability::domain {
  */
 struct feature_flags final {
     /**
+     * @brief Version number for optimistic locking and change tracking.
+     */
+    int version = 0;
+
+    /**
      * @brief Flag indicating whether the feature is enabled or disabled.
      */
     bool enabled = false;

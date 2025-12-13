@@ -17,8 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-create schema if not exists oresdb;
-create extension if not exists btree_gist;
 set schema 'oresdb';
 
 --
@@ -26,6 +24,7 @@ set schema 'oresdb';
 --
 create table if not exists "oresdb"."currencies" (
     "iso_code" text not null,
+    "version" integer not null,
     "name" text not null,
     "numeric_code" text not null,
     "symbol" text not null,
@@ -42,17 +41,47 @@ create table if not exists "oresdb"."currencies" (
     exclude using gist (
         iso_code WITH =,
         tstzrange(valid_from, valid_to) WITH &&
-    )
+    ),
+    check ("valid_from" < "valid_to")
 );
+
+-- Unique constraint on version for current records ensures version uniqueness per entity
+create unique index if not exists currencies_version_unique_idx
+on "oresdb"."currencies" (iso_code, version)
+where valid_to = '9999-12-31 23:59:59'::timestamptz;
 
 create or replace function update_currencies()
 returns trigger as $$
+declare
+    current_version integer;
 begin
-    update "oresdb"."currencies"
-    set valid_to = current_timestamp
+    -- Get the current version of the existing record (if any)
+    select version into current_version
+    from "oresdb"."currencies"
     where iso_code = new.iso_code
-    and valid_to = '9999-12-31 23:59:59'::timestamptz
-    and valid_from < current_timestamp;
+    and valid_to = '9999-12-31 23:59:59'::timestamptz;
+
+    if found then
+        -- Existing record: check version for optimistic locking
+        -- Version 0 is a special "force overwrite" sentinel used by imports
+        if new.version != 0 and new.version != current_version then
+            raise exception 'Version conflict: expected version %, but current version is %',
+                new.version, current_version
+                using errcode = 'P0002';
+        end if;
+        -- Increment version for the new record
+        new.version = current_version + 1;
+
+        -- Close the existing record
+        update "oresdb"."currencies"
+        set valid_to = current_timestamp
+        where iso_code = new.iso_code
+        and valid_to = '9999-12-31 23:59:59'::timestamptz
+        and valid_from < current_timestamp;
+    else
+        -- New record: set initial version
+        new.version = 1;
+    end if;
 
     new.valid_from = current_timestamp;
     new.valid_to = '9999-12-31 23:59:59'::timestamptz;

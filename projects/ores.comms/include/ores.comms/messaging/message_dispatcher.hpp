@@ -27,6 +27,7 @@
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_handler.hpp"
+#include "ores.comms/service/auth_session_service.hpp"
 
 namespace ores::comms::messaging {
 
@@ -53,7 +54,12 @@ private:
     }
 
 public:
-    message_dispatcher();
+    /**
+     * @brief Construct a message dispatcher with auth session service.
+     *
+     * @param sessions Shared auth session service for authorization
+     */
+    explicit message_dispatcher(std::shared_ptr<service::auth_session_service> sessions);
 
     /**
      * @brief Register a handler for a range of message types.
@@ -101,6 +107,7 @@ private:
      */
     message_type get_response_type(message_type request_type) const;
 
+    std::shared_ptr<service::auth_session_service> sessions_;
     std::map<message_type_range, std::shared_ptr<message_handler>> handlers_;
 };
 

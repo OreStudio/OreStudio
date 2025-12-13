@@ -29,6 +29,8 @@
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/messaging/message_handler.hpp"
 #include "ores.comms/messaging/message_dispatcher.hpp"
+#include "ores.comms/service/auth_session_service.hpp"
+#include <boost/uuid/uuid_generators.hpp>
 #include "ores.comms/messaging/reader.hpp"
 #include "ores.comms/messaging/writer.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -396,7 +398,12 @@ TEST_CASE("test_handler_rejects_invalid_message_type", tags) {
 TEST_CASE("test_dispatcher_with_registered_handler", tags) {
     auto lg(make_logger(test_suite));
 
-    message_dispatcher dispatcher;
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    // Store a test session to pass authorization
+    const std::string test_address = "127.0.0.1:54321";
+    sessions->store_session(test_address, {boost::uuids::random_generator()(), false});
+
+    message_dispatcher dispatcher(sessions);
 
     auto handler = std::make_shared<test_message_handler>();
     message_type_range test_range{TEST_SUBSYSTEM_MIN, TEST_SUBSYSTEM_MAX};
@@ -420,7 +427,7 @@ TEST_CASE("test_dispatcher_with_registered_handler", tags) {
     boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await dispatcher.dispatch(
-            request_frame, 2, "127.0.0.1:54321");
+            request_frame, 2, test_address);
 
         REQUIRE(result.has_value());
 
@@ -447,7 +454,12 @@ TEST_CASE("test_dispatcher_with_registered_handler", tags) {
 TEST_CASE("test_dispatcher_without_handler_returns_error", tags) {
     auto lg(make_logger(test_suite));
 
-    message_dispatcher dispatcher;
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    // Store a test session to pass authorization
+    const std::string test_address = "127.0.0.1:54321";
+    sessions->store_session(test_address, {boost::uuids::random_generator()(), false});
+
+    message_dispatcher dispatcher(sessions);
     // No handler registered
 
     test_request request;
@@ -464,7 +476,7 @@ TEST_CASE("test_dispatcher_without_handler_returns_error", tags) {
     boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await dispatcher.dispatch(
-            request_frame, 2, "127.0.0.1:54321");
+            request_frame, 2, test_address);
 
         CHECK(!result.has_value());
         CHECK(result.error() == error_code::invalid_message_type);
@@ -474,7 +486,12 @@ TEST_CASE("test_dispatcher_without_handler_returns_error", tags) {
 TEST_CASE("test_dispatcher_preserves_correlation_id", tags) {
     auto lg(make_logger(test_suite));
 
-    message_dispatcher dispatcher;
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    // Store a test session to pass authorization
+    const std::string test_address = "127.0.0.1:54321";
+    sessions->store_session(test_address, {boost::uuids::random_generator()(), false});
+
+    message_dispatcher dispatcher(sessions);
 
     auto handler = std::make_shared<test_message_handler>();
     message_type_range test_range{TEST_SUBSYSTEM_MIN, TEST_SUBSYSTEM_MAX};
@@ -498,7 +515,7 @@ TEST_CASE("test_dispatcher_preserves_correlation_id", tags) {
     boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await dispatcher.dispatch(
-            request_frame, 2, "127.0.0.1:54321");
+            request_frame, 2, test_address);
 
         REQUIRE(result.has_value());
 

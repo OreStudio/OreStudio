@@ -21,7 +21,7 @@
 #define ORES_SHELL_APP_COMMANDS_CURRENCIES_COMMANDS_HPP
 
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.shell/app/client_manager.hpp"
+#include "ores.comms/net/client_session.hpp"
 
 namespace cli {
 
@@ -51,7 +51,8 @@ public:
      *
      * Creates the currencies submenu and adds currency operations.
      */
-    static void register_commands(cli::Menu& root_menu, client_manager& client_manager);
+    static void register_commands(cli::Menu& root_menu,
+        comms::net::client_session& session);
 
     /**
      * @brief Process a get currencies request.
@@ -59,8 +60,30 @@ public:
      * Retrieves all currencies from the server and displays them.
      *
      * @param out Output stream for results
+     * @param session Client session for connectivity.
      */
-    static void process_get_currencies(std::ostream& out, client_manager& client_manager);
+    static void process_get_currencies(std::ostream& out,
+        comms::net::client_session& session);
+
+    /**
+     * @brief Process an add currency request.
+     *
+     * Creates a new currency with the provided details. The modified_by field
+     * is automatically set from the logged-in user's session.
+     *
+     * @param out Output stream for results
+     * @param session Client session for connectivity.
+     * @param iso_code ISO 4217 alphabetic code (e.g., "USD")
+     * @param name Full name of the currency
+     * @param numeric_code ISO 4217 numeric code (optional)
+     * @param symbol Currency symbol (optional)
+     * @param fractions_per_unit Number of fractional units (default: 100)
+     */
+    static void process_add_currency(std::ostream& out,
+        comms::net::client_session& session,
+        std::string iso_code, std::string name,
+        std::string numeric_code, std::string symbol,
+        std::string fractions_per_unit);
 };
 
 }

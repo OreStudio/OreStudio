@@ -479,31 +479,36 @@ TEST_CASE("delete_account_response_serialize_deserialize", tags) {
     CHECK(a.message == e.message);
 }
 
-TEST_CASE("logout_request_with_valid_uuid", tags) {
+TEST_CASE("logout_request_empty_payload", tags) {
     auto lg(make_logger(test_suite));
 
+    // logout_request is now empty - account_id is determined from session context
     logout_request rq;
-    rq.account_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, info) << "Request: " << rq;
 
-    CHECK(!rq.account_id.is_nil());
+    // Serialization should produce empty buffer
+    const auto serialized = rq.serialize();
+    CHECK(serialized.empty());
 }
 
 TEST_CASE("logout_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
+    // logout_request is empty - no fields to serialize
     logout_request e;
-    e.account_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
+    CHECK(serialized.empty());
+
     const auto r = logout_request::deserialize(serialized);
 
     REQUIRE(r.has_value());
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.account_id == e.account_id);
+    // Empty struct deserializes successfully
+    (void)a; // Nothing to check, struct is empty
 }
 
 TEST_CASE("logout_response_success", tags) {

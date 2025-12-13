@@ -20,5 +20,3 @@
 drop trigger if exists update_currencies_trigger on currencies;
 drop function if exists update_currencies;
 drop table if exists currencies;
--- drop extension if exists btree_gist;
--- drop schema if exists oresdb;

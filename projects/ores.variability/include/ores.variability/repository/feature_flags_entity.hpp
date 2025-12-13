@@ -34,6 +34,7 @@ struct feature_flags_entity {
     constexpr static const char* tablename = "feature_flags";
 
     sqlgen::PrimaryKey<std::string> name;
+    int version = 0;
     int enabled;
     std::string description;
     std::string modified_by;

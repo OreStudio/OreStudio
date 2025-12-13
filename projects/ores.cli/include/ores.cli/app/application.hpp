@@ -35,6 +35,7 @@
 #include "ores.cli/config/add_currency_options.hpp"
 #include "ores.cli/config/add_account_options.hpp"
 #include "ores.cli/config/add_feature_flag_options.hpp"
+#include "ores.cli/config/add_login_info_options.hpp"
 
 namespace ores::cli::app {
 
@@ -67,16 +68,19 @@ private:
     void export_currencies(const config::export_options& cfg) const;
     void export_accounts(const config::export_options& cfg) const;
     void export_feature_flags(const config::export_options& cfg) const;
+    void export_login_info(const config::export_options& cfg) const;
     void export_data(const std::optional<config::export_options>& ocfg) const;
 
     void delete_currency(const config::delete_options& cfg) const;
     void delete_account(const config::delete_options& cfg) const;
     void delete_feature_flag(const config::delete_options& cfg) const;
+    void delete_login_info(const config::delete_options& cfg) const;
     void delete_data(const std::optional<config::delete_options>& ocfg) const;
 
     void add_currency(const config::add_currency_options& cfg) const;
     void add_account(const config::add_account_options& cfg) const;
     void add_feature_flag(const config::add_feature_flag_options& cfg) const;
+    void add_login_info(const config::add_login_info_options& cfg) const;
     void add_data(const std::optional<config::add_options>& ocfg) const;
 
 public:

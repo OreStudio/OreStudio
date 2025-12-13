@@ -22,5 +22,3 @@ drop function if exists update_accounts;
 drop index if exists accounts_username_unique_idx;
 drop index if exists accounts_email_unique_idx;
 drop table if exists accounts;
--- drop extension if exists btree_gist;
--- drop schema if exists oresdb;

@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 -- Drop template database if it exists
-drop database if exists oresdb_template;
+-- update pg_database set datistemplate = false where datname = 'oresdb_template';
+-- drop database if exists oresdb_template;
 
 -- Create template database with clean template0 as base
 create database oresdb_template with template = template0;
@@ -31,10 +31,8 @@ grant all privileges on database oresdb_template to ores;
 \c oresdb_template
 
 -- Run all schema creation scripts
-\ir ./accounts_create.sql
-\ir ./currencies_create.sql
-\ir ./feature_flags_create.sql
-\ir ./login_info_create.sql
+\ir ./create_database.sql
+\ir ./create_all.sql
 
 -- Mark database as template to prevent accidental direct connections
 -- NOTE: This requires superuser privileges, so it's commented out

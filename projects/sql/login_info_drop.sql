@@ -20,5 +20,3 @@
 drop index if exists login_info_account_id_idx;
 drop index if exists login_info_locked_idx;
 drop table if exists login_info;
--- drop extension if exists btree_gist;
--- drop schema if exists oresdb;

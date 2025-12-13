@@ -35,6 +35,7 @@ struct currency_entity {
     constexpr static const char* tablename = "currencies";
 
     sqlgen::PrimaryKey<std::string> iso_code;
+    int version = 0;
     std::string name;
     std::string numeric_code;
     std::string symbol;

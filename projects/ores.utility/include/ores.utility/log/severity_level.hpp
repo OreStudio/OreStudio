@@ -58,8 +58,8 @@ operator<<(std::basic_ostream<CharT, TraitsT>& stream, severity_level level) {
     switch(level) {
     case severity_level::trace: stream << "TRACE"; break;
     case severity_level::debug: stream << "DEBUG"; break;
-    case severity_level::info: stream << "INFO"; break;
-    case severity_level::warn: stream << "WARN"; break;
+    case severity_level::info:  stream << "INFO"; break;
+    case severity_level::warn:  stream << "WARN"; break;
     case severity_level::error: stream << "ERROR"; break;
     default:
         throw std::invalid_argument("Invalid or unexpected severity level");

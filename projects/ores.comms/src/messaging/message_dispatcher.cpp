@@ -23,7 +23,9 @@ namespace ores::comms::messaging {
 
 using namespace ores::utility::log;
 
-message_dispatcher::message_dispatcher() = default;
+message_dispatcher::message_dispatcher(
+    std::shared_ptr<service::auth_session_service> sessions)
+    : sessions_(std::move(sessions)) {}
 
 void message_dispatcher::register_handler(message_type_range range,
     std::shared_ptr<message_handler> handler) {
@@ -37,6 +39,16 @@ message_dispatcher::dispatch(const frame& request_frame, std::uint32_t sequence,
     const std::string& remote_address) {
     const auto msg_type = request_frame.header().type;
     BOOST_LOG_SEV(lg(), debug) << "Dispatching message type " << msg_type;
+
+    // Check authorization before routing to handler
+    if (sessions_) {
+        auto auth_result = sessions_->authorize_request(msg_type, remote_address);
+        if (!auth_result) {
+            BOOST_LOG_SEV(lg(), warn) << "Authorization denied for " << msg_type
+                                      << " from " << remote_address;
+            co_return std::unexpected(auth_result.error());
+        }
+    }
 
     // Find the appropriate handler
     auto* handler = find_handler(msg_type);

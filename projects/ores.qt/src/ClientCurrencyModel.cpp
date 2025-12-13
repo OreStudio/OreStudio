@@ -51,7 +51,7 @@ int ClientCurrencyModel::rowCount(const QModelIndex& parent) const {
 int ClientCurrencyModel::columnCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
-    return 10; // Match the original model's column count
+    return Column::ColumnCount;
 }
 
 QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
@@ -65,16 +65,17 @@ QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
     const auto& currency = currencies_[row];
 
     switch (index.column()) {
-    case 0: return QString::fromStdString(currency.name);
-    case 1: return QString::fromStdString(currency.iso_code);
-    case 2: return QString::fromStdString(currency.numeric_code);
-    case 3: return QString::fromStdString(currency.symbol);
-    case 4: return QString::fromStdString(currency.fraction_symbol);
-    case 5: return currency.fractions_per_unit;
-    case 6: return QString::fromStdString(currency.rounding_type);
-    case 7: return currency.rounding_precision;
-    case 8: return QString::fromStdString(currency.format);
-    case 9: return QString::fromStdString(currency.currency_type);
+    case Column::CurrencyName: return QString::fromStdString(currency.name);
+    case Column::IsoCode: return QString::fromStdString(currency.iso_code);
+    case Column::Version: return currency.version;
+    case Column::NumericCode: return QString::fromStdString(currency.numeric_code);
+    case Column::Symbol: return QString::fromStdString(currency.symbol);
+    case Column::FractionSymbol: return QString::fromStdString(currency.fraction_symbol);
+    case Column::FractionsPerUnit: return currency.fractions_per_unit;
+    case Column::RoundingType: return QString::fromStdString(currency.rounding_type);
+    case Column::RoundingPrecision: return currency.rounding_precision;
+    case Column::Format: return QString::fromStdString(currency.format);
+    case Column::CurrencyType: return QString::fromStdString(currency.currency_type);
     default: return {};
     }
 }
@@ -86,16 +87,17 @@ headerData(int section, Qt::Orientation orientation, int role) const {
 
     if (orientation == Qt::Horizontal) {
         switch (section) {
-        case 0: return tr("Currency Name");
-        case 1: return tr("ISO Code");
-        case 2: return tr("Numeric Code");
-        case 3: return tr("Symbol");
-        case 4: return tr("Frac. Symbol");
-        case 5: return tr("Frac. per unit");
-        case 6: return tr("Rounding type");
-        case 7: return tr("Rounding precision");
-        case 8: return tr("Format");
-        case 9: return tr("Currency Type");
+        case Column::CurrencyName: return tr("Currency Name");
+        case Column::IsoCode: return tr("ISO Code");
+        case Column::Version: return tr("Version");
+        case Column::NumericCode: return tr("Numeric Code");
+        case Column::Symbol: return tr("Symbol");
+        case Column::FractionSymbol: return tr("Frac. Symbol");
+        case Column::FractionsPerUnit: return tr("Frac. per unit");
+        case Column::RoundingType: return tr("Rounding type");
+        case Column::RoundingPrecision: return tr("Rounding precision");
+        case Column::Format: return tr("Format");
+        case Column::CurrencyType: return tr("Currency Type");
         default: return {};
         }
     }

@@ -29,8 +29,10 @@ using namespace ores::utility::log;
 using comms::messaging::message_type;
 
 accounts_message_handler::accounts_message_handler(utility::database::context ctx,
-    std::shared_ptr<variability::service::system_flags_service> system_flags)
-    : service_(ctx), ctx_(ctx), system_flags_(std::move(system_flags)) {}
+    std::shared_ptr<variability::service::system_flags_service> system_flags,
+    std::shared_ptr<comms::service::auth_session_service> sessions)
+    : service_(ctx), ctx_(ctx), system_flags_(std::move(system_flags)),
+      sessions_(std::move(sessions)) {}
 
 accounts_message_handler::handler_result
 accounts_message_handler::handle_message(message_type type,
@@ -58,19 +60,19 @@ accounts_message_handler::handle_message(message_type type,
 
     switch (type) {
     case message_type::create_account_request:
-        co_return co_await handle_create_account_request(payload);
+        co_return co_await handle_create_account_request(payload, remote_address);
     case message_type::list_accounts_request:
-        co_return co_await handle_list_accounts_request(payload);
+        co_return co_await handle_list_accounts_request(payload, remote_address);
     case message_type::list_login_info_request:
-        co_return co_await handle_list_login_info_request(payload);
+        co_return co_await handle_list_login_info_request(payload, remote_address);
     case message_type::login_request:
         co_return co_await handle_login_request(payload, remote_address);
     case message_type::logout_request:
-        co_return co_await handle_logout_request(payload);
+        co_return co_await handle_logout_request(payload, remote_address);
     case message_type::unlock_account_request:
-        co_return co_await handle_unlock_account_request(payload);
+        co_return co_await handle_unlock_account_request(payload, remote_address);
     case message_type::delete_account_request:
-        co_return co_await handle_delete_account_request(payload);
+        co_return co_await handle_delete_account_request(payload, remote_address);
     case message_type::create_initial_admin_request:
         co_return co_await handle_create_initial_admin_request(payload, remote_address);
     case message_type::bootstrap_status_request:
@@ -82,8 +84,12 @@ accounts_message_handler::handle_message(message_type type,
 }
 
 accounts_message_handler::handler_result accounts_message_handler::
-handle_create_account_request(std::span<const std::byte> payload) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing create_account_request.";
+handle_create_account_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing create_account_request from "
+                               << remote_address;
+
+    // Authorization is checked by dispatcher before reaching this handler
 
     auto request_result = create_account_request::deserialize(payload);
     if (!request_result) {
@@ -106,9 +112,13 @@ handle_create_account_request(std::span<const std::byte> payload) {
 }
 
 accounts_message_handler::handler_result
-accounts_message_handler::accounts_message_handler::
-handle_list_accounts_request(std::span<const std::byte> payload) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing list_accounts_request.";
+accounts_message_handler::
+handle_list_accounts_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing list_accounts_request from "
+                               << remote_address;
+
+    // Authorization is checked by dispatcher before reaching this handler
 
     auto request_result = list_accounts_request::deserialize(payload);
     if (!request_result) {
@@ -145,8 +155,12 @@ handle_list_accounts_request(std::span<const std::byte> payload) {
 
 accounts_message_handler::handler_result
 accounts_message_handler::
-handle_list_login_info_request(std::span<const std::byte> payload) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing list_login_info_request.";
+handle_list_login_info_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing list_login_info_request from "
+                               << remote_address;
+
+    // Authorization is checked by dispatcher before reaching this handler
 
     auto request_result = list_login_info_request::deserialize(payload);
     if (!request_result) {
@@ -194,6 +208,12 @@ handle_login_request(std::span<const std::byte> payload,
                                   << account.username
                                   << " from IP: " << ip_address;
 
+        // Store session for this client in the shared session service
+        sessions_->store_session(remote_address, comms::service::session_info{
+            .account_id = account.id,
+            .is_admin = account.is_admin
+        });
+
         login_response response{
             .success = true,
             .error_message = "",
@@ -218,8 +238,12 @@ handle_login_request(std::span<const std::byte> payload,
 }
 
 accounts_message_handler::handler_result accounts_message_handler::
-handle_unlock_account_request(std::span<const std::byte> payload) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing unlock_account_request";
+handle_unlock_account_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing unlock_account_request from "
+                               << remote_address;
+
+    // Authorization is checked by dispatcher before reaching this handler
 
     auto request_result = unlock_account_request::deserialize(payload);
     if (!request_result) {
@@ -251,8 +275,12 @@ handle_unlock_account_request(std::span<const std::byte> payload) {
 }
 
 accounts_message_handler::handler_result accounts_message_handler::
-handle_delete_account_request(std::span<const std::byte> payload) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing delete_account_request";
+handle_delete_account_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_account_request from "
+                               << remote_address;
+
+    // Authorization is checked by dispatcher before reaching this handler
 
     auto request_result = delete_account_request::deserialize(payload);
     if (!request_result) {
@@ -396,23 +424,41 @@ handle_bootstrap_status_request(std::span<const std::byte> payload) {
 }
 
 accounts_message_handler::handler_result accounts_message_handler::
-handle_logout_request(std::span<const std::byte> payload) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing logout_request";
+handle_logout_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing logout_request from "
+                               << remote_address;
 
+    // Deserialize empty request (for protocol compliance)
     auto request_result = logout_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize logout_request";
         co_return std::unexpected(request_result.error());
     }
 
-    const auto& request = *request_result;
-    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+    // Get account_id from session context (not from request payload)
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "No session found for: " << remote_address;
+        logout_response response{
+            .success = false,
+            .message = "Not logged in"
+        };
+        co_return response.serialize();
+    }
+
+    const auto& account_id = session->account_id;
+    BOOST_LOG_SEV(lg(), debug) << "Logging out account: "
+                               << boost::uuids::to_string(account_id);
 
     try {
-        service_.logout(request.account_id);
+        service_.logout(account_id);
+
+        // Remove session for this client from the shared session service
+        sessions_->remove_session(remote_address);
 
         BOOST_LOG_SEV(lg(), info) << "Successfully logged out account: "
-                                  << boost::uuids::to_string(request.account_id);
+                                  << boost::uuids::to_string(account_id);
 
         logout_response response{
             .success = true,

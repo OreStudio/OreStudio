@@ -18,30 +18,32 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-13 Sat 04:09], for Saturday, December 13, 2025.
+#+CAPTION: Clock summary at [2025-12-13 Sat 09:52], for Saturday, December 13, 2025.
 |      | <75>                                               |        |      |      |       |
 | Tags | Headline                                           | Time   |      |      |     % |
 |------+----------------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                       | *3:46* |      |      | 100.0 |
+|      | *Total time*                                       | *4:05* |      |      | 100.0 |
 |------+----------------------------------------------------+--------+------+------+-------|
-|      | Stories                                            | 3:46   |      |      | 100.0 |
-|      | Active                                             |        | 3:46 |      | 100.0 |
-| code | Add a version attribute to entities                |        |      | 0:05 |   2.2 |
-| code | Retest all recipes after latest changes            |        |      | 0:58 |  25.7 |
-| code | Server must check database connectivity on startup |        |      | 1:50 |  48.7 |
-| code | Add system tray support                            |        |      | 0:53 |  23.5 |
+|      | Stories                                            | 4:05   |      |      | 100.0 |
+|      | Active                                             |        | 4:05 |      | 100.0 |
+| code | Add a version attribute to entities                |        |      | 0:05 |   2.0 |
+| code | Retest all recipes after latest changes            |        |      | 0:58 |  23.7 |
+| code | Server must check database connectivity on startup |        |      | 1:50 |  44.9 |
+| code | Add system tray support                            |        |      | 0:53 |  21.6 |
+| code | Red build after account lock PR                    |        |      | 0:10 |   4.1 |
+| code | Valgrind is detecting issues with comms tests      |        |      | 0:09 |   3.7 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-13 Sat 04:09]
+#+CAPTION: Clock summary at [2025-12-13 Sat 09:52]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *75:42* |       |       | 100.0 |
+|       | *Total time*                                            | *76:01* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 75:42   |       |       | 100.0 |
-|       | Active                                                  |         | 75:42 |       | 100.0 |
+|       | Stories                                                 | 76:01   |       |       | 100.0 |
+|       | Active                                                  |         | 76:01 |       | 100.0 |
 | agile | Sprint and product backlog refinement                   |         |       |  0:29 |   0.6 |
 | infra | OCR scan notebooks for this sprint                      |         |       | 15:42 |  20.7 |
 | code  | Implement session cancellation                          |         |       |  2:42 |   3.6 |
@@ -52,7 +54,7 @@
 | code  | Implement client heartbeat for disconnect detection     |         |       |  5:18 |   7.0 |
 | code  | Pressing disconnect crashes client                      |         |       |  0:23 |   0.5 |
 | infra | Create a component creator skill                        |         |       |  0:42 |   0.9 |
-| code  | Add listen/notify support                               |         |       | 11:25 |  15.1 |
+| code  | Add listen/notify support                               |         |       | 11:25 |  15.0 |
 | code  | Move context to database                                |         |       |  0:20 |   0.4 |
 | code  | Use =std::string_view= for loggers                      |         |       |  3:14 |   4.3 |
 | code  | Fix issues with logging after string_view change        |         |       |  0:53 |   1.2 |
@@ -70,6 +72,8 @@
 | code  | Retest all recipes after latest changes                 |         |       |  3:39 |   4.8 |
 | code  | Server must check database connectivity on startup      |         |       |  1:50 |   2.4 |
 | code  | Add system tray support                                 |         |       |  0:53 |   1.2 |
+| code  | Red build after account lock PR                         |         |       |  0:10 |   0.2 |
+| code  | Valgrind is detecting issues with comms tests           |         |       |  0:09 |   0.2 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1831,38 +1835,17 @@ Links:
 
 - [[https://doc.qt.io/archives/qt-5.15/qtwidgets-desktop-systray-example.html][System Tray Icon Example]]
 
-*** Perform tests to check database connectivity                       :code:
+*** COMPLETED Red build after account lock PR                          :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-13 Sat 09:32]--[2025-12-13 Sat 09:42] =>  0:10
+    :END:
 
-We added some basic database monitoring but did not perform a lot of testing.
+We rushed the PR last night and left a broken build.
 
-We should also generalise this so that if the database goes down after start we
-still perform some kind of retry logic.
-
-See also this point from Gemini:
-
-#+begin_quote
-The new broadcast_all method appears to be unused in this pull request. The
-database status broadcast is implemented directly in
-=ores::comms::net::server::broadcast_database_status= without using the
-subscription_manager. If this method is not intended for future use, it could be
-removed to avoid dead code.
-#+end_quote
-
-*** Retry logic does not notify give-up                                :code:
-
-At present we log:
-
-#+begin_src logview
-2025-12-13 04:02:39.718163 [INFO] [ores.comms.net.client] Retrying reconnection in 3755ms
-2025-12-13 04:02:43.473265 [INFO] [ores.comms.net.client] Reconnection attempt 4 of 5
-2025-12-13 04:02:43.473359 [INFO] [ores.comms.net.client] Connecting to localhost:55555
-2025-12-13 04:02:43.473751 [WARN] [ores.comms.net.client] Reconnection attempt 4 failed: Connection refused [system:111 at /home/marco/Development/OreStudio/OreStudio.local1/build/output/linux-clang-debug/vcpkg_installed/x64-linux/include/boost/asio/detail/reactive_socket_connect_op.hpp:97:37 in function 'static void boost::asio::detail::reactive_socket_connect_op<boost::asio::detail::range_connect_op<boost::asio::ip::tcp, boost::asio::any_io_executor, boost::asio::ip::basic_resolver_results<boost::asio::ip::tcp>, boost::asio::detail::default_connect_condition, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::ip::basic_endpoint<boost::asio::ip::tcp>>>, boost::asio::any_io_executor>::do_complete(void *, operation *, const boost::system::error_code &, std::size_t) [Handler = boost::asio::detail::range_connect_op<boost::asio::ip::tcp, boost::asio::any_io_executor, boost::asio::ip::basic_resolver_results<boost::asio::ip::tcp>, boost::asio::detail::default_connect_condition, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::ip::basic_endpoint<boost::asio::ip::tcp>>>, IoExecutor = boost::asio::any_io_executor]']
-2025-12-13 04:02:43.473798 [INFO] [ores.comms.net.client] Retrying reconnection in 9494ms
-#+end_src
-
-But nothing after that.
-
-*** Valgrind is detecting issues with comms tests                      :code:
+*** COMPLETED Valgrind is detecting issues with comms tests            :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-13 Sat 09:43]--[2025-12-13 Sat 09:52] =>  0:09
+    :END:
 
 #+begin_src fundamental
 ==51184==    at 0x566B796: std::_Hashtable<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::__detail::_Identity, std::equal_to<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::hash<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<true, true, true> >::size() const (hashtable.h:648)
@@ -2030,6 +2013,45 @@ But nothing after that.
 ==51184==
 #+end_src
 
+*** Add heat map of user sessions                                      :code:
+
+Things to measure:
+
+- duration of sessions (once we have session table).
+- bytes sent/received per session (possibly 3-D plot?). Also good for anomaly
+  detection.
+- mine github for ideas.
+
+*** Perform tests to check database connectivity                       :code:
+
+We added some basic database monitoring but did not perform a lot of testing.
+
+We should also generalise this so that if the database goes down after start we
+still perform some kind of retry logic.
+
+See also this point from Gemini:
+
+#+begin_quote
+The new broadcast_all method appears to be unused in this pull request. The
+database status broadcast is implemented directly in
+=ores::comms::net::server::broadcast_database_status= without using the
+subscription_manager. If this method is not intended for future use, it could be
+removed to avoid dead code.
+#+end_quote
+
+*** Retry logic does not notify give-up                                :code:
+
+At present we log:
+
+#+begin_src logview
+2025-12-13 04:02:39.718163 [INFO] [ores.comms.net.client] Retrying reconnection in 3755ms
+2025-12-13 04:02:43.473265 [INFO] [ores.comms.net.client] Reconnection attempt 4 of 5
+2025-12-13 04:02:43.473359 [INFO] [ores.comms.net.client] Connecting to localhost:55555
+2025-12-13 04:02:43.473751 [WARN] [ores.comms.net.client] Reconnection attempt 4 failed: Connection refused [system:111 at /home/marco/Development/OreStudio/OreStudio.local1/build/output/linux-clang-debug/vcpkg_installed/x64-linux/include/boost/asio/detail/reactive_socket_connect_op.hpp:97:37 in function 'static void boost::asio::detail::reactive_socket_connect_op<boost::asio::detail::range_connect_op<boost::asio::ip::tcp, boost::asio::any_io_executor, boost::asio::ip::basic_resolver_results<boost::asio::ip::tcp>, boost::asio::detail::default_connect_condition, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::ip::basic_endpoint<boost::asio::ip::tcp>>>, boost::asio::any_io_executor>::do_complete(void *, operation *, const boost::system::error_code &, std::size_t) [Handler = boost::asio::detail::range_connect_op<boost::asio::ip::tcp, boost::asio::any_io_executor, boost::asio::ip::basic_resolver_results<boost::asio::ip::tcp>, boost::asio::detail::default_connect_condition, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::ip::basic_endpoint<boost::asio::ip::tcp>>>, IoExecutor = boost::asio::any_io_executor]']
+2025-12-13 04:02:43.473798 [INFO] [ores.comms.net.client] Retrying reconnection in 9494ms
+#+end_src
+
+But nothing after that.
 
 *** Add entity messages should not set modified by                     :code:
 
@@ -2059,10 +2081,40 @@ We could have aliases to make this a bit more obvious:
 : login
 : logout
 
+*** Add roles and permissions                                          :code:
+
+At present we are monitoring authorisation at two levels:
+
+- is logged in
+- is admin
+
+We need to introduce basic RBAC where we have roles such as:
+
+- Trading
+- Sales
+- Operations: restricted access to some trading screens.
+- Support: read-only, admin screens.
+
+To start off with we can map these to read/write on CRUD dialogs.
+
+*** Consider compressing payload                                       :code:
+
+Sounds quite simple to extend the binary protocol with a compressed payload. We
+just need some information in the header about it. We should support both
+compressed and uncompressed payloads. Play with compression algos in boost.
+
 *** Add session information to database                                :code:
 
 At present we register the last login etc. It would be nice to record every
 session as well, including the duration.
+
+Notes:
+
+- record bytes sent/received.
+- keep track of geolocation so we know where users are logging in from.
+- calculate statistical measures (average session duration, average bytes etc)
+  and consider plotting them. Also in the aggregate so we can see patterns over
+  time.
 
 *** Add =system.disable_password_validation= to manifest               :code:
 

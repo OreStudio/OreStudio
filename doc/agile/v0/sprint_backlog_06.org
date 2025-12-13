@@ -18,53 +18,54 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-13 Sat 00:37], for Saturday, December 13, 2025.
+#+CAPTION: Clock summary at [2025-12-13 Sat 01:24], for Saturday, December 13, 2025.
 |      | <75>                                    |        |      |      |       |
 | Tags | Headline                                | Time   |      |      |     % |
 |------+-----------------------------------------+--------+------+------+-------|
-|      | *Total time*                            | *0:05* |      |      | 100.0 |
+|      | *Total time*                            | *1:03* |      |      | 100.0 |
 |------+-----------------------------------------+--------+------+------+-------|
-|      | Stories                                 | 0:05   |      |      | 100.0 |
-|      | Active                                  |        | 0:05 |      | 100.0 |
-| code | Retest all recipes after latest changes |        |      | 0:05 | 100.0 |
+|      | Stories                                 | 1:03   |      |      | 100.0 |
+|      | Active                                  |        | 1:03 |      | 100.0 |
+| code | Add a version attribute to entities     |        |      | 0:05 |   7.9 |
+| code | Retest all recipes after latest changes |        |      | 0:58 |  92.1 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-13 Sat 00:37]
+#+CAPTION: Clock summary at [2025-12-13 Sat 01:24]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *72:01* |       |       | 100.0 |
+|       | *Total time*                                            | *72:59* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 72:01   |       |       | 100.0 |
-|       | Active                                                  |         | 72:01 |       | 100.0 |
+|       | Stories                                                 | 72:59   |       |       | 100.0 |
+|       | Active                                                  |         | 72:59 |       | 100.0 |
 | agile | Sprint and product backlog refinement                   |         |       |  0:29 |   0.7 |
-| infra | OCR scan notebooks for this sprint                      |         |       | 15:42 |  21.8 |
+| infra | OCR scan notebooks for this sprint                      |         |       | 15:42 |  21.5 |
 | code  | Implement session cancellation                          |         |       |  2:42 |   3.7 |
 | code  | Create a variability service for feature flags          |         |       |  1:23 |   1.9 |
 | code  | Add tests to diagrams                                   |         |       |  1:26 |   2.0 |
 | code  | Add messaging to variability                            |         |       |  0:40 |   0.9 |
-| code  | Create handshake service in comms                       |         |       |  2:31 |   3.5 |
-| code  | Implement client heartbeat for disconnect detection     |         |       |  5:18 |   7.4 |
+| code  | Create handshake service in comms                       |         |       |  2:31 |   3.4 |
+| code  | Implement client heartbeat for disconnect detection     |         |       |  5:18 |   7.3 |
 | code  | Pressing disconnect crashes client                      |         |       |  0:23 |   0.5 |
 | infra | Create a component creator skill                        |         |       |  0:42 |   1.0 |
-| code  | Add listen/notify support                               |         |       | 11:25 |  15.9 |
+| code  | Add listen/notify support                               |         |       | 11:25 |  15.6 |
 | code  | Move context to database                                |         |       |  0:20 |   0.5 |
-| code  | Use =std::string_view= for loggers                      |         |       |  3:14 |   4.5 |
+| code  | Use =std::string_view= for loggers                      |         |       |  3:14 |   4.4 |
 | code  | Fix issues with logging after string_view change        |         |       |  0:53 |   1.2 |
-| code  | Remove bootstrap mode from context                      |         |       |  6:36 |   9.2 |
+| code  | Remove bootstrap mode from context                      |         |       |  6:36 |   9.0 |
 | code  | Add tests for messaging handler                         |         |       |  0:14 |   0.3 |
 | code  | Add retry algorithm to client                           |         |       |  1:52 |   2.6 |
 | code  | Fix valgrind leaks after string view changes to logging |         |       |  0:07 |   0.2 |
 | code  | Remove enum exception                                   |         |       |  0:20 |   0.5 |
 | code  | Entity syntax refactor snags                            |         |       |  0:40 |   0.9 |
 | code  | Experiment with simple code generation                  |         |       |  1:30 |   2.1 |
-| code  | Add postgres listener                                   |         |       |  1:59 |   2.8 |
+| code  | Add postgres listener                                   |         |       |  1:59 |   2.7 |
 | code  | Add a logout message                                    |         |       |  0:22 |   0.5 |
 | code  | Implement the event bus                                 |         |       |  2:33 |   3.5 |
-| code  | Add a version attribute to entities                     |         |       |  5:54 |   8.2 |
-| code  | Retest all recipes after latest changes                 |         |       |  2:46 |   3.8 |
+| code  | Add a version attribute to entities                     |         |       |  5:59 |   8.2 |
+| code  | Retest all recipes after latest changes                 |         |       |  3:39 |   5.0 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1775,6 +1776,7 @@ DETAIL:  Key (username)=(newuser24) already exists.
 
 *** COMPLETED Retest all recipes after latest changes                  :code:
     :LOGBOOK:
+    CLOCK: [2025-12-13 Sat 00:45]--[2025-12-13 Sat 01:24] =>  0:39
     CLOCK: [2025-12-13 Sat 00:06]--[2025-12-13 Sat 00:20] =>  0:14
     CLOCK: [2025-12-12 Fri 23:40]--[2025-12-13 Sat 00:05] =>  0:25
     CLOCK: [2025-12-12 Fri 00:46]--[2025-12-12 Fri 00:54] =>  0:08
@@ -1980,6 +1982,18 @@ Also, adding currencies requires supplying all parameters.
 After reloading we should mark latest currencies with a different colour so that
 it is obvious what was added. Consider colouring rows by recency.
 
+*** Consider adding top-level login and logout commands in shell       :code:
+
+At present we need to do:
+
+: accounts login
+: accounts logout
+
+We could have aliases to make this a bit more obvious:
+
+: login
+: logout
+
 *** Add session information to database                                :code:
 
 At present we register the last login etc. It would be nice to record every
@@ -1988,6 +2002,20 @@ session as well, including the duration.
 *** Add =system.disable_password_validation= to manifest               :code:
 
 This flag was dropped with all of the refactorings.
+
+*** Subscribe on reconnect fails                                       :code:
+
+Logs:
+
+#+begin_src logview
+2025-12-13 01:14:35.108648 [DEBUG] [ores.comms.messaging.frame] Successfully deserialized frame subscribe_request (0x10)
+2025-12-13 01:14:35.108680 [DEBUG] [ores.comms.net.connection] Successfully deserialized frame, type: subscribe_request (0x10) total size: 60
+2025-12-13 01:14:35.108708 [DEBUG] [ores.comms.net.server_session] Received message type subscribe_request (0x10)
+2025-12-13 01:14:35.108750 [DEBUG] [ores.comms.messaging.message_dispatcher] Dispatching message type subscribe_request (0x10)
+2025-12-13 01:14:35.108811 [WARN] [ores.comms.service.auth_session_service] Authorization failed for subscribe_request (0x10) from 127.0.0.1:45498: not authenticated
+2025-12-13 01:14:35.108842 [WARN] [ores.comms.messaging.message_dispatcher] Authorization denied for subscribe_request (0x10) from 127.0.0.1:45498
+2025-12-13 01:14:35.108875 [ERROR] [ores.comms.net.server_session] Message dispatch failed: 10
+#+end_src
 
 *** Unsubscribe before logout                                          :code:
 

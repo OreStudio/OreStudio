@@ -113,6 +113,12 @@ ores-shell> Commands available:
 	(menu)
  - accounts
 	(menu)
+ - bootstrap <string> <string> <string>
+	Create initial admin account (username password email) - only works in bootstrap mode
+ - login <string> <string>
+	Login with username and password (alias for 'accounts login')
+ - logout
+	Logout the current user (alias for 'accounts logout')
  - variability
 	(menu)
 ores-shell> Bye!
@@ -210,6 +216,34 @@ Type 'help' for available commands, 'exit' to quit
 
 ores-shell> Bye!
 #+end_example
+
+*** Login logout
+
+#+name: login-alias
+#+begin_src ores-shell :exports none
+connect localhost 55555 test
+login newuser3 Secure-Password-123
+logout
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<login-alias>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.6
+Type 'help' for available commands, 'exit' to quit
+
+ores-shell> ✓ Connected to :55555
+ores-shell> ✓ Login successful!
+ores-shell> ✓ Logged out successfully.
+ores-shell> Bye!
+#+end_example
+
 
 ** Accounts
    :PROPERTIES:

@@ -418,7 +418,8 @@ TEST_CASE("handle_unlock_account_request_non_admin", tags) {
 
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
-    accounts_message_handler sut(h.context(), system_flags);
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    accounts_message_handler sut(h.context(), system_flags, sessions);
 
     // Use a consistent remote address for non-admin session
     const std::string user_endpoint = "192.168.1.100:54321";
@@ -634,7 +635,8 @@ TEST_CASE("handle_lock_account_request", tags) {
 
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
-    accounts_message_handler sut(h.context(), system_flags);
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    accounts_message_handler sut(h.context(), system_flags, sessions);
 
     // Use a consistent remote address for admin session
     const std::string admin_endpoint = "192.168.1.100:54321";
@@ -721,7 +723,8 @@ TEST_CASE("handle_login_request_locked_account", tags) {
 
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
-    accounts_message_handler sut(h.context(), system_flags);
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    accounts_message_handler sut(h.context(), system_flags, sessions);
 
     // Use a consistent remote address for admin session
     const std::string admin_endpoint = "192.168.1.100:54321";
@@ -828,7 +831,8 @@ TEST_CASE("handle_lock_account_request_unauthenticated", tags) {
 
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
-    accounts_message_handler sut(h.context(), system_flags);
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    accounts_message_handler sut(h.context(), system_flags, sessions);
 
     // Create an account to try to lock
     const auto account = generate_synthetic_account();
@@ -871,7 +875,8 @@ TEST_CASE("handle_unlock_account_request_unauthenticated", tags) {
 
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
-    accounts_message_handler sut(h.context(), system_flags);
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    accounts_message_handler sut(h.context(), system_flags, sessions);
 
     // Create an account to try to unlock
     const auto account = generate_synthetic_account();

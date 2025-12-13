@@ -126,19 +126,18 @@ bool subscription_manager::unsubscribe(const session_id& id,
         return false;
     }
 
+    std::size_t remaining = 0;
     auto event_it = event_subscribers_.find(event_type);
     if (event_it != event_subscribers_.end()) {
         event_it->second.erase(id);
-        if (event_it->second.empty()) {
+        remaining = event_it->second.size();
+        if (remaining == 0) {
             BOOST_LOG_SEV(lg(), debug)
                 << "No more subscribers for event type '" << event_type
                 << "' - removing from map";
             event_subscribers_.erase(event_it);
         }
     }
-
-    const auto remaining = event_it != event_subscribers_.end()
-        ? event_it->second.size() : 0;
     BOOST_LOG_SEV(lg(), info)
         << "Session '" << id << "' unsubscribed from event type '"
         << event_type << "' (remaining subscribers: " << remaining << ")";

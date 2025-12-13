@@ -54,6 +54,8 @@ bool system_flags_service::is_enabled(domain::system_flag flag) const {
         return cache_.bootstrap_mode;
     case domain::system_flag::user_signups:
         return cache_.user_signups;
+    case domain::system_flag::disable_password_validation:
+        return cache_.disable_password_validation;
     }
     // Should never reach here for valid enum values
     return false;
@@ -104,6 +106,9 @@ void system_flags_service::update_cache(domain::system_flag flag, bool enabled) 
         break;
     case domain::system_flag::user_signups:
         cache_.user_signups = enabled;
+        break;
+    case domain::system_flag::disable_password_validation:
+        cache_.disable_password_validation = enabled;
         break;
     }
 }

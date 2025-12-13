@@ -47,6 +47,15 @@ struct system_flags_cache {
      * Default: false (matches system_flag_definitions)
      */
     bool user_signups = false;
+
+    /**
+     * @brief Whether password validation is disabled.
+     *
+     * When true, strict password validation requirements are bypassed.
+     * FOR TESTING/DEVELOPMENT ONLY.
+     * Default: false (matches system_flag_definitions)
+     */
+    bool disable_password_validation = false;
 };
 
 }

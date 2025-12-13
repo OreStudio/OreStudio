@@ -28,6 +28,7 @@
 #include <QImage>
 #include <QPainter>
 #include <QMdiSubWindow>
+#include <QMetaObject>
 #include "ui_CurrencyDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -263,11 +264,13 @@ void CurrencyDetailDialog::onSaveClicked() {
                 emit self->currencyCreated(
                     QString::fromStdString(currency.iso_code));
 
-                // Find the parent QMdiSubWindow and close it
+                // Find the parent QMdiSubWindow and close it asynchronously
+                // to avoid race conditions with signal processing
                 QWidget* parent = self->parentWidget();
                 while (parent) {
                     if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
-                        mdiSubWindow->close();
+                        QMetaObject::invokeMethod(mdiSubWindow, "close",
+                            Qt::QueuedConnection);
                         break;
                     }
                     parent = parent->parentWidget();

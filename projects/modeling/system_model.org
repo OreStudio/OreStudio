@@ -41,9 +41,10 @@ The system is organized into five architectural layers:
 
 ** Infrastructure Layer
 
-- Components: [[id:361A6093-D24C-9BC4-0543-6540461EDBB6][ores.comms]], [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]]
-- Communications: Binary protocol over SSL/TLS for client-server messaging.
-- Testing: Catch2 integration with database isolation and logging.
+- Components: [[id:361A6093-D24C-9BC4-0543-6540461EDBB6][ores.comms]], [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]], [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]].
+- *Communications*: Binary protocol over SSL/TLS for client-server messaging. Publishes connection lifecycle events (connected, disconnected, reconnecting, reconnected) to event bus.
+- *Testing*: Catch2 integration with database isolation and logging.
+- *Eventing*: Event-driven architecture with in-process publish/subscribe event bus, PostgreSQL LISTEN/NOTIFY integration, and entity change notifications.
 - Depends on: Foundation.
 
 ** Domain Layer

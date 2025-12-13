@@ -35,6 +35,8 @@ target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/ores.comms/include)
 
 target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.eventing.lib
     PRIVATE
         reflectcpp::reflectcpp
         OpenSSL::Crypto

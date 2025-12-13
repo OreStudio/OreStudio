@@ -186,8 +186,8 @@ namespace ores #F2F2F2 {
         client_options o-- ores::comms::net::retry_options
 
         class client #ECECEC {
-            +client(client_options config)
-            +client(client_options config, boost::asio::any_io_executor executor)
+            +client(client_options config, std::shared_ptr<eventing::service::event_bus> event_bus)
+            +client(client_options config, boost::asio::any_io_executor executor, std::shared_ptr<eventing::service::event_bus> event_bus)
             +~client()
             +connect() boost::asio::awaitable<void>
             +connect_sync() void
@@ -220,6 +220,7 @@ namespace ores #F2F2F2 {
             -{field} reconnecting_callback_ reconnecting_callback_t
             -{field} reconnected_callback_ reconnected_callback_t
             -{field} notification_callback_ notification_callback_t
+            -{field} event_bus_ std::shared_ptr<eventing::service::event_bus>
             -{field} write_strand_ std::unique_ptr<boost::asio::strand<boost::asio::any_io_executor>>
             -{field} pending_requests_ std::unique_ptr<pending_request_map>
             -{field} correlation_id_counter_ std::atomic<std::uint32_t>
@@ -240,6 +241,8 @@ namespace ores #F2F2F2 {
         automatic reconnection when connection is lost.
 
         Supports server-push notifications via notification_callback.
+        Publishes connection lifecycle events (connected, disconnected, reconnecting,
+        reconnected) to an optional event_bus for decoupled state notification.
         end note
 
             client o-u- ores::comms::net::client_options
@@ -252,6 +255,10 @@ namespace ores #F2F2F2 {
             client ..> ores::comms::messaging::ping : uses
             client ..> ores::comms::messaging::pong : uses
             client ..> ores::comms::messaging::notification_message : uses
+            client ..> ores::comms::domain::events::connected_event : publishes
+            client ..> ores::comms::domain::events::disconnected_event : publishes
+            client ..> ores::comms::domain::events::reconnecting_event : publishes
+            client ..> ores::comms::domain::events::reconnected_event : publishes
 
         class pending_request_map #ECECEC {
             +pending_request_map(boost::asio::any_io_executor executor)
@@ -899,6 +906,52 @@ namespace ores #F2F2F2 {
                 authorization_failed
                 invalid_request
                 last_value
+            }
+        }
+
+        namespace domain #F2F2F2 {
+            namespace events #F2F2F2 {
+                class connected_event <<event>> #FFE4B5 {
+                    +{field} timestamp std::chrono::system_clock::time_point
+                    +{field} host std::string
+                    +{field} port std::uint16_t
+                }
+
+                note top of connected_event
+                Event published when successfully connected to a server.
+
+                Published by the client after successful connection and handshake.
+                end note
+
+                class disconnected_event <<event>> #FFE4B5 {
+                    +{field} timestamp std::chrono::system_clock::time_point
+                }
+
+                note top of disconnected_event
+                Event published when disconnected from the server.
+
+                Published by the client when connection is lost or explicitly closed.
+                end note
+
+                class reconnecting_event <<event>> #FFE4B5 {
+                    +{field} timestamp std::chrono::system_clock::time_point
+                }
+
+                note top of reconnecting_event
+                Event published when attempting to reconnect to the server.
+
+                Published by the client when auto-reconnect is triggered.
+                end note
+
+                class reconnected_event <<event>> #FFE4B5 {
+                    +{field} timestamp std::chrono::system_clock::time_point
+                }
+
+                note top of reconnected_event
+                Event published when successfully reconnected to the server.
+
+                Published by the client after auto-reconnect succeeds.
+                end note
             }
         }
 

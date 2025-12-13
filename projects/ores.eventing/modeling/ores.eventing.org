@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: DDBC94C4-F350-478B-9E4C-643DEEA803B0
+:END:
+#+title: ORE Studio Eventing Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Event-driven architecture infrastructure for decoupled component communication in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio Eventing Component Diagram
+[[file:ores.eventing.png][file:ores.eventing.png]]
+
+Provides a publish/subscribe event bus for decoupled communication between
+components without direct dependencies. Key features:
+
+- Event Bus: In-process publish/subscribe with type-safe callbacks
+- Event Traits: Type-to-name mapping for protocol integration
+- Subscriptions: RAII-based subscription management with auto-unsubscribe
+- PostgreSQL Events: LISTEN/NOTIFY bridge for database change notifications
+- Entity Change Events: Domain-agnostic change notification with timestamps
+- Thread Safety: All event bus operations are thread-safe
+
+The domain namespace defines event types, traits, and entity change events.
+The service namespace provides the event_bus implementation and PostgreSQL
+integration via postgres_listener_service and postgres_event_source.
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

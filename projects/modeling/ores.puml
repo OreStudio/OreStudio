@@ -69,6 +69,20 @@ package "Foundation Layer" #F2F2F2 {
 
 ' Infrastructure Layer
 package "Infrastructure Layer" #F2F2F2 {
+    component [ores.eventing] as eventing #F7E5FF
+
+    note right of eventing
+    Event-driven architecture infrastructure for decoupled component communication:
+    - Event Bus: In-process publish/subscribe with type-safe callbacks
+    - Event Traits: Type-to-name mapping for protocol integration
+    - PostgreSQL Events: LISTEN/NOTIFY bridge for database change notifications
+    - Entity Change Events: Domain-agnostic change notification with timestamps
+    - Subscriptions: RAII-based subscription management with auto-unsubscribe
+    - Thread Safety: All event bus operations are thread-safe
+    Provides decoupled communication between components without direct dependencies.
+    Organized into: domain (event types, traits), service (event_bus, postgres_listener) namespaces.
+    end note
+
     component [ores.comms] as comms #F7E5FF
 
     note right of comms
@@ -81,6 +95,7 @@ package "Infrastructure Layer" #F2F2F2 {
     - Dispatching: Pluggable message handlers by subsystem range
     - Pooling: Maximum connection limits and active connection tracking
     - Errors: Comprehensive error codes with std::expected-based APIs
+    - Connection Events: Publishes connected/disconnected/reconnecting events to event bus
     end note
 
     component [ores.testing] as testing #F7E5FF
@@ -193,8 +208,11 @@ variability --> utility
 variability --> database
 
 ' Dependencies - Infrastructure to Foundation
+eventing --> utility
+eventing --> database
 comms --> utility
 comms --> database
+comms --> eventing
 testing --> utility
 testing --> database
 
@@ -222,12 +240,14 @@ qt --> utility
 qt --> accounts
 qt --> risk
 qt --> comms
+qt --> eventing
 
 service --> utility
 service --> database
 service --> accounts
 service --> risk
 service --> comms
+service --> eventing
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.puml"

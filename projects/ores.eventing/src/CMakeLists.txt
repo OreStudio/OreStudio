@@ -36,7 +36,6 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.comms.lib
         ores.database.lib
         ores.utility.lib
         sqlgen::sqlgen

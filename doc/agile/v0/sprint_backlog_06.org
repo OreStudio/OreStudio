@@ -18,56 +18,58 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-13 Sat 03:16], for Saturday, December 13, 2025.
+#+CAPTION: Clock summary at [2025-12-13 Sat 04:09], for Saturday, December 13, 2025.
 |      | <75>                                               |        |      |      |       |
 | Tags | Headline                                           | Time   |      |      |     % |
 |------+----------------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                       | *2:53* |      |      | 100.0 |
+|      | *Total time*                                       | *3:46* |      |      | 100.0 |
 |------+----------------------------------------------------+--------+------+------+-------|
-|      | Stories                                            | 2:53   |      |      | 100.0 |
-|      | Active                                             |        | 2:53 |      | 100.0 |
-| code | Add a version attribute to entities                |        |      | 0:05 |   2.9 |
-| code | Retest all recipes after latest changes            |        |      | 0:58 |  33.5 |
-| code | Server must check database connectivity on startup |        |      | 1:50 |  63.6 |
+|      | Stories                                            | 3:46   |      |      | 100.0 |
+|      | Active                                             |        | 3:46 |      | 100.0 |
+| code | Add a version attribute to entities                |        |      | 0:05 |   2.2 |
+| code | Retest all recipes after latest changes            |        |      | 0:58 |  25.7 |
+| code | Server must check database connectivity on startup |        |      | 1:50 |  48.7 |
+| code | Add system tray support                            |        |      | 0:53 |  23.5 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-13 Sat 03:16]
+#+CAPTION: Clock summary at [2025-12-13 Sat 04:09]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *74:49* |       |       | 100.0 |
+|       | *Total time*                                            | *75:42* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 74:49   |       |       | 100.0 |
-|       | Active                                                  |         | 74:49 |       | 100.0 |
+|       | Stories                                                 | 75:42   |       |       | 100.0 |
+|       | Active                                                  |         | 75:42 |       | 100.0 |
 | agile | Sprint and product backlog refinement                   |         |       |  0:29 |   0.6 |
-| infra | OCR scan notebooks for this sprint                      |         |       | 15:42 |  21.0 |
+| infra | OCR scan notebooks for this sprint                      |         |       | 15:42 |  20.7 |
 | code  | Implement session cancellation                          |         |       |  2:42 |   3.6 |
 | code  | Create a variability service for feature flags          |         |       |  1:23 |   1.8 |
 | code  | Add tests to diagrams                                   |         |       |  1:26 |   1.9 |
 | code  | Add messaging to variability                            |         |       |  0:40 |   0.9 |
-| code  | Create handshake service in comms                       |         |       |  2:31 |   3.4 |
-| code  | Implement client heartbeat for disconnect detection     |         |       |  5:18 |   7.1 |
+| code  | Create handshake service in comms                       |         |       |  2:31 |   3.3 |
+| code  | Implement client heartbeat for disconnect detection     |         |       |  5:18 |   7.0 |
 | code  | Pressing disconnect crashes client                      |         |       |  0:23 |   0.5 |
 | infra | Create a component creator skill                        |         |       |  0:42 |   0.9 |
-| code  | Add listen/notify support                               |         |       | 11:25 |  15.3 |
+| code  | Add listen/notify support                               |         |       | 11:25 |  15.1 |
 | code  | Move context to database                                |         |       |  0:20 |   0.4 |
 | code  | Use =std::string_view= for loggers                      |         |       |  3:14 |   4.3 |
 | code  | Fix issues with logging after string_view change        |         |       |  0:53 |   1.2 |
-| code  | Remove bootstrap mode from context                      |         |       |  6:36 |   8.8 |
+| code  | Remove bootstrap mode from context                      |         |       |  6:36 |   8.7 |
 | code  | Add tests for messaging handler                         |         |       |  0:14 |   0.3 |
 | code  | Add retry algorithm to client                           |         |       |  1:52 |   2.5 |
 | code  | Fix valgrind leaks after string view changes to logging |         |       |  0:07 |   0.2 |
 | code  | Remove enum exception                                   |         |       |  0:20 |   0.4 |
 | code  | Entity syntax refactor snags                            |         |       |  0:40 |   0.9 |
 | code  | Experiment with simple code generation                  |         |       |  1:30 |   2.0 |
-| code  | Add postgres listener                                   |         |       |  1:59 |   2.7 |
+| code  | Add postgres listener                                   |         |       |  1:59 |   2.6 |
 | code  | Add a logout message                                    |         |       |  0:22 |   0.5 |
 | code  | Implement the event bus                                 |         |       |  2:33 |   3.4 |
-| code  | Add a version attribute to entities                     |         |       |  5:59 |   8.0 |
-| code  | Retest all recipes after latest changes                 |         |       |  3:39 |   4.9 |
-| code  | Server must check database connectivity on startup      |         |       |  1:50 |   2.5 |
+| code  | Add a version attribute to entities                     |         |       |  5:59 |   7.9 |
+| code  | Retest all recipes after latest changes                 |         |       |  3:39 |   4.8 |
+| code  | Server must check database connectivity on startup      |         |       |  1:50 |   2.4 |
+| code  | Add system tray support                                 |         |       |  0:53 |   1.2 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1817,6 +1819,18 @@ Notes:
 - health monitor looks like a service and should really live in service folder.
 - remove log helper in database.
 
+*** COMPLETED Add system tray support                                  :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-13 Sat 03:16]--[2025-12-13 Sat 04:09] =>  0:53
+    :END:
+
+We need to be able to show notifications to users in the system tray - or
+whatever is the idiomatic way of doing this.
+
+Links:
+
+- [[https://doc.qt.io/archives/qt-5.15/qtwidgets-desktop-systray-example.html][System Tray Icon Example]]
+
 *** Perform tests to check database connectivity                       :code:
 
 We added some basic database monitoring but did not perform a lot of testing.
@@ -1833,6 +1847,20 @@ database status broadcast is implemented directly in
 subscription_manager. If this method is not intended for future use, it could be
 removed to avoid dead code.
 #+end_quote
+
+*** Retry logic does not notify give-up                                :code:
+
+At present we log:
+
+#+begin_src logview
+2025-12-13 04:02:39.718163 [INFO] [ores.comms.net.client] Retrying reconnection in 3755ms
+2025-12-13 04:02:43.473265 [INFO] [ores.comms.net.client] Reconnection attempt 4 of 5
+2025-12-13 04:02:43.473359 [INFO] [ores.comms.net.client] Connecting to localhost:55555
+2025-12-13 04:02:43.473751 [WARN] [ores.comms.net.client] Reconnection attempt 4 failed: Connection refused [system:111 at /home/marco/Development/OreStudio/OreStudio.local1/build/output/linux-clang-debug/vcpkg_installed/x64-linux/include/boost/asio/detail/reactive_socket_connect_op.hpp:97:37 in function 'static void boost::asio::detail::reactive_socket_connect_op<boost::asio::detail::range_connect_op<boost::asio::ip::tcp, boost::asio::any_io_executor, boost::asio::ip::basic_resolver_results<boost::asio::ip::tcp>, boost::asio::detail::default_connect_condition, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::ip::basic_endpoint<boost::asio::ip::tcp>>>, boost::asio::any_io_executor>::do_complete(void *, operation *, const boost::system::error_code &, std::size_t) [Handler = boost::asio::detail::range_connect_op<boost::asio::ip::tcp, boost::asio::any_io_executor, boost::asio::ip::basic_resolver_results<boost::asio::ip::tcp>, boost::asio::detail::default_connect_condition, boost::asio::detail::awaitable_handler<boost::asio::any_io_executor, boost::system::error_code, boost::asio::ip::basic_endpoint<boost::asio::ip::tcp>>>, IoExecutor = boost::asio::any_io_executor]']
+2025-12-13 04:02:43.473798 [INFO] [ores.comms.net.client] Retrying reconnection in 9494ms
+#+end_src
+
+But nothing after that.
 
 *** Valgrind is detecting issues with comms tests                      :code:
 
@@ -2089,15 +2117,6 @@ Now we have an event bus, we should create events for:
 
 - connect, disconnect, retry
 - login, logout
-
-*** Add system tray support                                            :code:
-
-We need to be able to show notifications to users in the system tray - or
-whatever is the idiomatic way of doing this.
-
-Links:
-
-- [[https://doc.qt.io/archives/qt-5.15/qtwidgets-desktop-systray-example.html][System Tray Icon Example]]
 
 *** Data in login info looks spurious                                  :code:
 

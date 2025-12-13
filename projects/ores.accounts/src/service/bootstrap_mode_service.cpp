@@ -31,6 +31,7 @@ bootstrap_mode_service::bootstrap_mode_service(database::context ctx)
       system_flags_service_(ctx),
       ctx_(ctx) {
     BOOST_LOG_SEV(lg(), debug) << "DML for account: " << account_repo_.sql();
+    system_flags_service_.refresh();
 }
 
 bool bootstrap_mode_service::is_in_bootstrap_mode() {

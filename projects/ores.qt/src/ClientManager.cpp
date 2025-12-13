@@ -34,8 +34,9 @@ namespace ores::qt {
 
 using namespace ores::utility::log;
 
-ClientManager::ClientManager(QObject* parent)
-    : QObject(parent) {
+ClientManager::ClientManager(std::shared_ptr<eventing::service::event_bus> event_bus,
+                             QObject* parent)
+    : QObject(parent), event_bus_(std::move(event_bus)) {
     BOOST_LOG_SEV(lg(), debug) << "ClientManager created";
     setupIO();
 }
@@ -96,28 +97,28 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
             .verify_certificate = false
         };
 
-        // Create new client using persistent IO executor
+        // Create new client using persistent IO executor and event bus
         auto new_client = std::make_shared<comms::net::client>(
-            config, io_context_->get_executor());
+            config, io_context_->get_executor(), event_bus_);
 
         // Synchronous connect (blocking but called from async thread usually)
         new_client->connect_sync();
 
-        // Set up disconnect callback
+        // Set up disconnect callback (events are now published by the client directly)
         new_client->set_disconnect_callback([this]() {
             BOOST_LOG_SEV(lg(), warn) << "Client detected disconnect";
             // Emit signal on main thread via meta-object system
             QMetaObject::invokeMethod(this, "disconnected", Qt::QueuedConnection);
         });
 
-        // Set up reconnecting callback
+        // Set up reconnecting callback (events are now published by the client directly)
         new_client->set_reconnecting_callback([this]() {
             BOOST_LOG_SEV(lg(), info) << "Client attempting to reconnect";
             // Emit signal on main thread via meta-object system
             QMetaObject::invokeMethod(this, "reconnecting", Qt::QueuedConnection);
         });
 
-        // Set up reconnected callback
+        // Set up reconnected callback (events are now published by the client directly)
         new_client->set_reconnected_callback([this]() {
             BOOST_LOG_SEV(lg(), info) << "Client reconnected successfully";
             // Emit signal on main thread via meta-object system
@@ -164,6 +165,8 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
         // Success - swap in new client and store account_id
         client_ = new_client;
         logged_in_account_id_ = response->account_id;
+        connected_host_ = host;
+        connected_port_ = port;
         BOOST_LOG_SEV(lg(), info) << "Login successful, account_id stored";
 
         // Create event adapter for subscriptions
@@ -183,6 +186,7 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
                 }, Qt::QueuedConnection);
             });
 
+        // Connected event is now published by the client directly
         emit connected();
         return {true, QString()};
 
@@ -206,6 +210,8 @@ void ClientManager::disconnect() {
         // to ensure proper cleanup on the client side
         client_->disconnect();
         client_.reset();
+
+        // Disconnected event is now published by the client directly
         emit disconnected();
     }
 }

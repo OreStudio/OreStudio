@@ -34,6 +34,7 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_context.hpp>
 #include "ores.utility/log/make_logger.hpp"
+#include "ores.eventing/service/event_bus.hpp"
 #include "ores.comms/net/client_options.hpp"
 #include "ores.comms/net/connection.hpp"
 #include "ores.comms/net/pending_request_map.hpp"
@@ -186,13 +187,22 @@ public:
      * @brief Construct client with configuration.
      *
      * Creates its own io_context for synchronous operations.
+     *
+     * @param config Client configuration options
+     * @param event_bus Optional event bus for publishing connection events
      */
-    explicit client(client_options config);
+    explicit client(client_options config,
+        std::shared_ptr<eventing::service::event_bus> event_bus = nullptr);
 
     /**
      * @brief Construct client with configuration and executor.
+     *
+     * @param config Client configuration options
+     * @param executor The executor to use for async operations
+     * @param event_bus Optional event bus for publishing connection events
      */
-    explicit client(client_options config, boost::asio::any_io_executor executor);
+    explicit client(client_options config, boost::asio::any_io_executor executor,
+        std::shared_ptr<eventing::service::event_bus> event_bus = nullptr);
 
     /**
      * @brief Destructor.
@@ -332,6 +342,7 @@ private:
     reconnecting_callback_t reconnecting_callback_;
     reconnected_callback_t reconnected_callback_;
     notification_callback_t notification_callback_;
+    std::shared_ptr<eventing::service::event_bus> event_bus_; // Optional event bus for connection events
 
     // Infrastructure for unified message loop
     std::unique_ptr<boost::asio::strand<boost::asio::any_io_executor>> write_strand_;

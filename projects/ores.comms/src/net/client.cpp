@@ -39,6 +39,7 @@
 #include "ores.comms/service/handshake_service.hpp"
 #include "ores.comms/messaging/heartbeat_protocol.hpp"
 #include "ores.comms/messaging/subscription_protocol.hpp"
+#include "ores.comms/domain/events/connection_events.hpp"
 
 namespace ores::comms::net {
 
@@ -75,12 +76,14 @@ boost::asio::awaitable<void> client::perform_handshake() {
         *conn_, sequence_generator, config_.client_identifier);
 }
 
-client::client(client_options config)
+client::client(client_options config,
+    std::shared_ptr<eventing::service::event_bus> event_bus)
     : config_(std::move(config)),
       io_ctx_(std::make_unique<boost::asio::io_context>()),
       executor_(io_ctx_->get_executor()),
       ssl_ctx_(boost::asio::ssl::context::tlsv13_client),
-      sequence_number_(0), state_(connection_state::disconnected) {
+      sequence_number_(0), state_(connection_state::disconnected),
+      event_bus_(std::move(event_bus)) {
     BOOST_LOG_SEV(lg(), info) << "Client options: " << config_;
     setup_ssl_context();
 
@@ -116,10 +119,12 @@ client::~client() {
     conn_.reset();
 }
 
-client::client(client_options config, boost::asio::any_io_executor executor)
+client::client(client_options config, boost::asio::any_io_executor executor,
+    std::shared_ptr<eventing::service::event_bus> event_bus)
     : config_(std::move(config)), executor_(std::move(executor)),
       ssl_ctx_(boost::asio::ssl::context::tlsv13_client),
-      sequence_number_(0), state_(connection_state::disconnected) {
+      sequence_number_(0), state_(connection_state::disconnected),
+      event_bus_(std::move(event_bus)) {
     BOOST_LOG_SEV(lg(), info) << "Client options: " << config_;
     setup_ssl_context();
 
@@ -162,6 +167,15 @@ boost::asio::awaitable<void> client::perform_connection() {
         state_ = connection_state::connected;
     }
     BOOST_LOG_SEV(lg(), info) << "Successfully connected to server.";
+
+    // Publish connected event to event bus
+    if (event_bus_) {
+        event_bus_->publish(domain::events::connected_event{
+            .timestamp = std::chrono::system_clock::now(),
+            .host = config_.host,
+            .port = config_.port
+        });
+    }
 
     // Start message loop in background (single reader for all responses)
     // Only needed when using correlation-based request/response or heartbeat
@@ -399,6 +413,13 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
 
             BOOST_LOG_SEV(lg(), info) << "Reconnection successful";
 
+            // Publish reconnected event to event bus
+            if (event_bus_) {
+                event_bus_->publish(domain::events::reconnected_event{
+                    .timestamp = std::chrono::system_clock::now()
+                });
+            }
+
             // Invoke reconnected callback to notify UI
             reconnected_callback_t reconnected_cb;
             {
@@ -449,6 +470,13 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
         std::lock_guard guard{state_mutex_};
         state_ = connection_state::disconnected;
         callback = disconnect_callback_;
+    }
+
+    // Publish disconnected event to event bus
+    if (event_bus_) {
+        event_bus_->publish(domain::events::disconnected_event{
+            .timestamp = std::chrono::system_clock::now()
+        });
     }
 
     // Invoke disconnect callback only after all retries exhausted
@@ -880,6 +908,13 @@ boost::asio::awaitable<void> client::run_message_loop() {
     }
 
     if (should_reconnect) {
+        // Publish reconnecting event to event bus
+        if (event_bus_) {
+            event_bus_->publish(domain::events::reconnecting_event{
+                .timestamp = std::chrono::system_clock::now()
+            });
+        }
+
         // Invoke reconnecting callback to notify UI
         if (reconnecting_cb) {
             BOOST_LOG_SEV(lg(), debug) << "Invoking reconnecting callback";
@@ -889,6 +924,13 @@ boost::asio::awaitable<void> client::run_message_loop() {
         auto exec = co_await boost::asio::this_coro::executor;
         boost::asio::co_spawn(exec, run_reconnect_loop(), boost::asio::detached);
     } else {
+        // Publish disconnected event to event bus
+        if (event_bus_) {
+            event_bus_->publish(domain::events::disconnected_event{
+                .timestamp = std::chrono::system_clock::now()
+            });
+        }
+
         // No auto-reconnect, invoke callback immediately if set
         disconnect_callback_t callback;
         {

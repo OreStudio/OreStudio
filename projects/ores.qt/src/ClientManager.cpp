@@ -29,15 +29,14 @@
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.comms/messaging/handshake_protocol.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
-#include "ores.comms/domain/events/connection_events.hpp"
 
 namespace ores::qt {
 
 using namespace ores::utility::log;
 
-ClientManager::ClientManager(eventing::service::event_bus& event_bus,
+ClientManager::ClientManager(std::shared_ptr<eventing::service::event_bus> event_bus,
                              QObject* parent)
-    : QObject(parent), event_bus_(event_bus) {
+    : QObject(parent), event_bus_(std::move(event_bus)) {
     BOOST_LOG_SEV(lg(), debug) << "ClientManager created";
     setupIO();
 }
@@ -98,42 +97,30 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
             .verify_certificate = false
         };
 
-        // Create new client using persistent IO executor
+        // Create new client using persistent IO executor and event bus
         auto new_client = std::make_shared<comms::net::client>(
-            config, io_context_->get_executor());
+            config, io_context_->get_executor(), event_bus_);
 
         // Synchronous connect (blocking but called from async thread usually)
         new_client->connect_sync();
 
-        // Set up disconnect callback
+        // Set up disconnect callback (events are now published by the client directly)
         new_client->set_disconnect_callback([this]() {
             BOOST_LOG_SEV(lg(), warn) << "Client detected disconnect";
-            // Publish event to bus (thread-safe)
-            event_bus_.publish(comms::domain::events::disconnected_event{
-                .timestamp = std::chrono::system_clock::now()
-            });
             // Emit signal on main thread via meta-object system
             QMetaObject::invokeMethod(this, "disconnected", Qt::QueuedConnection);
         });
 
-        // Set up reconnecting callback
+        // Set up reconnecting callback (events are now published by the client directly)
         new_client->set_reconnecting_callback([this]() {
             BOOST_LOG_SEV(lg(), info) << "Client attempting to reconnect";
-            // Publish event to bus (thread-safe)
-            event_bus_.publish(comms::domain::events::reconnecting_event{
-                .timestamp = std::chrono::system_clock::now()
-            });
             // Emit signal on main thread via meta-object system
             QMetaObject::invokeMethod(this, "reconnecting", Qt::QueuedConnection);
         });
 
-        // Set up reconnected callback
+        // Set up reconnected callback (events are now published by the client directly)
         new_client->set_reconnected_callback([this]() {
             BOOST_LOG_SEV(lg(), info) << "Client reconnected successfully";
-            // Publish event to bus (thread-safe)
-            event_bus_.publish(comms::domain::events::reconnected_event{
-                .timestamp = std::chrono::system_clock::now()
-            });
             // Emit signal on main thread via meta-object system
             QMetaObject::invokeMethod(this, "reconnected", Qt::QueuedConnection);
         });
@@ -199,12 +186,7 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
                 }, Qt::QueuedConnection);
             });
 
-        // Publish connected event to bus
-        event_bus_.publish(comms::domain::events::connected_event{
-            .timestamp = std::chrono::system_clock::now(),
-            .host = host,
-            .port = port
-        });
+        // Connected event is now published by the client directly
         emit connected();
         return {true, QString()};
 
@@ -229,10 +211,7 @@ void ClientManager::disconnect() {
         client_->disconnect();
         client_.reset();
 
-        // Publish disconnected event to bus
-        event_bus_.publish(comms::domain::events::disconnected_event{
-            .timestamp = std::chrono::system_clock::now()
-        });
+        // Disconnected event is now published by the client directly
         emit disconnected();
     }
 }

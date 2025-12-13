@@ -199,6 +199,9 @@ private:
      */
     std::unique_ptr<CurrencyController> currencyController_;
 
+    /** @brief Event bus for decoupled event handling */
+    std::shared_ptr<eventing::service::event_bus> eventBus_;
+
     /** @brief Client manager handling network connection and IO context */
     ClientManager* clientManager_;
 
@@ -210,9 +213,6 @@ private:
 
     /** @brief Context menu for the system tray icon */
     QMenu* trayContextMenu_;
-
-    /** @brief Event bus for decoupled event handling */
-    eventing::service::event_bus eventBus_;
 
     /** @brief Subscriptions to keep alive for event handling */
     std::vector<eventing::service::subscription> eventSubscriptions_;

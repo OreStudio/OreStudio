@@ -49,6 +49,7 @@ using namespace ores::utility::log;
 
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent), ui_(new Ui::MainWindow), mdiArea_(nullptr),
+    eventBus_(std::make_shared<eventing::service::event_bus>()),
     clientManager_(new ClientManager(eventBus_, this)),
     systemTrayIcon_(nullptr), trayContextMenu_(nullptr) {
 
@@ -173,7 +174,7 @@ MainWindow::MainWindow(QWidget* parent) :
 
         // Subscribe to connection events for tray notifications
         eventSubscriptions_.push_back(
-            eventBus_.subscribe<comms::domain::events::connected_event>(
+            eventBus_->subscribe<comms::domain::events::connected_event>(
                 [this](const comms::domain::events::connected_event& e) {
                     if (systemTrayIcon_) {
                         QString message = QString("Connected to %1:%2")
@@ -190,7 +191,7 @@ MainWindow::MainWindow(QWidget* parent) :
                 }));
 
         eventSubscriptions_.push_back(
-            eventBus_.subscribe<comms::domain::events::disconnected_event>(
+            eventBus_->subscribe<comms::domain::events::disconnected_event>(
                 [this](const comms::domain::events::disconnected_event&) {
                     if (systemTrayIcon_) {
                         QMetaObject::invokeMethod(this, [this]() {
@@ -204,7 +205,7 @@ MainWindow::MainWindow(QWidget* parent) :
                 }));
 
         eventSubscriptions_.push_back(
-            eventBus_.subscribe<comms::domain::events::reconnecting_event>(
+            eventBus_->subscribe<comms::domain::events::reconnecting_event>(
                 [this](const comms::domain::events::reconnecting_event&) {
                     if (systemTrayIcon_) {
                         QMetaObject::invokeMethod(this, [this]() {
@@ -218,7 +219,7 @@ MainWindow::MainWindow(QWidget* parent) :
                 }));
 
         eventSubscriptions_.push_back(
-            eventBus_.subscribe<comms::domain::events::reconnected_event>(
+            eventBus_->subscribe<comms::domain::events::reconnected_event>(
                 [this](const comms::domain::events::reconnected_event&) {
                     if (systemTrayIcon_) {
                         QMetaObject::invokeMethod(this, [this]() {

@@ -58,7 +58,7 @@ private:
     }
 
 public:
-    explicit ClientManager(eventing::service::event_bus& event_bus,
+    explicit ClientManager(std::shared_ptr<eventing::service::event_bus> event_bus,
                            QObject* parent = nullptr);
     ~ClientManager() override;
 
@@ -173,8 +173,8 @@ private:
     // Logged-in account tracking
     std::optional<boost::uuids::uuid> logged_in_account_id_;
 
-    // Event bus for publishing connection events
-    eventing::service::event_bus& event_bus_;
+    // Event bus for publishing connection events (passed to client)
+    std::shared_ptr<eventing::service::event_bus> event_bus_;
 
     // Connection details for event publishing
     std::string connected_host_;

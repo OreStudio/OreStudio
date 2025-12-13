@@ -1824,6 +1824,16 @@ We added some basic database monitoring but did not perform a lot of testing.
 We should also generalise this so that if the database goes down after start we
 still perform some kind of retry logic.
 
+See also this point from Gemini:
+
+#+begin_quote
+The new broadcast_all method appears to be unused in this pull request. The
+database status broadcast is implemented directly in
+=ores::comms::net::server::broadcast_database_status= without using the
+subscription_manager. If this method is not intended for future use, it could be
+removed to avoid dead code.
+#+end_quote
+
 *** Valgrind is detecting issues with comms tests                      :code:
 
 #+begin_src fundamental

@@ -22,6 +22,7 @@
 
 #include <string>
 #include <format>
+#include <optional>
 #include <boost/exception/info.hpp>
 
 namespace ores::utility::repository {
@@ -59,37 +60,39 @@ public:
 
     /**
      * @brief Constructs a version conflict exception with a custom message.
+     *
+     * When using this constructor, entity_type, entity_id, expected_version,
+     * and actual_version will be std::nullopt, indicating that this detailed
+     * information is not available.
      */
     explicit version_conflict_exception(std::string_view message = "")
-        : expected_version_(0),
-          actual_version_(0),
-          message_(message) {}
+        : message_(message) {}
 
     [[nodiscard]] const char* what() const noexcept override {
         return message_.c_str();
     }
 
-    [[nodiscard]] const std::string& entity_type() const noexcept {
+    [[nodiscard]] const std::optional<std::string>& entity_type() const noexcept {
         return entity_type_;
     }
 
-    [[nodiscard]] const std::string& entity_id() const noexcept {
+    [[nodiscard]] const std::optional<std::string>& entity_id() const noexcept {
         return entity_id_;
     }
 
-    [[nodiscard]] int expected_version() const noexcept {
+    [[nodiscard]] std::optional<int> expected_version() const noexcept {
         return expected_version_;
     }
 
-    [[nodiscard]] int actual_version() const noexcept {
+    [[nodiscard]] std::optional<int> actual_version() const noexcept {
         return actual_version_;
     }
 
 private:
-    std::string entity_type_;
-    std::string entity_id_;
-    int expected_version_;
-    int actual_version_;
+    std::optional<std::string> entity_type_;
+    std::optional<std::string> entity_id_;
+    std::optional<int> expected_version_;
+    std::optional<int> actual_version_;
     std::string message_;
 };
 

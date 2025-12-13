@@ -31,4 +31,33 @@ communication. Key features:
 The protocol namespace defines message frames, types, handlers, and the
 message dispatcher that routes messages to registered subsystem handlers.
 
+* Connection Events
+
+The client publishes connection lifecycle events to the [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]] event bus,
+enabling decoupled notification of connection state changes. This allows UI
+components (like system tray icons) to react to connection events without tight
+coupling to the client implementation.
+
+Events published by the client:
+
+| Event                | When Published                                      |
+|----------------------+-----------------------------------------------------|
+| =connected_event=    | After successful connection and protocol handshake  |
+| =disconnected_event= | When connection is lost or explicitly closed        |
+| =reconnecting_event= | When auto-reconnect is triggered after disconnect   |
+| =reconnected_event=  | After auto-reconnect successfully restores connection |
+
+To receive events, consumers subscribe via the event bus:
+
+#+begin_src cpp
+auto sub = event_bus->subscribe<comms::domain::events::connected_event>(
+    [](const auto& event) {
+        // Handle connection established
+    });
+#+end_src
+
+The client accepts an optional =shared_ptr<event_bus>= in its constructor. If
+provided, events are published automatically during connection lifecycle
+transitions. If null, no events are published (callbacks can still be used).
+
 | Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

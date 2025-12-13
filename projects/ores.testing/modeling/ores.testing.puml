@@ -148,7 +148,7 @@ namespace ores #F2F2F2 {
 
         class test_database_manager #ECECEC {
             +{static} make_context() : utility::repository::context
-            +{static} make_database_options() : utility::database::database_options
+            +{static} make_database_options() : database::database_options
             +{static} generate_test_database_name() : std::string
             +{static} create_test_database(const std::string& db_name) : void
             +{static} drop_test_database(const std::string& db_name) : void

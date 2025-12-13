@@ -24,7 +24,7 @@ namespace ores::variability::service {
 
 using namespace ores::utility::log;
 
-system_flags_service::system_flags_service(utility::database::context ctx)
+system_flags_service::system_flags_service(database::context ctx)
     : feature_flags_service_(std::move(ctx)) {}
 
 void system_flags_service::refresh() {

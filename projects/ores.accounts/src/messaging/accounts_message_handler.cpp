@@ -28,7 +28,7 @@ namespace ores::accounts::messaging {
 using namespace ores::utility::log;
 using comms::messaging::message_type;
 
-accounts_message_handler::accounts_message_handler(utility::database::context ctx,
+accounts_message_handler::accounts_message_handler(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
     std::shared_ptr<comms::service::auth_session_service> sessions)
     : service_(ctx), ctx_(ctx), system_flags_(std::move(system_flags)),

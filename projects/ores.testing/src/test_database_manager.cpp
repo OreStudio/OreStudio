@@ -42,8 +42,8 @@ const std::string prefix = "ORES_TEST_DB_";
 namespace ores::testing {
 
 using namespace ores::utility::log;
-using utility::database::context;
-using utility::database::context_factory;
+using database::context;
+using database::context_factory;
 using utility::environment::environment;
 
 context test_database_manager::make_admin_context() {
@@ -74,8 +74,8 @@ context test_database_manager::make_context() {
     return ctx;
 }
 
-utility::database::database_options test_database_manager::make_database_options() {
-    return utility::database::database_options {
+database::database_options test_database_manager::make_database_options() {
+    return database::database_options {
         .user = environment::environment::get_value_or_default(
             prefix + "USER", "ores"),
         .password = environment::environment::get_value_or_default(

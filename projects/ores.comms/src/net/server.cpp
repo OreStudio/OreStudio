@@ -69,7 +69,7 @@ void server::stop() {
 }
 
 void server::broadcast_database_status(bool available, const std::string& error_message) {
-    std::vector<std::shared_ptr<session>> sessions_copy;
+    std::vector<std::shared_ptr<server_session>> sessions_copy;
 
     {
         std::lock_guard<std::mutex> lock(sessions_mutex_);

@@ -26,7 +26,7 @@ namespace ores::accounts::service {
 
 using namespace ores::utility::log;
 
-bootstrap_mode_service::bootstrap_mode_service(utility::database::context ctx)
+bootstrap_mode_service::bootstrap_mode_service(database::context ctx)
     : account_repo_(ctx),
       system_flags_service_(ctx),
       ctx_(ctx) {

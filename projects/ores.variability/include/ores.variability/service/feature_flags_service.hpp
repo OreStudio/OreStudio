@@ -53,7 +53,7 @@ public:
      *
      * @param ctx The database context to be used by the repository.
      */
-    explicit feature_flags_service(utility::database::context ctx);
+    explicit feature_flags_service(database::context ctx);
 
     /**
      * @brief Retrieves a single feature flag by name.

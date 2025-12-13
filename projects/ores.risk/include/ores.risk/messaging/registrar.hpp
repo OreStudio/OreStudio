@@ -51,7 +51,7 @@ private:
 
 public:
     static void register_handlers(comms::net::server& server,
-        utility::database::context ctx,
+        database::context ctx,
         std::shared_ptr<variability::service::system_flags_service> system_flags);
 };
 

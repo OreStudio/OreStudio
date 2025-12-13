@@ -27,7 +27,7 @@ namespace ores::accounts::messaging {
 using namespace ores::utility::log;
 
 void registrar::register_handlers(comms::net::server& server,
-    utility::database::context ctx,
+    database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags) {
     BOOST_LOG_SEV(lg(), debug) << "Registering message handlers.";
 

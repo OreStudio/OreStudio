@@ -54,7 +54,7 @@ public:
      *
      * @param ctx The database context to be used by the underlying repository.
      */
-    explicit flag_initializer(utility::database::context ctx);
+    explicit flag_initializer(database::context ctx);
 
     /**
      * @brief Ensures all system flags exist in the database.

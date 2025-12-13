@@ -52,18 +52,18 @@ private:
      *
      * This is needed for admin operations like CREATE/DROP DATABASE.
      */
-    static utility::database::context make_admin_context();
+    static database::context make_admin_context();
 
   public:
     /**
      * @brief Creates a database context from environment variables.
      */
-    static utility::database::context make_context();
+    static database::context make_context();
 
     /**
      * @brief Creates database options from environment variables.
      */
-    static utility::database::database_options make_database_options();
+    static database::database_options make_database_options();
 
     /**
      * @brief Generates a unique database name for this test process.

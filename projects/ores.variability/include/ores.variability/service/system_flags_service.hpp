@@ -61,7 +61,7 @@ public:
      *
      * @param ctx The database context to be used by the underlying repository.
      */
-    explicit system_flags_service(utility::database::context ctx);
+    explicit system_flags_service(database::context ctx);
 
     /**
      * @brief Refreshes the cache by reading all system flags from the database.

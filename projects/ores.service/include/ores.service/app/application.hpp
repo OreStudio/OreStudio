@@ -48,8 +48,8 @@ public:
     application& operator=(const application&) = delete;
 
 private:
-    static utility::database::context
-    make_context(const std::optional<utility::database::database_options>& db_opts);
+    static database::context
+    make_context(const std::optional<database::database_options>& db_opts);
 
 public:
     boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,

@@ -53,7 +53,7 @@ public:
      *
      * @param ctx Database context for repository access
      */
-    explicit variability_message_handler(utility::database::context ctx);
+    explicit variability_message_handler(database::context ctx);
 
     /**
      * @brief Handle a variability subsystem message.

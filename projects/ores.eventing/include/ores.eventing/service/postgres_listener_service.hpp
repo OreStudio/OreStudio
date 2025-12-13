@@ -74,7 +74,7 @@ public:
      * @param callback The callback function to be invoked when a notification
      *        is received.
      */
-    explicit postgres_listener_service(utility::database::context ctx,
+    explicit postgres_listener_service(database::context ctx,
         notification_callback_t callback);
 
     /**
@@ -155,7 +155,7 @@ private:
     void handle_notification(const sqlgen::postgres::Notification& notification);
 
 private:
-    utility::database::context ctx_;
+    database::context ctx_;
     notification_callback_t notification_callback_;
 
     mutable std::mutex mutex_;              ///< Protects connection and channels

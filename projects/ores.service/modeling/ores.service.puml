@@ -97,7 +97,7 @@ namespace ores #F2F2F2 {
             class options #F7E5FF {
                 +{field} logging : std::optional<ores::utility::log::logging_options>
                 +{field} server : server_options
-                +{field} database : ores::utility::database::database_options
+                +{field} database : ores::database::database_options
             }
             options o-- ores::service::config::server_options
 
@@ -146,7 +146,7 @@ namespace ores #F2F2F2 {
                 +application()
                 +application(const application&) = delete
                 +operator=(const application&) = delete : application&
-                -{method} make_context(const std::optional<utility::database::database_options>& db_opts) : utility::repository::context
+                -{method} make_context(const std::optional<database::database_options>& db_opts) : utility::repository::context
                 +run(boost::asio::io_context& io_ctx, const config::options& cfg) const : boost::asio::awaitable<void>
             }
             application ..> ores::service::config::options

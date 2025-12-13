@@ -53,10 +53,10 @@ public:
     /**
      * @brief Gets the database context.
      */
-    utility::database::context& context() { return context_; }
+    database::context& context() { return context_; }
 
 private:
-    utility::database::context context_;
+    database::context context_;
 };
 
 }

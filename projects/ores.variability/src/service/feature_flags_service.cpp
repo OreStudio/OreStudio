@@ -24,7 +24,7 @@ namespace ores::variability::service {
 
 using namespace ores::utility::log;
 
-feature_flags_service::feature_flags_service(utility::database::context ctx)
+feature_flags_service::feature_flags_service(database::context ctx)
     : repo_(std::move(ctx)) {}
 
 std::optional<domain::feature_flags>

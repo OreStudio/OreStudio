@@ -178,7 +178,7 @@ namespace ores #F2F2F2 {
                 +{field} exporting std::optional<export_options>
                 +{field} deleting std::optional<delete_options>
                 +{field} adding std::optional<add_options>
-                +{field} database ores::utility::database::database_options
+                +{field} database ores::database::database_options
             }
 
             note top of options
@@ -327,10 +327,10 @@ namespace ores #F2F2F2 {
             '
 
             class application #ECECEC {
-                +application(output_stream: std::ostream&, db_opts: const std::optional<utility::database::database_options>&)
+                +application(output_stream: std::ostream&, db_opts: const std::optional<database::database_options>&)
                 +run(cfg: const config::options&) const: void
                 -{static} lg(): auto&
-                -{static} make_context(db_opts: const std::optional<utility::database::database_options>&): utility::repository::context
+                -{static} make_context(db_opts: const std::optional<database::database_options>&): utility::repository::context
                 -import_currencies(files: const std::vector<std::filesystem::path>) const: void
                 -import_data(ocfg: const std::optional<config::import_options>&) const: void
                 -export_currencies(cfg: const config::export_options&) const: void
@@ -348,7 +348,7 @@ namespace ores #F2F2F2 {
                 -add_feature_flag(cfg: const config::add_feature_flag_options&) const: void
                 -add_login_info(cfg: const config::add_login_info_options&) const: void
                 -add_data(ocfg: const std::optional<config::add_options>&) const: void
-                -{field} context_ utility::database::context
+                -{field} context_ database::context
                 -{field} output_stream_ std::ostream&
             }
 

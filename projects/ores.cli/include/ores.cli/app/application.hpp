@@ -55,13 +55,13 @@ private:
 
 public:
     explicit application(std::ostream& output_stream,
-        const std::optional<utility::database::database_options>& db_opts);
+        const std::optional<database::database_options>& db_opts);
     application(const application&) = delete;
     application& operator=(const application&) = delete;
 
 private:
-    static utility::database::context
-    make_context(const std::optional<utility::database::database_options>& db_opts);
+    static database::context
+    make_context(const std::optional<database::database_options>& db_opts);
     void import_currencies(const std::vector<std::filesystem::path> files) const;
     void import_data(const std::optional<config::import_options>& ocfg) const;
 
@@ -92,7 +92,7 @@ public:
     void run(const config::options& cfg) const;
 
 private:
-    utility::database::context context_;
+    database::context context_;
     std::ostream& output_stream_;
 };
 

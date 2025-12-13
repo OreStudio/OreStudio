@@ -39,6 +39,7 @@ target_link_libraries(${lib_target_name}
         Boost::log
         sqlgen::sqlgen
     PRIVATE
+        ores.utility.lib
         reflectcpp::reflectcpp
         Boost::boost)
 

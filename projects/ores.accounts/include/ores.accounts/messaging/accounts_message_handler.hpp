@@ -62,7 +62,7 @@ public:
      * @param system_flags Shared system flags service for flag access
      * @param sessions Shared auth session service for authentication
      */
-    accounts_message_handler(utility::database::context ctx,
+    accounts_message_handler(database::context ctx,
         std::shared_ptr<variability::service::system_flags_service> system_flags,
         std::shared_ptr<comms::service::auth_session_service> sessions);
 
@@ -171,7 +171,7 @@ private:
     static bool is_localhost(const std::string& remote_address);
 
     service::account_service service_;
-    utility::database::context ctx_;
+    database::context ctx_;
     std::shared_ptr<variability::service::system_flags_service> system_flags_;
     std::shared_ptr<comms::service::auth_session_service> sessions_;
 };

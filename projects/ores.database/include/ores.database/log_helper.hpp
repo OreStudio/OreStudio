@@ -20,33 +20,14 @@
 #ifndef ORES_DATABASE_LOG_HELPER_HPP
 #define ORES_DATABASE_LOG_HELPER_HPP
 
-#include <boost/log/trivial.hpp>
-#include <boost/log/sources/severity_channel_logger.hpp>
+#include "ores.utility/log/make_logger.hpp"
 
 namespace ores::database::log {
 
 /**
- * @brief Severity level type alias for boost log trivial severity.
+ * @brief Re-export utility log types for database module.
  */
-using severity_level = boost::log::trivial::severity_level;
-
-/**
- * @brief Logger type using severity channel logger.
- *
- * This is compatible with the logger type used in ores.utility::log.
- */
-using logger_t = boost::log::sources::severity_channel_logger_mt<
-    severity_level, std::string>;
-
-/**
- * @brief Severity level constants for convenience.
- */
-constexpr auto trace = severity_level::trace;
-constexpr auto debug = severity_level::debug;
-constexpr auto info = severity_level::info;
-constexpr auto warn = severity_level::warning;
-constexpr auto error = severity_level::error;
-constexpr auto fatal = severity_level::fatal;
+using namespace ores::utility::log;
 
 }
 

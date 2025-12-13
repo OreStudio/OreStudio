@@ -166,4 +166,47 @@ std::ostream& operator<<(std::ostream& s, const notification_message& v) {
              << ", timestamp=" << ms << "ms}";
 }
 
+// database_status_message
+
+std::vector<std::byte> database_status_message::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, available);
+    writer::write_string(buffer, error_message);
+
+    // Serialize timestamp as milliseconds since epoch
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+        timestamp.time_since_epoch()).count();
+    writer::write_int64(buffer, ms);
+
+    return buffer;
+}
+
+std::expected<database_status_message, error_code>
+database_status_message::deserialize(std::span<const std::byte> data) {
+    database_status_message msg;
+
+    auto available = reader::read_bool(data);
+    if (!available) return std::unexpected(available.error());
+    msg.available = *available;
+
+    auto error_message = reader::read_string(data);
+    if (!error_message) return std::unexpected(error_message.error());
+    msg.error_message = *error_message;
+
+    auto ms = reader::read_int64(data);
+    if (!ms) return std::unexpected(ms.error());
+    msg.timestamp = std::chrono::system_clock::time_point(
+        std::chrono::milliseconds(*ms));
+
+    return msg;
+}
+
+std::ostream& operator<<(std::ostream& s, const database_status_message& v) {
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+        v.timestamp.time_since_epoch()).count();
+    return s << "database_status_message{available=" << v.available
+             << ", error_message=" << v.error_message
+             << ", timestamp=" << ms << "ms}";
+}
+
 }

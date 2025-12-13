@@ -49,9 +49,9 @@
 namespace ores::service::app {
 using namespace ores::utility::log;
 
-utility::database::context application::make_context(
-    const std::optional<utility::database::database_options>& db_opts) {
-    using utility::database::context_factory;
+database::context application::make_context(
+    const std::optional<database::database_options>& db_opts) {
+    using database::context_factory;
 
     if (!db_opts.has_value()) {
         BOOST_THROW_EXCEPTION(
@@ -74,14 +74,9 @@ boost::asio::awaitable<void> application::
 run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Starting ORE Studio Service v" << ORES_VERSION;
 
-    if (!cfg.database.has_value()) {
-        BOOST_THROW_EXCEPTION(
-            application_exception("Database configuration is required."));
-    }
-
     // Create database health monitor
-    utility::database::health_monitor db_health_monitor(
-        cfg.database.value(), std::chrono::seconds(5));
+    database::health_monitor db_health_monitor(
+        cfg.database, std::chrono::seconds(5));
 
     // Perform initial database connectivity check
     BOOST_LOG_SEV(lg(), info) << "Checking database connectivity...";

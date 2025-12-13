@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-\i ./currencies_create.sql
-\i ./currencies_notify_trigger.sql
-\i ./accounts_create.sql
-\i ./feature_flags_create.sql
-\i ./login_info_create.sql
+\ir ./currencies_create.sql
+\ir ./currencies_notify_trigger.sql
+\ir ./accounts_create.sql
+\ir ./feature_flags_create.sql
+\ir ./login_info_create.sql
 
-\i ./bootstrap_mode_setup.sql
-\i ./disable_password_validation_setup.sql
+\ir ./bootstrap_mode_setup.sql
+\ir ./disable_password_validation_setup.sql

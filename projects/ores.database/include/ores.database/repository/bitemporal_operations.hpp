@@ -22,7 +22,7 @@
 
 #include <vector>
 #include <sqlgen/postgres.hpp>
-#include "ores.database/log_helper.hpp"
+#include "ores.utility/log/make_logger.hpp"
 #include "ores.database/context.hpp"
 #include "ores.database/repository/helpers.hpp"
 
@@ -60,9 +60,9 @@ namespace ores::database::repository {
  */
 template<typename EntityType, typename DomainType, typename QueryType, typename MapperFunc>
 std::vector<DomainType> execute_read_query(context ctx, const QueryType& query,
-    MapperFunc&& mapper, log::logger_t& lg, const std::string& operation_desc) {
+    MapperFunc&& mapper, utility::log::logger_t& lg, const std::string& operation_desc) {
 
-    using namespace ores::database::log;
+    using namespace ores::utility::log;
     using namespace sqlgen;
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
@@ -98,9 +98,9 @@ std::vector<DomainType> execute_read_query(context ctx, const QueryType& query,
  */
 template<typename EntityType>
 void execute_write_query(context ctx, const EntityType& entity,
-    log::logger_t& lg, const std::string& operation_desc) {
+    utility::log::logger_t& lg, const std::string& operation_desc) {
 
-    using namespace ores::database::log;
+    using namespace ores::utility::log;
     using namespace sqlgen;
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
@@ -135,9 +135,9 @@ void execute_write_query(context ctx, const EntityType& entity,
  */
 template<typename QueryType>
 void execute_delete_query(context ctx, const QueryType& query,
-    log::logger_t& lg, const std::string& operation_desc) {
+    utility::log::logger_t& lg, const std::string& operation_desc) {
 
-    using namespace ores::database::log;
+    using namespace ores::utility::log;
     using namespace sqlgen;
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ".";

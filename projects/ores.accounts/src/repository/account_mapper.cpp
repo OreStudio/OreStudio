@@ -26,7 +26,7 @@
 
 namespace ores::accounts::repository {
 
-using namespace ores::database::log;
+using namespace ores::utility::log;
 using namespace ores::database::repository;
 
 domain::account account_mapper::map(const account_entity& v) {

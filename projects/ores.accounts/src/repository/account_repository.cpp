@@ -32,7 +32,7 @@ namespace ores::accounts::repository {
 
 using namespace sqlgen;
 using namespace sqlgen::literals;
-using namespace ores::database::log;
+using namespace ores::utility::log;
 using namespace ores::database::repository;
 
 std::string account_repository::sql() {

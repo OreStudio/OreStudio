@@ -14,12 +14,70 @@ Component]].
   :header-args+: :results raw
   :header-args+: :dir ../../build/output/linux-clang-debug/publish/bin
   :header-args+: :var log_args="--log-enabled --log-level trace --log-directory ../log"
-  :header-args+: :var ORES_CLIENT_LOGIN_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "newuser3")
+  :header-args+: :var ORES_SHELL_LOGIN_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "newuser3")
   :END:
 
 ** General
 
 *** Help
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} --help
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell is an interactive REPL for ORE Studio.
+It provides a command-line interface for connecting to and interacting with ores.service.
+
+Usage: ores.shell [options]
+
+
+General:
+  -h [ --help ]                         Display usage and exit.
+  -v [ --version ]                      Output version information and exit.
+
+Logging:
+  -e [ --log-enabled ]                  Generate a log file.
+  -l [ --log-level ] arg (=info)        What level to use for logging. Valid
+                                        values: trace, debug, info, warn,
+                                        error.
+  --log-to-console                      Output logging to the console, as well
+                                        as to file.
+  --log-directory arg (=log)            Where to place the log files.
+  --log-filename arg (=ores.shell.log)  Name of the log file.
+
+Connection:
+  --connect-host arg                    Host to connect to (e.g., localhost)
+  --connect-port arg                    Port to connect to (e.g., 55555)
+  --connect-identifier arg              Client identifier to use when
+                                        connecting
+
+Login:
+  --login-username arg                  Username for authentication
+  --login-password arg                  Password for authentication
+
+#+end_example
+
+*** Version
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} --version
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Client for ORE Studio v0.0.6
+Copyright (C) 2025 Marco Craveiro.
+License GPLv3: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Build: Provider = LOCAL
+IMPORTANT: build details are NOT for security purposes.
+#+end_example
+
+
+*** Help Menu
 
 #+name: help-exit
 #+begin_src ores-shell :exports none
@@ -133,7 +191,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output :wrap example
-export ORES_CLIENT_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<auto-login>>
 EOF
@@ -160,6 +218,44 @@ ores-shell> Bye!
 
 Functionality related to the accounts domain entity in [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ORE Studio Accounts
 Component]].
+
+*** Help Menu
+
+#+name: help-currencies-exit
+#+begin_src ores-shell :exports none
+currencies
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<help-currencies-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.6
+Type 'help' for available commands, 'exit' to quit
+
+ores-shell> currencies> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - get
+	Retrieve all currencies from the server
+ - add <string> <string> <string> <string> <string>
+	Add a currency (iso_code name [numeric_code] [symbol] [fractions_per_unit])
+ - ores-shell
+	(menu)
+currencies> Bye!
+#+end_example
 
 *** Bootstrap
 
@@ -226,6 +322,8 @@ ores-shell> Bye!
     :header-args+: :var login_args="--login-username newuser3"
     :END:
 
+Creates new user accounts.
+
 #+name: create-account
 #+begin_src ores-shell :exports none
 accounts create newuser28 123 567 newuser28@example.com 0
@@ -234,7 +332,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_CLIENT_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<create-account>>
 EOF
@@ -257,6 +355,8 @@ ores-shell> Bye!
     :header-args+: :var login_args="--login-username newuser3"
     :END:
 
+Lists existing accounts.
+
 #+name: list-account
 #+begin_src ores-shell :exports none
 accounts list
@@ -264,7 +364,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_CLIENT_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
 <<list-account>>
 EOF
@@ -295,6 +395,8 @@ ores-shell> Bye!
     :PROPERTIES:
     :header-args+: :var login_args="--login-username newuser3"
     :END:
+
+Lists login information.
 
 #+name: list-login-info
 #+begin_src ores-shell :exports none
@@ -339,6 +441,43 @@ ores-shell> Bye!
 Functionality related to the accounts domain entity in [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ORE Studio Variability
 Component]].
 
+*** Help Menu
+
+#+name: help-variability-exit
+#+begin_src ores-shell :exports none
+variability
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<help-variability-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.6
+Type 'help' for available commands, 'exit' to quit
+
+ores-shell> variability> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - list-flags
+	Retrieve all feature flags from the server
+ - ores-shell
+	(menu)
+variability> Bye!
+#+end_example
+
+
 *** List Feature Flags
     :PROPERTIES:
     :header-args+: :var login_args="--login-username newuser3"
@@ -351,7 +490,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_CLIENT_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
 <<list-feature-flags>>
 EOF
@@ -387,9 +526,47 @@ ores-shell> Bye!
 
 Functionality related to the currencies domain entity.
 
-*** List
+*** Help Menu
 
-List all currencies in the system.
+#+name: help-currencies-exit
+#+begin_src ores-shell :exports none
+currencies
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<help-currencies-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.6
+Type 'help' for available commands, 'exit' to quit
+
+ores-shell> currencies> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - get
+	Retrieve all currencies from the server
+ - add <string> <string> <string> <string> <string>
+	Add a currency (iso_code name [numeric_code] [symbol] [fractions_per_unit])
+ - ores-shell
+	(menu)
+currencies> Bye!
+#+end_example
+
+*** Get
+
+Get all currencies in the system.
 
 #+name: currencies-list
 #+begin_src ores-shell :exports none
@@ -398,6 +575,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<currencies-list>>
 EOF
@@ -405,6 +583,121 @@ EOF
 
 #+RESULTS:
 #+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.6
+Type 'help' for available commands, 'exit' to quit
+
+ores-shell>
+
++----------+---------+-----------------------------------------------------+--------+------+----------------+-----------+-------------+---------------------+---------------------+
+| ISO Code | Version | Name                                                | Symbol | Type | Fractions/Unit | Precision | Modified By | Valid From          | Valid To            |
++----------+---------+-----------------------------------------------------+--------+------+----------------+-----------+-------------+---------------------+---------------------+
+| ZWL      | 0       | Zimbabwean dollar                                   |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| LBP      | 0       | Lebanese pound                                      |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| LKR      | 0       | Sri Lankan rupee                                    |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| LRD      | 0       | Liberian dollar                                     |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| LSL      | 0       | Lesotho loti                                        |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| LYD      | 0       | Libyan dinar                                        |        |      | 1000           | 3         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| MAD      | 0       | Moroccan dirham                                     |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| LAK      | 0       | Lao kip                                             |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| MDL      | 0       | Moldovan leu                                        |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| MGA      | 0       | Malagasy ariary                                     |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| MKD      | 0       | Macedonian denar                                    |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| MMK      | 0       | Myanmar kyat                                        |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| MNT      | 0       | Mongolian toegroeg                                  |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| MOP      | 0       | Macanese pataca                                     |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| MRU      | 0       | Mauritanian ouguiya                                 |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| MUR      | 0       | Mauritian rupee                                     |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| MVR      | 0       | Maldivian rufiyaa                                   |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| MWK      | 0       | Malawian kwacha                                     |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| MXN      | 0       | Mexican peso                                        |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| MXV      | 0       | Mexican Unidad de Inversion (UDI) (funds code)      |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| AED      | 0       | United Arab Emirates dirham                         |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| AFN      | 0       | Afghan afghani                                      |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| ALL      | 0       | Albanian lek                                        |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| AMD      | 0       | Armenian dram                                       |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| ANG      | 0       | Netherlands Antillean guilder                       |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| AOA      | 0       | Angolan kwanza                                      |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| ARS      | 0       | Argentine peso                                      |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| AUD      | 0       | Australian dollar                                   |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| AWG      | 0       | Aruban florin                                       |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| AZN      | 0       | Azerbaijani manat                                   |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| BAM      | 0       | Bosnia and Herzegovina convertible mark             |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| BBD      | 0       | Barbados dollar                                     |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| BDT      | 0       | Bangladeshi taka                                    |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| BGN      | 0       | Bulgarian lev                                       |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| BHD      | 0       | Bahraini dinar                                      |        |      | 1000           | 3         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| BIF      | 0       | Burundian franc                                     |        |      | 1              | 0         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| BMD      | 0       | Bermudian dollar                                    |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| BND      | 0       | Brunei dollar                                       |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| BOB      | 0       | Boliviano                                           |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| MYR      | 0       | Malaysian ringgit                                   |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| BOV      | 0       | Bolivian Mvdol (funds code)                         |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| BRL      | 0       | Brazilian real                                      |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| BSD      | 0       | Bahamian dollar                                     |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| BTN      | 0       | Bhutanese ngultrum                                  |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| BWP      | 0       | Botswana pula                                       |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| BYN      | 0       | Belarusian ruble                                    |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| BZD      | 0       | Belize dollar                                       |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| CAD      | 0       | Canadian dollar                                     |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| CDF      | 0       | Congolese franc                                     |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| CHE      | 0       | WIR euro (complementary currency)                   |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| CHF      | 0       | Swiss franc                                         |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| CHW      | 0       | WIR franc (complementary currency)                  |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| CLF      | 0       | Unidad de Fomento (funds code)                      |        |      | 10000          | 4         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| CLP      | 0       | Chilean peso                                        |        |      | 1              | 0         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| CNH      | 0       | Offshore Chinese Yuan traded in Hong Kong (Non-ISO) |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| CNT      | 0       | Offshore Chinese Yuan traded in Taiwan (Non-ISO)    |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| CNY      | 0       | Chinese yuan                                        |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| COP      | 0       | Colombian peso                                      |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| COU      | 0       | Unidad de Valor Real (UVR) (funds code)             |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| CRC      | 0       | Costa Rican colon                                   |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| CUC      | 0       | Cuban convertible peso                              |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| CUP      | 0       | Cuban peso                                          |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| CVE      | 0       | Cape Verdean escudo                                 |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| CZK      | 0       | Czech koruna                                        |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| DJF      | 0       | Djiboutian franc                                    |        |      | 1              | 0         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| DKK      | 0       | Danish krone                                        |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| DOP      | 0       | Dominican peso                                      |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| DZD      | 0       | Algerian dinar                                      |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| EGP      | 0       | Egyptian pound                                      |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| ERN      | 0       | Eritrean nakfa                                      |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| ETB      | 0       | Ethiopian birr                                      |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| EUR      | 0       | Euro                                                |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| FJD      | 0       | Fiji dollar                                         |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| FKP      | 0       | Falkland Islands pound                              |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| GBP      | 0       | Pound sterling                                      |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| GEL      | 0       | Georgian lari                                       |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| GGP      | 0       | Guernsey Pound (Non-ISO)                            |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| GHS      | 0       | Ghanaian cedi                                       |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| GIP      | 0       | Gibraltar pound                                     |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| GMD      | 0       | Gambian dalasi                                      |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| GNF      | 0       | Guinean franc                                       |        |      | 1              | 0         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| GTQ      | 0       | Guatemalan quetzal                                  |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| GYD      | 0       | Guyanese dollar                                     |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| HKD      | 0       | Hong Kong dollar                                    |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| HNL      | 0       | Honduran lempira                                    |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| HRK      | 0       | Croatian kuna                                       |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| HTG      | 0       | Haitian gourde                                      |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| HUF      | 0       | Hungarian forint                                    |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| IDR      | 0       | Indonesian rupiah                                   |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| ILS      | 0       | Israeli new shekel                                  |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| IMP      | 0       | Isle of Man Pound (Non-ISO)                         |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| INR      | 0       | Indian rupee                                        |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| IQD      | 0       | Iraqi dinar                                         |        |      | 1000           | 3         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| IRR      | 0       | Iranian rial                                        |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| ISK      | 0       | Icelandic krona                                     |        |      | 1              | 0         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| JEP      | 0       | Jersey Pound (Non-ISO)                              |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| JMD      | 0       | Jamaican dollar                                     |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| JOD      | 0       | Jordanian dinar                                     |        |      | 1000           | 3         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| JPY      | 0       | Japanese yen                                        |        |      | 1              | 0         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| KES      | 0       | Kenyan shilling                                     |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
++----------+---------+-----------------------------------------------------+--------+------+----------------+-----------+-------------+---------------------+---------------------+
+
+
+
+ores-shell> Bye!
 #+end_example
 
 *** Add
@@ -413,23 +706,25 @@ Add a new currency.
 
 #+name: currencies-add
 #+begin_src ores-shell :exports none
-currencies add TEST123 Test 1234
+currencies add TEST124 Test 125 A 100
 exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.shell ${log_args} ${connect_args} << 'EOF'
-<<currencies-list>>
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<currencies-add>>
 EOF
 #+end_src
 
 #+RESULTS:
 #+begin_example
 ✓ Connected to :55555
+✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.6
 Type 'help' for available commands, 'exit' to quit
 
-ores-shell> ✗ Server returned an error
+ores-shell> ✓ Currency added successfully!
 ores-shell> Bye!
 #+end_example
 

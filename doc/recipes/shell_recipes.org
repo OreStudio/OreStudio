@@ -317,6 +317,34 @@ ores-shell> ✓ Login successful!
 ores-shell> Bye!
 #+end_example
 
+*** Logout
+
+Explicit logout.
+
+#+name: explicit-logout
+#+begin_src ores-shell :exports none
+accounts login newuser3 Secure-Password-123
+accounts logout
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} ${connect_args} << 'EOF'
+<<explicit-logout>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+ORE Studio Shell REPL v0.0.6
+Type 'help' for available commands, 'exit' to quit
+
+ores-shell> ✓ Login successful!
+ores-shell> ✓ Logged out successfully.
+ores-shell> Bye!
+#+end_example
+
 *** Create
     :PROPERTIES:
     :header-args+: :var login_args="--login-username newuser3"
@@ -593,14 +621,13 @@ ores-shell>
 +----------+---------+-----------------------------------------------------+--------+------+----------------+-----------+-------------+---------------------+---------------------+
 | ISO Code | Version | Name                                                | Symbol | Type | Fractions/Unit | Precision | Modified By | Valid From          | Valid To            |
 +----------+---------+-----------------------------------------------------+--------+------+----------------+-----------+-------------+---------------------+---------------------+
-| ZWL      | 0       | Zimbabwean dollar                                   |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
-| LBP      | 0       | Lebanese pound                                      |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| TEST124  | 0       | Test                                                | A      | fiat | 100            | 2         | newuser3    | 2025-12-13 00:02:10 | 2025-12-13 00:02:10 |
+| TEST123  | 0       | Test                                                | A      | fiat | 100            | 2         | newuser3    | 2025-12-13 00:00:12 | 2025-12-13 00:00:12 |
 | LKR      | 0       | Sri Lankan rupee                                    |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
 | LRD      | 0       | Liberian dollar                                     |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
 | LSL      | 0       | Lesotho loti                                        |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
 | LYD      | 0       | Libyan dinar                                        |        |      | 1000           | 3         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
 | MAD      | 0       | Moroccan dirham                                     |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
-| LAK      | 0       | Lao kip                                             |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
 | MDL      | 0       | Moldovan leu                                        |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
 | MGA      | 0       | Malagasy ariary                                     |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
 | MKD      | 0       | Macedonian denar                                    |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
@@ -693,6 +720,7 @@ ores-shell>
 | JOD      | 0       | Jordanian dinar                                     |        |      | 1000           | 3         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
 | JPY      | 0       | Japanese yen                                        |        |      | 1              | 0         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
 | KES      | 0       | Kenyan shilling                                     |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
+| KGS      | 0       | Kyrgyzstani som                                     |        |      | 100            | 2         | ores        | 2025-12-12 00:06:16 | 2025-12-12 00:06:16 |
 +----------+---------+-----------------------------------------------------+--------+------+----------------+-----------+-------------+---------------------+---------------------+
 
 

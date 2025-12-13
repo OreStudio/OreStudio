@@ -315,6 +315,43 @@ TEST_CASE("account_locks_after_multiple_failed_logins", tags) {
     }
 }
 
+TEST_CASE("lock_account_successful", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h(database_table);
+    service::account_service sut(h.context());
+
+    const auto account = generate_synthetic_account();
+    BOOST_LOG_SEV(lg, info) << "Account: " << account;
+    const std::string password = faker::internet::password();
+
+    const auto generated =
+        sut.create_account(account.username, account.email,
+        password, account.modified_by, account.is_admin);
+
+    BOOST_LOG_SEV(lg, info) << "Locking account.";
+    bool lock_result = sut.lock_account(generated.id);
+    CHECK(lock_result == true);
+
+    BOOST_LOG_SEV(lg, info) << "Attempting login after lock";
+    auto ip = internet::ipv4();
+    CHECK_THROWS_AS(sut.login(generated.username, password, ip), std::runtime_error);
+}
+
+TEST_CASE("lock_nonexistent_account_returns_false", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h(database_table);
+    service::account_service sut(h.context());
+
+    boost::uuids::random_generator gen;
+    const auto non_existent_id = gen();
+    BOOST_LOG_SEV(lg, info) << "Attempting to lock nonexistent account: "
+                            << non_existent_id;
+
+    CHECK(sut.lock_account(non_existent_id) == false);
+}
+
 TEST_CASE("unlock_account_successful", tags) {
     auto lg(make_logger(test_suite));
 
@@ -338,7 +375,8 @@ TEST_CASE("unlock_account_successful", tags) {
     }
 
     BOOST_LOG_SEV(lg, info) << "Unlocking account.";
-    sut.unlock_account(generated.id);
+    bool unlock_result = sut.unlock_account(generated.id);
+    CHECK(unlock_result == true);
 
     BOOST_LOG_SEV(lg, info) << "Attempting login after unlock";
 
@@ -349,7 +387,7 @@ TEST_CASE("unlock_account_successful", tags) {
     CHECK(logged_in_account.username == account.username);
 }
 
-TEST_CASE("unlock_nonexistent_account_throws", tags) {
+TEST_CASE("unlock_nonexistent_account_returns_false", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
@@ -360,7 +398,7 @@ TEST_CASE("unlock_nonexistent_account_throws", tags) {
     BOOST_LOG_SEV(lg, info) << "Attempting to unlock nonexistent account: "
                             << non_existent_id;
 
-    CHECK_THROWS_AS(sut.unlock_account(non_existent_id), std::invalid_argument);
+    CHECK(sut.unlock_account(non_existent_id) == false);
 }
 
 TEST_CASE("delete_nonexistent_account_throws",

@@ -25,3 +25,11 @@ add_custom_target(${diagram_target}
     COMMAND java ${ORES_JAVA_ARGS} -jar ${ORES_PLANTUML_JAR} ${name}.puml
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
 add_dependencies(make_all_diagrams ${diagram_target})
+
+# Protocol session lifecycle sequence diagram
+set(protocol_session_target generate_protocol_session_diagram)
+add_custom_target(${protocol_session_target}
+    COMMENT "Generating protocol session lifecycle diagram" VERBATIM
+    COMMAND java ${ORES_JAVA_ARGS} -jar ${ORES_PLANTUML_JAR} protocol.session.puml
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
+add_dependencies(make_all_diagrams ${protocol_session_target})

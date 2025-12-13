@@ -375,6 +375,76 @@ TEST_CASE("unlock_account_response_serialize_deserialize", tags) {
     CHECK(a.error_message == e.error_message);
 }
 
+TEST_CASE("lock_account_request_with_valid_uuid", tags) {
+    auto lg(make_logger(test_suite));
+
+    lock_account_request rq;
+    rq.account_id = boost::uuids::random_generator()();
+    BOOST_LOG_SEV(lg, info) << "Request: " << rq;
+
+    CHECK(!rq.account_id.is_nil());
+}
+
+TEST_CASE("lock_account_request_serialize_deserialize", tags) {
+    auto lg(make_logger(test_suite));
+
+    lock_account_request e;
+    e.account_id = boost::uuids::random_generator()();
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+
+    const auto serialized = e.serialize();
+    const auto r = lock_account_request::deserialize(serialized);
+
+    REQUIRE(r.has_value());
+    const auto& a = r.value();
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
+
+    CHECK(a.account_id == e.account_id);
+}
+
+TEST_CASE("lock_account_response_success", tags) {
+    auto lg(make_logger(test_suite));
+
+    lock_account_response rp;
+    rp.success = true;
+    rp.error_message = "";
+    BOOST_LOG_SEV(lg, info) << "Response: " << rp;
+
+    CHECK(rp.success == true);
+    CHECK(rp.error_message.empty());
+}
+
+TEST_CASE("lock_account_response_failure", tags) {
+    auto lg(make_logger(test_suite));
+
+    lock_account_response rp;
+    rp.success = false;
+    rp.error_message = "Account not found";
+    BOOST_LOG_SEV(lg, info) << "Response: " << rp;
+
+    CHECK(rp.success == false);
+    CHECK(rp.error_message == "Account not found");
+}
+
+TEST_CASE("lock_account_response_serialize_deserialize", tags) {
+    auto lg(make_logger(test_suite));
+
+    lock_account_response e;
+    e.success = faker::datatype::boolean();
+    e.error_message = e.success ? "" : "Error occurred";
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+
+    const auto serialized = e.serialize();
+    const auto r = lock_account_response::deserialize(serialized);
+
+    REQUIRE(r.has_value());
+    const auto& a = r.value();
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
+
+    CHECK(a.success == e.success);
+    CHECK(a.error_message == e.error_message);
+}
+
 TEST_CASE("create_multiple_random_login_requests", tags) {
     auto lg(make_logger(test_suite));
 

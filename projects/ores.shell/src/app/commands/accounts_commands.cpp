@@ -61,12 +61,19 @@ register_commands(cli::Menu& root_menu, client_session& session) {
             std::move(password));
     }, "Login with username and password");
 
+    accounts_menu->Insert("lock",
+        [&session](std::ostream& out, std::string account_id) {
+        process_lock_account(std::ref(out),
+            std::ref(session),
+            std::move(account_id));
+    }, "Lock an account (account_id) - requires admin");
+
     accounts_menu->Insert("unlock",
         [&session](std::ostream& out, std::string account_id) {
         process_unlock_account(std::ref(out),
             std::ref(session),
             std::move(account_id));
-    }, "Unlock a locked account (account_id)");
+    }, "Unlock a locked account (account_id) - requires admin");
 
     accounts_menu->Insert("list-logins", [&session](std::ostream& out) {
         process_list_login_info(std::ref(out), std::ref(session));
@@ -141,6 +148,46 @@ process_login(std::ostream& out, client_session& session,
         .is_admin = response.is_admin
     };
     session.set_session_info(std::move(info));
+}
+
+void accounts_commands::
+process_lock_account(std::ostream& out, client_session& session,
+    std::string account_id) {
+    boost::uuids::uuid parsed_id;
+    try {
+        parsed_id = boost::lexical_cast<boost::uuids::uuid>(account_id);
+    } catch (const boost::bad_lexical_cast&) {
+        BOOST_LOG_SEV(lg(), error) << "Invalid account ID format: " << account_id;
+        out << "✗ Invalid account ID format. Expected UUID." << std::endl;
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Creating lock account request for ID: "
+                               << account_id;
+
+    using accounts::messaging::lock_account_request;
+    using accounts::messaging::lock_account_response;
+    auto result = session.process_authenticated_request<lock_account_request,
+                                                        lock_account_response,
+                                                        message_type::lock_account_request>
+        (lock_account_request{.account_id = parsed_id});
+
+    if (!result) {
+        out << "✗ " << to_string(result.error()) << std::endl;
+        return;
+    }
+
+    const auto& response = *result;
+    if (response.success) {
+        BOOST_LOG_SEV(lg(), info) << "Successfully locked account: "
+                                  << account_id;
+        out << "✓ Account locked successfully!" << std::endl
+            << "  Account ID: " << account_id << std::endl;
+    } else {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Failed to lock account: " << response.error_message;
+        out << "✗ Failed to lock account: " << response.error_message << std::endl;
+    }
 }
 
 void accounts_commands::

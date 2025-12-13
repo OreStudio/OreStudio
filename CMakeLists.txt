@@ -270,6 +270,11 @@ add_custom_target(deploy_plan
     COMMAND tj3 version_zero.tjp
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+add_custom_target(generate_protocol_docs
+    COMMENT "Generating protocol documentation" VERBATIM
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/scripts/generate_protocol_docs.py
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 #
 # aggregate targets and their aliases
 #

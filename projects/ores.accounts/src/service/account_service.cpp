@@ -180,14 +180,14 @@ domain::account account_service::login(const std::string& username,
                                 << username << ". Attempt: "
                                 << login_info.failed_logins;
 
+        login_info_repo_.update(login_info);
+
         constexpr int max_failed_attempts = 5;
         if (login_info.failed_logins >= max_failed_attempts) {
-            login_info.locked = true;
+            lock_account(account.id);
             BOOST_LOG_SEV(lg(), warn) << "Account locked due to too many failed attempts: "
                                       << username;
         }
-
-        login_info_repo_.update(login_info);
 
         throw std::runtime_error("Invalid username or password");
     }
@@ -205,7 +205,41 @@ domain::account account_service::login(const std::string& username,
     return account;
 }
 
-void account_service::unlock_account(const boost::uuids::uuid& account_id) {
+bool account_service::lock_account(const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Locking account: "
+                               << boost::uuids::to_string(account_id);
+
+    auto accounts = account_repo_.read_latest(account_id);
+    if (accounts.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Attempted to lock non-existent account: "
+                                  << boost::uuids::to_string(account_id);
+        return false;
+    }
+
+    auto login_info_vec = login_info_repo_.read(account_id);
+    if (login_info_vec.empty()) {
+        BOOST_LOG_SEV(lg(), error) << "Login tracking not found for account: "
+                                   << boost::uuids::to_string(account_id);
+        return false;
+    }
+
+    auto login_info = login_info_vec[0];
+
+    if (login_info.locked == true) {
+        BOOST_LOG_SEV(lg(), warn) << "Account is already locked.";
+        return true;
+    }
+
+    login_info.locked = true;
+
+    BOOST_LOG_SEV(lg(), info) << "Account locked: "
+                              << boost::uuids::to_string(account_id);
+
+    login_info_repo_.update(login_info);
+    return true;
+}
+
+bool account_service::unlock_account(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Unlocking account: "
                                << boost::uuids::to_string(account_id);
 
@@ -213,20 +247,22 @@ void account_service::unlock_account(const boost::uuids::uuid& account_id) {
     if (accounts.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "Attempted to unlock non-existent account: "
                                   << boost::uuids::to_string(account_id);
-        throw std::invalid_argument("Account does not exist");
+        return false;
     }
 
     auto login_info_vec = login_info_repo_.read(account_id);
     if (login_info_vec.empty()) {
         BOOST_LOG_SEV(lg(), error) << "Login tracking not found for account: "
                                    << boost::uuids::to_string(account_id);
-        throw std::runtime_error("Login tracking information missing");
+        return false;
     }
 
     auto login_info = login_info_vec[0];
 
-    if (login_info.locked == false)
+    if (login_info.locked == false) {
         BOOST_LOG_SEV(lg(), warn) << "Account is not locked.";
+        return true;
+    }
 
     login_info.locked = false;
     login_info.failed_logins = 0;
@@ -235,6 +271,7 @@ void account_service::unlock_account(const boost::uuids::uuid& account_id) {
                               << boost::uuids::to_string(account_id);
 
     login_info_repo_.update(login_info);
+    return true;
 }
 
 void account_service::logout(const boost::uuids::uuid& account_id) {
@@ -262,6 +299,20 @@ void account_service::logout(const boost::uuids::uuid& account_id) {
                               << boost::uuids::to_string(account_id);
 
     login_info_repo_.update(login_info);
+}
+
+bool account_service::is_admin(const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Checking admin status for account: "
+                               << boost::uuids::to_string(account_id);
+
+    auto accounts = account_repo_.read_latest(account_id);
+    if (accounts.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Account not found: "
+                                  << boost::uuids::to_string(account_id);
+        return false;
+    }
+
+    return accounts[0].is_admin;
 }
 
 }

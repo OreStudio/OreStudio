@@ -409,8 +409,8 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
         const bool is_final_attempt = (attempt + 1 == max_attempts);
         try {
             if (is_final_attempt) {
-                BOOST_LOG_SEV(lg(), warn) << "Final reconnection attempt ("
-                                          << max_attempts << " of " << max_attempts << ")";
+                BOOST_LOG_SEV(lg(), warn) << "Final reconnection attempt " << (attempt + 1)
+                                          << " of " << max_attempts;
             } else {
                 BOOST_LOG_SEV(lg(), info) << "Reconnection attempt " << (attempt + 1)
                                           << " of " << max_attempts;

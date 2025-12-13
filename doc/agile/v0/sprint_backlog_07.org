@@ -191,6 +191,28 @@ print(p)
 #+RESULTS: tags-chart
 [[file:sprint_backlog_07_tags.png]]
 
+*** Windows clang build failures                                       :code:
+
+Seems like we are failing with a SEGFAULT:
+
+#+begin_src xml
+<Catch2TestRun name="ores.comms.tests.exe" rng-seed="1383371051" xml-format-version="3" catch2-version="3.11.0">
+  <TestCase name="test_client_server_connection" tags="[networking][#net_client_tests]" filename="D:/a/OreStudio/OreStudio/projects/ores.comms/tests/net_client_tests.cpp" line="97">
+    <Expression success="false" filename="D:/a/OreStudio/OreStudio/projects/ores.comms/tests/net_client_tests.cpp" line="161">
+      <Original>
+        {Unknown expression after the reported line}
+      </Original>
+      <Expanded>
+        {Unknown expression after the reported line}
+      </Expanded>
+      <FatalErrorCondition filename="D:/a/OreStudio/OreStudio/projects/ores.comms/tests/net_client_tests.cpp" line="161">
+        SIGSEGV - Segmentation violation signal
+      </FatalErrorCondition>
+    </Expression>
+    <OverallResult success="false" skips="0" durationInSeconds="2.17718"/>
+  </TestCase>
+#+end_src
+
 *** Add heat map of user sessions                                      :code:
 
 Things to measure:

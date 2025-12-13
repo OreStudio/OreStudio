@@ -18,33 +18,34 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-13 Sat 21:07], for Saturday, December 13, 2025.
+#+CAPTION: Clock summary at [2025-12-13 Sat 21:47], for Saturday, December 13, 2025.
 |       | <75>                                               |        |      |      |       |
 | Tags  | Headline                                           | Time   |      |      |     % |
 |-------+----------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                       | *4:38* |      |      | 100.0 |
+|       | *Total time*                                       | *4:53* |      |      | 100.0 |
 |-------+----------------------------------------------------+--------+------+------+-------|
-|       | Stories                                            | 4:38   |      |      | 100.0 |
-|       | Active                                             |        | 4:38 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint                 |        |      | 0:33 |  11.9 |
-| code  | Add a version attribute to entities                |        |      | 0:05 |   1.8 |
-| code  | Retest all recipes after latest changes            |        |      | 0:58 |  20.9 |
-| code  | Server must check database connectivity on startup |        |      | 1:50 |  39.6 |
-| code  | Add system tray support                            |        |      | 0:53 |  19.1 |
-| code  | Red build after account lock PR                    |        |      | 0:10 |   3.6 |
-| code  | Valgrind is detecting issues with comms tests      |        |      | 0:09 |   3.2 |
+|       | Stories                                            | 4:53   |      |      | 100.0 |
+|       | Active                                             |        | 4:53 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint                 |        |      | 0:33 |  11.3 |
+| code  | Add a version attribute to entities                |        |      | 0:05 |   1.7 |
+| code  | Retest all recipes after latest changes            |        |      | 0:58 |  19.8 |
+| code  | Server must check database connectivity on startup |        |      | 1:50 |  37.5 |
+| code  | Add system tray support                            |        |      | 0:53 |  18.1 |
+| code  | Red build after account lock PR                    |        |      | 0:10 |   3.4 |
+| code  | Valgrind is detecting issues with comms tests      |        |      | 0:09 |   3.1 |
+| code  | Saving a new currency should close window          |        |      | 0:15 |   5.1 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-13 Sat 21:07]
+#+CAPTION: Clock summary at [2025-12-13 Sat 21:47]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *76:34* |       |       | 100.0 |
+|       | *Total time*                                            | *76:49* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 76:34   |       |       | 100.0 |
-|       | Active                                                  |         | 76:34 |       | 100.0 |
+|       | Stories                                                 | 76:49   |       |       | 100.0 |
+|       | Active                                                  |         | 76:49 |       | 100.0 |
 | agile | Sprint and product backlog refinement                   |         |       |  0:29 |   0.6 |
 | infra | OCR scan notebooks for this sprint                      |         |       | 16:15 |  21.2 |
 | code  | Implement session cancellation                          |         |       |  2:42 |   3.5 |
@@ -58,7 +59,7 @@
 | code  | Add listen/notify support                               |         |       | 11:25 |  14.9 |
 | code  | Move context to database                                |         |       |  0:20 |   0.4 |
 | code  | Use =std::string_view= for loggers                      |         |       |  3:14 |   4.2 |
-| code  | Fix issues with logging after string_view change        |         |       |  0:53 |   1.2 |
+| code  | Fix issues with logging after string_view change        |         |       |  0:53 |   1.1 |
 | code  | Remove bootstrap mode from context                      |         |       |  6:36 |   8.6 |
 | code  | Add tests for messaging handler                         |         |       |  0:14 |   0.3 |
 | code  | Add retry algorithm to client                           |         |       |  1:52 |   2.4 |
@@ -72,7 +73,7 @@
 | code  | Add a version attribute to entities                     |         |       |  5:59 |   7.8 |
 | code  | Retest all recipes after latest changes                 |         |       |  3:39 |   4.8 |
 | code  | Server must check database connectivity on startup      |         |       |  1:50 |   2.4 |
-| code  | Add system tray support                                 |         |       |  0:53 |   1.2 |
+| code  | Add system tray support                                 |         |       |  0:53 |   1.1 |
 | code  | Red build after account lock PR                         |         |       |  0:10 |   0.2 |
 | code  | Valgrind is detecting issues with comms tests           |         |       |  0:09 |   0.2 |
 | code  | Saving a new currency should close window               |         |       |  0:15 |   0.3 |
@@ -2054,6 +2055,20 @@ indicator approach everywhere.
 
 This flag was dropped with all of the refactorings.
 
+*** COMPLETED Consider adding top-level login and logout commands in shell :code:
+
+*Rationale*: Implemented.
+
+At present we need to do:
+
+: accounts login
+: accounts logout
+
+We could have aliases to make this a bit more obvious:
+
+: login
+: logout
+
 *** Add heat map of user sessions                                      :code:
 
 Things to measure:
@@ -2109,18 +2124,6 @@ Also, adding currencies requires supplying all parameters.
 
 After reloading we should mark latest currencies with a different colour so that
 it is obvious what was added. Consider colouring rows by recency.
-
-*** Consider adding top-level login and logout commands in shell       :code:
-
-At present we need to do:
-
-: accounts login
-: accounts logout
-
-We could have aliases to make this a bit more obvious:
-
-: login
-: logout
 
 *** Add roles and permissions                                          :code:
 

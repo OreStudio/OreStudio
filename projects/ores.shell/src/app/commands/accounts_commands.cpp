@@ -91,6 +91,17 @@ register_commands(cli::Menu& root_menu, client_session& session) {
         process_bootstrap(std::ref(out), std::ref(session),
             std::move(username), std::move(password), std::move(email));
     }, "Create initial admin account (username password email) - only works in bootstrap mode");
+
+    // Top-level login/logout aliases for convenience
+    root_menu.Insert("login", [&session](std::ostream& out,
+            std::string username, std::string password) {
+        process_login(std::ref(out), std::ref(session), std::move(username),
+            std::move(password));
+    }, "Login with username and password (alias for 'accounts login')");
+
+    root_menu.Insert("logout", [&session](std::ostream& out) {
+        process_logout(std::ref(out), std::ref(session));
+    }, "Logout the current user (alias for 'accounts logout')");
 }
 
 void accounts_commands::

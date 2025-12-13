@@ -159,6 +159,7 @@ namespace ores #F2F2F2 {
                 -{static} lg(): auto&
                 -setup_menus(): std::unique_ptr<::cli::Cli>
                 -display_welcome() const: void
+                -cleanup(): void
                 -{field} session_ comms::net::client_session&
             }
 
@@ -168,11 +169,10 @@ namespace ores #F2F2F2 {
             Provides a command-line interface for interacting with the ORE Studio server,
             including commands for connection management and data retrieval.
             - session_: reference to client session from comms
+            - cleanup(): sends logout request and disconnects cleanly on exit
             end note
 
             ores::shell::app::application ..> ores::shell::app::repl : creates
-            ores::shell::app::application ..> ores::comms::net::client_session : creates
-            ores::shell::app::repl o-- ores::comms::net::client_session
 
             note "Command handlers for the REPL." as ores_shell_commands_note
             commands --- ores_shell_commands_note
@@ -254,10 +254,6 @@ namespace ores #F2F2F2 {
                 variability-related operations.
                 end note
 
-                ores::shell::app::commands::connection_commands ..> ores::comms::net::client_session : uses
-                ores::shell::app::commands::currencies_commands ..> ores::comms::net::client_session : uses
-                ores::shell::app::commands::accounts_commands ..> ores::comms::net::client_session : uses
-                ores::shell::app::commands::variability_commands ..> ores::comms::net::client_session : uses
             }
         }
     }

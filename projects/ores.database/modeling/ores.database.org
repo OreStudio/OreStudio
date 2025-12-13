@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72
+:END:
+#+title: ORE Studio Database Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Database utilities component for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio Accounts Component Diagram
+[[file:ores.database.png][file:ores.accounts.png]]

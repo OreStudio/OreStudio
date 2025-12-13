@@ -24,91 +24,108 @@ namespace ores #F2F2F2 {
     note "Database connectivity and health monitoring.\nProvides connection pooling, context management,\nrepository helpers, and database health monitoring services." as ores_database_note
     database --- ores_database_note
     namespace database #F2F2F2 {
-        class context #ECECEC {
-            +connection_pool() connection_pool_type
-            +single_connection() connection_type
-            +credentials() sqlgen::Credentials
+
+        namespace domain #F2F2F2 {
+            class context #ECECEC {
+                +connection_pool() connection_pool_type
+                +single_connection() single_connection_type
+                +credentials() sqlgen::postgres::Credentials
+            }
+
+            note top of context
+            Context for the operations on a postgres database.
+
+            Holds connection pool, single connection, and credentials
+            for database operations.
+            end note
+
+            struct database_options #F7E5FF {
+                +{field} user std::string
+                +{field} password rfl::Skip<std::string>
+                +{field} host std::string
+                +{field} database std::string
+                +{field} port int
+            }
+
+            note top of database_options
+            Configuration for database connection.
+
+            Fields:
+
+            - user: Database user name.
+            - password: Password for the user.
+            - host: Host to connect to.
+            - database: Database to connect to.
+            - port: Port the database is listening on.
+            end note
         }
 
-        note top of context
-        Context for the operations on a repository.
+        namespace service #F2F2F2 {
+            class context_factory #ECECEC {
+                +{static} make_context(const configuration&) context
+            }
 
-        Fields:
+            note top of context_factory
+            Generates a new database context.
 
-        - connection_pool_: Connection pool for database operations.
-        end note
+            Methods:
 
-        class context_factory #ECECEC {
-            +{static} make_context(const configuration&) context
+            - make_context: Creates a database context from configuration.
+            end note
+
+            struct configuration #F7E5FF {
+                +{field} database_options database::database_options
+                +{field} pool_size std::size_t
+                +{field} num_attempts std::size_t
+                +{field} wait_time_in_seconds std::size_t
+            }
+
+            note top of configuration
+            Configuration for creating database context.
+
+            Fields:
+
+            - database_options: Database connection options.
+            - pool_size: Number of connections in the pool.
+            - num_attempts: Number of retry attempts when acquiring a connection.
+            - wait_time_in_seconds: Wait time between retry attempts.
+            end note
+
+            class health_monitor #ECECEC {
+                +health_monitor(database_options, std::chrono::seconds)
+                +set_status_change_callback(status_change_callback) void
+                +is_available() bool
+                +last_error() std::string
+                +run(boost::asio::io_context&) boost::asio::awaitable<void>
+                +stop() void
+                +check_health() bool
+            }
+
+            note top of health_monitor
+            Monitors database connectivity and provides health status.
+
+            This class periodically checks database connectivity and maintains the
+            current health status. It can notify listeners when the status changes,
+            allowing the server to inform clients of database availability issues.
+            end note
+
+            context_factory +-- configuration
         }
 
-        note top of context_factory
-        Generates a new repository context.
+        namespace config #F2F2F2 {
+            class database_configuration #ECECEC {
+                +{static} make_options_description() boost::program_options::options_description
+                +{static} read_options(const boost::program_options::variables_map&) database_options
+            }
 
-        Methods:
+            note top of database_configuration
+            Centralized manager for database configuration parsing.
 
-        - make_context: Creates a repository context from configuration.
-        end note
-
-        struct database_options #F7E5FF {
-            +{field} user std::string
-            +{field} password rfl::Skip<std::string>
-            +{field} host std::string
-            +{field} database std::string
-            +{field} port int
+            Provides utilities for creating command-line option descriptions,
+            reading configuration from parsed options, and mapping environment
+            variables.
+            end note
         }
-
-        note top of database_options
-        Configuration for database connection.
-
-        Fields:
-
-        - user: Database user name.
-        - password: Password for the user.
-        - host: Host to connect to.
-        - database: Database to connect to.
-        - port: Port the database is listening on.
-        end note
-
-        class database_configuration #ECECEC {
-            +{static} make_options_description() boost::program_options::options_description
-            +{static} read_options(const boost::program_options::variables_map&) database_options
-        }
-
-        note top of database_configuration
-        Centralized manager for database configuration parsing.
-
-        Provides utilities for creating command-line option descriptions,
-        reading configuration from parsed options, and mapping environment
-        variables.
-
-        Methods:
-
-        - make_options_description: Creates the boost::program_options description for database CLI arguments.
-        - read_options: Reads database options from parsed variables map.
-        end note
-
-        class health_monitor #ECECEC {
-            +is_available() bool
-            +last_error() std::string
-            +check_health() bool
-            +run(boost::asio::io_context&) boost::asio::awaitable<void>
-            +stop() void
-            +set_status_change_callback(status_change_callback) void
-        }
-
-        note top of health_monitor
-        Monitors database connectivity and provides health status.
-
-        This class periodically checks database connectivity and maintains the
-        current health status. It can notify listeners when the status changes,
-        allowing the server to inform clients of database availability issues.
-        end note
-
-        context_factory ..> context : creates
-        context_factory ..> database_options : uses
-        database_configuration ..> database_options
-        health_monitor ..> database_options : uses
 
         namespace repository #F2F2F2 {
             class repository_exception <<exception>> #D6B19F {
@@ -119,35 +136,42 @@ namespace ores #F2F2F2 {
             repository.
             end note
 
-            struct configuration #F7E5FF {
-                +{field} user std::string
-                +{field} password rfl::Skip<std::string>
-                +{field} host std::string
-                +{field} database std::string
-                +{field} port int
-                +{field} pool_size std::size_t
-                +{field} num_attempts std::size_t
-                +{field} wait_time_in_seconds std::size_t
+            class version_conflict_exception <<exception>> #D6B19F {
+                +version_conflict_exception(entity_type, entity_id, expected_version, actual_version)
+                +what() const char*
+                +entity_type() std::optional<std::string>
+                +entity_id() std::optional<std::string>
+                +expected_version() std::optional<int>
+                +actual_version() std::optional<int>
             }
 
-            note top of configuration
-            Configuration for creating repository context.
+            note top of version_conflict_exception
+            Exception thrown when an optimistic locking version conflict occurs.
 
-            Fields:
-
-            - user: Database user name.
-            - password: Password for the user.
-            - host: Host to connect to.
-            - database: Database to connect to.
-            - port: Port the database is listening in on.
-            - pool_size: Number of connections in the pool.
-            - num_attempts: Number of retry attempts when acquiring a connection.
-            - wait_time_in_seconds: Wait time between retry attempts.
+            This exception indicates that an entity update failed because the version
+            provided by the client does not match the current version in the database.
             end note
         }
 
-        context_factory +-- ores::database::repository::configuration
-        context_factory ..> ores::database::context
+        namespace tests #F2F2F2 {
+            class database_options_tests <<test suite>> #C5E1A5 {
+                +database_options_to_credentials() void
+            }
+
+            note top of database_options_tests
+            Test suite for database_options domain model.
+
+            Tests cover conversion to sqlgen credentials.
+            end note
+
+            database_options_tests ..> ores::database::domain::database_options : tests
+        }
+
+        ' Relationships
+        ores::database::service::context_factory ..> ores::database::domain::context : creates
+        ores::database::service::context_factory ..> ores::database::domain::database_options : uses
+        ores::database::service::health_monitor ..> ores::database::domain::database_options : uses
+        ores::database::config::database_configuration ..> ores::database::domain::database_options : creates
     }
 }
 

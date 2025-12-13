@@ -429,23 +429,36 @@ handle_logout_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing logout_request from "
                                << remote_address;
 
+    // Deserialize empty request (for protocol compliance)
     auto request_result = logout_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize logout_request";
         co_return std::unexpected(request_result.error());
     }
 
-    const auto& request = *request_result;
-    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+    // Get account_id from session context (not from request payload)
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "No session found for: " << remote_address;
+        logout_response response{
+            .success = false,
+            .message = "Not logged in"
+        };
+        co_return response.serialize();
+    }
+
+    const auto& account_id = session->account_id;
+    BOOST_LOG_SEV(lg(), debug) << "Logging out account: "
+                               << boost::uuids::to_string(account_id);
 
     try {
-        service_.logout(request.account_id);
+        service_.logout(account_id);
 
         // Remove session for this client from the shared session service
         sessions_->remove_session(remote_address);
 
         BOOST_LOG_SEV(lg(), info) << "Successfully logged out account: "
-                                  << boost::uuids::to_string(request.account_id);
+                                  << boost::uuids::to_string(account_id);
 
         logout_response response{
             .success = true,

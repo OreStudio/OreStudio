@@ -52,6 +52,11 @@ server_session::server_session(std::unique_ptr<connection> conn, std::string ser
 void server_session::stop() {
     BOOST_LOG_SEV(lg(), info) << "Stopping session for " << conn_->remote_address();
     active_ = false;
+
+    // Cancel notification signal to wake up the notification writer coroutine
+    // so it can exit gracefully before we close the connection
+    notification_signal_.cancel();
+
     if (conn_) {
         conn_->close();
     }
@@ -238,6 +243,8 @@ boost::asio::awaitable<void> server_session::process_messages() {
             // Close connection after logout
             if (request_frame.header().type == messaging::message_type::logout_request) {
                 BOOST_LOG_SEV(lg(), info) << "Logout completed, closing connection";
+                active_ = false;
+                notification_signal_.cancel();
                 co_return;
             }
         }
@@ -272,8 +279,14 @@ boost::asio::awaitable<void> server_session::run_notification_writer() {
             }
         }
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Exception in notification writer: " << e.what();
+        // Operation canceled is expected during session shutdown
+        if (active_) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Exception in notification writer: " << e.what();
+        } else {
+            BOOST_LOG_SEV(lg(), debug)
+                << "Notification writer interrupted during shutdown: " << e.what();
+        }
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Notification writer coroutine ended";

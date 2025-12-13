@@ -224,9 +224,8 @@ bool ClientManager::logout() {
     try {
         BOOST_LOG_SEV(lg(), debug) << "Sending logout request";
 
-        accounts::messaging::logout_request request{
-            .account_id = *logged_in_account_id_
-        };
+        // logout_request is empty - server determines account from session context
+        accounts::messaging::logout_request request{};
 
         auto payload = request.serialize();
         comms::messaging::frame request_frame(

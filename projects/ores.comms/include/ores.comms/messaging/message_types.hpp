@@ -41,8 +41,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 7.1 adds subscription protocol messages (subscribe_request,
 // subscribe_response, unsubscribe_request, unsubscribe_response, notification)
 // for server-push event notifications.
+//
+// Version 7.2 changes logout_request to have empty payload. Account ID is now
+// determined from session context to prevent clients from forging logout
+// requests for other users.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 7;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 2;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

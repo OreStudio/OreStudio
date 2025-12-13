@@ -85,6 +85,15 @@ private:
      * @brief Display the welcome message.
      */
     void display_welcome() const;
+
+    /**
+     * @brief Perform cleanup on REPL exit.
+     *
+     * Sends a logout request if logged in and disconnects cleanly from
+     * the server to avoid abrupt connection termination.
+     */
+    void cleanup();
+
     comms::net::client_session& session_;
 };
 

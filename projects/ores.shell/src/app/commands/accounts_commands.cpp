@@ -237,6 +237,12 @@ void accounts_commands::
 process_logout(std::ostream& out, client_session& session) {
     BOOST_LOG_SEV(lg(), debug) << "Processing logout request.";
 
+    // Check if logged in
+    if (!session.is_logged_in()) {
+        out << "✗ Not logged in." << std::endl;
+        return;
+    }
+
     using accounts::messaging::logout_request;
     using accounts::messaging::logout_response;
     auto result = session.process_authenticated_request<logout_request,

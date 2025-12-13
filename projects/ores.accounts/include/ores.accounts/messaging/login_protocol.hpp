@@ -116,19 +116,18 @@ struct list_login_info_response final {
 std::ostream& operator<<(std::ostream& s, const list_login_info_response& v);
 
 /**
- * @brief Request to logout the current user.
+ * @brief Request to logout the current session.
  *
- * The server will set login_info.online to false for the specified account
- * and close the connection after sending the response.
+ * The server will logout the currently authenticated session. The account_id
+ * is determined from the session context, not from the request payload.
+ * This prevents clients from forging logout requests for other users.
+ * After logout, login_info.online is set to false.
  */
 struct logout_request final {
-    boost::uuids::uuid account_id;
-
     /**
      * @brief Serialize request to bytes.
      *
-     * Format:
-     * - 16 bytes: account_id (UUID)
+     * Format: Empty (session context provides account info)
      */
     std::vector<std::byte> serialize() const;
 

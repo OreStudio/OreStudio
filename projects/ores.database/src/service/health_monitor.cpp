@@ -95,8 +95,8 @@ bool health_monitor::check_health() {
             }
             return true;
         } else {
-            // Connection failed
-            std::string error_msg = "Failed to connect to database";
+            // Connection failed - use actual error from connection result
+            std::string error_msg = conn_result.error().what();
             available_ = false;
             {
                 std::lock_guard lock(mutex_);

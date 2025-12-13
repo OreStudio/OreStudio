@@ -14,4 +14,4 @@ Diagram:
 
 #+attr_html: :width 100% :alt Description
 #+caption: ORE Studio Accounts Component Diagram
-[[file:ores.database.png][file:ores.accounts.png]]
+[[file:ores.database.png][file:ores.database.png]]

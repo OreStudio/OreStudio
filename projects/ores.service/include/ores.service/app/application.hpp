@@ -23,8 +23,8 @@
 #include <optional>
 #include <boost/asio/awaitable.hpp>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.database/context.hpp"
-#include "ores.database/database_options.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/database_options.hpp"
 #include "ores.service/config/options.hpp"
 
 namespace ores::service::app {

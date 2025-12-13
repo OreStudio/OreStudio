@@ -23,7 +23,7 @@
 #include "ores.accounts/repository/account_repository.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.database/context.hpp"
+#include "ores.database/domain/context.hpp"
 
 namespace ores::accounts::service {
 

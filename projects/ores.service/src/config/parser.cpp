@@ -27,7 +27,7 @@
 #include "ores.service/config/parser_exception.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/log/logging_configuration.hpp"
-#include "ores.database/database_configuration.hpp"
+#include "ores.database/config/database_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
 namespace {
 

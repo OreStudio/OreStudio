@@ -30,7 +30,7 @@
 #include <boost/asio/cancellation_signal.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/sources/severity_channel_logger.hpp>
-#include "ores.database/database_options.hpp"
+#include "ores.database/domain/database_options.hpp"
 
 namespace ores::database {
 

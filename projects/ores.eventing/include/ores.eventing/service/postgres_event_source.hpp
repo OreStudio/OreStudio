@@ -24,7 +24,7 @@
 #include <functional>
 #include <unordered_map>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.database/context.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.eventing/domain/entity_change_event.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.eventing/service/postgres_listener_service.hpp"

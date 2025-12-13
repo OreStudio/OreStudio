@@ -23,7 +23,7 @@
 #include <iosfwd>
 #include <optional>
 #include "ores.utility/log/logging_options.hpp"
-#include "ores.database/database_options.hpp"
+#include "ores.database/domain/database_options.hpp"
 #include "ores.comms/net/server_options.hpp"
 
 namespace ores::service::config {

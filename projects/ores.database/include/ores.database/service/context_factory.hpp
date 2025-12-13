@@ -23,8 +23,8 @@
 #include <iosfwd>
 #include <string_view>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.database/context.hpp"
-#include "ores.database/database_options.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/database_options.hpp"
 
 namespace ores::database {
 

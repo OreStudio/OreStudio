@@ -26,7 +26,7 @@
 #include <boost/throw_exception.hpp>
 #include <magic_enum/magic_enum.hpp>
 #include "ores.utility/log/logging_configuration.hpp"
-#include "ores.database/database_configuration.hpp"
+#include "ores.database/config/database_configuration.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 
 namespace ores::cli::config::parser_helpers {

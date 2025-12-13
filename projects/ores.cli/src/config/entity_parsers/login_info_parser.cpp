@@ -25,7 +25,7 @@
 #include "ores.cli/config/parser_exception.hpp"
 #include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/add_login_info_options.hpp"
-#include "ores.database/database_configuration.hpp"
+#include "ores.database/config/database_configuration.hpp"
 #include "ores.utility/log/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
 

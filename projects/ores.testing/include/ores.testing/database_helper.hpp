@@ -22,7 +22,7 @@
 
 #include <string>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.database/context.hpp"
+#include "ores.database/domain/context.hpp"
 
 namespace ores::testing {
 

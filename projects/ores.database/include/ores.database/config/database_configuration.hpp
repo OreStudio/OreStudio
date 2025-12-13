@@ -21,7 +21,7 @@
 #define ORES_DATABASE_DATABASE_CONFIGURATION_HPP
 
 #include <boost/program_options.hpp>
-#include "ores.database/database_options.hpp"
+#include "ores.database/domain/database_options.hpp"
 
 namespace ores::database {
 

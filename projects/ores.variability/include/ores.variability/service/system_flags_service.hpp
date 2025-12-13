@@ -22,7 +22,7 @@
 
 #include <string_view>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.database/context.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.variability/domain/system_flags.hpp"
 #include "ores.variability/domain/system_flags_cache.hpp"
 #include "ores.variability/service/feature_flags_service.hpp"

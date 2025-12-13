@@ -24,7 +24,7 @@
 #include <vector>
 #include <sqlgen/postgres.hpp>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.database/context.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.variability/domain/feature_flags.hpp"
 
 namespace ores::variability::repository {

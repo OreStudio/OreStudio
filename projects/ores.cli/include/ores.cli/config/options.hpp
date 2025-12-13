@@ -23,7 +23,7 @@
 #include <iosfwd>
 #include <optional>
 #include "ores.utility/log/logging_options.hpp"
-#include "ores.database/database_options.hpp"
+#include "ores.database/domain/database_options.hpp"
 #include "ores.cli/config/import_options.hpp"
 #include "ores.cli/config/export_options.hpp"
 #include "ores.cli/config/delete_options.hpp"

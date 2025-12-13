@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.database/health_monitor.hpp"
+#include "ores.database/service/health_monitor.hpp"
 
 #include <sqlgen/postgres.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/bind_cancellation_slot.hpp>
 #include <boost/asio/use_awaitable.hpp>
-#include "ores.database/database_options.hpp"
+#include "ores.database/domain/database_options.hpp"
 
 namespace ores::database {
 

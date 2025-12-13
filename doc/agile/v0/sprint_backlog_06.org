@@ -18,35 +18,35 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-13 Sat 19:49], for Saturday, December 13, 2025.
-|      | <75>                                               |        |      |      |       |
-| Tags | Headline                                           | Time   |      |      |     % |
-|------+----------------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                       | *4:20* |      |      | 100.0 |
-|------+----------------------------------------------------+--------+------+------+-------|
-|      | Stories                                            | 4:20   |      |      | 100.0 |
-|      | Active                                             |        | 4:20 |      | 100.0 |
-| code | Add a version attribute to entities                |        |      | 0:05 |   1.9 |
-| code | Retest all recipes after latest changes            |        |      | 0:58 |  22.3 |
-| code | Server must check database connectivity on startup |        |      | 1:50 |  42.3 |
-| code | Add system tray support                            |        |      | 0:53 |  20.4 |
-| code | Red build after account lock PR                    |        |      | 0:10 |   3.8 |
-| code | Valgrind is detecting issues with comms tests      |        |      | 0:09 |   3.5 |
-| code | Saving a new currency should close window          |        |      | 0:15 |   5.8 |
+#+CAPTION: Clock summary at [2025-12-13 Sat 21:07], for Saturday, December 13, 2025.
+|       | <75>                                               |        |      |      |       |
+| Tags  | Headline                                           | Time   |      |      |     % |
+|-------+----------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                       | *4:38* |      |      | 100.0 |
+|-------+----------------------------------------------------+--------+------+------+-------|
+|       | Stories                                            | 4:38   |      |      | 100.0 |
+|       | Active                                             |        | 4:38 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint                 |        |      | 0:33 |  11.9 |
+| code  | Add a version attribute to entities                |        |      | 0:05 |   1.8 |
+| code  | Retest all recipes after latest changes            |        |      | 0:58 |  20.9 |
+| code  | Server must check database connectivity on startup |        |      | 1:50 |  39.6 |
+| code  | Add system tray support                            |        |      | 0:53 |  19.1 |
+| code  | Red build after account lock PR                    |        |      | 0:10 |   3.6 |
+| code  | Valgrind is detecting issues with comms tests      |        |      | 0:09 |   3.2 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-13 Sat 19:49]
+#+CAPTION: Clock summary at [2025-12-13 Sat 21:07]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *76:16* |       |       | 100.0 |
+|       | *Total time*                                            | *76:34* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 76:16   |       |       | 100.0 |
-|       | Active                                                  |         | 76:16 |       | 100.0 |
+|       | Stories                                                 | 76:34   |       |       | 100.0 |
+|       | Active                                                  |         | 76:34 |       | 100.0 |
 | agile | Sprint and product backlog refinement                   |         |       |  0:29 |   0.6 |
-| infra | OCR scan notebooks for this sprint                      |         |       | 15:42 |  20.6 |
+| infra | OCR scan notebooks for this sprint                      |         |       | 16:15 |  21.2 |
 | code  | Implement session cancellation                          |         |       |  2:42 |   3.5 |
 | code  | Create a variability service for feature flags          |         |       |  1:23 |   1.8 |
 | code  | Add tests to diagrams                                   |         |       |  1:26 |   1.9 |
@@ -55,11 +55,11 @@
 | code  | Implement client heartbeat for disconnect detection     |         |       |  5:18 |   6.9 |
 | code  | Pressing disconnect crashes client                      |         |       |  0:23 |   0.5 |
 | infra | Create a component creator skill                        |         |       |  0:42 |   0.9 |
-| code  | Add listen/notify support                               |         |       | 11:25 |  15.0 |
+| code  | Add listen/notify support                               |         |       | 11:25 |  14.9 |
 | code  | Move context to database                                |         |       |  0:20 |   0.4 |
 | code  | Use =std::string_view= for loggers                      |         |       |  3:14 |   4.2 |
 | code  | Fix issues with logging after string_view change        |         |       |  0:53 |   1.2 |
-| code  | Remove bootstrap mode from context                      |         |       |  6:36 |   8.7 |
+| code  | Remove bootstrap mode from context                      |         |       |  6:36 |   8.6 |
 | code  | Add tests for messaging handler                         |         |       |  0:14 |   0.3 |
 | code  | Add retry algorithm to client                           |         |       |  1:52 |   2.4 |
 | code  | Fix valgrind leaks after string view changes to logging |         |       |  0:07 |   0.2 |
@@ -234,8 +234,13 @@ print(p)
 
 [[file:sprint_backlog_05_resources.png]]
 
-*** STARTED OCR scan notebooks for this sprint                        :infra:
+*** Add AI generated sprint summary                                   :infra:
+
+At the end of the sprint, generate the sprint summary using the prompt.
+
+*** COMPLETED OCR scan notebooks for this sprint                      :infra:
     :LOGBOOK:
+    CLOCK: [2025-12-13 Sat 20:12]--[2025-12-13 Sat 20:45] =>  0:33
     CLOCK: [2025-12-12 Fri 10:07]--[2025-12-12 Fri 11:00] =>  0:53
     CLOCK: [2025-12-12 Fri 09:40]--[2025-12-12 Fri 10:06] =>  0:26
     CLOCK: [2025-12-11 Thu 08:12]--[2025-12-11 Thu 09:35] =>  1:23
@@ -256,10 +261,6 @@ print(p)
 
 We need to scan all of our finance notebooks so we can use them with AI. Each
 sprint will have a story similar to this until we scan and process them all.
-
-*** Add AI generated sprint summary                                   :infra:
-
-At the end of the sprint, generate the sprint summary using the prompt.
 
 *** COMPLETED Implement session cancellation                           :code:
     CLOSED: [2025-12-02 Tue 18:15]
@@ -2049,6 +2050,10 @@ they won't notice the refresh anyway. But for consistency, I'd keep the yellow
 indicator approach everywhere.
 #+end_quote
 
+*** COMPLETED Add =system.disable_password_validation= to manifest     :code:
+
+This flag was dropped with all of the refactorings.
+
 *** Add heat map of user sessions                                      :code:
 
 Things to measure:
@@ -2151,10 +2156,6 @@ Notes:
 - calculate statistical measures (average session duration, average bytes etc)
   and consider plotting them. Also in the aggregate so we can see patterns over
   time.
-
-*** Add =system.disable_password_validation= to manifest               :code:
-
-This flag was dropped with all of the refactorings.
 
 *** Subscribe on reconnect fails                                       :code:
 

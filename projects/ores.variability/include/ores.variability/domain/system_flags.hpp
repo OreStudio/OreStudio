@@ -58,7 +58,16 @@ enum class system_flag {
      * process. When disabled, only administrators can create accounts.
      * Default: disabled (false)
      */
-    user_signups
+    user_signups,
+
+    /**
+     * @brief Controls whether password policy validation is disabled.
+     *
+     * When enabled, disables strict password validation requirements.
+     * This is intended for testing and development environments only.
+     * Default: disabled (false) - password validation is enforced.
+     */
+    disable_password_validation
 };
 
 /**
@@ -88,6 +97,12 @@ inline constexpr std::array system_flag_definitions = {
         .flag = system_flag::user_signups,
         .default_enabled = false,
         .description = "Controls whether user self-registration is allowed."
+    },
+    system_flag_definition {
+        .flag = system_flag::disable_password_validation,
+        .default_enabled = false,
+        .description = "When enabled, disables strict password validation. "
+        "FOR TESTING/DEVELOPMENT ONLY."
     }
 };
 

@@ -18,32 +18,30 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-12 Fri 19:25], for Friday, December 12, 2025.
-|       | <75>                                    |        |      |      |       |
-| Tags  | Headline                                | Time   |      |      |     % |
-|-------+-----------------------------------------+--------+------+------+-------|
-|       | *Total time*                            | *6:46* |      |      | 100.0 |
-|-------+-----------------------------------------+--------+------+------+-------|
-|       | Stories                                 | 6:46   |      |      | 100.0 |
-|       | Active                                  |        | 6:46 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint      |        |      | 1:19 |  19.5 |
-| code  | Add a version attribute to entities     |        |      | 4:34 |  67.5 |
-| code  | Retest all recipes after latest changes |        |      | 0:53 |  13.1 |
+#+CAPTION: Clock summary at [2025-12-13 Sat 00:06], for Saturday, December 13, 2025.
+|      | <75>                                |        |      |      |       |
+| Tags | Headline                            | Time   |      |      |     % |
+|------+-------------------------------------+--------+------+------+-------|
+|      | *Total time*                        | *0:05* |      |      | 100.0 |
+|------+-------------------------------------+--------+------+------+-------|
+|      | Stories                             | 0:05   |      |      | 100.0 |
+|      | Active                              |        | 0:05 |      | 100.0 |
+| code | Add a version attribute to entities |        |      | 0:05 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-12 Fri 19:25]
+#+CAPTION: Clock summary at [2025-12-13 Sat 00:07]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *71:36* |       |       | 100.0 |
+|       | *Total time*                                            | *72:01* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 71:36   |       |       | 100.0 |
-|       | Active                                                  |         | 71:36 |       | 100.0 |
+|       | Stories                                                 | 72:01   |       |       | 100.0 |
+|       | Active                                                  |         | 72:01 |       | 100.0 |
 | agile | Sprint and product backlog refinement                   |         |       |  0:29 |   0.7 |
-| infra | OCR scan notebooks for this sprint                      |         |       | 15:42 |  21.9 |
-| code  | Implement session cancellation                          |         |       |  2:42 |   3.8 |
+| infra | OCR scan notebooks for this sprint                      |         |       | 15:42 |  21.8 |
+| code  | Implement session cancellation                          |         |       |  2:42 |   3.7 |
 | code  | Create a variability service for feature flags          |         |       |  1:23 |   1.9 |
 | code  | Add tests to diagrams                                   |         |       |  1:26 |   2.0 |
 | code  | Add messaging to variability                            |         |       |  0:40 |   0.9 |
@@ -64,8 +62,8 @@
 | code  | Experiment with simple code generation                  |         |       |  1:30 |   2.1 |
 | code  | Add postgres listener                                   |         |       |  1:59 |   2.8 |
 | code  | Add a logout message                                    |         |       |  0:22 |   0.5 |
-| code  | Implement the event bus                                 |         |       |  2:33 |   3.6 |
-| code  | Add a version attribute to entities                     |         |       |  5:54 |   8.2 |
+| code  | Implement the event bus                                 |         |       |  2:33 |   3.5 |
+| code  | Add a version attribute to entities                     |         |       |  6:19 |   8.8 |
 | code  | Retest all recipes after latest changes                 |         |       |  2:21 |   3.3 |
 #+end:
 
@@ -1742,8 +1740,9 @@ subscription protocol management).
 
 
 
-*** STARTED Add a version attribute to entities                        :code:
+*** COMPLETED Add a version attribute to entities                      :code:
     :LOGBOOK:
+    CLOCK: [2025-12-12 Fri 23:40]--[2025-12-13 Sat 00:05] =>  0:25
     CLOCK: [2025-12-12 Fri 18:49]--[2025-12-12 Fri 19:25] =>  0:36
     CLOCK: [2025-12-12 Fri 15:16]--[2025-12-12 Fri 16:40] =>  1:24
     CLOCK: [2025-12-12 Fri 13:42]--[2025-12-12 Fri 14:00] =>  1:33
@@ -1774,12 +1773,6 @@ DETAIL:  Key (username)=(newuser24) already exists.
 
   We should have a proper application exception for it.
 
-*** Add entity messages should not set modified by                     :code:
-
-At present you can supply any modified by you want in the protocol messages. It
-makes more sense to say the message must have the modified by as the user logged
-in from the session.
-
 *** STARTED Retest all recipes after latest changes                    :code:
     :LOGBOOK:
     CLOCK: [2025-12-12 Fri 00:46]--[2025-12-12 Fri 00:54] =>  0:08
@@ -1799,6 +1792,27 @@ Notes:
 - can we notify/listen from shell? should be possible, just tell user of news on
   next command.
 - "✗ Not logged in. Cannot logout." if not logged in, don't try to logout.
+
+*** Add entity messages should not set modified by                     :code:
+
+At present you can supply any modified by you want in the protocol messages. It
+makes more sense to say the message must have the modified by as the user logged
+in from the session.
+
+*** Add currencies update command to shell                             :code:
+
+At present we can only add new currencies. We also need to be able to update.
+Also, adding currencies requires supplying all parameters.
+
+*** Latest currencies should have different colour                     :code:
+
+After reloading we should mark latest currencies with a different colour so that
+it is obvious what was added.
+
+*** Add session information to database                                :code:
+
+At present we register the last login etc. It would be nice to record every
+session as well, including the duration.
 
 *** Valgrind is detecting issues with comms tests                      :code:
 

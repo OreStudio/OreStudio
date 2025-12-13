@@ -155,9 +155,22 @@ boost::asio::awaitable<void> server::run(boost::asio::io_context& io_context,
 
 boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_context,
     std::function<void(std::uint16_t)> on_listening) {
-    tcp::acceptor acceptor(
-        co_await boost::asio::this_coro::executor,
-        tcp::endpoint(tcp::v4(), options_.port));
+    tcp::acceptor acceptor(co_await boost::asio::this_coro::executor);
+
+    try {
+        acceptor.open(tcp::v4());
+        acceptor.set_option(tcp::acceptor::reuse_address(true));
+        acceptor.bind(tcp::endpoint(tcp::v4(), options_.port));
+        acceptor.listen();
+    } catch (const boost::system::system_error& e) {
+        if (e.code() == boost::asio::error::address_in_use) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Cannot start server: port " << options_.port
+                << " is already in use. Another instance of ores.service may be running. "
+                << "Use 'lsof -i :" << options_.port << "' to find the process.";
+        }
+        throw;
+    }
 
     auto local_port = acceptor.local_endpoint().port();
     BOOST_LOG_SEV(lg(), info) << "Server listening on port " << local_port;

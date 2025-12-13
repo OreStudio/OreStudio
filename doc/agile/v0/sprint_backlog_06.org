@@ -18,62 +18,64 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-13 Sat 09:52], for Saturday, December 13, 2025.
+#+CAPTION: Clock summary at [2025-12-13 Sat 19:49], for Saturday, December 13, 2025.
 |      | <75>                                               |        |      |      |       |
 | Tags | Headline                                           | Time   |      |      |     % |
 |------+----------------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                       | *4:05* |      |      | 100.0 |
+|      | *Total time*                                       | *4:20* |      |      | 100.0 |
 |------+----------------------------------------------------+--------+------+------+-------|
-|      | Stories                                            | 4:05   |      |      | 100.0 |
-|      | Active                                             |        | 4:05 |      | 100.0 |
-| code | Add a version attribute to entities                |        |      | 0:05 |   2.0 |
-| code | Retest all recipes after latest changes            |        |      | 0:58 |  23.7 |
-| code | Server must check database connectivity on startup |        |      | 1:50 |  44.9 |
-| code | Add system tray support                            |        |      | 0:53 |  21.6 |
-| code | Red build after account lock PR                    |        |      | 0:10 |   4.1 |
-| code | Valgrind is detecting issues with comms tests      |        |      | 0:09 |   3.7 |
+|      | Stories                                            | 4:20   |      |      | 100.0 |
+|      | Active                                             |        | 4:20 |      | 100.0 |
+| code | Add a version attribute to entities                |        |      | 0:05 |   1.9 |
+| code | Retest all recipes after latest changes            |        |      | 0:58 |  22.3 |
+| code | Server must check database connectivity on startup |        |      | 1:50 |  42.3 |
+| code | Add system tray support                            |        |      | 0:53 |  20.4 |
+| code | Red build after account lock PR                    |        |      | 0:10 |   3.8 |
+| code | Valgrind is detecting issues with comms tests      |        |      | 0:09 |   3.5 |
+| code | Saving a new currency should close window          |        |      | 0:15 |   5.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-13 Sat 09:52]
+#+CAPTION: Clock summary at [2025-12-13 Sat 19:49]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *76:01* |       |       | 100.0 |
+|       | *Total time*                                            | *76:16* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 76:01   |       |       | 100.0 |
-|       | Active                                                  |         | 76:01 |       | 100.0 |
+|       | Stories                                                 | 76:16   |       |       | 100.0 |
+|       | Active                                                  |         | 76:16 |       | 100.0 |
 | agile | Sprint and product backlog refinement                   |         |       |  0:29 |   0.6 |
-| infra | OCR scan notebooks for this sprint                      |         |       | 15:42 |  20.7 |
-| code  | Implement session cancellation                          |         |       |  2:42 |   3.6 |
+| infra | OCR scan notebooks for this sprint                      |         |       | 15:42 |  20.6 |
+| code  | Implement session cancellation                          |         |       |  2:42 |   3.5 |
 | code  | Create a variability service for feature flags          |         |       |  1:23 |   1.8 |
 | code  | Add tests to diagrams                                   |         |       |  1:26 |   1.9 |
 | code  | Add messaging to variability                            |         |       |  0:40 |   0.9 |
 | code  | Create handshake service in comms                       |         |       |  2:31 |   3.3 |
-| code  | Implement client heartbeat for disconnect detection     |         |       |  5:18 |   7.0 |
+| code  | Implement client heartbeat for disconnect detection     |         |       |  5:18 |   6.9 |
 | code  | Pressing disconnect crashes client                      |         |       |  0:23 |   0.5 |
 | infra | Create a component creator skill                        |         |       |  0:42 |   0.9 |
 | code  | Add listen/notify support                               |         |       | 11:25 |  15.0 |
 | code  | Move context to database                                |         |       |  0:20 |   0.4 |
-| code  | Use =std::string_view= for loggers                      |         |       |  3:14 |   4.3 |
+| code  | Use =std::string_view= for loggers                      |         |       |  3:14 |   4.2 |
 | code  | Fix issues with logging after string_view change        |         |       |  0:53 |   1.2 |
 | code  | Remove bootstrap mode from context                      |         |       |  6:36 |   8.7 |
 | code  | Add tests for messaging handler                         |         |       |  0:14 |   0.3 |
-| code  | Add retry algorithm to client                           |         |       |  1:52 |   2.5 |
+| code  | Add retry algorithm to client                           |         |       |  1:52 |   2.4 |
 | code  | Fix valgrind leaks after string view changes to logging |         |       |  0:07 |   0.2 |
 | code  | Remove enum exception                                   |         |       |  0:20 |   0.4 |
 | code  | Entity syntax refactor snags                            |         |       |  0:40 |   0.9 |
 | code  | Experiment with simple code generation                  |         |       |  1:30 |   2.0 |
 | code  | Add postgres listener                                   |         |       |  1:59 |   2.6 |
 | code  | Add a logout message                                    |         |       |  0:22 |   0.5 |
-| code  | Implement the event bus                                 |         |       |  2:33 |   3.4 |
-| code  | Add a version attribute to entities                     |         |       |  5:59 |   7.9 |
+| code  | Implement the event bus                                 |         |       |  2:33 |   3.3 |
+| code  | Add a version attribute to entities                     |         |       |  5:59 |   7.8 |
 | code  | Retest all recipes after latest changes                 |         |       |  3:39 |   4.8 |
 | code  | Server must check database connectivity on startup      |         |       |  1:50 |   2.4 |
 | code  | Add system tray support                                 |         |       |  0:53 |   1.2 |
 | code  | Red build after account lock PR                         |         |       |  0:10 |   0.2 |
 | code  | Valgrind is detecting issues with comms tests           |         |       |  0:09 |   0.2 |
+| code  | Saving a new currency should close window               |         |       |  0:15 |   0.3 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -2013,6 +2015,40 @@ We rushed the PR last night and left a broken build.
 ==51184==
 #+end_src
 
+*** COMPLETED Saving a new currency should close window                :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-13 Sat 18:40]--[2025-12-13 Sat 18:55] =>  0:15
+    :END:
+
+At present when we enter a new currency and press save the currency stays there.
+
+Not auto reloading:
+
+#+begin_quote
+My opinion on reload behavior:
+
+I'd recommend the yellow button indicator approach for these reasons:
+
+1. User control - The user stays in control of when the list refreshes, which
+   respects their workflow. They might be in the middle of looking at something
+   else in the list.
+2. Preserves state - Auto-reload could disrupt scroll position, selection, or
+   sorting the user had set up.
+3. Consistent pattern - This is a common pattern in professional applications
+   (e.g., email clients showing "new messages" indicator rather than
+   auto-scrolling). Users understand "yellow = stale data, click to refresh."
+ 4. Multi-user scenarios - If multiple users are working, auto-reload on every
+    change could be disruptive. The indicator lets users refresh when
+    convenient.
+5. Predictability - Auto-reload can feel jarring or "magical." The indicator is
+   explicit about what happened.
+
+The one exception might be: if the user created a currency and the Currencies
+list window is not currently visible/focused, then auto-reload is harmless since
+they won't notice the refresh anyway. But for consistency, I'd keep the yellow
+indicator approach everywhere.
+#+end_quote
+
 *** Add heat map of user sessions                                      :code:
 
 Things to measure:
@@ -2158,10 +2194,6 @@ We should probably unsubscribe before we logout.
 When we have a lot of clients all connecting we can't really see who is doing
 what in the server. We need an additional "tag" in logging to represent the
 session.
-
-*** Saving a new currency should close window                          :code:
-
-At present when we enter a new currency and press save the currency stays there.
 
 *** Use events in comms and accounts                                   :code:
 

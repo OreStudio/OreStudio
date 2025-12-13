@@ -27,6 +27,8 @@
 #include <QPixmap>
 #include <QImage>
 #include <QPainter>
+#include <QMdiSubWindow>
+#include <QMetaObject>
 #include "ui_CurrencyDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -257,13 +259,22 @@ void CurrencyDetailDialog::onSaveClicked() {
             emit self->isDirtyChanged(false);
             self->updateSaveResetButtonState();
 
-            // Transition from add mode to edit mode after successful creation
+            // Close window after successful creation of new currency
             if (self->isAddMode_) {
-                self->isAddMode_ = false;
-                self->currentCurrency_ = currency; // Update with saved currency
-                self->ui_->isoCodeEdit->setReadOnly(true); // ISO code can't be changed anymore
                 emit self->currencyCreated(
                     QString::fromStdString(currency.iso_code));
+
+                // Find the parent QMdiSubWindow and close it asynchronously
+                // to avoid race conditions with signal processing
+                QWidget* parent = self->parentWidget();
+                while (parent) {
+                    if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
+                        QMetaObject::invokeMethod(mdiSubWindow, "close",
+                            Qt::QueuedConnection);
+                        break;
+                    }
+                    parent = parent->parentWidget();
+                }
             } else {
                 self->currentCurrency_ = currency; // Update with modified currency
                 emit self->currencyUpdated(

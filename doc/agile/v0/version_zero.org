@@ -198,3 +198,4 @@ Backlogs]]. The last entry is the active sprint.
 * Footer
 
 | [[id:2A3C7481-0984-D344-575B-7BFBB8D5A98B][Sprint Backlog 05]] | implement bootstrap mode; finish up all remaining tasks around domain entities.         |
+| [[id:44AD3D04-EC5A-4039-91DD-7CEA0A18CA92][Sprint Backlog 07]] | finish reference implementation; add entity versioning.                                  |

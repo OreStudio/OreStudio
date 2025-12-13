@@ -180,6 +180,48 @@ struct notification_message final {
 
 std::ostream& operator<<(std::ostream& s, const notification_message& v);
 
+/**
+ * @brief Server-initiated notification of database status.
+ *
+ * This is a push message from the server to connected clients.
+ * It informs clients about database connectivity status.
+ */
+struct database_status_message final {
+    /**
+     * @brief Whether the database is available.
+     */
+    bool available;
+
+    /**
+     * @brief Error message if unavailable, empty otherwise.
+     */
+    std::string error_message;
+
+    /**
+     * @brief Timestamp of when the status was checked (UTC).
+     */
+    std::chrono::system_clock::time_point timestamp;
+
+    /**
+     * @brief Serialize notification to bytes.
+     *
+     * Format:
+     * - 1 byte: available (0 or 1)
+     * - 2 bytes: error_message length
+     * - N bytes: error_message (UTF-8)
+     * - 8 bytes: timestamp (milliseconds since epoch, int64_t)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize notification from bytes.
+     */
+    static std::expected<database_status_message, error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const database_status_message& v);
+
 }
 
 #endif

@@ -30,7 +30,7 @@ namespace ores::eventing::service {
 using namespace ores::utility::log;
 
 postgres_listener_service::postgres_listener_service(
-    utility::database::context ctx,
+    database::context ctx,
     notification_callback_t callback)
     : ctx_(std::move(ctx)),
       notification_callback_(std::move(callback)),

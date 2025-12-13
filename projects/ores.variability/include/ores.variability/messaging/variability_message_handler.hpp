@@ -22,7 +22,7 @@
 
 #include "ores.comms/messaging/message_handler.hpp"
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/database/context.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.variability/repository/feature_flags_repository.hpp"
 
 namespace ores::variability::messaging {
@@ -53,7 +53,7 @@ public:
      *
      * @param ctx Database context for repository access
      */
-    explicit variability_message_handler(utility::database::context ctx);
+    explicit variability_message_handler(database::context ctx);
 
     /**
      * @brief Handle a variability subsystem message.

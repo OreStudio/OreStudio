@@ -19,13 +19,13 @@
  */
 #include "ores.risk/repository/currency_mapper.hpp"
 
-#include "ores.utility/repository/mapper_helpers.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.risk/domain/currency_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::risk::repository {
 
 using namespace ores::utility::log;
-using namespace ores::utility::repository;
+using namespace ores::database::repository;
 
 domain::currency currency_mapper::map(const currency_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
@@ -81,7 +81,7 @@ currency_mapper::map(const std::vector<currency_entity>& v) {
     return map_vector<currency_entity, domain::currency>(
         v,
         [](const auto& ve) { return map(ve); },
-        "ores.risk.repository.currency_mapper",
+        lg(),
         "db entities");
 }
 
@@ -90,7 +90,7 @@ currency_mapper::map(const std::vector<domain::currency>& v) {
     return map_vector<domain::currency, currency_entity>(
         v,
         [](const auto& ve) { return map(ve); },
-        "ores.risk.repository.currency_mapper",
+        lg(),
         "domain entities");
 }
 

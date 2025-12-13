@@ -51,8 +51,9 @@ list(APPEND ORES_JAVA_ARGS "-DPLANTUML_LIMIT_SIZE=65535")
 #
 # Projects
 #
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.testing)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.database)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.utility)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.testing)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.variability)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.accounts)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.cli)

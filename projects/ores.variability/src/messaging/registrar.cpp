@@ -26,7 +26,7 @@ namespace ores::variability::messaging {
 using namespace ores::utility::log;
 
 void registrar::register_handlers(comms::net::server& server,
-    utility::database::context ctx) {
+    database::context ctx) {
     BOOST_LOG_SEV(lg(), info) << "Registering variability subsystem message handlers.";
 
     auto handler = std::make_shared<variability_message_handler>(std::move(ctx));

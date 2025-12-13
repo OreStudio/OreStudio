@@ -25,7 +25,7 @@
 #include "ores.cli/config/parser_exception.hpp"
 #include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/add_account_options.hpp"
-#include "ores.utility/database/database_configuration.hpp"
+#include "ores.database/config/database_configuration.hpp"
 #include "ores.utility/log/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
 
@@ -194,7 +194,7 @@ handle_accounts_command(bool has_help,
     }
 
     // Read common options
-    using ores::utility::database::database_configuration;
+    using ores::database::database_configuration;
     using ores::utility::log::logging_configuration;
     r.database = database_configuration::read_options(vm);
     r.logging = logging_configuration::read_options(vm);

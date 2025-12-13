@@ -33,10 +33,11 @@ The system is organized into five architectural layers:
 
 ** Foundation Layer
 
-- Components: [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]], [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability]].
-- Core infrastructure: database connectivity, logging, filesystem utilities.
-- UUID generation, environment variables, string conversion.
-- No dependencies on other ORE Studio components.
+- Components: [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]], [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability]].
+- *Database*: PostgreSQL connectivity, connection pooling, health monitoring, repository helpers.
+- *Utility*: Logging, filesystem utilities, UUID generation, environment variables, string conversion.
+- *Variability*: Feature flags and runtime configuration management.
+- No dependencies on other ORE Studio components (ores.database is the base).
 
 ** Infrastructure Layer
 

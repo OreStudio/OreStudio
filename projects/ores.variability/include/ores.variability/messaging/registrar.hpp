@@ -22,7 +22,7 @@
 
 #include "ores.comms/net/server.hpp"
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/database/context.hpp"
+#include "ores.database/domain/context.hpp"
 
 namespace ores::variability::messaging {
 
@@ -48,7 +48,7 @@ private:
 
 public:
     static void register_handlers(comms::net::server& server,
-        utility::database::context ctx);
+        database::context ctx);
 };
 
 }

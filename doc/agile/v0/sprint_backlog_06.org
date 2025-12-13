@@ -18,54 +18,56 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-13 Sat 01:24], for Saturday, December 13, 2025.
-|      | <75>                                    |        |      |      |       |
-| Tags | Headline                                | Time   |      |      |     % |
-|------+-----------------------------------------+--------+------+------+-------|
-|      | *Total time*                            | *1:03* |      |      | 100.0 |
-|------+-----------------------------------------+--------+------+------+-------|
-|      | Stories                                 | 1:03   |      |      | 100.0 |
-|      | Active                                  |        | 1:03 |      | 100.0 |
-| code | Add a version attribute to entities     |        |      | 0:05 |   7.9 |
-| code | Retest all recipes after latest changes |        |      | 0:58 |  92.1 |
+#+CAPTION: Clock summary at [2025-12-13 Sat 03:16], for Saturday, December 13, 2025.
+|      | <75>                                               |        |      |      |       |
+| Tags | Headline                                           | Time   |      |      |     % |
+|------+----------------------------------------------------+--------+------+------+-------|
+|      | *Total time*                                       | *2:53* |      |      | 100.0 |
+|------+----------------------------------------------------+--------+------+------+-------|
+|      | Stories                                            | 2:53   |      |      | 100.0 |
+|      | Active                                             |        | 2:53 |      | 100.0 |
+| code | Add a version attribute to entities                |        |      | 0:05 |   2.9 |
+| code | Retest all recipes after latest changes            |        |      | 0:58 |  33.5 |
+| code | Server must check database connectivity on startup |        |      | 1:50 |  63.6 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-13 Sat 01:24]
+#+CAPTION: Clock summary at [2025-12-13 Sat 03:16]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *72:59* |       |       | 100.0 |
+|       | *Total time*                                            | *74:49* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 72:59   |       |       | 100.0 |
-|       | Active                                                  |         | 72:59 |       | 100.0 |
-| agile | Sprint and product backlog refinement                   |         |       |  0:29 |   0.7 |
-| infra | OCR scan notebooks for this sprint                      |         |       | 15:42 |  21.5 |
-| code  | Implement session cancellation                          |         |       |  2:42 |   3.7 |
-| code  | Create a variability service for feature flags          |         |       |  1:23 |   1.9 |
-| code  | Add tests to diagrams                                   |         |       |  1:26 |   2.0 |
+|       | Stories                                                 | 74:49   |       |       | 100.0 |
+|       | Active                                                  |         | 74:49 |       | 100.0 |
+| agile | Sprint and product backlog refinement                   |         |       |  0:29 |   0.6 |
+| infra | OCR scan notebooks for this sprint                      |         |       | 15:42 |  21.0 |
+| code  | Implement session cancellation                          |         |       |  2:42 |   3.6 |
+| code  | Create a variability service for feature flags          |         |       |  1:23 |   1.8 |
+| code  | Add tests to diagrams                                   |         |       |  1:26 |   1.9 |
 | code  | Add messaging to variability                            |         |       |  0:40 |   0.9 |
 | code  | Create handshake service in comms                       |         |       |  2:31 |   3.4 |
-| code  | Implement client heartbeat for disconnect detection     |         |       |  5:18 |   7.3 |
+| code  | Implement client heartbeat for disconnect detection     |         |       |  5:18 |   7.1 |
 | code  | Pressing disconnect crashes client                      |         |       |  0:23 |   0.5 |
-| infra | Create a component creator skill                        |         |       |  0:42 |   1.0 |
-| code  | Add listen/notify support                               |         |       | 11:25 |  15.6 |
-| code  | Move context to database                                |         |       |  0:20 |   0.5 |
-| code  | Use =std::string_view= for loggers                      |         |       |  3:14 |   4.4 |
+| infra | Create a component creator skill                        |         |       |  0:42 |   0.9 |
+| code  | Add listen/notify support                               |         |       | 11:25 |  15.3 |
+| code  | Move context to database                                |         |       |  0:20 |   0.4 |
+| code  | Use =std::string_view= for loggers                      |         |       |  3:14 |   4.3 |
 | code  | Fix issues with logging after string_view change        |         |       |  0:53 |   1.2 |
-| code  | Remove bootstrap mode from context                      |         |       |  6:36 |   9.0 |
+| code  | Remove bootstrap mode from context                      |         |       |  6:36 |   8.8 |
 | code  | Add tests for messaging handler                         |         |       |  0:14 |   0.3 |
-| code  | Add retry algorithm to client                           |         |       |  1:52 |   2.6 |
+| code  | Add retry algorithm to client                           |         |       |  1:52 |   2.5 |
 | code  | Fix valgrind leaks after string view changes to logging |         |       |  0:07 |   0.2 |
-| code  | Remove enum exception                                   |         |       |  0:20 |   0.5 |
+| code  | Remove enum exception                                   |         |       |  0:20 |   0.4 |
 | code  | Entity syntax refactor snags                            |         |       |  0:40 |   0.9 |
-| code  | Experiment with simple code generation                  |         |       |  1:30 |   2.1 |
+| code  | Experiment with simple code generation                  |         |       |  1:30 |   2.0 |
 | code  | Add postgres listener                                   |         |       |  1:59 |   2.7 |
 | code  | Add a logout message                                    |         |       |  0:22 |   0.5 |
-| code  | Implement the event bus                                 |         |       |  2:33 |   3.5 |
-| code  | Add a version attribute to entities                     |         |       |  5:59 |   8.2 |
-| code  | Retest all recipes after latest changes                 |         |       |  3:39 |   5.0 |
+| code  | Implement the event bus                                 |         |       |  2:33 |   3.4 |
+| code  | Add a version attribute to entities                     |         |       |  5:59 |   8.0 |
+| code  | Retest all recipes after latest changes                 |         |       |  3:39 |   4.9 |
+| code  | Server must check database connectivity on startup      |         |       |  1:50 |   2.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1797,6 +1799,41 @@ Notes:
   next command.
 - "✗ Not logged in. Cannot logout." if not logged in, don't try to logout.
 
+*** COMPLETED Server must check database connectivity on startup       :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-13 Sat 01:25]--[2025-12-13 Sat 03:15] =>  1:50
+    :END:
+
+At present the server only checks connectivity to database when a user requests
+an operation. We need some kind of initial polling which puts the server in a
+mode replying to all clients: "database not available". While this is happening,
+it should keep polling the database and checking the connectivity.
+
+Ideally the server should start, but poll the DB. It should send messages to
+clients informing them of the issues with database.
+
+Notes:
+
+- health monitor looks like a service and should really live in service folder.
+- remove log helper in database.
+
+*** Perform tests to check database connectivity                       :code:
+
+We added some basic database monitoring but did not perform a lot of testing.
+
+We should also generalise this so that if the database goes down after start we
+still perform some kind of retry logic.
+
+See also this point from Gemini:
+
+#+begin_quote
+The new broadcast_all method appears to be unused in this pull request. The
+database status broadcast is implemented directly in
+=ores::comms::net::server::broadcast_database_status= without using the
+subscription_manager. If this method is not intended for future use, it could be
+removed to avoid dead code.
+#+end_quote
+
 *** Valgrind is detecting issues with comms tests                      :code:
 
 #+begin_src fundamental
@@ -2155,17 +2192,6 @@ TEST_CASE("handle_login_request_locked_account", tags) {
 #+end_src
 
 
-
-
-*** Server must check database connectivity on startup                 :code:
-
-At present the server only checks connectivity to database when a user requests
-an operation. We need some kind of initial polling which puts the server in a
-mode replying to all clients: "database not available". While this is happening,
-it should keep polling the database and checking the connectivity.
-
-Ideally the server should start, but poll the DB. It should send messages to
-clients informing them of the issues with database.
 
 
 *** Add flags for currencies                                           :code:

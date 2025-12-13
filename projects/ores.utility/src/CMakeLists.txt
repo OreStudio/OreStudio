@@ -44,7 +44,6 @@ target_link_libraries(${lib_target_name}
         OpenSSL::SSL
         Boost::log
         Boost::program_options
-        sqlgen::sqlgen
     PRIVATE
         faker-cxx::faker-cxx
         reflectcpp::reflectcpp

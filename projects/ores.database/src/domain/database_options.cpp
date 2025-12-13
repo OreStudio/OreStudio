@@ -17,32 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_REPOSITORY_REPOSITORY_EXCEPTION_HPP
-#define ORES_UTILITY_REPOSITORY_REPOSITORY_EXCEPTION_HPP
+#include "ores.database/domain/database_options.hpp"
 
-#include <string>
-#include <boost/exception/info.hpp>
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 
-namespace ores::utility::repository {
+namespace ores::database {
 
-/**
- * @brief A fatal error has occurred whilst reading or writing to the
- * repository.
- */
-class repository_exception : public virtual std::exception,
-                             public virtual boost::exception {
-public:
-    explicit repository_exception(std::string_view message = "")
-        : message_(message) {}
-
-    [[nodiscard]] const char* what() const noexcept override {
-        return message_.c_str();
-    }
-
-private:
-    std::string message_;
-};
-
+std::ostream& operator<<(std::ostream& s, const database_options& v) {
+    rfl::json::write(v, s);
+    return s;
 }
 
-#endif
+sqlgen::postgres::Credentials to_credentials(const database_options& opts) {
+    return sqlgen::postgres::Credentials {
+        .user = opts.user,
+        .password = opts.password(),
+        .host = opts.host,
+        .dbname = opts.database,
+        .port = opts.port
+    };
+}
+
+}

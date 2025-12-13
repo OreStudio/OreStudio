@@ -38,7 +38,7 @@ throw_if_empty(const std::string& name, const std::string& value)
     }
 }
 
-account_service::account_service(utility::database::context ctx)
+account_service::account_service(database::context ctx)
     : account_repo_(ctx),
       login_info_repo_(ctx) {
 

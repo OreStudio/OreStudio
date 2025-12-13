@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_DATABASE_DATABASE_CONFIGURATION_HPP
-#define ORES_UTILITY_DATABASE_DATABASE_CONFIGURATION_HPP
+#ifndef ORES_DATABASE_DATABASE_CONFIGURATION_HPP
+#define ORES_DATABASE_DATABASE_CONFIGURATION_HPP
 
 #include <boost/program_options.hpp>
-#include "ores.utility/database/database_options.hpp"
+#include "ores.database/domain/database_options.hpp"
 
-namespace ores::utility::database {
+namespace ores::database {
 
 /**
  * @brief Centralized manager for database configuration parsing.

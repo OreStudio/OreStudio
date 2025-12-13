@@ -24,7 +24,7 @@ namespace ores::eventing::service {
 using namespace ores::utility::log;
 
 postgres_event_source::postgres_event_source(
-    utility::database::context ctx, event_bus& bus)
+    database::context ctx, event_bus& bus)
     : bus_(bus),
       listener_(std::move(ctx),
           [this](const domain::entity_change_event& e) {

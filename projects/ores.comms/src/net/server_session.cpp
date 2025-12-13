@@ -84,6 +84,27 @@ bool server_session::queue_notification(const std::string& event_type,
     return true;
 }
 
+bool server_session::queue_database_status(bool available, const std::string& error_message,
+    std::chrono::system_clock::time_point timestamp) {
+    if (!active_) {
+        BOOST_LOG_SEV(lg(), debug)
+            << "Cannot queue database status - session not active";
+        return false;
+    }
+
+    {
+        std::lock_guard lock(notification_mutex_);
+        pending_database_status_.push({available, error_message, timestamp});
+    }
+
+    // Signal the notification writer by cancelling the timer
+    notification_signal_.cancel();
+
+    BOOST_LOG_SEV(lg(), debug)
+        << "Queued database status notification (available=" << available << ")";
+    return true;
+}
+
 boost::asio::awaitable<void> server_session::run() {
     std::string remote_addr = conn_->remote_address();
     try {
@@ -276,6 +297,9 @@ boost::asio::awaitable<void> server_session::run_notification_writer() {
 
                 // Send all pending notifications
                 co_await send_pending_notifications();
+
+                // Send all pending database status notifications
+                co_await send_pending_database_status();
             }
         }
     } catch (const std::exception& e) {
@@ -334,6 +358,52 @@ boost::asio::awaitable<void> server_session::send_pending_notifications() {
             BOOST_LOG_SEV(lg(), error)
                 << "Failed to send notification for event type '"
                 << notification.event_type << "': " << e.what();
+        }
+    }
+}
+
+boost::asio::awaitable<void> server_session::send_pending_database_status() {
+    std::vector<pending_database_status> to_send;
+
+    {
+        std::lock_guard lock(notification_mutex_);
+        while (!pending_database_status_.empty()) {
+            to_send.push_back(std::move(pending_database_status_.front()));
+            pending_database_status_.pop();
+        }
+    }
+
+    if (to_send.empty()) {
+        co_return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug)
+        << "Sending " << to_send.size() << " pending database status notification(s)";
+
+    for (const auto& status : to_send) {
+        try {
+            messaging::database_status_message msg{
+                .available = status.available,
+                .error_message = status.error_message,
+                .timestamp = status.timestamp
+            };
+
+            auto payload = msg.serialize();
+            messaging::frame frame{
+                messaging::message_type::database_status_notification,
+                ++sequence_number_,
+                std::move(payload)
+            };
+
+            co_await conn_->write_frame(frame);
+
+            BOOST_LOG_SEV(lg(), info)
+                << "Sent database status notification (available="
+                << status.available << ") to " << conn_->remote_address();
+
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to send database status notification: " << e.what();
         }
     }
 }

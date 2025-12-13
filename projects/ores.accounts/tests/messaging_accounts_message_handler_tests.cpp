@@ -58,7 +58,7 @@ create_account_request to_create_account_request(const domain::account& a) {
 }
 
 std::shared_ptr<ores::variability::service::system_flags_service>
-make_system_flags(ores::utility::database::context& ctx) {
+make_system_flags(ores::database::context& ctx) {
     auto flags = std::make_shared<ores::variability::service::system_flags_service>(ctx);
     // Disable bootstrap mode so tests can proceed
     flags->set_bootstrap_mode(false, "test");

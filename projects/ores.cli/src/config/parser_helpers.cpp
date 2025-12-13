@@ -26,7 +26,7 @@
 #include <boost/throw_exception.hpp>
 #include <magic_enum/magic_enum.hpp>
 #include "ores.utility/log/logging_configuration.hpp"
-#include "ores.utility/database/database_configuration.hpp"
+#include "ores.database/config/database_configuration.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 
 namespace ores::cli::config::parser_helpers {
@@ -58,7 +58,7 @@ void print_help_command(const std::string& command_name,
 
 boost::program_options::options_description
 add_common_options(boost::program_options::options_description base) {
-    using ores::utility::database::database_configuration;
+    using ores::database::database_configuration;
     using ores::utility::log::logging_configuration;
 
     const auto db_desc(database_configuration::make_options_description());

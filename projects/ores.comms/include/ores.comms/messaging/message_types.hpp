@@ -45,8 +45,11 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 7.2 changes logout_request to have empty payload. Account ID is now
 // determined from session context to prevent clients from forging logout
 // requests for other users.
+//
+// Version 7.3 adds database_status_notification message for server-push
+// database health status updates, and database_unavailable error code.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 7;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 2;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 3;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -73,6 +76,9 @@ enum class message_type {
     unsubscribe_request = 0x0012,
     unsubscribe_response = 0x0013,
     notification = 0x0014,
+
+    // System status notifications (0x0020 - 0x002F)
+    database_status_notification = 0x0020,
 
     // Risk subsystem messages (0x1000 - 0x1FFF)
     get_currencies_request = 0x1001,
@@ -129,6 +135,7 @@ enum class error_code {
     bootstrap_mode_forbidden = 0x000E,
     weak_password = 0x000F,
     not_localhost = 0x0010,
+    database_unavailable = 0x0011,
     last_value
 };
 

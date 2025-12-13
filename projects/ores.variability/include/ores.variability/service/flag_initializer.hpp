@@ -22,7 +22,7 @@
 
 #include <string_view>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/database/context.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.variability/service/feature_flags_service.hpp"
 
 namespace ores::variability::service {
@@ -54,7 +54,7 @@ public:
      *
      * @param ctx The database context to be used by the underlying repository.
      */
-    explicit flag_initializer(utility::database::context ctx);
+    explicit flag_initializer(database::context ctx);
 
     /**
      * @brief Ensures all system flags exist in the database.

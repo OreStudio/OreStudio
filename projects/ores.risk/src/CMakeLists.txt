@@ -40,6 +40,7 @@ target_link_libraries(${lib_target_name}
         pugixml::pugixml
         Boost::boost
         ores.utility.lib
+        ores.database.lib
         ores.variability.lib
         faker-cxx::faker-cxx
         libfort::fort

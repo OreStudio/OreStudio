@@ -21,6 +21,11 @@
 #include "ores.service/app/application.hpp"
 
 #include <boost/throw_exception.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
+#include <boost/asio/steady_timer.hpp>
+#include <boost/asio/this_coro.hpp>
+#include <boost/asio/use_awaitable.hpp>
 #include "ores.risk/messaging/registrar.hpp"
 #include "ores.risk/domain/events/currency_changed_event.hpp"
 #include "ores.accounts/messaging/registrar.hpp"
@@ -34,7 +39,8 @@
 #include "ores.eventing/service/registrar.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.utility/version/version.hpp"
-#include "ores.utility/database/context_factory.hpp"
+#include "ores.database/service/context_factory.hpp"
+#include "ores.database/service/health_monitor.hpp"
 #include "ores.comms/net/server.hpp"
 #include "ores.comms/service/subscription_manager.hpp"
 #include "ores.comms/service/subscription_handler.hpp"
@@ -43,9 +49,9 @@
 namespace ores::service::app {
 using namespace ores::utility::log;
 
-utility::database::context application::make_context(
-    const std::optional<utility::database::database_options>& db_opts) {
-    using utility::database::context_factory;
+database::context application::make_context(
+    const std::optional<database::database_options>& db_opts) {
+    using database::context_factory;
 
     if (!db_opts.has_value()) {
         BOOST_THROW_EXCEPTION(
@@ -67,6 +73,34 @@ application::application() = default;
 boost::asio::awaitable<void> application::
 run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Starting ORE Studio Service v" << ORES_VERSION;
+
+    // Create database health monitor
+    database::health_monitor db_health_monitor(
+        cfg.database, std::chrono::seconds(5));
+
+    // Perform initial database connectivity check
+    BOOST_LOG_SEV(lg(), info) << "Checking database connectivity...";
+    bool db_initially_available = db_health_monitor.check_health();
+
+    if (!db_initially_available) {
+        BOOST_LOG_SEV(lg(), warn) << "================================================";
+        BOOST_LOG_SEV(lg(), warn) << "DATABASE CONNECTIVITY CHECK FAILED";
+        BOOST_LOG_SEV(lg(), warn) << "Error: " << db_health_monitor.last_error();
+        BOOST_LOG_SEV(lg(), warn) << "Waiting for database to become available...";
+        BOOST_LOG_SEV(lg(), warn) << "================================================";
+
+        // Wait for database to become available before proceeding
+        while (!db_health_monitor.check_health()) {
+            BOOST_LOG_SEV(lg(), info) << "Database still unavailable, retrying in 5 seconds...";
+            boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
+            timer.expires_after(std::chrono::seconds(5));
+            co_await timer.async_wait(boost::asio::use_awaitable);
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Database connectivity restored!";
+    } else {
+        BOOST_LOG_SEV(lg(), info) << "Database connectivity check PASSED";
+    }
 
     auto ctx = make_context(cfg.database);
 
@@ -150,7 +184,26 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         {comms::messaging::CORE_SUBSYSTEM_MIN, comms::messaging::CORE_SUBSYSTEM_MAX},
         subscription_handler);
 
+    // Set up database health monitor callback to broadcast status changes to clients
+    db_health_monitor.set_status_change_callback(
+        [&srv](bool available, const std::string& error_message) {
+            BOOST_LOG_SEV(lg(), info)
+                << "Database status changed: "
+                << (available ? "AVAILABLE" : "UNAVAILABLE");
+            srv->broadcast_database_status(available, error_message);
+        });
+
+    // Start the database health monitor to continuously poll
+    boost::asio::co_spawn(io_ctx,
+        [&db_health_monitor, &io_ctx]() -> boost::asio::awaitable<void> {
+            co_await db_health_monitor.run(io_ctx);
+        },
+        boost::asio::detached);
+
     co_await srv->run(io_ctx);
+
+    // Stop the database health monitor
+    db_health_monitor.stop();
 
     // Stop the event source
     event_source.stop();

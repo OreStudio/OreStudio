@@ -25,7 +25,7 @@ namespace ores::variability::service {
 
 using namespace ores::utility::log;
 
-flag_initializer::flag_initializer(utility::database::context ctx)
+flag_initializer::flag_initializer(database::context ctx)
     : feature_flags_service_(std::move(ctx)) {}
 
 std::size_t flag_initializer::ensure_system_flags_exist() {

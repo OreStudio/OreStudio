@@ -19,13 +19,14 @@
  */
 #include "ores.variability/repository/feature_flags_mapper.hpp"
 
-#include "ores.utility/repository/mapper_helpers.hpp"
+#include <algorithm>
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.variability/domain/feature_flags_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::variability::repository {
 
 using namespace ores::utility::log;
-using namespace ores::utility::repository;
+using namespace ores::database::repository;
 
 domain::feature_flags feature_flags_mapper::map(const feature_flags_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
@@ -60,7 +61,7 @@ feature_flags_mapper::map(const std::vector<feature_flags_entity>& v) {
     return map_vector<feature_flags_entity, domain::feature_flags>(
         v,
         [](const auto& ve) { return map(ve); },
-        "ores.variability.repository.feature_flags_mapper",
+        lg(),
         "db entities");
 }
 
@@ -69,7 +70,7 @@ feature_flags_mapper::map(const std::vector<domain::feature_flags>& v) {
     return map_vector<domain::feature_flags, feature_flags_entity>(
         v,
         [](const auto& ve) { return map(ve); },
-        "ores.variability.repository.feature_flags_mapper",
+        lg(),
         "domain entities");
 }
 

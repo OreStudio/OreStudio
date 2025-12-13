@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_REPOSITORY_MAPPER_HELPERS_HPP
-#define ORES_UTILITY_REPOSITORY_MAPPER_HELPERS_HPP
+#ifndef ORES_DATABASE_REPOSITORY_MAPPER_HELPERS_HPP
+#define ORES_DATABASE_REPOSITORY_MAPPER_HELPERS_HPP
 
 #include <vector>
 #include <chrono>
@@ -26,10 +26,9 @@
 #include <sstream>
 #include <format>
 #include <sqlgen/postgres.hpp>
-#include "ores.utility/log/severity_level.hpp"
 #include "ores.utility/log/make_logger.hpp"
 
-namespace ores::utility::repository {
+namespace ores::database::repository {
 
 /**
  * @brief Maps a vector of source objects to a vector of destination objects.
@@ -42,7 +41,7 @@ namespace ores::utility::repository {
  * @tparam MapFunc The mapping function type (typically a lambda or function pointer)
  * @param source The source vector to map from
  * @param map_func The function to map individual elements (Source -> Dest)
- * @param logger_name The name to use for logging
+ * @param lg The logger to use for logging
  * @param log_prefix The prefix for log messages (e.g., "db entities" or "domain entities")
  * @return A vector of destination objects
  *
@@ -50,7 +49,7 @@ namespace ores::utility::repository {
  * auto domain_vec = map_vector<entity_type, domain_type>(
  *     entities,
  *     [](const auto& e) { return mapper::map(e); },
- *     "ores.accounts.mapper",
+ *     lg,
  *     "db entities"
  * );
  */
@@ -58,21 +57,20 @@ template<typename Source, typename Dest, typename MapFunc>
 std::vector<Dest> map_vector(
     const std::vector<Source>& source,
     MapFunc&& map_func,
-    const std::string& logger_name,
+    utility::log::logger_t& lg,
     const std::string& log_prefix) {
 
     using namespace ores::utility::log;
-    auto logger = make_logger(logger_name);
 
-    BOOST_LOG_SEV(logger, debug) << "Mapping " << log_prefix
-                                 << ". Total: " << source.size();
+    BOOST_LOG_SEV(lg, debug) << "Mapping " << log_prefix
+                             << ". Total: " << source.size();
 
     std::vector<Dest> result;
     result.reserve(source.size());
     std::ranges::transform(source, std::back_inserter(result),
         std::forward<MapFunc>(map_func));
 
-    BOOST_LOG_SEV(logger, debug) << "Mapped " << log_prefix << ".";
+    BOOST_LOG_SEV(lg, debug) << "Mapped " << log_prefix << ".";
     return result;
 }
 
@@ -104,20 +102,21 @@ timestamp_to_timepoint(const sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">& ts) {
  * "%Y-%m-%d %H:%M:%S" suitable for database storage.
  *
  * @param tp The time_point to convert
+ * @param lg The logger to use for logging
  * @return A sqlgen Timestamp, or an empty Timestamp if conversion fails
  *
  * @example
- * entity.last_login = timepoint_to_timestamp(std::chrono::system_clock::now());
+ * entity.last_login = timepoint_to_timestamp(std::chrono::system_clock::now(), lg);
  */
 inline sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
-timepoint_to_timestamp(const std::chrono::system_clock::time_point& tp) {
+timepoint_to_timestamp(const std::chrono::system_clock::time_point& tp,
+    utility::log::logger_t& lg) {
     using namespace ores::utility::log;
 
     const auto s = std::format("{:%Y-%m-%d %H:%M:%S}", tp);
     const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(s);
     if (!r) {
-        auto logger = make_logger("ores.utility.repository.mapper_helpers");
-        BOOST_LOG_SEV(logger, error) << "Error converting timepoint to timestamp";
+        BOOST_LOG_SEV(lg, error) << "Error converting timepoint to timestamp";
         return {};
     }
     return r.value();

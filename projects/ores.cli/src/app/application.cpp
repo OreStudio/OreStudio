@@ -33,8 +33,8 @@
 #include <magic_enum/magic_enum.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp"  // IWYU pragma: keep.
-#include "ores.utility/database/context_factory.hpp"
-#include "ores.utility/database/database_options.hpp"
+#include "ores.database/service/context_factory.hpp"
+#include "ores.database/domain/database_options.hpp"
 #include "ores.utility/datetime/datetime.hpp"
 #include "ores.risk/orexml/importer.hpp"
 #include "ores.risk/orexml/exporter.hpp"
@@ -71,9 +71,9 @@ using ores::risk::domain::currency;
 using risk::repository::currency_repository;
 using connection = sqlgen::Result<rfl::Ref<sqlgen::postgres::Connection>>;
 
-utility::database::context application::make_context(
-    const std::optional<utility::database::database_options>& db_opts) {
-    using utility::database::context_factory;
+database::context application::make_context(
+    const std::optional<database::database_options>& db_opts) {
+    using database::context_factory;
 
     if (!db_opts.has_value()) {
         BOOST_THROW_EXCEPTION(
@@ -91,7 +91,7 @@ utility::database::context application::make_context(
 }
 
 application::application(std::ostream& output_stream,
-    const std::optional<utility::database::database_options>& db_opts)
+    const std::optional<database::database_options>& db_opts)
     : output_stream_(output_stream), context_(make_context(db_opts)) {
     BOOST_LOG_SEV(lg(), debug) << "Creating application.";
 }

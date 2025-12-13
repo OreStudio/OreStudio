@@ -25,7 +25,7 @@ namespace ores::variability::messaging {
 
 using namespace ores::utility::log;
 
-variability_message_handler::variability_message_handler(utility::database::context ctx)
+variability_message_handler::variability_message_handler(database::context ctx)
     : feature_flags_repo_(std::move(ctx)) {}
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,

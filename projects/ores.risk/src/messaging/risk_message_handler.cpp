@@ -25,7 +25,7 @@ namespace ores::risk::messaging {
 
 using namespace ores::utility::log;
 
-risk_message_handler::risk_message_handler(utility::database::context ctx,
+risk_message_handler::risk_message_handler(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags)
     : ctx_(ctx), system_flags_(std::move(system_flags)) {}
 

@@ -39,6 +39,7 @@ target_link_libraries(${lib_target_name}
         ores.comms.lib
     PRIVATE
         ores.utility.lib
+        ores.database.lib
         sqlgen::sqlgen
         reflectcpp::reflectcpp
         libfort::fort

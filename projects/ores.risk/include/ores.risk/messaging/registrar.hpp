@@ -23,7 +23,7 @@
 #include <memory>
 #include "ores.comms/net/server.hpp"
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/database/context.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 
 namespace ores::risk::messaging {
@@ -51,7 +51,7 @@ private:
 
 public:
     static void register_handlers(comms::net::server& server,
-        utility::database::context ctx,
+        database::context ctx,
         std::shared_ptr<variability::service::system_flags_service> system_flags);
 };
 

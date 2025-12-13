@@ -24,7 +24,7 @@
 #include <functional>
 #include <unordered_map>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/database/context.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.eventing/domain/entity_change_event.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.eventing/service/postgres_listener_service.hpp"
@@ -82,7 +82,7 @@ public:
      * @param ctx Database context for the listener connection.
      * @param bus Reference to the event bus for publishing events.
      */
-    postgres_event_source(utility::database::context ctx, event_bus& bus);
+    postgres_event_source(database::context ctx, event_bus& bus);
 
     ~postgres_event_source();
 

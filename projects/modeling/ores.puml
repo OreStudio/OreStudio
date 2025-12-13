@@ -26,17 +26,31 @@ end note
 
 ' Foundation Layer
 package "Foundation Layer" #F2F2F2 {
+    component [ores.database] as database #F7E5FF
+
+    note right of database
+    Database connectivity and health monitoring infrastructure:
+    - Connection: PostgreSQL connection management with libpq via sqlgen
+    - Pooling: Connection pool with configurable size and retry attempts
+    - Context: Database context abstraction for repository operations
+    - Health Monitor: Continuous database availability checking with callbacks
+    - Repository Helpers: Bitemporal operations, timestamp conversion, SQL generation
+    - Configuration: CLI options parsing for database credentials
+    No dependencies on other ORE Studio components (base of the dependency tree).
+    Organized into: database (core), repository (helpers) namespaces.
+    end note
+
     component [ores.utility] as utility #F7E5FF
 
     note right of utility
-    Foundation utilities with no dependencies on other ORE Studio components:
-    - Database: PostgreSQL connection management with libpq
-    - Repository: Database context abstraction for ORM operations
+    Foundation utilities with minimal dependencies:
     - Logging: Boost.Log integration with per-module and per-test-case support
     - Filesystem: File I/O, directory operations, recursive search
     - UUID: UUID v7 generation for time-ordered unique identifiers
     - String: Type conversion and string manipulation
     - Environment: Variable access with type conversion
+    - Program Options: Environment mapper factory for CLI configuration
+    Organized into: log, filesystem, uuid, string, environment namespaces.
     end note
 
     component [ores.variability] as variability #F7E5FF
@@ -174,18 +188,23 @@ package "Application Layer" #F2F2F2 {
     end note
 }
 
-' Dependencies - Foundation Layer
+' Dependencies - Foundation Layer (ores.database is the base)
 variability --> utility
+variability --> database
 
 ' Dependencies - Infrastructure to Foundation
 comms --> utility
+comms --> database
 testing --> utility
+testing --> database
 
 ' Dependencies - Domain to Foundation/Infrastructure
 risk --> utility
+risk --> database
 accounts --> variability
 accounts --> comms
 accounts --> utility
+accounts --> database
 
 ' Dependencies - Shell to Foundation/Domain/Infrastructure
 shell --> utility
@@ -205,6 +224,7 @@ qt --> risk
 qt --> comms
 
 service --> utility
+service --> database
 service --> accounts
 service --> risk
 service --> comms

@@ -22,7 +22,7 @@
 
 #include <string_view>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/database/context.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.variability/domain/system_flags.hpp"
 #include "ores.variability/domain/system_flags_cache.hpp"
 #include "ores.variability/service/feature_flags_service.hpp"
@@ -61,7 +61,7 @@ public:
      *
      * @param ctx The database context to be used by the underlying repository.
      */
-    explicit system_flags_service(utility::database::context ctx);
+    explicit system_flags_service(database::context ctx);
 
     /**
      * @brief Refreshes the cache by reading all system flags from the database.

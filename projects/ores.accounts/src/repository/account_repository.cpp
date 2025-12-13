@@ -22,8 +22,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include <sqlgen/postgres.hpp>
-#include "ores.utility/repository/helpers.hpp"
-#include "ores.utility/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.accounts/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.accounts/repository/account_entity.hpp"
 #include "ores.accounts/repository/account_mapper.hpp"
@@ -33,7 +33,7 @@ namespace ores::accounts::repository {
 using namespace sqlgen;
 using namespace sqlgen::literals;
 using namespace ores::utility::log;
-using namespace ores::utility::repository;
+using namespace ores::database::repository;
 
 std::string account_repository::sql() {
     return generate_create_table_sql<account_entity>(lg());

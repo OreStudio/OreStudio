@@ -25,7 +25,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <sqlgen/postgres.hpp>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/database/context.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.accounts/domain/login_info.hpp"
 
 namespace ores::accounts::repository {
@@ -46,7 +46,7 @@ private:
     }
 
 public:
-    using context = ores::utility::database::context;
+    using context = ores::database::context;
     explicit login_info_repository(context ctx);
 
     /**

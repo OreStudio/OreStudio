@@ -24,7 +24,7 @@
 #include <vector>
 #include <sqlgen/postgres.hpp>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/database/context.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.risk/domain/currency.hpp"
 
 namespace ores::risk::repository {
@@ -44,7 +44,7 @@ private:
     }
 
 public:
-    using context = ores::utility::database::context;
+    using context = ores::database::context;
 
     /**
      * @brief Returns the SQL created by sqlgen to construct the table.

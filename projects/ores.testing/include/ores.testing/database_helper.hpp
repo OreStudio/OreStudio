@@ -22,7 +22,7 @@
 
 #include <string>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/database/context.hpp"
+#include "ores.database/domain/context.hpp"
 
 namespace ores::testing {
 
@@ -53,10 +53,10 @@ public:
     /**
      * @brief Gets the database context.
      */
-    utility::database::context& context() { return context_; }
+    database::context& context() { return context_; }
 
 private:
-    utility::database::context context_;
+    database::context context_;
 };
 
 }

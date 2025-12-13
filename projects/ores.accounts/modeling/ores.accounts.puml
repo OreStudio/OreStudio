@@ -527,14 +527,14 @@ namespace ores #F2F2F2 {
             end note
 
             class accounts_message_handler #ECECEC {
-                +accounts_message_handler(utility::database::context, std::shared_ptr<variability::service::system_flags_service>, std::shared_ptr<comms::service::auth_session_service>)
+                +accounts_message_handler(database::context, std::shared_ptr<variability::service::system_flags_service>, std::shared_ptr<comms::service::auth_session_service>)
                 +handle_message(comms::messaging::message_type, std::span<const std::uint8_t>, std::string) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::messaging::error_code>>
                 -handle_create_account_request(std::span<const std::uint8_t>) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::messaging::error_code>>
                 -handle_list_accounts_request(std::span<const std::uint8_t>) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::messaging::error_code>>
                 -handle_login_request(std::span<const std::uint8_t>, std::string) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::messaging::error_code>>
                 -handle_logout_request(std::span<const std::uint8_t>, std::string) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::messaging::error_code>>
                 -handle_unlock_account_request(std::span<const std::uint8_t>) boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::messaging::error_code>>
-                -{field} ctx_ utility::database::context
+                -{field} ctx_ database::context
                 -{field} account_repo_ repository::account_repository
                 -{field} login_info_repo_ repository::login_info_repository
                 -{field} sessions_ std::shared_ptr<comms::service::auth_session_service>

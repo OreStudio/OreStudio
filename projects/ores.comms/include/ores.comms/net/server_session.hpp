@@ -62,6 +62,15 @@ public:
     };
 
     /**
+     * @brief Pending database status notification to be sent to client.
+     */
+    struct pending_database_status {
+        bool available;
+        std::string error_message;
+        std::chrono::system_clock::time_point timestamp;
+    };
+
+    /**
      * @brief Construct a session from a connection.
      *
      * @param conn The connection to manage
@@ -102,6 +111,19 @@ public:
     bool queue_notification(const std::string& event_type,
         std::chrono::system_clock::time_point timestamp);
 
+    /**
+     * @brief Queue a database status notification to be sent to this client.
+     *
+     * Thread-safe. Used to inform the client of database availability status.
+     *
+     * @param available Whether the database is available.
+     * @param error_message Error message if unavailable, empty otherwise.
+     * @param timestamp The timestamp of the status check.
+     * @return true if queued successfully, false if session is not active.
+     */
+    bool queue_database_status(bool available, const std::string& error_message,
+        std::chrono::system_clock::time_point timestamp);
+
 private:
     /**
      * @brief Perform handshake with client.
@@ -132,6 +154,13 @@ private:
     boost::asio::awaitable<void> send_pending_notifications();
 
     /**
+     * @brief Send all pending database status notifications to the client.
+     *
+     * Drains the database status queue and sends each as a status message.
+     */
+    boost::asio::awaitable<void> send_pending_database_status();
+
+    /**
      * @brief Register this session with the subscription manager.
      */
     void register_with_subscription_manager();
@@ -158,6 +187,7 @@ private:
     // Thread-safe notification queue
     mutable std::mutex notification_mutex_;
     std::queue<pending_notification> pending_notifications_;
+    std::queue<pending_database_status> pending_database_status_;
 };
 
 }

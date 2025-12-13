@@ -68,6 +68,41 @@ void server::stop() {
     BOOST_LOG_SEV(lg(), info) << "Accept loop cancellation signal emitted";
 }
 
+void server::broadcast_database_status(bool available, const std::string& error_message) {
+    std::vector<std::shared_ptr<server_session>> sessions_copy;
+
+    {
+        std::lock_guard<std::mutex> lock(sessions_mutex_);
+        sessions_copy.reserve(active_sessions_.size());
+        for (const auto& sess : active_sessions_) {
+            sessions_copy.push_back(sess);
+        }
+    }
+
+    if (sessions_copy.empty()) {
+        BOOST_LOG_SEV(lg(), debug)
+            << "No active sessions to broadcast database status";
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info)
+        << "Broadcasting database status (available=" << available
+        << ") to " << sessions_copy.size() << " session(s)";
+
+    auto timestamp = std::chrono::system_clock::now();
+    std::size_t success_count = 0;
+
+    for (const auto& sess : sessions_copy) {
+        if (sess->queue_database_status(available, error_message, timestamp)) {
+            ++success_count;
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), info)
+        << "Database status broadcast queued for "
+        << success_count << "/" << sessions_copy.size() << " sessions";
+}
+
 void server::setup_ssl_context() {
     ssl_ctx_.set_options(
         ssl::context::default_workarounds |
@@ -120,9 +155,22 @@ boost::asio::awaitable<void> server::run(boost::asio::io_context& io_context,
 
 boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_context,
     std::function<void(std::uint16_t)> on_listening) {
-    tcp::acceptor acceptor(
-        co_await boost::asio::this_coro::executor,
-        tcp::endpoint(tcp::v4(), options_.port));
+    tcp::acceptor acceptor(co_await boost::asio::this_coro::executor);
+
+    try {
+        acceptor.open(tcp::v4());
+        acceptor.set_option(tcp::acceptor::reuse_address(true));
+        acceptor.bind(tcp::endpoint(tcp::v4(), options_.port));
+        acceptor.listen();
+    } catch (const boost::system::system_error& e) {
+        if (e.code() == boost::asio::error::address_in_use) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Cannot start server: port " << options_.port
+                << " is already in use. Another instance of ores.service may be running. "
+                << "Use 'lsof -i :" << options_.port << "' to find the process.";
+        }
+        throw;
+    }
 
     auto local_port = acceptor.local_endpoint().port();
     BOOST_LOG_SEV(lg(), info) << "Server listening on port " << local_port;

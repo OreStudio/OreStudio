@@ -116,7 +116,7 @@ namespace ores #F2F2F2 {
             end note
 
             class postgres_listener_service #ECECEC {
-                +postgres_listener_service(utility::database::context ctx, notification_callback_t callback)
+                +postgres_listener_service(database::context ctx, notification_callback_t callback)
                 +~postgres_listener_service()
                 +start() void
                 +stop() void
@@ -126,7 +126,7 @@ namespace ores #F2F2F2 {
                 -issue_pending_listens() void
                 -listen_loop() void
                 -handle_notification(const sqlgen::postgres::Notification& notification) void
-                -{field} ctx_ utility::database::context
+                -{field} ctx_ database::context
                 -{field} notification_callback_ notification_callback_t
                 -{field} mutex_ std::mutex
                 -{field} connection_ std::optional<rfl::Ref<sqlgen::postgres::Connection>>
@@ -151,7 +151,7 @@ namespace ores #F2F2F2 {
             end note
 
             class postgres_event_source #ECECEC {
-                +postgres_event_source(utility::database::context ctx, event_bus& bus)
+                +postgres_event_source(database::context ctx, event_bus& bus)
                 +~postgres_event_source()
                 +register_mapping<Event>(entity_name, channel_name) void
                 +start() void

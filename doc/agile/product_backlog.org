@@ -66,6 +66,493 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Add heat map of user sessions                                      :code:
+
+Things to measure:
+
+- duration of sessions (once we have session table).
+- bytes sent/received per session (possibly 3-D plot?). Also good for anomaly
+  detection.
+- mine github for ideas.
+
+*** Perform tests to check database connectivity                       :code:
+
+We added some basic database monitoring but did not perform a lot of testing.
+
+We should also generalise this so that if the database goes down after start we
+still perform some kind of retry logic.
+
+See also this point from Gemini:
+
+#+begin_quote
+The new broadcast_all method appears to be unused in this pull request. The
+database status broadcast is implemented directly in
+=ores::comms::net::server::broadcast_database_status= without using the
+subscription_manager. If this method is not intended for future use, it could be
+removed to avoid dead code.
+#+end_quote
+
+*** Add entity messages should not set modified by                     :code:
+
+At present you can supply any modified by you want in the protocol messages. It
+makes more sense to say the message must have the modified by as the user logged
+in from the session.
+
+*** Add currencies update command to shell                             :code:
+
+At present we can only add new currencies. We also need to be able to update.
+Also, adding currencies requires supplying all parameters.
+
+*** Latest currencies should have different colour                     :code:
+
+After reloading we should mark latest currencies with a different colour so that
+it is obvious what was added. Consider colouring rows by recency.
+
+*** Add roles and permissions                                          :code:
+
+At present we are monitoring authorisation at two levels:
+
+- is logged in
+- is admin
+
+We need to introduce basic RBAC where we have roles such as:
+
+- Trading
+- Sales
+- Operations: restricted access to some trading screens.
+- Support: read-only, admin screens.
+
+To start off with we can map these to read/write on CRUD dialogs.
+
+*** Consider compressing payload                                       :code:
+
+Sounds quite simple to extend the binary protocol with a compressed payload. We
+just need some information in the header about it. We should support both
+compressed and uncompressed payloads. Play with compression algos in boost.
+
+*** Add session information to database                                :code:
+
+At present we register the last login etc. It would be nice to record every
+session as well, including the duration.
+
+Notes:
+
+- record bytes sent/received.
+- keep track of geolocation so we know where users are logging in from.
+- calculate statistical measures (average session duration, average bytes etc)
+  and consider plotting them. Also in the aggregate so we can see patterns over
+  time.
+
+*** Subscribe on reconnect fails                                       :code:
+
+Logs:
+
+#+begin_src logview
+2025-12-13 01:14:35.108648 [DEBUG] [ores.comms.messaging.frame] Successfully deserialized frame subscribe_request (0x10)
+2025-12-13 01:14:35.108680 [DEBUG] [ores.comms.net.connection] Successfully deserialized frame, type: subscribe_request (0x10) total size: 60
+2025-12-13 01:14:35.108708 [DEBUG] [ores.comms.net.server_session] Received message type subscribe_request (0x10)
+2025-12-13 01:14:35.108750 [DEBUG] [ores.comms.messaging.message_dispatcher] Dispatching message type subscribe_request (0x10)
+2025-12-13 01:14:35.108811 [WARN] [ores.comms.service.auth_session_service] Authorization failed for subscribe_request (0x10) from 127.0.0.1:45498: not authenticated
+2025-12-13 01:14:35.108842 [WARN] [ores.comms.messaging.message_dispatcher] Authorization denied for subscribe_request (0x10) from 127.0.0.1:45498
+2025-12-13 01:14:35.108875 [ERROR] [ores.comms.net.server_session] Message dispatch failed: 10
+#+end_src
+
+*** Unsubscribe before logout                                          :code:
+
+On logout we see the following:
+
+#+begin_src logview
+2025-12-11 22:45:54.559906 [INFO] [ores.accounts.messaging.accounts_message_handler] Successfully logged out account: 019a5e49-476c-70ce-9909-3887cae700e9
+2025-12-11 22:45:54.559940 [DEBUG] [ores.comms.messaging.message_dispatcher] Successfully dispatched message, response type logout_response (0x200e) correlation_id=763
+2025-12-11 22:45:54.559978 [DEBUG] [ores.comms.messaging.frame] Serialised frame logout_response (0x200e), size: 58
+2025-12-11 22:45:54.560005 [DEBUG] [ores.comms.net.connection] Writing frame of size 58 type: logout_response (0x200e) sequence: 767
+2025-12-11 22:45:54.560083 [DEBUG] [ores.comms.net.connection] Successfully wrote frame
+2025-12-11 22:45:54.560113 [DEBUG] [ores.comms.net.session] Sent response for message type logout_request (0x200d)
+2025-12-11 22:45:54.560137 [INFO] [ores.comms.net.session] Logout completed, closing connection
+2025-12-11 22:45:54.560200 [ERROR] [ores.comms.net.session] Exception in notification writer: co_await: Operation canceled [system:125]
+2025-12-11 22:45:54.560233 [DEBUG] [ores.comms.net.session] Notification writer coroutine ended
+2025-12-11 22:45:54.560281 [INFO] [ores.comms.net.session] Unregistering session '127.0.0.1:38366' from subscription manager
+#+end_src
+
+We should probably unsubscribe before we logout.
+
+*** Log with session id                                                :code:
+
+When we have a lot of clients all connecting we can't really see who is doing
+what in the server. We need an additional "tag" in logging to represent the
+session.
+
+*** Use events in comms and accounts                                   :code:
+
+Now we have an event bus, we should create events for:
+
+- connect, disconnect, retry
+- login, logout
+
+*** Data in login info looks spurious                                  :code:
+
+We see stuff like this:
+
+#+begin_src
+oresdb=> select * from login_info;
+              account_id              |     last_ip     | last_attempt_ip | failed_logins | locked |       last_login       | online
+--------------------------------------+-----------------+-----------------+---------------+--------+------------------------+--------
+ 019a4439-be9e-798e-bf2f-927ca236f84c | 0.0.0.0         | 0.0.0.0         |             0 |      0 | 1969-12-31 23:00:00+01 |      0
+ 019a3ba6-bd11-709b-b93d-fea9403d3d39 | 127.0.0.1       | 127.0.0.1       |             0 |      0 | 2025-10-31 19:03:48+00 |      1
+ 019a4431-98f8-79ae-9fc8-f6a6e77a0490 | 192.168.1.100   | 192.168.1.100   |             0 |      0 | 2025-11-02 10:51:32+00 |      1
+ 019a4431-9a7d-7b3d-a1cb-b9e02d44c804 | 0.0.0.0         | 192.168.1.100   |             1 |      0 | 1969-12-31 23:00:00+01 |      0
+
+#+end_src
+
+Also, we need a login timestamp and a logout timestamp so we can measure session
+duration.
+
+*** Currencies displays when not connected                             :code:
+
+At present we can display currencies even before we connect. This is probably ok
+but we should at least state we are not connected. Alternatively it should be
+disabled.
+
+*** Add lock account request                                           :code:
+
+As per gemini's comments, we should have a request to lock an account.
+
+Notes:
+
+- account unlock should return boolean rather than throw.
+
+Test.
+
+#+begin_src c++
+TEST_CASE("handle_login_request_locked_account", tags) {
+    auto lg(make_logger(test_suite));
+    database_helper h;
+    h.truncate_table(database_table);
+
+    accounts_message_handler handler(h.get_context());
+    boost::asio::io_context io_context;
+
+    const auto account = generate_synthetic_account();
+    create_account_request create_req(to_create_account_request(account));
+    BOOST_LOG_SEV(lg, info) << "Create account request: " << create_req;
+
+    const auto create_payload = create_req.serialize();
+    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+        auto result = co_await handler.handle_message(
+            message_type::create_account_request,
+            create_payload, "127.0.0.1:12345");
+        REQUIRE(result.has_value());
+    });
+
+    // 2. Simulate locking the account (A dedicated lock request should exist,
+    //    but for this test, we'll assume the handler has a method/logic for it
+    //    or that the system supports a lock request message type).
+    // Assuming a lock_account_request exists or the account is locked internally.
+    unlock_account_request lock_req; // Re-use struct for simplicity, assuming a dedicated lock is handled internally
+    lock_req.account_id = create_account_response::deserialize(
+        handler.get_account_id_by_username(create_req.username)).value().account_id; // Hypothetical internal method
+    // In a real system, you'd send a dedicated lock message here.
+    // For now, we rely on a separate mechanism to put the account into a locked state.
+    // **NOTE**: For a proper test, a dedicated LOCK_ACCOUNT_REQUEST is needed.
+
+    // 3. Attempt login with valid credentials for the now-locked account
+    login_request login_req;
+    login_req.username = create_req.username;
+    login_req.password = create_req.password;
+    BOOST_LOG_SEV(lg, info) << "Attempting login for locked user: " << login_req.username;
+
+    const auto login_payload = login_req.serialize();
+
+    run_co_test(io_context, [&]() -> boost::asio::awaitable<void> {
+        auto result = co_await handler.handle_message(
+            message_type::login_request,
+            login_payload, "192.168.1.100:54321");
+
+        REQUIRE(result.has_value());
+        const auto response_result = login_response::deserialize(result.value());
+        REQUIRE(response_result.has_value());
+        const auto& response = response_result.value();
+        BOOST_LOG_SEV(lg, info) << "Response: " << response;
+
+        CHECK(response.success == false);
+        // Check for an explicit error message/code related to account lock.
+        CHECK(response.error_message.find("locked") != std::string::npos);
+    });
+}
+#+end_src
+
+
+
+
+*** Add flags for currencies                                           :code:
+
+Add flags for the currencies. Need database support. Display them in the
+currencies dialog.
+
+Actually it is better to have a generic mechanism to upload an SVG and maybe tag
+it with an identifier. Then we could have a way to associate a currency with one
+of the available SVGs. The currency dialog could have a tab where users can
+select the SVG from a list. We can then have a table with SVG for currency which
+remembers these. This provides a generic solution for all cases where we have
+some kind of asset and an associated image.
+
+SQL:
+
+#+begin_src sql
+-- Ensure you have the necessary extension for generating random UUIDs
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- 1. icons table: Stores the SVG data
+CREATE TABLE icons (
+    -- Primary key using UUID (GUID)
+    icon_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    -- Unique key used by the application (e.g., 'usd_flag', 'btc_symbol')
+    key VARCHAR(100) UNIQUE NOT NULL,
+
+    -- The entire SVG content stored as plain text
+    svg_data TEXT NOT NULL,
+
+    -- Optional timestamps
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Index the 'key' column for faster lookups
+CREATE INDEX idx_icons_key ON icons (key);
+
+---
+
+-- 2. tags table: Stores the list of available categories
+CREATE TABLE tags (
+    -- Primary key remains SERIAL as tags are usually created centrally
+    tag_id SERIAL PRIMARY KEY,
+
+    -- The name of the tag (e.g., 'currency', 'flag', 'commodity')
+    name VARCHAR(50) UNIQUE NOT NULL
+);
+
+-- Index the 'name' column for quick lookups and joins
+CREATE INDEX idx_tags_name ON tags (name);
+
+---
+
+-- 3. icon_tags table: Junction table for the many-to-many relationship
+CREATE TABLE icon_tags (
+    -- Foreign key to the icons table (now a UUID)
+    icon_id UUID NOT NULL REFERENCES icons(icon_id) ON DELETE CASCADE,
+
+    -- Foreign key to the tags table (remains INTEGER)
+    tag_id INTEGER NOT NULL REFERENCES tags(tag_id) ON DELETE CASCADE,
+
+    -- Ensures that each icon/tag combination can only exist once
+    PRIMARY KEY (icon_id, tag_id)
+);
+
+-- Optional: Create a separate index for lookups by tag
+CREATE INDEX idx_icon_tags_tag_id ON icon_tags (tag_id);
+#+end_src
+
+
+*** Add sound assets                                                   :code:
+
+We need to be able to associate sounds to certain events such as disconnect,
+connect etc. Users need to be able to choose their own sounds.
+
+*** Add a delete all button which deletes all currencies               :code:
+
+It is useful especially in test environments to be able to delete all entities
+before a re-import.
+
+
+*** Add screen in qt to exit bootstrap mode                            :code:
+
+- move service to service directory.
+- follow the "_protocol" convention for file names with messages.
+
+**** Session: Address race condition review comment
+
+The heartbeat implementation has a critical race condition where =run_heartbeat()=
+and =send_request()= can execute concurrently, leading to two independent
+request-response cycles on the same socket without synchronization. This also
+needs to support future "listen/notify" server-push notifications.
+
+**Solution:** Unified message loop with correlation IDs - single reader dispatches
+incoming frames by type, writes serialized via strand, correlation IDs match
+responses to requests.
+
+***** Tasks
+
+- [X] 1.1 Add =correlation_id= to frame structure
+  - Add =uint32_t correlation_id= field to =protocol::frame=
+  - Update frame serialization/deserialization
+  - Bump protocol version if needed
+
+- [X] 1.2 Update message types if needed
+  - Verify ping/pong exist (confirmed: 0x0005, 0x0006)
+  - Notification types deferred until listen/notify implementation
+
+- [X] 2.1 Create =response_channel= class
+  - Single-value async channel using Boost.Asio primitives
+  - =set_value(frame)= - producer side (reader loop)
+  - =set_error(error_code)= - for timeouts/disconnects
+  - =awaitable<expected<frame, error_code>> get()= - consumer side
+  - Use =asio::steady_timer= as signaling primitive
+
+- [X] 2.2 Create =pending_request_map= class
+  - Thread-safe map: =correlation_id= → =response_channel=
+  - =register(correlation_id)= → =response_channel&=
+  - =complete(correlation_id, frame)= - called by reader
+  - =fail(correlation_id, error)= - called on timeout/disconnect
+  - =fail_all(error)= - called on connection loss
+
+- [X] 3.1 Add write strand to client
+  - =asio::strand<asio::any_io_executor> write_strand_=
+  - Initialize in constructor
+
+- [X] 3.2 Create =write_frame()= helper
+  - Posts write operation to strand
+  - Returns awaitable that completes when write is done
+
+- [X] 4.1 Implement =run_message_loop()= coroutine
+  - Single reader, loops reading frames
+  - Dispatches by message type (response/pong → complete, notification → callback)
+  - On read error → =fail_all()=, set disconnected
+
+- [ ] 4.2 Add centralized timeout handling (deferred)
+  - Read with timeout using =asio::steady_timer=
+  - Configurable default timeout
+  - Can be added later when needed
+
+- [X] 5. Refactor =send_request()=
+  - Generate correlation_id
+  - Register in pending_requests_map
+  - Post write to strand
+  - =co_await= response channel
+
+- [X] 6. Refactor =run_heartbeat()= to use new infrastructure
+  - Use unified request/response pattern
+  - Timeout triggers disconnect callback
+
+- [X] 7. Update server to echo =correlation_id=
+  - Ping handler returns pong with same correlation_id
+  - All response handlers copy correlation_id from request
+
+- [-] 8.1 Add notification callback type (deferred to listen/notify story)
+  - =notification_callback_t= for server-push messages
+
+- [X] 8.2 Keep =disconnect_callback_t=
+  - Invoked by message loop on connection loss
+
+- [X] 9.1 Start message loop on connect
+  - =co_spawn= the =run_message_loop()= after connection
+
+- [X] 9.2 Clean shutdown
+  - Cancel message loop, fail pending requests, invoke disconnect callback
+
+- [ ] 10.1 Update existing tests
+
+- [ ] 10.2 Add new tests
+  - Concurrent requests with correlation IDs
+  - Request timeout handling
+  - Heartbeat timeout triggers disconnect
+  - Write serialization
+
+*** Add tests for messaging handler                                    :code:
+
+We need tests in comms which create a test request and response and a test
+handler.
+*** Add screen in qt to exit bootstrap mode                            :code:
+
+As per claude:
+
+The create_initial_admin_request message type serves several important purposes
+that differentiate it from the CLI and REPL approaches:
+
+Why We Need create_initial_admin_request
+
+  1. Network-accessible bootstrap flow
+  - Allows remote initial setup from localhost without requiring shell/CLI access
+  to the server
+  - Enables a web-based "first-run" setup experience (like many web applications)
+  - The Qt client can provide a proper UI for initial admin account creation
+
+  2. Localhost-only security enforcement
+  - The endpoint enforces that it can only be called from localhost (127.0.0.1 or
+  ::1) at line
+  projects/ores.accounts/src/messaging/accounts_message_handler.cpp:320
+  - Provides network-accessible bootstrap with security guarantees
+  - Prevents remote bootstrap attacks
+
+  3. Atomic mode transition
+  - The endpoint both creates the admin AND exits bootstrap mode in a single atomic
+   operation (lines 362-367 in accounts_message_handler.cpp)
+  - Guarantees consistency - can't create admin without exiting bootstrap mode
+
+  4. Service-layer validation
+  - Goes through full service layer with password validation and business logic
+  - The CLI is essentially an "administrative backdoor" that bypasses the service
+  layer and writes directly to the database
+
+  5. Protocol-compliant workflow
+  - Clients speaking the binary protocol need a proper bootstrap endpoint
+  - REPL create_account_request is blocked in bootstrap mode (by enforcement logic)
+  - create_initial_admin_request is the only endpoint that works in bootstrap mode
+
+  The Distinction
+
+  - CLI approach: Administrative backdoor, direct database access, bypasses all
+  service logic
+  - create_initial_admin_request: Proper network-accessible bootstrap flow with
+  localhost restriction and atomic mode transition
+  - REPL create_account_request: Normal account creation, blocked in bootstrap mode
+
+  The create_initial_admin_request enables a proper "first-run experience" for
+  clients connecting via the network protocol, while maintaining security through
+  localhost-only access.
+
+
+
+*** Users cannot update their passwords                                :code:
+
+At present it is not possible to update passwords, or any other property of an
+account.
+
+*** Cli clean-ups                                                      :code:
+
+- we still seem to support =--entity currencies=. This should now be invalid.
+- we are still exporting as JSON. We should instead allow CSV and XML exports
+  only.
+- add recipes for all commands.
+- should be able to list all admin accounts.
+- list command should support table output.
+- is admin should be a bool: =--is-admin arg (=0)=
+- add account duplicates logic. We should have a single service for this.
+- split application into entities.
+
+*** Add version support to entities                                    :code:
+
+We need a "version" field which is incremented automatically by a trigger. It is
+used as follows:
+
+- domain entities have a version field which is loaded from database.
+- if we try to save at version =n= but current version is not =n-1=, it should
+  fail to save.
+- version is incremented automatically on save.
+- display version in UI prominently (/e.g./ next to entity key, iso code for
+  currencies) so that we can see when we reload.
+
+*** Add search to currencies                                           :code:
+
+It should be possible to filter the open currencies by a string. This should be
+any field. The user needs to know when the list has been filtered. Ideally we
+should have buttons at the top per field and filter using those. It should go
+back to database rather than just filter what is available in UI.
+
+
+
+
+
 *** Mine dexter for ideas                                              :code:
 
 #+begin_quote

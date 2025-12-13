@@ -40,14 +40,14 @@ apt-get install tj3
 *** Project Start
     :PROPERTIES:
     :task_id: start
-    :start: 2025-12-01
+    :start: 2025-12-13
     :END:
 
 *** Setup Infrastructure
     :PROPERTIES:
     :EFFORT:   1d
     :BLOCKER:  previous-sibling
-    :allocate: s05
+    :allocate: s06
     :END:
 
 Setup all of the fundamental infrastructure including cross platform CI, sprint
@@ -57,7 +57,7 @@ management, project management, integration with AI, packaging, deployment, etc.
     :PROPERTIES:
     :EFFORT:   2d
     :BLOCKER:  previous-sibling
-    :allocate: s06
+    :allocate: s07
     :END:
 
 Create all of the key facets for the entities under the reference
@@ -68,7 +68,7 @@ include basic testing and start of documentation generation (PDF manual, etc).
     :PROPERTIES:
     :EFFORT:   5d
     :BLOCKER:  previous-sibling
-    :allocate: s07
+    :allocate: s08
     :END:
 
 Add all reference data from ORE, including Calendars, etc.
@@ -77,7 +77,7 @@ Add all reference data from ORE, including Calendars, etc.
     :PROPERTIES:
     :EFFORT:   5d
     :BLOCKER:  previous-sibling
-    :allocate: s08
+    :allocate: s09
     :END:
 
 Add all market data from ORE, including Calendars, etc.
@@ -86,7 +86,7 @@ Add all market data from ORE, including Calendars, etc.
     :PROPERTIES:
     :EFFORT:   5d
     :BLOCKER:  previous-sibling
-    :allocate: s09
+    :allocate: s10
     :END:
 
 Add all market data from ORE, including Calendars, etc.
@@ -95,7 +95,7 @@ Add all market data from ORE, including Calendars, etc.
     :PROPERTIES:
     :EFFORT:   5d
     :BLOCKER:  previous-sibling
-    :allocate: s10
+    :allocate: s11
     :END:
 
 Add all market data from ORE, including Calendars, etc.
@@ -186,6 +186,11 @@ Backlogs]]. The last entry is the active sprint.
 ** Sprint 15
    :PROPERTIES:
    :resource_id: s15
+   :END:
+
+** Sprint 16
+   :PROPERTIES:
+   :resource_id: s16
    :END:
 
 | Previous: [[id:57A7FABC-21FE-5124-45EB-9685D0712176][Sprint Backlog]] |

@@ -18,7 +18,7 @@
 name: Canary Linux
 
 env:
-  VCPKG_BINARY_SOURCES: 'clear;default'
+  VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg_cache,readwrite'
 
 on:  # yamllint disable-line rule:truthy
   pull_request:

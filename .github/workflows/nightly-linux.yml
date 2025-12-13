@@ -17,6 +17,9 @@
 ---
 name: Nightly Build
 
+env:
+  VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg_cache,readwrite'
+
 on:  # yamllint disable-line rule:truthy
   schedule:
     - cron: '0 0 * * *'

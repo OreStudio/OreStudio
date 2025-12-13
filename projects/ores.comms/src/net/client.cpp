@@ -406,9 +406,15 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
         bool should_retry = false;
         std::chrono::milliseconds retry_delay{0};
 
+        const bool is_final_attempt = (attempt + 1 == max_attempts);
         try {
-            BOOST_LOG_SEV(lg(), info) << "Reconnection attempt " << (attempt + 1)
-                                      << " of " << max_attempts;
+            if (is_final_attempt) {
+                BOOST_LOG_SEV(lg(), warn) << "Final reconnection attempt ("
+                                          << max_attempts << " of " << max_attempts << ")";
+            } else {
+                BOOST_LOG_SEV(lg(), info) << "Reconnection attempt " << (attempt + 1)
+                                          << " of " << max_attempts;
+            }
             co_await perform_connection();
 
             BOOST_LOG_SEV(lg(), info) << "Reconnection successful";
@@ -462,8 +468,10 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
         }
     }
 
-    // All reconnection attempts failed
-    BOOST_LOG_SEV(lg(), error) << "All reconnection attempts failed";
+    // All reconnection attempts failed - give up
+    BOOST_LOG_SEV(lg(), error) << "All " << max_attempts
+                               << " reconnection attempts failed. "
+                               << "Giving up, auto-reconnect will not retry.";
 
     disconnect_callback_t callback;
     {

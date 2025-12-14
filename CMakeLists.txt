@@ -38,10 +38,7 @@ message(STATUS "CMake Version: ${CMAKE_VERSION}")
 
 # ctest support
 enable_testing()
-configure_file(
-    ${CMAKE_SOURCE_DIR}/CTestCustom.cmake
-    ${CMAKE_BINARY_DIR}/CTestCustom.cmake
-    COPYONLY)
+configure_file(CTestCustom.cmake CTestCustom.cmake COPYONLY)
 
 project(OreStudio VERSION 0.0.7 LANGUAGES CXX
     DESCRIPTION "UI and other utilities for the Open Source Risk Engine (ORE).")

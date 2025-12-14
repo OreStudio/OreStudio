@@ -129,7 +129,8 @@ find_package(Boost 1.88 REQUIRED COMPONENTS
     uuid
     exception
     scope_exit
-    program_options)
+    program_options
+    iostreams)
 
 # OpenSSL
 find_package(OpenSSL REQUIRED)

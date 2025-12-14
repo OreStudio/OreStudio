@@ -42,6 +42,7 @@ target_link_libraries(${lib_target_name}
         OpenSSL::Crypto
         OpenSSL::SSL
         Boost::boost
+        Boost::iostreams
         ores.utility.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

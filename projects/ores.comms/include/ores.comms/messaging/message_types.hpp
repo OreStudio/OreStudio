@@ -51,7 +51,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 8.0 removes requester_account_id from lock_account_request and
 // unlock_account_request. Authorization is now handled via server-side session
 // tracking instead of client-provided identity. This is a breaking change.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 8;
+//
+// Version 9.0 adds optional payload compression support. The reserved1 field
+// in the frame header is now used for compression_type (1 byte) and flags
+// (1 byte). Supported compression algorithms: none, zlib, gzip, bzip2.
+// Uncompressed payloads remain fully supported (compression_type::none).
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 9;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
@@ -63,6 +68,20 @@ constexpr std::uint16_t ACCOUNTS_SUBSYSTEM_MIN = 0x2000;
 constexpr std::uint16_t ACCOUNTS_SUBSYSTEM_MAX = 0x2FFF;
 constexpr std::uint16_t VARIABILITY_SUBSYSTEM_MIN = 0x3000;
 constexpr std::uint16_t VARIABILITY_SUBSYSTEM_MAX = 0x3FFF;
+
+/**
+ * @brief Compression algorithm used for payload compression.
+ *
+ * The compression type is stored in the high byte of the former reserved1
+ * field in the frame header. Using none (0x00) maintains backward
+ * compatibility with uncompressed payloads.
+ */
+enum class compression_type : std::uint8_t {
+    none = 0x00,   // No compression (default)
+    zlib = 0x01,   // zlib/deflate compression
+    gzip = 0x02,   // gzip compression
+    bzip2 = 0x03   // bzip2 compression
+};
 
 enum class message_type {
     // Core protocol messages (0x0000 - 0x0FFF)
@@ -141,6 +160,8 @@ enum class error_code {
     weak_password = 0x000F,
     not_localhost = 0x0010,
     database_unavailable = 0x0011,
+    decompression_failed = 0x0012,
+    unsupported_compression = 0x0013,
     last_value
 };
 
@@ -164,6 +185,14 @@ inline std::ostream& operator<<(std::ostream& os, message_type mt) {
 inline std::ostream& operator<<(std::ostream& os, error_code ec) {
     return os << magic_enum::enum_name(ec)
               << " (0x" << std::hex << static_cast<std::uint16_t>(ec) << std::dec << ")";
+}
+
+/**
+ * @brief Stream output operator for compression_type.
+ */
+inline std::ostream& operator<<(std::ostream& os, compression_type ct) {
+    return os << magic_enum::enum_name(ct)
+              << " (0x" << std::hex << static_cast<std::uint8_t>(ct) << std::dec << ")";
 }
 
 }

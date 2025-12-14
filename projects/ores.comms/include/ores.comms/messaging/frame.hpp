@@ -37,24 +37,31 @@ constexpr size_t MAX_PAYLOAD_SIZE = 1'000'000;
  * @brief Frame header structure for the ORES protocol.
  *
  * Frame layout (32 bytes header):
- * +0:  magic (4 bytes)         - Protocol identifier (0x4F524553 = "ORES")
- * +4:  version_major (2 bytes) - Protocol major version
- * +6:  version_minor (2 bytes) - Protocol minor version
- * +8:  type (2 bytes)          - Message type
- * +10: reserved1 (2 bytes)     - Reserved for future use
- * +12: payload_size (4 bytes)  - Size of payload in bytes
- * +16: sequence (4 bytes)      - Sequence number for ordering
- * +20: crc (4 bytes)           - CRC32 checksum of header + payload
- * +24: correlation_id (4 bytes)- Matches requests to responses
- * +28: reserved2 (4 bytes)     - Reserved for future use
- * +32: payload (N bytes)       - Message payload
+ * +0:  magic (4 bytes)          - Protocol identifier (0x4F524553 = "ORES")
+ * +4:  version_major (2 bytes)  - Protocol major version
+ * +6:  version_minor (2 bytes)  - Protocol minor version
+ * +8:  type (2 bytes)           - Message type
+ * +10: compression (1 byte)     - Compression algorithm (compression_type enum)
+ * +11: compression_flags (1 byte) - Reserved compression flags (must be 0)
+ * +12: payload_size (4 bytes)   - Size of payload in bytes (compressed size if compressed)
+ * +16: sequence (4 bytes)       - Sequence number for ordering
+ * +20: crc (4 bytes)            - CRC32 checksum of header + compressed payload
+ * +24: correlation_id (4 bytes) - Matches requests to responses
+ * +28: reserved2 (4 bytes)      - Reserved for future use
+ * +32: payload (N bytes)        - Message payload (compressed if compression != none)
+ *
+ * When compression is enabled (compression != none):
+ * - payload_size contains the compressed size
+ * - The payload is the compressed data
+ * - CRC is calculated over header + compressed payload
  */
 struct frame_header final {
     std::uint32_t magic;
     std::uint16_t version_major;
     std::uint16_t version_minor;
     message_type type;
-    std::uint16_t reserved1;
+    compression_type compression;
+    std::uint8_t compression_flags;
     std::uint32_t payload_size;
     std::uint32_t sequence;
     std::uint32_t crc;
@@ -79,9 +86,11 @@ private:
 
 public:
     frame();
-    frame(message_type type, std::uint32_t sequence, std::vector<std::byte> payload);
+    frame(message_type type, std::uint32_t sequence, std::vector<std::byte> payload,
+        compression_type compression = compression_type::none);
     frame(message_type type, std::uint32_t sequence, std::uint32_t correlation_id,
-        std::vector<std::byte> payload);
+        std::vector<std::byte> payload,
+        compression_type compression = compression_type::none);
 
     /**
      * @brief Get the correlation ID for request/response matching.
@@ -94,9 +103,22 @@ public:
     const frame_header& header() const { return header_; }
 
     /**
-     * @brief Get the payload.
+     * @brief Get the raw payload (compressed if compression is enabled).
      */
     const std::vector<std::byte>& payload() const { return payload_; }
+
+    /**
+     * @brief Get the compression type used for the payload.
+     */
+    compression_type compression() const { return header_.compression; }
+
+    /**
+     * @brief Decompress and return the payload.
+     *
+     * If no compression was used, returns a copy of the raw payload.
+     * @return The decompressed payload, or error_code on failure
+     */
+    std::expected<std::vector<std::byte>, error_code> decompressed_payload() const;
 
     /**
      * @brief Serialize frame to bytes.

@@ -33,12 +33,14 @@ set(CTEST_CUSTOM_MAXIMUM_FAILED_TEST_OUTPUT_SIZE 0)
 
 # warning exceptions
 list(APPEND CTEST_CUSTOM_WARNING_EXCEPTION
-    # RPath in OSX
-    ".*CMake Warning.*z_vcpkg_fixup_rpath_macho\\.cmake.*"
+    # RPath in OSX (install_name_tool can't be redone)
+    "z_vcpkg_fixup_rpath_macho"
     # boost-system's buildsystem uses very long paths
-    ".*CMake Warning.*vcpkg_buildpath_length_warning\\.cmake.*"
-    # could not find a matching pdb file
-    ".*CMake Warning.*vcpkg_copy_pdbs\\.cmake.*"
+    "vcpkg_buildpath_length_warning"
+    # could not find a matching pdb file (Windows)
+    "vcpkg_copy_pdbs"
+    # vcpkg unused variable warnings (e.g. PCRE2_STATIC_RUNTIME)
+    "MAYBE_UNUSED_VARIABLES"
 )
 
 # warning addons

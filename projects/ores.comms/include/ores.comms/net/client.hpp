@@ -336,8 +336,8 @@ private:
     boost::asio::ssl::context ssl_ctx_;
     std::unique_ptr<connection> conn_;
     std::uint32_t sequence_number_;
-    connection_state state_;
-    mutable std::mutex state_mutex_; // Thread-safe state protection
+    std::atomic<connection_state> state_;
+    mutable std::mutex state_mutex_; // Protects conn_, sequence_number_, and callbacks
     disconnect_callback_t disconnect_callback_;
     reconnecting_callback_t reconnecting_callback_;
     reconnected_callback_t reconnected_callback_;

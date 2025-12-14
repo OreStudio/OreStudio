@@ -64,11 +64,6 @@ compress(std::span<const std::byte> data, compression_type type) {
         return std::vector<std::byte>(data.begin(), data.end());
     }
 
-    if (!is_compression_supported(type)) {
-        BOOST_LOG_SEV(lg(), error) << "Unsupported compression type: " << type;
-        return std::unexpected(error_code::unsupported_compression);
-    }
-
     try {
         std::vector<char> compressed;
         io::filtering_streambuf<io::output> out;
@@ -108,11 +103,6 @@ std::expected<std::vector<std::byte>, error_code>
 decompress(std::span<const std::byte> data, compression_type type) {
     if (type == compression_type::none) {
         return std::vector<std::byte>(data.begin(), data.end());
-    }
-
-    if (!is_compression_supported(type)) {
-        BOOST_LOG_SEV(lg(), error) << "Unsupported compression type: " << type;
-        return std::unexpected(error_code::unsupported_compression);
     }
 
     try {

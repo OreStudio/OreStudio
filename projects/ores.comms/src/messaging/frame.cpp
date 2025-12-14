@@ -55,11 +55,6 @@ bool is_valid_message_type(std::uint16_t type) {
         type <= static_cast<std::uint16_t>(message_type::last_value);
 }
 
-bool is_valid_compression_type(std::uint8_t type) {
-    using ores::comms::messaging::compression_type;
-    return type <= static_cast<std::uint8_t>(compression_type::bzip2);
-}
-
 }
 
 namespace ores::comms::messaging {
@@ -89,32 +84,13 @@ frame::frame(message_type type,
     header_.version_major = PROTOCOL_VERSION_MAJOR;
     header_.version_minor = PROTOCOL_VERSION_MINOR;
     header_.type = type;
-    header_.compression = compression;
     header_.compression_flags = 0;
     header_.sequence = sequence;
     header_.crc = 0; // Will be calculated during serialization
     header_.correlation_id = 0;
     header_.reserved2.fill(0);
 
-    // Compress payload if compression is enabled
-    if (compression != compression_type::none && !payload.empty()) {
-        auto compressed = compress(
-            std::span<const std::byte>(payload.data(), payload.size()),
-            compression);
-        if (compressed) {
-            payload_ = std::move(*compressed);
-        } else {
-            // Fall back to uncompressed if compression fails
-            BOOST_LOG_SEV(lg(), warn) << "Compression failed, using uncompressed payload";
-            header_.compression = compression_type::none;
-            payload_ = std::move(payload);
-        }
-    } else {
-        // Empty payloads are never compressed
-        header_.compression = compression_type::none;
-        payload_ = std::move(payload);
-    }
-    header_.payload_size = static_cast<std::uint32_t>(payload_.size());
+    init_payload(std::move(payload), compression);
 }
 
 frame::frame(message_type type, std::uint32_t sequence,
@@ -126,28 +102,29 @@ frame::frame(message_type type, std::uint32_t sequence,
     header_.version_major = PROTOCOL_VERSION_MAJOR;
     header_.version_minor = PROTOCOL_VERSION_MINOR;
     header_.type = type;
-    header_.compression = compression;
     header_.compression_flags = 0;
     header_.sequence = sequence;
     header_.crc = 0; // Will be calculated during serialization
     header_.correlation_id = correlation_id;
     header_.reserved2.fill(0);
 
-    // Compress payload if compression is enabled
+    init_payload(std::move(payload), compression);
+}
+
+void frame::init_payload(std::vector<std::byte> payload, compression_type compression) {
     if (compression != compression_type::none && !payload.empty()) {
         auto compressed = compress(
             std::span<const std::byte>(payload.data(), payload.size()),
             compression);
         if (compressed) {
+            header_.compression = compression;
             payload_ = std::move(*compressed);
         } else {
-            // Fall back to uncompressed if compression fails
             BOOST_LOG_SEV(lg(), warn) << "Compression failed, using uncompressed payload";
             header_.compression = compression_type::none;
             payload_ = std::move(payload);
         }
     } else {
-        // Empty payloads are never compressed
         header_.compression = compression_type::none;
         payload_ = std::move(payload);
     }
@@ -262,12 +239,12 @@ frame::deserialize_header(std::span<const std::byte> data, bool skip_version_che
     // Read compression type (1 byte) and compression flags (1 byte)
     std::uint8_t raw_compression = static_cast<std::uint8_t>(data[offset++]);
     header.compression_flags = static_cast<std::uint8_t>(data[offset++]);
-    if (!is_valid_compression_type(raw_compression)) {
-        BOOST_LOG_SEV(lg(), error) << "Invalid compression type: "
-                                   << static_cast<int>(raw_compression);
+    header.compression = static_cast<compression_type>(raw_compression);
+    if (!is_compression_supported(header.compression)) {
+        BOOST_LOG_SEV(lg(), error) << "Unsupported compression type: "
+                                   << header.compression;
         return std::unexpected(error_code::unsupported_compression);
     }
-    header.compression = static_cast<compression_type>(raw_compression);
     header.payload_size = read32();
     header.sequence = read32();
     header.crc = read32();

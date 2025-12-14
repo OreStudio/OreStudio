@@ -175,6 +175,15 @@ private:
      * @brief Serialize header to bytes in network byte order.
      */
     void serialize_header(frame_header header, std::span<std::byte> buffer) const;
+
+    /**
+     * @brief Initialize payload with optional compression.
+     *
+     * Compresses the payload if compression is enabled and payload is non-empty.
+     * Falls back to uncompressed if compression fails.
+     * Updates header_.compression and header_.payload_size accordingly.
+     */
+    void init_payload(std::vector<std::byte> payload, compression_type compression);
 };
 
 std::ostream& operator<<(std::ostream& s, const frame_header& v);

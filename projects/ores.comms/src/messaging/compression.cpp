@@ -100,7 +100,7 @@ compress(std::span<const std::byte> data, compression_type type) {
         return result;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Compression failed: " << e.what();
-        return std::unexpected(error_code::decompression_failed);
+        return std::unexpected(error_code::compression_failed);
     }
 }
 

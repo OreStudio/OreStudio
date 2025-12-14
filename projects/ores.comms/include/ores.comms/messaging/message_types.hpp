@@ -162,6 +162,7 @@ enum class error_code {
     database_unavailable = 0x0011,
     decompression_failed = 0x0012,
     unsupported_compression = 0x0013,
+    compression_failed = 0x0014,
     last_value
 };
 

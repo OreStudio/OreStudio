@@ -110,6 +110,8 @@ frame::frame(message_type type,
             payload_ = std::move(payload);
         }
     } else {
+        // Empty payloads are never compressed
+        header_.compression = compression_type::none;
         payload_ = std::move(payload);
     }
     header_.payload_size = static_cast<std::uint32_t>(payload_.size());
@@ -145,6 +147,8 @@ frame::frame(message_type type, std::uint32_t sequence,
             payload_ = std::move(payload);
         }
     } else {
+        // Empty payloads are never compressed
+        header_.compression = compression_type::none;
         payload_ = std::move(payload);
     }
     header_.payload_size = static_cast<std::uint32_t>(payload_.size());

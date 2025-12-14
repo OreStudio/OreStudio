@@ -710,8 +710,9 @@ TEST_CASE("test_frame_compression_empty_payload", tags) {
         ores::comms::messaging::compression_type::zlib
     );
 
-    // Empty payload should remain empty (no compression applied)
+    // Empty payload should remain empty and compression should be set to none
     CHECK(frame.payload().empty());
+    CHECK(frame.compression() == ores::comms::messaging::compression_type::none);
 
     // Serialize and deserialize
     auto serialized = frame.serialize();
@@ -720,6 +721,7 @@ TEST_CASE("test_frame_compression_empty_payload", tags) {
     auto header_result = ores::comms::messaging::frame::deserialize_header(
         std::span<const std::byte>(serialized));
     REQUIRE(header_result.has_value());
+    CHECK(header_result->compression == ores::comms::messaging::compression_type::none);
 
     auto deserialized_result = ores::comms::messaging::frame::deserialize(
         *header_result, std::span<const std::byte>(serialized));

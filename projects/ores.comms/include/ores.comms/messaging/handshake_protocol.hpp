@@ -29,12 +29,34 @@
 namespace ores::comms::messaging {
 
 /**
+ * @brief Compression support bitmask values.
+ *
+ * Used in handshake_request::supported_compression to indicate which
+ * compression algorithms the client supports.
+ */
+constexpr std::uint8_t COMPRESSION_SUPPORT_ZLIB = 0x01;
+constexpr std::uint8_t COMPRESSION_SUPPORT_GZIP = 0x02;
+constexpr std::uint8_t COMPRESSION_SUPPORT_BZIP2 = 0x04;
+constexpr std::uint8_t COMPRESSION_SUPPORT_ALL = 0x07;
+
+/**
  * @brief Handshake request message sent by client to initiate connection.
  */
 struct handshake_request final {
     std::uint16_t client_version_major;
     std::uint16_t client_version_minor;
     std::string client_identifier;
+    /**
+     * @brief Bitmask of compression types supported by the client.
+     *
+     * Bit 0 (0x01): zlib
+     * Bit 1 (0x02): gzip
+     * Bit 2 (0x04): bzip2
+     *
+     * A value of 0x00 means no compression support (or old client).
+     * A value of 0x07 means all compression types are supported.
+     */
+    std::uint8_t supported_compression = 0;
 
     /**
      * @brief Serialize to frame payload.
@@ -57,6 +79,14 @@ struct handshake_response final {
     bool version_compatible;
     std::string server_identifier;
     error_code status;
+    /**
+     * @brief Compression type selected for this session.
+     *
+     * The server selects one compression type from the client's supported
+     * types, or none if compression is not desired or not supported.
+     * All subsequent frames in this session should use this compression type.
+     */
+    compression_type selected_compression = compression_type::none;
 
     /**
      * @brief Serialize to frame payload.
@@ -108,19 +138,33 @@ struct error_response final {
 
 /**
  * @brief Create a handshake request frame.
+ *
+ * @param sequence Frame sequence number
+ * @param client_identifier Client identifier string
+ * @param supported_compression Bitmask of supported compression types
+ *        (default: 0 = no compression support)
  */
 frame create_handshake_request_frame(
     std::uint32_t sequence,
-    const std::string& client_identifier);
+    const std::string& client_identifier,
+    std::uint8_t supported_compression = 0);
 
 /**
  * @brief Create a handshake response frame.
+ *
+ * @param sequence Frame sequence number
+ * @param version_compatible Whether the client version is compatible
+ * @param server_identifier Server identifier string
+ * @param status Error status (default: none)
+ * @param selected_compression Compression type selected for this session
+ *        (default: none)
  */
 frame create_handshake_response_frame(
     std::uint32_t sequence,
     bool version_compatible,
     const std::string& server_identifier,
-    error_code status = error_code::none);
+    error_code status = error_code::none,
+    compression_type selected_compression = compression_type::none);
 
 /**
  * @brief Create a handshake acknowledgment frame.
@@ -136,6 +180,20 @@ frame create_error_response_frame(
     std::uint32_t sequence,
     error_code code,
     const std::string& message);
+
+/**
+ * @brief Select a compression type from the client's supported types.
+ *
+ * Returns the preferred compression type that is supported by the client,
+ * or compression_type::none if no compression is supported.
+ *
+ * @param supported_compression Bitmask of supported compression types
+ * @param preferred The server's preferred compression type (default: zlib)
+ * @return The selected compression type
+ */
+compression_type select_compression(
+    std::uint8_t supported_compression,
+    compression_type preferred = compression_type::zlib);
 
 }
 

@@ -229,3 +229,89 @@ TEST_CASE("test_compression_ratio", tags) {
     CHECK(gzip_compressed->size() < data.size() / 10);
     CHECK(bzip2_compressed->size() < data.size() / 10);
 }
+
+// Handshake compression negotiation tests
+#include "ores.comms/messaging/handshake_protocol.hpp"
+
+using ores::comms::messaging::select_compression;
+using ores::comms::messaging::COMPRESSION_SUPPORT_ZLIB;
+using ores::comms::messaging::COMPRESSION_SUPPORT_GZIP;
+using ores::comms::messaging::COMPRESSION_SUPPORT_BZIP2;
+using ores::comms::messaging::COMPRESSION_SUPPORT_ALL;
+
+TEST_CASE("test_select_compression_no_support", "[compression][handshake]") {
+    auto lg(make_logger(test_suite));
+
+    // Client doesn't support compression
+    auto selected = select_compression(0x00);
+    CHECK(selected == compression_type::none);
+
+    BOOST_LOG_SEV(lg, debug) << "No compression support returns none";
+}
+
+TEST_CASE("test_select_compression_zlib_only", "[compression][handshake]") {
+    auto lg(make_logger(test_suite));
+
+    auto selected = select_compression(COMPRESSION_SUPPORT_ZLIB);
+    CHECK(selected == compression_type::zlib);
+
+    BOOST_LOG_SEV(lg, debug) << "Zlib only returns zlib";
+}
+
+TEST_CASE("test_select_compression_gzip_only", "[compression][handshake]") {
+    auto lg(make_logger(test_suite));
+
+    auto selected = select_compression(COMPRESSION_SUPPORT_GZIP);
+    CHECK(selected == compression_type::gzip);
+
+    BOOST_LOG_SEV(lg, debug) << "Gzip only returns gzip";
+}
+
+TEST_CASE("test_select_compression_bzip2_only", "[compression][handshake]") {
+    auto lg(make_logger(test_suite));
+
+    auto selected = select_compression(COMPRESSION_SUPPORT_BZIP2);
+    CHECK(selected == compression_type::bzip2);
+
+    BOOST_LOG_SEV(lg, debug) << "Bzip2 only returns bzip2";
+}
+
+TEST_CASE("test_select_compression_all_supported", "[compression][handshake]") {
+    auto lg(make_logger(test_suite));
+
+    // With all supported, should return preferred (default: zlib)
+    auto selected = select_compression(COMPRESSION_SUPPORT_ALL);
+    CHECK(selected == compression_type::zlib);
+
+    BOOST_LOG_SEV(lg, debug) << "All supported with default preference returns zlib";
+}
+
+TEST_CASE("test_select_compression_preferred_gzip", "[compression][handshake]") {
+    auto lg(make_logger(test_suite));
+
+    // Server prefers gzip, client supports all
+    auto selected = select_compression(COMPRESSION_SUPPORT_ALL, compression_type::gzip);
+    CHECK(selected == compression_type::gzip);
+
+    BOOST_LOG_SEV(lg, debug) << "Server preference for gzip honored";
+}
+
+TEST_CASE("test_select_compression_preferred_not_supported", "[compression][handshake]") {
+    auto lg(make_logger(test_suite));
+
+    // Server prefers bzip2, but client only supports zlib
+    auto selected = select_compression(COMPRESSION_SUPPORT_ZLIB, compression_type::bzip2);
+    CHECK(selected == compression_type::zlib);
+
+    BOOST_LOG_SEV(lg, debug) << "Falls back to supported type when preferred not available";
+}
+
+TEST_CASE("test_select_compression_gzip_bzip2", "[compression][handshake]") {
+    auto lg(make_logger(test_suite));
+
+    // Client supports gzip and bzip2, but not zlib
+    auto selected = select_compression(COMPRESSION_SUPPORT_GZIP | COMPRESSION_SUPPORT_BZIP2);
+    CHECK(selected == compression_type::gzip);
+
+    BOOST_LOG_SEV(lg, debug) << "Falls back in order: zlib > gzip > bzip2";
+}

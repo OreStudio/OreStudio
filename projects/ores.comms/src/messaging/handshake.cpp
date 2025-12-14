@@ -107,12 +107,14 @@ deserialize(std::span<const std::byte> data) {
 // Frame creation functions
 frame create_handshake_request_frame(
     std::uint32_t sequence,
-    const std::string& client_identifier) {
+    const std::string& client_identifier,
+    std::uint8_t supported_compression) {
 
     handshake_request req {
         .client_version_major = PROTOCOL_VERSION_MAJOR,
         .client_version_minor = PROTOCOL_VERSION_MINOR,
-        .client_identifier = client_identifier
+        .client_identifier = client_identifier,
+        .supported_compression = supported_compression
     };
 
     return {message_type::handshake_request, sequence, req.serialize(req)};
@@ -122,14 +124,16 @@ frame create_handshake_response_frame(
     std::uint32_t sequence,
     bool version_compatible,
     const std::string& server_identifier,
-    error_code status) {
+    error_code status,
+    compression_type selected_compression) {
 
     handshake_response resp{
         .server_version_major = PROTOCOL_VERSION_MAJOR,
         .server_version_minor = PROTOCOL_VERSION_MINOR,
         .version_compatible = version_compatible,
         .server_identifier = server_identifier,
-        .status = status
+        .status = status,
+        .selected_compression = selected_compression
     };
 
     return { message_type::handshake_response, sequence, resp.serialize(resp) };
@@ -155,6 +159,39 @@ frame create_error_response_frame(
     };
 
     return { message_type::error_response, sequence, err.serialize(err) };
+}
+
+compression_type select_compression(
+    std::uint8_t supported_compression,
+    compression_type preferred) {
+
+    // Map compression type to its bitmask value
+    auto type_to_mask = [](compression_type ct) -> std::uint8_t {
+        switch (ct) {
+            case compression_type::zlib: return COMPRESSION_SUPPORT_ZLIB;
+            case compression_type::gzip: return COMPRESSION_SUPPORT_GZIP;
+            case compression_type::bzip2: return COMPRESSION_SUPPORT_BZIP2;
+            default: return 0;
+        }
+    };
+
+    // Check if preferred type is supported
+    if (supported_compression & type_to_mask(preferred)) {
+        return preferred;
+    }
+
+    // Fall back to any supported type (prefer zlib > gzip > bzip2)
+    if (supported_compression & COMPRESSION_SUPPORT_ZLIB) {
+        return compression_type::zlib;
+    }
+    if (supported_compression & COMPRESSION_SUPPORT_GZIP) {
+        return compression_type::gzip;
+    }
+    if (supported_compression & COMPRESSION_SUPPORT_BZIP2) {
+        return compression_type::bzip2;
+    }
+
+    return compression_type::none;
 }
 
 }

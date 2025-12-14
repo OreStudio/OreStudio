@@ -162,10 +162,7 @@ boost::asio::awaitable<void> client::perform_connection() {
                                << " (client: " << config_.client_identifier << ")";
 
     co_await perform_handshake();
-    {
-        std::lock_guard guard{state_mutex_};
-        state_ = connection_state::connected;
-    }
+    state_.store(connection_state::connected, std::memory_order_release);
     BOOST_LOG_SEV(lg(), info) << "Successfully connected to server.";
 
     // Publish connected event to event bus
@@ -195,28 +192,20 @@ boost::asio::awaitable<void> client::perform_connection() {
 }
 
 boost::asio::awaitable<void> client::connect() {
-    {
-        std::lock_guard guard{state_mutex_};
-        if (state_ != connection_state::disconnected) {
-            throw connection_error("Client is already connected or connecting");
-        }
-        state_ = connection_state::connecting;
+    auto expected = connection_state::disconnected;
+    if (!state_.compare_exchange_strong(expected, connection_state::connecting,
+            std::memory_order_acq_rel)) {
+        throw connection_error("Client is already connected or connecting");
     }
 
     try {
         co_await perform_connection();
     } catch (const connection_error&) {
-        {
-            std::lock_guard guard{state_mutex_};
-            state_ = connection_state::disconnected;
-        }
+        state_.store(connection_state::disconnected, std::memory_order_release);
         throw;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Connection error: " << e.what();
-        {
-            std::lock_guard guard{state_mutex_};
-            state_ = connection_state::disconnected;
-        }
+        state_.store(connection_state::disconnected, std::memory_order_release);
         throw connection_error(
             std::format("Failed to connect to server: {}", e.what()));
     }
@@ -294,12 +283,10 @@ boost::asio::awaitable<void> client::connect_with_retry() {
         co_return;
     }
 
-    {
-        std::lock_guard guard{state_mutex_};
-        if (state_ != connection_state::disconnected) {
-            throw connection_error("Client is already connected or connecting");
-        }
-        state_ = connection_state::connecting;
+    auto expected = connection_state::disconnected;
+    if (!state_.compare_exchange_strong(expected, connection_state::connecting,
+            std::memory_order_acq_rel)) {
+        throw connection_error("Client is already connected or connecting");
     }
 
     auto exec = co_await boost::asio::this_coro::executor;
@@ -336,10 +323,7 @@ boost::asio::awaitable<void> client::connect_with_retry() {
     }
 
     // All attempts failed
-    {
-        std::lock_guard guard{state_mutex_};
-        state_ = connection_state::disconnected;
-    }
+    state_.store(connection_state::disconnected, std::memory_order_release);
 
     BOOST_LOG_SEV(lg(), error) << "All " << max_attempts
                                << " connection attempts failed";
@@ -395,12 +379,9 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
 
     for (std::uint32_t attempt = 0; attempt < max_attempts; ++attempt) {
         // Check if we should still try to reconnect
-        {
-            std::lock_guard guard{state_mutex_};
-            if (state_ != connection_state::reconnecting) {
-                BOOST_LOG_SEV(lg(), debug) << "Reconnect cancelled, state changed";
-                break;
-            }
+        if (state_.load(std::memory_order_acquire) != connection_state::reconnecting) {
+            BOOST_LOG_SEV(lg(), debug) << "Reconnect cancelled, state changed";
+            break;
         }
 
         bool should_retry = false;
@@ -473,10 +454,11 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
                                << " reconnection attempts failed. "
                                << "Giving up, auto-reconnect will not retry.";
 
+    state_.store(connection_state::disconnected, std::memory_order_release);
+
     disconnect_callback_t callback;
     {
         std::lock_guard guard{state_mutex_};
-        state_ = connection_state::disconnected;
         callback = disconnect_callback_;
     }
 
@@ -500,10 +482,7 @@ void client::disconnect() {
     BOOST_LOG_SEV(lg(), debug) << "Disconnecting from server";
 
     // First mark as disconnected to stop the message loop and reconnect loop
-    {
-        std::lock_guard guard{state_mutex_};
-        state_ = connection_state::disconnected;
-    }
+    state_.store(connection_state::disconnected, std::memory_order_release);
 
     // Close the connection (this will cancel pending async operations)
     // Note: We don't reset the unique_ptr here because the message loop
@@ -526,13 +505,11 @@ void client::disconnect() {
 }
 
 bool client::is_connected() const {
-    std::lock_guard guard{state_mutex_};
-    return state_ == connection_state::connected && conn_ && conn_->is_open();
+    return state_.load(std::memory_order_acquire) == connection_state::connected;
 }
 
 connection_state client::get_state() const {
-    std::lock_guard guard{state_mutex_};
-    return state_;
+    return state_.load(std::memory_order_acquire);
 }
 
 void client::set_disconnect_callback(disconnect_callback_t callback) {
@@ -590,7 +567,7 @@ boost::asio::awaitable<void> client::run_heartbeat() {
             std::uint32_t seq;
             {
                 std::lock_guard guard{state_mutex_};
-                if (!conn_ || state_ != connection_state::connected) {
+                if (!conn_ || state_.load(std::memory_order_acquire) != connection_state::connected) {
                     break;
                 }
                 seq = ++sequence_number_;
@@ -648,17 +625,15 @@ client::send_request(messaging::frame request_frame) {
     BOOST_LOG_SEV(lg(), debug) << "Sending request.";
 
     // Check connection state - fail immediately if not connected
-    {
-        std::lock_guard guard{state_mutex_};
-        if (state_ == connection_state::reconnecting) {
-            BOOST_LOG_SEV(lg(), warn) << "Cannot send request: reconnecting";
-            co_return std::unexpected(messaging::error_code::network_error);
-        }
-        if (state_ != connection_state::connected) {
-            BOOST_LOG_SEV(lg(), error) << "Cannot send request: not connected (state="
-                                       << state_ << ")";
-            co_return std::unexpected(messaging::error_code::network_error);
-        }
+    auto current_state = state_.load(std::memory_order_acquire);
+    if (current_state == connection_state::reconnecting) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot send request: reconnecting";
+        co_return std::unexpected(messaging::error_code::network_error);
+    }
+    if (current_state != connection_state::connected) {
+        BOOST_LOG_SEV(lg(), error) << "Cannot send request: not connected (state="
+                                   << current_state << ")";
+        co_return std::unexpected(messaging::error_code::network_error);
     }
     BOOST_LOG_SEV(lg(), trace) << "Currently connected.";
 
@@ -718,12 +693,12 @@ client::send_request(messaging::frame request_frame) {
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to read response frame, error "
                                        << response_result.error();
+            state_.store(connection_state::disconnected, std::memory_order_release);
             {
                 std::lock_guard guard{state_mutex_};
-                state_ = connection_state::disconnected;
-            }
-            if (conn_) {
-                conn_->close();
+                if (conn_) {
+                    conn_->close();
+                }
             }
             BOOST_LOG_SEV(lg(), warn) << "Connection lost";
             co_return std::unexpected(response_result.error());
@@ -735,12 +710,12 @@ client::send_request(messaging::frame request_frame) {
 
     } catch (const boost::system::system_error& e) {
         BOOST_LOG_SEV(lg(), error) << "Network error: " << e.what();
+        state_.store(connection_state::disconnected, std::memory_order_release);
         {
             std::lock_guard guard{state_mutex_};
-            state_ = connection_state::disconnected;
-        }
-        if (conn_) {
-            conn_->close();
+            if (conn_) {
+                conn_->close();
+            }
         }
         co_return std::unexpected(messaging::error_code::network_error);
     } catch (const std::exception& e) {
@@ -899,20 +874,26 @@ boost::asio::awaitable<void> client::run_message_loop() {
     // Check if we should attempt auto-reconnect
     bool should_reconnect = false;
     reconnecting_callback_t reconnecting_cb;
-    {
-        std::lock_guard guard{state_mutex_};
-        // Only auto-reconnect if we were connected (not explicitly disconnected)
-        if (state_ == connection_state::connected &&
-            config_.retry.auto_reconnect &&
-            config_.retry.max_attempts > 0) {
-            state_ = connection_state::reconnecting;
+
+    // Only auto-reconnect if we were connected (not explicitly disconnected)
+    if (config_.retry.auto_reconnect && config_.retry.max_attempts > 0) {
+        auto expected = connection_state::connected;
+        if (state_.compare_exchange_strong(expected, connection_state::reconnecting,
+                std::memory_order_acq_rel)) {
             should_reconnect = true;
-            reconnecting_cb = reconnecting_callback_;
+            {
+                std::lock_guard guard{state_mutex_};
+                reconnecting_cb = reconnecting_callback_;
+            }
             BOOST_LOG_SEV(lg(), info) << "Connection lost, will attempt auto-reconnect";
-        } else if (state_ != connection_state::disconnected) {
-            // Not auto-reconnecting, mark as disconnected
-            state_ = connection_state::disconnected;
         }
+    }
+
+    // If not reconnecting and not already disconnected, mark as disconnected
+    if (!should_reconnect) {
+        auto expected = connection_state::connected;
+        state_.compare_exchange_strong(expected, connection_state::disconnected,
+            std::memory_order_acq_rel);
     }
 
     if (should_reconnect) {

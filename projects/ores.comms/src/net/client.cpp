@@ -527,7 +527,7 @@ void client::disconnect() {
 
 bool client::is_connected() const {
     std::lock_guard guard{state_mutex_};
-    return state_ == connection_state::connected && conn_ && conn_->is_open();
+    return state_ == connection_state::connected;
 }
 
 connection_state client::get_state() const {

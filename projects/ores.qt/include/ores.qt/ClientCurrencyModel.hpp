@@ -21,8 +21,11 @@
 #define ORES_QT_CLIENT_CURRENCY_MODEL_HPP
 
 #include <vector>
+#include <unordered_map>
+#include <chrono>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
+#include <QTimer>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.risk/domain/currency.hpp"
@@ -123,6 +126,20 @@ public:
      */
     std::uint32_t total_available_count() const { return total_available_count_; }
 
+    /**
+     * @brief Get the recency decay duration in seconds.
+     *
+     * @return Duration over which the "new" color fades to transparent.
+     */
+    int recency_decay_seconds() const { return recency_decay_seconds_; }
+
+    /**
+     * @brief Set the recency decay duration.
+     *
+     * @param seconds Duration over which the "new" color fades (1-300 seconds).
+     */
+    void set_recency_decay_seconds(int seconds);
+
 signals:
     /**
      * @brief Emitted when data has been successfully loaded.
@@ -136,8 +153,21 @@ signals:
 
 private slots:
     void onCurrenciesLoaded();
+    void onDecayTimerTimeout();
 
 private:
+    /**
+     * @brief Calculate background color based on how recently the currency was added.
+     *
+     * Returns a color that fades from highlight color to transparent over the
+     * decay duration. Newer currencies are more vibrant.
+     *
+     * @param iso_code The currency ISO code to get the color for.
+     * @return QVariant containing QBrush for background, or invalid QVariant if no color.
+     */
+    QVariant recency_background_color(const std::string& iso_code) const;
+
+    using time_point = std::chrono::steady_clock::time_point;
     /**
      * @brief Enumeration of table columns for type-safe column access.
      *
@@ -173,6 +203,11 @@ private:
     std::uint32_t page_size_{100};
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
+
+    // Recency tracking for row coloring
+    std::unordered_map<std::string, time_point> load_timestamps_;
+    QTimer* decay_timer_;
+    int recency_decay_seconds_{30};  // Default: color fades over 30 seconds
 };
 
 }

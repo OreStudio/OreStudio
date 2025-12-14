@@ -22,6 +22,8 @@
 #include <algorithm>
 #include <unordered_set>
 #include <QtConcurrent>
+#include <QBrush>
+#include <QColor>
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.risk/messaging/protocol.hpp"
@@ -35,11 +37,16 @@ using namespace ores::utility::log;
 ClientCurrencyModel::
 ClientCurrencyModel(ClientManager* clientManager, QObject* parent)
     : QAbstractTableModel(parent), clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FutureWatcherResult>(this)) {
+      watcher_(new QFutureWatcher<FutureWatcherResult>(this)),
+      decay_timer_(new QTimer(this)) {
 
     connect(watcher_,
         &QFutureWatcher<FutureWatcherResult>::finished,
         this, &ClientCurrencyModel::onCurrenciesLoaded);
+
+    // Setup decay timer for recency color updates (every second)
+    connect(decay_timer_, &QTimer::timeout,
+        this, &ClientCurrencyModel::onDecayTimerTimeout);
 }
 
 int ClientCurrencyModel::rowCount(const QModelIndex& parent) const {
@@ -55,7 +62,7 @@ int ClientCurrencyModel::columnCount(const QModelIndex& parent) const {
 }
 
 QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
-    if (!index.isValid() || role != Qt::DisplayRole)
+    if (!index.isValid())
         return {};
 
     const auto row = static_cast<std::size_t>(index.row());
@@ -63,6 +70,13 @@ QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
         return {};
 
     const auto& currency = currencies_[row];
+
+    if (role == Qt::BackgroundRole) {
+        return recency_background_color(currency.iso_code);
+    }
+
+    if (role != Qt::DisplayRole)
+        return {};
 
     switch (index.column()) {
     case Column::CurrencyName: return QString::fromStdString(currency.name);
@@ -130,7 +144,9 @@ void ClientCurrencyModel::refresh(bool replace) {
         if (!currencies_.empty()) {
             beginResetModel();
             currencies_.clear();
+            load_timestamps_.clear();
             total_available_count_ = 0;
+            decay_timer_->stop();
             endResetModel();
         }
     }
@@ -232,6 +248,12 @@ void ClientCurrencyModel::onCurrenciesLoaded() {
         const int new_count = static_cast<int>(new_currencies.size());
 
         if (new_count > 0) {
+            // Record load timestamp for new currencies (before insertion)
+            const auto now = std::chrono::steady_clock::now();
+            for (const auto& curr : new_currencies) {
+                load_timestamps_[curr.iso_code] = now;
+            }
+
             // Append new data to existing currencies
             beginInsertRows(QModelIndex(), old_size, old_size + new_count - 1);
             currencies_.insert(currencies_.end(),
@@ -247,6 +269,11 @@ void ClientCurrencyModel::onCurrenciesLoaded() {
             // Notify that all data may have changed due to sorting
             if (old_size > 0) {
                 emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1));
+            }
+
+            // Start the decay timer to update colors periodically
+            if (!decay_timer_->isActive()) {
+                decay_timer_->start(1000);  // Update every second
             }
         }
 
@@ -311,6 +338,75 @@ void ClientCurrencyModel::set_page_size(std::uint32_t size) {
     } else {
         page_size_ = size;
         BOOST_LOG_SEV(lg(), info) << "Page size set to: " << page_size_;
+    }
+}
+
+void ClientCurrencyModel::set_recency_decay_seconds(int seconds) {
+    if (seconds < 1 || seconds > 300) {
+        BOOST_LOG_SEV(lg(), warn) << "Invalid recency decay: " << seconds
+                                  << "s. Must be between 1 and 300. Using default: 30s";
+        recency_decay_seconds_ = 30;
+    } else {
+        recency_decay_seconds_ = seconds;
+        BOOST_LOG_SEV(lg(), info) << "Recency decay set to: "
+                                  << recency_decay_seconds_ << "s";
+    }
+}
+
+QVariant ClientCurrencyModel::
+recency_background_color(const std::string& iso_code) const {
+    auto it = load_timestamps_.find(iso_code);
+    if (it == load_timestamps_.end()) {
+        // No timestamp - currency was loaded before we started tracking
+        return {};
+    }
+
+    const auto now = std::chrono::steady_clock::now();
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+        now - it->second).count();
+    const auto decay_ms = recency_decay_seconds_ * 1000;
+
+    if (elapsed >= decay_ms) {
+        // Fully decayed - no color
+        return {};
+    }
+
+    // Calculate opacity: 1.0 (just loaded) -> 0.0 (fully decayed)
+    const double progress = static_cast<double>(elapsed) / decay_ms;
+    const int alpha = static_cast<int>(255 * (1.0 - progress) * 0.4);
+
+    // Use a soft green highlight for recently loaded currencies
+    // RGB(144, 238, 144) is light green, with fading alpha
+    QColor color(144, 238, 144, alpha);
+    return QBrush(color);
+}
+
+void ClientCurrencyModel::onDecayTimerTimeout() {
+    const auto now = std::chrono::steady_clock::now();
+    const auto decay_duration = std::chrono::seconds(recency_decay_seconds_);
+
+    // Remove expired timestamps and check if any are still active
+    bool has_active_timestamps = false;
+    auto it = load_timestamps_.begin();
+    while (it != load_timestamps_.end()) {
+        if (now - it->second >= decay_duration) {
+            it = load_timestamps_.erase(it);
+        } else {
+            has_active_timestamps = true;
+            ++it;
+        }
+    }
+
+    // Stop the timer if all timestamps have expired
+    if (!has_active_timestamps) {
+        decay_timer_->stop();
+        BOOST_LOG_SEV(lg(), debug) << "All recency colors have decayed, stopping timer";
+    }
+
+    // Emit dataChanged to update the view with new colors
+    if (!currencies_.empty()) {
+        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
+            {Qt::BackgroundRole});
     }
 }
 

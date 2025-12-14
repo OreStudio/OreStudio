@@ -169,9 +169,6 @@ message(STATUS "Source directory: ${CTEST_SOURCE_DIRECTORY}")
 set(CTEST_BINARY_DIRECTORY "${CTEST_SOURCE_DIRECTORY}/build/output/${preset}")
 message(STATUS "Binary directory: ${CTEST_BINARY_DIRECTORY}")
 
-# Read custom files
-ctest_read_custom_files(${CTEST_SOURCE_DIRECTORY})
-
 # Determine the number of jobs to run in parallel.
 include(ProcessorCount)
 ProcessorCount(nproc)
@@ -227,6 +224,10 @@ endif()
 # Step: start the build
 #
 ctest_start(${build_group})
+
+# Read custom files. This must be called after ctest_start() but before other
+# ctest_* commands, to ensure warning exceptions are applied.
+ctest_read_custom_files(${CTEST_SOURCE_DIRECTORY})
 
 #
 # Memory Checks

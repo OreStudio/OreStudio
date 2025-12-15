@@ -20,7 +20,9 @@
 #include "ores.qt/AccountController.hpp"
 
 #include <QPointer>
+#include <boost/uuid/uuid.hpp>
 #include "ores.qt/AccountMdiWindow.hpp"
+#include "ores.qt/AccountDetailDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
@@ -184,16 +186,127 @@ void AccountController::onNotificationReceived(
 
 void AccountController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new account requested";
-    // TODO: Implement AccountDetailDialog for creating new accounts
-    emit statusMessage("Create account dialog not yet implemented");
+
+    const QColor iconColor(220, 220, 220);
+
+    auto* detailDialog = new AccountDetailDialog(mainWindow_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
+
+    // Set empty account for create mode
+    accounts::domain::account empty_account;
+    detailDialog->setAccount(empty_account);
+
+    // Connect signals
+    connect(detailDialog, &AccountDetailDialog::statusMessage,
+            this, [this](const QString& message) {
+        emit statusMessage(message);
+    });
+    connect(detailDialog, &AccountDetailDialog::errorMessage,
+            this, [this](const QString& message) {
+        emit errorMessage(message);
+    });
+    connect(detailDialog, &AccountDetailDialog::accountCreated,
+            this, [this](const boost::uuids::uuid& /* account_id */) {
+        // Refresh the account list
+        if (accountListWindow_) {
+            auto* accountWidget = qobject_cast<AccountMdiWindow*>(
+                accountListWindow_->widget());
+            if (accountWidget) {
+                accountWidget->reload();
+            }
+        }
+    });
+
+    auto* detailWindow = new DetachableMdiSubWindow();
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle("New Account");
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_person_20_filled.svg", iconColor));
+
+    allDetachableWindows_.append(detailWindow);
+    QPointer<AccountController> self = this;
+    QPointer<DetachableMdiSubWindow> windowBeingDestroyed = detailWindow;
+    connect(detailWindow, &QObject::destroyed, this,
+        [self, windowBeingDestroyed]() {
+        if (!self) return;
+        if (!windowBeingDestroyed.isNull()) {
+            self->allDetachableWindows_.removeAll(windowBeingDestroyed.data());
+        }
+    });
+
+    mdiArea_->addSubWindow(detailWindow);
+    detailWindow->adjustSize();
+    detailWindow->show();
 }
 
 void AccountController::onShowAccountDetails(
     const accounts::domain::account& account) {
     BOOST_LOG_SEV(lg(), info) << "Showing account details for: "
                              << account.username;
-    // TODO: Implement AccountDetailDialog for editing accounts
-    emit statusMessage("Edit account dialog not yet implemented");
+
+    const QColor iconColor(220, 220, 220);
+
+    auto* detailDialog = new AccountDetailDialog(mainWindow_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
+    detailDialog->setAccount(account);
+
+    // Connect signals
+    connect(detailDialog, &AccountDetailDialog::statusMessage,
+            this, [this](const QString& message) {
+        emit statusMessage(message);
+    });
+    connect(detailDialog, &AccountDetailDialog::errorMessage,
+            this, [this](const QString& message) {
+        emit errorMessage(message);
+    });
+    connect(detailDialog, &AccountDetailDialog::accountUpdated,
+            this, [this](const boost::uuids::uuid& /* account_id */) {
+        // Refresh the account list
+        if (accountListWindow_) {
+            auto* accountWidget = qobject_cast<AccountMdiWindow*>(
+                accountListWindow_->widget());
+            if (accountWidget) {
+                accountWidget->reload();
+            }
+        }
+    });
+    connect(detailDialog, &AccountDetailDialog::accountDeleted,
+            this, [this](const boost::uuids::uuid& /* account_id */) {
+        // Refresh the account list
+        if (accountListWindow_) {
+            auto* accountWidget = qobject_cast<AccountMdiWindow*>(
+                accountListWindow_->widget());
+            if (accountWidget) {
+                accountWidget->reload();
+            }
+        }
+    });
+
+    auto* detailWindow = new DetachableMdiSubWindow();
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle(QString("Account: %1")
+        .arg(QString::fromStdString(account.username)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_person_20_filled.svg", iconColor));
+
+    allDetachableWindows_.append(detailWindow);
+    QPointer<AccountController> self = this;
+    QPointer<DetachableMdiSubWindow> windowBeingDestroyed = detailWindow;
+    connect(detailWindow, &QObject::destroyed, this,
+        [self, windowBeingDestroyed]() {
+        if (!self) return;
+        if (!windowBeingDestroyed.isNull()) {
+            self->allDetachableWindows_.removeAll(windowBeingDestroyed.data());
+        }
+    });
+
+    mdiArea_->addSubWindow(detailWindow);
+    detailWindow->adjustSize();
+    detailWindow->show();
 }
 
 }

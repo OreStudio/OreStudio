@@ -72,9 +72,11 @@ boost::asio::awaitable<void> client::perform_handshake() {
         return ++sequence_number_;
     };
 
-    co_await service::handshake_service::perform_client_handshake(
+    session_compression_ = co_await service::handshake_service::perform_client_handshake(
         *conn_, sequence_generator, config_.client_identifier,
         config_.supported_compression);
+
+    BOOST_LOG_SEV(lg(), info) << "Session compression set to: " << session_compression_;
 }
 
 client::client(client_options config,
@@ -650,10 +652,11 @@ client::send_request(messaging::frame request_frame) {
         auto corr_id = next_correlation_id();
         auto channel = pending_requests_->register_request(corr_id);
 
-        // Create frame with correlation ID
+        // Create frame with correlation ID and session compression
         auto frame_to_send = messaging::frame(
             request_frame.header().type, seq, corr_id,
-            std::vector<std::byte>(request_frame.payload()));
+            std::vector<std::byte>(request_frame.payload()),
+            session_compression_);
 
         BOOST_LOG_SEV(lg(), debug) << "Sending request " << frame_to_send.header().type
                                    << " (correlation_id=" << corr_id << ")";
@@ -683,7 +686,8 @@ client::send_request(messaging::frame request_frame) {
     try {
         auto frame_to_send = messaging::frame(
             request_frame.header().type, seq,
-            std::vector<std::byte>(request_frame.payload()));
+            std::vector<std::byte>(request_frame.payload()),
+            session_compression_);
 
         BOOST_LOG_SEV(lg(), debug) << "Sending request (direct) "
                                    << frame_to_send.header().type;

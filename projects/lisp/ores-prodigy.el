@@ -56,6 +56,7 @@
 (prodigy-define-service
   :name "ORE Studio QT - Debug"
   :cwd (concat (ores/path-to-publish) "/bin")
+  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--compression-enabled")
   :command (concat (ores/path-to-publish) "/bin/ores.qt")
   :tags '(ores ui debug)
   :stop-signal 'sigint
@@ -64,6 +65,7 @@
 (prodigy-define-service
   :name "ORE Studio QT - Release"
   :cwd (concat (ores/path-to-publish) "/bin")
+  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--compression-enabled")
   :command (concat (ores/path-to-publish) "/bin/ores.qt")
   :tags '(ores ui release)
   :stop-signal 'sigint

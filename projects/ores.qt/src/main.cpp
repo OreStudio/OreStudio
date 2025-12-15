@@ -81,6 +81,8 @@ int main(int argc, char *argv[]) {
     splash.setProgressDuration(splashDuration);
 
     ores::qt::MainWindow mainWindow;
+    mainWindow.getClientManager()->setSupportedCompression(parser.supportedCompression());
+
     QTimer::singleShot(splashDuration, &splash, SLOT(close()));
     QTimer::singleShot(splashDuration, &mainWindow, SLOT(show()));
 

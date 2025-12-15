@@ -20,6 +20,8 @@
 #ifndef ORES_QT_COMMAND_LINE_PARSER_HPP
 #define ORES_QT_COMMAND_LINE_PARSER_HPP
 
+#include <cstdint>
+#include <optional>
 #include <QCoreApplication>
 #include <QCommandLineParser>
 #include "ores.utility/log/logging_options.hpp"
@@ -49,16 +51,33 @@ public:
     /**
      * @brief Get logging configuration based on parsed options.
      *
-     * Returns empty options (logging disabled) if --log-enabled is not set.
+     * Returns std::nullopt if --log-enabled is not set, which disables logging.
      *
      * @return Logging options configured from command line arguments
      */
-    [[nodiscard]] utility::log::logging_options loggingOptions() const;
+    [[nodiscard]] std::optional<utility::log::logging_options> loggingOptions() const;
 
     /**
      * @brief Check if logging is enabled.
      */
     [[nodiscard]] bool isLoggingEnabled() const;
+
+    /**
+     * @brief Check if compression is enabled.
+     */
+    [[nodiscard]] bool isCompressionEnabled() const;
+
+    /**
+     * @brief Get the supported compression bitmask based on parsed options.
+     *
+     * Returns the bitmask value for use in client_options.supported_compression.
+     * If compression is disabled, returns 0.
+     * If a specific algorithm is selected, returns just that bit.
+     * If "all" is selected (default), returns COMPRESSION_SUPPORT_ALL.
+     *
+     * @return Compression support bitmask
+     */
+    [[nodiscard]] std::uint8_t supportedCompression() const;
 
 private:
     void setupOptions();

@@ -94,7 +94,8 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
             .host = host,
             .port = port,
             .client_identifier = "ores-qt-client",
-            .verify_certificate = false
+            .verify_certificate = false,
+            .supported_compression = supported_compression_
         };
 
         // Create new client using persistent IO executor and event bus

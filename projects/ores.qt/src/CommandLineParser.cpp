@@ -19,7 +19,9 @@
  */
 #include "ores.qt/CommandLineParser.hpp"
 
+#include <optional>
 #include <boost/process/v2/pid.hpp>
+#include "ores.comms/messaging/handshake_protocol.hpp"
 
 namespace ores::qt {
 
@@ -69,6 +71,19 @@ void CommandLineParser::setupOptions() {
         "log-include-pid",
         "Include the process ID in the log filename."
     });
+
+    // Compression options
+    parser_.addOption({
+        {"c", "compression-enabled"},
+        "Enable compression for network communication."
+    });
+
+    parser_.addOption({
+        "compression-algorithm",
+        "Compression algorithm to use. Valid values: zlib, gzip, bzip2, all.",
+        "algorithm",
+        "all"
+    });
 }
 
 void CommandLineParser::process(const QCoreApplication& app) {
@@ -79,13 +94,13 @@ bool CommandLineParser::isLoggingEnabled() const {
     return parser_.isSet("log-enabled");
 }
 
-utility::log::logging_options CommandLineParser::loggingOptions() const {
-    utility::log::logging_options r;
-
-    // If logging is not enabled, return empty options (logging disabled)
+std::optional<utility::log::logging_options> CommandLineParser::loggingOptions() const {
+    // If logging is not enabled, return nullopt to disable logging
     if (!isLoggingEnabled()) {
-        return r;
+        return std::nullopt;
     }
+
+    utility::log::logging_options r;
 
     // Build the filename
     std::string filename = parser_.value("log-filename").toStdString();
@@ -107,6 +122,31 @@ utility::log::logging_options CommandLineParser::loggingOptions() const {
     r.severity = parser_.value("log-level").toStdString();
 
     return r;
+}
+
+bool CommandLineParser::isCompressionEnabled() const {
+    return parser_.isSet("compression-enabled");
+}
+
+std::uint8_t CommandLineParser::supportedCompression() const {
+    using namespace comms::messaging;
+
+    if (!isCompressionEnabled()) {
+        return 0;
+    }
+
+    const auto algorithm = parser_.value("compression-algorithm").toLower().toStdString();
+
+    if (algorithm == "zlib") {
+        return COMPRESSION_SUPPORT_ZLIB;
+    } else if (algorithm == "gzip") {
+        return COMPRESSION_SUPPORT_GZIP;
+    } else if (algorithm == "bzip2") {
+        return COMPRESSION_SUPPORT_BZIP2;
+    } else {
+        // "all" or any unrecognized value defaults to all
+        return COMPRESSION_SUPPORT_ALL;
+    }
 }
 
 }

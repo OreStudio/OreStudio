@@ -3,6 +3,7 @@
 :END:
 #+title: ORE Studio Shell Recipes
 #+author: Marco Craveiro
+#+startup: inlineimages
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 
 Demonstrates all of the functionality available on the [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ORE Studio Shell

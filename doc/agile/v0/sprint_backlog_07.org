@@ -17,34 +17,36 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-15 Mon 17:05], for Monday, December 15, 2025.
+#+CAPTION: Clock summary at [2025-12-15 Mon 22:11], for Monday, December 15, 2025.
 |       | <75>                                           |        |      |      |       |
 | Tags  | Headline                                       | Time   |      |      |     % |
 |-------+------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                   | *4:28* |      |      | 100.0 |
+|       | *Total time*                                   | *5:52* |      |      | 100.0 |
 |-------+------------------------------------------------+--------+------+------+-------|
-|       | Stories                                        | 4:28   |      |      | 100.0 |
-|       | Active                                         |        | 4:28 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |        |      | 0:28 |  10.4 |
-| infra | OCR scan notebooks for this sprint             |        |      | 0:30 |  11.2 |
-| code  | Consider compressing payload                   |        |      | 3:05 |  69.0 |
-| code  | Latest currencies should have different colour |        |      | 0:25 |   9.3 |
+|       | Stories                                        | 5:52   |      |      | 100.0 |
+|       | Active                                         |        | 5:52 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |        |      | 0:28 |   8.0 |
+| infra | OCR scan notebooks for this sprint             |        |      | 0:30 |   8.5 |
+| code  | Consider compressing payload                   |        |      | 3:05 |  52.6 |
+| code  | Latest currencies should have different colour |        |      | 1:18 |  22.2 |
+| code  | Do not expose temporal machinery in domain     |        |      | 0:31 |   8.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-15 Mon 17:05]
+#+CAPTION: Clock summary at [2025-12-15 Mon 22:11]
 |       | <75>                                           |        |      |      |       |
 | Tags  | Headline                                       | Time   |      |      |     % |
 |-------+------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                   | *5:07* |      |      | 100.0 |
+|       | *Total time*                                   | *6:31* |      |      | 100.0 |
 |-------+------------------------------------------------+--------+------+------+-------|
-|       | Stories                                        | 5:07   |      |      | 100.0 |
-|       | Active                                         |        | 5:07 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |        |      | 1:07 |  21.8 |
-| infra | OCR scan notebooks for this sprint             |        |      | 0:30 |   9.8 |
-| code  | Consider compressing payload                   |        |      | 3:05 |  60.3 |
-| code  | Latest currencies should have different colour |        |      | 0:25 |   8.1 |
+|       | Stories                                        | 6:31   |      |      | 100.0 |
+|       | Active                                         |        | 6:31 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |        |      | 1:07 |  17.1 |
+| infra | OCR scan notebooks for this sprint             |        |      | 0:30 |   7.7 |
+| code  | Consider compressing payload                   |        |      | 3:05 |  47.3 |
+| code  | Latest currencies should have different colour |        |      | 1:18 |  19.9 |
+| code  | Do not expose temporal machinery in domain     |        |      | 0:31 |   7.9 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -375,12 +377,59 @@ Links:
 
 *** STARTED Latest currencies should have different colour             :code:
     :LOGBOOK:
+    CLOCK: [2025-12-15 Mon 17:06]--[2025-12-15 Mon 17:59] =>  0:53
     CLOCK: [2025-12-15 Mon 16:49]--[2025-12-15 Mon 17:05] =>  0:16
     CLOCK: [2025-12-15 Mon 16:40]--[2025-12-15 Mon 16:49] =>  0:09
     :END:
 
 After reloading we should mark latest currencies with a different colour so that
 it is obvious what was added. Consider colouring rows by recency.
+
+Notes:
+
+- valid to is the same as valid from, which is incorrect.
+
+*** STARTED Do not expose temporal machinery in domain                 :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-15 Mon 21:40]--[2025-12-15 Mon 22:11] =>  0:31
+    :END:
+
+As per discussions with Claude:
+
+#+begin_quote
+> ok that looks good. but in terms of valid to/valid from: these are really
+> repository concerns, I think we are leaking them outside of the repository. I
+> wonder if it makes more sense for the domain entities to have a field such as
+> "created_at" which maps to the repository "valid_from" and not expose
+> temporarilty. what are your thoughts. do not change anything, we will deal
+> with that later, just want to capture this requirement for now.
+
+That's a valid architectural concern. You're right that valid_from/valid_to are
+temporal table implementation details that are leaking into the domain layer.
+
+  Current state (leaky abstraction):
+  - Domain entity has valid_from and valid_to strings
+  - These are really repository/database concerns for temporal versioning (SCD Type 2 pattern)
+  - The UI now displays these raw database fields
+
+  Cleaner approach:
+  - Domain entity has created_at (or modified_at) - represents when this version was created
+  - Repository maps valid_from → created_at when loading
+  - valid_to stays internal to repository (used for querying current vs historical records)
+  - Domain doesn't need to know about the bi-temporal mechanics
+
+  Benefits:
+  - Domain entities are simpler and more intuitive
+  - Repository encapsulates temporal implementation details
+  - Easier to change temporal strategy without affecting domain
+  - created_at is more meaningful to users than "valid from"
+
+  I'll note this for future work. When you're ready to address it, the changes would involve:
+  1. Rename valid_from → created_at in domain::currency
+  2. Remove valid_to from domain (keep only in entity/repository layer)
+  3. Update mapper to translate between them
+  4. Update UI labels accordingly
+#+end_quote
 
 *** History should have a revert button                                :code:
 

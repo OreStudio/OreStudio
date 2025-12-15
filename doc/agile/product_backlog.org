@@ -592,6 +592,7 @@ Links:
 
 - [[https://www.claude.com/blog/improving-frontend-design-through-skills][Improving frontend design through Skills]]
 - [[https://github.com/VoltAgent/awesome-claude-skills][Awesome Claude Skills]]
+- [[https://devexperts.com/blog/ui/][Designing User Interface in the Trading Software]]
 
 Analysis from Gemini:
 

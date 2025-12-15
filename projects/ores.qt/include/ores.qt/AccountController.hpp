@@ -25,6 +25,7 @@
 #include <QDateTime>
 #include "ores.qt/EntityController.hpp"
 #include "ores.utility/log/make_logger.hpp"
+#include "ores.accounts/domain/account.hpp"
 
 namespace ores::qt {
 
@@ -109,6 +110,25 @@ public:
     void closeAllWindows() override;
 
 private slots:
+    /**
+     * @brief Handles request to add a new account.
+     *
+     * Creates and displays an account detail dialog for entering a new
+     * account. Connected to the account list window's add button.
+     */
+    void onAddNewRequested();
+
+    /**
+     * @brief Handles request to show account details.
+     *
+     * Creates and displays an account detail dialog for viewing/editing an
+     * existing account. Connected to the account list window's edit button
+     * and double-click.
+     *
+     * @param account The account to display/edit
+     */
+    void onShowAccountDetails(const accounts::domain::account& account);
+
     /**
      * @brief Handles account change notifications from the server.
      *

@@ -20,7 +20,7 @@
 #include "ores.qt/AccountController.hpp"
 
 #include <QPointer>
-#include <QLabel>
+#include "ores.qt/AccountMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
@@ -108,14 +108,27 @@ void AccountController::showListWindow() {
     BOOST_LOG_SEV(lg(), info) << "Creating new accounts MDI window";
     const QColor iconColor(220, 220, 220);
 
-    // For now, create a placeholder widget until AccountMdiWindow is implemented
-    auto* placeholderWidget = new QLabel("Account Management\n\nComing soon...");
-    placeholderWidget->setAlignment(Qt::AlignCenter);
-    placeholderWidget->setMinimumSize(400, 300);
+    auto* accountWidget = new AccountMdiWindow(clientManager_, username_, mainWindow_);
+
+    // Connect status signals
+    connect(accountWidget, &AccountMdiWindow::statusChanged,
+            this, [this](const QString& message) {
+        emit statusMessage(message);
+    });
+    connect(accountWidget, &AccountMdiWindow::errorOccurred,
+            this, [this](const QString& err_msg) {
+        emit errorMessage("Error: " + err_msg);
+    });
+
+    // Connect account operations
+    connect(accountWidget, &AccountMdiWindow::addNewRequested,
+            this, &AccountController::onAddNewRequested);
+    connect(accountWidget, &AccountMdiWindow::showAccountDetails,
+            this, &AccountController::onShowAccountDetails);
 
     accountListWindow_ = new DetachableMdiSubWindow();
     accountListWindow_->setAttribute(Qt::WA_DeleteOnClose);
-    accountListWindow_->setWidget(placeholderWidget);
+    accountListWindow_->setWidget(accountWidget);
     accountListWindow_->setWindowTitle("Accounts");
     accountListWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_person_20_filled.svg", iconColor));
@@ -158,15 +171,29 @@ void AccountController::onNotificationReceived(
     BOOST_LOG_SEV(lg(), info) << "Received account change notification at "
                               << timestamp.toString(Qt::ISODate).toStdString();
 
-    // TODO: When AccountMdiWindow is implemented, mark it as stale here
-    // if (accountListWindow_) {
-    //     auto* accountWidget = qobject_cast<AccountMdiWindow*>(
-    //         accountListWindow_->widget());
-    //     if (accountWidget) {
-    //         accountWidget->markAsStale();
-    //         BOOST_LOG_SEV(lg(), debug) << "Marked account window as stale";
-    //     }
-    // }
+    // If the account list window is open, mark it as stale
+    if (accountListWindow_) {
+        auto* accountWidget = qobject_cast<AccountMdiWindow*>(
+            accountListWindow_->widget());
+        if (accountWidget) {
+            accountWidget->markAsStale();
+            BOOST_LOG_SEV(lg(), debug) << "Marked account window as stale";
+        }
+    }
+}
+
+void AccountController::onAddNewRequested() {
+    BOOST_LOG_SEV(lg(), info) << "Add new account requested";
+    // TODO: Implement AccountDetailDialog for creating new accounts
+    emit statusMessage("Create account dialog not yet implemented");
+}
+
+void AccountController::onShowAccountDetails(
+    const accounts::domain::account& account) {
+    BOOST_LOG_SEV(lg(), info) << "Showing account details for: "
+                             << account.username;
+    // TODO: Implement AccountDetailDialog for editing accounts
+    emit statusMessage("Edit account dialog not yet implemented");
 }
 
 }

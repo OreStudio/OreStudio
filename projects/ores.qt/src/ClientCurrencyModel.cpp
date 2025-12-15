@@ -22,8 +22,9 @@
 #include <algorithm>
 #include <unordered_set>
 #include <QtConcurrent>
-#include <QBrush>
 #include <QColor>
+#include <QDateTime>
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.risk/messaging/protocol.hpp"
@@ -38,15 +39,15 @@ ClientCurrencyModel::
 ClientCurrencyModel(ClientManager* clientManager, QObject* parent)
     : QAbstractTableModel(parent), clientManager_(clientManager),
       watcher_(new QFutureWatcher<FutureWatcherResult>(this)),
-      decay_timer_(new QTimer(this)) {
+      pulse_timer_(new QTimer(this)) {
 
     connect(watcher_,
         &QFutureWatcher<FutureWatcherResult>::finished,
         this, &ClientCurrencyModel::onCurrenciesLoaded);
 
-    // Setup decay timer for recency color updates (every second)
-    connect(decay_timer_, &QTimer::timeout,
-        this, &ClientCurrencyModel::onDecayTimerTimeout);
+    // Setup pulse timer for recency color updates (same interval as reload button)
+    connect(pulse_timer_, &QTimer::timeout,
+        this, &ClientCurrencyModel::onPulseTimerTimeout);
 }
 
 int ClientCurrencyModel::rowCount(const QModelIndex& parent) const {
@@ -71,8 +72,8 @@ QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
 
     const auto& currency = currencies_[row];
 
-    if (role == Qt::BackgroundRole) {
-        return recency_background_color(currency.iso_code);
+    if (role == Qt::ForegroundRole) {
+        return recency_foreground_color(currency.iso_code);
     }
 
     if (role != Qt::DisplayRole)
@@ -90,6 +91,8 @@ QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
     case Column::RoundingPrecision: return currency.rounding_precision;
     case Column::Format: return QString::fromStdString(currency.format);
     case Column::CurrencyType: return QString::fromStdString(currency.currency_type);
+    case Column::ValidFrom: return QString::fromStdString(currency.valid_from);
+    case Column::ValidTo: return QString::fromStdString(currency.valid_to);
     default: return {};
     }
 }
@@ -112,6 +115,8 @@ headerData(int section, Qt::Orientation orientation, int role) const {
         case Column::RoundingPrecision: return tr("Rounding precision");
         case Column::Format: return tr("Format");
         case Column::CurrencyType: return tr("Currency Type");
+        case Column::ValidFrom: return tr("Valid From");
+        case Column::ValidTo: return tr("Valid To");
         default: return {};
         }
     }
@@ -144,9 +149,11 @@ void ClientCurrencyModel::refresh(bool replace) {
         if (!currencies_.empty()) {
             beginResetModel();
             currencies_.clear();
-            load_timestamps_.clear();
+            recent_iso_codes_.clear();
+            pulse_timer_->stop();
+            pulse_count_ = 0;
+            pulse_state_ = false;
             total_available_count_ = 0;
-            decay_timer_->stop();
             endResetModel();
         }
     }
@@ -248,12 +255,6 @@ void ClientCurrencyModel::onCurrenciesLoaded() {
         const int new_count = static_cast<int>(new_currencies.size());
 
         if (new_count > 0) {
-            // Record load timestamp for new currencies (before insertion)
-            const auto now = std::chrono::steady_clock::now();
-            for (const auto& curr : new_currencies) {
-                load_timestamps_[curr.iso_code] = now;
-            }
-
             // Append new data to existing currencies
             beginInsertRows(QModelIndex(), old_size, old_size + new_count - 1);
             currencies_.insert(currencies_.end(),
@@ -261,19 +262,14 @@ void ClientCurrencyModel::onCurrenciesLoaded() {
                 std::make_move_iterator(new_currencies.end()));
             endInsertRows();
 
-            // Sort all currencies by name
-            std::ranges::sort(currencies_, [](auto const& a, auto const& b) {
-                return a.name < b.name;
-            });
+            // Update the set of recent currencies for recency coloring
+            update_recent_currencies();
 
-            // Notify that all data may have changed due to sorting
-            if (old_size > 0) {
-                emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1));
-            }
-
-            // Start the decay timer to update colors periodically
-            if (!decay_timer_->isActive()) {
-                decay_timer_->start(1000);  // Update every second
+            // Start the pulse timer if there are recent currencies to highlight
+            if (!recent_iso_codes_.empty() && !pulse_timer_->isActive()) {
+                pulse_count_ = 0;
+                pulse_state_ = true;  // Start with highlight on
+                pulse_timer_->start(500);  // Toggle every 500ms (same as reload button)
             }
         }
 
@@ -341,72 +337,89 @@ void ClientCurrencyModel::set_page_size(std::uint32_t size) {
     }
 }
 
-void ClientCurrencyModel::set_recency_decay_seconds(int seconds) {
-    if (seconds < 1 || seconds > 300) {
-        BOOST_LOG_SEV(lg(), warn) << "Invalid recency decay: " << seconds
-                                  << "s. Must be between 1 and 300. Using default: 30s";
-        recency_decay_seconds_ = 30;
-    } else {
-        recency_decay_seconds_ = seconds;
-        BOOST_LOG_SEV(lg(), info) << "Recency decay set to: "
-                                  << recency_decay_seconds_ << "s";
-    }
-}
+void ClientCurrencyModel::update_recent_currencies() {
+    recent_iso_codes_.clear();
 
-QVariant ClientCurrencyModel::
-recency_background_color(const std::string& iso_code) const {
-    auto it = load_timestamps_.find(iso_code);
-    if (it == load_timestamps_.end()) {
-        // No timestamp - currency was loaded before we started tracking
-        return {};
+    const QDateTime now = QDateTime::currentDateTime();
+
+    // First load: set baseline timestamp, no highlighting
+    if (!last_reload_time_.isValid()) {
+        last_reload_time_ = now;
+        BOOST_LOG_SEV(lg(), debug) << "First load - setting baseline timestamp: "
+                                   << last_reload_time_.toString(Qt::ISODate).toStdString();
+        return;
     }
 
-    const auto now = std::chrono::steady_clock::now();
-    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-        now - it->second).count();
-    const auto decay_ms = recency_decay_seconds_ * 1000;
+    BOOST_LOG_SEV(lg(), debug) << "Checking currencies newer than last reload: "
+                               << last_reload_time_.toString(Qt::ISODate).toStdString();
 
-    if (elapsed >= decay_ms) {
-        // Fully decayed - no color
-        return {};
-    }
+    // Find currencies with valid_from newer than last reload
+    for (const auto& currency : currencies_) {
+        if (currency.valid_from.empty()) {
+            continue;
+        }
 
-    // Calculate opacity: 1.0 (just loaded) -> 0.0 (fully decayed)
-    const double progress = static_cast<double>(elapsed) / decay_ms;
-    const int alpha = static_cast<int>(255 * (1.0 - progress) * 0.4);
+        // Parse valid_from as datetime (try multiple formats)
+        QDateTime validFrom = QDateTime::fromString(
+            QString::fromStdString(currency.valid_from), Qt::ISODate);
 
-    // Use a soft green highlight for recently loaded currencies
-    // RGB(144, 238, 144) is light green, with fading alpha
-    QColor color(144, 238, 144, alpha);
-    return QBrush(color);
-}
+        if (!validFrom.isValid()) {
+            // Try alternative format (YYYY-MM-DD HH:MM:SS)
+            validFrom = QDateTime::fromString(
+                QString::fromStdString(currency.valid_from), "yyyy-MM-dd HH:mm:ss");
+        }
 
-void ClientCurrencyModel::onDecayTimerTimeout() {
-    const auto now = std::chrono::steady_clock::now();
-    const auto decay_duration = std::chrono::seconds(recency_decay_seconds_);
+        if (!validFrom.isValid()) {
+            // Try date-only format (YYYY-MM-DD) - assume start of day
+            validFrom = QDateTime::fromString(
+                QString::fromStdString(currency.valid_from), "yyyy-MM-dd");
+        }
 
-    // Remove expired timestamps and check if any are still active
-    bool has_active_timestamps = false;
-    auto it = load_timestamps_.begin();
-    while (it != load_timestamps_.end()) {
-        if (now - it->second >= decay_duration) {
-            it = load_timestamps_.erase(it);
-        } else {
-            has_active_timestamps = true;
-            ++it;
+        if (validFrom.isValid() && validFrom > last_reload_time_) {
+            recent_iso_codes_.insert(currency.iso_code);
+            BOOST_LOG_SEV(lg(), trace) << "Currency " << currency.iso_code
+                                       << " is recent (valid_from: "
+                                       << currency.valid_from << ")";
         }
     }
 
-    // Stop the timer if all timestamps have expired
-    if (!has_active_timestamps) {
-        decay_timer_->stop();
-        BOOST_LOG_SEV(lg(), debug) << "All recency colors have decayed, stopping timer";
+    // Update the reload timestamp for next comparison
+    last_reload_time_ = now;
+
+    BOOST_LOG_SEV(lg(), debug) << "Found " << recent_iso_codes_.size()
+                               << " currencies newer than last reload";
+}
+
+QVariant ClientCurrencyModel::
+recency_foreground_color(const std::string& iso_code) const {
+    if (recent_iso_codes_.empty() || recent_iso_codes_.find(iso_code) == recent_iso_codes_.end()) {
+        return {};
+    }
+
+    // Only show color when pulse_state_ is true (pulsing on)
+    if (!pulse_state_) {
+        return {};
+    }
+
+    // Use the stale indicator color (same as reload button)
+    return color_constants::stale_indicator;
+}
+
+void ClientCurrencyModel::onPulseTimerTimeout() {
+    pulse_state_ = !pulse_state_;
+    pulse_count_++;
+
+    // Stop pulsing after max cycles but keep yellow color on
+    if (pulse_count_ >= max_pulse_cycles_) {
+        pulse_timer_->stop();
+        pulse_state_ = true;  // Keep highlight on after pulsing stops
+        BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete, staying highlighted";
     }
 
     // Emit dataChanged to update the view with new colors
     if (!currencies_.empty()) {
         emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::BackgroundRole});
+            {Qt::ForegroundRole});
     }
 }
 

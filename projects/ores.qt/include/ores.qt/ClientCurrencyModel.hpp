@@ -21,7 +21,7 @@
 #define ORES_QT_CLIENT_CURRENCY_MODEL_HPP
 
 #include <vector>
-#include <unordered_map>
+#include <unordered_set>
 #include <chrono>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
@@ -126,20 +126,6 @@ public:
      */
     std::uint32_t total_available_count() const { return total_available_count_; }
 
-    /**
-     * @brief Get the recency decay duration in seconds.
-     *
-     * @return Duration over which the "new" color fades to transparent.
-     */
-    int recency_decay_seconds() const { return recency_decay_seconds_; }
-
-    /**
-     * @brief Set the recency decay duration.
-     *
-     * @param seconds Duration over which the "new" color fades (1-300 seconds).
-     */
-    void set_recency_decay_seconds(int seconds);
-
 signals:
     /**
      * @brief Emitted when data has been successfully loaded.
@@ -153,21 +139,25 @@ signals:
 
 private slots:
     void onCurrenciesLoaded();
-    void onDecayTimerTimeout();
+    void onPulseTimerTimeout();
 
 private:
     /**
-     * @brief Calculate background color based on how recently the currency was added.
+     * @brief Calculate foreground color based on how recent the currency's valid_from date is.
      *
-     * Returns a color that fades from highlight color to transparent over the
-     * decay duration. Newer currencies are more vibrant.
+     * Returns a decaying highlight color for currencies with the most recent valid_from dates.
+     * The color fades from highlight to transparent over the decay duration.
      *
-     * @param iso_code The currency ISO code to get the color for.
-     * @return QVariant containing QBrush for background, or invalid QVariant if no color.
+     * @param iso_code The currency's ISO code to check for recency.
+     * @return QVariant containing QColor for foreground, or invalid QVariant if no color.
      */
-    QVariant recency_background_color(const std::string& iso_code) const;
+    QVariant recency_foreground_color(const std::string& iso_code) const;
 
-    using time_point = std::chrono::steady_clock::time_point;
+    /**
+     * @brief Update the set of recent currencies (valid_from within recency window).
+     */
+    void update_recent_currencies();
+
     /**
      * @brief Enumeration of table columns for type-safe column access.
      *
@@ -186,6 +176,8 @@ private:
         RoundingPrecision,
         Format,
         CurrencyType,
+        ValidFrom,
+        ValidTo,
         ColumnCount  // Must be last - represents total number of columns
     };
 
@@ -204,10 +196,13 @@ private:
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
-    // Recency tracking for row coloring
-    std::unordered_map<std::string, time_point> load_timestamps_;
-    QTimer* decay_timer_;
-    int recency_decay_seconds_{30};  // Default: color fades over 30 seconds
+    // Recency tracking for row coloring based on valid_from date
+    std::unordered_set<std::string> recent_iso_codes_;  // ISO codes newer than last reload
+    QDateTime last_reload_time_;  // Timestamp of last reload (for comparison)
+    QTimer* pulse_timer_;
+    bool pulse_state_{false};  // Toggle for pulsing effect
+    int pulse_count_{0};
+    static constexpr int max_pulse_cycles_{6};  // 6 pulses (3 seconds at 500ms interval)
 };
 
 }

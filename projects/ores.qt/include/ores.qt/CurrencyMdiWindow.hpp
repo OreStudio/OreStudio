@@ -26,6 +26,7 @@
 #include <QToolBar>
 #include <QIcon>
 #include <QTimer>
+#include <QSortFilterProxyModel>
 #include <memory>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.utility/log/make_logger.hpp"
@@ -128,6 +129,7 @@ private:
     QAction* historyAction_;
 
     std::unique_ptr<ClientCurrencyModel> currencyModel_;
+    QSortFilterProxyModel* proxyModel_;
     ClientManager* clientManager_;
     QString username_;
     bool isStale_{false};

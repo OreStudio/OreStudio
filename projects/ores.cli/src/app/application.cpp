@@ -429,13 +429,7 @@ add_currency(const config::add_currency_options& cfg) const {
     currency.format = cfg.format.value_or("");
     currency.currency_type = cfg.currency_type.value_or("");
     currency.modified_by = cfg.modified_by;
-
-    // Set timestamps to current time
-    const auto now = std::chrono::system_clock::now();
-    const auto timestamp = utility::datetime::datetime::format_time_point(
-        now, "%Y-%m-%d %H:%M:%S");
-    currency.valid_from = timestamp;
-    currency.valid_to = timestamp;
+    // Note: recorded_at is set by the database triggers via valid_from
 
     // Write to database
     currency_repository repo;

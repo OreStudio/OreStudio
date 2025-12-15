@@ -41,7 +41,7 @@ using messaging::PROTOCOL_VERSION_MINOR;
 
 using namespace ores::utility::log;
 
-boost::asio::awaitable<void> handshake_service::perform_client_handshake(
+boost::asio::awaitable<messaging::compression_type> handshake_service::perform_client_handshake(
     net::connection& conn,
     const std::function<std::uint32_t()>& sequence_generator,
     const std::string& client_identifier,
@@ -126,10 +126,14 @@ boost::asio::awaitable<void> handshake_service::perform_client_handshake(
     co_await conn.write_frame(ack_frame);
     BOOST_LOG_SEV(lg(), debug) << "Sent handshake acknowledgement.";
 
-    BOOST_LOG_SEV(lg(), debug) << "Client handshake completed successfully.";
+    BOOST_LOG_SEV(lg(), info) << "Client handshake completed successfully. "
+                              << "Session compression: " << response.selected_compression;
+
+    co_return response.selected_compression;
 }
 
-boost::asio::awaitable<bool> handshake_service::perform_server_handshake(
+boost::asio::awaitable<std::optional<messaging::compression_type>>
+handshake_service::perform_server_handshake(
     net::connection& conn,
     std::uint32_t sequence,
     const std::string& server_identifier) {
@@ -146,7 +150,7 @@ boost::asio::awaitable<bool> handshake_service::perform_server_handshake(
         if (!frame_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to read handshake request: error code "
                                       << static_cast<int>(frame_result.error());
-            co_return false;
+            co_return std::nullopt;
         }
 
         const auto& request_frame = *frame_result;
@@ -155,7 +159,7 @@ boost::asio::awaitable<bool> handshake_service::perform_server_handshake(
         if (request_frame.header().type != message_type::handshake_request) {
             BOOST_LOG_SEV(lg(), error) << "Expected handshake request, got message type "
                                       << static_cast<int>(request_frame.header().type);
-            co_return false;
+            co_return std::nullopt;
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Received valid handshake request frame";
@@ -164,7 +168,7 @@ boost::asio::awaitable<bool> handshake_service::perform_server_handshake(
         auto request_result = handshake_request::deserialize(request_frame.payload());
         if (!request_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to deserialize handshake request";
-            co_return false;
+            co_return std::nullopt;
         }
 
         const auto& request = *request_result;
@@ -202,7 +206,7 @@ boost::asio::awaitable<bool> handshake_service::perform_server_handshake(
                                       << "." << request.client_version_minor << ", server="
                                       << PROTOCOL_VERSION_MAJOR << "."
                                       << PROTOCOL_VERSION_MINOR;
-            co_return false;
+            co_return std::nullopt;
         }
 
         // Read handshake acknowledgment
@@ -211,14 +215,14 @@ boost::asio::awaitable<bool> handshake_service::perform_server_handshake(
         if (!ack_frame_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to read handshake ack, error code: "
                                       << static_cast<int>(ack_frame_result.error());
-            co_return false;
+            co_return std::nullopt;
         }
 
         const auto& ack_frame = *ack_frame_result;
         if (ack_frame.header().type != message_type::handshake_ack) {
             BOOST_LOG_SEV(lg(), error) << "Expected handshake ack, got message type "
                                       << static_cast<int>(ack_frame.header().type);
-            co_return false;
+            co_return std::nullopt;
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Received valid handshake acknowledgment frame";
@@ -226,22 +230,23 @@ boost::asio::awaitable<bool> handshake_service::perform_server_handshake(
         auto ack_result = handshake_ack::deserialize(ack_frame.payload());
         if (!ack_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to deserialize handshake ack";
-            co_return false;
+            co_return std::nullopt;
         }
 
         const auto& ack = *ack_result;
         if (ack.status != error_code::none) {
             BOOST_LOG_SEV(lg(), error) << "Client reported handshake error: "
                                       << static_cast<int>(ack.status);
-            co_return false;
+            co_return std::nullopt;
         }
 
-        BOOST_LOG_SEV(lg(), info) << "Server handshake completed successfully";
-        co_return true;
+        BOOST_LOG_SEV(lg(), info) << "Server handshake completed successfully. "
+                                 << "Session compression: " << selected_compression;
+        co_return selected_compression;
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Exception during server handshake: " << e.what();
-        co_return false;
+        co_return std::nullopt;
     }
 }
 

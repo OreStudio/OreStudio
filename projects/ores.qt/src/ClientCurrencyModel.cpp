@@ -164,13 +164,30 @@ void ClientCurrencyModel::refresh(bool replace) {
                 return {false, {}, 0};
             }
 
+            // Log frame attributes for debugging
+            const auto& header = response_result->header();
+            BOOST_LOG_SEV(lg(), debug) << "Currencies response frame: type="
+                                       << static_cast<int>(header.type)
+                                       << ", compression=" << header.compression
+                                       << ", payload_size=" << response_result->payload().size();
+
+            // Decompress payload
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress currencies response"
+                                           << ", compression=" << header.compression
+                                           << ", error=" << payload_result.error();
+                return {false, {}, 0};
+            }
+
             BOOST_LOG_SEV(lg(), debug) << "Received a currencies response.";
             auto response =
-                risk::messaging::get_currencies_response::deserialize(
-                    response_result->payload());
+                risk::messaging::get_currencies_response::deserialize(*payload_result);
 
             if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize currencies response";
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize currencies response"
+                                           << ", decompressed_payload_size="
+                                           << payload_result->size();
                 return {false, {}, 0};
             }
 

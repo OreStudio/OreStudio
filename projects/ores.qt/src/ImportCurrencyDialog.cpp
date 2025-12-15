@@ -404,8 +404,17 @@ void ImportCurrencyDialog::onImportClicked() {
                         continue;
                     }
 
+                    // Decompress payload
+                    auto payload_result = response_result->decompressed_payload();
+                    if (!payload_result) {
+                        BOOST_LOG_SEV(lg(), warn)
+                            << "Failed to decompress import response for: "
+                            << currency.iso_code;
+                        continue;
+                    }
+
                     auto response = save_currency_response::
-                        deserialize(response_result->payload());
+                        deserialize(*payload_result);
 
                     if (response && response->success) {
                         success_count++;

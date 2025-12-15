@@ -130,8 +130,16 @@ void CurrencyHistoryDialog::loadHistory() {
             return;
         }
 
+        // Decompress payload
+        auto payload_result = result->decompressed_payload();
+        if (!payload_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to decompress history response";
+            self->onHistoryLoadError("Failed to decompress server response");
+            return;
+        }
+
         auto response = risk::messaging::get_currency_history_response::
-            deserialize(result->payload());
+            deserialize(*payload_result);
 
         if (!response) {
             BOOST_LOG_SEV(lg(), error) << "Could not deserialise server response.";

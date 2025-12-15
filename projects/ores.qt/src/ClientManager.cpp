@@ -28,6 +28,7 @@
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.comms/messaging/handshake_protocol.hpp"
+#include "ores.comms/domain/events/connection_events.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
 
 namespace ores::qt {
@@ -98,9 +99,11 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
             .supported_compression = supported_compression_
         };
 
-        // Create new client using persistent IO executor and event bus
+        // Create new client using persistent IO executor.
+        // Note: We don't pass event_bus here because we don't want connected_event
+        // published until login succeeds. We'll publish events manually after login.
         auto new_client = std::make_shared<comms::net::client>(
-            config, io_context_->get_executor(), event_bus_);
+            config, io_context_->get_executor(), nullptr);
 
         // Synchronous connect (blocking but called from async thread usually)
         new_client->connect_sync();
@@ -142,25 +145,56 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
         auto response_result = new_client->send_request_sync(std::move(request_frame));
 
         if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "LOGIN FAILURE: Network error during login request"
+                                       << ", error_code: "
+                                       << static_cast<int>(response_result.error());
             return {false, QString("Network error during login request")};
         }
 
+        // Log frame attributes for debugging
+        const auto& header = response_result->header();
+        BOOST_LOG_SEV(lg(), debug) << "Login response frame: type="
+                                   << static_cast<int>(header.type)
+                                   << ", compression=" << header.compression
+                                   << ", payload_size=" << response_result->payload().size()
+                                   << ", correlation_id=" << response_result->correlation_id();
+
+        // Decompress payload
+        auto response_payload_result = response_result->decompressed_payload();
+        if (!response_payload_result) {
+            BOOST_LOG_SEV(lg(), error) << "LOGIN FAILURE: Failed to decompress response"
+                                       << ", compression=" << header.compression
+                                       << ", error=" << response_payload_result.error();
+            return {false, QString("Failed to decompress server response")};
+        }
+        const auto& response_payload = *response_payload_result;
+
         // Check for error response
-        if (response_result->header().type == comms::messaging::message_type::error_response) {
-            auto error_resp = comms::messaging::error_response::deserialize(
-                response_result->payload());
+        if (header.type == comms::messaging::message_type::error_response) {
+            auto error_resp = comms::messaging::error_response::deserialize(response_payload);
             if (error_resp) {
+                BOOST_LOG_SEV(lg(), error) << "LOGIN FAILURE: Server returned error response"
+                                           << ", error_code: "
+                                           << static_cast<int>(error_resp->code)
+                                           << ", message: " << error_resp->message;
                 return {false, QString::fromStdString(error_resp->message)};
             }
+            BOOST_LOG_SEV(lg(), error) << "LOGIN FAILURE: Server returned malformed error response";
             return {false, QString("Unknown server error")};
         }
 
-        auto response = accounts::messaging::login_response::deserialize(
-            response_result->payload());
+        auto response = accounts::messaging::login_response::deserialize(response_payload);
 
-        if (!response || !response->success) {
-            return {false, QString::fromStdString(
-                response ? response->error_message : "Invalid login response")};
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "LOGIN FAILURE: Failed to deserialize login_response"
+                                       << ", decompressed_payload_size: " << response_payload.size();
+            return {false, QString("Invalid login response from server")};
+        }
+
+        if (!response->success) {
+            BOOST_LOG_SEV(lg(), warn) << "LOGIN FAILURE: Server rejected login for user '"
+                                      << username << "', reason: " << response->error_message;
+            return {false, QString::fromStdString(response->error_message)};
         }
 
         // Success - swap in new client and store account_id
@@ -168,7 +202,9 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
         logged_in_account_id_ = response->account_id;
         connected_host_ = host;
         connected_port_ = port;
-        BOOST_LOG_SEV(lg(), info) << "Login successful, account_id stored";
+        BOOST_LOG_SEV(lg(), info) << "LOGIN SUCCESS: User '" << response->username
+                                  << "' authenticated to " << host << ":" << port
+                                  << ", is_admin: " << response->is_admin;
 
         // Create event adapter for subscriptions
         event_adapter_ = std::make_unique<comms::service::remote_event_adapter>(client_);
@@ -187,7 +223,14 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
                 }, Qt::QueuedConnection);
             });
 
-        // Connected event is now published by the client directly
+        // Publish connected event to event bus now that login succeeded
+        if (event_bus_) {
+            event_bus_->publish(comms::domain::events::connected_event{
+                .timestamp = std::chrono::system_clock::now(),
+                .host = host,
+                .port = port
+            });
+        }
         emit connected();
         return {true, QString()};
 
@@ -249,8 +292,22 @@ bool ClientManager::logout() {
             return false;
         }
 
-        auto response = accounts::messaging::logout_response::deserialize(
-            response_result->payload());
+        // Log frame attributes for debugging
+        const auto& header = response_result->header();
+        BOOST_LOG_SEV(lg(), debug) << "Logout response frame: type="
+                                   << static_cast<int>(header.type)
+                                   << ", compression=" << header.compression
+                                   << ", payload_size=" << response_result->payload().size();
+
+        // Decompress payload
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            BOOST_LOG_SEV(lg(), warn) << "Logout failed: decompression error";
+            logged_in_account_id_ = std::nullopt;
+            return false;
+        }
+
+        auto response = accounts::messaging::logout_response::deserialize(*payload_result);
 
         if (response && response->success) {
             BOOST_LOG_SEV(lg(), info) << "Logout successful";

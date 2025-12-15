@@ -177,6 +177,7 @@ frame create_handshake_ack_frame(
 
 frame create_error_response_frame(
     std::uint32_t sequence,
+    std::uint32_t correlation_id,
     error_code code,
     const std::string& message) {
 
@@ -185,7 +186,7 @@ frame create_error_response_frame(
         .message = message
     };
 
-    return { message_type::error_response, sequence, err.serialize(err) };
+    return { message_type::error_response, sequence, correlation_id, err.serialize(err) };
 }
 
 compression_type select_compression(

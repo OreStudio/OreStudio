@@ -158,9 +158,15 @@ frame create_handshake_ack_frame(
 
 /**
  * @brief Create an error response frame.
+ *
+ * @param sequence The sequence number for the frame
+ * @param correlation_id The correlation ID from the request (for matching)
+ * @param code The error code
+ * @param message Human-readable error message
  */
 frame create_error_response_frame(
     std::uint32_t sequence,
+    std::uint32_t correlation_id,
     error_code code,
     const std::string& message);
 

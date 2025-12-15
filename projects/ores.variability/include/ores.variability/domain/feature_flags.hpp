@@ -52,6 +52,11 @@ struct feature_flags final {
      * @brief Username of the user who last modified this feature flag.
      */
     std::string modified_by;
+
+    /**
+     * @brief Timestamp when this version of the record was recorded in the system.
+     */
+    std::string recorded_at;
 };
 
 }

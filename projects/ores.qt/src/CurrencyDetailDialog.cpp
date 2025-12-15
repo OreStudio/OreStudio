@@ -142,8 +142,7 @@ void CurrencyDetailDialog::setCurrency(const risk::domain::currency& currency) {
     ui_->currencyTypeEdit->setText(QString::fromStdString(currency.currency_type));
     ui_->versionEdit->setText(QString::number(currency.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(currency.modified_by));
-    ui_->validFromEdit->setText(QString::fromStdString(currency.valid_from));
-    ui_->validToEdit->setText(QString::fromStdString(currency.valid_to));
+    ui_->recordedAtEdit->setText(QString::fromStdString(currency.recorded_at));
 
     isDirty_ = false;
     emit isDirtyChanged(false);
@@ -180,8 +179,7 @@ void CurrencyDetailDialog::clearDialog() {
     ui_->currencyTypeEdit->clear();
     ui_->versionEdit->clear();
     ui_->modifiedByEdit->clear();
-    ui_->validFromEdit->clear();
-    ui_->validToEdit->clear();
+    ui_->recordedAtEdit->clear();
 
     isDirty_ = false;
     emit isDirtyChanged(false);

@@ -87,13 +87,9 @@ void CurrencyItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
         case 10: // CurrencyType
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;
-        case 11: // ValidFrom
+        case 11: // recorded_at
             opt.font = monospaceFont_;
-            opt.displayAlignment = Qt::AlignCenter;
-            break;
-        case 12: // ValidTo
-            opt.font = monospaceFont_;
-            opt.displayAlignment = Qt::AlignCenter;
+            opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;
         default:
             break;

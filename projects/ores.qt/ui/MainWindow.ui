@@ -44,6 +44,12 @@
     </property>
     <addaction name="CurrenciesAction"/>
    </widget>
+   <widget class="QMenu" name="menuSystem">
+    <property name="title">
+     <string>&amp;System</string>
+    </property>
+    <addaction name="ActionAccounts"/>
+   </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
      <string>&amp;Window</string>
@@ -59,6 +65,7 @@
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuRefereceData"/>
+   <addaction name="menuSystem"/>
    <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -128,6 +135,18 @@
    </property>
    <property name="toolTip">
     <string>Detach all MDI windows to floating windows</string>
+   </property>
+  </action>
+  <action name="ActionAccounts">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_person_20_filled.svg</normaloff>:/icons/ic_fluent_person_20_filled.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Accounts</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage user accounts (Admin only)</string>
    </property>
   </action>
  </widget>

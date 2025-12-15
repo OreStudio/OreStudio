@@ -43,6 +43,7 @@ namespace ores::qt {
 
 class DetachableMdiSubWindow;
 class CurrencyController;
+class AccountController;
 
 /**
  * @brief Main application window providing the MDI interface and entity
@@ -198,6 +199,14 @@ private:
      * list, detail, and history windows.
      */
     std::unique_ptr<CurrencyController> currencyController_;
+
+    /**
+     * @brief Controller managing all account-related windows and operations.
+     *
+     * Created after successful login, handles account list and detail windows.
+     * Only accessible to admin users.
+     */
+    std::unique_ptr<AccountController> accountController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

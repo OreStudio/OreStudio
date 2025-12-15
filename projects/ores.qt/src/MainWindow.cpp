@@ -37,6 +37,7 @@
 #include "ui_MainWindow.h"
 #include "ores.qt/LoginDialog.hpp"
 #include "ores.qt/CurrencyController.hpp"
+#include "ores.qt/AccountController.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -95,6 +96,8 @@ MainWindow::MainWindow(QWidget* parent) :
         ":/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
     ui_->ActionAbout->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_star_20_regular.svg", iconColor));
+    ui_->ActionAccounts->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_person_20_filled.svg", iconColor));
 
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this,
@@ -131,6 +134,12 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->CurrenciesAction, &QAction::triggered, this, [this]() {
         if (currencyController_)
             currencyController_->showListWindow();
+    });
+
+    // Connect Accounts action to controller (admin only)
+    connect(ui_->ActionAccounts, &QAction::triggered, this, [this]() {
+        if (accountController_)
+            accountController_->showListWindow();
     });
 
     // Initially disable data-related actions until logged in
@@ -294,12 +303,15 @@ void MainWindow::onLoginTriggered() {
 
     if (result == QDialog::Accepted) {
         username_ = dialog.getUsername();
-        
+
         // Update controllers with new username if needed
         if (currencyController_) {
             currencyController_->setUsername(QString::fromStdString(username_));
         }
-        
+        if (accountController_) {
+            accountController_->setUsername(QString::fromStdString(username_));
+        }
+
         BOOST_LOG_SEV(lg(), info) << "Successfully connected and authenticated.";
         ui_->statusbar->showMessage("Successfully connected and logged in.");
     } else {
@@ -309,6 +321,7 @@ void MainWindow::onLoginTriggered() {
 
 void MainWindow::updateMenuState() {
     const bool isConnected = clientManager_ && clientManager_->isConnected();
+    const bool isAdmin = clientManager_ && clientManager_->isAdmin();
 
     // Enable/disable menu actions based on connection state
     // We allow opening windows even if disconnected (they will show offline state)
@@ -319,6 +332,10 @@ void MainWindow::updateMenuState() {
     ui_->ActionConnect->setEnabled(!isConnected);
     ui_->ActionDisconnect->setEnabled(isConnected);
 
+    // System menu is only visible to admin users
+    ui_->menuSystem->menuAction()->setVisible(isAdmin);
+    ui_->ActionAccounts->setEnabled(isAdmin);
+
     // Update connection status icon in status bar
     if (isConnected) {
         connectionStatusIconLabel_->setPixmap(connectedIcon_.pixmap(16, 16));
@@ -327,7 +344,7 @@ void MainWindow::updateMenuState() {
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Menu state updated. Connected: "
-                               << isConnected;
+                               << isConnected << ", Admin: " << isAdmin;
 }
 
 void MainWindow::createControllers() {
@@ -345,6 +362,21 @@ void MainWindow::createControllers() {
         ui_->statusbar->showMessage(message);
     });
     connect(currencyController_.get(), &CurrencyController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create account controller (admin only functionality)
+    accountController_ = std::make_unique<AccountController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect account controller signals to status bar
+    connect(accountController_.get(), &AccountController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(accountController_.get(), &AccountController::errorMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });

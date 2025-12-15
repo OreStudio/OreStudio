@@ -24,6 +24,7 @@
 #include <string>
 #include <chrono>
 #include <cstdint>
+#include "ores.comms/messaging/handshake_protocol.hpp"
 
 namespace ores::comms::net {
 
@@ -115,6 +116,15 @@ struct client_options final {
      * @brief Retry and reconnection options.
      */
     retry_options retry;
+
+    /**
+     * @brief Bitmask of compression types supported by this client.
+     *
+     * Used during handshake to negotiate compression with the server.
+     * Default is COMPRESSION_SUPPORT_ALL (zlib, gzip, bzip2).
+     * Set to 0 to disable compression.
+     */
+    std::uint8_t supported_compression = messaging::COMPRESSION_SUPPORT_ALL;
 };
 
 std::ostream& operator<<(std::ostream& s, const client_options& v);

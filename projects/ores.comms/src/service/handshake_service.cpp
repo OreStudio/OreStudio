@@ -35,6 +35,7 @@ using messaging::handshake_ack;
 using messaging::create_handshake_request_frame;
 using messaging::create_handshake_response_frame;
 using messaging::create_handshake_ack_frame;
+using messaging::select_compression;
 using messaging::PROTOCOL_VERSION_MAJOR;
 using messaging::PROTOCOL_VERSION_MINOR;
 
@@ -43,10 +44,12 @@ using namespace ores::utility::log;
 boost::asio::awaitable<void> handshake_service::perform_client_handshake(
     net::connection& conn,
     const std::function<std::uint32_t()>& sequence_generator,
-    const std::string& client_identifier) {
+    const std::string& client_identifier,
+    std::uint8_t supported_compression) {
 
     // Send handshake request
-    auto request_frame = create_handshake_request_frame(sequence_generator(), client_identifier);
+    auto request_frame = create_handshake_request_frame(
+        sequence_generator(), client_identifier, supported_compression);
 
     BOOST_LOG_SEV(lg(), debug) << "About to send handshake request frame.";
     co_await conn.write_frame(request_frame);
@@ -55,7 +58,10 @@ boost::asio::awaitable<void> handshake_service::perform_client_handshake(
                               << " Version: "
                               << PROTOCOL_VERSION_MAJOR
                               << "."
-                              << PROTOCOL_VERSION_MINOR;
+                              << PROTOCOL_VERSION_MINOR
+                              << " Compression support: 0x"
+                              << std::hex << static_cast<int>(supported_compression)
+                              << std::dec;
 
     // Read handshake response
     BOOST_LOG_SEV(lg(), debug) << "About to read handshake response frame.";
@@ -91,7 +97,9 @@ boost::asio::awaitable<void> handshake_service::perform_client_handshake(
                               << response.server_version_major
                               << "." << response.server_version_minor
                               << ". Compatible: "
-                              << response.version_compatible;
+                              << response.version_compatible
+                              << ". Compression: "
+                              << response.selected_compression;
 
     // Check version compatibility
     if (!response.version_compatible) {
@@ -162,17 +170,28 @@ boost::asio::awaitable<bool> handshake_service::perform_server_handshake(
         const auto& request = *request_result;
         BOOST_LOG_SEV(lg(), info) << "Handshake request from client '" << request.client_identifier
                                  << "' (version " << request.client_version_major << "."
-                                 << request.client_version_minor << ")";
+                                 << request.client_version_minor << ")"
+                                 << " compression support: 0x"
+                                 << std::hex << static_cast<int>(request.supported_compression)
+                                 << std::dec;
 
         // Check version compatibility
         bool version_compatible = (request.client_version_major == PROTOCOL_VERSION_MAJOR);
+
+        // Select compression algorithm based on client support
+        auto selected_compression = messaging::select_compression(
+            request.supported_compression);
+
+        BOOST_LOG_SEV(lg(), info) << "Compression negotiation: selected "
+                                 << selected_compression;
 
         // Send handshake response
         auto response_frame = create_handshake_response_frame(
             sequence,
             version_compatible,
             server_identifier,
-            version_compatible ? error_code::none : error_code::version_mismatch);
+            version_compatible ? error_code::none : error_code::version_mismatch,
+            selected_compression);
 
         BOOST_LOG_SEV(lg(), debug) << "About to send handshake response frame";
         co_await conn.write_frame(response_frame);

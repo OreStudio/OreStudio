@@ -60,12 +60,15 @@ public:
      * @param conn Connection to perform handshake on
      * @param sequence_generator Function that generates sequence numbers
      * @param client_identifier Client identifier string
+     * @param supported_compression Bitmask of supported compression types
+     *        (default: 0 = no compression support)
      * @throws connection_error if handshake fails
      */
     static boost::asio::awaitable<void> perform_client_handshake(
         net::connection& conn,
         const std::function<std::uint32_t()>& sequence_generator,
-        const std::string& client_identifier);
+        const std::string& client_identifier,
+        std::uint8_t supported_compression = 0);
 
     /**
      * @brief Perform server-side handshake.

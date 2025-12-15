@@ -73,7 +73,8 @@ boost::asio::awaitable<void> client::perform_handshake() {
     };
 
     co_await service::handshake_service::perform_client_handshake(
-        *conn_, sequence_generator, config_.client_identifier);
+        *conn_, sequence_generator, config_.client_identifier,
+        config_.supported_compression);
 }
 
 client::client(client_options config,

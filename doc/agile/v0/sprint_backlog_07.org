@@ -17,35 +17,42 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-15 Mon 13:32], for Monday, December 15, 2025.
-|       | <75>                               |        |      |      |       |
-| Tags  | Headline                           | Time   |      |      |     % |
-|-------+------------------------------------+--------+------+------+-------|
-|       | *Total time*                       | *3:35* |      |      | 100.0 |
-|-------+------------------------------------+--------+------+------+-------|
-|       | Stories                            | 3:35   |      |      | 100.0 |
-|       | Active                             |        | 3:35 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint |        |      | 0:30 |  14.0 |
-| code  | Consider compressing payload       |        |      | 3:05 |  86.0 |
+#+CAPTION: Clock summary at [2025-12-15 Mon 22:51], for Monday, December 15, 2025.
+|       | <75>                                           |        |      |      |       |
+| Tags  | Headline                                       | Time   |      |      |     % |
+|-------+------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                   | *6:02* |      |      | 100.0 |
+|-------+------------------------------------------------+--------+------+------+-------|
+|       | Stories                                        | 6:02   |      |      | 100.0 |
+|       | Active                                         |        | 6:02 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |        |      | 0:28 |   7.7 |
+| infra | OCR scan notebooks for this sprint             |        |      | 0:30 |   8.3 |
+| code  | Consider compressing payload                   |        |      | 3:05 |  51.1 |
+| code  | Latest currencies should have different colour |        |      | 1:28 |  24.3 |
+| code  | Do not expose temporal machinery in domain     |        |      | 0:31 |   8.6 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-15 Mon 13:32]
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *4:14* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 4:14   |      |      | 100.0 |
-|       | Active                                |        | 4:14 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:39 |  15.4 |
-| infra | OCR scan notebooks for this sprint    |        |      | 0:30 |  11.8 |
-| code  | Consider compressing payload          |        |      | 3:05 |  72.8 |
+#+CAPTION: Clock summary at [2025-12-15 Mon 22:51]
+|       | <75>                                           |        |      |      |       |
+| Tags  | Headline                                       | Time   |      |      |     % |
+|-------+------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                   | *6:41* |      |      | 100.0 |
+|-------+------------------------------------------------+--------+------+------+-------|
+|       | Stories                                        | 6:41   |      |      | 100.0 |
+|       | Active                                         |        | 6:41 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |        |      | 1:07 |  16.7 |
+| infra | OCR scan notebooks for this sprint             |        |      | 0:30 |   7.5 |
+| code  | Consider compressing payload                   |        |      | 3:05 |  46.1 |
+| code  | Latest currencies should have different colour |        |      | 1:28 |  21.9 |
+| code  | Do not expose temporal machinery in domain     |        |      | 0:31 |   7.7 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2025-12-15 Mon 16:23]--[2025-12-15 Mon 16:39] =>  0:16
+    CLOCK: [2025-12-15 Mon 16:10]--[2025-12-15 Mon 16:22] =>  0:12
     CLOCK: [2025-12-13 Sat 22:17]--[2025-12-13 Sat 22:56] =>  0:39
     :END:
 
@@ -206,6 +213,18 @@ sprint will have a story similar to this until we scan and process them all.
 
 At the end of the sprint, generate the sprint summary using the prompt.
 
+*** Sprint Demo                                                       :infra:
+
+Time spent doing the demo. This is the first one so it will be very basic.
+
+**** Presentation
+
+***** ORE Studio v0.0.4, "Fazenda Camilunga"
+
+    Marco Craveiro
+    Moimba Software Engineering
+    Released on 16th November 2025
+
 *** COMPLETED Consider compressing payload                             :code:
     :LOGBOOK:
     CLOCK: [2025-12-15 Mon 11:29]--[2025-12-15 Mon 13:32] =>  2:03
@@ -216,202 +235,10 @@ Sounds quite simple to extend the binary protocol with a compressed payload. We
 just need some information in the header about it. We should support both
 compressed and uncompressed payloads. Play with compression algos in boost.
 
-*** Windows clang build failures                                       :code:
+*** COMPLETED Add lock account request                                 :code:
+>>>>>>> 37dd037 ([agile] Backlog refinement)
 
-Seems like we are failing with a SEGFAULT:
-
-#+begin_src xml
-<Catch2TestRun name="ores.comms.tests.exe" rng-seed="1383371051" xml-format-version="3" catch2-version="3.11.0">
-  <TestCase name="test_client_server_connection" tags="[networking][#net_client_tests]" filename="D:/a/OreStudio/OreStudio/projects/ores.comms/tests/net_client_tests.cpp" line="97">
-    <Expression success="false" filename="D:/a/OreStudio/OreStudio/projects/ores.comms/tests/net_client_tests.cpp" line="161">
-      <Original>
-        {Unknown expression after the reported line}
-      </Original>
-      <Expanded>
-        {Unknown expression after the reported line}
-      </Expanded>
-      <FatalErrorCondition filename="D:/a/OreStudio/OreStudio/projects/ores.comms/tests/net_client_tests.cpp" line="161">
-        SIGSEGV - Segmentation violation signal
-      </FatalErrorCondition>
-    </Expression>
-    <OverallResult success="false" skips="0" durationInSeconds="2.17718"/>
-  </TestCase>
-#+end_src
-
-*** Create the observability component                                 :code:
-
-We need some kind of observability context so that we can look at related log
-entries. This is sort of related to logging by thread except with coroutines we
-are no longer interested in threads per se but on some kind of "work identifier"
-which is preserved across function calls. For this we can have an observability
-context which is passed around.
-
-Notes:
-
-- we should also add the notion of parents and children so that we can create a
-  graph with the relationships. We should create specific messages for this
-  which are not directly related to logging. The server can just keep track of
-  the observability contexts in a table. We should link it back to each client
-  etc.
-- the observability context should also extend to the server so that we can
-  filter all logs for that ID.
-- consider using mongo IDs for this or create our own IDs:
-
-#+begin_src c++
-Option A: 64-bit IDs (8 bytes) - Best balance
-cpp
-struct LogId {
-    uint32_t timestamp;  // seconds since 2020
-    uint16_t machine;    // 0-65535 machines
-    uint16_t sequence;   // per-second counter
-
-    // Encode to 11 Base64 chars or 8-10 Base62 chars
-};
-#+end_src
-
-
-*** Add heat map of user sessions                                      :code:
-
-Things to measure:
-
-- duration of sessions (once we have session table).
-- bytes sent/received per session (possibly 3-D plot?). Also good for anomaly
-  detection.
-- mine github for ideas.
-
-*** Perform tests to check database connectivity                       :code:
-
-We added some basic database monitoring but did not perform a lot of testing.
-
-We should also generalise this so that if the database goes down after start we
-still perform some kind of retry logic.
-
-See also this point from Gemini:
-
-#+begin_quote
-The new broadcast_all method appears to be unused in this pull request. The
-database status broadcast is implemented directly in
-=ores::comms::net::server::broadcast_database_status= without using the
-subscription_manager. If this method is not intended for future use, it could be
-removed to avoid dead code.
-#+end_quote
-
-*** Add entity messages should not set modified by                     :code:
-
-At present you can supply any modified by you want in the protocol messages. It
-makes more sense to say the message must have the modified by as the user logged
-in from the session.
-
-*** Add currencies update command to shell                             :code:
-
-At present we can only add new currencies. We also need to be able to update.
-Also, adding currencies requires supplying all parameters.
-
-*** Latest currencies should have different colour                     :code:
-
-After reloading we should mark latest currencies with a different colour so that
-it is obvious what was added. Consider colouring rows by recency.
-
-*** Add roles and permissions                                          :code:
-
-At present we are monitoring authorisation at two levels:
-
-- is logged in
-- is admin
-
-We need to introduce basic RBAC where we have roles such as:
-
-- Trading
-- Sales
-- Operations: restricted access to some trading screens.
-- Support: read-only, admin screens.
-
-To start off with we can map these to read/write on CRUD dialogs.
-
-*** Add session information to database                                :code:
-
-At present we register the last login etc. It would be nice to record every
-session as well, including the duration.
-
-Notes:
-
-- record bytes sent/received.
-- keep track of geolocation so we know where users are logging in from.
-- calculate statistical measures (average session duration, average bytes etc)
-  and consider plotting them. Also in the aggregate so we can see patterns over
-  time.
-
-*** Subscribe on reconnect fails                                       :code:
-
-Logs:
-
-#+begin_src logview
-2025-12-13 01:14:35.108648 [DEBUG] [ores.comms.messaging.frame] Successfully deserialized frame subscribe_request (0x10)
-2025-12-13 01:14:35.108680 [DEBUG] [ores.comms.net.connection] Successfully deserialized frame, type: subscribe_request (0x10) total size: 60
-2025-12-13 01:14:35.108708 [DEBUG] [ores.comms.net.server_session] Received message type subscribe_request (0x10)
-2025-12-13 01:14:35.108750 [DEBUG] [ores.comms.messaging.message_dispatcher] Dispatching message type subscribe_request (0x10)
-2025-12-13 01:14:35.108811 [WARN] [ores.comms.service.auth_session_service] Authorization failed for subscribe_request (0x10) from 127.0.0.1:45498: not authenticated
-2025-12-13 01:14:35.108842 [WARN] [ores.comms.messaging.message_dispatcher] Authorization denied for subscribe_request (0x10) from 127.0.0.1:45498
-2025-12-13 01:14:35.108875 [ERROR] [ores.comms.net.server_session] Message dispatch failed: 10
-#+end_src
-
-*** Unsubscribe before logout                                          :code:
-
-On logout we see the following:
-
-#+begin_src logview
-2025-12-11 22:45:54.559906 [INFO] [ores.accounts.messaging.accounts_message_handler] Successfully logged out account: 019a5e49-476c-70ce-9909-3887cae700e9
-2025-12-11 22:45:54.559940 [DEBUG] [ores.comms.messaging.message_dispatcher] Successfully dispatched message, response type logout_response (0x200e) correlation_id=763
-2025-12-11 22:45:54.559978 [DEBUG] [ores.comms.messaging.frame] Serialised frame logout_response (0x200e), size: 58
-2025-12-11 22:45:54.560005 [DEBUG] [ores.comms.net.connection] Writing frame of size 58 type: logout_response (0x200e) sequence: 767
-2025-12-11 22:45:54.560083 [DEBUG] [ores.comms.net.connection] Successfully wrote frame
-2025-12-11 22:45:54.560113 [DEBUG] [ores.comms.net.session] Sent response for message type logout_request (0x200d)
-2025-12-11 22:45:54.560137 [INFO] [ores.comms.net.session] Logout completed, closing connection
-2025-12-11 22:45:54.560200 [ERROR] [ores.comms.net.session] Exception in notification writer: co_await: Operation canceled [system:125]
-2025-12-11 22:45:54.560233 [DEBUG] [ores.comms.net.session] Notification writer coroutine ended
-2025-12-11 22:45:54.560281 [INFO] [ores.comms.net.session] Unregistering session '127.0.0.1:38366' from subscription manager
-#+end_src
-
-We should probably unsubscribe before we logout.
-
-*** Log with session id                                                :code:
-
-When we have a lot of clients all connecting we can't really see who is doing
-what in the server. We need an additional "tag" in logging to represent the
-session.
-
-*** Use events in comms and accounts                                   :code:
-
-Now we have an event bus, we should create events for:
-
-- connect, disconnect, retry
-- login, logout
-
-*** Data in login info looks spurious                                  :code:
-
-We see stuff like this:
-
-#+begin_src
-oresdb=> select * from login_info;
-              account_id              |     last_ip     | last_attempt_ip | failed_logins | locked |       last_login       | online
---------------------------------------+-----------------+-----------------+---------------+--------+------------------------+--------
- 019a4439-be9e-798e-bf2f-927ca236f84c | 0.0.0.0         | 0.0.0.0         |             0 |      0 | 1969-12-31 23:00:00+01 |      0
- 019a3ba6-bd11-709b-b93d-fea9403d3d39 | 127.0.0.1       | 127.0.0.1       |             0 |      0 | 2025-10-31 19:03:48+00 |      1
- 019a4431-98f8-79ae-9fc8-f6a6e77a0490 | 192.168.1.100   | 192.168.1.100   |             0 |      0 | 2025-11-02 10:51:32+00 |      1
- 019a4431-9a7d-7b3d-a1cb-b9e02d44c804 | 0.0.0.0         | 192.168.1.100   |             1 |      0 | 1969-12-31 23:00:00+01 |      0
-
-#+end_src
-
-Also, we need a login timestamp and a logout timestamp so we can measure session
-duration.
-
-*** Currencies displays when not connected                             :code:
-
-At present we can display currencies even before we connect. This is probably ok
-but we should at least state we are not connected. Alternatively it should be
-disabled.
-
-*** Add lock account request                                           :code:
+*Rationale*: implemented last sprint.
 
 As per gemini's comments, we should have a request to lock an account.
 
@@ -481,6 +308,313 @@ TEST_CASE("handle_login_request_locked_account", tags) {
 
 
 
+
+*** COMPLETED Add tests for messaging handler                          :code:
+
+*Rationale*: implemented last sprint.
+
+We need tests in comms which create a test request and response and a test
+handler.
+*** COMPLETED Add version support to entities                          :code:
+
+*Rationale*: implemented last sprint.
+
+We need a "version" field which is incremented automatically by a trigger. It is
+used as follows:
+
+- domain entities have a version field which is loaded from database.
+- if we try to save at version =n= but current version is not =n-1=, it should
+  fail to save.
+- version is incremented automatically on save.
+- display version in UI prominently (/e.g./ next to entity key, iso code for
+  currencies) so that we can see when we reload.
+*** COMPLETED Add skill to create new project component                :code:
+
+*Rationale*: implemented last sprint.
+
+Should create folders, CMakeLists, sample test, add to main make file etc. The
+new project should compile.
+
+Links:
+
+
+*** COMPLETED Latest currencies should have different colour           :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-15 Mon 22:41]--[2025-12-15 Mon 22:51] =>  0:10
+    CLOCK: [2025-12-15 Mon 17:06]--[2025-12-15 Mon 17:59] =>  0:53
+    CLOCK: [2025-12-15 Mon 16:49]--[2025-12-15 Mon 17:05] =>  0:16
+    CLOCK: [2025-12-15 Mon 16:40]--[2025-12-15 Mon 16:49] =>  0:09
+    :END:
+
+After reloading we should mark latest currencies with a different colour so that
+it is obvious what was added. Consider colouring rows by recency.
+
+Notes:
+
+- valid to is the same as valid from, which is incorrect.
+
+*** STARTED Windows clang build failures                               :code:
+
+Seems like we are failing with a SEGFAULT:
+
+#+begin_src xml
+<Catch2TestRun name="ores.comms.tests.exe" rng-seed="1383371051" xml-format-version="3" catch2-version="3.11.0">
+  <TestCase name="test_client_server_connection" tags="[networking][#net_client_tests]" filename="D:/a/OreStudio/OreStudio/projects/ores.comms/tests/net_client_tests.cpp" line="97">
+    <Expression success="false" filename="D:/a/OreStudio/OreStudio/projects/ores.comms/tests/net_client_tests.cpp" line="161">
+      <Original>
+        {Unknown expression after the reported line}
+      </Original>
+      <Expanded>
+        {Unknown expression after the reported line}
+      </Expanded>
+      <FatalErrorCondition filename="D:/a/OreStudio/OreStudio/projects/ores.comms/tests/net_client_tests.cpp" line="161">
+        SIGSEGV - Segmentation violation signal
+      </FatalErrorCondition>
+    </Expression>
+    <OverallResult success="false" skips="0" durationInSeconds="2.17718"/>
+  </TestCase>
+#+end_src
+
+*** STARTED Ignore warnings on windows and OSX                         :code:
+
+At present we have a number of spurious warnings on both windows and OSX. Try to
+see if we can get CDash to ignore them.
+
+Notes:
+
+- Raised a Kitware ticket.
+
+Links:
+
+- [[https://gitlab.kitware.com/cmake/cmake/-/issues/27367][CTest: Using regexes to filter warnings for CDash]]
+- [[https://stackoverflow.com/questions/26458652/ctest-custom-warning-exception][SO: ctest custom warning exception]]
+
+
+*** STARTED Do not expose temporal machinery in domain                 :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-15 Mon 21:40]--[2025-12-15 Mon 22:11] =>  0:31
+    :END:
+
+As per discussions with Claude:
+
+#+begin_quote
+> ok that looks good. but in terms of valid to/valid from: these are really
+> repository concerns, I think we are leaking them outside of the repository. I
+> wonder if it makes more sense for the domain entities to have a field such as
+> "created_at" which maps to the repository "valid_from" and not expose
+> temporarilty. what are your thoughts. do not change anything, we will deal
+> with that later, just want to capture this requirement for now.
+
+That's a valid architectural concern. You're right that valid_from/valid_to are
+temporal table implementation details that are leaking into the domain layer.
+
+  Current state (leaky abstraction):
+  - Domain entity has valid_from and valid_to strings
+  - These are really repository/database concerns for temporal versioning (SCD Type 2 pattern)
+  - The UI now displays these raw database fields
+
+  Cleaner approach:
+  - Domain entity has created_at (or modified_at) - represents when this version was created
+  - Repository maps valid_from → created_at when loading
+  - valid_to stays internal to repository (used for querying current vs historical records)
+  - Domain doesn't need to know about the bi-temporal mechanics
+
+  Benefits:
+  - Domain entities are simpler and more intuitive
+  - Repository encapsulates temporal implementation details
+  - Easier to change temporal strategy without affecting domain
+  - created_at is more meaningful to users than "valid from"
+
+  I'll note this for future work. When you're ready to address it, the changes would involve:
+  1. Rename valid_from → created_at in domain::currency
+  2. Remove valid_to from domain (keep only in entity/repository layer)
+  3. Update mapper to translate between them
+  4. Update UI labels accordingly
+#+end_quote
+
+*** History should have a revert button                                :code:
+
+It should be possible to choose a given version and ask the system to revert the
+currency to that version. It just makes an update with a new version to look
+like that version. It should also be possible to open at version. It shows the
+edit dialog in "read only mode" with the entity at that version. The tool bar
+should indicate this. It should also have a revert in that dialog.
+
+
+*** Add REPL to Qt                                                     :code:
+
+Users should be able to interact with the system directly via the REPL. Add a
+simple widget for this.
+
+
+*** Add entity messages should not set modified by                     :code:
+
+At present you can supply any modified by you want in the protocol messages. It
+makes more sense to say the message must have the modified by as the user logged
+in from the session.
+
+*** Create the observability component                                 :code:
+
+We need some kind of observability context so that we can look at related log
+entries. This is sort of related to logging by thread except with coroutines we
+are no longer interested in threads per se but on some kind of "work identifier"
+which is preserved across function calls. For this we can have an observability
+context which is passed around.
+
+Notes:
+
+- we should also add the notion of parents and children so that we can create a
+  graph with the relationships. We should create specific messages for this
+  which are not directly related to logging. The server can just keep track of
+  the observability contexts in a table. We should link it back to each client
+  etc.
+- the observability context should also extend to the server so that we can
+  filter all logs for that ID.
+- consider using mongo IDs for this or create our own IDs:
+
+#+begin_src c++
+Option A: 64-bit IDs (8 bytes) - Best balance
+cpp
+struct LogId {
+    uint32_t timestamp;  // seconds since 2020
+    uint16_t machine;    // 0-65535 machines
+    uint16_t sequence;   // per-second counter
+
+    // Encode to 11 Base64 chars or 8-10 Base62 chars
+};
+#+end_src
+
+Merged stories:
+
+*Log with session id*
+
+When we have a lot of clients all connecting we can't really see who is doing
+what in the server. We need an additional "tag" in logging to represent the
+session.
+
+*** Add heat map of user sessions                                      :code:
+
+Things to measure:
+
+- duration of sessions (once we have session table).
+- bytes sent/received per session (possibly 3-D plot?). Also good for anomaly
+  detection.
+- mine github for ideas.
+
+*** Perform tests to check database connectivity                       :code:
+
+We added some basic database monitoring but did not perform a lot of testing.
+
+We should also generalise this so that if the database goes down after start we
+still perform some kind of retry logic.
+
+See also this point from Gemini:
+
+#+begin_quote
+The new broadcast_all method appears to be unused in this pull request. The
+database status broadcast is implemented directly in
+=ores::comms::net::server::broadcast_database_status= without using the
+subscription_manager. If this method is not intended for future use, it could be
+removed to avoid dead code.
+#+end_quote
+
+*** Add currencies update command to shell                             :code:
+
+At present we can only add new currencies. We also need to be able to update.
+Also, adding currencies requires supplying all parameters.
+
+*** Add roles and permissions                                          :code:
+
+At present we are monitoring authorisation at two levels:
+
+- is logged in
+- is admin
+
+We need to introduce basic RBAC where we have roles such as:
+
+- Trading
+- Sales
+- Operations: restricted access to some trading screens.
+- Support: read-only, admin screens.
+
+To start off with we can map these to read/write on CRUD dialogs.
+
+*** Add session information to database                                :code:
+
+At present we register the last login etc. It would be nice to record every
+session as well, including the duration.
+
+Notes:
+
+- record bytes sent/received.
+- keep track of geolocation so we know where users are logging in from.
+- calculate statistical measures (average session duration, average bytes etc)
+  and consider plotting them. Also in the aggregate so we can see patterns over
+  time.
+
+*** Subscribe on reconnect fails                                       :code:
+
+Logs:
+
+#+begin_src logview
+2025-12-13 01:14:35.108648 [DEBUG] [ores.comms.messaging.frame] Successfully deserialized frame subscribe_request (0x10)
+2025-12-13 01:14:35.108680 [DEBUG] [ores.comms.net.connection] Successfully deserialized frame, type: subscribe_request (0x10) total size: 60
+2025-12-13 01:14:35.108708 [DEBUG] [ores.comms.net.server_session] Received message type subscribe_request (0x10)
+2025-12-13 01:14:35.108750 [DEBUG] [ores.comms.messaging.message_dispatcher] Dispatching message type subscribe_request (0x10)
+2025-12-13 01:14:35.108811 [WARN] [ores.comms.service.auth_session_service] Authorization failed for subscribe_request (0x10) from 127.0.0.1:45498: not authenticated
+2025-12-13 01:14:35.108842 [WARN] [ores.comms.messaging.message_dispatcher] Authorization denied for subscribe_request (0x10) from 127.0.0.1:45498
+2025-12-13 01:14:35.108875 [ERROR] [ores.comms.net.server_session] Message dispatch failed: 10
+#+end_src
+
+*** Unsubscribe before logout                                          :code:
+
+On logout we see the following:
+
+#+begin_src logview
+2025-12-11 22:45:54.559906 [INFO] [ores.accounts.messaging.accounts_message_handler] Successfully logged out account: 019a5e49-476c-70ce-9909-3887cae700e9
+2025-12-11 22:45:54.559940 [DEBUG] [ores.comms.messaging.message_dispatcher] Successfully dispatched message, response type logout_response (0x200e) correlation_id=763
+2025-12-11 22:45:54.559978 [DEBUG] [ores.comms.messaging.frame] Serialised frame logout_response (0x200e), size: 58
+2025-12-11 22:45:54.560005 [DEBUG] [ores.comms.net.connection] Writing frame of size 58 type: logout_response (0x200e) sequence: 767
+2025-12-11 22:45:54.560083 [DEBUG] [ores.comms.net.connection] Successfully wrote frame
+2025-12-11 22:45:54.560113 [DEBUG] [ores.comms.net.session] Sent response for message type logout_request (0x200d)
+2025-12-11 22:45:54.560137 [INFO] [ores.comms.net.session] Logout completed, closing connection
+2025-12-11 22:45:54.560200 [ERROR] [ores.comms.net.session] Exception in notification writer: co_await: Operation canceled [system:125]
+2025-12-11 22:45:54.560233 [DEBUG] [ores.comms.net.session] Notification writer coroutine ended
+2025-12-11 22:45:54.560281 [INFO] [ores.comms.net.session] Unregistering session '127.0.0.1:38366' from subscription manager
+#+end_src
+
+We should probably unsubscribe before we logout.
+
+*** Use events in comms and accounts                                   :code:
+
+Now we have an event bus, we should create events for:
+
+- connect, disconnect, retry
+- login, logout
+
+*** Data in login info looks spurious                                  :code:
+
+We see stuff like this:
+
+#+begin_src
+oresdb=> select * from login_info;
+              account_id              |     last_ip     | last_attempt_ip | failed_logins | locked |       last_login       | online
+--------------------------------------+-----------------+-----------------+---------------+--------+------------------------+--------
+ 019a4439-be9e-798e-bf2f-927ca236f84c | 0.0.0.0         | 0.0.0.0         |             0 |      0 | 1969-12-31 23:00:00+01 |      0
+ 019a3ba6-bd11-709b-b93d-fea9403d3d39 | 127.0.0.1       | 127.0.0.1       |             0 |      0 | 2025-10-31 19:03:48+00 |      1
+ 019a4431-98f8-79ae-9fc8-f6a6e77a0490 | 192.168.1.100   | 192.168.1.100   |             0 |      0 | 2025-11-02 10:51:32+00 |      1
+ 019a4431-9a7d-7b3d-a1cb-b9e02d44c804 | 0.0.0.0         | 192.168.1.100   |             1 |      0 | 1969-12-31 23:00:00+01 |      0
+
+#+end_src
+
+Also, we need a login timestamp and a logout timestamp so we can measure session
+duration.
+
+*** Currencies displays when not connected                             :code:
+
+At present we can display currencies even before we connect. This is probably ok
+but we should at least state we are not connected. Alternatively it should be
+disabled.
 
 *** Add flags for currencies                                           :code:
 
@@ -565,103 +699,6 @@ before a re-import.
 
 *** Add screen in qt to exit bootstrap mode                            :code:
 
-- move service to service directory.
-- follow the "_protocol" convention for file names with messages.
-
-**** Session: Address race condition review comment
-
-The heartbeat implementation has a critical race condition where =run_heartbeat()=
-and =send_request()= can execute concurrently, leading to two independent
-request-response cycles on the same socket without synchronization. This also
-needs to support future "listen/notify" server-push notifications.
-
-**Solution:** Unified message loop with correlation IDs - single reader dispatches
-incoming frames by type, writes serialized via strand, correlation IDs match
-responses to requests.
-
-***** Tasks
-
-- [X] 1.1 Add =correlation_id= to frame structure
-  - Add =uint32_t correlation_id= field to =protocol::frame=
-  - Update frame serialization/deserialization
-  - Bump protocol version if needed
-
-- [X] 1.2 Update message types if needed
-  - Verify ping/pong exist (confirmed: 0x0005, 0x0006)
-  - Notification types deferred until listen/notify implementation
-
-- [X] 2.1 Create =response_channel= class
-  - Single-value async channel using Boost.Asio primitives
-  - =set_value(frame)= - producer side (reader loop)
-  - =set_error(error_code)= - for timeouts/disconnects
-  - =awaitable<expected<frame, error_code>> get()= - consumer side
-  - Use =asio::steady_timer= as signaling primitive
-
-- [X] 2.2 Create =pending_request_map= class
-  - Thread-safe map: =correlation_id= → =response_channel=
-  - =register(correlation_id)= → =response_channel&=
-  - =complete(correlation_id, frame)= - called by reader
-  - =fail(correlation_id, error)= - called on timeout/disconnect
-  - =fail_all(error)= - called on connection loss
-
-- [X] 3.1 Add write strand to client
-  - =asio::strand<asio::any_io_executor> write_strand_=
-  - Initialize in constructor
-
-- [X] 3.2 Create =write_frame()= helper
-  - Posts write operation to strand
-  - Returns awaitable that completes when write is done
-
-- [X] 4.1 Implement =run_message_loop()= coroutine
-  - Single reader, loops reading frames
-  - Dispatches by message type (response/pong → complete, notification → callback)
-  - On read error → =fail_all()=, set disconnected
-
-- [ ] 4.2 Add centralized timeout handling (deferred)
-  - Read with timeout using =asio::steady_timer=
-  - Configurable default timeout
-  - Can be added later when needed
-
-- [X] 5. Refactor =send_request()=
-  - Generate correlation_id
-  - Register in pending_requests_map
-  - Post write to strand
-  - =co_await= response channel
-
-- [X] 6. Refactor =run_heartbeat()= to use new infrastructure
-  - Use unified request/response pattern
-  - Timeout triggers disconnect callback
-
-- [X] 7. Update server to echo =correlation_id=
-  - Ping handler returns pong with same correlation_id
-  - All response handlers copy correlation_id from request
-
-- [-] 8.1 Add notification callback type (deferred to listen/notify story)
-  - =notification_callback_t= for server-push messages
-
-- [X] 8.2 Keep =disconnect_callback_t=
-  - Invoked by message loop on connection loss
-
-- [X] 9.1 Start message loop on connect
-  - =co_spawn= the =run_message_loop()= after connection
-
-- [X] 9.2 Clean shutdown
-  - Cancel message loop, fail pending requests, invoke disconnect callback
-
-- [ ] 10.1 Update existing tests
-
-- [ ] 10.2 Add new tests
-  - Concurrent requests with correlation IDs
-  - Request timeout handling
-  - Heartbeat timeout triggers disconnect
-  - Write serialization
-
-*** Add tests for messaging handler                                    :code:
-
-We need tests in comms which create a test request and response and a test
-handler.
-*** Add screen in qt to exit bootstrap mode                            :code:
-
 As per claude:
 
 The create_initial_admin_request message type serves several important purposes
@@ -719,6 +756,7 @@ account.
 *** Cli clean-ups                                                      :code:
 
 - we still seem to support =--entity currencies=. This should now be invalid.
+  Done.
 - we are still exporting as JSON. We should instead allow CSV and XML exports
   only.
 - add recipes for all commands.
@@ -728,18 +766,6 @@ account.
 - add account duplicates logic. We should have a single service for this.
 - split application into entities.
 
-*** Add version support to entities                                    :code:
-
-We need a "version" field which is incremented automatically by a trigger. It is
-used as follows:
-
-- domain entities have a version field which is loaded from database.
-- if we try to save at version =n= but current version is not =n-1=, it should
-  fail to save.
-- version is incremented automatically on save.
-- display version in UI prominently (/e.g./ next to entity key, iso code for
-  currencies) so that we can see when we reload.
-
 *** Add search to currencies                                           :code:
 
 It should be possible to filter the open currencies by a string. This should be
@@ -747,12 +773,6 @@ any field. The user needs to know when the list has been filtered. Ideally we
 should have buttons at the top per field and filter using those. It should go
 back to database rather than just filter what is available in UI.
 
-
-
-
-
-
-
-*** Footer
+* Footer
 
 | Previous: [[id:154212FF-BB02-8D84-1E33-9338B458380A][Version Zero]] |

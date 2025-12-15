@@ -3,6 +3,7 @@
 :END:
 #+title: ORE Studio Shell Recipes
 #+author: Marco Craveiro
+#+startup: inlineimages
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 
 Demonstrates all of the functionality available on the [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ORE Studio Shell
@@ -768,7 +769,7 @@ Add a new currency.
 
 #+name: currencies-add
 #+begin_src ores-shell :exports none
-currencies add TEST124 Test 125 A 100
+currencies add TEST700 Test700 700 A 100
 exit
 #+end_src
 
@@ -783,7 +784,7 @@ EOF
 #+begin_example
 ✓ Connected to :55555
 ✓ Logged in as: newuser3
-ORE Studio Shell REPL v0.0.6
+ORE Studio Shell REPL v0.0.7
 Type 'help' for available commands, 'exit' to quit
 
 ores-shell> ✓ Currency added successfully!

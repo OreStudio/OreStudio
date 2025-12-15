@@ -21,8 +21,11 @@
 #define ORES_QT_CLIENT_CURRENCY_MODEL_HPP
 
 #include <vector>
+#include <unordered_set>
+#include <chrono>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
+#include <QTimer>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.risk/domain/currency.hpp"
@@ -136,8 +139,25 @@ signals:
 
 private slots:
     void onCurrenciesLoaded();
+    void onPulseTimerTimeout();
 
 private:
+    /**
+     * @brief Calculate foreground color based on how recent the currency's valid_from date is.
+     *
+     * Returns a decaying highlight color for currencies with the most recent valid_from dates.
+     * The color fades from highlight to transparent over the decay duration.
+     *
+     * @param iso_code The currency's ISO code to check for recency.
+     * @return QVariant containing QColor for foreground, or invalid QVariant if no color.
+     */
+    QVariant recency_foreground_color(const std::string& iso_code) const;
+
+    /**
+     * @brief Update the set of recent currencies (valid_from within recency window).
+     */
+    void update_recent_currencies();
+
     /**
      * @brief Enumeration of table columns for type-safe column access.
      *
@@ -156,6 +176,8 @@ private:
         RoundingPrecision,
         Format,
         CurrencyType,
+        ValidFrom,
+        ValidTo,
         ColumnCount  // Must be last - represents total number of columns
     };
 
@@ -173,6 +195,15 @@ private:
     std::uint32_t page_size_{100};
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
+
+    // Recency tracking for row coloring based on valid_from date
+    std::unordered_set<std::string> recent_iso_codes_;  // ISO codes newer than last reload
+    QDateTime last_reload_time_;  // Timestamp of last reload (for comparison)
+    QTimer* pulse_timer_;
+    bool pulse_state_{false};  // Toggle for pulsing effect
+    int pulse_count_{0};
+    static constexpr int max_pulse_cycles_{6};  // 6 pulses (3 seconds at 500ms interval)
+    static constexpr int pulse_interval_ms_{500};  // Pulse toggle interval in milliseconds
 };
 
 }

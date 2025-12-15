@@ -52,7 +52,7 @@
 \timing
 
 -- set the ores schema on the search path
-set SEARCH_PATH to "ores", "$user", "public";
+set SEARCH_PATH to "oresdb", "$user", "public";
 
 -- do not auto-commit
 -- disabled for the moment as this means we have to commit even on selects!

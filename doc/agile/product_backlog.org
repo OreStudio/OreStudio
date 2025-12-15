@@ -5,6 +5,7 @@
 #+title: Product Backlog
 #+tags: { reviewing(r) }
 #+tags: { code(c) infra(i) doc(d) agile(a) }
+#+startup: inlineimages
 
 This document contains the [[http://www.mountaingoatsoftware.com/agile/scrum/product-backlog][product backlog]] for VisualOre.
 
@@ -65,6 +66,107 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 ** Near
 
 Stories we may get two in the next two or three sprints.
+
+*** Consider adding "global search" via typesense                      :code:
+
+Typesense:
+
+#+begin_quote
+Typesense is a fast, typo-tolerant search engine for building delightful search
+experiences.
+#+end_quote
+
+We could pump specially crafted documents into typesense with IDs and types and
+then let users search across any type of entity.
+
+
+Links:
+
+- [[https://github.com/typesense/typesense][GH typesense]]
+
+
+*** Add a generic tagging system                                       :code:
+
+It should be possible to associate any entity with one or more tags and then do
+a search by tags on that entity type. For example, tag a set of currencies as
+emerging markets and then search by that.
+
+Labels versus tags:
+
+#+begin_src markdown
+That is an **excellent question** that gets to the heart of cloud governance and
+system design. You are correct that the underlying structure is fundamentally
+the same—a **key-value pair attached to a resource**—but the distinction is
+necessary because of the **context, governance, and enforcement mechanisms**
+applied to each one.
+
+The distinction between GCP Labels and Tags boils down to **Annotation vs.
+Policy**.
+
+---
+
+## ⚖️ Why the Distinction is Necessary
+
+| Feature              | GCP **Labels** (Annotation)                                                                          | GCP **Tags** (Policy/Governance)                                                                                                                                               |
+|:---------------------|:-----------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Primary Goal**     | **Organization, filtering, cost allocation, and reporting.**                                         | **Policy enforcement, access control, and hierarchical governance.**                                                                                                           |
+| **Structure**        | **Flexible/Arbitrary.** Key-Value pair set directly on the resource.                                 | **Structured/Centralized.** Key and Value are defined *centrally* as separate resources (at the Organization/Project level) and then *bound* to the resource.                  |
+| **Hierarchy**        | **Flat.** A resource does not inherit labels from its parent folder.                                 | **Hierarchical.** Tags are inherited by child resources (like a VM inheriting a tag from its containing project).                                                              |
+| **Access Control**   | **Low Control.** Any user with permissions to modify the resource can typically modify its labels.   | **High Control.** Dedicated **IAM Roles** are required to create, manage, and even attach Tag Keys and Values. This prevents users from "tagging" their way out of a policy.   |
+| **Enforcement**      | **None.** Labels are metadata and cannot be used directly in IAM conditions to grant or deny access. | **High.** Tags are the *only* mechanism designed for **conditional IAM policies** and Organization Policies (e.g., "deny deletion unless resource has tag `environment:dev`"). |
+| **Use Case Example** | Filtering the console: "Show me all resources labeled `owner:john_doe`."                             | Security: "Only allow network traffic from resources tagged `security_zone:trusted`."                                                                                          |
+
+### Analogy: The Whiteboard vs. The Building Code
+
+1.  **Labels are like a sticky note on a whiteboard:**
+    ,* They are **flexible**, quickly written, and easy to change.
+    ,* They are used for **informal organization** (cost center, app name, etc.).
+    ,* Changing the note has **no impact on the resource's function** or security.
+
+2.  **Tags are like a building code requirement:**
+    ,* They are **highly structured** and defined by a central authority (the city/organization).
+    ,* They are used to **enforce policy** (safety, compliance).
+    ,* If a resource (a building) doesn't have the correct tag (e.g., a **fire-rating tag**), an automated system (the policy engine) will **deny an action** (e.g., deny occupation or modification).
+
+---
+
+## How This Relates to Your SVG System
+
+Your current **three-table model** is structurally a **GCP Label** system—it's
+excellent for annotation and filtering (e.g., "Give me all icons with the tag
+'currency'").
+
+If you wanted to implement a **GCP Tag** concept, you would need to:
+
+1.  **Formalize the Tags:** Create certain tags as *official resources* (like
+    `Status` with official values `Draft`, `Approved`, `Production`).
+2.  **Add Permissions:** Implement **application logic** that checks a user's
+    role against the tag. For example: "A user needs the `Approver` role to
+    apply the `Status:Production` tag to an icon."
+
+The need to distinguish them comes down to providing one system that is
+,**flexible for organization (Labels)** and another that is **rigid for security
+and compliance (Tags)**.
+#+end_src
+
+Examples:
+
+- majors, minors, EM, latam, etc are tags we can have on currencies. On currency
+  pairs, We could also have USD crosses, which is inferred by having USD as one
+  of the pair. However these are not labels because we do not want everyone to
+  start using them. When defining a report, you could associate currencies and
+  currency pairs to the report via the tags.
+- labels are things we could associate with images for example. Flags could have
+  both "countries" and "currencies" labels so that when we want to select a flag
+  as the image for a currency, we could ask for all images labelled
+  "currencies". The labelling can be done by pretty much anyone.
+
+
+*** Add "uptime" screen                                                :code:
+
+See the claude page for ideas:
+
+[[./v0/anthropic_uptime_page.jpeg]]
 
 *** Mine dexter for ideas                                              :code:
 
@@ -214,7 +316,7 @@ Catch::rngSeed()
 As per Gemini code review:
 
 #+begin_src markdown
-Certainly. Point \#2 from the review of `CurrencyHistoryDialog.cpp` addressed
+Certainly. Point #2 from the review of `CurrencyHistoryDialog.cpp` addressed
 the potential complexity of error checking by suggesting that relying on the
 specific response message type is **fragile**.
 
@@ -365,18 +467,6 @@ Links:
 
 - [[https://github.com/jurplel/install-qt-action][install-qt-action]]
 
-*** Sprint Demo                                                       :infra:
-
-Time spent doing the demo. This is the first one so it will be very basic.
-
-**** Presentation
-
-***** ORE Studio v0.0.4, "Fazenda Camilunga"
-
-    Marco Craveiro
-    Moimba Software Engineering
-    Released on 16th November 2025
-
 *** Add =[[nodiscard]]= to repository operations returning data        :code:
 
 At present we can create an account and ignore the result, etc. We should be
@@ -453,11 +543,6 @@ Links:
 
 - [[https://github.com/Civitasv/asciichart][GH asciichart]]
 
-*** Add REPL to Qt                                                     :code:
-
-Users should be able to interact with the system directly via the REPL. Add a
-simple widget for this.
-
 *** Add skill to review product backlog                               :infra:
 
 We could get claude to review the stories, add more details, etc. Needs more
@@ -466,20 +551,6 @@ thinking.
 *** Add skill to update vcpkg                                         :infra:
 
 As per instructions in [[id:CB42DFE5-804B-E1C4-E1E3-0A6C4766609C][readme]].
-
-*** Ignore warnings on windows and OSX                                 :code:
-
-At present we have a number of spurious warnings on both windows and OSX. Try to
-see if we can get CDash to ignore them.
-
-Notes:
-
-- Raised a Kitware ticket.
-
-Links:
-
-- [[https://gitlab.kitware.com/cmake/cmake/-/issues/27367][CTest: Using regexes to filter warnings for CDash]]
-- [[https://stackoverflow.com/questions/26458652/ctest-custom-warning-exception][SO: ctest custom warning exception]]
 
 *** Ensure applications work under OSX using github images             :code:
 
@@ -521,6 +592,7 @@ Links:
 
 - [[https://www.claude.com/blog/improving-frontend-design-through-skills][Improving frontend design through Skills]]
 - [[https://github.com/VoltAgent/awesome-claude-skills][Awesome Claude Skills]]
+- [[https://devexperts.com/blog/ui/][Designing User Interface in the Trading Software]]
 
 Analysis from Gemini:
 
@@ -755,13 +827,6 @@ database.
 
 Possible names: log shipping, log forwarding, etc.
 
-*** Add skill to create new project component                          :code:
-
-Should create folders, CMakeLists, sample test, add to main make file etc. The
-new project should compile.
-
-Links:
-
 *** Add skill to improve UI design                                     :code:
 
 Make the UI more professional.
@@ -845,82 +910,6 @@ Make the reload button blue when there are changes.
 Notes:
 
 - history windows should also have the notification.
-
-*** Add a generic tagging system                                       :code:
-
-It should be possible to associate any entity with one or more tags and then do
-a search by tags on that entity type. For example, tag a set of currencies as
-emerging markets and then search by that.
-
-Labels versus tags:
-
-#+begin_src markdown
-That is an **excellent question** that gets to the heart of cloud governance and
-system design. You are correct that the underlying structure is fundamentally
-the same—a **key-value pair attached to a resource**—but the distinction is
-necessary because of the **context, governance, and enforcement mechanisms**
-applied to each one.
-
-The distinction between GCP Labels and Tags boils down to **Annotation vs.
-Policy**.
-
----
-
-## ⚖️ Why the Distinction is Necessary
-
-| Feature              | GCP **Labels** (Annotation)                                                                          | GCP **Tags** (Policy/Governance)                                                                                                                                               |
-|:---------------------|:-----------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Primary Goal**     | **Organization, filtering, cost allocation, and reporting.**                                         | **Policy enforcement, access control, and hierarchical governance.**                                                                                                           |
-| **Structure**        | **Flexible/Arbitrary.** Key-Value pair set directly on the resource.                                 | **Structured/Centralized.** Key and Value are defined *centrally* as separate resources (at the Organization/Project level) and then *bound* to the resource.                  |
-| **Hierarchy**        | **Flat.** A resource does not inherit labels from its parent folder.                                 | **Hierarchical.** Tags are inherited by child resources (like a VM inheriting a tag from its containing project).                                                              |
-| **Access Control**   | **Low Control.** Any user with permissions to modify the resource can typically modify its labels.   | **High Control.** Dedicated **IAM Roles** are required to create, manage, and even attach Tag Keys and Values. This prevents users from "tagging" their way out of a policy.   |
-| **Enforcement**      | **None.** Labels are metadata and cannot be used directly in IAM conditions to grant or deny access. | **High.** Tags are the *only* mechanism designed for **conditional IAM policies** and Organization Policies (e.g., "deny deletion unless resource has tag `environment:dev`"). |
-| **Use Case Example** | Filtering the console: "Show me all resources labeled `owner:john_doe`."                             | Security: "Only allow network traffic from resources tagged `security_zone:trusted`."                                                                                          |
-
-### Analogy: The Whiteboard vs. The Building Code
-
-1.  **Labels are like a sticky note on a whiteboard:**
-    ,* They are **flexible**, quickly written, and easy to change.
-    ,* They are used for **informal organization** (cost center, app name, etc.).
-    ,* Changing the note has **no impact on the resource's function** or security.
-
-2.  **Tags are like a building code requirement:**
-    ,* They are **highly structured** and defined by a central authority (the city/organization).
-    ,* They are used to **enforce policy** (safety, compliance).
-    ,* If a resource (a building) doesn't have the correct tag (e.g., a **fire-rating tag**), an automated system (the policy engine) will **deny an action** (e.g., deny occupation or modification).
-
----
-
-## How This Relates to Your SVG System
-
-Your current **three-table model** is structurally a **GCP Label** system—it's
-excellent for annotation and filtering (e.g., "Give me all icons with the tag
-'currency'").
-
-If you wanted to implement a **GCP Tag** concept, you would need to:
-
-1.  **Formalize the Tags:** Create certain tags as *official resources* (like
-    `Status` with official values `Draft`, `Approved`, `Production`).
-2.  **Add Permissions:** Implement **application logic** that checks a user's
-    role against the tag. For example: "A user needs the `Approver` role to
-    apply the `Status:Production` tag to an icon."
-
-The need to distinguish them comes down to providing one system that is
-,**flexible for organization (Labels)** and another that is **rigid for security
-and compliance (Tags)**.
-#+end_src
-
-Examples:
-
-- majors, minors, EM, latam, etc are tags we can have on currencies. On currency
-  pairs, We could also have USD crosses, which is inferred by having USD as one
-  of the pair. However these are not labels because we do not want everyone to
-  start using them. When defining a report, you could associate currencies and
-  currency pairs to the report via the tags.
-- labels are things we could associate with images for example. Flags could have
-  both "countries" and "currencies" labels so that when we want to select a flag
-  as the image for a currency, we could ask for all images labelled
-  "currencies". The labelling can be done by pretty much anyone.
 
 *** Light system theme results in mix of dark and light                :code:
 
@@ -1198,6 +1187,8 @@ Links:
   create Http server or client. Beauty allows the creation of synchronous or
   asynchronous server and client, and adds some signals and timer management
   based on Boost.Asio"
+- [[https://www.boost.org/doc/libs/latest/libs/beast/doc/html/beast/examples.html#beast.examples.servers][Boost beast examples]]
+- [[https://www.boost.org/doc/libs/latest/libs/json/doc/html/index.html][Boost JSON]]
 
 Merged:
 
@@ -1834,5 +1825,7 @@ Example:
 | XE           | Xenoria      | XEX           |           10047 | Xenorian Xen       |
 | YS           | Yslandia     | YSY           |           10048 | Yslandian Yen      |
 | ZE           | Zephyria     | ZEZ           |           10049 | Zephyrian Zephyr   |
+
+* Footer
 
 | Previous: [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]] |

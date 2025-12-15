@@ -155,8 +155,10 @@ Otherwise use last path if set, or ask for path if not set."
     (pop-to-buffer buffer)
 
     (unless (comint-check-proc buffer)
-      ;; Now start the process with NO extra args (nil for STARTFILE and ARGS)
-      (make-comint-in-buffer "ores-shell" buffer program)
+      (let ((log-dir (expand-file-name "../log" (file-name-directory program))))
+        (make-comint-in-buffer "ores-shell" buffer program nil
+                               "--log-enabled" "--log-level" "trace"
+                               "--log-directory" log-dir))
       (message "ORES client started. Type 'help' for available commands."))))
 
 (provide 'ores-shell)

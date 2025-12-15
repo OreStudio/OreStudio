@@ -44,7 +44,7 @@ domain::currency currency_mapper::map(const currency_entity& v) {
     r.currency_type = v.currency_type;
     r.modified_by = v.modified_by;
     r.valid_from = v.valid_from.has_value() ? v.valid_from->str() : "";
-    r.valid_to = v.valid_to.has_value() ? v.valid_from->str() : "";
+    r.valid_to = v.valid_to.has_value() ? v.valid_to->str() : "";
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;

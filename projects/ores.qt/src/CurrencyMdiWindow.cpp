@@ -42,6 +42,7 @@
 #include <QImage>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/CurrencyItemDelegate.hpp"
 #include "ores.qt/ImportCurrencyDialog.hpp"
 #include "ores.risk/messaging/protocol.hpp"
@@ -77,7 +78,7 @@ CurrencyMdiWindow(ClientManager* clientManager,
 
     toolBar_->setMovable(false);
     toolBar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    const QColor iconColor(220, 220, 220);
+    const auto& iconColor = color_constants::icon_color;
 
     // Setup reload action with normal and stale icons
     setupReloadAction();
@@ -150,7 +151,12 @@ CurrencyMdiWindow(ClientManager* clientManager,
     currencyTableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     currencyTableView_->setWordWrap(false); // Prevent text wrapping in cells
 
-    currencyTableView_->setModel(currencyModel_.get());
+    // Setup proxy model for sorting
+    proxyModel_ = new QSortFilterProxyModel(this);
+    proxyModel_->setSourceModel(currencyModel_.get());
+    currencyTableView_->setModel(proxyModel_);
+    currencyTableView_->setSortingEnabled(true);
+    currencyTableView_->sortByColumn(0, Qt::AscendingOrder);  // Default sort by name
 
     currencyTableView_->setItemDelegate(
         new CurrencyItemDelegate(currencyTableView_));
@@ -300,10 +306,12 @@ void CurrencyMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
         return;
     }
 
-    const auto* currency = currencyModel_->getCurrency(index.row());
+    // Map proxy index to source index
+    const auto sourceIndex = proxyModel_->mapToSource(index);
+    const auto* currency = currencyModel_->getCurrency(sourceIndex.row());
     if (!currency) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get currency for row: "
-                                 << index.row();
+                                 << sourceIndex.row();
         return;
     }
 
@@ -336,7 +344,9 @@ void CurrencyMdiWindow::viewHistorySelected() {
         return;
     }
 
-    const auto* currency = currencyModel_->getCurrency(selected.first().row());
+    // Map proxy index to source index
+    const auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    const auto* currency = currencyModel_->getCurrency(sourceIndex.row());
     if (!currency) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get currency for history view";
         return;
@@ -361,8 +371,9 @@ void CurrencyMdiWindow::deleteSelected() {
 
     std::vector<std::string> iso_codes;
     for (const auto& index : selected) {
-        const auto* currency = currencyModel_
-            ->getCurrency(index.row());
+        // Map proxy index to source index
+        const auto sourceIndex = proxyModel_->mapToSource(index);
+        const auto* currency = currencyModel_->getCurrency(sourceIndex.row());
         if (currency)
             iso_codes.push_back(currency->iso_code);
     }
@@ -377,8 +388,8 @@ void CurrencyMdiWindow::deleteSelected() {
 
     QString confirmMessage;
     if (iso_codes.size() == 1) {
-        const auto* currency =
-            currencyModel_->getCurrency(selected.first().row());
+        const auto sourceIndex = proxyModel_->mapToSource(selected.first());
+        const auto* currency = currencyModel_->getCurrency(sourceIndex.row());
         confirmMessage = QString("Are you sure you want to delete currency '%1' (%2)?")
             .arg(QString::fromStdString(currency->name))
             .arg(QString::fromStdString(currency->iso_code));
@@ -756,13 +767,10 @@ void CurrencyMdiWindow::updateActionStates() {
 }
 
 void CurrencyMdiWindow::setupReloadAction() {
-    const QColor normalColor(220, 220, 220);
-    const QColor staleColor(255, 165, 0);  // Orange/amber for stale indicator
-
     normalReloadIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", normalColor);
+        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", color_constants::icon_color);
     staleReloadIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", staleColor);
+        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", color_constants::stale_indicator);
 
     reloadAction_->setIcon(normalReloadIcon_);
     reloadAction_->setToolTip("Reload currencies from server");

@@ -514,7 +514,7 @@ add_feature_flag(const config::add_feature_flag_options& cfg) const {
     flag.name = cfg.flag_name;
     flag.description = cfg.description.value_or("");
     flag.enabled = cfg.enabled.value_or(false);
-    flag.modified_by = cfg.modified_by;
+    flag.recorded_by = cfg.modified_by;
 
     // Write to database
     variability::repository::feature_flags_repository repo(context_);

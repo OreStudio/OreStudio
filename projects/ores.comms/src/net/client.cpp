@@ -138,6 +138,13 @@ client::client(client_options config, boost::asio::any_io_executor executor,
 }
 
 boost::asio::awaitable<void> client::perform_connection() {
+    // Early check - if already disconnected, don't even try to connect
+    auto current = state_.load(std::memory_order_acquire);
+    if (current == connection_state::disconnected) {
+        BOOST_LOG_SEV(lg(), info) << "Connection aborted - already disconnected";
+        throw connection_error("Connection aborted - already disconnected");
+    }
+
     BOOST_LOG_SEV(lg(), info) << "Connecting to " << config_.host
                               << ":" << config_.port;
 
@@ -154,9 +161,26 @@ boost::asio::awaitable<void> client::perform_connection() {
 
     BOOST_LOG_SEV(lg(), debug) << "TCP connection established.";
 
+    // Check if disconnect was called while we were connecting
+    if (state_.load(std::memory_order_acquire) == connection_state::disconnected) {
+        BOOST_LOG_SEV(lg(), info) << "Connection aborted after TCP connect - disconnect was called";
+        socket.close();
+        throw connection_error("Connection aborted by disconnect");
+    }
+
     conn_ = std::make_unique<connection>(
         connection::ssl_socket(std::move(socket), ssl_ctx_));
     co_await conn_->ssl_handshake_client();
+
+    // Check again after SSL handshake
+    if (state_.load(std::memory_order_acquire) == connection_state::disconnected) {
+        BOOST_LOG_SEV(lg(), info) << "Connection aborted after SSL handshake - disconnect was called";
+        if (conn_) {
+            conn_->close();
+        }
+        throw connection_error("Connection aborted by disconnect");
+    }
+
     BOOST_LOG_SEV(lg(), debug) << "SSL handshake complete.";
 
     BOOST_LOG_SEV(lg(), debug) << "Protocol version: "
@@ -165,7 +189,35 @@ boost::asio::awaitable<void> client::perform_connection() {
                                << " (client: " << config_.client_identifier << ")";
 
     co_await perform_handshake();
-    state_.store(connection_state::connected, std::memory_order_release);
+
+    // Only transition to connected if we're in an expected state.
+    // If disconnect() was called during connection, state will be disconnected
+    // and we should abort rather than overwrite that state.
+    auto current_state = state_.load(std::memory_order_acquire);
+    if (current_state == connection_state::disconnected) {
+        BOOST_LOG_SEV(lg(), info) << "Connection aborted - disconnect was called during handshake";
+        if (conn_) {
+            conn_->close();
+        }
+        throw connection_error("Connection aborted by disconnect");
+    }
+
+    // Try to transition from connecting/reconnecting to connected
+    auto expected = connection_state::connecting;
+    if (!state_.compare_exchange_strong(expected, connection_state::connected,
+            std::memory_order_acq_rel)) {
+        expected = connection_state::reconnecting;
+        if (!state_.compare_exchange_strong(expected, connection_state::connected,
+                std::memory_order_acq_rel)) {
+            BOOST_LOG_SEV(lg(), info) << "Connection completed but state changed to "
+                                      << static_cast<int>(expected) << ", closing connection";
+            if (conn_) {
+                conn_->close();
+            }
+            throw connection_error("Connection aborted - state changed during connection");
+        }
+    }
+
     BOOST_LOG_SEV(lg(), info) << "Successfully connected to server.";
 
     // Publish connected event to event bus
@@ -401,6 +453,21 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
             }
             co_await perform_connection();
 
+            // Check state again after connection completes - disconnect() may have
+            // been called while we were connecting
+            if (state_.load(std::memory_order_acquire) != connection_state::reconnecting) {
+                BOOST_LOG_SEV(lg(), info) << "Reconnect cancelled after connection established, "
+                                          << "closing new connection";
+                {
+                    std::lock_guard guard{state_mutex_};
+                    if (conn_) {
+                        conn_->close();
+                    }
+                }
+                reconnect_loop_running_ = false;
+                co_return;
+            }
+
             BOOST_LOG_SEV(lg(), info) << "Reconnection successful";
 
             // Publish reconnected event to event bus
@@ -423,6 +490,24 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
 
             reconnect_loop_running_ = false;
             co_return;
+        } catch (const connection_error& e) {
+            // Check if this was an intentional abort (user disconnect)
+            std::string_view msg = e.what();
+            if (msg.find("aborted") != std::string_view::npos) {
+                BOOST_LOG_SEV(lg(), info) << "Reconnection attempt " << (attempt + 1)
+                                          << " cancelled: " << e.what();
+                // Don't retry if aborted
+                break;
+            }
+
+            BOOST_LOG_SEV(lg(), warn) << "Reconnection attempt " << (attempt + 1)
+                                      << " failed: " << e.what();
+
+            // Don't wait after the last attempt
+            if (attempt + 1 < max_attempts) {
+                retry_delay = calculate_backoff(attempt);
+                should_retry = true;
+            }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn) << "Reconnection attempt " << (attempt + 1)
                                       << " failed: " << e.what();
@@ -450,6 +535,15 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
                 throw;
             }
         }
+    }
+
+    // Check why we exited the loop
+    auto final_state = state_.load(std::memory_order_acquire);
+    if (final_state == connection_state::disconnected) {
+        // User called disconnect() - this is an intentional cancellation, not a failure
+        BOOST_LOG_SEV(lg(), info) << "Reconnection cancelled by user disconnect";
+        reconnect_loop_running_ = false;
+        co_return;
     }
 
     // All reconnection attempts failed - give up

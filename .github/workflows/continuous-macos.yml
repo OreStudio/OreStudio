@@ -109,7 +109,7 @@ jobs:
            cat ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/publish/bin/test-results-*.xml
 
       - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v5.0.0
+        uses: actions/upload-artifact@v6.0.0
         with:
           name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
           path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/packages/OreStudio-0.0.7-Darwin.dmg

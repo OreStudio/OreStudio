@@ -83,13 +83,13 @@ process_add_currency(std::ostream& out, client_session& session,
     BOOST_LOG_SEV(lg(), debug) << "Initiating add currency request for: "
                                << iso_code;
 
-    // Get modified_by from logged-in user
+    // Get recorded_by from logged-in user
     const auto& session_info = session.session_info();
     if (!session_info) {
         out << "✗ You must be logged in to add a currency." << std::endl;
         return;
     }
-    const auto& modified_by = session_info->username;
+    const auto& recorded_by = session_info->username;
 
     // Parse fractions_per_unit with default
     int fractions = 100;
@@ -121,7 +121,7 @@ process_add_currency(std::ostream& out, client_session& session,
                 .rounding_precision = 2,
                 .format = "",
                 .currency_type = "fiat",
-                .modified_by = modified_by,
+                .recorded_by = recorded_by,
                 .recorded_at = ""
             }
         });

@@ -29,11 +29,11 @@ std::string convert_to_table(const currency& c) {
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "ISO Code" << "Version" << "Name" << "Symbol"
-          << "Type" << "Fractions/Unit" << "Precision" << "Modified By"
+          << "Type" << "Fractions/Unit" << "Precision" << "Recorded By"
           << "Recorded At" << fort::endr;
 
     table << c.iso_code << c.version << c.name << c.symbol << c.currency_type
-          << c.fractions_per_unit << c.rounding_precision << c.modified_by
+          << c.fractions_per_unit << c.rounding_precision << c.recorded_by
           << c.recorded_at << fort::endr;
 
     std::ostringstream ss;
@@ -46,12 +46,12 @@ std::string convert_to_table(const std::vector<currency>& v) {
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "ISO Code" << "Version" << "Name" << "Symbol"
-          << "Type" << "Fractions/Unit" << "Precision" << "Modified By"
+          << "Type" << "Fractions/Unit" << "Precision" << "Recorded By"
           << "Recorded At" << fort::endr;
 
     for (const auto& c : v) {
         table << c.iso_code << c.version << c.name << c.symbol << c.currency_type
-              << c.fractions_per_unit << c.rounding_precision << c.modified_by
+              << c.fractions_per_unit << c.rounding_precision << c.recorded_by
               << c.recorded_at << fort::endr;
     }
 

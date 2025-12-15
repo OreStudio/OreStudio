@@ -190,7 +190,7 @@ TEST_CASE("get_currencies_response_with_empty_fields", tags) {
     ccy.rounding_precision = 0;
     ccy.format = "";
     ccy.currency_type = "";
-    ccy.modified_by = "";
+    ccy.recorded_by = "";
     ccy.recorded_at = "";
 
     resp.currencies.push_back(ccy);

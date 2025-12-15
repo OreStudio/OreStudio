@@ -82,9 +82,9 @@ struct currency final {
     std::string currency_type;
 
     /**
-     * @brief Username of the person who created this version.
+     * @brief Username of the person who recorded this version in the system.
      */
-    std::string modified_by;
+    std::string recorded_by;
 
     /**
      * @brief Timestamp when this version of the record was recorded in the system.

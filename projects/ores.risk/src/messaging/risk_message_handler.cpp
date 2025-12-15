@@ -223,8 +223,8 @@ handle_get_currency_history_request(std::span<const std::byte> payload) {
             domain::currency_version version;
             version.data = currency;
             version.version_number = version_number--;
-            version.modified_by = currency.modified_by;
-            version.modified_at = currency.recorded_at;
+            version.recorded_by = currency.recorded_by;
+            version.recorded_at = currency.recorded_at;
             version.change_summary = "Version " + std::to_string(version.version_number);
 
             history.versions.push_back(std::move(version));

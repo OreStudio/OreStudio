@@ -43,13 +43,13 @@ void serialize_currency_version(std::vector<std::byte>& buffer, const domain::cu
     writer::write_uint32(buffer, static_cast<std::uint32_t>(version.data.rounding_precision));
     writer::write_string(buffer, version.data.format);
     writer::write_string(buffer, version.data.currency_type);
-    writer::write_string(buffer, version.data.modified_by);
+    writer::write_string(buffer, version.data.recorded_by);
     writer::write_string(buffer, version.data.recorded_at);
 
     // Write version metadata
     writer::write_uint32(buffer, static_cast<std::uint32_t>(version.version_number));
-    writer::write_string(buffer, version.modified_by);
-    writer::write_string(buffer, version.modified_at);
+    writer::write_string(buffer, version.recorded_by);
+    writer::write_string(buffer, version.recorded_at);
     writer::write_string(buffer, version.change_summary);
 }
 
@@ -98,9 +98,9 @@ deserialize_currency_version(std::span<const std::byte>& data) {
     if (!currency_type) return std::unexpected(currency_type.error());
     version.data.currency_type = *currency_type;
 
-    auto modified_by = reader::read_string(data);
-    if (!modified_by) return std::unexpected(modified_by.error());
-    version.data.modified_by = *modified_by;
+    auto recorded_by = reader::read_string(data);
+    if (!recorded_by) return std::unexpected(recorded_by.error());
+    version.data.recorded_by = *recorded_by;
 
     auto recorded_at = reader::read_string(data);
     if (!recorded_at) return std::unexpected(recorded_at.error());
@@ -111,13 +111,13 @@ deserialize_currency_version(std::span<const std::byte>& data) {
     if (!version_number) return std::unexpected(version_number.error());
     version.version_number = static_cast<int>(*version_number);
 
-    auto version_modified_by = reader::read_string(data);
-    if (!version_modified_by) return std::unexpected(version_modified_by.error());
-    version.modified_by = *version_modified_by;
+    auto version_recorded_by = reader::read_string(data);
+    if (!version_recorded_by) return std::unexpected(version_recorded_by.error());
+    version.recorded_by = *version_recorded_by;
 
-    auto modified_at = reader::read_string(data);
-    if (!modified_at) return std::unexpected(modified_at.error());
-    version.modified_at = *modified_at;
+    auto version_recorded_at = reader::read_string(data);
+    if (!version_recorded_at) return std::unexpected(version_recorded_at.error());
+    version.recorded_at = *version_recorded_at;
 
     auto change_summary = reader::read_string(data);
     if (!change_summary) return std::unexpected(change_summary.error());

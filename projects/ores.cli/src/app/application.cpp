@@ -428,7 +428,7 @@ add_currency(const config::add_currency_options& cfg) const {
     currency.rounding_precision = cfg.rounding_precision.value_or(2);
     currency.format = cfg.format.value_or("");
     currency.currency_type = cfg.currency_type.value_or("");
-    currency.modified_by = cfg.modified_by;
+    currency.recorded_by = cfg.modified_by;
     // Note: recorded_at is set by the database triggers via valid_from
 
     // Write to database

@@ -52,6 +52,29 @@ private:
     }
 
 public:
+    /**
+     * @brief Enumeration of table columns for type-safe column access.
+     *
+     * Using an enum instead of magic numbers makes the code self-documenting
+     * and easier to refactor when columns are added, removed, or reordered.
+     */
+    enum Column {
+        CurrencyName,
+        IsoCode,
+        Version,
+        NumericCode,
+        Symbol,
+        FractionSymbol,
+        FractionsPerUnit,
+        RoundingType,
+        RoundingPrecision,
+        Format,
+        CurrencyType,
+        RecordedBy,
+        RecordedAt,
+        ColumnCount  // Must be last - represents total number of columns
+    };
+
     explicit ClientCurrencyModel(ClientManager* clientManager,
                                    QObject* parent = nullptr);
     ~ClientCurrencyModel() override = default;
@@ -157,29 +180,6 @@ private:
      * @brief Update the set of recent currencies (valid_from within recency window).
      */
     void update_recent_currencies();
-
-    /**
-     * @brief Enumeration of table columns for type-safe column access.
-     *
-     * Using an enum instead of magic numbers makes the code self-documenting
-     * and easier to refactor when columns are added, removed, or reordered.
-     */
-    enum Column {
-        CurrencyName,
-        IsoCode,
-        Version,
-        NumericCode,
-        Symbol,
-        FractionSymbol,
-        FractionsPerUnit,
-        RoundingType,
-        RoundingPrecision,
-        Format,
-        CurrencyType,
-        ValidFrom,
-        ValidTo,
-        ColumnCount  // Must be last - represents total number of columns
-    };
 
     struct FetchResult {
         bool success;

@@ -243,28 +243,28 @@
                 </widget>
                </item>
                <item row="7" column="0">
-                <widget class="QLabel" name="modifiedByLabel">
+                <widget class="QLabel" name="recordedByLabel">
                  <property name="text">
-                  <string>Modified By:</string>
+                  <string>Recorded By:</string>
                  </property>
                 </widget>
                </item>
                <item row="7" column="1">
-                <widget class="QLabel" name="modifiedByValue">
+                <widget class="QLabel" name="recordedByValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="8" column="0">
-                <widget class="QLabel" name="modifiedAtLabel">
+                <widget class="QLabel" name="recordedAtLabel">
                  <property name="text">
-                  <string>Modified At:</string>
+                  <string>Recorded At:</string>
                  </property>
                 </widget>
                </item>
                <item row="8" column="1">
-                <widget class="QLabel" name="modifiedAtValue">
+                <widget class="QLabel" name="recordedAtValue">
                  <property name="text">
                   <string/>
                  </property>

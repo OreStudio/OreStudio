@@ -40,14 +40,14 @@ struct currency_version final {
     int version_number;
 
     /**
-     * @brief Username of the person who created this version.
+     * @brief Username of the person who recorded this version in the system.
      */
-    std::string modified_by;
+    std::string recorded_by;
 
     /**
-     * @brief Timestamp when this version was created.
+     * @brief Timestamp when this version was recorded in the system.
      */
-    std::string modified_at;
+    std::string recorded_at;
 
     /**
      * @brief Summary of changes made in this version.

@@ -48,3 +48,4 @@ The project is implemented in C++ 23 and uses CMake as the build system.
 ## Pull Requests
 
 - do not add "Test plan" section to PRs.
+- git commit titles should use format [COMPONENT] Description. Example [qt] change xyz

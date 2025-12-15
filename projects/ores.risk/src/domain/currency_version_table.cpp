@@ -27,12 +27,12 @@ std::string convert_to_table(const std::vector<currency_version>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Version" << "ISO Code" << "Name" << "Modified By"
-          << "Modified At" << "Change Summary" << fort::endr;
+    table << fort::header << "Version" << "ISO Code" << "Name" << "Recorded By"
+          << "Recorded At" << "Change Summary" << fort::endr;
 
     for (const auto& cv : v) {
         table << cv.version_number << cv.data.iso_code << cv.data.name
-              << cv.modified_by << cv.modified_at << cv.change_summary
+              << cv.recorded_by << cv.recorded_at << cv.change_summary
               << fort::endr;
     }
     return table.to_string();

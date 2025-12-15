@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/CurrencyItemDelegate.hpp"
+#include "ores.qt/ClientCurrencyModel.hpp"
 
 #include <QPainter>
 #include <QApplication>
@@ -44,50 +45,53 @@ void CurrencyItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
     }
 
     // Apply monospace font and alignment based on column
-    // Column indices match ClientCurrencyModel::Column enum
+    using Column = ClientCurrencyModel::Column;
     switch (index.column()) {
-        case 0: // CurrencyName
+        case Column::CurrencyName:
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;
-        case 1: // IsoCode
+        case Column::IsoCode:
             opt.font = monospaceFont_;
             opt.font.setBold(true);
             opt.displayAlignment = Qt::AlignCenter;
             break;
-        case 2: // Version
+        case Column::Version:
             opt.font = monospaceFont_;
             opt.displayAlignment = Qt::AlignCenter;
             break;
-        case 3: // NumericCode
+        case Column::NumericCode:
             opt.font = monospaceFont_;
             opt.displayAlignment = Qt::AlignCenter;
             break;
-        case 4: // Symbol
+        case Column::Symbol:
             opt.font = monospaceFont_;
             opt.displayAlignment = Qt::AlignCenter;
             break;
-        case 5: // FractionSymbol
+        case Column::FractionSymbol:
             opt.font = monospaceFont_;
             opt.displayAlignment = Qt::AlignCenter;
             break;
-        case 6: // FractionsPerUnit
+        case Column::FractionsPerUnit:
             opt.font = monospaceFont_;
             opt.displayAlignment = Qt::AlignRight | Qt::AlignVCenter;
             break;
-        case 7: // RoundingType
+        case Column::RoundingType:
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;
-        case 8: // RoundingPrecision
+        case Column::RoundingPrecision:
             opt.font = monospaceFont_;
             opt.displayAlignment = Qt::AlignRight | Qt::AlignVCenter;
             break;
-        case 9: // Format
+        case Column::Format:
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;
-        case 10: // CurrencyType
+        case Column::CurrencyType:
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;
-        case 11: // recorded_at
+        case Column::RecordedBy:
+            opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
+            break;
+        case Column::RecordedAt:
             opt.font = monospaceFont_;
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;

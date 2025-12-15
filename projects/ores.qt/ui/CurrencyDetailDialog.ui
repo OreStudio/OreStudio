@@ -183,14 +183,14 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="labelModifiedBy">
+       <widget class="QLabel" name="labelRecordedBy">
         <property name="text">
-         <string>Modified By:</string>
+         <string>Recorded By:</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="modifiedByEdit">
+       <widget class="QLineEdit" name="recordedByEdit">
         <property name="readOnly">
          <bool>true</bool>
         </property>

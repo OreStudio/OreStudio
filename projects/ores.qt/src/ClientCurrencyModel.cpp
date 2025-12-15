@@ -91,8 +91,8 @@ QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
     case Column::RoundingPrecision: return currency.rounding_precision;
     case Column::Format: return QString::fromStdString(currency.format);
     case Column::CurrencyType: return QString::fromStdString(currency.currency_type);
-    case Column::ValidFrom: return QString::fromStdString(currency.valid_from);
-    case Column::ValidTo: return QString::fromStdString(currency.valid_to);
+    case Column::RecordedBy: return QString::fromStdString(currency.recorded_by);
+    case Column::RecordedAt: return QString::fromStdString(currency.recorded_at);
     default: return {};
     }
 }
@@ -115,8 +115,8 @@ headerData(int section, Qt::Orientation orientation, int role) const {
         case Column::RoundingPrecision: return tr("Rounding precision");
         case Column::Format: return tr("Format");
         case Column::CurrencyType: return tr("Currency Type");
-        case Column::ValidFrom: return tr("Valid From");
-        case Column::ValidTo: return tr("Valid To");
+        case Column::RecordedBy: return tr("Recorded By");
+        case Column::RecordedAt: return tr("Recorded At");
         default: return {};
         }
     }
@@ -353,33 +353,33 @@ void ClientCurrencyModel::update_recent_currencies() {
     BOOST_LOG_SEV(lg(), debug) << "Checking currencies newer than last reload: "
                                << last_reload_time_.toString(Qt::ISODate).toStdString();
 
-    // Find currencies with valid_from newer than last reload
+    // Find currencies with recorded_at newer than last reload
     for (const auto& currency : currencies_) {
-        if (currency.valid_from.empty()) {
+        if (currency.recorded_at.empty()) {
             continue;
         }
 
-        // Parse valid_from as datetime (try multiple formats)
-        QDateTime validFrom = QDateTime::fromString(
-            QString::fromStdString(currency.valid_from), Qt::ISODate);
+        // Parse recorded_at as datetime (try multiple formats)
+        QDateTime recordedAt = QDateTime::fromString(
+            QString::fromStdString(currency.recorded_at), Qt::ISODate);
 
-        if (!validFrom.isValid()) {
+        if (!recordedAt.isValid()) {
             // Try alternative format (YYYY-MM-DD HH:MM:SS)
-            validFrom = QDateTime::fromString(
-                QString::fromStdString(currency.valid_from), "yyyy-MM-dd HH:mm:ss");
+            recordedAt = QDateTime::fromString(
+                QString::fromStdString(currency.recorded_at), "yyyy-MM-dd HH:mm:ss");
         }
 
-        if (!validFrom.isValid()) {
+        if (!recordedAt.isValid()) {
             // Try date-only format (YYYY-MM-DD) - assume start of day
-            validFrom = QDateTime::fromString(
-                QString::fromStdString(currency.valid_from), "yyyy-MM-dd");
+            recordedAt = QDateTime::fromString(
+                QString::fromStdString(currency.recorded_at), "yyyy-MM-dd");
         }
 
-        if (validFrom.isValid() && validFrom > last_reload_time_) {
+        if (recordedAt.isValid() && recordedAt > last_reload_time_) {
             recent_iso_codes_.insert(currency.iso_code);
             BOOST_LOG_SEV(lg(), trace) << "Currency " << currency.iso_code
-                                       << " is recent (valid_from: "
-                                       << currency.valid_from << ")";
+                                       << " is recent (recorded_at: "
+                                       << currency.recorded_at << ")";
         }
     }
 

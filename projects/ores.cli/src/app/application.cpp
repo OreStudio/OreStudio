@@ -479,7 +479,7 @@ add_account(const config::add_account_options& cfg) const {
     account.version = 0;
     account.is_admin = cfg.is_admin.value_or(false);
     account.id = account_id;
-    account.modified_by = cfg.modified_by;
+    account.recorded_by = cfg.modified_by;
     account.username = cfg.username;
     account.password_hash = password_hash;
     account.password_salt = "";  // Not used - hash contains salt

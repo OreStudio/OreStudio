@@ -31,7 +31,7 @@ namespace ores::accounts::generators {
 domain::account generate_synthetic_account() {
     domain::account r;
     r.version = 1;
-    r.modified_by = faker::internet::username();
+    r.recorded_by = faker::internet::username();
 
     boost::uuids::string_generator gen;
     r.id = gen(faker::string::uuidV4());

@@ -104,7 +104,7 @@ handle_create_account_request(std::span<const std::byte> payload,
 
     domain::account account =
         service_.create_account( request.username, request.email,
-        request.password,request.modified_by, request.is_admin);
+        request.password, request.recorded_by, request.is_admin);
 
     BOOST_LOG_SEV(lg(), info) << "Created account with ID: " << account.id
                               << " for username: " << account.username;

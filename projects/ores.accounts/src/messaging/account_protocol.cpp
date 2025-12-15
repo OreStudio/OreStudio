@@ -38,7 +38,7 @@ std::vector<std::byte> create_account_request::serialize() const {
     writer::write_string(buffer, password);
     writer::write_string(buffer, totp_secret);
     writer::write_string(buffer, email);
-    writer::write_string(buffer, modified_by);
+    writer::write_string(buffer, recorded_by);
     writer::write_bool(buffer, is_admin);
     return buffer;
 }
@@ -63,9 +63,9 @@ create_account_request::deserialize(std::span<const std::byte> data) {
     if (!email_result) return std::unexpected(email_result.error());
     request.email = *email_result;
 
-    auto modified_by_result = reader::read_string(data);
-    if (!modified_by_result) return std::unexpected(modified_by_result.error());
-    request.modified_by = *modified_by_result;
+    auto recorded_by_result = reader::read_string(data);
+    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
+    request.recorded_by = *recorded_by_result;
 
     auto is_admin_result = reader::read_bool(data);
     if (!is_admin_result) return std::unexpected(is_admin_result.error());
@@ -143,7 +143,7 @@ std::vector<std::byte> list_accounts_response::serialize() const {
     // Write each account
     for (const auto& account : accounts) {
         writer::write_uint32(buffer, static_cast<std::uint32_t>(account.version));
-        writer::write_string(buffer, account.modified_by);
+        writer::write_string(buffer, account.recorded_by);
         writer::write_uuid(buffer, account.id);
         writer::write_string(buffer, account.username);
         writer::write_string(buffer, account.password_hash);
@@ -183,9 +183,9 @@ list_accounts_response::deserialize(std::span<const std::byte> data) {
         if (!version_result) return std::unexpected(version_result.error());
         account.version = static_cast<int>(*version_result);
 
-        auto modified_by_result = reader::read_string(data);
-        if (!modified_by_result) return std::unexpected(modified_by_result.error());
-        account.modified_by = *modified_by_result;
+        auto recorded_by_result = reader::read_string(data);
+        if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
+        account.recorded_by = *recorded_by_result;
 
         auto id_result = reader::read_uuid(data);
         if (!id_result) return std::unexpected(id_result.error());

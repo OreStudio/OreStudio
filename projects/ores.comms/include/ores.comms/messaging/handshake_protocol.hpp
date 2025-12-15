@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <expected>
 #include "ores.comms/messaging/frame.hpp"
+#include "ores.comms/messaging/error_protocol.hpp"
 
 namespace ores::comms::messaging {
 
@@ -116,24 +117,6 @@ struct handshake_ack final {
      */
     static std::expected<handshake_ack, error_code>
     deserialize(std::span<const std::byte> data);
-};
-
-/**
- * @brief Error response message sent when request processing fails.
- */
-struct error_response final {
-    error_code code;
-    std::string message;
-
-    /**
-     * @brief Serialize to frame payload.
-     */
-    static std::vector<std::byte> serialize(error_response v);
-
-    /**
-     * @brief Deserialize from frame payload.
-     */
-    static std::expected<error_response, error_code> deserialize(std::span<const std::byte> data);
 };
 
 /**

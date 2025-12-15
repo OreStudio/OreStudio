@@ -98,10 +98,10 @@ public:
      *
      * @param flag The system flag to modify.
      * @param enabled The new enabled state.
-     * @param modified_by Username of the user making the change.
+     * @param recorded_by Username of the user making the change.
      */
     void set_enabled(domain::system_flag flag, bool enabled,
-        std::string_view modified_by);
+        std::string_view recorded_by);
 
     // Convenience methods for specific flags
 
@@ -118,9 +118,9 @@ public:
      * Persists to database and updates the cache.
      *
      * @param enabled The new bootstrap mode state.
-     * @param modified_by Username of the user making the change.
+     * @param recorded_by Username of the user making the change.
      */
-    void set_bootstrap_mode(bool enabled, std::string_view modified_by);
+    void set_bootstrap_mode(bool enabled, std::string_view recorded_by);
 
     /**
      * @brief Checks if user self-registration (signups) is enabled (from cache).
@@ -135,9 +135,9 @@ public:
      * Persists to database and updates the cache.
      *
      * @param enabled The new user signups state.
-     * @param modified_by Username of the user making the change.
+     * @param recorded_by Username of the user making the change.
      */
-    void set_user_signups(bool enabled, std::string_view modified_by);
+    void set_user_signups(bool enabled, std::string_view recorded_by);
 
 private:
     /**

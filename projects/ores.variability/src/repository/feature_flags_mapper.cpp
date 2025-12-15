@@ -36,7 +36,7 @@ domain::feature_flags feature_flags_mapper::map(const feature_flags_entity& v) {
     r.name = v.name.value();
     r.enabled = v.enabled != 0 ? true : false;
     r.description = v.description;
-    r.modified_by = v.modified_by;
+    r.recorded_by = v.modified_by;
     r.recorded_at = v.valid_from.str();
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
@@ -51,7 +51,7 @@ feature_flags_entity feature_flags_mapper::map(const domain::feature_flags& v) {
     r.version = v.version;
     r.enabled = v.enabled;
     r.description = v.description;
-    r.modified_by = v.modified_by;
+    r.modified_by = v.recorded_by;
     // Note: recorded_at is read-only; valid_from/valid_to are managed by database triggers
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

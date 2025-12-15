@@ -62,19 +62,19 @@ bool system_flags_service::is_enabled(domain::system_flag flag) const {
 }
 
 void system_flags_service::set_enabled(domain::system_flag flag, bool enabled,
-    std::string_view modified_by) {
+    std::string_view recorded_by) {
     const auto flag_name = domain::to_flag_name(flag);
     const auto& def = domain::get_definition(flag);
 
     BOOST_LOG_SEV(lg(), info) << "Setting system flag " << flag_name
         << " to " << (enabled ? "enabled" : "disabled")
-        << " by " << modified_by;
+        << " by " << recorded_by;
 
     domain::feature_flags ff{
         .enabled = enabled,
         .name = flag_name,
         .description = std::string(def.description),
-        .modified_by = std::string(modified_by)
+        .recorded_by = std::string(recorded_by)
     };
 
     feature_flags_service_.save_feature_flag(ff);
@@ -86,8 +86,8 @@ bool system_flags_service::is_bootstrap_mode_enabled() const {
 }
 
 void system_flags_service::set_bootstrap_mode(bool enabled,
-    std::string_view modified_by) {
-    set_enabled(domain::system_flag::bootstrap_mode, enabled, modified_by);
+    std::string_view recorded_by) {
+    set_enabled(domain::system_flag::bootstrap_mode, enabled, recorded_by);
 }
 
 bool system_flags_service::is_user_signups_enabled() const {
@@ -95,8 +95,8 @@ bool system_flags_service::is_user_signups_enabled() const {
 }
 
 void system_flags_service::set_user_signups(bool enabled,
-    std::string_view modified_by) {
-    set_enabled(domain::system_flag::user_signups, enabled, modified_by);
+    std::string_view recorded_by) {
+    set_enabled(domain::system_flag::user_signups, enabled, recorded_by);
 }
 
 void system_flags_service::update_cache(domain::system_flag flag, bool enabled) {

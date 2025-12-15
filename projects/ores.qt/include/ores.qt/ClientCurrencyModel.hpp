@@ -203,6 +203,7 @@ private:
     bool pulse_state_{false};  // Toggle for pulsing effect
     int pulse_count_{0};
     static constexpr int max_pulse_cycles_{6};  // 6 pulses (3 seconds at 500ms interval)
+    static constexpr int pulse_interval_ms_{500};  // Pulse toggle interval in milliseconds
 };
 
 }

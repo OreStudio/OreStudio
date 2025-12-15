@@ -269,7 +269,7 @@ void ClientCurrencyModel::onCurrenciesLoaded() {
             if (!recent_iso_codes_.empty() && !pulse_timer_->isActive()) {
                 pulse_count_ = 0;
                 pulse_state_ = true;  // Start with highlight on
-                pulse_timer_->start(500);  // Toggle every 500ms (same as reload button)
+                pulse_timer_->start(pulse_interval_ms_);
             }
         }
 

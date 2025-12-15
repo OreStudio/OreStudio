@@ -197,9 +197,10 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
             return {false, QString::fromStdString(response->error_message)};
         }
 
-        // Success - swap in new client and store account_id
+        // Success - swap in new client and store account_id and admin status
         client_ = new_client;
         logged_in_account_id_ = response->account_id;
+        is_admin_ = response->is_admin;
         connected_host_ = host;
         connected_port_ = port;
         BOOST_LOG_SEV(lg(), info) << "LOGIN SUCCESS: User '" << response->username
@@ -312,6 +313,7 @@ bool ClientManager::logout() {
         if (response && response->success) {
             BOOST_LOG_SEV(lg(), info) << "Logout successful";
             logged_in_account_id_ = std::nullopt;
+            is_admin_ = false;
             return true;
         } else {
             BOOST_LOG_SEV(lg(), warn) << "Logout failed: "
@@ -322,11 +324,16 @@ bool ClientManager::logout() {
     }
 
     logged_in_account_id_ = std::nullopt;
+    is_admin_ = false;
     return false;
 }
 
 bool ClientManager::isConnected() const {
     return client_ && client_->is_connected();
+}
+
+bool ClientManager::isAdmin() const {
+    return is_admin_;
 }
 
 std::expected<comms::messaging::frame, comms::messaging::error_code>

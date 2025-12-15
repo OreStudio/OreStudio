@@ -110,7 +110,7 @@ jobs:
           psql ${{ steps.postgres.outputs.connection-uri }} -f ./projects/sql/create_database.sql
 
       - name: Get latest CMake
-        uses: lukka/get-cmake@v4.2.0
+        uses: lukka/get-cmake@v4.2.1
 
       - name: Run vcpkg
         uses: lukka/run-vcpkg@v11

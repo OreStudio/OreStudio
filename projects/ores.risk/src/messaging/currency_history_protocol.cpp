@@ -44,8 +44,7 @@ void serialize_currency_version(std::vector<std::byte>& buffer, const domain::cu
     writer::write_string(buffer, version.data.format);
     writer::write_string(buffer, version.data.currency_type);
     writer::write_string(buffer, version.data.modified_by);
-    writer::write_string(buffer, version.data.valid_from);
-    writer::write_string(buffer, version.data.valid_to);
+    writer::write_string(buffer, version.data.recorded_at);
 
     // Write version metadata
     writer::write_uint32(buffer, static_cast<std::uint32_t>(version.version_number));
@@ -103,13 +102,9 @@ deserialize_currency_version(std::span<const std::byte>& data) {
     if (!modified_by) return std::unexpected(modified_by.error());
     version.data.modified_by = *modified_by;
 
-    auto valid_from = reader::read_string(data);
-    if (!valid_from) return std::unexpected(valid_from.error());
-    version.data.valid_from = *valid_from;
-
-    auto valid_to = reader::read_string(data);
-    if (!valid_to) return std::unexpected(valid_to.error());
-    version.data.valid_to = *valid_to;
+    auto recorded_at = reader::read_string(data);
+    if (!recorded_at) return std::unexpected(recorded_at.error());
+    version.data.recorded_at = *recorded_at;
 
     // Read version metadata
     auto version_number = reader::read_uint32(data);

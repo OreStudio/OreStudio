@@ -41,8 +41,7 @@ domain::currency generate_synthetic_currency() {
     r.format = "%3% %1$.2f";
     r.currency_type = "Fiat";
     r.modified_by = std::string(faker::internet::username());
-    r.valid_from = utility::faker::datetime::past_string();
-    r.valid_to = "9999-12-31 23:59:59";
+    r.recorded_at = utility::faker::datetime::past_string();
 
     return r;
 }
@@ -61,8 +60,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .modified_by = std::string(faker::internet::username()),
-        .valid_from = utility::faker::datetime::past_string(),
-        .valid_to = "9999-12-31 23:59:59"
+        .recorded_at = utility::faker::datetime::past_string()
     });
 
     r.push_back({
@@ -77,8 +75,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .modified_by = std::string(faker::internet::username()),
-        .valid_from = utility::faker::datetime::past_string(),
-        .valid_to = "9999-12-31 23:59:59"
+        .recorded_at = utility::faker::datetime::past_string()
     });
 
     r.push_back({
@@ -93,8 +90,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .modified_by = std::string(faker::internet::username()),
-        .valid_from = utility::faker::datetime::past_string(),
-        .valid_to = "9999-12-31 23:59:59"
+        .recorded_at = utility::faker::datetime::past_string()
     });
 
     r.push_back({
@@ -108,8 +104,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .modified_by = std::string(faker::internet::username()),
-        .valid_from = utility::faker::datetime::past_string(),
-        .valid_to = "9999-12-31 23:59:59"
+        .recorded_at = utility::faker::datetime::past_string()
     });
 
     r.push_back({
@@ -124,8 +119,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .modified_by = std::string(faker::internet::username()),
-        .valid_from = utility::faker::datetime::past_string(),
-        .valid_to = "9999-12-31 23:59:59"
+        .recorded_at = utility::faker::datetime::past_string()
     });
 
     r.push_back({
@@ -140,8 +134,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .modified_by = std::string(faker::internet::username()),
-        .valid_from = utility::faker::datetime::past_string(),
-        .valid_to = "9999-12-31 23:59:59"
+        .recorded_at = utility::faker::datetime::past_string()
     });
 
     r.push_back({
@@ -156,8 +149,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .modified_by = std::string(faker::internet::username()),
-        .valid_from = utility::faker::datetime::past_string(),
-        .valid_to = "9999-12-31 23:59:59"
+        .recorded_at = utility::faker::datetime::past_string()
     });
     return r;
 }

@@ -53,8 +53,7 @@ TEST_CASE("create_currency_version_with_valid_fields", tags) {
     cv.data.format = "%3% %1$.2f";
     cv.data.currency_type = "Fiat";
     cv.data.modified_by = "admin";
-    cv.data.valid_from = "2025-01-01";
-    cv.data.valid_to = "2099-12-31";
+    cv.data.recorded_at = "2025-01-01";
     cv.version_number = 1;
     cv.modified_by = "admin";
     cv.modified_at = "2025-01-01 10:00:00";
@@ -85,8 +84,7 @@ TEST_CASE("create_currency_version_with_faker", tags) {
     cv.data.format = "%3% %1$.2f";
     cv.data.currency_type = "Fiat";
     cv.data.modified_by = std::string(faker::internet::username());
-    cv.data.valid_from = "";
-    cv.data.valid_to = "";
+    cv.data.recorded_at = "";
     cv.version_number = faker::number::integer(1, 100);
     cv.modified_by = std::string(faker::internet::username());
     cv.modified_at = std::string(faker::date::pastDate());
@@ -116,8 +114,7 @@ TEST_CASE("currency_version_convert_multiple_to_table", tags) {
         cv.data.format = "%3% %1$.2f";
         cv.data.currency_type = "Fiat";
         cv.data.modified_by = "admin";
-        cv.data.valid_from = "";
-        cv.data.valid_to = "";
+        cv.data.recorded_at = "";
         cv.version_number = i + 1;
         cv.modified_by = "user" + std::to_string(i);
         cv.modified_at = "2025-01-0" + std::to_string(i + 1);
@@ -155,8 +152,7 @@ TEST_CASE("currency_version_table_with_faker_data", tags) {
         cv.data.format = "%3% %1$.2f";
         cv.data.currency_type = "Fiat";
         cv.data.modified_by = std::string(faker::internet::username());
-        cv.data.valid_from = "";
-        cv.data.valid_to = "";
+        cv.data.recorded_at = "";
         cv.version_number = i + 1;
         cv.modified_by = std::string(faker::internet::username());
         cv.modified_at = std::string(faker::date::pastDate());

@@ -87,14 +87,9 @@ struct currency final {
     std::string modified_by;
 
     /**
-     * @brief Start date of validity.
+     * @brief Timestamp when this version of the record was recorded in the system.
      */
-    std::string valid_from;
-
-    /**
-     * @brief End date of validity.
-     */
-    std::string valid_to;
+    std::string recorded_at;
 };
 
 }

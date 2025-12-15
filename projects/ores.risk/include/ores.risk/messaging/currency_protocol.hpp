@@ -96,10 +96,8 @@ struct get_currencies_response final {
      *   - N bytes: currency_type (UTF-8)
      *   - 2 bytes: modified_by length
      *   - N bytes: modified_by (UTF-8)
-     *   - 2 bytes: valid_from length
-     *   - N bytes: valid_from (UTF-8)
-     *   - 2 bytes: valid_to length
-     *   - N bytes: valid_to (UTF-8)
+     *   - 2 bytes: recorded_at length
+     *   - N bytes: recorded_at (UTF-8)
      */
     std::vector<std::byte> serialize() const;
 

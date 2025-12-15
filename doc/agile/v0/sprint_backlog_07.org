@@ -17,32 +17,34 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-15 Mon 16:39], for Monday, December 15, 2025.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *4:03* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 4:03   |      |      | 100.0 |
-|       | Active                                |        | 4:03 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:28 |  11.5 |
-| infra | OCR scan notebooks for this sprint    |        |      | 0:30 |  12.3 |
-| code  | Consider compressing payload          |        |      | 3:05 |  76.1 |
+#+CAPTION: Clock summary at [2025-12-15 Mon 17:05], for Monday, December 15, 2025.
+|       | <75>                                           |        |      |      |       |
+| Tags  | Headline                                       | Time   |      |      |     % |
+|-------+------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                   | *4:28* |      |      | 100.0 |
+|-------+------------------------------------------------+--------+------+------+-------|
+|       | Stories                                        | 4:28   |      |      | 100.0 |
+|       | Active                                         |        | 4:28 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |        |      | 0:28 |  10.4 |
+| infra | OCR scan notebooks for this sprint             |        |      | 0:30 |  11.2 |
+| code  | Consider compressing payload                   |        |      | 3:05 |  69.0 |
+| code  | Latest currencies should have different colour |        |      | 0:25 |   9.3 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-15 Mon 16:39]
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *4:42* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 4:42   |      |      | 100.0 |
-|       | Active                                |        | 4:42 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 1:07 |  23.8 |
-| infra | OCR scan notebooks for this sprint    |        |      | 0:30 |  10.6 |
-| code  | Consider compressing payload          |        |      | 3:05 |  65.6 |
+#+CAPTION: Clock summary at [2025-12-15 Mon 17:05]
+|       | <75>                                           |        |      |      |       |
+| Tags  | Headline                                       | Time   |      |      |     % |
+|-------+------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                   | *5:07* |      |      | 100.0 |
+|-------+------------------------------------------------+--------+------+------+-------|
+|       | Stories                                        | 5:07   |      |      | 100.0 |
+|       | Active                                         |        | 5:07 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |        |      | 1:07 |  21.8 |
+| infra | OCR scan notebooks for this sprint             |        |      | 0:30 |   9.8 |
+| code  | Consider compressing payload                   |        |      | 3:05 |  60.3 |
+| code  | Latest currencies should have different colour |        |      | 0:25 |   8.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -356,11 +358,6 @@ Seems like we are failing with a SEGFAULT:
   </TestCase>
 #+end_src
 
-*** STARTED Latest currencies should have different colour             :code:
-
-After reloading we should mark latest currencies with a different colour so that
-it is obvious what was added. Consider colouring rows by recency.
-
 *** STARTED Ignore warnings on windows and OSX                         :code:
 
 At present we have a number of spurious warnings on both windows and OSX. Try to
@@ -375,6 +372,15 @@ Links:
 - [[https://gitlab.kitware.com/cmake/cmake/-/issues/27367][CTest: Using regexes to filter warnings for CDash]]
 - [[https://stackoverflow.com/questions/26458652/ctest-custom-warning-exception][SO: ctest custom warning exception]]
 
+
+*** STARTED Latest currencies should have different colour             :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-15 Mon 16:49]--[2025-12-15 Mon 17:05] =>  0:16
+    CLOCK: [2025-12-15 Mon 16:40]--[2025-12-15 Mon 16:49] =>  0:09
+    :END:
+
+After reloading we should mark latest currencies with a different colour so that
+it is obvious what was added. Consider colouring rows by recency.
 
 *** History should have a revert button                                :code:
 
@@ -717,6 +723,6 @@ any field. The user needs to know when the list has been filtered. Ideally we
 should have buttons at the top per field and filter using those. It should go
 back to database rather than just filter what is available in UI.
 
-*** Footer
+* Footer
 
 | Previous: [[id:154212FF-BB02-8D84-1E33-9338B458380A][Version Zero]] |

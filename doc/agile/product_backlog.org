@@ -1825,4 +1825,6 @@ Example:
 | YS           | Yslandia     | YSY           |           10048 | Yslandian Yen      |
 | ZE           | Zephyria     | ZEZ           |           10049 | Zephyrian Zephyr   |
 
+* Footer
+
 | Previous: [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]] |

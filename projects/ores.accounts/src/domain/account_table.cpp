@@ -29,13 +29,13 @@ std::string convert_to_table(const std::vector<account>& v) {
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "ID (UUID)" << "Username" << "Email"
-          << "Admin?" << "Modified By" << "Version" << fort::endr;
+          << "Admin?" << "Modified By" << "Recorded At" << "Version" << fort::endr;
 
     for (const auto& a : v) {
         std::string admin_status = a.is_admin ? "Y" : "N";
         table << boost::uuids::to_string(a.id) << a.username
               << a.email << admin_status << a.modified_by
-              << a.version << fort::endr;
+              << a.recorded_at << a.version << fort::endr;
     }
     return table.to_string();
 }

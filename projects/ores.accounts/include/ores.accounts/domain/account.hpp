@@ -74,6 +74,11 @@ struct account final {
      * @brief Email address associated with the account.
      */
     std::string email;
+
+    /**
+     * @brief Timestamp when this version of the record was recorded in the system.
+     */
+    std::string recorded_at;
 };
 
 }

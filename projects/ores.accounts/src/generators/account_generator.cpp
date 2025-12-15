@@ -24,6 +24,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include "ores.utility/faker/totp.hpp"
+#include "ores.utility/faker/datetime.hpp"
 
 namespace ores::accounts::generators {
 
@@ -47,6 +48,7 @@ domain::account generate_synthetic_account() {
     r.totp_secret = totp::totp_secret();
 
     r.is_admin = false;
+    r.recorded_at = utility::faker::datetime::past_string();
     return r;
 }
 

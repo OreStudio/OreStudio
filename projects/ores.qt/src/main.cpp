@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <boost/process/v2/pid.hpp>
 #include <QApplication>
 #include <QFile>
 #include <QIcon>
@@ -25,10 +24,9 @@
 #include <QTimer>
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/version/version.hpp"
-#include "ores.utility/log/logging_options.hpp"
 #include "ores.utility/log/lifecycle_manager.hpp"
 #include "ores.comms/messaging/message_types.hpp"
+#include "ores.qt/CommandLineParser.hpp"
 #include "ores.qt/MainWindow.hpp"
 #include "ores.qt/SplashScreen.hpp"
 
@@ -37,29 +35,24 @@ namespace {
 inline static std::string_view logger_name = "ores.qt.main";
 
 using namespace ores::utility::log;
-auto lg(make_logger(logger_name));
 
 const std::string product_version("Qt UI for ORE Studio v" ORES_VERSION);
-
-ores::utility::log::logging_options createLoggingConfiguration() {
-    // FIXME: read this from command line
-    ores::utility::log::logging_options r;
-    r.filename = "ores.qt." + std::to_string(boost::process::v2::current_pid()) + ".log";
-    r.output_to_console = false;
-    r.output_directory = "../log";
-    r.severity = "debug";
-    return r;
-}
 
 } // namespace
 
 int main(int argc, char *argv[]) {
-    auto cfg(createLoggingConfiguration());
-    ores::utility::log::lifecycle_manager lm(cfg);
+    QApplication app(argc, argv);
+    QCoreApplication::setApplicationName("ores.qt");
+    QCoreApplication::setApplicationVersion(ORES_VERSION);
+
+    ores::qt::CommandLineParser parser;
+    parser.process(app);
+
+    ores::utility::log::lifecycle_manager lm(parser.loggingOptions());
+
+    auto lg(make_logger(logger_name));
 
     BOOST_LOG_SEV(lg, info) << "Started Qt UI " << product_version;
-
-    QApplication app(argc, argv);
 
     // Load the stylesheet
     QFile file(":/TradingStyle.qss");

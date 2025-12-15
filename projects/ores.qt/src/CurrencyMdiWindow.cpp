@@ -431,9 +431,21 @@ void CurrencyMdiWindow::deleteSelected() {
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Received batch delete_currency_response";
+
+        // Decompress payload
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to decompress batch response";
+            for (const auto& iso_code : iso_codes) {
+                results.push_back({iso_code,
+                    {false, "Failed to decompress server response"}});
+            }
+            return results;
+        }
+
         // Deserialize batch response
         auto response = risk::messaging::delete_currency_response::
-            deserialize(response_result->payload());
+            deserialize(*payload_result);
 
         if (!response) {
             BOOST_LOG_SEV(lg(), error) << "Failed to deserialize batch response";

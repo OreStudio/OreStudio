@@ -36,7 +36,7 @@ void message_dispatcher::register_handler(message_type_range range,
 
 boost::asio::awaitable<std::expected<frame, error_code>>
 message_dispatcher::dispatch(const frame& request_frame, std::uint32_t sequence,
-    const std::string& remote_address) {
+    const std::string& remote_address, compression_type response_compression) {
     const auto msg_type = request_frame.header().type;
     BOOST_LOG_SEV(lg(), debug) << "Dispatching message type " << msg_type;
 
@@ -58,8 +58,19 @@ message_dispatcher::dispatch(const frame& request_frame, std::uint32_t sequence,
         co_return std::unexpected(error_code::invalid_message_type);
     }
 
+    // Decompress payload if necessary
+    auto payload_result = request_frame.decompressed_payload();
+    if (!payload_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to decompress payload for message type "
+                                   << msg_type
+                                   << ", compression: " << request_frame.header().compression
+                                   << ", payload_size: " << request_frame.payload().size()
+                                   << ", error: " << payload_result.error();
+        co_return std::unexpected(payload_result.error());
+    }
+
     // Invoke the handler
-    auto result = co_await handler->handle_message(msg_type, request_frame.payload(),
+    auto result = co_await handler->handle_message(msg_type, *payload_result,
         remote_address);
     if (!result) {
         BOOST_LOG_SEV(lg(), error) << "Handler failed for message type "
@@ -68,13 +79,15 @@ message_dispatcher::dispatch(const frame& request_frame, std::uint32_t sequence,
         co_return std::unexpected(result.error());
     }
 
-    // Create response frame with correlation_id from request
+    // Create response frame with correlation_id from request and session compression
     auto response_type = get_response_type(msg_type);
     auto correlation_id = request_frame.correlation_id();
-    frame response_frame(response_type, sequence, correlation_id, std::move(*result));
+    frame response_frame(response_type, sequence, correlation_id, std::move(*result),
+        response_compression);
 
     BOOST_LOG_SEV(lg(), debug) << "Successfully dispatched message, response type "
-                               << response_type << " correlation_id=" << correlation_id;
+                               << response_type << " correlation_id=" << correlation_id
+                               << " compression=" << response_compression;
 
     co_return response_frame;
 }

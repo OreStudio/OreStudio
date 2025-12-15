@@ -31,6 +31,7 @@
 #include "ores.shell/app/commands/connection_commands.hpp"
 #include "ores.shell/app/commands/accounts_commands.hpp"
 #include "ores.shell/app/commands/variability_commands.hpp"
+#include "ores.shell/app/commands/compression_commands.hpp"
 
 namespace ores::shell::app {
 
@@ -64,6 +65,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     currencies_commands::register_commands(*root, session_);
     accounts_commands::register_commands(*root, session_);
     variability_commands::register_commands(*root, session_);
+    compression_commands::register_commands(*root);
 
     auto cli_instance =
         std::make_unique<cli::Cli>(std::move(root));

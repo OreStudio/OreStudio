@@ -21,8 +21,23 @@
 
 #include <rfl.hpp>
 #include <rfl/bson.hpp>
+#include "ores.utility/log/make_logger.hpp"
+
+namespace {
+
+std::string_view logger_name = "ores.comms.messaging.handshake";
+
+auto& lg() {
+    using namespace ores::utility::log;
+    static auto instance = make_logger(logger_name);
+    return instance;
+}
+
+}
 
 namespace ores::comms::messaging {
+
+using namespace ores::utility::log;
 
 std::vector<std::byte>
 handshake_request::serialize(handshake_request v) {
@@ -107,13 +122,23 @@ deserialize(std::span<const std::byte> data) {
 // Frame creation functions
 frame create_handshake_request_frame(
     std::uint32_t sequence,
-    const std::string& client_identifier) {
+    const std::string& client_identifier,
+    std::uint8_t supported_compression) {
 
     handshake_request req {
         .client_version_major = PROTOCOL_VERSION_MAJOR,
         .client_version_minor = PROTOCOL_VERSION_MINOR,
-        .client_identifier = client_identifier
+        .client_identifier = client_identifier,
+        .supported_compression = supported_compression
     };
+
+    BOOST_LOG_SEV(lg(), info) << "Creating handshake request: client='" << client_identifier
+                              << "', supported_compression=0x" << std::hex
+                              << static_cast<int>(supported_compression) << std::dec
+                              << " (zlib=" << ((supported_compression & COMPRESSION_SUPPORT_ZLIB) ? "yes" : "no")
+                              << ", gzip=" << ((supported_compression & COMPRESSION_SUPPORT_GZIP) ? "yes" : "no")
+                              << ", bzip2=" << ((supported_compression & COMPRESSION_SUPPORT_BZIP2) ? "yes" : "no")
+                              << ")";
 
     return {message_type::handshake_request, sequence, req.serialize(req)};
 }
@@ -122,15 +147,21 @@ frame create_handshake_response_frame(
     std::uint32_t sequence,
     bool version_compatible,
     const std::string& server_identifier,
-    error_code status) {
+    error_code status,
+    compression_type selected_compression) {
 
     handshake_response resp{
         .server_version_major = PROTOCOL_VERSION_MAJOR,
         .server_version_minor = PROTOCOL_VERSION_MINOR,
         .version_compatible = version_compatible,
         .server_identifier = server_identifier,
-        .status = status
+        .status = status,
+        .selected_compression = selected_compression
     };
+
+    BOOST_LOG_SEV(lg(), info) << "Creating handshake response: server='" << server_identifier
+                              << "', version_compatible=" << (version_compatible ? "yes" : "no")
+                              << ", selected_compression=" << selected_compression;
 
     return { message_type::handshake_response, sequence, resp.serialize(resp) };
 }
@@ -146,6 +177,7 @@ frame create_handshake_ack_frame(
 
 frame create_error_response_frame(
     std::uint32_t sequence,
+    std::uint32_t correlation_id,
     error_code code,
     const std::string& message) {
 
@@ -154,7 +186,48 @@ frame create_error_response_frame(
         .message = message
     };
 
-    return { message_type::error_response, sequence, err.serialize(err) };
+    return { message_type::error_response, sequence, correlation_id, err.serialize(err) };
+}
+
+compression_type select_compression(
+    std::uint8_t supported_compression,
+    compression_type preferred) {
+
+    // Map compression type to its bitmask value
+    auto type_to_mask = [](compression_type ct) -> std::uint8_t {
+        switch (ct) {
+            case compression_type::zlib: return COMPRESSION_SUPPORT_ZLIB;
+            case compression_type::gzip: return COMPRESSION_SUPPORT_GZIP;
+            case compression_type::bzip2: return COMPRESSION_SUPPORT_BZIP2;
+            default: return 0;
+        }
+    };
+
+    compression_type selected = compression_type::none;
+
+    // Check if preferred type is supported
+    if (supported_compression & type_to_mask(preferred)) {
+        selected = preferred;
+    } else if (supported_compression & COMPRESSION_SUPPORT_ZLIB) {
+        selected = compression_type::zlib;
+    } else if (supported_compression & COMPRESSION_SUPPORT_GZIP) {
+        selected = compression_type::gzip;
+    } else if (supported_compression & COMPRESSION_SUPPORT_BZIP2) {
+        selected = compression_type::bzip2;
+    }
+
+    if (selected == compression_type::none) {
+        BOOST_LOG_SEV(lg(), info) << "Compression negotiation: no compression "
+                                  << "(client supported=0x" << std::hex
+                                  << static_cast<int>(supported_compression) << std::dec << ")";
+    } else {
+        BOOST_LOG_SEV(lg(), info) << "Compression negotiation: selected " << selected
+                                  << " (client supported=0x" << std::hex
+                                  << static_cast<int>(supported_compression) << std::dec
+                                  << ", server preferred=" << preferred << ")";
+    }
+
+    return selected;
 }
 
 }

@@ -462,3 +462,274 @@ TEST_CASE("test_frame_version_mismatch_handshake_scenario", tags) {
                             << client_version << " client";
     BOOST_LOG_SEV(lg, debug) << "Server can now send handshake_response with version details";
 }
+
+TEST_CASE("test_frame_compression_zlib", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Create a frame with zlib compression
+    // Use a larger, more compressible payload
+    std::vector<std::byte> payload(500);
+    for (size_t i = 0; i < payload.size(); ++i) {
+        payload[i] = static_cast<std::byte>((i % 10) + '0');
+    }
+
+    BOOST_LOG_SEV(lg, debug) << "Creating frame with zlib compression, original payload size: "
+                             << payload.size();
+
+    ores::comms::messaging::frame frame(
+        message_type::handshake_request,
+        1,
+        payload,
+        ores::comms::messaging::compression_type::zlib
+    );
+
+    BOOST_LOG_SEV(lg, debug) << "Compressed payload size: " << frame.payload().size();
+
+    // Verify compression happened
+    CHECK(frame.compression() == ores::comms::messaging::compression_type::zlib);
+    CHECK(frame.payload().size() < payload.size());
+
+    // Serialize and deserialize
+    auto serialized = frame.serialize();
+    REQUIRE(!serialized.empty());
+
+    auto header_result = ores::comms::messaging::frame::deserialize_header(
+        std::span<const std::byte>(serialized));
+    REQUIRE(header_result.has_value());
+    CHECK(header_result->compression == ores::comms::messaging::compression_type::zlib);
+
+    auto deserialized_result = ores::comms::messaging::frame::deserialize(
+        *header_result, std::span<const std::byte>(serialized));
+    REQUIRE(deserialized_result.has_value());
+
+    // Decompress and verify
+    auto decompressed = deserialized_result->decompressed_payload();
+    REQUIRE(decompressed.has_value());
+    CHECK(decompressed->size() == payload.size());
+    CHECK(std::equal(payload.begin(), payload.end(), decompressed->begin(), decompressed->end()));
+
+    BOOST_LOG_SEV(lg, debug) << "Zlib compression roundtrip successful";
+}
+
+TEST_CASE("test_frame_compression_gzip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Create a frame with gzip compression
+    std::vector<std::byte> payload(500);
+    for (size_t i = 0; i < payload.size(); ++i) {
+        payload[i] = static_cast<std::byte>((i % 10) + '0');
+    }
+
+    BOOST_LOG_SEV(lg, debug) << "Creating frame with gzip compression, original payload size: "
+                             << payload.size();
+
+    ores::comms::messaging::frame frame(
+        message_type::handshake_request,
+        2,
+        payload,
+        ores::comms::messaging::compression_type::gzip
+    );
+
+    BOOST_LOG_SEV(lg, debug) << "Compressed payload size: " << frame.payload().size();
+
+    // Verify compression happened
+    CHECK(frame.compression() == ores::comms::messaging::compression_type::gzip);
+    CHECK(frame.payload().size() < payload.size());
+
+    // Serialize and deserialize
+    auto serialized = frame.serialize();
+    REQUIRE(!serialized.empty());
+
+    auto header_result = ores::comms::messaging::frame::deserialize_header(
+        std::span<const std::byte>(serialized));
+    REQUIRE(header_result.has_value());
+
+    auto deserialized_result = ores::comms::messaging::frame::deserialize(
+        *header_result, std::span<const std::byte>(serialized));
+    REQUIRE(deserialized_result.has_value());
+
+    // Decompress and verify
+    auto decompressed = deserialized_result->decompressed_payload();
+    REQUIRE(decompressed.has_value());
+    CHECK(decompressed->size() == payload.size());
+    CHECK(std::equal(payload.begin(), payload.end(), decompressed->begin(), decompressed->end()));
+
+    BOOST_LOG_SEV(lg, debug) << "Gzip compression roundtrip successful";
+}
+
+TEST_CASE("test_frame_compression_bzip2", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Create a frame with bzip2 compression
+    std::vector<std::byte> payload(500);
+    for (size_t i = 0; i < payload.size(); ++i) {
+        payload[i] = static_cast<std::byte>((i % 10) + '0');
+    }
+
+    BOOST_LOG_SEV(lg, debug) << "Creating frame with bzip2 compression, original payload size: "
+                             << payload.size();
+
+    ores::comms::messaging::frame frame(
+        message_type::handshake_request,
+        3,
+        payload,
+        ores::comms::messaging::compression_type::bzip2
+    );
+
+    BOOST_LOG_SEV(lg, debug) << "Compressed payload size: " << frame.payload().size();
+
+    // Verify compression happened
+    CHECK(frame.compression() == ores::comms::messaging::compression_type::bzip2);
+    CHECK(frame.payload().size() < payload.size());
+
+    // Serialize and deserialize
+    auto serialized = frame.serialize();
+    REQUIRE(!serialized.empty());
+
+    auto header_result = ores::comms::messaging::frame::deserialize_header(
+        std::span<const std::byte>(serialized));
+    REQUIRE(header_result.has_value());
+
+    auto deserialized_result = ores::comms::messaging::frame::deserialize(
+        *header_result, std::span<const std::byte>(serialized));
+    REQUIRE(deserialized_result.has_value());
+
+    // Decompress and verify
+    auto decompressed = deserialized_result->decompressed_payload();
+    REQUIRE(decompressed.has_value());
+    CHECK(decompressed->size() == payload.size());
+    CHECK(std::equal(payload.begin(), payload.end(), decompressed->begin(), decompressed->end()));
+
+    BOOST_LOG_SEV(lg, debug) << "Bzip2 compression roundtrip successful";
+}
+
+TEST_CASE("test_frame_no_compression", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Create a frame without compression (default)
+    std::vector<std::byte> payload = {
+        std::byte{0x01},
+        std::byte{0x02},
+        std::byte{0x03},
+        std::byte{0x04}
+    };
+
+    BOOST_LOG_SEV(lg, debug) << "Creating frame without compression";
+
+    ores::comms::messaging::frame frame(
+        message_type::handshake_request,
+        4,
+        payload
+    );
+
+    // Verify no compression
+    CHECK(frame.compression() == ores::comms::messaging::compression_type::none);
+    CHECK(frame.payload().size() == payload.size());
+
+    // Serialize and deserialize
+    auto serialized = frame.serialize();
+    REQUIRE(!serialized.empty());
+
+    auto header_result = ores::comms::messaging::frame::deserialize_header(
+        std::span<const std::byte>(serialized));
+    REQUIRE(header_result.has_value());
+    CHECK(header_result->compression == ores::comms::messaging::compression_type::none);
+
+    auto deserialized_result = ores::comms::messaging::frame::deserialize(
+        *header_result, std::span<const std::byte>(serialized));
+    REQUIRE(deserialized_result.has_value());
+
+    // "Decompress" (returns same data since no compression)
+    auto decompressed = deserialized_result->decompressed_payload();
+    REQUIRE(decompressed.has_value());
+    CHECK(decompressed->size() == payload.size());
+    CHECK(std::equal(payload.begin(), payload.end(), decompressed->begin(), decompressed->end()));
+
+    BOOST_LOG_SEV(lg, debug) << "No compression roundtrip successful";
+}
+
+TEST_CASE("test_frame_compression_with_correlation_id", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Create a frame with compression and correlation ID
+    std::vector<std::byte> payload(300);
+    for (size_t i = 0; i < payload.size(); ++i) {
+        payload[i] = static_cast<std::byte>('A' + (i % 26));
+    }
+
+    std::uint32_t correlation_id = 12345;
+
+    BOOST_LOG_SEV(lg, debug) << "Creating frame with zlib compression and correlation_id";
+
+    ores::comms::messaging::frame frame(
+        message_type::get_currencies_request,
+        5,
+        correlation_id,
+        payload,
+        ores::comms::messaging::compression_type::zlib
+    );
+
+    // Verify correlation ID and compression
+    CHECK(frame.correlation_id() == correlation_id);
+    CHECK(frame.compression() == ores::comms::messaging::compression_type::zlib);
+
+    // Serialize and deserialize
+    auto serialized = frame.serialize();
+    REQUIRE(!serialized.empty());
+
+    auto header_result = ores::comms::messaging::frame::deserialize_header(
+        std::span<const std::byte>(serialized));
+    REQUIRE(header_result.has_value());
+
+    auto deserialized_result = ores::comms::messaging::frame::deserialize(
+        *header_result, std::span<const std::byte>(serialized));
+    REQUIRE(deserialized_result.has_value());
+
+    CHECK(deserialized_result->correlation_id() == correlation_id);
+
+    // Decompress and verify
+    auto decompressed = deserialized_result->decompressed_payload();
+    REQUIRE(decompressed.has_value());
+    CHECK(decompressed->size() == payload.size());
+
+    BOOST_LOG_SEV(lg, debug) << "Compression with correlation_id roundtrip successful";
+}
+
+TEST_CASE("test_frame_compression_empty_payload", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Create a frame with compression but empty payload
+    std::vector<std::byte> empty_payload;
+
+    BOOST_LOG_SEV(lg, debug) << "Creating frame with zlib compression and empty payload";
+
+    ores::comms::messaging::frame frame(
+        message_type::handshake_request,
+        6,
+        empty_payload,
+        ores::comms::messaging::compression_type::zlib
+    );
+
+    // Empty payload should remain empty and compression should be set to none
+    CHECK(frame.payload().empty());
+    CHECK(frame.compression() == ores::comms::messaging::compression_type::none);
+
+    // Serialize and deserialize
+    auto serialized = frame.serialize();
+    REQUIRE(!serialized.empty());
+
+    auto header_result = ores::comms::messaging::frame::deserialize_header(
+        std::span<const std::byte>(serialized));
+    REQUIRE(header_result.has_value());
+    CHECK(header_result->compression == ores::comms::messaging::compression_type::none);
+
+    auto deserialized_result = ores::comms::messaging::frame::deserialize(
+        *header_result, std::span<const std::byte>(serialized));
+    REQUIRE(deserialized_result.has_value());
+
+    auto decompressed = deserialized_result->decompressed_payload();
+    REQUIRE(decompressed.has_value());
+    CHECK(decompressed->empty());
+
+    BOOST_LOG_SEV(lg, debug) << "Empty payload compression roundtrip successful";
+}

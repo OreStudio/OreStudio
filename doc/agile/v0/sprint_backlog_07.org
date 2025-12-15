@@ -17,28 +17,31 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-13 Sat 22:56], for Saturday, December 13, 2025.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *0:39* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 0:39   |      |      | 100.0 |
-|       | Active                                |        | 0:39 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:39 | 100.0 |
+#+CAPTION: Clock summary at [2025-12-15 Mon 13:32], for Monday, December 15, 2025.
+|       | <75>                               |        |      |      |       |
+| Tags  | Headline                           | Time   |      |      |     % |
+|-------+------------------------------------+--------+------+------+-------|
+|       | *Total time*                       | *3:35* |      |      | 100.0 |
+|-------+------------------------------------+--------+------+------+-------|
+|       | Stories                            | 3:35   |      |      | 100.0 |
+|       | Active                             |        | 3:35 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint |        |      | 0:30 |  14.0 |
+| code  | Consider compressing payload       |        |      | 3:05 |  86.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-13 Sat 22:56]
+#+CAPTION: Clock summary at [2025-12-15 Mon 13:32]
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *0:39* |      |      | 100.0 |
+|       | *Total time*                          | *4:14* |      |      | 100.0 |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 0:39   |      |      | 100.0 |
-|       | Active                                |        | 0:39 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:39 | 100.0 |
+|       | Stories                               | 4:14   |      |      | 100.0 |
+|       | Active                                |        | 4:14 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:39 |  15.4 |
+| infra | OCR scan notebooks for this sprint    |        |      | 0:30 |  11.8 |
+| code  | Consider compressing payload          |        |      | 3:05 |  72.8 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -191,6 +194,28 @@ print(p)
 #+RESULTS: tags-chart
 [[file:sprint_backlog_07_tags.png]]
 
+*** STARTED OCR scan notebooks for this sprint                        :infra:
+    :LOGBOOK:
+    CLOCK: [2025-12-15 Mon 09:10]--[2025-12-15 Mon 09:40] =>  0:30
+    :END:
+
+We need to scan all of our finance notebooks so we can use them with AI. Each
+sprint will have a story similar to this until we scan and process them all.
+
+*** Add AI generated sprint summary                                   :infra:
+
+At the end of the sprint, generate the sprint summary using the prompt.
+
+*** COMPLETED Consider compressing payload                             :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-15 Mon 11:29]--[2025-12-15 Mon 13:32] =>  2:03
+    CLOCK: [2025-12-15 Mon 09:58]--[2025-12-15 Mon 11:00] =>  1:02
+    :END:
+
+Sounds quite simple to extend the binary protocol with a compressed payload. We
+just need some information in the header about it. We should support both
+compressed and uncompressed payloads. Play with compression algos in boost.
+
 *** Windows clang build failures                                       :code:
 
 Seems like we are failing with a SEGFAULT:
@@ -212,6 +237,38 @@ Seems like we are failing with a SEGFAULT:
     <OverallResult success="false" skips="0" durationInSeconds="2.17718"/>
   </TestCase>
 #+end_src
+
+*** Create the observability component                                 :code:
+
+We need some kind of observability context so that we can look at related log
+entries. This is sort of related to logging by thread except with coroutines we
+are no longer interested in threads per se but on some kind of "work identifier"
+which is preserved across function calls. For this we can have an observability
+context which is passed around.
+
+Notes:
+
+- we should also add the notion of parents and children so that we can create a
+  graph with the relationships. We should create specific messages for this
+  which are not directly related to logging. The server can just keep track of
+  the observability contexts in a table. We should link it back to each client
+  etc.
+- the observability context should also extend to the server so that we can
+  filter all logs for that ID.
+- consider using mongo IDs for this or create our own IDs:
+
+#+begin_src c++
+Option A: 64-bit IDs (8 bytes) - Best balance
+cpp
+struct LogId {
+    uint32_t timestamp;  // seconds since 2020
+    uint16_t machine;    // 0-65535 machines
+    uint16_t sequence;   // per-second counter
+
+    // Encode to 11 Base64 chars or 8-10 Base62 chars
+};
+#+end_src
+
 
 *** Add heat map of user sessions                                      :code:
 
@@ -270,12 +327,6 @@ We need to introduce basic RBAC where we have roles such as:
 - Support: read-only, admin screens.
 
 To start off with we can map these to read/write on CRUD dialogs.
-
-*** Consider compressing payload                                       :code:
-
-Sounds quite simple to extend the binary protocol with a compressed payload. We
-just need some information in the header about it. We should support both
-compressed and uncompressed payloads. Play with compression algos in boost.
 
 *** Add session information to database                                :code:
 

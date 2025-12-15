@@ -25,6 +25,7 @@
 #include <boost/crc.hpp>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
+#include "ores.comms/messaging/compression.hpp"
 
 namespace {
 
@@ -65,7 +66,8 @@ frame::frame() : header_{}, payload_{} {
     header_.version_major = PROTOCOL_VERSION_MAJOR;
     header_.version_minor = PROTOCOL_VERSION_MINOR;
     header_.type = message_type::handshake_request;
-    header_.reserved1 = 0;
+    header_.compression = compression_type::none;
+    header_.compression_flags = 0;
     header_.payload_size = 0;
     header_.sequence = 0;
     header_.crc = 0;
@@ -74,35 +76,59 @@ frame::frame() : header_{}, payload_{} {
 }
 
 frame::frame(message_type type,
-    std::uint32_t sequence, std::vector<std::byte> payload) :
-    header_{}, payload_(std::move(payload)) {
+    std::uint32_t sequence, std::vector<std::byte> payload,
+    compression_type compression) :
+    header_{}, payload_{} {
 
     header_.magic = PROTOCOL_MAGIC;
     header_.version_major = PROTOCOL_VERSION_MAJOR;
     header_.version_minor = PROTOCOL_VERSION_MINOR;
     header_.type = type;
-    header_.reserved1 = 0;
-    header_.payload_size = static_cast<std::uint32_t>(payload_.size());
+    header_.compression_flags = 0;
     header_.sequence = sequence;
     header_.crc = 0; // Will be calculated during serialization
     header_.correlation_id = 0;
     header_.reserved2.fill(0);
+
+    init_payload(std::move(payload), compression);
 }
 
 frame::frame(message_type type, std::uint32_t sequence,
-    std::uint32_t correlation_id, std::vector<std::byte> payload) :
-    header_{}, payload_(std::move(payload)) {
+    std::uint32_t correlation_id, std::vector<std::byte> payload,
+    compression_type compression) :
+    header_{}, payload_{} {
 
     header_.magic = PROTOCOL_MAGIC;
     header_.version_major = PROTOCOL_VERSION_MAJOR;
     header_.version_minor = PROTOCOL_VERSION_MINOR;
     header_.type = type;
-    header_.reserved1 = 0;
-    header_.payload_size = static_cast<std::uint32_t>(payload_.size());
+    header_.compression_flags = 0;
     header_.sequence = sequence;
     header_.crc = 0; // Will be calculated during serialization
     header_.correlation_id = correlation_id;
     header_.reserved2.fill(0);
+
+    init_payload(std::move(payload), compression);
+}
+
+void frame::init_payload(std::vector<std::byte> payload, compression_type compression) {
+    if (compression != compression_type::none && !payload.empty()) {
+        auto compressed = compress(
+            std::span<const std::byte>(payload.data(), payload.size()),
+            compression);
+        if (compressed) {
+            header_.compression = compression;
+            payload_ = std::move(*compressed);
+        } else {
+            BOOST_LOG_SEV(lg(), warn) << "Compression failed, using uncompressed payload";
+            header_.compression = compression_type::none;
+            payload_ = std::move(payload);
+        }
+    } else {
+        header_.compression = compression_type::none;
+        payload_ = std::move(payload);
+    }
+    header_.payload_size = static_cast<std::uint32_t>(payload_.size());
 }
 
 void frame::serialize_header(frame_header header, std::span<std::byte> buffer) const {
@@ -128,7 +154,9 @@ void frame::serialize_header(frame_header header, std::span<std::byte> buffer) c
     write16(header.version_major);
     write16(header.version_minor);
     write16(static_cast<std::uint16_t>(header.type));
-    write16(header.reserved1);
+    // Write compression type (1 byte) and compression flags (1 byte)
+    buffer[offset++] = static_cast<std::byte>(header.compression);
+    buffer[offset++] = static_cast<std::byte>(header.compression_flags);
     write32(header.payload_size);
     write32(header.sequence);
     write32(header.crc);
@@ -208,7 +236,15 @@ frame::deserialize_header(std::span<const std::byte> data, bool skip_version_che
         return std::unexpected(error_code::invalid_message_type);
     }
     header.type = static_cast<message_type>(raw_type);
-    header.reserved1 = read16();
+    // Read compression type (1 byte) and compression flags (1 byte)
+    std::uint8_t raw_compression = static_cast<std::uint8_t>(data[offset++]);
+    header.compression_flags = static_cast<std::uint8_t>(data[offset++]);
+    header.compression = static_cast<compression_type>(raw_compression);
+    if (!is_compression_supported(header.compression)) {
+        BOOST_LOG_SEV(lg(), error) << "Unsupported compression type: "
+                                   << header.compression;
+        return std::unexpected(error_code::unsupported_compression);
+    }
     header.payload_size = read32();
     header.sequence = read32();
     header.crc = read32();
@@ -230,8 +266,8 @@ frame::deserialize_header(std::span<const std::byte> data, bool skip_version_che
         return std::unexpected(error_code::version_mismatch);
     }
 
-    if (header.reserved1 != 0) {
-        BOOST_LOG_SEV(lg(), error) << "Invalid reserved1 field";
+    if (header.compression_flags != 0) {
+        BOOST_LOG_SEV(lg(), error) << "Invalid compression_flags field (must be 0)";
         return std::unexpected(error_code::invalid_message_type);
     }
     if (std::ranges::any_of(header.reserved2,
@@ -319,6 +355,12 @@ std::expected<void, error_code> frame::validate() const {
     }
 
     return {};
+}
+
+std::expected<std::vector<std::byte>, error_code> frame::decompressed_payload() const {
+    return decompress(
+        std::span<const std::byte>(payload_.data(), payload_.size()),
+        header_.compression);
 }
 
 std::ostream& operator<<(std::ostream& s, const frame_header& v) {

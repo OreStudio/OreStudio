@@ -22,9 +22,11 @@
 
 #include <string>
 #include <cstdint>
+#include <optional>
 #include <functional>
 #include <boost/asio/awaitable.hpp>
 #include "ores.utility/log/make_logger.hpp"
+#include "ores.comms/messaging/message_types.hpp"
 
 namespace ores::comms::net { class connection; }
 
@@ -60,12 +62,16 @@ public:
      * @param conn Connection to perform handshake on
      * @param sequence_generator Function that generates sequence numbers
      * @param client_identifier Client identifier string
+     * @param supported_compression Bitmask of supported compression types
+     *        (default: 0 = no compression support)
+     * @return The compression type selected by the server for this session
      * @throws connection_error if handshake fails
      */
-    static boost::asio::awaitable<void> perform_client_handshake(
+    static boost::asio::awaitable<messaging::compression_type> perform_client_handshake(
         net::connection& conn,
         const std::function<std::uint32_t()>& sequence_generator,
-        const std::string& client_identifier);
+        const std::string& client_identifier,
+        std::uint8_t supported_compression = 0);
 
     /**
      * @brief Perform server-side handshake.
@@ -76,9 +82,10 @@ public:
      * @param conn Connection to perform handshake on
      * @param sequence Sequence number for response frame
      * @param server_identifier Server identifier string
-     * @return true if handshake succeeded, false otherwise
+     * @return The negotiated compression type on success, std::nullopt on failure
      */
-    static boost::asio::awaitable<bool> perform_server_handshake(
+    static boost::asio::awaitable<std::optional<messaging::compression_type>>
+    perform_server_handshake(
         net::connection& conn,
         std::uint32_t sequence,
         const std::string& server_identifier);

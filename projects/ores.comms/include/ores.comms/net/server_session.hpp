@@ -188,6 +188,9 @@ private:
     mutable std::mutex notification_mutex_;
     std::queue<pending_notification> pending_notifications_;
     std::queue<pending_database_status> pending_database_status_;
+
+    // Session compression type negotiated during handshake
+    messaging::compression_type session_compression_{messaging::compression_type::none};
 };
 
 }

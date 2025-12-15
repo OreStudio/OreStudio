@@ -152,14 +152,17 @@ boost::asio::awaitable<void> server_session::run() {
 }
 
 boost::asio::awaitable<bool> server_session::perform_handshake() {
-    bool success = co_await service::handshake_service::perform_server_handshake(
+    auto compression_result = co_await service::handshake_service::perform_server_handshake(
         *conn_, ++sequence_number_, server_id_);
 
-    if (success) {
+    if (compression_result) {
+        session_compression_ = *compression_result;
         handshake_complete_ = true;
+        BOOST_LOG_SEV(lg(), info) << "Session compression set to: " << session_compression_;
+        co_return true;
     }
 
-    co_return success;
+    co_return false;
 }
 
 boost::asio::awaitable<void> server_session::process_messages() {
@@ -197,7 +200,7 @@ boost::asio::awaitable<void> server_session::process_messages() {
 
             try {
                 auto response_result = co_await dispatcher_->dispatch(request_frame,
-                    ++sequence_number_, remote_addr);
+                    ++sequence_number_, remote_addr, session_compression_);
 
                 if (!response_result) {
                     auto err = response_result.error();
@@ -237,14 +240,24 @@ boost::asio::awaitable<void> server_session::process_messages() {
                         case messaging::error_code::not_localhost:
                             error_msg = "Bootstrap operations are only allowed from localhost";
                             break;
+                        case messaging::error_code::decompression_failed:
+                            error_msg = "Failed to decompress request payload - possible compression mismatch";
+                            break;
+                        case messaging::error_code::unsupported_compression:
+                            error_msg = "Server does not support the compression algorithm used in request";
+                            break;
+                        case messaging::error_code::compression_failed:
+                            error_msg = "Failed to compress response payload";
+                            break;
                         default:
                             error_msg = "An error occurred processing your request";
                             break;
                     }
 
                     response_frame = messaging::create_error_response_frame(
-                        sequence_number_, err, error_msg);
-                    BOOST_LOG_SEV(lg(), debug) << "Sending error response: " << error_msg;
+                        sequence_number_, request_frame.correlation_id(), err, error_msg);
+                    BOOST_LOG_SEV(lg(), debug) << "Sending error response: " << error_msg
+                                              << " (correlation_id=" << request_frame.correlation_id() << ")";
                 } else {
                     response_frame = *response_result;
                 }
@@ -252,8 +265,10 @@ boost::asio::awaitable<void> server_session::process_messages() {
                 // Handler threw an exception - send detailed error to client
                 BOOST_LOG_SEV(lg(), error) << "Exception in message handler: " << e.what();
                 response_frame = messaging::create_error_response_frame(
-                    sequence_number_, messaging::error_code::database_error, e.what());
-                BOOST_LOG_SEV(lg(), debug) << "Sending error response with exception details";
+                    sequence_number_, request_frame.correlation_id(),
+                    messaging::error_code::database_error, e.what());
+                BOOST_LOG_SEV(lg(), debug) << "Sending error response with exception details"
+                                          << " (correlation_id=" << request_frame.correlation_id() << ")";
             }
 
             // Send response back to client

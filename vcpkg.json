@@ -24,6 +24,7 @@
         "boost-crc",
         "boost-scope-exit",
         "boost-process",
+        "boost-iostreams",
         "cli",
         "faker-cxx",
         "catch2",

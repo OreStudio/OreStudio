@@ -225,9 +225,14 @@ void CurrencyDetailDialog::onSaveClicked() {
 
                 BOOST_LOG_SEV(lg(), debug) << "Received save currency response.";
 
+                // Decompress payload
+                auto payload_result = response_result->decompressed_payload();
+                if (!payload_result)
+                    return {false, "Failed to decompress server response"};
+
                 using risk::messaging::save_currency_response;
                 auto response = save_currency_response::
-                    deserialize(response_result->payload());
+                    deserialize(*payload_result);
 
                 bool result = false;
                 std::string message = "Invalid server response";
@@ -344,8 +349,16 @@ void CurrencyDetailDialog::onDeleteClicked() {
             }
 
             BOOST_LOG_SEV(lg(), debug) << "Received delete currency response.";
+
+            // Decompress payload
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress server response";
+                return {false, "Failed to decompress server response"};
+            }
+
             auto response = risk::messaging::delete_currency_response::deserialize(
-                response_result->payload());
+                *payload_result);
 
             if (!response) {
                 BOOST_LOG_SEV(lg(), error) << "Invalid server response";

@@ -186,7 +186,10 @@ handle_login_request(std::span<const std::byte> payload,
 
     auto request_result = login_request::deserialize(payload);
     if (!request_result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize login_request";
+        BOOST_LOG_SEV(lg(), error) << "LOGIN FAILURE: Failed to deserialize login_request"
+                                   << " from " << remote_address
+                                   << ", payload_size: " << payload.size()
+                                   << ", error: " << request_result.error();
         co_return std::unexpected(request_result.error());
     }
 
@@ -206,9 +209,10 @@ handle_login_request(std::span<const std::byte> payload,
         domain::account account = service_.login(request.username,
             request.password, ip_address);
 
-        BOOST_LOG_SEV(lg(), info) << "Successful login for username: "
-                                  << account.username
-                                  << " from IP: " << ip_address;
+        BOOST_LOG_SEV(lg(), info) << "LOGIN SUCCESS: User '" << account.username
+                                  << "' authenticated from IP: " << ip_address
+                                  << ", account_id: " << account.id
+                                  << ", is_admin: " << account.is_admin;
 
         // Store session for this client in the shared session service
         sessions_->store_session(remote_address, comms::service::session_info{
@@ -226,7 +230,9 @@ handle_login_request(std::span<const std::byte> payload,
         co_return response.serialize();
 
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Login failed: " << e.what();
+        BOOST_LOG_SEV(lg(), warn) << "LOGIN FAILURE: Authentication failed for username '"
+                                  << request.username << "' from " << remote_address
+                                  << ", reason: " << e.what();
 
         login_response response{
             .success = false,

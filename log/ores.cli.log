@@ -1,8 +1,0 @@
-2025-11-18 15:59:06.044112 [INFO] [ores.cli.app.host] Command line arguments: ["currencies","list","--db-host","localhost","--db-port","5432","--log-enabled","--log-level","info","--format","table"]
-2025-11-18 15:59:06.051843 [INFO] [ores.cli.application] Started application.
-2025-11-18 15:59:06.052940 [ERROR] [ores.risk.repository.currency_repository] Connection to postgres failed: connection to server at "localhost" (::1), port 5432 failed: fe_sendauth: no password supplied
-2025-11-18 15:59:06.053076 [ERROR] [ores.cli.app.host] Error: /home/marco/Development/OreStudio/OreStudio.local1/projects/ores.risk/src/repository/currency_repository.cpp(43): Throw in function void ores::risk::repository::currency_repository::ensure_success(const auto) [result:auto = rfl::Result<std::vector<ores::risk::repository::currency_entity>>]
-Dynamic exception type: boost::wrapexcept<ores::utility::repository::repository_exception>
-std::exception::what: Repository error: Connection to postgres failed: connection to server at "localhost" (::1), port 5432 failed: fe_sendauth: no password supplied
-
-2025-11-18 15:59:06.053127 [ERROR] [ores.cli.app.host] Failed to execute command.

@@ -24,6 +24,7 @@
 #include <cli/cli.h>
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.accounts/messaging/bootstrap_protocol.hpp"
+#include "ores.shell/app/commands/compression_commands.hpp"
 
 namespace ores::shell::app::commands {
 
@@ -97,6 +98,7 @@ process_connect(std::ostream& out, client_session& session,
 
     config.verify_certificate = false; // FIXME: for now
     config.heartbeat_enabled = false;  // Shell is synchronous request-response
+    config.supported_compression = compression_commands::get_supported_compression();
 
     auto result = session.connect(std::move(config));
     if (result) {

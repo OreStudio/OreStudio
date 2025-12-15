@@ -25,6 +25,7 @@
 #include "ores.accounts/messaging/login_protocol.hpp"
 #include "ores.accounts/messaging/bootstrap_protocol.hpp"
 #include "ores.shell/app/repl.hpp"
+#include "ores.shell/app/commands/compression_commands.hpp"
 
 namespace ores::shell::app {
 
@@ -58,6 +59,9 @@ bool auto_connect(client_session& session, std::ostream& out,
 
     // Disable heartbeat for shell - it's synchronous request-response
     config.heartbeat_enabled = false;
+    // Use compression setting from compression_commands
+    config.supported_compression =
+        commands::compression_commands::get_supported_compression();
 
     auto result = session.connect(std::move(config));
     if (result) {

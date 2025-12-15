@@ -66,7 +66,7 @@ process_get_currencies(std::ostream& out, client_session& session) {
         (get_currencies_request{});
 
     if (!result) {
-        out << "✗ " << to_string(result.error()) << std::endl;
+        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
         return;
     }
 
@@ -122,13 +122,12 @@ process_add_currency(std::ostream& out, client_session& session,
                 .format = "",
                 .currency_type = "fiat",
                 .modified_by = modified_by,
-                .valid_from = "",
-                .valid_to = ""
+                .recorded_at = ""
             }
         });
 
     if (!result) {
-        out << "✗ " << to_string(result.error()) << std::endl;
+        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
         return;
     }
 

@@ -17,36 +17,36 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-15 Mon 22:11], for Monday, December 15, 2025.
+#+CAPTION: Clock summary at [2025-12-15 Mon 22:51], for Monday, December 15, 2025.
 |       | <75>                                           |        |      |      |       |
 | Tags  | Headline                                       | Time   |      |      |     % |
 |-------+------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                   | *5:52* |      |      | 100.0 |
+|       | *Total time*                                   | *6:02* |      |      | 100.0 |
 |-------+------------------------------------------------+--------+------+------+-------|
-|       | Stories                                        | 5:52   |      |      | 100.0 |
-|       | Active                                         |        | 5:52 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |        |      | 0:28 |   8.0 |
-| infra | OCR scan notebooks for this sprint             |        |      | 0:30 |   8.5 |
-| code  | Consider compressing payload                   |        |      | 3:05 |  52.6 |
-| code  | Latest currencies should have different colour |        |      | 1:18 |  22.2 |
-| code  | Do not expose temporal machinery in domain     |        |      | 0:31 |   8.8 |
+|       | Stories                                        | 6:02   |      |      | 100.0 |
+|       | Active                                         |        | 6:02 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |        |      | 0:28 |   7.7 |
+| infra | OCR scan notebooks for this sprint             |        |      | 0:30 |   8.3 |
+| code  | Consider compressing payload                   |        |      | 3:05 |  51.1 |
+| code  | Latest currencies should have different colour |        |      | 1:28 |  24.3 |
+| code  | Do not expose temporal machinery in domain     |        |      | 0:31 |   8.6 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-15 Mon 22:11]
+#+CAPTION: Clock summary at [2025-12-15 Mon 22:51]
 |       | <75>                                           |        |      |      |       |
 | Tags  | Headline                                       | Time   |      |      |     % |
 |-------+------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                   | *6:31* |      |      | 100.0 |
+|       | *Total time*                                   | *6:41* |      |      | 100.0 |
 |-------+------------------------------------------------+--------+------+------+-------|
-|       | Stories                                        | 6:31   |      |      | 100.0 |
-|       | Active                                         |        | 6:31 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |        |      | 1:07 |  17.1 |
-| infra | OCR scan notebooks for this sprint             |        |      | 0:30 |   7.7 |
-| code  | Consider compressing payload                   |        |      | 3:05 |  47.3 |
-| code  | Latest currencies should have different colour |        |      | 1:18 |  19.9 |
-| code  | Do not expose temporal machinery in domain     |        |      | 0:31 |   7.9 |
+|       | Stories                                        | 6:41   |      |      | 100.0 |
+|       | Active                                         |        | 6:41 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |        |      | 1:07 |  16.7 |
+| infra | OCR scan notebooks for this sprint             |        |      | 0:30 |   7.5 |
+| code  | Consider compressing payload                   |        |      | 3:05 |  46.1 |
+| code  | Latest currencies should have different colour |        |      | 1:28 |  21.9 |
+| code  | Do not expose temporal machinery in domain     |        |      | 0:31 |   7.7 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -338,6 +338,21 @@ new project should compile.
 Links:
 
 
+*** COMPLETED Latest currencies should have different colour           :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-15 Mon 22:41]--[2025-12-15 Mon 22:51] =>  0:10
+    CLOCK: [2025-12-15 Mon 17:06]--[2025-12-15 Mon 17:59] =>  0:53
+    CLOCK: [2025-12-15 Mon 16:49]--[2025-12-15 Mon 17:05] =>  0:16
+    CLOCK: [2025-12-15 Mon 16:40]--[2025-12-15 Mon 16:49] =>  0:09
+    :END:
+
+After reloading we should mark latest currencies with a different colour so that
+it is obvious what was added. Consider colouring rows by recency.
+
+Notes:
+
+- valid to is the same as valid from, which is incorrect.
+
 *** STARTED Windows clang build failures                               :code:
 
 Seems like we are failing with a SEGFAULT:
@@ -374,20 +389,6 @@ Links:
 - [[https://gitlab.kitware.com/cmake/cmake/-/issues/27367][CTest: Using regexes to filter warnings for CDash]]
 - [[https://stackoverflow.com/questions/26458652/ctest-custom-warning-exception][SO: ctest custom warning exception]]
 
-
-*** STARTED Latest currencies should have different colour             :code:
-    :LOGBOOK:
-    CLOCK: [2025-12-15 Mon 17:06]--[2025-12-15 Mon 17:59] =>  0:53
-    CLOCK: [2025-12-15 Mon 16:49]--[2025-12-15 Mon 17:05] =>  0:16
-    CLOCK: [2025-12-15 Mon 16:40]--[2025-12-15 Mon 16:49] =>  0:09
-    :END:
-
-After reloading we should mark latest currencies with a different colour so that
-it is obvious what was added. Consider colouring rows by recency.
-
-Notes:
-
-- valid to is the same as valid from, which is incorrect.
 
 *** STARTED Do not expose temporal machinery in domain                 :code:
     :LOGBOOK:

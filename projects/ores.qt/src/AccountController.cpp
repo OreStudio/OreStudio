@@ -208,12 +208,12 @@ void AccountController::onAddNewRequested() {
     });
     connect(detailDialog, &AccountDetailDialog::accountCreated,
             this, [this](const boost::uuids::uuid& /* account_id */) {
-        // Refresh the account list
+        // Mark the account list as stale (consistent with currency workflow)
         if (accountListWindow_) {
             auto* accountWidget = qobject_cast<AccountMdiWindow*>(
                 accountListWindow_->widget());
             if (accountWidget) {
-                accountWidget->reload();
+                accountWidget->markAsStale();
             }
         }
     });
@@ -264,23 +264,23 @@ void AccountController::onShowAccountDetails(
     });
     connect(detailDialog, &AccountDetailDialog::accountUpdated,
             this, [this](const boost::uuids::uuid& /* account_id */) {
-        // Refresh the account list
+        // Mark the account list as stale (consistent with currency workflow)
         if (accountListWindow_) {
             auto* accountWidget = qobject_cast<AccountMdiWindow*>(
                 accountListWindow_->widget());
             if (accountWidget) {
-                accountWidget->reload();
+                accountWidget->markAsStale();
             }
         }
     });
     connect(detailDialog, &AccountDetailDialog::accountDeleted,
             this, [this](const boost::uuids::uuid& /* account_id */) {
-        // Refresh the account list
+        // Mark the account list as stale (consistent with currency workflow)
         if (accountListWindow_) {
             auto* accountWidget = qobject_cast<AccountMdiWindow*>(
                 accountListWindow_->widget());
             if (accountWidget) {
-                accountWidget->reload();
+                accountWidget->markAsStale();
             }
         }
     });

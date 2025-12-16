@@ -71,12 +71,17 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 //
 // Version 12.0 adds reset_password_request and reset_password_response messages
 // for admin-initiated password reset. Adds password_reset_required field to
-// login_response and list_login_info_response. Also adds role-based access
-// control (RBAC) messages for managing roles, permissions, and role assignments.
-// New RBAC messages: list_roles, list_permissions, assign_role, revoke_role,
-// get_account_roles, and get_account_permissions. This is a breaking change as
+// login_response and list_login_info_response. This is a breaking change as
 // existing serialization formats are extended with new fields.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 12;
+//
+// Version 13.0 adds role-based access control (RBAC) with full authorization
+// system. New domain types: permission, role, account_role, role_permission.
+// New RBAC messages: list_roles_request/response, list_permissions_request/response,
+// assign_role_request/response, revoke_role_request/response,
+// get_account_roles_request/response, get_account_permissions_request/response.
+// Adds authorization checks to all protected endpoints. This is a breaking change
+// as it introduces mandatory RBAC enforcement for administrative operations.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 13;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges

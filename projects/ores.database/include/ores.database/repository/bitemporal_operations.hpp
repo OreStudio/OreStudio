@@ -20,6 +20,7 @@
 #ifndef ORES_DATABASE_REPOSITORY_BITEMPORAL_OPERATIONS_HPP
 #define ORES_DATABASE_REPOSITORY_BITEMPORAL_OPERATIONS_HPP
 
+#include <map>
 #include <vector>
 #include <sqlgen/postgres.hpp>
 #include "ores.utility/log/make_logger.hpp"
@@ -193,6 +194,53 @@ inline std::vector<std::string> execute_raw_string_query(context ctx,
     ensure_success(r, lg);
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". Total: " << result.size();
+    return result;
+}
+
+/**
+ * @brief Executes a raw SQL query that returns a grouped map of strings.
+ *
+ * This helper executes a query with two columns (key, value) and returns
+ * a map where each key maps to a vector of associated values. Useful for
+ * batch loading one-to-many relationships in a single query.
+ *
+ * @param ctx The repository context
+ * @param sql The raw SQL query string (must return exactly 2 columns)
+ * @param lg The logger to use
+ * @param operation_desc Description of the operation for logging
+ * @return A map from first column to vector of second column values
+ *
+ * @example
+ * auto role_perms = execute_raw_grouped_query(ctx_,
+ *     "SELECT rp.role_id, p.code FROM role_permissions rp JOIN ...",
+ *     lg(), "Reading all role permission codes");
+ */
+inline std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
+    context ctx, const std::string& sql, utility::log::logger_t& lg,
+    const std::string& operation_desc) {
+
+    using namespace ores::utility::log;
+    using namespace sqlgen;
+
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
+
+    std::map<std::string, std::vector<std::string>> result;
+
+    const auto execute_query = [&](auto&& session) {
+        auto query_result = session->execute(sql);
+        for (const auto& row : query_result) {
+            if (row.size() >= 2 && !row[0].is_null() && !row[1].is_null()) {
+                result[row[0].template as<std::string>()].push_back(
+                    row[1].template as<std::string>());
+            }
+        }
+        return query_result;
+    };
+
+    const auto r = session(ctx.connection_pool()).and_then(execute_query);
+    ensure_success(r, lg);
+
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". Total keys: " << result.size();
     return result;
 }
 

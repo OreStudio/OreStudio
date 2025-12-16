@@ -95,9 +95,15 @@ std::vector<domain::role> authorization_service::list_roles() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all roles.";
     auto roles = role_repo_.read_latest();
 
-    // Populate permission_codes for each role
+    // Batch fetch all role-permission mappings in a single query
+    auto role_perm_map = role_permission_repo_.read_all_role_permission_codes();
+
+    // Populate permission_codes for each role from the pre-fetched map
     for (auto& role : roles) {
-        role.permission_codes = get_role_permissions(role.id);
+        const auto role_id_str = boost::lexical_cast<std::string>(role.id);
+        if (auto it = role_perm_map.find(role_id_str); it != role_perm_map.end()) {
+            role.permission_codes = std::move(it->second);
+        }
     }
 
     return roles;

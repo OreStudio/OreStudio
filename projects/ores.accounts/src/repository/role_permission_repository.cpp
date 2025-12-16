@@ -132,4 +132,21 @@ void role_permission_repository::remove_all_for_role(
         "removing all role-permission assignments for role");
 }
 
+std::map<std::string, std::vector<std::string>>
+role_permission_repository::read_all_role_permission_codes() {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all role permission codes.";
+
+    // Single query with JOINs to get all role-permission mappings with codes
+    const std::string sql =
+        "SELECT rp.role_id::text, p.code "
+        "FROM oresdb.role_permissions rp "
+        "JOIN oresdb.permissions p ON rp.permission_id = p.id "
+        "WHERE rp.valid_to = '9999-12-31 23:59:59' "
+        "AND p.valid_to = '9999-12-31 23:59:59' "
+        "ORDER BY rp.role_id, p.code";
+
+    return execute_raw_grouped_query(ctx_, sql, lg(),
+        "Reading all role permission codes");
+}
+
 }

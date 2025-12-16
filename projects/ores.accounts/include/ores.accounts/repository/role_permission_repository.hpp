@@ -20,6 +20,7 @@
 #ifndef ORES_ACCOUNTS_REPOSITORY_ROLE_PERMISSION_REPOSITORY_HPP
 #define ORES_ACCOUNTS_REPOSITORY_ROLE_PERMISSION_REPOSITORY_HPP
 
+#include <map>
 #include <string>
 #include <vector>
 #include <boost/uuid/uuid.hpp>
@@ -89,6 +90,14 @@ public:
      * @brief Removes all permission assignments for a role.
      */
     void remove_all_for_role(const boost::uuids::uuid& role_id);
+
+    /**
+     * @brief Gets all role-permission mappings with permission codes in a single query.
+     *
+     * Returns a map from role_id (as string) to vector of permission codes.
+     * Uses JOINs to efficiently fetch all data in one database round-trip.
+     */
+    std::map<std::string, std::vector<std::string>> read_all_role_permission_codes();
 
 private:
     context ctx_;

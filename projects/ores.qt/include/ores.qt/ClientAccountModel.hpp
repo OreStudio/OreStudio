@@ -21,6 +21,7 @@
 #define ORES_QT_CLIENT_ACCOUNT_MODEL_HPP
 
 #include <vector>
+#include <optional>
 #include <unordered_set>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
@@ -28,8 +29,22 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.accounts/domain/account.hpp"
+#include "ores.accounts/domain/login_info.hpp"
 
 namespace ores::qt {
+
+/**
+ * @brief Composite structure combining account with its login status.
+ *
+ * This struct joins account domain data with login_info data for display
+ * purposes in the Qt UI. The login_info is optional since not all accounts
+ * may have corresponding login_info records (e.g., newly created accounts
+ * that have never logged in).
+ */
+struct AccountWithLoginInfo {
+    accounts::domain::account account;
+    std::optional<accounts::domain::login_info> loginInfo;
+};
 
 /**
  * @brief Model for displaying accounts fetched from the server via client.
@@ -90,7 +105,15 @@ public:
     void fetchMore(const QModelIndex& parent = QModelIndex()) override;
 
     /**
-     * @brief Get account at the specified row.
+     * @brief Get account with login info at the specified row.
+     *
+     * @param row The row index.
+     * @return The account with login info, or nullptr if row is invalid.
+     */
+    const AccountWithLoginInfo* getAccountWithLoginInfo(int row) const;
+
+    /**
+     * @brief Get account at the specified row (for backward compatibility).
      *
      * @param row The row index.
      * @return The account object, or nullptr if row is invalid.
@@ -98,11 +121,11 @@ public:
     const accounts::domain::account* getAccount(int row) const;
 
     /**
-     * @brief Get all accounts.
+     * @brief Get all accounts with their login info.
      *
-     * @return A vector containing all current accounts.
+     * @return A vector containing all current accounts with login info.
      */
-    std::vector<accounts::domain::account> getAccounts() const;
+    std::vector<AccountWithLoginInfo> getAccountsWithLoginInfo() const;
 
     /**
      * @brief Get the page size used for pagination.
@@ -166,6 +189,8 @@ private:
         Username,
         Email,
         IsAdmin,
+        Online,
+        Locked,
         Version,
         RecordedBy,
         RecordedAt,
@@ -175,13 +200,14 @@ private:
     struct FetchResult {
         bool success;
         std::vector<accounts::domain::account> accounts;
+        std::vector<accounts::domain::login_info> loginInfos;
         std::uint32_t total_available_count;
     };
 
     using FutureWatcherResult = FetchResult;
 
     ClientManager* clientManager_;
-    std::vector<accounts::domain::account> accounts_;
+    std::vector<AccountWithLoginInfo> accounts_;
     QFutureWatcher<FutureWatcherResult>* watcher_;
     std::uint32_t page_size_{100};
     std::uint32_t total_available_count_{0};

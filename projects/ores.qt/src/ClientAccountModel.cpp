@@ -21,6 +21,7 @@
 
 #include <algorithm>
 #include <unordered_set>
+#include <unordered_map>
 #include <QtConcurrent>
 #include <QColor>
 #include <QDateTime>
@@ -29,6 +30,7 @@
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.accounts/messaging/account_protocol.hpp"
+#include "ores.accounts/messaging/login_protocol.hpp"
 
 namespace ores::qt {
 
@@ -71,12 +73,15 @@ QVariant ClientAccountModel::data(const QModelIndex& index, int role) const {
     if (row >= accounts_.size())
         return {};
 
-    const auto& account = accounts_[row];
+    const auto& item = accounts_[row];
+    const auto& account = item.account;
 
     // Recency highlighting for foreground color
     if (role == Qt::ForegroundRole) {
-        // Skip recency coloring for admin column (handled by delegate)
-        if (index.column() == Column::IsAdmin) {
+        // Skip recency coloring for badge columns (handled by delegate)
+        if (index.column() == Column::IsAdmin ||
+            index.column() == Column::Online ||
+            index.column() == Column::Locked) {
             return {};
         }
         auto recency_color = recency_foreground_color(account.username);
@@ -92,6 +97,14 @@ QVariant ClientAccountModel::data(const QModelIndex& index, int role) const {
     case Column::Username: return QString::fromStdString(account.username);
     case Column::Email: return QString::fromStdString(account.email);
     case Column::IsAdmin: return account.is_admin ? tr("Admin") : tr("-");
+    case Column::Online:
+        if (item.loginInfo.has_value())
+            return item.loginInfo->online ? tr("Online") : tr("-");
+        return tr("-");
+    case Column::Locked:
+        if (item.loginInfo.has_value())
+            return item.loginInfo->locked ? tr("Locked") : tr("-");
+        return tr("-");
     case Column::Version: return account.version;
     case Column::RecordedBy: return QString::fromStdString(account.recorded_by);
     case Column::RecordedAt: return QString::fromStdString(account.recorded_at);
@@ -109,6 +122,8 @@ headerData(int section, Qt::Orientation orientation, int role) const {
         case Column::Username: return tr("Username");
         case Column::Email: return tr("Email");
         case Column::IsAdmin: return tr("Admin");
+        case Column::Online: return tr("Online");
+        case Column::Locked: return tr("Locked");
         case Column::Version: return tr("Version");
         case Column::RecordedBy: return tr("Recorded By");
         case Column::RecordedAt: return tr("Recorded At");
@@ -158,59 +173,78 @@ void ClientAccountModel::refresh(bool replace) {
         QtConcurrent::run([self, offset, page_size]() -> FutureWatcherResult {
             BOOST_LOG_SEV(lg(), debug) << "Making an accounts request with offset="
                                        << offset << ", limit=" << page_size;
-            if (!self) return {false, {}, 0};
+            if (!self) return {false, {}, {}, 0};
 
-            accounts::messaging::list_accounts_request request;
-            request.offset = offset;
-            request.limit = page_size;
-            auto payload = request.serialize();
+            // Fetch accounts
+            accounts::messaging::list_accounts_request accounts_request;
+            accounts_request.offset = offset;
+            accounts_request.limit = page_size;
+            auto accounts_payload = accounts_request.serialize();
 
-            frame request_frame(message_type::list_accounts_request,
-                0, std::move(payload));
+            frame accounts_frame(message_type::list_accounts_request,
+                0, std::move(accounts_payload));
 
-            // Send request synchronously (on background thread)
-            auto response_result =
-                self->clientManager_->sendRequest(std::move(request_frame));
+            auto accounts_response_result =
+                self->clientManager_->sendRequest(std::move(accounts_frame));
 
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send request: "
-                                           << response_result.error();
-                return {false, {}, 0};
+            if (!accounts_response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send accounts request: "
+                                           << accounts_response_result.error();
+                return {false, {}, {}, 0};
             }
 
-            // Log frame attributes for debugging
-            const auto& header = response_result->header();
-            BOOST_LOG_SEV(lg(), debug) << "Accounts response frame: type="
-                                       << static_cast<int>(header.type)
-                                       << ", compression=" << header.compression
-                                       << ", payload_size=" << response_result->payload().size();
-
-            // Decompress payload
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress accounts response"
-                                           << ", compression=" << header.compression
-                                           << ", error=" << payload_result.error();
-                return {false, {}, 0};
+            auto accounts_payload_result = accounts_response_result->decompressed_payload();
+            if (!accounts_payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress accounts response";
+                return {false, {}, {}, 0};
             }
 
-            BOOST_LOG_SEV(lg(), debug) << "Received an accounts response.";
-            auto response =
-                accounts::messaging::list_accounts_response::deserialize(*payload_result);
+            auto accounts_response =
+                accounts::messaging::list_accounts_response::deserialize(*accounts_payload_result);
 
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize accounts response"
-                                           << ", decompressed_payload_size="
-                                           << payload_result->size();
-                return {false, {}, 0};
+            if (!accounts_response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize accounts response";
+                return {false, {}, {}, 0};
             }
 
-            BOOST_LOG_SEV(lg(), debug) << "Received " << response->accounts.size()
+            BOOST_LOG_SEV(lg(), debug) << "Received " << accounts_response->accounts.size()
                                        << " accounts, total available: "
-                                       << response->total_available_count;
+                                       << accounts_response->total_available_count;
 
-            return {true, std::move(response->accounts),
-                    response->total_available_count};
+            // Fetch login info
+            accounts::messaging::list_login_info_request login_info_request;
+            auto login_info_payload = login_info_request.serialize();
+
+            frame login_info_frame(message_type::list_login_info_request,
+                0, std::move(login_info_payload));
+
+            auto login_info_response_result =
+                self->clientManager_->sendRequest(std::move(login_info_frame));
+
+            std::vector<accounts::domain::login_info> login_infos;
+            if (login_info_response_result) {
+                auto login_payload_result = login_info_response_result->decompressed_payload();
+                if (login_payload_result) {
+                    auto login_response =
+                        accounts::messaging::list_login_info_response::deserialize(*login_payload_result);
+                    if (login_response) {
+                        login_infos = std::move(login_response->login_infos);
+                        BOOST_LOG_SEV(lg(), debug) << "Received " << login_infos.size()
+                                                   << " login info records";
+                    } else {
+                        BOOST_LOG_SEV(lg(), warn) << "Failed to deserialize login info response";
+                    }
+                } else {
+                    BOOST_LOG_SEV(lg(), warn) << "Failed to decompress login info response";
+                }
+            } else {
+                BOOST_LOG_SEV(lg(), warn) << "Failed to fetch login info: "
+                                          << login_info_response_result.error();
+            }
+
+            return {true, std::move(accounts_response->accounts),
+                    std::move(login_infos),
+                    accounts_response->total_available_count};
         });
 
      watcher_->setFuture(future);
@@ -224,18 +258,33 @@ void ClientAccountModel::onAccountsLoaded() {
     if (result.success) {
         total_available_count_ = result.total_available_count;
 
-        // Build set of existing IDs for duplicate detection
-        std::unordered_set<std::string> existing_ids;
-        for (const auto& acct : accounts_) {
-            existing_ids.insert(boost::uuids::to_string(acct.id));
+        // Build map of login_info by account_id for joining
+        std::unordered_map<std::string, accounts::domain::login_info> login_info_map;
+        for (auto& li : result.loginInfos) {
+            login_info_map[boost::uuids::to_string(li.account_id)] = std::move(li);
         }
 
-        // Filter out duplicates from new results
-        std::vector<accounts::domain::account> new_accounts;
+        // Build set of existing IDs for duplicate detection
+        std::unordered_set<std::string> existing_ids;
+        for (const auto& item : accounts_) {
+            existing_ids.insert(boost::uuids::to_string(item.account.id));
+        }
+
+        // Filter out duplicates and join with login_info
+        std::vector<AccountWithLoginInfo> new_items;
         for (auto& acct : result.accounts) {
             std::string id_str = boost::uuids::to_string(acct.id);
             if (existing_ids.find(id_str) == existing_ids.end()) {
-                new_accounts.push_back(std::move(acct));
+                AccountWithLoginInfo item;
+                item.account = std::move(acct);
+
+                // Join with login_info if available
+                auto li_it = login_info_map.find(id_str);
+                if (li_it != login_info_map.end()) {
+                    item.loginInfo = std::move(li_it->second);
+                }
+
+                new_items.push_back(std::move(item));
                 existing_ids.insert(id_str);
             } else {
                 BOOST_LOG_SEV(lg(), trace) << "Skipping duplicate account: "
@@ -243,20 +292,19 @@ void ClientAccountModel::onAccountsLoaded() {
             }
         }
 
-        const int old_size = static_cast<int>(accounts_.size());
-        const int new_count = static_cast<int>(new_accounts.size());
+        const int new_count = static_cast<int>(new_items.size());
 
         if (new_count > 0) {
             // Use model reset since we're inserting and then sorting
             // (sorting is a structural change that requires full reset)
             beginResetModel();
             accounts_.insert(accounts_.end(),
-                std::make_move_iterator(new_accounts.begin()),
-                std::make_move_iterator(new_accounts.end()));
+                std::make_move_iterator(new_items.begin()),
+                std::make_move_iterator(new_items.end()));
 
             // Sort all accounts by username
             std::ranges::sort(accounts_, [](auto const& a, auto const& b) {
-                return a.username < b.username;
+                return a.account.username < b.account.username;
             });
             endResetModel();
         }
@@ -267,15 +315,15 @@ void ClientAccountModel::onAccountsLoaded() {
                                   << " duplicates). Total in model: " << accounts_.size()
                                   << ", Total available: " << total_available_count_;
 
-            // Update the set of recent accounts for recency coloring
-            update_recent_accounts();
+        // Update the set of recent accounts for recency coloring
+        update_recent_accounts();
 
-            // Start the pulse timer if there are recent accounts to highlight
-            if (!recent_usernames_.empty() && !pulse_timer_->isActive()) {
-                pulse_count_ = 0;
-                pulse_state_ = true;  // Start with highlight on
-                pulse_timer_->start(pulse_interval_ms_);
-            }
+        // Start the pulse timer if there are recent accounts to highlight
+        if (!recent_usernames_.empty() && !pulse_timer_->isActive()) {
+            pulse_count_ = 0;
+            pulse_state_ = true;  // Start with highlight on
+            pulse_timer_->start(pulse_interval_ms_);
+        }
 
         emit dataLoaded();
     } else {
@@ -284,14 +332,21 @@ void ClientAccountModel::onAccountsLoaded() {
     }
 }
 
-const accounts::domain::account* ClientAccountModel::getAccount(int row) const {
+const AccountWithLoginInfo* ClientAccountModel::getAccountWithLoginInfo(int row) const {
     if (row < 0 || row >= static_cast<int>(accounts_.size()))
         return nullptr;
 
     return &accounts_[row];
 }
 
-std::vector<accounts::domain::account> ClientAccountModel::getAccounts() const {
+const accounts::domain::account* ClientAccountModel::getAccount(int row) const {
+    if (row < 0 || row >= static_cast<int>(accounts_.size()))
+        return nullptr;
+
+    return &accounts_[row].account;
+}
+
+std::vector<AccountWithLoginInfo> ClientAccountModel::getAccountsWithLoginInfo() const {
     return accounts_;
 }
 
@@ -347,7 +402,8 @@ void ClientAccountModel::update_recent_accounts() {
                                << last_reload_time_.toString(Qt::ISODate).toStdString();
 
     // Find accounts with recorded_at newer than last reload
-    for (const auto& account : accounts_) {
+    for (const auto& item : accounts_) {
+        const auto& account = item.account;
         if (account.recorded_at.empty()) {
             continue;
         }

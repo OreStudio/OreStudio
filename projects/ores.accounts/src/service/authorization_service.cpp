@@ -313,15 +313,18 @@ bool authorization_service::has_permission(
 bool authorization_service::check_permission(
     const std::vector<std::string>& permissions,
     const std::string& required_permission) {
+    // Precondition: permissions vector must be sorted (guaranteed by
+    // get_effective_permissions which uses ORDER BY in the SQL query)
+
     // Wildcard grants all permissions
-    if (std::find(permissions.begin(), permissions.end(),
-                  domain::permissions::all) != permissions.end()) {
+    if (std::binary_search(permissions.begin(), permissions.end(),
+                           domain::permissions::all)) {
         return true;
     }
 
     // Check for exact match
-    return std::find(permissions.begin(), permissions.end(),
-                     required_permission) != permissions.end();
+    return std::binary_search(permissions.begin(), permissions.end(),
+                              required_permission);
 }
 
 void authorization_service::publish_permissions_changed(

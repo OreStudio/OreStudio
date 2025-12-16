@@ -22,6 +22,7 @@
 
 #include <map>
 #include <vector>
+#include <iterator>
 #include <sqlgen/postgres.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
@@ -181,6 +182,8 @@ inline std::vector<std::string> execute_raw_string_query(context ctx,
     std::vector<std::string> result;
 
     const auto execute_query = [&](auto&& session) {
+        using std::begin;
+        using std::end;
         auto query_result = session->execute(sql);
         for (const auto& row : query_result) {
             if (!row.empty() && !row[0].is_null()) {
@@ -227,6 +230,8 @@ inline std::map<std::string, std::vector<std::string>> execute_raw_grouped_query
     std::map<std::string, std::vector<std::string>> result;
 
     const auto execute_query = [&](auto&& session) {
+        using std::begin;
+        using std::end;
         auto query_result = session->execute(sql);
         for (const auto& row : query_result) {
             if (row.size() >= 2 && !row[0].is_null() && !row[1].is_null()) {

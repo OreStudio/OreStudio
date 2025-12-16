@@ -38,6 +38,7 @@
 #include <QSortFilterProxyModel>
 #include <QImage>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.qt/AccountItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.accounts/messaging/account_protocol.hpp"
@@ -129,6 +130,7 @@ AccountMdiWindow(ClientManager* clientManager,
 
     proxyModel_->setSourceModel(accountModel_.get());
     accountTableView_->setModel(proxyModel_);
+    accountTableView_->setItemDelegate(new AccountItemDelegate(this));
     accountTableView_->setSortingEnabled(true);
     accountTableView_->sortByColumn(0, Qt::AscendingOrder);
 

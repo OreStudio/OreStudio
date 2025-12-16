@@ -324,16 +324,14 @@ void MainWindow::updateMenuState() {
     const bool isAdmin = clientManager_ && clientManager_->isAdmin();
 
     // Enable/disable menu actions based on connection state
-    // We allow opening windows even if disconnected (they will show offline state)
-    // But for now, let's keep it simple and enable them.
-    ui_->CurrenciesAction->setEnabled(true);
+    ui_->CurrenciesAction->setEnabled(isConnected);
 
     // Enable/disable connect and disconnect actions
     ui_->ActionConnect->setEnabled(!isConnected);
     ui_->ActionDisconnect->setEnabled(isConnected);
 
-    // System menu is only visible to admin users
-    ui_->menuSystem->menuAction()->setVisible(isAdmin);
+    // System menu is always visible but only enabled for admin users
+    ui_->menuSystem->menuAction()->setEnabled(isAdmin);
     ui_->ActionAccounts->setEnabled(isAdmin);
 
     // Update connection status icon in status bar

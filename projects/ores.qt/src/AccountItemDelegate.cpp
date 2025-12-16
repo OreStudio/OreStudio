@@ -1,0 +1,163 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.qt/AccountItemDelegate.hpp"
+#include "ores.qt/ClientAccountModel.hpp"
+
+#include <QPainter>
+#include <QApplication>
+#include <QStyleOptionViewItem>
+
+namespace ores::qt {
+
+namespace {
+
+// Admin column index (matches ClientAccountModel::Column::IsAdmin)
+constexpr int admin_column_index = 2;
+
+// Badge colors
+const QColor admin_badge_bg(59, 130, 246);      // Blue background for "Yes"
+const QColor admin_badge_text(255, 255, 255);   // White text for "Yes"
+const QColor non_admin_badge_bg(107, 114, 128); // Gray background for "No"
+const QColor non_admin_badge_text(255, 255, 255); // White text for "No"
+
+}
+
+AccountItemDelegate::AccountItemDelegate(QObject* parent)
+    : QStyledItemDelegate(parent) {
+    monospaceFont_ = QFont("Fira Code");
+    monospaceFont_.setPointSize(10);
+
+    badgeFont_ = QFont();
+    badgeFont_.setPointSize(7);
+    badgeFont_.setBold(true);
+}
+
+void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
+                                const QModelIndex& index) const {
+    QStyleOptionViewItem opt = option;
+    initStyleOption(&opt, index);
+
+    // Handle the Admin column with badge rendering
+    if (index.column() == admin_column_index) {
+        // Draw the background (for selection highlighting)
+        QStyle* style = QApplication::style();
+        style->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter);
+
+        // Get the display text to determine badge type
+        QString text = index.data(Qt::DisplayRole).toString();
+
+        // Determine badge colors based on admin status
+        QColor bgColor, textColor;
+        QString badgeText;
+        if (text == "Admin") {
+            bgColor = admin_badge_bg;
+            textColor = admin_badge_text;
+            badgeText = tr("Yes");
+        } else {
+            bgColor = non_admin_badge_bg;
+            textColor = non_admin_badge_text;
+            badgeText = tr("No");
+        }
+
+        // Draw the badge
+        drawBadge(painter, opt.rect, badgeText, bgColor, textColor);
+        return;
+    }
+
+    // Check if model provides a custom foreground color (e.g., recency coloring)
+    QVariant fgData = index.data(Qt::ForegroundRole);
+    if (fgData.isValid()) {
+        opt.palette.setColor(QPalette::Text, fgData.value<QColor>());
+        opt.palette.setColor(QPalette::HighlightedText, fgData.value<QColor>());
+    }
+
+    // Apply formatting based on column
+    switch (index.column()) {
+        case 0: // Username
+            opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
+            break;
+        case 1: // Email
+            opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
+            break;
+        case 3: // Version
+            opt.font = monospaceFont_;
+            opt.displayAlignment = Qt::AlignCenter;
+            break;
+        case 4: // RecordedBy
+            opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
+            break;
+        case 5: // RecordedAt
+            opt.font = monospaceFont_;
+            opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
+            break;
+        default:
+            break;
+    }
+
+    // Draw the item using the modified options
+    QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter);
+}
+
+QSize AccountItemDelegate::sizeHint(const QStyleOptionViewItem& option,
+                                    const QModelIndex& index) const {
+    QSize size = QStyledItemDelegate::sizeHint(option, index);
+
+    // Ensure minimum height for badge column
+    if (index.column() == admin_column_index) {
+        size.setHeight(qMax(size.height(), 24));
+        size.setWidth(qMax(size.width(), 50));
+    }
+
+    return size;
+}
+
+void AccountItemDelegate::drawBadge(QPainter* painter, const QRect& rect,
+                                    const QString& text, const QColor& backgroundColor,
+                                    const QColor& textColor) const {
+    painter->save();
+    painter->setRenderHint(QPainter::Antialiasing, true);
+
+    // Calculate badge dimensions (compact size)
+    QFontMetrics fm(badgeFont_);
+    int textWidth = fm.horizontalAdvance(text);
+    int padding = 5;
+    int badgeWidth = textWidth + padding * 2;
+    int badgeHeight = fm.height() + 2;
+
+    // Center the badge in the cell
+    int x = rect.center().x() - badgeWidth / 2;
+    int y = rect.center().y() - badgeHeight / 2;
+    QRect badgeRect(x, y, badgeWidth, badgeHeight);
+
+    // Draw pill-shaped background (rounded rectangle)
+    int radius = badgeHeight / 2;
+    painter->setBrush(backgroundColor);
+    painter->setPen(Qt::NoPen);
+    painter->drawRoundedRect(badgeRect, radius, radius);
+
+    // Draw text
+    painter->setFont(badgeFont_);
+    painter->setPen(textColor);
+    painter->drawText(badgeRect, Qt::AlignCenter, text);
+
+    painter->restore();
+}
+
+}

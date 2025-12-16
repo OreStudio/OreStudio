@@ -24,6 +24,7 @@
 #include <QtConcurrent>
 #include <QColor>
 #include <QDateTime>
+#include <QFont>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
@@ -72,8 +73,16 @@ QVariant ClientAccountModel::data(const QModelIndex& index, int role) const {
 
     const auto& account = accounts_[row];
 
+    // Recency highlighting for foreground color
     if (role == Qt::ForegroundRole) {
-        return recency_foreground_color(account.username);
+        // Skip recency coloring for admin column (handled by delegate)
+        if (index.column() == Column::IsAdmin) {
+            return {};
+        }
+        auto recency_color = recency_foreground_color(account.username);
+        if (recency_color.isValid())
+            return recency_color;
+        return {};
     }
 
     if (role != Qt::DisplayRole)
@@ -82,7 +91,7 @@ QVariant ClientAccountModel::data(const QModelIndex& index, int role) const {
     switch (index.column()) {
     case Column::Username: return QString::fromStdString(account.username);
     case Column::Email: return QString::fromStdString(account.email);
-    case Column::IsAdmin: return account.is_admin ? tr("Yes") : tr("No");
+    case Column::IsAdmin: return account.is_admin ? tr("Admin") : tr("-");
     case Column::Version: return account.version;
     case Column::RecordedBy: return QString::fromStdString(account.recorded_by);
     case Column::RecordedAt: return QString::fromStdString(account.recorded_at);

@@ -56,7 +56,11 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // in the frame header is now used for compression_type (1 byte) and flags
 // (1 byte). Supported compression algorithms: none, zlib, gzip, bzip2.
 // Uncompressed payloads remain fully supported (compression_type::none).
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 9;
+//
+// Version 10.0 replaces valid_from/valid_to fields with recorded_by/recorded_at
+// in domain types (currency, account, feature_flags). This is a breaking change
+// affecting all entity serialization in the protocol.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 10;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges

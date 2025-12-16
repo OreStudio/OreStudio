@@ -303,12 +303,10 @@ bool ClientAccountModel::canFetchMore(const QModelIndex& parent) const {
     if (parent.isValid())
         return false;
 
-    const bool has_more = accounts_.size() < page_size_ &&
-                          accounts_.size() < total_available_count_;
+    const bool has_more = accounts_.size() < total_available_count_;
 
     BOOST_LOG_SEV(lg(), trace) << "canFetchMore: " << has_more
                                << " (loaded: " << accounts_.size()
-                               << ", page_size: " << page_size_
                                << ", available: " << total_available_count_ << ")";
     return has_more && !is_fetching_;
 }

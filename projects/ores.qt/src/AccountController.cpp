@@ -27,7 +27,7 @@
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.accounts/domain/events/account_changed_event.hpp"
+#include "ores.accounts/eventing/account_changed_event.hpp"
 
 namespace ores::qt {
 
@@ -36,7 +36,7 @@ using namespace ores::utility::log;
 namespace {
     // Event type name for account changes
     constexpr std::string_view account_event_name =
-        eventing::domain::event_traits<accounts::domain::events::account_changed_event>::name;
+        eventing::domain::event_traits<accounts::eventing::account_changed_event>::name;
 }
 
 AccountController::AccountController(

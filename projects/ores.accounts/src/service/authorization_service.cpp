@@ -24,9 +24,9 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.accounts/domain/permission.hpp"
-#include "ores.accounts/domain/events/role_assigned_event.hpp"
-#include "ores.accounts/domain/events/role_revoked_event.hpp"
-#include "ores.accounts/domain/events/permissions_changed_event.hpp"
+#include "ores.accounts/eventing/role_assigned_event.hpp"
+#include "ores.accounts/eventing/role_revoked_event.hpp"
+#include "ores.accounts/eventing/permissions_changed_event.hpp"
 
 namespace ores::accounts::service {
 
@@ -245,7 +245,7 @@ void authorization_service::assign_role(
 
     // Publish events
     if (event_bus_) {
-        domain::events::role_assigned_event event;
+        eventing::role_assigned_event event;
         event.account_id = account_id;
         event.role_id = role_id;
         event.timestamp = std::chrono::system_clock::now();
@@ -268,7 +268,7 @@ void authorization_service::revoke_role(
 
     // Publish events
     if (event_bus_) {
-        domain::events::role_revoked_event event;
+        eventing::role_revoked_event event;
         event.account_id = account_id;
         event.role_id = role_id;
         event.timestamp = std::chrono::system_clock::now();
@@ -336,7 +336,7 @@ void authorization_service::publish_permissions_changed(
 
     auto permissions = get_effective_permissions(account_id);
 
-    domain::events::permissions_changed_event event;
+    eventing::permissions_changed_event event;
     event.account_id = account_id;
     event.permission_codes = std::move(permissions);
     event.timestamp = std::chrono::system_clock::now();

@@ -149,7 +149,7 @@ private:
         Email,
         IsAdmin,
         Version,
-        ModifiedBy,
+        RecordedBy,
         ColumnCount  // Must be last - represents total number of columns
     };
 

@@ -70,7 +70,7 @@ QVariant ClientAccountModel::data(const QModelIndex& index, int role) const {
     case Column::Email: return QString::fromStdString(account.email);
     case Column::IsAdmin: return account.is_admin ? tr("Yes") : tr("No");
     case Column::Version: return account.version;
-    case Column::ModifiedBy: return QString::fromStdString(account.modified_by);
+    case Column::RecordedBy: return QString::fromStdString(account.recorded_by);
     default: return {};
     }
 }
@@ -86,7 +86,7 @@ headerData(int section, Qt::Orientation orientation, int role) const {
         case Column::Email: return tr("Email");
         case Column::IsAdmin: return tr("Admin");
         case Column::Version: return tr("Version");
-        case Column::ModifiedBy: return tr("Modified By");
+        case Column::RecordedBy: return tr("Recorded By");
         default: return {};
         }
     }

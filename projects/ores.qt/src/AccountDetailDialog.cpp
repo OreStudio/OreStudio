@@ -30,6 +30,7 @@
 #include <QMdiSubWindow>
 #include <QMetaObject>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include "ui_AccountDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -84,7 +85,7 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
         &AccountDetailDialog::onFieldChanged);
     connect(ui_->emailEdit, &QLineEdit::textChanged, this,
         &AccountDetailDialog::onFieldChanged);
-    connect(ui_->isAdminCheckBox, &QCheckBox::stateChanged, this,
+    connect(ui_->isAdminCheckBox, &QCheckBox::checkStateChanged, this,
         &AccountDetailDialog::onFieldChanged);
     connect(ui_->passwordEdit, &QLineEdit::textChanged, this,
         &AccountDetailDialog::onFieldChanged);
@@ -122,7 +123,7 @@ void AccountDetailDialog::setAccount(const accounts::domain::account& account) {
     ui_->emailEdit->setText(QString::fromStdString(account.email));
     ui_->isAdminCheckBox->setChecked(account.is_admin);
     ui_->versionEdit->setText(QString::number(account.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(account.modified_by));
+    ui_->modifiedByEdit->setText(QString::fromStdString(account.recorded_by));
 
     // Clear password fields
     ui_->passwordEdit->clear();
@@ -151,7 +152,7 @@ accounts::domain::account AccountDetailDialog::getAccount() const {
     account.username = ui_->usernameEdit->text().toStdString();
     account.email = ui_->emailEdit->text().toStdString();
     account.is_admin = ui_->isAdminCheckBox->isChecked();
-    account.modified_by = modifiedByUsername_.empty() ? "qt_user" : modifiedByUsername_;
+    account.recorded_by = modifiedByUsername_.empty() ? "qt_user" : modifiedByUsername_;
 
     return account;
 }
@@ -245,12 +246,12 @@ void AccountDetailDialog::onSaveClicked() {
         const std::string username = ui_->usernameEdit->text().toStdString();
         const std::string password = ui_->passwordEdit->text().toStdString();
         const std::string email = ui_->emailEdit->text().toStdString();
-        const std::string modified_by = modifiedByUsername_.empty()
+        const std::string recorded_by = modifiedByUsername_.empty()
             ? "qt_user" : modifiedByUsername_;
         const bool is_admin = ui_->isAdminCheckBox->isChecked();
 
         QFuture<std::pair<bool, std::string>> future =
-            QtConcurrent::run([self, username, password, email, modified_by, is_admin]()
+            QtConcurrent::run([self, username, password, email, recorded_by, is_admin]()
                 -> std::pair<bool, std::string> {
                 if (!self) return {false, ""};
 
@@ -261,7 +262,7 @@ void AccountDetailDialog::onSaveClicked() {
                 request.username = username;
                 request.password = password;
                 request.email = email;
-                request.modified_by = modified_by;
+                request.recorded_by = recorded_by;
                 request.is_admin = is_admin;
                 request.totp_secret = ""; // Not used yet
 

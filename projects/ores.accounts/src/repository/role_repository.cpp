@@ -24,7 +24,7 @@
 #include <sqlgen/postgres.hpp>
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.accounts/domain/role_json.hpp" // IWYU pragma: keep.
+#include "ores.accounts/domain/role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.accounts/repository/role_entity.hpp"
 #include "ores.accounts/repository/role_mapper.hpp"
 
@@ -61,7 +61,7 @@ std::vector<domain::role> role_repository::read_latest() {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<role_entity>> |
         where("valid_to"_c == max.value()) |
-        order_by("name"_c.asc());
+        order_by("name"_c);
 
     return execute_read_query<role_entity, domain::role>(ctx_, query,
         [](const auto& entities) { return role_mapper::map(entities); },
@@ -116,25 +116,23 @@ role_repository::read_latest_by_ids(const std::vector<boost::uuids::uuid>& ids) 
         "SELECT id, version, name, description, modified_by "
         "FROM oresdb.get_roles_by_ids(" + array_literal + ")";
 
-    std::vector<domain::role> result;
+    const auto rows = execute_raw_multi_column_query(ctx_, sql, lg(),
+        "Reading roles by IDs");
 
-    const auto execute_query = [&](auto&& session) {
-        auto query_result = session->execute(sql);
-        for (const auto& row : query_result) {
+    std::vector<domain::role> result;
+    result.reserve(rows.size());
+
+    for (const auto& row : rows) {
+        if (row.size() >= 5 && row[0] && row[1] && row[2] && row[3] && row[4]) {
             domain::role r;
-            r.id = boost::lexical_cast<boost::uuids::uuid>(
-                row[0].template as<std::string>());
-            r.version = row[1].template as<int>();
-            r.name = row[2].template as<std::string>();
-            r.description = row[3].template as<std::string>();
-            r.recorded_by = row[4].template as<std::string>();
+            r.id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
+            r.version = std::stoi(*row[1]);
+            r.name = *row[2];
+            r.description = *row[3];
+            r.recorded_by = *row[4];
             result.push_back(std::move(r));
         }
-        return query_result;
-    };
-
-    const auto r = session(ctx_.connection_pool()).and_then(execute_query);
-    ensure_success(r, lg());
+    }
 
     BOOST_LOG_SEV(lg(), debug) << "Read roles by IDs. Total: " << result.size();
     return result;

@@ -1068,7 +1068,7 @@ TEST_CASE("handle_change_password_request_weak_password", tags) {
         CHECK(login_resp->success == true);
     });
 
-    // Try to change password to a weak password (less than 8 characters)
+    // Try to change password to a weak password (less than 12 characters)
     change_password_request cp_rq;
     cp_rq.new_password = "short";
     BOOST_LOG_SEV(lg, info) << "Change password request (weak password)";
@@ -1086,6 +1086,6 @@ TEST_CASE("handle_change_password_request_weak_password", tags) {
         BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
         CHECK(rp.success == false);
-        CHECK(rp.message.find("8") != std::string::npos);
+        CHECK(rp.message.find("12") != std::string::npos);
     });
 }

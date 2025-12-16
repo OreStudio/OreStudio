@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
 #include "ores.accounts/domain/permission.hpp"
 #include "ores.accounts/domain/events/role_assigned_event.hpp"
 #include "ores.accounts/domain/events/role_revoked_event.hpp"
@@ -76,7 +77,7 @@ domain::permission authorization_service::create_permission(
     }
 
     domain::permission perm;
-    perm.id = uuid_generator_.generate();
+    perm.id = uuid_generator_();
     perm.code = code;
     perm.description = description;
 
@@ -163,7 +164,7 @@ domain::role authorization_service::create_role(
 
     // Create the role
     domain::role role;
-    role.id = uuid_generator_.generate();
+    role.id = uuid_generator_();
     role.version = 0;
     role.name = name;
     role.description = description;

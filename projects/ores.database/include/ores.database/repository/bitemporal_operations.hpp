@@ -21,6 +21,7 @@
 #define ORES_DATABASE_REPOSITORY_BITEMPORAL_OPERATIONS_HPP
 
 #include <map>
+#include <optional>
 #include <vector>
 #include <sqlgen/postgres.hpp>
 #include "ores.utility/log/make_logger.hpp"
@@ -169,34 +170,9 @@ void execute_delete_query(context ctx, const QueryType& query,
  *     "SELECT DISTINCT p.code FROM permissions p JOIN ...",
  *     lg(), "Reading effective permissions");
  */
-inline std::vector<std::string> execute_raw_string_query(context ctx,
+std::vector<std::string> execute_raw_string_query(context ctx,
     const std::string& sql, utility::log::logger_t& lg,
-    const std::string& operation_desc) {
-
-    using namespace ores::utility::log;
-    using namespace sqlgen;
-
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
-
-    std::vector<std::string> result;
-
-    const auto execute_query = [&](auto&& session) {
-        auto query_result = session->execute(sql);
-        for (auto it = query_result.begin(); it != query_result.end(); ++it) {
-            const auto& row = *it;
-            if (!row.empty() && !row[0].is_null()) {
-                result.push_back(row[0].template as<std::string>());
-            }
-        }
-        return query_result;
-    };
-
-    const auto r = session(ctx.connection_pool()).and_then(execute_query);
-    ensure_success(r, lg);
-
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ". Total: " << result.size();
-    return result;
-}
+    const std::string& operation_desc);
 
 /**
  * @brief Executes a raw SQL query that returns a grouped map of strings.
@@ -216,35 +192,35 @@ inline std::vector<std::string> execute_raw_string_query(context ctx,
  *     "SELECT rp.role_id, p.code FROM role_permissions rp JOIN ...",
  *     lg(), "Reading all role permission codes");
  */
-inline std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
+std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
     context ctx, const std::string& sql, utility::log::logger_t& lg,
-    const std::string& operation_desc) {
+    const std::string& operation_desc);
 
-    using namespace ores::utility::log;
-    using namespace sqlgen;
-
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
-
-    std::map<std::string, std::vector<std::string>> result;
-
-    const auto execute_query = [&](auto&& session) {
-        auto query_result = session->execute(sql);
-        for (auto it = query_result.begin(); it != query_result.end(); ++it) {
-            const auto& row = *it;
-            if (row.size() >= 2 && !row[0].is_null() && !row[1].is_null()) {
-                result[row[0].template as<std::string>()].push_back(
-                    row[1].template as<std::string>());
-            }
-        }
-        return query_result;
-    };
-
-    const auto r = session(ctx.connection_pool()).and_then(execute_query);
-    ensure_success(r, lg);
-
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ". Total keys: " << result.size();
-    return result;
-}
+/**
+ * @brief Executes a raw SQL query that returns multiple columns per row.
+ *
+ * This helper executes a query and returns all rows as vectors of optional
+ * string values. Each inner vector represents a row, with column values
+ * as optional strings (nullopt for NULL values).
+ *
+ * @param ctx The repository context
+ * @param sql The raw SQL query string
+ * @param lg The logger to use
+ * @param operation_desc Description of the operation for logging
+ * @return A vector of rows, where each row is a vector of optional<string>
+ *
+ * @example
+ * auto rows = execute_raw_multi_column_query(ctx_,
+ *     "SELECT id, name, description FROM roles WHERE ...",
+ *     lg(), "Reading role data");
+ * for (const auto& row : rows) {
+ *     auto id = row[0].value_or("");
+ *     auto name = row[1].value_or("");
+ * }
+ */
+std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_query(
+    context ctx, const std::string& sql, utility::log::logger_t& lg,
+    const std::string& operation_desc);
 
 }
 

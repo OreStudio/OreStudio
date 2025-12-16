@@ -22,7 +22,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.accounts/domain/role_json.hpp" // IWYU pragma: keep.
+#include "ores.accounts/domain/role_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::accounts::repository {
 

@@ -24,7 +24,7 @@
 #include <sqlgen/postgres.hpp>
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.accounts/domain/permission_json.hpp" // IWYU pragma: keep.
+#include "ores.accounts/domain/permission_json_io.hpp" // IWYU pragma: keep.
 #include "ores.accounts/repository/permission_entity.hpp"
 #include "ores.accounts/repository/permission_mapper.hpp"
 
@@ -62,7 +62,7 @@ std::vector<domain::permission> permission_repository::read_latest() {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<permission_entity>> |
         where("valid_to"_c == max.value()) |
-        order_by("code"_c.asc());
+        order_by("code"_c);
 
     return execute_read_query<permission_entity, domain::permission>(ctx_, query,
         [](const auto& entities) { return permission_mapper::map(entities); },

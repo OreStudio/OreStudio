@@ -262,12 +262,23 @@ namespace ores #F2F2F2 {
         namespace service #F2F2F2 {
             class account_service #ECECEC {
                 +account_service(account_repository, login_info_repository)
+                +get_account(boost::uuids::uuid) std::optional<domain::account>
                 +create_account(context, std::string, std::string, std::string, std::string, bool) domain::account
                 +list_accounts(context) std::vector<domain::account>
+                +list_accounts(context, std::uint32_t, std::uint32_t) std::vector<domain::account>
+                +get_total_account_count() std::uint32_t
                 +delete_account(context, boost::uuids::uuid) void
                 +login(context, std::string, std::string, boost::asio::ip::address) domain::account
                 +logout(context, boost::uuids::uuid) void
-                +unlock_account(context, boost::uuids::uuid) void
+                +lock_account(context, boost::uuids::uuid) bool
+                +unlock_account(context, boost::uuids::uuid) bool
+                +is_admin(boost::uuids::uuid) bool
+                +update_account(boost::uuids::uuid, std::string, std::string, bool) bool
+                +get_account_history(std::string) std::vector<domain::account>
+                +set_password_reset_required(boost::uuids::uuid) bool
+                +change_password(boost::uuids::uuid, std::string) std::string
+                +get_login_info(boost::uuids::uuid) domain::login_info
+                +update_my_email(boost::uuids::uuid, std::string) std::string
                 -{static} throw_if_empty(std::string, std::string) void
                 -{field} account_repo_ repository::account_repository
                 -{field} login_info_repo_ repository::login_info_repository
@@ -276,12 +287,21 @@ namespace ores #F2F2F2 {
 
             note top of account_service
             Service for managing user accounts including creation, listing, and deletion.
+
+            Key features:
+            - Account CRUD operations
+            - Login/logout with session tracking
+            - Password reset and change
+            - Email self-service update
+            - Account locking/unlocking
             end note
 
             account_service o-- ores::accounts::repository::account_repository
             account_service o-- ores::accounts::repository::login_info_repository
             account_service ..> ores::accounts::domain::account
             account_service ..> ores::accounts::security::password_manager : uses
+            account_service ..> ores::accounts::security::password_policy_validator : uses
+            account_service ..> ores::accounts::security::email_validator : uses
 
             class bootstrap_mode_service #ECECEC {
                 +bootstrap_mode_service(utility::repository::context)
@@ -582,6 +602,23 @@ namespace ores #F2F2F2 {
         }
 
         namespace security #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class password_manager
+                class password_policy_validator
+                class email_validator
+            }
+
+            password_manager -[hidden]down- password_policy_validator
+            password_policy_validator -[hidden]down- email_validator
+
+            '
+            ' Class definitions
+            '
+
             class password_manager #ECECEC {
                 +{static} create_password_hash(std::string) std::string
                 +{static} verify_password_hash(std::string, std::string) bool
@@ -601,6 +638,38 @@ namespace ores #F2F2F2 {
             and verify them against stored hashes. It uses the scrypt key derivation
             function from OpenSSL to generate and validate password hashes, ensuring
             strong security through configurable CPU/memory cost parameters.
+            end note
+
+            class password_policy_validator #ECECEC {
+                +{static} validate(std::string, bool) validation_result
+                -{static} {field} MIN_LENGTH std::size_t
+                -{static} {field} SPECIAL_CHARS const char*
+            }
+
+            note top of password_policy_validator
+            Validates passwords against OWASP-compliant security policy.
+
+            Requirements:
+            - Minimum 12 characters
+            - At least one uppercase letter (A-Z)
+            - At least one lowercase letter (a-z)
+            - At least one digit (0-9)
+            - At least one special character
+            end note
+
+            class email_validator #ECECEC {
+                +{static} validate(std::string) validation_result
+            }
+
+            note top of email_validator
+            Validates email addresses against basic format requirements.
+
+            Checks:
+            - Not empty
+            - Exactly one '@' symbol
+            - '@' not at start or end
+            - Domain contains '.'
+            - Domain doesn't start/end with '.'
             end note
         }
 
@@ -653,6 +722,7 @@ namespace ores #F2F2F2 {
             together {
                 class security_password_manager_tests
                 class security_password_policy_validator_tests
+                class security_email_validator_tests
             }
 
             ' Stack related tests vertically
@@ -660,6 +730,7 @@ namespace ores #F2F2F2 {
             messaging_accounts_message_handler_tests -[hidden]down- messaging_protocol_tests
             repository_account_repository_tests -[hidden]down- service_account_service_tests
             security_password_manager_tests -[hidden]down- security_password_policy_validator_tests
+            security_password_policy_validator_tests -[hidden]down- security_email_validator_tests
 
             '
             ' Class definitions
@@ -850,6 +921,35 @@ namespace ores #F2F2F2 {
             Tests cover password length, uppercase/lowercase,
             digits, special characters, and validation enable/disable.
             end note
+
+            security_password_policy_validator_tests ..> ores::accounts::security::password_policy_validator : tests
+
+            class security_email_validator_tests <<test suite>> #C5E1A5 {
+                +valid_email_passes_validation() void
+                +valid_email_with_subdomain() void
+                +valid_email_with_plus_sign() void
+                +valid_email_with_dots_in_local_part() void
+                +empty_email_fails() void
+                +email_without_at_symbol_fails() void
+                +email_with_multiple_at_symbols_fails() void
+                +email_starting_with_at_fails() void
+                +email_ending_with_at_fails() void
+                +email_without_dot_in_domain_fails() void
+                +email_with_domain_starting_with_dot_fails() void
+                +email_with_domain_ending_with_dot_fails() void
+                +valid_email_with_numbers() void
+                +valid_email_with_hyphen_in_domain() void
+            }
+
+            note top of security_email_validator_tests
+            Test suite for email validation.
+
+            Tests cover valid email formats (standard, subdomain, plus sign,
+            dots, numbers, hyphens) and invalid formats (empty, missing @,
+            multiple @, domain without dot, invalid dot placement).
+            end note
+
+            security_email_validator_tests ..> ores::accounts::security::email_validator : tests
 
             class service_account_service_tests <<test suite>> #C5E1A5 {
                 +create_account_with_valid_data() void

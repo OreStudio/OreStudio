@@ -95,6 +95,156 @@ namespace ores #F2F2F2 {
             login_info --> ores::accounts::domain::account
         }
 
+        namespace domain::events #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class role_assigned_event
+                class role_revoked_event
+                class permissions_changed_event
+            }
+
+            role_assigned_event -[hidden]down- role_revoked_event
+            role_revoked_event -[hidden]down- permissions_changed_event
+
+            '
+            ' Class definitions
+            '
+
+            class role_assigned_event #F7E5FF {
+                +{field} account_id boost::uuids::uuid
+                +{field} role_id boost::uuids::uuid
+                +{field} timestamp std::chrono::system_clock::time_point
+            }
+
+            note top of role_assigned_event
+            Event published when a role is assigned to an account.
+            end note
+
+            class role_revoked_event #F7E5FF {
+                +{field} account_id boost::uuids::uuid
+                +{field} role_id boost::uuids::uuid
+                +{field} timestamp std::chrono::system_clock::time_point
+            }
+
+            note top of role_revoked_event
+            Event published when a role is revoked from an account.
+            end note
+
+            class permissions_changed_event #F7E5FF {
+                +{field} account_id boost::uuids::uuid
+                +{field} timestamp std::chrono::system_clock::time_point
+            }
+
+            note top of permissions_changed_event
+            Event published when an account's effective permissions change.
+            end note
+        }
+
+        namespace domain::rbac #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class permission
+                class role
+            }
+
+            together {
+                class account_role
+                class role_permission
+            }
+
+            permission -[hidden]down- account_role
+            role -[hidden]down- role_permission
+
+            '
+            ' Class definitions
+            '
+
+            class permission #F7E5FF {
+                +{field} id boost::uuids::uuid
+                +{field} code std::string
+                +{field} description std::string
+            }
+
+            note top of permission
+            Represents an atomic permission that can be granted to roles.
+
+            Fields:
+
+            - id: Unique identifier for the permission.
+            - code: Permission code (e.g., "accounts:create").
+            - description: Human-readable description.
+            end note
+
+            class role #F7E5FF {
+                +{field} version int
+                +{field} id boost::uuids::uuid
+                +{field} name std::string
+                +{field} description std::string
+                +{field} recorded_by std::string
+                +{field} recorded_at std::string
+                +{field} permission_codes std::vector<std::string>
+            }
+
+            note top of role
+            Represents a named collection of permissions.
+
+            Fields:
+
+            - version: Version number for optimistic locking.
+            - id: Unique identifier for the role.
+            - name: Unique name (e.g., "Trading", "Admin").
+            - description: Human-readable description.
+            - recorded_by: Username who last modified.
+            - recorded_at: Timestamp of last modification.
+            - permission_codes: Denormalized list of permission codes.
+            end note
+
+            class account_role #F7E5FF {
+                +{field} account_id boost::uuids::uuid
+                +{field} role_id boost::uuids::uuid
+                +{field} assigned_by std::string
+                +{field} assigned_at std::string
+            }
+
+            note top of account_role
+            Junction entity linking accounts to roles.
+
+            Fields:
+
+            - account_id: The account receiving the role.
+            - role_id: The role being assigned.
+            - assigned_by: Username who assigned this role.
+            - assigned_at: Timestamp of assignment.
+            end note
+
+            class role_permission #F7E5FF {
+                +{field} role_id boost::uuids::uuid
+                +{field} permission_id boost::uuids::uuid
+            }
+
+            note top of role_permission
+            Junction entity linking roles to permissions.
+
+            Fields:
+
+            - role_id: The role receiving the permission.
+            - permission_id: The permission being granted.
+            end note
+
+            ' Relationships
+            role o-- ores::accounts::domain::rbac::permission : has
+            account_role --> ores::accounts::domain::account
+            account_role --> ores::accounts::domain::rbac::role
+            role_permission --> ores::accounts::domain::rbac::role
+            role_permission --> ores::accounts::domain::rbac::permission
+        }
+
         namespace repository #F2F2F2 {
             '
             ' Layout groupings
@@ -256,6 +406,238 @@ namespace ores #F2F2F2 {
             end note
 
             login_info_repository ..> ores::accounts::domain::login_info
+
+            ' Group: Permission persistence
+            together {
+                class permission_entity
+                class permission_mapper
+                class permission_repository
+            }
+
+            ' Group: Role persistence
+            together {
+                class role_entity
+                class role_mapper
+                class role_repository
+            }
+
+            ' Group: Account-Role persistence
+            together {
+                class account_role_entity
+                class account_role_mapper
+                class account_role_repository
+            }
+
+            ' Group: Role-Permission persistence
+            together {
+                class role_permission_entity
+                class role_permission_mapper
+                class role_permission_repository
+            }
+
+            ' Stack RBAC classes vertically
+            permission_entity -[hidden]down- permission_mapper
+            permission_mapper -[hidden]down- permission_repository
+            role_entity -[hidden]down- role_mapper
+            role_mapper -[hidden]down- role_repository
+            account_role_entity -[hidden]down- account_role_mapper
+            account_role_mapper -[hidden]down- account_role_repository
+            role_permission_entity -[hidden]down- role_permission_mapper
+            role_permission_mapper -[hidden]down- role_permission_repository
+
+            class permission_entity <<orm>> #99CB99 {
+                +{field} id sqlgen::PrimaryKey<std::string>
+                +{field} code std::string
+                +{field} description std::string
+                +{field} valid_from sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
+                +{field} valid_to sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
+            }
+
+            note top of permission_entity
+            ORM entity for permissions table.
+
+            ORM Settings:
+
+            - Schema: oresdb
+            - Table: permissions
+            end note
+
+            class permission_mapper <<orm>> #99CB99 {
+                +{static} map(permission_entity) domain::permission
+                +{static} map(domain::permission) permission_entity
+                +{static} map(std::vector<permission_entity>) std::vector<domain::permission>
+            }
+
+            note top of permission_mapper
+            Maps permission domain to entity and vice-versa.
+            end note
+
+            permission_mapper ..> ores::accounts::domain::rbac::permission
+            permission_mapper ..> ores::accounts::repository::permission_entity
+
+            class permission_repository <<orm>> #99CB99 {
+                +sql() std::string
+                +write(domain::permission) void
+                +write(std::vector<domain::permission>) void
+                +read_latest() std::vector<domain::permission>
+                +read_latest(boost::uuids::uuid) std::vector<domain::permission>
+                +read_latest_by_code(std::string) std::vector<domain::permission>
+                +remove(boost::uuids::uuid) void
+            }
+
+            note top of permission_repository
+            Reads and writes permissions to data storage.
+            end note
+
+            permission_repository ..> ores::accounts::domain::rbac::permission
+
+            class role_entity <<orm>> #99CB99 {
+                +{field} id sqlgen::PrimaryKey<std::string>
+                +{field} version int
+                +{field} name std::string
+                +{field} description std::string
+                +{field} modified_by std::string
+                +{field} valid_from sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
+                +{field} valid_to sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
+            }
+
+            note top of role_entity
+            ORM entity for roles table.
+
+            ORM Settings:
+
+            - Schema: oresdb
+            - Table: roles
+            end note
+
+            class role_mapper <<orm>> #99CB99 {
+                +{static} map(role_entity) domain::role
+                +{static} map(domain::role) role_entity
+                +{static} map(std::vector<role_entity>) std::vector<domain::role>
+            }
+
+            note top of role_mapper
+            Maps role domain to entity and vice-versa.
+            end note
+
+            role_mapper ..> ores::accounts::domain::rbac::role
+            role_mapper ..> ores::accounts::repository::role_entity
+
+            class role_repository <<orm>> #99CB99 {
+                +sql() std::string
+                +write(domain::role) void
+                +read_latest() std::vector<domain::role>
+                +read_latest(boost::uuids::uuid) std::vector<domain::role>
+                +read_latest_by_name(std::string) std::vector<domain::role>
+                +read_latest_by_ids(std::vector<boost::uuids::uuid>) std::vector<domain::role>
+                +remove(boost::uuids::uuid) void
+            }
+
+            note top of role_repository
+            Reads and writes roles to data storage.
+            end note
+
+            role_repository ..> ores::accounts::domain::rbac::role
+
+            class account_role_entity <<orm>> #99CB99 {
+                +{field} account_id std::string
+                +{field} role_id std::string
+                +{field} assigned_by std::string
+                +{field} valid_from sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
+                +{field} valid_to sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
+            }
+
+            note top of account_role_entity
+            ORM entity for account_roles junction table.
+
+            ORM Settings:
+
+            - Schema: oresdb
+            - Table: account_roles
+            - Primary Key: (account_id, role_id) at database level
+            end note
+
+            class account_role_mapper <<orm>> #99CB99 {
+                +{static} map(account_role_entity) domain::account_role
+                +{static} map(domain::account_role) account_role_entity
+                +{static} map(std::vector<account_role_entity>) std::vector<domain::account_role>
+            }
+
+            note top of account_role_mapper
+            Maps account_role domain to entity and vice-versa.
+            end note
+
+            account_role_mapper ..> ores::accounts::domain::rbac::account_role
+            account_role_mapper ..> ores::accounts::repository::account_role_entity
+
+            class account_role_repository <<orm>> #99CB99 {
+                +sql() std::string
+                +write(domain::account_role) void
+                +write(std::vector<domain::account_role>) void
+                +read_latest() std::vector<domain::account_role>
+                +read_latest_by_account(boost::uuids::uuid) std::vector<domain::account_role>
+                +read_latest_by_role(boost::uuids::uuid) std::vector<domain::account_role>
+                +exists(boost::uuids::uuid, boost::uuids::uuid) bool
+                +remove(boost::uuids::uuid, boost::uuids::uuid) void
+                +remove_all_for_account(boost::uuids::uuid) void
+                +read_effective_permissions(boost::uuids::uuid) std::vector<std::string>
+                +read_roles_with_permissions(boost::uuids::uuid) std::vector<domain::role>
+            }
+
+            note top of account_role_repository
+            Reads and writes account-role assignments.
+            end note
+
+            account_role_repository ..> ores::accounts::domain::rbac::account_role
+            account_role_repository ..> ores::accounts::domain::rbac::role
+
+            class role_permission_entity <<orm>> #99CB99 {
+                +{field} role_id std::string
+                +{field} permission_id std::string
+                +{field} valid_from sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
+                +{field} valid_to sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
+            }
+
+            note top of role_permission_entity
+            ORM entity for role_permissions junction table.
+
+            ORM Settings:
+
+            - Schema: oresdb
+            - Table: role_permissions
+            - Primary Key: (role_id, permission_id) at database level
+            end note
+
+            class role_permission_mapper <<orm>> #99CB99 {
+                +{static} map(role_permission_entity) domain::role_permission
+                +{static} map(domain::role_permission) role_permission_entity
+                +{static} map(std::vector<role_permission_entity>) std::vector<domain::role_permission>
+            }
+
+            note top of role_permission_mapper
+            Maps role_permission domain to entity and vice-versa.
+            end note
+
+            role_permission_mapper ..> ores::accounts::domain::rbac::role_permission
+            role_permission_mapper ..> ores::accounts::repository::role_permission_entity
+
+            class role_permission_repository <<orm>> #99CB99 {
+                +sql() std::string
+                +write(domain::role_permission) void
+                +write(std::vector<domain::role_permission>) void
+                +read_latest() std::vector<domain::role_permission>
+                +read_latest_by_role(boost::uuids::uuid) std::vector<domain::role_permission>
+                +remove(boost::uuids::uuid, boost::uuids::uuid) void
+                +remove_all_for_role(boost::uuids::uuid) void
+                +read_all_role_permission_codes() std::map<std::string, std::vector<std::string>>
+                +read_role_permission_codes(std::vector<boost::uuids::uuid>) std::map<std::string, std::vector<std::string>>
+            }
+
+            note top of role_permission_repository
+            Reads and writes role-permission assignments.
+            end note
+
+            role_permission_repository ..> ores::accounts::domain::rbac::role_permission
         }
 
         namespace service #F2F2F2 {
@@ -320,6 +702,77 @@ namespace ores #F2F2F2 {
             end note
 
             bootstrap_mode_service o-- ores::accounts::repository::account_repository
+
+            class authorization_service #ECECEC {
+                +authorization_service(context, event_bus*)
+                +list_permissions() std::vector<domain::permission>
+                +find_permission_by_code(std::string) std::optional<domain::permission>
+                +create_permission(std::string, std::string) domain::permission
+                +list_roles() std::vector<domain::role>
+                +find_role(boost::uuids::uuid) std::optional<domain::role>
+                +find_role_by_name(std::string) std::optional<domain::role>
+                +create_role(std::string, std::string, std::vector<std::string>, std::string) domain::role
+                +get_role_permissions(boost::uuids::uuid) std::vector<std::string>
+                +assign_role(boost::uuids::uuid, boost::uuids::uuid, std::string) void
+                +revoke_role(boost::uuids::uuid, boost::uuids::uuid) void
+                +get_account_roles(boost::uuids::uuid) std::vector<domain::role>
+                +get_effective_permissions(boost::uuids::uuid) std::vector<std::string>
+                +has_permission(boost::uuids::uuid, std::string) bool
+                +{static} check_permission(std::vector<std::string>, std::string) bool
+                -{field} permission_repo_ repository::permission_repository
+                -{field} role_repo_ repository::role_repository
+                -{field} account_role_repo_ repository::account_role_repository
+                -{field} role_permission_repo_ repository::role_permission_repository
+                -{field} uuid_generator_ utility::uuid::uuid_v7_generator
+                -{field} event_bus_ event_bus*
+            }
+
+            note top of authorization_service
+            Service for managing role-based access control (RBAC).
+
+            Provides functionality for:
+            - Managing permissions (CRUD operations)
+            - Managing roles and their associated permissions
+            - Assigning and revoking roles from accounts
+            - Checking if an account has specific permissions
+            - Computing the effective permissions for an account
+
+            Events are published when role assignments change.
+            end note
+
+            authorization_service o-- ores::accounts::repository::permission_repository
+            authorization_service o-- ores::accounts::repository::role_repository
+            authorization_service o-- ores::accounts::repository::account_role_repository
+            authorization_service o-- ores::accounts::repository::role_permission_repository
+            authorization_service ..> ores::accounts::domain::rbac::permission
+            authorization_service ..> ores::accounts::domain::rbac::role
+            authorization_service ..> ores::accounts::domain::events::role_assigned_event : publishes
+            authorization_service ..> ores::accounts::domain::events::role_revoked_event : publishes
+            authorization_service ..> ores::accounts::domain::events::permissions_changed_event : publishes
+
+            class rbac_seeder #ECECEC {
+                +rbac_seeder(authorization_service&)
+                +seed(std::string) void
+                +seed_permissions() void
+                +seed_roles(std::string) void
+                -{field} auth_service_ authorization_service&
+            }
+
+            note top of rbac_seeder
+            Seeds the RBAC system with predefined permissions and roles.
+
+            Creates standard permissions and roles required for the application.
+            Idempotent - running multiple times won't create duplicates.
+
+            Predefined Roles:
+            - Admin: Full access (wildcard permission)
+            - Trading: currencies:read, currencies:history, flags:read
+            - Sales: currencies:read, flags:read
+            - Operations: currencies:*, flags:read, accounts:read
+            - Support: All read permissions
+            end note
+
+            rbac_seeder o-- ores::accounts::service::authorization_service
         }
 
         namespace messaging #F2F2F2 {

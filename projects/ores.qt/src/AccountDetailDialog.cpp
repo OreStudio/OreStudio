@@ -85,7 +85,7 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
         &AccountDetailDialog::onFieldChanged);
     connect(ui_->emailEdit, &QLineEdit::textChanged, this,
         &AccountDetailDialog::onFieldChanged);
-    connect(ui_->isAdminCheckBox, &QCheckBox::checkStateChanged, this,
+    connect(ui_->isAdminCheckBox, &QCheckBox::stateChanged, this,
         &AccountDetailDialog::onFieldChanged);
     connect(ui_->passwordEdit, &QLineEdit::textChanged, this,
         &AccountDetailDialog::onFieldChanged);

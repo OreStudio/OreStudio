@@ -28,14 +28,31 @@ namespace ores::qt {
 
 namespace {
 
-// Admin column index (matches ClientAccountModel::Column::IsAdmin)
+// Column indices (matches ClientAccountModel::Column enum)
 constexpr int admin_column_index = 2;
+constexpr int online_column_index = 3;
+constexpr int locked_column_index = 4;
+constexpr int version_column_index = 5;
+constexpr int recorded_by_column_index = 6;
+constexpr int recorded_at_column_index = 7;
 
 // Badge colors
 const QColor admin_badge_bg(59, 130, 246);      // Blue background for "Yes"
 const QColor admin_badge_text(255, 255, 255);   // White text for "Yes"
 const QColor non_admin_badge_bg(107, 114, 128); // Gray background for "No"
 const QColor non_admin_badge_text(255, 255, 255); // White text for "No"
+
+// Online status badge colors
+const QColor online_badge_bg(34, 197, 94);      // Green background for online
+const QColor online_badge_text(255, 255, 255);  // White text
+const QColor offline_badge_bg(107, 114, 128);   // Gray background for offline
+const QColor offline_badge_text(255, 255, 255); // White text
+
+// Locked status badge colors
+const QColor locked_badge_bg(239, 68, 68);      // Red background for locked
+const QColor locked_badge_text(255, 255, 255);  // White text
+const QColor unlocked_badge_bg(107, 114, 128);  // Gray background for not locked
+const QColor unlocked_badge_text(255, 255, 255); // White text
 
 }
 
@@ -54,26 +71,53 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 
-    // Handle the Admin column with badge rendering
-    if (index.column() == admin_column_index) {
+    // Handle badge columns
+    if (index.column() == admin_column_index ||
+        index.column() == online_column_index ||
+        index.column() == locked_column_index) {
+
         // Draw the background (for selection highlighting)
         QStyle* style = QApplication::style();
         style->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter);
 
         // Get the display text to determine badge type
         QString text = index.data(Qt::DisplayRole).toString();
-
-        // Determine badge colors based on admin status
         QColor bgColor, textColor;
         QString badgeText;
-        if (text == "Admin") {
-            bgColor = admin_badge_bg;
-            textColor = admin_badge_text;
-            badgeText = tr("Yes");
-        } else {
-            bgColor = non_admin_badge_bg;
-            textColor = non_admin_badge_text;
-            badgeText = tr("No");
+
+        if (index.column() == admin_column_index) {
+            // Admin column
+            if (text == "Admin") {
+                bgColor = admin_badge_bg;
+                textColor = admin_badge_text;
+                badgeText = tr("Yes");
+            } else {
+                bgColor = non_admin_badge_bg;
+                textColor = non_admin_badge_text;
+                badgeText = tr("No");
+            }
+        } else if (index.column() == online_column_index) {
+            // Online column
+            if (text == "Online") {
+                bgColor = online_badge_bg;
+                textColor = online_badge_text;
+                badgeText = tr("Yes");
+            } else {
+                bgColor = offline_badge_bg;
+                textColor = offline_badge_text;
+                badgeText = tr("No");
+            }
+        } else if (index.column() == locked_column_index) {
+            // Locked column
+            if (text == "Locked") {
+                bgColor = locked_badge_bg;
+                textColor = locked_badge_text;
+                badgeText = tr("Yes");
+            } else {
+                bgColor = unlocked_badge_bg;
+                textColor = unlocked_badge_text;
+                badgeText = tr("No");
+            }
         }
 
         // Draw the badge
@@ -96,14 +140,14 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
         case 1: // Email
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;
-        case 3: // Version
+        case version_column_index: // Version
             opt.font = monospaceFont_;
             opt.displayAlignment = Qt::AlignCenter;
             break;
-        case 4: // RecordedBy
+        case recorded_by_column_index: // RecordedBy
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;
-        case 5: // RecordedAt
+        case recorded_at_column_index: // RecordedAt
             opt.font = monospaceFont_;
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;
@@ -119,8 +163,10 @@ QSize AccountItemDelegate::sizeHint(const QStyleOptionViewItem& option,
                                     const QModelIndex& index) const {
     QSize size = QStyledItemDelegate::sizeHint(option, index);
 
-    // Ensure minimum height for badge column
-    if (index.column() == admin_column_index) {
+    // Ensure minimum height for badge columns
+    if (index.column() == admin_column_index ||
+        index.column() == online_column_index ||
+        index.column() == locked_column_index) {
         size.setHeight(qMax(size.height(), 24));
         size.setWidth(qMax(size.width(), 50));
     }

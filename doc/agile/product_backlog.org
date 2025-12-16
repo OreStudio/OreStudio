@@ -593,6 +593,7 @@ Links:
 - [[https://www.claude.com/blog/improving-frontend-design-through-skills][Improving frontend design through Skills]]
 - [[https://github.com/VoltAgent/awesome-claude-skills][Awesome Claude Skills]]
 - [[https://devexperts.com/blog/ui/][Designing User Interface in the Trading Software]]
+- [[https://www.businesswire.com/news/home/20240109821427/en/The-New-B2Core-v4---Modern-Interfaces-and-Revamped-Designs][The New B2Core v4 - Modern Interfaces and Revamped Designs]]
 
 Analysis from Gemini:
 

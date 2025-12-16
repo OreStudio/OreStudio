@@ -17,13 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-\ir ./account_roles_drop.sql
-\ir ./role_permissions_drop.sql
-\ir ./roles_drop.sql
-\ir ./permissions_drop.sql
-\ir ./currencies_notify_trigger_drop.sql
-\ir ./currencies_drop.sql
-\ir ./accounts_notify_trigger_drop.sql
-\ir ./accounts_drop.sql
-\ir ./feature_flags_drop.sql
-\ir ./login_info_drop.sql
+drop trigger if exists update_permissions_trigger on permissions;
+drop function if exists update_permissions;
+drop index if exists permissions_code_unique_idx;
+drop table if exists permissions;

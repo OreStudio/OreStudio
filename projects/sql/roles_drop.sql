@@ -17,13 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-\ir ./account_roles_drop.sql
-\ir ./role_permissions_drop.sql
-\ir ./roles_drop.sql
-\ir ./permissions_drop.sql
-\ir ./currencies_notify_trigger_drop.sql
-\ir ./currencies_drop.sql
-\ir ./accounts_notify_trigger_drop.sql
-\ir ./accounts_drop.sql
-\ir ./feature_flags_drop.sql
-\ir ./login_info_drop.sql
+drop trigger if exists update_roles_trigger on roles;
+drop function if exists update_roles;
+drop index if exists roles_name_unique_idx;
+drop index if exists roles_version_unique_idx;
+drop table if exists roles;

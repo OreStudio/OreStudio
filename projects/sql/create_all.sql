@@ -23,6 +23,10 @@
 \ir ./accounts_notify_trigger.sql
 \ir ./feature_flags_create.sql
 \ir ./login_info_create.sql
+\ir ./permissions_create.sql
+\ir ./roles_create.sql
+\ir ./role_permissions_create.sql
+\ir ./account_roles_create.sql
 
 \ir ./bootstrap_mode_setup.sql
 \ir ./disable_password_validation_setup.sql

@@ -22,7 +22,6 @@
 
 #include <string>
 #include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::accounts::repository {
 
@@ -30,12 +29,14 @@ namespace ores::accounts::repository {
  * @brief Represents an account-role assignment in the database.
  *
  * This is a junction table linking accounts to roles.
+ * Note: The composite primary key (account_id, role_id, valid_from) is defined
+ * at the database schema level since sqlgen doesn't support composite keys.
  */
 struct account_role_entity {
     constexpr static const char* schema = "oresdb";
     constexpr static const char* tablename = "account_roles";
 
-    sqlgen::PrimaryKey<std::string> account_id;
+    std::string account_id;
     std::string role_id;
     std::string assigned_by;
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> assigned_at = "9999-12-31 23:59:59";

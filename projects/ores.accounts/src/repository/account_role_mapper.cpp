@@ -32,7 +32,7 @@ domain::account_role account_role_mapper::map(const account_role_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::account_role r;
-    r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id.value());
+    r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id);
     r.role_id = boost::lexical_cast<boost::uuids::uuid>(v.role_id);
     r.assigned_by = v.assigned_by;
     r.assigned_at = v.assigned_at.str();

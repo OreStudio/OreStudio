@@ -247,22 +247,18 @@ void ClientAccountModel::onAccountsLoaded() {
         const int new_count = static_cast<int>(new_accounts.size());
 
         if (new_count > 0) {
-            // Append new data to existing accounts
-            beginInsertRows(QModelIndex(), old_size, old_size + new_count - 1);
+            // Use model reset since we're inserting and then sorting
+            // (sorting is a structural change that requires full reset)
+            beginResetModel();
             accounts_.insert(accounts_.end(),
                 std::make_move_iterator(new_accounts.begin()),
                 std::make_move_iterator(new_accounts.end()));
-            endInsertRows();
 
             // Sort all accounts by username
             std::ranges::sort(accounts_, [](auto const& a, auto const& b) {
                 return a.username < b.username;
             });
-
-            // Notify that all data may have changed due to sorting
-            if (old_size > 0) {
-                emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1));
-            }
+            endResetModel();
         }
 
         BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " new accounts "

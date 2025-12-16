@@ -143,6 +143,8 @@ role_repository::read_latest_by_ids(const std::vector<boost::uuids::uuid>& ids) 
 void role_repository::remove(const boost::uuids::uuid& role_id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing role from database: " << role_id;
 
+    // Delete the role - the database rule will close the temporal record
+    // instead of actually deleting it (sets valid_to = current_timestamp)
     const auto id_str = boost::lexical_cast<std::string>(role_id);
     const auto query = sqlgen::delete_from<role_entity> |
         where("id"_c == id_str);

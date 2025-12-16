@@ -17,39 +17,39 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-16 Tue 18:17], for Tuesday, December 16, 2025.
+#+CAPTION: Clock summary at [2025-12-16 Tue 18:55], for Tuesday, December 16, 2025.
 |       | <75>                                         |        |      |      |       |
 | Tags  | Headline                                     | Time   |      |      |     % |
 |-------+----------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                 | *8:13* |      |      | 100.0 |
+|       | *Total time*                                 | *8:51* |      |      | 100.0 |
 |-------+----------------------------------------------+--------+------+------+-------|
-|       | Stories                                      | 8:13   |      |      | 100.0 |
-|       | Active                                       |        | 8:13 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint           |        |      | 0:23 |   4.7 |
-| code  | Do not expose temporal machinery in domain   |        |      | 0:07 |   1.4 |
-| code  | Add account management support to qt         |        |      | 3:43 |  45.2 |
-| code  | Add password reset functionality to accounts |        |      | 1:11 |  14.4 |
-| code  | Add roles and permissions                    |        |      | 2:49 |  34.3 |
+|       | Stories                                      | 8:51   |      |      | 100.0 |
+|       | Active                                       |        | 8:51 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint           |        |      | 0:23 |   4.3 |
+| code  | Do not expose temporal machinery in domain   |        |      | 0:07 |   1.3 |
+| code  | Add account management support to qt         |        |      | 3:43 |  42.0 |
+| code  | Add password reset functionality to accounts |        |      | 1:49 |  20.5 |
+| code  | Add roles and permissions                    |        |      | 2:49 |  31.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-16 Tue 18:17]
+#+CAPTION: Clock summary at [2025-12-16 Tue 18:55]
 |       | <75>                                           |         |       |      |       |
 | Tags  | Headline                                       | Time    |       |      |     % |
 |-------+------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                   | *15:41* |       |      | 100.0 |
+|       | *Total time*                                   | *16:19* |       |      | 100.0 |
 |-------+------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                        | 15:41   |       |      | 100.0 |
-|       | Active                                         |         | 15:41 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |         |       | 1:07 |   7.1 |
-| infra | OCR scan notebooks for this sprint             |         |       | 0:53 |   5.6 |
-| code  | Consider compressing payload                   |         |       | 3:05 |  19.7 |
-| code  | Latest currencies should have different colour |         |       | 1:28 |   9.4 |
-| code  | Do not expose temporal machinery in domain     |         |       | 1:25 |   9.0 |
-| code  | Add account management support to qt           |         |       | 3:43 |  23.7 |
-| code  | Add password reset functionality to accounts   |         |       | 1:11 |   7.5 |
-| code  | Add roles and permissions                      |         |       | 2:49 |  18.0 |
+|       | Stories                                        | 16:19   |       |      | 100.0 |
+|       | Active                                         |         | 16:19 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |         |       | 1:07 |   6.8 |
+| infra | OCR scan notebooks for this sprint             |         |       | 0:53 |   5.4 |
+| code  | Consider compressing payload                   |         |       | 3:05 |  18.9 |
+| code  | Latest currencies should have different colour |         |       | 1:28 |   9.0 |
+| code  | Do not expose temporal machinery in domain     |         |       | 1:25 |   8.7 |
+| code  | Add account management support to qt           |         |       | 3:43 |  22.8 |
+| code  | Add password reset functionality to accounts   |         |       | 1:49 |  11.1 |
+| code  | Add roles and permissions                      |         |       | 2:49 |  17.3 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -422,6 +422,7 @@ Notes:
 
 *** COMPLETED Add password reset functionality to accounts             :code:
     :LOGBOOK:
+    CLOCK: [2025-12-16 Tue 18:17]--[2025-12-16 Tue 18:55] =>  0:38
     CLOCK: [2025-12-16 Tue 17:05]--[2025-12-16 Tue 18:16] =>  1:11
     :END:
 
@@ -549,6 +550,12 @@ reviewable change.
 *** Add sign-up workflow                                               :code:
 
 It should be possible to sign-up and create a new account.
+
+*** Add a dashboard for users                                          :code:
+
+Examples:
+
+[[./user_dashboard_core_ui.png]]
 
 *** Improve error messages in shell                                    :code:
 

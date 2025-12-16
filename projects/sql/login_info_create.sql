@@ -31,6 +31,7 @@ create table if not exists "oresdb"."login_info" (
     "locked" integer not null,
     "last_login" timestamp with time zone not null,
     "online" integer not null,
+    "password_reset_required" integer not null default 0,
     primary key (account_id)
 );
 

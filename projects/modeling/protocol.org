@@ -170,5 +170,7 @@ Admin-only operations (lock/unlock account) use server-side session tracking:
 | 0x201A | reset_password_response | Accounts |
 | 0x201B | change_password_request | Accounts |
 | 0x201C | change_password_response | Accounts |
+| 0x201D | update_my_email_request | Accounts |
+| 0x201E | update_my_email_response | Accounts |
 | 0x3000 | list_feature_flags_request | Variability |
 | 0x3001 | list_feature_flags_response | Variability |

@@ -220,14 +220,8 @@ handle_login_request(std::span<const std::byte> payload,
             request.password, ip_address);
 
         // Get login_info to check password_reset_required flag
-        auto login_infos = service_.list_login_info();
-        bool password_reset_required = false;
-        for (const auto& li : login_infos) {
-            if (li.account_id == account.id) {
-                password_reset_required = li.password_reset_required;
-                break;
-            }
-        }
+        const auto login_info = service_.get_login_info(account.id);
+        const bool password_reset_required = login_info.password_reset_required;
 
         BOOST_LOG_SEV(lg(), info) << "LOGIN SUCCESS: User '" << account.username
                                   << "' authenticated from IP: " << ip_address
@@ -800,12 +794,8 @@ handle_reset_password_request(std::span<const std::byte> payload,
     for (const auto& account_id : request.account_ids) {
         // Look up username for better logging
         std::string username = "<unknown>";
-        auto accounts = service_.list_accounts();
-        for (const auto& acc : accounts) {
-            if (acc.id == account_id) {
-                username = acc.username;
-                break;
-            }
+        if (auto account = service_.get_account(account_id)) {
+            username = account->username;
         }
 
         bool success = service_.set_password_reset_required(account_id);
@@ -863,12 +853,8 @@ handle_change_password_request(std::span<const std::byte> payload,
 
     // Look up username for better logging
     std::string username = "<unknown>";
-    auto accounts = service_.list_accounts();
-    for (const auto& acc : accounts) {
-        if (acc.id == account_id) {
-            username = acc.username;
-            break;
-        }
+    if (auto account = service_.get_account(account_id)) {
+        username = account->username;
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Change password: processing request for user '"
@@ -946,12 +932,8 @@ handle_update_my_email_request(std::span<const std::byte> payload,
 
     // Look up username for better logging
     std::string username = "<unknown>";
-    auto accounts = service_.list_accounts();
-    for (const auto& acc : accounts) {
-        if (acc.id == account_id) {
-            username = acc.username;
-            break;
-        }
+    if (auto account = service_.get_account(account_id)) {
+        username = account->username;
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Update email: processing request for user '"

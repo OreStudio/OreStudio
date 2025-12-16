@@ -97,6 +97,15 @@ account_service::create_account(const std::string& username,
     return new_account;
 }
 
+std::optional<domain::account>
+account_service::get_account(const boost::uuids::uuid& account_id) {
+    auto accounts = account_repo_.read_latest(account_id);
+    if (accounts.empty()) {
+        return std::nullopt;
+    }
+    return accounts[0];
+}
+
 std::vector<domain::account> account_service::list_accounts() {
     return account_repo_.read_latest();
 }

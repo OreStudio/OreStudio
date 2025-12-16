@@ -80,6 +80,14 @@ public:
         const std::string& recorded_by, bool is_admin = false);
 
     /**
+     * @brief Gets a single account by its ID.
+     *
+     * @param account_id The ID of the account to retrieve
+     * @return The account if found, std::nullopt otherwise
+     */
+    std::optional<domain::account> get_account(const boost::uuids::uuid& account_id);
+
+    /**
      * @brief Lists all accounts in the system.
      *
      * @return Vector of all accounts

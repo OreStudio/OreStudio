@@ -484,6 +484,59 @@ struct reset_password_response final {
 
 std::ostream& operator<<(std::ostream& s, const reset_password_response& v);
 
+/**
+ * @brief Request to change the current user's password.
+ *
+ * Used by users to change their own password, typically after being required
+ * to reset it. The account ID is determined from the session context.
+ */
+struct change_password_request final {
+    std::string new_password;
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 2 bytes: new_password length
+     * - N bytes: new_password (UTF-8)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<change_password_request, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const change_password_request& v);
+
+/**
+ * @brief Response indicating whether password change succeeded.
+ */
+struct change_password_response final {
+    bool success = false;
+    std::string message;
+
+    /**
+     * @brief Serialize response to bytes.
+     *
+     * Format:
+     * - 1 byte: success (boolean)
+     * - 2 bytes: message length
+     * - N bytes: message (UTF-8)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize response from bytes.
+     */
+    static std::expected<change_password_response, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const change_password_response& v);
+
 }
 
 #endif

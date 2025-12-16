@@ -606,4 +606,56 @@ std::ostream& operator<<(std::ostream& s, const reset_password_response& v)
     return s;
 }
 
+std::vector<std::byte> change_password_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_string(buffer, new_password);
+    return buffer;
+}
+
+std::expected<change_password_request, comms::messaging::error_code>
+change_password_request::deserialize(std::span<const std::byte> data) {
+    change_password_request request;
+
+    auto password_result = reader::read_string(data);
+    if (!password_result) return std::unexpected(password_result.error());
+    request.new_password = *password_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const change_password_request&)
+{
+    // Don't log passwords - write placeholder
+    s << "{\"new_password\":\"[REDACTED]\"}";
+    return s;
+}
+
+std::vector<std::byte> change_password_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    return buffer;
+}
+
+std::expected<change_password_response, comms::messaging::error_code>
+change_password_response::deserialize(std::span<const std::byte> data) {
+    change_password_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const change_password_response& v)
+{
+    rfl::json::write(v, s);
+    return s;
+}
+
 }

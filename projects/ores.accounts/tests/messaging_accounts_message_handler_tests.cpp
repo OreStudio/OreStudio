@@ -919,3 +919,173 @@ TEST_CASE("handle_unlock_account_request_unauthenticated", tags) {
         CHECK(rp.results[0].message.find("Authentication") != std::string::npos);
     });
 }
+
+TEST_CASE("handle_change_password_request_success", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h(database_table);
+    auto system_flags = make_system_flags(h.context());
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    accounts_message_handler sut(h.context(), system_flags, sessions);
+
+    // Use a consistent remote address for user session
+    const std::string user_endpoint = "192.168.1.100:54321";
+
+    // Create a user account
+    const auto account = generate_synthetic_account();
+    BOOST_LOG_SEV(lg, info) << "Account: " << account;
+
+    create_account_request ca_rq(to_create_account_request(account));
+    BOOST_LOG_SEV(lg, info) << "Create account request: " << ca_rq;
+
+    boost::uuids::uuid account_id;
+    boost::asio::io_context io_ctx;
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::create_account_request,
+            ca_rq.serialize(), internet::endpoint());
+        REQUIRE(r.has_value());
+        account_id = create_account_response::deserialize(r.value()).value().account_id;
+    });
+
+    // Login to establish session
+    login_request login_rq;
+    login_rq.username = ca_rq.username;
+    login_rq.password = ca_rq.password;
+
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::login_request,
+            login_rq.serialize(), user_endpoint);
+        REQUIRE(r.has_value());
+        auto login_resp = login_response::deserialize(r.value());
+        REQUIRE(login_resp.has_value());
+        CHECK(login_resp->success == true);
+    });
+
+    // Change password
+    change_password_request cp_rq;
+    cp_rq.new_password = "NewSecurePassword123!";
+    BOOST_LOG_SEV(lg, info) << "Change password request";
+
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::change_password_request,
+            cp_rq.serialize(), user_endpoint);
+
+        REQUIRE(r.has_value());
+        const auto response_result =
+            change_password_response::deserialize(r.value());
+        REQUIRE(response_result.has_value());
+        const auto& rp = response_result.value();
+        BOOST_LOG_SEV(lg, info) << "Response: " << rp;
+        INFO("Change password error: " << rp.message);
+        REQUIRE(rp.success == true);
+    });
+
+    // Verify the new password works by logging in again
+    login_request new_login_rq;
+    new_login_rq.username = ca_rq.username;
+    new_login_rq.password = "NewSecurePassword123!";
+
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::login_request,
+            new_login_rq.serialize(), "192.168.1.200:12345");
+        REQUIRE(r.has_value());
+        auto login_resp = login_response::deserialize(r.value());
+        REQUIRE(login_resp.has_value());
+        CHECK(login_resp->success == true);
+    });
+}
+
+TEST_CASE("handle_change_password_request_unauthenticated", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h(database_table);
+    auto system_flags = make_system_flags(h.context());
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    accounts_message_handler sut(h.context(), system_flags, sessions);
+
+    // Try to change password without being logged in (no session established)
+    change_password_request cp_rq;
+    cp_rq.new_password = "NewSecurePassword123!";
+    BOOST_LOG_SEV(lg, info) << "Change password request (unauthenticated)";
+
+    boost::asio::io_context io_ctx;
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::change_password_request,
+            cp_rq.serialize(), "192.168.1.50:12345");
+
+        REQUIRE(r.has_value());
+        const auto response_result =
+            change_password_response::deserialize(r.value());
+        REQUIRE(response_result.has_value());
+        const auto& rp = response_result.value();
+        BOOST_LOG_SEV(lg, info) << "Response: " << rp;
+
+        CHECK(rp.success == false);
+        CHECK(rp.message.find("Authentication") != std::string::npos);
+    });
+}
+
+TEST_CASE("handle_change_password_request_weak_password", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h(database_table);
+    auto system_flags = make_system_flags(h.context());
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    accounts_message_handler sut(h.context(), system_flags, sessions);
+
+    // Use a consistent remote address for user session
+    const std::string user_endpoint = "192.168.1.100:54321";
+
+    // Create a user account
+    const auto account = generate_synthetic_account();
+    create_account_request ca_rq(to_create_account_request(account));
+
+    boost::asio::io_context io_ctx;
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::create_account_request,
+            ca_rq.serialize(), internet::endpoint());
+        REQUIRE(r.has_value());
+    });
+
+    // Login to establish session
+    login_request login_rq;
+    login_rq.username = ca_rq.username;
+    login_rq.password = ca_rq.password;
+
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::login_request,
+            login_rq.serialize(), user_endpoint);
+        REQUIRE(r.has_value());
+        auto login_resp = login_response::deserialize(r.value());
+        REQUIRE(login_resp.has_value());
+        CHECK(login_resp->success == true);
+    });
+
+    // Try to change password to a weak password (less than 8 characters)
+    change_password_request cp_rq;
+    cp_rq.new_password = "short";
+    BOOST_LOG_SEV(lg, info) << "Change password request (weak password)";
+
+    run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
+        auto r = co_await sut.handle_message(
+            message_type::change_password_request,
+            cp_rq.serialize(), user_endpoint);
+
+        REQUIRE(r.has_value());
+        const auto response_result =
+            change_password_response::deserialize(r.value());
+        REQUIRE(response_result.has_value());
+        const auto& rp = response_result.value();
+        BOOST_LOG_SEV(lg, info) << "Response: " << rp;
+
+        CHECK(rp.success == false);
+        CHECK(rp.message.find("8") != std::string::npos);
+    });
+}

@@ -77,7 +77,7 @@ void ClientManager::cleanupIO() {
     io_context_.reset();
 }
 
-std::pair<bool, QString> ClientManager::connectAndLogin(
+LoginResult ClientManager::connectAndLogin(
     const std::string& host,
     std::uint16_t port,
     const std::string& username,
@@ -148,7 +148,7 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
             BOOST_LOG_SEV(lg(), error) << "LOGIN FAILURE: Network error during login request"
                                        << ", error_code: "
                                        << static_cast<int>(response_result.error());
-            return {false, QString("Network error during login request")};
+            return {.success = false, .error_message = QString("Network error during login request")};
         }
 
         // Log frame attributes for debugging
@@ -165,7 +165,7 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
             BOOST_LOG_SEV(lg(), error) << "LOGIN FAILURE: Failed to decompress response"
                                        << ", compression=" << header.compression
                                        << ", error=" << response_payload_result.error();
-            return {false, QString("Failed to decompress server response")};
+            return {.success = false, .error_message = QString("Failed to decompress server response")};
         }
         const auto& response_payload = *response_payload_result;
 
@@ -177,10 +177,10 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
                                            << ", error_code: "
                                            << static_cast<int>(error_resp->code)
                                            << ", message: " << error_resp->message;
-                return {false, QString::fromStdString(error_resp->message)};
+                return {.success = false, .error_message = QString::fromStdString(error_resp->message)};
             }
             BOOST_LOG_SEV(lg(), error) << "LOGIN FAILURE: Server returned malformed error response";
-            return {false, QString("Unknown server error")};
+            return {.success = false, .error_message = QString("Unknown server error")};
         }
 
         auto response = accounts::messaging::login_response::deserialize(response_payload);
@@ -188,24 +188,27 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
         if (!response) {
             BOOST_LOG_SEV(lg(), error) << "LOGIN FAILURE: Failed to deserialize login_response"
                                        << ", decompressed_payload_size: " << response_payload.size();
-            return {false, QString("Invalid login response from server")};
+            return {.success = false, .error_message = QString("Invalid login response from server")};
         }
 
         if (!response->success) {
             BOOST_LOG_SEV(lg(), warn) << "LOGIN FAILURE: Server rejected login for user '"
                                       << username << "', reason: " << response->error_message;
-            return {false, QString::fromStdString(response->error_message)};
+            return {.success = false, .error_message = QString::fromStdString(response->error_message)};
         }
 
-        // Success - swap in new client and store account_id and admin status
+        // Success - swap in new client and store account_id, username, and admin status
         client_ = new_client;
         logged_in_account_id_ = response->account_id;
+        logged_in_username_ = response->username;
         is_admin_ = response->is_admin;
         connected_host_ = host;
         connected_port_ = port;
+        const bool password_reset_required = response->password_reset_required;
         BOOST_LOG_SEV(lg(), info) << "LOGIN SUCCESS: User '" << response->username
                                   << "' authenticated to " << host << ":" << port
-                                  << ", is_admin: " << response->is_admin;
+                                  << ", is_admin: " << response->is_admin
+                                  << ", password_reset_required: " << password_reset_required;
 
         // Create event adapter for subscriptions
         event_adapter_ = std::make_unique<comms::service::remote_event_adapter>(client_);
@@ -233,11 +236,11 @@ std::pair<bool, QString> ClientManager::connectAndLogin(
             });
         }
         emit connected();
-        return {true, QString()};
+        return {.success = true, .error_message = QString(), .password_reset_required = password_reset_required};
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Connection failed: " << e.what();
-        return {false, QString::fromStdString(e.what())};
+        return {.success = false, .error_message = QString::fromStdString(e.what())};
     }
 }
 
@@ -290,6 +293,7 @@ bool ClientManager::logout() {
         if (!response_result) {
             BOOST_LOG_SEV(lg(), warn) << "Logout request failed (network error)";
             logged_in_account_id_ = std::nullopt;
+            logged_in_username_.clear();
             return false;
         }
 
@@ -305,6 +309,7 @@ bool ClientManager::logout() {
         if (!payload_result) {
             BOOST_LOG_SEV(lg(), warn) << "Logout failed: decompression error";
             logged_in_account_id_ = std::nullopt;
+            logged_in_username_.clear();
             return false;
         }
 
@@ -313,6 +318,7 @@ bool ClientManager::logout() {
         if (response && response->success) {
             BOOST_LOG_SEV(lg(), info) << "Logout successful";
             logged_in_account_id_ = std::nullopt;
+            logged_in_username_.clear();
             is_admin_ = false;
             return true;
         } else {
@@ -324,6 +330,7 @@ bool ClientManager::logout() {
     }
 
     logged_in_account_id_ = std::nullopt;
+    logged_in_username_.clear();
     is_admin_ = false;
     return false;
 }

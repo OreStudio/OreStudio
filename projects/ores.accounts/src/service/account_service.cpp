@@ -333,7 +333,8 @@ bool account_service::update_account(const boost::uuids::uuid& account_id,
     account.email = email;
     account.is_admin = is_admin;
     account.recorded_by = recorded_by;
-    account.version++; // Increment version for new temporal entry
+    // Note: version is NOT incremented here - the database trigger handles it
+    // The trigger uses optimistic locking: new.version must match current_version
 
     // Write the updated account (creates new temporal version)
     account_repo_.write(account);
@@ -405,6 +406,73 @@ bool account_service::set_password_reset_required(
 
     login_info_repo_.update(login_info);
     return true;
+}
+
+std::string account_service::change_password(const boost::uuids::uuid& account_id,
+    const std::string& new_password) {
+    BOOST_LOG_SEV(lg(), debug) << "Changing password for account: "
+                               << boost::uuids::to_string(account_id);
+
+    // Validate password strength
+    if (new_password.empty()) {
+        return "Password cannot be empty";
+    }
+
+    if (new_password.length() < 8) {
+        return "Password must be at least 8 characters long";
+    }
+
+    // Verify account exists
+    auto accounts = account_repo_.read_latest(account_id);
+    if (accounts.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Attempted to change password for non-existent account: "
+                                  << boost::uuids::to_string(account_id);
+        return "Account does not exist";
+    }
+
+    // Hash the new password
+    using security::password_manager;
+    auto password_hash = password_manager::create_password_hash(new_password);
+
+    // Update account with new password hash
+    auto account = accounts[0];
+    account.password_hash = password_hash;
+    // Note: version is NOT incremented here - the database trigger handles it
+    // The trigger uses optimistic locking: new.version must match current_version
+
+    // Write the updated account (creates new temporal version)
+    account_repo_.write(account);
+
+    // Clear password_reset_required flag
+    auto login_info_vec = login_info_repo_.read(account_id);
+    if (!login_info_vec.empty()) {
+        auto login_info = login_info_vec[0];
+        if (login_info.password_reset_required) {
+            login_info.password_reset_required = false;
+            login_info_repo_.update(login_info);
+            BOOST_LOG_SEV(lg(), debug) << "Cleared password_reset_required flag";
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully changed password for account: "
+                              << boost::uuids::to_string(account_id);
+
+    return ""; // Empty string indicates success
+}
+
+domain::login_info account_service::get_login_info(
+    const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting login_info for account: "
+                               << boost::uuids::to_string(account_id);
+
+    auto login_info_vec = login_info_repo_.read(account_id);
+    if (login_info_vec.empty()) {
+        BOOST_LOG_SEV(lg(), error) << "Login tracking not found for account: "
+                                   << boost::uuids::to_string(account_id);
+        throw std::runtime_error("Login tracking information missing");
+    }
+
+    return login_info_vec[0];
 }
 
 }

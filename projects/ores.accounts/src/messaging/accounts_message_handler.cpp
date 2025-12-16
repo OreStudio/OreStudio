@@ -85,6 +85,8 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_get_account_history_request(payload, remote_address);
     case message_type::reset_password_request:
         co_return co_await handle_reset_password_request(payload, remote_address);
+    case message_type::change_password_request:
+        co_return co_await handle_change_password_request(payload, remote_address);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown accounts message type " << type;
         co_return std::unexpected(comms::messaging::error_code::invalid_message_type);
@@ -810,6 +812,73 @@ handle_reset_password_request(std::span<const std::byte> payload,
     }
 
     co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_change_password_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing change_password_request from "
+                               << remote_address;
+
+    auto request_result = change_password_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize change_password_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    // Don't log password in request
+
+    // Get the user's session from shared session service
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "Change password denied: no active session for "
+                                  << remote_address;
+        change_password_response response{
+            .success = false,
+            .message = "Authentication required to change password"
+        };
+        co_return response.serialize();
+    }
+
+    const auto& account_id = session->account_id;
+    BOOST_LOG_SEV(lg(), debug) << "Changing password for account: "
+                               << boost::uuids::to_string(account_id);
+
+    try {
+        // Call service to change password (validates strength, hashes, clears flag)
+        auto error = service_.change_password(account_id, request.new_password);
+
+        if (!error.empty()) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to change password for account "
+                                      << boost::uuids::to_string(account_id)
+                                      << ": " << error;
+            change_password_response response{
+                .success = false,
+                .message = error
+            };
+            co_return response.serialize();
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully changed password for account: "
+                                  << boost::uuids::to_string(account_id);
+
+        change_password_response response{
+            .success = true,
+            .message = "Password changed successfully"
+        };
+        co_return response.serialize();
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Exception while changing password for account "
+                                   << boost::uuids::to_string(account_id)
+                                   << ": " << e.what();
+        change_password_response response{
+            .success = false,
+            .message = std::string("Failed to change password: ") + e.what()
+        };
+        co_return response.serialize();
+    }
 }
 
 }

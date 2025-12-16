@@ -38,6 +38,15 @@
 namespace ores::qt {
 
 /**
+ * @brief Result of a login attempt.
+ */
+struct LoginResult {
+    bool success = false;
+    QString error_message;
+    bool password_reset_required = false;
+};
+
+/**
  * @brief Manages the lifecycle of the network client and IO context.
  *
  * Maintains a persistent IO context/thread while allowing the client connection
@@ -69,9 +78,9 @@ public:
      * @param port Server port
      * @param username Login username
      * @param password Login password
-     * @return std::pair<bool, QString> Success status and error message
+     * @return LoginResult containing success status, error message, and password_reset_required flag
      */
-    std::pair<bool, QString> connectAndLogin(
+    LoginResult connectAndLogin(
         const std::string& host,
         std::uint16_t port,
         const std::string& username,
@@ -103,6 +112,13 @@ public:
      * @return true if user is an admin, false otherwise or if not logged in.
      */
     bool isAdmin() const;
+
+    /**
+     * @brief Get the current logged-in user's username.
+     *
+     * @return Username string, or empty if not logged in.
+     */
+    const std::string& currentUsername() const { return logged_in_username_; }
 
     /**
      * @brief Send a request if connected.
@@ -191,6 +207,7 @@ private:
 
     // Logged-in account tracking
     std::optional<boost::uuids::uuid> logged_in_account_id_;
+    std::string logged_in_username_;
 
     // Admin status of logged-in user
     bool is_admin_{false};

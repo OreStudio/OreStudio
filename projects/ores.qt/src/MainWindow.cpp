@@ -36,6 +36,7 @@
 #include <QIcon>
 #include "ui_MainWindow.h"
 #include "ores.qt/LoginDialog.hpp"
+#include "ores.qt/MyAccountDialog.hpp"
 #include "ores.qt/CurrencyController.hpp"
 #include "ores.qt/AccountController.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
@@ -98,12 +99,16 @@ MainWindow::MainWindow(QWidget* parent) :
         ":/icons/ic_fluent_star_20_regular.svg", iconColor));
     ui_->ActionAccounts->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_person_accounts_20_regular.svg", iconColor));
+    ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_person_20_regular.svg", iconColor));
 
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this,
         &MainWindow::onLoginTriggered);
     connect(ui_->ActionDisconnect, &QAction::triggered, this,
         &MainWindow::onDisconnectTriggered);
+    connect(ui_->ActionMyAccount, &QAction::triggered, this,
+        &MainWindow::onMyAccountTriggered);
     connect(ui_->ActionAbout, &QAction::triggered, this,
         &MainWindow::onAboutTriggered);
 
@@ -334,6 +339,9 @@ void MainWindow::updateMenuState() {
     ui_->menuSystem->menuAction()->setEnabled(isAdmin);
     ui_->ActionAccounts->setEnabled(isAdmin);
 
+    // My Account menu item is enabled when connected
+    ui_->ActionMyAccount->setEnabled(isConnected);
+
     // Update connection status icon in status bar
     if (isConnected) {
         connectionStatusIconLabel_->setPixmap(connectedIcon_.pixmap(16, 16));
@@ -395,6 +403,12 @@ void MainWindow::performDisconnectCleanup() {
 
 void MainWindow::onAboutTriggered() {
     AboutDialog dialog(this);
+    dialog.exec();
+}
+
+void MainWindow::onMyAccountTriggered() {
+    BOOST_LOG_SEV(lg(), debug) << "My Account triggered";
+    MyAccountDialog dialog(clientManager_, this);
     dialog.exec();
 }
 

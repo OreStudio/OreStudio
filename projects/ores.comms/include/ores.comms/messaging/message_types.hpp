@@ -156,6 +156,8 @@ enum class message_type {
     get_account_history_response = 0x2018,
     reset_password_request = 0x2019,
     reset_password_response = 0x201A,
+    change_password_request = 0x201B,
+    change_password_response = 0x201C,
 
     // Variability subsystem messages (0x3000 - 0x3FFF)
     list_feature_flags_request = 0x3000,

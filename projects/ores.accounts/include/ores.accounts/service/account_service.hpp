@@ -215,6 +215,28 @@ public:
      */
     bool set_password_reset_required(const boost::uuids::uuid& account_id);
 
+    /**
+     * @brief Changes the password for an account.
+     *
+     * Validates password strength, hashes the new password, updates the account,
+     * and clears the password_reset_required flag.
+     *
+     * @param account_id The ID of the account to update
+     * @param new_password The new plaintext password (will be hashed)
+     * @return empty string on success, error message on failure
+     */
+    std::string change_password(const boost::uuids::uuid& account_id,
+        const std::string& new_password);
+
+    /**
+     * @brief Retrieves the login_info for a specific account.
+     *
+     * @param account_id The ID of the account
+     * @return The login_info for the account
+     * @throws std::runtime_error If login_info not found
+     */
+    domain::login_info get_login_info(const boost::uuids::uuid& account_id);
+
 private:
     repository::account_repository account_repo_;
     repository::login_info_repository login_info_repo_;

@@ -36,6 +36,9 @@
     <addaction name="separator"/>
     <addaction name="ActionConnect"/>
     <addaction name="ActionDisconnect"/>
+    <addaction name="separator"/>
+    <addaction name="ActionMyAccount"/>
+    <addaction name="separator"/>
     <addaction name="ExitAction"/>
    </widget>
    <widget class="QMenu" name="menuRefereceData">
@@ -89,6 +92,15 @@
   <action name="ExitAction">
    <property name="text">
     <string>E&amp;xit</string>
+   </property>
+  </action>
+  <action name="ActionMyAccount">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_person_20_regular.svg</normaloff>:/icons/ic_fluent_person_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;My Account...</string>
    </property>
   </action>
   <action name="CurrenciesAction">

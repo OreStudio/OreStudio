@@ -641,3 +641,201 @@ TEST_CASE("logout_response_serialize_deserialize", tags) {
     CHECK(a.success == e.success);
     CHECK(a.message == e.message);
 }
+
+TEST_CASE("login_response_with_password_reset_required", tags) {
+    auto lg(make_logger(test_suite));
+
+    login_response rp;
+    rp.success = true;
+    rp.error_message = "";
+    rp.account_id = boost::uuids::random_generator()();
+    rp.username = std::string(faker::internet::username());
+    rp.is_admin = false;
+    rp.password_reset_required = true;
+    BOOST_LOG_SEV(lg, info) << "Response: " << rp;
+
+    CHECK(rp.success == true);
+    CHECK(rp.password_reset_required == true);
+}
+
+TEST_CASE("login_response_serialize_deserialize_with_password_reset", tags) {
+    auto lg(make_logger(test_suite));
+
+    login_response e;
+    e.success = true;
+    e.error_message = "";
+    e.account_id = boost::uuids::random_generator()();
+    e.username = std::string(faker::internet::username());
+    e.is_admin = faker::datatype::boolean();
+    e.password_reset_required = faker::datatype::boolean();
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+
+    const auto serialized = e.serialize();
+    const auto r = login_response::deserialize(serialized);
+
+    REQUIRE(r.has_value());
+    const auto& a = r.value();
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
+
+    CHECK(a.success == e.success);
+    CHECK(a.error_message == e.error_message);
+    CHECK(a.account_id == e.account_id);
+    CHECK(a.username == e.username);
+    CHECK(a.is_admin == e.is_admin);
+    CHECK(a.password_reset_required == e.password_reset_required);
+}
+
+TEST_CASE("reset_password_request_with_valid_uuids", tags) {
+    auto lg(make_logger(test_suite));
+
+    reset_password_request rq;
+    rq.account_ids.push_back(boost::uuids::random_generator()());
+    rq.account_ids.push_back(boost::uuids::random_generator()());
+    BOOST_LOG_SEV(lg, info) << "Request: " << rq;
+
+    CHECK(rq.account_ids.size() == 2);
+    CHECK(!rq.account_ids[0].is_nil());
+    CHECK(!rq.account_ids[1].is_nil());
+}
+
+TEST_CASE("reset_password_request_serialize_deserialize", tags) {
+    auto lg(make_logger(test_suite));
+
+    reset_password_request e;
+    e.account_ids.push_back(boost::uuids::random_generator()());
+    e.account_ids.push_back(boost::uuids::random_generator()());
+    e.account_ids.push_back(boost::uuids::random_generator()());
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+
+    const auto serialized = e.serialize();
+    const auto r = reset_password_request::deserialize(serialized);
+
+    REQUIRE(r.has_value());
+    const auto& a = r.value();
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
+
+    REQUIRE(a.account_ids.size() == e.account_ids.size());
+    for (size_t i = 0; i < e.account_ids.size(); ++i) {
+        CHECK(a.account_ids[i] == e.account_ids[i]);
+    }
+}
+
+TEST_CASE("reset_password_response_success", tags) {
+    auto lg(make_logger(test_suite));
+
+    reset_password_response rp;
+    rp.results.push_back({boost::uuids::random_generator()(), true, ""});
+    BOOST_LOG_SEV(lg, info) << "Response: " << rp;
+
+    CHECK(rp.results.size() == 1);
+    CHECK(rp.results[0].success == true);
+    CHECK(rp.results[0].message.empty());
+}
+
+TEST_CASE("reset_password_response_mixed_results", tags) {
+    auto lg(make_logger(test_suite));
+
+    reset_password_response rp;
+    rp.results.push_back({boost::uuids::random_generator()(), true, ""});
+    rp.results.push_back({boost::uuids::random_generator()(), false, "Account not found"});
+    BOOST_LOG_SEV(lg, info) << "Response: " << rp;
+
+    CHECK(rp.results.size() == 2);
+    CHECK(rp.results[0].success == true);
+    CHECK(rp.results[1].success == false);
+    CHECK(rp.results[1].message == "Account not found");
+}
+
+TEST_CASE("reset_password_response_serialize_deserialize", tags) {
+    auto lg(make_logger(test_suite));
+
+    reset_password_response e;
+    e.results.push_back({boost::uuids::random_generator()(), true, ""});
+    e.results.push_back({boost::uuids::random_generator()(), false, "Error occurred"});
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+
+    const auto serialized = e.serialize();
+    const auto r = reset_password_response::deserialize(serialized);
+
+    REQUIRE(r.has_value());
+    const auto& a = r.value();
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
+
+    REQUIRE(a.results.size() == e.results.size());
+    for (size_t i = 0; i < e.results.size(); ++i) {
+        CHECK(a.results[i].account_id == e.results[i].account_id);
+        CHECK(a.results[i].success == e.results[i].success);
+        CHECK(a.results[i].message == e.results[i].message);
+    }
+}
+
+TEST_CASE("change_password_request_with_valid_password", tags) {
+    auto lg(make_logger(test_suite));
+
+    change_password_request rq;
+    rq.new_password = std::string(faker::internet::password(12));
+    BOOST_LOG_SEV(lg, info) << "Request: " << rq;
+
+    CHECK(!rq.new_password.empty());
+    CHECK(rq.new_password.length() >= 8);
+}
+
+TEST_CASE("change_password_request_serialize_deserialize", tags) {
+    auto lg(make_logger(test_suite));
+
+    change_password_request e;
+    e.new_password = std::string(faker::internet::password(16));
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+
+    const auto serialized = e.serialize();
+    const auto r = change_password_request::deserialize(serialized);
+
+    REQUIRE(r.has_value());
+    const auto& a = r.value();
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
+
+    CHECK(a.new_password == e.new_password);
+}
+
+TEST_CASE("change_password_response_success", tags) {
+    auto lg(make_logger(test_suite));
+
+    change_password_response rp;
+    rp.success = true;
+    rp.message = "Password changed successfully";
+    BOOST_LOG_SEV(lg, info) << "Response: " << rp;
+
+    CHECK(rp.success == true);
+    CHECK(rp.message == "Password changed successfully");
+}
+
+TEST_CASE("change_password_response_failure", tags) {
+    auto lg(make_logger(test_suite));
+
+    change_password_response rp;
+    rp.success = false;
+    rp.message = "Password must be at least 8 characters long";
+    BOOST_LOG_SEV(lg, info) << "Response: " << rp;
+
+    CHECK(rp.success == false);
+    CHECK(!rp.message.empty());
+}
+
+TEST_CASE("change_password_response_serialize_deserialize", tags) {
+    auto lg(make_logger(test_suite));
+
+    change_password_response e;
+    e.success = faker::datatype::boolean();
+    e.message = e.success ? "Password changed successfully" : "Error occurred";
+    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
+
+    const auto serialized = e.serialize();
+    const auto r = change_password_response::deserialize(serialized);
+
+    REQUIRE(r.has_value());
+    const auto& a = r.value();
+    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
+
+    CHECK(a.success == e.success);
+    CHECK(a.message == e.message);
+}

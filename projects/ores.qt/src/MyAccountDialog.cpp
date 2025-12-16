@@ -1,0 +1,310 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.qt/MyAccountDialog.hpp"
+
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QFormLayout>
+#include <QtConcurrent>
+#include <QFutureWatcher>
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.comms/messaging/frame.hpp"
+#include "ores.comms/messaging/message_types.hpp"
+#include "ores.accounts/messaging/protocol.hpp"
+
+namespace ores::qt {
+
+using namespace ores::utility::log;
+
+MyAccountDialog::MyAccountDialog(ClientManager* clientManager, QWidget* parent)
+    : QDialog(parent),
+      username_edit_(new QLineEdit(this)),
+      password_group_(new QGroupBox("Change Password", this)),
+      new_password_edit_(new QLineEdit(this)),
+      confirm_password_edit_(new QLineEdit(this)),
+      change_password_button_(new QPushButton("Change Password", this)),
+      password_status_label_(new QLabel(this)),
+      close_button_(new QPushButton("Close", this)),
+      clientManager_(clientManager) {
+
+    setupUI();
+    loadAccountInfo();
+
+    // Connect signals
+    connect(change_password_button_, &QPushButton::clicked,
+            this, &MyAccountDialog::onChangePasswordClicked);
+    connect(close_button_, &QPushButton::clicked,
+            this, &MyAccountDialog::onCloseClicked);
+    connect(this, &MyAccountDialog::changePasswordCompleted,
+            this, &MyAccountDialog::onChangePasswordResult);
+}
+
+MyAccountDialog::~MyAccountDialog() {
+}
+
+void MyAccountDialog::setupUI() {
+    BOOST_LOG_SEV(lg(), debug) << "Setting up UI.";
+
+    setWindowTitle("My Account");
+    setModal(true);
+    setMinimumWidth(450);
+    setFixedWidth(450);
+    setSizeGripEnabled(false);
+
+    const QColor iconColor(220, 220, 220);
+
+    // Account Info Group
+    auto* account_group = new QGroupBox("Account Information", this);
+    auto* account_layout = new QFormLayout(account_group);
+    account_layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+
+    // Username (read-only)
+    username_edit_->setReadOnly(true);
+    username_edit_->setStyleSheet("QLineEdit { background-color: #3a3a3a; }");
+    account_layout->addRow("Username:", username_edit_);
+
+    // Password Change Group
+    auto* password_layout = new QFormLayout(password_group_);
+    password_layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+
+    // New password field
+    new_password_edit_->setEchoMode(QLineEdit::Password);
+    new_password_edit_->setPlaceholderText("Enter new password");
+    password_layout->addRow("New Password:", new_password_edit_);
+
+    // Confirm password field
+    confirm_password_edit_->setEchoMode(QLineEdit::Password);
+    confirm_password_edit_->setPlaceholderText("Confirm new password");
+    password_layout->addRow("Confirm Password:", confirm_password_edit_);
+
+    // Password status label
+    password_status_label_->setWordWrap(true);
+    password_status_label_->setStyleSheet("QLabel { color: #666; font-style: italic; }");
+
+    // Change password button
+    change_password_button_->setIcon(
+        IconUtils::createRecoloredIcon(":/icons/ic_fluent_key_20_regular.svg", iconColor));
+
+    auto* password_button_layout = new QHBoxLayout();
+    password_button_layout->addWidget(password_status_label_);
+    password_button_layout->addStretch();
+    password_button_layout->addWidget(change_password_button_);
+
+    password_layout->addRow(password_button_layout);
+
+    // Close button
+    close_button_->setIcon(
+        IconUtils::createRecoloredIcon(":/icons/ic_fluent_dismiss_20_regular.svg", iconColor));
+
+    auto* button_layout = new QHBoxLayout();
+    button_layout->addStretch();
+    button_layout->addWidget(close_button_);
+
+    // Main layout
+    auto* main_layout = new QVBoxLayout(this);
+    main_layout->addWidget(account_group);
+    main_layout->addWidget(password_group_);
+    main_layout->addSpacing(10);
+    main_layout->addLayout(button_layout);
+
+    // Set default button
+    close_button_->setDefault(true);
+}
+
+void MyAccountDialog::loadAccountInfo() {
+    BOOST_LOG_SEV(lg(), debug) << "Loading account info.";
+
+    if (!clientManager_) {
+        BOOST_LOG_SEV(lg(), error) << "Client manager not available.";
+        return;
+    }
+
+    // Get current user info from client manager
+    const auto& username = clientManager_->currentUsername();
+    username_edit_->setText(QString::fromStdString(username));
+
+    BOOST_LOG_SEV(lg(), debug) << "Loaded account info for user: " << username;
+}
+
+void MyAccountDialog::enablePasswordForm(bool enabled) {
+    BOOST_LOG_SEV(lg(), trace) << "Enable password form: " << enabled;
+
+    new_password_edit_->setEnabled(enabled);
+    confirm_password_edit_->setEnabled(enabled);
+    change_password_button_->setEnabled(enabled);
+}
+
+bool MyAccountDialog::validatePasswordInput() {
+    const auto new_password = new_password_edit_->text();
+    const auto confirm_password = confirm_password_edit_->text();
+
+    if (new_password.isEmpty()) {
+        MessageBoxHelper::warning(this, "Invalid Input", "Please enter a new password.");
+        new_password_edit_->setFocus();
+        return false;
+    }
+
+    if (confirm_password.isEmpty()) {
+        MessageBoxHelper::warning(this, "Invalid Input", "Please confirm your new password.");
+        confirm_password_edit_->setFocus();
+        return false;
+    }
+
+    if (new_password != confirm_password) {
+        MessageBoxHelper::warning(this, "Password Mismatch",
+            "The passwords do not match. Please try again.");
+        confirm_password_edit_->clear();
+        confirm_password_edit_->setFocus();
+        return false;
+    }
+
+    // Basic password strength check
+    if (new_password.length() < 8) {
+        MessageBoxHelper::warning(this, "Weak Password",
+            "Password must be at least 8 characters long.");
+        new_password_edit_->setFocus();
+        return false;
+    }
+
+    return true;
+}
+
+void MyAccountDialog::onChangePasswordClicked() {
+    BOOST_LOG_SEV(lg(), trace) << "On change password clicked.";
+
+    if (!clientManager_) {
+        MessageBoxHelper::critical(this, "Internal Error", "Client manager not initialized");
+        return;
+    }
+
+    if (!validatePasswordInput()) {
+        return;
+    }
+
+    const auto new_password = new_password_edit_->text();
+
+    // Disable form during request
+    enablePasswordForm(false);
+    password_status_label_->setText("Changing password...");
+    password_status_label_->setStyleSheet("QLabel { color: #666; font-style: italic; }");
+
+    // Perform password change asynchronously
+    auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(this);
+    connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished,
+            [this, watcher]() {
+        const auto [success, error_msg] = watcher->result();
+        watcher->deleteLater();
+        emit changePasswordCompleted(success, error_msg);
+    });
+
+    QFuture<std::pair<bool, QString>> future = QtConcurrent::run(
+        [this, new_password]() -> std::pair<bool, QString> {
+            try {
+                accounts::messaging::change_password_request request{
+                    .new_password = new_password.toStdString()
+                };
+
+                auto payload = request.serialize();
+                comms::messaging::frame request_frame(
+                    comms::messaging::message_type::change_password_request,
+                    0,
+                    std::move(payload)
+                );
+
+                auto response_result = clientManager_->sendRequest(std::move(request_frame));
+
+                if (!response_result) {
+                    return {false, QString("Network error during password change")};
+                }
+
+                const auto& header = response_result->header();
+
+                // Check for error response
+                if (header.type == comms::messaging::message_type::error_response) {
+                    auto payload_result = response_result->decompressed_payload();
+                    if (payload_result) {
+                        auto error_resp = comms::messaging::error_response::deserialize(*payload_result);
+                        if (error_resp) {
+                            return {false, QString::fromStdString(error_resp->message)};
+                        }
+                    }
+                    return {false, QString("Unknown server error")};
+                }
+
+                // Decompress payload
+                auto payload_result = response_result->decompressed_payload();
+                if (!payload_result) {
+                    return {false, QString("Failed to decompress server response")};
+                }
+
+                auto response = accounts::messaging::change_password_response::deserialize(*payload_result);
+
+                if (!response) {
+                    return {false, QString("Invalid response from server")};
+                }
+
+                if (!response->success) {
+                    return {false, QString::fromStdString(response->message)};
+                }
+
+                return {true, QString()};
+            } catch (const std::exception& e) {
+                return {false, QString::fromStdString(e.what())};
+            }
+        }
+    );
+
+    watcher->setFuture(future);
+}
+
+void MyAccountDialog::onChangePasswordResult(bool success, const QString& error_message) {
+    BOOST_LOG_SEV(lg(), debug) << "On change password result called.";
+
+    enablePasswordForm(true);
+
+    if (success) {
+        BOOST_LOG_SEV(lg(), info) << "Password change was successful.";
+        password_status_label_->setText("Password changed successfully!");
+        password_status_label_->setStyleSheet("QLabel { color: #0a0; }");
+
+        // Clear the password fields
+        new_password_edit_->clear();
+        confirm_password_edit_->clear();
+
+        MessageBoxHelper::information(this, "Success",
+            "Your password has been changed successfully.");
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "Password change failed: "
+                                  << error_message.toStdString();
+
+        password_status_label_->setText("");
+
+        MessageBoxHelper::critical(this, "Password Change Failed",
+            QString("Failed to change password: %1").arg(error_message));
+    }
+}
+
+void MyAccountDialog::onCloseClicked() {
+    BOOST_LOG_SEV(lg(), trace) << "On close clicked.";
+    accept();
+}
+
+}

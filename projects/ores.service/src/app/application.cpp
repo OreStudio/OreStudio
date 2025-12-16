@@ -27,7 +27,7 @@
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include "ores.risk/messaging/registrar.hpp"
-#include "ores.risk/domain/events/currency_changed_event.hpp"
+#include "ores.risk/eventing/currency_changed_event.hpp"
 #include "ores.accounts/messaging/registrar.hpp"
 #include "ores.accounts/eventing/account_changed_event.hpp"
 #include "ores.variability/messaging/registrar.hpp"
@@ -141,7 +141,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
 
     // Register entity-to-event mappings for each component
     eventing::service::registrar::register_mapping<
-        risk::domain::events::currency_changed_event>(
+        risk::eventing::currency_changed_event>(
         event_source, "ores.risk.currency", "ores_currencies");
     eventing::service::registrar::register_mapping<
         accounts::eventing::account_changed_event>(
@@ -155,10 +155,10 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
 
     // Bridge event bus to subscription manager - when domain events occur,
     // notify all clients subscribed to those event types
-    auto currency_sub = event_bus.subscribe<risk::domain::events::currency_changed_event>(
-        [&subscription_mgr](const risk::domain::events::currency_changed_event& e) {
+    auto currency_sub = event_bus.subscribe<risk::eventing::currency_changed_event>(
+        [&subscription_mgr](const risk::eventing::currency_changed_event& e) {
             using traits = eventing::domain::event_traits<
-                risk::domain::events::currency_changed_event>;
+                risk::eventing::currency_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp);
         });
 

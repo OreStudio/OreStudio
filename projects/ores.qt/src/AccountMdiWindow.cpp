@@ -104,14 +104,14 @@ AccountMdiWindow(ClientManager* clientManager,
     toolBar_->addSeparator();
 
     lockAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_lock_closed_20_filled.svg", iconColor));
+            ":/icons/ic_fluent_lock_closed_20_regular.svg", iconColor));
     lockAction_->setToolTip("Lock selected account");
     connect(lockAction_, &QAction::triggered, this,
         &AccountMdiWindow::lockSelected);
     toolBar_->addAction(lockAction_);
 
     unlockAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_lock_open_20_filled.svg", iconColor));
+            ":/icons/ic_fluent_lock_open_20_regular.svg", iconColor));
     unlockAction_->setToolTip("Unlock selected account");
     connect(unlockAction_, &QAction::triggered, this,
         &AccountMdiWindow::unlockSelected);

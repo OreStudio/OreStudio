@@ -30,6 +30,8 @@
 #include "ores.risk/eventing/currency_changed_event.hpp"
 #include "ores.accounts/messaging/registrar.hpp"
 #include "ores.accounts/eventing/account_changed_event.hpp"
+#include "ores.accounts/service/rbac_seeder.hpp"
+#include "ores.accounts/service/authorization_service.hpp"
 #include "ores.variability/messaging/registrar.hpp"
 #include "ores.variability/service/system_flags_seeder.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
@@ -107,6 +109,11 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     // Ensure all system flags exist in the database before any component queries them
     variability::service::system_flags_seeder flags_seeder(ctx);
     flags_seeder.seed();
+
+    // Seed RBAC permissions and roles
+    accounts::service::authorization_service auth_service(ctx);
+    accounts::service::rbac_seeder rbac_seeder(auth_service);
+    rbac_seeder.seed("system");
 
     // Create shared system flags service and refresh cache from database
     auto system_flags = std::make_shared<variability::service::system_flags_service>(ctx);

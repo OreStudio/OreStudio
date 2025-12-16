@@ -64,7 +64,7 @@ private:
 
 public:
     using context = ores::database::context;
-    using event_bus = eventing::service::event_bus;
+    using event_bus = ores::eventing::service::event_bus;
 
     /**
      * @brief Constructs an authorization_service with required repositories.

@@ -482,4 +482,45 @@ domain::login_info account_service::get_login_info(
     return login_info_vec[0];
 }
 
+std::string account_service::update_my_email(const boost::uuids::uuid& account_id,
+    const std::string& new_email) {
+    BOOST_LOG_SEV(lg(), debug) << "Updating email for account: "
+                               << boost::uuids::to_string(account_id);
+
+    // Validate email format (basic check)
+    if (new_email.empty()) {
+        return "Email cannot be empty";
+    }
+
+    if (new_email.find('@') == std::string::npos) {
+        return "Invalid email format";
+    }
+
+    // Verify account exists
+    auto accounts = account_repo_.read_latest(account_id);
+    if (accounts.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Attempted to update email for non-existent account: "
+                                  << boost::uuids::to_string(account_id);
+        return "Account does not exist";
+    }
+
+    // Check if email is the same
+    if (accounts[0].email == new_email) {
+        return "New email is the same as current email";
+    }
+
+    // Update account with new email
+    auto account = accounts[0];
+    account.email = new_email;
+    // Note: version is NOT incremented here - the database trigger handles it
+
+    // Write the updated account (creates new temporal version)
+    account_repo_.write(account);
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully updated email for account: "
+                              << boost::uuids::to_string(account_id);
+
+    return ""; // Empty string indicates success
+}
+
 }

@@ -237,6 +237,18 @@ public:
      */
     domain::login_info get_login_info(const boost::uuids::uuid& account_id);
 
+    /**
+     * @brief Updates the email address for a user's own account.
+     *
+     * This is for self-service email updates. Validates email format.
+     *
+     * @param account_id The ID of the account to update
+     * @param new_email The new email address
+     * @return empty string on success, error message on failure
+     */
+    std::string update_my_email(const boost::uuids::uuid& account_id,
+        const std::string& new_email);
+
 private:
     repository::account_repository account_repo_;
     repository::login_info_repository login_info_repo_;

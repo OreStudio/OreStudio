@@ -658,4 +658,55 @@ std::ostream& operator<<(std::ostream& s, const change_password_response& v)
     return s;
 }
 
+std::vector<std::byte> update_my_email_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_string(buffer, new_email);
+    return buffer;
+}
+
+std::expected<update_my_email_request, comms::messaging::error_code>
+update_my_email_request::deserialize(std::span<const std::byte> data) {
+    update_my_email_request request;
+
+    auto email_result = reader::read_string(data);
+    if (!email_result) return std::unexpected(email_result.error());
+    request.new_email = *email_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const update_my_email_request& v)
+{
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> update_my_email_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    return buffer;
+}
+
+std::expected<update_my_email_response, comms::messaging::error_code>
+update_my_email_response::deserialize(std::span<const std::byte> data) {
+    update_my_email_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const update_my_email_response& v)
+{
+    rfl::json::write(v, s);
+    return s;
+}
+
 }

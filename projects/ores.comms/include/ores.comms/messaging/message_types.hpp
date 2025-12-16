@@ -158,6 +158,8 @@ enum class message_type {
     reset_password_response = 0x201A,
     change_password_request = 0x201B,
     change_password_response = 0x201C,
+    update_my_email_request = 0x201D,
+    update_my_email_response = 0x201E,
 
     // Variability subsystem messages (0x3000 - 0x3FFF)
     list_feature_flags_request = 0x3000,

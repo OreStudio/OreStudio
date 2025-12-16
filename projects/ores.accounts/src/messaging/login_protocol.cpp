@@ -66,6 +66,7 @@ std::vector<std::byte> login_response::serialize() const {
     writer::write_string(buffer, error_message);
     writer::write_uuid(buffer, account_id);
     writer::write_string(buffer, username);
+    writer::write_string(buffer, email);
     writer::write_bool(buffer, is_admin);
     writer::write_bool(buffer, password_reset_required);
     return buffer;
@@ -90,6 +91,10 @@ login_response::deserialize(std::span<const std::byte> data) {
     auto username_result = reader::read_string(data);
     if (!username_result) return std::unexpected(username_result.error());
     response.username = *username_result;
+
+    auto email_result = reader::read_string(data);
+    if (!email_result) return std::unexpected(email_result.error());
+    response.email = *email_result;
 
     auto is_admin_result = reader::read_bool(data);
     if (!is_admin_result) return std::unexpected(is_admin_result.error());

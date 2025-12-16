@@ -197,10 +197,11 @@ LoginResult ClientManager::connectAndLogin(
             return {.success = false, .error_message = QString::fromStdString(response->error_message)};
         }
 
-        // Success - swap in new client and store account_id, username, and admin status
+        // Success - swap in new client and store account_id, username, email, and admin status
         client_ = new_client;
         logged_in_account_id_ = response->account_id;
         logged_in_username_ = response->username;
+        logged_in_email_ = response->email;
         is_admin_ = response->is_admin;
         connected_host_ = host;
         connected_port_ = port;
@@ -294,6 +295,7 @@ bool ClientManager::logout() {
             BOOST_LOG_SEV(lg(), warn) << "Logout request failed (network error)";
             logged_in_account_id_ = std::nullopt;
             logged_in_username_.clear();
+            logged_in_email_.clear();
             return false;
         }
 
@@ -310,6 +312,7 @@ bool ClientManager::logout() {
             BOOST_LOG_SEV(lg(), warn) << "Logout failed: decompression error";
             logged_in_account_id_ = std::nullopt;
             logged_in_username_.clear();
+            logged_in_email_.clear();
             return false;
         }
 
@@ -319,6 +322,7 @@ bool ClientManager::logout() {
             BOOST_LOG_SEV(lg(), info) << "Logout successful";
             logged_in_account_id_ = std::nullopt;
             logged_in_username_.clear();
+            logged_in_email_.clear();
             is_admin_ = false;
             return true;
         } else {
@@ -331,6 +335,7 @@ bool ClientManager::logout() {
 
     logged_in_account_id_ = std::nullopt;
     logged_in_username_.clear();
+    logged_in_email_.clear();
     is_admin_ = false;
     return false;
 }

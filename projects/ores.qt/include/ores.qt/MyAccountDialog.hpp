@@ -64,10 +64,13 @@ public:
 private slots:
     void onChangePasswordClicked();
     void onChangePasswordResult(bool success, const QString& error_message);
+    void onSaveEmailClicked();
+    void onSaveEmailResult(bool success, const QString& error_message);
     void onCloseClicked();
 
 signals:
     void changePasswordCompleted(bool success, const QString& error_message);
+    void saveEmailCompleted(bool success, const QString& error_message);
 
 private:
     void setupUI();
@@ -78,6 +81,9 @@ private:
 private:
     // Account info section
     QLineEdit* username_edit_;
+    QLineEdit* email_edit_;
+    QPushButton* save_email_button_;
+    QLabel* email_status_label_;
 
     // Password change section
     QGroupBox* password_group_;

@@ -37,6 +37,9 @@ using namespace ores::utility::log;
 MyAccountDialog::MyAccountDialog(ClientManager* clientManager, QWidget* parent)
     : QDialog(parent),
       username_edit_(new QLineEdit(this)),
+      email_edit_(new QLineEdit(this)),
+      save_email_button_(new QPushButton("Save", this)),
+      email_status_label_(new QLabel(this)),
       password_group_(new QGroupBox("Change Password", this)),
       new_password_edit_(new QLineEdit(this)),
       confirm_password_edit_(new QLineEdit(this)),
@@ -51,10 +54,14 @@ MyAccountDialog::MyAccountDialog(ClientManager* clientManager, QWidget* parent)
     // Connect signals
     connect(change_password_button_, &QPushButton::clicked,
             this, &MyAccountDialog::onChangePasswordClicked);
+    connect(save_email_button_, &QPushButton::clicked,
+            this, &MyAccountDialog::onSaveEmailClicked);
     connect(close_button_, &QPushButton::clicked,
             this, &MyAccountDialog::onCloseClicked);
     connect(this, &MyAccountDialog::changePasswordCompleted,
             this, &MyAccountDialog::onChangePasswordResult);
+    connect(this, &MyAccountDialog::saveEmailCompleted,
+            this, &MyAccountDialog::onSaveEmailResult);
 }
 
 MyAccountDialog::~MyAccountDialog() {
@@ -80,6 +87,21 @@ void MyAccountDialog::setupUI() {
     username_edit_->setReadOnly(true);
     username_edit_->setStyleSheet("QLineEdit { background-color: #3a3a3a; }");
     account_layout->addRow("Username:", username_edit_);
+
+    // Email field with save button
+    auto* email_layout = new QHBoxLayout();
+    email_edit_->setPlaceholderText("Enter email address");
+    email_layout->addWidget(email_edit_);
+    save_email_button_->setIcon(
+        IconUtils::createRecoloredIcon(":/icons/ic_fluent_save_20_regular.svg", iconColor));
+    save_email_button_->setFixedWidth(80);
+    email_layout->addWidget(save_email_button_);
+    account_layout->addRow("Email:", email_layout);
+
+    // Email status label
+    email_status_label_->setWordWrap(true);
+    email_status_label_->setStyleSheet("QLabel { color: #666; font-style: italic; }");
+    account_layout->addRow("", email_status_label_);
 
     // Password Change Group
     auto* password_layout = new QFormLayout(password_group_);
@@ -140,6 +162,10 @@ void MyAccountDialog::loadAccountInfo() {
     // Get current user info from client manager
     const auto& username = clientManager_->currentUsername();
     username_edit_->setText(QString::fromStdString(username));
+
+    // Get current email from client manager
+    const auto& email = clientManager_->currentEmail();
+    email_edit_->setText(QString::fromStdString(email));
 
     BOOST_LOG_SEV(lg(), debug) << "Loaded account info for user: " << username;
 }
@@ -307,6 +333,133 @@ void MyAccountDialog::onChangePasswordResult(bool success, const QString& error_
 
         MessageBoxHelper::critical(this, "Password Change Failed",
             QString("Failed to change password: %1").arg(error_message));
+    }
+}
+
+void MyAccountDialog::onSaveEmailClicked() {
+    if (!clientManager_) {
+        MessageBoxHelper::critical(this, "Internal Error", "Client manager not initialized");
+        return;
+    }
+
+    const auto& username = clientManager_->currentUsername();
+    const auto new_email = email_edit_->text().trimmed();
+
+    BOOST_LOG_SEV(lg(), info)
+        << "Update email: user '" << username
+        << "' initiating email update via My Account";
+
+    if (new_email.isEmpty()) {
+        MessageBoxHelper::warning(this, "Invalid Input", "Please enter an email address.");
+        email_edit_->setFocus();
+        return;
+    }
+
+    if (!new_email.contains('@')) {
+        MessageBoxHelper::warning(this, "Invalid Input", "Please enter a valid email address.");
+        email_edit_->setFocus();
+        return;
+    }
+
+    // Disable form during request
+    email_edit_->setEnabled(false);
+    save_email_button_->setEnabled(false);
+    email_status_label_->setText("Saving email...");
+    email_status_label_->setStyleSheet("QLabel { color: #666; font-style: italic; }");
+
+    // Perform email update asynchronously
+    auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(this);
+    connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished,
+            [this, watcher]() {
+        const auto [success, error_msg] = watcher->result();
+        watcher->deleteLater();
+        emit saveEmailCompleted(success, error_msg);
+    });
+
+    QFuture<std::pair<bool, QString>> future = QtConcurrent::run(
+        [this, new_email]() -> std::pair<bool, QString> {
+            try {
+                accounts::messaging::update_my_email_request request{
+                    .new_email = new_email.toStdString()
+                };
+
+                auto payload = request.serialize();
+                comms::messaging::frame request_frame(
+                    comms::messaging::message_type::update_my_email_request,
+                    0,
+                    std::move(payload)
+                );
+
+                auto response_result = clientManager_->sendRequest(std::move(request_frame));
+
+                if (!response_result) {
+                    return {false, QString("Network error during email update")};
+                }
+
+                const auto& header = response_result->header();
+
+                // Check for error response
+                if (header.type == comms::messaging::message_type::error_response) {
+                    auto payload_result = response_result->decompressed_payload();
+                    if (payload_result) {
+                        auto error_resp = comms::messaging::error_response::deserialize(*payload_result);
+                        if (error_resp) {
+                            return {false, QString::fromStdString(error_resp->message)};
+                        }
+                    }
+                    return {false, QString("Unknown server error")};
+                }
+
+                // Decompress payload
+                auto payload_result = response_result->decompressed_payload();
+                if (!payload_result) {
+                    return {false, QString("Failed to decompress server response")};
+                }
+
+                auto response = accounts::messaging::update_my_email_response::deserialize(*payload_result);
+
+                if (!response) {
+                    return {false, QString("Invalid response from server")};
+                }
+
+                if (!response->success) {
+                    return {false, QString::fromStdString(response->message)};
+                }
+
+                // Update the stored email in ClientManager
+                clientManager_->setCurrentEmail(new_email.toStdString());
+
+                return {true, QString()};
+            } catch (const std::exception& e) {
+                return {false, QString::fromStdString(e.what())};
+            }
+        }
+    );
+
+    watcher->setFuture(future);
+}
+
+void MyAccountDialog::onSaveEmailResult(bool success, const QString& error_message) {
+    const auto& username = clientManager_ ? clientManager_->currentUsername() : "<unknown>";
+
+    email_edit_->setEnabled(true);
+    save_email_button_->setEnabled(true);
+
+    if (success) {
+        BOOST_LOG_SEV(lg(), info)
+            << "Update email: user '" << username
+            << "' successfully updated their email via My Account";
+        email_status_label_->setText("Email saved successfully!");
+        email_status_label_->setStyleSheet("QLabel { color: #0a0; }");
+    } else {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Update email failed: user '" << username
+            << "' email update failed - " << error_message.toStdString();
+
+        email_status_label_->setText("");
+
+        MessageBoxHelper::critical(this, "Email Update Failed",
+            QString("Failed to update email: %1").arg(error_message));
     }
 }
 

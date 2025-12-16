@@ -87,6 +87,8 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_reset_password_request(payload, remote_address);
     case message_type::change_password_request:
         co_return co_await handle_change_password_request(payload, remote_address);
+    case message_type::update_my_email_request:
+        co_return co_await handle_update_my_email_request(payload, remote_address);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown accounts message type " << type;
         co_return std::unexpected(comms::messaging::error_code::invalid_message_type);
@@ -245,6 +247,7 @@ handle_login_request(std::span<const std::byte> payload,
             .error_message = "",
             .account_id = account.id,
             .username = account.username,
+            .email = account.email,
             .is_admin = account.is_admin,
             .password_reset_required = password_reset_required
         };
@@ -260,6 +263,7 @@ handle_login_request(std::span<const std::byte> payload,
             .error_message = e.what(),
             .account_id = boost::uuids::nil_uuid(),
             .username = request.username,
+            .email = "",
             .is_admin = false,
             .password_reset_required = false
         };
@@ -906,6 +910,88 @@ handle_change_password_request(std::span<const std::byte> payload,
         change_password_response response{
             .success = false,
             .message = std::string("Failed to change password: ") + e.what()
+        };
+        co_return response.serialize();
+    }
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_update_my_email_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing update_my_email_request from "
+                               << remote_address;
+
+    auto request_result = update_my_email_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize update_my_email_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+
+    // Get the user's session from shared session service
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "Update email denied: no active session for "
+                                  << remote_address;
+        update_my_email_response response{
+            .success = false,
+            .message = "Authentication required to update email"
+        };
+        co_return response.serialize();
+    }
+
+    const auto& account_id = session->account_id;
+
+    // Look up username for better logging
+    std::string username = "<unknown>";
+    auto accounts = service_.list_accounts();
+    for (const auto& acc : accounts) {
+        if (acc.id == account_id) {
+            username = acc.username;
+            break;
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Update email: processing request for user '"
+                               << username << "' (account_id: "
+                               << boost::uuids::to_string(account_id) << ")";
+
+    try {
+        auto error = service_.update_my_email(account_id, request.new_email);
+
+        if (!error.empty()) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Update email failed: user '" << username
+                << "' (account_id: " << boost::uuids::to_string(account_id)
+                << ") - reason: " << error;
+            update_my_email_response response{
+                .success = false,
+                .message = error
+            };
+            co_return response.serialize();
+        }
+
+        BOOST_LOG_SEV(lg(), info)
+            << "Update email: user '" << username
+            << "' successfully updated their email to '" << request.new_email
+            << "' (account_id: " << boost::uuids::to_string(account_id) << ")";
+
+        update_my_email_response response{
+            .success = true,
+            .message = "Email updated successfully"
+        };
+        co_return response.serialize();
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Update email error: exception for user '" << username
+            << "' (account_id: " << boost::uuids::to_string(account_id)
+            << "): " << e.what();
+        update_my_email_response response{
+            .success = false,
+            .message = std::string("Failed to update email: ") + e.what()
         };
         co_return response.serialize();
     }

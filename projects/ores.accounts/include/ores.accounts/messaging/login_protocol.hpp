@@ -66,6 +66,7 @@ struct login_response final {
     std::string error_message;
     boost::uuids::uuid account_id;
     std::string username;
+    std::string email;
     bool is_admin = false;
     bool password_reset_required = false;
 
@@ -79,6 +80,8 @@ struct login_response final {
      * - 16 bytes: account_id (UUID)
      * - 2 bytes: username length
      * - N bytes: username (UTF-8)
+     * - 2 bytes: email length
+     * - N bytes: email (UTF-8)
      * - 1 byte: is_admin (boolean)
      * - 1 byte: password_reset_required (boolean)
      */

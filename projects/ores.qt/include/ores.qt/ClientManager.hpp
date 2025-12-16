@@ -121,6 +121,20 @@ public:
     const std::string& currentUsername() const { return logged_in_username_; }
 
     /**
+     * @brief Get the current logged-in user's email.
+     *
+     * @return Email string, or empty if not logged in or not set.
+     */
+    const std::string& currentEmail() const { return logged_in_email_; }
+
+    /**
+     * @brief Set the current logged-in user's email.
+     *
+     * Used after successful email update to keep local state in sync.
+     */
+    void setCurrentEmail(const std::string& email) { logged_in_email_ = email; }
+
+    /**
      * @brief Send a request if connected.
      *
      * @param request The request frame to send
@@ -208,6 +222,7 @@ private:
     // Logged-in account tracking
     std::optional<boost::uuids::uuid> logged_in_account_id_;
     std::string logged_in_username_;
+    std::string logged_in_email_;
 
     // Admin status of logged-in user
     bool is_admin_{false};

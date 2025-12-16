@@ -143,8 +143,9 @@ void AccountDetailDialog::setCreateMode(bool createMode) {
     // Password section is visible only in create mode
     ui_->passwordGroup->setVisible(createMode);
 
-    // Metadata is not useful in create mode
+    // Metadata and login status are not useful in create mode
     ui_->metadataGroup->setVisible(!createMode);
+    ui_->loginStatusGroup->setVisible(!createMode);
 }
 
 accounts::domain::account AccountDetailDialog::getAccount() const {
@@ -166,9 +167,51 @@ void AccountDetailDialog::clearDialog() {
     ui_->versionEdit->clear();
     ui_->modifiedByEdit->clear();
 
+    // Clear login status fields
+    ui_->onlineEdit->clear();
+    ui_->lockedEdit->clear();
+    ui_->failedLoginsEdit->clear();
+    ui_->lastLoginEdit->clear();
+    ui_->lastIpEdit->clear();
+    ui_->lastAttemptIpEdit->clear();
+
+    currentLoginInfo_.reset();
     isDirty_ = false;
     emit isDirtyChanged(false);
     updateSaveResetButtonState();
+}
+
+void AccountDetailDialog::setLoginInfo(
+    const std::optional<accounts::domain::login_info>& loginInfo) {
+    currentLoginInfo_ = loginInfo;
+
+    if (loginInfo.has_value()) {
+        const auto& li = loginInfo.value();
+        ui_->onlineEdit->setText(li.online ? tr("Yes") : tr("No"));
+        ui_->lockedEdit->setText(li.locked ? tr("Yes") : tr("No"));
+        ui_->failedLoginsEdit->setText(QString::number(li.failed_logins));
+
+        // Convert time_point to string
+        auto time_t_val = std::chrono::system_clock::to_time_t(li.last_login);
+        if (time_t_val > 0) {
+            QDateTime lastLoginDt = QDateTime::fromSecsSinceEpoch(time_t_val);
+            ui_->lastLoginEdit->setText(lastLoginDt.toString(Qt::ISODate));
+        } else {
+            ui_->lastLoginEdit->setText(tr("Never"));
+        }
+
+        // Convert IP addresses to string
+        ui_->lastIpEdit->setText(QString::fromStdString(li.last_ip.to_string()));
+        ui_->lastAttemptIpEdit->setText(QString::fromStdString(li.last_attempt_ip.to_string()));
+    } else {
+        // No login info available
+        ui_->onlineEdit->setText(tr("N/A"));
+        ui_->lockedEdit->setText(tr("N/A"));
+        ui_->failedLoginsEdit->setText(tr("N/A"));
+        ui_->lastLoginEdit->setText(tr("N/A"));
+        ui_->lastIpEdit->setText(tr("N/A"));
+        ui_->lastAttemptIpEdit->setText(tr("N/A"));
+    }
 }
 
 void AccountDetailDialog::save() {

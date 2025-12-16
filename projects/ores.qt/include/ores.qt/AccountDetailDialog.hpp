@@ -24,7 +24,9 @@
 #include <QToolBar>
 #include <QAction>
 #include <memory>
+#include <optional>
 #include "ores.accounts/domain/account.hpp"
+#include "ores.accounts/domain/login_info.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.utility/log/make_logger.hpp"
 
@@ -80,6 +82,16 @@ public:
     void setAccount(const accounts::domain::account& account);
 
     /**
+     * @brief Sets the login info to display (read-only).
+     *
+     * This populates the Login Status group with the current login
+     * status information for the account.
+     *
+     * @param loginInfo The login info to display, or nullopt to clear
+     */
+    void setLoginInfo(const std::optional<accounts::domain::login_info>& loginInfo);
+
+    /**
      * @brief Gets the current account state from the form.
      *
      * @return The account with values from the form fields
@@ -126,6 +138,7 @@ private:
 
     ClientManager* clientManager_;
     accounts::domain::account currentAccount_;
+    std::optional<accounts::domain::login_info> currentLoginInfo_;
 };
 
 }

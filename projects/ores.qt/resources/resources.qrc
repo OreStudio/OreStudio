@@ -45,7 +45,9 @@
     <file>icons/ic_fluent_info_20_filled.svg</file>
     <file>icons/ic_fluent_info_20_regular.svg</file>
     <file>icons/ic_fluent_lock_closed_20_filled.svg</file>
+    <file>icons/ic_fluent_lock_closed_20_regular.svg</file>
     <file>icons/ic_fluent_lock_open_20_filled.svg</file>
+    <file>icons/ic_fluent_lock_open_20_regular.svg</file>
     <file>icons/ic_fluent_plug_connected_20_filled.svg</file>
     <file>icons/ic_fluent_plug_connected_20_regular.svg</file>
     <file>icons/ic_fluent_plug_connected_checkmark_20_filled.svg</file>

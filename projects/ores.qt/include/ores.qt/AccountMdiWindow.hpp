@@ -80,6 +80,7 @@ public slots:
     void deleteSelected();
     void lockSelected();
     void unlockSelected();
+    void resetPasswordSelected();
     void viewHistorySelected();
 
     /**
@@ -130,6 +131,7 @@ private:
     QAction* deleteAction_;
     QAction* lockAction_;
     QAction* unlockAction_;
+    QAction* resetPasswordAction_;
     QAction* historyAction_;
 
     std::unique_ptr<ClientAccountModel> accountModel_;

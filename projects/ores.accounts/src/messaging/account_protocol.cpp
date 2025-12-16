@@ -520,4 +520,90 @@ std::ostream& operator<<(std::ostream& s, const update_account_response& v)
     return s;
 }
 
+std::vector<std::byte> reset_password_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(account_ids.size()));
+    for (const auto& id : account_ids) {
+        writer::write_uuid(buffer, id);
+    }
+    return buffer;
+}
+
+std::expected<reset_password_request, comms::messaging::error_code>
+reset_password_request::deserialize(std::span<const std::byte> data) {
+    reset_password_request request;
+
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    const auto count = *count_result;
+
+    request.account_ids.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        auto id_result = reader::read_uuid(data);
+        if (!id_result) return std::unexpected(id_result.error());
+        request.account_ids.push_back(*id_result);
+    }
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const reset_password_request& v)
+{
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::ostream& operator<<(std::ostream& s, const reset_password_result& v)
+{
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> reset_password_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
+    for (const auto& result : results) {
+        writer::write_uuid(buffer, result.account_id);
+        writer::write_bool(buffer, result.success);
+        writer::write_string(buffer, result.message);
+    }
+    return buffer;
+}
+
+std::expected<reset_password_response, comms::messaging::error_code>
+reset_password_response::deserialize(std::span<const std::byte> data) {
+    reset_password_response response;
+
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    const auto count = *count_result;
+
+    response.results.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        reset_password_result result;
+
+        auto id_result = reader::read_uuid(data);
+        if (!id_result) return std::unexpected(id_result.error());
+        result.account_id = *id_result;
+
+        auto success_result = reader::read_bool(data);
+        if (!success_result) return std::unexpected(success_result.error());
+        result.success = *success_result;
+
+        auto message_result = reader::read_string(data);
+        if (!message_result) return std::unexpected(message_result.error());
+        result.message = *message_result;
+
+        response.results.push_back(std::move(result));
+    }
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const reset_password_response& v)
+{
+    rfl::json::write(v, s);
+    return s;
+}
+
 }

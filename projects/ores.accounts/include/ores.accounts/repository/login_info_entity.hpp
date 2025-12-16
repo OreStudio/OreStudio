@@ -40,6 +40,7 @@ struct login_info_entity {
     int locked;
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> last_login = "9999-12-31 23:59:59";
     int online;
+    int password_reset_required;
 };
 
 std::ostream& operator<<(std::ostream& s, const login_info_entity& v);

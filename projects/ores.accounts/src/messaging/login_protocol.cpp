@@ -67,6 +67,7 @@ std::vector<std::byte> login_response::serialize() const {
     writer::write_uuid(buffer, account_id);
     writer::write_string(buffer, username);
     writer::write_bool(buffer, is_admin);
+    writer::write_bool(buffer, password_reset_required);
     return buffer;
 }
 
@@ -93,6 +94,11 @@ login_response::deserialize(std::span<const std::byte> data) {
     auto is_admin_result = reader::read_bool(data);
     if (!is_admin_result) return std::unexpected(is_admin_result.error());
     response.is_admin = *is_admin_result;
+
+    auto password_reset_required_result = reader::read_bool(data);
+    if (!password_reset_required_result)
+        return std::unexpected(password_reset_required_result.error());
+    response.password_reset_required = *password_reset_required_result;
 
     return response;
 }
@@ -137,6 +143,7 @@ std::vector<std::byte> list_login_info_response::serialize() const {
         writer::write_bool(buffer, li.online);
         writer::write_string(buffer, li.last_ip.to_string());
         writer::write_string(buffer, li.last_attempt_ip.to_string());
+        writer::write_bool(buffer, li.password_reset_required);
     }
 
     return buffer;
@@ -188,6 +195,11 @@ list_login_info_response::deserialize(std::span<const std::byte> data) {
         auto last_attempt_ip_str_result = reader::read_string(data);
         if (!last_attempt_ip_str_result) return std::unexpected(last_attempt_ip_str_result.error());
         li.last_attempt_ip = boost::asio::ip::make_address(*last_attempt_ip_str_result);
+
+        auto password_reset_required_result = reader::read_bool(data);
+        if (!password_reset_required_result)
+            return std::unexpected(password_reset_required_result.error());
+        li.password_reset_required = *password_reset_required_result;
 
         response.login_infos.push_back(std::move(li));
     }

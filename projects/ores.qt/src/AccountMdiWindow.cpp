@@ -65,6 +65,7 @@ AccountMdiWindow(ClientManager* clientManager,
       deleteAction_(new QAction("Delete", this)),
       lockAction_(new QAction("Lock", this)),
       unlockAction_(new QAction("Unlock", this)),
+      resetPasswordAction_(new QAction("Reset Pwd", this)),
       historyAction_(new QAction("History", this)),
       accountModel_(std::make_unique<ClientAccountModel>(clientManager)),
       proxyModel_(new QSortFilterProxyModel(this)),
@@ -118,6 +119,13 @@ AccountMdiWindow(ClientManager* clientManager,
     connect(unlockAction_, &QAction::triggered, this,
         &AccountMdiWindow::unlockSelected);
     toolBar_->addAction(unlockAction_);
+
+    resetPasswordAction_->setIcon(IconUtils::createRecoloredIcon(
+            ":/icons/ic_fluent_password_reset_48_regular.svg", iconColor));
+    resetPasswordAction_->setToolTip("Force password reset on next login");
+    connect(resetPasswordAction_, &QAction::triggered, this,
+        &AccountMdiWindow::resetPasswordSelected);
+    toolBar_->addAction(resetPasswordAction_);
 
     toolBar_->addSeparator();
 
@@ -779,6 +787,171 @@ void AccountMdiWindow::unlockSelected() {
     watcher->setFuture(future);
 }
 
+void AccountMdiWindow::resetPasswordSelected() {
+    const auto selected = accountTableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Reset password requested but no row selected";
+        return;
+    }
+
+    if (!clientManager_->isConnected()) {
+         MessageBoxHelper::warning(this, "Disconnected",
+             "Cannot reset password while disconnected.");
+         return;
+    }
+
+    std::vector<boost::uuids::uuid> account_ids;
+    for (const auto& index : selected) {
+        const QModelIndex sourceIndex = proxyModel_->mapToSource(index);
+        const auto* account = accountModel_->getAccount(sourceIndex.row());
+        if (account)
+            account_ids.push_back(account->id);
+    }
+
+    if (account_ids.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "No valid accounts to reset password";
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Reset password requested for "
+                               << account_ids.size() << " accounts";
+
+    QString confirmMessage;
+    if (account_ids.size() == 1) {
+        const QModelIndex sourceIndex = proxyModel_->mapToSource(selected.first());
+        const auto* account = accountModel_->getAccount(sourceIndex.row());
+        confirmMessage = QString(
+            "Are you sure you want to force password reset for account '%1'?\n\n"
+            "The user will be required to change their password on next login.")
+            .arg(QString::fromStdString(account->username));
+    } else {
+        confirmMessage = QString(
+            "Are you sure you want to force password reset for %1 accounts?\n\n"
+            "These users will be required to change their password on next login.")
+            .arg(account_ids.size());
+    }
+
+    auto reply = MessageBoxHelper::question(this, "Reset Password",
+        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes) {
+        BOOST_LOG_SEV(lg(), debug) << "Reset password cancelled by user.";
+        return;
+    }
+
+    QPointer<AccountMdiWindow> self = this;
+    using ResetResult = std::vector<accounts::messaging::reset_password_result>;
+
+    auto task = [self, account_ids]() -> ResetResult {
+        if (!self) return {};
+
+        BOOST_LOG_SEV(lg(), debug) << "Resetting password for "
+                                   << account_ids.size() << " accounts";
+
+        accounts::messaging::reset_password_request request{account_ids};
+        auto payload = request.serialize();
+
+        comms::messaging::frame request_frame(
+            message_type::reset_password_request,
+            0, std::move(payload)
+        );
+
+        auto response_result = self->clientManager_->sendRequest(
+            std::move(request_frame));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to send reset password request";
+            ResetResult error_results;
+            for (const auto& id : account_ids) {
+                error_results.push_back({id, false,
+                    "Failed to communicate with server"});
+            }
+            return error_results;
+        }
+
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
+            ResetResult error_results;
+            for (const auto& id : account_ids) {
+                error_results.push_back({id, false,
+                    "Failed to decompress server response"});
+            }
+            return error_results;
+        }
+
+        auto response = accounts::messaging::reset_password_response::
+            deserialize(*payload_result);
+
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+            ResetResult error_results;
+            for (const auto& id : account_ids) {
+                error_results.push_back({id, false, "Invalid server response"});
+            }
+            return error_results;
+        }
+
+        return response->results;
+    };
+
+    auto* watcher = new QFutureWatcher<ResetResult>(self);
+    connect(watcher, &QFutureWatcher<ResetResult>::finished,
+            self, [self, watcher]() {
+        auto results = watcher->result();
+        watcher->deleteLater();
+
+        int success_count = 0;
+        int failure_count = 0;
+        QString first_error;
+
+        for (const auto& result : results) {
+            if (result.success) {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Password reset set successfully for account: "
+                    << boost::uuids::to_string(result.account_id);
+                success_count++;
+            } else {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Password reset failed for account: "
+                    << boost::uuids::to_string(result.account_id)
+                    << " - " << result.message;
+                failure_count++;
+                if (first_error.isEmpty()) {
+                    first_error = QString::fromStdString(result.message);
+                }
+            }
+        }
+
+        self->accountModel_->refresh();
+        if (failure_count == 0) {
+            QString msg = success_count == 1
+                ? "Password reset required for 1 account"
+                : QString("Password reset required for %1 accounts")
+                    .arg(success_count);
+            emit self->statusChanged(msg);
+        } else if (success_count == 0) {
+            QString msg = QString("Failed to reset password for %1 %2: %3")
+                .arg(failure_count)
+                .arg(failure_count == 1 ? "account" : "accounts")
+                .arg(first_error);
+            emit self->errorOccurred(msg);
+            MessageBoxHelper::critical(self, "Reset Password Failed", msg);
+        } else {
+            QString msg = QString("Reset %1 %2, failed to reset %3 %4")
+                .arg(success_count)
+                .arg(success_count == 1 ? "account" : "accounts")
+                .arg(failure_count)
+                .arg(failure_count == 1 ? "account" : "accounts");
+            emit self->statusChanged(msg);
+            MessageBoxHelper::warning(self, "Partial Success", msg);
+        }
+    });
+
+    QFuture<ResetResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
 void AccountMdiWindow::viewHistorySelected() {
     const auto selected = accountTableView_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
@@ -820,10 +993,11 @@ void AccountMdiWindow::updateActionStates() {
     editAction_->setEnabled(hasSingleSelection);
     historyAction_->setEnabled(hasSingleSelection);
 
-    // Delete, lock, unlock support multi-selection
+    // Delete, lock, unlock, reset password support multi-selection
     deleteAction_->setEnabled(hasSelection);
     lockAction_->setEnabled(hasSelection);
     unlockAction_->setEnabled(hasSelection);
+    resetPasswordAction_->setEnabled(hasSelection);
 }
 
 void AccountMdiWindow::setupReloadAction() {

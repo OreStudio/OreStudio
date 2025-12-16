@@ -204,6 +204,17 @@ public:
      */
     std::vector<domain::account> get_account_history(const std::string& username);
 
+    /**
+     * @brief Sets the password_reset_required flag on an account.
+     *
+     * When this flag is set, the user will be forced to change their password
+     * on their next login.
+     *
+     * @param account_id The ID of the account to flag for password reset
+     * @return true if the flag was set successfully, false otherwise
+     */
+    bool set_password_reset_required(const boost::uuids::uuid& account_id);
+
 private:
     repository::account_repository account_repo_;
     repository::login_info_repository login_info_repo_;

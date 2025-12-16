@@ -370,4 +370,41 @@ account_service::get_account_history(const std::string& username) {
     return all_versions;
 }
 
+bool account_service::set_password_reset_required(
+    const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Setting password_reset_required for account: "
+                               << boost::uuids::to_string(account_id);
+
+    auto accounts = account_repo_.read_latest(account_id);
+    if (accounts.empty()) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Attempted to set password reset on non-existent account: "
+            << boost::uuids::to_string(account_id);
+        return false;
+    }
+
+    auto login_info_vec = login_info_repo_.read(account_id);
+    if (login_info_vec.empty()) {
+        BOOST_LOG_SEV(lg(), error) << "Login tracking not found for account: "
+                                   << boost::uuids::to_string(account_id);
+        return false;
+    }
+
+    auto login_info = login_info_vec[0];
+
+    if (login_info.password_reset_required) {
+        BOOST_LOG_SEV(lg(), debug)
+            << "Password reset is already required for account.";
+        return true;
+    }
+
+    login_info.password_reset_required = true;
+
+    BOOST_LOG_SEV(lg(), info) << "Password reset required set for account: "
+                              << boost::uuids::to_string(account_id);
+
+    login_info_repo_.update(login_info);
+    return true;
+}
+
 }

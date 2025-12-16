@@ -68,7 +68,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // batch operations with a vector of account IDs. Responses now return a vector of
 // per-account results (lock_account_result/unlock_account_result). This is a
 // breaking change as the wire format is incompatible with previous versions.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 11;
+//
+// Version 12.0 adds reset_password_request and reset_password_response messages
+// for admin-initiated password reset. Adds password_reset_required field to
+// login_response and list_login_info_response. This is a breaking change as
+// existing serialization formats are extended with new fields.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 12;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
@@ -149,6 +154,8 @@ enum class message_type {
     update_account_response = 0x2016,
     get_account_history_request = 0x2017,
     get_account_history_response = 0x2018,
+    reset_password_request = 0x2019,
+    reset_password_response = 0x201A,
 
     // Variability subsystem messages (0x3000 - 0x3FFF)
     list_feature_flags_request = 0x3000,

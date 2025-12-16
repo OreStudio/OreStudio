@@ -67,6 +67,7 @@ struct login_response final {
     boost::uuids::uuid account_id;
     std::string username;
     bool is_admin = false;
+    bool password_reset_required = false;
 
     /**
      * @brief Serialize response to bytes.
@@ -79,6 +80,7 @@ struct login_response final {
      * - 2 bytes: username length
      * - N bytes: username (UTF-8)
      * - 1 byte: is_admin (boolean)
+     * - 1 byte: password_reset_required (boolean)
      */
     std::vector<std::byte> serialize() const;
 

@@ -60,8 +60,11 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 10.0 replaces valid_from/valid_to fields with recorded_by/recorded_at
 // in domain types (currency, account, feature_flags). This is a breaking change
 // affecting all entity serialization in the protocol.
+//
+// Version 10.1 adds update_account_request and update_account_response messages
+// for editing existing account email and admin status.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 10;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

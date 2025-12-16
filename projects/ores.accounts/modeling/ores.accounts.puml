@@ -95,7 +95,7 @@ namespace ores #F2F2F2 {
             login_info --> ores::accounts::domain::account
         }
 
-        namespace domain::events #F2F2F2 {
+        namespace eventing #F2F2F2 {
             '
             ' Layout groupings
             '
@@ -746,9 +746,9 @@ namespace ores #F2F2F2 {
             authorization_service o-- ores::accounts::repository::role_permission_repository
             authorization_service ..> ores::accounts::domain::rbac::permission
             authorization_service ..> ores::accounts::domain::rbac::role
-            authorization_service ..> ores::accounts::domain::events::role_assigned_event : publishes
-            authorization_service ..> ores::accounts::domain::events::role_revoked_event : publishes
-            authorization_service ..> ores::accounts::domain::events::permissions_changed_event : publishes
+            authorization_service ..> ores::accounts::eventing::role_assigned_event : publishes
+            authorization_service ..> ores::accounts::eventing::role_revoked_event : publishes
+            authorization_service ..> ores::accounts::eventing::permissions_changed_event : publishes
 
             class rbac_seeder #ECECEC {
                 +rbac_seeder(authorization_service&)

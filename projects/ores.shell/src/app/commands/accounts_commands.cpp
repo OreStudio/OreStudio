@@ -181,23 +181,29 @@ process_lock_account(std::ostream& out, client_session& session,
     auto result = session.process_authenticated_request<lock_account_request,
                                                         lock_account_response,
                                                         message_type::lock_account_request>
-        (lock_account_request{.account_id = parsed_id});
+        (lock_account_request{.account_ids = {parsed_id}});
 
     if (!result) {
-        out << "✗ " << to_string(result.error()) << std::endl;
+        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
         return;
     }
 
     const auto& response = *result;
-    if (response.success) {
+    if (response.results.empty()) {
+        out << "✗ No results returned from server" << std::endl;
+        return;
+    }
+
+    const auto& account_result = response.results[0];
+    if (account_result.success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully locked account: "
                                   << account_id;
         out << "✓ Account locked successfully!" << std::endl
             << "  Account ID: " << account_id << std::endl;
     } else {
         BOOST_LOG_SEV(lg(), warn)
-            << "Failed to lock account: " << response.error_message;
-        out << "✗ Failed to lock account: " << response.error_message << std::endl;
+            << "Failed to lock account: " << account_result.message;
+        out << "✗ Failed to lock account: " << account_result.message << std::endl;
     }
 }
 
@@ -221,23 +227,29 @@ process_unlock_account(std::ostream& out, client_session& session,
     auto result = session.process_authenticated_request<unlock_account_request,
                                                         unlock_account_response,
                                                         message_type::unlock_account_request>
-        (unlock_account_request{.account_id = parsed_id});
+        (unlock_account_request{.account_ids = {parsed_id}});
 
     if (!result) {
-        out << "✗ " << to_string(result.error()) << std::endl;
+        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
         return;
     }
 
     const auto& response = *result;
-    if (response.success) {
+    if (response.results.empty()) {
+        out << "✗ No results returned from server" << std::endl;
+        return;
+    }
+
+    const auto& account_result = response.results[0];
+    if (account_result.success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully unlocked account: "
                                   << account_id;
         out << "✓ Account unlocked successfully!" << std::endl
             << "  Account ID: " << account_id << std::endl;
     } else {
         BOOST_LOG_SEV(lg(), warn)
-            << "Failed to unlock account: " << response.error_message;
-        out << "✗ Failed to unlock account: " << response.error_message << std::endl;
+            << "Failed to unlock account: " << account_result.message;
+        out << "✗ Failed to unlock account: " << account_result.message << std::endl;
     }
 }
 

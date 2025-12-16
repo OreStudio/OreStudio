@@ -309,17 +309,19 @@ TEST_CASE("unlock_account_request_with_valid_uuid", tags) {
     auto lg(make_logger(test_suite));
 
     unlock_account_request rq;
-    rq.account_id = boost::uuids::random_generator()();
+    rq.account_ids.push_back(boost::uuids::random_generator()());
     BOOST_LOG_SEV(lg, info) << "Request: " << rq;
 
-    CHECK(!rq.account_id.is_nil());
+    CHECK(rq.account_ids.size() == 1);
+    CHECK(!rq.account_ids[0].is_nil());
 }
 
 TEST_CASE("unlock_account_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     unlock_account_request e;
-    e.account_id = boost::uuids::random_generator()();
+    e.account_ids.push_back(boost::uuids::random_generator()());
+    e.account_ids.push_back(boost::uuids::random_generator()());
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -329,39 +331,42 @@ TEST_CASE("unlock_account_request_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.account_id == e.account_id);
+    REQUIRE(a.account_ids.size() == e.account_ids.size());
+    for (size_t i = 0; i < e.account_ids.size(); ++i) {
+        CHECK(a.account_ids[i] == e.account_ids[i]);
+    }
 }
 
 TEST_CASE("unlock_account_response_success", tags) {
     auto lg(make_logger(test_suite));
 
     unlock_account_response rp;
-    rp.success = true;
-    rp.error_message = "";
+    rp.results.push_back({boost::uuids::random_generator()(), true, ""});
     BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
-    CHECK(rp.success == true);
-    CHECK(rp.error_message.empty());
+    CHECK(rp.results.size() == 1);
+    CHECK(rp.results[0].success == true);
+    CHECK(rp.results[0].message.empty());
 }
 
 TEST_CASE("unlock_account_response_failure", tags) {
     auto lg(make_logger(test_suite));
 
     unlock_account_response rp;
-    rp.success = false;
-    rp.error_message = "Account not found";
+    rp.results.push_back({boost::uuids::random_generator()(), false, "Account not found"});
     BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
-    CHECK(rp.success == false);
-    CHECK(rp.error_message == "Account not found");
+    CHECK(rp.results.size() == 1);
+    CHECK(rp.results[0].success == false);
+    CHECK(rp.results[0].message == "Account not found");
 }
 
 TEST_CASE("unlock_account_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     unlock_account_response e;
-    e.success = faker::datatype::boolean();
-    e.error_message = e.success ? "" : "Error occurred";
+    e.results.push_back({boost::uuids::random_generator()(), true, ""});
+    e.results.push_back({boost::uuids::random_generator()(), false, "Error occurred"});
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -371,25 +376,31 @@ TEST_CASE("unlock_account_response_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.success == e.success);
-    CHECK(a.error_message == e.error_message);
+    REQUIRE(a.results.size() == e.results.size());
+    for (size_t i = 0; i < e.results.size(); ++i) {
+        CHECK(a.results[i].account_id == e.results[i].account_id);
+        CHECK(a.results[i].success == e.results[i].success);
+        CHECK(a.results[i].message == e.results[i].message);
+    }
 }
 
 TEST_CASE("lock_account_request_with_valid_uuid", tags) {
     auto lg(make_logger(test_suite));
 
     lock_account_request rq;
-    rq.account_id = boost::uuids::random_generator()();
+    rq.account_ids.push_back(boost::uuids::random_generator()());
     BOOST_LOG_SEV(lg, info) << "Request: " << rq;
 
-    CHECK(!rq.account_id.is_nil());
+    CHECK(rq.account_ids.size() == 1);
+    CHECK(!rq.account_ids[0].is_nil());
 }
 
 TEST_CASE("lock_account_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     lock_account_request e;
-    e.account_id = boost::uuids::random_generator()();
+    e.account_ids.push_back(boost::uuids::random_generator()());
+    e.account_ids.push_back(boost::uuids::random_generator()());
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -399,39 +410,42 @@ TEST_CASE("lock_account_request_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.account_id == e.account_id);
+    REQUIRE(a.account_ids.size() == e.account_ids.size());
+    for (size_t i = 0; i < e.account_ids.size(); ++i) {
+        CHECK(a.account_ids[i] == e.account_ids[i]);
+    }
 }
 
 TEST_CASE("lock_account_response_success", tags) {
     auto lg(make_logger(test_suite));
 
     lock_account_response rp;
-    rp.success = true;
-    rp.error_message = "";
+    rp.results.push_back({boost::uuids::random_generator()(), true, ""});
     BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
-    CHECK(rp.success == true);
-    CHECK(rp.error_message.empty());
+    CHECK(rp.results.size() == 1);
+    CHECK(rp.results[0].success == true);
+    CHECK(rp.results[0].message.empty());
 }
 
 TEST_CASE("lock_account_response_failure", tags) {
     auto lg(make_logger(test_suite));
 
     lock_account_response rp;
-    rp.success = false;
-    rp.error_message = "Account not found";
+    rp.results.push_back({boost::uuids::random_generator()(), false, "Account not found"});
     BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
-    CHECK(rp.success == false);
-    CHECK(rp.error_message == "Account not found");
+    CHECK(rp.results.size() == 1);
+    CHECK(rp.results[0].success == false);
+    CHECK(rp.results[0].message == "Account not found");
 }
 
 TEST_CASE("lock_account_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     lock_account_response e;
-    e.success = faker::datatype::boolean();
-    e.error_message = e.success ? "" : "Error occurred";
+    e.results.push_back({boost::uuids::random_generator()(), true, ""});
+    e.results.push_back({boost::uuids::random_generator()(), false, "Error occurred"});
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -441,8 +455,12 @@ TEST_CASE("lock_account_response_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.success == e.success);
-    CHECK(a.error_message == e.error_message);
+    REQUIRE(a.results.size() == e.results.size());
+    for (size_t i = 0; i < e.results.size(); ++i) {
+        CHECK(a.results[i].account_id == e.results[i].account_id);
+        CHECK(a.results[i].success == e.results[i].success);
+        CHECK(a.results[i].message == e.results[i].message);
+    }
 }
 
 TEST_CASE("create_multiple_random_login_requests", tags) {

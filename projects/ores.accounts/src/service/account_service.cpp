@@ -315,4 +315,59 @@ bool account_service::is_admin(const boost::uuids::uuid& account_id) {
     return accounts[0].is_admin;
 }
 
+bool account_service::update_account(const boost::uuids::uuid& account_id,
+    const std::string& email, const std::string& recorded_by, bool is_admin) {
+    BOOST_LOG_SEV(lg(), debug) << "Updating account: "
+                               << boost::uuids::to_string(account_id);
+
+    // Verify account exists
+    auto accounts = account_repo_.read_latest(account_id);
+    if (accounts.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Attempted to update non-existent account: "
+                                  << boost::uuids::to_string(account_id);
+        throw std::invalid_argument("Account does not exist");
+    }
+
+    // Get existing account and create new version with updated fields
+    auto account = accounts[0];
+    account.email = email;
+    account.is_admin = is_admin;
+    account.recorded_by = recorded_by;
+    account.version++; // Increment version for new temporal entry
+
+    // Write the updated account (creates new temporal version)
+    account_repo_.write(account);
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully updated account: "
+                              << boost::uuids::to_string(account_id)
+                              << ", new version: " << account.version;
+
+    return true;
+}
+
+std::vector<domain::account>
+account_service::get_account_history(const std::string& username) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting account history for username: "
+                               << username;
+
+    // First look up the account by username to get the ID
+    auto accounts = account_repo_.read_latest_by_username(username);
+    if (accounts.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Account not found for username: "
+                                  << username;
+        return {};
+    }
+
+    const auto& account_id = accounts[0].id;
+    BOOST_LOG_SEV(lg(), debug) << "Found account ID: "
+                               << boost::uuids::to_string(account_id);
+
+    // Get all versions of the account by ID
+    auto all_versions = account_repo_.read_all(account_id);
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << all_versions.size()
+                              << " historical versions for account: " << username;
+
+    return all_versions;
+}
+
 }

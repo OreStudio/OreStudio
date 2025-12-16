@@ -14,7 +14,7 @@ To regenerate: =cmake --build --preset linux-clang-debug --target generate_proto
 
 * Protocol Version
 
-Current version: *10.0*
+Current version: *11.0*
 
 ** Version History
 
@@ -34,6 +34,12 @@ Current version: *10.0*
 - Version 10.0 replaces valid_from/valid_to fields with recorded_by/recorded_at
 - in domain types (currency, account, feature_flags). This is a breaking change
 - affecting all entity serialization in the protocol.
+- Version 10.1 adds update_account_request and update_account_response messages
+- for editing existing account email and admin status.
+- Version 11.0 changes lock_account_request and unlock_account_request to support
+- batch operations with a vector of account IDs. Responses now return a vector of
+- per-account results (lock_account_result/unlock_account_result). This is a
+- breaking change as the wire format is incompatible with previous versions.
 
 * Subsystems
 
@@ -43,7 +49,7 @@ The protocol is organized into subsystems, each with its own message range:
 |-------------+---------------+------------------+----------|
 | [[id:B1A2C3D4-E5F6-7890-ABCD-EF1234567890][Core]]        | 0x0000-0x0FFF | ores.comms       |       11 |
 | [[id:C2B3D4E5-F6A7-8901-BCDE-F12345678901][Risk]]        | 0x1000-0x1FFF | ores.risk        |        8 |
-| [[id:D3C4E5F6-A7B8-9012-CDEF-123456789012][Accounts]]    | 0x2000-0x2FFF | ores.accounts    |       20 |
+| [[id:D3C4E5F6-A7B8-9012-CDEF-123456789012][Accounts]]    | 0x2000-0x2FFF | ores.accounts    |       22 |
 | [[id:E4D5F6A7-B8C9-0123-DEFA-234567890123][Variability]] | 0x3000-0x3FFF | ores.variability |        2 |
 
 * Session Lifecycle
@@ -151,5 +157,7 @@ Admin-only operations (lock/unlock account) use server-side session tracking:
 | 0x2012 | bootstrap_status_response | Accounts |
 | 0x2013 | lock_account_request | Accounts |
 | 0x2014 | lock_account_response | Accounts |
+| 0x2015 | update_account_request | Accounts |
+| 0x2016 | update_account_response | Accounts |
 | 0x3000 | list_feature_flags_request | Variability |
 | 0x3001 | list_feature_flags_response | Variability |

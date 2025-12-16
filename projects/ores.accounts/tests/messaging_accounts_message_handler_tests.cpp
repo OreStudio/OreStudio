@@ -391,7 +391,7 @@ TEST_CASE("handle_unlock_account_request", tags) {
 
     // Attempt to unlock the account (admin is logged in from admin_endpoint)
     unlock_account_request urq;
-    urq.account_id = account_id;
+    urq.account_ids = {account_id};
     BOOST_LOG_SEV(lg, info) << "Unlock request: " << urq;
 
     const auto unlock_payload = urq.serialize();
@@ -407,8 +407,9 @@ TEST_CASE("handle_unlock_account_request", tags) {
         const auto& rp = response_result.value();
         BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
-        CHECK(rp.success == true);
-        CHECK(rp.error_message.empty());
+        REQUIRE(rp.results.size() == 1);
+        CHECK(rp.results[0].success == true);
+        CHECK(rp.results[0].message.empty());
     });
 }
 
@@ -467,7 +468,7 @@ TEST_CASE("handle_unlock_account_request_non_admin", tags) {
 
     // Try to unlock account2 using non-admin account1's session
     unlock_account_request urq;
-    urq.account_id = account2_id;
+    urq.account_ids = {account2_id};
     BOOST_LOG_SEV(lg, info) << "Unlock request (non-admin): " << urq;
 
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
@@ -482,8 +483,9 @@ TEST_CASE("handle_unlock_account_request_non_admin", tags) {
         const auto& rp = response_result.value();
         BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
-        CHECK(rp.success == false);
-        CHECK(rp.error_message.find("Admin") != std::string::npos);
+        REQUIRE(rp.results.size() == 1);
+        CHECK(rp.results[0].success == false);
+        CHECK(rp.results[0].message.find("Admin") != std::string::npos);
     });
 }
 
@@ -697,7 +699,7 @@ TEST_CASE("handle_lock_account_request", tags) {
 
     // Lock the account (admin is logged in from admin_endpoint)
     lock_account_request lrq;
-    lrq.account_id = account_id;
+    lrq.account_ids = {account_id};
     BOOST_LOG_SEV(lg, info) << "Lock request: " << lrq;
 
     const auto lock_payload = lrq.serialize();
@@ -713,8 +715,9 @@ TEST_CASE("handle_lock_account_request", tags) {
         const auto& rp = response_result.value();
         BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
-        CHECK(rp.success == true);
-        CHECK(rp.error_message.empty());
+        REQUIRE(rp.results.size() == 1);
+        CHECK(rp.results[0].success == true);
+        CHECK(rp.results[0].message.empty());
     });
 }
 
@@ -786,7 +789,7 @@ TEST_CASE("handle_login_request_locked_account", tags) {
 
     // 3. Lock the account using lock_account_request (admin is logged in)
     lock_account_request lock_rq;
-    lock_rq.account_id = account_id;
+    lock_rq.account_ids = {account_id};
     BOOST_LOG_SEV(lg, info) << "Lock account request: " << lock_rq;
 
     const auto lock_payload = lock_rq.serialize();
@@ -799,7 +802,8 @@ TEST_CASE("handle_login_request_locked_account", tags) {
         const auto response_result =
             lock_account_response::deserialize(r.value());
         REQUIRE(response_result.has_value());
-        CHECK(response_result.value().success == true);
+        REQUIRE(response_result.value().results.size() == 1);
+        CHECK(response_result.value().results[0].success == true);
     });
 
     // 4. Attempt login with valid credentials for the now-locked account
@@ -850,7 +854,7 @@ TEST_CASE("handle_lock_account_request_unauthenticated", tags) {
 
     // Try to lock without being logged in (no session established)
     lock_account_request lrq;
-    lrq.account_id = account_id;
+    lrq.account_ids = {account_id};
     BOOST_LOG_SEV(lg, info) << "Lock request (unauthenticated): " << lrq;
 
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
@@ -865,8 +869,9 @@ TEST_CASE("handle_lock_account_request_unauthenticated", tags) {
         const auto& rp = response_result.value();
         BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
-        CHECK(rp.success == false);
-        CHECK(rp.error_message.find("Authentication") != std::string::npos);
+        REQUIRE(rp.results.size() == 1);
+        CHECK(rp.results[0].success == false);
+        CHECK(rp.results[0].message.find("Authentication") != std::string::npos);
     });
 }
 
@@ -894,7 +899,7 @@ TEST_CASE("handle_unlock_account_request_unauthenticated", tags) {
 
     // Try to unlock without being logged in (no session established)
     unlock_account_request urq;
-    urq.account_id = account_id;
+    urq.account_ids = {account_id};
     BOOST_LOG_SEV(lg, info) << "Unlock request (unauthenticated): " << urq;
 
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
@@ -909,7 +914,8 @@ TEST_CASE("handle_unlock_account_request_unauthenticated", tags) {
         const auto& rp = response_result.value();
         BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
-        CHECK(rp.success == false);
-        CHECK(rp.error_message.find("Authentication") != std::string::npos);
+        REQUIRE(rp.results.size() == 1);
+        CHECK(rp.results[0].success == false);
+        CHECK(rp.results[0].message.find("Authentication") != std::string::npos);
     });
 }

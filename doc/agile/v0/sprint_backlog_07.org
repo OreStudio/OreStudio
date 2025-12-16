@@ -17,32 +17,35 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-16 Tue 00:07], for Tuesday, December 16, 2025.
-|      | <75>                                       |        |      |      |       |
-| Tags | Headline                                   | Time   |      |      |     % |
-|------+--------------------------------------------+--------+------+------+-------|
-|      | *Total time*                               | *0:07* |      |      | 100.0 |
-|------+--------------------------------------------+--------+------+------+-------|
-|      | Stories                                    | 0:07   |      |      | 100.0 |
-|      | Active                                     |        | 0:07 |      | 100.0 |
-| code | Do not expose temporal machinery in domain |        |      | 0:07 | 100.0 |
+#+CAPTION: Clock summary at [2025-12-16 Tue 11:48], for Tuesday, December 16, 2025.
+|       | <75>                                       |        |      |      |       |
+| Tags  | Headline                                   | Time   |      |      |     % |
+|-------+--------------------------------------------+--------+------+------+-------|
+|       | *Total time*                               | *4:13* |      |      | 100.0 |
+|-------+--------------------------------------------+--------+------+------+-------|
+|       | Stories                                    | 4:13   |      |      | 100.0 |
+|       | Active                                     |        | 4:13 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint         |        |      | 0:23 |   9.1 |
+| code  | Do not expose temporal machinery in domain |        |      | 0:07 |   2.8 |
+| code  | Add account management support to qt       |        |      | 3:43 |  88.1 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-16 Tue 00:07]
-|       | <75>                                           |        |      |      |       |
-| Tags  | Headline                                       | Time   |      |      |     % |
-|-------+------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                   | *7:35* |      |      | 100.0 |
-|-------+------------------------------------------------+--------+------+------+-------|
-|       | Stories                                        | 7:35   |      |      | 100.0 |
-|       | Active                                         |        | 7:35 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |        |      | 1:07 |  14.7 |
-| infra | OCR scan notebooks for this sprint             |        |      | 0:30 |   6.6 |
-| code  | Consider compressing payload                   |        |      | 3:05 |  40.7 |
-| code  | Latest currencies should have different colour |        |      | 1:28 |  19.3 |
-| code  | Do not expose temporal machinery in domain     |        |      | 1:25 |  18.7 |
+#+CAPTION: Clock summary at [2025-12-16 Tue 11:48]
+|       | <75>                                           |         |       |      |       |
+| Tags  | Headline                                       | Time    |       |      |     % |
+|-------+------------------------------------------------+---------+-------+------+-------|
+|       | *Total time*                                   | *11:41* |       |      | 100.0 |
+|-------+------------------------------------------------+---------+-------+------+-------|
+|       | Stories                                        | 11:41   |       |      | 100.0 |
+|       | Active                                         |         | 11:41 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |         |       | 1:07 |   9.6 |
+| infra | OCR scan notebooks for this sprint             |         |       | 0:53 |   7.6 |
+| code  | Consider compressing payload                   |         |       | 3:05 |  26.4 |
+| code  | Latest currencies should have different colour |         |       | 1:28 |  12.6 |
+| code  | Do not expose temporal machinery in domain     |         |       | 1:25 |  12.1 |
+| code  | Add account management support to qt           |         |       | 3:43 |  31.8 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -199,6 +202,7 @@ print(p)
 
 *** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
+    CLOCK: [2025-12-16 Tue 09:30]--[2025-12-16 Tue 09:53] =>  0:23
     CLOCK: [2025-12-15 Mon 09:10]--[2025-12-15 Mon 09:40] =>  0:30
     :END:
 
@@ -324,7 +328,7 @@ used as follows:
 - version is incremented automatically on save.
 - display version in UI prominently (/e.g./ next to entity key, iso code for
   currencies) so that we can see when we reload.
-*** COMPLETED Add skill to create new project component                :code:
+*** COMPLETED Add skill to create new project component            2   :code:
 
 *Rationale*: implemented last sprint.
 
@@ -393,6 +397,25 @@ temporal table implementation details that are leaking into the domain layer.
   4. Update UI labels accordingly
 #+end_quote
 
+*** COMPLETED Add account management support to qt                     :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-16 Tue 09:54]--[2025-12-16 Tue 11:47] =>  1:53
+    CLOCK: [2025-12-16 Tue 00:08]--[2025-12-16 Tue 01:58] =>  1:50
+    :END:
+
+At present we cannot add, remove etc accounts from the UI.
+
+Notes:
+
+- add history support for accounts.
+- on delete we are automatically reloading.
+- if a user has never logged in we should be able to see it. In fact we should
+  bucket accounts by recency:
+  - never logged in
+  - logged in a long time ago
+  - logged in recently
+  - is logged in
+
 *** STARTED Windows clang build failures                               :code:
 
 Seems like we are failing with a SEGFAULT:
@@ -430,14 +453,88 @@ Links:
 - [[https://stackoverflow.com/questions/26458652/ctest-custom-warning-exception][SO: ctest custom warning exception]]
 
 
-*** Remove columns from currency dialog                                :code:
+*** Add password reset functionality to accounts                       :code:
 
-We need to either make the columns configurable, or remove some less useful
-columns such as symbol, fraction etc.
+At present it is not possible to reset a user's password.
+
+*** Add sign-up workflow                                               :code:
+
+It should be possible to sign-up and create a new account.
+
+*** Improve error messages in shell                                    :code:
+
+At present adding an account that violates some database constraint is not very
+informative:
+
+: ores-shell> ✗ Server returned an error
+
+Client logs:
+
+#+begin_src logview
+2025-12-16 10:20:39.538351 [TRACE] [ores.comms.net.client] send_request_sync: task completed.
+2025-12-16 10:20:39.538431 [DEBUG] [ores.comms.net.client] Completed synchronous send request successfully.
+2025-12-16 10:20:39.538494 [ERROR] [ores.comms.net.client_session] Server returned error: Repository error: Executing INSERT failed: ERROR:  duplicate key value violates unique constraint "accounts_username_unique_idx"
+DETAIL:  Key (username)=(newuser37) already exists.
+2025-12-16 10:20:39.538567 [DEBUG] [ores.shell.app.repl] Sending logout request before exit.
+#+end_src
+
+Similarly, if the server goes down we don't know. Next messages just say:
+
+: accounts> list
+: ✗ Request failed
+
+Server logs:
+
+#+begin_src logview
+2025-12-16 10:22:34.224094 [DEBUG] [ores.comms.net.connection] Waiting to read the next frame (skip_version_check=false) cancel_slot.is_connected=false
+2025-12-16 10:22:34.224231 [ERROR] [ores.comms.net.connection] Network error in read_frame: stream truncated [asio.ssl.stream:1]
+2025-12-16 10:22:34.224276 [ERROR] [ores.comms.net.client] Failed to read response frame, error network_error (0x7)
+2025-12-16 10:22:34.224335 [WARN] [ores.comms.net.client] Connection lost
+2025-12-16 10:22:34.224364 [TRACE] [ores.comms.net.client] send_request_sync: task completed.
+#+end_src
+
+*** Assorted fixes to currency dialog                                  :code:
+
+At present the following is not working or is a snag:
+
+- can we make the details windows unmaximisable.
+- currencies history is broken, does not show changes diff. Done.
+- version is zero. Done.
+- update the modified by and modified at in currencies to use recorded
+  terminology.
+- We need to either make the columns configurable, or remove some less useful
+  columns such as symbol, fraction etc.
+- save new currency does not close dialog.
+- can we refactor reload logic into common entity code.
+
+*** Assorted fixes to accounts dialog                                  :code:
+
+- remove "grant administrative privileges" from details screen.
+
+*** Implement entity history in shell                                  :code:
+
+We need to add a command in shell to show entity history.
+
+Notes:
+
+- for the history diff we could use a simple unified diff format.
+
+*** Consider adding an "entity waterfall"                              :code:
+
+It would be nice to be able to see what entities have been added, deleted,
+modified, etc. This would work as a running commentary.
+
+*** Notification of deletes                                            :code:
+
+At present it is easy to see new rows or modified rows in an entity dialog. It
+is not possible to see deleted rows. One way to do this is to preserve state
+from before reload by key. Any entities which are not present after reload can
+be shown as red. History then allows users to re-instate deleted entities.
 
 *** Add listen/notify to shell                                         :code:
 
 At present we cannot listen from the shell. This makes testing harder.
+Notification should show up in the next prompt like PSQL does.
 
 *** History should have a revert button                                :code:
 
@@ -558,6 +655,9 @@ Notes:
 - calculate statistical measures (average session duration, average bytes etc)
   and consider plotting them. Also in the aggregate so we can see patterns over
   time.
+- keep track of the session id so we know what client we are using, the version
+  etc. We should display this information in the accounts dialog.
+- on the main accounts dialog we should show the number of open sessions.
 
 *** Subscribe on reconnect fails                                       :code:
 

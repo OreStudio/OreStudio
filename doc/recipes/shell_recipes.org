@@ -389,8 +389,8 @@ Creates new user accounts.
 
 #+name: create-account
 #+begin_src ores-shell :exports none
-accounts create newuser28 123 567 newuser28@example.com 0
-accounts create newuser29 123 567 newuser29@example.com 1
+accounts create newuser40 Secure-Password-123 567 newuser40@example.com 0
+accounts create newuser41 Secure-Password-123 567 newuser41@example.com 1
 exit
 #+end_src
 
@@ -405,11 +405,11 @@ EOF
 #+begin_example
 ✓ Connected to :55555
 ✓ Logged in as: newuser3
-ORE Studio Shell REPL v0.0.6
+ORE Studio Shell REPL v0.0.7
 Type 'help' for available commands, 'exit' to quit
 
-ores-shell> ✓ Account created with ID: 019b13f1-7eea-72ce-a76e-172895437e2e
-ores-shell> ✓ Account created with ID: 019b13f1-7f8e-7295-9783-932e36172274
+ores-shell> ✓ Account created with ID: 019b26b1-237f-78b2-a6b8-6c0f6e343d10
+ores-shell> ✓ Account created with ID: 019b26b1-23d6-7458-bbb7-feb5b8067ef9
 ores-shell> Bye!
 #+end_example
 

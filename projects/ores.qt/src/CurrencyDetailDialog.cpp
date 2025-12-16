@@ -58,7 +58,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
 
     // Create Save action
     saveAction_ = new QAction("Save", this);
-    saveAction_->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_save_20_filled.svg",
+    saveAction_->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_save_20_regular.svg",
             iconColor));
     saveAction_->setToolTip("Save changes");
     connect(saveAction_, &QAction::triggered, this,

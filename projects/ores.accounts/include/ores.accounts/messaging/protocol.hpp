@@ -21,6 +21,7 @@
 #define ORES_ACCOUNTS_MESSAGING_PROTOCOL_HPP
 
 #include "ores.accounts/messaging/account_protocol.hpp"
+#include "ores.accounts/messaging/account_history_protocol.hpp"
 #include "ores.accounts/messaging/login_protocol.hpp"
 #include "ores.accounts/messaging/bootstrap_protocol.hpp"
 

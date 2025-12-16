@@ -98,6 +98,13 @@ public:
     bool isConnected() const;
 
     /**
+     * @brief Check if the logged-in user has admin privileges.
+     *
+     * @return true if user is an admin, false otherwise or if not logged in.
+     */
+    bool isAdmin() const;
+
+    /**
      * @brief Send a request if connected.
      *
      * @param request The request frame to send
@@ -184,6 +191,9 @@ private:
 
     // Logged-in account tracking
     std::optional<boost::uuids::uuid> logged_in_account_id_;
+
+    // Admin status of logged-in user
+    bool is_admin_{false};
 
     // Event bus for publishing connection events (passed to client)
     std::shared_ptr<eventing::service::event_bus> event_bus_;

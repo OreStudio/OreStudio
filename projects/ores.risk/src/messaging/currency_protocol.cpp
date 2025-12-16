@@ -32,6 +32,7 @@ namespace {
  * @brief Helper function to serialize a single currency
  */
 void serialize_currency(std::vector<std::byte>& buffer, const domain::currency& currency) {
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(currency.version));
     writer::write_string(buffer, currency.iso_code);
     writer::write_string(buffer, currency.name);
     writer::write_string(buffer, currency.numeric_code);
@@ -49,6 +50,10 @@ void serialize_currency(std::vector<std::byte>& buffer, const domain::currency& 
 std::expected<domain::currency, error_code>
 deserialize_currency(std::span<const std::byte>& data) {
     domain::currency currency;
+
+    auto version = reader::read_uint32(data);
+    if (!version) return std::unexpected(version.error());
+    currency.version = static_cast<int>(*version);
 
     auto iso_code = reader::read_string(data);
     if (!iso_code) return std::unexpected(iso_code.error());
@@ -253,6 +258,7 @@ std::vector<std::byte> get_currencies_response::serialize() const {
 
     // Write each currency
     for (const auto& currency : currencies) {
+        writer::write_uint32(buffer, static_cast<std::uint32_t>(currency.version));
         writer::write_string(buffer, currency.iso_code);
         writer::write_string(buffer, currency.name);
         writer::write_string(buffer, currency.numeric_code);
@@ -292,6 +298,10 @@ get_currencies_response::deserialize(std::span<const std::byte> data) {
     response.currencies.reserve(count);
     for (std::uint32_t i = 0; i < count; ++i) {
         domain::currency currency;
+
+        auto version = reader::read_uint32(data);
+        if (!version) return std::unexpected(version.error());
+        currency.version = static_cast<int>(*version);
 
         auto iso_code = reader::read_string(data);
         if (!iso_code) return std::unexpected(iso_code.error());

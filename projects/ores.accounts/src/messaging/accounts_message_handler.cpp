@@ -79,6 +79,10 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_create_initial_admin_request(payload, remote_address);
     case message_type::bootstrap_status_request:
         co_return co_await handle_bootstrap_status_request(payload);
+    case message_type::update_account_request:
+        co_return co_await handle_update_account_request(payload, remote_address);
+    case message_type::get_account_history_request:
+        co_return co_await handle_get_account_history_request(payload, remote_address);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown accounts message type " << type;
         co_return std::unexpected(comms::messaging::error_code::invalid_message_type);
@@ -265,10 +269,15 @@ handle_lock_account_request(std::span<const std::byte> payload,
     if (!session) {
         BOOST_LOG_SEV(lg(), warn) << "Lock account denied: no active session for "
                                   << remote_address;
-        lock_account_response response{
-            .success = false,
-            .error_message = "Authentication required to lock accounts"
-        };
+        // Return error for all requested accounts
+        lock_account_response response;
+        for (const auto& id : request.account_ids) {
+            response.results.push_back({
+                .account_id = id,
+                .success = false,
+                .message = "Authentication required to lock accounts"
+            });
+        }
         co_return response.serialize();
     }
 
@@ -277,27 +286,38 @@ handle_lock_account_request(std::span<const std::byte> payload,
         BOOST_LOG_SEV(lg(), warn) << "Lock account denied: requester "
                                   << boost::uuids::to_string(session->account_id)
                                   << " is not an admin";
-        lock_account_response response{
-            .success = false,
-            .error_message = "Admin privileges required to lock accounts"
-        };
+        // Return error for all requested accounts
+        lock_account_response response;
+        for (const auto& id : request.account_ids) {
+            response.results.push_back({
+                .account_id = id,
+                .success = false,
+                .message = "Admin privileges required to lock accounts"
+            });
+        }
         co_return response.serialize();
     }
 
-    bool success = service_.lock_account(request.account_id);
+    // Process each account
+    lock_account_response response;
+    for (const auto& account_id : request.account_ids) {
+        bool success = service_.lock_account(account_id);
 
-    if (success) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully locked account: "
-                                  << boost::uuids::to_string(request.account_id);
-    } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to lock account: "
-                                  << boost::uuids::to_string(request.account_id);
+        if (success) {
+            BOOST_LOG_SEV(lg(), info) << "Successfully locked account: "
+                                      << boost::uuids::to_string(account_id);
+        } else {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to lock account: "
+                                      << boost::uuids::to_string(account_id);
+        }
+
+        response.results.push_back({
+            .account_id = account_id,
+            .success = success,
+            .message = success ? "" : "Account does not exist"
+        });
     }
 
-    lock_account_response response{
-        .success = success,
-        .error_message = success ? "" : "Account does not exist"
-    };
     co_return response.serialize();
 }
 
@@ -321,10 +341,15 @@ handle_unlock_account_request(std::span<const std::byte> payload,
     if (!session) {
         BOOST_LOG_SEV(lg(), warn) << "Unlock account denied: no active session for "
                                   << remote_address;
-        unlock_account_response response{
-            .success = false,
-            .error_message = "Authentication required to unlock accounts"
-        };
+        // Return error for all requested accounts
+        unlock_account_response response;
+        for (const auto& id : request.account_ids) {
+            response.results.push_back({
+                .account_id = id,
+                .success = false,
+                .message = "Authentication required to unlock accounts"
+            });
+        }
         co_return response.serialize();
     }
 
@@ -333,27 +358,38 @@ handle_unlock_account_request(std::span<const std::byte> payload,
         BOOST_LOG_SEV(lg(), warn) << "Unlock account denied: requester "
                                   << boost::uuids::to_string(session->account_id)
                                   << " is not an admin";
-        unlock_account_response response{
-            .success = false,
-            .error_message = "Admin privileges required to unlock accounts"
-        };
+        // Return error for all requested accounts
+        unlock_account_response response;
+        for (const auto& id : request.account_ids) {
+            response.results.push_back({
+                .account_id = id,
+                .success = false,
+                .message = "Admin privileges required to unlock accounts"
+            });
+        }
         co_return response.serialize();
     }
 
-    bool success = service_.unlock_account(request.account_id);
+    // Process each account
+    unlock_account_response response;
+    for (const auto& account_id : request.account_ids) {
+        bool success = service_.unlock_account(account_id);
 
-    if (success) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully unlocked account: "
-                                  << boost::uuids::to_string(request.account_id);
-    } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to unlock account: "
-                                  << boost::uuids::to_string(request.account_id);
+        if (success) {
+            BOOST_LOG_SEV(lg(), info) << "Successfully unlocked account: "
+                                      << boost::uuids::to_string(account_id);
+        } else {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to unlock account: "
+                                      << boost::uuids::to_string(account_id);
+        }
+
+        response.results.push_back({
+            .account_id = account_id,
+            .success = success,
+            .message = success ? "" : "Account does not exist"
+        });
     }
 
-    unlock_account_response response{
-        .success = success,
-        .error_message = success ? "" : "Account does not exist"
-    };
     co_return response.serialize();
 }
 
@@ -554,6 +590,138 @@ handle_logout_request(std::span<const std::byte> payload,
         };
         co_return response.serialize();
     }
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_update_account_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing update_account_request from "
+                               << remote_address;
+
+    auto request_result = update_account_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize update_account_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+
+    // Get the requester's session from shared session service
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "Update account denied: no active session for "
+                                  << remote_address;
+        update_account_response response{
+            .success = false,
+            .error_message = "Authentication required to update accounts"
+        };
+        co_return response.serialize();
+    }
+
+    // Check if requester has admin privileges
+    if (!session->is_admin) {
+        BOOST_LOG_SEV(lg(), warn) << "Update account denied: requester "
+                                  << boost::uuids::to_string(session->account_id)
+                                  << " is not an admin";
+        update_account_response response{
+            .success = false,
+            .error_message = "Admin privileges required to update accounts"
+        };
+        co_return response.serialize();
+    }
+
+    try {
+        bool success = service_.update_account(request.account_id,
+            request.email, request.recorded_by, request.is_admin);
+
+        if (success) {
+            BOOST_LOG_SEV(lg(), info) << "Successfully updated account: "
+                                      << boost::uuids::to_string(request.account_id);
+        }
+
+        update_account_response response{
+            .success = success,
+            .error_message = success ? "" : "Failed to update account"
+        };
+        co_return response.serialize();
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to update account: " << e.what();
+
+        update_account_response response{
+            .success = false,
+            .error_message = std::string("Failed to update account: ") + e.what()
+        };
+        co_return response.serialize();
+    }
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_account_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_account_history_request from "
+                               << remote_address;
+
+    auto request_result = get_account_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_account_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Retrieving history for account: " << request.username;
+
+    get_account_history_response response;
+    try {
+        // Get all versions of the account from service
+        auto accounts = service_.get_account_history(request.username);
+
+        if (accounts.empty()) {
+            response.success = false;
+            response.message = "Account not found: " + request.username;
+            BOOST_LOG_SEV(lg(), warn) << "No history found for account: "
+                                      << request.username;
+            co_return response.serialize();
+        }
+
+        // Convert accounts to account_version objects
+        domain::account_version_history history;
+        history.username = request.username;
+
+        // Sort by version descending (newest first) - use database version field
+        std::sort(accounts.begin(), accounts.end(),
+            [](const auto& a, const auto& b) {
+                return a.version > b.version;
+            });
+
+        for (const auto& account : accounts) {
+            domain::account_version version;
+            version.data = account;
+            version.version_number = account.version;  // Use database version field
+            version.recorded_by = account.recorded_by;
+            version.recorded_at = account.recorded_at;
+            version.change_summary = "Version " + std::to_string(version.version_number);
+
+            history.versions.push_back(std::move(version));
+        }
+
+        response.success = true;
+        response.message = "History retrieved successfully";
+        response.history = std::move(history);
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
+                                  << response.history.versions.size()
+                                  << " versions for account: " << request.username;
+
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to retrieve account history: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error retrieving history for account "
+                                   << request.username << ": " << e.what();
+    }
+
+    co_return response.serialize();
 }
 
 }

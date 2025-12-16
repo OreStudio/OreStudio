@@ -33,6 +33,7 @@ namespace {
  */
 void serialize_currency_version(std::vector<std::byte>& buffer, const domain::currency_version& version) {
     // Write currency data
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(version.data.version));
     writer::write_string(buffer, version.data.iso_code);
     writer::write_string(buffer, version.data.name);
     writer::write_string(buffer, version.data.numeric_code);
@@ -58,6 +59,10 @@ deserialize_currency_version(std::span<const std::byte>& data) {
     domain::currency_version version;
 
     // Read currency data
+    auto db_version = reader::read_uint32(data);
+    if (!db_version) return std::unexpected(db_version.error());
+    version.data.version = static_cast<int>(*db_version);
+
     auto iso_code = reader::read_string(data);
     if (!iso_code) return std::unexpected(iso_code.error());
     version.data.iso_code = *iso_code;

@@ -45,6 +45,7 @@ namespace ores::accounts::messaging {
  * - delete_account_request: Deletes an account (bitemporal soft delete)
  * - create_initial_admin_request: Creates initial admin (bootstrap mode only, localhost only)
  * - bootstrap_status_request: Checks if system is in bootstrap mode
+ * - get_account_history_request: Retrieves all historical versions of an account
  */
 class accounts_message_handler final : public comms::messaging::message_handler {
 private:
@@ -169,6 +170,24 @@ private:
      */
     handler_result
     handle_logout_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle update_account_request message.
+     *
+     * Requires authentication. Only admin users can update accounts.
+     */
+    handler_result
+    handle_update_account_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle get_account_history_request message.
+     *
+     * Requires authentication. Returns all historical versions of an account.
+     */
+    handler_result
+    handle_get_account_history_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
     /**

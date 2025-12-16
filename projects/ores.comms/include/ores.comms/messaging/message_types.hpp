@@ -60,7 +60,15 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 10.0 replaces valid_from/valid_to fields with recorded_by/recorded_at
 // in domain types (currency, account, feature_flags). This is a breaking change
 // affecting all entity serialization in the protocol.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 10;
+//
+// Version 10.1 adds update_account_request and update_account_response messages
+// for editing existing account email and admin status.
+//
+// Version 11.0 changes lock_account_request and unlock_account_request to support
+// batch operations with a vector of account IDs. Responses now return a vector of
+// per-account results (lock_account_result/unlock_account_result). This is a
+// breaking change as the wire format is incompatible with previous versions.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 11;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
@@ -137,6 +145,10 @@ enum class message_type {
     bootstrap_status_response = 0x2012,
     lock_account_request = 0x2013,
     lock_account_response = 0x2014,
+    update_account_request = 0x2015,
+    update_account_response = 0x2016,
+    get_account_history_request = 0x2017,
+    get_account_history_response = 0x2018,
 
     // Variability subsystem messages (0x3000 - 0x3FFF)
     list_feature_flags_request = 0x3000,

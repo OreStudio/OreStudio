@@ -58,12 +58,12 @@
       </column>
       <column>
        <property name="text">
-        <string>Modified At</string>
+        <string>Recorded At</string>
        </property>
       </column>
       <column>
        <property name="text">
-        <string>Modified By</string>
+        <string>Recorded By</string>
        </property>
       </column>
      </widget>

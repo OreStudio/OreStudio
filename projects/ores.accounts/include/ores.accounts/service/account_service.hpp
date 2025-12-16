@@ -177,6 +177,33 @@ public:
      */
     bool is_admin(const boost::uuids::uuid& account_id);
 
+    /**
+     * @brief Updates an existing account's email and admin status.
+     *
+     * Username cannot be changed. This creates a new version of the account
+     * in the temporal history.
+     *
+     * @param account_id The ID of the account to update
+     * @param email The new email address
+     * @param recorded_by The username making the change
+     * @param is_admin The new admin status
+     * @return true if the account was updated successfully, false otherwise
+     * @throws std::invalid_argument If account does not exist
+     */
+    bool update_account(const boost::uuids::uuid& account_id,
+        const std::string& email, const std::string& recorded_by, bool is_admin);
+
+    /**
+     * @brief Retrieves all historical versions of an account by username.
+     *
+     * Returns all versions of the account from the temporal history,
+     * ordered from newest to oldest.
+     *
+     * @param username The username of the account
+     * @return Vector of all historical versions of the account
+     */
+    std::vector<domain::account> get_account_history(const std::string& username);
+
 private:
     repository::account_repository account_repo_;
     repository::login_info_repository login_info_repo_;

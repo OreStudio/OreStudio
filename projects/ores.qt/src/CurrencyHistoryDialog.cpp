@@ -171,6 +171,11 @@ void CurrencyHistoryDialog::onHistoryLoaded() {
     for (int i = 0; i < static_cast<int>(history_.versions.size()); ++i) {
         const auto& version = history_.versions[i];
 
+        BOOST_LOG_SEV(lg(), trace) << "Displaying version [" << i << "]: "
+                                   << "version_number=" << version.version_number
+                                   << ", data.version=" << version.data.version
+                                   << ", recorded_by=" << version.recorded_by;
+
         auto* versionItem =
             new QTableWidgetItem(QString::number(version.version_number));
         auto* recordedAtItem =
@@ -230,12 +235,22 @@ void CurrencyHistoryDialog::displayChangesTab(int version_index) {
 
     // If this is the first (oldest) version, there's nothing to diff against so
     // leave the changes table empty
-    if (version_index == static_cast<int>(history_.versions.size()) - 1)
+    if (version_index == static_cast<int>(history_.versions.size()) - 1) {
+        BOOST_LOG_SEV(lg(), trace) << "No previous version to diff against for oldest version";
         return;
+    }
 
     // Calculate diff with previous version
     const auto& previous = history_.versions[version_index + 1];
+
+    BOOST_LOG_SEV(lg(), trace) << "Calculating diff between version "
+                               << current.version_number << " and " << previous.version_number;
+    BOOST_LOG_SEV(lg(), trace) << "Current name: " << current.data.name
+                               << ", Previous name: " << previous.data.name;
+
     auto diffs = calculateDiff(current, previous);
+
+    BOOST_LOG_SEV(lg(), trace) << "Found " << diffs.size() << " differences";
 
     ui_->changesTableWidget->setRowCount(diffs.size());
 

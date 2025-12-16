@@ -19,6 +19,7 @@
  */
 \ir ./currencies_notify_trigger_drop.sql
 \ir ./currencies_drop.sql
+\ir ./accounts_notify_trigger_drop.sql
 \ir ./accounts_drop.sql
 \ir ./feature_flags_drop.sql
 \ir ./login_info_drop.sql

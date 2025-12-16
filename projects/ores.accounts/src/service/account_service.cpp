@@ -24,6 +24,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include "ores.accounts/security/password_manager.hpp"
 #include "ores.accounts/security/password_policy_validator.hpp"
+#include "ores.accounts/security/email_validator.hpp"
 
 namespace ores::accounts::service {
 
@@ -488,13 +489,11 @@ std::string account_service::update_my_email(const boost::uuids::uuid& account_i
     BOOST_LOG_SEV(lg(), debug) << "Updating email for account: "
                                << boost::uuids::to_string(account_id);
 
-    // Validate email format (basic check)
-    if (new_email.empty()) {
-        return "Email cannot be empty";
-    }
-
-    if (new_email.find('@') == std::string::npos) {
-        return "Invalid email format";
+    // Validate email format
+    using security::email_validator;
+    auto validation = email_validator::validate(new_email);
+    if (!validation.is_valid) {
+        return validation.error_message;
     }
 
     // Verify account exists

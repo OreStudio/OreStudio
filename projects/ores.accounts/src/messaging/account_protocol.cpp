@@ -144,6 +144,7 @@ std::vector<std::byte> list_accounts_response::serialize() const {
     for (const auto& account : accounts) {
         writer::write_uint32(buffer, static_cast<std::uint32_t>(account.version));
         writer::write_string(buffer, account.recorded_by);
+        writer::write_string(buffer, account.recorded_at);
         writer::write_uuid(buffer, account.id);
         writer::write_string(buffer, account.username);
         writer::write_string(buffer, account.password_hash);
@@ -186,6 +187,10 @@ list_accounts_response::deserialize(std::span<const std::byte> data) {
         auto recorded_by_result = reader::read_string(data);
         if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
         account.recorded_by = *recorded_by_result;
+
+        auto recorded_at_result = reader::read_string(data);
+        if (!recorded_at_result) return std::unexpected(recorded_at_result.error());
+        account.recorded_at = *recorded_at_result;
 
         auto id_result = reader::read_uuid(data);
         if (!id_result) return std::unexpected(id_result.error());

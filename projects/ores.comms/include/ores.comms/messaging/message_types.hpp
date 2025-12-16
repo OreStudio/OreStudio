@@ -63,8 +63,13 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 //
 // Version 10.1 adds update_account_request and update_account_response messages
 // for editing existing account email and admin status.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 10;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
+//
+// Version 11.0 changes lock_account_request and unlock_account_request to support
+// batch operations with a vector of account IDs. Responses now return a vector of
+// per-account results (lock_account_result/unlock_account_result). This is a
+// breaking change as the wire format is incompatible with previous versions.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 11;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

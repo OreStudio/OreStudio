@@ -14,7 +14,7 @@ To regenerate: =cmake --build --preset linux-clang-debug --target generate_proto
 
 * Protocol Version
 
-Current version: *10.1*
+Current version: *11.0*
 
 ** Version History
 
@@ -36,6 +36,10 @@ Current version: *10.1*
 - affecting all entity serialization in the protocol.
 - Version 10.1 adds update_account_request and update_account_response messages
 - for editing existing account email and admin status.
+- Version 11.0 changes lock_account_request and unlock_account_request to support
+- batch operations with a vector of account IDs. Responses now return a vector of
+- per-account results (lock_account_result/unlock_account_result). This is a
+- breaking change as the wire format is incompatible with previous versions.
 
 * Subsystems
 

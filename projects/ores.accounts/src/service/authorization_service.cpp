@@ -150,6 +150,17 @@ domain::role authorization_service::create_role(
         throw std::runtime_error("Role with name '" + name + "' already exists.");
     }
 
+    // Validate all permissions exist before creating anything
+    std::vector<domain::permission> resolved_perms;
+    resolved_perms.reserve(permission_codes.size());
+    for (const auto& code : permission_codes) {
+        auto perm = find_permission_by_code(code);
+        if (!perm) {
+            throw std::runtime_error("Permission with code '" + code + "' not found.");
+        }
+        resolved_perms.push_back(*perm);
+    }
+
     // Create the role
     domain::role role;
     role.id = uuid_generator_.generate();
@@ -162,17 +173,10 @@ domain::role authorization_service::create_role(
     role_repo_.write(role);
 
     // Create role-permission mappings
-    for (const auto& code : permission_codes) {
-        auto perm = find_permission_by_code(code);
-        if (!perm) {
-            BOOST_LOG_SEV(lg(), warn) << "Permission not found: " << code
-                                      << " - skipping.";
-            continue;
-        }
-
+    for (const auto& perm : resolved_perms) {
         domain::role_permission rp;
         rp.role_id = role.id;
-        rp.permission_id = perm->id;
+        rp.permission_id = perm.id;
         role_permission_repo_.write(rp);
     }
 

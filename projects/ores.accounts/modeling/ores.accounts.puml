@@ -15,7 +15,6 @@
 ' GNU Emacs; see the file COPYING. If not, write to the Free Software
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 @startuml
-!pragma layout smetana
 
 title ores.accounts Component
 
@@ -30,10 +29,10 @@ namespace ores #F2F2F2 {
             ' Layout groupings
             '
 
-            together {
-                class account
-                class login_info
-            }
+             ' together {
+             '     class account
+             '     class login_info
+             ' }
 
             account -[hidden]down- login_info
 
@@ -102,18 +101,18 @@ namespace ores #F2F2F2 {
             '
 
             ' Group: Account persistence
-            together {
-                class account_entity
-                class account_mapper
-                class account_repository
-            }
+             ' together {
+             '     class account_entity
+             '     class account_mapper
+             '     class account_repository
+             ' }
 
             ' Group: Login info persistence
-            together {
-                class login_info_entity
-                class login_info_mapper
-                class login_info_repository
-            }
+             ' together {
+             '     class login_info_entity
+             '     class login_info_mapper
+             '     class login_info_repository
+             ' }
 
             ' Stack account classes vertically
             account_entity -[hidden]down- account_mapper
@@ -329,40 +328,52 @@ namespace ores #F2F2F2 {
             '
 
             ' Group: Create account messages
-            together {
-                class create_account_request
-                class create_account_response
-            }
+            /'
+             ' together {
+             '     class create_account_request
+             '     class create_account_response
+             ' }
+             '/
 
             ' Group: List accounts messages
-            together {
-                class list_accounts_request
-                class list_accounts_response
-            }
+            /'
+             ' together {
+             '     class list_accounts_request
+             '     class list_accounts_response
+             ' }
+             '/
 
             ' Group: Login messages
-            together {
-                class login_request
-                class login_response
-            }
+            /'
+             ' together {
+             '     class login_request
+             '     class login_response
+             ' }
+             '/
 
             ' Group: Logout messages
-            together {
-                class logout_request
-                class logout_response
-            }
+            /'
+             ' together {
+             '     class logout_request
+             '     class logout_response
+             ' }
+             '/
 
             ' Group: Unlock account messages
-            together {
-                class unlock_account_request
-                class unlock_account_response
-            }
+            /'
+             ' together {
+             '     class unlock_account_request
+             '     class unlock_account_response
+             ' }
+             '/
 
             ' Group: Handler infrastructure
-            together {
-                class accounts_message_handler
-                class registrar
-            }
+            /'
+             ' together {
+             '     class accounts_message_handler
+             '     class registrar
+             ' }
+             '/
 
             ' Stack request/response pairs vertically
             create_account_request -[hidden]down- create_account_response
@@ -606,11 +617,13 @@ namespace ores #F2F2F2 {
             ' Layout groupings
             '
 
-            together {
-                class password_manager
-                class password_policy_validator
-                class email_validator
-            }
+            /'
+             ' together {
+             '     class password_manager
+             '     class password_policy_validator
+             '     class email_validator
+             ' }
+             '/
 
             password_manager -[hidden]down- password_policy_validator
             password_policy_validator -[hidden]down- email_validator
@@ -701,29 +714,37 @@ namespace ores #F2F2F2 {
             '
 
             ' Group: Domain tests
-            together {
-                class domain_account_tests
-                class domain_logins_tests
-            }
+            /'
+             ' together {
+             '     class domain_account_tests
+             '     class domain_logins_tests
+             ' }
+             '/
 
             ' Group: Messaging tests
-            together {
-                class messaging_accounts_message_handler_tests
-                class messaging_protocol_tests
-            }
+            /'
+             ' together {
+             '     class messaging_accounts_message_handler_tests
+             '     class messaging_protocol_tests
+             ' }
+             '/
 
             ' Group: Repository and service tests
-            together {
-                class repository_account_repository_tests
-                class service_account_service_tests
-            }
+            /'
+             ' together {
+             '     class repository_account_repository_tests
+             '     class service_account_service_tests
+             ' }
+             '/
 
             ' Group: Security tests
-            together {
-                class security_password_manager_tests
-                class security_password_policy_validator_tests
-                class security_email_validator_tests
-            }
+            /'
+             ' together {
+             '     class security_password_manager_tests
+             '     class security_password_policy_validator_tests
+             '     class security_email_validator_tests
+             ' }
+             '/
 
             ' Stack related tests vertically
             domain_account_tests -[hidden]down- domain_logins_tests

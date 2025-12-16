@@ -22,20 +22,25 @@
 
 #include <string>
 #include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::accounts::repository {
 
 /**
  * @brief Represents a role-permission assignment in the database.
  *
- * This is a junction table linking roles to permissions.
+ * This is a junction table linking roles to permissions in a many-to-many
+ * relationship. A role can have multiple permissions, and a permission can
+ * be assigned to multiple roles.
+ *
+ * Note: The actual primary key is a composite key (role_id, permission_id,
+ * valid_from) defined at the database schema level. sqlgen does not support
+ * composite primary keys, so this entity omits the PrimaryKey wrapper.
  */
 struct role_permission_entity {
     constexpr static const char* schema = "oresdb";
     constexpr static const char* tablename = "role_permissions";
 
-    sqlgen::PrimaryKey<std::string> role_id;
+    std::string role_id;
     std::string permission_id;
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";

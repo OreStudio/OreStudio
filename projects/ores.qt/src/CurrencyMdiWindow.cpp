@@ -87,13 +87,13 @@ CurrencyMdiWindow(ClientManager* clientManager,
     toolBar_->addSeparator();
 
     addAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_add_20_filled.svg", iconColor));
+            ":/icons/ic_fluent_add_20_regular.svg", iconColor));
     addAction_->setToolTip("Add new currency");
     connect(addAction_, &QAction::triggered, this, &CurrencyMdiWindow::addNew);
     toolBar_->addAction(addAction_);
 
     editAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_edit_20_filled.svg", iconColor));
+            ":/icons/ic_fluent_edit_20_regular.svg", iconColor));
     editAction_->setToolTip("Edit selected currency");
     connect(editAction_, &QAction::triggered, this,
         &CurrencyMdiWindow::editSelected);

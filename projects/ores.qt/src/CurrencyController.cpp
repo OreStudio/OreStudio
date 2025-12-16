@@ -142,7 +142,7 @@ void CurrencyController::showListWindow() {
     currencyListWindow_->setWidget(currencyWidget);
     currencyListWindow_->setWindowTitle("Currencies");
     currencyListWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
+        ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
 
     // Track window for detach/reattach operations
     allDetachableWindows_.append(currencyListWindow_);
@@ -205,7 +205,7 @@ void CurrencyController::onAddNewRequested() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Currency");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
+        ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
 
     allDetachableWindows_.append(detailWindow);
     QPointer<CurrencyController> self = this;
@@ -272,7 +272,7 @@ void CurrencyController::onShowCurrencyDetails(
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Currency Details: %1").arg(isoCode));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
+        ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
 
     // Track this detail window
     track_window(windowKey, detailWindow);

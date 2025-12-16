@@ -81,23 +81,23 @@ MainWindow::MainWindow(QWidget* parent) :
     const QColor disconnectedColor(200, 100, 100); // Red for disconnected
     const QColor reconnectingColor(230, 180, 80); // Orange/yellow for reconnecting
     connectedIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_plug_connected_20_filled.svg",
+        ":/icons/ic_fluent_plug_connected_20_regular.svg",
         connectedColor);
     disconnectedIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_plug_disconnected_20_filled.svg", disconnectedColor);
+        ":/icons/ic_fluent_plug_disconnected_20_regular.svg", disconnectedColor);
     reconnectingIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_plug_disconnected_20_filled.svg", reconnectingColor);
+        ":/icons/ic_fluent_plug_disconnected_20_regular.svg", reconnectingColor);
 
     ui_->ActionConnect->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_plug_connected_20_filled.svg", iconColor));
+        ":/icons/ic_fluent_plug_connected_20_regular.svg", iconColor));
     ui_->ActionDisconnect->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_plug_disconnected_20_filled.svg", iconColor));
+        ":/icons/ic_fluent_plug_disconnected_20_regular.svg", iconColor));
     ui_->CurrenciesAction->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_currency_dollar_euro_20_filled.svg", iconColor));
+        ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
     ui_->ActionAbout->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_star_20_regular.svg", iconColor));
     ui_->ActionAccounts->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_person_20_filled.svg", iconColor));
+        ":/icons/ic_fluent_person_accounts_20_regular.svg", iconColor));
 
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this,

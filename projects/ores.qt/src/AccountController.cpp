@@ -133,7 +133,7 @@ void AccountController::showListWindow() {
     accountListWindow_->setWidget(accountWidget);
     accountListWindow_->setWindowTitle("Accounts");
     accountListWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_person_20_filled.svg", iconColor));
+        ":/icons/ic_fluent_person_accounts_20_regular.svg", iconColor));
 
     // Track window for detach/reattach operations
     allDetachableWindows_.append(accountListWindow_);
@@ -223,7 +223,7 @@ void AccountController::onAddNewRequested() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Account");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_person_20_filled.svg", iconColor));
+        ":/icons/ic_fluent_person_accounts_20_regular.svg", iconColor));
 
     allDetachableWindows_.append(detailWindow);
     QPointer<AccountController> self = this;
@@ -291,7 +291,7 @@ void AccountController::onShowAccountDetails(
     detailWindow->setWindowTitle(QString("Account: %1")
         .arg(QString::fromStdString(account.username)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_person_20_filled.svg", iconColor));
+        ":/icons/ic_fluent_person_accounts_20_regular.svg", iconColor));
 
     allDetachableWindows_.append(detailWindow);
     QPointer<AccountController> self = this;

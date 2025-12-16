@@ -82,13 +82,13 @@ AccountMdiWindow(ClientManager* clientManager,
     toolBar_->addSeparator();
 
     addAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_add_20_filled.svg", iconColor));
+            ":/icons/ic_fluent_add_20_regular.svg", iconColor));
     addAction_->setToolTip("Add new account");
     connect(addAction_, &QAction::triggered, this, &AccountMdiWindow::addNew);
     toolBar_->addAction(addAction_);
 
     editAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_edit_20_filled.svg", iconColor));
+            ":/icons/ic_fluent_edit_20_regular.svg", iconColor));
     editAction_->setToolTip("Edit selected account");
     connect(editAction_, &QAction::triggered, this,
         &AccountMdiWindow::editSelected);

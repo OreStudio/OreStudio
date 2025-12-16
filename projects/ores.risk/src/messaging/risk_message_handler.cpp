@@ -212,10 +212,10 @@ handle_get_currency_history_request(std::span<const std::byte> payload) {
         domain::currency_version_history history;
         history.iso_code = request.iso_code;
 
-        // Sort by valid_from descending (newest first)
+        // Sort by recorded_at descending (newest first)
         std::sort(currencies.begin(), currencies.end(),
             [](const auto& a, const auto& b) {
-                return a.valid_from > b.valid_from;
+                return a.recorded_at > b.recorded_at;
             });
 
         int version_number = static_cast<int>(currencies.size());
@@ -223,8 +223,8 @@ handle_get_currency_history_request(std::span<const std::byte> payload) {
             domain::currency_version version;
             version.data = currency;
             version.version_number = version_number--;
-            version.modified_by = currency.modified_by;
-            version.modified_at = currency.valid_from;
+            version.recorded_by = currency.recorded_by;
+            version.recorded_at = currency.recorded_at;
             version.change_summary = "Version " + std::to_string(version.version_number);
 
             history.versions.push_back(std::move(version));

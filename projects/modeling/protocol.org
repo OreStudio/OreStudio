@@ -14,7 +14,7 @@ To regenerate: =cmake --build --preset linux-clang-debug --target generate_proto
 
 * Protocol Version
 
-Current version: *8.0*
+Current version: *10.0*
 
 ** Version History
 
@@ -27,6 +27,13 @@ Current version: *8.0*
 - Version 8.0 removes requester_account_id from lock_account_request and
 - unlock_account_request. Authorization is now handled via server-side session
 - tracking instead of client-provided identity. This is a breaking change.
+- Version 9.0 adds optional payload compression support. The reserved1 field
+- in the frame header is now used for compression_type (1 byte) and flags
+- (1 byte). Supported compression algorithms: none, zlib, gzip, bzip2.
+- Uncompressed payloads remain fully supported (compression_type::none).
+- Version 10.0 replaces valid_from/valid_to fields with recorded_by/recorded_at
+- in domain types (currency, account, feature_flags). This is a breaking change
+- affecting all entity serialization in the protocol.
 
 * Subsystems
 

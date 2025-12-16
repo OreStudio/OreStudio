@@ -45,9 +45,9 @@ struct account final {
     boost::uuids::uuid id;
 
     /**
-     * @brief Username of the user who last modified this account.
+     * @brief Username of the person who recorded this version in the system.
      */
-    std::string modified_by;
+    std::string recorded_by;
 
 
     /**
@@ -74,6 +74,11 @@ struct account final {
      * @brief Email address associated with the account.
      */
     std::string email;
+
+    /**
+     * @brief Timestamp when this version of the record was recorded in the system.
+     */
+    std::string recorded_at;
 };
 
 }

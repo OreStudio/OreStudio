@@ -51,7 +51,7 @@ std::size_t flag_initializer::ensure_system_flags_exist() {
             .enabled = def.default_enabled,
             .name = flag_name,
             .description = std::string(def.description),
-            .modified_by = "system"
+            .recorded_by = "system"
         };
 
         feature_flags_service_.save_feature_flag(ff);

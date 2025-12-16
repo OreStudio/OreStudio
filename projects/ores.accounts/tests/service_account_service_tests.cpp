@@ -57,7 +57,7 @@ TEST_CASE("create_account_with_valid_data", tags) {
 
     const std::string password = faker::internet::password();
     const auto a = sut.create_account(e.username, e.email, password,
-            e.modified_by, false);
+            e.recorded_by, false);
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
     CHECK(a.username == e.username);
@@ -81,7 +81,7 @@ TEST_CASE("create_account_with_admin_flag", tags) {
     const std::string password = faker::internet::password();
     const auto a =
         sut.create_account(e.username, e.email, password,
-        e.modified_by, e.is_admin);
+        e.recorded_by, e.is_admin);
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
     CHECK(a.username == e.username);
@@ -103,7 +103,7 @@ TEST_CASE("create_multiple_accounts", tags) {
         const std::string password = faker::internet::password();
         const auto a =
             sut.create_account(e.username, e.email, password,
-            e.modified_by, e.is_admin);
+            e.recorded_by, e.is_admin);
         BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
         CHECK(a.username == e.username);
@@ -124,7 +124,7 @@ TEST_CASE("create_account_with_empty_username_throws", tags) {
 
     const std::string password = faker::internet::password();
     CHECK_THROWS_AS(sut.create_account(e.username, e.email, password,
-            e.modified_by, e.is_admin), std::invalid_argument);
+            e.recorded_by, e.is_admin), std::invalid_argument);
 }
 
 TEST_CASE("create_account_with_empty_email_throws", tags) {
@@ -139,7 +139,7 @@ TEST_CASE("create_account_with_empty_email_throws", tags) {
 
     const std::string password = faker::internet::password();
     CHECK_THROWS_AS(sut.create_account(e.username, e.email,
-            password, e.modified_by, e.is_admin), std::invalid_argument);
+            password, e.recorded_by, e.is_admin), std::invalid_argument);
 }
 
 TEST_CASE("create_account_with_empty_password_throws", tags) {
@@ -153,7 +153,7 @@ TEST_CASE("create_account_with_empty_password_throws", tags) {
 
     const std::string empty_password;
     CHECK_THROWS_AS(sut.create_account(e.username, e.email,
-            empty_password, e.modified_by, e.is_admin), std::invalid_argument);
+            empty_password, e.recorded_by, e.is_admin), std::invalid_argument);
 }
 
 TEST_CASE("list_accounts_returns_empty_for_no_accounts", tags) {
@@ -179,7 +179,7 @@ TEST_CASE("list_accounts_returns_created_accounts", tags) {
         const std::string password = faker::internet::password();
         BOOST_LOG_SEV(lg, info) << "Expected: " << e;
         sut.create_account(e.username, e.email, password,
-            e.modified_by, e.is_admin);
+            e.recorded_by, e.is_admin);
     }
 
     auto actual_list = sut.list_accounts();
@@ -198,7 +198,7 @@ TEST_CASE("login_with_valid_credentials", tags) {
 
     const std::string password = faker::internet::password();
     const auto account = sut.create_account(e.username,
-        e.email, password, e.modified_by, e.is_admin);
+        e.email, password, e.recorded_by, e.is_admin);
 
     auto ip = internet::ipv4();
     auto a = sut.login(account.username, password, ip);
@@ -218,7 +218,7 @@ TEST_CASE("login_with_invalid_password_throws", tags) {
 
     const std::string password = faker::internet::password();
     const auto account = sut.create_account(e.username,
-        e.email, password, e.modified_by, e.is_admin);
+        e.email, password, e.recorded_by, e.is_admin);
 
     auto ip = internet::ipv4();
     CHECK_THROWS_AS(sut.login(e.username, "wrong_password", ip),
@@ -272,7 +272,7 @@ TEST_CASE("login_with_empty_password_throws", tags) {
 
     const std::string password = faker::internet::password();
     sut.create_account(account.username, account.email, password,
-        account.modified_by, account.is_admin);
+        account.recorded_by, account.is_admin);
 
     const std::string empty_password;
     auto ip = internet::ipv4();
@@ -291,7 +291,7 @@ TEST_CASE("account_locks_after_multiple_failed_logins", tags) {
 
     const std::string password = faker::internet::password();
     sut.create_account(account.username, account.email, password,
-        account.modified_by, account.is_admin);
+        account.recorded_by, account.is_admin);
 
     BOOST_LOG_SEV(lg, info) << "Attempting 5 failed logins to lock account";
 
@@ -327,7 +327,7 @@ TEST_CASE("lock_account_successful", tags) {
 
     const auto generated =
         sut.create_account(account.username, account.email,
-        password, account.modified_by, account.is_admin);
+        password, account.recorded_by, account.is_admin);
 
     BOOST_LOG_SEV(lg, info) << "Locking account.";
     bool lock_result = sut.lock_account(generated.id);
@@ -364,7 +364,7 @@ TEST_CASE("unlock_account_successful", tags) {
 
     const auto generated =
         sut.create_account(account.username, account.email,
-        password, account.modified_by, account.is_admin);
+        password, account.recorded_by, account.is_admin);
 
     BOOST_LOG_SEV(lg, info) << "Locking account by failing 5 login attempts";
     auto ip = internet::ipv4();
@@ -428,7 +428,7 @@ TEST_CASE("login_with_different_ip_addresses", tags) {
 
     const std::string password = faker::internet::password();
     sut.create_account(account.username, account.email, password,
-        account.modified_by, account.is_admin);
+        account.recorded_by, account.is_admin);
 
     BOOST_LOG_SEV(lg, info) << "Testing logins from different IPs.";
     for (int i = 0; i < 3; ++i) {

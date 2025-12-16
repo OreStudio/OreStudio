@@ -77,7 +77,7 @@ public:
      */
     domain::account create_account(const std::string& username,
         const std::string& email, const std::string& password,
-        const std::string& modified_by, bool is_admin = false);
+        const std::string& recorded_by, bool is_admin = false);
 
     /**
      * @brief Lists all accounts in the system.

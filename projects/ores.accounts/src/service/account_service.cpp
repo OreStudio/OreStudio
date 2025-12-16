@@ -49,7 +49,7 @@ account_service::account_service(database::context ctx)
 domain::account
 account_service::create_account(const std::string& username,
     const std::string& email, const std::string& password,
-    const std::string& modified_by, bool is_admin) {
+    const std::string& recorded_by, bool is_admin) {
 
     throw_if_empty("Username", username);
     throw_if_empty("Email", email);
@@ -69,7 +69,7 @@ account_service::create_account(const std::string& username,
         .version = 0, // will be set by repository
         .is_admin = is_admin,
         .id = id,
-        .modified_by = modified_by,
+        .recorded_by = recorded_by,
         .username = username,
         .password_hash = password_hash,
         .password_salt = "", // FIXME remove

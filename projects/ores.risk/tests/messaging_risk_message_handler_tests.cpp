@@ -236,9 +236,8 @@ TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip", tags) 
     original_ccy.rounding_precision = 8;
     original_ccy.format = "%3% %1$.8f";
     original_ccy.currency_type = "Cryptocurrency";
-    original_ccy.modified_by = "system";
-    original_ccy.valid_from = "";
-    original_ccy.valid_to = "";
+    original_ccy.recorded_by = "system";
+    original_ccy.recorded_at = "";
 
     risk::repository::currency_repository repo;
     repo.write(h.context(), {original_ccy});
@@ -279,10 +278,9 @@ TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip", tags) 
         CHECK(retrieved_ccy.rounding_precision == original_ccy.rounding_precision);
         CHECK(retrieved_ccy.format == original_ccy.format);
         CHECK(retrieved_ccy.currency_type == original_ccy.currency_type);
-        // Note: modified_by, valid_from, and valid_to are set by the repository
-        CHECK(!retrieved_ccy.modified_by.empty());
-        CHECK(!retrieved_ccy.valid_from.empty());
-        CHECK(!retrieved_ccy.valid_to.empty());
+        // Note: recorded_by and recorded_at are set by the repository
+        CHECK(!retrieved_ccy.recorded_by.empty());
+        CHECK(!retrieved_ccy.recorded_at.empty());
 
         test_completed = true;
     }, boost::asio::detached);

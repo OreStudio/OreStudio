@@ -17,36 +17,32 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-15 Mon 22:51], for Monday, December 15, 2025.
-|       | <75>                                           |        |      |      |       |
-| Tags  | Headline                                       | Time   |      |      |     % |
-|-------+------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                   | *6:02* |      |      | 100.0 |
-|-------+------------------------------------------------+--------+------+------+-------|
-|       | Stories                                        | 6:02   |      |      | 100.0 |
-|       | Active                                         |        | 6:02 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |        |      | 0:28 |   7.7 |
-| infra | OCR scan notebooks for this sprint             |        |      | 0:30 |   8.3 |
-| code  | Consider compressing payload                   |        |      | 3:05 |  51.1 |
-| code  | Latest currencies should have different colour |        |      | 1:28 |  24.3 |
-| code  | Do not expose temporal machinery in domain     |        |      | 0:31 |   8.6 |
+#+CAPTION: Clock summary at [2025-12-16 Tue 00:07], for Tuesday, December 16, 2025.
+|      | <75>                                       |        |      |      |       |
+| Tags | Headline                                   | Time   |      |      |     % |
+|------+--------------------------------------------+--------+------+------+-------|
+|      | *Total time*                               | *0:07* |      |      | 100.0 |
+|------+--------------------------------------------+--------+------+------+-------|
+|      | Stories                                    | 0:07   |      |      | 100.0 |
+|      | Active                                     |        | 0:07 |      | 100.0 |
+| code | Do not expose temporal machinery in domain |        |      | 0:07 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-15 Mon 22:51]
+#+CAPTION: Clock summary at [2025-12-16 Tue 00:07]
 |       | <75>                                           |        |      |      |       |
 | Tags  | Headline                                       | Time   |      |      |     % |
 |-------+------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                   | *6:41* |      |      | 100.0 |
+|       | *Total time*                                   | *7:35* |      |      | 100.0 |
 |-------+------------------------------------------------+--------+------+------+-------|
-|       | Stories                                        | 6:41   |      |      | 100.0 |
-|       | Active                                         |        | 6:41 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |        |      | 1:07 |  16.7 |
-| infra | OCR scan notebooks for this sprint             |        |      | 0:30 |   7.5 |
-| code  | Consider compressing payload                   |        |      | 3:05 |  46.1 |
-| code  | Latest currencies should have different colour |        |      | 1:28 |  21.9 |
-| code  | Do not expose temporal machinery in domain     |        |      | 0:31 |   7.7 |
+|       | Stories                                        | 7:35   |      |      | 100.0 |
+|       | Active                                         |        | 7:35 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |        |      | 1:07 |  14.7 |
+| infra | OCR scan notebooks for this sprint             |        |      | 0:30 |   6.6 |
+| code  | Consider compressing payload                   |        |      | 3:05 |  40.7 |
+| code  | Latest currencies should have different colour |        |      | 1:28 |  19.3 |
+| code  | Do not expose temporal machinery in domain     |        |      | 1:25 |  18.7 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -353,45 +349,10 @@ Notes:
 
 - valid to is the same as valid from, which is incorrect.
 
-*** STARTED Windows clang build failures                               :code:
-
-Seems like we are failing with a SEGFAULT:
-
-#+begin_src xml
-<Catch2TestRun name="ores.comms.tests.exe" rng-seed="1383371051" xml-format-version="3" catch2-version="3.11.0">
-  <TestCase name="test_client_server_connection" tags="[networking][#net_client_tests]" filename="D:/a/OreStudio/OreStudio/projects/ores.comms/tests/net_client_tests.cpp" line="97">
-    <Expression success="false" filename="D:/a/OreStudio/OreStudio/projects/ores.comms/tests/net_client_tests.cpp" line="161">
-      <Original>
-        {Unknown expression after the reported line}
-      </Original>
-      <Expanded>
-        {Unknown expression after the reported line}
-      </Expanded>
-      <FatalErrorCondition filename="D:/a/OreStudio/OreStudio/projects/ores.comms/tests/net_client_tests.cpp" line="161">
-        SIGSEGV - Segmentation violation signal
-      </FatalErrorCondition>
-    </Expression>
-    <OverallResult success="false" skips="0" durationInSeconds="2.17718"/>
-  </TestCase>
-#+end_src
-
-*** STARTED Ignore warnings on windows and OSX                         :code:
-
-At present we have a number of spurious warnings on both windows and OSX. Try to
-see if we can get CDash to ignore them.
-
-Notes:
-
-- Raised a Kitware ticket.
-
-Links:
-
-- [[https://gitlab.kitware.com/cmake/cmake/-/issues/27367][CTest: Using regexes to filter warnings for CDash]]
-- [[https://stackoverflow.com/questions/26458652/ctest-custom-warning-exception][SO: ctest custom warning exception]]
-
-
-*** STARTED Do not expose temporal machinery in domain                 :code:
+*** COMPLETED Do not expose temporal machinery in domain               :code:
     :LOGBOOK:
+    CLOCK: [2025-12-15 Mon 23:42]--[2025-12-16 Tue 00:07] =>  0:25
+    CLOCK: [2025-12-15 Mon 23:12]--[2025-12-15 Mon 23:41] =>  0:29
     CLOCK: [2025-12-15 Mon 21:40]--[2025-12-15 Mon 22:11] =>  0:31
     :END:
 
@@ -431,6 +392,52 @@ temporal table implementation details that are leaking into the domain layer.
   3. Update mapper to translate between them
   4. Update UI labels accordingly
 #+end_quote
+
+*** STARTED Windows clang build failures                               :code:
+
+Seems like we are failing with a SEGFAULT:
+
+#+begin_src xml
+<Catch2TestRun name="ores.comms.tests.exe" rng-seed="1383371051" xml-format-version="3" catch2-version="3.11.0">
+  <TestCase name="test_client_server_connection" tags="[networking][#net_client_tests]" filename="D:/a/OreStudio/OreStudio/projects/ores.comms/tests/net_client_tests.cpp" line="97">
+    <Expression success="false" filename="D:/a/OreStudio/OreStudio/projects/ores.comms/tests/net_client_tests.cpp" line="161">
+      <Original>
+        {Unknown expression after the reported line}
+      </Original>
+      <Expanded>
+        {Unknown expression after the reported line}
+      </Expanded>
+      <FatalErrorCondition filename="D:/a/OreStudio/OreStudio/projects/ores.comms/tests/net_client_tests.cpp" line="161">
+        SIGSEGV - Segmentation violation signal
+      </FatalErrorCondition>
+    </Expression>
+    <OverallResult success="false" skips="0" durationInSeconds="2.17718"/>
+  </TestCase>
+#+end_src
+
+*** STARTED Ignore warnings on windows and OSX                         :code:
+
+At present we have a number of spurious warnings on both windows and OSX. Try to
+see if we can get CDash to ignore them.
+
+Notes:
+
+- Raised a Kitware ticket.
+
+Links:
+
+- [[https://gitlab.kitware.com/cmake/cmake/-/issues/27367][CTest: Using regexes to filter warnings for CDash]]
+- [[https://stackoverflow.com/questions/26458652/ctest-custom-warning-exception][SO: ctest custom warning exception]]
+
+
+*** Remove columns from currency dialog                                :code:
+
+We need to either make the columns configurable, or remove some less useful
+columns such as symbol, fraction etc.
+
+*** Add listen/notify to shell                                         :code:
+
+At present we cannot listen from the shell. This makes testing harder.
 
 *** History should have a revert button                                :code:
 
@@ -627,6 +634,11 @@ of the available SVGs. The currency dialog could have a tab where users can
 select the SVG from a list. We can then have a table with SVG for currency which
 remembers these. This provides a generic solution for all cases where we have
 some kind of asset and an associated image.
+
+Notes:
+
+- consider just adding svg directly to the application instead of going via the
+  database.
 
 SQL:
 

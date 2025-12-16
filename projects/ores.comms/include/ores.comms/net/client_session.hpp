@@ -186,7 +186,7 @@ public:
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Processing request type: "
-                                   << static_cast<int>(RequestMsgType);
+                                   << RequestMsgType;
 
         auto payload = request.serialize();
         messaging::frame request_frame(RequestMsgType, 0, std::move(payload));
@@ -199,10 +199,15 @@ public:
             return std::unexpected(client_session_error::request_failed);
         }
 
+        auto decompressed = response_result->decompressed_payload();
+        if (!decompressed) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to decompress response payload";
+            return std::unexpected(client_session_error::deserialization_failed);
+        }
+
         // Check for error response
         if (response_result->header().type == messaging::message_type::error_response) {
-            auto err_resp = messaging::error_response::deserialize(
-                response_result->payload());
+            auto err_resp = messaging::error_response::deserialize(*decompressed);
             if (err_resp) {
                 BOOST_LOG_SEV(lg(), error) << "Server returned error: "
                                            << err_resp->message;
@@ -210,7 +215,7 @@ public:
             return std::unexpected(client_session_error::server_error);
         }
 
-        auto response = ResponseType::deserialize(response_result->payload());
+        auto response = ResponseType::deserialize(*decompressed);
         if (!response) {
             BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
             return std::unexpected(client_session_error::deserialization_failed);

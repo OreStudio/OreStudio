@@ -59,7 +59,7 @@ std::vector<std::byte> list_feature_flags_response::serialize() const {
         writer::write_string(buffer, ff.name);
         writer::write_bool(buffer, ff.enabled);
         writer::write_string(buffer, ff.description);
-        writer::write_string(buffer, ff.modified_by);
+        writer::write_string(buffer, ff.recorded_by);
     }
 
     return buffer;
@@ -91,9 +91,9 @@ list_feature_flags_response::deserialize(std::span<const std::byte> data) {
         if (!description_result) return std::unexpected(description_result.error());
         ff.description = *description_result;
 
-        auto modified_by_result = reader::read_string(data);
-        if (!modified_by_result) return std::unexpected(modified_by_result.error());
-        ff.modified_by = *modified_by_result;
+        auto recorded_by_result = reader::read_string(data);
+        if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
+        ff.recorded_by = *recorded_by_result;
 
         response.feature_flags.push_back(std::move(ff));
     }

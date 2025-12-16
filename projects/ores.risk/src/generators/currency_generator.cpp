@@ -40,9 +40,8 @@ domain::currency generate_synthetic_currency() {
     r.rounding_precision = 2;
     r.format = "%3% %1$.2f";
     r.currency_type = "Fiat";
-    r.modified_by = std::string(faker::internet::username());
-    r.valid_from = utility::faker::datetime::past_string();
-    r.valid_to = "9999-12-31 23:59:59";
+    r.recorded_by = std::string(faker::internet::username());
+    r.recorded_at = utility::faker::datetime::past_string();
 
     return r;
 }
@@ -60,9 +59,8 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .rounding_precision = 2,
         .format = "%3% %1$.2f",
         .currency_type = "master",
-        .modified_by = std::string(faker::internet::username()),
-        .valid_from = utility::faker::datetime::past_string(),
-        .valid_to = "9999-12-31 23:59:59"
+        .recorded_by = std::string(faker::internet::username()),
+        .recorded_at = utility::faker::datetime::past_string()
     });
 
     r.push_back({
@@ -76,9 +74,8 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .rounding_precision = 2,
         .format = "%3% %1$.2f",
         .currency_type = "master",
-        .modified_by = std::string(faker::internet::username()),
-        .valid_from = utility::faker::datetime::past_string(),
-        .valid_to = "9999-12-31 23:59:59"
+        .recorded_by = std::string(faker::internet::username()),
+        .recorded_at = utility::faker::datetime::past_string()
     });
 
     r.push_back({
@@ -92,9 +89,8 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .rounding_precision = 2,
         .format = "%3% %1$.2f",
         .currency_type = "master",
-        .modified_by = std::string(faker::internet::username()),
-        .valid_from = utility::faker::datetime::past_string(),
-        .valid_to = "9999-12-31 23:59:59"
+        .recorded_by = std::string(faker::internet::username()),
+        .recorded_at = utility::faker::datetime::past_string()
     });
 
     r.push_back({
@@ -107,9 +103,8 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .rounding_precision = 0,
         .format = "%3% %1$.2f",
         .currency_type = "master",
-        .modified_by = std::string(faker::internet::username()),
-        .valid_from = utility::faker::datetime::past_string(),
-        .valid_to = "9999-12-31 23:59:59"
+        .recorded_by = std::string(faker::internet::username()),
+        .recorded_at = utility::faker::datetime::past_string()
     });
 
     r.push_back({
@@ -123,9 +118,8 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .rounding_precision = 2,
         .format = "%3% %1$.2f",
         .currency_type = "master",
-        .modified_by = std::string(faker::internet::username()),
-        .valid_from = utility::faker::datetime::past_string(),
-        .valid_to = "9999-12-31 23:59:59"
+        .recorded_by = std::string(faker::internet::username()),
+        .recorded_at = utility::faker::datetime::past_string()
     });
 
     r.push_back({
@@ -139,9 +133,8 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .rounding_precision = 2,
         .format = "%3% %1$.2f",
         .currency_type = "master",
-        .modified_by = std::string(faker::internet::username()),
-        .valid_from = utility::faker::datetime::past_string(),
-        .valid_to = "9999-12-31 23:59:59"
+        .recorded_by = std::string(faker::internet::username()),
+        .recorded_at = utility::faker::datetime::past_string()
     });
 
     r.push_back({
@@ -155,9 +148,8 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .rounding_precision = 2,
         .format = "%3% %1$.2f",
         .currency_type = "master",
-        .modified_by = std::string(faker::internet::username()),
-        .valid_from = utility::faker::datetime::past_string(),
-        .valid_to = "9999-12-31 23:59:59"
+        .recorded_by = std::string(faker::internet::username()),
+        .recorded_at = utility::faker::datetime::past_string()
     });
     return r;
 }

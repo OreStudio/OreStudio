@@ -428,14 +428,8 @@ add_currency(const config::add_currency_options& cfg) const {
     currency.rounding_precision = cfg.rounding_precision.value_or(2);
     currency.format = cfg.format.value_or("");
     currency.currency_type = cfg.currency_type.value_or("");
-    currency.modified_by = cfg.modified_by;
-
-    // Set timestamps to current time
-    const auto now = std::chrono::system_clock::now();
-    const auto timestamp = utility::datetime::datetime::format_time_point(
-        now, "%Y-%m-%d %H:%M:%S");
-    currency.valid_from = timestamp;
-    currency.valid_to = timestamp;
+    currency.recorded_by = cfg.modified_by;
+    // Note: recorded_at is set by the database triggers via valid_from
 
     // Write to database
     currency_repository repo;
@@ -485,7 +479,7 @@ add_account(const config::add_account_options& cfg) const {
     account.version = 0;
     account.is_admin = cfg.is_admin.value_or(false);
     account.id = account_id;
-    account.modified_by = cfg.modified_by;
+    account.recorded_by = cfg.modified_by;
     account.username = cfg.username;
     account.password_hash = password_hash;
     account.password_salt = "";  // Not used - hash contains salt
@@ -520,7 +514,7 @@ add_feature_flag(const config::add_feature_flag_options& cfg) const {
     flag.name = cfg.flag_name;
     flag.description = cfg.description.value_or("");
     flag.enabled = cfg.enabled.value_or(false);
-    flag.modified_by = cfg.modified_by;
+    flag.recorded_by = cfg.modified_by;
 
     // Write to database
     variability::repository::feature_flags_repository repo(context_);

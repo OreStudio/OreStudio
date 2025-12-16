@@ -43,7 +43,7 @@ TEST_CASE("create_account_request_with_valid_fields", tags) {
     rq.password = "test_password";
     rq.totp_secret = "JBSWY3DPEHPK3PXP";
     rq.email = "test@example.com";
-    rq.modified_by = "admin";
+    rq.recorded_by = "admin";
     rq.is_admin = false;
     BOOST_LOG_SEV(lg, info) << "Rrequest: " << rq;
 
@@ -51,7 +51,7 @@ TEST_CASE("create_account_request_with_valid_fields", tags) {
     CHECK(rq.password == "test_password");
     CHECK(rq.totp_secret == "JBSWY3DPEHPK3PXP");
     CHECK(rq.email == "test@example.com");
-    CHECK(rq.modified_by == "admin");
+    CHECK(rq.recorded_by == "admin");
     CHECK(rq.is_admin == false);
 }
 
@@ -63,7 +63,7 @@ TEST_CASE("create_account_request_with_faker", tags) {
     rq.password = std::string(faker::internet::password());
     rq.totp_secret = faker::string::alphanumeric(16);
     rq.email = std::string(faker::internet::email());
-    rq.modified_by = std::string(faker::internet::username());
+    rq.recorded_by = std::string(faker::internet::username());
     rq.is_admin = faker::datatype::boolean();
     BOOST_LOG_SEV(lg, info) << "create_account_request: " << rq;
 
@@ -71,7 +71,7 @@ TEST_CASE("create_account_request_with_faker", tags) {
     CHECK(!rq.password.empty());
     CHECK(rq.totp_secret.length() == 16);
     CHECK(!rq.email.empty());
-    CHECK(!rq.modified_by.empty());
+    CHECK(!rq.recorded_by.empty());
 }
 
 TEST_CASE("create_account_request_serialize_deserialize", tags) {
@@ -82,7 +82,7 @@ TEST_CASE("create_account_request_serialize_deserialize", tags) {
     e.password = std::string(faker::internet::password());
     e.totp_secret = faker::string::alphanumeric(20);
     e.email = std::string(faker::internet::email());
-    e.modified_by = std::string(faker::internet::username());
+    e.recorded_by = std::string(faker::internet::username());
     e.is_admin = false;
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
@@ -150,7 +150,7 @@ TEST_CASE("list_accounts_response_with_faker", tags) {
     for (int i = 0; i < expected_size; ++i) {
         account a;
         a.version = faker::number::integer(1, 100);
-        a.modified_by = std::string(faker::internet::username());
+        a.recorded_by = std::string(faker::internet::username());
         a.id = boost::uuids::random_generator()();
         a.username = std::string(faker::internet::username());
         a.password_hash = std::string(faker::crypto::sha256());
@@ -175,7 +175,7 @@ TEST_CASE("list_accounts_response_serialize_deserialize", tags) {
     for (int i = 0; i < expected_size; ++i) {
         account a;
         a.version = i + 1;
-        a.modified_by = "user" + std::to_string(i);
+        a.recorded_by = "user" + std::to_string(i);
         a.id = boost::uuids::random_generator()();
         a.username = "username" + std::to_string(i);
         a.password_hash = std::string(faker::crypto::sha256());
@@ -468,7 +468,7 @@ TEST_CASE("create_multiple_random_create_account_requests", tags) {
         rq.password = std::string(faker::internet::password());
         rq.totp_secret = faker::string::alphanumeric(16);
         rq.email = std::string(faker::internet::email());
-        rq.modified_by = std::string(faker::person::firstName()) + " " +
+        rq.recorded_by = std::string(faker::person::firstName()) + " " +
             std::string(faker::person::lastName());
         rq.is_admin = faker::datatype::boolean();
         BOOST_LOG_SEV(lg, info) << "Request " << i << ":" << rq;

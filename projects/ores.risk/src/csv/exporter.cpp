@@ -65,7 +65,7 @@ exporter::export_currency_config(const std::vector<currency>& v) {
     // Add CSV header following RFC 4180
     oss << "iso_code,name,numeric_code,symbol,fraction_symbol,"
         << "fractions_per_unit,rounding_type,rounding_precision,"
-        << "format,currency_type,modified_by,valid_from,valid_to\n";
+        << "format,currency_type,recorded_by,recorded_at\n";
 
     // Add data rows
     for (const auto& curr : v) {
@@ -79,9 +79,8 @@ exporter::export_currency_config(const std::vector<currency>& v) {
             << curr.rounding_precision << ","
             << escape_csv_field(curr.format) << ","
             << escape_csv_field(curr.currency_type) << ","
-            << escape_csv_field(curr.modified_by) << ","
-            << escape_csv_field(curr.valid_from) << ","
-            << escape_csv_field(curr.valid_to) << "\n";
+            << escape_csv_field(curr.recorded_by) << ","
+            << escape_csv_field(curr.recorded_at) << "\n";
     }
 
     std::string result = oss.str();

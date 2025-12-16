@@ -384,9 +384,9 @@ void ImportCurrencyDialog::onImportClicked() {
                 }, Qt::QueuedConnection);
 
                 try {
-                    // Set modified_by to current user
+                    // Set recorded_by to current user
                     auto currency_to_import = currency;
-                    currency_to_import.modified_by = self->username_.toStdString();
+                    currency_to_import.recorded_by = self->username_.toStdString();
 
                     save_currency_request request{currency_to_import};
                     auto payload = request.serialize();

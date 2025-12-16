@@ -173,16 +173,16 @@ void CurrencyHistoryDialog::onHistoryLoaded() {
 
         auto* versionItem =
             new QTableWidgetItem(QString::number(version.version_number));
-        auto* modifiedAtItem =
-            new QTableWidgetItem(QString::fromStdString(version.modified_at));
-        auto* modifiedByItem =
-            new QTableWidgetItem(QString::fromStdString(version.modified_by));
+        auto* recordedAtItem =
+            new QTableWidgetItem(QString::fromStdString(version.recorded_at));
+        auto* recordedByItem =
+            new QTableWidgetItem(QString::fromStdString(version.recorded_by));
 
         versionItem->setIcon(cachedIcon);
 
         ui_->versionListWidget->setItem(i, 0, versionItem);
-        ui_->versionListWidget->setItem(i, 1, modifiedAtItem);
-        ui_->versionListWidget->setItem(i, 2, modifiedByItem);
+        ui_->versionListWidget->setItem(i, 1, recordedAtItem);
+        ui_->versionListWidget->setItem(i, 2, recordedByItem);
     }
 
     if (!history_.versions.empty())
@@ -267,8 +267,8 @@ void CurrencyHistoryDialog::displayFullDetailsTab(int version_index) {
     ui_->fractionSymbolValue->setText(QString::fromStdString(data.fraction_symbol));
     ui_->fractionsPerUnitValue->setText(QString::number(data.fractions_per_unit));
     ui_->versionNumberValue->setText(QString::number(version.version_number));
-    ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->modifiedAtValue->setText(QString::fromStdString(version.modified_at));
+    ui_->recordedByValue->setText(QString::fromStdString(version.recorded_by));
+    ui_->recordedAtValue->setText(QString::fromStdString(version.recorded_at));
 }
 
 #define CHECK_DIFF_STRING(FIELD_NAME, FIELD) \

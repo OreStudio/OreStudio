@@ -138,7 +138,7 @@ TEST_CASE("read_all_currencies_multiple_versions", tags) {
 
     auto ccy2 = ccy1;
     ccy2.name = test_name + " v2";
-    ccy2.modified_by = "unit test";
+    ccy2.recorded_by = "unit test";
     BOOST_LOG_SEV(lg, debug) << "Currency 2: " << ccy2;
 
     repo.write(h.context(), {ccy1});

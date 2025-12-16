@@ -57,7 +57,7 @@ TEST_CASE("feature_flags_service_save_and_get_feature_flag", tags) {
     flag.name = "test_flag";
     flag.enabled = true;
     flag.description = "Test Description";
-    flag.modified_by = "tester";
+    flag.recorded_by = "tester";
 
     sut.save_feature_flag(flag);
 
@@ -66,8 +66,8 @@ TEST_CASE("feature_flags_service_save_and_get_feature_flag", tags) {
     CHECK(result->name == "test_flag");
     CHECK(result->enabled == true);
     CHECK(result->description == "Test Description");
-    INFO("Actual modified_by: " << result->modified_by);
-    CHECK(result->modified_by == "tester");
+    INFO("Actual recorded_by: " << result->recorded_by);
+    CHECK(result->recorded_by == "tester");
 }
 
 TEST_CASE("feature_flags_service_update_feature_flag", tags) {
@@ -82,13 +82,13 @@ TEST_CASE("feature_flags_service_update_feature_flag", tags) {
     flag.name = "update_flag";
     flag.enabled = true;
     flag.description = "Initial Description";
-    flag.modified_by = "tester";
+    flag.recorded_by = "tester";
     sut.save_feature_flag(flag);
 
     // Update
     flag.enabled = false;
     flag.description = "Updated Description";
-    flag.modified_by = "updater";
+    flag.recorded_by = "updater";
     sut.save_feature_flag(flag);
 
     // Verify update
@@ -96,8 +96,8 @@ TEST_CASE("feature_flags_service_update_feature_flag", tags) {
     REQUIRE(result.has_value());
     CHECK(result->enabled == false);
     CHECK(result->description == "Updated Description");
-    INFO("Actual modified_by after update: " << result->modified_by);
-    CHECK(result->modified_by == "updater");
+    INFO("Actual recorded_by after update: " << result->recorded_by);
+    CHECK(result->recorded_by == "updater");
 }
 
 TEST_CASE("feature_flags_service_delete_feature_flag", tags) {
@@ -110,7 +110,7 @@ TEST_CASE("feature_flags_service_delete_feature_flag", tags) {
     feature_flags flag;
     flag.name = "delete_flag";
     flag.enabled = true;
-    flag.modified_by = "deleter";
+    flag.recorded_by = "deleter";
     sut.save_feature_flag(flag);
 
     REQUIRE(sut.get_feature_flag("delete_flag").has_value());
@@ -130,13 +130,13 @@ TEST_CASE("feature_flags_service_get_all_feature_flags", tags) {
     feature_flags flag1;
     flag1.name = "flag1";
     flag1.enabled = true;
-    flag1.modified_by = "tester";
+    flag1.recorded_by = "tester";
     sut.save_feature_flag(flag1);
 
     feature_flags flag2;
     flag2.name = "flag2";
     flag2.enabled = false;
-    flag2.modified_by = "tester";
+    flag2.recorded_by = "tester";
     sut.save_feature_flag(flag2);
 
     auto results = sut.get_all_feature_flags();

@@ -38,7 +38,7 @@ struct create_account_request final {
     std::string password;
     std::string totp_secret;
     std::string email;
-    std::string modified_by;
+    std::string recorded_by;
     bool is_admin = false;
 
     /**
@@ -53,8 +53,8 @@ struct create_account_request final {
      * - N bytes: totp_secret (UTF-8)
      * - 2 bytes: email length
      * - N bytes: email (UTF-8)
-     * - 2 bytes: modified_by length
-     * - N bytes: modified_by (UTF-8)
+     * - 2 bytes: recorded_by length
+     * - N bytes: recorded_by (UTF-8)
      * - 1 byte: is_admin (boolean)
      */
     std::vector<std::byte> serialize() const;
@@ -136,8 +136,8 @@ struct list_accounts_response final {
      * - 4 bytes: count (number of accounts in this response)
      * - For each account:
      *   - 4 bytes: version
-     *   - 2 bytes: modified_by length
-     *   - N bytes: modified_by (UTF-8)
+     *   - 2 bytes: recorded_by length
+     *   - N bytes: recorded_by (UTF-8)
      *   - 16 bytes: id (UUID)
      *   - 2 bytes: username length
      *   - N bytes: username (UTF-8)

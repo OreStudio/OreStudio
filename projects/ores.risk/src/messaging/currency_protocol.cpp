@@ -42,9 +42,8 @@ void serialize_currency(std::vector<std::byte>& buffer, const domain::currency& 
     writer::write_uint32(buffer, static_cast<std::uint32_t>(currency.rounding_precision));
     writer::write_string(buffer, currency.format);
     writer::write_string(buffer, currency.currency_type);
-    writer::write_string(buffer, currency.modified_by);
-    writer::write_string(buffer, currency.valid_from);
-    writer::write_string(buffer, currency.valid_to);
+    writer::write_string(buffer, currency.recorded_by);
+    writer::write_string(buffer, currency.recorded_at);
 }
 
 std::expected<domain::currency, error_code>
@@ -91,17 +90,13 @@ deserialize_currency(std::span<const std::byte>& data) {
     if (!currency_type) return std::unexpected(currency_type.error());
     currency.currency_type = *currency_type;
 
-    auto modified_by = reader::read_string(data);
-    if (!modified_by) return std::unexpected(modified_by.error());
-    currency.modified_by = *modified_by;
+    auto recorded_by = reader::read_string(data);
+    if (!recorded_by) return std::unexpected(recorded_by.error());
+    currency.recorded_by = *recorded_by;
 
-    auto valid_from = reader::read_string(data);
-    if (!valid_from) return std::unexpected(valid_from.error());
-    currency.valid_from = *valid_from;
-
-    auto valid_to = reader::read_string(data);
-    if (!valid_to) return std::unexpected(valid_to.error());
-    currency.valid_to = *valid_to;
+    auto recorded_at = reader::read_string(data);
+    if (!recorded_at) return std::unexpected(recorded_at.error());
+    currency.recorded_at = *recorded_at;
 
     return currency;
 }
@@ -268,9 +263,8 @@ std::vector<std::byte> get_currencies_response::serialize() const {
         writer::write_uint32(buffer, static_cast<std::uint32_t>(currency.rounding_precision));
         writer::write_string(buffer, currency.format);
         writer::write_string(buffer, currency.currency_type);
-        writer::write_string(buffer, currency.modified_by);
-        writer::write_string(buffer, currency.valid_from);
-        writer::write_string(buffer, currency.valid_to);
+        writer::write_string(buffer, currency.recorded_by);
+        writer::write_string(buffer, currency.recorded_at);
     }
 
     return buffer;
@@ -339,17 +333,13 @@ get_currencies_response::deserialize(std::span<const std::byte> data) {
         if (!currency_type) return std::unexpected(currency_type.error());
         currency.currency_type = *currency_type;
 
-        auto modified_by = reader::read_string(data);
-        if (!modified_by) return std::unexpected(modified_by.error());
-        currency.modified_by = *modified_by;
+        auto recorded_by = reader::read_string(data);
+        if (!recorded_by) return std::unexpected(recorded_by.error());
+        currency.recorded_by = *recorded_by;
 
-        auto valid_from = reader::read_string(data);
-        if (!valid_from) return std::unexpected(valid_from.error());
-        currency.valid_from = *valid_from;
-
-        auto valid_to = reader::read_string(data);
-        if (!valid_to) return std::unexpected(valid_to.error());
-        currency.valid_to = *valid_to;
+        auto recorded_at = reader::read_string(data);
+        if (!recorded_at) return std::unexpected(recorded_at.error());
+        currency.recorded_at = *recorded_at;
 
         response.currencies.push_back(std::move(currency));
     }

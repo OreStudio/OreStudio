@@ -50,9 +50,8 @@ TEST_CASE("create_currency_with_valid_fields", tags) {
     ccy.rounding_precision = 2;
     ccy.format = "%3% %1$.2f";
     ccy.currency_type = "Fiat";
-    ccy.modified_by = "admin";
-    ccy.valid_from = "2025-01-01";
-    ccy.valid_to = "2099-12-31";
+    ccy.recorded_by = "admin";
+    ccy.recorded_at = "2025-01-01";
 
     BOOST_LOG_SEV(lg, debug) << "Currency: " << ccy;
 
@@ -80,9 +79,8 @@ TEST_CASE("create_currency_with_faker", tags) {
     ccy.rounding_precision = faker::number::integer(0, 5);
     ccy.format = "%3% %1$.2f";
     ccy.currency_type = "";
-    ccy.modified_by = std::string(faker::internet::username());
-    ccy.valid_from = "";
-    ccy.valid_to = "";
+    ccy.recorded_by = std::string(faker::internet::username());
+    ccy.recorded_at = "";
 
     BOOST_LOG_SEV(lg, debug) << "Currency: " << ccy;
 
@@ -112,10 +110,9 @@ TEST_CASE("create_multiple_random_currencies", tags) {
         ccy.rounding_precision = faker::number::integer(0, 5);
         ccy.format = "%3% %1$.2f";
         ccy.currency_type = "";
-        ccy.modified_by = std::string(faker::person::firstName()) + " " +
+        ccy.recorded_by = std::string(faker::person::firstName()) + " " +
             std::string(faker::person::lastName());
-        ccy.valid_from = "";
-        ccy.valid_to = "";
+        ccy.recorded_at = "";
 
         BOOST_LOG_SEV(lg, debug) << "Currency " << i << ": " << ccy;
 
@@ -139,9 +136,8 @@ TEST_CASE("create_currency_with_high_precision", tags) {
     ccy.rounding_precision = 8;
     ccy.format = "%3% %1$.8f";
     ccy.currency_type = "Cryptocurrency";
-    ccy.modified_by = "system";
-    ccy.valid_from = "";
-    ccy.valid_to = "";
+    ccy.recorded_by = "system";
+    ccy.recorded_at = "";
 
     BOOST_LOG_SEV(lg, debug) << "High precision currency: " << ccy;
 
@@ -164,9 +160,8 @@ TEST_CASE("create_currency_with_no_fractions", tags) {
     ccy.rounding_precision = 0;
     ccy.format = "%3% %1$.0f";
     ccy.currency_type = "Fiat";
-    ccy.modified_by = "admin";
-    ccy.valid_from = "";
-    ccy.valid_to = "";
+    ccy.recorded_by = "admin";
+    ccy.recorded_at = "";
 
     BOOST_LOG_SEV(lg, debug) << "Currency with no fractions: " << ccy;
 
@@ -189,9 +184,8 @@ TEST_CASE("create_currency_with_three_decimal_places", tags) {
     ccy.rounding_precision = 3;
     ccy.format = "%3% %1$.3f";
     ccy.currency_type = "Fiat";
-    ccy.modified_by = "admin";
-    ccy.valid_from = "";
-    ccy.valid_to = "";
+    ccy.recorded_by = "admin";
+    ccy.recorded_at = "";
 
     BOOST_LOG_SEV(lg, debug) << "Currency with three decimal places: " << ccy;
 
@@ -227,9 +221,8 @@ TEST_CASE("create_currencies_with_different_symbols", tags) {
         ccy.rounding_precision = 2;
         ccy.format = "%3% %1$.2f";
         ccy.currency_type = "Fiat";
-        ccy.modified_by = "system";
-        ccy.valid_from = "";
-        ccy.valid_to = "";
+        ccy.recorded_by = "system";
+        ccy.recorded_at = "";
 
         BOOST_LOG_SEV(lg, debug) << "Currency: " << ccy;
 
@@ -252,9 +245,8 @@ TEST_CASE("currency_convert_single_to_table", tags) {
     ccy.rounding_precision = 2;
     ccy.format = "%3% %1$.2f";
     ccy.currency_type = "Fiat";
-    ccy.modified_by = "admin";
-    ccy.valid_from = "2025-01-01";
-    ccy.valid_to = "2099-12-31";
+    ccy.recorded_by = "admin";
+    ccy.recorded_at = "2025-01-01";
 
     auto table = convert_to_table(ccy);
 
@@ -281,9 +273,8 @@ TEST_CASE("currency_convert_multiple_to_table", tags) {
         ccy.rounding_precision = 2;
         ccy.format = "%3% %1$.2f";
         ccy.currency_type = "Test";
-        ccy.modified_by = "system";
-        ccy.valid_from = "";
-        ccy.valid_to = "";
+        ccy.recorded_by = "system";
+        ccy.recorded_at = "";
         currencies.push_back(ccy);
     }
 
@@ -315,9 +306,8 @@ TEST_CASE("currency_table_with_faker_data", tags) {
         ccy.rounding_precision = faker::number::integer(0, 5);
         ccy.format = "%3% %1$.2f";
         ccy.currency_type = "Fiat";
-        ccy.modified_by = std::string(faker::internet::username());
-        ccy.valid_from = "";
-        ccy.valid_to = "";
+        ccy.recorded_by = std::string(faker::internet::username());
+        ccy.recorded_at = "";
         currencies.push_back(ccy);
     }
 

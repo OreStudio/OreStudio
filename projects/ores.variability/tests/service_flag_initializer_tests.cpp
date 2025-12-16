@@ -66,7 +66,7 @@ TEST_CASE("flag_initializer_all_system_flags_exist_after_initialization", tags) 
         INFO("Checking flag: " << flag_name);
         REQUIRE(flag_opt.has_value());
         CHECK(flag_opt->enabled == def.default_enabled);
-        CHECK(!flag_opt->modified_by.empty());
+        CHECK(!flag_opt->recorded_by.empty());
     }
 }
 
@@ -82,7 +82,7 @@ TEST_CASE("flag_initializer_does_not_overwrite_existing_flag_values", tags) {
             .enabled = false,  // Default is true
             .name = to_flag_name(system_flag::bootstrap_mode),
             .description = "Custom description",
-            .modified_by = "admin"
+            .recorded_by = "admin"
         };
         svc.save_feature_flag(ff);
     }

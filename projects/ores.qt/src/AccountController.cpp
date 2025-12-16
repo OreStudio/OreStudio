@@ -186,74 +186,43 @@ void AccountController::onNotificationReceived(
 
 void AccountController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new account requested";
-
-    const QColor iconColor(220, 220, 220);
-
-    auto* detailDialog = new AccountDetailDialog(mainWindow_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
-
-    // Set empty account for create mode
-    accounts::domain::account empty_account;
-    detailDialog->setAccount(empty_account);
-
-    // Connect signals
-    connect(detailDialog, &AccountDetailDialog::statusMessage,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
-    });
-    connect(detailDialog, &AccountDetailDialog::errorMessage,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
-    });
-    connect(detailDialog, &AccountDetailDialog::accountCreated,
-            this, [this](const boost::uuids::uuid& /* account_id */) {
-        // Mark the account list as stale (consistent with currency workflow)
-        if (accountListWindow_) {
-            auto* accountWidget = qobject_cast<AccountMdiWindow*>(
-                accountListWindow_->widget());
-            if (accountWidget) {
-                accountWidget->markAsStale();
-            }
-        }
-    });
-
-    auto* detailWindow = new DetachableMdiSubWindow();
-    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
-    detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle("New Account");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_person_accounts_20_regular.svg", iconColor));
-
-    allDetachableWindows_.append(detailWindow);
-    QPointer<AccountController> self = this;
-    QPointer<DetachableMdiSubWindow> windowBeingDestroyed = detailWindow;
-    connect(detailWindow, &QObject::destroyed, this,
-        [self, windowBeingDestroyed]() {
-        if (!self) return;
-        if (!windowBeingDestroyed.isNull()) {
-            self->allDetachableWindows_.removeAll(windowBeingDestroyed.data());
-        }
-    });
-
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->adjustSize();
-    detailWindow->show();
+    showDetailWindow(std::nullopt);
 }
 
 void AccountController::onShowAccountDetails(
     const accounts::domain::account& account) {
     BOOST_LOG_SEV(lg(), info) << "Showing account details for: "
                              << account.username;
+    showDetailWindow(account);
+}
 
+void AccountController::markAccountListAsStale() {
+    if (accountListWindow_) {
+        auto* accountWidget = qobject_cast<AccountMdiWindow*>(
+            accountListWindow_->widget());
+        if (accountWidget) {
+            accountWidget->markAsStale();
+        }
+    }
+}
+
+void AccountController::showDetailWindow(
+    const std::optional<accounts::domain::account>& account) {
+    const bool isCreateMode = !account.has_value();
     const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new AccountDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setAccount(account);
 
-    // Connect signals
+    if (isCreateMode) {
+        accounts::domain::account empty_account;
+        detailDialog->setAccount(empty_account);
+    } else {
+        detailDialog->setAccount(*account);
+    }
+
+    // Connect common signals
     connect(detailDialog, &AccountDetailDialog::statusMessage,
             this, [this](const QString& message) {
         emit statusMessage(message);
@@ -262,37 +231,31 @@ void AccountController::onShowAccountDetails(
             this, [this](const QString& message) {
         emit errorMessage(message);
     });
-    connect(detailDialog, &AccountDetailDialog::accountUpdated,
-            this, [this](const boost::uuids::uuid& /* account_id */) {
-        // Mark the account list as stale (consistent with currency workflow)
-        if (accountListWindow_) {
-            auto* accountWidget = qobject_cast<AccountMdiWindow*>(
-                accountListWindow_->widget());
-            if (accountWidget) {
-                accountWidget->markAsStale();
-            }
-        }
-    });
-    connect(detailDialog, &AccountDetailDialog::accountDeleted,
-            this, [this](const boost::uuids::uuid& /* account_id */) {
-        // Mark the account list as stale (consistent with currency workflow)
-        if (accountListWindow_) {
-            auto* accountWidget = qobject_cast<AccountMdiWindow*>(
-                accountListWindow_->widget());
-            if (accountWidget) {
-                accountWidget->markAsStale();
-            }
-        }
-    });
 
+    // Connect account change signals - all mark the list as stale
+    connect(detailDialog, &AccountDetailDialog::accountCreated,
+            this, [this](const boost::uuids::uuid&) { markAccountListAsStale(); });
+    connect(detailDialog, &AccountDetailDialog::accountUpdated,
+            this, [this](const boost::uuids::uuid&) { markAccountListAsStale(); });
+    connect(detailDialog, &AccountDetailDialog::accountDeleted,
+            this, [this](const boost::uuids::uuid&) { markAccountListAsStale(); });
+
+    // Create and configure window
     auto* detailWindow = new DetachableMdiSubWindow();
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Account: %1")
-        .arg(QString::fromStdString(account.username)));
+
+    if (isCreateMode) {
+        detailWindow->setWindowTitle("New Account");
+    } else {
+        detailWindow->setWindowTitle(QString("Account: %1")
+            .arg(QString::fromStdString(account->username)));
+    }
+
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_person_accounts_20_regular.svg", iconColor));
 
+    // Track window for cleanup
     allDetachableWindows_.append(detailWindow);
     QPointer<AccountController> self = this;
     QPointer<DetachableMdiSubWindow> windowBeingDestroyed = detailWindow;

@@ -20,6 +20,7 @@
 #ifndef ORES_QT_ACCOUNT_CONTROLLER_HPP
 #define ORES_QT_ACCOUNT_CONTROLLER_HPP
 
+#include <optional>
 #include <QPointer>
 #include <QList>
 #include <QDateTime>
@@ -141,6 +142,23 @@ private slots:
     void onNotificationReceived(const QString& eventType, const QDateTime& timestamp);
 
 private:
+    /**
+     * @brief Creates and shows an account detail window.
+     *
+     * This helper consolidates the common logic for creating account detail
+     * dialogs, whether for new accounts or editing existing ones.
+     *
+     * @param account Optional account to edit. If nullopt, creates a new account.
+     */
+    void showDetailWindow(const std::optional<accounts::domain::account>& account);
+
+    /**
+     * @brief Marks the account list as stale if it exists.
+     *
+     * Helper method to reduce code duplication in signal handlers.
+     */
+    void markAccountListAsStale();
+
     /**
      * @brief Reference to MainWindow's list of all detachable windows.
      *

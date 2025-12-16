@@ -345,4 +345,29 @@ bool account_service::update_account(const boost::uuids::uuid& account_id,
     return true;
 }
 
+std::vector<domain::account>
+account_service::get_account_history(const std::string& username) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting account history for username: "
+                               << username;
+
+    // First look up the account by username to get the ID
+    auto accounts = account_repo_.read_latest_by_username(username);
+    if (accounts.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Account not found for username: "
+                                  << username;
+        return {};
+    }
+
+    const auto& account_id = accounts[0].id;
+    BOOST_LOG_SEV(lg(), debug) << "Found account ID: "
+                               << boost::uuids::to_string(account_id);
+
+    // Get all versions of the account by ID
+    auto all_versions = account_repo_.read_all(account_id);
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << all_versions.size()
+                              << " historical versions for account: " << username;
+
+    return all_versions;
+}
+
 }

@@ -80,7 +80,7 @@ QVariant ClientAccountModel::data(const QModelIndex& index, int role) const {
     if (role == Qt::ForegroundRole) {
         // Skip recency coloring for badge columns (handled by delegate)
         if (index.column() == Column::IsAdmin ||
-            index.column() == Column::Online ||
+            index.column() == Column::Status ||
             index.column() == Column::Locked) {
             return {};
         }
@@ -97,10 +97,16 @@ QVariant ClientAccountModel::data(const QModelIndex& index, int role) const {
     case Column::Username: return QString::fromStdString(account.username);
     case Column::Email: return QString::fromStdString(account.email);
     case Column::IsAdmin: return account.is_admin ? tr("Admin") : tr("-");
-    case Column::Online:
-        if (item.loginInfo.has_value())
-            return item.loginInfo->online ? tr("Online") : tr("-");
+    case Column::Status: {
+        auto status = calculateLoginStatus(item.loginInfo);
+        switch (status) {
+        case LoginStatus::Never: return tr("Never");
+        case LoginStatus::LongAgo: return tr("Old");
+        case LoginStatus::Recent: return tr("Recent");
+        case LoginStatus::Online: return tr("Online");
+        }
         return tr("-");
+    }
     case Column::Locked:
         if (item.loginInfo.has_value())
             return item.loginInfo->locked ? tr("Locked") : tr("-");
@@ -122,7 +128,7 @@ headerData(int section, Qt::Orientation orientation, int role) const {
         case Column::Username: return tr("Username");
         case Column::Email: return tr("Email");
         case Column::IsAdmin: return tr("Admin");
-        case Column::Online: return tr("Online");
+        case Column::Status: return tr("Status");
         case Column::Locked: return tr("Locked");
         case Column::Version: return tr("Version");
         case Column::RecordedBy: return tr("Recorded By");
@@ -469,6 +475,40 @@ void ClientAccountModel::onPulseTimerTimeout() {
         emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
             {Qt::ForegroundRole});
     }
+}
+
+LoginStatus ClientAccountModel::calculateLoginStatus(
+    const std::optional<accounts::domain::login_info>& loginInfo) {
+
+    // No login info means never logged in
+    if (!loginInfo.has_value()) {
+        return LoginStatus::Never;
+    }
+
+    // Currently online
+    if (loginInfo->online) {
+        return LoginStatus::Online;
+    }
+
+    // Check if last_login is at epoch (never logged in)
+    const auto epoch = std::chrono::system_clock::time_point{};
+    if (loginInfo->last_login == epoch) {
+        return LoginStatus::Never;
+    }
+
+    // Calculate time since last login
+    const auto now = std::chrono::system_clock::now();
+    const auto days_since_login = std::chrono::duration_cast<std::chrono::hours>(
+        now - loginInfo->last_login).count() / 24;
+
+    // Threshold: 30 days for "recent" vs "long ago"
+    constexpr int recent_threshold_days = 30;
+
+    if (days_since_login <= recent_threshold_days) {
+        return LoginStatus::Recent;
+    }
+
+    return LoginStatus::LongAgo;
 }
 
 }

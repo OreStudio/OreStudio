@@ -132,6 +132,16 @@ private slots:
     void onShowAccountDetails(const AccountWithLoginInfo& accountWithLoginInfo);
 
     /**
+     * @brief Handles request to show account history.
+     *
+     * Creates and displays an account history dialog for viewing version
+     * history of an account.
+     *
+     * @param username The username of the account to show history for
+     */
+    void onShowAccountHistory(const QString& username);
+
+    /**
      * @brief Handles account change notifications from the server.
      *
      * Called when a notification is received indicating accounts have changed.

@@ -70,6 +70,7 @@ signals:
     void selectionChanged(int selection_count);
     void addNewRequested();
     void showAccountDetails(const AccountWithLoginInfo& accountWithLoginInfo);
+    void showAccountHistory(const QString& username);
     void accountDeleted(const boost::uuids::uuid& account_id);
 
 public slots:
@@ -79,6 +80,7 @@ public slots:
     void deleteSelected();
     void lockSelected();
     void unlockSelected();
+    void viewHistorySelected();
 
     /**
      * @brief Mark the data as stale (changed on server).
@@ -128,6 +130,7 @@ private:
     QAction* deleteAction_;
     QAction* lockAction_;
     QAction* unlockAction_;
+    QAction* historyAction_;
 
     std::unique_ptr<ClientAccountModel> accountModel_;
     QSortFilterProxyModel* proxyModel_;

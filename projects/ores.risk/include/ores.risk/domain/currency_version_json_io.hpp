@@ -17,66 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_RISK_DOMAIN_CURRENCY_VERSION_HPP
-#define ORES_RISK_DOMAIN_CURRENCY_VERSION_HPP
+#ifndef ORES_RISK_DOMAIN_CURRENCY_VERSION_JSON_IO_HPP
+#define ORES_RISK_DOMAIN_CURRENCY_VERSION_JSON_IO_HPP
 
-#include <string>
-#include <vector>
 #include <iosfwd>
-#include "ores.risk/domain/currency.hpp"
+#include "ores.risk/domain/currency_version.hpp"
 
 namespace ores::risk::domain {
 
-/**
- * @brief Represents a specific version of a currency with metadata.
- */
-struct currency_version final {
-    /**
-     * @brief The currency data at this version.
-     */
-    currency data;
-
-    /**
-     * @brief Version number (1-based, higher is newer).
-     */
-    int version_number;
-
-    /**
-     * @brief Username of the person who created this version.
-     */
-    std::string modified_by;
-
-    /**
-     * @brief Timestamp when this version was created.
-     */
-    std::string modified_at;
-
-    /**
-     * @brief Summary of changes made in this version.
-     *
-     * Examples: "Created currency", "Modified 2 fields", "Updated name and symbol"
-     */
-    std::string change_summary;
-};
-
 std::ostream& operator<<(std::ostream& s, const currency_version& v);
-
-/**
- * @brief Contains the full version history for a currency.
- */
-struct currency_version_history final {
-    /**
-     * @brief ISO code of the currency.
-     */
-    std::string iso_code;
-
-    /**
-     * @brief All versions of this currency, ordered from newest to oldest.
-     */
-    std::vector<currency_version> versions;
-};
-
-std::ostream& operator<<(std::ostream& s, const currency_version_history& v);
 
 }
 

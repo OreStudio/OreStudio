@@ -23,6 +23,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/AccountMdiWindow.hpp"
 #include "ores.qt/AccountDetailDialog.hpp"
+#include "ores.qt/AccountHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
@@ -127,6 +128,8 @@ void AccountController::showListWindow() {
             this, &AccountController::onAddNewRequested);
     connect(accountWidget, &AccountMdiWindow::showAccountDetails,
             this, &AccountController::onShowAccountDetails);
+    connect(accountWidget, &AccountMdiWindow::showAccountHistory,
+            this, &AccountController::onShowAccountHistory);
 
     accountListWindow_ = new DetachableMdiSubWindow();
     accountListWindow_->setAttribute(Qt::WA_DeleteOnClose);
@@ -194,6 +197,52 @@ void AccountController::onShowAccountDetails(
     BOOST_LOG_SEV(lg(), info) << "Showing account details for: "
                              << accountWithLoginInfo.account.username;
     showDetailWindow(accountWithLoginInfo);
+}
+
+void AccountController::onShowAccountHistory(const QString& username) {
+    BOOST_LOG_SEV(lg(), info) << "Showing account history for: "
+                             << username.toStdString();
+
+    const QColor iconColor(220, 220, 220);
+
+    auto* historyDialog = new AccountHistoryDialog(username, clientManager_, mainWindow_);
+
+    // Connect status signals
+    connect(historyDialog, &AccountHistoryDialog::statusChanged,
+            this, [this](const QString& message) {
+        emit statusMessage(message);
+    });
+    connect(historyDialog, &AccountHistoryDialog::errorOccurred,
+            this, [this](const QString& err_msg) {
+        emit errorMessage(err_msg);
+    });
+
+    // Create and configure window
+    auto* historyWindow = new DetachableMdiSubWindow();
+    historyWindow->setAttribute(Qt::WA_DeleteOnClose);
+    historyWindow->setWidget(historyDialog);
+    historyWindow->setWindowTitle(QString("Account History: %1").arg(username));
+    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+
+    // Track window for cleanup
+    allDetachableWindows_.append(historyWindow);
+    QPointer<AccountController> self = this;
+    QPointer<DetachableMdiSubWindow> windowBeingDestroyed = historyWindow;
+    connect(historyWindow, &QObject::destroyed, this,
+        [self, windowBeingDestroyed]() {
+        if (!self) return;
+        if (!windowBeingDestroyed.isNull()) {
+            self->allDetachableWindows_.removeAll(windowBeingDestroyed.data());
+        }
+    });
+
+    mdiArea_->addSubWindow(historyWindow);
+    historyWindow->adjustSize();
+    historyWindow->show();
+
+    // Load the history data
+    historyDialog->loadHistory();
 }
 
 void AccountController::markAccountListAsStale() {

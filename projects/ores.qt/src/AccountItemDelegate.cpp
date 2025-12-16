@@ -30,7 +30,7 @@ namespace {
 
 // Column indices (matches ClientAccountModel::Column enum)
 constexpr int admin_column_index = 2;
-constexpr int online_column_index = 3;
+constexpr int status_column_index = 3;
 constexpr int locked_column_index = 4;
 constexpr int version_column_index = 5;
 constexpr int recorded_by_column_index = 6;
@@ -42,11 +42,15 @@ const QColor admin_badge_text(255, 255, 255);   // White text for "Yes"
 const QColor non_admin_badge_bg(107, 114, 128); // Gray background for "No"
 const QColor non_admin_badge_text(255, 255, 255); // White text for "No"
 
-// Online status badge colors
-const QColor online_badge_bg(34, 197, 94);      // Green background for online
-const QColor online_badge_text(255, 255, 255);  // White text
-const QColor offline_badge_bg(107, 114, 128);   // Gray background for offline
-const QColor offline_badge_text(255, 255, 255); // White text
+// Login status badge colors
+const QColor status_never_bg(107, 114, 128);    // Gray for never logged in
+const QColor status_never_text(255, 255, 255);
+const QColor status_old_bg(234, 179, 8);        // Amber/Yellow for long ago
+const QColor status_old_text(255, 255, 255);
+const QColor status_recent_bg(59, 130, 246);    // Blue for recent
+const QColor status_recent_text(255, 255, 255);
+const QColor status_online_bg(34, 197, 94);     // Green for online
+const QColor status_online_text(255, 255, 255);
 
 // Locked status badge colors
 const QColor locked_badge_bg(239, 68, 68);      // Red background for locked
@@ -73,7 +77,7 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
 
     // Handle badge columns
     if (index.column() == admin_column_index ||
-        index.column() == online_column_index ||
+        index.column() == status_column_index ||
         index.column() == locked_column_index) {
 
         // Draw the background (for selection highlighting)
@@ -96,16 +100,25 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
                 textColor = non_admin_badge_text;
                 badgeText = tr("No");
             }
-        } else if (index.column() == online_column_index) {
-            // Online column
+        } else if (index.column() == status_column_index) {
+            // Login status column - different color for each status
             if (text == "Online") {
-                bgColor = online_badge_bg;
-                textColor = online_badge_text;
-                badgeText = tr("Yes");
+                bgColor = status_online_bg;
+                textColor = status_online_text;
+                badgeText = tr("Online");
+            } else if (text == "Recent") {
+                bgColor = status_recent_bg;
+                textColor = status_recent_text;
+                badgeText = tr("Recent");
+            } else if (text == "Old") {
+                bgColor = status_old_bg;
+                textColor = status_old_text;
+                badgeText = tr("Old");
             } else {
-                bgColor = offline_badge_bg;
-                textColor = offline_badge_text;
-                badgeText = tr("No");
+                // Never logged in
+                bgColor = status_never_bg;
+                textColor = status_never_text;
+                badgeText = tr("Never");
             }
         } else if (index.column() == locked_column_index) {
             // Locked column
@@ -165,10 +178,15 @@ QSize AccountItemDelegate::sizeHint(const QStyleOptionViewItem& option,
 
     // Ensure minimum height for badge columns
     if (index.column() == admin_column_index ||
-        index.column() == online_column_index ||
+        index.column() == status_column_index ||
         index.column() == locked_column_index) {
         size.setHeight(qMax(size.height(), 24));
-        size.setWidth(qMax(size.width(), 50));
+        // Status column needs more width for "Recent" and "Online" text
+        if (index.column() == status_column_index) {
+            size.setWidth(qMax(size.width(), 70));
+        } else {
+            size.setWidth(qMax(size.width(), 50));
+        }
     }
 
     return size;

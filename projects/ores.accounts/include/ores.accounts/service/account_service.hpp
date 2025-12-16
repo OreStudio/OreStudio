@@ -193,6 +193,17 @@ public:
     bool update_account(const boost::uuids::uuid& account_id,
         const std::string& email, const std::string& recorded_by, bool is_admin);
 
+    /**
+     * @brief Retrieves all historical versions of an account by username.
+     *
+     * Returns all versions of the account from the temporal history,
+     * ordered from newest to oldest.
+     *
+     * @param username The username of the account
+     * @return Vector of all historical versions of the account
+     */
+    std::vector<domain::account> get_account_history(const std::string& username);
+
 private:
     repository::account_repository account_repo_;
     repository::login_info_repository login_info_repo_;

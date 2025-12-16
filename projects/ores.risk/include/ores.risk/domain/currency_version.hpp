@@ -37,7 +37,7 @@ struct currency_version final {
     /**
      * @brief Version number (1-based, higher is newer).
      */
-    int version_number;
+    int version_number = 0;
 
     /**
      * @brief Username of the person who recorded this version in the system.

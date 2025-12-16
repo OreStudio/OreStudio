@@ -147,6 +147,8 @@ enum class message_type {
     lock_account_response = 0x2014,
     update_account_request = 0x2015,
     update_account_response = 0x2016,
+    get_account_history_request = 0x2017,
+    get_account_history_response = 0x2018,
 
     // Variability subsystem messages (0x3000 - 0x3FFF)
     list_feature_flags_request = 0x3000,

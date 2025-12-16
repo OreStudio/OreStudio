@@ -81,6 +81,8 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_bootstrap_status_request(payload);
     case message_type::update_account_request:
         co_return co_await handle_update_account_request(payload, remote_address);
+    case message_type::get_account_history_request:
+        co_return co_await handle_get_account_history_request(payload, remote_address);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown accounts message type " << type;
         co_return std::unexpected(comms::messaging::error_code::invalid_message_type);
@@ -653,6 +655,73 @@ handle_update_account_request(std::span<const std::byte> payload,
         };
         co_return response.serialize();
     }
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_account_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_account_history_request from "
+                               << remote_address;
+
+    auto request_result = get_account_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_account_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Retrieving history for account: " << request.username;
+
+    get_account_history_response response;
+    try {
+        // Get all versions of the account from service
+        auto accounts = service_.get_account_history(request.username);
+
+        if (accounts.empty()) {
+            response.success = false;
+            response.message = "Account not found: " + request.username;
+            BOOST_LOG_SEV(lg(), warn) << "No history found for account: "
+                                      << request.username;
+            co_return response.serialize();
+        }
+
+        // Convert accounts to account_version objects
+        domain::account_version_history history;
+        history.username = request.username;
+
+        // Sort by version descending (newest first) - use database version field
+        std::sort(accounts.begin(), accounts.end(),
+            [](const auto& a, const auto& b) {
+                return a.version > b.version;
+            });
+
+        for (const auto& account : accounts) {
+            domain::account_version version;
+            version.data = account;
+            version.version_number = account.version;  // Use database version field
+            version.recorded_by = account.recorded_by;
+            version.recorded_at = account.recorded_at;
+            version.change_summary = "Version " + std::to_string(version.version_number);
+
+            history.versions.push_back(std::move(version));
+        }
+
+        response.success = true;
+        response.message = "History retrieved successfully";
+        response.history = std::move(history);
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
+                                  << response.history.versions.size()
+                                  << " versions for account: " << request.username;
+
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to retrieve account history: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error retrieving history for account "
+                                   << request.username << ": " << e.what();
+    }
+
+    co_return response.serialize();
 }
 
 }

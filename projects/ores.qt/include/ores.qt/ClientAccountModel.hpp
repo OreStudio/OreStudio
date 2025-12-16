@@ -34,6 +34,19 @@
 namespace ores::qt {
 
 /**
+ * @brief Enum representing account login status buckets.
+ *
+ * Used to categorize accounts by their login recency for display
+ * with different visual treatments (badge colors).
+ */
+enum class LoginStatus {
+    Never,    // Never logged in (no login_info or epoch last_login)
+    LongAgo,  // Logged in more than 30 days ago
+    Recent,   // Logged in within the last 30 days
+    Online    // Currently logged in
+};
+
+/**
  * @brief Composite structure combining account with its login status.
  *
  * This struct joins account domain data with login_info data for display
@@ -189,13 +202,22 @@ private:
         Username,
         Email,
         IsAdmin,
-        Online,
+        Status,     // Login status: Never, LongAgo, Recent, Online
         Locked,
         Version,
         RecordedBy,
         RecordedAt,
         ColumnCount  // Must be last - represents total number of columns
     };
+
+    /**
+     * @brief Calculate login status from login_info.
+     *
+     * @param loginInfo Optional login info for the account.
+     * @return LoginStatus bucket based on login recency.
+     */
+    static LoginStatus calculateLoginStatus(
+        const std::optional<accounts::domain::login_info>& loginInfo);
 
     struct FetchResult {
         bool success;

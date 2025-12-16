@@ -209,3 +209,60 @@ TEST_CASE("get_currencies_response_with_empty_fields", tags) {
     CHECK(deserialized.currencies[0].symbol.empty());
     CHECK(deserialized.currencies[0].currency_type.empty());
 }
+
+TEST_CASE("get_currency_history_response_serialize_deserialize", tags) {
+    using namespace ores::utility::log;
+    using ores::risk::domain::currency_version;
+    using ores::risk::domain::currency_version_history;
+    auto lg(make_logger(test_suite));
+
+    get_currency_history_response original;
+    original.success = true;
+    original.message = "History retrieved successfully";
+    original.history.iso_code = "USD";
+
+    // Create 3 versions with different version numbers
+    for (int i = 3; i >= 1; --i) {
+        currency_version ver;
+        ver.data.iso_code = "USD";
+        ver.data.name = "US Dollar v" + std::to_string(i);
+        ver.data.numeric_code = "840";
+        ver.data.symbol = "$";
+        ver.data.fraction_symbol = "cent";
+        ver.data.fractions_per_unit = 100;
+        ver.data.rounding_type = "Nearest";
+        ver.data.rounding_precision = 2;
+        ver.data.format = "#,##0.00";
+        ver.data.currency_type = "Major";
+        ver.data.recorded_by = "admin";
+        ver.data.recorded_at = "2025-01-0" + std::to_string(i) + " 10:00:00";
+        ver.version_number = i;
+        ver.recorded_by = "admin";
+        ver.recorded_at = "2025-01-0" + std::to_string(i) + " 10:00:00";
+        ver.change_summary = "Version " + std::to_string(i);
+        original.history.versions.push_back(ver);
+    }
+
+    BOOST_LOG_SEV(lg, debug) << "Original response with "
+                             << original.history.versions.size()
+                             << " versions";
+
+    const auto serialized = original.serialize();
+    BOOST_LOG_SEV(lg, debug) << "Serialized size: " << serialized.size() << " bytes";
+
+    const auto result = get_currency_history_response::deserialize(serialized);
+
+    REQUIRE(result.has_value());
+    const auto& des = result.value();
+
+    CHECK(des.success == true);
+    CHECK(des.history.iso_code == "USD");
+    REQUIRE(des.history.versions.size() == 3);
+
+    // Verify version numbers are preserved correctly
+    CHECK(des.history.versions[0].version_number == 3);
+    CHECK(des.history.versions[1].version_number == 2);
+    CHECK(des.history.versions[2].version_number == 1);
+
+    BOOST_LOG_SEV(lg, debug) << "All version numbers verified correctly";
+}

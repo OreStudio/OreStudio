@@ -20,6 +20,7 @@
 \ir ./currencies_create.sql
 \ir ./currencies_notify_trigger.sql
 \ir ./accounts_create.sql
+\ir ./accounts_notify_trigger.sql
 \ir ./feature_flags_create.sql
 \ir ./login_info_create.sql
 

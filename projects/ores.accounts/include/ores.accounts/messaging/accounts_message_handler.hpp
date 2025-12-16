@@ -172,6 +172,15 @@ private:
         const std::string& remote_address);
 
     /**
+     * @brief Handle update_account_request message.
+     *
+     * Requires authentication. Only admin users can update accounts.
+     */
+    handler_result
+    handle_update_account_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
      * @brief Check if a remote address is localhost.
      *
      * @param remote_address The remote endpoint address

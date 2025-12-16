@@ -315,6 +315,66 @@ struct lock_account_response final {
 
 std::ostream& operator<<(std::ostream& s, const lock_account_response& v);
 
+/**
+ * @brief Request to update an existing account.
+ *
+ * Only email and is_admin fields can be updated. Username cannot be changed.
+ * Requires admin privileges.
+ */
+struct update_account_request final {
+    boost::uuids::uuid account_id;
+    std::string email;
+    std::string recorded_by;
+    bool is_admin = false;
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 16 bytes: account_id (UUID)
+     * - 2 bytes: email length
+     * - N bytes: email (UTF-8)
+     * - 2 bytes: recorded_by length
+     * - N bytes: recorded_by (UTF-8)
+     * - 1 byte: is_admin (boolean)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<update_account_request, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const update_account_request& v);
+
+/**
+ * @brief Response indicating whether update operation succeeded.
+ */
+struct update_account_response final {
+    bool success = false;
+    std::string error_message;
+
+    /**
+     * @brief Serialize response to bytes.
+     *
+     * Format:
+     * - 1 byte: success (boolean)
+     * - 2 bytes: error_message length
+     * - N bytes: error_message (UTF-8)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize response from bytes.
+     */
+    static std::expected<update_account_response, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const update_account_response& v);
+
 }
 
 #endif

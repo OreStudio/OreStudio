@@ -376,4 +376,70 @@ std::ostream& operator<<(std::ostream& s, const lock_account_response& v)
     return s;
 }
 
+std::vector<std::byte> update_account_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_uuid(buffer, account_id);
+    writer::write_string(buffer, email);
+    writer::write_string(buffer, recorded_by);
+    writer::write_bool(buffer, is_admin);
+    return buffer;
+}
+
+std::expected<update_account_request, comms::messaging::error_code>
+update_account_request::deserialize(std::span<const std::byte> data) {
+    update_account_request request;
+
+    auto account_id_result = reader::read_uuid(data);
+    if (!account_id_result) return std::unexpected(account_id_result.error());
+    request.account_id = *account_id_result;
+
+    auto email_result = reader::read_string(data);
+    if (!email_result) return std::unexpected(email_result.error());
+    request.email = *email_result;
+
+    auto recorded_by_result = reader::read_string(data);
+    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
+    request.recorded_by = *recorded_by_result;
+
+    auto is_admin_result = reader::read_bool(data);
+    if (!is_admin_result) return std::unexpected(is_admin_result.error());
+    request.is_admin = *is_admin_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const update_account_request& v)
+{
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> update_account_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, error_message);
+    return buffer;
+}
+
+std::expected<update_account_response, comms::messaging::error_code>
+update_account_response::deserialize(std::span<const std::byte> data) {
+    update_account_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto error_message_result = reader::read_string(data);
+    if (!error_message_result) return std::unexpected(error_message_result.error());
+    response.error_message = *error_message_result;
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const update_account_response& v)
+{
+    rfl::json::write(v, s);
+    return s;
+}
+
 }

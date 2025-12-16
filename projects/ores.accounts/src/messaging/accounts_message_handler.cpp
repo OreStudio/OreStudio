@@ -79,6 +79,8 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_create_initial_admin_request(payload, remote_address);
     case message_type::bootstrap_status_request:
         co_return co_await handle_bootstrap_status_request(payload);
+    case message_type::update_account_request:
+        co_return co_await handle_update_account_request(payload, remote_address);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown accounts message type " << type;
         co_return std::unexpected(comms::messaging::error_code::invalid_message_type);
@@ -551,6 +553,71 @@ handle_logout_request(std::span<const std::byte> payload,
         logout_response response{
             .success = false,
             .message = e.what()
+        };
+        co_return response.serialize();
+    }
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_update_account_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing update_account_request from "
+                               << remote_address;
+
+    auto request_result = update_account_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize update_account_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+
+    // Get the requester's session from shared session service
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "Update account denied: no active session for "
+                                  << remote_address;
+        update_account_response response{
+            .success = false,
+            .error_message = "Authentication required to update accounts"
+        };
+        co_return response.serialize();
+    }
+
+    // Check if requester has admin privileges
+    if (!session->is_admin) {
+        BOOST_LOG_SEV(lg(), warn) << "Update account denied: requester "
+                                  << boost::uuids::to_string(session->account_id)
+                                  << " is not an admin";
+        update_account_response response{
+            .success = false,
+            .error_message = "Admin privileges required to update accounts"
+        };
+        co_return response.serialize();
+    }
+
+    try {
+        bool success = service_.update_account(request.account_id,
+            request.email, request.recorded_by, request.is_admin);
+
+        if (success) {
+            BOOST_LOG_SEV(lg(), info) << "Successfully updated account: "
+                                      << boost::uuids::to_string(request.account_id);
+        }
+
+        update_account_response response{
+            .success = success,
+            .error_message = success ? "" : "Failed to update account"
+        };
+        co_return response.serialize();
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to update account: " << e.what();
+
+        update_account_response response{
+            .success = false,
+            .error_message = std::string("Failed to update account: ") + e.what()
         };
         co_return response.serialize();
     }

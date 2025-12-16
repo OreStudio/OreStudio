@@ -348,9 +348,93 @@ void AccountDetailDialog::onSaveClicked() {
 
         watcher->setFuture(future);
     } else {
-        // Edit mode - currently not implemented (no update_account protocol yet)
-        MessageBoxHelper::information(this, "Not Implemented",
-            "Account editing is not yet implemented. You can only create new accounts.");
+        // Edit mode - update existing account
+        QPointer<AccountDetailDialog> self = this;
+        const boost::uuids::uuid account_id = currentAccount_.id;
+        const std::string email = ui_->emailEdit->text().toStdString();
+        const std::string recorded_by = modifiedByUsername_.empty()
+            ? "qt_user" : modifiedByUsername_;
+        const bool is_admin = ui_->isAdminCheckBox->isChecked();
+
+        QFuture<std::pair<bool, std::string>> future =
+            QtConcurrent::run([self, account_id, email, recorded_by, is_admin]()
+                -> std::pair<bool, std::string> {
+                if (!self) return {false, ""};
+
+                BOOST_LOG_SEV(lg(), debug) << "Sending update account request for: "
+                                           << boost::uuids::to_string(account_id);
+
+                accounts::messaging::update_account_request request;
+                request.account_id = account_id;
+                request.email = email;
+                request.recorded_by = recorded_by;
+                request.is_admin = is_admin;
+
+                auto payload = request.serialize();
+                frame request_frame(message_type::update_account_request,
+                    0, std::move(payload));
+
+                auto response_result =
+                    self->clientManager_->sendRequest(std::move(request_frame));
+
+                if (!response_result) {
+                    return {false, "Failed to communicate with server"};
+                }
+
+                auto payload_result = response_result->decompressed_payload();
+                if (!payload_result) {
+                    return {false, "Failed to decompress server response"};
+                }
+
+                auto response = accounts::messaging::update_account_response::
+                    deserialize(*payload_result);
+
+                if (!response) {
+                    return {false, "Invalid server response"};
+                }
+
+                return {response->success, response->error_message};
+            });
+
+        auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(self);
+        connect(watcher, &QFutureWatcher<std::pair<bool, std::string>>::finished, self,
+            [self, watcher, account_id]() {
+            if (!self) return;
+
+            auto [success, message] = watcher->result();
+            watcher->deleteLater();
+
+            if (success) {
+                BOOST_LOG_SEV(lg(), debug) << "Account updated successfully";
+
+                emit self->statusMessage(QString("Successfully updated account"));
+
+                self->isDirty_ = false;
+                emit self->isDirtyChanged(false);
+                self->updateSaveResetButtonState();
+
+                emit self->accountUpdated(account_id);
+
+                // Close window after successful update
+                QWidget* parent = self->parentWidget();
+                while (parent) {
+                    if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
+                        QMetaObject::invokeMethod(mdiSubWindow, "close",
+                            Qt::QueuedConnection);
+                        break;
+                    }
+                    parent = parent->parentWidget();
+                }
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Account update failed: " << message;
+                emit self->errorMessage(QString("Failed to update account: %1")
+                    .arg(QString::fromStdString(message)));
+                MessageBoxHelper::critical(self, "Update Failed",
+                    QString::fromStdString(message));
+            }
+        });
+
+        watcher->setFuture(future);
     }
 }
 

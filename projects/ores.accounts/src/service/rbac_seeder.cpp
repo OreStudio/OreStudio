@@ -55,6 +55,7 @@ void rbac_seeder::seed_permissions() {
         {perms::accounts_delete, "Delete user accounts"},
         {perms::accounts_lock, "Lock user accounts"},
         {perms::accounts_unlock, "Unlock user accounts"},
+        {perms::accounts_reset_password, "Force password reset on user accounts"},
 
         // Currency management
         {perms::currencies_create, "Create new currencies"},

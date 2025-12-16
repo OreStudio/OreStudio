@@ -63,6 +63,7 @@ namespace permissions {
     constexpr auto accounts_delete = "accounts:delete";
     constexpr auto accounts_lock = "accounts:lock";
     constexpr auto accounts_unlock = "accounts:unlock";
+    constexpr auto accounts_reset_password = "accounts:reset_password";
 
     // Currency management
     constexpr auto currencies_create = "currencies:create";

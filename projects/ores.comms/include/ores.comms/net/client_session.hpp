@@ -53,7 +53,24 @@ enum class client_session_error {
     admin_required,
     request_failed,
     deserialization_failed,
-    server_error
+    server_error,
+    connection_lost
+};
+
+/**
+ * @brief Error information returned from client session operations.
+ *
+ * Contains both an error code and an optional detailed message from the server.
+ */
+struct session_error {
+    client_session_error code;
+    std::string message;
+
+    session_error(client_session_error c)
+        : code(c), message() {}
+
+    session_error(client_session_error c, std::string msg)
+        : code(c), message(std::move(msg)) {}
 };
 
 template<typename Request>
@@ -107,7 +124,7 @@ public:
      * @param options Connection options
      * @return Empty expected on success, error on failure
      */
-    std::expected<void, client_session_error> connect(client_options options);
+    std::expected<void, session_error> connect(client_options options);
 
     /**
      * @brief Disconnect from the server.
@@ -176,13 +193,13 @@ public:
     template <Serializable RequestType,
               Deserializable ResponseType,
               messaging::message_type RequestMsgType>
-    std::expected<ResponseType, client_session_error>
+    std::expected<ResponseType, session_error>
     process_request(RequestType request) {
         using namespace ores::utility::log;
 
         if (!client_ || !client_->is_connected()) {
             BOOST_LOG_SEV(lg(), error) << "Not connected to server";
-            return std::unexpected(client_session_error::not_connected);
+            return std::unexpected(session_error(client_session_error::not_connected));
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Processing request type: "
@@ -194,15 +211,24 @@ public:
         auto response_result = client_->send_request_sync(std::move(request_frame));
 
         if (!response_result) {
+            auto error_code = response_result.error();
             BOOST_LOG_SEV(lg(), error) << "Request failed with error code: "
-                                       << static_cast<int>(response_result.error());
-            return std::unexpected(client_session_error::request_failed);
+                                       << static_cast<int>(error_code);
+            // Check if this is a network error indicating connection loss
+            if (error_code == messaging::error_code::network_error) {
+                return std::unexpected(session_error(
+                    client_session_error::connection_lost,
+                    "Connection to server lost"));
+            }
+            return std::unexpected(session_error(
+                client_session_error::request_failed,
+                "Request failed: " + messaging::to_string(error_code)));
         }
 
         auto decompressed = response_result->decompressed_payload();
         if (!decompressed) {
             BOOST_LOG_SEV(lg(), error) << "Failed to decompress response payload";
-            return std::unexpected(client_session_error::deserialization_failed);
+            return std::unexpected(session_error(client_session_error::deserialization_failed));
         }
 
         // Check for error response
@@ -211,14 +237,17 @@ public:
             if (err_resp) {
                 BOOST_LOG_SEV(lg(), error) << "Server returned error: "
                                            << err_resp->message;
+                return std::unexpected(session_error(
+                    client_session_error::server_error,
+                    err_resp->message));
             }
-            return std::unexpected(client_session_error::server_error);
+            return std::unexpected(session_error(client_session_error::server_error));
         }
 
         auto response = ResponseType::deserialize(*decompressed);
         if (!response) {
             BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-            return std::unexpected(client_session_error::deserialization_failed);
+            return std::unexpected(session_error(client_session_error::deserialization_failed));
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Successfully processed request";
@@ -239,13 +268,13 @@ public:
     template <Serializable RequestType,
               Deserializable ResponseType,
               messaging::message_type RequestMsgType>
-    std::expected<ResponseType, client_session_error>
+    std::expected<ResponseType, session_error>
     process_authenticated_request(RequestType request) {
         using namespace ores::utility::log;
         if (!is_logged_in()) {
             BOOST_LOG_SEV(lg(), warn) << "Attempted authenticated request while "
                                       << "not logged in";
-            return std::unexpected(client_session_error::not_logged_in);
+            return std::unexpected(session_error(client_session_error::not_logged_in));
         }
         return process_request<RequestType, ResponseType, RequestMsgType>(
             std::move(request));
@@ -266,18 +295,18 @@ public:
     template <Serializable RequestType,
               Deserializable ResponseType,
               messaging::message_type RequestMsgType>
-    std::expected<ResponseType, client_session_error>
+    std::expected<ResponseType, session_error>
     process_admin_request(RequestType request) {
         using namespace ores::utility::log;
         if (!is_logged_in()) {
             BOOST_LOG_SEV(lg(), warn) << "Attempted admin request while "
                                       << "not logged in";
-            return std::unexpected(client_session_error::not_logged_in);
+            return std::unexpected(session_error(client_session_error::not_logged_in));
         }
         if (!is_admin()) {
             BOOST_LOG_SEV(lg(), warn) << "Attempted admin request without "
                                       << "admin privileges";
-            return std::unexpected(client_session_error::admin_required);
+            return std::unexpected(session_error(client_session_error::admin_required));
         }
         return process_request<RequestType, ResponseType, RequestMsgType>(
             std::move(request));
@@ -292,6 +321,14 @@ private:
  * @brief Convert client_session_error to string for display.
  */
 std::string to_string(client_session_error error);
+
+/**
+ * @brief Convert session_error to string for display.
+ *
+ * Returns the detailed message if available, otherwise falls back to the
+ * generic error code message.
+ */
+std::string to_string(const session_error& error);
 
 }
 

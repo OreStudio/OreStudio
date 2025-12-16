@@ -23,6 +23,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include "ores.accounts/security/password_manager.hpp"
+#include "ores.accounts/security/password_policy_validator.hpp"
 
 namespace ores::accounts::service {
 
@@ -415,13 +416,11 @@ std::string account_service::change_password(const boost::uuids::uuid& account_i
     BOOST_LOG_SEV(lg(), debug) << "Changing password for account: "
                                << boost::uuids::to_string(account_id);
 
-    // Validate password strength
-    if (new_password.empty()) {
-        return "Password cannot be empty";
-    }
-
-    if (new_password.length() < 8) {
-        return "Password must be at least 8 characters long";
+    // Validate password strength using policy validator
+    using security::password_policy_validator;
+    auto validation = password_policy_validator::validate(new_password);
+    if (!validation.is_valid) {
+        return validation.error_message;
     }
 
     // Verify account exists

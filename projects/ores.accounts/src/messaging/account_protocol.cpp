@@ -233,15 +233,29 @@ std::ostream& operator<<(std::ostream& s, const list_accounts_response& v)
 
 std::vector<std::byte> unlock_account_request::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uuid(buffer, account_id);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(account_ids.size()));
+    for (const auto& id : account_ids) {
+        writer::write_uuid(buffer, id);
+    }
     return buffer;
 }
 
 std::expected<unlock_account_request, comms::messaging::error_code>
 unlock_account_request::deserialize(std::span<const std::byte> data) {
-    auto account_id_result = reader::read_uuid(data);
-    if (!account_id_result) return std::unexpected(account_id_result.error());
-    return unlock_account_request{*account_id_result};
+    unlock_account_request request;
+
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    const auto count = *count_result;
+
+    request.account_ids.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        auto id_result = reader::read_uuid(data);
+        if (!id_result) return std::unexpected(id_result.error());
+        request.account_ids.push_back(*id_result);
+    }
+
+    return request;
 }
 
 std::ostream& operator<<(std::ostream& s, const unlock_account_request& v)
@@ -250,10 +264,20 @@ std::ostream& operator<<(std::ostream& s, const unlock_account_request& v)
     return s;
 }
 
+std::ostream& operator<<(std::ostream& s, const unlock_account_result& v)
+{
+    rfl::json::write(v, s);
+    return s;
+}
+
 std::vector<std::byte> unlock_account_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_bool(buffer, success);
-    writer::write_string(buffer, error_message);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
+    for (const auto& result : results) {
+        writer::write_uuid(buffer, result.account_id);
+        writer::write_bool(buffer, result.success);
+        writer::write_string(buffer, result.message);
+    }
     return buffer;
 }
 
@@ -261,13 +285,28 @@ std::expected<unlock_account_response, comms::messaging::error_code>
 unlock_account_response::deserialize(std::span<const std::byte> data) {
     unlock_account_response response;
 
-    auto success_result = reader::read_bool(data);
-    if (!success_result) return std::unexpected(success_result.error());
-    response.success = *success_result;
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    const auto count = *count_result;
 
-    auto error_message_result = reader::read_string(data);
-    if (!error_message_result) return std::unexpected(error_message_result.error());
-    response.error_message = *error_message_result;
+    response.results.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        unlock_account_result result;
+
+        auto id_result = reader::read_uuid(data);
+        if (!id_result) return std::unexpected(id_result.error());
+        result.account_id = *id_result;
+
+        auto success_result = reader::read_bool(data);
+        if (!success_result) return std::unexpected(success_result.error());
+        result.success = *success_result;
+
+        auto message_result = reader::read_string(data);
+        if (!message_result) return std::unexpected(message_result.error());
+        result.message = *message_result;
+
+        response.results.push_back(std::move(result));
+    }
 
     return response;
 }
@@ -331,15 +370,29 @@ std::ostream& operator<<(std::ostream& s, const delete_account_response& v) {
 
 std::vector<std::byte> lock_account_request::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uuid(buffer, account_id);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(account_ids.size()));
+    for (const auto& id : account_ids) {
+        writer::write_uuid(buffer, id);
+    }
     return buffer;
 }
 
 std::expected<lock_account_request, comms::messaging::error_code>
 lock_account_request::deserialize(std::span<const std::byte> data) {
-    auto account_id_result = reader::read_uuid(data);
-    if (!account_id_result) return std::unexpected(account_id_result.error());
-    return lock_account_request{*account_id_result};
+    lock_account_request request;
+
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    const auto count = *count_result;
+
+    request.account_ids.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        auto id_result = reader::read_uuid(data);
+        if (!id_result) return std::unexpected(id_result.error());
+        request.account_ids.push_back(*id_result);
+    }
+
+    return request;
 }
 
 std::ostream& operator<<(std::ostream& s, const lock_account_request& v)
@@ -348,10 +401,20 @@ std::ostream& operator<<(std::ostream& s, const lock_account_request& v)
     return s;
 }
 
+std::ostream& operator<<(std::ostream& s, const lock_account_result& v)
+{
+    rfl::json::write(v, s);
+    return s;
+}
+
 std::vector<std::byte> lock_account_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_bool(buffer, success);
-    writer::write_string(buffer, error_message);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
+    for (const auto& result : results) {
+        writer::write_uuid(buffer, result.account_id);
+        writer::write_bool(buffer, result.success);
+        writer::write_string(buffer, result.message);
+    }
     return buffer;
 }
 
@@ -359,13 +422,28 @@ std::expected<lock_account_response, comms::messaging::error_code>
 lock_account_response::deserialize(std::span<const std::byte> data) {
     lock_account_response response;
 
-    auto success_result = reader::read_bool(data);
-    if (!success_result) return std::unexpected(success_result.error());
-    response.success = *success_result;
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    const auto count = *count_result;
 
-    auto error_message_result = reader::read_string(data);
-    if (!error_message_result) return std::unexpected(error_message_result.error());
-    response.error_message = *error_message_result;
+    response.results.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        lock_account_result result;
+
+        auto id_result = reader::read_uuid(data);
+        if (!id_result) return std::unexpected(id_result.error());
+        result.account_id = *id_result;
+
+        auto success_result = reader::read_bool(data);
+        if (!success_result) return std::unexpected(success_result.error());
+        result.success = *success_result;
+
+        auto message_result = reader::read_string(data);
+        if (!message_result) return std::unexpected(message_result.error());
+        result.message = *message_result;
+
+        response.results.push_back(std::move(result));
+    }
 
     return response;
 }

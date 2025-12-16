@@ -267,10 +267,15 @@ handle_lock_account_request(std::span<const std::byte> payload,
     if (!session) {
         BOOST_LOG_SEV(lg(), warn) << "Lock account denied: no active session for "
                                   << remote_address;
-        lock_account_response response{
-            .success = false,
-            .error_message = "Authentication required to lock accounts"
-        };
+        // Return error for all requested accounts
+        lock_account_response response;
+        for (const auto& id : request.account_ids) {
+            response.results.push_back({
+                .account_id = id,
+                .success = false,
+                .message = "Authentication required to lock accounts"
+            });
+        }
         co_return response.serialize();
     }
 
@@ -279,27 +284,38 @@ handle_lock_account_request(std::span<const std::byte> payload,
         BOOST_LOG_SEV(lg(), warn) << "Lock account denied: requester "
                                   << boost::uuids::to_string(session->account_id)
                                   << " is not an admin";
-        lock_account_response response{
-            .success = false,
-            .error_message = "Admin privileges required to lock accounts"
-        };
+        // Return error for all requested accounts
+        lock_account_response response;
+        for (const auto& id : request.account_ids) {
+            response.results.push_back({
+                .account_id = id,
+                .success = false,
+                .message = "Admin privileges required to lock accounts"
+            });
+        }
         co_return response.serialize();
     }
 
-    bool success = service_.lock_account(request.account_id);
+    // Process each account
+    lock_account_response response;
+    for (const auto& account_id : request.account_ids) {
+        bool success = service_.lock_account(account_id);
 
-    if (success) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully locked account: "
-                                  << boost::uuids::to_string(request.account_id);
-    } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to lock account: "
-                                  << boost::uuids::to_string(request.account_id);
+        if (success) {
+            BOOST_LOG_SEV(lg(), info) << "Successfully locked account: "
+                                      << boost::uuids::to_string(account_id);
+        } else {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to lock account: "
+                                      << boost::uuids::to_string(account_id);
+        }
+
+        response.results.push_back({
+            .account_id = account_id,
+            .success = success,
+            .message = success ? "" : "Account does not exist"
+        });
     }
 
-    lock_account_response response{
-        .success = success,
-        .error_message = success ? "" : "Account does not exist"
-    };
     co_return response.serialize();
 }
 
@@ -323,10 +339,15 @@ handle_unlock_account_request(std::span<const std::byte> payload,
     if (!session) {
         BOOST_LOG_SEV(lg(), warn) << "Unlock account denied: no active session for "
                                   << remote_address;
-        unlock_account_response response{
-            .success = false,
-            .error_message = "Authentication required to unlock accounts"
-        };
+        // Return error for all requested accounts
+        unlock_account_response response;
+        for (const auto& id : request.account_ids) {
+            response.results.push_back({
+                .account_id = id,
+                .success = false,
+                .message = "Authentication required to unlock accounts"
+            });
+        }
         co_return response.serialize();
     }
 
@@ -335,27 +356,38 @@ handle_unlock_account_request(std::span<const std::byte> payload,
         BOOST_LOG_SEV(lg(), warn) << "Unlock account denied: requester "
                                   << boost::uuids::to_string(session->account_id)
                                   << " is not an admin";
-        unlock_account_response response{
-            .success = false,
-            .error_message = "Admin privileges required to unlock accounts"
-        };
+        // Return error for all requested accounts
+        unlock_account_response response;
+        for (const auto& id : request.account_ids) {
+            response.results.push_back({
+                .account_id = id,
+                .success = false,
+                .message = "Admin privileges required to unlock accounts"
+            });
+        }
         co_return response.serialize();
     }
 
-    bool success = service_.unlock_account(request.account_id);
+    // Process each account
+    unlock_account_response response;
+    for (const auto& account_id : request.account_ids) {
+        bool success = service_.unlock_account(account_id);
 
-    if (success) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully unlocked account: "
-                                  << boost::uuids::to_string(request.account_id);
-    } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to unlock account: "
-                                  << boost::uuids::to_string(request.account_id);
+        if (success) {
+            BOOST_LOG_SEV(lg(), info) << "Successfully unlocked account: "
+                                      << boost::uuids::to_string(account_id);
+        } else {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to unlock account: "
+                                      << boost::uuids::to_string(account_id);
+        }
+
+        response.results.push_back({
+            .account_id = account_id,
+            .success = success,
+            .message = success ? "" : "Account does not exist"
+        });
     }
 
-    unlock_account_response response{
-        .success = success,
-        .error_message = success ? "" : "Account does not exist"
-    };
     co_return response.serialize();
 }
 

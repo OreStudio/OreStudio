@@ -106,14 +106,14 @@ AccountMdiWindow(ClientManager* clientManager,
 
     lockAction_->setIcon(IconUtils::createRecoloredIcon(
             ":/icons/ic_fluent_lock_closed_20_regular.svg", iconColor));
-    lockAction_->setToolTip("Lock selected account");
+    lockAction_->setToolTip("Lock selected account(s)");
     connect(lockAction_, &QAction::triggered, this,
         &AccountMdiWindow::lockSelected);
     toolBar_->addAction(lockAction_);
 
     unlockAction_->setIcon(IconUtils::createRecoloredIcon(
             ":/icons/ic_fluent_lock_open_20_regular.svg", iconColor));
-    unlockAction_->setToolTip("Unlock selected account");
+    unlockAction_->setToolTip("Unlock selected account(s)");
     connect(unlockAction_, &QAction::triggered, this,
         &AccountMdiWindow::unlockSelected);
     toolBar_->addAction(unlockAction_);
@@ -473,31 +473,50 @@ void AccountMdiWindow::lockSelected() {
          return;
     }
 
-    // Map proxy index to source index
-    const QModelIndex sourceIndex = proxyModel_->mapToSource(selected.first());
-    const auto* account = accountModel_->getAccount(sourceIndex.row());
-    if (!account) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get account for lock";
+    std::vector<boost::uuids::uuid> account_ids;
+    for (const auto& index : selected) {
+        const QModelIndex sourceIndex = proxyModel_->mapToSource(index);
+        const auto* account = accountModel_->getAccount(sourceIndex.row());
+        if (account)
+            account_ids.push_back(account->id);
+    }
+
+    if (account_ids.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "No valid accounts to lock";
         return;
     }
 
-    QString confirmMessage = QString("Are you sure you want to lock account '%1'?")
-        .arg(QString::fromStdString(account->username));
+    BOOST_LOG_SEV(lg(), debug) << "Lock requested for " << account_ids.size()
+                               << " accounts";
+
+    QString confirmMessage;
+    if (account_ids.size() == 1) {
+        const QModelIndex sourceIndex = proxyModel_->mapToSource(selected.first());
+        const auto* account = accountModel_->getAccount(sourceIndex.row());
+        confirmMessage = QString("Are you sure you want to lock account '%1'?")
+            .arg(QString::fromStdString(account->username));
+    } else {
+        confirmMessage = QString("Are you sure you want to lock %1 accounts?")
+            .arg(account_ids.size());
+    }
 
     auto reply = MessageBoxHelper::question(this, "Lock Account",
         confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
+        BOOST_LOG_SEV(lg(), debug) << "Lock cancelled by user.";
         return;
     }
 
     QPointer<AccountMdiWindow> self = this;
-    boost::uuids::uuid account_id = account->id;
+    using LockResult = std::vector<accounts::messaging::lock_account_result>;
 
-    auto task = [self, account_id]() -> std::pair<bool, std::string> {
-        if (!self) return {false, "Window closed"};
+    auto task = [self, account_ids]() -> LockResult {
+        if (!self) return {};
 
-        accounts::messaging::lock_account_request request{account_id};
+        BOOST_LOG_SEV(lg(), debug) << "Locking " << account_ids.size() << " accounts";
+
+        accounts::messaging::lock_account_request request{account_ids};
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -509,42 +528,90 @@ void AccountMdiWindow::lockSelected() {
             std::move(request_frame));
 
         if (!response_result) {
-            return {false, "Failed to communicate with server"};
+            BOOST_LOG_SEV(lg(), error) << "Failed to send lock request";
+            LockResult error_results;
+            for (const auto& id : account_ids) {
+                error_results.push_back({id, false, "Failed to communicate with server"});
+            }
+            return error_results;
         }
 
         auto payload_result = response_result->decompressed_payload();
         if (!payload_result) {
-            return {false, "Failed to decompress server response"};
+            BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
+            LockResult error_results;
+            for (const auto& id : account_ids) {
+                error_results.push_back({id, false, "Failed to decompress server response"});
+            }
+            return error_results;
         }
 
         auto response = accounts::messaging::lock_account_response::
             deserialize(*payload_result);
 
         if (!response) {
-            return {false, "Invalid server response"};
+            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+            LockResult error_results;
+            for (const auto& id : account_ids) {
+                error_results.push_back({id, false, "Invalid server response"});
+            }
+            return error_results;
         }
 
-        return {response->success, response->error_message};
+        return response->results;
     };
 
-    auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(self);
-    connect(watcher, &QFutureWatcher<std::pair<bool, std::string>>::finished,
+    auto* watcher = new QFutureWatcher<LockResult>(self);
+    connect(watcher, &QFutureWatcher<LockResult>::finished,
             self, [self, watcher]() {
-        auto [success, message] = watcher->result();
+        auto results = watcher->result();
         watcher->deleteLater();
 
-        if (success) {
-            emit self->statusChanged("Account locked successfully");
-            self->accountModel_->refresh();
-        } else {
-            QString msg = QString("Failed to lock account: %1")
-                .arg(QString::fromStdString(message));
+        int success_count = 0;
+        int failure_count = 0;
+        QString first_error;
+
+        for (const auto& result : results) {
+            if (result.success) {
+                BOOST_LOG_SEV(lg(), debug) << "Account locked successfully: "
+                                           << boost::uuids::to_string(result.account_id);
+                success_count++;
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Account lock failed: "
+                                           << boost::uuids::to_string(result.account_id)
+                                           << " - " << result.message;
+                failure_count++;
+                if (first_error.isEmpty()) {
+                    first_error = QString::fromStdString(result.message);
+                }
+            }
+        }
+
+        self->accountModel_->refresh();
+        if (failure_count == 0) {
+            QString msg = success_count == 1
+                ? "Successfully locked 1 account"
+                : QString("Successfully locked %1 accounts").arg(success_count);
+            emit self->statusChanged(msg);
+        } else if (success_count == 0) {
+            QString msg = QString("Failed to lock %1 %2: %3")
+                .arg(failure_count)
+                .arg(failure_count == 1 ? "account" : "accounts")
+                .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Lock Failed", msg);
+        } else {
+            QString msg = QString("Locked %1 %2, failed to lock %3 %4")
+                .arg(success_count)
+                .arg(success_count == 1 ? "account" : "accounts")
+                .arg(failure_count)
+                .arg(failure_count == 1 ? "account" : "accounts");
+            emit self->statusChanged(msg);
+            MessageBoxHelper::warning(self, "Partial Success", msg);
         }
     });
 
-    QFuture<std::pair<bool, std::string>> future = QtConcurrent::run(task);
+    QFuture<LockResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 
@@ -560,31 +627,50 @@ void AccountMdiWindow::unlockSelected() {
          return;
     }
 
-    // Map proxy index to source index
-    const QModelIndex sourceIndex = proxyModel_->mapToSource(selected.first());
-    const auto* account = accountModel_->getAccount(sourceIndex.row());
-    if (!account) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get account for unlock";
+    std::vector<boost::uuids::uuid> account_ids;
+    for (const auto& index : selected) {
+        const QModelIndex sourceIndex = proxyModel_->mapToSource(index);
+        const auto* account = accountModel_->getAccount(sourceIndex.row());
+        if (account)
+            account_ids.push_back(account->id);
+    }
+
+    if (account_ids.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "No valid accounts to unlock";
         return;
     }
 
-    QString confirmMessage = QString("Are you sure you want to unlock account '%1'?")
-        .arg(QString::fromStdString(account->username));
+    BOOST_LOG_SEV(lg(), debug) << "Unlock requested for " << account_ids.size()
+                               << " accounts";
+
+    QString confirmMessage;
+    if (account_ids.size() == 1) {
+        const QModelIndex sourceIndex = proxyModel_->mapToSource(selected.first());
+        const auto* account = accountModel_->getAccount(sourceIndex.row());
+        confirmMessage = QString("Are you sure you want to unlock account '%1'?")
+            .arg(QString::fromStdString(account->username));
+    } else {
+        confirmMessage = QString("Are you sure you want to unlock %1 accounts?")
+            .arg(account_ids.size());
+    }
 
     auto reply = MessageBoxHelper::question(this, "Unlock Account",
         confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
+        BOOST_LOG_SEV(lg(), debug) << "Unlock cancelled by user.";
         return;
     }
 
     QPointer<AccountMdiWindow> self = this;
-    boost::uuids::uuid account_id = account->id;
+    using UnlockResult = std::vector<accounts::messaging::unlock_account_result>;
 
-    auto task = [self, account_id]() -> std::pair<bool, std::string> {
-        if (!self) return {false, "Window closed"};
+    auto task = [self, account_ids]() -> UnlockResult {
+        if (!self) return {};
 
-        accounts::messaging::unlock_account_request request{account_id};
+        BOOST_LOG_SEV(lg(), debug) << "Unlocking " << account_ids.size() << " accounts";
+
+        accounts::messaging::unlock_account_request request{account_ids};
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -596,42 +682,90 @@ void AccountMdiWindow::unlockSelected() {
             std::move(request_frame));
 
         if (!response_result) {
-            return {false, "Failed to communicate with server"};
+            BOOST_LOG_SEV(lg(), error) << "Failed to send unlock request";
+            UnlockResult error_results;
+            for (const auto& id : account_ids) {
+                error_results.push_back({id, false, "Failed to communicate with server"});
+            }
+            return error_results;
         }
 
         auto payload_result = response_result->decompressed_payload();
         if (!payload_result) {
-            return {false, "Failed to decompress server response"};
+            BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
+            UnlockResult error_results;
+            for (const auto& id : account_ids) {
+                error_results.push_back({id, false, "Failed to decompress server response"});
+            }
+            return error_results;
         }
 
         auto response = accounts::messaging::unlock_account_response::
             deserialize(*payload_result);
 
         if (!response) {
-            return {false, "Invalid server response"};
+            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+            UnlockResult error_results;
+            for (const auto& id : account_ids) {
+                error_results.push_back({id, false, "Invalid server response"});
+            }
+            return error_results;
         }
 
-        return {response->success, response->error_message};
+        return response->results;
     };
 
-    auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(self);
-    connect(watcher, &QFutureWatcher<std::pair<bool, std::string>>::finished,
+    auto* watcher = new QFutureWatcher<UnlockResult>(self);
+    connect(watcher, &QFutureWatcher<UnlockResult>::finished,
             self, [self, watcher]() {
-        auto [success, message] = watcher->result();
+        auto results = watcher->result();
         watcher->deleteLater();
 
-        if (success) {
-            emit self->statusChanged("Account unlocked successfully");
-            self->accountModel_->refresh();
-        } else {
-            QString msg = QString("Failed to unlock account: %1")
-                .arg(QString::fromStdString(message));
+        int success_count = 0;
+        int failure_count = 0;
+        QString first_error;
+
+        for (const auto& result : results) {
+            if (result.success) {
+                BOOST_LOG_SEV(lg(), debug) << "Account unlocked successfully: "
+                                           << boost::uuids::to_string(result.account_id);
+                success_count++;
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Account unlock failed: "
+                                           << boost::uuids::to_string(result.account_id)
+                                           << " - " << result.message;
+                failure_count++;
+                if (first_error.isEmpty()) {
+                    first_error = QString::fromStdString(result.message);
+                }
+            }
+        }
+
+        self->accountModel_->refresh();
+        if (failure_count == 0) {
+            QString msg = success_count == 1
+                ? "Successfully unlocked 1 account"
+                : QString("Successfully unlocked %1 accounts").arg(success_count);
+            emit self->statusChanged(msg);
+        } else if (success_count == 0) {
+            QString msg = QString("Failed to unlock %1 %2: %3")
+                .arg(failure_count)
+                .arg(failure_count == 1 ? "account" : "accounts")
+                .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Unlock Failed", msg);
+        } else {
+            QString msg = QString("Unlocked %1 %2, failed to unlock %3 %4")
+                .arg(success_count)
+                .arg(success_count == 1 ? "account" : "accounts")
+                .arg(failure_count)
+                .arg(failure_count == 1 ? "account" : "accounts");
+            emit self->statusChanged(msg);
+            MessageBoxHelper::warning(self, "Partial Success", msg);
         }
     });
 
-    QFuture<std::pair<bool, std::string>> future = QtConcurrent::run(task);
+    QFuture<UnlockResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 
@@ -648,9 +782,13 @@ QSize AccountMdiWindow::sizeHint() const {
 void AccountMdiWindow::updateActionStates() {
     const int selection_count = accountTableView_
         ->selectionModel()->selectedRows().count();
+    const bool hasSingleSelection = selection_count == 1;
     const bool hasSelection = selection_count > 0;
 
-    editAction_->setEnabled(hasSelection);
+    // Edit only works on single selection (opens a dialog)
+    editAction_->setEnabled(hasSingleSelection);
+
+    // Delete, lock, unlock support multi-selection
     deleteAction_->setEnabled(hasSelection);
     lockAction_->setEnabled(hasSelection);
     unlockAction_->setEnabled(hasSelection);

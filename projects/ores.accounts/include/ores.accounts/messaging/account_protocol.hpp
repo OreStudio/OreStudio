@@ -163,19 +163,22 @@ struct list_accounts_response final {
 std::ostream& operator<<(std::ostream& s, const list_accounts_response& v);
 
 /**
- * @brief Request to unlock a locked account.
+ * @brief Request to unlock one or more locked accounts.
  *
- * Requires admin privileges - the server verifies the requester's identity
- * from the session context.
+ * Supports batch operations by accepting a vector of account IDs.
+ * Each account is processed independently - partial success is possible.
+ * Requires admin privileges.
  */
 struct unlock_account_request final {
-    boost::uuids::uuid account_id;
+    std::vector<boost::uuids::uuid> account_ids;
 
     /**
      * @brief Serialize request to bytes.
      *
      * Format:
-     * - 16 bytes: account_id (UUID)
+     * - 4 bytes: count (number of account IDs)
+     * - For each account:
+     *   - 16 bytes: account_id (UUID)
      */
     std::vector<std::byte> serialize() const;
 
@@ -189,19 +192,35 @@ struct unlock_account_request final {
 std::ostream& operator<<(std::ostream& s, const unlock_account_request& v);
 
 /**
- * @brief Response indicating whether unlock operation succeeded.
+ * @brief Result for a single account unlock operation.
+ */
+struct unlock_account_result final {
+    boost::uuids::uuid account_id;
+    bool success = false;
+    std::string message;
+};
+
+std::ostream& operator<<(std::ostream& s, const unlock_account_result& v);
+
+/**
+ * @brief Response containing results for unlock operation(s).
+ *
+ * Contains one result per requested account, indicating individual
+ * success or failure. Supports partial success in batch operations.
  */
 struct unlock_account_response final {
-    bool success = false;
-    std::string error_message;
+    std::vector<unlock_account_result> results;
 
     /**
      * @brief Serialize response to bytes.
      *
      * Format:
-     * - 1 byte: success (boolean)
-     * - 2 bytes: error_message length
-     * - N bytes: error_message (UTF-8)
+     * - 4 bytes: count (number of results)
+     * - For each result:
+     *   - 16 bytes: account_id (UUID)
+     *   - 1 byte: success (boolean)
+     *   - 2 bytes: message length
+     *   - N bytes: message (UTF-8)
      */
     std::vector<std::byte> serialize() const;
 
@@ -264,19 +283,22 @@ struct delete_account_response final {
 std::ostream& operator<<(std::ostream& s, const delete_account_response& v);
 
 /**
- * @brief Request to lock an account.
+ * @brief Request to lock one or more accounts.
  *
- * Requires admin privileges - the server verifies the requester's identity
- * from the session context.
+ * Supports batch operations by accepting a vector of account IDs.
+ * Each account is processed independently - partial success is possible.
+ * Requires admin privileges.
  */
 struct lock_account_request final {
-    boost::uuids::uuid account_id;
+    std::vector<boost::uuids::uuid> account_ids;
 
     /**
      * @brief Serialize request to bytes.
      *
      * Format:
-     * - 16 bytes: account_id (UUID)
+     * - 4 bytes: count (number of account IDs)
+     * - For each account:
+     *   - 16 bytes: account_id (UUID)
      */
     std::vector<std::byte> serialize() const;
 
@@ -290,19 +312,35 @@ struct lock_account_request final {
 std::ostream& operator<<(std::ostream& s, const lock_account_request& v);
 
 /**
- * @brief Response indicating whether lock operation succeeded.
+ * @brief Result for a single account lock operation.
+ */
+struct lock_account_result final {
+    boost::uuids::uuid account_id;
+    bool success = false;
+    std::string message;
+};
+
+std::ostream& operator<<(std::ostream& s, const lock_account_result& v);
+
+/**
+ * @brief Response containing results for lock operation(s).
+ *
+ * Contains one result per requested account, indicating individual
+ * success or failure. Supports partial success in batch operations.
  */
 struct lock_account_response final {
-    bool success = false;
-    std::string error_message;
+    std::vector<lock_account_result> results;
 
     /**
      * @brief Serialize response to bytes.
      *
      * Format:
-     * - 1 byte: success (boolean)
-     * - 2 bytes: error_message length
-     * - N bytes: error_message (UTF-8)
+     * - 4 bytes: count (number of results)
+     * - For each result:
+     *   - 16 bytes: account_id (UUID)
+     *   - 1 byte: success (boolean)
+     *   - 2 bytes: message length
+     *   - N bytes: message (UTF-8)
      */
     std::vector<std::byte> serialize() const;
 

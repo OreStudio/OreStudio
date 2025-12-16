@@ -35,6 +35,7 @@
 #include <QToolBar>
 #include <QAction>
 #include <QPixmap>
+#include <QSortFilterProxyModel>
 #include <QImage>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
@@ -64,6 +65,7 @@ AccountMdiWindow(ClientManager* clientManager,
       lockAction_(new QAction("Lock", this)),
       unlockAction_(new QAction("Unlock", this)),
       accountModel_(std::make_unique<ClientAccountModel>(clientManager)),
+      proxyModel_(new QSortFilterProxyModel(this)),
       clientManager_(clientManager),
       username_(username) {
 
@@ -125,7 +127,10 @@ AccountMdiWindow(ClientManager* clientManager,
     accountTableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     accountTableView_->setWordWrap(false);
 
-    accountTableView_->setModel(accountModel_.get());
+    proxyModel_->setSourceModel(accountModel_.get());
+    accountTableView_->setModel(proxyModel_);
+    accountTableView_->setSortingEnabled(true);
+    accountTableView_->sortByColumn(0, Qt::AscendingOrder);
 
     QHeaderView* verticalHeader(accountTableView_->verticalHeader());
     QHeaderView* horizontalHeader(accountTableView_->horizontalHeader());
@@ -264,10 +269,12 @@ void AccountMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
         return;
     }
 
-    const auto* account = accountModel_->getAccount(index.row());
+    // Map proxy index to source index
+    const QModelIndex sourceIndex = proxyModel_->mapToSource(index);
+    const auto* account = accountModel_->getAccount(sourceIndex.row());
     if (!account) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get account for row: "
-                                 << index.row();
+                                 << sourceIndex.row();
         return;
     }
 
@@ -306,7 +313,9 @@ void AccountMdiWindow::deleteSelected() {
 
     std::vector<boost::uuids::uuid> account_ids;
     for (const auto& index : selected) {
-        const auto* account = accountModel_->getAccount(index.row());
+        // Map proxy index to source index
+        const QModelIndex sourceIndex = proxyModel_->mapToSource(index);
+        const auto* account = accountModel_->getAccount(sourceIndex.row());
         if (account)
             account_ids.push_back(account->id);
     }
@@ -321,7 +330,9 @@ void AccountMdiWindow::deleteSelected() {
 
     QString confirmMessage;
     if (account_ids.size() == 1) {
-        const auto* account = accountModel_->getAccount(selected.first().row());
+        // Map proxy index to source index
+        const QModelIndex sourceIndex = proxyModel_->mapToSource(selected.first());
+        const auto* account = accountModel_->getAccount(sourceIndex.row());
         confirmMessage = QString("Are you sure you want to delete account '%1'?")
             .arg(QString::fromStdString(account->username));
     } else {
@@ -460,7 +471,9 @@ void AccountMdiWindow::lockSelected() {
          return;
     }
 
-    const auto* account = accountModel_->getAccount(selected.first().row());
+    // Map proxy index to source index
+    const QModelIndex sourceIndex = proxyModel_->mapToSource(selected.first());
+    const auto* account = accountModel_->getAccount(sourceIndex.row());
     if (!account) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get account for lock";
         return;
@@ -545,7 +558,9 @@ void AccountMdiWindow::unlockSelected() {
          return;
     }
 
-    const auto* account = accountModel_->getAccount(selected.first().row());
+    // Map proxy index to source index
+    const QModelIndex sourceIndex = proxyModel_->mapToSource(selected.first());
+    const auto* account = accountModel_->getAccount(sourceIndex.row());
     if (!account) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get account for unlock";
         return;

@@ -26,6 +26,7 @@
 #include <QToolBar>
 #include <QIcon>
 #include <QTimer>
+#include <QSortFilterProxyModel>
 #include <memory>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.utility/log/make_logger.hpp"
@@ -129,6 +130,7 @@ private:
     QAction* unlockAction_;
 
     std::unique_ptr<ClientAccountModel> accountModel_;
+    QSortFilterProxyModel* proxyModel_;
     ClientManager* clientManager_;
     QString username_;
     bool isStale_{false};

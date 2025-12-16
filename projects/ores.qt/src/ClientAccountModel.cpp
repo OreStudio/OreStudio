@@ -22,6 +22,8 @@
 #include <algorithm>
 #include <unordered_set>
 #include <QtConcurrent>
+#include <QColor>
+#include <QDateTime>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
@@ -36,11 +38,16 @@ using namespace ores::utility::log;
 ClientAccountModel::
 ClientAccountModel(ClientManager* clientManager, QObject* parent)
     : QAbstractTableModel(parent), clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FutureWatcherResult>(this)) {
+      watcher_(new QFutureWatcher<FutureWatcherResult>(this)),
+      pulse_timer_(new QTimer(this)) {
 
     connect(watcher_,
         &QFutureWatcher<FutureWatcherResult>::finished,
         this, &ClientAccountModel::onAccountsLoaded);
+
+    // Setup pulse timer for recency color updates (same interval as reload button)
+    connect(pulse_timer_, &QTimer::timeout,
+        this, &ClientAccountModel::onPulseTimerTimeout);
 }
 
 int ClientAccountModel::rowCount(const QModelIndex& parent) const {
@@ -56,7 +63,7 @@ int ClientAccountModel::columnCount(const QModelIndex& parent) const {
 }
 
 QVariant ClientAccountModel::data(const QModelIndex& index, int role) const {
-    if (!index.isValid() || role != Qt::DisplayRole)
+    if (!index.isValid())
         return {};
 
     const auto row = static_cast<std::size_t>(index.row());
@@ -65,12 +72,20 @@ QVariant ClientAccountModel::data(const QModelIndex& index, int role) const {
 
     const auto& account = accounts_[row];
 
+    if (role == Qt::ForegroundRole) {
+        return recency_foreground_color(account.username);
+    }
+
+    if (role != Qt::DisplayRole)
+        return {};
+
     switch (index.column()) {
     case Column::Username: return QString::fromStdString(account.username);
     case Column::Email: return QString::fromStdString(account.email);
     case Column::IsAdmin: return account.is_admin ? tr("Yes") : tr("No");
     case Column::Version: return account.version;
     case Column::RecordedBy: return QString::fromStdString(account.recorded_by);
+    case Column::RecordedAt: return QString::fromStdString(account.recorded_at);
     default: return {};
     }
 }
@@ -87,6 +102,7 @@ headerData(int section, Qt::Orientation orientation, int role) const {
         case Column::IsAdmin: return tr("Admin");
         case Column::Version: return tr("Version");
         case Column::RecordedBy: return tr("Recorded By");
+        case Column::RecordedAt: return tr("Recorded At");
         default: return {};
         }
     }
@@ -117,6 +133,10 @@ void ClientAccountModel::refresh(bool replace) {
             beginResetModel();
             accounts_.clear();
             total_available_count_ = 0;
+            recent_usernames_.clear();
+            pulse_timer_->stop();
+            pulse_count_ = 0;
+            pulse_state_ = false;
             endResetModel();
         }
     }
@@ -242,6 +262,16 @@ void ClientAccountModel::onAccountsLoaded() {
                                   << " duplicates). Total in model: " << accounts_.size()
                                   << ", Total available: " << total_available_count_;
 
+            // Update the set of recent accounts for recency coloring
+            update_recent_accounts();
+
+            // Start the pulse timer if there are recent accounts to highlight
+            if (!recent_usernames_.empty() && !pulse_timer_->isActive()) {
+                pulse_count_ = 0;
+                pulse_state_ = true;  // Start with highlight on
+                pulse_timer_->start(pulse_interval_ms_);
+            }
+
         emit dataLoaded();
     } else {
         BOOST_LOG_SEV(lg(), error) << "Accounts request failed: no response.";
@@ -293,4 +323,94 @@ void ClientAccountModel::set_page_size(std::uint32_t size) {
     }
 }
 
+void ClientAccountModel::update_recent_accounts() {
+    recent_usernames_.clear();
+
+    if (accounts_.empty()) {
+        BOOST_LOG_SEV(lg(), debug) << "No accounts to check for recency.";
+        return;
+    }
+
+    QDateTime now = QDateTime::currentDateTime();
+
+    // If this is the first load, set last_reload_time_ and return (no recent accounts)
+    if (!last_reload_time_.isValid()) {
+        last_reload_time_ = now;
+        BOOST_LOG_SEV(lg(), debug) << "First load, setting last_reload_time_";
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Checking accounts newer than last reload: "
+                               << last_reload_time_.toString(Qt::ISODate).toStdString();
+
+    // Find accounts with recorded_at newer than last reload
+    for (const auto& account : accounts_) {
+        if (account.recorded_at.empty()) {
+            continue;
+        }
+
+        // Parse recorded_at as datetime (try multiple formats)
+        QDateTime recordedAt = QDateTime::fromString(
+            QString::fromStdString(account.recorded_at), Qt::ISODate);
+
+        if (!recordedAt.isValid()) {
+            // Try alternative format (YYYY-MM-DD HH:MM:SS)
+            recordedAt = QDateTime::fromString(
+                QString::fromStdString(account.recorded_at), "yyyy-MM-dd HH:mm:ss");
+        }
+
+        if (!recordedAt.isValid()) {
+            // Try date-only format (YYYY-MM-DD) - assume start of day
+            recordedAt = QDateTime::fromString(
+                QString::fromStdString(account.recorded_at), "yyyy-MM-dd");
+        }
+
+        if (recordedAt.isValid() && recordedAt > last_reload_time_) {
+            recent_usernames_.insert(account.username);
+            BOOST_LOG_SEV(lg(), trace) << "Account " << account.username
+                                       << " is recent (recorded_at: "
+                                       << account.recorded_at << ")";
+        }
+    }
+
+    // Update the reload timestamp for next comparison
+    last_reload_time_ = now;
+
+    BOOST_LOG_SEV(lg(), debug) << "Found " << recent_usernames_.size()
+                               << " accounts newer than last reload";
 }
+
+QVariant ClientAccountModel::
+recency_foreground_color(const std::string& username) const {
+    if (recent_usernames_.empty() || recent_usernames_.find(username) == recent_usernames_.end()) {
+        return {};  // No special color
+    }
+
+    // Only show color when pulse_state_ is true (pulsing on)
+    if (!pulse_state_) {
+        return {};
+    }
+
+    // Return yellow/gold color for recent accounts
+    return QColor(255, 200, 0);  // Gold color
+}
+
+void ClientAccountModel::onPulseTimerTimeout() {
+    pulse_state_ = !pulse_state_;
+    pulse_count_++;
+
+    // After max_pulse_cycles_, keep the highlight on permanently
+    if (pulse_count_ >= max_pulse_cycles_) {
+        pulse_timer_->stop();
+        pulse_state_ = true;  // Keep highlight on after pulsing stops
+    }
+
+    // Emit dataChanged for ForegroundRole on all rows with recent usernames
+    if (!recent_usernames_.empty()) {
+        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
+            {Qt::ForegroundRole});
+    }
+}
+
+}
+

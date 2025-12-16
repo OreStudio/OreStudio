@@ -76,6 +76,15 @@ public:
     std::vector<domain::role> read_latest_by_name(const std::string& name);
 
     /**
+     * @brief Reads multiple roles by their IDs in a single query.
+     *
+     * Uses IN clause to efficiently fetch multiple roles at once,
+     * avoiding N+1 query issues.
+     */
+    std::vector<domain::role>
+    read_latest_by_ids(const std::vector<boost::uuids::uuid>& ids);
+
+    /**
      * @brief Deletes a role by closing its temporal validity.
      */
     void remove(const boost::uuids::uuid& role_id);

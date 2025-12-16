@@ -27,6 +27,7 @@
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.accounts/domain/account_role.hpp"
+#include "ores.accounts/domain/role.hpp"
 
 namespace ores::accounts::repository {
 
@@ -98,6 +99,15 @@ public:
      */
     std::vector<std::string>
     read_effective_permissions(const boost::uuids::uuid& account_id);
+
+    /**
+     * @brief Gets all roles assigned to an account with their permissions.
+     *
+     * This method efficiently fetches all roles for an account along with
+     * their permission codes in a single database query, avoiding N+1 issues.
+     */
+    std::vector<domain::role>
+    read_roles_with_permissions(const boost::uuids::uuid& account_id);
 
 private:
     context ctx_;

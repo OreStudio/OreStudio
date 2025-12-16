@@ -280,18 +280,8 @@ std::vector<domain::role>
 authorization_service::get_account_roles(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting roles for account: " << account_id;
 
-    auto account_roles = account_role_repo_.read_latest_by_account(account_id);
-    std::vector<domain::role> roles;
-    roles.reserve(account_roles.size());
-
-    for (const auto& ar : account_roles) {
-        auto role = find_role(ar.role_id);
-        if (role) {
-            roles.push_back(*role);
-        }
-    }
-
-    return roles;
+    // Use optimized single-query approach that fetches roles with permissions
+    return account_role_repo_.read_roles_with_permissions(account_id);
 }
 
 // ============================================================================

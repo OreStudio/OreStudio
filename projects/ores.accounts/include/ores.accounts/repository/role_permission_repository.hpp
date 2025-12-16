@@ -99,6 +99,15 @@ public:
      */
     std::map<std::string, std::vector<std::string>> read_all_role_permission_codes();
 
+    /**
+     * @brief Gets permission codes for specific roles in a single query.
+     *
+     * More efficient than read_all_role_permission_codes when only a few
+     * roles are needed. Uses IN clause with JOINs.
+     */
+    std::map<std::string, std::vector<std::string>>
+    read_role_permission_codes(const std::vector<boost::uuids::uuid>& role_ids);
+
 private:
     context ctx_;
 };

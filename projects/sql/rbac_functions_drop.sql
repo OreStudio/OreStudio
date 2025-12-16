@@ -17,14 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-\ir ./rbac_functions_drop.sql
-\ir ./account_roles_drop.sql
-\ir ./role_permissions_drop.sql
-\ir ./roles_drop.sql
-\ir ./permissions_drop.sql
-\ir ./currencies_notify_trigger_drop.sql
-\ir ./currencies_drop.sql
-\ir ./accounts_notify_trigger_drop.sql
-\ir ./accounts_drop.sql
-\ir ./feature_flags_drop.sql
-\ir ./login_info_drop.sql
+set schema 'oresdb';
+
+--
+-- Drop RBAC query functions.
+--
+
+drop function if exists get_effective_permissions(uuid);
+drop function if exists get_all_role_permission_codes();
+drop function if exists get_role_permission_codes(uuid[]);
+drop function if exists get_roles_by_ids(uuid[]);
+drop function if exists get_account_roles_with_permissions(uuid);
+

@@ -27,6 +27,7 @@
 \ir ./roles_create.sql
 \ir ./role_permissions_create.sql
 \ir ./account_roles_create.sql
+\ir ./rbac_functions_create.sql
 
 \ir ./bootstrap_mode_setup.sql
 \ir ./disable_password_validation_setup.sql

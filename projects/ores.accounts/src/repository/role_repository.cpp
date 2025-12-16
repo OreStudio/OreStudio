@@ -95,6 +95,51 @@ role_repository::read_latest_by_name(const std::string& name) {
         lg(), "Reading latest role by name.");
 }
 
+std::vector<domain::role>
+role_repository::read_latest_by_ids(const std::vector<boost::uuids::uuid>& ids) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading roles by IDs. Count: " << ids.size();
+
+    if (ids.empty()) {
+        return {};
+    }
+
+    // Build array literal for PostgreSQL
+    std::string array_literal = "ARRAY[";
+    for (size_t i = 0; i < ids.size(); ++i) {
+        if (i > 0) array_literal += ", ";
+        array_literal += "'" + boost::lexical_cast<std::string>(ids[i]) + "'::uuid";
+    }
+    array_literal += "]";
+
+    // Call the SQL function defined in rbac_functions_create.sql
+    const std::string sql =
+        "SELECT id, version, name, description, modified_by "
+        "FROM oresdb.get_roles_by_ids(" + array_literal + ")";
+
+    std::vector<domain::role> result;
+
+    const auto execute_query = [&](auto&& session) {
+        auto query_result = session->execute(sql);
+        for (const auto& row : query_result) {
+            domain::role r;
+            r.id = boost::lexical_cast<boost::uuids::uuid>(
+                row[0].template as<std::string>());
+            r.version = row[1].template as<int>();
+            r.name = row[2].template as<std::string>();
+            r.description = row[3].template as<std::string>();
+            r.recorded_by = row[4].template as<std::string>();
+            result.push_back(std::move(r));
+        }
+        return query_result;
+    };
+
+    const auto r = session(ctx_.connection_pool()).and_then(execute_query);
+    ensure_success(r, lg());
+
+    BOOST_LOG_SEV(lg(), debug) << "Read roles by IDs. Total: " << result.size();
+    return result;
+}
+
 void role_repository::remove(const boost::uuids::uuid& role_id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing role from database: " << role_id;
 

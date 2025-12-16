@@ -136,17 +136,39 @@ std::map<std::string, std::vector<std::string>>
 role_permission_repository::read_all_role_permission_codes() {
     BOOST_LOG_SEV(lg(), debug) << "Reading all role permission codes.";
 
-    // Single query with JOINs to get all role-permission mappings with codes
+    // Call the SQL function defined in rbac_functions_create.sql
     const std::string sql =
-        "SELECT rp.role_id::text, p.code "
-        "FROM oresdb.role_permissions rp "
-        "JOIN oresdb.permissions p ON rp.permission_id = p.id "
-        "WHERE rp.valid_to = '9999-12-31 23:59:59' "
-        "AND p.valid_to = '9999-12-31 23:59:59' "
-        "ORDER BY rp.role_id, p.code";
+        "SELECT role_id, code FROM oresdb.get_all_role_permission_codes()";
 
     return execute_raw_grouped_query(ctx_, sql, lg(),
         "Reading all role permission codes");
+}
+
+std::map<std::string, std::vector<std::string>>
+role_permission_repository::read_role_permission_codes(
+    const std::vector<boost::uuids::uuid>& role_ids) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading permission codes for roles. Count: "
+                               << role_ids.size();
+
+    if (role_ids.empty()) {
+        return {};
+    }
+
+    // Build array literal for PostgreSQL
+    std::string array_literal = "ARRAY[";
+    for (size_t i = 0; i < role_ids.size(); ++i) {
+        if (i > 0) array_literal += ", ";
+        array_literal += "'" + boost::lexical_cast<std::string>(role_ids[i]) + "'::uuid";
+    }
+    array_literal += "]";
+
+    // Call the SQL function defined in rbac_functions_create.sql
+    const std::string sql =
+        "SELECT role_id, code FROM oresdb.get_role_permission_codes(" +
+        array_literal + ")";
+
+    return execute_raw_grouped_query(ctx_, sql, lg(),
+        "Reading permission codes for specific roles");
 }
 
 }

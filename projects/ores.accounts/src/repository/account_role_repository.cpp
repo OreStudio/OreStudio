@@ -19,6 +19,7 @@
  */
 #include "ores.accounts/repository/account_role_repository.hpp"
 
+#include <sstream>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include <sqlgen/postgres.hpp>
@@ -137,20 +138,63 @@ account_role_repository::read_effective_permissions(
 
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
 
-    // Single query with JOINs to get all permission codes for an account
+    // Call the SQL function defined in rbac_functions_create.sql
     const std::string sql =
-        "SELECT DISTINCT p.code "
-        "FROM oresdb.permissions p "
-        "JOIN oresdb.role_permissions rp ON p.id = rp.permission_id "
-        "JOIN oresdb.account_roles ar ON rp.role_id = ar.role_id "
-        "WHERE ar.account_id = '" + account_id_str + "' "
-        "AND p.valid_to = '9999-12-31 23:59:59' "
-        "AND rp.valid_to = '9999-12-31 23:59:59' "
-        "AND ar.valid_to = '9999-12-31 23:59:59' "
-        "ORDER BY p.code";
+        "SELECT code FROM oresdb.get_effective_permissions('" +
+        account_id_str + "'::uuid)";
 
     return execute_raw_string_query(ctx_, sql, lg(),
         "Reading effective permissions for account");
+}
+
+std::vector<domain::role>
+account_role_repository::read_roles_with_permissions(
+    const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading roles with permissions for account: "
+                               << account_id;
+
+    const auto account_id_str = boost::lexical_cast<std::string>(account_id);
+
+    // Call the SQL function defined in rbac_functions_create.sql
+    const std::string sql =
+        "SELECT role_id, role_version, role_name, role_description, "
+        "role_modified_by, permission_codes "
+        "FROM oresdb.get_account_roles_with_permissions('" +
+        account_id_str + "'::uuid)";
+
+    std::vector<domain::role> result;
+
+    const auto execute_query = [&](auto&& session) {
+        auto query_result = session->execute(sql);
+        for (const auto& row : query_result) {
+            domain::role r;
+            r.id = boost::lexical_cast<boost::uuids::uuid>(
+                row[0].template as<std::string>());
+            r.version = row[1].template as<int>();
+            r.name = row[2].template as<std::string>();
+            r.description = row[3].template as<std::string>();
+            r.recorded_by = row[4].template as<std::string>();
+
+            // Parse comma-separated permission codes
+            const auto codes_str = row[5].template as<std::string>();
+            if (!codes_str.empty()) {
+                std::istringstream iss(codes_str);
+                std::string code;
+                while (std::getline(iss, code, ',')) {
+                    r.permission_codes.push_back(code);
+                }
+            }
+            result.push_back(std::move(r));
+        }
+        return query_result;
+    };
+
+    const auto r = session(ctx_.connection_pool()).and_then(execute_query);
+    ensure_success(r, lg());
+
+    BOOST_LOG_SEV(lg(), debug) << "Read roles with permissions. Total: "
+                               << result.size();
+    return result;
 }
 
 }

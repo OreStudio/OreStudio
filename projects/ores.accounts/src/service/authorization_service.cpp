@@ -224,14 +224,11 @@ void authorization_service::assign_role(
     }
 
     // Check if already assigned
-    auto existing = account_role_repo_.read_latest_by_account(account_id);
-    for (const auto& ar : existing) {
-        if (ar.role_id == role_id) {
-            BOOST_LOG_SEV(lg(), warn) << "Role " << role_id
-                                      << " already assigned to account "
-                                      << account_id;
-            return;
-        }
+    if (account_role_repo_.exists(account_id, role_id)) {
+        BOOST_LOG_SEV(lg(), warn) << "Role " << role_id
+                                  << " already assigned to account "
+                                  << account_id;
+        return;
     }
 
     // Create assignment

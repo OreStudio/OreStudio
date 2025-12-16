@@ -99,6 +99,29 @@ account_role_repository::read_latest_by_role(const boost::uuids::uuid& role_id) 
         lg(), "Reading account-role assignments by role.");
 }
 
+bool account_role_repository::exists(
+    const boost::uuids::uuid& account_id,
+    const boost::uuids::uuid& role_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Checking if role " << role_id
+                               << " is assigned to account " << account_id;
+
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto account_id_str = boost::lexical_cast<std::string>(account_id);
+    const auto role_id_str = boost::lexical_cast<std::string>(role_id);
+    const auto query = sqlgen::read<std::vector<account_role_entity>> |
+        where("account_id"_c == account_id_str &&
+              "role_id"_c == role_id_str &&
+              "valid_to"_c == max.value()) |
+        limit(1);
+
+    const auto result = execute_read_query<account_role_entity, domain::account_role>(
+        ctx_, query,
+        [](const auto& entities) { return account_role_mapper::map(entities); },
+        lg(), "Checking account-role assignment existence.");
+
+    return !result.empty();
+}
+
 void account_role_repository::remove(
     const boost::uuids::uuid& account_id,
     const boost::uuids::uuid& role_id) {

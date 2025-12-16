@@ -81,6 +81,14 @@ public:
     read_latest_by_role(const boost::uuids::uuid& role_id);
 
     /**
+     * @brief Checks if a specific account-role assignment exists.
+     *
+     * More efficient than read_latest_by_account when only checking existence.
+     */
+    bool exists(const boost::uuids::uuid& account_id,
+                const boost::uuids::uuid& role_id);
+
+    /**
      * @brief Removes a specific account-role assignment.
      */
     void remove(const boost::uuids::uuid& account_id,

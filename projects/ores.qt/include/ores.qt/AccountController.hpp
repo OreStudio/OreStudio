@@ -25,6 +25,7 @@
 #include <QList>
 #include <QDateTime>
 #include "ores.qt/EntityController.hpp"
+#include "ores.qt/ClientAccountModel.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.accounts/domain/account.hpp"
 
@@ -126,9 +127,9 @@ private slots:
      * existing account. Connected to the account list window's edit button
      * and double-click.
      *
-     * @param account The account to display/edit
+     * @param accountWithLoginInfo The account with login info to display/edit
      */
-    void onShowAccountDetails(const accounts::domain::account& account);
+    void onShowAccountDetails(const AccountWithLoginInfo& accountWithLoginInfo);
 
     /**
      * @brief Handles account change notifications from the server.
@@ -148,9 +149,10 @@ private:
      * This helper consolidates the common logic for creating account detail
      * dialogs, whether for new accounts or editing existing ones.
      *
-     * @param account Optional account to edit. If nullopt, creates a new account.
+     * @param accountWithLoginInfo Optional account with login info to edit.
+     *        If nullopt, creates a new account.
      */
-    void showDetailWindow(const std::optional<accounts::domain::account>& account);
+    void showDetailWindow(const std::optional<AccountWithLoginInfo>& accountWithLoginInfo);
 
     /**
      * @brief Marks the account list as stale if it exists.

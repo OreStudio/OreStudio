@@ -190,10 +190,10 @@ void AccountController::onAddNewRequested() {
 }
 
 void AccountController::onShowAccountDetails(
-    const accounts::domain::account& account) {
+    const AccountWithLoginInfo& accountWithLoginInfo) {
     BOOST_LOG_SEV(lg(), info) << "Showing account details for: "
-                             << account.username;
-    showDetailWindow(account);
+                             << accountWithLoginInfo.account.username;
+    showDetailWindow(accountWithLoginInfo);
 }
 
 void AccountController::markAccountListAsStale() {
@@ -207,8 +207,8 @@ void AccountController::markAccountListAsStale() {
 }
 
 void AccountController::showDetailWindow(
-    const std::optional<accounts::domain::account>& account) {
-    const bool isCreateMode = !account.has_value();
+    const std::optional<AccountWithLoginInfo>& accountWithLoginInfo) {
+    const bool isCreateMode = !accountWithLoginInfo.has_value();
     const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new AccountDetailDialog(mainWindow_);
@@ -218,8 +218,10 @@ void AccountController::showDetailWindow(
     if (isCreateMode) {
         accounts::domain::account empty_account;
         detailDialog->setAccount(empty_account);
+        detailDialog->setLoginInfo(std::nullopt);
     } else {
-        detailDialog->setAccount(*account);
+        detailDialog->setAccount(accountWithLoginInfo->account);
+        detailDialog->setLoginInfo(accountWithLoginInfo->loginInfo);
     }
 
     // Connect common signals
@@ -249,7 +251,7 @@ void AccountController::showDetailWindow(
         detailWindow->setWindowTitle("New Account");
     } else {
         detailWindow->setWindowTitle(QString("Account: %1")
-            .arg(QString::fromStdString(account->username)));
+            .arg(QString::fromStdString(accountWithLoginInfo->account.username)));
     }
 
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(

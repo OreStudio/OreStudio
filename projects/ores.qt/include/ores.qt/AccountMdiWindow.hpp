@@ -69,7 +69,7 @@ signals:
     void errorOccurred(const QString& error_message);
     void selectionChanged(int selection_count);
     void addNewRequested();
-    void showAccountDetails(const accounts::domain::account& account);
+    void showAccountDetails(const AccountWithLoginInfo& accountWithLoginInfo);
     void accountDeleted(const boost::uuids::uuid& account_id);
 
 public slots:

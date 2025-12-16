@@ -273,16 +273,16 @@ void AccountMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
 
     // Map proxy index to source index
     const QModelIndex sourceIndex = proxyModel_->mapToSource(index);
-    const auto* account = accountModel_->getAccount(sourceIndex.row());
-    if (!account) {
+    const auto* accountWithLoginInfo = accountModel_->getAccountWithLoginInfo(sourceIndex.row());
+    if (!accountWithLoginInfo) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get account for row: "
                                  << sourceIndex.row();
         return;
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Emitting showAccountDetails for account: "
-                             << account->username;
-    emit showAccountDetails(*account);
+                             << accountWithLoginInfo->account.username;
+    emit showAccountDetails(*accountWithLoginInfo);
 }
 
 void AccountMdiWindow::onSelectionChanged() {

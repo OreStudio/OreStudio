@@ -33,14 +33,74 @@ set(CTEST_CUSTOM_MAXIMUM_FAILED_TEST_OUTPUT_SIZE 0)
 
 # warning exceptions
 list(APPEND CTEST_CUSTOM_WARNING_EXCEPTION
+    #
+    # vcpkg-related warnings (configure phase - may not filter during configure)
+    #
     # RPath in OSX (install_name_tool can't be redone)
     "z_vcpkg_fixup_rpath_macho"
+    "fixup_rpath_macho"
     # boost-system's buildsystem uses very long paths
     "vcpkg_buildpath_length_warning"
     # could not find a matching pdb file (Windows)
     "vcpkg_copy_pdbs"
+    "could not find a matching pdb"
     # vcpkg unused variable warnings (e.g. PCRE2_STATIC_RUNTIME)
     "MAYBE_UNUSED_VARIABLES"
+    # vcpkg portfile warnings
+    "ports/.*portfile\\.cmake"
+    "scripts/cmake/vcpkg"
+
+    #
+    # Windows-specific warnings
+    #
+    # MSVC deprecation warnings in external headers
+    "This function or variable may be unsafe"
+    "Please define _CRT_SECURE_NO_WARNINGS"
+    # DLL export warnings
+    "needs to have dll-interface"
+    # Windows SDK warnings
+    "Windows SDK"
+    # Linker warnings about missing PDBs (common in vcpkg builds)
+    "LNK4099"
+    # Code analysis warnings we can ignore
+    "C26.*"
+    # vcpkg installed headers
+    "vcpkg_installed"
+
+    #
+    # macOS-specific warnings
+    #
+    # install_name_tool warnings
+    "install_name_tool"
+    # Code signing warnings
+    "codesign"
+    # Framework warnings
+    "framework"
+    # Deprecation warnings in system headers
+    "is deprecated"
+    # macOS SDK warnings
+    "MacOSX.*\\.sdk"
+
+    #
+    # Common third-party library warnings to ignore
+    #
+    # Boost
+    "boost/"
+    "BOOST_"
+    # Qt (moc, uic generated)
+    "moc_.*\\.cpp"
+    "ui_.*\\.h"
+    "qrc_.*\\.cpp"
+    # ICU
+    "ports/icu"
+    # qtbase
+    "ports/qtbase"
+
+    #
+    # CMake-generated warnings
+    #
+    "CMake Warning \\(dev\\)"
+    "Policy CMP"
 )
 
 # warning addons

@@ -227,6 +227,11 @@ ctest_start(${build_group})
 
 # Read custom files. This must be called after ctest_start() but before other
 # ctest_* commands, to ensure warning exceptions are applied.
+# Note: CTEST_CUSTOM_WARNING_EXCEPTION only applies to ctest_build() output,
+# not ctest_configure() output. vcpkg warnings during configure phase cannot
+# be filtered using this mechanism.
+# We read from source directory since binary directory doesn't exist until
+# after ctest_configure() runs.
 ctest_read_custom_files(${CTEST_SOURCE_DIRECTORY})
 
 #

@@ -66,7 +66,7 @@ public:
     /**
      * @brief Refreshes the cache by reading all system flags from the database.
      *
-     * Call this at startup after flag_initializer has run, or when you need
+     * Call this at startup after system_flags_seeder has run, or when you need
      * to ensure the cache reflects the latest database state.
      */
     void refresh();

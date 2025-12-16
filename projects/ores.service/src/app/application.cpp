@@ -31,7 +31,7 @@
 #include "ores.accounts/messaging/registrar.hpp"
 #include "ores.accounts/eventing/account_changed_event.hpp"
 #include "ores.variability/messaging/registrar.hpp"
-#include "ores.variability/service/flag_initializer.hpp"
+#include "ores.variability/service/system_flags_seeder.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.accounts/service/bootstrap_mode_service.hpp"
 #include "ores.eventing/service/event_bus.hpp"
@@ -105,8 +105,8 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     auto ctx = make_context(cfg.database);
 
     // Ensure all system flags exist in the database before any component queries them
-    variability::service::flag_initializer flag_init(ctx);
-    flag_init.ensure_system_flags_exist();
+    variability::service::system_flags_seeder flags_seeder(ctx);
+    flags_seeder.seed();
 
     // Create shared system flags service and refresh cache from database
     auto system_flags = std::make_shared<variability::service::system_flags_service>(ctx);

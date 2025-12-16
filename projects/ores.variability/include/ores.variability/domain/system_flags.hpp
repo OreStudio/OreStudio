@@ -83,7 +83,7 @@ struct system_flag_definition {
  * @brief Compile-time manifest of all system flags with their defaults.
  *
  * This array defines all well-known system flags, their default enabled state,
- * and human-readable descriptions. The flag_initializer service uses this
+ * and human-readable descriptions. The system_flags_seeder service uses this
  * manifest to ensure all system flags exist in the database at startup.
  */
 inline constexpr std::array system_flag_definitions = {

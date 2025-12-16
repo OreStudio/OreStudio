@@ -158,14 +158,19 @@ bool ChangePasswordDialog::validateInput() {
 }
 
 void ChangePasswordDialog::onChangeClicked() {
-    BOOST_LOG_SEV(lg(), trace) << "On change password clicked.";
-
     if (!clientManager_) {
         MessageBoxHelper::critical(this, "Internal Error", "Client manager not initialized");
         return;
     }
 
+    const auto& username = clientManager_->currentUsername();
+    BOOST_LOG_SEV(lg(), info)
+        << "Change password: user '" << username
+        << "' initiating forced password change (admin-required reset)";
+
     if (!validateInput()) {
+        BOOST_LOG_SEV(lg(), debug) << "Change password: validation failed for user '"
+                                   << username << "'";
         return;
     }
 
@@ -246,15 +251,19 @@ void ChangePasswordDialog::onChangeClicked() {
 }
 
 void ChangePasswordDialog::onChangeResult(bool success, const QString& error_message) {
-    BOOST_LOG_SEV(lg(), debug) << "On change password result called.";
+    const auto& username = clientManager_ ? clientManager_->currentUsername() : "<unknown>";
+
     if (success) {
-        BOOST_LOG_SEV(lg(), info) << "Password change was successful.";
+        BOOST_LOG_SEV(lg(), info)
+            << "Change password: user '" << username
+            << "' completed forced password change";
         status_label_->setText("Password changed successfully!");
         status_label_->setStyleSheet("QLabel { color: #0a0; }");
         accept();  // Close dialog with success
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Password change failed: "
-                                  << error_message.toStdString();
+        BOOST_LOG_SEV(lg(), warn)
+            << "Change password failed: user '" << username
+            << "' forced password change failed - " << error_message.toStdString();
 
         enableForm(true);
         status_label_->setText("");

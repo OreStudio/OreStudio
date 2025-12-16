@@ -794,14 +794,28 @@ handle_reset_password_request(std::span<const std::byte> payload,
     // Process each account
     reset_password_response response;
     for (const auto& account_id : request.account_ids) {
+        // Look up username for better logging
+        std::string username = "<unknown>";
+        auto accounts = service_.list_accounts();
+        for (const auto& acc : accounts) {
+            if (acc.id == account_id) {
+                username = acc.username;
+                break;
+            }
+        }
+
         bool success = service_.set_password_reset_required(account_id);
 
         if (success) {
-            BOOST_LOG_SEV(lg(), info) << "Successfully set password reset required for account: "
-                                      << boost::uuids::to_string(account_id);
+            BOOST_LOG_SEV(lg(), info)
+                << "Password reset: admin forced password reset for user '"
+                << username << "' (account_id: "
+                << boost::uuids::to_string(account_id) << ")";
         } else {
-            BOOST_LOG_SEV(lg(), warn) << "Failed to set password reset required for account: "
-                                      << boost::uuids::to_string(account_id);
+            BOOST_LOG_SEV(lg(), warn)
+                << "Password reset failed: could not set reset flag for user '"
+                << username << "' (account_id: "
+                << boost::uuids::to_string(account_id) << ")";
         }
 
         response.results.push_back({
@@ -842,17 +856,30 @@ handle_change_password_request(std::span<const std::byte> payload,
     }
 
     const auto& account_id = session->account_id;
-    BOOST_LOG_SEV(lg(), debug) << "Changing password for account: "
-                               << boost::uuids::to_string(account_id);
+
+    // Look up username for better logging
+    std::string username = "<unknown>";
+    auto accounts = service_.list_accounts();
+    for (const auto& acc : accounts) {
+        if (acc.id == account_id) {
+            username = acc.username;
+            break;
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Change password: processing request for user '"
+                               << username << "' (account_id: "
+                               << boost::uuids::to_string(account_id) << ")";
 
     try {
         // Call service to change password (validates strength, hashes, clears flag)
         auto error = service_.change_password(account_id, request.new_password);
 
         if (!error.empty()) {
-            BOOST_LOG_SEV(lg(), warn) << "Failed to change password for account "
-                                      << boost::uuids::to_string(account_id)
-                                      << ": " << error;
+            BOOST_LOG_SEV(lg(), warn)
+                << "Change password failed: user '" << username
+                << "' (account_id: " << boost::uuids::to_string(account_id)
+                << ") - reason: " << error;
             change_password_response response{
                 .success = false,
                 .message = error
@@ -860,8 +887,10 @@ handle_change_password_request(std::span<const std::byte> payload,
             co_return response.serialize();
         }
 
-        BOOST_LOG_SEV(lg(), info) << "Successfully changed password for account: "
-                                  << boost::uuids::to_string(account_id);
+        BOOST_LOG_SEV(lg(), info)
+            << "Change password: user '" << username
+            << "' successfully changed their password (account_id: "
+            << boost::uuids::to_string(account_id) << ")";
 
         change_password_response response{
             .success = true,
@@ -870,9 +899,10 @@ handle_change_password_request(std::span<const std::byte> payload,
         co_return response.serialize();
 
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Exception while changing password for account "
-                                   << boost::uuids::to_string(account_id)
-                                   << ": " << e.what();
+        BOOST_LOG_SEV(lg(), error)
+            << "Change password error: exception for user '" << username
+            << "' (account_id: " << boost::uuids::to_string(account_id)
+            << "): " << e.what();
         change_password_response response{
             .success = false,
             .message = std::string("Failed to change password: ") + e.what()

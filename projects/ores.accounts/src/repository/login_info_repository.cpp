@@ -68,7 +68,8 @@ update(const domain::login_info& login_info) {
         "failed_logins"_c.set(entity.failed_logins),
         "locked"_c.set(entity.locked),
         "last_login"_c.set(entity.last_login),
-        "online"_c.set(entity.online)
+        "online"_c.set(entity.online),
+        "password_reset_required"_c.set(entity.password_reset_required)
     ) | where("account_id"_c == entity.account_id);
 
     const auto r = session(ctx_.connection_pool())

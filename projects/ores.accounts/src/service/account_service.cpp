@@ -430,8 +430,15 @@ std::string account_service::change_password(const boost::uuids::uuid& account_i
         return "Account does not exist";
     }
 
-    // Hash the new password
+    // Check that new password is different from current password
     using security::password_manager;
+    const auto& current_hash = accounts[0].password_hash;
+    if (password_manager::verify_password_hash(new_password, current_hash)) {
+        BOOST_LOG_SEV(lg(), debug) << "New password matches current password";
+        return "New password must be different from current password";
+    }
+
+    // Hash the new password
     auto password_hash = password_manager::create_password_hash(new_password);
 
     // Update account with new password hash

@@ -188,14 +188,19 @@ bool MyAccountDialog::validatePasswordInput() {
 }
 
 void MyAccountDialog::onChangePasswordClicked() {
-    BOOST_LOG_SEV(lg(), trace) << "On change password clicked.";
-
     if (!clientManager_) {
         MessageBoxHelper::critical(this, "Internal Error", "Client manager not initialized");
         return;
     }
 
+    const auto& username = clientManager_->currentUsername();
+    BOOST_LOG_SEV(lg(), info)
+        << "Change password: user '" << username
+        << "' initiating voluntary password change via My Account";
+
     if (!validatePasswordInput()) {
+        BOOST_LOG_SEV(lg(), debug)
+            << "Change password: validation failed for user '" << username << "'";
         return;
     }
 
@@ -276,12 +281,14 @@ void MyAccountDialog::onChangePasswordClicked() {
 }
 
 void MyAccountDialog::onChangePasswordResult(bool success, const QString& error_message) {
-    BOOST_LOG_SEV(lg(), debug) << "On change password result called.";
+    const auto& username = clientManager_ ? clientManager_->currentUsername() : "<unknown>";
 
     enablePasswordForm(true);
 
     if (success) {
-        BOOST_LOG_SEV(lg(), info) << "Password change was successful.";
+        BOOST_LOG_SEV(lg(), info)
+            << "Change password: user '" << username
+            << "' completed voluntary password change via My Account";
         password_status_label_->setText("Password changed successfully!");
         password_status_label_->setStyleSheet("QLabel { color: #0a0; }");
 
@@ -292,8 +299,9 @@ void MyAccountDialog::onChangePasswordResult(bool success, const QString& error_
         MessageBoxHelper::information(this, "Success",
             "Your password has been changed successfully.");
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Password change failed: "
-                                  << error_message.toStdString();
+        BOOST_LOG_SEV(lg(), warn)
+            << "Change password failed: user '" << username
+            << "' voluntary password change failed - " << error_message.toStdString();
 
         password_status_label_->setText("");
 

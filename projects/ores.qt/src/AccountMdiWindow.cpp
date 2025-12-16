@@ -809,12 +809,29 @@ void AccountMdiWindow::resetPasswordSelected() {
     }
 
     if (account_ids.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "No valid accounts to reset password";
+        BOOST_LOG_SEV(lg(), warn) << "Password reset: no valid accounts selected";
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Reset password requested for "
-                               << account_ids.size() << " accounts";
+    // Log the usernames being reset
+    std::vector<std::string> usernames;
+    for (const auto& index : selected) {
+        const QModelIndex sourceIndex = proxyModel_->mapToSource(index);
+        const auto* account = accountModel_->getAccount(sourceIndex.row());
+        if (account)
+            usernames.push_back(account->username);
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Password reset: admin initiating reset for "
+                              << account_ids.size() << " user(s): "
+                              << [&usernames]() {
+                                  std::string result;
+                                  for (size_t i = 0; i < usernames.size(); ++i) {
+                                      if (i > 0) result += ", ";
+                                      result += "'" + usernames[i] + "'";
+                                  }
+                                  return result;
+                              }();
 
     QString confirmMessage;
     if (account_ids.size() == 1) {
@@ -906,16 +923,28 @@ void AccountMdiWindow::resetPasswordSelected() {
         QString first_error;
 
         for (const auto& result : results) {
+            // Look up username for logging
+            std::string username = "<unknown>";
+            for (int row = 0; row < self->accountModel_->rowCount(); ++row) {
+                const auto* account = self->accountModel_->getAccount(row);
+                if (account && account->id == result.account_id) {
+                    username = account->username;
+                    break;
+                }
+            }
+
             if (result.success) {
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Password reset set successfully for account: "
-                    << boost::uuids::to_string(result.account_id);
+                BOOST_LOG_SEV(lg(), info)
+                    << "Password reset: reset flag set for user '"
+                    << username << "' (account_id: "
+                    << boost::uuids::to_string(result.account_id) << ")";
                 success_count++;
             } else {
                 BOOST_LOG_SEV(lg(), error)
-                    << "Password reset failed for account: "
+                    << "Password reset failed: could not set reset flag for user '"
+                    << username << "' (account_id: "
                     << boost::uuids::to_string(result.account_id)
-                    << " - " << result.message;
+                    << ") - " << result.message;
                 failure_count++;
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(result.message);

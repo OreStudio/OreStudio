@@ -25,6 +25,7 @@
 #include <QColor>
 #include <QDateTime>
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.risk/messaging/protocol.hpp"
@@ -92,7 +93,7 @@ QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
     case Column::Format: return QString::fromStdString(currency.format);
     case Column::CurrencyType: return QString::fromStdString(currency.currency_type);
     case Column::RecordedBy: return QString::fromStdString(currency.recorded_by);
-    case Column::RecordedAt: return QString::fromStdString(currency.recorded_at);
+    case Column::RecordedAt: return relative_time_helper::format(currency.recorded_at);
     default: return {};
     }
 }

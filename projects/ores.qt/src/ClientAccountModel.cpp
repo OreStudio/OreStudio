@@ -31,6 +31,7 @@
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.accounts/messaging/account_protocol.hpp"
 #include "ores.accounts/messaging/login_protocol.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
 
@@ -113,7 +114,7 @@ QVariant ClientAccountModel::data(const QModelIndex& index, int role) const {
         return tr("-");
     case Column::Version: return account.version;
     case Column::RecordedBy: return QString::fromStdString(account.recorded_by);
-    case Column::RecordedAt: return QString::fromStdString(account.recorded_at);
+    case Column::RecordedAt: return relative_time_helper::format(account.recorded_at);
     default: return {};
     }
 }

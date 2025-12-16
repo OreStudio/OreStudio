@@ -17,32 +17,34 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-16 Tue 00:07], for Tuesday, December 16, 2025.
+#+CAPTION: Clock summary at [2025-12-16 Tue 01:58], for Tuesday, December 16, 2025.
 |      | <75>                                       |        |      |      |       |
 | Tags | Headline                                   | Time   |      |      |     % |
 |------+--------------------------------------------+--------+------+------+-------|
-|      | *Total time*                               | *0:07* |      |      | 100.0 |
+|      | *Total time*                               | *1:57* |      |      | 100.0 |
 |------+--------------------------------------------+--------+------+------+-------|
-|      | Stories                                    | 0:07   |      |      | 100.0 |
-|      | Active                                     |        | 0:07 |      | 100.0 |
-| code | Do not expose temporal machinery in domain |        |      | 0:07 | 100.0 |
+|      | Stories                                    | 1:57   |      |      | 100.0 |
+|      | Active                                     |        | 1:57 |      | 100.0 |
+| code | Do not expose temporal machinery in domain |        |      | 0:07 |   6.0 |
+| code | Add account management support to qt       |        |      | 1:50 |  94.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-16 Tue 00:07]
+#+CAPTION: Clock summary at [2025-12-16 Tue 01:58]
 |       | <75>                                           |        |      |      |       |
 | Tags  | Headline                                       | Time   |      |      |     % |
 |-------+------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                   | *7:35* |      |      | 100.0 |
+|       | *Total time*                                   | *9:25* |      |      | 100.0 |
 |-------+------------------------------------------------+--------+------+------+-------|
-|       | Stories                                        | 7:35   |      |      | 100.0 |
-|       | Active                                         |        | 7:35 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |        |      | 1:07 |  14.7 |
-| infra | OCR scan notebooks for this sprint             |        |      | 0:30 |   6.6 |
-| code  | Consider compressing payload                   |        |      | 3:05 |  40.7 |
-| code  | Latest currencies should have different colour |        |      | 1:28 |  19.3 |
-| code  | Do not expose temporal machinery in domain     |        |      | 1:25 |  18.7 |
+|       | Stories                                        | 9:25   |      |      | 100.0 |
+|       | Active                                         |        | 9:25 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |        |      | 1:07 |  11.9 |
+| infra | OCR scan notebooks for this sprint             |        |      | 0:30 |   5.3 |
+| code  | Consider compressing payload                   |        |      | 3:05 |  32.7 |
+| code  | Latest currencies should have different colour |        |      | 1:28 |  15.6 |
+| code  | Do not expose temporal machinery in domain     |        |      | 1:25 |  15.0 |
+| code  | Add account management support to qt           |        |      | 1:50 |  19.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -429,6 +431,25 @@ Links:
 - [[https://gitlab.kitware.com/cmake/cmake/-/issues/27367][CTest: Using regexes to filter warnings for CDash]]
 - [[https://stackoverflow.com/questions/26458652/ctest-custom-warning-exception][SO: ctest custom warning exception]]
 
+
+*** STARTED Add account management support to qt                       :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-16 Tue 00:08]--[2025-12-16 Tue 01:58] =>  1:50
+    :END:
+
+At present we cannot add, remove etc accounts from the UI.
+
+*** Consider adding an "entity waterfall"                              :code:
+
+It would be nice to be able to see what entities have been added, deleted,
+modified, etc. This would work as a running commentary.
+
+*** Notification of deletes                                            :code:
+
+At present it is easy to see new rows or modified rows in an entity dialog. It
+is not possible to see deleted rows. One way to do this is to preserve state
+from before reload by key. Any entities which are not present after reload can
+be shown as red. History then allows users to re-instate deleted entities.
 
 *** Remove columns from currency dialog                                :code:
 

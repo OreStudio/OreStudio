@@ -100,6 +100,8 @@ void permission_repository::remove(const boost::uuids::uuid& permission_id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing permission from database: "
                                << permission_id;
 
+    // Delete the permission - the database rule will close the temporal record
+    // instead of actually deleting it (sets valid_to = current_timestamp)
     const auto id_str = boost::lexical_cast<std::string>(permission_id);
     const auto query = sqlgen::delete_from<permission_entity> |
         where("id"_c == id_str);

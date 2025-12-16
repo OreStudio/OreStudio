@@ -84,6 +84,7 @@
    <addaction name="ActionDisconnect"/>
    <addaction name="separator"/>
    <addaction name="CurrenciesAction"/>
+   <addaction name="ActionAccounts"/>
   </widget>
   <action name="ExitAction">
    <property name="text">
@@ -93,7 +94,7 @@
   <action name="CurrenciesAction">
    <property name="icon">
     <iconset>
-     <normaloff>:/icons/ic_fluent_currency_dollar_euro_20_filled.svg</normaloff>:/icons/ic_fluent_currency_dollar_euro_20_filled.svg</iconset>
+     <normaloff>:/icons/ic_fluent_currency_dollar_euro_20_regular.svg</normaloff>:/icons/ic_fluent_currency_dollar_euro_20_regular.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Currencies</string>
@@ -102,7 +103,7 @@
   <action name="ActionConnect">
    <property name="icon">
     <iconset>
-     <normaloff>:/icons/ic_fluent_plug_disconnected_20_filled.svg</normaloff>:/icons/ic_fluent_plug_disconnected_20_filled.svg</iconset>
+     <normaloff>:/icons/ic_fluent_plug_disconnected_20_regular.svg</normaloff>:/icons/ic_fluent_plug_disconnected_20_regular.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Connect</string>
@@ -111,7 +112,7 @@
   <action name="ActionDisconnect">
    <property name="icon">
     <iconset>
-     <normaloff>:/icons/ic_fluent_plug_connected_20_filled.svg</normaloff>:/icons/ic_fluent_plug_connected_20_filled.svg</iconset>
+     <normaloff>:/icons/ic_fluent_plug_connected_20_regular.svg</normaloff>:/icons/ic_fluent_plug_connected_20_regular.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Disconnect</string>
@@ -140,7 +141,7 @@
   <action name="ActionAccounts">
    <property name="icon">
     <iconset>
-     <normaloff>:/icons/ic_fluent_person_20_filled.svg</normaloff>:/icons/ic_fluent_person_20_filled.svg</iconset>
+     <normaloff>:/icons/ic_fluent_person_accounts_20_regular.svg</normaloff>:/icons/ic_fluent_person_accounts_20_regular.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Accounts</string>

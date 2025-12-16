@@ -17,35 +17,39 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-16 Tue 11:48], for Tuesday, December 16, 2025.
-|       | <75>                                       |        |      |      |       |
-| Tags  | Headline                                   | Time   |      |      |     % |
-|-------+--------------------------------------------+--------+------+------+-------|
-|       | *Total time*                               | *4:13* |      |      | 100.0 |
-|-------+--------------------------------------------+--------+------+------+-------|
-|       | Stories                                    | 4:13   |      |      | 100.0 |
-|       | Active                                     |        | 4:13 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint         |        |      | 0:23 |   9.1 |
-| code  | Do not expose temporal machinery in domain |        |      | 0:07 |   2.8 |
-| code  | Add account management support to qt       |        |      | 3:43 |  88.1 |
+#+CAPTION: Clock summary at [2025-12-16 Tue 18:17], for Tuesday, December 16, 2025.
+|       | <75>                                         |        |      |      |       |
+| Tags  | Headline                                     | Time   |      |      |     % |
+|-------+----------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                 | *8:13* |      |      | 100.0 |
+|-------+----------------------------------------------+--------+------+------+-------|
+|       | Stories                                      | 8:13   |      |      | 100.0 |
+|       | Active                                       |        | 8:13 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint           |        |      | 0:23 |   4.7 |
+| code  | Do not expose temporal machinery in domain   |        |      | 0:07 |   1.4 |
+| code  | Add account management support to qt         |        |      | 3:43 |  45.2 |
+| code  | Add password reset functionality to accounts |        |      | 1:11 |  14.4 |
+| code  | Add roles and permissions                    |        |      | 2:49 |  34.3 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-16 Tue 11:48]
+#+CAPTION: Clock summary at [2025-12-16 Tue 18:17]
 |       | <75>                                           |         |       |      |       |
 | Tags  | Headline                                       | Time    |       |      |     % |
 |-------+------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                   | *11:41* |       |      | 100.0 |
+|       | *Total time*                                   | *15:41* |       |      | 100.0 |
 |-------+------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                        | 11:41   |       |      | 100.0 |
-|       | Active                                         |         | 11:41 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |         |       | 1:07 |   9.6 |
-| infra | OCR scan notebooks for this sprint             |         |       | 0:53 |   7.6 |
-| code  | Consider compressing payload                   |         |       | 3:05 |  26.4 |
-| code  | Latest currencies should have different colour |         |       | 1:28 |  12.6 |
-| code  | Do not expose temporal machinery in domain     |         |       | 1:25 |  12.1 |
-| code  | Add account management support to qt           |         |       | 3:43 |  31.8 |
+|       | Stories                                        | 15:41   |       |      | 100.0 |
+|       | Active                                         |         | 15:41 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |         |       | 1:07 |   7.1 |
+| infra | OCR scan notebooks for this sprint             |         |       | 0:53 |   5.6 |
+| code  | Consider compressing payload                   |         |       | 3:05 |  19.7 |
+| code  | Latest currencies should have different colour |         |       | 1:28 |   9.4 |
+| code  | Do not expose temporal machinery in domain     |         |       | 1:25 |   9.0 |
+| code  | Add account management support to qt           |         |       | 3:43 |  23.7 |
+| code  | Add password reset functionality to accounts   |         |       | 1:11 |   7.5 |
+| code  | Add roles and permissions                      |         |       | 2:49 |  18.0 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -416,6 +420,13 @@ Notes:
   - logged in recently
   - is logged in
 
+*** COMPLETED Add password reset functionality to accounts             :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-16 Tue 17:05]--[2025-12-16 Tue 18:16] =>  1:11
+    :END:
+
+At present it is not possible to reset a user's password.
+
 *** STARTED Windows clang build failures                               :code:
 
 Seems like we are failing with a SEGFAULT:
@@ -453,9 +464,87 @@ Links:
 - [[https://stackoverflow.com/questions/26458652/ctest-custom-warning-exception][SO: ctest custom warning exception]]
 
 
-*** Add password reset functionality to accounts                       :code:
+*** STARTED Add roles and permissions                                  :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-16 Tue 14:16]--[2025-12-16 Tue 16:30] =>  2:14
+    CLOCK: [2025-12-16 Tue 11:48]--[2025-12-16 Tue 12:23] =>  0:35
+    :END:
 
-At present it is not possible to reset a user's password.
+At present we are monitoring authorisation at two levels:
+
+- is logged in
+- is admin
+
+We need to introduce basic RBAC where we have roles such as:
+
+- Trading
+- Sales
+- Operations: restricted access to some trading screens.
+- Support: read-only, admin screens.
+
+To start off with we can map these to read/write on CRUD dialogs.
+
+*** Use chrono timepoints for domain entities                          :code:
+
+Gemini made an interesting review comment for
+
+: projects/ores.accounts/include/ores.accounts/domain/account_role.hpp
+
+#+begin_src c++
+/**
+ * @brief Timestamp when this role assignment was created.
+ */
+std::string assigned_at;
+#+end_src
+
+For consistency with other domain event objects and for better type safety,
+consider using =std::chrono::system_clock::time_point= for assigned_at instead
+of =std::string=. Storing timestamps as strings in domain objects can be
+error-prone and makes date/time arithmetic difficult. The conversion from the
+database string format can be handled in the mapper.
+
+Suggested change:
+
+#+begin_src diff
+-std::string assigned_at;
++std::chrono::system_clock::time_point assigned_at;
+#+end_src
+
+Claude agrees:
+
+Using =std::chrono::system_clock::time_point= is architecturally better for
+several reasons:
+
+Advantages:
+
+- Type safety - Compiler catches errors; can't accidentally assign arbitrary
+  strings
+- Time arithmetic - Easy to compute durations, compare timestamps
+- Idiomatic C++ - Standard library type for time handling
+- Self-documenting - The type itself conveys "this is a point in time"
+
+Trade-offs:
+
+- Requires conversion code in mappers (string ↔ time_point)
+- Need to handle timezone consistently (UTC recommended)
+- Serialization to JSON/protocol buffers needs explicit handling
+
+My recommendation: I agree with the reviewer's suggestion. The conversion
+complexity is localized to mappers, and the benefits of type safety throughout
+the rest of the codebase outweigh the cost.
+
+However, this should be done consistently across all domain types (accounts,
+roles, permissions, etc.), not just RBAC. Otherwise you'd have mixed patterns -
+some types using strings, some using time_point.
+
+Good candidate for a separate PR that:
+
+- Adds timestamp conversion utilities to the mapper infrastructure
+- Updates all domain types to use time_point
+- Updates all mappers consistently
+
+This keeps the RBAC PR focused and makes the timestamp improvement a coherent,
+reviewable change.
 
 *** Add sign-up workflow                                               :code:
 
@@ -493,6 +582,53 @@ Server logs:
 2025-12-16 10:22:34.224364 [TRACE] [ores.comms.net.client] send_request_sync: task completed.
 #+end_src
 
+*** User interface options                                             :code:
+
+This story keeps track of configuration points in the UI which should be added
+at some point:
+
+- display time in human readable form - e.g. last month, 3 months ago, etc.
+- auto-reload. If a dialog receives new data, reload it automatically. Defaults
+  to off.
+
+Notes:
+
+- we need a UI to manage the UI options.
+- should be stored in the server and cached locally with a sqlite db.
+
+*** New feature flags                                                  :code:
+
+- allow sign-ups. If true, users can create their own accounts.
+- auto-authorise sign-ups. If true, the account is automatically created. If
+  false, admin user has to authorise it.
+
+Notes:
+
+- we need a UI to manage the UI options.
+
+*** Add support for relative time formatting                           :code:
+
+"Relative Time Formatting" is part of the ECMAScript Internationalization API
+(Intl.RelativeTimeFormat).
+
+C++20's <chrono> library has extensive date/time support:
+
+#+begin_src c++
+#include <chrono>
+#include <iostream>
+
+std::string relative_time(std::chrono::system_clock::time_point past) {
+    auto now = std::chrono::system_clock::now();
+    auto diff = now - past;
+
+    if (diff < std::chrono::minutes(1))
+        return "just now";
+    else if (diff < std::chrono::hours(1))
+        return std::to_string(std::chrono::duration_cast<std::chrono::minutes>(diff).count()) + " minutes ago";
+    // ... continue for hours, days, etc.
+}
+#+end_src
+
 *** Assorted fixes to currency dialog                                  :code:
 
 At present the following is not working or is a snag:
@@ -510,6 +646,20 @@ At present the following is not working or is a snag:
 *** Assorted fixes to accounts dialog                                  :code:
 
 - remove "grant administrative privileges" from details screen.
+- old users remain online. Server should check sessions on start and update
+  table.
+- cannot tell who unlocked an account and when.
+- do not use "old" for accounts who never logged in. Maybe "unused"?
+- at present you can't tell if you asked for a password reset. We probably
+  should use Status to mean: locked, unlocked, reset. And maybe "Age" or "Last
+  Login" to mean: online, never, recent, old.
+- add right-click menu with the context options from the toolbar.
+- after reload, lock etc remember which line we were on and return to it.
+- email updated message is truncated.
+
+*** Exit confirmation                                                  :code:
+
+We should ask if a user wants to exit before we exit.
 
 *** Implement entity history in shell                                  :code:
 
@@ -544,6 +694,11 @@ like that version. It should also be possible to open at version. It shows the
 edit dialog in "read only mode" with the entity at that version. The tool bar
 should indicate this. It should also have a revert in that dialog.
 
+*** History should have a reload button                                :code:
+
+It should be possible to reload history without having to reload currencies. In
+an ideal world we should be able to listen to currency specific notifications.
+This will be needed in the future for other types of events.
 
 *** Add REPL to Qt                                                     :code:
 
@@ -626,22 +781,6 @@ removed to avoid dead code.
 
 At present we can only add new currencies. We also need to be able to update.
 Also, adding currencies requires supplying all parameters.
-
-*** Add roles and permissions                                          :code:
-
-At present we are monitoring authorisation at two levels:
-
-- is logged in
-- is admin
-
-We need to introduce basic RBAC where we have roles such as:
-
-- Trading
-- Sales
-- Operations: restricted access to some trading screens.
-- Support: read-only, admin screens.
-
-To start off with we can map these to read/write on CRUD dialogs.
 
 *** Add session information to database                                :code:
 

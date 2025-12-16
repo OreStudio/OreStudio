@@ -67,6 +67,17 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Add support for FIX                                                :code:
+
+Links:
+
+- [[https://github.com/jamesdbrock/hffix][GH: hffix]]: "The High Frequency FIX Parser library is an open source
+  implementation of tagvalue FIX (classic FIX) intended for use by developers of
+  high frequency, low latency financial software. The purpose of the library is
+  to do fast, efficient encoding and decoding of FIX in place, at the location
+  of the I/O buffer. The library does not use intermediate message objects, and
+  it does no memory allocation on the free store (the “heap”)."
+
 *** Consider adding "global search" via typesense                      :code:
 
 Typesense:

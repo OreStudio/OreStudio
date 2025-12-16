@@ -151,6 +151,51 @@ void execute_delete_query(context ctx, const QueryType& query,
     BOOST_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
 }
 
+/**
+ * @brief Executes a raw SQL query that returns a single column of strings.
+ *
+ * This helper is useful for complex queries with JOINs that cannot be expressed
+ * through sqlgen's ORM interface.
+ *
+ * @param ctx The repository context
+ * @param sql The raw SQL query string
+ * @param lg The logger to use
+ * @param operation_desc Description of the operation for logging
+ * @return A vector of strings from the first column of the result
+ *
+ * @example
+ * auto permissions = execute_raw_string_query(ctx_,
+ *     "SELECT DISTINCT p.code FROM permissions p JOIN ...",
+ *     lg(), "Reading effective permissions");
+ */
+inline std::vector<std::string> execute_raw_string_query(context ctx,
+    const std::string& sql, utility::log::logger_t& lg,
+    const std::string& operation_desc) {
+
+    using namespace ores::utility::log;
+    using namespace sqlgen;
+
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
+
+    std::vector<std::string> result;
+
+    const auto execute_query = [&](auto&& session) {
+        auto query_result = session->execute(sql);
+        for (const auto& row : query_result) {
+            if (!row.empty() && !row[0].is_null()) {
+                result.push_back(row[0].template as<std::string>());
+            }
+        }
+        return query_result;
+    };
+
+    const auto r = session(ctx.connection_pool()).and_then(execute_query);
+    ensure_success(r, lg);
+
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". Total: " << result.size();
+    return result;
+}
+
 }
 
 #endif

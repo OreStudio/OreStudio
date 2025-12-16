@@ -90,6 +90,15 @@ public:
      */
     void remove_all_for_account(const boost::uuids::uuid& account_id);
 
+    /**
+     * @brief Gets all effective permission codes for an account in a single query.
+     *
+     * This method uses JOINs to efficiently fetch all distinct permission codes
+     * assigned to an account through its roles, avoiding the N+1 query problem.
+     */
+    std::vector<std::string>
+    read_effective_permissions(const boost::uuids::uuid& account_id);
+
 private:
     context ctx_;
 };

@@ -125,4 +125,28 @@ void account_role_repository::remove_all_for_account(
         "removing all account-role assignments for account");
 }
 
+std::vector<std::string>
+account_role_repository::read_effective_permissions(
+    const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading effective permissions for account: "
+                               << account_id;
+
+    const auto account_id_str = boost::lexical_cast<std::string>(account_id);
+
+    // Single query with JOINs to get all permission codes for an account
+    const std::string sql =
+        "SELECT DISTINCT p.code "
+        "FROM oresdb.permissions p "
+        "JOIN oresdb.role_permissions rp ON p.id = rp.permission_id "
+        "JOIN oresdb.account_roles ar ON rp.role_id = ar.role_id "
+        "WHERE ar.account_id = '" + account_id_str + "' "
+        "AND p.valid_to = '9999-12-31 23:59:59' "
+        "AND rp.valid_to = '9999-12-31 23:59:59' "
+        "AND ar.valid_to = '9999-12-31 23:59:59' "
+        "ORDER BY p.code";
+
+    return execute_raw_string_query(ctx_, sql, lg(),
+        "Reading effective permissions for account");
+}
+
 }

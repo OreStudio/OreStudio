@@ -21,7 +21,6 @@
 
 #include <algorithm>
 #include <stdexcept>
-#include <unordered_set>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.accounts/domain/permission.hpp"
 #include "ores.accounts/domain/events/role_assigned_event.hpp"
@@ -299,18 +298,8 @@ authorization_service::get_effective_permissions(
     BOOST_LOG_SEV(lg(), debug) << "Computing effective permissions for account: "
                                << account_id;
 
-    auto roles = get_account_roles(account_id);
-
-    // Use a set to deduplicate permissions
-    std::unordered_set<std::string> perm_set;
-    for (const auto& role : roles) {
-        for (const auto& code : role.permission_codes) {
-            perm_set.insert(code);
-        }
-    }
-
-    std::vector<std::string> result(perm_set.begin(), perm_set.end());
-    std::sort(result.begin(), result.end());
+    // Use optimized single-query approach with JOINs
+    auto result = account_role_repo_.read_effective_permissions(account_id);
 
     BOOST_LOG_SEV(lg(), debug) << "Account " << account_id << " has "
                                << result.size() << " effective permissions.";

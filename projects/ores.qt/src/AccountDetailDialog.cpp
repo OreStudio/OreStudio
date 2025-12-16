@@ -522,7 +522,17 @@ void AccountDetailDialog::onDeleteClicked() {
             emit self->statusMessage(QString("Successfully deleted account: %1")
                 .arg(QString::fromStdString(username)));
             emit self->accountDeleted(account_id);
-            self->clearDialog();
+
+            // Close window after successful deletion
+            QWidget* parent = self->parentWidget();
+            while (parent) {
+                if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
+                    QMetaObject::invokeMethod(mdiSubWindow, "close",
+                        Qt::QueuedConnection);
+                    break;
+                }
+                parent = parent->parentWidget();
+            }
         } else {
             BOOST_LOG_SEV(lg(), error) << "Account deletion failed: " << message;
             emit self->errorMessage(QString("Failed to delete account: %1")

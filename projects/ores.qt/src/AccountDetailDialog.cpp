@@ -208,6 +208,7 @@ void AccountDetailDialog::onSaveClicked() {
 
     // Validate username
     if (ui_->usernameEdit->text().trimmed().isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Validation failed: username is empty";
         MessageBoxHelper::warning(this, "Validation Error",
             "Username is required.");
         return;
@@ -219,18 +220,22 @@ void AccountDetailDialog::onSaveClicked() {
         const QString confirmPassword = ui_->confirmPasswordEdit->text();
 
         if (password.isEmpty()) {
+            BOOST_LOG_SEV(lg(), warn) << "Password validation failed: password is empty";
             MessageBoxHelper::warning(this, "Validation Error",
                 "Password is required for new accounts.");
             return;
         }
 
         if (password != confirmPassword) {
+            BOOST_LOG_SEV(lg(), warn) << "Password validation failed: passwords do not match";
             MessageBoxHelper::warning(this, "Validation Error",
                 "Passwords do not match.");
             return;
         }
 
         if (password.length() < 12) {
+            BOOST_LOG_SEV(lg(), warn) << "Password validation failed: password too short ("
+                                      << password.length() << " chars, minimum 12)";
             MessageBoxHelper::warning(this, "Validation Error",
                 "Password must be at least 12 characters long.");
             return;

@@ -76,3 +76,14 @@ create or replace trigger update_account_roles_trigger
 before insert on "oresdb"."account_roles"
 for each row
 execute function update_account_roles();
+
+-- Use a RULE instead of a trigger to avoid tuple modification conflicts
+-- Rules rewrite the query before execution, so there's no conflict with the DELETE
+create or replace rule delete_account_roles_rule as
+on delete to "oresdb"."account_roles"
+do instead
+  update "oresdb"."account_roles"
+  set valid_to = current_timestamp
+  where account_id = old.account_id
+  and role_id = old.role_id
+  and valid_to = '9999-12-31 23:59:59'::timestamptz;

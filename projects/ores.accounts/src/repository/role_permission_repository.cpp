@@ -106,6 +106,8 @@ void role_permission_repository::remove(
     BOOST_LOG_SEV(lg(), debug) << "Removing role-permission assignment. Role: "
                                << role_id << ", Permission: " << permission_id;
 
+    // Delete the assignment - the database rule will close the temporal record
+    // instead of actually deleting it (sets valid_to = current_timestamp)
     const auto role_id_str = boost::lexical_cast<std::string>(role_id);
     const auto permission_id_str = boost::lexical_cast<std::string>(permission_id);
     const auto query = sqlgen::delete_from<role_permission_entity> |
@@ -120,6 +122,8 @@ void role_permission_repository::remove_all_for_role(
     const boost::uuids::uuid& role_id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing all permissions for role: " << role_id;
 
+    // Delete the assignments - the database rule will close the temporal records
+    // instead of actually deleting them (sets valid_to = current_timestamp)
     const auto role_id_str = boost::lexical_cast<std::string>(role_id);
     const auto query = sqlgen::delete_from<role_permission_entity> |
         where("role_id"_c == role_id_str);

@@ -70,3 +70,14 @@ create or replace trigger update_role_permissions_trigger
 before insert on "oresdb"."role_permissions"
 for each row
 execute function update_role_permissions();
+
+-- Use a RULE instead of a trigger to avoid tuple modification conflicts
+-- Rules rewrite the query before execution, so there's no conflict with the DELETE
+create or replace rule delete_role_permissions_rule as
+on delete to "oresdb"."role_permissions"
+do instead
+  update "oresdb"."role_permissions"
+  set valid_to = current_timestamp
+  where role_id = old.role_id
+  and permission_id = old.permission_id
+  and valid_to = '9999-12-31 23:59:59'::timestamptz;

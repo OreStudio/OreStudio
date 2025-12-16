@@ -104,6 +104,8 @@ void account_role_repository::remove(
     BOOST_LOG_SEV(lg(), debug) << "Removing account-role assignment. Account: "
                                << account_id << ", Role: " << role_id;
 
+    // Delete the assignment - the database rule will close the temporal record
+    // instead of actually deleting it (sets valid_to = current_timestamp)
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
     const auto role_id_str = boost::lexical_cast<std::string>(role_id);
     const auto query = sqlgen::delete_from<account_role_entity> |
@@ -117,6 +119,8 @@ void account_role_repository::remove_all_for_account(
     const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing all roles for account: " << account_id;
 
+    // Delete the assignments - the database rule will close the temporal records
+    // instead of actually deleting them (sets valid_to = current_timestamp)
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
     const auto query = sqlgen::delete_from<account_role_entity> |
         where("account_id"_c == account_id_str);

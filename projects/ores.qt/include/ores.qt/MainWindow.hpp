@@ -129,6 +129,11 @@ private slots:
     void onAboutTriggered();
 
     /**
+     * @brief Displays the My Account dialog for user self-service.
+     */
+    void onMyAccountTriggered();
+
+    /**
      * @brief Detaches all MDI windows to separate floating windows.
      */
     void onDetachAllTriggered();

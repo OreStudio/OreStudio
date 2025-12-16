@@ -413,6 +413,183 @@ struct update_account_response final {
 
 std::ostream& operator<<(std::ostream& s, const update_account_response& v);
 
+/**
+ * @brief Request to reset password for one or more accounts.
+ *
+ * Sets the password_reset_required flag on the target accounts, forcing
+ * the user to change their password on next login. Supports batch operations.
+ * Requires admin privileges.
+ */
+struct reset_password_request final {
+    std::vector<boost::uuids::uuid> account_ids;
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 4 bytes: count (number of account IDs)
+     * - For each account:
+     *   - 16 bytes: account_id (UUID)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<reset_password_request, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const reset_password_request& v);
+
+/**
+ * @brief Result for a single password reset operation.
+ */
+struct reset_password_result final {
+    boost::uuids::uuid account_id;
+    bool success = false;
+    std::string message;
+};
+
+std::ostream& operator<<(std::ostream& s, const reset_password_result& v);
+
+/**
+ * @brief Response containing results for password reset operation(s).
+ *
+ * Contains one result per requested account, indicating individual
+ * success or failure. Supports partial success in batch operations.
+ */
+struct reset_password_response final {
+    std::vector<reset_password_result> results;
+
+    /**
+     * @brief Serialize response to bytes.
+     *
+     * Format:
+     * - 4 bytes: count (number of results)
+     * - For each result:
+     *   - 16 bytes: account_id (UUID)
+     *   - 1 byte: success (boolean)
+     *   - 2 bytes: message length
+     *   - N bytes: message (UTF-8)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize response from bytes.
+     */
+    static std::expected<reset_password_response, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const reset_password_response& v);
+
+/**
+ * @brief Request to change the current user's password.
+ *
+ * Used by users to change their own password, typically after being required
+ * to reset it. The account ID is determined from the session context.
+ */
+struct change_password_request final {
+    std::string new_password;
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 2 bytes: new_password length
+     * - N bytes: new_password (UTF-8)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<change_password_request, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const change_password_request& v);
+
+/**
+ * @brief Response indicating whether password change succeeded.
+ */
+struct change_password_response final {
+    bool success = false;
+    std::string message;
+
+    /**
+     * @brief Serialize response to bytes.
+     *
+     * Format:
+     * - 1 byte: success (boolean)
+     * - 2 bytes: message length
+     * - N bytes: message (UTF-8)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize response from bytes.
+     */
+    static std::expected<change_password_response, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const change_password_response& v);
+
+/**
+ * @brief Request to update the current user's email address.
+ *
+ * Used by users to change their own email. The account ID is determined
+ * from the session context.
+ */
+struct update_my_email_request final {
+    std::string new_email;
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 2 bytes: new_email length
+     * - N bytes: new_email (UTF-8)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<update_my_email_request, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const update_my_email_request& v);
+
+/**
+ * @brief Response indicating whether email update succeeded.
+ */
+struct update_my_email_response final {
+    bool success = false;
+    std::string message;
+
+    /**
+     * @brief Serialize response to bytes.
+     *
+     * Format:
+     * - 1 byte: success (boolean)
+     * - 2 bytes: message length
+     * - N bytes: message (UTF-8)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize response from bytes.
+     */
+    static std::expected<update_my_email_response, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const update_my_email_response& v);
+
 }
 
 #endif

@@ -64,10 +64,10 @@ public:
 
 private slots:
     void onLoginClicked();
-    void onLoginResult(bool success, const QString& error_message);
+    void onLoginResult(const LoginResult& result);
 
 signals:
-    void loginCompleted(bool success, const QString& error_message);
+    void loginCompleted(const LoginResult& result);
 
 private:
     void setupUI();

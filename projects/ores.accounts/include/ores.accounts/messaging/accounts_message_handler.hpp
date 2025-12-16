@@ -46,6 +46,9 @@ namespace ores::accounts::messaging {
  * - create_initial_admin_request: Creates initial admin (bootstrap mode only, localhost only)
  * - bootstrap_status_request: Checks if system is in bootstrap mode
  * - get_account_history_request: Retrieves all historical versions of an account
+ * - reset_password_request: Sets password_reset_required flag to force password change
+ * - change_password_request: Changes user's password and clears password_reset_required flag
+ * - update_my_email_request: Allows user to update their own email address
  */
 class accounts_message_handler final : public comms::messaging::message_handler {
 private:
@@ -188,6 +191,35 @@ private:
      */
     handler_result
     handle_get_account_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle reset_password_request message.
+     *
+     * Requires authentication. Only admin users can reset passwords.
+     * Sets the password_reset_required flag on the target account(s).
+     */
+    handler_result
+    handle_reset_password_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle change_password_request message.
+     *
+     * Requires authentication. Allows users to change their own password.
+     * Validates password strength and clears password_reset_required flag.
+     */
+    handler_result
+    handle_change_password_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle update_my_email_request message.
+     *
+     * Requires authentication. Allows users to update their own email address.
+     */
+    handler_result
+    handle_update_my_email_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
     /**

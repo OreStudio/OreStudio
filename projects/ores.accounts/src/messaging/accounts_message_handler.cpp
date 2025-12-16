@@ -83,6 +83,12 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_update_account_request(payload, remote_address);
     case message_type::get_account_history_request:
         co_return co_await handle_get_account_history_request(payload, remote_address);
+    case message_type::reset_password_request:
+        co_return co_await handle_reset_password_request(payload, remote_address);
+    case message_type::change_password_request:
+        co_return co_await handle_change_password_request(payload, remote_address);
+    case message_type::update_my_email_request:
+        co_return co_await handle_update_my_email_request(payload, remote_address);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown accounts message type " << type;
         co_return std::unexpected(comms::messaging::error_code::invalid_message_type);
@@ -213,10 +219,16 @@ handle_login_request(std::span<const std::byte> payload,
         domain::account account = service_.login(request.username,
             request.password, ip_address);
 
+        // Get login_info to check password_reset_required flag
+        const auto login_info = service_.get_login_info(account.id);
+        const bool password_reset_required = login_info.password_reset_required;
+
         BOOST_LOG_SEV(lg(), info) << "LOGIN SUCCESS: User '" << account.username
                                   << "' authenticated from IP: " << ip_address
                                   << ", account_id: " << account.id
-                                  << ", is_admin: " << account.is_admin;
+                                  << ", is_admin: " << account.is_admin
+                                  << ", password_reset_required: "
+                                  << password_reset_required;
 
         // Store session for this client in the shared session service
         sessions_->store_session(remote_address, comms::service::session_info{
@@ -229,7 +241,9 @@ handle_login_request(std::span<const std::byte> payload,
             .error_message = "",
             .account_id = account.id,
             .username = account.username,
-            .is_admin = account.is_admin
+            .email = account.email,
+            .is_admin = account.is_admin,
+            .password_reset_required = password_reset_required
         };
         co_return response.serialize();
 
@@ -243,7 +257,9 @@ handle_login_request(std::span<const std::byte> payload,
             .error_message = e.what(),
             .account_id = boost::uuids::nil_uuid(),
             .username = request.username,
-            .is_admin = false
+            .email = "",
+            .is_admin = false,
+            .password_reset_required = false
         };
         co_return response.serialize();
     }
@@ -722,6 +738,245 @@ handle_get_account_history_request(std::span<const std::byte> payload,
     }
 
     co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_reset_password_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing reset_password_request from "
+                               << remote_address;
+
+    auto request_result = reset_password_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize reset_password_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+
+    // Get the requester's session from shared session service
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "Reset password denied: no active session for "
+                                  << remote_address;
+        // Return error for all requested accounts
+        reset_password_response response;
+        for (const auto& id : request.account_ids) {
+            response.results.push_back({
+                .account_id = id,
+                .success = false,
+                .message = "Authentication required to reset passwords"
+            });
+        }
+        co_return response.serialize();
+    }
+
+    // Check if requester has admin privileges
+    if (!session->is_admin) {
+        BOOST_LOG_SEV(lg(), warn) << "Reset password denied: requester "
+                                  << boost::uuids::to_string(session->account_id)
+                                  << " is not an admin";
+        // Return error for all requested accounts
+        reset_password_response response;
+        for (const auto& id : request.account_ids) {
+            response.results.push_back({
+                .account_id = id,
+                .success = false,
+                .message = "Admin privileges required to reset passwords"
+            });
+        }
+        co_return response.serialize();
+    }
+
+    // Process each account
+    reset_password_response response;
+    for (const auto& account_id : request.account_ids) {
+        // Look up username for better logging
+        std::string username = "<unknown>";
+        if (auto account = service_.get_account(account_id)) {
+            username = account->username;
+        }
+
+        bool success = service_.set_password_reset_required(account_id);
+
+        if (success) {
+            BOOST_LOG_SEV(lg(), info)
+                << "Password reset: admin forced password reset for user '"
+                << username << "' (account_id: "
+                << boost::uuids::to_string(account_id) << ")";
+        } else {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Password reset failed: could not set reset flag for user '"
+                << username << "' (account_id: "
+                << boost::uuids::to_string(account_id) << ")";
+        }
+
+        response.results.push_back({
+            .account_id = account_id,
+            .success = success,
+            .message = success ? "" : "Account does not exist"
+        });
+    }
+
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_change_password_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing change_password_request from "
+                               << remote_address;
+
+    auto request_result = change_password_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize change_password_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    // Don't log password in request
+
+    // Get the user's session from shared session service
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "Change password denied: no active session for "
+                                  << remote_address;
+        change_password_response response{
+            .success = false,
+            .message = "Authentication required to change password"
+        };
+        co_return response.serialize();
+    }
+
+    const auto& account_id = session->account_id;
+
+    // Look up username for better logging
+    std::string username = "<unknown>";
+    if (auto account = service_.get_account(account_id)) {
+        username = account->username;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Change password: processing request for user '"
+                               << username << "' (account_id: "
+                               << boost::uuids::to_string(account_id) << ")";
+
+    try {
+        // Call service to change password (validates strength, hashes, clears flag)
+        auto error = service_.change_password(account_id, request.new_password);
+
+        if (!error.empty()) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Change password failed: user '" << username
+                << "' (account_id: " << boost::uuids::to_string(account_id)
+                << ") - reason: " << error;
+            change_password_response response{
+                .success = false,
+                .message = error
+            };
+            co_return response.serialize();
+        }
+
+        BOOST_LOG_SEV(lg(), info)
+            << "Change password: user '" << username
+            << "' successfully changed their password (account_id: "
+            << boost::uuids::to_string(account_id) << ")";
+
+        change_password_response response{
+            .success = true,
+            .message = "Password changed successfully"
+        };
+        co_return response.serialize();
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Change password error: exception for user '" << username
+            << "' (account_id: " << boost::uuids::to_string(account_id)
+            << "): " << e.what();
+        change_password_response response{
+            .success = false,
+            .message = std::string("Failed to change password: ") + e.what()
+        };
+        co_return response.serialize();
+    }
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_update_my_email_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing update_my_email_request from "
+                               << remote_address;
+
+    auto request_result = update_my_email_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize update_my_email_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+
+    // Get the user's session from shared session service
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "Update email denied: no active session for "
+                                  << remote_address;
+        update_my_email_response response{
+            .success = false,
+            .message = "Authentication required to update email"
+        };
+        co_return response.serialize();
+    }
+
+    const auto& account_id = session->account_id;
+
+    // Look up username for better logging
+    std::string username = "<unknown>";
+    if (auto account = service_.get_account(account_id)) {
+        username = account->username;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Update email: processing request for user '"
+                               << username << "' (account_id: "
+                               << boost::uuids::to_string(account_id) << ")";
+
+    try {
+        auto error = service_.update_my_email(account_id, request.new_email);
+
+        if (!error.empty()) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Update email failed: user '" << username
+                << "' (account_id: " << boost::uuids::to_string(account_id)
+                << ") - reason: " << error;
+            update_my_email_response response{
+                .success = false,
+                .message = error
+            };
+            co_return response.serialize();
+        }
+
+        BOOST_LOG_SEV(lg(), info)
+            << "Update email: user '" << username
+            << "' successfully updated their email to '" << request.new_email
+            << "' (account_id: " << boost::uuids::to_string(account_id) << ")";
+
+        update_my_email_response response{
+            .success = true,
+            .message = "Email updated successfully"
+        };
+        co_return response.serialize();
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Update email error: exception for user '" << username
+            << "' (account_id: " << boost::uuids::to_string(account_id)
+            << "): " << e.what();
+        update_my_email_response response{
+            .success = false,
+            .message = std::string("Failed to update email: ") + e.what()
+        };
+        co_return response.serialize();
+    }
 }
 
 }

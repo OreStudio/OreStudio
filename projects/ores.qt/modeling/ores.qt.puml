@@ -61,6 +61,8 @@ namespace ores #F2F2F2 {
             class LoginDialog
             class AboutDialog
             class SplashScreen
+            class MyAccountDialog
+            class ChangePasswordDialog
         }
 
         ' Group: Helpers
@@ -80,6 +82,8 @@ namespace ores #F2F2F2 {
         CurrencyDetailDialog -[hidden]down- CurrencyHistoryDialog
         LoginDialog -[hidden]down- AboutDialog
         AboutDialog -[hidden]down- SplashScreen
+        SplashScreen -[hidden]down- MyAccountDialog
+        MyAccountDialog -[hidden]down- ChangePasswordDialog
         CurrencyItemDelegate -[hidden]down- MessageBoxHelper
         MessageBoxHelper -[hidden]down- IconUtils
         IconUtils -[hidden]down- LogoLabel
@@ -89,7 +93,7 @@ namespace ores #F2F2F2 {
         DetachableMdiSubWindow -[hidden]down- EntityController
         CurrencyController -[hidden]down- CurrencyMdiWindow
         CurrencyHistoryDialog -[hidden]down- LoginDialog
-        SplashScreen -[hidden]down- CurrencyItemDelegate
+        ChangePasswordDialog -[hidden]down- CurrencyItemDelegate
 
         '
         ' Class definitions
@@ -97,20 +101,32 @@ namespace ores #F2F2F2 {
 
         ' Client Manager
         class ClientManager #ECECEC {
-            +ClientManager(QObject* parent)
+            +ClientManager(std::shared_ptr<eventing::service::event_bus>, QObject* parent)
             +~ClientManager()
-            +connectAndLogin(const std::string& host, std::uint16_t port, const std::string& username, const std::string& password) std::pair<bool, QString>
+            +connectAndLogin(const std::string& host, std::uint16_t port, const std::string& username, const std::string& password) LoginResult
             +disconnect() void
+            +logout() bool
             +isConnected() bool
+            +isAdmin() bool
+            +currentUsername() const std::string&
+            +currentEmail() const std::string&
+            +setCurrentEmail(const std::string& email) void
             +sendRequest(comms::messaging::frame request) std::expected<comms::messaging::frame, comms::messaging::error_code>
             +getClient() std::shared_ptr<comms::net::client>
             +getExecutor() boost::asio::any_io_executor
+            +subscribeToEvent(const std::string& eventType) void
+            +unsubscribeFromEvent(const std::string& eventType) void
+            +setSupportedCompression(std::uint8_t compression) void
             -setupIO() void
             -cleanupIO() void
             -{field} io_context_ std::unique_ptr<boost::asio::io_context>
             -{field} work_guard_ std::unique_ptr<boost::asio::executor_work_guard>
             -{field} io_thread_ std::unique_ptr<std::thread>
             -{field} client_ std::shared_ptr<comms::net::client>
+            -{field} logged_in_account_id_ std::optional<boost::uuids::uuid>
+            -{field} logged_in_username_ std::string
+            -{field} logged_in_email_ std::string
+            -{field} is_admin_ bool
         }
         note top of ClientManager
         Manages the lifecycle of the network client and IO context.
@@ -120,12 +136,13 @@ namespace ores #F2F2F2 {
         in connection state to allow UI components to update accordingly
         without closing.
 
-        - io_context_: Boost ASIO IO context (persistent)
-        - work_guard_: Work guard for IO context
-        - io_thread_: Thread running IO context
-        - client_: Transient client connection
+        Key features:
+        - Session tracking (account_id, username, email, admin status)
+        - Event subscriptions for server push notifications
+        - Compression negotiation
 
-        Signals: connected(), disconnected(), connectionError(QString)
+        Signals: connected(), disconnected(), reconnecting(), reconnected(),
+                 connectionError(QString), notificationReceived(QString, QDateTime)
         end note
 
         ' Main Window
@@ -445,6 +462,62 @@ namespace ores #F2F2F2 {
         - messageText_: Status message text
         end note
 
+        class MyAccountDialog #ECECEC {
+            +MyAccountDialog(ClientManager* clientManager, QWidget* parent)
+            +~MyAccountDialog()
+            -setupUI() void
+            -onChangePasswordClicked() void
+            -onSaveEmailClicked() void
+            -onSaveEmailResult(bool success, const QString& error_message) void
+            -{field} clientManager_ ClientManager*
+            -{field} username_label_ QLabel*
+            -{field} email_edit_ QLineEdit*
+            -{field} save_email_button_ QPushButton*
+            -{field} email_status_label_ QLabel*
+            -{field} change_password_button_ QPushButton*
+        }
+        note top of MyAccountDialog
+        Dialog for user self-service account management.
+
+        Allows users to:
+        - View their username (read-only)
+        - Update their email address
+        - Change their password
+
+        - clientManager_: Client manager for network operations
+        - username_label_: Display current username
+        - email_edit_: Email input field
+        - save_email_button_: Save email button
+        - email_status_label_: Status message label
+        - change_password_button_: Opens ChangePasswordDialog
+        end note
+
+        class ChangePasswordDialog #ECECEC {
+            +ChangePasswordDialog(ClientManager* clientManager, QWidget* parent)
+            +~ChangePasswordDialog()
+            -setupUI() void
+            -onChangePasswordClicked() void
+            -onChangePasswordResult(bool success, const QString& error_message) void
+            -validatePasswords() bool
+            -{field} clientManager_ ClientManager*
+            -{field} new_password_edit_ QLineEdit*
+            -{field} confirm_password_edit_ QLineEdit*
+            -{field} change_button_ QPushButton*
+            -{field} status_label_ QLabel*
+        }
+        note top of ChangePasswordDialog
+        Dialog for changing user password.
+
+        Validates password requirements and confirms password match
+        before sending change request to server.
+
+        - clientManager_: Client manager for network operations
+        - new_password_edit_: New password input
+        - confirm_password_edit_: Confirm password input
+        - change_button_: Change password button
+        - status_label_: Status message label
+        end note
+
         ' Helpers
         class CurrencyItemDelegate #ECECEC {
             +CurrencyItemDelegate(QObject* parent)
@@ -509,10 +582,14 @@ namespace ores #F2F2F2 {
         ' Relationships - Dialogs
         ores::qt::AboutDialog *-- ores::qt::LogoLabel
         ores::qt::LoginDialog o-- ores::qt::ClientManager
+        ores::qt::MyAccountDialog o-- ores::qt::ClientManager
+        ores::qt::ChangePasswordDialog o-- ores::qt::ClientManager
+        ores::qt::MyAccountDialog ..> ores::qt::ChangePasswordDialog : creates
 
         ' Relationships - MainWindow uses
         ores::qt::MainWindow ..> ores::qt::LoginDialog : uses
         ores::qt::MainWindow ..> ores::qt::AboutDialog : uses
+        ores::qt::MainWindow ..> ores::qt::MyAccountDialog : uses
         ores::qt::MainWindow ..> ores::qt::MessageBoxHelper : uses
         ores::qt::MainWindow ..> ores::qt::IconUtils : uses
 

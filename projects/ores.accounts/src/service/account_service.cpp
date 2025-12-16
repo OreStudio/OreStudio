@@ -23,6 +23,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include "ores.accounts/security/password_manager.hpp"
+#include "ores.accounts/security/password_policy_validator.hpp"
+#include "ores.accounts/security/email_validator.hpp"
 
 namespace ores::accounts::service {
 
@@ -95,6 +97,15 @@ account_service::create_account(const std::string& username,
     login_info_repo_.write(login_infos);
 
     return new_account;
+}
+
+std::optional<domain::account>
+account_service::get_account(const boost::uuids::uuid& account_id) {
+    auto accounts = account_repo_.read_latest(account_id);
+    if (accounts.empty()) {
+        return std::nullopt;
+    }
+    return accounts[0];
 }
 
 std::vector<domain::account> account_service::list_accounts() {
@@ -333,7 +344,8 @@ bool account_service::update_account(const boost::uuids::uuid& account_id,
     account.email = email;
     account.is_admin = is_admin;
     account.recorded_by = recorded_by;
-    account.version++; // Increment version for new temporal entry
+    // Note: version is NOT incremented here - the database trigger handles it
+    // The trigger uses optimistic locking: new.version must match current_version
 
     // Write the updated account (creates new temporal version)
     account_repo_.write(account);
@@ -368,6 +380,147 @@ account_service::get_account_history(const std::string& username) {
                               << " historical versions for account: " << username;
 
     return all_versions;
+}
+
+bool account_service::set_password_reset_required(
+    const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Setting password_reset_required for account: "
+                               << boost::uuids::to_string(account_id);
+
+    auto login_info_vec = login_info_repo_.read(account_id);
+    if (login_info_vec.empty()) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Account or login tracking not found for account: "
+            << boost::uuids::to_string(account_id);
+        return false;
+    }
+
+    auto login_info = login_info_vec[0];
+
+    if (login_info.password_reset_required) {
+        BOOST_LOG_SEV(lg(), debug)
+            << "Password reset is already required for account.";
+        return true;
+    }
+
+    login_info.password_reset_required = true;
+
+    BOOST_LOG_SEV(lg(), info) << "Password reset required set for account: "
+                              << boost::uuids::to_string(account_id);
+
+    login_info_repo_.update(login_info);
+    return true;
+}
+
+std::string account_service::change_password(const boost::uuids::uuid& account_id,
+    const std::string& new_password) {
+    BOOST_LOG_SEV(lg(), debug) << "Changing password for account: "
+                               << boost::uuids::to_string(account_id);
+
+    // Validate password strength using policy validator
+    using security::password_policy_validator;
+    auto validation = password_policy_validator::validate(new_password);
+    if (!validation.is_valid) {
+        return validation.error_message;
+    }
+
+    // Verify account exists
+    auto accounts = account_repo_.read_latest(account_id);
+    if (accounts.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Attempted to change password for non-existent account: "
+                                  << boost::uuids::to_string(account_id);
+        return "Account does not exist";
+    }
+
+    // Check that new password is different from current password
+    using security::password_manager;
+    const auto& current_hash = accounts[0].password_hash;
+    if (password_manager::verify_password_hash(new_password, current_hash)) {
+        BOOST_LOG_SEV(lg(), debug) << "New password matches current password";
+        return "New password must be different from current password";
+    }
+
+    // Hash the new password
+    auto password_hash = password_manager::create_password_hash(new_password);
+
+    // Update account with new password hash
+    auto account = accounts[0];
+    account.password_hash = password_hash;
+    // Note: version is NOT incremented here - the database trigger handles it
+    // The trigger uses optimistic locking: new.version must match current_version
+
+    // Write the updated account (creates new temporal version)
+    account_repo_.write(account);
+
+    // Clear password_reset_required flag
+    auto login_info_vec = login_info_repo_.read(account_id);
+    if (!login_info_vec.empty()) {
+        auto login_info = login_info_vec[0];
+        if (login_info.password_reset_required) {
+            login_info.password_reset_required = false;
+            login_info_repo_.update(login_info);
+            BOOST_LOG_SEV(lg(), debug) << "Cleared password_reset_required flag";
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully changed password for account: "
+                              << boost::uuids::to_string(account_id);
+
+    return ""; // Empty string indicates success
+}
+
+domain::login_info account_service::get_login_info(
+    const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting login_info for account: "
+                               << boost::uuids::to_string(account_id);
+
+    auto login_info_vec = login_info_repo_.read(account_id);
+    if (login_info_vec.empty()) {
+        BOOST_LOG_SEV(lg(), error) << "Login tracking not found for account: "
+                                   << boost::uuids::to_string(account_id);
+        throw std::runtime_error("Login tracking information missing");
+    }
+
+    return login_info_vec[0];
+}
+
+std::string account_service::update_my_email(const boost::uuids::uuid& account_id,
+    const std::string& new_email) {
+    BOOST_LOG_SEV(lg(), debug) << "Updating email for account: "
+                               << boost::uuids::to_string(account_id);
+
+    // Validate email format
+    using security::email_validator;
+    auto validation = email_validator::validate(new_email);
+    if (!validation.is_valid) {
+        return validation.error_message;
+    }
+
+    // Verify account exists
+    auto accounts = account_repo_.read_latest(account_id);
+    if (accounts.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Attempted to update email for non-existent account: "
+                                  << boost::uuids::to_string(account_id);
+        return "Account does not exist";
+    }
+
+    // Check if email is the same
+    if (accounts[0].email == new_email) {
+        return "New email is the same as current email";
+    }
+
+    // Update account with new email
+    auto account = accounts[0];
+    account.email = new_email;
+    // Note: version is NOT incremented here - the database trigger handles it
+
+    // Write the updated account (creates new temporal version)
+    account_repo_.write(account);
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully updated email for account: "
+                              << boost::uuids::to_string(account_id);
+
+    return ""; // Empty string indicates success
 }
 
 }

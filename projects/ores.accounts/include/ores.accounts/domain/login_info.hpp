@@ -56,6 +56,14 @@ struct login_info final {
     bool online = false;
 
     /**
+     * @brief Flag indicating whether the user must change their password on next login.
+     *
+     * Set by an admin when resetting a user's password. Cleared after the user
+     * successfully sets a new password.
+     */
+    bool password_reset_required = false;
+
+    /**
      * @brief IP address from the last successful login.
      */
     boost::asio::ip::address last_ip;

@@ -80,6 +80,14 @@ public:
         const std::string& recorded_by, bool is_admin = false);
 
     /**
+     * @brief Gets a single account by its ID.
+     *
+     * @param account_id The ID of the account to retrieve
+     * @return The account if found, std::nullopt otherwise
+     */
+    std::optional<domain::account> get_account(const boost::uuids::uuid& account_id);
+
+    /**
      * @brief Lists all accounts in the system.
      *
      * @return Vector of all accounts
@@ -203,6 +211,51 @@ public:
      * @return Vector of all historical versions of the account
      */
     std::vector<domain::account> get_account_history(const std::string& username);
+
+    /**
+     * @brief Sets the password_reset_required flag on an account.
+     *
+     * When this flag is set, the user will be forced to change their password
+     * on their next login.
+     *
+     * @param account_id The ID of the account to flag for password reset
+     * @return true if the flag was set successfully, false otherwise
+     */
+    bool set_password_reset_required(const boost::uuids::uuid& account_id);
+
+    /**
+     * @brief Changes the password for an account.
+     *
+     * Validates password strength, hashes the new password, updates the account,
+     * and clears the password_reset_required flag.
+     *
+     * @param account_id The ID of the account to update
+     * @param new_password The new plaintext password (will be hashed)
+     * @return empty string on success, error message on failure
+     */
+    std::string change_password(const boost::uuids::uuid& account_id,
+        const std::string& new_password);
+
+    /**
+     * @brief Retrieves the login_info for a specific account.
+     *
+     * @param account_id The ID of the account
+     * @return The login_info for the account
+     * @throws std::runtime_error If login_info not found
+     */
+    domain::login_info get_login_info(const boost::uuids::uuid& account_id);
+
+    /**
+     * @brief Updates the email address for a user's own account.
+     *
+     * This is for self-service email updates. Validates email format.
+     *
+     * @param account_id The ID of the account to update
+     * @param new_email The new email address
+     * @return empty string on success, error message on failure
+     */
+    std::string update_my_email(const boost::uuids::uuid& account_id,
+        const std::string& new_email);
 
 private:
     repository::account_repository account_repo_;

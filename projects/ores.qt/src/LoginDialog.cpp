@@ -27,6 +27,7 @@
 #include <QSizePolicy>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include "ores.qt/ChangePasswordDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 
@@ -52,6 +53,9 @@ LoginDialog::LoginDialog(ClientManager* clientManager, QWidget* parent)
     connect(cancel_button_, &QPushButton::clicked, this, &QDialog::reject);
     connect(this, &LoginDialog::loginCompleted,
             this, &LoginDialog::onLoginResult);
+
+    // Register LoginResult for cross-thread signal/slot
+    qRegisterMetaType<LoginResult>("LoginResult");
 }
 
 LoginDialog::~LoginDialog() {
@@ -165,16 +169,16 @@ void LoginDialog::onLoginClicked() {
     status_label_->setStyleSheet("QLabel { color: #666; font-style: italic; }");
 
     // Perform login asynchronously via ClientManager
-    auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(this);
-    connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished,
+    auto* watcher = new QFutureWatcher<LoginResult>(this);
+    connect(watcher, &QFutureWatcher<LoginResult>::finished,
             [this, watcher]() {
-        const auto [success, error_msg] = watcher->result();
+        const auto result = watcher->result();
         watcher->deleteLater();
-        emit loginCompleted(success, error_msg);
+        emit loginCompleted(result);
     });
 
-    QFuture<std::pair<bool, QString>> future = QtConcurrent::run(
-        [this, host, port, username, password]() -> std::pair<bool, QString> {
+    QFuture<LoginResult> future = QtConcurrent::run(
+        [this, host, port, username, password]() -> LoginResult {
             return clientManager_->connectAndLogin(
                 host.toStdString(), port, username.toStdString(), password.toStdString());
         }
@@ -183,22 +187,47 @@ void LoginDialog::onLoginClicked() {
     watcher->setFuture(future);
 }
 
-void LoginDialog::onLoginResult(bool success, const QString& error_message) {
+void LoginDialog::onLoginResult(const LoginResult& result) {
     BOOST_LOG_SEV(lg(), debug) << "On login result called.";
-    if (success) {
+    if (result.success) {
         BOOST_LOG_SEV(lg(), debug) << "Login was successful.";
-        status_label_->setText("Login successful!");
-        status_label_->setStyleSheet("QLabel { color: #0a0; }");
-        accept();  // Close dialog with success
+
+        // Check if password reset is required
+        if (result.password_reset_required) {
+            BOOST_LOG_SEV(lg(), info) << "Password reset required, showing change password dialog.";
+            status_label_->setText("Password change required...");
+            status_label_->setStyleSheet("QLabel { color: #f80; font-style: italic; }");
+
+            // Show change password dialog
+            ChangePasswordDialog changeDialog(clientManager_, this);
+            if (changeDialog.exec() == QDialog::Accepted) {
+                BOOST_LOG_SEV(lg(), info) << "Password changed successfully.";
+                status_label_->setText("Login successful!");
+                status_label_->setStyleSheet("QLabel { color: #0a0; }");
+                accept();  // Close dialog with success
+            } else {
+                BOOST_LOG_SEV(lg(), warn) << "Password change canceled or failed.";
+                // Disconnect since user canceled password change
+                clientManager_->disconnect();
+                enableForm(true);
+                status_label_->setText("");
+                MessageBoxHelper::warning(this, "Password Change Required",
+                    "You must change your password to continue. Please login again to retry.");
+            }
+        } else {
+            status_label_->setText("Login successful!");
+            status_label_->setStyleSheet("QLabel { color: #0a0; }");
+            accept();  // Close dialog with success
+        }
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Login failed: "
-                                  << error_message.toStdString();
+                                  << result.error_message.toStdString();
 
         enableForm(true);
         status_label_->setText("");
 
         MessageBoxHelper::critical(this, "Login Failed",
-            QString("Authentication failed: %1").arg(error_message));
+            QString("Authentication failed: %1").arg(result.error_message));
     }
 }
 

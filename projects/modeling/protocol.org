@@ -14,7 +14,7 @@ To regenerate: =cmake --build --preset linux-clang-debug --target generate_proto
 
 * Protocol Version
 
-Current version: *11.0*
+Current version: *12.0*
 
 ** Version History
 
@@ -40,6 +40,10 @@ Current version: *11.0*
 - batch operations with a vector of account IDs. Responses now return a vector of
 - per-account results (lock_account_result/unlock_account_result). This is a
 - breaking change as the wire format is incompatible with previous versions.
+- Version 12.0 adds reset_password_request and reset_password_response messages
+- for admin-initiated password reset. Adds password_reset_required field to
+- login_response and list_login_info_response. This is a breaking change as
+- existing serialization formats are extended with new fields.
 
 * Subsystems
 
@@ -47,9 +51,9 @@ The protocol is organized into subsystems, each with its own message range:
 
 | Subsystem   | Range         | Component        | Messages |
 |-------------+---------------+------------------+----------|
-| [[id:B1A2C3D4-E5F6-7890-ABCD-EF1234567890][Core]]        | 0x0000-0x0FFF | ores.comms       |       11 |
+| [[id:B1A2C3D4-E5F6-7890-ABCD-EF1234567890][Core]]        | 0x0000-0x0FFF | ores.comms       |       12 |
 | [[id:C2B3D4E5-F6A7-8901-BCDE-F12345678901][Risk]]        | 0x1000-0x1FFF | ores.risk        |        8 |
-| [[id:D3C4E5F6-A7B8-9012-CDEF-123456789012][Accounts]]    | 0x2000-0x2FFF | ores.accounts    |       22 |
+| [[id:D3C4E5F6-A7B8-9012-CDEF-123456789012][Accounts]]    | 0x2000-0x2FFF | ores.accounts    |       28 |
 | [[id:E4D5F6A7-B8C9-0123-DEFA-234567890123][Variability]] | 0x3000-0x3FFF | ores.variability |        2 |
 
 * Session Lifecycle
@@ -129,6 +133,7 @@ Admin-only operations (lock/unlock account) use server-side session tracking:
 | 0x0012 | unsubscribe_request | Core |
 | 0x0013 | unsubscribe_response | Core |
 | 0x0014 | notification | Core |
+| 0x0020 | database_status_notification | Core |
 | 0x1001 | get_currencies_request | Risk |
 | 0x1002 | get_currencies_response | Risk |
 | 0x1003 | save_currency_request | Risk |
@@ -159,5 +164,13 @@ Admin-only operations (lock/unlock account) use server-side session tracking:
 | 0x2014 | lock_account_response | Accounts |
 | 0x2015 | update_account_request | Accounts |
 | 0x2016 | update_account_response | Accounts |
+| 0x2017 | get_account_history_request | Accounts |
+| 0x2018 | get_account_history_response | Accounts |
+| 0x2019 | reset_password_request | Accounts |
+| 0x201A | reset_password_response | Accounts |
+| 0x201B | change_password_request | Accounts |
+| 0x201C | change_password_response | Accounts |
+| 0x201D | update_my_email_request | Accounts |
+| 0x201E | update_my_email_response | Accounts |
 | 0x3000 | list_feature_flags_request | Variability |
 | 0x3001 | list_feature_flags_response | Variability |

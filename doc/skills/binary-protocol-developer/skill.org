@@ -220,14 +220,14 @@ action_resource_request::deserialize(std::span<const std::byte> data) {
 
 *** Field serialization formats
 
-| C++ Type                    | Wire Format                        | Writer/Reader          |
-|-----------------------------+------------------------------------+------------------------|
-| =bool=                      | 1 byte (0x00/0x01)                 | write_bool/read_bool   |
-| =std::uint16_t=             | 2 bytes big-endian                 | write_uint16/read_uint16 |
-| =std::uint32_t=             | 4 bytes big-endian                 | write_uint32/read_uint32 |
-| =boost::uuids::uuid=        | 16 bytes raw                       | write_uuid/read_uuid   |
-| =std::string=               | 2 bytes length + N bytes UTF-8     | write_string/read_string |
-| =std::vector<T>=            | 4 bytes count + N * sizeof(T)      | Custom implementation  |
+| C++ Type             | Wire Format                    | Writer/Reader            |
+|----------------------+--------------------------------+--------------------------|
+| =bool=               | 1 byte (0x00/0x01)             | write_bool/read_bool     |
+| =std::uint16_t=      | 2 bytes big-endian             | write_uint16/read_uint16 |
+| =std::uint32_t=      | 4 bytes big-endian             | write_uint32/read_uint32 |
+| =boost::uuids::uuid= | 16 bytes raw                   | write_uuid/read_uuid     |
+| =std::string=        | 2 bytes length + N bytes UTF-8 | write_string/read_string |
+| =std::vector<T>=     | 4 bytes count + N * sizeof(T)  | Custom implementation    |
 
 *** Important serialization rules
 

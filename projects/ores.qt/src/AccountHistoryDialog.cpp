@@ -22,8 +22,10 @@
 #include <QIcon>
 #include <QDateTime>
 #include <QScrollBar>
+#include <QVBoxLayout>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
@@ -43,12 +45,15 @@ const QIcon& AccountHistoryDialog::getHistoryIcon() const {
 AccountHistoryDialog::AccountHistoryDialog(QString username,
     ClientManager* clientManager, QWidget* parent)
     : QWidget(parent), ui_(new Ui::AccountHistoryDialog),
-      clientManager_(clientManager), username_(std::move(username)) {
+      clientManager_(clientManager), username_(std::move(username)),
+      toolBar_(nullptr), openAction_(nullptr), revertAction_(nullptr) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating account history widget for: "
                               << username_.toStdString();
 
     ui_->setupUi(this);
+
+    setupToolbar();
 
     connect(ui_->versionListWidget, &QTableWidget::currentCellChanged,
             this, [this](int currentRow, int, int, int) {
@@ -68,6 +73,8 @@ AccountHistoryDialog::AccountHistoryDialog(QString username,
     ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
     ui_->changesTableWidget->setColumnWidth(0, 200);
     ui_->changesTableWidget->setColumnWidth(1, 200);
+
+    updateButtonStates();
 }
 
 AccountHistoryDialog::~AccountHistoryDialog() {
@@ -195,6 +202,8 @@ void AccountHistoryDialog::onHistoryLoaded() {
             .arg(QString::fromStdString(latest.data.username)));
     }
 
+    updateButtonStates();
+
     emit statusChanged(QString("Loaded %1 versions")
         .arg(history_.versions.size()));
 }
@@ -302,6 +311,90 @@ calculateDiff(const accounts::domain::account_version& current,
 
 #undef CHECK_DIFF_STRING
 #undef CHECK_DIFF_BOOL
+
+void AccountHistoryDialog::setupToolbar() {
+    toolBar_ = new QToolBar(this);
+    toolBar_->setMovable(false);
+    toolBar_->setFloatable(false);
+
+    const QColor iconColor(220, 220, 220);
+
+    // Create Open action
+    openAction_ = new QAction("Open", this);
+    openAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_edit_20_regular.svg", iconColor));
+    openAction_->setToolTip("Open this version in read-only mode");
+    connect(openAction_, &QAction::triggered, this,
+        &AccountHistoryDialog::onOpenClicked);
+    toolBar_->addAction(openAction_);
+
+    // Create Revert action
+    revertAction_ = new QAction("Revert", this);
+    revertAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
+    revertAction_->setToolTip("Revert account to this version");
+    connect(revertAction_, &QAction::triggered, this,
+        &AccountHistoryDialog::onRevertClicked);
+    toolBar_->addAction(revertAction_);
+
+    // Add toolbar to layout
+    auto* mainLayout = qobject_cast<QVBoxLayout*>(layout());
+    if (mainLayout)
+        mainLayout->insertWidget(0, toolBar_);
+}
+
+void AccountHistoryDialog::updateButtonStates() {
+    const int index = selectedVersionIndex();
+    const bool hasSelection = index >= 0 &&
+        index < static_cast<int>(history_.versions.size());
+
+    if (openAction_)
+        openAction_->setEnabled(hasSelection);
+
+    if (revertAction_)
+        revertAction_->setEnabled(hasSelection);
+}
+
+int AccountHistoryDialog::selectedVersionIndex() const {
+    return ui_->versionListWidget->currentRow();
+}
+
+void AccountHistoryDialog::onOpenClicked() {
+    const int index = selectedVersionIndex();
+    if (index < 0 || index >= static_cast<int>(history_.versions.size()))
+        return;
+
+    const auto& version = history_.versions[index];
+    BOOST_LOG_SEV(lg(), info) << "Opening account version "
+                              << version.version_number << " in read-only mode";
+
+    emit openVersionRequested(version.data, version.version_number);
+}
+
+void AccountHistoryDialog::onRevertClicked() {
+    const int index = selectedVersionIndex();
+    if (index < 0 || index >= static_cast<int>(history_.versions.size()))
+        return;
+
+    const auto& version = history_.versions[index];
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to account version "
+                              << version.version_number;
+
+    // Confirm with user
+    auto reply = MessageBoxHelper::question(this, "Revert Account",
+        QString("Are you sure you want to revert '%1' to version %2?\n\n"
+                "This will create a new version with the data from version %2.")
+            .arg(username_)
+            .arg(version.version_number),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes) {
+        BOOST_LOG_SEV(lg(), debug) << "Revert cancelled by user";
+        return;
+    }
+
+    emit revertVersionRequested(version.data);
+}
 
 QSize AccountHistoryDialog::sizeHint() const {
     // Call the base implementation first to get the minimum size required by

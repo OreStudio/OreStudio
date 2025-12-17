@@ -113,9 +113,9 @@ jobs:
           $cmake_args="build_group=Continuous,preset=$preset"
           ctest -VV --preset $preset --script "CTest.cmake,$cmake_args"
 
-      - name: Dump test details
+      - name: Parse test results
         run: |
-           Get-Content ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/publish/bin/test-results-*.xml
+           python ./build/scripts/parse_catch2_results.py "./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/publish/bin/test-results-*.xml"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v6.0.0

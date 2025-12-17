@@ -135,9 +135,9 @@ public:
     client_session(const client_session&) = delete;
     client_session& operator=(const client_session&) = delete;
 
-    // Movable
-    client_session(client_session&&) = default;
-    client_session& operator=(client_session&&) = default;
+    // Movable (defined in .cpp due to incomplete type in unique_ptr)
+    client_session(client_session&&) noexcept;
+    client_session& operator=(client_session&&) noexcept;
 
     /**
      * @brief Connect to the server.

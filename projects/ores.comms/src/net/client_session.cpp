@@ -30,6 +30,9 @@ client_session::~client_session() {
     }
 }
 
+client_session::client_session(client_session&&) noexcept = default;
+client_session& client_session::operator=(client_session&&) noexcept = default;
+
 std::expected<void, session_error>
 client_session::connect(client_options options) {
     BOOST_LOG_SEV(lg(), info) << "Connecting to " << options.host << ":"

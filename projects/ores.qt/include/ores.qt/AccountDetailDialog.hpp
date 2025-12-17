@@ -108,6 +108,21 @@ public:
      */
     void save();
 
+    /**
+     * @brief Sets the dialog to read-only mode for viewing historical versions.
+     *
+     * In read-only mode:
+     * - All fields are disabled
+     * - Save button is hidden
+     * - Delete button is hidden
+     * - Revert button is shown
+     * - Toolbar shows version information
+     *
+     * @param readOnly True to enable read-only mode
+     * @param versionNumber The historical version number being displayed
+     */
+    void setReadOnly(bool readOnly, int versionNumber = 0);
+
 signals:
     void accountUpdated(const boost::uuids::uuid& account_id);
     void accountCreated(const boost::uuids::uuid& account_id);
@@ -116,25 +131,36 @@ signals:
     void errorMessage(const QString& message);
     void isDirtyChanged(bool isDirty);
 
+    /**
+     * @brief Emitted when user requests to revert to the displayed historical version.
+     * @param account The account data to revert to.
+     */
+    void revertRequested(const accounts::domain::account& account);
+
 private slots:
     void onSaveClicked();
     void onResetClicked();
     void onDeleteClicked();
+    void onRevertClicked();
     void onFieldChanged();
 
 private:
     void updateSaveResetButtonState();
     void setCreateMode(bool createMode);
+    void setFieldsReadOnly(bool readOnly);
     bool validatePassword() const;
 
 private:
     std::unique_ptr<Ui::AccountDetailDialog> ui_;
     bool isDirty_;
     bool isAddMode_;
+    bool isReadOnly_;
+    int historicalVersion_;
     std::string modifiedByUsername_;
     QToolBar* toolBar_;
     QAction* saveAction_;
     QAction* deleteAction_;
+    QAction* revertAction_;
 
     ClientManager* clientManager_;
     accounts::domain::account currentAccount_;

@@ -22,8 +22,10 @@
 #include <QIcon>
 #include <QDateTime>
 #include <QScrollBar>
+#include <QVBoxLayout>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.risk/messaging/protocol.hpp"
@@ -43,12 +45,15 @@ const QIcon& CurrencyHistoryDialog::getHistoryIcon() const {
 CurrencyHistoryDialog::CurrencyHistoryDialog(QString iso_code,
     ClientManager* clientManager, QWidget* parent)
     : QWidget(parent), ui_(new Ui::CurrencyHistoryDialog),
-      clientManager_(clientManager), isoCode_(std::move(iso_code)) {
+      clientManager_(clientManager), isoCode_(std::move(iso_code)),
+      toolBar_(nullptr), openAction_(nullptr), revertAction_(nullptr) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating currency history widget for: "
                               << isoCode_.toStdString();
 
     ui_->setupUi(this);
+
+    setupToolbar();
 
     connect(ui_->versionListWidget, &QTableWidget::currentCellChanged,
             this, [this](int currentRow, int, int, int) {
@@ -68,6 +73,8 @@ CurrencyHistoryDialog::CurrencyHistoryDialog(QString iso_code,
     ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
     ui_->changesTableWidget->setColumnWidth(0, 200);
     ui_->changesTableWidget->setColumnWidth(1, 200);
+
+    updateButtonStates();
 }
 
 CurrencyHistoryDialog::~CurrencyHistoryDialog() {
@@ -201,6 +208,8 @@ void CurrencyHistoryDialog::onHistoryLoaded() {
             .arg(QString::fromStdString(latest.data.name)));
     }
 
+    updateButtonStates();
+
     emit statusChanged(QString("Loaded %1 versions")
         .arg(history_.versions.size()));
 }
@@ -328,6 +337,90 @@ calculateDiff(const risk::domain::currency_version& current,
 
 #undef CHECK_DIFF_STRING
 #undef CHECK_DIFF_INT
+
+void CurrencyHistoryDialog::setupToolbar() {
+    toolBar_ = new QToolBar(this);
+    toolBar_->setMovable(false);
+    toolBar_->setFloatable(false);
+
+    const QColor iconColor(220, 220, 220);
+
+    // Create Open action
+    openAction_ = new QAction("Open", this);
+    openAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_edit_20_regular.svg", iconColor));
+    openAction_->setToolTip("Open this version in read-only mode");
+    connect(openAction_, &QAction::triggered, this,
+        &CurrencyHistoryDialog::onOpenClicked);
+    toolBar_->addAction(openAction_);
+
+    // Create Revert action
+    revertAction_ = new QAction("Revert", this);
+    revertAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
+    revertAction_->setToolTip("Revert currency to this version");
+    connect(revertAction_, &QAction::triggered, this,
+        &CurrencyHistoryDialog::onRevertClicked);
+    toolBar_->addAction(revertAction_);
+
+    // Add toolbar to layout
+    auto* mainLayout = qobject_cast<QVBoxLayout*>(layout());
+    if (mainLayout)
+        mainLayout->insertWidget(0, toolBar_);
+}
+
+void CurrencyHistoryDialog::updateButtonStates() {
+    const int index = selectedVersionIndex();
+    const bool hasSelection = index >= 0 &&
+        index < static_cast<int>(history_.versions.size());
+
+    if (openAction_)
+        openAction_->setEnabled(hasSelection);
+
+    if (revertAction_)
+        revertAction_->setEnabled(hasSelection);
+}
+
+int CurrencyHistoryDialog::selectedVersionIndex() const {
+    return ui_->versionListWidget->currentRow();
+}
+
+void CurrencyHistoryDialog::onOpenClicked() {
+    const int index = selectedVersionIndex();
+    if (index < 0 || index >= static_cast<int>(history_.versions.size()))
+        return;
+
+    const auto& version = history_.versions[index];
+    BOOST_LOG_SEV(lg(), info) << "Opening currency version "
+                              << version.version_number << " in read-only mode";
+
+    emit openVersionRequested(version.data, version.version_number);
+}
+
+void CurrencyHistoryDialog::onRevertClicked() {
+    const int index = selectedVersionIndex();
+    if (index < 0 || index >= static_cast<int>(history_.versions.size()))
+        return;
+
+    const auto& version = history_.versions[index];
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to currency version "
+                              << version.version_number;
+
+    // Confirm with user
+    auto reply = MessageBoxHelper::question(this, "Revert Currency",
+        QString("Are you sure you want to revert '%1' to version %2?\n\n"
+                "This will create a new version with the data from version %2.")
+            .arg(isoCode_)
+            .arg(version.version_number),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes) {
+        BOOST_LOG_SEV(lg(), debug) << "Revert cancelled by user";
+        return;
+    }
+
+    emit revertVersionRequested(version.data);
+}
 
 QSize CurrencyHistoryDialog::sizeHint() const {
     // Call the base implementation first to get the minimum size required by

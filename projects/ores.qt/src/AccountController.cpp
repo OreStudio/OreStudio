@@ -20,17 +20,25 @@
 #include "ores.qt/AccountController.hpp"
 
 #include <QPointer>
+#include <QtConcurrent>
+#include <QFutureWatcher>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/AccountMdiWindow.hpp"
 #include "ores.qt/AccountDetailDialog.hpp"
 #include "ores.qt/AccountHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.accounts/eventing/account_changed_event.hpp"
+#include "ores.accounts/messaging/account_protocol.hpp"
+#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
+using comms::messaging::frame;
+using comms::messaging::message_type;
 using namespace ores::utility::log;
 
 namespace {
@@ -217,6 +225,12 @@ void AccountController::onShowAccountHistory(const QString& username) {
         emit errorMessage(err_msg);
     });
 
+    // Connect open and revert signals
+    connect(historyDialog, &AccountHistoryDialog::openVersionRequested,
+            this, &AccountController::onOpenAccountVersion);
+    connect(historyDialog, &AccountHistoryDialog::revertVersionRequested,
+            this, &AccountController::onRevertAccount);
+
     // Create and configure window
     auto* historyWindow = new DetachableMdiSubWindow();
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -321,6 +335,139 @@ void AccountController::showDetailWindow(
     mdiArea_->addSubWindow(detailWindow);
     detailWindow->adjustSize();
     detailWindow->show();
+}
+
+void AccountController::onOpenAccountVersion(
+    const accounts::domain::account& account, int versionNumber) {
+    BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
+                              << " for account: " << account.username;
+
+    const QString username = QString::fromStdString(account.username);
+    const QColor iconColor(220, 220, 220);
+
+    auto* detailDialog = new AccountDetailDialog(mainWindow_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
+
+    connect(detailDialog, &AccountDetailDialog::statusMessage,
+            this, [this](const QString& message) {
+        emit statusMessage(message);
+    });
+    connect(detailDialog, &AccountDetailDialog::errorMessage,
+            this, [this](const QString& message) {
+        emit errorMessage(message);
+    });
+
+    // Connect revert signal
+    connect(detailDialog, &AccountDetailDialog::revertRequested,
+            this, &AccountController::onRevertAccount);
+
+    detailDialog->setAccount(account);
+    detailDialog->setLoginInfo(std::nullopt);  // No login info for historical versions
+    detailDialog->setReadOnly(true, versionNumber);
+
+    auto* detailWindow = new DetachableMdiSubWindow();
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle(QString("Account: %1 (Version %2 - Read Only)")
+        .arg(username).arg(versionNumber));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_person_accounts_20_regular.svg", iconColor));
+
+    allDetachableWindows_.append(detailWindow);
+    QPointer<AccountController> self = this;
+    QPointer<DetachableMdiSubWindow> windowBeingDestroyed = detailWindow;
+    connect(detailWindow, &QObject::destroyed, this,
+        [self, windowBeingDestroyed]() {
+        if (!self) return;
+        if (!windowBeingDestroyed.isNull()) {
+            self->allDetachableWindows_.removeAll(windowBeingDestroyed.data());
+        }
+    });
+
+    mdiArea_->addSubWindow(detailWindow);
+    detailWindow->adjustSize();
+    detailWindow->show();
+}
+
+void AccountController::onRevertAccount(const accounts::domain::account& account) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting account: " << account.username;
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Revert requested but client not connected.";
+        emit errorMessage("Not connected to server. Please login.");
+        return;
+    }
+
+    // Create update request with the historical data
+    QPointer<AccountController> self = this;
+    const boost::uuids::uuid account_id = account.id;
+    const std::string username = account.username;
+    const std::string email = account.email;
+    const bool is_admin = account.is_admin;
+    const std::string recorded_by = username_.toStdString();
+
+    QFuture<std::pair<bool, std::string>> future =
+        QtConcurrent::run([self, account_id, email, is_admin, recorded_by]()
+            -> std::pair<bool, std::string> {
+            if (!self) return {false, ""};
+
+            BOOST_LOG_SEV(lg(), debug) << "Sending update account request for revert: "
+                                       << boost::uuids::to_string(account_id);
+
+            accounts::messaging::update_account_request request;
+            request.account_id = account_id;
+            request.email = email;
+            request.is_admin = is_admin;
+            request.recorded_by = recorded_by;
+
+            auto payload = request.serialize();
+            frame request_frame(message_type::update_account_request,
+                0, std::move(payload));
+
+            auto response_result =
+                self->clientManager_->sendRequest(std::move(request_frame));
+
+            if (!response_result)
+                return {false, "Failed to communicate with server"};
+
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result)
+                return {false, "Failed to decompress server response"};
+
+            auto response = accounts::messaging::update_account_response::
+                deserialize(*payload_result);
+
+            if (!response)
+                return {false, "Invalid server response"};
+
+            return {response->success, response->error_message};
+        });
+
+    auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(self);
+    connect(watcher, &QFutureWatcher<std::pair<bool, std::string>>::finished, self,
+        [self, watcher, username]() {
+
+        if (!self) return;
+
+        auto [success, message] = watcher->result();
+        watcher->deleteLater();
+
+        if (success) {
+            BOOST_LOG_SEV(lg(), debug) << "Account reverted successfully.";
+            emit self->statusMessage(QString("Successfully reverted account: %1")
+                .arg(QString::fromStdString(username)));
+            self->markAccountListAsStale();
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Account revert failed: " << message;
+            emit self->errorMessage(QString("Failed to revert account: %1")
+                .arg(QString::fromStdString(message)));
+            MessageBoxHelper::critical(self->mainWindow_, "Revert Failed",
+                QString::fromStdString(message));
+        }
+    });
+
+    watcher->setFuture(future);
 }
 
 }

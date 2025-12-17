@@ -25,6 +25,8 @@
 #include <QWidget>
 #include <QString>
 #include <QVector>
+#include <QToolBar>
+#include <QAction>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.risk/domain/currency_version.hpp"
 #include "ores.risk/domain/currency_version_history.hpp"
@@ -69,10 +71,25 @@ signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
 
+    /**
+     * @brief Emitted when user requests to open a version in read-only mode.
+     * @param currency The currency data at the selected version.
+     * @param versionNumber The version number being viewed.
+     */
+    void openVersionRequested(const risk::domain::currency& currency, int versionNumber);
+
+    /**
+     * @brief Emitted when user requests to revert to a selected version.
+     * @param currency The currency data to revert to.
+     */
+    void revertVersionRequested(const risk::domain::currency& currency);
+
 private slots:
     void onVersionSelected(int index);
     void onHistoryLoaded();
     void onHistoryLoadError(const QString& error);
+    void onOpenClicked();
+    void onRevertClicked();
 
 private:
     void displayChangesTab(int version_index);
@@ -88,10 +105,18 @@ private:
         const risk::domain::currency_version& current,
         const risk::domain::currency_version& previous);
 
+    void setupToolbar();
+    void updateButtonStates();
+    int selectedVersionIndex() const;
+
     std::unique_ptr<Ui::CurrencyHistoryDialog> ui_;
     ClientManager* clientManager_;
     QString isoCode_;
     risk::domain::currency_version_history history_;
+
+    QToolBar* toolBar_;
+    QAction* openAction_;
+    QAction* revertAction_;
 };
 
 }

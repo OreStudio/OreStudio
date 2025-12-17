@@ -142,6 +142,27 @@ private slots:
     void onShowAccountHistory(const QString& username);
 
     /**
+     * @brief Handles request to open a historical account version in read-only mode.
+     *
+     * Creates an account detail dialog showing the historical version with
+     * all fields read-only and a revert button available.
+     *
+     * @param account The account data at the historical version
+     * @param versionNumber The version number being viewed
+     */
+    void onOpenAccountVersion(const accounts::domain::account& account, int versionNumber);
+
+    /**
+     * @brief Handles request to revert an account to a historical version.
+     *
+     * Saves the account data from the historical version, creating a new
+     * version with that data.
+     *
+     * @param account The account data to revert to
+     */
+    void onRevertAccount(const accounts::domain::account& account);
+
+    /**
      * @brief Handles account change notifications from the server.
      *
      * Called when a notification is received indicating accounts have changed.

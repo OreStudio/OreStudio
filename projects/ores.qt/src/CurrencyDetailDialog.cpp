@@ -44,7 +44,8 @@ using FutureResult = std::pair<bool, std::string>;
 
 CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     : QWidget(parent), ui_(new Ui::CurrencyDetailDialog), isDirty_(false),
-      isAddMode_(false), clientManager_(nullptr) {
+      isAddMode_(false), isReadOnly_(false), historicalVersion_(0),
+      clientManager_(nullptr) {
 
     ui_->setupUi(this);
 
@@ -73,6 +74,16 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     connect(deleteAction_, &QAction::triggered, this,
         &CurrencyDetailDialog::onDeleteClicked);
     toolBar_->addAction(deleteAction_);
+
+    // Create Revert action (initially hidden)
+    revertAction_ = new QAction("Revert to this version", this);
+    revertAction_->setIcon(IconUtils::createRecoloredIcon(
+            ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
+    revertAction_->setToolTip("Revert currency to this historical version");
+    connect(revertAction_, &QAction::triggered, this,
+        &CurrencyDetailDialog::onRevertClicked);
+    toolBar_->addAction(revertAction_);
+    revertAction_->setVisible(false);
 
     // Add toolbar to the dialog's layout
     // Get the main layout from the UI
@@ -402,12 +413,80 @@ void CurrencyDetailDialog::onDeleteClicked() {
 }
 
 void CurrencyDetailDialog::onFieldChanged() {
+    if (isReadOnly_)
+        return;
+
     isDirty_ = true;
     emit isDirtyChanged(true);
     updateSaveResetButtonState();
 }
 
+void CurrencyDetailDialog::onRevertClicked() {
+    BOOST_LOG_SEV(lg(), info) << "Revert clicked for historical version "
+                              << historicalVersion_;
+
+    // Confirm with user
+    auto reply = MessageBoxHelper::question(this, "Revert Currency",
+        QString("Are you sure you want to revert '%1' to version %2?\n\n"
+                "This will create a new version with the data from version %2.")
+            .arg(QString::fromStdString(currentCurrency_.iso_code))
+            .arg(historicalVersion_),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes) {
+        BOOST_LOG_SEV(lg(), debug) << "Revert cancelled by user";
+        return;
+    }
+
+    emit revertRequested(currentCurrency_);
+}
+
+void CurrencyDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
+    isReadOnly_ = readOnly;
+    historicalVersion_ = versionNumber;
+
+    BOOST_LOG_SEV(lg(), debug) << "Setting read-only mode: " << readOnly
+                               << ", version: " << versionNumber;
+
+    setFieldsReadOnly(readOnly);
+
+    // Update toolbar visibility
+    if (saveAction_)
+        saveAction_->setVisible(!readOnly);
+
+    if (deleteAction_)
+        deleteAction_->setVisible(!readOnly);
+
+    if (revertAction_)
+        revertAction_->setVisible(readOnly);
+
+    updateSaveResetButtonState();
+}
+
+void CurrencyDetailDialog::setFieldsReadOnly(bool readOnly) {
+    ui_->isoCodeEdit->setReadOnly(readOnly);
+    ui_->nameEdit->setReadOnly(readOnly);
+    ui_->numericCodeEdit->setReadOnly(readOnly);
+    ui_->symbolEdit->setReadOnly(readOnly);
+    ui_->fractionSymbolEdit->setReadOnly(readOnly);
+    ui_->fractionsPerUnitSpinBox->setReadOnly(readOnly);
+    ui_->roundingTypeEdit->setReadOnly(readOnly);
+    ui_->roundingPrecisionSpinBox->setReadOnly(readOnly);
+    ui_->formatEdit->setReadOnly(readOnly);
+    ui_->currencyTypeEdit->setReadOnly(readOnly);
+}
+
 void CurrencyDetailDialog::updateSaveResetButtonState() {
+    if (isReadOnly_) {
+        if (saveAction_)
+            saveAction_->setEnabled(false);
+        if (deleteAction_)
+            deleteAction_->setEnabled(false);
+        if (revertAction_)
+            revertAction_->setEnabled(true);
+        return;
+    }
+
     if (saveAction_)
         saveAction_->setEnabled(isDirty_);
 

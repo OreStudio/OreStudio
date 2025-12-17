@@ -46,7 +46,8 @@ using FutureResult = std::pair<bool, std::string>;
 
 AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     : QWidget(parent), ui_(new Ui::AccountDetailDialog), isDirty_(false),
-      isAddMode_(false), clientManager_(nullptr) {
+      isAddMode_(false), isReadOnly_(false), historicalVersion_(0),
+      clientManager_(nullptr) {
 
     ui_->setupUi(this);
 
@@ -74,6 +75,16 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     connect(deleteAction_, &QAction::triggered, this,
         &AccountDetailDialog::onDeleteClicked);
     toolBar_->addAction(deleteAction_);
+
+    // Create Revert action (initially hidden)
+    revertAction_ = new QAction("Revert to this version", this);
+    revertAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
+    revertAction_->setToolTip("Revert account to this historical version");
+    connect(revertAction_, &QAction::triggered, this,
+        &AccountDetailDialog::onRevertClicked);
+    toolBar_->addAction(revertAction_);
+    revertAction_->setVisible(false);
 
     // Add toolbar to the dialog's layout
     auto* mainLayout = qobject_cast<QVBoxLayout*>(layout());
@@ -589,12 +600,76 @@ void AccountDetailDialog::onDeleteClicked() {
 }
 
 void AccountDetailDialog::onFieldChanged() {
+    if (isReadOnly_)
+        return;
+
     isDirty_ = true;
     emit isDirtyChanged(true);
     updateSaveResetButtonState();
 }
 
+void AccountDetailDialog::onRevertClicked() {
+    BOOST_LOG_SEV(lg(), info) << "Revert clicked for historical version "
+                              << historicalVersion_;
+
+    // Confirm with user
+    auto reply = MessageBoxHelper::question(this, "Revert Account",
+        QString("Are you sure you want to revert '%1' to version %2?\n\n"
+                "This will create a new version with the data from version %2.")
+            .arg(QString::fromStdString(currentAccount_.username))
+            .arg(historicalVersion_),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes) {
+        BOOST_LOG_SEV(lg(), debug) << "Revert cancelled by user";
+        return;
+    }
+
+    emit revertRequested(currentAccount_);
+}
+
+void AccountDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
+    isReadOnly_ = readOnly;
+    historicalVersion_ = versionNumber;
+
+    BOOST_LOG_SEV(lg(), debug) << "Setting read-only mode: " << readOnly
+                               << ", version: " << versionNumber;
+
+    setFieldsReadOnly(readOnly);
+
+    // Update toolbar visibility
+    if (saveAction_)
+        saveAction_->setVisible(!readOnly);
+
+    if (deleteAction_)
+        deleteAction_->setVisible(!readOnly);
+
+    if (revertAction_)
+        revertAction_->setVisible(readOnly);
+
+    // Hide password group in read-only mode
+    ui_->passwordGroup->setVisible(false);
+
+    updateSaveResetButtonState();
+}
+
+void AccountDetailDialog::setFieldsReadOnly(bool readOnly) {
+    ui_->usernameEdit->setReadOnly(readOnly);
+    ui_->emailEdit->setReadOnly(readOnly);
+    ui_->isAdminCheckBox->setEnabled(!readOnly);
+}
+
 void AccountDetailDialog::updateSaveResetButtonState() {
+    if (isReadOnly_) {
+        if (saveAction_)
+            saveAction_->setEnabled(false);
+        if (deleteAction_)
+            deleteAction_->setEnabled(false);
+        if (revertAction_)
+            revertAction_->setEnabled(true);
+        return;
+    }
+
     if (saveAction_)
         saveAction_->setEnabled(isDirty_);
 

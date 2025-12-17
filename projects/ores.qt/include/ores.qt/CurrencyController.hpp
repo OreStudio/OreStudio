@@ -142,6 +142,27 @@ private slots:
     void onShowCurrencyHistory(const QString& isoCode);
 
     /**
+     * @brief Handles request to open a historical currency version in read-only mode.
+     *
+     * Creates a currency detail dialog showing the historical version with
+     * all fields read-only and a revert button available.
+     *
+     * @param currency The currency data at the historical version
+     * @param versionNumber The version number being viewed
+     */
+    void onOpenCurrencyVersion(const risk::domain::currency& currency, int versionNumber);
+
+    /**
+     * @brief Handles request to revert a currency to a historical version.
+     *
+     * Saves the currency data from the historical version, creating a new
+     * version with that data.
+     *
+     * @param currency The currency data to revert to
+     */
+    void onRevertCurrency(const risk::domain::currency& currency);
+
+    /**
      * @brief Handles currency change notifications from the server.
      *
      * Called when a notification is received indicating currencies have changed.

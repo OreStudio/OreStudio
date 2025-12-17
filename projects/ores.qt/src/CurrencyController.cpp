@@ -20,6 +20,8 @@
 #include "ores.qt/CurrencyController.hpp"
 
 #include <QPointer>
+#include <QtConcurrent>
+#include <QFutureWatcher>
 #include "ores.qt/CurrencyMdiWindow.hpp"
 #include "ores.qt/CurrencyDetailDialog.hpp"
 #include "ores.qt/CurrencyHistoryDialog.hpp"
@@ -28,9 +30,13 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.risk/eventing/currency_changed_event.hpp"
+#include "ores.risk/messaging/protocol.hpp"
+#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
+using comms::messaging::frame;
+using comms::messaging::message_type;
 using namespace ores::utility::log;
 
 namespace {
@@ -195,7 +201,7 @@ void CurrencyController::onAddNewRequested() {
     });
     connect(detailDialog, &CurrencyDetailDialog::errorMessage,
             this, [this](const QString& message) {
-        emit statusMessage(message);
+        emit errorMessage(message);
     });
 
     detailDialog->setCurrency(new_currency);
@@ -262,7 +268,7 @@ void CurrencyController::onShowCurrencyDetails(
     });
     connect(detailDialog, &CurrencyDetailDialog::errorMessage,
             this, [this](const QString& message) {
-        emit statusMessage(message);
+        emit errorMessage(message);
     });
 
     detailDialog->setCurrency(currency);
@@ -322,7 +328,6 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
                               << isoCode.toStdString();
     const QColor iconColor(220, 220, 220);
 
-    // Assuming CurrencyHistoryDialog updated to take ClientManager*
     auto* historyWidget = new CurrencyHistoryDialog(isoCode, clientManager_,
                                                      mainWindow_);
 
@@ -334,6 +339,12 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
             this, [this](const QString& error_message) {
         emit statusMessage("Error loading history: " + error_message);
     });
+
+    // Connect open and revert signals
+    connect(historyWidget, &CurrencyHistoryDialog::openVersionRequested,
+            this, &CurrencyController::onOpenCurrencyVersion);
+    connect(historyWidget, &CurrencyHistoryDialog::revertVersionRequested,
+            this, &CurrencyController::onRevertCurrency);
 
     historyWidget->loadHistory();
 
@@ -394,6 +405,156 @@ void CurrencyController::onNotificationReceived(
             BOOST_LOG_SEV(lg(), debug) << "Marked currency window as stale";
         }
     }
+}
+
+void CurrencyController::onOpenCurrencyVersion(
+    const risk::domain::currency& currency, int versionNumber) {
+    BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
+                              << " for currency: " << currency.iso_code;
+
+    const QString isoCode = QString::fromStdString(currency.iso_code);
+    const QString windowKey = build_window_key("version", QString("%1_v%2")
+        .arg(isoCode).arg(versionNumber));
+
+    // Try to reuse existing window
+    if (try_reuse_window(windowKey)) {
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing version window";
+        return;
+    }
+
+    const QColor iconColor(220, 220, 220);
+
+    auto* detailDialog = new CurrencyDetailDialog(mainWindow_);
+    if (clientManager_) {
+        detailDialog->setClientManager(clientManager_);
+        detailDialog->setUsername(username_.toStdString());
+    }
+
+    connect(detailDialog, &CurrencyDetailDialog::statusMessage,
+            this, [this](const QString& message) {
+        emit statusMessage(message);
+    });
+    connect(detailDialog, &CurrencyDetailDialog::errorMessage,
+            this, [this](const QString& message) {
+        emit errorMessage(message);
+    });
+
+    // Connect revert signal
+    connect(detailDialog, &CurrencyDetailDialog::revertRequested,
+            this, &CurrencyController::onRevertCurrency);
+
+    detailDialog->setCurrency(currency);
+    detailDialog->setReadOnly(true, versionNumber);
+
+    auto* detailWindow = new DetachableMdiSubWindow();
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle(QString("Currency: %1 (Version %2 - Read Only)")
+        .arg(isoCode).arg(versionNumber));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
+
+    // Track this version window
+    track_window(windowKey, detailWindow);
+
+    allDetachableWindows_.append(detailWindow);
+    QPointer<CurrencyController> self = this;
+    QPointer<DetachableMdiSubWindow> windowPtr = detailWindow;
+    connect(detailWindow, &QObject::destroyed, this,
+            [self, windowPtr, windowKey]() {
+        if (self) {
+            self->allDetachableWindows_.removeAll(windowPtr.data());
+            self->untrack_window(windowKey);
+        }
+    });
+
+    mdiArea_->addSubWindow(detailWindow);
+    detailWindow->adjustSize();
+
+    // If the parent currency list window is detached, detach this window too
+    if (currencyListWindow_ && currencyListWindow_->isDetached()) {
+        detailWindow->show();
+        detailWindow->detach();
+
+        QPoint parentPos = currencyListWindow_->pos();
+        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
+    } else {
+        detailWindow->show();
+    }
+}
+
+void CurrencyController::onRevertCurrency(const risk::domain::currency& currency) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting currency: " << currency.iso_code;
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Revert requested but client not connected.";
+        emit errorMessage("Not connected to server. Please login.");
+        return;
+    }
+
+    // Create a copy of the currency for saving
+    risk::domain::currency currencyToSave = currency;
+    currencyToSave.recorded_by = username_.toStdString();
+
+    QPointer<CurrencyController> self = this;
+    QFuture<std::pair<bool, std::string>> future =
+        QtConcurrent::run([self, currencyToSave]() -> std::pair<bool, std::string> {
+            if (!self) return {false, ""};
+
+            BOOST_LOG_SEV(lg(), debug) << "Sending save currency request for revert: "
+                                       << currencyToSave.iso_code;
+
+            risk::messaging::save_currency_request request{currencyToSave};
+            auto payload = request.serialize();
+            frame request_frame = frame(message_type::save_currency_request,
+                0, std::move(payload));
+
+            auto response_result =
+                self->clientManager_->sendRequest(std::move(request_frame));
+
+            if (!response_result)
+                return {false, "Failed to communicate with server"};
+
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result)
+                return {false, "Failed to decompress server response"};
+
+            using risk::messaging::save_currency_response;
+            auto response = save_currency_response::deserialize(*payload_result);
+
+            bool result = false;
+            std::string message = "Invalid server response";
+            if (response) {
+                result = response->success;
+                message = response->message;
+            }
+
+            return {result, message};
+        });
+
+    auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(self);
+    connect(watcher, &QFutureWatcher<std::pair<bool, std::string>>::finished, self,
+        [self, watcher, currencyToSave]() {
+
+        if (!self) return;
+
+        auto [success, message] = watcher->result();
+        watcher->deleteLater();
+
+        if (success) {
+            BOOST_LOG_SEV(lg(), debug) << "Currency reverted successfully.";
+            emit self->statusMessage(QString("Successfully reverted currency: %1")
+                .arg(QString::fromStdString(currencyToSave.iso_code)));
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Currency revert failed: " << message;
+            emit self->errorMessage(QString("Failed to revert currency: %1")
+                .arg(QString::fromStdString(message)));
+            MessageBoxHelper::critical(self->mainWindow_, "Revert Failed",
+                QString::fromStdString(message));
+        }
+    });
+
+    watcher->setFuture(future);
 }
 
 }

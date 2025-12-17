@@ -62,6 +62,21 @@ public:
     void clearDialog();
     void save();
 
+    /**
+     * @brief Sets the dialog to read-only mode for viewing historical versions.
+     *
+     * In read-only mode:
+     * - All fields are disabled
+     * - Save button is hidden
+     * - Delete button is hidden
+     * - Revert button is shown
+     * - Toolbar shows version information
+     *
+     * @param readOnly True to enable read-only mode
+     * @param versionNumber The historical version number being displayed
+     */
+    void setReadOnly(bool readOnly, int versionNumber = 0);
+
 signals:
     void currencyUpdated(const QString& iso_code);
     void currencyCreated(const QString& iso_code);
@@ -70,23 +85,34 @@ signals:
     void errorMessage(const QString& message);
     void isDirtyChanged(bool isDirty);
 
+    /**
+     * @brief Emitted when user requests to revert to the displayed historical version.
+     * @param currency The currency data to revert to.
+     */
+    void revertRequested(const risk::domain::currency& currency);
+
 private slots:
     void onSaveClicked();
     void onResetClicked();
     void onDeleteClicked();
+    void onRevertClicked();
     void onFieldChanged();
 
 private:
     void updateSaveResetButtonState();
+    void setFieldsReadOnly(bool readOnly);
 
 private:
     std::unique_ptr<Ui::CurrencyDetailDialog> ui_;
     bool isDirty_;
     bool isAddMode_;
+    bool isReadOnly_;
+    int historicalVersion_;
     std::string username_;
     QToolBar* toolBar_;
     QAction* saveAction_;
     QAction* deleteAction_;
+    QAction* revertAction_;
 
     ClientManager* clientManager_;
     risk::domain::currency currentCurrency_;

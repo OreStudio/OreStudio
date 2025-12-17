@@ -337,14 +337,14 @@ TEST_CASE("format_time_point_months_ago", tags) {
     relative_time_formatter fmt(numeric_style::automatic);
 
     auto reference = system_clock::now();
-    // About 90 days = 3 months
+    // About 90 days = 2.96 months (using 30.44 day average month), truncates to 2
     auto past = offset_from(reference, -seconds(90 * 86400));
 
     auto result = fmt.format(past, reference);
 
-    BOOST_LOG_SEV(lg, info) << "3 months ago: " << result;
+    BOOST_LOG_SEV(lg, info) << "2 months ago: " << result;
 
-    CHECK(result == "3 months ago");
+    CHECK(result == "2 months ago");
 }
 
 TEST_CASE("format_time_point_last_year", tags) {

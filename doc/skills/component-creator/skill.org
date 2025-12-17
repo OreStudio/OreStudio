@@ -83,6 +83,7 @@ specific content type. The following are the set of well-known facets:
 | =generators= | Contains C++ generators for the domain types, typically used in testing but also used in production.                |
 | =messaging=  | Contains classes related to network messaging such as requests, responses, handlers etc for this component.         |
 | =repository= | Contains database support for the domain types via sqlgen. Includes repositories, entities, mappers, etc.           |
+| =eventing=   | Contains event related classes.                                                                                     |
 | =service=    | Contains standalone types with domain operations that do not fit into a domain type.                                |
 | =app=        | If the component provides an executable, it will need standard application infrastructure such as hosting, etc.     |
 | =config=     | Contains top-level configuration, if required. If it is an executable component the command-line parser lives here. |

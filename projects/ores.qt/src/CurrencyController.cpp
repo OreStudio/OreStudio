@@ -27,7 +27,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.risk/domain/events/currency_changed_event.hpp"
+#include "ores.risk/eventing/currency_changed_event.hpp"
 
 namespace ores::qt {
 
@@ -36,7 +36,7 @@ using namespace ores::utility::log;
 namespace {
     // Event type name for currency changes
     constexpr std::string_view currency_event_name =
-        eventing::domain::event_traits<risk::domain::events::currency_changed_event>::name;
+        eventing::domain::event_traits<risk::eventing::currency_changed_event>::name;
 }
 
 CurrencyController::CurrencyController(

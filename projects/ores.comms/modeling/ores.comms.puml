@@ -255,10 +255,10 @@ namespace ores #F2F2F2 {
             client ..> ores::comms::messaging::ping : uses
             client ..> ores::comms::messaging::pong : uses
             client ..> ores::comms::messaging::notification_message : uses
-            client ..> ores::comms::domain::events::connected_event : publishes
-            client ..> ores::comms::domain::events::disconnected_event : publishes
-            client ..> ores::comms::domain::events::reconnecting_event : publishes
-            client ..> ores::comms::domain::events::reconnected_event : publishes
+            client ..> ores::comms::eventing::connected_event : publishes
+            client ..> ores::comms::eventing::disconnected_event : publishes
+            client ..> ores::comms::eventing::reconnecting_event : publishes
+            client ..> ores::comms::eventing::reconnected_event : publishes
 
         class pending_request_map #ECECEC {
             +pending_request_map(boost::asio::any_io_executor executor)

@@ -232,11 +232,11 @@ namespace ores #F2F2F2 {
             together {
                 class feature_flags_service
                 class system_flags_service
-                class flag_initializer
+                class system_flags_seeder
             }
 
             feature_flags_service -[hidden]down- system_flags_service
-            system_flags_service -[hidden]down- flag_initializer
+            system_flags_service -[hidden]down- system_flags_seeder
 
             '
             ' Class definitions
@@ -298,25 +298,25 @@ namespace ores #F2F2F2 {
             system_flags_service o-- ores::variability::domain::system_flags_cache
             system_flags_service ..> ores::variability::domain::system_flag : uses
 
-            class flag_initializer #ECECEC {
-                +flag_initializer(context)
-                +ensure_system_flags_exist() std::size_t
+            class system_flags_seeder #ECECEC {
+                +system_flags_seeder(context)
+                +seed() std::size_t
                 -{field} feature_flags_service_ feature_flags_service
             }
 
-            note top of flag_initializer
-            Initializes system flags in the database at startup.
+            note top of system_flags_seeder
+            Seeds system flags in the database at startup.
 
             Ensures all well-known system flags exist with default values.
             Called early during service startup, before any component queries
             system flags. Only creates missing flags - does not overwrite
-            existing values.
+            existing values. Idempotent - running multiple times is safe.
 
             Returns the number of flags created (0 if all existed).
             end note
 
-            flag_initializer o-- feature_flags_service
-            flag_initializer ..> ores::variability::domain::system_flag_definition : uses
+            system_flags_seeder o-- feature_flags_service
+            system_flags_seeder ..> ores::variability::domain::system_flag_definition : uses
         }
 
         namespace messaging #F2F2F2 {
@@ -419,12 +419,12 @@ namespace ores #F2F2F2 {
             ' Group: Service tests
             together {
                 class service_system_flags_service_tests
-                class service_flag_initializer_tests
+                class service_system_flags_seeder_tests
             }
 
             ' Stack vertically
             domain_feature_flags_tests -[hidden]down- domain_system_flags_tests
-            service_system_flags_service_tests -[hidden]down- service_flag_initializer_tests
+            service_system_flags_service_tests -[hidden]down- service_system_flags_seeder_tests
 
             '
             ' Class definitions
@@ -498,22 +498,22 @@ namespace ores #F2F2F2 {
 
             service_system_flags_service_tests ..> ores::variability::service::system_flags_service : tests
 
-            class service_flag_initializer_tests <<test suite>> #C5E1A5 {
+            class service_system_flags_seeder_tests <<test suite>> #C5E1A5 {
                 +creates_all_system_flags() void
                 +preserves_existing_flags() void
-                +idempotent_initialization() void
+                +idempotent_seeding() void
             }
 
-            note top of service_flag_initializer_tests
-            Test suite for flag_initializer.
+            note top of service_system_flags_seeder_tests
+            Test suite for system_flags_seeder.
 
             Tests cover:
             - Creates all flags when database is empty
             - Preserves existing flag values
-            - Idempotent behavior (multiple runs safe)
+            - Idempotent behavior (multiple seeds safe)
             end note
 
-            service_flag_initializer_tests ..> ores::variability::service::flag_initializer : tests
+            service_system_flags_seeder_tests ..> ores::variability::service::system_flags_seeder : tests
         }
     }
 }

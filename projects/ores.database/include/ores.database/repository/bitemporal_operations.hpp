@@ -20,6 +20,8 @@
 #ifndef ORES_DATABASE_REPOSITORY_BITEMPORAL_OPERATIONS_HPP
 #define ORES_DATABASE_REPOSITORY_BITEMPORAL_OPERATIONS_HPP
 
+#include <map>
+#include <optional>
 #include <vector>
 #include <sqlgen/postgres.hpp>
 #include "ores.utility/log/make_logger.hpp"
@@ -150,6 +152,75 @@ void execute_delete_query(context ctx, const QueryType& query,
 
     BOOST_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
 }
+
+/**
+ * @brief Executes a raw SQL query that returns a single column of strings.
+ *
+ * This helper is useful for complex queries with JOINs that cannot be expressed
+ * through sqlgen's ORM interface.
+ *
+ * @param ctx The repository context
+ * @param sql The raw SQL query string
+ * @param lg The logger to use
+ * @param operation_desc Description of the operation for logging
+ * @return A vector of strings from the first column of the result
+ *
+ * @example
+ * auto permissions = execute_raw_string_query(ctx_,
+ *     "SELECT DISTINCT p.code FROM permissions p JOIN ...",
+ *     lg(), "Reading effective permissions");
+ */
+std::vector<std::string> execute_raw_string_query(context ctx,
+    const std::string& sql, utility::log::logger_t& lg,
+    const std::string& operation_desc);
+
+/**
+ * @brief Executes a raw SQL query that returns a grouped map of strings.
+ *
+ * This helper executes a query with two columns (key, value) and returns
+ * a map where each key maps to a vector of associated values. Useful for
+ * batch loading one-to-many relationships in a single query.
+ *
+ * @param ctx The repository context
+ * @param sql The raw SQL query string (must return exactly 2 columns)
+ * @param lg The logger to use
+ * @param operation_desc Description of the operation for logging
+ * @return A map from first column to vector of second column values
+ *
+ * @example
+ * auto role_perms = execute_raw_grouped_query(ctx_,
+ *     "SELECT rp.role_id, p.code FROM role_permissions rp JOIN ...",
+ *     lg(), "Reading all role permission codes");
+ */
+std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
+    context ctx, const std::string& sql, utility::log::logger_t& lg,
+    const std::string& operation_desc);
+
+/**
+ * @brief Executes a raw SQL query that returns multiple columns per row.
+ *
+ * This helper executes a query and returns all rows as vectors of optional
+ * string values. Each inner vector represents a row, with column values
+ * as optional strings (nullopt for NULL values).
+ *
+ * @param ctx The repository context
+ * @param sql The raw SQL query string
+ * @param lg The logger to use
+ * @param operation_desc Description of the operation for logging
+ * @return A vector of rows, where each row is a vector of optional<string>
+ *
+ * @example
+ * auto rows = execute_raw_multi_column_query(ctx_,
+ *     "SELECT id, name, description FROM roles WHERE ...",
+ *     lg(), "Reading role data");
+ * for (const auto& row : rows) {
+ *     auto id = row[0].value_or("");
+ *     auto name = row[1].value_or("");
+ * }
+ */
+std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_query(
+    context ctx, const std::string& sql, utility::log::logger_t& lg,
+    const std::string& operation_desc);
 
 }
 

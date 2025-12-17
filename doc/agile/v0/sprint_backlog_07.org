@@ -17,39 +17,35 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-16 Tue 18:55], for Tuesday, December 16, 2025.
-|       | <75>                                         |        |      |      |       |
-| Tags  | Headline                                     | Time   |      |      |     % |
-|-------+----------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                 | *8:51* |      |      | 100.0 |
-|-------+----------------------------------------------+--------+------+------+-------|
-|       | Stories                                      | 8:51   |      |      | 100.0 |
-|       | Active                                       |        | 8:51 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint           |        |      | 0:23 |   4.3 |
-| code  | Do not expose temporal machinery in domain   |        |      | 0:07 |   1.3 |
-| code  | Add account management support to qt         |        |      | 3:43 |  42.0 |
-| code  | Add password reset functionality to accounts |        |      | 1:49 |  20.5 |
-| code  | Add roles and permissions                    |        |      | 2:49 |  31.8 |
+#+CAPTION: Clock summary at [2025-12-17 Wed 00:08], for Wednesday, December 17, 2025.
+|      | <75>                                              |        |      |      |       |
+| Tags | Headline                                          | Time   |      |      |     % |
+|------+---------------------------------------------------+--------+------+------+-------|
+|      | *Total time*                                      | *0:08* |      |      | 100.0 |
+|------+---------------------------------------------------+--------+------+------+-------|
+|      | Stories                                           | 0:08   |      |      | 100.0 |
+|      | Active                                            |        | 0:08 |      | 100.0 |
+| code | Add core infrastructure for roles and permissions |        |      | 0:08 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-16 Tue 18:55]
-|       | <75>                                           |         |       |      |       |
-| Tags  | Headline                                       | Time    |       |      |     % |
-|-------+------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                   | *16:19* |       |      | 100.0 |
-|-------+------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                        | 16:19   |       |      | 100.0 |
-|       | Active                                         |         | 16:19 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |         |       | 1:07 |   6.8 |
-| infra | OCR scan notebooks for this sprint             |         |       | 0:53 |   5.4 |
-| code  | Consider compressing payload                   |         |       | 3:05 |  18.9 |
-| code  | Latest currencies should have different colour |         |       | 1:28 |   9.0 |
-| code  | Do not expose temporal machinery in domain     |         |       | 1:25 |   8.7 |
-| code  | Add account management support to qt           |         |       | 3:43 |  22.8 |
-| code  | Add password reset functionality to accounts   |         |       | 1:49 |  11.1 |
-| code  | Add roles and permissions                      |         |       | 2:49 |  17.3 |
+#+CAPTION: Clock summary at [2025-12-17 Wed 00:08]
+|       | <75>                                              |         |       |      |       |
+| Tags  | Headline                                          | Time    |       |      |     % |
+|-------+---------------------------------------------------+---------+-------+------+-------|
+|       | *Total time*                                      | *18:22* |       |      | 100.0 |
+|-------+---------------------------------------------------+---------+-------+------+-------|
+|       | Stories                                           | 18:22   |       |      | 100.0 |
+|       | Active                                            |         | 18:22 |      | 100.0 |
+| agile | Sprint and product backlog refinement             |         |       | 1:07 |   6.1 |
+| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   4.8 |
+| code  | Consider compressing payload                      |         |       | 3:05 |  16.8 |
+| code  | Latest currencies should have different colour    |         |       | 1:28 |   8.0 |
+| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   7.7 |
+| code  | Add account management support to qt              |         |       | 3:43 |  20.2 |
+| code  | Add password reset functionality to accounts      |         |       | 1:49 |   9.9 |
+| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |  26.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -428,6 +424,32 @@ Notes:
 
 At present it is not possible to reset a user's password.
 
+*** COMPLETED Add core infrastructure for roles and permissions        :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-16 Tue 23:35]--[2025-12-17 Wed 00:08] =>  0:33
+    CLOCK: [2025-12-16 Tue 22:04]--[2025-12-16 Tue 23:34] =>  1:30
+    CLOCK: [2025-12-16 Tue 14:16]--[2025-12-16 Tue 16:30] =>  2:14
+    CLOCK: [2025-12-16 Tue 11:48]--[2025-12-16 Tue 12:23] =>  0:35
+    :END:
+
+At present we are monitoring authorisation at two levels:
+
+- is logged in
+- is admin
+
+We need to introduce basic RBAC where we have roles such as:
+
+- Trading
+- Sales
+- Operations: restricted access to some trading screens.
+- Support: read-only, admin screens.
+
+To start off with we can map these to read/write on CRUD dialogs.
+
+Notes:
+
+- rename =flag_initializer= to =flag_seeder= to make it consistent. Done.
+
 *** STARTED Windows clang build failures                               :code:
 
 Seems like we are failing with a SEGFAULT:
@@ -465,25 +487,72 @@ Links:
 - [[https://stackoverflow.com/questions/26458652/ctest-custom-warning-exception][SO: ctest custom warning exception]]
 
 
-*** STARTED Add roles and permissions                                  :code:
-    :LOGBOOK:
-    CLOCK: [2025-12-16 Tue 14:16]--[2025-12-16 Tue 16:30] =>  2:14
-    CLOCK: [2025-12-16 Tue 11:48]--[2025-12-16 Tue 12:23] =>  0:35
-    :END:
+*** Implement RBAC enforcement                                         :code:
 
-At present we are monitoring authorisation at two levels:
+Conversation with Claude:
 
-- is logged in
-- is admin
+RBAC permission checking is not yet implemented. The handlers currently use
+simple session->is_admin checks rather than checking permissions via the
+authorization_service.
 
-We need to introduce basic RBAC where we have roles such as:
+For example in =handle_lock_account_request:301:=
 
-- Trading
-- Sales
-- Operations: restricted access to some trading screens.
-- Support: read-only, admin screens.
+#+begin_src c++
+  // Current: simple admin check
+  if (!session->is_admin) { ... }
 
-To start off with we can map these to read/write on CRUD dialogs.
+  // Should be: permission check
+  if (!auth_service_.has_permission(session->account_id, permissions::accounts_lock)) { ... }
+#+end_src
+
+The RBAC infrastructure exists (permissions, roles seeded in DB), but it's not
+being enforced. To properly test RBAC, we need to:
+
+1. Inject authorization_service into accounts_message_handler
+2. Replace is_admin checks with permission checks
+3. Store permissions in session (optional, for performance)
+
+Would you like me to implement proper RBAC enforcement in the message handlers?
+This would involve:
+
+- Adding authorization_service to the handler
+- Checking specific permissions like accounts:lock, accounts:reset_password, etc.
+- Non-admin users with the right role/permissions would then be allowed to perform those operations
+
+> actually maybe we should split that into a separate PR as this one is already
+> very large. I'll merge it as is
+
+● Good call. The current PR already includes:
+
+- RBAC domain types (permission, role, account_role, role_permission)
+- Database schema for RBAC tables
+- authorization_service for managing permissions/roles
+- rbac_seeder for seeding predefined permissions and roles
+- Protocol messages for RBAC operations (list_roles, list_permissions, assign_role, etc.)
+- Protocol version bump to 13.0
+
+The follow-up PR would implement:
+
+- Injecting authorization_service into message handlers
+- Replacing is_admin checks with proper permission checks
+- Testing non-admin users with specific role permissions
+
+This keeps the current PR focused on RBAC infrastructure and the next one on
+enforcement.
+
+*** Tests are logging to stdout in github                              :code:
+
+There is a lot of stdout output in CDash. We need to understand why that is.
+
+*** Add UI for roles and permission management                         :code:
+
+We added the core infrastructure but we need a way to manage it from Qt and from
+the shell.
+
+*** Consider renaming =utility= to =system=                            :code:
+
+Try to avoid the "grab bag" component that is littered with all sorts of random
+stuff. System implies extensions to core libraries like std and boost.
 
 *** Use chrono timepoints for domain entities                          :code:
 
@@ -663,6 +732,7 @@ At present the following is not working or is a snag:
 - add right-click menu with the context options from the toolbar.
 - after reload, lock etc remember which line we were on and return to it.
 - email updated message is truncated.
+- user cannot lock it's own account.
 
 *** Exit confirmation                                                  :code:
 

@@ -28,7 +28,7 @@
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.comms/messaging/handshake_protocol.hpp"
-#include "ores.comms/domain/events/connection_events.hpp"
+#include "ores.comms/eventing/connection_events.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
 
 namespace ores::qt {
@@ -230,7 +230,7 @@ LoginResult ClientManager::connectAndLogin(
 
         // Publish connected event to event bus now that login succeeded
         if (event_bus_) {
-            event_bus_->publish(comms::domain::events::connected_event{
+            event_bus_->publish(comms::eventing::connected_event{
                 .timestamp = std::chrono::system_clock::now(),
                 .host = host,
                 .port = port

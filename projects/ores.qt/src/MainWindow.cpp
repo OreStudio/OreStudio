@@ -43,7 +43,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/AboutDialog.hpp"
-#include "ores.comms/domain/events/connection_events.hpp"
+#include "ores.comms/eventing/connection_events.hpp"
 
 namespace ores::qt {
 
@@ -188,8 +188,8 @@ MainWindow::MainWindow(QWidget* parent) :
 
         // Subscribe to connection events for tray notifications
         eventSubscriptions_.push_back(
-            eventBus_->subscribe<comms::domain::events::connected_event>(
-                [this](const comms::domain::events::connected_event& e) {
+            eventBus_->subscribe<comms::eventing::connected_event>(
+                [this](const comms::eventing::connected_event& e) {
                     if (systemTrayIcon_) {
                         QString message = QString("Connected to %1:%2")
                             .arg(QString::fromStdString(e.host))
@@ -205,8 +205,8 @@ MainWindow::MainWindow(QWidget* parent) :
                 }));
 
         eventSubscriptions_.push_back(
-            eventBus_->subscribe<comms::domain::events::disconnected_event>(
-                [this](const comms::domain::events::disconnected_event&) {
+            eventBus_->subscribe<comms::eventing::disconnected_event>(
+                [this](const comms::eventing::disconnected_event&) {
                     if (systemTrayIcon_) {
                         QMetaObject::invokeMethod(this, [this]() {
                             systemTrayIcon_->showMessage(
@@ -219,8 +219,8 @@ MainWindow::MainWindow(QWidget* parent) :
                 }));
 
         eventSubscriptions_.push_back(
-            eventBus_->subscribe<comms::domain::events::reconnecting_event>(
-                [this](const comms::domain::events::reconnecting_event&) {
+            eventBus_->subscribe<comms::eventing::reconnecting_event>(
+                [this](const comms::eventing::reconnecting_event&) {
                     if (systemTrayIcon_) {
                         QMetaObject::invokeMethod(this, [this]() {
                             systemTrayIcon_->showMessage(
@@ -233,8 +233,8 @@ MainWindow::MainWindow(QWidget* parent) :
                 }));
 
         eventSubscriptions_.push_back(
-            eventBus_->subscribe<comms::domain::events::reconnected_event>(
-                [this](const comms::domain::events::reconnected_event&) {
+            eventBus_->subscribe<comms::eventing::reconnected_event>(
+                [this](const comms::eventing::reconnected_event&) {
                     if (systemTrayIcon_) {
                         QMetaObject::invokeMethod(this, [this]() {
                             systemTrayIcon_->showMessage(

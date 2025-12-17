@@ -27,11 +27,13 @@
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include "ores.risk/messaging/registrar.hpp"
-#include "ores.risk/domain/events/currency_changed_event.hpp"
+#include "ores.risk/eventing/currency_changed_event.hpp"
 #include "ores.accounts/messaging/registrar.hpp"
-#include "ores.accounts/domain/events/account_changed_event.hpp"
+#include "ores.accounts/eventing/account_changed_event.hpp"
+#include "ores.accounts/service/rbac_seeder.hpp"
+#include "ores.accounts/service/authorization_service.hpp"
 #include "ores.variability/messaging/registrar.hpp"
-#include "ores.variability/service/flag_initializer.hpp"
+#include "ores.variability/service/system_flags_seeder.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.accounts/service/bootstrap_mode_service.hpp"
 #include "ores.eventing/service/event_bus.hpp"
@@ -105,8 +107,13 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     auto ctx = make_context(cfg.database);
 
     // Ensure all system flags exist in the database before any component queries them
-    variability::service::flag_initializer flag_init(ctx);
-    flag_init.ensure_system_flags_exist();
+    variability::service::system_flags_seeder flags_seeder(ctx);
+    flags_seeder.seed();
+
+    // Seed RBAC permissions and roles
+    accounts::service::authorization_service auth_service(ctx);
+    accounts::service::rbac_seeder rbac_seeder(auth_service);
+    rbac_seeder.seed("system");
 
     // Create shared system flags service and refresh cache from database
     auto system_flags = std::make_shared<variability::service::system_flags_service>(ctx);
@@ -141,10 +148,10 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
 
     // Register entity-to-event mappings for each component
     eventing::service::registrar::register_mapping<
-        risk::domain::events::currency_changed_event>(
+        risk::eventing::currency_changed_event>(
         event_source, "ores.risk.currency", "ores_currencies");
     eventing::service::registrar::register_mapping<
-        accounts::domain::events::account_changed_event>(
+        accounts::eventing::account_changed_event>(
         event_source, "ores.accounts.account", "ores_accounts");
 
     // Start the event source to begin listening for database notifications
@@ -155,17 +162,17 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
 
     // Bridge event bus to subscription manager - when domain events occur,
     // notify all clients subscribed to those event types
-    auto currency_sub = event_bus.subscribe<risk::domain::events::currency_changed_event>(
-        [&subscription_mgr](const risk::domain::events::currency_changed_event& e) {
+    auto currency_sub = event_bus.subscribe<risk::eventing::currency_changed_event>(
+        [&subscription_mgr](const risk::eventing::currency_changed_event& e) {
             using traits = eventing::domain::event_traits<
-                risk::domain::events::currency_changed_event>;
+                risk::eventing::currency_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp);
         });
 
-    auto account_sub = event_bus.subscribe<accounts::domain::events::account_changed_event>(
-        [&subscription_mgr](const accounts::domain::events::account_changed_event& e) {
+    auto account_sub = event_bus.subscribe<accounts::eventing::account_changed_event>(
+        [&subscription_mgr](const accounts::eventing::account_changed_event& e) {
             using traits = eventing::domain::event_traits<
-                accounts::domain::events::account_changed_event>;
+                accounts::eventing::account_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp);
         });
 

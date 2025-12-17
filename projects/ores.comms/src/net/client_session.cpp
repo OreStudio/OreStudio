@@ -24,6 +24,8 @@ namespace ores::comms::net {
 
 using namespace ores::utility::log;
 
+client_session::client_session() = default;
+
 client_session::~client_session() {
     if (is_connected()) {
         disconnect();

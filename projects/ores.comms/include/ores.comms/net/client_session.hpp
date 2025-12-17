@@ -128,7 +128,7 @@ private:
     }
 
 public:
-    client_session() = default;
+    client_session();
     ~client_session();
 
     // Non-copyable, non-movable (contains mutex)

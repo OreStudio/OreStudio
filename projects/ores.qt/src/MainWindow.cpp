@@ -277,8 +277,8 @@ void MainWindow::closeEvent(QCloseEvent* event) {
     // Ask user for confirmation before exiting
     const auto reply = MessageBoxHelper::question(
         this,
-        "Exit ORE Studio",
-        "Are you sure you want to exit ORE Studio?",
+        tr("Exit ORE Studio"),
+        tr("Are you sure you want to exit?"),
         QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {

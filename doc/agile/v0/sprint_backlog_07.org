@@ -17,35 +17,39 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-17 Wed 00:08], for Wednesday, December 17, 2025.
+#+CAPTION: Clock summary at [2025-12-17 Wed 00:36], for Wednesday, December 17, 2025.
 |      | <75>                                              |        |      |      |       |
 | Tags | Headline                                          | Time   |      |      |     % |
 |------+---------------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                      | *0:08* |      |      | 100.0 |
+|      | *Total time*                                      | *0:34* |      |      | 100.0 |
 |------+---------------------------------------------------+--------+------+------+-------|
-|      | Stories                                           | 0:08   |      |      | 100.0 |
-|      | Active                                            |        | 0:08 |      | 100.0 |
-| code | Add core infrastructure for roles and permissions |        |      | 0:08 | 100.0 |
+|      | Stories                                           | 0:34   |      |      | 100.0 |
+|      | Active                                            |        | 0:34 |      | 100.0 |
+| code | Add core infrastructure for roles and permissions |        |      | 0:08 |  23.5 |
+| code | Add exit confirmation dialog                      |        |      | 0:03 |   8.8 |
+| code | Ignore warnings on windows and OSX                |        |      | 0:23 |  67.6 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-17 Wed 00:08]
+#+CAPTION: Clock summary at [2025-12-17 Wed 00:36]
 |       | <75>                                              |         |       |      |       |
 | Tags  | Headline                                          | Time    |       |      |     % |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                      | *18:22* |       |      | 100.0 |
+|       | *Total time*                                      | *18:48* |       |      | 100.0 |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                           | 18:22   |       |      | 100.0 |
-|       | Active                                            |         | 18:22 |      | 100.0 |
-| agile | Sprint and product backlog refinement             |         |       | 1:07 |   6.1 |
-| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   4.8 |
-| code  | Consider compressing payload                      |         |       | 3:05 |  16.8 |
-| code  | Latest currencies should have different colour    |         |       | 1:28 |   8.0 |
-| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   7.7 |
-| code  | Add account management support to qt              |         |       | 3:43 |  20.2 |
-| code  | Add password reset functionality to accounts      |         |       | 1:49 |   9.9 |
-| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |  26.5 |
+|       | Stories                                           | 18:48   |       |      | 100.0 |
+|       | Active                                            |         | 18:48 |      | 100.0 |
+| agile | Sprint and product backlog refinement             |         |       | 1:07 |   5.9 |
+| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   4.7 |
+| code  | Consider compressing payload                      |         |       | 3:05 |  16.4 |
+| code  | Latest currencies should have different colour    |         |       | 1:28 |   7.8 |
+| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   7.5 |
+| code  | Add account management support to qt              |         |       | 3:43 |  19.8 |
+| code  | Add password reset functionality to accounts      |         |       | 1:49 |   9.7 |
+| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |  25.9 |
+| code  | Add exit confirmation dialog                      |         |       | 0:03 |   0.3 |
+| code  | Ignore warnings on windows and OSX                |         |       | 0:23 |   2.0 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -450,6 +454,13 @@ Notes:
 
 - rename =flag_initializer= to =flag_seeder= to make it consistent. Done.
 
+*** COMPLETED Add exit confirmation dialog                             :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-17 Wed 00:33]--[2025-12-17 Wed 00:36] =>  0:03
+    :END:
+
+Add a simple dialog to check if the user really wants to exit.
+
 *** STARTED Windows clang build failures                               :code:
 
 Seems like we are failing with a SEGFAULT:
@@ -473,6 +484,9 @@ Seems like we are failing with a SEGFAULT:
 #+end_src
 
 *** STARTED Ignore warnings on windows and OSX                         :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-17 Wed 00:09]--[2025-12-17 Wed 00:32] =>  0:23
+    :END:
 
 At present we have a number of spurious warnings on both windows and OSX. Try to
 see if we can get CDash to ignore them.
@@ -485,7 +499,7 @@ Links:
 
 - [[https://gitlab.kitware.com/cmake/cmake/-/issues/27367][CTest: Using regexes to filter warnings for CDash]]
 - [[https://stackoverflow.com/questions/26458652/ctest-custom-warning-exception][SO: ctest custom warning exception]]
-
+- [[https://www.reddit.com/r/cmake/comments/1poie3j/ignoring_configure_time_warnings_in_cdash/][reddit: Ignoring configure time warnings in CDash]]
 
 *** Implement RBAC enforcement                                         :code:
 
@@ -543,6 +557,22 @@ enforcement.
 *** Tests are logging to stdout in github                              :code:
 
 There is a lot of stdout output in CDash. We need to understand why that is.
+
+#+begin_src
+Test output
+[2025-12-16 20:31:44.600851] [0x00000001f1d1a200] [info]    Test run starting, creating test database
+[2025-12-16 20:31:44.601397] [0x00000001f1d1a200] [info]    Generated test database name: oresdb_test_4816_1242
+[2025-12-16 20:31:44.601401] [0x00000001f1d1a200] [info]    Creating test database: oresdb_test_4816_1242
+[2025-12-16 20:31:44.601434] [0x00000001f1d1a200] [info]    Creating context. Configuration: {"database_options":{"user":"ores","host":"localhost","database":"postgres","port":5432},"pool_size":1,"num_attempts":10,"wait_time_in_seconds":1}
+[2025-12-16 20:31:44.630284] [0x00000001f1d1a200] [info]    Finished creating context.
+[2025-12-16 20:31:44.771670] [0x00000001f1d1a200] [info]    Successfully created test database: oresdb_test_4816_1242
+[2025-12-16 20:31:44.771733] [0x00000001f1d1a200] [info]    Setting ORES_TEST_DB_DATABASE environment variable to: oresdb_test_4816_1242
+[2025-12-16 20:31:44.771738] [0x00000001f1d1a200] [info]    Environment variable set successfully
+[2025-12-16 20:31:44.771740] [0x00000001f1d1a200] [info]    Test database ready: oresdb_test_4816_1242
+[2025-12-16 20:31:44.772151] [0x00000001f1d1a200] [info]    Test case starting: delete_account_response_failure
+[2025-12-16 20:31:44.772158] [0x00000001f1d1a200] [info]      Tags: messaging #messaging_protocol_tests
+#+end_src
+
 
 *** Add UI for roles and permission management                         :code:
 

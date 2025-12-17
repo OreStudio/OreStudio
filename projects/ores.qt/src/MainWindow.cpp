@@ -101,6 +101,8 @@ MainWindow::MainWindow(QWidget* parent) :
         ":/icons/ic_fluent_person_accounts_20_regular.svg", iconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_person_20_regular.svg", iconColor));
+    ui_->ExitAction->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_dismiss_20_regular.svg", iconColor));
 
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this,
@@ -111,6 +113,7 @@ MainWindow::MainWindow(QWidget* parent) :
         &MainWindow::onMyAccountTriggered);
     connect(ui_->ActionAbout, &QAction::triggered, this,
         &MainWindow::onAboutTriggered);
+    connect(ui_->ExitAction, &QAction::triggered, this, &QMainWindow::close);
 
     // Connect Window menu actions
     connect(ui_->ActionDetachAll, &QAction::triggered, this,
@@ -270,6 +273,21 @@ MainWindow::MainWindow(QWidget* parent) :
 
 void MainWindow::closeEvent(QCloseEvent* event) {
     BOOST_LOG_SEV(lg(), debug) << "MainWindow close event triggered";
+
+    // Ask user for confirmation before exiting
+    const auto reply = MessageBoxHelper::question(
+        this,
+        tr("Exit ORE Studio"),
+        tr("Are you sure you want to exit?"),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes) {
+        BOOST_LOG_SEV(lg(), debug) << "Exit cancelled by user";
+        event->ignore();
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "User confirmed exit, closing application";
 
     // Close all detachable windows first
     // Make a copy of the list since closing windows modifies the original list

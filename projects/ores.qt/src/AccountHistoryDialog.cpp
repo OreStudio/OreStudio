@@ -25,6 +25,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -174,7 +175,7 @@ void AccountHistoryDialog::onHistoryLoaded() {
         auto* versionItem =
             new QTableWidgetItem(QString::number(version.version_number));
         auto* recordedAtItem =
-            new QTableWidgetItem(QString::fromStdString(version.recorded_at));
+            new QTableWidgetItem(relative_time_helper::format(version.recorded_at));
         auto* recordedByItem =
             new QTableWidgetItem(QString::fromStdString(version.recorded_by));
 
@@ -264,7 +265,7 @@ void AccountHistoryDialog::displayFullDetailsTab(int version_index) {
     ui_->isAdminValue->setText(data.is_admin ? tr("Yes") : tr("No"));
     ui_->versionNumberValue->setText(QString::number(version.version_number));
     ui_->recordedByValue->setText(QString::fromStdString(version.recorded_by));
-    ui_->recordedAtValue->setText(QString::fromStdString(version.recorded_at));
+    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
 }
 
 #define CHECK_DIFF_STRING(FIELD_NAME, FIELD) \

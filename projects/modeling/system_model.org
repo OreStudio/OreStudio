@@ -29,22 +29,27 @@ Diagram:
 #+caption: ORE Studio System Diagram
 [[file:ores.png][file:ores.png]]
 
-The system is organized into five architectural layers:
+The system is organised into four architectural layers:
 
 ** Foundation Layer
 
 - Components: [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]], [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability]].
-- *Database*: PostgreSQL connectivity, connection pooling, health monitoring, repository helpers.
-- *Utility*: Logging, filesystem utilities, UUID generation, environment variables, string conversion.
+- *Database*: PostgreSQL connectivity, connection pooling, health monitoring,
+  repository helpers.
+- *Utility*: Logging, filesystem utilities, UUID generation, environment
+  variables, string conversion.
 - *Variability*: Feature flags and runtime configuration management.
 - No dependencies on other ORE Studio components (ores.database is the base).
 
 ** Infrastructure Layer
 
 - Components: [[id:361A6093-D24C-9BC4-0543-6540461EDBB6][ores.comms]], [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]], [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]].
-- *Communications*: Binary protocol over SSL/TLS for client-server messaging. Publishes connection lifecycle events (connected, disconnected, reconnecting, reconnected) to event bus.
+- *Communications*: Binary protocol over SSL/TLS for client-server messaging.
+  Publishes connection lifecycle events (connected, disconnected, reconnecting,
+  reconnected) to event bus.
 - *Testing*: Catch2 integration with database isolation and logging.
-- *Eventing*: Event-driven architecture with in-process publish/subscribe event bus, PostgreSQL LISTEN/NOTIFY integration, and entity change notifications.
+- *Eventing*: Event-driven architecture with in-process publish/subscribe event
+  bus, PostgreSQL LISTEN/NOTIFY integration, and entity change notifications.
 - Depends on: Foundation.
 
 ** Domain Layer

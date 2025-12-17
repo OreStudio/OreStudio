@@ -367,8 +367,8 @@ TEST_CASE("format_time_point_years_ago", tags) {
     relative_time_formatter fmt(numeric_style::automatic);
 
     auto reference = system_clock::now();
-    // About 3 years
-    auto past = offset_from(reference, -seconds(3 * 365 * 86400));
+    // 3 average years (365.24 days each) = 3 * 31556952 seconds
+    auto past = offset_from(reference, -seconds(3 * 31556952));
 
     auto result = fmt.format(past, reference);
 

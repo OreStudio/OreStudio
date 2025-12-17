@@ -34,6 +34,21 @@ constexpr long long seconds_per_month = 2629746; // Average month (30.44 days)
 constexpr long long seconds_per_quarter = 7889238; // 3 months
 constexpr long long seconds_per_year = 31556952; // Average year (365.24 days)
 
+struct time_unit_boundary {
+    long long threshold;
+    long long divisor;
+    time_unit unit;
+};
+
+constexpr time_unit_boundary boundaries[] = {
+    {seconds_per_hour, seconds_per_minute, time_unit::minute},
+    {seconds_per_day, seconds_per_hour, time_unit::hour},
+    {seconds_per_week, seconds_per_day, time_unit::day},
+    {seconds_per_month, seconds_per_week, time_unit::week},
+    {seconds_per_quarter, seconds_per_month, time_unit::month},
+    {seconds_per_year, seconds_per_quarter, time_unit::quarter},
+};
+
 std::string unit_to_string(time_unit unit, bool plural) {
     switch (unit) {
     case time_unit::second:
@@ -168,34 +183,10 @@ std::string relative_time_formatter::format(
         return format(seconds, time_unit::second);
     }
 
-    if (abs_seconds < seconds_per_hour) {
-        // Less than an hour
-        return format(seconds / seconds_per_minute, time_unit::minute);
-    }
-
-    if (abs_seconds < seconds_per_day) {
-        // Less than a day
-        return format(seconds / seconds_per_hour, time_unit::hour);
-    }
-
-    if (abs_seconds < seconds_per_week) {
-        // Less than a week
-        return format(seconds / seconds_per_day, time_unit::day);
-    }
-
-    if (abs_seconds < seconds_per_month) {
-        // Less than a month
-        return format(seconds / seconds_per_week, time_unit::week);
-    }
-
-    if (abs_seconds < seconds_per_quarter) {
-        // Less than a quarter
-        return format(seconds / seconds_per_month, time_unit::month);
-    }
-
-    if (abs_seconds < seconds_per_year) {
-        // Less than a year
-        return format(seconds / seconds_per_quarter, time_unit::quarter);
+    for (const auto& boundary : boundaries) {
+        if (abs_seconds < boundary.threshold) {
+            return format(seconds / boundary.divisor, boundary.unit);
+        }
     }
 
     // One year or more

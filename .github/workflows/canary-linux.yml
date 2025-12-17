@@ -89,6 +89,6 @@ jobs:
           export cmake_args="build_group=Canary,preset=${preset},code_coverage=1"
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
-      - name: Dump test details
+      - name: Parse test results
         run: |
-           cat ./build/output/linux-gcc-debug/publish/bin/test-results-*.xml
+           python3 ./build/scripts/parse_catch2_results.py "./build/output/linux-gcc-debug/publish/bin/test-results-*.xml"

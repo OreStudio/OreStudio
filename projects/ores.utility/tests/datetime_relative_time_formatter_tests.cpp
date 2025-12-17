@@ -323,8 +323,7 @@ TEST_CASE("format_time_point_last_month", tags) {
 
     auto reference = system_clock::now();
     // About 35 days, which should be 1 month
-    auto past = offset_from(reference, seconds(35 * 86400));
-    past = reference - seconds(35 * 86400);
+    auto past = offset_from(reference, -seconds(35 * 86400));
 
     auto result = fmt.format(past, reference);
 

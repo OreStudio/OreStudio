@@ -20,6 +20,7 @@
 #include "ores.utility/datetime/relative_time_formatter.hpp"
 
 #include <cmath>
+#include <stdexcept>
 
 namespace ores::utility::datetime {
 
@@ -51,8 +52,9 @@ std::string unit_to_string(time_unit unit, bool plural) {
         return plural ? "quarters" : "quarter";
     case time_unit::year:
         return plural ? "years" : "year";
+    default:
+        throw std::invalid_argument("Unknown time_unit value");
     }
-    return "";
 }
 
 std::string format_numeric(long long value, time_unit unit) {
@@ -157,49 +159,47 @@ std::string relative_time_formatter::format(
 
     // Determine the appropriate unit based on the magnitude of the difference
     const auto abs_seconds = std::abs(seconds);
-    const int sign = seconds >= 0 ? 1 : -1;
 
     if (abs_seconds < seconds_per_minute) {
         // Less than a minute
         if (abs_seconds < 10 && style_ == numeric_style::automatic) {
             return "just now";
         }
-        return format(sign * static_cast<long long>(abs_seconds), time_unit::second);
+        return format(seconds, time_unit::second);
     }
 
     if (abs_seconds < seconds_per_hour) {
         // Less than an hour
-        const auto minutes = abs_seconds / seconds_per_minute;
-        return format(sign * static_cast<long long>(minutes), time_unit::minute);
+        return format(seconds / seconds_per_minute, time_unit::minute);
     }
 
     if (abs_seconds < seconds_per_day) {
         // Less than a day
-        const auto hours = abs_seconds / seconds_per_hour;
-        return format(sign * static_cast<long long>(hours), time_unit::hour);
+        return format(seconds / seconds_per_hour, time_unit::hour);
     }
 
     if (abs_seconds < seconds_per_week) {
         // Less than a week
-        const auto days = abs_seconds / seconds_per_day;
-        return format(sign * static_cast<long long>(days), time_unit::day);
+        return format(seconds / seconds_per_day, time_unit::day);
     }
 
     if (abs_seconds < seconds_per_month) {
         // Less than a month
-        const auto weeks = abs_seconds / seconds_per_week;
-        return format(sign * static_cast<long long>(weeks), time_unit::week);
+        return format(seconds / seconds_per_week, time_unit::week);
+    }
+
+    if (abs_seconds < seconds_per_quarter) {
+        // Less than a quarter
+        return format(seconds / seconds_per_month, time_unit::month);
     }
 
     if (abs_seconds < seconds_per_year) {
         // Less than a year
-        const auto months = abs_seconds / seconds_per_month;
-        return format(sign * static_cast<long long>(months), time_unit::month);
+        return format(seconds / seconds_per_quarter, time_unit::quarter);
     }
 
     // One year or more
-    const auto years = abs_seconds / seconds_per_year;
-    return format(sign * static_cast<long long>(years), time_unit::year);
+    return format(seconds / seconds_per_year, time_unit::year);
 }
 
 std::string relative_time_formatter::format(long long value, time_unit unit) const {

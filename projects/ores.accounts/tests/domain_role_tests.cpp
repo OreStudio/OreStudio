@@ -22,6 +22,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
+#include <iomanip>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.accounts/domain/role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.accounts/domain/permission.hpp"
@@ -30,6 +32,14 @@ namespace {
 
 const std::string_view test_suite("ores.accounts.tests");
 const std::string tags("[domain]");
+
+std::string make_timestamp(int month, int day) {
+    std::ostringstream oss;
+    oss << "2025-"
+        << std::setw(2) << std::setfill('0') << month << "-"
+        << std::setw(2) << std::setfill('0') << day << "T00:00:00Z";
+    return oss.str();
+}
 
 }
 
@@ -198,8 +208,7 @@ TEST_CASE("create_role_with_faker", tags) {
     sut.name = std::string(faker::word::noun());
     sut.description = std::string(faker::lorem::sentence());
     sut.recorded_by = std::string(faker::internet::username());
-    sut.recorded_at = "2025-01-" +
-        std::to_string(faker::number::integer(1, 28)) + "T00:00:00Z";
+    sut.recorded_at = make_timestamp(1, faker::number::integer(1, 28));
 
     const std::vector<std::string> available_permissions = {
         accounts_read, currencies_read, flags_read

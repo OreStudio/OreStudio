@@ -15,23 +15,15 @@
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 """Parse Catch2 XML test results and display summary with failure details."""
 
+from __future__ import annotations
+
 import argparse
 import glob
 import sys
-import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from pathlib import Path
 
-
-@dataclass
-class TestFailure:
-    """Represents a single test failure with assertion details."""
-    name: str
-    filename: str
-    line: int
-    tags: str
-    duration: float
-    expressions: list = field(default_factory=list)
+import defusedxml.ElementTree as ET
 
 
 @dataclass
@@ -45,6 +37,17 @@ class Expression:
 
 
 @dataclass
+class TestFailure:
+    """Represents a single test failure with assertion details."""
+    name: str
+    filename: str
+    line: int
+    tags: str
+    duration: float
+    expressions: list[Expression] = field(default_factory=list)
+
+
+@dataclass
 class TestSummary:
     """Summary statistics for test results."""
     total: int = 0
@@ -52,7 +55,7 @@ class TestSummary:
     failed: int = 0
     skipped: int = 0
     duration: float = 0.0
-    failures: list = field(default_factory=list)
+    failures: list[TestFailure] = field(default_factory=list)
 
 
 def parse_test_file(filepath: Path) -> TestSummary:
@@ -111,7 +114,7 @@ def parse_test_file(filepath: Path) -> TestSummary:
     return summary
 
 
-def merge_summaries(summaries: list) -> TestSummary:
+def merge_summaries(summaries: list[TestSummary]) -> TestSummary:
     """Merge multiple test summaries into one."""
     merged = TestSummary()
     for s in summaries:
@@ -124,7 +127,7 @@ def merge_summaries(summaries: list) -> TestSummary:
     return merged
 
 
-def print_summary(summary: TestSummary, verbose: bool = False) -> None:
+def print_summary(summary: TestSummary) -> None:
     """Print test summary to stdout."""
     print("=" * 70)
     print("TEST RESULTS SUMMARY")
@@ -190,7 +193,7 @@ def main() -> int:
         print("No test results found in XML files.", file=sys.stderr)
         return 1
 
-    print_summary(merged, args.verbose)
+    print_summary(merged)
 
     return 1 if merged.failed > 0 else 0
 

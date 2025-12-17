@@ -23,12 +23,23 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
+#include <iomanip>
 #include "ores.utility/log/make_logger.hpp"
 
 namespace {
 
 const std::string_view test_suite("ores.accounts.tests");
 const std::string tags("[domain]");
+
+std::string make_timestamp(int month, int day, int hour) {
+    std::ostringstream oss;
+    oss << "2025-"
+        << std::setw(2) << std::setfill('0') << month << "-"
+        << std::setw(2) << std::setfill('0') << day << "T"
+        << std::setw(2) << std::setfill('0') << hour << ":00:00Z";
+    return oss.str();
+}
 
 }
 
@@ -85,7 +96,7 @@ TEST_CASE("account_role_same_account_multiple_roles", tags) {
         ar.account_id = account_id;
         ar.role_id = boost::uuids::random_generator()();
         ar.assigned_by = "admin";
-        ar.assigned_at = "2025-01-" + std::to_string(15 + i) + "T10:00:00Z";
+        ar.assigned_at = make_timestamp(1, 15 + i, 10);
         assignments.push_back(ar);
         BOOST_LOG_SEV(lg, info) << "Account role " << i << " - account_id: "
             << ar.account_id << ", role_id: " << ar.role_id;
@@ -108,7 +119,7 @@ TEST_CASE("account_role_same_role_multiple_accounts", tags) {
         ar.account_id = boost::uuids::random_generator()();
         ar.role_id = role_id;
         ar.assigned_by = "admin";
-        ar.assigned_at = "2025-01-15T1" + std::to_string(i) + ":00:00Z";
+        ar.assigned_at = make_timestamp(1, 15, 10 + i);
         assignments.push_back(ar);
         BOOST_LOG_SEV(lg, info) << "Account role " << i << " - account_id: "
             << ar.account_id << ", role_id: " << ar.role_id;
@@ -127,10 +138,10 @@ TEST_CASE("create_account_role_with_faker", tags) {
     sut.account_id = boost::uuids::random_generator()();
     sut.role_id = boost::uuids::random_generator()();
     sut.assigned_by = std::string(faker::internet::username());
-    sut.assigned_at = "2025-" +
-        std::to_string(faker::number::integer(1, 12)) + "-" +
-        std::to_string(faker::number::integer(1, 28)) + "T" +
-        std::to_string(faker::number::integer(0, 23)) + ":00:00Z";
+    sut.assigned_at = make_timestamp(
+        faker::number::integer(1, 12),
+        faker::number::integer(1, 28),
+        faker::number::integer(0, 23));
     BOOST_LOG_SEV(lg, info) << "Account role - account_id: " << sut.account_id
         << ", role_id: " << sut.role_id << ", assigned_by: " << sut.assigned_by
         << ", assigned_at: " << sut.assigned_at;
@@ -150,8 +161,7 @@ TEST_CASE("create_multiple_random_account_roles", tags) {
         sut.role_id = boost::uuids::random_generator()();
         sut.assigned_by = std::string(faker::person::firstName()) + " " +
             std::string(faker::person::lastName());
-        sut.assigned_at = "2025-01-" +
-            std::to_string(faker::number::integer(1, 28)) + "T10:00:00Z";
+        sut.assigned_at = make_timestamp(1, faker::number::integer(1, 28), 10);
         BOOST_LOG_SEV(lg, info) << "Account role " << i << " - account_id: "
             << sut.account_id << ", role_id: " << sut.role_id
             << ", assigned_by: " << sut.assigned_by;

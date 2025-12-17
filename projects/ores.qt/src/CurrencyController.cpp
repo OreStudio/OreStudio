@@ -201,7 +201,7 @@ void CurrencyController::onAddNewRequested() {
     });
     connect(detailDialog, &CurrencyDetailDialog::errorMessage,
             this, [this](const QString& message) {
-        emit statusMessage(message);
+        emit errorMessage(message);
     });
 
     detailDialog->setCurrency(new_currency);
@@ -268,7 +268,7 @@ void CurrencyController::onShowCurrencyDetails(
     });
     connect(detailDialog, &CurrencyDetailDialog::errorMessage,
             this, [this](const QString& message) {
-        emit statusMessage(message);
+        emit errorMessage(message);
     });
 
     detailDialog->setCurrency(currency);
@@ -436,7 +436,7 @@ void CurrencyController::onOpenCurrencyVersion(
     });
     connect(detailDialog, &CurrencyDetailDialog::errorMessage,
             this, [this](const QString& message) {
-        emit statusMessage(message);
+        emit errorMessage(message);
     });
 
     // Connect revert signal

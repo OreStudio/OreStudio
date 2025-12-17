@@ -97,7 +97,7 @@ process_connect(std::ostream& out, client_session& session,
     }
 
     config.verify_certificate = false; // FIXME: for now
-    config.heartbeat_enabled = false;  // Shell is synchronous request-response
+    config.heartbeat_enabled = true;   // Enable to receive async notifications
     config.supported_compression = compression_commands::get_supported_compression();
 
     auto result = session.connect(std::move(config));

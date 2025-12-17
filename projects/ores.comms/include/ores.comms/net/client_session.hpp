@@ -20,10 +20,15 @@
 #ifndef ORES_COMMS_NET_CLIENT_SESSION_HPP
 #define ORES_COMMS_NET_CLIENT_SESSION_HPP
 
+#include <mutex>
+#include <deque>
 #include <memory>
+#include <chrono>
 #include <optional>
 #include <expected>
 #include <string>
+#include <vector>
+#include <set>
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/messaging/message_types.hpp"
@@ -41,6 +46,16 @@ struct client_session_info {
     boost::uuids::uuid account_id;
     std::string username;
     bool is_admin;
+};
+
+/**
+ * @brief A notification received from the server.
+ *
+ * Stored in a queue for display at the next prompt.
+ */
+struct pending_notification {
+    std::string event_type;
+    std::chrono::system_clock::time_point timestamp;
 };
 
 /**
@@ -312,9 +327,73 @@ public:
             std::move(request));
     }
 
+    /**
+     * @brief Subscribe to notifications for an event type.
+     *
+     * Sends a SUBSCRIBE protocol message to the server. The subscription
+     * is tracked locally to support re-subscription after reconnect.
+     *
+     * @param event_type The fully qualified event type name (e.g., "ores.risk.currency_changed")
+     * @return True if subscription succeeded, false otherwise
+     */
+    bool subscribe(const std::string& event_type);
+
+    /**
+     * @brief Unsubscribe from notifications for an event type.
+     *
+     * Sends an UNSUBSCRIBE protocol message to the server.
+     *
+     * @param event_type The fully qualified event type name
+     * @return True if unsubscription succeeded, false otherwise
+     */
+    bool unsubscribe(const std::string& event_type);
+
+    /**
+     * @brief Check if currently subscribed to an event type.
+     *
+     * @param event_type The event type to check
+     * @return True if subscribed, false otherwise
+     */
+    [[nodiscard]] bool is_subscribed(const std::string& event_type) const;
+
+    /**
+     * @brief Get the set of currently subscribed event types.
+     *
+     * @return Set of event type names
+     */
+    [[nodiscard]] std::set<std::string> get_subscriptions() const;
+
+    /**
+     * @brief Get all pending notifications and clear the queue.
+     *
+     * Returns notifications in the order they were received. The internal
+     * queue is cleared after this call.
+     *
+     * @return Vector of pending notifications
+     */
+    std::vector<pending_notification> take_pending_notifications();
+
+    /**
+     * @brief Check if there are any pending notifications.
+     *
+     * @return True if there are pending notifications
+     */
+    [[nodiscard]] bool has_pending_notifications() const;
+
 private:
+    /**
+     * @brief Handle incoming notification from the client.
+     *
+     * Called by the notification callback registered on the client.
+     */
+    void on_notification(const std::string& event_type,
+        std::chrono::system_clock::time_point timestamp);
+
     std::shared_ptr<client> client_;
     std::optional<client_session_info> session_info_;
+    std::set<std::string> subscriptions_;
+    mutable std::mutex notifications_mutex_;
+    std::deque<pending_notification> pending_notifications_;
 };
 
 /**

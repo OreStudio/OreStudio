@@ -32,6 +32,7 @@
 #include "ores.shell/app/commands/accounts_commands.hpp"
 #include "ores.shell/app/commands/variability_commands.hpp"
 #include "ores.shell/app/commands/compression_commands.hpp"
+#include "ores.shell/app/commands/subscription_commands.hpp"
 
 namespace ores::shell::app {
 
@@ -66,6 +67,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     accounts_commands::register_commands(*root, session_);
     variability_commands::register_commands(*root, session_);
     compression_commands::register_commands(*root);
+    subscription_commands::register_commands(*root, session_);
 
     auto cli_instance =
         std::make_unique<cli::Cli>(std::move(root));
@@ -79,6 +81,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
 void repl::display_welcome() const {
     std::cout << "ORE Studio Shell REPL v" << ORES_VERSION << std::endl;
     std::cout << "Type 'help' for available commands, 'exit' to quit" << std::endl;
+    std::cout << "Use 'listen <event>' to subscribe, 'notifications' to view" << std::endl;
     std::cout << std::endl;
 }
 

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.comms/net/client_session.hpp"
-#include "ores.comms/messaging/subscription_protocol.hpp"
+#include "ores.comms/service/remote_event_adapter.hpp"
 
 namespace ores::comms::net {
 
@@ -39,6 +39,7 @@ client_session::connect(client_options options) {
     if (client_ && client_->is_connected()) {
         BOOST_LOG_SEV(lg(), info) << "Disconnecting existing connection";
         client_->disconnect();
+        event_adapter_.reset();
         session_info_.reset();
     }
 
@@ -46,8 +47,11 @@ client_session::connect(client_options options) {
         client_ = std::make_shared<client>(std::move(options));
         client_->connect_sync();
 
+        // Create the event adapter which handles subscriptions
+        event_adapter_ = std::make_unique<service::remote_event_adapter>(client_);
+
         // Register notification callback to queue notifications for display
-        client_->set_notification_callback(
+        event_adapter_->set_notification_callback(
             [this](const std::string& event_type,
                    std::chrono::system_clock::time_point timestamp) {
                 on_notification(event_type, timestamp);
@@ -57,6 +61,7 @@ client_session::connect(client_options options) {
         return {};
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Connection failed: " << e.what();
+        event_adapter_.reset();
         client_.reset();
         return std::unexpected(session_error(
             client_session_error::not_connected,
@@ -72,8 +77,8 @@ void client_session::disconnect() {
 
     if (!client_->is_connected()) {
         BOOST_LOG_SEV(lg(), debug) << "Already disconnected.";
+        event_adapter_.reset();
         session_info_.reset();
-        subscriptions_.clear();
         {
             std::lock_guard lock(notifications_mutex_);
             pending_notifications_.clear();
@@ -81,16 +86,15 @@ void client_session::disconnect() {
         return;
     }
 
-    // Clear session info and subscriptions on disconnect
+    // Clear session info on disconnect
     session_info_.reset();
-    subscriptions_.clear();
     {
         std::lock_guard lock(notifications_mutex_);
         pending_notifications_.clear();
     }
 
-    // Clear the notification callback before disconnecting
-    client_->set_notification_callback(nullptr);
+    // Reset adapter before disconnecting (clears notification callback)
+    event_adapter_.reset();
 
     client_->disconnect();
     BOOST_LOG_SEV(lg(), info) << "Disconnected from server.";
@@ -101,99 +105,35 @@ bool client_session::is_connected() const noexcept {
 }
 
 bool client_session::subscribe(const std::string& event_type) {
-    if (!client_ || !client_->is_connected()) {
+    if (!event_adapter_) {
         BOOST_LOG_SEV(lg(), error) << "Cannot subscribe: not connected";
         return false;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Subscribing to event type: " << event_type;
-
-    // Send subscribe request
-    messaging::subscribe_request request;
-    request.event_type = event_type;
-
-    auto payload = request.serialize();
-    messaging::frame request_frame(messaging::message_type::subscribe_request,
-        0, std::move(payload));
-
-    auto response_result = client_->send_request_sync(std::move(request_frame));
-    if (!response_result) {
-        BOOST_LOG_SEV(lg(), error) << "Subscribe request failed";
-        return false;
-    }
-
-    auto decompressed = response_result->decompressed_payload();
-    if (!decompressed) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to decompress subscribe response";
-        return false;
-    }
-
-    auto response = messaging::subscribe_response::deserialize(*decompressed);
-    if (!response) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize subscribe response";
-        return false;
-    }
-
-    if (response->success) {
-        subscriptions_.insert(event_type);
-        BOOST_LOG_SEV(lg(), info) << "Successfully subscribed to " << event_type;
-    } else {
-        BOOST_LOG_SEV(lg(), warn) << "Subscribe failed: " << response->message;
-    }
-
-    return response->success;
+    return event_adapter_->subscribe_sync(event_type);
 }
 
 bool client_session::unsubscribe(const std::string& event_type) {
-    if (!client_ || !client_->is_connected()) {
+    if (!event_adapter_) {
         BOOST_LOG_SEV(lg(), error) << "Cannot unsubscribe: not connected";
         return false;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Unsubscribing from event type: " << event_type;
-
-    // Send unsubscribe request
-    messaging::unsubscribe_request request;
-    request.event_type = event_type;
-
-    auto payload = request.serialize();
-    messaging::frame request_frame(messaging::message_type::unsubscribe_request,
-        0, std::move(payload));
-
-    auto response_result = client_->send_request_sync(std::move(request_frame));
-    if (!response_result) {
-        BOOST_LOG_SEV(lg(), error) << "Unsubscribe request failed";
-        return false;
-    }
-
-    auto decompressed = response_result->decompressed_payload();
-    if (!decompressed) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to decompress unsubscribe response";
-        return false;
-    }
-
-    auto response = messaging::unsubscribe_response::deserialize(*decompressed);
-    if (!response) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize unsubscribe response";
-        return false;
-    }
-
-    if (response->success) {
-        subscriptions_.erase(event_type);
-        BOOST_LOG_SEV(lg(), info) << "Successfully unsubscribed from " << event_type;
-    } else {
-        BOOST_LOG_SEV(lg(), warn) << "Unsubscribe failed: " << response->message;
-    }
-
-    return response->success;
+    return event_adapter_->unsubscribe_sync(event_type);
 }
 
 bool client_session::is_subscribed(const std::string& event_type) const {
-    return subscriptions_.contains(event_type);
+    if (!event_adapter_) {
+        return false;
+    }
+    return event_adapter_->is_subscribed(event_type);
 }
 
 std::set<std::string> client_session::get_subscriptions() const {
-    return subscriptions_;
+    if (!event_adapter_) {
+        return {};
+    }
+    return event_adapter_->get_subscriptions();
 }
 
 std::vector<pending_notification> client_session::take_pending_notifications() {

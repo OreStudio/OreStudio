@@ -37,6 +37,12 @@
 #include "ores.comms/net/client.hpp"
 #include "ores.comms/net/client_options.hpp"
 
+namespace ores::comms::service {
+
+class remote_event_adapter;
+
+}
+
 namespace ores::comms::net {
 
 /**
@@ -330,8 +336,8 @@ public:
     /**
      * @brief Subscribe to notifications for an event type.
      *
-     * Sends a SUBSCRIBE protocol message to the server. The subscription
-     * is tracked locally to support re-subscription after reconnect.
+     * Delegates to remote_event_adapter to send a SUBSCRIBE protocol message.
+     * Received notifications are queued for retrieval via take_pending_notifications().
      *
      * @param event_type The fully qualified event type name (e.g., "ores.risk.currency_changed")
      * @return True if subscription succeeded, false otherwise
@@ -341,7 +347,7 @@ public:
     /**
      * @brief Unsubscribe from notifications for an event type.
      *
-     * Sends an UNSUBSCRIBE protocol message to the server.
+     * Delegates to remote_event_adapter to send an UNSUBSCRIBE protocol message.
      *
      * @param event_type The fully qualified event type name
      * @return True if unsubscription succeeded, false otherwise
@@ -382,16 +388,17 @@ public:
 
 private:
     /**
-     * @brief Handle incoming notification from the client.
+     * @brief Handle incoming notification from the adapter.
      *
-     * Called by the notification callback registered on the client.
+     * Called by the notification callback registered on the remote_event_adapter.
+     * Queues notifications for later retrieval.
      */
     void on_notification(const std::string& event_type,
         std::chrono::system_clock::time_point timestamp);
 
     std::shared_ptr<client> client_;
+    std::unique_ptr<service::remote_event_adapter> event_adapter_;
     std::optional<client_session_info> session_info_;
-    std::set<std::string> subscriptions_;
     mutable std::mutex notifications_mutex_;
     std::deque<pending_notification> pending_notifications_;
 };

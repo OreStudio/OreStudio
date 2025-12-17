@@ -84,6 +84,14 @@ public:
     boost::asio::awaitable<bool> subscribe(const std::string& event_type);
 
     /**
+     * @brief Subscribe to notifications for an event type (blocking version).
+     *
+     * @param event_type The fully qualified event type name
+     * @return True if subscription succeeded, false otherwise
+     */
+    bool subscribe_sync(const std::string& event_type);
+
+    /**
      * @brief Unsubscribe from notifications for an event type.
      *
      * Sends an UNSUBSCRIBE protocol message to the server.
@@ -92,6 +100,14 @@ public:
      * @return True if unsubscription succeeded, false otherwise
      */
     boost::asio::awaitable<bool> unsubscribe(const std::string& event_type);
+
+    /**
+     * @brief Unsubscribe from notifications for an event type (blocking version).
+     *
+     * @param event_type The fully qualified event type name
+     * @return True if unsubscription succeeded, false otherwise
+     */
+    bool unsubscribe_sync(const std::string& event_type);
 
     /**
      * @brief Check if currently subscribed to an event type.

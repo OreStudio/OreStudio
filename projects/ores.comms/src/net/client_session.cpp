@@ -29,7 +29,7 @@ client_session::~client_session() {
     }
 }
 
-std::expected<void, client_session_error>
+std::expected<void, session_error>
 client_session::connect(client_options options) {
     BOOST_LOG_SEV(lg(), info) << "Connecting to " << options.host << ":"
                               << options.port << " (identifier: "
@@ -49,7 +49,9 @@ client_session::connect(client_options options) {
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Connection failed: " << e.what();
         client_.reset();
-        return std::unexpected(client_session_error::not_connected);
+        return std::unexpected(session_error(
+            client_session_error::not_connected,
+            std::string("Connection failed: ") + e.what()));
     }
 }
 
@@ -92,9 +94,18 @@ std::string to_string(client_session_error error) {
         return "Failed to parse server response";
     case client_session_error::server_error:
         return "Server returned an error";
+    case client_session_error::connection_lost:
+        return "Connection to server lost";
     default:
         return "Unknown error";
     }
+}
+
+std::string to_string(const session_error& error) {
+    if (!error.message.empty()) {
+        return error.message;
+    }
+    return to_string(error.code);
 }
 
 }

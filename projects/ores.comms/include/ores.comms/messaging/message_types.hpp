@@ -245,6 +245,13 @@ inline std::ostream& operator<<(std::ostream& os, compression_type ct) {
               << " (0x" << std::hex << static_cast<std::uint8_t>(ct) << std::dec << ")";
 }
 
+/**
+ * @brief Convert error_code to string for display.
+ */
+inline std::string to_string(error_code ec) {
+    return std::string(magic_enum::enum_name(ec));
+}
+
 }
 
 #endif

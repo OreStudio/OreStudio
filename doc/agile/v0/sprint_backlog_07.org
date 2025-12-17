@@ -17,38 +17,40 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-17 Wed 00:36], for Wednesday, December 17, 2025.
+#+CAPTION: Clock summary at [2025-12-17 Wed 00:55], for Wednesday, December 17, 2025.
 |      | <75>                                              |        |      |      |       |
 | Tags | Headline                                          | Time   |      |      |     % |
 |------+---------------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                      | *0:34* |      |      | 100.0 |
+|      | *Total time*                                      | *0:57* |      |      | 100.0 |
 |------+---------------------------------------------------+--------+------+------+-------|
-|      | Stories                                           | 0:34   |      |      | 100.0 |
-|      | Active                                            |        | 0:34 |      | 100.0 |
-| code | Add core infrastructure for roles and permissions |        |      | 0:08 |  23.5 |
-| code | Add exit confirmation dialog                      |        |      | 0:03 |   8.8 |
-| code | Ignore warnings on windows and OSX                |        |      | 0:23 |  67.6 |
+|      | Stories                                           | 0:57   |      |      | 100.0 |
+|      | Active                                            |        | 0:57 |      | 100.0 |
+| code | Add core infrastructure for roles and permissions |        |      | 0:08 |  14.0 |
+| code | Add exit confirmation dialog                      |        |      | 0:03 |   5.3 |
+| code | Improve error messages in shell                   |        |      | 0:23 |  40.4 |
+| code | Ignore warnings on windows and OSX                |        |      | 0:23 |  40.4 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-17 Wed 00:36]
+#+CAPTION: Clock summary at [2025-12-17 Wed 00:55]
 |       | <75>                                              |         |       |      |       |
 | Tags  | Headline                                          | Time    |       |      |     % |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                      | *18:48* |       |      | 100.0 |
+|       | *Total time*                                      | *19:11* |       |      | 100.0 |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                           | 18:48   |       |      | 100.0 |
-|       | Active                                            |         | 18:48 |      | 100.0 |
-| agile | Sprint and product backlog refinement             |         |       | 1:07 |   5.9 |
-| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   4.7 |
-| code  | Consider compressing payload                      |         |       | 3:05 |  16.4 |
-| code  | Latest currencies should have different colour    |         |       | 1:28 |   7.8 |
-| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   7.5 |
-| code  | Add account management support to qt              |         |       | 3:43 |  19.8 |
-| code  | Add password reset functionality to accounts      |         |       | 1:49 |   9.7 |
-| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |  25.9 |
+|       | Stories                                           | 19:11   |       |      | 100.0 |
+|       | Active                                            |         | 19:11 |      | 100.0 |
+| agile | Sprint and product backlog refinement             |         |       | 1:07 |   5.8 |
+| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   4.6 |
+| code  | Consider compressing payload                      |         |       | 3:05 |  16.1 |
+| code  | Latest currencies should have different colour    |         |       | 1:28 |   7.6 |
+| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   7.4 |
+| code  | Add account management support to qt              |         |       | 3:43 |  19.4 |
+| code  | Add password reset functionality to accounts      |         |       | 1:49 |   9.5 |
+| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |  25.4 |
 | code  | Add exit confirmation dialog                      |         |       | 0:03 |   0.3 |
+| code  | Improve error messages in shell                   |         |       | 0:23 |   2.0 |
 | code  | Ignore warnings on windows and OSX                |         |       | 0:23 |   2.0 |
 #+end:
 
@@ -461,6 +463,41 @@ Notes:
 
 Add a simple dialog to check if the user really wants to exit.
 
+*** COMPLETED Improve error messages in shell                          :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-17 Wed 00:32]--[2025-12-17 Wed 00:55] =>  0:23
+    :END:
+
+At present adding an account that violates some database constraint is not very
+informative:
+
+: ores-shell> ✗ Server returned an error
+
+Client logs:
+
+#+begin_src logview
+2025-12-16 10:20:39.538351 [TRACE] [ores.comms.net.client] send_request_sync: task completed.
+2025-12-16 10:20:39.538431 [DEBUG] [ores.comms.net.client] Completed synchronous send request successfully.
+2025-12-16 10:20:39.538494 [ERROR] [ores.comms.net.client_session] Server returned error: Repository error: Executing INSERT failed: ERROR:  duplicate key value violates unique constraint "accounts_username_unique_idx"
+DETAIL:  Key (username)=(newuser37) already exists.
+2025-12-16 10:20:39.538567 [DEBUG] [ores.shell.app.repl] Sending logout request before exit.
+#+end_src
+
+Similarly, if the server goes down we don't know. Next messages just say:
+
+: accounts> list
+: ✗ Request failed
+
+Server logs:
+
+#+begin_src logview
+2025-12-16 10:22:34.224094 [DEBUG] [ores.comms.net.connection] Waiting to read the next frame (skip_version_check=false) cancel_slot.is_connected=false
+2025-12-16 10:22:34.224231 [ERROR] [ores.comms.net.connection] Network error in read_frame: stream truncated [asio.ssl.stream:1]
+2025-12-16 10:22:34.224276 [ERROR] [ores.comms.net.client] Failed to read response frame, error network_error (0x7)
+2025-12-16 10:22:34.224335 [WARN] [ores.comms.net.client] Connection lost
+2025-12-16 10:22:34.224364 [TRACE] [ores.comms.net.client] send_request_sync: task completed.
+#+end_src
+
 *** STARTED Windows clang build failures                               :code:
 
 Seems like we are failing with a SEGFAULT:
@@ -553,6 +590,11 @@ The follow-up PR would implement:
 
 This keeps the current PR focused on RBAC infrastructure and the next one on
 enforcement.
+
+Notes:
+
+- add tests for all new entities. Code coverage has dropped a lot after adding
+  them.
 
 *** Tests are logging to stdout in github                              :code:
 
@@ -655,38 +697,6 @@ It should be possible to sign-up and create a new account.
 Examples:
 
 [[./user_dashboard_core_ui.png]]
-
-*** Improve error messages in shell                                    :code:
-
-At present adding an account that violates some database constraint is not very
-informative:
-
-: ores-shell> ✗ Server returned an error
-
-Client logs:
-
-#+begin_src logview
-2025-12-16 10:20:39.538351 [TRACE] [ores.comms.net.client] send_request_sync: task completed.
-2025-12-16 10:20:39.538431 [DEBUG] [ores.comms.net.client] Completed synchronous send request successfully.
-2025-12-16 10:20:39.538494 [ERROR] [ores.comms.net.client_session] Server returned error: Repository error: Executing INSERT failed: ERROR:  duplicate key value violates unique constraint "accounts_username_unique_idx"
-DETAIL:  Key (username)=(newuser37) already exists.
-2025-12-16 10:20:39.538567 [DEBUG] [ores.shell.app.repl] Sending logout request before exit.
-#+end_src
-
-Similarly, if the server goes down we don't know. Next messages just say:
-
-: accounts> list
-: ✗ Request failed
-
-Server logs:
-
-#+begin_src logview
-2025-12-16 10:22:34.224094 [DEBUG] [ores.comms.net.connection] Waiting to read the next frame (skip_version_check=false) cancel_slot.is_connected=false
-2025-12-16 10:22:34.224231 [ERROR] [ores.comms.net.connection] Network error in read_frame: stream truncated [asio.ssl.stream:1]
-2025-12-16 10:22:34.224276 [ERROR] [ores.comms.net.client] Failed to read response frame, error network_error (0x7)
-2025-12-16 10:22:34.224335 [WARN] [ores.comms.net.client] Connection lost
-2025-12-16 10:22:34.224364 [TRACE] [ores.comms.net.client] send_request_sync: task completed.
-#+end_src
 
 *** User interface options                                             :code:
 

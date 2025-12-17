@@ -66,8 +66,8 @@ struct session_error {
     client_session_error code;
     std::string message;
 
-    session_error(client_session_error c)
-        : code(c), message() {}
+    explicit session_error(client_session_error c)
+        : code(c) {}
 
     session_error(client_session_error c, std::string msg)
         : code(c), message(std::move(msg)) {}

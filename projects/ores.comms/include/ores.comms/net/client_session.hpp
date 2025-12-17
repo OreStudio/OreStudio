@@ -131,13 +131,11 @@ public:
     client_session() = default;
     ~client_session();
 
-    // Non-copyable
+    // Non-copyable, non-movable (contains mutex)
     client_session(const client_session&) = delete;
     client_session& operator=(const client_session&) = delete;
-
-    // Movable (defined in .cpp due to incomplete type in unique_ptr)
-    client_session(client_session&&) noexcept;
-    client_session& operator=(client_session&&) noexcept;
+    client_session(client_session&&) = delete;
+    client_session& operator=(client_session&&) = delete;
 
     /**
      * @brief Connect to the server.

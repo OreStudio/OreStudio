@@ -86,8 +86,7 @@ void subscription_commands::
 process_channels(std::ostream& out) {
     out << "Available event channels:" << std::endl;
     for (const auto& [channel, description] : known_channels) {
-        out << "  " << channel << std::endl;
-        out << "    " << description << std::endl;
+        out << "  " << channel << " - " << description << std::endl;
     }
     out << std::endl;
     out << "Use 'events listen <channel>' to subscribe." << std::endl;

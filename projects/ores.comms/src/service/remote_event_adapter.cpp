@@ -21,7 +21,6 @@
 
 #include <boost/log/sources/record_ostream.hpp>
 #include "ores.comms/messaging/subscription_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::comms::service {
 
@@ -51,86 +50,122 @@ boost::asio::awaitable<bool>
 remote_event_adapter::subscribe(const std::string& event_type) {
     BOOST_LOG_SEV(lg(), info) << "Subscribing to event type: " << event_type;
 
-    // Create subscribe request
     messaging::subscribe_request req;
     req.event_type = event_type;
-    auto payload = req.serialize();
 
-    // Create and send frame
-    messaging::frame request_frame(
-        messaging::message_type::subscribe_request, 0,
-        std::vector<std::byte>(payload.begin(), payload.end()));
-
-    auto result = co_await client_->send_request(std::move(request_frame));
+    auto result = co_await client_->process_request_async<
+        messaging::subscribe_request,
+        messaging::subscribe_response,
+        messaging::message_type::subscribe_request>(std::move(req));
 
     if (!result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to send subscribe request for "
+        BOOST_LOG_SEV(lg(), error) << "Subscribe request failed for "
                                    << event_type << ": " << result.error();
         co_return false;
     }
 
-    // Parse response
-    auto response = messaging::subscribe_response::deserialize(result->payload());
-    if (!response) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize subscribe response for "
-                                   << event_type;
-        co_return false;
-    }
-
-    if (response->success) {
+    if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully subscribed to " << event_type
-                                  << ": " << response->message;
+                                  << ": " << result->message;
         std::lock_guard lock(mutex_);
         subscriptions_.insert(event_type);
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Subscription failed for " << event_type
-                                  << ": " << response->message;
+                                  << ": " << result->message;
     }
 
-    co_return response->success;
+    co_return result->success;
+}
+
+bool remote_event_adapter::subscribe_sync(const std::string& event_type) {
+    BOOST_LOG_SEV(lg(), info) << "Subscribing to event type (sync): " << event_type;
+
+    messaging::subscribe_request req;
+    req.event_type = event_type;
+
+    auto result = client_->process_request<
+        messaging::subscribe_request,
+        messaging::subscribe_response,
+        messaging::message_type::subscribe_request>(std::move(req));
+
+    if (!result) {
+        BOOST_LOG_SEV(lg(), error) << "Subscribe request failed for "
+                                   << event_type << ": " << result.error();
+        return false;
+    }
+
+    if (result->success) {
+        BOOST_LOG_SEV(lg(), info) << "Successfully subscribed to " << event_type
+                                  << ": " << result->message;
+        std::lock_guard lock(mutex_);
+        subscriptions_.insert(event_type);
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "Subscription failed for " << event_type
+                                  << ": " << result->message;
+    }
+
+    return result->success;
 }
 
 boost::asio::awaitable<bool>
 remote_event_adapter::unsubscribe(const std::string& event_type) {
     BOOST_LOG_SEV(lg(), info) << "Unsubscribing from event type: " << event_type;
 
-    // Create unsubscribe request
     messaging::unsubscribe_request req;
     req.event_type = event_type;
-    auto payload = req.serialize();
 
-    // Create and send frame
-    messaging::frame request_frame(
-        messaging::message_type::unsubscribe_request, 0,
-        std::vector<std::byte>(payload.begin(), payload.end()));
-
-    auto result = co_await client_->send_request(std::move(request_frame));
+    auto result = co_await client_->process_request_async<
+        messaging::unsubscribe_request,
+        messaging::unsubscribe_response,
+        messaging::message_type::unsubscribe_request>(std::move(req));
 
     if (!result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to send unsubscribe request for "
+        BOOST_LOG_SEV(lg(), error) << "Unsubscribe request failed for "
                                    << event_type << ": " << result.error();
         co_return false;
     }
 
-    // Parse response
-    auto response = messaging::unsubscribe_response::deserialize(result->payload());
-    if (!response) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize unsubscribe response for "
-                                   << event_type;
-        co_return false;
-    }
-
-    if (response->success) {
+    if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully unsubscribed from " << event_type
-                                  << ": " << response->message;
+                                  << ": " << result->message;
         std::lock_guard lock(mutex_);
         subscriptions_.erase(event_type);
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Unsubscription failed for " << event_type
-                                  << ": " << response->message;
+                                  << ": " << result->message;
     }
 
-    co_return response->success;
+    co_return result->success;
+}
+
+bool remote_event_adapter::unsubscribe_sync(const std::string& event_type) {
+    BOOST_LOG_SEV(lg(), info) << "Unsubscribing from event type (sync): " << event_type;
+
+    messaging::unsubscribe_request req;
+    req.event_type = event_type;
+
+    auto result = client_->process_request<
+        messaging::unsubscribe_request,
+        messaging::unsubscribe_response,
+        messaging::message_type::unsubscribe_request>(std::move(req));
+
+    if (!result) {
+        BOOST_LOG_SEV(lg(), error) << "Unsubscribe request failed for "
+                                   << event_type << ": " << result.error();
+        return false;
+    }
+
+    if (result->success) {
+        BOOST_LOG_SEV(lg(), info) << "Successfully unsubscribed from " << event_type
+                                  << ": " << result->message;
+        std::lock_guard lock(mutex_);
+        subscriptions_.erase(event_type);
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "Unsubscription failed for " << event_type
+                                  << ": " << result->message;
+    }
+
+    return result->success;
 }
 
 bool remote_event_adapter::is_subscribed(const std::string& event_type) const {

@@ -17,41 +17,42 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-17 Wed 00:55], for Wednesday, December 17, 2025.
-|      | <75>                                              |        |      |      |       |
-| Tags | Headline                                          | Time   |      |      |     % |
-|------+---------------------------------------------------+--------+------+------+-------|
-|      | *Total time*                                      | *0:57* |      |      | 100.0 |
-|------+---------------------------------------------------+--------+------+------+-------|
-|      | Stories                                           | 0:57   |      |      | 100.0 |
-|      | Active                                            |        | 0:57 |      | 100.0 |
-| code | Add core infrastructure for roles and permissions |        |      | 0:08 |  14.0 |
-| code | Add exit confirmation dialog                      |        |      | 0:03 |   5.3 |
-| code | Improve error messages in shell                   |        |      | 0:23 |  40.4 |
-| code | Ignore warnings on windows and OSX                |        |      | 0:23 |  40.4 |
+#+CAPTION: Clock summary at [2025-12-18 Thu 23:56], for Thursday, December 18, 2025.
+|      | <75>                          |        |      |      |       |
+| Tags | Headline                      | Time   |      |      |     % |
+|------+-------------------------------+--------+------+------+-------|
+|      | *Total time*                  | *6:05* |      |      | 100.0 |
+|------+-------------------------------+--------+------+------+-------|
+|      | Stories                       | 6:05   |      |      | 100.0 |
+|      | Active                        |        | 6:05 |      | 100.0 |
+| code | Setup windows laptop with WSL |        |      | 3:20 |  54.8 |
+| code | Add listen/notify to shell    |        |      | 2:45 |  45.2 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-17 Wed 00:55]
+#+CAPTION: Clock summary at [2025-12-18 Thu 23:56]
 |       | <75>                                              |         |       |      |       |
 | Tags  | Headline                                          | Time    |       |      |     % |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                      | *19:11* |       |      | 100.0 |
+|       | *Total time*                                      | *29:07* |       |      | 100.0 |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                           | 19:11   |       |      | 100.0 |
-|       | Active                                            |         | 19:11 |      | 100.0 |
-| agile | Sprint and product backlog refinement             |         |       | 1:07 |   5.8 |
-| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   4.6 |
-| code  | Consider compressing payload                      |         |       | 3:05 |  16.1 |
-| code  | Latest currencies should have different colour    |         |       | 1:28 |   7.6 |
-| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   7.4 |
-| code  | Add account management support to qt              |         |       | 3:43 |  19.4 |
-| code  | Add password reset functionality to accounts      |         |       | 1:49 |   9.5 |
-| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |  25.4 |
-| code  | Add exit confirmation dialog                      |         |       | 0:03 |   0.3 |
-| code  | Improve error messages in shell                   |         |       | 0:23 |   2.0 |
-| code  | Ignore warnings on windows and OSX                |         |       | 0:23 |   2.0 |
+|       | Stories                                           | 29:07   |       |      | 100.0 |
+|       | Active                                            |         | 29:07 |      | 100.0 |
+| agile | Sprint and product backlog refinement             |         |       | 1:07 |   3.8 |
+| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   3.0 |
+| code  | Consider compressing payload                      |         |       | 3:05 |  10.6 |
+| code  | Latest currencies should have different colour    |         |       | 1:28 |   5.0 |
+| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   4.9 |
+| code  | Add account management support to qt              |         |       | 3:43 |  12.8 |
+| code  | Add password reset functionality to accounts      |         |       | 1:49 |   6.2 |
+| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |  16.7 |
+| code  | Add exit confirmation dialog                      |         |       | 0:03 |   0.2 |
+| code  | Improve error messages in shell                   |         |       | 0:23 |   1.3 |
+| code  | Add support for relative time formatting          |         |       | 2:01 |   6.9 |
+| code  | Setup windows laptop with WSL                     |         |       | 5:10 |  17.7 |
+| code  | Add listen/notify to shell                        |         |       | 2:45 |   9.4 |
+| code  | Ignore warnings on windows and OSX                |         |       | 0:23 |   1.3 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -498,6 +499,67 @@ Server logs:
 2025-12-16 10:22:34.224364 [TRACE] [ores.comms.net.client] send_request_sync: task completed.
 #+end_src
 
+*** COMPLETED Add support for relative time formatting                 :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-17 Wed 16:08]--[2025-12-17 Wed 18:09] =>  2:01
+    :END:
+
+"Relative Time Formatting" is part of the ECMAScript Internationalization API
+Intl.RelativeTimeFormat.
+
+C++20's =<chrono>= library has extensive date/time support:
+
+#+begin_src c++
+#include <chrono>
+#include <iostream>
+
+std::string relative_time(std::chrono::system_clock::time_point past) {
+    auto now = std::chrono::system_clock::now();
+    auto diff = now - past;
+
+    if (diff < std::chrono::minutes(1))
+        return "just now";
+    else if (diff < std::chrono::hours(1))
+        return std::to_string(std::chrono::duration_cast<std::chrono::minutes>(diff).count()) + " minutes ago";
+    // ... continue for hours, days, etc.
+}
+#+end_src
+
+*** COMPLETED Exit confirmation                                        :code:
+
+*Rationale*: Implemented.
+
+We should ask if a user wants to exit before we exit.
+
+*** COMPLETED Users cannot update their passwords                      :code:
+
+*Rationale*: implemented.
+
+At present it is not possible to update passwords, or any other property of an
+account.
+
+*** COMPLETED Setup windows laptop with WSL                            :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-18 Thu 14:30]--[2025-12-18 Thu 15:40] =>  1:10
+    CLOCK: [2025-12-17 Wed 22:10]--[2025-12-18 Thu 02:10] =>  4:00
+    :END:
+
+Install all the tooling needed to build OreStudio in WSL on the windows laptop.
+Fix all the issues with Emacs bootstrap after elpaca move.
+
+
+*** COMPLETED Add listen/notify to shell                               :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-18 Thu 23:47]--[2025-12-18 Thu 23:56] =>  0:09
+    CLOCK: [2025-12-18 Thu 19:03]--[2025-12-18 Thu 19:25] =>  0:22
+    CLOCK: [2025-12-18 Thu 18:45]--[2025-12-18 Thu 19:02] =>  0:17
+    CLOCK: [2025-12-18 Thu 17:24]--[2025-12-18 Thu 17:59] =>  0:35
+    CLOCK: [2025-12-18 Thu 16:01]--[2025-12-18 Thu 17:23] =>  1:22
+    :END:
+
+At present we cannot listen from the shell. This makes testing harder.
+Notification should show up in the next prompt like PSQL does.
+
 *** STARTED Windows clang build failures                               :code:
 
 Seems like we are failing with a SEGFAULT:
@@ -537,6 +599,22 @@ Links:
 - [[https://gitlab.kitware.com/cmake/cmake/-/issues/27367][CTest: Using regexes to filter warnings for CDash]]
 - [[https://stackoverflow.com/questions/26458652/ctest-custom-warning-exception][SO: ctest custom warning exception]]
 - [[https://www.reddit.com/r/cmake/comments/1poie3j/ignoring_configure_time_warnings_in_cdash/][reddit: Ignoring configure time warnings in CDash]]
+
+*** Define type traits for message grouping                            :code:
+
+At present we do:
+
+#+begin_src c++
+auto result = client_->process_request<
+    messaging::subscribe_request,
+    messaging::subscribe_response,
+    messaging::message_type::subscribe_request>(std::move(req));
+#+end_src
+
+This grouping is known in advance because these messages are defined together.
+We should be able to create a type in the protocol that defines the grouping as
+traits and then supply the group as the template argument, /e.g./
+=messaging::subscribe=, which unpacks the tuple.
 
 *** Implement RBAC enforcement                                         :code:
 
@@ -722,29 +800,6 @@ Notes:
 
 - we need a UI to manage the UI options.
 
-*** Add support for relative time formatting                           :code:
-
-"Relative Time Formatting" is part of the ECMAScript Internationalization API
-(Intl.RelativeTimeFormat).
-
-C++20's <chrono> library has extensive date/time support:
-
-#+begin_src c++
-#include <chrono>
-#include <iostream>
-
-std::string relative_time(std::chrono::system_clock::time_point past) {
-    auto now = std::chrono::system_clock::now();
-    auto diff = now - past;
-
-    if (diff < std::chrono::minutes(1))
-        return "just now";
-    else if (diff < std::chrono::hours(1))
-        return std::to_string(std::chrono::duration_cast<std::chrono::minutes>(diff).count()) + " minutes ago";
-    // ... continue for hours, days, etc.
-}
-#+end_src
-
 *** Assorted fixes to currency dialog                                  :code:
 
 At present the following is not working or is a snag:
@@ -774,10 +829,6 @@ At present the following is not working or is a snag:
 - email updated message is truncated.
 - user cannot lock it's own account.
 
-*** Exit confirmation                                                  :code:
-
-We should ask if a user wants to exit before we exit.
-
 *** Implement entity history in shell                                  :code:
 
 We need to add a command in shell to show entity history.
@@ -797,11 +848,6 @@ At present it is easy to see new rows or modified rows in an entity dialog. It
 is not possible to see deleted rows. One way to do this is to preserve state
 from before reload by key. Any entities which are not present after reload can
 be shown as red. History then allows users to re-instate deleted entities.
-
-*** Add listen/notify to shell                                         :code:
-
-At present we cannot listen from the shell. This makes testing harder.
-Notification should show up in the next prompt like PSQL does.
 
 *** History should have a revert button                                :code:
 
@@ -1064,6 +1110,10 @@ connect etc. Users need to be able to choose their own sounds.
 It is useful especially in test environments to be able to delete all entities
 before a re-import.
 
+Notes:
+
+- purge button.
+
 
 *** Add screen in qt to exit bootstrap mode                            :code:
 
@@ -1115,11 +1165,6 @@ Why We Need create_initial_admin_request
   localhost-only access.
 
 
-
-*** Users cannot update their passwords                                :code:
-
-At present it is not possible to update passwords, or any other property of an
-account.
 
 *** Cli clean-ups                                                      :code:
 

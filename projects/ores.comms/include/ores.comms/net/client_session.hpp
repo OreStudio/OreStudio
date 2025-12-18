@@ -20,10 +20,15 @@
 #ifndef ORES_COMMS_NET_CLIENT_SESSION_HPP
 #define ORES_COMMS_NET_CLIENT_SESSION_HPP
 
+#include <mutex>
+#include <deque>
 #include <memory>
+#include <chrono>
 #include <optional>
 #include <expected>
 #include <string>
+#include <vector>
+#include <set>
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/messaging/message_types.hpp"
@@ -31,6 +36,12 @@
 #include "ores.comms/messaging/error_protocol.hpp"
 #include "ores.comms/net/client.hpp"
 #include "ores.comms/net/client_options.hpp"
+
+namespace ores::comms::service {
+
+class remote_event_adapter;
+
+}
 
 namespace ores::comms::net {
 
@@ -41,6 +52,16 @@ struct client_session_info {
     boost::uuids::uuid account_id;
     std::string username;
     bool is_admin;
+};
+
+/**
+ * @brief A notification received from the server.
+ *
+ * Stored in a queue for display at the next prompt.
+ */
+struct pending_notification {
+    std::string event_type;
+    std::chrono::system_clock::time_point timestamp;
 };
 
 /**
@@ -107,16 +128,14 @@ private:
     }
 
 public:
-    client_session() = default;
+    client_session();
     ~client_session();
 
-    // Non-copyable
+    // Non-copyable, non-movable (contains mutex)
     client_session(const client_session&) = delete;
     client_session& operator=(const client_session&) = delete;
-
-    // Movable
-    client_session(client_session&&) = default;
-    client_session& operator=(client_session&&) = default;
+    client_session(client_session&&) = delete;
+    client_session& operator=(client_session&&) = delete;
 
     /**
      * @brief Connect to the server.
@@ -312,9 +331,74 @@ public:
             std::move(request));
     }
 
+    /**
+     * @brief Subscribe to notifications for an event type.
+     *
+     * Delegates to remote_event_adapter to send a SUBSCRIBE protocol message.
+     * Received notifications are queued for retrieval via take_pending_notifications().
+     *
+     * @param event_type The fully qualified event type name (e.g., "ores.risk.currency_changed")
+     * @return True if subscription succeeded, false otherwise
+     */
+    bool subscribe(const std::string& event_type);
+
+    /**
+     * @brief Unsubscribe from notifications for an event type.
+     *
+     * Delegates to remote_event_adapter to send an UNSUBSCRIBE protocol message.
+     *
+     * @param event_type The fully qualified event type name
+     * @return True if unsubscription succeeded, false otherwise
+     */
+    bool unsubscribe(const std::string& event_type);
+
+    /**
+     * @brief Check if currently subscribed to an event type.
+     *
+     * @param event_type The event type to check
+     * @return True if subscribed, false otherwise
+     */
+    [[nodiscard]] bool is_subscribed(const std::string& event_type) const;
+
+    /**
+     * @brief Get the set of currently subscribed event types.
+     *
+     * @return Set of event type names
+     */
+    [[nodiscard]] std::set<std::string> get_subscriptions() const;
+
+    /**
+     * @brief Get all pending notifications and clear the queue.
+     *
+     * Returns notifications in the order they were received. The internal
+     * queue is cleared after this call.
+     *
+     * @return Vector of pending notifications
+     */
+    std::vector<pending_notification> take_pending_notifications();
+
+    /**
+     * @brief Check if there are any pending notifications.
+     *
+     * @return True if there are pending notifications
+     */
+    [[nodiscard]] bool has_pending_notifications() const;
+
 private:
+    /**
+     * @brief Handle incoming notification from the adapter.
+     *
+     * Called by the notification callback registered on the remote_event_adapter.
+     * Queues notifications for later retrieval.
+     */
+    void on_notification(const std::string& event_type,
+        std::chrono::system_clock::time_point timestamp);
+
     std::shared_ptr<client> client_;
+    std::unique_ptr<service::remote_event_adapter> event_adapter_;
     std::optional<client_session_info> session_info_;
+    mutable std::mutex notifications_mutex_;
+    std::deque<pending_notification> pending_notifications_;
 };
 
 /**

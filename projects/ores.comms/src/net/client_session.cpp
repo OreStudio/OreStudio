@@ -18,10 +18,13 @@
  *
  */
 #include "ores.comms/net/client_session.hpp"
+#include "ores.comms/service/remote_event_adapter.hpp"
 
 namespace ores::comms::net {
 
 using namespace ores::utility::log;
+
+client_session::client_session() = default;
 
 client_session::~client_session() {
     if (is_connected()) {
@@ -38,16 +41,29 @@ client_session::connect(client_options options) {
     if (client_ && client_->is_connected()) {
         BOOST_LOG_SEV(lg(), info) << "Disconnecting existing connection";
         client_->disconnect();
+        event_adapter_.reset();
         session_info_.reset();
     }
 
     try {
         client_ = std::make_shared<client>(std::move(options));
         client_->connect_sync();
+
+        // Create the event adapter which handles subscriptions
+        event_adapter_ = std::make_unique<service::remote_event_adapter>(client_);
+
+        // Register notification callback to queue notifications for display
+        event_adapter_->set_notification_callback(
+            [this](const std::string& event_type,
+                   std::chrono::system_clock::time_point timestamp) {
+                on_notification(event_type, timestamp);
+            });
+
         BOOST_LOG_SEV(lg(), info) << "Successfully connected.";
         return {};
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Connection failed: " << e.what();
+        event_adapter_.reset();
         client_.reset();
         return std::unexpected(session_error(
             client_session_error::not_connected,
@@ -61,21 +77,81 @@ void client_session::disconnect() {
         return;
     }
 
-    if (!client_->is_connected()) {
+    if (client_->is_connected()) {
+        // Reset adapter before disconnecting (clears notification callback)
+        event_adapter_.reset();
+        client_->disconnect();
+        BOOST_LOG_SEV(lg(), info) << "Disconnected from server.";
+    } else {
         BOOST_LOG_SEV(lg(), debug) << "Already disconnected.";
-        session_info_.reset();
-        return;
+        event_adapter_.reset();
     }
 
-    // Clear session info on disconnect
+    // Clear session state
     session_info_.reset();
-
-    client_->disconnect();
-    BOOST_LOG_SEV(lg(), info) << "Disconnected from server.";
+    {
+        std::lock_guard lock(notifications_mutex_);
+        pending_notifications_.clear();
+    }
 }
 
 bool client_session::is_connected() const noexcept {
     return client_ && client_->is_connected();
+}
+
+bool client_session::subscribe(const std::string& event_type) {
+    if (!event_adapter_) {
+        BOOST_LOG_SEV(lg(), error) << "Cannot subscribe: not connected";
+        return false;
+    }
+
+    return event_adapter_->subscribe_sync(event_type);
+}
+
+bool client_session::unsubscribe(const std::string& event_type) {
+    if (!event_adapter_) {
+        BOOST_LOG_SEV(lg(), error) << "Cannot unsubscribe: not connected";
+        return false;
+    }
+
+    return event_adapter_->unsubscribe_sync(event_type);
+}
+
+bool client_session::is_subscribed(const std::string& event_type) const {
+    if (!event_adapter_) {
+        return false;
+    }
+    return event_adapter_->is_subscribed(event_type);
+}
+
+std::set<std::string> client_session::get_subscriptions() const {
+    if (!event_adapter_) {
+        return {};
+    }
+    return event_adapter_->get_subscriptions();
+}
+
+std::vector<pending_notification> client_session::take_pending_notifications() {
+    std::deque<pending_notification> notifications;
+    {
+        std::lock_guard lock(notifications_mutex_);
+        notifications.swap(pending_notifications_);
+    }
+    return {std::make_move_iterator(notifications.begin()),
+            std::make_move_iterator(notifications.end())};
+}
+
+bool client_session::has_pending_notifications() const {
+    std::lock_guard lock(notifications_mutex_);
+    return !pending_notifications_.empty();
+}
+
+void client_session::on_notification(const std::string& event_type,
+    std::chrono::system_clock::time_point timestamp) {
+    BOOST_LOG_SEV(lg(), debug) << "Received notification for " << event_type;
+
+    std::lock_guard lock(notifications_mutex_);
+    pending_notifications_.push_back({event_type, timestamp});
 }
 
 std::string to_string(client_session_error error) {

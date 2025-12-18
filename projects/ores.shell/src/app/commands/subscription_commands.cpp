@@ -20,6 +20,7 @@
 #include "ores.shell/app/commands/subscription_commands.hpp"
 
 #include <ostream>
+#include <vector>
 #include <functional>
 #include <cli/cli.h>
 #include "ores.utility/datetime/datetime.hpp"
@@ -99,12 +100,22 @@ process_unlisten(std::ostream& out, client_session& session,
         }
 
         std::size_t count = 0;
+        std::vector<std::string> failed;
         for (const auto& sub : subscriptions) {
             if (session.unsubscribe(sub)) {
                 ++count;
+            } else {
+                failed.push_back(sub);
             }
         }
         out << "✓ Unsubscribed from " << count << " event type(s)." << std::endl;
+        if (!failed.empty()) {
+            out << "✗ Failed to unsubscribe from " << failed.size()
+                << " event type(s):" << std::endl;
+            for (const auto& sub : failed) {
+                out << "  - " << sub << std::endl;
+            }
+        }
     } else {
         // Unsubscribe from specific event type
         if (!session.is_subscribed(event_type)) {

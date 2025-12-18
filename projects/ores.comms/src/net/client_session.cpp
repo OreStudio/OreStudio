@@ -77,29 +77,22 @@ void client_session::disconnect() {
         return;
     }
 
-    if (!client_->is_connected()) {
+    if (client_->is_connected()) {
+        // Reset adapter before disconnecting (clears notification callback)
+        event_adapter_.reset();
+        client_->disconnect();
+        BOOST_LOG_SEV(lg(), info) << "Disconnected from server.";
+    } else {
         BOOST_LOG_SEV(lg(), debug) << "Already disconnected.";
         event_adapter_.reset();
-        session_info_.reset();
-        {
-            std::lock_guard lock(notifications_mutex_);
-            pending_notifications_.clear();
-        }
-        return;
     }
 
-    // Clear session info on disconnect
+    // Clear session state
     session_info_.reset();
     {
         std::lock_guard lock(notifications_mutex_);
         pending_notifications_.clear();
     }
-
-    // Reset adapter before disconnecting (clears notification callback)
-    event_adapter_.reset();
-
-    client_->disconnect();
-    BOOST_LOG_SEV(lg(), info) << "Disconnected from server.";
 }
 
 bool client_session::is_connected() const noexcept {

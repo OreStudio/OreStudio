@@ -42,16 +42,12 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.database.lib
         ores.utility.lib
-        Boost::boost
     PRIVATE
         ores.accounts.lib
         ores.risk.lib
         ores.comms.lib
         magic_enum::magic_enum
-        sqlgen::sqlgen
-        reflectcpp::reflectcpp
-        cli::cli
-        Boost::program_options)
+        cli::cli)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

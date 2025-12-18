@@ -40,9 +40,6 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         reflectcpp::reflectcpp
         OpenSSL::Crypto
-        OpenSSL::SSL
-        Boost::boost
-        Boost::iostreams
-        ores.utility.lib)
+        Boost::iostreams)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

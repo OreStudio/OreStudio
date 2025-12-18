@@ -41,14 +41,12 @@ find_package(cli CONFIG REQUIRED)
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.utility.lib
-        Boost::boost
     PRIVATE
         ores.accounts.lib
         ores.variability.lib
         ores.risk.lib
         ores.comms.lib
-        cli::cli
-        Boost::program_options)
+        cli::cli)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

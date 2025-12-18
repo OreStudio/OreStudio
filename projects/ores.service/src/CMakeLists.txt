@@ -43,10 +43,7 @@ target_link_libraries(${lib_target_name}
         ores.variability.lib
         ores.eventing.lib
         ores.comms.lib
-        ores.utility.lib
-        reflectcpp::reflectcpp
-        Boost::boost
-        Boost::program_options)
+        ores.utility.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

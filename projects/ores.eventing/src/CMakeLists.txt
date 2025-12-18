@@ -38,10 +38,8 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.database.lib
         ores.utility.lib
-        sqlgen::sqlgen
     PRIVATE
         faker-cxx::faker-cxx
-        libfort::fort
-        Boost::boost)
+        libfort::fort)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

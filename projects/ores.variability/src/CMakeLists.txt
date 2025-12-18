@@ -38,11 +38,6 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.comms.lib
     PRIVATE
-        ores.utility.lib
-        ores.database.lib
-        sqlgen::sqlgen
-        reflectcpp::reflectcpp
-        libfort::fort
-        Boost::boost)
+        libfort::fort)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

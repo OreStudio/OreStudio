@@ -38,12 +38,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.utility.lib
         ores.database.lib
-        Boost::log
     PRIVATE
-        Boost::boost
-        Boost::exception
-        sqlgen::sqlgen
-        Catch2::Catch2
-    )
+        Catch2::Catch2)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

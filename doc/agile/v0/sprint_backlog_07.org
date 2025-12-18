@@ -17,42 +17,42 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-18 Thu 17:23], for Thursday, December 18, 2025.
+#+CAPTION: Clock summary at [2025-12-18 Thu 23:56], for Thursday, December 18, 2025.
 |      | <75>                          |        |      |      |       |
 | Tags | Headline                      | Time   |      |      |     % |
 |------+-------------------------------+--------+------+------+-------|
-|      | *Total time*                  | *4:42* |      |      | 100.0 |
+|      | *Total time*                  | *6:05* |      |      | 100.0 |
 |------+-------------------------------+--------+------+------+-------|
-|      | Stories                       | 4:42   |      |      | 100.0 |
-|      | Active                        |        | 4:42 |      | 100.0 |
-| code | Setup windows laptop with WSL |        |      | 3:20 |  70.9 |
-| code | Add listen/notify to shell    |        |      | 1:22 |  29.1 |
+|      | Stories                       | 6:05   |      |      | 100.0 |
+|      | Active                        |        | 6:05 |      | 100.0 |
+| code | Setup windows laptop with WSL |        |      | 3:20 |  54.8 |
+| code | Add listen/notify to shell    |        |      | 2:45 |  45.2 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-18 Thu 17:23]
+#+CAPTION: Clock summary at [2025-12-18 Thu 23:56]
 |       | <75>                                              |         |       |      |       |
 | Tags  | Headline                                          | Time    |       |      |     % |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                      | *27:44* |       |      | 100.0 |
+|       | *Total time*                                      | *29:07* |       |      | 100.0 |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                           | 27:44   |       |      | 100.0 |
-|       | Active                                            |         | 27:44 |      | 100.0 |
-| agile | Sprint and product backlog refinement             |         |       | 1:07 |   4.0 |
-| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   3.2 |
-| code  | Consider compressing payload                      |         |       | 3:05 |  11.1 |
-| code  | Latest currencies should have different colour    |         |       | 1:28 |   5.3 |
-| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   5.1 |
-| code  | Add account management support to qt              |         |       | 3:43 |  13.4 |
-| code  | Add password reset functionality to accounts      |         |       | 1:49 |   6.6 |
-| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |  17.5 |
+|       | Stories                                           | 29:07   |       |      | 100.0 |
+|       | Active                                            |         | 29:07 |      | 100.0 |
+| agile | Sprint and product backlog refinement             |         |       | 1:07 |   3.8 |
+| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   3.0 |
+| code  | Consider compressing payload                      |         |       | 3:05 |  10.6 |
+| code  | Latest currencies should have different colour    |         |       | 1:28 |   5.0 |
+| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   4.9 |
+| code  | Add account management support to qt              |         |       | 3:43 |  12.8 |
+| code  | Add password reset functionality to accounts      |         |       | 1:49 |   6.2 |
+| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |  16.7 |
 | code  | Add exit confirmation dialog                      |         |       | 0:03 |   0.2 |
-| code  | Improve error messages in shell                   |         |       | 0:23 |   1.4 |
-| code  | Add support for relative time formatting          |         |       | 2:01 |   7.3 |
-| code  | Setup windows laptop with WSL                     |         |       | 5:10 |  18.6 |
-| code  | Ignore warnings on windows and OSX                |         |       | 0:23 |   1.4 |
-| code  | Add listen/notify to shell                        |         |       | 1:22 |   4.9 |
+| code  | Improve error messages in shell                   |         |       | 0:23 |   1.3 |
+| code  | Add support for relative time formatting          |         |       | 2:01 |   6.9 |
+| code  | Setup windows laptop with WSL                     |         |       | 5:10 |  17.7 |
+| code  | Add listen/notify to shell                        |         |       | 2:45 |   9.4 |
+| code  | Ignore warnings on windows and OSX                |         |       | 0:23 |   1.3 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -548,6 +548,18 @@ Install all the tooling needed to build OreStudio in WSL on the windows laptop.
 Fix all the issues with Emacs bootstrap after elpaca move.
 
 
+*** COMPLETED Add listen/notify to shell                               :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-18 Thu 23:47]--[2025-12-18 Thu 23:56] =>  0:09
+    CLOCK: [2025-12-18 Thu 19:03]--[2025-12-18 Thu 19:25] =>  0:22
+    CLOCK: [2025-12-18 Thu 18:45]--[2025-12-18 Thu 19:02] =>  0:17
+    CLOCK: [2025-12-18 Thu 17:24]--[2025-12-18 Thu 17:59] =>  0:35
+    CLOCK: [2025-12-18 Thu 16:01]--[2025-12-18 Thu 17:23] =>  1:22
+    :END:
+
+At present we cannot listen from the shell. This makes testing harder.
+Notification should show up in the next prompt like PSQL does.
+
 *** STARTED Windows clang build failures                               :code:
 
 Seems like we are failing with a SEGFAULT:
@@ -588,13 +600,21 @@ Links:
 - [[https://stackoverflow.com/questions/26458652/ctest-custom-warning-exception][SO: ctest custom warning exception]]
 - [[https://www.reddit.com/r/cmake/comments/1poie3j/ignoring_configure_time_warnings_in_cdash/][reddit: Ignoring configure time warnings in CDash]]
 
-*** STARTED Add listen/notify to shell                                 :code:
-    :LOGBOOK:
-    CLOCK: [2025-12-18 Thu 16:01]--[2025-12-18 Thu 17:23] =>  1:22
-    :END:
+*** Define type traits for message grouping                            :code:
 
-At present we cannot listen from the shell. This makes testing harder.
-Notification should show up in the next prompt like PSQL does.
+At present we do:
+
+#+begin_src c++
+auto result = client_->process_request<
+    messaging::subscribe_request,
+    messaging::subscribe_response,
+    messaging::message_type::subscribe_request>(std::move(req));
+#+end_src
+
+This grouping is known in advance because these messages are defined together.
+We should be able to create a type in the protocol that defines the grouping as
+traits and then supply the group as the template argument, /e.g./
+=messaging::subscribe=, which unpacks the tuple.
 
 *** Implement RBAC enforcement                                         :code:
 

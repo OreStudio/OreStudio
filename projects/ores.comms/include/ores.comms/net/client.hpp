@@ -347,6 +347,8 @@ public:
               messaging::message_type RequestMsgType>
     std::expected<ResponseType, messaging::error_code>
     process_request(RequestType request) {
+        using namespace ores::utility::log;
+
         auto payload = request.serialize();
         messaging::frame request_frame(RequestMsgType, 0, std::move(payload));
 
@@ -357,15 +359,13 @@ public:
 
         auto response_payload = result->decompressed_payload();
         if (!response_payload) {
-            BOOST_LOG_SEV(lg(), ores::utility::log::error)
-                << "Failed to decompress response";
+            BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
             return std::unexpected(response_payload.error());
         }
 
         auto response = ResponseType::deserialize(*response_payload);
         if (!response) {
-            BOOST_LOG_SEV(lg(), ores::utility::log::error)
-                << "Failed to deserialize response";
+            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
             return std::unexpected(response.error());
         }
 
@@ -387,6 +387,8 @@ public:
               messaging::message_type RequestMsgType>
     boost::asio::awaitable<std::expected<ResponseType, messaging::error_code>>
     process_request_async(RequestType request) {
+        using namespace ores::utility::log;
+
         auto payload = request.serialize();
         messaging::frame request_frame(RequestMsgType, 0, std::move(payload));
 
@@ -397,15 +399,13 @@ public:
 
         auto response_payload = result->decompressed_payload();
         if (!response_payload) {
-            BOOST_LOG_SEV(lg(), ores::utility::log::error)
-                << "Failed to decompress response";
+            BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
             co_return std::unexpected(response_payload.error());
         }
 
         auto response = ResponseType::deserialize(*response_payload);
         if (!response) {
-            BOOST_LOG_SEV(lg(), ores::utility::log::error)
-                << "Failed to deserialize response";
+            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
             co_return std::unexpected(response.error());
         }
 

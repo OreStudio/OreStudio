@@ -89,7 +89,7 @@ process_channels(std::ostream& out) {
         out << "  " << channel << " - " << description << std::endl;
     }
     out << std::endl;
-    out << "Use 'events listen <channel>' to subscribe." << std::endl;
+    out << "Use 'listen <channel>' to subscribe, or 'listen *' for all." << std::endl;
 }
 
 void subscription_commands::
@@ -104,6 +104,32 @@ process_listen(std::ostream& out, client_session& session,
     if (event_type.empty()) {
         out << "✗ Event type required. Usage: listen <event_type>" << std::endl;
         out << "  Example: listen ores.risk.currency_changed" << std::endl;
+        out << "  Use 'listen *' to subscribe to all channels." << std::endl;
+        return;
+    }
+
+    if (event_type == "*") {
+        // Subscribe to all known channels
+        std::size_t count = 0;
+        std::vector<std::string> failed;
+        for (const auto& [channel, _] : known_channels) {
+            if (session.is_subscribed(channel)) {
+                continue;  // Skip already subscribed
+            }
+            if (session.subscribe(channel)) {
+                ++count;
+            } else {
+                failed.emplace_back(channel);
+            }
+        }
+        out << "✓ Subscribed to " << count << " channel(s)." << std::endl;
+        if (!failed.empty()) {
+            out << "✗ Failed to subscribe to " << failed.size()
+                << " channel(s):" << std::endl;
+            for (const auto& ch : failed) {
+                out << "  - " << ch << std::endl;
+            }
+        }
         return;
     }
 

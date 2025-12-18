@@ -21,7 +21,6 @@
 #define ORES_SHELL_APP_COMMANDS_SUBSCRIPTION_COMMANDS_HPP
 
 #include <string>
-#include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/net/client_session.hpp"
 
 namespace cli {
@@ -42,16 +41,6 @@ namespace ores::shell::app::commands {
  * - notifications: Display pending notifications
  */
 class subscription_commands {
-private:
-    inline static std::string_view logger_name =
-        "ores.shell.app.commands.subscription";
-
-    auto& lg() {
-        using namespace ores::utility::log;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
 public:
     /**
      * @brief Register subscription management commands.

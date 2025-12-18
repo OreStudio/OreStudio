@@ -139,12 +139,13 @@ std::set<std::string> client_session::get_subscriptions() const {
 }
 
 std::vector<pending_notification> client_session::take_pending_notifications() {
-    std::lock_guard lock(notifications_mutex_);
-    std::vector<pending_notification> result(
-        pending_notifications_.begin(),
-        pending_notifications_.end());
-    pending_notifications_.clear();
-    return result;
+    std::deque<pending_notification> notifications;
+    {
+        std::lock_guard lock(notifications_mutex_);
+        notifications.swap(pending_notifications_);
+    }
+    return {std::make_move_iterator(notifications.begin()),
+            std::make_move_iterator(notifications.end())};
 }
 
 bool client_session::has_pending_notifications() const {

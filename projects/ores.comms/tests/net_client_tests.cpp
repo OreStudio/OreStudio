@@ -226,9 +226,17 @@ TEST_CASE("test_session_cancellation_on_server_stop", tags) {
             auto client = std::make_shared<ores::comms::net::client>(
                 client_opts, co_await boost::asio::this_coro::executor);
             co_await client->connect();
-            CHECK(client->is_connected());
+            // Store result in variable to help Catch2 expression decomposition
+            // on Windows Clang with coroutines
+            const bool connected = client->is_connected();
+            CHECK(connected);
             clients.push_back(client);
             BOOST_LOG_SEV(lg, info) << "Client " << i << " connected";
+
+            // Small delay between connections to allow Windows socket/SSL
+            // handshake to fully complete before next connection
+            timer.expires_after(std::chrono::milliseconds(50));
+            co_await timer.async_wait(boost::asio::use_awaitable);
         }
 
         // Give sessions time to fully establish
@@ -263,12 +271,15 @@ TEST_CASE("test_session_cancellation_on_server_stop", tags) {
                 ores::comms::messaging::message_type::get_currencies_request, 0, {}};
             auto result = co_await client->send_request(dummy_request);
 
+            // Store results in variables for Catch2 expression decomposition
+            const bool has_result = result.has_value();
+            const bool is_connected = client->is_connected();
             BOOST_LOG_SEV(lg, info) << "Client " << i << " result: "
-                                    << (result.has_value() ? "SUCCESS (unexpected!)" : "FAILED (expected)")
-                                    << " - is_connected after: " << client->is_connected();
+                                    << (has_result ? "SUCCESS (unexpected!)" : "FAILED (expected)")
+                                    << " - is_connected after: " << is_connected;
 
-            CHECK(!result.has_value());
-            CHECK(!client->is_connected());
+            CHECK(!has_result);
+            CHECK(!is_connected);
         }
 
         BOOST_LOG_SEV(lg, info) << "Test finished - server stopped cleanly with active sessions";

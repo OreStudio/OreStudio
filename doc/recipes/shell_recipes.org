@@ -304,7 +304,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 ./ores.shell ${log_args} ${connect_args} << 'EOF'
-<<explicit-login>>
+<<initial-bootstrap>>
 EOF
 #+end_src
 
@@ -316,11 +316,12 @@ EOF
   System in BOOTSTRAP MODE - awaiting initial admin account creation
   Use 'bootstrap <username> <password> <email>' to create the initial admin account.
 
-ORE Studio Shell REPL v0.0.6
+ORE Studio Shell REPL v0.0.7
 Type 'help' for available commands, 'exit' to quit
+Use 'listen <event>' to subscribe, 'notifications' to view
 
 ores-shell> ✓ Initial admin account created successfully!
-  Account ID: 019b13ea-d4a6-7494-8319-1808185f48bf
+  Account ID: 019b3268-404f-7f3d-a923-8cb8bc2d23c3
   You can now login with the credentials provided.
 ores-shell> Bye!
 #+end_example
@@ -407,9 +408,10 @@ EOF
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.7
 Type 'help' for available commands, 'exit' to quit
+Use 'listen <event>' to subscribe, 'notifications' to view
 
-ores-shell> ✓ Account created with ID: 019b26b1-237f-78b2-a6b8-6c0f6e343d10
-ores-shell> ✓ Account created with ID: 019b26b1-23d6-7458-bbb7-feb5b8067ef9
+ores-shell> ✓ Account created with ID: 019b3271-4d81-728b-924c-c7ca84d189f1
+ores-shell> ✓ Account created with ID: 019b3271-4dfd-7f93-970f-0e32af40587c
 ores-shell> Bye!
 #+end_example
 

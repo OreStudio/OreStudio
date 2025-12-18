@@ -69,8 +69,15 @@ remote_event_adapter::subscribe(const std::string& event_type) {
         co_return false;
     }
 
-    // Parse response
-    auto response = messaging::subscribe_response::deserialize(result->payload());
+    // Decompress and parse response
+    auto payload = result->decompressed_payload();
+    if (!payload) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to decompress subscribe response for "
+                                   << event_type;
+        co_return false;
+    }
+
+    auto response = messaging::subscribe_response::deserialize(*payload);
     if (!response) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize subscribe response for "
                                    << event_type;
@@ -111,8 +118,15 @@ bool remote_event_adapter::subscribe_sync(const std::string& event_type) {
         return false;
     }
 
-    // Parse response
-    auto response = messaging::subscribe_response::deserialize(result->payload());
+    // Decompress and parse response
+    auto response_payload = result->decompressed_payload();
+    if (!response_payload) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to decompress subscribe response for "
+                                   << event_type;
+        return false;
+    }
+
+    auto response = messaging::subscribe_response::deserialize(*response_payload);
     if (!response) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize subscribe response for "
                                    << event_type;
@@ -154,8 +168,15 @@ remote_event_adapter::unsubscribe(const std::string& event_type) {
         co_return false;
     }
 
-    // Parse response
-    auto response = messaging::unsubscribe_response::deserialize(result->payload());
+    // Decompress and parse response
+    auto payload = result->decompressed_payload();
+    if (!payload) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to decompress unsubscribe response for "
+                                   << event_type;
+        co_return false;
+    }
+
+    auto response = messaging::unsubscribe_response::deserialize(*payload);
     if (!response) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize unsubscribe response for "
                                    << event_type;
@@ -196,8 +217,15 @@ bool remote_event_adapter::unsubscribe_sync(const std::string& event_type) {
         return false;
     }
 
-    // Parse response
-    auto response = messaging::unsubscribe_response::deserialize(result->payload());
+    // Decompress and parse response
+    auto response_payload = result->decompressed_payload();
+    if (!response_payload) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to decompress unsubscribe response for "
+                                   << event_type;
+        return false;
+    }
+
+    auto response = messaging::unsubscribe_response::deserialize(*response_payload);
     if (!response) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize unsubscribe response for "
                                    << event_type;

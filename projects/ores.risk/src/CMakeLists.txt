@@ -36,17 +36,11 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PRIVATE
-        sqlgen::sqlgen
         pugixml::pugixml
-        Boost::boost
-        ores.utility.lib
-        ores.database.lib
         ores.variability.lib
         faker-cxx::faker-cxx
         libfort::fort
-   PUBLIC
-        reflectcpp::reflectcpp
-        ores.comms.lib
-    )
+    PUBLIC
+        ores.comms.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

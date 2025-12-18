@@ -39,13 +39,7 @@ target_link_libraries(${lib_target_name}
         ores.variability.lib
         ores.eventing.lib
     PRIVATE
-        ores.comms.lib
-        ores.utility.lib
-        ores.database.lib
-        sqlgen::sqlgen
-        reflectcpp::reflectcpp
         faker-cxx::faker-cxx
-        libfort::fort
-        Boost::boost)
+        libfort::fort)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

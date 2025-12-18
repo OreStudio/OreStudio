@@ -36,11 +36,9 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        Boost::log
         sqlgen::sqlgen
     PRIVATE
         ores.utility.lib
-        reflectcpp::reflectcpp
-        Boost::boost)
+        reflectcpp::reflectcpp)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

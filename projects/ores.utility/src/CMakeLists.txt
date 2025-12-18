@@ -44,11 +44,9 @@ target_link_libraries(${lib_target_name}
         OpenSSL::SSL
         Boost::log
         Boost::program_options
+        Boost::exception
     PRIVATE
         faker-cxx::faker-cxx
-        reflectcpp::reflectcpp
-        Boost::boost
-        Boost::exception
-    )
+        reflectcpp::reflectcpp)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

@@ -38,8 +38,9 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.eventing.lib
     PRIVATE
-        reflectcpp::reflectcpp
-        OpenSSL::Crypto
         Boost::iostreams)
+# Note: reflectcpp and OpenSSL::Crypto come transitively through ores.eventing.lib
+# -> ores.utility.lib (OpenSSL::SSL includes Crypto, reflectcpp is linked)
+# -> ores.database.lib (reflectcpp is linked)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

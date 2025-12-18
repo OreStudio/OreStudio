@@ -130,5 +130,5 @@ jobs:
 
       - name: Parse test results
         run: |
-           pip install defusedxml
+           python3 -m pip install defusedxml
            python3 ./build/scripts/parse_catch2_results.py "./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/publish/bin/test-results-*.xml"

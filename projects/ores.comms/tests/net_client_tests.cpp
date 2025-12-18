@@ -154,11 +154,15 @@ TEST_CASE("test_client_server_connection", tags) {
         co_await client->connect();
 
         BOOST_LOG_SEV(lg, info) << "Client connected";
-        CHECK(client->is_connected());
+        // Store result in variable for Catch2 expression decomposition on Windows Clang
+        const bool connected = client->is_connected();
+        CHECK(connected);
 
         // Clean disconnect
         client->disconnect();
-        CHECK(!client->is_connected());
+        // Store result in variable for Catch2 expression decomposition on Windows Clang
+        const bool disconnected = !client->is_connected();
+        CHECK(disconnected);
 
         BOOST_LOG_SEV(lg, info) << "Stopping server";
         server->stop();

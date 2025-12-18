@@ -19,27 +19,16 @@
  */
 #include "ores.shell/app/commands/subscription_commands.hpp"
 
-#include <iomanip>
 #include <ostream>
 #include <functional>
 #include <cli/cli.h>
+#include "ores.utility/datetime/datetime.hpp"
 
 namespace ores::shell::app::commands {
 
 using namespace ores::utility::log;
 using comms::net::client_session;
-
-namespace {
-
-std::string format_timestamp(std::chrono::system_clock::time_point tp) {
-    auto time = std::chrono::system_clock::to_time_t(tp);
-    std::tm tm = *std::localtime(&time);
-    std::ostringstream oss;
-    oss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-    return oss.str();
-}
-
-} // anonymous namespace
+using utility::datetime::datetime;
 
 void subscription_commands::
 register_commands(cli::Menu& root_menu, client_session& session) {
@@ -163,7 +152,7 @@ process_notifications(std::ostream& out, client_session& session) {
     out << "Received " << notifications.size() << " notification(s):" << std::endl;
     for (const auto& notif : notifications) {
         out << "  Async notification \"" << notif.event_type
-            << "\" received at " << format_timestamp(notif.timestamp)
+            << "\" received at " << datetime::format_time_point(notif.timestamp)
             << std::endl;
     }
 }
@@ -174,7 +163,7 @@ display_pending_notifications(std::ostream& out, client_session& session) {
 
     for (const auto& notif : notifications) {
         out << "Asynchronous notification \"" << notif.event_type
-            << "\" received from server at " << format_timestamp(notif.timestamp)
+            << "\" received from server at " << datetime::format_time_point(notif.timestamp)
             << "." << std::endl;
     }
 

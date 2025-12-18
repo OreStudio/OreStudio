@@ -26,6 +26,8 @@
 #include <memory>
 #include <iosfwd>
 #include <cstdint>
+#include <concepts>
+#include <expected>
 #include <functional>
 #include <string_view>
 #include <boost/asio/awaitable.hpp>
@@ -38,6 +40,7 @@
 #include "ores.comms/net/client_options.hpp"
 #include "ores.comms/net/connection.hpp"
 #include "ores.comms/net/pending_request_map.hpp"
+#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::comms::net {
 
@@ -328,6 +331,82 @@ public:
      */
     std::expected<messaging::frame, messaging::error_code>
     send_request_sync(messaging::frame request_frame);
+
+    /**
+     * @brief Send typed request and receive typed response (blocking version).
+     *
+     * Handles serialization, framing, decompression, and deserialization.
+     *
+     * @tparam RequestType Request message type (must have serialize() method)
+     * @tparam ResponseType Response message type (must have static deserialize() method)
+     * @tparam RequestMsgType The message_type enum value for this request
+     * @param request The request to send
+     * @return Expected containing deserialized response, or error_code
+     */
+    template <typename RequestType, typename ResponseType,
+              messaging::message_type RequestMsgType>
+    std::expected<ResponseType, messaging::error_code>
+    process_request(RequestType request) {
+        auto payload = request.serialize();
+        messaging::frame request_frame(RequestMsgType, 0, std::move(payload));
+
+        auto result = send_request_sync(std::move(request_frame));
+        if (!result) {
+            return std::unexpected(result.error());
+        }
+
+        auto response_payload = result->decompressed_payload();
+        if (!response_payload) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
+            return std::unexpected(messaging::error_code::decompression_failed);
+        }
+
+        auto response = ResponseType::deserialize(*response_payload);
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+            return std::unexpected(messaging::error_code::deserialization_failed);
+        }
+
+        return *response;
+    }
+
+    /**
+     * @brief Send typed request and receive typed response (async version).
+     *
+     * Handles serialization, framing, decompression, and deserialization.
+     *
+     * @tparam RequestType Request message type (must have serialize() method)
+     * @tparam ResponseType Response message type (must have static deserialize() method)
+     * @tparam RequestMsgType The message_type enum value for this request
+     * @param request The request to send
+     * @return Awaitable containing deserialized response, or error_code
+     */
+    template <typename RequestType, typename ResponseType,
+              messaging::message_type RequestMsgType>
+    boost::asio::awaitable<std::expected<ResponseType, messaging::error_code>>
+    process_request_async(RequestType request) {
+        auto payload = request.serialize();
+        messaging::frame request_frame(RequestMsgType, 0, std::move(payload));
+
+        auto result = co_await send_request(std::move(request_frame));
+        if (!result) {
+            co_return std::unexpected(result.error());
+        }
+
+        auto response_payload = result->decompressed_payload();
+        if (!response_payload) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
+            co_return std::unexpected(messaging::error_code::decompression_failed);
+        }
+
+        auto response = ResponseType::deserialize(*response_payload);
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+            co_return std::unexpected(messaging::error_code::deserialization_failed);
+        }
+
+        co_return *response;
+    }
 
 private:
     client_options config_;

@@ -378,7 +378,9 @@ TEST_CASE("test_heartbeat_disconnect_detection", tags) {
         });
 
         co_await client->connect();
-        CHECK(client->is_connected());
+        // Store result in variable for Catch2 expression decomposition on Windows Clang
+        const bool connected = client->is_connected();
+        CHECK(connected);
         BOOST_LOG_SEV(lg, info) << "Client connected";
 
         // Give heartbeat time to start
@@ -396,7 +398,9 @@ TEST_CASE("test_heartbeat_disconnect_detection", tags) {
         // Verify disconnect was detected
         BOOST_LOG_SEV(lg, info) << "Callback invoked: " << callback_invoked;
         CHECK(callback_invoked);
-        CHECK(!client->is_connected());
+        // Store result in variable for Catch2 expression decomposition on Windows Clang
+        const bool disconnected = !client->is_connected();
+        CHECK(disconnected);
 
         BOOST_LOG_SEV(lg, info) << "Test finished - disconnect detected via heartbeat";
         client->disconnect();
@@ -464,7 +468,9 @@ TEST_CASE("test_heartbeat_disabled", tags) {
         });
 
         co_await client->connect();
-        CHECK(client->is_connected());
+        // Store result in variable for Catch2 expression decomposition on Windows Clang
+        const bool connected = client->is_connected();
+        CHECK(connected);
         BOOST_LOG_SEV(lg, info) << "Client connected";
 
         // Stop server

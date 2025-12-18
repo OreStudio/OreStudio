@@ -19,6 +19,7 @@
  */
 #include "ores.shell/app/commands/subscription_commands.hpp"
 
+#include <array>
 #include <ostream>
 #include <vector>
 #include <functional>
@@ -31,27 +32,65 @@ using namespace ores::utility::log;
 using comms::net::client_session;
 using utility::datetime::datetime;
 
+namespace {
+
+/**
+ * @brief Known event channels available for subscription.
+ *
+ * These are the event types that can be subscribed to via the listen command.
+ * Event types follow the pattern: ores.<module>.<event_name>
+ */
+constexpr std::array known_channels = {
+    std::pair{"ores.risk.currency_changed", "Currency data modified"},
+    std::pair{"ores.accounts.account_changed", "Account data modified"},
+    std::pair{"ores.accounts.role_assigned", "Role assigned to account"},
+    std::pair{"ores.accounts.role_revoked", "Role revoked from account"},
+    std::pair{"ores.accounts.permissions_changed", "Account permissions modified"},
+    std::pair{"ores.variability.feature_flags_changed", "Feature flags modified"},
+};
+
+} // anonymous namespace
+
 void subscription_commands::
 register_commands(cli::Menu& root_menu, client_session& session) {
-    root_menu.Insert("listen", [&session](std::ostream& out,
+    auto events_menu = std::make_unique<cli::Menu>("events");
+
+    events_menu->Insert("channels", [](std::ostream& out) {
+        process_channels(out);
+    }, "List available event channels");
+
+    events_menu->Insert("listen", [&session](std::ostream& out,
             std::string event_type) {
         process_listen(std::ref(out), std::ref(session),
             std::move(event_type));
     }, "Subscribe to notifications for an event type");
 
-    root_menu.Insert("unlisten", [&session](std::ostream& out,
+    events_menu->Insert("unlisten", [&session](std::ostream& out,
             std::string event_type) {
         process_unlisten(std::ref(out), std::ref(session),
             std::move(event_type));
     }, "Unsubscribe from notifications (event_type or * for all)");
 
-    root_menu.Insert("subscriptions", [&session](std::ostream& out) {
+    events_menu->Insert("subscriptions", [&session](std::ostream& out) {
         process_subscriptions(std::ref(out), std::ref(session));
     }, "List active subscriptions");
 
-    root_menu.Insert("notifications", [&session](std::ostream& out) {
+    events_menu->Insert("notifications", [&session](std::ostream& out) {
         process_notifications(std::ref(out), std::ref(session));
     }, "Display and clear pending notifications");
+
+    root_menu.Insert(std::move(events_menu));
+}
+
+void subscription_commands::
+process_channels(std::ostream& out) {
+    out << "Available event channels:" << std::endl;
+    for (const auto& [channel, description] : known_channels) {
+        out << "  " << channel << std::endl;
+        out << "    " << description << std::endl;
+    }
+    out << std::endl;
+    out << "Use 'events listen <channel>' to subscribe." << std::endl;
 }
 
 void subscription_commands::

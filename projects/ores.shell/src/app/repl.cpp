@@ -81,7 +81,8 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
 void repl::display_welcome() const {
     std::cout << "ORE Studio Shell REPL v" << ORES_VERSION << std::endl;
     std::cout << "Type 'help' for available commands, 'exit' to quit" << std::endl;
-    std::cout << "Use 'listen <event>' to subscribe, 'notifications' to view" << std::endl;
+    std::cout << "Use 'events channels' to list events, 'events listen <channel>' to subscribe"
+              << std::endl;
     std::cout << std::endl;
 }
 

@@ -34,7 +34,8 @@ namespace ores::shell::app::commands {
 /**
  * @brief Manages commands related to event subscriptions and notifications.
  *
- * Provides PSQL-like LISTEN/NOTIFY functionality for the shell:
+ * Creates an 'events' submenu with PSQL-like LISTEN/NOTIFY functionality:
+ * - channels: List available event channels
  * - listen: Subscribe to server notifications for an event type
  * - unlisten: Unsubscribe from notifications
  * - subscriptions: List active subscriptions
@@ -45,14 +46,21 @@ public:
     /**
      * @brief Register subscription management commands.
      *
-     * Adds listen, unlisten, subscriptions, and notifications commands
-     * to the root menu.
+     * Creates an 'events' submenu and adds channels, listen, unlisten,
+     * subscriptions, and notifications commands to it.
      *
-     * @param root The root menu to add commands to
+     * @param root The root menu to add the events submenu to
      * @param session Client session for server communication
      */
     static void register_commands(cli::Menu& root,
         comms::net::client_session& session);
+
+    /**
+     * @brief List available event channels.
+     *
+     * @param out Output stream for user feedback
+     */
+    static void process_channels(std::ostream& out);
 
     /**
      * @brief Process a listen (subscribe) request.

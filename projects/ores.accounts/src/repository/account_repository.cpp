@@ -174,6 +174,20 @@ account_repository::read_latest_by_username(const std::string& username) {
         lg(), "Reading latest account by username");
 }
 
+std::vector<domain::account>
+account_repository::read_latest_by_email(const std::string& email) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest account by email: " << email;
+
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<account_entity>> |
+        where("email"_c == email && "valid_to"_c == max.value()) |
+        order_by("valid_from"_c.desc());
+
+    return execute_read_query<account_entity, domain::account>(ctx_, query,
+        [](const auto& entities) { return account_mapper::map(entities); },
+        lg(), "Reading latest account by email");
+}
+
 void account_repository::remove(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing account from database: " << account_id;
 

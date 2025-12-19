@@ -101,6 +101,12 @@ public:
     read_latest_by_username(const std::string& username);
 
     /**
+     * @brief Reads the latest account by email.
+     */
+    std::vector<domain::account>
+    read_latest_by_email(const std::string& email);
+
+    /**
      * @brief Deletes an account by closing its temporal validity.
      *
      * Sets the valid_to timestamp to now, effectively "deleting" the account

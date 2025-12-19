@@ -997,7 +997,7 @@ handle_signup_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
     // Use signup_service which handles all validation and feature flag checks
-    service::signup_service signup_svc(ctx_);
+    service::signup_service signup_svc(ctx_, system_flags_);
     auto result = signup_svc.register_user(request.username, request.email,
         request.password);
 

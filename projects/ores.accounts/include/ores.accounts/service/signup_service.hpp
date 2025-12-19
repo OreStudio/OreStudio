@@ -20,6 +20,7 @@
 #ifndef ORES_ACCOUNTS_SERVICE_SIGNUP_SERVICE_HPP
 #define ORES_ACCOUNTS_SERVICE_SIGNUP_SERVICE_HPP
 
+#include <memory>
 #include <string>
 #include <expected>
 #include <boost/uuid/uuid.hpp>
@@ -75,8 +76,10 @@ public:
      * @brief Constructs a signup_service.
      *
      * @param ctx The database context for repository access.
+     * @param system_flags Shared system flags service for flag access.
      */
-    explicit signup_service(database::context ctx);
+    signup_service(database::context ctx,
+        std::shared_ptr<variability::service::system_flags_service> system_flags);
 
     /**
      * @brief Registers a new user account.
@@ -107,7 +110,7 @@ public:
 private:
     repository::account_repository account_repo_;
     repository::login_info_repository login_info_repo_;
-    variability::service::system_flags_service system_flags_service_;
+    std::shared_ptr<variability::service::system_flags_service> system_flags_;
     utility::uuid::uuid_v7_generator uuid_generator_;
 };
 

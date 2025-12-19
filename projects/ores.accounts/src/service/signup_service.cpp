@@ -29,13 +29,11 @@ namespace ores::accounts::service {
 using namespace ores::utility::log;
 using error_code = ores::comms::messaging::error_code;
 
-signup_service::signup_service(database::context ctx)
+signup_service::signup_service(database::context ctx,
+    std::shared_ptr<variability::service::system_flags_service> system_flags)
     : account_repo_(ctx),
       login_info_repo_(ctx),
-      system_flags_service_(ctx) {
-    // Refresh the system flags cache on construction
-    system_flags_service_.refresh();
-}
+      system_flags_(std::move(system_flags)) {}
 
 signup_result signup_service::register_user(const std::string& username,
     const std::string& email, const std::string& password) {
@@ -47,7 +45,7 @@ signup_result signup_service::register_user(const std::string& username,
     result.username = username;
 
     // Check if signups are enabled
-    if (!system_flags_service_.is_user_signups_enabled()) {
+    if (!system_flags_->is_user_signups_enabled()) {
         BOOST_LOG_SEV(lg(), warn) << "Signup rejected: signups are disabled";
         result.error_message = "User registration is currently disabled";
         result.error_code = error_code::signup_disabled;
@@ -55,7 +53,7 @@ signup_result signup_service::register_user(const std::string& username,
     }
 
     // Check if authorization is required (not yet implemented)
-    if (system_flags_service_.is_signup_requires_authorization_enabled()) {
+    if (system_flags_->is_signup_requires_authorization_enabled()) {
         BOOST_LOG_SEV(lg(), warn)
             << "Signup rejected: authorization workflow not implemented";
         result.error_message = "Signup authorization workflow is not yet "
@@ -161,7 +159,7 @@ signup_result signup_service::register_user(const std::string& username,
 }
 
 bool signup_service::is_signup_enabled() const {
-    return system_flags_service_.is_user_signups_enabled();
+    return system_flags_->is_user_signups_enabled();
 }
 
 }

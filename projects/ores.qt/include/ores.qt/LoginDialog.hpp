@@ -65,6 +65,7 @@ public:
 private slots:
     void onLoginClicked();
     void onLoginResult(const LoginResult& result);
+    void onSignUpClicked();
 
 signals:
     void loginCompleted(const LoginResult& result);
@@ -80,6 +81,7 @@ private:
     QLineEdit* host_edit_;
     QSpinBox* port_spinbox_;
     QPushButton* login_button_;
+    QPushButton* signup_button_;
     QPushButton* cancel_button_;
     QLabel* status_label_;
 

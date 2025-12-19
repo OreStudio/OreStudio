@@ -28,6 +28,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.qt/ChangePasswordDialog.hpp"
+#include "ores.qt/SignUpDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 
@@ -42,6 +43,7 @@ LoginDialog::LoginDialog(ClientManager* clientManager, QWidget* parent)
       host_edit_(new QLineEdit(this)),
       port_spinbox_(new QSpinBox(this)),
       login_button_(new QPushButton("Login", this)),
+      signup_button_(new QPushButton("Sign Up", this)),
       cancel_button_(new QPushButton("Cancel", this)),
       status_label_(new QLabel(this)),
       clientManager_(clientManager) {
@@ -50,6 +52,7 @@ LoginDialog::LoginDialog(ClientManager* clientManager, QWidget* parent)
 
     // Connect signals
     connect(login_button_, &QPushButton::clicked, this, &LoginDialog::onLoginClicked);
+    connect(signup_button_, &QPushButton::clicked, this, &LoginDialog::onSignUpClicked);
     connect(cancel_button_, &QPushButton::clicked, this, &QDialog::reject);
     connect(this, &LoginDialog::loginCompleted,
             this, &LoginDialog::onLoginResult);
@@ -102,10 +105,12 @@ void LoginDialog::setupUI() {
     // Set icons on buttons
     const QColor iconColor(220, 220, 220); // Light gray for dark theme
     login_button_->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_checkmark_20_regular.svg", iconColor));
+    signup_button_->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_person_add_20_regular.svg", iconColor));
     cancel_button_->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_dismiss_20_regular.svg", iconColor));
 
     // Button layout
     auto* button_layout = new QHBoxLayout();
+    button_layout->addWidget(signup_button_);
     button_layout->addStretch();
     button_layout->addWidget(cancel_button_);
     button_layout->addWidget(login_button_);
@@ -129,6 +134,7 @@ void LoginDialog::enableForm(bool enabled) {
     host_edit_->setEnabled(enabled);
     port_spinbox_->setEnabled(enabled);
     login_button_->setEnabled(enabled);
+    signup_button_->setEnabled(enabled);
 }
 
 void LoginDialog::onLoginClicked() {
@@ -228,6 +234,29 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
 
         MessageBoxHelper::critical(this, "Login Failed",
             QString("Authentication failed: %1").arg(result.error_message));
+    }
+}
+
+void LoginDialog::onSignUpClicked() {
+    BOOST_LOG_SEV(lg(), trace) << "On sign up was clicked.";
+
+    if (!clientManager_) {
+        MessageBoxHelper::critical(this, "Internal Error", "Client manager not initialized");
+        return;
+    }
+
+    // Create and show signup dialog with current server info
+    SignUpDialog signupDialog(clientManager_, this);
+    signupDialog.setServerInfo(host_edit_->text(), port_spinbox_->value());
+
+    if (signupDialog.exec() == QDialog::Accepted) {
+        // Pre-fill the username field with the registered username
+        const auto registeredUsername = signupDialog.getRegisteredUsername();
+        if (!registeredUsername.isEmpty()) {
+            username_edit_->setText(registeredUsername);
+            password_edit_->clear();
+            password_edit_->setFocus();
+        }
     }
 }
 

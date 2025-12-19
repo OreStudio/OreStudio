@@ -26,6 +26,7 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_traits.hpp"
 #include "ores.accounts/domain/role.hpp"
 #include "ores.accounts/domain/permission.hpp"
 
@@ -361,6 +362,76 @@ struct get_account_permissions_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const get_account_permissions_response& v);
+
+}
+
+namespace ores::comms::messaging {
+
+/**
+ * @brief Message traits specialization for list_roles_request.
+ */
+template<>
+struct message_traits<accounts::messaging::list_roles_request> {
+    using request_type = accounts::messaging::list_roles_request;
+    using response_type = accounts::messaging::list_roles_response;
+    static constexpr message_type request_message_type =
+        message_type::list_roles_request;
+};
+
+/**
+ * @brief Message traits specialization for list_permissions_request.
+ */
+template<>
+struct message_traits<accounts::messaging::list_permissions_request> {
+    using request_type = accounts::messaging::list_permissions_request;
+    using response_type = accounts::messaging::list_permissions_response;
+    static constexpr message_type request_message_type =
+        message_type::list_permissions_request;
+};
+
+/**
+ * @brief Message traits specialization for assign_role_request.
+ */
+template<>
+struct message_traits<accounts::messaging::assign_role_request> {
+    using request_type = accounts::messaging::assign_role_request;
+    using response_type = accounts::messaging::assign_role_response;
+    static constexpr message_type request_message_type =
+        message_type::assign_role_request;
+};
+
+/**
+ * @brief Message traits specialization for revoke_role_request.
+ */
+template<>
+struct message_traits<accounts::messaging::revoke_role_request> {
+    using request_type = accounts::messaging::revoke_role_request;
+    using response_type = accounts::messaging::revoke_role_response;
+    static constexpr message_type request_message_type =
+        message_type::revoke_role_request;
+};
+
+/**
+ * @brief Message traits specialization for get_account_roles_request.
+ */
+template<>
+struct message_traits<accounts::messaging::get_account_roles_request> {
+    using request_type = accounts::messaging::get_account_roles_request;
+    using response_type = accounts::messaging::get_account_roles_response;
+    static constexpr message_type request_message_type =
+        message_type::get_account_roles_request;
+};
+
+/**
+ * @brief Message traits specialization for get_account_permissions_request.
+ */
+template<>
+struct message_traits<accounts::messaging::get_account_permissions_request> {
+    using request_type = accounts::messaging::get_account_permissions_request;
+    using response_type = accounts::messaging::get_account_permissions_response;
+    static constexpr message_type request_message_type =
+        message_type::get_account_permissions_request;
+};
 
 }
 

@@ -28,6 +28,7 @@
 #include <expected>
 #include <string>
 #include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_traits.hpp"
 
 namespace ores::comms::messaging {
 
@@ -221,6 +222,28 @@ struct database_status_message final {
 };
 
 std::ostream& operator<<(std::ostream& s, const database_status_message& v);
+
+/**
+ * @brief Message traits specialization for subscribe_request.
+ */
+template<>
+struct message_traits<subscribe_request> {
+    using request_type = subscribe_request;
+    using response_type = subscribe_response;
+    static constexpr message_type request_message_type =
+        message_type::subscribe_request;
+};
+
+/**
+ * @brief Message traits specialization for unsubscribe_request.
+ */
+template<>
+struct message_traits<unsubscribe_request> {
+    using request_type = unsubscribe_request;
+    using response_type = unsubscribe_response;
+    static constexpr message_type request_message_type =
+        message_type::unsubscribe_request;
+};
 
 }
 

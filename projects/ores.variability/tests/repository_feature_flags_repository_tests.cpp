@@ -184,7 +184,7 @@ TEST_CASE("read_all_feature_flags_by_name", tags) {
     auto read_flags = repo.read_all(test_name);
     BOOST_LOG_SEV(lg, debug) << "Read " << read_flags.size() << " feature flags";
 
-    CHECK(read_flags.size() >= 2);
+    CHECK(read_flags.size() == 2);
 
     // Verify different versions exist
     bool found_v1 = false, found_v2 = false;

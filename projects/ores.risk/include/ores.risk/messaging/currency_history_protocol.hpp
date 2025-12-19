@@ -27,6 +27,7 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_traits.hpp"
 #include "ores.risk/domain/currency_version_history.hpp"
 
 namespace ores::risk::messaging {
@@ -72,6 +73,21 @@ struct get_currency_history_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const get_currency_history_response& v);
+
+}
+
+namespace ores::comms::messaging {
+
+/**
+ * @brief Message traits specialization for get_currency_history_request.
+ */
+template<>
+struct message_traits<risk::messaging::get_currency_history_request> {
+    using request_type = risk::messaging::get_currency_history_request;
+    using response_type = risk::messaging::get_currency_history_response;
+    static constexpr message_type request_message_type =
+        message_type::get_currency_history_request;
+};
 
 }
 

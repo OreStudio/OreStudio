@@ -28,6 +28,7 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_traits.hpp"
 #include "ores.risk/domain/currency.hpp"
 
 namespace ores::risk::messaging {
@@ -226,6 +227,43 @@ struct delete_currency_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const delete_currency_response& v);
+
+}
+
+namespace ores::comms::messaging {
+
+/**
+ * @brief Message traits specialization for get_currencies_request.
+ */
+template<>
+struct message_traits<risk::messaging::get_currencies_request> {
+    using request_type = risk::messaging::get_currencies_request;
+    using response_type = risk::messaging::get_currencies_response;
+    static constexpr message_type request_message_type =
+        message_type::get_currencies_request;
+};
+
+/**
+ * @brief Message traits specialization for save_currency_request.
+ */
+template<>
+struct message_traits<risk::messaging::save_currency_request> {
+    using request_type = risk::messaging::save_currency_request;
+    using response_type = risk::messaging::save_currency_response;
+    static constexpr message_type request_message_type =
+        message_type::save_currency_request;
+};
+
+/**
+ * @brief Message traits specialization for delete_currency_request.
+ */
+template<>
+struct message_traits<risk::messaging::delete_currency_request> {
+    using request_type = risk::messaging::delete_currency_request;
+    using response_type = risk::messaging::delete_currency_response;
+    static constexpr message_type request_message_type =
+        message_type::delete_currency_request;
+};
 
 }
 

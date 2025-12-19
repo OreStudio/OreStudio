@@ -22,6 +22,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include "ores.accounts/messaging/protocol.hpp"
+#include "ores.accounts/messaging/signup_protocol.hpp"
+#include "ores.accounts/service/signup_service.hpp"
 
 namespace ores::accounts::messaging {
 
@@ -89,6 +91,8 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_change_password_request(payload, remote_address);
     case message_type::update_my_email_request:
         co_return co_await handle_update_my_email_request(payload, remote_address);
+    case message_type::signup_request:
+        co_return co_await handle_signup_request(payload);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown accounts message type " << type;
         co_return std::unexpected(comms::messaging::error_code::invalid_message_type);
@@ -977,6 +981,43 @@ handle_update_my_email_request(std::span<const std::byte> payload,
         };
         co_return response.serialize();
     }
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_signup_request(std::span<const std::byte> payload) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing signup_request";
+
+    auto request_result = signup_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize signup_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+
+    // Use signup_service which handles all validation and feature flag checks
+    service::signup_service signup_svc(ctx_);
+    auto result = signup_svc.register_user(request.username, request.email,
+        request.password);
+
+    if (result.success) {
+        BOOST_LOG_SEV(lg(), info) << "Signup successful for username: "
+                                  << result.username
+                                  << ", account_id: " << result.account_id;
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "Signup failed for username: "
+                                  << request.username
+                                  << ", reason: " << result.error_message;
+    }
+
+    signup_response response{
+        .success = result.success,
+        .error_message = result.error_message,
+        .account_id = result.account_id,
+        .username = result.username
+    };
+    co_return response.serialize();
 }
 
 }

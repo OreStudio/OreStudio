@@ -49,6 +49,7 @@ namespace ores::accounts::messaging {
  * - reset_password_request: Sets password_reset_required flag to force password change
  * - change_password_request: Changes user's password and clears password_reset_required flag
  * - update_my_email_request: Allows user to update their own email address
+ * - signup_request: Creates a new account via self-registration (when enabled)
  */
 class accounts_message_handler final : public comms::messaging::message_handler {
 private:
@@ -221,6 +222,15 @@ private:
     handler_result
     handle_update_my_email_request(std::span<const std::byte> payload,
         const std::string& remote_address);
+
+    /**
+     * @brief Handle signup_request message.
+     *
+     * Does NOT require authentication. Allows unauthenticated users to
+     * create their own accounts when the system.user_signups flag is enabled.
+     */
+    handler_result
+    handle_signup_request(std::span<const std::byte> payload);
 
     /**
      * @brief Check if a remote address is localhost.

@@ -71,6 +71,13 @@ TEST_CASE("write_single_feature_flag", tags) {
 
     BOOST_LOG_SEV(lg, debug) << "Feature flag: " << flag;
     CHECK_NOTHROW(repo.write(flag));
+
+    auto read_flags = repo.read_latest(flag.name);
+    REQUIRE(read_flags.size() == 1);
+    const auto& read_flag = read_flags[0];
+    CHECK(read_flag.name == flag.name);
+    CHECK(read_flag.enabled == flag.enabled);
+    CHECK(read_flag.description == flag.description);
 }
 
 TEST_CASE("write_multiple_feature_flags", tags) {

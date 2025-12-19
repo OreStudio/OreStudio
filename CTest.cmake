@@ -266,7 +266,7 @@ set(CTEST_UPDATE_COMMAND "${GIT_EXECUTABLE}")
 # version.
 set(CTEST_UPDATE_VERSION_ONLY ON)
 ctest_update(RETURN_VALUE update_result)
-if(git_result)
+if(update_result)
     message(FATAL_ERROR "Failed to update source code from git.")
 endif()
 
@@ -286,7 +286,10 @@ endif()
 # Step: build.
 #
 set(CTEST_BUILD_TARGET "package")
-ctest_build(PARALLEL_LEVEL ${nproc})
+ctest_build(PARALLEL_LEVEL ${nproc} RETURN_VALUE build_result)
+if(build_result)
+    message(FATAL_ERROR "Build failed with error code: ${build_result}")
+endif()
 
 #
 # Step: test.

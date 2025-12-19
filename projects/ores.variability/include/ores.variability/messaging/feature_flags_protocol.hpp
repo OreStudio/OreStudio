@@ -25,6 +25,7 @@
 #include <vector>
 #include <expected>
 #include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_traits.hpp"
 #include "ores.variability/domain/feature_flags.hpp"
 
 namespace ores::variability::messaging {
@@ -52,6 +53,21 @@ struct list_feature_flags_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const list_feature_flags_response& v);
+
+}
+
+namespace ores::comms::messaging {
+
+/**
+ * @brief Message traits specialization for list_feature_flags_request.
+ */
+template<>
+struct message_traits<variability::messaging::list_feature_flags_request> {
+    using request_type = variability::messaging::list_feature_flags_request;
+    using response_type = variability::messaging::list_feature_flags_response;
+    static constexpr message_type request_message_type =
+        message_type::list_feature_flags_request;
+};
 
 }
 

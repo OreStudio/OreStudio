@@ -41,6 +41,7 @@
 #include "ores.comms/net/connection.hpp"
 #include "ores.comms/net/pending_request_map.hpp"
 #include "ores.comms/messaging/frame.hpp"
+#include "ores.comms/messaging/message_traits.hpp"
 
 namespace ores::comms::net {
 
@@ -410,6 +411,57 @@ public:
         }
 
         co_return *response;
+    }
+
+    // =========================================================================
+    // Traits-based process_request overloads
+    // =========================================================================
+    // These overloads use message_traits to infer the response type and
+    // message_type enum from the request type, simplifying the API.
+
+    /**
+     * @brief Send typed request using message_traits (blocking version).
+     *
+     * Uses message_traits to automatically determine the response type and
+     * message_type enum value from the request type.
+     *
+     * @tparam RequestType Request message type (must have message_traits)
+     * @param request The request to send
+     * @return Expected containing deserialized response, or error_code
+     */
+    template <typename RequestType>
+        requires messaging::has_message_traits<RequestType>
+    std::expected<typename messaging::message_traits<RequestType>::response_type,
+                  messaging::error_code>
+    process_request(RequestType request) {
+        using traits = messaging::message_traits<RequestType>;
+        return process_request<
+            typename traits::request_type,
+            typename traits::response_type,
+            traits::request_message_type>(std::move(request));
+    }
+
+    /**
+     * @brief Send typed request using message_traits (async version).
+     *
+     * Uses message_traits to automatically determine the response type and
+     * message_type enum value from the request type.
+     *
+     * @tparam RequestType Request message type (must have message_traits)
+     * @param request The request to send
+     * @return Awaitable containing deserialized response, or error_code
+     */
+    template <typename RequestType>
+        requires messaging::has_message_traits<RequestType>
+    boost::asio::awaitable<
+        std::expected<typename messaging::message_traits<RequestType>::response_type,
+                      messaging::error_code>>
+    process_request_async(RequestType request) {
+        using traits = messaging::message_traits<RequestType>;
+        return process_request_async<
+            typename traits::request_type,
+            typename traits::response_type,
+            traits::request_message_type>(std::move(request));
     }
 
 private:

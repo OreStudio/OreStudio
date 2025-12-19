@@ -32,6 +32,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_traits.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/error_protocol.hpp"
 #include "ores.comms/net/client.hpp"
@@ -329,6 +330,72 @@ public:
         }
         return process_request<RequestType, ResponseType, RequestMsgType>(
             std::move(request));
+    }
+
+    // =========================================================================
+    // Traits-based process_request overloads
+    // =========================================================================
+    // These overloads use message_traits to infer the response type and
+    // message_type enum from the request type, simplifying the API.
+
+    /**
+     * @brief Process a request using message_traits (does not require auth).
+     *
+     * Uses message_traits to automatically determine the response type and
+     * message_type enum value from the request type.
+     *
+     * @tparam RequestType Request message type (must have message_traits)
+     * @param request The request to send
+     * @return Response on success, error on failure
+     */
+    template <typename RequestType>
+        requires messaging::has_message_traits<RequestType>
+    std::expected<typename messaging::message_traits<RequestType>::response_type,
+                  session_error>
+    process_request(RequestType request) {
+        using traits = messaging::message_traits<RequestType>;
+        return process_request<
+            typename traits::request_type,
+            typename traits::response_type,
+            traits::request_message_type>(std::move(request));
+    }
+
+    /**
+     * @brief Process a request using message_traits (requires authentication).
+     *
+     * @tparam RequestType Request message type (must have message_traits)
+     * @param request The request to send
+     * @return Response on success, error on failure
+     */
+    template <typename RequestType>
+        requires messaging::has_message_traits<RequestType>
+    std::expected<typename messaging::message_traits<RequestType>::response_type,
+                  session_error>
+    process_authenticated_request(RequestType request) {
+        using traits = messaging::message_traits<RequestType>;
+        return process_authenticated_request<
+            typename traits::request_type,
+            typename traits::response_type,
+            traits::request_message_type>(std::move(request));
+    }
+
+    /**
+     * @brief Process a request using message_traits (requires admin).
+     *
+     * @tparam RequestType Request message type (must have message_traits)
+     * @param request The request to send
+     * @return Response on success, error on failure
+     */
+    template <typename RequestType>
+        requires messaging::has_message_traits<RequestType>
+    std::expected<typename messaging::message_traits<RequestType>::response_type,
+                  session_error>
+    process_admin_request(RequestType request) {
+        using traits = messaging::message_traits<RequestType>;
+        return process_admin_request<
+            typename traits::request_type,
+            typename traits::response_type,
+            traits::request_message_type>(std::move(request));
     }
 
     /**

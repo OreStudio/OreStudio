@@ -47,6 +47,15 @@ struct LoginResult {
 };
 
 /**
+ * @brief Result of a signup attempt.
+ */
+struct SignupResult {
+    bool success = false;
+    QString error_message;
+    QString username;
+};
+
+/**
  * @brief Manages the lifecycle of the network client and IO context.
  *
  * Maintains a persistent IO context/thread while allowing the client connection
@@ -84,6 +93,27 @@ public:
         const std::string& host,
         std::uint16_t port,
         const std::string& username,
+        const std::string& password);
+
+    /**
+     * @brief Connect to the server and attempt signup.
+     *
+     * Creates a temporary connection to register a new user account.
+     * Does not establish a persistent connection or log in the user.
+     * The connection is closed after the signup attempt completes.
+     *
+     * @param host Server hostname
+     * @param port Server port
+     * @param username Desired username
+     * @param email User's email address
+     * @param password Desired password
+     * @return SignupResult containing success status and error message if failed
+     */
+    SignupResult signup(
+        const std::string& host,
+        std::uint16_t port,
+        const std::string& username,
+        const std::string& email,
         const std::string& password);
 
     /**

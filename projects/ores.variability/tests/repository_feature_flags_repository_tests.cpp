@@ -91,6 +91,9 @@ TEST_CASE("write_multiple_feature_flags", tags) {
     BOOST_LOG_SEV(lg, debug) << "Generated " << flags.size() << " feature flags";
 
     CHECK_NOTHROW(repo.write(flags));
+
+    auto read_flags = repo.read_latest();
+    CHECK(read_flags.size() == flags.size());
 }
 
 TEST_CASE("read_latest_feature_flags", tags) {

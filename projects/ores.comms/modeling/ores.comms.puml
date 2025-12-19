@@ -464,6 +464,11 @@ namespace ores #F2F2F2 {
                 class frame
             }
 
+            ' Group: Traits template (Row 2.5)
+            together {
+                class message_traits
+            }
+
             ' Group: Heartbeat messages (Row 3)
             together {
                 class ping
@@ -636,6 +641,36 @@ namespace ores #F2F2F2 {
 
             frame o-u- ores::comms::messaging::frame_header
             frame ..> ores::comms::messaging::error_code
+
+            class message_traits<Request> <<template>> #ECECEC {
+                +{field} request_type Request
+                +{field} response_type Response
+                +{field} request_message_type message_type
+            }
+
+            note top of message_traits
+            Traits template for mapping request types to response types.
+
+            Provides compile-time type information for request/response pairs:
+            - request_type: The request struct type
+            - response_type: The corresponding response struct type
+            - request_message_type: The message_type enum value
+
+            Enables simplified process_request API:
+
+            // Old API:
+            client->process_request<
+                subscribe_request,
+                subscribe_response,
+                message_type::subscribe_request>(req);
+
+            // New API using traits:
+            client->process_request(req);
+
+            See also: has_message_traits concept
+            end note
+
+            message_traits ..> ores::comms::messaging::message_type
 
             class message_dispatcher #ECECEC {
                 +message_dispatcher(std::shared_ptr<service::auth_session_service> sessions)
@@ -1170,6 +1205,11 @@ namespace ores #F2F2F2 {
                 class subscription_protocol_tests
             }
 
+            ' Group: Traits tests
+            together {
+                class message_traits_tests
+            }
+
             ' Hidden relationships to stack related classes vertically
             frame_tests -[hidden]down- message_handler_tests
             subscription_manager_tests -[hidden]down- subscription_protocol_tests
@@ -1290,6 +1330,23 @@ namespace ores #F2F2F2 {
             subscription_protocol_tests ..> ores::comms::messaging::unsubscribe_response : tests
             subscription_protocol_tests ..> ores::comms::messaging::notification_message : tests
             subscription_protocol_tests ..> ores::comms::service::subscription_handler : tests
+
+            class message_traits_tests <<test suite>> #C5E1A5 {
+                +test_has_message_traits_concept_satisfaction() void
+                +test_message_traits_correct_types() void
+                +test_response_type_convention() void
+            }
+
+            note top of message_traits_tests
+            Test suite for message_traits template.
+
+            Tests cover:
+            - has_message_traits concept satisfaction
+            - Correct request/response type mappings
+            - Response message_type follows request + 1 convention
+            end note
+
+            message_traits_tests ..> ores::comms::messaging::message_traits : tests
         }
     }
 }

@@ -26,6 +26,7 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_traits.hpp"
 
 namespace ores::accounts::messaging {
 
@@ -138,6 +139,32 @@ struct bootstrap_status_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const bootstrap_status_response& v);
+
+}
+
+namespace ores::comms::messaging {
+
+/**
+ * @brief Message traits specialization for create_initial_admin_request.
+ */
+template<>
+struct message_traits<accounts::messaging::create_initial_admin_request> {
+    using request_type = accounts::messaging::create_initial_admin_request;
+    using response_type = accounts::messaging::create_initial_admin_response;
+    static constexpr message_type request_message_type =
+        message_type::create_initial_admin_request;
+};
+
+/**
+ * @brief Message traits specialization for bootstrap_status_request.
+ */
+template<>
+struct message_traits<accounts::messaging::bootstrap_status_request> {
+    using request_type = accounts::messaging::bootstrap_status_request;
+    using response_type = accounts::messaging::bootstrap_status_response;
+    static constexpr message_type request_message_type =
+        message_type::bootstrap_status_request;
+};
 
 }
 

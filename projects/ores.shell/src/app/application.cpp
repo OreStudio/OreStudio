@@ -76,15 +76,11 @@ bool auto_connect(client_session& session, std::ostream& out,
 bool auto_login(client_session& session, std::ostream& out,
     const config::login_options& login_config) {
     using accounts::messaging::login_request;
-    using accounts::messaging::login_response;
-    using comms::messaging::message_type;
 
-    auto result = session.process_request<login_request, login_response,
-                                          message_type::login_request>
-        (login_request{
-            .username = login_config.username,
-            .password = login_config.password
-        });
+    auto result = session.process_request(login_request{
+        .username = login_config.username,
+        .password = login_config.password
+    });
 
     if (!result) {
         out << "✗ Auto-login failed: " << to_string(result.error()) << std::endl;
@@ -110,13 +106,8 @@ bool auto_login(client_session& session, std::ostream& out,
 
 void check_bootstrap_status(client_session& session, std::ostream& out) {
     using accounts::messaging::bootstrap_status_request;
-    using accounts::messaging::bootstrap_status_response;
-    using comms::messaging::message_type;
 
-    auto result = session.process_request<bootstrap_status_request,
-                                          bootstrap_status_response,
-                                          message_type::bootstrap_status_request>
-        (bootstrap_status_request{});
+    auto result = session.process_request(bootstrap_status_request{});
 
     if (!result) {
         // Silently ignore errors - bootstrap check is optional

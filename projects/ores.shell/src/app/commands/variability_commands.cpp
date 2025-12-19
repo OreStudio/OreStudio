@@ -48,11 +48,7 @@ process_list_feature_flags(std::ostream& out, client_session& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list feature flags request.";
 
     using variability::messaging::list_feature_flags_request;
-    using variability::messaging::list_feature_flags_response;
-    auto result = session.process_request<list_feature_flags_request,
-                                          list_feature_flags_response,
-                                          message_type::list_feature_flags_request>
-        (list_feature_flags_request{});
+    auto result = session.process_request(list_feature_flags_request{});
 
     if (!result) {
         out << "✗ " << to_string(result.error()) << std::endl;

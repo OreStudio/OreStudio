@@ -59,11 +59,7 @@ process_get_currencies(std::ostream& out, client_session& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get currencies request.";
 
     using risk::messaging::get_currencies_request;
-    using risk::messaging::get_currencies_response;
-    auto result = session.process_request<get_currencies_request,
-                                          get_currencies_response,
-                                          message_type::get_currencies_request>
-        (get_currencies_request{});
+    auto result = session.process_request(get_currencies_request{});
 
     if (!result) {
         out << "✗ " << comms::net::to_string(result.error()) << std::endl;

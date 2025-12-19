@@ -35,13 +35,8 @@ namespace {
 
 void check_bootstrap_status(client_session& session, std::ostream& out) {
     using accounts::messaging::bootstrap_status_request;
-    using accounts::messaging::bootstrap_status_response;
-    using comms::messaging::message_type;
 
-    auto result = session.process_request<bootstrap_status_request,
-                                          bootstrap_status_response,
-                                          message_type::bootstrap_status_request>
-        (bootstrap_status_request{});
+    auto result = session.process_request(bootstrap_status_request{});
 
     if (!result) {
         // Silently ignore errors - bootstrap check is optional

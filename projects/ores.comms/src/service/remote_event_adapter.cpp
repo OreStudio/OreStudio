@@ -83,10 +83,7 @@ bool remote_event_adapter::subscribe_sync(const std::string& event_type) {
     messaging::subscribe_request req;
     req.event_type = event_type;
 
-    auto result = client_->process_request<
-        messaging::subscribe_request,
-        messaging::subscribe_response,
-        messaging::message_type::subscribe_request>(std::move(req));
+    auto result = client_->process_request(std::move(req));
 
     if (!result) {
         BOOST_LOG_SEV(lg(), error) << "Subscribe request failed for "
@@ -144,10 +141,7 @@ bool remote_event_adapter::unsubscribe_sync(const std::string& event_type) {
     messaging::unsubscribe_request req;
     req.event_type = event_type;
 
-    auto result = client_->process_request<
-        messaging::unsubscribe_request,
-        messaging::unsubscribe_response,
-        messaging::message_type::unsubscribe_request>(std::move(req));
+    auto result = client_->process_request(std::move(req));
 
     if (!result) {
         BOOST_LOG_SEV(lg(), error) << "Unsubscribe request failed for "

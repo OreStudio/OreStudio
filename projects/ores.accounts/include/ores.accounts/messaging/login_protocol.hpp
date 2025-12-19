@@ -27,6 +27,7 @@
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_traits.hpp"
 #include "ores.accounts/domain/login_info.hpp"
 
 namespace ores::accounts::messaging {
@@ -170,6 +171,43 @@ struct logout_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const logout_response& v);
+
+}
+
+namespace ores::comms::messaging {
+
+/**
+ * @brief Message traits specialization for login_request.
+ */
+template<>
+struct message_traits<accounts::messaging::login_request> {
+    using request_type = accounts::messaging::login_request;
+    using response_type = accounts::messaging::login_response;
+    static constexpr message_type request_message_type =
+        message_type::login_request;
+};
+
+/**
+ * @brief Message traits specialization for list_login_info_request.
+ */
+template<>
+struct message_traits<accounts::messaging::list_login_info_request> {
+    using request_type = accounts::messaging::list_login_info_request;
+    using response_type = accounts::messaging::list_login_info_response;
+    static constexpr message_type request_message_type =
+        message_type::list_login_info_request;
+};
+
+/**
+ * @brief Message traits specialization for logout_request.
+ */
+template<>
+struct message_traits<accounts::messaging::logout_request> {
+    using request_type = accounts::messaging::logout_request;
+    using response_type = accounts::messaging::logout_response;
+    static constexpr message_type request_message_type =
+        message_type::logout_request;
+};
 
 }
 

@@ -26,6 +26,7 @@
 #include <expected>
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/error_protocol.hpp"
+#include "ores.comms/messaging/message_traits.hpp"
 
 namespace ores::comms::messaging {
 
@@ -183,6 +184,17 @@ frame create_error_response_frame(
 compression_type select_compression(
     std::uint8_t supported_compression,
     compression_type preferred = compression_type::zlib);
+
+/**
+ * @brief Message traits specialization for handshake_request.
+ */
+template<>
+struct message_traits<handshake_request> {
+    using request_type = handshake_request;
+    using response_type = handshake_response;
+    static constexpr message_type request_message_type =
+        message_type::handshake_request;
+};
 
 }
 

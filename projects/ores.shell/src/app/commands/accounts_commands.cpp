@@ -132,10 +132,8 @@ process_login(std::ostream& out, client_session& session,
                                << username;
 
     using accounts::messaging::login_request;
-    using accounts::messaging::login_response;
-    auto result = session.process_request<login_request, login_response,
-                                          message_type::login_request>
-        (login_request{.username = username, .password = std::move(password)});
+    auto result = session.process_request(
+        login_request{.username = username, .password = std::move(password)});
 
     if (!result) {
         out << "✗ " << to_string(result.error()) << std::endl;
@@ -343,15 +341,11 @@ process_bootstrap(std::ostream& out, client_session& session,
                                << username;
 
     using accounts::messaging::create_initial_admin_request;
-    using accounts::messaging::create_initial_admin_response;
-    auto result = session.process_request<create_initial_admin_request,
-                                          create_initial_admin_response,
-                                          message_type::create_initial_admin_request>
-        (create_initial_admin_request{
-            .username = std::move(username),
-            .password = std::move(password),
-            .email = std::move(email)
-        });
+    auto result = session.process_request(create_initial_admin_request{
+        .username = std::move(username),
+        .password = std::move(password),
+        .email = std::move(email)
+    });
 
     if (!result) {
         out << "✗ " << to_string(result.error()) << std::endl;

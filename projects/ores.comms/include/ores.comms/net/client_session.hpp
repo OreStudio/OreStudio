@@ -355,7 +355,7 @@ public:
     process_request(RequestType request) {
         using traits = messaging::message_traits<RequestType>;
         return process_request<
-            typename traits::request_type,
+            RequestType,
             typename traits::response_type,
             traits::request_message_type>(std::move(request));
     }
@@ -374,7 +374,7 @@ public:
     process_authenticated_request(RequestType request) {
         using traits = messaging::message_traits<RequestType>;
         return process_authenticated_request<
-            typename traits::request_type,
+            RequestType,
             typename traits::response_type,
             traits::request_message_type>(std::move(request));
     }
@@ -393,7 +393,7 @@ public:
     process_admin_request(RequestType request) {
         using traits = messaging::message_traits<RequestType>;
         return process_admin_request<
-            typename traits::request_type,
+            RequestType,
             typename traits::response_type,
             traits::request_message_type>(std::move(request));
     }

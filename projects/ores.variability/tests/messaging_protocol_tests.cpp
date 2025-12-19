@@ -125,7 +125,6 @@ TEST_CASE("list_feature_flags_response_serialize_deserialize_with_flags", tags) 
     e.feature_flags.reserve(expected_size);
     for (int i = 0; i < expected_size; ++i) {
         feature_flags ff;
-        ff.version = i + 1;
         ff.name = "flag_" + std::to_string(i);
         ff.enabled = (i % 2 == 0);
         ff.description = "Description for flag " + std::to_string(i);
@@ -143,7 +142,6 @@ TEST_CASE("list_feature_flags_response_serialize_deserialize_with_flags", tags) 
 
     REQUIRE(a.feature_flags.size() == e.feature_flags.size());
     for (size_t i = 0; i < e.feature_flags.size(); ++i) {
-        CHECK(a.feature_flags[i].version == e.feature_flags[i].version);
         CHECK(a.feature_flags[i].name == e.feature_flags[i].name);
         CHECK(a.feature_flags[i].enabled == e.feature_flags[i].enabled);
         CHECK(a.feature_flags[i].description == e.feature_flags[i].description);
@@ -172,7 +170,6 @@ TEST_CASE("list_feature_flags_response_serialize_deserialize_with_faker", tags) 
 
     REQUIRE(a.feature_flags.size() == e.feature_flags.size());
     for (size_t i = 0; i < e.feature_flags.size(); ++i) {
-        CHECK(a.feature_flags[i].version == e.feature_flags[i].version);
         CHECK(a.feature_flags[i].name == e.feature_flags[i].name);
         CHECK(a.feature_flags[i].enabled == e.feature_flags[i].enabled);
         CHECK(a.feature_flags[i].description == e.feature_flags[i].description);

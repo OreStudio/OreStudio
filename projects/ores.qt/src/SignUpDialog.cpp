@@ -180,13 +180,6 @@ bool SignUpDialog::validateInput() {
         return false;
     }
 
-    if (password.length() < 12) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Password must be at least 12 characters long.");
-        password_edit_->setFocus();
-        return false;
-    }
-
     if (password != confirmPassword) {
         MessageBoxHelper::warning(this, "Invalid Input",
             "Passwords do not match. Please try again.");

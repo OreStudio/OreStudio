@@ -26,6 +26,7 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_traits.hpp"
 #include "ores.accounts/domain/account.hpp"
 
 namespace ores::accounts::messaging {
@@ -589,6 +590,109 @@ struct update_my_email_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const update_my_email_response& v);
+
+}
+
+namespace ores::comms::messaging {
+
+/**
+ * @brief Message traits specialization for create_account_request.
+ */
+template<>
+struct message_traits<accounts::messaging::create_account_request> {
+    using request_type = accounts::messaging::create_account_request;
+    using response_type = accounts::messaging::create_account_response;
+    static constexpr message_type request_message_type =
+        message_type::create_account_request;
+};
+
+/**
+ * @brief Message traits specialization for list_accounts_request.
+ */
+template<>
+struct message_traits<accounts::messaging::list_accounts_request> {
+    using request_type = accounts::messaging::list_accounts_request;
+    using response_type = accounts::messaging::list_accounts_response;
+    static constexpr message_type request_message_type =
+        message_type::list_accounts_request;
+};
+
+/**
+ * @brief Message traits specialization for unlock_account_request.
+ */
+template<>
+struct message_traits<accounts::messaging::unlock_account_request> {
+    using request_type = accounts::messaging::unlock_account_request;
+    using response_type = accounts::messaging::unlock_account_response;
+    static constexpr message_type request_message_type =
+        message_type::unlock_account_request;
+};
+
+/**
+ * @brief Message traits specialization for delete_account_request.
+ */
+template<>
+struct message_traits<accounts::messaging::delete_account_request> {
+    using request_type = accounts::messaging::delete_account_request;
+    using response_type = accounts::messaging::delete_account_response;
+    static constexpr message_type request_message_type =
+        message_type::delete_account_request;
+};
+
+/**
+ * @brief Message traits specialization for lock_account_request.
+ */
+template<>
+struct message_traits<accounts::messaging::lock_account_request> {
+    using request_type = accounts::messaging::lock_account_request;
+    using response_type = accounts::messaging::lock_account_response;
+    static constexpr message_type request_message_type =
+        message_type::lock_account_request;
+};
+
+/**
+ * @brief Message traits specialization for update_account_request.
+ */
+template<>
+struct message_traits<accounts::messaging::update_account_request> {
+    using request_type = accounts::messaging::update_account_request;
+    using response_type = accounts::messaging::update_account_response;
+    static constexpr message_type request_message_type =
+        message_type::update_account_request;
+};
+
+/**
+ * @brief Message traits specialization for reset_password_request.
+ */
+template<>
+struct message_traits<accounts::messaging::reset_password_request> {
+    using request_type = accounts::messaging::reset_password_request;
+    using response_type = accounts::messaging::reset_password_response;
+    static constexpr message_type request_message_type =
+        message_type::reset_password_request;
+};
+
+/**
+ * @brief Message traits specialization for change_password_request.
+ */
+template<>
+struct message_traits<accounts::messaging::change_password_request> {
+    using request_type = accounts::messaging::change_password_request;
+    using response_type = accounts::messaging::change_password_response;
+    static constexpr message_type request_message_type =
+        message_type::change_password_request;
+};
+
+/**
+ * @brief Message traits specialization for update_my_email_request.
+ */
+template<>
+struct message_traits<accounts::messaging::update_my_email_request> {
+    using request_type = accounts::messaging::update_my_email_request;
+    using response_type = accounts::messaging::update_my_email_response;
+    static constexpr message_type request_message_type =
+        message_type::update_my_email_request;
+};
 
 }
 

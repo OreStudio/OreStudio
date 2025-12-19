@@ -27,6 +27,7 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/messaging/message_traits.hpp"
 #include "ores.accounts/domain/account_version_history.hpp"
 
 namespace ores::accounts::messaging {
@@ -72,6 +73,21 @@ struct get_account_history_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const get_account_history_response& v);
+
+}
+
+namespace ores::comms::messaging {
+
+/**
+ * @brief Message traits specialization for get_account_history_request.
+ */
+template<>
+struct message_traits<accounts::messaging::get_account_history_request> {
+    using request_type = accounts::messaging::get_account_history_request;
+    using response_type = accounts::messaging::get_account_history_response;
+    static constexpr message_type request_message_type =
+        message_type::get_account_history_request;
+};
 
 }
 

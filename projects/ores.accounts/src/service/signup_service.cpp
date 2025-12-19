@@ -129,7 +129,7 @@ signup_result signup_service::register_user(const std::string& username,
         .recorded_by = username,  // Self-registered
         .username = username,
         .password_hash = password_hash,
-        .password_salt = "",
+        .password_salt = "", // FIXME remove
         .totp_secret = "",
         .email = email
     };

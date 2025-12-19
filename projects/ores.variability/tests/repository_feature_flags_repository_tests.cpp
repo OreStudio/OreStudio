@@ -112,7 +112,7 @@ TEST_CASE("read_latest_feature_flags", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read " << read_flags.size() << " feature flags";
 
     CHECK(!read_flags.empty());
-    CHECK(read_flags.size() >= written_flags.size());
+    CHECK(read_flags.size() == written_flags.size());
 }
 
 TEST_CASE("read_latest_feature_flag_by_name", tags) {
@@ -155,7 +155,7 @@ TEST_CASE("read_all_feature_flags", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read " << read_flags.size() << " feature flags";
 
     CHECK(!read_flags.empty());
-    CHECK(read_flags.size() >= written_flags.size());
+    CHECK(read_flags.size() == written_flags.size());
 }
 
 TEST_CASE("read_all_feature_flags_by_name", tags) {

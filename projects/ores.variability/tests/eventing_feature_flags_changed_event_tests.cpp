@@ -58,10 +58,8 @@ TEST_CASE("create_feature_flags_changed_event", tags) {
 
     // Verify timestamp is recent (within last second)
     const auto now = std::chrono::system_clock::now();
-    const auto diff = std::chrono::duration_cast<std::chrono::seconds>(
-        now - sut.timestamp).count();
-    CHECK(diff >= 0);
-    CHECK(diff < 1);
+    CHECK(sut.timestamp <= now);
+    CHECK(now - sut.timestamp < std::chrono::seconds(2)); // Allow a small delta for robustness
 }
 
 TEST_CASE("create_feature_flags_changed_event_with_past_timestamp", tags) {

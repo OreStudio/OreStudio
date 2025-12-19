@@ -46,17 +46,12 @@ using ores::variability::domain::feature_flags;
 using namespace ores::utility::log;
 
 TEST_CASE("list_feature_flags_request_serialize_deserialize", tags) {
-    auto lg(make_logger(test_suite));
-
     list_feature_flags_request e;
-    BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
     const auto r = list_feature_flags_request::deserialize(serialized);
 
     REQUIRE(r.has_value());
-    const auto& a = r.value();
-    BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 }
 
 TEST_CASE("list_feature_flags_request_empty_payload", tags) {

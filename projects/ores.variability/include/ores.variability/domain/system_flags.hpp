@@ -61,6 +61,17 @@ enum class system_flag {
     user_signups,
 
     /**
+     * @brief Controls whether new signups require admin authorization.
+     *
+     * When enabled, newly signed-up accounts require administrator approval
+     * before they can be used. When disabled, accounts are immediately active.
+     * Note: This feature is not yet implemented - enabling this flag will
+     * cause signup to fail with an error.
+     * Default: disabled (false)
+     */
+    signup_requires_authorization,
+
+    /**
      * @brief Controls whether password policy validation is disabled.
      *
      * When enabled, disables strict password validation requirements.
@@ -97,6 +108,12 @@ inline constexpr std::array system_flag_definitions = {
         .flag = system_flag::user_signups,
         .default_enabled = false,
         .description = "Controls whether user self-registration is allowed."
+    },
+    system_flag_definition {
+        .flag = system_flag::signup_requires_authorization,
+        .default_enabled = false,
+        .description = "Controls whether new signups require admin authorization. "
+        "NOT YET IMPLEMENTED - enabling will cause signup to fail."
     },
     system_flag_definition {
         .flag = system_flag::disable_password_validation,

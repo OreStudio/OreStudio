@@ -153,6 +153,40 @@ TEST_CASE("get_definition_returns_correct_user_signups_defaults", tags) {
     CHECK_FALSE(def.description.empty());
 }
 
+TEST_CASE("to_flag_name_converts_signup_requires_authorization", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto name = to_flag_name(system_flag::signup_requires_authorization);
+    BOOST_LOG_SEV(lg, info) << "signup_requires_authorization flag name: " << name;
+
+    CHECK(name == "system.signup_requires_authorization");
+}
+
+TEST_CASE("from_flag_name_parses_valid_signup_requires_authorization", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto result = from_flag_name("system.signup_requires_authorization");
+    BOOST_LOG_SEV(lg, info) << "Parsed flag: "
+        << (result ? magic_enum::enum_name(*result) : "nullopt");
+
+    REQUIRE(result.has_value());
+    CHECK(*result == system_flag::signup_requires_authorization);
+}
+
+TEST_CASE("get_definition_returns_correct_signup_requires_authorization_defaults", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto& def = get_definition(system_flag::signup_requires_authorization);
+
+    BOOST_LOG_SEV(lg, info) << "signup_requires_authorization definition:"
+        << " default_enabled=" << def.default_enabled
+        << " description=" << def.description;
+
+    CHECK(def.flag == system_flag::signup_requires_authorization);
+    CHECK(def.default_enabled == false);
+    CHECK_FALSE(def.description.empty());
+}
+
 TEST_CASE("system_flag_definitions_contains_all_enum_values", tags) {
     auto lg(make_logger(test_suite));
 

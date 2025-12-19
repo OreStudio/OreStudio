@@ -30,6 +30,7 @@
 #include "ores.comms/messaging/handshake_protocol.hpp"
 #include "ores.comms/eventing/connection_events.hpp"
 #include "ores.accounts/messaging/protocol.hpp"
+#include "ores.accounts/messaging/signup_protocol.hpp"
 
 namespace ores::qt {
 
@@ -242,6 +243,126 @@ LoginResult ClientManager::connectAndLogin(
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Connection failed: " << e.what();
         return {.success = false, .error_message = QString::fromStdString(e.what())};
+    }
+}
+
+SignupResult ClientManager::signup(
+    const std::string& host,
+    std::uint16_t port,
+    const std::string& username,
+    const std::string& email,
+    const std::string& password) {
+
+    BOOST_LOG_SEV(lg(), info) << "Attempting signup to " << host << ":" << port
+                              << " for username: " << username;
+
+    try {
+        comms::net::client_options config{
+            .host = host,
+            .port = port,
+            .client_identifier = "ores-qt-client",
+            .verify_certificate = false,
+            .supported_compression = supported_compression_
+        };
+
+        // Create temporary client for signup (not stored in client_)
+        auto temp_client = std::make_shared<comms::net::client>(
+            config, io_context_->get_executor(), nullptr);
+
+        // Synchronous connect
+        temp_client->connect_sync();
+
+        // Send signup request
+        accounts::messaging::signup_request request{
+            .username = username,
+            .email = email,
+            .password = password
+        };
+
+        auto payload = request.serialize();
+        comms::messaging::frame request_frame(
+            comms::messaging::message_type::signup_request,
+            0,
+            std::move(payload)
+        );
+
+        auto response_result = temp_client->send_request_sync(std::move(request_frame));
+
+        // Disconnect temporary client
+        temp_client->disconnect();
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "SIGNUP FAILURE: Network error during signup request"
+                                       << ", error_code: "
+                                       << static_cast<int>(response_result.error());
+            return {.success = false,
+                    .error_message = QString("Network error during signup request"),
+                    .username = QString()};
+        }
+
+        // Log frame attributes for debugging
+        const auto& header = response_result->header();
+        BOOST_LOG_SEV(lg(), debug) << "Signup response frame: type="
+                                   << static_cast<int>(header.type)
+                                   << ", compression=" << header.compression
+                                   << ", payload_size=" << response_result->payload().size();
+
+        // Decompress payload
+        auto response_payload_result = response_result->decompressed_payload();
+        if (!response_payload_result) {
+            BOOST_LOG_SEV(lg(), error) << "SIGNUP FAILURE: Failed to decompress response";
+            return {.success = false,
+                    .error_message = QString("Failed to decompress server response"),
+                    .username = QString()};
+        }
+        const auto& response_payload = *response_payload_result;
+
+        // Check for error response
+        if (header.type == comms::messaging::message_type::error_response) {
+            auto error_resp = comms::messaging::error_response::deserialize(response_payload);
+            if (error_resp) {
+                BOOST_LOG_SEV(lg(), error) << "SIGNUP FAILURE: Server returned error response"
+                                           << ", error_code: "
+                                           << static_cast<int>(error_resp->code)
+                                           << ", message: " << error_resp->message;
+                return {.success = false,
+                        .error_message = QString::fromStdString(error_resp->message),
+                        .username = QString()};
+            }
+            BOOST_LOG_SEV(lg(), error) << "SIGNUP FAILURE: Server returned malformed error response";
+            return {.success = false,
+                    .error_message = QString("Unknown server error"),
+                    .username = QString()};
+        }
+
+        auto response = accounts::messaging::signup_response::deserialize(response_payload);
+
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "SIGNUP FAILURE: Failed to deserialize signup_response";
+            return {.success = false,
+                    .error_message = QString("Invalid signup response from server"),
+                    .username = QString()};
+        }
+
+        if (!response->success) {
+            BOOST_LOG_SEV(lg(), warn) << "SIGNUP FAILURE: Server rejected signup for user '"
+                                      << username << "', reason: " << response->error_message;
+            return {.success = false,
+                    .error_message = QString::fromStdString(response->error_message),
+                    .username = QString::fromStdString(username)};
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "SIGNUP SUCCESS: Account created for user '"
+                                  << response->username << "'";
+        return {.success = true,
+                .error_message = QString(),
+                .username = QString::fromStdString(response->username)};
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Signup failed: " << e.what();
+        return {.success = false,
+                .error_message = QString::fromStdString(e.what()),
+                .username = QString()};
     }
 }
 

@@ -436,7 +436,7 @@ public:
     process_request(RequestType request) {
         using traits = messaging::message_traits<RequestType>;
         return process_request<
-            typename traits::request_type,
+            RequestType,
             typename traits::response_type,
             traits::request_message_type>(std::move(request));
     }
@@ -459,7 +459,7 @@ public:
     process_request_async(RequestType request) {
         using traits = messaging::message_traits<RequestType>;
         return process_request_async<
-            typename traits::request_type,
+            RequestType,
             typename traits::response_type,
             traits::request_message_type>(std::move(request));
     }

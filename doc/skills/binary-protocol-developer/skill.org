@@ -183,6 +183,67 @@ struct action_resource_response final {
 std::ostream& operator<<(std::ostream& s, const action_resource_response& v);
 #+end_src
 
+*** Adding message_traits specialization
+
+After defining the request/response pair, add a =message_traits= specialization
+to enable the simplified =process_request= API. This should be added at the end
+of the protocol header, in the =ores::comms::messaging= namespace:
+
+#+begin_src cpp
+} // namespace ores::COMPONENT::messaging
+
+namespace ores::comms::messaging {
+
+/**
+ * @brief Message traits specialization for action_resource_request.
+ */
+template<>
+struct message_traits<COMPONENT::messaging::action_resource_request> {
+    using request_type = COMPONENT::messaging::action_resource_request;
+    using response_type = COMPONENT::messaging::action_resource_response;
+    static constexpr message_type request_message_type =
+        message_type::action_resource_request;
+};
+
+} // namespace ores::comms::messaging
+#+end_src
+
+Include the traits header at the top of your protocol file:
+
+#+begin_src cpp
+#include "ores.comms/messaging/message_traits.hpp"
+#+end_src
+
+The =message_traits= template provides:
+
+- =request_type=: The request struct type
+- =response_type=: The corresponding response struct type
+- =request_message_type=: The =message_type= enum value for the request
+
+This enables using the simplified client API:
+
+#+begin_src cpp
+// Old verbose API (still works):
+auto result = client_->process_request<
+    action_resource_request,
+    action_resource_response,
+    messaging::message_type::action_resource_request>(std::move(req));
+
+// New simplified API using traits:
+auto result = client_->process_request(std::move(req));
+#+end_src
+
+The =has_message_traits= concept can be used to constrain templates:
+
+#+begin_src cpp
+template <typename RequestType>
+    requires messaging::has_message_traits<RequestType>
+void process(RequestType request) {
+    using traits = messaging::message_traits<RequestType>;
+    // Use traits::response_type, traits::request_message_type, etc.
+}
+#+end_src
+
 ** Step 4: Implement serialization
 
 Use the reader/writer utilities for consistent serialization:
@@ -359,6 +420,60 @@ secure hashing and proper authentication flows.
 - Keep protocol structs separate from service logic
 - Use mappers to convert between protocol types and domain types
 - Group related message types in the same protocol file
+
+* Traits systems in ORE Studio
+
+ORE Studio uses two complementary traits systems for different purposes:
+
+** message_traits (ores.comms)
+
+Maps request types to their corresponding response types and =message_type= enum
+values. Used for RPC-style request/response messaging.
+
+| Provides              | Description                              |
+|-----------------------+------------------------------------------|
+| =request_type=        | The request struct type                  |
+| =response_type=       | The corresponding response struct type   |
+| =request_message_type= | The =message_type= enum value           |
+
+Location: =ores.comms/messaging/message_traits.hpp=
+
+** event_traits (ores.eventing)
+
+Maps domain events to string names for the pub/sub notification system. Used
+when subscribing to server-push notifications.
+
+| Provides | Description                              |
+|----------+------------------------------------------|
+| =name=   | The event type name (e.g., "ores.risk.currency_changed") |
+
+Location: =ores.eventing/domain/event_traits.hpp=
+
+** How they work together
+
+These traits are orthogonal but work together for the subscription system:
+
+1. Client uses =event_traits= to get the event name string for a domain event
+2. Client builds =subscribe_request= with that event name
+3. Client uses =message_traits= (via =process_request=) to send the request
+4. Server uses =event_traits= when publishing events to match subscribers
+
+Example flow:
+
+#+begin_src cpp
+// 1. Get event name from event_traits
+constexpr auto event_name = event_traits<currency_changed_event>::name;
+// Result: "ores.risk.currency_changed"
+
+// 2. Build subscribe request
+subscribe_request req{.event_type = std::string{event_name}};
+
+// 3. Send using message_traits (process_request infers types)
+auto result = client_->process_request(std::move(req));
+// message_traits<subscribe_request> provides:
+//   response_type = subscribe_response
+//   request_message_type = message_type::subscribe_request
+#+end_src
 
 * Artefacts                                                        :noexport:
 

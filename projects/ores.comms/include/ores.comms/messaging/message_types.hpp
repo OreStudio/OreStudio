@@ -81,8 +81,14 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // get_account_roles_request/response, get_account_permissions_request/response.
 // Adds authorization checks to all protected endpoints. This is a breaking change
 // as it introduces mandatory RBAC enforcement for administrative operations.
+//
+// Version 13.1 adds user self-registration (signup) workflow. New messages:
+// signup_request/response for creating accounts without admin privileges.
+// New error codes: signup_disabled, username_taken, email_taken,
+// signup_requires_authorization. Signup is controlled by system.user_signups
+// feature flag.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 13;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -183,6 +189,10 @@ enum class message_type {
     get_account_permissions_request = 0x202A,
     get_account_permissions_response = 0x202B,
 
+    // User self-registration messages (0x2030 - 0x203F)
+    signup_request = 0x2030,
+    signup_response = 0x2031,
+
     // Variability subsystem messages (0x3000 - 0x3FFF)
     list_feature_flags_request = 0x3000,
     list_feature_flags_response = 0x3001,
@@ -212,6 +222,10 @@ enum class error_code {
     decompression_failed = 0x0012,
     unsupported_compression = 0x0013,
     compression_failed = 0x0014,
+    signup_disabled = 0x0015,
+    username_taken = 0x0016,
+    email_taken = 0x0017,
+    signup_requires_authorization = 0x0018,
     last_value
 };
 

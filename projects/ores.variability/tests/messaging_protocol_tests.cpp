@@ -172,9 +172,11 @@ TEST_CASE("list_feature_flags_response_serialize_deserialize_with_faker", tags) 
 
     REQUIRE(a.feature_flags.size() == e.feature_flags.size());
     for (size_t i = 0; i < e.feature_flags.size(); ++i) {
+        CHECK(a.feature_flags[i].version == e.feature_flags[i].version);
         CHECK(a.feature_flags[i].name == e.feature_flags[i].name);
         CHECK(a.feature_flags[i].enabled == e.feature_flags[i].enabled);
         CHECK(a.feature_flags[i].description == e.feature_flags[i].description);
+        CHECK(a.feature_flags[i].recorded_by == e.feature_flags[i].recorded_by);
     }
 }
 

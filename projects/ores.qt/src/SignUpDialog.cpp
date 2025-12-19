@@ -23,6 +23,7 @@
 #include <QHBoxLayout>
 #include <QFormLayout>
 #include <QSizePolicy>
+#include <QRegularExpression>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.qt/IconUtils.hpp"
@@ -165,7 +166,8 @@ bool SignUpDialog::validateInput() {
         return false;
     }
 
-    if (!email.contains('@') || !email.contains('.')) {
+    const QRegularExpression emailRegex(R"(.+@.+\..+)");
+    if (!emailRegex.match(email).hasMatch()) {
         MessageBoxHelper::warning(this, "Invalid Input",
             "Please enter a valid email address.");
         email_edit_->setFocus();

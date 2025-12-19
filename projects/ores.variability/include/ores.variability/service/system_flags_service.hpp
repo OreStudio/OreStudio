@@ -139,6 +139,24 @@ public:
      */
     void set_user_signups(bool enabled, std::string_view recorded_by);
 
+    /**
+     * @brief Checks if signup requires authorization (from cache).
+     *
+     * @return true if signup requires authorization, false otherwise.
+     */
+    [[nodiscard]] bool is_signup_requires_authorization_enabled() const;
+
+    /**
+     * @brief Sets the signup requires authorization state.
+     *
+     * Persists to database and updates the cache.
+     *
+     * @param enabled The new signup requires authorization state.
+     * @param recorded_by Username of the user making the change.
+     */
+    void set_signup_requires_authorization(bool enabled,
+        std::string_view recorded_by);
+
 private:
     /**
      * @brief Updates a specific flag in the cache.

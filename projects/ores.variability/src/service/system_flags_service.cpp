@@ -54,6 +54,8 @@ bool system_flags_service::is_enabled(domain::system_flag flag) const {
         return cache_.bootstrap_mode;
     case domain::system_flag::user_signups:
         return cache_.user_signups;
+    case domain::system_flag::signup_requires_authorization:
+        return cache_.signup_requires_authorization;
     case domain::system_flag::disable_password_validation:
         return cache_.disable_password_validation;
     }
@@ -99,6 +101,16 @@ void system_flags_service::set_user_signups(bool enabled,
     set_enabled(domain::system_flag::user_signups, enabled, recorded_by);
 }
 
+bool system_flags_service::is_signup_requires_authorization_enabled() const {
+    return cache_.signup_requires_authorization;
+}
+
+void system_flags_service::set_signup_requires_authorization(bool enabled,
+    std::string_view recorded_by) {
+    set_enabled(domain::system_flag::signup_requires_authorization, enabled,
+        recorded_by);
+}
+
 void system_flags_service::update_cache(domain::system_flag flag, bool enabled) {
     switch (flag) {
     case domain::system_flag::bootstrap_mode:
@@ -106,6 +118,9 @@ void system_flags_service::update_cache(domain::system_flag flag, bool enabled) 
         break;
     case domain::system_flag::user_signups:
         cache_.user_signups = enabled;
+        break;
+    case domain::system_flag::signup_requires_authorization:
+        cache_.signup_requires_authorization = enabled;
         break;
     case domain::system_flag::disable_password_validation:
         cache_.disable_password_validation = enabled;

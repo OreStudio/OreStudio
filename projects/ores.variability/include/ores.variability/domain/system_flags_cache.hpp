@@ -49,6 +49,15 @@ struct system_flags_cache {
     bool user_signups = false;
 
     /**
+     * @brief Whether new signups require admin authorization.
+     *
+     * When true, newly created accounts require admin approval.
+     * Note: Not yet implemented - enabling will cause signup to fail.
+     * Default: false (matches system_flag_definitions)
+     */
+    bool signup_requires_authorization = false;
+
+    /**
      * @brief Whether password validation is disabled.
      *
      * When true, strict password validation requirements are bypassed.

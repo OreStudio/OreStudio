@@ -23,6 +23,14 @@
 
 namespace ores::telemetry::domain {
 
+namespace {
+
+// File-scoped generators to ensure single instance and avoid ID collisions
+generators::trace_id_generator g_trace_gen;
+generators::span_id_generator g_span_gen;
+
+}
+
 telemetry_context::telemetry_context(span_context ctx,
                                      std::shared_ptr<resource> res)
     : ctx_(std::move(ctx)), resource_(std::move(res)) {}
@@ -51,9 +59,7 @@ std::pair<telemetry_context, span> telemetry_context::start_span(
     std::string_view name,
     span_kind kind) const {
 
-    // Generate a new span_id for the child
-    static generators::span_id_generator span_gen;
-    const auto new_span_id = span_gen();
+    const auto new_span_id = g_span_gen();
 
     // Create the new context with same trace but new span
     span_context new_ctx;
@@ -76,11 +82,8 @@ std::pair<telemetry_context, span> telemetry_context::start_linked_trace(
     std::string_view name,
     span_kind kind) const {
 
-    // Generate new trace_id and span_id
-    static generators::trace_id_generator trace_gen;
-    static generators::span_id_generator span_gen;
-    const auto new_trace_id = trace_gen();
-    const auto new_span_id = span_gen();
+    const auto new_trace_id = g_trace_gen();
+    const auto new_span_id = g_span_gen();
 
     // Create a completely new context
     span_context new_ctx;

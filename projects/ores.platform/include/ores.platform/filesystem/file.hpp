@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_FILESYSTEM_FILE_HPP
-#define ORES_UTILITY_FILESYSTEM_FILE_HPP
+#ifndef ORES_PLATFORM_FILESYSTEM_FILE_HPP
+#define ORES_PLATFORM_FILESYSTEM_FILE_HPP
 
 #include <set>
 #include <list>
@@ -27,14 +27,14 @@
 #include <sstream>
 #include <filesystem>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/filesystem/io_error.hpp"
+#include "ores.platform/filesystem/io_error.hpp"
 
-namespace ores::utility::filesystem {
+namespace ores::platform::filesystem {
 
 class file final {
 private:
     inline static std::string_view logger_name =
-        "ores.utility.filesystem.file";
+        "ores.platform.filesystem.file";
 
     static auto& lg() {
         using namespace ores::utility::log;

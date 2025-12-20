@@ -20,7 +20,7 @@
 #include "ores.risk/orexml/importer.hpp"
 
 #include <sstream>
-#include "ores.utility/filesystem/file.hpp"
+#include "ores.platform/filesystem/file.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.risk/orexml/CurrencyConfig.hpp"
 #include "ores.risk/orexml/currency_mapper.hpp"
@@ -62,7 +62,7 @@ std::vector<currency>
 importer::import_currency_config(const std::filesystem::path& path) {
     BOOST_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();
 
-    using namespace ores::utility::filesystem;
+    using namespace ores::platform::filesystem;
     const std::string c(file::read_content(path));
     BOOST_LOG_SEV(lg(), trace) << "File content: " << c;
 

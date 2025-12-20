@@ -15,30 +15,11 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.telemetry")
-set(lib_binary_name ${name})
-set(lib_target_name ${name}.lib)
+set(name "ores.platform")
 
-set(files "")
-file(GLOB_RECURSE files RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-
-set(lib_files ${files})
-add_library(${lib_target_name} ${lib_files})
-set_target_properties(${lib_target_name} PROPERTIES
-    OUTPUT_NAME ${lib_binary_name})
-set_target_properties(${lib_target_name}
-    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
-
-target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/ores.telemetry/include)
-
-target_link_libraries(${lib_target_name}
-    PUBLIC
-        ores.utility.lib
-    PRIVATE
-        ores.platform.lib
-        Boost::boost)
-
-install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
+set(diagram_target generate_${name}_diagram)
+add_custom_target(${diagram_target}
+    COMMENT "Generating PlantUML diagram for ${name}" VERBATIM
+    COMMAND java ${ORES_JAVA_ARGS} -jar ${ORES_PLANTUML_JAR} ${name}.puml
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
+add_dependencies(make_all_diagrams ${diagram_target})

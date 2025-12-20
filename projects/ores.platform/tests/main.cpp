@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,29 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_FILESYSTEM_FILE_NOT_FOUND_HPP
-#define ORES_UTILITY_FILESYSTEM_FILE_NOT_FOUND_HPP
+#include <openssl/crypto.h>
+#include <boost/scope_exit.hpp>
+#include <catch2/catch_session.hpp>
+#include <catch2/reporters/catch_reporter_registrars.hpp>
+#include "ores.testing/logging_listener.hpp"
+#include "ores.testing/database_lifecycle_listener.hpp"
 
-#include <string>
-#include <boost/exception/info.hpp>
+CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
+CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
 
-namespace ores::utility::filesystem {
+int main(int argc, char* argv[]) {
+    BOOST_SCOPE_EXIT(void) {
+        OPENSSL_cleanup();
+    } BOOST_SCOPE_EXIT_END
 
-/**
- * @brief File was not found.
- */
-class file_not_found : public virtual std::exception,
-                       public virtual boost::exception {
-public:
-    file_not_found() = default;
-    ~file_not_found() noexcept override = default;
-    explicit file_not_found(std::string message) : message_(std::move(message)) { }
-    const char* what() const noexcept override { return(message_.c_str()); }
-
-private:
-    std::string message_;
-};
-
+    ores::testing::logging_listener::set_test_module_name("ores.platform.tests");
+    return Catch::Session().run(argc, argv);
 }
-
-#endif

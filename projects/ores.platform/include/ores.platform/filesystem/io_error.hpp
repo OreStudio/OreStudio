@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_FILESYSTEM_IO_ERROR_HPP
-#define ORES_UTILITY_FILESYSTEM_IO_ERROR_HPP
+#ifndef ORES_PLATFORM_FILESYSTEM_IO_ERROR_HPP
+#define ORES_PLATFORM_FILESYSTEM_IO_ERROR_HPP
 
 #include <string>
 #include <boost/exception/info.hpp>
 
-namespace ores::utility::filesystem {
+namespace ores::platform::filesystem {
 
 /**
  * @brief An error occurred whilst performing an IO operation.

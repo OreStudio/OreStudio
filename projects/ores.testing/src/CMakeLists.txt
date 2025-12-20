@@ -39,6 +39,7 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.database.lib
     PRIVATE
+        ores.platform.lib
         Catch2::Catch2)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

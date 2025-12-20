@@ -18,13 +18,15 @@
  *
  */
 #include "ores.telemetry/generators/trace_id_generator.hpp"
-#include "ores.utility/net/network_info.hpp"
+#include "ores.platform/net/network_info.hpp"
 #include <chrono>
+
+using ores::platform::net::derive_machine_id_hash;
 
 namespace ores::telemetry::generators {
 
 std::uint16_t trace_id_generator::derive_machine_id() {
-    return utility::net::derive_machine_id_hash();
+    return derive_machine_id_hash();
 }
 
 trace_id_generator::trace_id_generator()

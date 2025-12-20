@@ -17,19 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/net/network_info.hpp"
+#include "ores.platform/net/network_info.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include "ores.utility/log/make_logger.hpp"
 
 namespace {
 
-const std::string_view test_suite("ores.utility.tests");
+const std::string_view test_suite("ores.platform.tests");
 const std::string tags("[net]");
 
 }
 
-using namespace ores::utility::net;
+using namespace ores::platform::net;
 using namespace ores::utility::log;
 
 TEST_CASE("get_hostname_returns_non_empty_string", tags) {

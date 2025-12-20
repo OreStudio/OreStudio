@@ -22,7 +22,7 @@
 #include <filesystem>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/filesystem/file.hpp"
+#include "ores.platform/filesystem/file.hpp"
 
 namespace {
 
@@ -82,7 +82,7 @@ TEST_CASE("read_currency_config_from_currencies_xml", tags) {
     const auto f = std::filesystem::path(test_data_dir + "currencies.xml");
     BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
 
-    using ores::utility::filesystem::file;
+    using ores::platform::filesystem::file;
     const std::string content = file::read_content(f);
 
     BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
@@ -125,7 +125,7 @@ TEST_CASE("read_currency_config_from_currencies_01_xml", tags) {
         std::filesystem::path(test_data_dir + "currencies_01.xml");
     BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
 
-    using ores::utility::filesystem::file;
+    using ores::platform::filesystem::file;
     const std::string content = file::read_content(f);
 
     BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
@@ -157,7 +157,7 @@ TEST_CASE("read_currency_config_from_currencies_41_xml", tags) {
         std::filesystem::path(test_data_dir + "currencies_41.xml");
     BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
 
-    using ores::utility::filesystem::file;
+    using ores::platform::filesystem::file;
     const std::string content = file::read_content(f);
 
     BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
@@ -174,7 +174,7 @@ TEST_CASE("read_currency_config_from_currencies_42_xml", tags) {
         std::filesystem::path(test_data_dir + "currencies_42.xml");
     BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
 
-    using ores::utility::filesystem::file;
+    using ores::platform::filesystem::file;
     const std::string content = file::read_content(f);
 
     BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
@@ -191,7 +191,7 @@ TEST_CASE("read_currency_config_from_currencies_62_xml", tags) {
         std::filesystem::path(test_data_dir + "currencies_62.xml");
     BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
 
-    using ores::utility::filesystem::file;
+    using ores::platform::filesystem::file;
     const std::string content = file::read_content(f);
 
     BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
@@ -208,7 +208,7 @@ TEST_CASE("read_currency_config_from_currencies_API_xml", tags) {
         std::filesystem::path(test_data_dir + "currencies_API.xml");
     BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
 
-    using ores::utility::filesystem::file;
+    using ores::platform::filesystem::file;
     const std::string content = file::read_content(f);
 
     BOOST_LOG_SEV(lg, debug) << "Parsing XML content";

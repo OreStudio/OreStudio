@@ -15,7 +15,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.risk")
+set(name "ores.platform")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
@@ -26,22 +26,21 @@ file(GLOB_RECURSE files RELATIVE
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})
+
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/ores.risk/include)
+    ${CMAKE_SOURCE_DIR}/projects/ores.platform/include)
 
 target_link_libraries(${lib_target_name}
-    PRIVATE
-        pugixml::pugixml
-        ores.variability.lib
-        ores.platform.lib
-        faker-cxx::faker-cxx
-        libfort::fort
     PUBLIC
-        ores.comms.lib)
+        Boost::boost
+        Boost::exception
+    PRIVATE
+        Boost::process
+        ores.utility.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

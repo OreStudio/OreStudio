@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/net/network_info.hpp"
+#include "ores.platform/net/network_info.hpp"
 
 #include <algorithm>
 #include <array>
@@ -26,7 +26,7 @@
 #include <sstream>
 #include <vector>
 
-#include <boost/process/environment.hpp>
+#include <boost/process/v2/pid.hpp>
 
 #if defined(__linux__)
 #include <unistd.h>
@@ -48,7 +48,7 @@
 #pragma comment(lib, "iphlpapi.lib")
 #endif
 
-namespace ores::utility::net {
+namespace ores::platform::net {
 
 std::string get_hostname() {
 #if defined(__linux__)
@@ -317,7 +317,7 @@ std::uint16_t derive_machine_id_hash() {
 
 std::int64_t get_process_id() {
     return static_cast<std::int64_t>(
-        boost::this_process::get_id());
+        boost::process::v2::current_pid());
 }
 
 }

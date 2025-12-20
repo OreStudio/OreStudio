@@ -18,11 +18,13 @@
  *
  */
 #include "ores.telemetry/domain/resource.hpp"
+#include <algorithm>
 #include <array>
 #include <fstream>
 #include <functional>
 #include <iomanip>
 #include <sstream>
+#include <vector>
 
 #ifdef __linux__
 #include <unistd.h>
@@ -54,14 +56,10 @@ std::string get_first_mac_address() {
         return "";
     }
 
-    std::string result;
+    // Collect all non-loopback MAC addresses
+    std::vector<std::string> macs;
     for (auto* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
-        if (ifa->ifa_addr == nullptr) {
-            continue;
-        }
-
-        // Skip loopback interfaces
-        if ((ifa->ifa_flags & IFF_LOOPBACK) != 0) {
+        if (ifa->ifa_addr == nullptr || (ifa->ifa_flags & IFF_LOOPBACK) != 0) {
             continue;
         }
 
@@ -75,14 +73,20 @@ std::string get_first_mac_address() {
                     oss << std::setw(2)
                         << static_cast<unsigned>(s->sll_addr[i]);
                 }
-                result = oss.str();
-                break;
+                macs.push_back(oss.str());
             }
         }
     }
 
     freeifaddrs(ifaddr);
-    return result;
+
+    if (macs.empty()) {
+        return "";
+    }
+
+    // Sort to ensure stable ordering across reboots
+    std::sort(macs.begin(), macs.end());
+    return macs.front();
 #else
     return "";
 #endif

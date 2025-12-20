@@ -18,6 +18,7 @@
  *
  */
 #include "ores.telemetry/domain/telemetry_context.hpp"
+#include "ores.telemetry/domain/semantic_conventions.hpp"
 #include "ores.telemetry/generators/trace_id_generator.hpp"
 #include "ores.telemetry/generators/span_id_generator.hpp"
 
@@ -116,9 +117,11 @@ TEST_CASE("telemetry_context_start_linked_trace_creates_new_trace", tags) {
     REQUIRE(linked_span.links[0].context.span == parent_ctx.get_span_id());
 
     // Link should have relationship attribute
-    auto it = linked_span.links[0].attrs.find("link.relationship");
+    auto it = linked_span.links[0].attrs.find(
+        std::string(semconv::link::relationship));
     REQUIRE(it != linked_span.links[0].attrs.end());
-    REQUIRE(std::get<std::string>(it->second) == "triggered_by");
+    REQUIRE(std::get<std::string>(it->second) ==
+            semconv::link::triggered_by);
 
     BOOST_LOG_SEV(lg, debug) << "Created linked trace: "
                              << linked_span.context.trace.to_hex()

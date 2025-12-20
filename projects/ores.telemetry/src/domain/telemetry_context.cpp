@@ -18,6 +18,7 @@
  *
  */
 #include "ores.telemetry/domain/telemetry_context.hpp"
+#include "ores.telemetry/domain/semantic_conventions.hpp"
 #include "ores.telemetry/generators/trace_id_generator.hpp"
 #include "ores.telemetry/generators/span_id_generator.hpp"
 
@@ -102,7 +103,8 @@ std::pair<telemetry_context, span> telemetry_context::start_linked_trace(
     // Add a link to the originating span
     span_link link;
     link.context = ctx_;
-    link.attrs["link.relationship"] = std::string("triggered_by");
+    link.attrs[std::string(semconv::link::relationship)] =
+        std::string(semconv::link::triggered_by);
     new_span.links.push_back(std::move(link));
 
     return {telemetry_context(new_ctx, resource_), std::move(new_span)};

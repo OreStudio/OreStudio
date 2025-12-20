@@ -18,87 +18,13 @@
  *
  */
 #include "ores.telemetry/generators/trace_id_generator.hpp"
-#include <algorithm>
-#include <array>
+#include "ores.utility/net/network_info.hpp"
 #include <chrono>
-#include <functional>
-#include <vector>
-
-#ifdef __linux__
-#include <unistd.h>
-#include <limits.h>
-#include <ifaddrs.h>
-#include <net/if.h>
-#include <netpacket/packet.h>
-#endif
 
 namespace ores::telemetry::generators {
 
-namespace {
-
-std::string get_hostname_for_id() {
-#ifdef __linux__
-    std::array<char, HOST_NAME_MAX + 1> buffer{};
-    if (gethostname(buffer.data(), buffer.size()) == 0) {
-        return std::string(buffer.data());
-    }
-#endif
-    return "unknown";
-}
-
-std::string get_first_mac_for_id() {
-#ifdef __linux__
-    struct ifaddrs* ifaddr = nullptr;
-    if (getifaddrs(&ifaddr) == -1) {
-        return "";
-    }
-
-    // Collect all non-loopback MAC addresses
-    std::vector<std::string> macs;
-    for (auto* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
-        if (ifa->ifa_addr == nullptr || (ifa->ifa_flags & IFF_LOOPBACK) != 0) {
-            continue;
-        }
-
-        if (ifa->ifa_addr->sa_family == AF_PACKET) {
-            auto* s = reinterpret_cast<struct sockaddr_ll*>(ifa->ifa_addr);
-            if (s->sll_halen == 6) {
-                std::string mac_str;
-                mac_str.reserve(6);
-                for (int i = 0; i < 6; ++i) {
-                    mac_str += static_cast<char>(s->sll_addr[i]);
-                }
-                macs.push_back(mac_str);
-            }
-        }
-    }
-
-    freeifaddrs(ifaddr);
-
-    if (macs.empty()) {
-        return "";
-    }
-
-    // Sort to ensure stable ordering across reboots
-    std::sort(macs.begin(), macs.end());
-    return macs.front();
-#else
-    return "";
-#endif
-}
-
-}
-
 std::uint16_t trace_id_generator::derive_machine_id() {
-    const auto hostname = get_hostname_for_id();
-    const auto mac = get_first_mac_for_id();
-
-    // Combine and hash to get a 16-bit ID
-    std::string combined = hostname + mac;
-    const std::size_t hash = std::hash<std::string>{}(combined);
-
-    // Take lower 16 bits
-    return static_cast<std::uint16_t>(hash & 0xFFFF);
+    return utility::net::derive_machine_id_hash();
 }
 
 trace_id_generator::trace_id_generator()

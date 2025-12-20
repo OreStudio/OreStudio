@@ -42,9 +42,9 @@ const std::string prefix = "ORES_TEST_DB_";
 namespace ores::testing {
 
 using namespace ores::utility::log;
-using database::context;
-using database::context_factory;
-using platform::environment::environment;
+using ores::database::context;
+using ores::database::context_factory;
+using ores::platform::environment::environment;
 
 context test_database_manager::make_admin_context() {
     auto opts = make_database_options();

@@ -57,7 +57,7 @@ namespace ores::database::repository {
  * return execute_read_query<account_entity, domain::account>(
  *     ctx_, query,
  *     [](const auto& entities) { return account_mapper::map(entities); },
- *     "ores.accounts.repository.account_repository",
+ *     "ores.iam.repository.account_repository",
  *     "Read latest accounts");
  */
 template<typename EntityType, typename DomainType, typename QueryType, typename MapperFunc>
@@ -95,7 +95,7 @@ std::vector<DomainType> execute_read_query(context ctx, const QueryType& query,
  * @example
  * execute_write_query(ctx_,
  *     account_mapper::map(account),
- *     "ores.accounts.repository.account_repository",
+ *     "ores.iam.repository.account_repository",
  *     "Writing account to database");
  */
 template<typename EntityType>
@@ -132,7 +132,7 @@ void execute_write_query(context ctx, const EntityType& entity,
  * const auto query = sqlgen::delete_from<account_entity> |
  *     where("id"_c == id_str);
  * execute_delete_query(ctx_, query,
- *     "ores.accounts.repository.account_repository",
+ *     "ores.iam.repository.account_repository",
  *     "Removing account from database");
  */
 template<typename QueryType>

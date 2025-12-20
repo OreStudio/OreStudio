@@ -110,7 +110,7 @@ TEST_CASE("subscribe_response stream operator", tags) {
 
 TEST_CASE("unsubscribe_request roundtrip serialization", tags) {
     unsubscribe_request original;
-    original.event_type = "ores.accounts.account_changed";
+    original.event_type = "ores.iam.account_changed";
 
     auto bytes = original.serialize();
     auto result = unsubscribe_request::deserialize(bytes);

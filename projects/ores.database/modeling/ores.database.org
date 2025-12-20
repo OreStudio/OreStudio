@@ -13,5 +13,5 @@ Database utilities component for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE 
 Diagram:
 
 #+attr_html: :width 100% :alt Description
-#+caption: ORE Studio Accounts Component Diagram
+#+caption: ORE Studio IAM Component Diagram
 [[file:ores.database.png][file:ores.database.png]]

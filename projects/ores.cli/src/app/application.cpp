@@ -42,18 +42,18 @@
 #include "ores.risk/domain/currency_table.hpp"
 #include "ores.risk/domain/currency_json.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
-#include "ores.accounts/service/bootstrap_mode_service.hpp"
-#include "ores.accounts/domain/account_json.hpp"
-#include "ores.accounts/domain/account_table.hpp"
-#include "ores.accounts/security/password_manager.hpp"
-#include "ores.accounts/repository/account_repository.hpp"
-#include "ores.accounts/security/password_policy_validator.hpp"
+#include "ores.iam/service/bootstrap_mode_service.hpp"
+#include "ores.iam/domain/account_json.hpp"
+#include "ores.iam/domain/account_table.hpp"
+#include "ores.iam/security/password_manager.hpp"
+#include "ores.iam/repository/account_repository.hpp"
+#include "ores.iam/security/password_policy_validator.hpp"
 #include "ores.variability/domain/feature_flags_json.hpp"
 #include "ores.variability/domain/feature_flags_table.hpp"
 #include "ores.variability/repository/feature_flags_repository.hpp"
-#include "ores.accounts/domain/login_info_json.hpp"
-#include "ores.accounts/domain/login_info_table.hpp"
-#include "ores.accounts/repository/login_info_repository.hpp"
+#include "ores.iam/domain/login_info_json.hpp"
+#include "ores.iam/domain/login_info_table.hpp"
+#include "ores.iam/repository/login_info_repository.hpp"
 #include "ores.cli/config/export_options.hpp"
 #include "ores.cli/config/add_currency_options.hpp"
 #include "ores.cli/config/add_account_options.hpp"
@@ -171,7 +171,7 @@ export_currencies(const config::export_options& cfg) const {
 void application::
 export_accounts(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting accounts.";
-    accounts::repository::account_repository repo(context_);
+    iam::repository::account_repository repo(context_);
 
     const auto reader([&]() {
         if (cfg.all_versions) {
@@ -193,11 +193,11 @@ export_accounts(const config::export_options& cfg) const {
         return repo.read_latest();
     });
 
-    const std::vector<accounts::domain::account> accts(reader());
+    const std::vector<iam::domain::account> accts(reader());
     if (cfg.target_format == config::format::json) {
-        output_stream_ << accounts::domain::convert_to_json(accts) << std::endl;
+        output_stream_ << iam::domain::convert_to_json(accts) << std::endl;
     } else if (cfg.target_format == config::format::table) {
-        output_stream_ << accounts::domain::convert_to_table(accts) << std::endl;
+        output_stream_ << iam::domain::convert_to_table(accts) << std::endl;
     }
 }
 
@@ -244,8 +244,8 @@ void application::
 export_login_info(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting login info.";
 
-    accounts::repository::login_info_repository repo(context_);
-    std::vector<accounts::domain::login_info> infos;
+    iam::repository::login_info_repository repo(context_);
+    std::vector<iam::domain::login_info> infos;
 
     if (!cfg.key.empty()) {
         // Export specific login info by account ID
@@ -263,9 +263,9 @@ export_login_info(const config::export_options& cfg) const {
 
     // Output in the requested format
     if (cfg.target_format == config::format::json) {
-        output_stream_ << accounts::domain::convert_to_json(infos) << std::endl;
+        output_stream_ << iam::domain::convert_to_json(infos) << std::endl;
     } else if (cfg.target_format == config::format::table) {
-        output_stream_ << accounts::domain::convert_to_table(infos) << std::endl;
+        output_stream_ << iam::domain::convert_to_table(infos) << std::endl;
     } else {
         BOOST_THROW_EXCEPTION(
             application_exception("Only JSON and table formats are supported for login info"));
@@ -326,7 +326,7 @@ delete_currency(const config::delete_options& cfg) const {
 void application::
 delete_account(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting account: " << cfg.key;
-    accounts::repository::account_repository repo(context_);
+    iam::repository::account_repository repo(context_);
 
     // Try to parse as UUID first
     boost::uuids::uuid account_id;
@@ -366,7 +366,7 @@ delete_feature_flag(const config::delete_options& cfg) const {
 void application::
 delete_login_info(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting login info for account: " << cfg.key;
-    accounts::repository::login_info_repository repo(context_);
+    iam::repository::login_info_repository repo(context_);
 
     // Parse as UUID
     boost::uuids::uuid account_id;
@@ -448,7 +448,7 @@ add_account(const config::add_account_options& cfg) const {
     const auto account_id = gen();
 
     // Validate password policy
-    using accounts::security::password_policy_validator;
+    using iam::security::password_policy_validator;
     using variability::repository::feature_flags_repository;
 
     // Check if password validation is disabled via feature flag
@@ -470,12 +470,12 @@ add_account(const config::add_account_options& cfg) const {
     }
 
     // Hash the password
-    using accounts::security::password_manager;
+    using iam::security::password_manager;
     const auto password_hash =
         password_manager::create_password_hash(cfg.password);
 
     // Construct account from command-line arguments
-    accounts::domain::account account;
+    iam::domain::account account;
     account.version = 0;
     account.is_admin = cfg.is_admin.value_or(false);
     account.id = account_id;
@@ -486,12 +486,12 @@ add_account(const config::add_account_options& cfg) const {
     account.totp_secret = "";    // Can be set later
     account.email = cfg.email;
 
-    accounts::service::bootstrap_mode_service bootstrap_svc(context_);
+    iam::service::bootstrap_mode_service bootstrap_svc(context_);
     bootstrap_svc.initialize_bootstrap_state();
     if (bootstrap_svc.is_in_bootstrap_mode())
         output_stream_ << "System is currently in bootstrap mode." << std::endl;
 
-    accounts::repository::account_repository repo(context_);
+    iam::repository::account_repository repo(context_);
     repo.write(account);
 
     output_stream_ << "Successfully added account: " << account.username
@@ -538,7 +538,7 @@ add_login_info(const config::add_login_info_options& cfg) const {
     }
 
     // Construct login info from command-line arguments
-    accounts::domain::login_info record;
+    iam::domain::login_info record;
     record.account_id = account_id;
     record.locked = cfg.locked.value_or(false);
     record.failed_logins = cfg.failed_logins.value_or(0);
@@ -546,7 +546,7 @@ add_login_info(const config::add_login_info_options& cfg) const {
     record.last_login = std::chrono::system_clock::now();
 
     // Write to database
-    accounts::repository::login_info_repository repo(context_);
+    iam::repository::login_info_repository repo(context_);
     repo.write({record});
 
     output_stream_ << "Successfully added login info for account: "

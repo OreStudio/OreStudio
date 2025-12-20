@@ -43,7 +43,7 @@ target_link_libraries(${lib_target_name}
         ores.database.lib
         ores.utility.lib
     PRIVATE
-        ores.accounts.lib
+        ores.iam.lib
         ores.risk.lib
         ores.comms.lib
         magic_enum::magic_enum

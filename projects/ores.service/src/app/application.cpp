@@ -28,14 +28,14 @@
 #include <boost/asio/use_awaitable.hpp>
 #include "ores.risk/messaging/registrar.hpp"
 #include "ores.risk/eventing/currency_changed_event.hpp"
-#include "ores.accounts/messaging/registrar.hpp"
-#include "ores.accounts/eventing/account_changed_event.hpp"
-#include "ores.accounts/service/rbac_seeder.hpp"
-#include "ores.accounts/service/authorization_service.hpp"
+#include "ores.iam/messaging/registrar.hpp"
+#include "ores.iam/eventing/account_changed_event.hpp"
+#include "ores.iam/service/rbac_seeder.hpp"
+#include "ores.iam/service/authorization_service.hpp"
 #include "ores.variability/messaging/registrar.hpp"
 #include "ores.variability/service/system_flags_seeder.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
-#include "ores.accounts/service/bootstrap_mode_service.hpp"
+#include "ores.iam/service/bootstrap_mode_service.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.eventing/service/postgres_event_source.hpp"
 #include "ores.eventing/service/registrar.hpp"
@@ -111,8 +111,8 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     flags_seeder.seed();
 
     // Seed RBAC permissions and roles
-    accounts::service::authorization_service auth_service(ctx);
-    accounts::service::rbac_seeder rbac_seeder(auth_service);
+    iam::service::authorization_service auth_service(ctx);
+    iam::service::rbac_seeder rbac_seeder(auth_service);
     rbac_seeder.seed("system");
 
     // Create shared system flags service and refresh cache from database
@@ -120,7 +120,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     system_flags->refresh();
 
     // Initialize and check bootstrap mode
-    accounts::service::bootstrap_mode_service bootstrap_svc(ctx);
+    iam::service::bootstrap_mode_service bootstrap_svc(ctx);
     bootstrap_svc.initialize_bootstrap_state();
 
     // Refresh system flags cache after bootstrap state initialization
@@ -151,8 +151,8 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         risk::eventing::currency_changed_event>(
         event_source, "ores.risk.currency", "ores_currencies");
     eventing::service::registrar::register_mapping<
-        accounts::eventing::account_changed_event>(
-        event_source, "ores.accounts.account", "ores_accounts");
+        iam::eventing::account_changed_event>(
+        event_source, "ores.iam.account", "ores_accounts");
 
     // Start the event source to begin listening for database notifications
     event_source.start();
@@ -169,10 +169,10 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             subscription_mgr->notify(std::string{traits::name}, e.timestamp);
         });
 
-    auto account_sub = event_bus.subscribe<accounts::eventing::account_changed_event>(
-        [&subscription_mgr](const accounts::eventing::account_changed_event& e) {
+    auto account_sub = event_bus.subscribe<iam::eventing::account_changed_event>(
+        [&subscription_mgr](const iam::eventing::account_changed_event& e) {
             using traits = eventing::domain::event_traits<
-                accounts::eventing::account_changed_event>;
+                iam::eventing::account_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp);
         });
 
@@ -181,7 +181,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
 
     // Register subsystem handlers
     ores::risk::messaging::registrar::register_handlers(*srv, ctx, system_flags);
-    ores::accounts::messaging::registrar::register_handlers(*srv, ctx, system_flags);
+    ores::iam::messaging::registrar::register_handlers(*srv, ctx, system_flags);
     ores::variability::messaging::registrar::register_handlers(*srv, ctx);
 
     // Register subscription handler for subscribe/unsubscribe messages

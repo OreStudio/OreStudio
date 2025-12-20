@@ -29,8 +29,8 @@
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.comms/messaging/handshake_protocol.hpp"
 #include "ores.comms/eventing/connection_events.hpp"
-#include "ores.accounts/messaging/protocol.hpp"
-#include "ores.accounts/messaging/signup_protocol.hpp"
+#include "ores.iam/messaging/protocol.hpp"
+#include "ores.iam/messaging/signup_protocol.hpp"
 
 namespace ores::qt {
 
@@ -131,7 +131,7 @@ LoginResult ClientManager::connectAndLogin(
         });
 
         // Perform Login
-        accounts::messaging::login_request request{
+        iam::messaging::login_request request{
             .username = username,
             .password = password
         };
@@ -184,7 +184,7 @@ LoginResult ClientManager::connectAndLogin(
             return {.success = false, .error_message = QString("Unknown server error")};
         }
 
-        auto response = accounts::messaging::login_response::deserialize(response_payload);
+        auto response = iam::messaging::login_response::deserialize(response_payload);
 
         if (!response) {
             BOOST_LOG_SEV(lg(), error) << "LOGIN FAILURE: Failed to deserialize login_response"
@@ -273,7 +273,7 @@ SignupResult ClientManager::signup(
         temp_client->connect_sync();
 
         // Send signup request
-        accounts::messaging::signup_request request{
+        iam::messaging::signup_request request{
             .username = username,
             .email = email,
             .password = password
@@ -335,7 +335,7 @@ SignupResult ClientManager::signup(
                     .username = QString()};
         }
 
-        auto response = accounts::messaging::signup_response::deserialize(response_payload);
+        auto response = iam::messaging::signup_response::deserialize(response_payload);
 
         if (!response) {
             BOOST_LOG_SEV(lg(), error) << "SIGNUP FAILURE: Failed to deserialize signup_response";
@@ -401,7 +401,7 @@ bool ClientManager::logout() {
         BOOST_LOG_SEV(lg(), debug) << "Sending logout request";
 
         // logout_request is empty - server determines account from session context
-        accounts::messaging::logout_request request{};
+        iam::messaging::logout_request request{};
 
         auto payload = request.serialize();
         comms::messaging::frame request_frame(
@@ -437,7 +437,7 @@ bool ClientManager::logout() {
             return false;
         }
 
-        auto response = accounts::messaging::logout_response::deserialize(*payload_result);
+        auto response = iam::messaging::logout_response::deserialize(*payload_result);
 
         if (response && response->success) {
             BOOST_LOG_SEV(lg(), info) << "Logout successful";

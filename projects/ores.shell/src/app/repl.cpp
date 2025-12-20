@@ -26,7 +26,7 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.comms/messaging/message_types.hpp"
-#include "ores.accounts/messaging/protocol.hpp"
+#include "ores.iam/messaging/protocol.hpp"
 #include "ores.shell/app/commands/currencies_commands.hpp"
 #include "ores.shell/app/commands/connection_commands.hpp"
 #include "ores.shell/app/commands/accounts_commands.hpp"
@@ -95,8 +95,8 @@ void repl::cleanup() {
     if (session_.is_logged_in()) {
         BOOST_LOG_SEV(lg(), debug) << "Sending logout request before exit.";
 
-        using accounts::messaging::logout_request;
-        using accounts::messaging::logout_response;
+        using iam::messaging::logout_request;
+        using iam::messaging::logout_response;
         using comms::messaging::message_type;
 
         auto result = session_.process_authenticated_request<logout_request,

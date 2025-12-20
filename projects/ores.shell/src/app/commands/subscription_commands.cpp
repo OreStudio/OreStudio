@@ -42,10 +42,10 @@ namespace {
  */
 constexpr std::array known_channels = {
     std::pair{"ores.risk.currency_changed", "Currency data modified"},
-    std::pair{"ores.accounts.account_changed", "Account data modified"},
-    std::pair{"ores.accounts.role_assigned", "Role assigned to account"},
-    std::pair{"ores.accounts.role_revoked", "Role revoked from account"},
-    std::pair{"ores.accounts.permissions_changed", "Account permissions modified"},
+    std::pair{"ores.iam.account_changed", "Account data modified"},
+    std::pair{"ores.iam.role_assigned", "Role assigned to account"},
+    std::pair{"ores.iam.role_revoked", "Role revoked from account"},
+    std::pair{"ores.iam.permissions_changed", "Account permissions modified"},
     std::pair{"ores.variability.feature_flags_changed", "Feature flags modified"},
 };
 

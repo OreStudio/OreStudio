@@ -129,10 +129,10 @@ package "Domain Layer" #F2F2F2 {
     Organized into: domain, repository, orexml, csv, messaging, generators namespaces.
     end note
 
-    component [ores.accounts] as accounts #F7E5FF
+    component [ores.iam] as iam #F7E5FF
 
-    note right of accounts
-    Comprehensive user account management with secure authentication:
+    note right of iam
+    Identity and access management (IAM) with secure authentication:
     - Account Lifecycle: Creation, listing, and deletion of user accounts
     - Authentication: Secure password hashing using scrypt, login tracking
     - Security: Account locking after failed login attempts, unlock capability
@@ -219,32 +219,32 @@ testing --> database
 ' Dependencies - Domain to Foundation/Infrastructure
 risk --> utility
 risk --> database
-accounts --> variability
-accounts --> comms
-accounts --> utility
-accounts --> database
+iam --> variability
+iam --> comms
+iam --> utility
+iam --> database
 
 ' Dependencies - Shell to Foundation/Domain/Infrastructure
 shell --> utility
 shell --> variability
-shell --> accounts
+shell --> iam
 shell --> comms
 
 ' Dependencies - Applications to all layers
 cli --> utility
 cli --> variability
-cli --> accounts
+cli --> iam
 cli --> risk
 
 qt --> utility
-qt --> accounts
+qt --> iam
 qt --> risk
 qt --> comms
 qt --> eventing
 
 service --> utility
 service --> database
-service --> accounts
+service --> iam
 service --> risk
 service --> comms
 service --> eventing

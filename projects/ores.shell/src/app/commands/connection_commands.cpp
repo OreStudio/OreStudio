@@ -23,7 +23,7 @@
 #include <functional>
 #include <cli/cli.h>
 #include "ores.comms/messaging/message_types.hpp"
-#include "ores.accounts/messaging/bootstrap_protocol.hpp"
+#include "ores.iam/messaging/bootstrap_protocol.hpp"
 #include "ores.shell/app/commands/compression_commands.hpp"
 
 namespace ores::shell::app::commands {
@@ -34,7 +34,7 @@ using comms::net::client_session;
 namespace {
 
 void check_bootstrap_status(client_session& session, std::ostream& out) {
-    using accounts::messaging::bootstrap_status_request;
+    using iam::messaging::bootstrap_status_request;
 
     auto result = session.process_request(bootstrap_status_request{});
 

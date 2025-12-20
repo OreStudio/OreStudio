@@ -27,7 +27,7 @@
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/ClientAccountModel.hpp"
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.accounts/domain/account.hpp"
+#include "ores.iam/domain/account.hpp"
 
 namespace ores::qt {
 
@@ -150,7 +150,7 @@ private slots:
      * @param account The account data at the historical version
      * @param versionNumber The version number being viewed
      */
-    void onOpenAccountVersion(const accounts::domain::account& account, int versionNumber);
+    void onOpenAccountVersion(const iam::domain::account& account, int versionNumber);
 
     /**
      * @brief Handles request to revert an account to a historical version.
@@ -160,7 +160,7 @@ private slots:
      *
      * @param account The account data to revert to
      */
-    void onRevertAccount(const accounts::domain::account& account);
+    void onRevertAccount(const iam::domain::account& account);
 
     /**
      * @brief Handles account change notifications from the server.

@@ -41,7 +41,7 @@
 #include "ores.qt/AccountItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.accounts/messaging/account_protocol.hpp"
+#include "ores.iam/messaging/account_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -379,7 +379,7 @@ void AccountMdiWindow::deleteSelected() {
             BOOST_LOG_SEV(lg(), debug) << "Deleting account: "
                                        << boost::uuids::to_string(account_id);
 
-            accounts::messaging::delete_account_request request{account_id};
+            iam::messaging::delete_account_request request{account_id};
             auto payload = request.serialize();
 
             comms::messaging::frame request_frame(
@@ -405,7 +405,7 @@ void AccountMdiWindow::deleteSelected() {
                 continue;
             }
 
-            auto response = accounts::messaging::delete_account_response::
+            auto response = iam::messaging::delete_account_response::
                 deserialize(*payload_result);
 
             if (!response) {
@@ -527,14 +527,14 @@ void AccountMdiWindow::lockSelected() {
     }
 
     QPointer<AccountMdiWindow> self = this;
-    using LockResult = std::vector<accounts::messaging::lock_account_result>;
+    using LockResult = std::vector<iam::messaging::lock_account_result>;
 
     auto task = [self, account_ids]() -> LockResult {
         if (!self) return {};
 
         BOOST_LOG_SEV(lg(), debug) << "Locking " << account_ids.size() << " accounts";
 
-        accounts::messaging::lock_account_request request{account_ids};
+        iam::messaging::lock_account_request request{account_ids};
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -564,7 +564,7 @@ void AccountMdiWindow::lockSelected() {
             return error_results;
         }
 
-        auto response = accounts::messaging::lock_account_response::
+        auto response = iam::messaging::lock_account_response::
             deserialize(*payload_result);
 
         if (!response) {
@@ -681,14 +681,14 @@ void AccountMdiWindow::unlockSelected() {
     }
 
     QPointer<AccountMdiWindow> self = this;
-    using UnlockResult = std::vector<accounts::messaging::unlock_account_result>;
+    using UnlockResult = std::vector<iam::messaging::unlock_account_result>;
 
     auto task = [self, account_ids]() -> UnlockResult {
         if (!self) return {};
 
         BOOST_LOG_SEV(lg(), debug) << "Unlocking " << account_ids.size() << " accounts";
 
-        accounts::messaging::unlock_account_request request{account_ids};
+        iam::messaging::unlock_account_request request{account_ids};
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -718,7 +718,7 @@ void AccountMdiWindow::unlockSelected() {
             return error_results;
         }
 
-        auto response = accounts::messaging::unlock_account_response::
+        auto response = iam::messaging::unlock_account_response::
             deserialize(*payload_result);
 
         if (!response) {
@@ -857,7 +857,7 @@ void AccountMdiWindow::resetPasswordSelected() {
     }
 
     QPointer<AccountMdiWindow> self = this;
-    using ResetResult = std::vector<accounts::messaging::reset_password_result>;
+    using ResetResult = std::vector<iam::messaging::reset_password_result>;
 
     auto task = [self, account_ids]() -> ResetResult {
         if (!self) return {};
@@ -865,7 +865,7 @@ void AccountMdiWindow::resetPasswordSelected() {
         BOOST_LOG_SEV(lg(), debug) << "Resetting password for "
                                    << account_ids.size() << " accounts";
 
-        accounts::messaging::reset_password_request request{account_ids};
+        iam::messaging::reset_password_request request{account_ids};
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -897,7 +897,7 @@ void AccountMdiWindow::resetPasswordSelected() {
             return error_results;
         }
 
-        auto response = accounts::messaging::reset_password_response::
+        auto response = iam::messaging::reset_password_response::
             deserialize(*payload_result);
 
         if (!response) {

@@ -28,7 +28,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.accounts/messaging/protocol.hpp"
+#include "ores.iam/messaging/protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -93,7 +93,7 @@ void AccountHistoryDialog::loadHistory() {
     BOOST_LOG_SEV(lg(), info) << "Loading account history for: "
                               << username_.toStdString();
 
-    accounts::messaging::get_account_history_request request{username_.toStdString()};
+    iam::messaging::get_account_history_request request{username_.toStdString()};
     auto payload = request.serialize();
 
     frame request_frame(message_type::get_account_history_request,
@@ -146,7 +146,7 @@ void AccountHistoryDialog::loadHistory() {
             return;
         }
 
-        auto response = accounts::messaging::get_account_history_response::
+        auto response = iam::messaging::get_account_history_response::
             deserialize(*payload_result);
 
         if (!response) {
@@ -294,8 +294,8 @@ void AccountHistoryDialog::displayFullDetailsTab(int version_index) {
     }
 
 AccountHistoryDialog::DiffResult AccountHistoryDialog::
-calculateDiff(const accounts::domain::account_version& current,
-    const accounts::domain::account_version& previous) {
+calculateDiff(const iam::domain::account_version& current,
+    const iam::domain::account_version& previous) {
 
     DiffResult diffs;
 

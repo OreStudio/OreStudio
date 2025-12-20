@@ -28,7 +28,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
-#include "ores.accounts/messaging/protocol.hpp"
+#include "ores.iam/messaging/protocol.hpp"
 
 namespace ores::qt {
 
@@ -249,7 +249,7 @@ void MyAccountDialog::onChangePasswordClicked() {
     QFuture<std::pair<bool, QString>> future = QtConcurrent::run(
         [this, new_password]() -> std::pair<bool, QString> {
             try {
-                accounts::messaging::change_password_request request{
+                iam::messaging::change_password_request request{
                     .new_password = new_password.toStdString()
                 };
 
@@ -286,7 +286,7 @@ void MyAccountDialog::onChangePasswordClicked() {
                     return {false, QString("Failed to decompress server response")};
                 }
 
-                auto response = accounts::messaging::change_password_response::deserialize(*payload_result);
+                auto response = iam::messaging::change_password_response::deserialize(*payload_result);
 
                 if (!response) {
                     return {false, QString("Invalid response from server")};
@@ -379,7 +379,7 @@ void MyAccountDialog::onSaveEmailClicked() {
     QFuture<std::pair<bool, QString>> future = QtConcurrent::run(
         [this, new_email]() -> std::pair<bool, QString> {
             try {
-                accounts::messaging::update_my_email_request request{
+                iam::messaging::update_my_email_request request{
                     .new_email = new_email.toStdString()
                 };
 
@@ -416,7 +416,7 @@ void MyAccountDialog::onSaveEmailClicked() {
                     return {false, QString("Failed to decompress server response")};
                 }
 
-                auto response = accounts::messaging::update_my_email_response::deserialize(*payload_result);
+                auto response = iam::messaging::update_my_email_response::deserialize(*payload_result);
 
                 if (!response) {
                     return {false, QString("Invalid response from server")};

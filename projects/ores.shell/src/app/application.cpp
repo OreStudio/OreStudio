@@ -22,8 +22,8 @@
 
 #include <iostream>
 #include "ores.comms/net/client_session.hpp"
-#include "ores.accounts/messaging/login_protocol.hpp"
-#include "ores.accounts/messaging/bootstrap_protocol.hpp"
+#include "ores.iam/messaging/login_protocol.hpp"
+#include "ores.iam/messaging/bootstrap_protocol.hpp"
 #include "ores.shell/app/repl.hpp"
 #include "ores.shell/app/commands/compression_commands.hpp"
 
@@ -75,7 +75,7 @@ bool auto_connect(client_session& session, std::ostream& out,
 
 bool auto_login(client_session& session, std::ostream& out,
     const config::login_options& login_config) {
-    using accounts::messaging::login_request;
+    using iam::messaging::login_request;
 
     auto result = session.process_request(login_request{
         .username = login_config.username,
@@ -105,7 +105,7 @@ bool auto_login(client_session& session, std::ostream& out,
 }
 
 void check_bootstrap_status(client_session& session, std::ostream& out) {
-    using accounts::messaging::bootstrap_status_request;
+    using iam::messaging::bootstrap_status_request;
 
     auto result = session.process_request(bootstrap_status_request{});
 

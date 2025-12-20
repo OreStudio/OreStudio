@@ -45,7 +45,7 @@ domain::span_id span_id_generator::operator()() {
         // Add some randomness to the initial sequence to avoid
         // collisions across processes starting at the same millisecond
         seq = static_cast<std::uint16_t>(random_engine_() & 0x0FFF);
-        sequence_.store(seq);
+        sequence_.store(seq + 1);  // Store next value to avoid duplicate on next call
     } else {
         seq = sequence_.fetch_add(1);
         // If we overflow the sequence in a single millisecond, add random bits

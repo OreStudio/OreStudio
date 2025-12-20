@@ -51,6 +51,12 @@ where valid_to = '9999-12-31 23:59:59'::timestamptz;
 create or replace function update_image_tags()
 returns trigger as $$
 begin
+    -- Close any existing current record for this image_id and tag_id pair
+    update "oresdb"."image_tags"
+    set valid_to = current_timestamp
+    where image_id = new.image_id and tag_id = new.tag_id
+    and valid_to = '9999-12-31 23:59:59'::timestamptz;
+
     new.valid_from = current_timestamp;
     new.valid_to = '9999-12-31 23:59:59'::timestamptz;
     new.assigned_at = current_timestamp;

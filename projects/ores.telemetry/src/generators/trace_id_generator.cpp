@@ -18,9 +18,11 @@
  *
  */
 #include "ores.telemetry/generators/trace_id_generator.hpp"
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <functional>
+#include <vector>
 
 #ifdef __linux__
 #include <unistd.h>
@@ -51,30 +53,35 @@ std::string get_first_mac_for_id() {
         return "";
     }
 
-    std::string result;
+    // Collect all non-loopback MAC addresses
+    std::vector<std::string> macs;
     for (auto* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
-        if (ifa->ifa_addr == nullptr) {
-            continue;
-        }
-
-        if ((ifa->ifa_flags & IFF_LOOPBACK) != 0) {
+        if (ifa->ifa_addr == nullptr || (ifa->ifa_flags & IFF_LOOPBACK) != 0) {
             continue;
         }
 
         if (ifa->ifa_addr->sa_family == AF_PACKET) {
             auto* s = reinterpret_cast<struct sockaddr_ll*>(ifa->ifa_addr);
             if (s->sll_halen == 6) {
-                // Just combine the bytes into a string
+                std::string mac_str;
+                mac_str.reserve(6);
                 for (int i = 0; i < 6; ++i) {
-                    result += static_cast<char>(s->sll_addr[i]);
+                    mac_str += static_cast<char>(s->sll_addr[i]);
                 }
-                break;
+                macs.push_back(mac_str);
             }
         }
     }
 
     freeifaddrs(ifaddr);
-    return result;
+
+    if (macs.empty()) {
+        return "";
+    }
+
+    // Sort to ensure stable ordering across reboots
+    std::sort(macs.begin(), macs.end());
+    return macs.front();
 #else
     return "";
 #endif

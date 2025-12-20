@@ -132,3 +132,27 @@ TEST_CASE("read_nonexistent_image_tag", tags) {
 
     CHECK(read_image_tags.size() == 0);
 }
+
+TEST_CASE("update_image_tag", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h(database_table);
+    auto it = generate_synthetic_image_tag();
+    BOOST_LOG_SEV(lg, debug) << "Original image-tag: " << it;
+
+    image_tag_repository repo;
+    repo.write(h.context(), it);
+
+    // Re-writing the same association should be handled gracefully (as an update)
+    auto updated_it = it;
+    updated_it.assigned_by = "new_user";
+    BOOST_LOG_SEV(lg, debug) << "Updated image-tag: " << updated_it;
+
+    CHECK_NOTHROW(repo.write(h.context(), updated_it));
+
+    auto read_image_tags = repo.read_latest_by_image(h.context(), it.image_id);
+    BOOST_LOG_SEV(lg, debug) << "Read image-tags: " << read_image_tags;
+
+    REQUIRE(read_image_tags.size() == 1);
+    CHECK(read_image_tags[0].assigned_by == updated_it.assigned_by);
+}

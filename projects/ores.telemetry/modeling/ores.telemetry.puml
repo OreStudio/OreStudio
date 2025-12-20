@@ -1,0 +1,198 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*'
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+
+title ores.telemetry Component - OpenTelemetry-Aligned Distributed Tracing
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    note "Telemetry component providing distributed tracing,\nlog correlation, and observability context.\nAligned with OpenTelemetry specification." as ores_telemetry_note
+    telemetry --- ores_telemetry_note
+
+    namespace telemetry #E8F4E8 {
+
+        namespace domain #D4E8D4 {
+            class trace_id <<struct>> {
+                +bytes : array<byte, 16>
+                --
+                +is_valid() : bool
+                +to_hex() : string
+                {static} +from_hex(hex) : trace_id
+            }
+            note right of trace_id
+                128-bit trace identifier
+                Bytes 0-5: timestamp (ms)
+                Bytes 6-7: machine_id
+                Bytes 8-15: random
+            end note
+
+            class span_id <<struct>> {
+                +bytes : array<byte, 8>
+                --
+                +is_valid() : bool
+                +to_hex() : string
+                {static} +from_hex(hex) : span_id
+            }
+            note right of span_id
+                64-bit span identifier
+                Bytes 0-5: timestamp (ms)
+                Bytes 6-7: sequence
+            end note
+
+            class span_context <<struct>> {
+                +trace : trace_id
+                +span : span_id
+                +trace_flags : uint8
+                --
+                +is_valid() : bool
+                +is_sampled() : bool
+            }
+
+            enum span_kind {
+                internal
+                server
+                client
+                producer
+                consumer
+            }
+
+            enum span_status_code {
+                unset
+                ok
+                error
+            }
+
+            class span_link <<struct>> {
+                +context : span_context
+                +attrs : attributes
+            }
+            note bottom of span_link
+                Hypergraph edge linking
+                spans across traces
+            end note
+
+            class span <<struct>> {
+                +context : span_context
+                +parent_span_id : optional<span_id>
+                +links : vector<span_link>
+                +name : string
+                +kind : span_kind
+                +start_time : time_point
+                +end_time : optional<time_point>
+                +status_code : span_status_code
+                +status_message : string
+                +attrs : attributes
+                --
+                +is_session() : bool
+                +is_root() : bool
+                +duration() : optional<nanoseconds>
+            }
+
+            class resource <<struct>> {
+                +attrs : attributes
+                --
+                +service_name() : optional<string>
+                +host_name() : optional<string>
+                +host_id() : optional<string>
+                {static} +from_environment(name, version) : resource
+            }
+            note right of resource
+                Machine/service identity
+                Locally derived host_id
+            end note
+
+            class log_record <<struct>> {
+                +timestamp : time_point
+                +observed_timestamp : optional<time_point>
+                +severity : severity_level
+                +body : string
+                +trace : optional<trace_id>
+                +span : optional<span_id>
+                +logger_name : string
+                +attrs : attributes
+                +source_resource : shared_ptr<resource>
+            }
+
+            class telemetry_context <<class>> {
+                -ctx_ : span_context
+                -resource_ : shared_ptr<resource>
+                --
+                +context() : span_context
+                +get_trace_id() : trace_id
+                +get_span_id() : span_id
+                +get_resource() : resource
+                +start_span(name, kind) : pair<context, span>
+                +start_linked_trace(name, kind) : pair<context, span>
+                +is_valid() : bool
+            }
+            note bottom of telemetry_context
+                Immutable context passed
+                through call chain for
+                coroutine-safe tracing
+            end note
+
+            span_context *-- trace_id
+            span_context *-- span_id
+            span *-- span_context
+            span *-- span_kind
+            span *-- span_status_code
+            span o-- span_link
+            span_link *-- span_context
+            log_record o-- trace_id
+            log_record o-- span_id
+            log_record o-- resource
+            telemetry_context *-- span_context
+            telemetry_context o-- resource
+        }
+
+        namespace generators #D4D4E8 {
+            class trace_id_generator <<class>> {
+                -machine_id_ : uint16
+                -random_engine_ : mt19937_64
+                -mutex_ : mutex
+                --
+                +trace_id_generator()
+                +trace_id_generator(machine_id)
+                +operator()() : trace_id
+                +machine_id() : uint16
+                {static} -derive_machine_id() : uint16
+            }
+
+            class span_id_generator <<class>> {
+                -sequence_ : atomic<uint16>
+                -last_timestamp_ms_ : uint64
+                -random_engine_ : mt19937
+                -mutex_ : mutex
+                --
+                +span_id_generator()
+                +operator()() : span_id
+            }
+
+            trace_id_generator ..> domain::trace_id : creates
+            span_id_generator ..> domain::span_id : creates
+        }
+    }
+}
+
+' Layout hints
+domain::telemetry_context -[hidden]down- generators::trace_id_generator
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.telemetry.puml"
+' End:
+@enduml

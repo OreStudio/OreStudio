@@ -21,6 +21,7 @@
 
 #include <rfl.hpp>
 #include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 
 namespace ores::risk::domain {
 

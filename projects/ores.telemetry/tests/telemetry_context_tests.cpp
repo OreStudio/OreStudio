@@ -23,6 +23,7 @@
 #include "ores.telemetry/generators/span_id_generator.hpp"
 
 #include <catch2/catch_test_macros.hpp>
+#include <thread>
 #include "ores.utility/log/make_logger.hpp"
 
 namespace {

@@ -17,42 +17,46 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-18 Thu 23:56], for Thursday, December 18, 2025.
-|      | <75>                          |        |      |      |       |
-| Tags | Headline                      | Time   |      |      |     % |
-|------+-------------------------------+--------+------+------+-------|
-|      | *Total time*                  | *6:05* |      |      | 100.0 |
-|------+-------------------------------+--------+------+------+-------|
-|      | Stories                       | 6:05   |      |      | 100.0 |
-|      | Active                        |        | 6:05 |      | 100.0 |
-| code | Setup windows laptop with WSL |        |      | 3:20 |  54.8 |
-| code | Add listen/notify to shell    |        |      | 2:45 |  45.2 |
+#+CAPTION: Clock summary at [2025-12-20 Sat 13:21], for Saturday, December 20, 2025.
+|      | <75>                               |        |      |      |       |
+| Tags | Headline                           | Time   |      |      |     % |
+|------+------------------------------------+--------+------+------+-------|
+|      | *Total time*                       | *3:29* |      |      | 100.0 |
+|------+------------------------------------+--------+------+------+-------|
+|      | Stories                            | 3:29   |      |      | 100.0 |
+|      | Active                             |        | 3:29 |      | 100.0 |
+| code | Rename =accounts= to =iam=         |        |      | 1:30 |  43.1 |
+| code | Create the observability component |        |      | 1:59 |  56.9 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-18 Thu 23:56]
+#+CAPTION: Clock summary at [2025-12-20 Sat 13:21]
 |       | <75>                                              |         |       |      |       |
 | Tags  | Headline                                          | Time    |       |      |     % |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                      | *29:07* |       |      | 100.0 |
+|       | *Total time*                                      | *35:54* |       |      | 100.0 |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                           | 29:07   |       |      | 100.0 |
-|       | Active                                            |         | 29:07 |      | 100.0 |
-| agile | Sprint and product backlog refinement             |         |       | 1:07 |   3.8 |
-| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   3.0 |
-| code  | Consider compressing payload                      |         |       | 3:05 |  10.6 |
-| code  | Latest currencies should have different colour    |         |       | 1:28 |   5.0 |
-| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   4.9 |
-| code  | Add account management support to qt              |         |       | 3:43 |  12.8 |
-| code  | Add password reset functionality to accounts      |         |       | 1:49 |   6.2 |
-| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |  16.7 |
-| code  | Add exit confirmation dialog                      |         |       | 0:03 |   0.2 |
-| code  | Improve error messages in shell                   |         |       | 0:23 |   1.3 |
-| code  | Add support for relative time formatting          |         |       | 2:01 |   6.9 |
-| code  | Setup windows laptop with WSL                     |         |       | 5:10 |  17.7 |
-| code  | Add listen/notify to shell                        |         |       | 2:45 |   9.4 |
-| code  | Ignore warnings on windows and OSX                |         |       | 0:23 |   1.3 |
+|       | Stories                                           | 35:54   |       |      | 100.0 |
+|       | Active                                            |         | 35:54 |      | 100.0 |
+| agile | Sprint and product backlog refinement             |         |       | 1:07 |   3.1 |
+| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   2.5 |
+| code  | Consider compressing payload                      |         |       | 3:05 |   8.6 |
+| code  | Latest currencies should have different colour    |         |       | 1:28 |   4.1 |
+| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   3.9 |
+| code  | Add account management support to qt              |         |       | 3:43 |  10.4 |
+| code  | Add password reset functionality to accounts      |         |       | 1:49 |   5.1 |
+| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |  13.6 |
+| code  | Add exit confirmation dialog                      |         |       | 0:03 |   0.1 |
+| code  | Improve error messages in shell                   |         |       | 0:23 |   1.1 |
+| code  | Add support for relative time formatting          |         |       | 2:01 |   5.6 |
+| code  | Setup windows laptop with WSL                     |         |       | 5:10 |  14.4 |
+| code  | Add listen/notify to shell                        |         |       | 2:45 |   7.7 |
+| code  | Define type traits for message grouping           |         |       | 0:44 |   2.0 |
+| code  | Ignore warnings on windows and OSX                |         |       | 0:23 |   1.1 |
+| code  | Add flags for currencies                          |         |       | 2:34 |   7.1 |
+| code  | Rename =accounts= to =iam=                        |         |       | 1:30 |   4.2 |
+| code  | Create the observability component                |         |       | 1:59 |   5.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -560,6 +564,25 @@ Fix all the issues with Emacs bootstrap after elpaca move.
 At present we cannot listen from the shell. This makes testing harder.
 Notification should show up in the next prompt like PSQL does.
 
+*** COMPLETED Define type traits for message grouping                  :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-19 Fri 00:02]--[2025-12-19 Fri 00:46] =>  0:44
+    :END:
+
+At present we do:
+
+#+begin_src c++
+auto result = client_->process_request<
+    messaging::subscribe_request,
+    messaging::subscribe_response,
+    messaging::message_type::subscribe_request>(std::move(req));
+#+end_src
+
+This grouping is known in advance because these messages are defined together.
+We should be able to create a type in the protocol that defines the grouping as
+traits and then supply the group as the template argument, /e.g./
+=messaging::subscribe=, which unpacks the tuple.
+
 *** STARTED Windows clang build failures                               :code:
 
 Seems like we are failing with a SEGFAULT:
@@ -600,25 +623,6 @@ Links:
 - [[https://stackoverflow.com/questions/26458652/ctest-custom-warning-exception][SO: ctest custom warning exception]]
 - [[https://www.reddit.com/r/cmake/comments/1poie3j/ignoring_configure_time_warnings_in_cdash/][reddit: Ignoring configure time warnings in CDash]]
 
-*** STARTED Define type traits for message grouping                    :code:
-    :LOGBOOK:
-    CLOCK: [2025-12-19 Fri 00:02]--[2025-12-19 Fri 00:46] =>  0:44
-    :END:
-
-At present we do:
-
-#+begin_src c++
-auto result = client_->process_request<
-    messaging::subscribe_request,
-    messaging::subscribe_response,
-    messaging::message_type::subscribe_request>(std::move(req));
-#+end_src
-
-This grouping is known in advance because these messages are defined together.
-We should be able to create a type in the protocol that defines the grouping as
-traits and then supply the group as the template argument, /e.g./
-=messaging::subscribe=, which unpacks the tuple.
-
 *** STARTED Add flags for currencies                                   :code:
     :LOGBOOK:
     CLOCK: [2025-12-19 Fri 08:12]--[2025-12-19 Fri 10:46] =>  2:34
@@ -626,6 +630,41 @@ traits and then supply the group as the template argument, /e.g./
 
 Add flags for the currencies. Need database support. Display them in the
 currencies dialog.
+
+Gemini PR summary:
+
+#+begin_quote
+This pull request introduces a foundational ores.assets component, establishing
+a comprehensive system for managing dynamic assets within the application. It
+provides structured domain models for images, tags, and their relationships,
+backed by a bitemporal database design that supports versioning and historical
+tracking. The new component includes a full data access layer with mappers and
+repositories, complemented by synthetic data generators and extensive test
+coverage to ensure its stability and functionality.
+
+Highlights:
+
+- New Component: ores.assets: Introduced a new component, ores.assets, dedicated
+  to dynamic asset management, particularly for images and their associations.
+- Domain Models: Added core domain models including image (for SVG content), tag
+  (for categorization), image_tag (for many-to-many relationships), and
+  currency_image (to link currencies with their flags).
+- Bitemporal Database Support: Implemented robust bitemporal database tables
+  (images, tags, image_tags, currency_images) with valid_from and valid_to
+  timestamps, triggers for versioning, optimistic locking, and soft deletes,
+  ensuring historical data integrity.
+- Repository Layer: Developed a complete repository layer with mappers and
+  repository classes for each domain model, facilitating CRUD operations and
+  data persistence.
+- Synthetic Data Generators and Tests: Included generators for synthetic data
+  for all new domain models and comprehensive test suites for the repository
+  classes, ensuring the reliability and correctness of the data access layer.
+- SQL Schema and Utilities: Provided detailed SQL scripts for creating and
+  dropping the new asset-related tables, along with a utility function
+  (load_flag) to easily load SVG flag images into the database.
+#+end_quote
+
+*Previous analysis*
 
 Actually it is better to have a generic mechanism to upload an SVG and maybe tag
 it with an identifier. Then we could have a way to associate a currency with one
@@ -691,6 +730,109 @@ CREATE TABLE icon_tags (
 CREATE INDEX idx_icon_tags_tag_id ON icon_tags (tag_id);
 #+end_src
 
+
+*** STARTED Rename =accounts= to =iam=                                 :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-20 Sat 13:11]--[2025-12-20 Sat 13:21] =>  0:10
+    CLOCK: [2025-12-20 Sat 11:20]--[2025-12-20 Sat 12:40] =>  1:20
+    :END:
+
+Gemini summary:
+
+#+begin_quote
+This pull request executes a significant refactoring effort by renaming the
+'accounts' module to 'IAM' (Identity and Access Management). This change
+clarifies the module's responsibilities, which extend beyond simple account
+management to encompass broader identity and access control functionalities. The
+renaming impacts various aspects of the project, ensuring consistency in naming
+conventions across the entire codebase, from file structures and build systems
+to C++ namespaces and user-facing documentation.
+
+Highlights:
+
+- Module Renaming: The ores.accounts module has been comprehensively renamed to
+  ores.iam to more accurately reflect its purpose as an Identity and Access
+  Management component.
+- Codebase-Wide Refactoring: This change involved updating directory names, C++
+  namespaces (ores::accounts to ores::iam), include paths, and references across
+  all relevant files, including source code, headers, build configurations
+  (CMakeLists.txt), and documentation.
+- Documentation and Diagram Updates: All internal and external documentation,
+  including CLAUDE.md, ores.hpp, Org-mode files (.org), and PlantUML diagrams
+  (.puml), have been updated to reflect the new ores.iam naming convention and
+  its expanded description.
+#+end_quote
+
+*** STARTED Create the observability component                         :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-20 Sat 09:20]--[2025-12-20 Sat 11:19] =>  1:59
+    :END:
+
+We need some kind of observability context so that we can look at related log
+entries. This is sort of related to logging by thread except with coroutines we
+are no longer interested in threads per se but on some kind of "work identifier"
+which is preserved across function calls. For this we can have an observability
+context which is passed around.
+
+Gemini summary;
+
+#+begin_quote
+This pull request integrates a new ores.telemetry component, establishing a
+robust framework for observability within the project. By adhering to the
+OpenTelemetry standard, it facilitates distributed tracing and log correlation,
+crucial for understanding complex system behavior. The design prioritizes
+coroutine-safety through explicit context management, ensuring that telemetry
+data can be accurately captured and propagated across asynchronous call chains.
+
+Highlights:
+
+- New Telemetry Component: Introduced a new ores.telemetry component, fully
+  aligned with the OpenTelemetry specification, to enable distributed tracing
+  and log correlation across the system.
+- Core Observability Domain Types: Defined essential domain types including
+  trace_id, span_id, span_context, span, log_record, and resource, providing a
+  structured foundation for telemetry data.
+- Unique ID Generators: Implemented thread-safe trace_id_generator and
+  span_id_generator classes that embed timestamps and machine IDs, ensuring
+  uniqueness, time-sortability, and efficient generation of identifiers.
+- Coroutine-Safe Context Propagation: Provided a telemetry_context class
+  designed for explicit, immutable context passing, making it safe and effective
+  for tracing within coroutine-based asynchronous operations.
+- Comprehensive Testing and Modeling: Included extensive unit tests for ID
+  generation, context propagation, and span lifecycle management, alongside
+  PlantUML diagrams for clear visualization of the component's architecture.
+#+end_quote
+
+Notes:
+
+- we should also add the notion of parents and children so that we can create a
+  graph with the relationships. We should create specific messages for this
+  which are not directly related to logging. The server can just keep track of
+  the observability contexts in a table. We should link it back to each client
+  etc.
+- the observability context should also extend to the server so that we can
+  filter all logs for that ID.
+- consider using mongo IDs for this or create our own IDs:
+
+#+begin_src c++
+Option A: 64-bit IDs (8 bytes) - Best balance
+cpp
+struct LogId {
+    uint32_t timestamp;  // seconds since 2020
+    uint16_t machine;    // 0-65535 machines
+    uint16_t sequence;   // per-second counter
+
+    // Encode to 11 Base64 chars or 8-10 Base62 chars
+};
+#+end_src
+
+Merged stories:
+
+*Log with session id*
+
+When we have a lot of clients all connecting we can't really see who is doing
+what in the server. We need an additional "tag" in logging to represent the
+session.
 
 *** Implement RBAC enforcement                                         :code:
 
@@ -950,45 +1092,6 @@ simple widget for this.
 At present you can supply any modified by you want in the protocol messages. It
 makes more sense to say the message must have the modified by as the user logged
 in from the session.
-
-*** Create the observability component                                 :code:
-
-We need some kind of observability context so that we can look at related log
-entries. This is sort of related to logging by thread except with coroutines we
-are no longer interested in threads per se but on some kind of "work identifier"
-which is preserved across function calls. For this we can have an observability
-context which is passed around.
-
-Notes:
-
-- we should also add the notion of parents and children so that we can create a
-  graph with the relationships. We should create specific messages for this
-  which are not directly related to logging. The server can just keep track of
-  the observability contexts in a table. We should link it back to each client
-  etc.
-- the observability context should also extend to the server so that we can
-  filter all logs for that ID.
-- consider using mongo IDs for this or create our own IDs:
-
-#+begin_src c++
-Option A: 64-bit IDs (8 bytes) - Best balance
-cpp
-struct LogId {
-    uint32_t timestamp;  // seconds since 2020
-    uint16_t machine;    // 0-65535 machines
-    uint16_t sequence;   // per-second counter
-
-    // Encode to 11 Base64 chars or 8-10 Base62 chars
-};
-#+end_src
-
-Merged stories:
-
-*Log with session id*
-
-When we have a lot of clients all connecting we can't really see who is doing
-what in the server. We need an additional "tag" in logging to represent the
-session.
 
 *** Add heat map of user sessions                                      :code:
 

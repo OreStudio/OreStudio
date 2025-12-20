@@ -29,8 +29,8 @@
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.comms/messaging/handshake_protocol.hpp"
 #include "ores.comms/eventing/connection_events.hpp"
-#include "ores.accounts/messaging/protocol.hpp"
-#include "ores.accounts/messaging/signup_protocol.hpp"
+#include "ores.iam/messaging/protocol.hpp"
+#include "ores.iam/messaging/signup_protocol.hpp"
 
 namespace ores::qt {
 

@@ -27,7 +27,7 @@
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/ClientAccountModel.hpp"
 #include "ores.utility/log/make_logger.hpp"
-#include "ores.accounts/domain/account.hpp"
+#include "ores.iam/domain/account.hpp"
 
 namespace ores::qt {
 

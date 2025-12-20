@@ -28,8 +28,8 @@
 #include <QToolBar>
 #include <QAction>
 #include "ores.qt/ClientManager.hpp"
-#include "ores.accounts/domain/account_version.hpp"
-#include "ores.accounts/domain/account_version_history.hpp"
+#include "ores.iam/domain/account_version.hpp"
+#include "ores.iam/domain/account_version_history.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ui_AccountHistoryDialog.h"
 

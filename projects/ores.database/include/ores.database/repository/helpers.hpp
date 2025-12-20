@@ -105,7 +105,7 @@ inline auto make_timestamp(const std::string& s, utility::log::logger_t& lg) {
  *
  * @example
  * std::string sql = generate_create_table_sql<account_entity>(
- *     "ores.accounts.repository.account_repository");
+ *     "ores.iam.repository.account_repository");
  */
 template<typename EntityType>
 std::string generate_create_table_sql(utility::log::logger_t& lg) {

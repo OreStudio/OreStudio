@@ -24,10 +24,10 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <cli/cli.h>
-#include "ores.accounts/messaging/protocol.hpp"
-#include "ores.accounts/messaging/bootstrap_protocol.hpp"
-#include "ores.accounts/domain/account_table_io.hpp"  // IWYU pragma: keep.
-#include "ores.accounts/domain/login_info_table_io.hpp"  // IWYU pragma: keep.
+#include "ores.iam/messaging/protocol.hpp"
+#include "ores.iam/messaging/bootstrap_protocol.hpp"
+#include "ores.iam/domain/account_table_io.hpp"  // IWYU pragma: keep.
+#include "ores.iam/domain/login_info_table_io.hpp"  // IWYU pragma: keep.
 
 namespace ores::shell::app::commands {
 

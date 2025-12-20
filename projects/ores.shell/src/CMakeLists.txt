@@ -42,7 +42,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.utility.lib
     PRIVATE
-        ores.accounts.lib
+        ores.iam.lib
         ores.variability.lib
         ores.risk.lib
         ores.comms.lib

@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: D00BEA0D-E501-C534-A013-E6F40C1A6097
+:END:
+#+title: ORE Studio IAM Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Account management component for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio IAM Component Diagram
+[[file:ores.iam.png][file:ores.iam.png]]
+
+This module provides comprehensive user account management with secure
+authentication and authorization. Key features include:
+
+- Account lifecycle: creation, listing, and deletion of user accounts
+- Authentication: secure password hashing using scrypt, login tracking
+- Security: account locking after failed login attempts, unlock capability
+- Message-based API: asynchronous request/response handlers for client-server
+  communication (subsystem range =0x2000-0x2FFF=)
+- Temporal database support: version tracking with =valid_from= and =valid_to=
+  fields
+- Synthetic data generation: test account generation for development
+
+The module is organized into namespaces: domain (core entities), repository ([[https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping][ORM]]
+and persistence), service (business logic), messaging (API handlers), security
+(password management), and generators (test data).
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

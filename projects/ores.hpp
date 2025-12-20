@@ -41,9 +41,9 @@
  * - Testing: Catch2 integration with database isolation and logging
  * - Depends on: Foundation
  *
- * **Domain Layer** (`ores.risk`, `ores.accounts`)
+ * **Domain Layer** (`ores.risk`, `ores.iam`)
  * - Risk: ORE domain model with XML/CSV/JSON I/O and temporal versioning
- * - Accounts: User authentication, authorization, and feature flags
+ * - IAM: User authentication, authorization, and session management
  * - Depends on: Foundation, Infrastructure
  *
  * **Client Layer** (`ores.client`)

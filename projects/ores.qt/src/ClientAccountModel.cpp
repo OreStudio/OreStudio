@@ -29,8 +29,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
-#include "ores.accounts/messaging/account_protocol.hpp"
-#include "ores.accounts/messaging/login_protocol.hpp"
+#include "ores.iam/messaging/account_protocol.hpp"
+#include "ores.iam/messaging/login_protocol.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {

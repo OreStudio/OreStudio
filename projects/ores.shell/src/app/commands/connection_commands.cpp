@@ -23,7 +23,7 @@
 #include <functional>
 #include <cli/cli.h>
 #include "ores.comms/messaging/message_types.hpp"
-#include "ores.accounts/messaging/bootstrap_protocol.hpp"
+#include "ores.iam/messaging/bootstrap_protocol.hpp"
 #include "ores.shell/app/commands/compression_commands.hpp"
 
 namespace ores::shell::app::commands {

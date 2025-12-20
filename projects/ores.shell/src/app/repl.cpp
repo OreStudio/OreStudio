@@ -26,7 +26,7 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.comms/messaging/message_types.hpp"
-#include "ores.accounts/messaging/protocol.hpp"
+#include "ores.iam/messaging/protocol.hpp"
 #include "ores.shell/app/commands/currencies_commands.hpp"
 #include "ores.shell/app/commands/connection_commands.hpp"
 #include "ores.shell/app/commands/accounts_commands.hpp"

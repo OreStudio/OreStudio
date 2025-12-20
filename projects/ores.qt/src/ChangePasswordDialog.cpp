@@ -28,7 +28,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
-#include "ores.accounts/messaging/protocol.hpp"
+#include "ores.iam/messaging/protocol.hpp"
 
 namespace ores::qt {
 

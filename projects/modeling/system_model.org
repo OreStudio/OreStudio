@@ -54,7 +54,7 @@ The system is organised into four architectural layers:
 
 ** Domain Layer
 
-- Components: [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.risk]], [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.accounts]].
+- Components: [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.risk]], [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]].
 - *Risk*: ORE domain model with XML/CSV/JSON I/O and temporal versioning.
 - *Accounts*: User authentication, authorisation, and feature flags.
 - Depends on: Foundation, Infrastructure

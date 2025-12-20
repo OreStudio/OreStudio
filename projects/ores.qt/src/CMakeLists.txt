@@ -35,7 +35,7 @@ find_package(Boost REQUIRED COMPONENTS process)
 target_link_libraries(${exe_binary_name} PRIVATE
     ores.risk.lib
     ores.comms.lib
-    ores.accounts.lib
+    ores.iam.lib
     ores.eventing.lib
     ores.utility.lib
     Boost::process

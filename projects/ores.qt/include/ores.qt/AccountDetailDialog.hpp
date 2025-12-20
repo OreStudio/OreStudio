@@ -25,8 +25,8 @@
 #include <QAction>
 #include <memory>
 #include <optional>
-#include "ores.accounts/domain/account.hpp"
-#include "ores.accounts/domain/login_info.hpp"
+#include "ores.iam/domain/account.hpp"
+#include "ores.iam/domain/login_info.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.utility/log/make_logger.hpp"
 

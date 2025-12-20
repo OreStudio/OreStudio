@@ -41,7 +41,7 @@
 #include "ores.qt/AccountItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.accounts/messaging/account_protocol.hpp"
+#include "ores.iam/messaging/account_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {

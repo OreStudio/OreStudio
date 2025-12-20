@@ -22,8 +22,8 @@
 
 #include <iostream>
 #include "ores.comms/net/client_session.hpp"
-#include "ores.accounts/messaging/login_protocol.hpp"
-#include "ores.accounts/messaging/bootstrap_protocol.hpp"
+#include "ores.iam/messaging/login_protocol.hpp"
+#include "ores.iam/messaging/bootstrap_protocol.hpp"
 #include "ores.shell/app/repl.hpp"
 #include "ores.shell/app/commands/compression_commands.hpp"
 

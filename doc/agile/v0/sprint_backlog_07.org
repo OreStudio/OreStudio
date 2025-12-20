@@ -600,7 +600,10 @@ Links:
 - [[https://stackoverflow.com/questions/26458652/ctest-custom-warning-exception][SO: ctest custom warning exception]]
 - [[https://www.reddit.com/r/cmake/comments/1poie3j/ignoring_configure_time_warnings_in_cdash/][reddit: Ignoring configure time warnings in CDash]]
 
-*** Define type traits for message grouping                            :code:
+*** STARTED Define type traits for message grouping                    :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-19 Fri 00:02]--[2025-12-19 Fri 00:46] =>  0:44
+    :END:
 
 At present we do:
 
@@ -615,6 +618,79 @@ This grouping is known in advance because these messages are defined together.
 We should be able to create a type in the protocol that defines the grouping as
 traits and then supply the group as the template argument, /e.g./
 =messaging::subscribe=, which unpacks the tuple.
+
+*** STARTED Add flags for currencies                                   :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-19 Fri 08:12]--[2025-12-19 Fri 10:46] =>  2:34
+    :END:
+
+Add flags for the currencies. Need database support. Display them in the
+currencies dialog.
+
+Actually it is better to have a generic mechanism to upload an SVG and maybe tag
+it with an identifier. Then we could have a way to associate a currency with one
+of the available SVGs. The currency dialog could have a tab where users can
+select the SVG from a list. We can then have a table with SVG for currency which
+remembers these. This provides a generic solution for all cases where we have
+some kind of asset and an associated image.
+
+SQL:
+
+#+begin_src sql
+-- Ensure you have the necessary extension for generating random UUIDs
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- 1. icons table: Stores the SVG data
+CREATE TABLE icons (
+    -- Primary key using UUID (GUID)
+    icon_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    -- Unique key used by the application (e.g., 'usd_flag', 'btc_symbol')
+    key VARCHAR(100) UNIQUE NOT NULL,
+
+    -- The entire SVG content stored as plain text
+    svg_data TEXT NOT NULL,
+
+    -- Optional timestamps
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Index the 'key' column for faster lookups
+CREATE INDEX idx_icons_key ON icons (key);
+
+---
+
+-- 2. tags table: Stores the list of available categories
+CREATE TABLE tags (
+    -- Primary key remains SERIAL as tags are usually created centrally
+    tag_id SERIAL PRIMARY KEY,
+
+    -- The name of the tag (e.g., 'currency', 'flag', 'commodity')
+    name VARCHAR(50) UNIQUE NOT NULL
+);
+
+-- Index the 'name' column for quick lookups and joins
+CREATE INDEX idx_tags_name ON tags (name);
+
+---
+
+-- 3. icon_tags table: Junction table for the many-to-many relationship
+CREATE TABLE icon_tags (
+    -- Foreign key to the icons table (now a UUID)
+    icon_id UUID NOT NULL REFERENCES icons(icon_id) ON DELETE CASCADE,
+
+    -- Foreign key to the tags table (remains INTEGER)
+    tag_id INTEGER NOT NULL REFERENCES tags(tag_id) ON DELETE CASCADE,
+
+    -- Ensures that each icon/tag combination can only exist once
+    PRIMARY KEY (icon_id, tag_id)
+);
+
+-- Optional: Create a separate index for lookups by tag
+CREATE INDEX idx_icon_tags_tag_id ON icon_tags (tag_id);
+#+end_src
+
 
 *** Implement RBAC enforcement                                         :code:
 
@@ -674,6 +750,11 @@ Notes:
 - add tests for all new entities. Code coverage has dropped a lot after adding
   them.
 
+*** Add UI for roles and permission management                         :code:
+
+We added the core infrastructure but we need a way to manage it from Qt and from
+the shell.
+
 *** Tests are logging to stdout in github                              :code:
 
 There is a lot of stdout output in CDash. We need to understand why that is.
@@ -693,11 +774,6 @@ Test output
 [2025-12-16 20:31:44.772158] [0x00000001f1d1a200] [info]      Tags: messaging #messaging_protocol_tests
 #+end_src
 
-
-*** Add UI for roles and permission management                         :code:
-
-We added the core infrastructure but we need a way to manage it from Qt and from
-the shell.
 
 *** Consider renaming =utility= to =system=                            :code:
 
@@ -1025,80 +1101,9 @@ At present we can display currencies even before we connect. This is probably ok
 but we should at least state we are not connected. Alternatively it should be
 disabled.
 
-*** Add flags for currencies                                           :code:
+*** =ores.qt= is not using client session                              :code:
 
-Add flags for the currencies. Need database support. Display them in the
-currencies dialog.
-
-Actually it is better to have a generic mechanism to upload an SVG and maybe tag
-it with an identifier. Then we could have a way to associate a currency with one
-of the available SVGs. The currency dialog could have a tab where users can
-select the SVG from a list. We can then have a table with SVG for currency which
-remembers these. This provides a generic solution for all cases where we have
-some kind of asset and an associated image.
-
-Notes:
-
-- consider just adding svg directly to the application instead of going via the
-  database.
-
-SQL:
-
-#+begin_src sql
--- Ensure you have the necessary extension for generating random UUIDs
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
--- 1. icons table: Stores the SVG data
-CREATE TABLE icons (
-    -- Primary key using UUID (GUID)
-    icon_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-    -- Unique key used by the application (e.g., 'usd_flag', 'btc_symbol')
-    key VARCHAR(100) UNIQUE NOT NULL,
-
-    -- The entire SVG content stored as plain text
-    svg_data TEXT NOT NULL,
-
-    -- Optional timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Index the 'key' column for faster lookups
-CREATE INDEX idx_icons_key ON icons (key);
-
----
-
--- 2. tags table: Stores the list of available categories
-CREATE TABLE tags (
-    -- Primary key remains SERIAL as tags are usually created centrally
-    tag_id SERIAL PRIMARY KEY,
-
-    -- The name of the tag (e.g., 'currency', 'flag', 'commodity')
-    name VARCHAR(50) UNIQUE NOT NULL
-);
-
--- Index the 'name' column for quick lookups and joins
-CREATE INDEX idx_tags_name ON tags (name);
-
----
-
--- 3. icon_tags table: Junction table for the many-to-many relationship
-CREATE TABLE icon_tags (
-    -- Foreign key to the icons table (now a UUID)
-    icon_id UUID NOT NULL REFERENCES icons(icon_id) ON DELETE CASCADE,
-
-    -- Foreign key to the tags table (remains INTEGER)
-    tag_id INTEGER NOT NULL REFERENCES tags(tag_id) ON DELETE CASCADE,
-
-    -- Ensures that each icon/tag combination can only exist once
-    PRIMARY KEY (icon_id, tag_id)
-);
-
--- Optional: Create a separate index for lookups by tag
-CREATE INDEX idx_icon_tags_tag_id ON icon_tags (tag_id);
-#+end_src
-
+Refactor client manager to use it.
 
 *** Add sound assets                                                   :code:
 

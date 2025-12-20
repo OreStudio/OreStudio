@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,22 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-\ir ./create_database.sql
-\ir ./currencies_create.sql
-\ir ./currencies_notify_trigger.sql
-\ir ./accounts_create.sql
-\ir ./accounts_notify_trigger.sql
-\ir ./feature_flags_create.sql
-\ir ./login_info_create.sql
-\ir ./permissions_create.sql
-\ir ./roles_create.sql
-\ir ./role_permissions_create.sql
-\ir ./account_roles_create.sql
-\ir ./rbac_functions_create.sql
-\ir ./images_create.sql
-\ir ./tags_create.sql
-\ir ./image_tags_create.sql
-\ir ./currency_images_create.sql
+#include <openssl/crypto.h>
+#include <boost/scope_exit.hpp>
+#include <catch2/catch_session.hpp>
+#include <catch2/reporters/catch_reporter_registrars.hpp>
+#include "ores.testing/logging_listener.hpp"
+#include "ores.testing/database_lifecycle_listener.hpp"
 
-\ir ./bootstrap_mode_setup.sql
-\ir ./disable_password_validation_setup.sql
+CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
+CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
+
+int main(int argc, char* argv[]) {
+    BOOST_SCOPE_EXIT(void) {
+        OPENSSL_cleanup();
+    } BOOST_SCOPE_EXIT_END
+
+    ores::testing::logging_listener::set_test_module_name("ores.assets.tests");
+    return Catch::Session().run(argc, argv);
+}

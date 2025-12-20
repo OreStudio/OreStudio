@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,22 +17,29 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-\ir ./create_database.sql
-\ir ./currencies_create.sql
-\ir ./currencies_notify_trigger.sql
-\ir ./accounts_create.sql
-\ir ./accounts_notify_trigger.sql
-\ir ./feature_flags_create.sql
-\ir ./login_info_create.sql
-\ir ./permissions_create.sql
-\ir ./roles_create.sql
-\ir ./role_permissions_create.sql
-\ir ./account_roles_create.sql
-\ir ./rbac_functions_create.sql
-\ir ./images_create.sql
-\ir ./tags_create.sql
-\ir ./image_tags_create.sql
-\ir ./currency_images_create.sql
+#ifndef ORES_ASSETS_GENERATORS_TAG_GENERATOR_HPP
+#define ORES_ASSETS_GENERATORS_TAG_GENERATOR_HPP
 
-\ir ./bootstrap_mode_setup.sql
-\ir ./disable_password_validation_setup.sql
+#include <vector>
+#include "ores.assets/domain/tag.hpp"
+
+namespace ores::assets::generators {
+
+/**
+ * @brief Generates a synthetic tag.
+ */
+domain::tag generate_synthetic_tag();
+
+/**
+ * @brief Generates N synthetic tags. May contain duplicates.
+ */
+std::vector<domain::tag> generate_synthetic_tags(std::size_t n);
+
+/**
+ * @brief Generates N synthetic tags with unique names.
+ */
+std::vector<domain::tag> generate_unique_synthetic_tags(std::size_t n);
+
+}
+
+#endif

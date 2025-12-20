@@ -26,13 +26,22 @@
 #include <sstream>
 #include <vector>
 
-#ifdef __linux__
+#include <boost/process/environment.hpp>
+
+#if defined(__linux__)
 #include <unistd.h>
 #include <limits.h>
 #include <sys/types.h>
 #include <ifaddrs.h>
 #include <net/if.h>
 #include <netpacket/packet.h>
+#elif defined(__APPLE__)
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/param.h>
+#include <ifaddrs.h>
+#include <net/if.h>
+#include <net/if_dl.h>
 #elif defined(_WIN32)
 #include <windows.h>
 #include <iphlpapi.h>
@@ -42,8 +51,13 @@
 namespace ores::utility::net {
 
 std::string get_hostname() {
-#ifdef __linux__
+#if defined(__linux__)
     std::array<char, HOST_NAME_MAX + 1> buffer{};
+    if (gethostname(buffer.data(), buffer.size()) == 0) {
+        return std::string(buffer.data());
+    }
+#elif defined(__APPLE__)
+    std::array<char, MAXHOSTNAMELEN + 1> buffer{};
     if (gethostname(buffer.data(), buffer.size()) == 0) {
         return std::string(buffer.data());
     }
@@ -58,7 +72,7 @@ std::string get_hostname() {
 }
 
 std::optional<std::string> get_primary_mac_address() {
-#ifdef __linux__
+#if defined(__linux__)
     struct ifaddrs* ifaddr = nullptr;
     if (getifaddrs(&ifaddr) == -1) {
         return std::nullopt;
@@ -79,6 +93,43 @@ std::optional<std::string> get_primary_mac_address() {
                     if (i > 0) oss << ':';
                     oss << std::setw(2)
                         << static_cast<unsigned>(s->sll_addr[i]);
+                }
+                macs.push_back(oss.str());
+            }
+        }
+    }
+
+    freeifaddrs(ifaddr);
+
+    if (macs.empty()) {
+        return std::nullopt;
+    }
+
+    std::sort(macs.begin(), macs.end());
+    return macs.front();
+
+#elif defined(__APPLE__)
+    struct ifaddrs* ifaddr = nullptr;
+    if (getifaddrs(&ifaddr) == -1) {
+        return std::nullopt;
+    }
+
+    std::vector<std::string> macs;
+    for (auto* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr == nullptr || (ifa->ifa_flags & IFF_LOOPBACK) != 0) {
+            continue;
+        }
+
+        if (ifa->ifa_addr->sa_family == AF_LINK) {
+            auto* sdl = reinterpret_cast<struct sockaddr_dl*>(ifa->ifa_addr);
+            if (sdl->sdl_alen == 6) {
+                auto* mac_ptr = reinterpret_cast<unsigned char*>(
+                    LLADDR(sdl));
+                std::ostringstream oss;
+                oss << std::hex << std::setfill('0');
+                for (int i = 0; i < 6; ++i) {
+                    if (i > 0) oss << ':';
+                    oss << std::setw(2) << static_cast<unsigned>(mac_ptr[i]);
                 }
                 macs.push_back(oss.str());
             }
@@ -135,7 +186,7 @@ std::optional<std::string> get_primary_mac_address() {
 }
 
 std::optional<std::string> get_primary_mac_address_bytes() {
-#ifdef __linux__
+#if defined(__linux__)
     struct ifaddrs* ifaddr = nullptr;
     if (getifaddrs(&ifaddr) == -1) {
         return std::nullopt;
@@ -154,6 +205,41 @@ std::optional<std::string> get_primary_mac_address_bytes() {
                 mac_bytes.reserve(6);
                 for (int i = 0; i < 6; ++i) {
                     mac_bytes += static_cast<char>(s->sll_addr[i]);
+                }
+                macs.push_back(mac_bytes);
+            }
+        }
+    }
+
+    freeifaddrs(ifaddr);
+
+    if (macs.empty()) {
+        return std::nullopt;
+    }
+
+    std::sort(macs.begin(), macs.end());
+    return macs.front();
+
+#elif defined(__APPLE__)
+    struct ifaddrs* ifaddr = nullptr;
+    if (getifaddrs(&ifaddr) == -1) {
+        return std::nullopt;
+    }
+
+    std::vector<std::string> macs;
+    for (auto* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr == nullptr || (ifa->ifa_flags & IFF_LOOPBACK) != 0) {
+            continue;
+        }
+
+        if (ifa->ifa_addr->sa_family == AF_LINK) {
+            auto* sdl = reinterpret_cast<struct sockaddr_dl*>(ifa->ifa_addr);
+            if (sdl->sdl_alen == 6) {
+                auto* mac_ptr = reinterpret_cast<unsigned char*>(LLADDR(sdl));
+                std::string mac_bytes;
+                mac_bytes.reserve(6);
+                for (int i = 0; i < 6; ++i) {
+                    mac_bytes += static_cast<char>(mac_ptr[i]);
                 }
                 macs.push_back(mac_bytes);
             }
@@ -230,13 +316,8 @@ std::uint16_t derive_machine_id_hash() {
 }
 
 std::int64_t get_process_id() {
-#ifdef __linux__
-    return static_cast<std::int64_t>(getpid());
-#elif defined(_WIN32)
-    return static_cast<std::int64_t>(GetCurrentProcessId());
-#else
-    return 0;
-#endif
+    return static_cast<std::int64_t>(
+        boost::this_process::get_id());
 }
 
 }

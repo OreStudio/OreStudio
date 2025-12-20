@@ -99,18 +99,8 @@ TEST_CASE("span_ids_are_time_sortable", tags) {
     std::this_thread::sleep_for(std::chrono::milliseconds(2));
     const auto id2 = gen();
 
-    // First 6 bytes are timestamp - id2 should be >= id1
-    bool id2_greater_or_equal = true;
-    for (int i = 0; i < 6; ++i) {
-        if (id2.bytes[i] > id1.bytes[i]) {
-            break;
-        } else if (id2.bytes[i] < id1.bytes[i]) {
-            id2_greater_or_equal = false;
-            break;
-        }
-    }
-
-    REQUIRE(id2_greater_or_equal);
+    // The defaulted operator<=> allows for direct comparison.
+    REQUIRE(id1 <= id2);
 }
 
 TEST_CASE("span_id_generator_is_thread_safe", tags) {

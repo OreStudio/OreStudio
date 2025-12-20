@@ -28,6 +28,7 @@
 #include "ores.assets/domain/currency_image.hpp" // IWYU pragma: keep.
 #include "ores.assets/domain/currency_image_json_io.hpp" // IWYU pragma: keep.
 #include "ores.assets/generators/currency_image_generator.hpp"
+#include "ores.assets/generators/image_generator.hpp"
 
 namespace {
 
@@ -131,4 +132,28 @@ TEST_CASE("read_nonexistent_currency_image", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read currency-images: " << read_currency_images;
 
     CHECK(read_currency_images.size() == 0);
+}
+
+TEST_CASE("update_currency_image", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h(database_table);
+    auto ci = generate_synthetic_currency_image();
+    BOOST_LOG_SEV(lg, debug) << "Original currency-image: " << ci;
+
+    currency_image_repository repo;
+    repo.write(h.context(), ci);
+
+    // Update by writing a new association for the same currency
+    auto updated_ci = ci;
+    updated_ci.image_id = generate_synthetic_image().image_id;
+    BOOST_LOG_SEV(lg, debug) << "Updated currency-image: " << updated_ci;
+
+    CHECK_NOTHROW(repo.write(h.context(), updated_ci));
+
+    auto read_currency_images = repo.read_latest_by_currency(h.context(), ci.iso_code);
+    BOOST_LOG_SEV(lg, debug) << "Read currency-images: " << read_currency_images;
+
+    REQUIRE(read_currency_images.size() == 1);
+    CHECK(read_currency_images[0].image_id == updated_ci.image_id);
 }

@@ -1,4 +1,4 @@
-' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*'
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 '
 ' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
 '
@@ -15,41 +15,148 @@
 ' GNU Emacs; see the file COPYING. If not, write to the Free Software
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 @startuml
+!pragma layout smetana
 
 title ores.platform Component
 
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
-    note "Platform-specific utilities including environment variables,\nfilesystem operations, and network information." as ores_platform_note
-    platform --- ores_platform_note
     namespace platform #F2F2F2 {
-        namespace environment {
-            class environment {
-                +{static} get_value(name: string): optional<string>
-                +{static} get_value_or_default(name: string, default: string): string
-                +{static} get_int_value_or_default(name: string, default: int): int
-                +{static} set_value(name: string, value: string): void
+        namespace environment #F2F2F2 {
+            class environment #ECECEC {
+                +{static} get_value(const std::string&) std::optional<std::string>
+                +{static} get_value_or_default(const std::string&, const std::string&) std::string
+                +{static} get_int_value_or_default(const std::string&, int) int
+                +{static} set_value(const std::string&, const std::string&) void
             }
+
+            note top of environment
+            Utilities for reading and writing environment variables.
+
+            Methods:
+
+            - get_value: Gets an environment variable value.
+            - get_value_or_default: Gets an environment variable value with a default.
+            - get_int_value_or_default: Gets an environment variable value as an integer.
+            - set_value: Sets an environment variable value.
+            end note
         }
 
-        namespace filesystem {
-            class file {
-                +{static} read_content(path: path): string
-                +{static} write_content(path: path, content: string): void
-                +{static} find_files(dir: path): set<path>
-                +{static} remove(files: list<path>): void
-                +{static} recreate_directory(dir: path): void
+        namespace filesystem #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class file_not_found
+                class io_error
+                class file
             }
-            class io_error
-            class file_not_found
+
+            file_not_found -[hidden]down- io_error
+            io_error -[hidden]down- file
+
+            '
+            ' Class definitions
+            '
+
+            class file_not_found <<exception>> #D6B19F {
+            }
+
+            note top of file_not_found
+            File was not found.
+            end note
+
+            class io_error <<exception>> #D6B19F {
+            }
+
+            note top of io_error
+            An error occurred whilst performing an IO operation.
+            end note
+
+            class file #ECECEC {
+                +{static} read_content(std::istream&) std::string
+                +{static} read_content(const std::filesystem::path&) std::string
+                +{static} write_content(const std::filesystem::path&, const std::string&) void
+                +{static} write(const std::filesystem::path&, const Ioable&) void
+                +{static} find_files(const std::filesystem::path&) std::set<std::filesystem::path>
+                +{static} find_files(const std::vector<std::filesystem::path>&) std::set<std::filesystem::path>
+                +{static} find_files(const std::list<std::filesystem::path>&) std::set<std::filesystem::path>
+                +{static} find_file_recursively_upwards(std::filesystem::path, const std::filesystem::path&) std::filesystem::path
+                +{static} remove(const std::list<std::filesystem::path>&) void
+                +{static} remove_empty_directories(const std::filesystem::path&) void
+                +{static} remove_empty_directories(const std::list<std::filesystem::path>&) void
+                +{static} recreate_directory(const std::filesystem::path&) void
+            }
+
+            note top of file
+            Utility class for file operations.
+
+            Methods:
+
+            - read_content: Returns the contents of the file.
+            - write_content: Writes the string to a file located at path.
+            - write: Dump the object as a stream to the file.
+            - find_files: Returns all files available in all input directories, recursively.
+            - find_file_recursively_upwards: Finds the relative path, by searching recursively upwards from the starting directory.
+            - remove: Deletes all files in the supplied list.
+            - remove_empty_directories: Removes all empty directories, recursively.
+            - recreate_directory: If the directory exists, deletes it and recreates it. Otherwise, creates it.
+            end note
         }
 
-        namespace net {
-            +get_hostname(): string
-            +get_primary_mac_address(): optional<string>
-            +derive_machine_id(): string
-            +get_process_id(): int64
+        namespace net #F2F2F2 {
+            class network_info #ECECEC {
+                +{static} get_hostname() std::string
+                +{static} get_primary_mac_address() std::optional<std::string>
+                +{static} get_primary_mac_address_bytes() std::optional<std::string>
+                +{static} derive_machine_id() std::string
+                +{static} derive_machine_id_hash() std::uint16_t
+                +{static} get_process_id() std::int64_t
+            }
+
+            note top of network_info
+            Network and hardware identification utilities.
+
+            Provides cross-platform access to machine identity
+            information for use in distributed systems.
+
+            Methods:
+
+            - get_hostname: Gets the hostname of the current machine.
+            - get_primary_mac_address: Gets the primary MAC address as colon-separated hex.
+            - get_primary_mac_address_bytes: Gets the primary MAC address as raw bytes.
+            - derive_machine_id: Derives a stable hex machine identifier from hardware.
+            - derive_machine_id_hash: Derives a 16-bit machine ID suitable for embedding in IDs.
+            - get_process_id: Gets the current process ID.
+            end note
+        }
+
+        namespace tests #F2F2F2 {
+            class net_network_info_tests <<test suite>> #C5E1A5 {
+                +get_hostname_returns_non_empty_string() void
+                +get_hostname_is_stable() void
+                +get_primary_mac_address_format() void
+                +get_primary_mac_address_is_stable() void
+                +get_primary_mac_address_bytes_length() void
+                +derive_machine_id_is_non_empty() void
+                +derive_machine_id_is_stable() void
+                +derive_machine_id_is_hex() void
+                +derive_machine_id_hash_is_stable() void
+                +get_process_id_is_positive() void
+                +get_process_id_is_stable() void
+            }
+
+            note top of net_network_info_tests
+            Test suite for network information utilities.
+
+            Tests cover hostname retrieval, MAC address format
+            and stability, machine ID derivation, and process
+            ID retrieval.
+            end note
+
+            net_network_info_tests ..> ores::platform::net::network_info : tests
         }
     }
 }

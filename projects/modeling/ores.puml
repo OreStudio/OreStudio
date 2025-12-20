@@ -45,12 +45,23 @@ package "Foundation Layer" #F2F2F2 {
     note right of utility
     Foundation utilities with minimal dependencies:
     - Logging: Boost.Log integration with per-module and per-test-case support
-    - Filesystem: File I/O, directory operations, recursive search
     - UUID: UUID v7 generation for time-ordered unique identifiers
     - String: Type conversion and string manipulation
-    - Environment: Variable access with type conversion
+    - DateTime: Time formatting and relative time display
+    - Converter: Base32/Base64 encoding and decoding
     - Program Options: Environment mapper factory for CLI configuration
-    Organized into: log, filesystem, uuid, string, environment namespaces.
+    Organized into: log, uuid, string, datetime, convert, program_options namespaces.
+    end note
+
+    component [ores.platform] as platform #F7E5FF
+
+    note right of platform
+    Platform-specific utilities for OS and hardware interaction:
+    - Environment: Environment variable access with type conversion
+    - Filesystem: File I/O, directory operations, recursive search
+    - Network: Hostname, MAC address, machine ID, process ID
+    Provides cross-platform abstractions for system-level operations.
+    Organized into: environment, filesystem, net namespaces.
     end note
 
     component [ores.variability] as variability #F7E5FF
@@ -204,6 +215,7 @@ package "Application Layer" #F2F2F2 {
 }
 
 ' Dependencies - Foundation Layer (ores.database is the base)
+platform --> utility
 variability --> utility
 variability --> database
 
@@ -214,10 +226,12 @@ comms --> utility
 comms --> database
 comms --> eventing
 testing --> utility
+testing --> platform
 testing --> database
 
 ' Dependencies - Domain to Foundation/Infrastructure
 risk --> utility
+risk --> platform
 risk --> database
 iam --> variability
 iam --> comms

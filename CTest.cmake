@@ -303,7 +303,7 @@ endif()
 if(USE_MEMCHECK)
     ctest_memcheck(PARALLEL_LEVEL ${nproc})
 else()
-    ctest_test(PARALLEL_LEVEL ${nproc} QUIET)
+    ctest_test(PARALLEL_LEVEL ${nproc})
 endif()
 
 #

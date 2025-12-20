@@ -46,6 +46,12 @@ where valid_to = '9999-12-31 23:59:59'::timestamptz;
 create or replace function update_currency_images()
 returns trigger as $$
 begin
+    -- Close any existing current record for this iso_code
+    update "oresdb"."currency_images"
+    set valid_to = current_timestamp
+    where iso_code = new.iso_code
+    and valid_to = '9999-12-31 23:59:59'::timestamptz;
+
     new.valid_from = current_timestamp;
     new.valid_to = '9999-12-31 23:59:59'::timestamptz;
     new.assigned_at = current_timestamp;

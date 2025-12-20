@@ -1,0 +1,384 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+!pragma layout smetana
+
+title ores.assets Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    note "Asset management for dynamically loaded images,\ntagging support, and currency associations." as ores_assets_note
+    assets --- ores_assets_note
+    namespace assets #F2F2F2 {
+        namespace domain #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class image
+                class tag
+            }
+
+            together {
+                class image_tag
+                class currency_image
+            }
+
+            image -[hidden]right- tag
+            image_tag -[hidden]right- currency_image
+            image -[hidden]down- image_tag
+
+            '
+            ' Class definitions
+            '
+
+            class image #F7E5FF {
+                +{field} version : int
+                +{field} image_id : std::string
+                +{field} key : std::string
+                +{field} description : std::string
+                +{field} svg_data : std::string
+                +{field} recorded_by : std::string
+                +{field} recorded_at : std::string
+            }
+
+            note top of image
+            Represents a dynamically loaded image (typically SVG).
+
+            Fields:
+
+            - version: Version number for optimistic locking.
+            - image_id: Unique identifier (UUID).
+            - key: Unique key used by application (e.g., 'ro', 'us').
+            - description: Human-readable description.
+            - svg_data: The entire SVG content as plain text.
+            - recorded_by: Username who recorded this version.
+            - recorded_at: Timestamp when this version was recorded.
+            end note
+
+            class tag #F7E5FF {
+                +{field} version : int
+                +{field} tag_id : std::string
+                +{field} name : std::string
+                +{field} description : std::string
+                +{field} recorded_by : std::string
+                +{field} recorded_at : std::string
+            }
+
+            note top of tag
+            Represents a category tag for images.
+
+            Fields:
+
+            - version: Version number for optimistic locking.
+            - tag_id: Unique identifier (UUID).
+            - name: Unique tag name (e.g., 'flag', 'currency').
+            - description: Human-readable description.
+            - recorded_by: Username who recorded this version.
+            - recorded_at: Timestamp when this version was recorded.
+            end note
+
+            class image_tag #F7E5FF {
+                +{field} image_id : std::string
+                +{field} tag_id : std::string
+                +{field} assigned_by : std::string
+                +{field} assigned_at : std::string
+            }
+
+            note top of image_tag
+            Junction type linking images to tags (many-to-many).
+
+            Fields:
+
+            - image_id: The image identifier (UUID).
+            - tag_id: The tag identifier (UUID).
+            - assigned_by: Username who assigned this tag.
+            - assigned_at: Timestamp when tag was assigned.
+            end note
+
+            class currency_image #F7E5FF {
+                +{field} iso_code : std::string
+                +{field} image_id : std::string
+                +{field} assigned_by : std::string
+                +{field} assigned_at : std::string
+            }
+
+            note top of currency_image
+            Links a currency to its primary image.
+
+            Fields:
+
+            - iso_code: Currency ISO code (e.g., 'USD', 'EUR').
+            - image_id: The image identifier (UUID).
+            - assigned_by: Username who assigned this image.
+            - assigned_at: Timestamp when image was assigned.
+            end note
+
+            image "1" -- "*" image_tag
+            tag "1" -- "*" image_tag
+            image "1" -- "*" currency_image
+        }
+
+        namespace repository #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class image_entity
+                class image_mapper
+                class image_repository
+            }
+
+            together {
+                class tag_entity
+                class tag_mapper
+                class tag_repository
+            }
+
+            together {
+                class image_tag_entity
+                class image_tag_mapper
+                class image_tag_repository
+            }
+
+            together {
+                class currency_image_entity
+                class currency_image_mapper
+                class currency_image_repository
+            }
+
+            image_entity -[hidden]down- image_mapper
+            image_mapper -[hidden]down- image_repository
+            tag_entity -[hidden]down- tag_mapper
+            tag_mapper -[hidden]down- tag_repository
+            image_tag_entity -[hidden]down- image_tag_mapper
+            image_tag_mapper -[hidden]down- image_tag_repository
+            currency_image_entity -[hidden]down- currency_image_mapper
+            currency_image_mapper -[hidden]down- currency_image_repository
+
+            '
+            ' Class definitions
+            '
+
+            class image_entity <<orm>> #99CB99 {
+                +{field} image_id : sqlgen::PrimaryKey<std::string>
+                +{field} version : int
+                +{field} key : std::string
+                +{field} description : std::string
+                +{field} svg_data : std::string
+                +{field} modified_by : std::string
+                +{field} valid_from : sqlgen::Timestamp
+                +{field} valid_to : sqlgen::Timestamp
+            }
+
+            class image_mapper <<orm>> #99CB99 {
+                +{static} map(const image_entity& v) : domain::image
+                +{static} map(const domain::image& v) : image_entity
+                +{static} map(const std::vector<image_entity>& v) : std::vector<domain::image>
+                +{static} map(const std::vector<domain::image>& v) : std::vector<image_entity>
+            }
+
+            class image_repository <<orm>> #99CB99 {
+                +sql() : std::string
+                +write(context ctx, const domain::image& image) : void
+                +write(context ctx, const std::vector<domain::image>& images) : void
+                +read_latest(context ctx) : std::vector<domain::image>
+                +read_latest_by_id(context ctx, const std::string& image_id) : std::vector<domain::image>
+                +read_latest_by_key(context ctx, const std::string& key) : std::vector<domain::image>
+                +read_all(context ctx) : std::vector<domain::image>
+                +remove(context ctx, const std::string& image_id) : void
+            }
+
+            image_mapper ..> ores::assets::domain::image : uses
+            image_repository ..> ores::assets::domain::image : uses
+
+            class tag_entity <<orm>> #99CB99 {
+                +{field} tag_id : sqlgen::PrimaryKey<std::string>
+                +{field} version : int
+                +{field} name : std::string
+                +{field} description : std::string
+                +{field} modified_by : std::string
+                +{field} valid_from : sqlgen::Timestamp
+                +{field} valid_to : sqlgen::Timestamp
+            }
+
+            class tag_mapper <<orm>> #99CB99 {
+                +{static} map(const tag_entity& v) : domain::tag
+                +{static} map(const domain::tag& v) : tag_entity
+                +{static} map(const std::vector<tag_entity>& v) : std::vector<domain::tag>
+                +{static} map(const std::vector<domain::tag>& v) : std::vector<tag_entity>
+            }
+
+            class tag_repository <<orm>> #99CB99 {
+                +sql() : std::string
+                +write(context ctx, const domain::tag& tag) : void
+                +write(context ctx, const std::vector<domain::tag>& tags) : void
+                +read_latest(context ctx) : std::vector<domain::tag>
+                +read_latest_by_id(context ctx, const std::string& tag_id) : std::vector<domain::tag>
+                +read_latest_by_name(context ctx, const std::string& name) : std::vector<domain::tag>
+                +read_all(context ctx) : std::vector<domain::tag>
+                +remove(context ctx, const std::string& tag_id) : void
+            }
+
+            tag_mapper ..> ores::assets::domain::tag : uses
+            tag_repository ..> ores::assets::domain::tag : uses
+
+            class image_tag_entity <<orm>> #99CB99 {
+                +{field} image_id : sqlgen::PrimaryKey<std::string>
+                +{field} tag_id : sqlgen::PrimaryKey<std::string>
+                +{field} assigned_by : std::string
+                +{field} assigned_at : sqlgen::Timestamp
+                +{field} valid_from : sqlgen::Timestamp
+                +{field} valid_to : sqlgen::Timestamp
+            }
+
+            class image_tag_mapper <<orm>> #99CB99 {
+                +{static} map(const image_tag_entity& v) : domain::image_tag
+                +{static} map(const domain::image_tag& v) : image_tag_entity
+                +{static} map(const std::vector<image_tag_entity>& v) : std::vector<domain::image_tag>
+                +{static} map(const std::vector<domain::image_tag>& v) : std::vector<image_tag_entity>
+            }
+
+            class image_tag_repository <<orm>> #99CB99 {
+                +sql() : std::string
+                +write(context ctx, const domain::image_tag& image_tag) : void
+                +write(context ctx, const std::vector<domain::image_tag>& image_tags) : void
+                +read_latest(context ctx) : std::vector<domain::image_tag>
+                +read_latest_by_image(context ctx, const std::string& image_id) : std::vector<domain::image_tag>
+                +read_latest_by_tag(context ctx, const std::string& tag_id) : std::vector<domain::image_tag>
+                +remove(context ctx, const std::string& image_id, const std::string& tag_id) : void
+            }
+
+            image_tag_mapper ..> ores::assets::domain::image_tag : uses
+            image_tag_repository ..> ores::assets::domain::image_tag : uses
+
+            class currency_image_entity <<orm>> #99CB99 {
+                +{field} iso_code : sqlgen::PrimaryKey<std::string>
+                +{field} image_id : std::string
+                +{field} assigned_by : std::string
+                +{field} assigned_at : sqlgen::Timestamp
+                +{field} valid_from : sqlgen::Timestamp
+                +{field} valid_to : sqlgen::Timestamp
+            }
+
+            class currency_image_mapper <<orm>> #99CB99 {
+                +{static} map(const currency_image_entity& v) : domain::currency_image
+                +{static} map(const domain::currency_image& v) : currency_image_entity
+                +{static} map(const std::vector<currency_image_entity>& v) : std::vector<domain::currency_image>
+                +{static} map(const std::vector<domain::currency_image>& v) : std::vector<currency_image_entity>
+            }
+
+            class currency_image_repository <<orm>> #99CB99 {
+                +sql() : std::string
+                +write(context ctx, const domain::currency_image& currency_image) : void
+                +write(context ctx, const std::vector<domain::currency_image>& currency_images) : void
+                +read_latest(context ctx) : std::vector<domain::currency_image>
+                +read_latest_by_currency(context ctx, const std::string& iso_code) : std::vector<domain::currency_image>
+                +read_latest_by_image(context ctx, const std::string& image_id) : std::vector<domain::currency_image>
+                +remove(context ctx, const std::string& iso_code) : void
+            }
+
+            currency_image_mapper ..> ores::assets::domain::currency_image : uses
+            currency_image_repository ..> ores::assets::domain::currency_image : uses
+        }
+
+        namespace generators #F2F2F2 {
+            class "<functions>" as image_generator #FFFACD {
+                +{static} generate_synthetic_image() : domain::image
+                +{static} generate_synthetic_images(std::size_t n) : std::vector<domain::image>
+                +{static} generate_unique_synthetic_images(std::size_t n) : std::vector<domain::image>
+            }
+
+            class "<functions>" as tag_generator #FFFACD {
+                +{static} generate_synthetic_tag() : domain::tag
+                +{static} generate_synthetic_tags(std::size_t n) : std::vector<domain::tag>
+                +{static} generate_unique_synthetic_tags(std::size_t n) : std::vector<domain::tag>
+            }
+
+            class "<functions>" as image_tag_generator #FFFACD {
+                +{static} generate_synthetic_image_tag() : domain::image_tag
+                +{static} generate_synthetic_image_tag(image_id, tag_id) : domain::image_tag
+                +{static} generate_synthetic_image_tags(std::size_t n) : std::vector<domain::image_tag>
+            }
+
+            class "<functions>" as currency_image_generator #FFFACD {
+                +{static} generate_synthetic_currency_image() : domain::currency_image
+                +{static} generate_synthetic_currency_image(iso_code, image_id) : domain::currency_image
+                +{static} generate_synthetic_currency_images(std::size_t n) : std::vector<domain::currency_image>
+                +{static} generate_unique_synthetic_currency_images(std::size_t n) : std::vector<domain::currency_image>
+            }
+
+            image_generator ..> ores::assets::domain::image : generates
+            tag_generator ..> ores::assets::domain::tag : generates
+            image_tag_generator ..> ores::assets::domain::image_tag : generates
+            currency_image_generator ..> ores::assets::domain::currency_image : generates
+        }
+
+        namespace tests #F2F2F2 {
+            class repository_image_repository_tests <<test suite>> #C5E1A5 {
+                +write_single_image() void
+                +write_multiple_images() void
+                +read_latest_images() void
+                +read_latest_image_by_id() void
+                +read_latest_image_by_key() void
+                +read_all_images() void
+                +read_nonexistent_image_id() void
+            }
+
+            class repository_tag_repository_tests <<test suite>> #C5E1A5 {
+                +write_single_tag() void
+                +write_multiple_tags() void
+                +read_latest_tags() void
+                +read_latest_tag_by_id() void
+                +read_latest_tag_by_name() void
+                +read_all_tags() void
+                +read_nonexistent_tag_id() void
+            }
+
+            class repository_image_tag_repository_tests <<test suite>> #C5E1A5 {
+                +write_single_image_tag() void
+                +write_multiple_image_tags() void
+                +read_latest_image_tags() void
+                +read_latest_image_tags_by_image() void
+                +read_latest_image_tags_by_tag() void
+                +read_nonexistent_image_tag() void
+            }
+
+            class repository_currency_image_repository_tests <<test suite>> #C5E1A5 {
+                +write_single_currency_image() void
+                +write_multiple_currency_images() void
+                +read_latest_currency_images() void
+                +read_latest_currency_images_by_currency() void
+                +read_latest_currency_images_by_image() void
+                +read_nonexistent_currency_image() void
+            }
+
+            repository_image_repository_tests ..> ores::assets::repository::image_repository : tests
+            repository_tag_repository_tests ..> ores::assets::repository::tag_repository : tests
+            repository_image_tag_repository_tests ..> ores::assets::repository::image_tag_repository : tests
+            repository_currency_image_repository_tests ..> ores::assets::repository::currency_image_repository : tests
+        }
+    }
+}
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.assets.puml"
+' End:
+@enduml

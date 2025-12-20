@@ -17,22 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-\ir ./create_database.sql
-\ir ./currencies_create.sql
-\ir ./currencies_notify_trigger.sql
-\ir ./accounts_create.sql
-\ir ./accounts_notify_trigger.sql
-\ir ./feature_flags_create.sql
-\ir ./login_info_create.sql
-\ir ./permissions_create.sql
-\ir ./roles_create.sql
-\ir ./role_permissions_create.sql
-\ir ./account_roles_create.sql
-\ir ./rbac_functions_create.sql
-\ir ./images_create.sql
-\ir ./tags_create.sql
-\ir ./image_tags_create.sql
-\ir ./currency_images_create.sql
+set schema 'oresdb';
 
-\ir ./bootstrap_mode_setup.sql
-\ir ./disable_password_validation_setup.sql
+drop rule if exists delete_currency_images_rule on "oresdb"."currency_images";
+drop trigger if exists update_currency_images_trigger on "oresdb"."currency_images";
+drop function if exists update_currency_images;
+drop index if exists currency_images_image_idx;
+drop table if exists "oresdb"."currency_images";

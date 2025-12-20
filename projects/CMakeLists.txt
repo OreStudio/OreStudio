@@ -36,9 +36,9 @@ add_compile_options(
     $<$<CXX_COMPILER_ID:MSVC>:/WX>)
 
 #
-# Catch2 args
-# ${ORES_CATCH_REPORTER}
-set(ORES_CATCH2_ARGS --reporter xml --durations yes --filenames-as-tags)
+# Catch2 args: compact reporter for console output, XML added per test target.
+#
+set(ORES_CATCH2_ARGS --reporter compact --durations yes --filenames-as-tags)
 
 #
 # Java args for PlantUML

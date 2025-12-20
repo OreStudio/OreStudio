@@ -26,7 +26,7 @@
 #include <sstream>
 #include <vector>
 
-#include <boost/process/environment.hpp>
+#include <boost/process/v2/pid.hpp>
 
 #if defined(__linux__)
 #include <unistd.h>
@@ -317,7 +317,7 @@ std::uint16_t derive_machine_id_hash() {
 
 std::int64_t get_process_id() {
     return static_cast<std::int64_t>(
-        boost::this_process::get_id());
+        boost::process::v2::current_pid());
 }
 
 }

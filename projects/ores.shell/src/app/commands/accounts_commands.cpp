@@ -108,8 +108,8 @@ void accounts_commands::
 process_list_accounts(std::ostream& out, client_session& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list account request.";
 
-    using accounts::messaging::list_accounts_request;
-    using accounts::messaging::list_accounts_response;
+    using iam::messaging::list_accounts_request;
+    using iam::messaging::list_accounts_response;
     auto result = session.process_authenticated_request<list_accounts_request,
                                                         list_accounts_response,
                                                         message_type::list_accounts_request>
@@ -131,7 +131,7 @@ process_login(std::ostream& out, client_session& session,
     BOOST_LOG_SEV(lg(), debug) << "Initiating login request for user: "
                                << username;
 
-    using accounts::messaging::login_request;
+    using iam::messaging::login_request;
     auto result = session.process_request(
         login_request{.username = username, .password = std::move(password)});
 
@@ -174,8 +174,8 @@ process_lock_account(std::ostream& out, client_session& session,
     BOOST_LOG_SEV(lg(), debug) << "Creating lock account request for ID: "
                                << account_id;
 
-    using accounts::messaging::lock_account_request;
-    using accounts::messaging::lock_account_response;
+    using iam::messaging::lock_account_request;
+    using iam::messaging::lock_account_response;
     auto result = session.process_authenticated_request<lock_account_request,
                                                         lock_account_response,
                                                         message_type::lock_account_request>
@@ -220,8 +220,8 @@ process_unlock_account(std::ostream& out, client_session& session,
     BOOST_LOG_SEV(lg(), debug) << "Creating unlock account request for ID: "
                                << account_id;
 
-    using accounts::messaging::unlock_account_request;
-    using accounts::messaging::unlock_account_response;
+    using iam::messaging::unlock_account_request;
+    using iam::messaging::unlock_account_response;
     auto result = session.process_authenticated_request<unlock_account_request,
                                                         unlock_account_response,
                                                         message_type::unlock_account_request>
@@ -257,8 +257,8 @@ void accounts_commands::process_create_account(std::ostream& out,
     bool is_admin) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating create account request.";
 
-    using accounts::messaging::create_account_request;
-    using accounts::messaging::create_account_response;
+    using iam::messaging::create_account_request;
+    using iam::messaging::create_account_response;
     auto result = session.process_authenticated_request<create_account_request,
                                                         create_account_response,
                                                         message_type::create_account_request>
@@ -284,8 +284,8 @@ void accounts_commands::
 process_list_login_info(std::ostream& out, client_session& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list login info request.";
 
-    using accounts::messaging::list_login_info_request;
-    using accounts::messaging::list_login_info_response;
+    using iam::messaging::list_login_info_request;
+    using iam::messaging::list_login_info_response;
     auto result = session.process_authenticated_request<list_login_info_request,
                                                         list_login_info_response,
                                                         message_type::list_login_info_request>
@@ -311,8 +311,8 @@ process_logout(std::ostream& out, client_session& session) {
         return;
     }
 
-    using accounts::messaging::logout_request;
-    using accounts::messaging::logout_response;
+    using iam::messaging::logout_request;
+    using iam::messaging::logout_response;
     auto result = session.process_authenticated_request<logout_request,
                                                         logout_response,
                                                         message_type::logout_request>
@@ -340,7 +340,7 @@ process_bootstrap(std::ostream& out, client_session& session,
     BOOST_LOG_SEV(lg(), debug) << "Initiating bootstrap request for user: "
                                << username;
 
-    using accounts::messaging::create_initial_admin_request;
+    using iam::messaging::create_initial_admin_request;
     auto result = session.process_request(create_initial_admin_request{
         .username = std::move(username),
         .password = std::move(password),

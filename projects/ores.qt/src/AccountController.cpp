@@ -44,7 +44,7 @@ using namespace ores::utility::log;
 namespace {
     // Event type name for account changes
     constexpr std::string_view account_event_name =
-        eventing::domain::event_traits<accounts::eventing::account_changed_event>::name;
+        eventing::domain::event_traits<iam::eventing::account_changed_event>::name;
 }
 
 AccountController::AccountController(
@@ -279,7 +279,7 @@ void AccountController::showDetailWindow(
     detailDialog->setUsername(username_.toStdString());
 
     if (isCreateMode) {
-        accounts::domain::account empty_account;
+        iam::domain::account empty_account;
         detailDialog->setAccount(empty_account);
         detailDialog->setLoginInfo(std::nullopt);
     } else {
@@ -338,7 +338,7 @@ void AccountController::showDetailWindow(
 }
 
 void AccountController::onOpenAccountVersion(
-    const accounts::domain::account& account, int versionNumber) {
+    const iam::domain::account& account, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for account: " << account.username;
 
@@ -390,7 +390,7 @@ void AccountController::onOpenAccountVersion(
     detailWindow->show();
 }
 
-void AccountController::onRevertAccount(const accounts::domain::account& account) {
+void AccountController::onRevertAccount(const iam::domain::account& account) {
     BOOST_LOG_SEV(lg(), info) << "Reverting account: " << account.username;
 
     if (!clientManager_ || !clientManager_->isConnected()) {
@@ -415,7 +415,7 @@ void AccountController::onRevertAccount(const accounts::domain::account& account
             BOOST_LOG_SEV(lg(), debug) << "Sending update account request for revert: "
                                        << boost::uuids::to_string(account_id);
 
-            accounts::messaging::update_account_request request;
+            iam::messaging::update_account_request request;
             request.account_id = account_id;
             request.email = email;
             request.is_admin = is_admin;
@@ -435,7 +435,7 @@ void AccountController::onRevertAccount(const accounts::domain::account& account
             if (!payload_result)
                 return {false, "Failed to decompress server response"};
 
-            auto response = accounts::messaging::update_account_response::
+            auto response = iam::messaging::update_account_response::
                 deserialize(*payload_result);
 
             if (!response)

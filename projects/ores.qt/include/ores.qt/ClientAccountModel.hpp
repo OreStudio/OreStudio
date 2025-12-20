@@ -55,8 +55,8 @@ enum class LoginStatus {
  * that have never logged in).
  */
 struct AccountWithLoginInfo {
-    accounts::domain::account account;
-    std::optional<accounts::domain::login_info> loginInfo;
+    iam::domain::account account;
+    std::optional<iam::domain::login_info> loginInfo;
 };
 
 /**
@@ -131,7 +131,7 @@ public:
      * @param row The row index.
      * @return The account object, or nullptr if row is invalid.
      */
-    const accounts::domain::account* getAccount(int row) const;
+    const iam::domain::account* getAccount(int row) const;
 
     /**
      * @brief Get all accounts with their login info.
@@ -217,12 +217,12 @@ private:
      * @return LoginStatus bucket based on login recency.
      */
     static LoginStatus calculateLoginStatus(
-        const std::optional<accounts::domain::login_info>& loginInfo);
+        const std::optional<iam::domain::login_info>& loginInfo);
 
     struct FetchResult {
         bool success;
-        std::vector<accounts::domain::account> accounts;
-        std::vector<accounts::domain::login_info> loginInfos;
+        std::vector<iam::domain::account> accounts;
+        std::vector<iam::domain::login_info> loginInfos;
         std::uint32_t total_available_count;
     };
 

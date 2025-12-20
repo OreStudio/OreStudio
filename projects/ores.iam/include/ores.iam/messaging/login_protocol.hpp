@@ -180,9 +180,9 @@ namespace ores::comms::messaging {
  * @brief Message traits specialization for login_request.
  */
 template<>
-struct message_traits<accounts::messaging::login_request> {
-    using request_type = accounts::messaging::login_request;
-    using response_type = accounts::messaging::login_response;
+struct message_traits<iam::messaging::login_request> {
+    using request_type = iam::messaging::login_request;
+    using response_type = iam::messaging::login_response;
     static constexpr message_type request_message_type =
         message_type::login_request;
 };
@@ -191,9 +191,9 @@ struct message_traits<accounts::messaging::login_request> {
  * @brief Message traits specialization for list_login_info_request.
  */
 template<>
-struct message_traits<accounts::messaging::list_login_info_request> {
-    using request_type = accounts::messaging::list_login_info_request;
-    using response_type = accounts::messaging::list_login_info_response;
+struct message_traits<iam::messaging::list_login_info_request> {
+    using request_type = iam::messaging::list_login_info_request;
+    using response_type = iam::messaging::list_login_info_response;
     static constexpr message_type request_message_type =
         message_type::list_login_info_request;
 };
@@ -202,9 +202,9 @@ struct message_traits<accounts::messaging::list_login_info_request> {
  * @brief Message traits specialization for logout_request.
  */
 template<>
-struct message_traits<accounts::messaging::logout_request> {
-    using request_type = accounts::messaging::logout_request;
-    using response_type = accounts::messaging::logout_response;
+struct message_traits<iam::messaging::logout_request> {
+    using request_type = iam::messaging::logout_request;
+    using response_type = iam::messaging::logout_response;
     static constexpr message_type request_message_type =
         message_type::logout_request;
 };

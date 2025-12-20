@@ -111,8 +111,8 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     flags_seeder.seed();
 
     // Seed RBAC permissions and roles
-    accounts::service::authorization_service auth_service(ctx);
-    accounts::service::rbac_seeder rbac_seeder(auth_service);
+    iam::service::authorization_service auth_service(ctx);
+    iam::service::rbac_seeder rbac_seeder(auth_service);
     rbac_seeder.seed("system");
 
     // Create shared system flags service and refresh cache from database
@@ -120,7 +120,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     system_flags->refresh();
 
     // Initialize and check bootstrap mode
-    accounts::service::bootstrap_mode_service bootstrap_svc(ctx);
+    iam::service::bootstrap_mode_service bootstrap_svc(ctx);
     bootstrap_svc.initialize_bootstrap_state();
 
     // Refresh system flags cache after bootstrap state initialization
@@ -151,7 +151,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         risk::eventing::currency_changed_event>(
         event_source, "ores.risk.currency", "ores_currencies");
     eventing::service::registrar::register_mapping<
-        accounts::eventing::account_changed_event>(
+        iam::eventing::account_changed_event>(
         event_source, "ores.iam.account", "ores_accounts");
 
     // Start the event source to begin listening for database notifications
@@ -169,10 +169,10 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             subscription_mgr->notify(std::string{traits::name}, e.timestamp);
         });
 
-    auto account_sub = event_bus.subscribe<accounts::eventing::account_changed_event>(
-        [&subscription_mgr](const accounts::eventing::account_changed_event& e) {
+    auto account_sub = event_bus.subscribe<iam::eventing::account_changed_event>(
+        [&subscription_mgr](const iam::eventing::account_changed_event& e) {
             using traits = eventing::domain::event_traits<
-                accounts::eventing::account_changed_event>;
+                iam::eventing::account_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp);
         });
 

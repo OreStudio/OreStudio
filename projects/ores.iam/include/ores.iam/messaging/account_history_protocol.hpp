@@ -82,9 +82,9 @@ namespace ores::comms::messaging {
  * @brief Message traits specialization for get_account_history_request.
  */
 template<>
-struct message_traits<accounts::messaging::get_account_history_request> {
-    using request_type = accounts::messaging::get_account_history_request;
-    using response_type = accounts::messaging::get_account_history_response;
+struct message_traits<iam::messaging::get_account_history_request> {
+    using request_type = iam::messaging::get_account_history_request;
+    using response_type = iam::messaging::get_account_history_response;
     static constexpr message_type request_message_type =
         message_type::get_account_history_request;
 };

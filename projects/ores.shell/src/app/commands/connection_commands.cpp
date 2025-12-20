@@ -34,7 +34,7 @@ using comms::net::client_session;
 namespace {
 
 void check_bootstrap_status(client_session& session, std::ostream& out) {
-    using accounts::messaging::bootstrap_status_request;
+    using iam::messaging::bootstrap_status_request;
 
     auto result = session.process_request(bootstrap_status_request{});
 

@@ -183,7 +183,7 @@ void ClientAccountModel::refresh(bool replace) {
             if (!self) return {false, {}, {}, 0};
 
             // Fetch accounts
-            accounts::messaging::list_accounts_request accounts_request;
+            iam::messaging::list_accounts_request accounts_request;
             accounts_request.offset = offset;
             accounts_request.limit = page_size;
             auto accounts_payload = accounts_request.serialize();
@@ -207,7 +207,7 @@ void ClientAccountModel::refresh(bool replace) {
             }
 
             auto accounts_response =
-                accounts::messaging::list_accounts_response::deserialize(*accounts_payload_result);
+                iam::messaging::list_accounts_response::deserialize(*accounts_payload_result);
 
             if (!accounts_response) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to deserialize accounts response";
@@ -219,7 +219,7 @@ void ClientAccountModel::refresh(bool replace) {
                                        << accounts_response->total_available_count;
 
             // Fetch login info
-            accounts::messaging::list_login_info_request login_info_request;
+            iam::messaging::list_login_info_request login_info_request;
             auto login_info_payload = login_info_request.serialize();
 
             frame login_info_frame(message_type::list_login_info_request,
@@ -228,12 +228,12 @@ void ClientAccountModel::refresh(bool replace) {
             auto login_info_response_result =
                 self->clientManager_->sendRequest(std::move(login_info_frame));
 
-            std::vector<accounts::domain::login_info> login_infos;
+            std::vector<iam::domain::login_info> login_infos;
             if (login_info_response_result) {
                 auto login_payload_result = login_info_response_result->decompressed_payload();
                 if (login_payload_result) {
                     auto login_response =
-                        accounts::messaging::list_login_info_response::deserialize(*login_payload_result);
+                        iam::messaging::list_login_info_response::deserialize(*login_payload_result);
                     if (login_response) {
                         login_infos = std::move(login_response->login_infos);
                         BOOST_LOG_SEV(lg(), debug) << "Received " << login_infos.size()
@@ -266,7 +266,7 @@ void ClientAccountModel::onAccountsLoaded() {
         total_available_count_ = result.total_available_count;
 
         // Build map of login_info by account_id for joining
-        std::unordered_map<std::string, accounts::domain::login_info> login_info_map;
+        std::unordered_map<std::string, iam::domain::login_info> login_info_map;
         for (auto& li : result.loginInfos) {
             login_info_map[boost::uuids::to_string(li.account_id)] = std::move(li);
         }
@@ -346,7 +346,7 @@ const AccountWithLoginInfo* ClientAccountModel::getAccountWithLoginInfo(int row)
     return &accounts_[row];
 }
 
-const accounts::domain::account* ClientAccountModel::getAccount(int row) const {
+const iam::domain::account* ClientAccountModel::getAccount(int row) const {
     if (row < 0 || row >= static_cast<int>(accounts_.size()))
         return nullptr;
 
@@ -479,7 +479,7 @@ void ClientAccountModel::onPulseTimerTimeout() {
 }
 
 LoginStatus ClientAccountModel::calculateLoginStatus(
-    const std::optional<accounts::domain::login_info>& loginInfo) {
+    const std::optional<iam::domain::login_info>& loginInfo) {
 
     // No login info means never logged in
     if (!loginInfo.has_value()) {

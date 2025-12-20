@@ -124,7 +124,7 @@ AccountDetailDialog::~AccountDetailDialog() {
     }
 }
 
-void AccountDetailDialog::setAccount(const accounts::domain::account& account) {
+void AccountDetailDialog::setAccount(const iam::domain::account& account) {
     currentAccount_ = account;
     isAddMode_ = account.username.empty();
 
@@ -159,8 +159,8 @@ void AccountDetailDialog::setCreateMode(bool createMode) {
     ui_->loginStatusGroup->setVisible(!createMode);
 }
 
-accounts::domain::account AccountDetailDialog::getAccount() const {
-    accounts::domain::account account = currentAccount_;
+iam::domain::account AccountDetailDialog::getAccount() const {
+    iam::domain::account account = currentAccount_;
     account.username = ui_->usernameEdit->text().toStdString();
     account.email = ui_->emailEdit->text().toStdString();
     account.is_admin = ui_->isAdminCheckBox->isChecked();
@@ -193,7 +193,7 @@ void AccountDetailDialog::clearDialog() {
 }
 
 void AccountDetailDialog::setLoginInfo(
-    const std::optional<accounts::domain::login_info>& loginInfo) {
+    const std::optional<iam::domain::login_info>& loginInfo) {
     currentLoginInfo_ = loginInfo;
 
     if (loginInfo.has_value()) {
@@ -317,7 +317,7 @@ void AccountDetailDialog::onSaveClicked() {
                 BOOST_LOG_SEV(lg(), debug) << "Sending create account request for: "
                                            << username;
 
-                accounts::messaging::create_account_request request;
+                iam::messaging::create_account_request request;
                 request.username = username;
                 request.password = password;
                 request.email = email;
@@ -341,7 +341,7 @@ void AccountDetailDialog::onSaveClicked() {
                     return {false, "Failed to decompress server response"};
                 }
 
-                auto response = accounts::messaging::create_account_response::
+                auto response = iam::messaging::create_account_response::
                     deserialize(*payload_result);
 
                 if (!response) {
@@ -418,7 +418,7 @@ void AccountDetailDialog::onSaveClicked() {
                 BOOST_LOG_SEV(lg(), debug) << "Sending update account request for: "
                                            << boost::uuids::to_string(account_id);
 
-                accounts::messaging::update_account_request request;
+                iam::messaging::update_account_request request;
                 request.account_id = account_id;
                 request.email = email;
                 request.recorded_by = recorded_by;
@@ -440,7 +440,7 @@ void AccountDetailDialog::onSaveClicked() {
                     return {false, "Failed to decompress server response"};
                 }
 
-                auto response = accounts::messaging::update_account_response::
+                auto response = iam::messaging::update_account_response::
                     deserialize(*payload_result);
 
                 if (!response) {
@@ -534,7 +534,7 @@ void AccountDetailDialog::onDeleteClicked() {
             BOOST_LOG_SEV(lg(), debug) << "Sending delete account request for: "
                                        << boost::uuids::to_string(account_id);
 
-            accounts::messaging::delete_account_request request{account_id};
+            iam::messaging::delete_account_request request{account_id};
             auto payload = request.serialize();
 
             frame request_frame(message_type::delete_account_request,
@@ -552,7 +552,7 @@ void AccountDetailDialog::onDeleteClicked() {
                 return {false, "Failed to decompress server response"};
             }
 
-            auto response = accounts::messaging::delete_account_response::
+            auto response = iam::messaging::delete_account_response::
                 deserialize(*payload_result);
 
             if (!response) {

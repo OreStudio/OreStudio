@@ -79,7 +79,7 @@ public:
      *
      * @param account The account to display/edit
      */
-    void setAccount(const accounts::domain::account& account);
+    void setAccount(const iam::domain::account& account);
 
     /**
      * @brief Sets the login info to display (read-only).
@@ -89,14 +89,14 @@ public:
      *
      * @param loginInfo The login info to display, or nullopt to clear
      */
-    void setLoginInfo(const std::optional<accounts::domain::login_info>& loginInfo);
+    void setLoginInfo(const std::optional<iam::domain::login_info>& loginInfo);
 
     /**
      * @brief Gets the current account state from the form.
      *
      * @return The account with values from the form fields
      */
-    [[nodiscard]] accounts::domain::account getAccount() const;
+    [[nodiscard]] iam::domain::account getAccount() const;
 
     /**
      * @brief Clears all form fields and resets dialog state.
@@ -135,7 +135,7 @@ signals:
      * @brief Emitted when user requests to revert to the displayed historical version.
      * @param account The account data to revert to.
      */
-    void revertRequested(const accounts::domain::account& account);
+    void revertRequested(const iam::domain::account& account);
 
 private slots:
     void onSaveClicked();
@@ -163,8 +163,8 @@ private:
     QAction* revertAction_;
 
     ClientManager* clientManager_;
-    accounts::domain::account currentAccount_;
-    std::optional<accounts::domain::login_info> currentLoginInfo_;
+    iam::domain::account currentAccount_;
+    std::optional<iam::domain::login_info> currentLoginInfo_;
 };
 
 }

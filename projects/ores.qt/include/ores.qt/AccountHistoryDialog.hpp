@@ -76,13 +76,13 @@ signals:
      * @param account The account data at the selected version.
      * @param versionNumber The version number being viewed.
      */
-    void openVersionRequested(const accounts::domain::account& account, int versionNumber);
+    void openVersionRequested(const iam::domain::account& account, int versionNumber);
 
     /**
      * @brief Emitted when user requests to revert to a selected version.
      * @param account The account data to revert to.
      */
-    void revertVersionRequested(const accounts::domain::account& account);
+    void revertVersionRequested(const iam::domain::account& account);
 
 private slots:
     void onVersionSelected(int index);
@@ -102,8 +102,8 @@ private:
      */
     using DiffResult = QVector<QPair<QString, QPair<QString, QString>>>;
     DiffResult calculateDiff(
-        const accounts::domain::account_version& current,
-        const accounts::domain::account_version& previous);
+        const iam::domain::account_version& current,
+        const iam::domain::account_version& previous);
 
     void setupToolbar();
     void updateButtonStates();
@@ -112,7 +112,7 @@ private:
     std::unique_ptr<Ui::AccountHistoryDialog> ui_;
     ClientManager* clientManager_;
     QString username_;
-    accounts::domain::account_version_history history_;
+    iam::domain::account_version_history history_;
 
     QToolBar* toolBar_;
     QAction* openAction_;

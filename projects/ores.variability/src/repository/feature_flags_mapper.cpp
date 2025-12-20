@@ -37,7 +37,7 @@ domain::feature_flags feature_flags_mapper::map(const feature_flags_entity& v) {
     r.enabled = v.enabled != 0 ? true : false;
     r.description = v.description;
     r.recorded_by = v.modified_by;
-    r.recorded_at = v.valid_from.str();
+    r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;

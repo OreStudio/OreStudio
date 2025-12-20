@@ -20,6 +20,7 @@
 #ifndef ORES_IAM_DOMAIN_ACCOUNT_VERSION_HPP
 #define ORES_IAM_DOMAIN_ACCOUNT_VERSION_HPP
 
+#include <chrono>
 #include <string>
 #include "ores.iam/domain/account.hpp"
 
@@ -47,7 +48,7 @@ struct account_version final {
     /**
      * @brief Timestamp when this version was recorded in the system.
      */
-    std::string recorded_at;
+    std::chrono::system_clock::time_point recorded_at;
 
     /**
      * @brief Summary of changes made in this version.

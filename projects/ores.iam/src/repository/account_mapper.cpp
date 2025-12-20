@@ -42,7 +42,7 @@ domain::account account_mapper::map(const account_entity& v) {
     r.totp_secret = v.totp_secret;
     r.email = v.email;
     r.is_admin = v.is_admin != 0 ? true : false;
-    r.recorded_at = v.valid_from.str();
+    r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;

@@ -20,6 +20,7 @@
 #ifndef ORES_IAM_DOMAIN_ROLE_HPP
 #define ORES_IAM_DOMAIN_ROLE_HPP
 
+#include <chrono>
 #include <string>
 #include <vector>
 #include <boost/uuid/uuid.hpp>
@@ -64,7 +65,7 @@ struct role final {
     /**
      * @brief Timestamp when this version of the record was recorded.
      */
-    std::string recorded_at;
+    std::chrono::system_clock::time_point recorded_at;
 
     /**
      * @brief Permission codes granted to this role.

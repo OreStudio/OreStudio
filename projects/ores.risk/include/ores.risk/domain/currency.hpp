@@ -20,6 +20,7 @@
 #ifndef ORES_RISK_DOMAIN_CURRENCY_HPP
 #define ORES_RISK_DOMAIN_CURRENCY_HPP
 
+#include <chrono>
 #include <string>
 
 namespace ores::risk::domain {
@@ -89,7 +90,7 @@ struct currency final {
     /**
      * @brief Timestamp when this version of the record was recorded in the system.
      */
-    std::string recorded_at;
+    std::chrono::system_clock::time_point recorded_at;
 };
 
 }

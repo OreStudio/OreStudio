@@ -1,0 +1,54 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_TELEMETRY_DOMAIN_SPAN_STATUS_HPP
+#define ORES_TELEMETRY_DOMAIN_SPAN_STATUS_HPP
+
+#include <cstdint>
+
+namespace ores::telemetry::domain {
+
+/**
+ * @brief The status code of a span, following OpenTelemetry conventions.
+ *
+ * The status represents the outcome of the operation that the span describes.
+ */
+enum class span_status_code : std::uint8_t {
+    /**
+     * @brief The default status. The operation completed without any known
+     * errors.
+     */
+    unset = 0,
+
+    /**
+     * @brief The operation completed successfully. This is typically set
+     * explicitly when the operation is known to have succeeded.
+     */
+    ok = 1,
+
+    /**
+     * @brief The operation encountered an error. When this is set, the
+     * span should also include an error message in its status.
+     */
+    error = 2
+};
+
+}
+
+#endif

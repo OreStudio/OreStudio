@@ -17,15 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/filesystem/file.hpp"
+#include "ores.platform/filesystem/file.hpp"
 
 #include <filesystem>
 #include <system_error>
 #include <boost/throw_exception.hpp>
-#include "ores.utility/filesystem/io_error.hpp"
-#include "ores.utility/filesystem/file_not_found.hpp"
+#include "ores.platform/filesystem/io_error.hpp"
+#include "ores.platform/filesystem/file_not_found.hpp"
 
-namespace ores::utility::filesystem {
+namespace ores::platform::filesystem {
 
 using namespace ores::utility::log;
 

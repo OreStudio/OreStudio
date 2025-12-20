@@ -19,12 +19,12 @@
  */
 #define _CRT_SECURE_NO_WARNINGS // Avoid getenv warnings
 
-#include "ores.utility/environment/environment.hpp"
+#include "ores.platform/environment/environment.hpp"
 
 #include <cstdlib>
 #include "ores.utility/string/converter.hpp"
 
-namespace ores::utility::environment {
+namespace ores::platform::environment {
 
 std::optional<std::string>
 environment::get_value(const std::string& name) {
@@ -47,7 +47,7 @@ get_int_value_or_default(const std::string& name, int default_value) {
         return default_value;
 
     try {
-        return string::converter::string_to_int(value.value());
+        return ores::utility::string::converter::string_to_int(value.value());
     } catch(...) {
         return default_value;
     }

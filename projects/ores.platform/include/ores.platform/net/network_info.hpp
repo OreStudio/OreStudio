@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_NET_NETWORK_INFO_HPP
-#define ORES_UTILITY_NET_NETWORK_INFO_HPP
+#ifndef ORES_PLATFORM_NET_NETWORK_INFO_HPP
+#define ORES_PLATFORM_NET_NETWORK_INFO_HPP
 
 #include <cstdint>
 #include <optional>
 #include <string>
 
-namespace ores::utility::net {
+namespace ores::platform::net {
 
 /**
  * @brief Gets the hostname of the current machine.

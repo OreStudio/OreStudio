@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/net/network_info.hpp"
+#include "ores.platform/net/network_info.hpp"
 
 #include <algorithm>
 #include <array>
@@ -48,7 +48,7 @@
 #pragma comment(lib, "iphlpapi.lib")
 #endif
 
-namespace ores::utility::net {
+namespace ores::platform::net {
 
 std::string get_hostname() {
 #if defined(__linux__)

@@ -1,6 +1,6 @@
 # -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
 #
-# Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -15,10 +15,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/test_data"
-    DESTINATION "${ORES_PUBLISH_DIRECTORY}/")
-
-set(name "ores.risk")
+set(name "ores.platform")
 set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
@@ -36,22 +33,21 @@ target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
         ores.utility.lib
-        ores.platform.lib
-        ores.variability.lib
         ores.testing.lib
         Catch2::Catch2
         faker-cxx::faker-cxx
         ${CMAKE_THREAD_LIBS_INIT})
 
 add_custom_target(test_${tests_target_name}
-    COMMENT "Running ${tests_target_name}" VERBATIM
+    COMMENT "Testing ${tests_target_name}" VERBATIM
     COMMAND $<TARGET_FILE:${tests_binary_name}>
     WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     DEPENDS ${tests_target_name})
+
 add_dependencies(run_all_tests test_${tests_target_name})
 
 add_test(NAME ${tests_target_name}
-    COMMAND ${tests_binary_name} ${ORES_CATCH2_ARGS} -r compact -r xml::out=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml
+    COMMAND ${tests_binary_name} ${ORES_CATCH2_ARGS} -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml
     WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 set_tests_properties(${tests_target_name} PROPERTIES

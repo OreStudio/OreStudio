@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_ENVIRONMENT_ENVIRONMENT_HPP
-#define ORES_UTILITY_ENVIRONMENT_ENVIRONMENT_HPP
+#ifndef ORES_PLATFORM_ENVIRONMENT_ENVIRONMENT_HPP
+#define ORES_PLATFORM_ENVIRONMENT_ENVIRONMENT_HPP
 
 #include <string>
 #include <optional>
 
-namespace ores::utility::environment {
+namespace ores::platform::environment {
 
 /**
  * @brief Utilities for reading environment variables.

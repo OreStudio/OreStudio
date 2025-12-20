@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_EVENTING_ROLE_REVOKED_EVENT_HPP
-#define ORES_ACCOUNTS_EVENTING_ROLE_REVOKED_EVENT_HPP
+#ifndef ORES_IAM_EVENTING_ROLE_REVOKED_EVENT_HPP
+#define ORES_IAM_EVENTING_ROLE_REVOKED_EVENT_HPP
 
 #include <chrono>
 #include <boost/uuid/uuid.hpp>

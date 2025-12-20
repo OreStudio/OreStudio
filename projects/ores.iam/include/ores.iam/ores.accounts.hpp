@@ -16,8 +16,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ACCOUNTS_ACCOUNTS_HPP
-#define ORES_ACCOUNTS_ACCOUNTS_HPP
+#ifndef ORES_IAM_ACCOUNTS_HPP
+#define ORES_IAM_ACCOUNTS_HPP
 
 /**
  * @brief Account management module for ORE Studio.

@@ -256,6 +256,10 @@ if(with_memcheck)
     endif()
 endif()
 
+# Track if any step fails so we can still submit results to CDash before
+# exiting with an error.
+set(had_failures OFF)
+
 #
 # Step: Version control.
 #
@@ -266,8 +270,9 @@ set(CTEST_UPDATE_COMMAND "${GIT_EXECUTABLE}")
 # version.
 set(CTEST_UPDATE_VERSION_ONLY ON)
 ctest_update(RETURN_VALUE update_result)
-if(update_result)
-    message(FATAL_ERROR "Failed to update source code from git.")
+if(NOT update_result EQUAL 0)
+    message(WARNING "Failed to update source code from git.")
+    set(had_failures ON)
 endif()
 
 # Setup the preset for configuration.
@@ -278,32 +283,40 @@ set(cmake_args ${cmake_args} "-DBUILD_SHARED_LIBS=ON")
 
 message(STATUS "CMake args: ${cmake_args}")
 ctest_configure(OPTIONS "${cmake_args}" RETURN_VALUE configure_result)
-if(configure_result)
-    message(FATAL_ERROR "Failed to configure")
+if(NOT configure_result EQUAL 0)
+    message(WARNING "Failed to configure")
+    set(had_failures ON)
 endif()
 
 #
 # Step: build.
 #
-set(CTEST_BUILD_TARGET "package")
-ctest_build(PARALLEL_LEVEL ${nproc} RETURN_VALUE build_result)
-if(build_result)
-    message(FATAL_ERROR "Build failed with error code: ${build_result}")
+# Only attempt build if configuration succeeded.
+set(build_result 0)
+if(configure_result EQUAL 0)
+    set(CTEST_BUILD_TARGET "package")
+    ctest_build(PARALLEL_LEVEL ${nproc} RETURN_VALUE build_result)
+    if(NOT build_result EQUAL 0)
+        message(WARNING "Build failed with error code: ${build_result}")
+        set(had_failures ON)
+    endif()
 endif()
 
 #
 # Step: test.
 #
 # If memcheck is enabled, run tests with valgrind, otherwise, run them normally.
-#
-# Note: because we are doing nothing with the return value, the build will be
-# green even when tests fail. This is OK because we rely on CDash to see the
-# testing status. Travis/AppVeyor just tells us weather the build and packaging
-# steps have worked or failed.
-if(USE_MEMCHECK)
-    ctest_memcheck(PARALLEL_LEVEL ${nproc})
-else()
-    ctest_test(PARALLEL_LEVEL ${nproc})
+# Only run tests if the build succeeded.
+if(configure_result EQUAL 0 AND build_result EQUAL 0)
+    if(USE_MEMCHECK)
+        ctest_memcheck(PARALLEL_LEVEL ${nproc} RETURN_VALUE test_result)
+    else()
+        ctest_test(PARALLEL_LEVEL ${nproc} RETURN_VALUE test_result)
+    endif()
+    if(NOT test_result EQUAL 0)
+        message(WARNING "Tests failed with error code: ${test_result}")
+        set(had_failures ON)
+    endif()
 endif()
 
 #
@@ -322,4 +335,13 @@ endif()
 #
 # Step: submit build results
 #
+# Always submit results to CDash, even if there were failures. This ensures
+# compilation errors and test failures are visible in the dashboard.
 ctest_submit(RETRY_COUNT ${retry_count} RETRY_DELAY ${retry_delay})
+
+#
+# Exit with error if any step failed
+#
+if(had_failures)
+    message(FATAL_ERROR "Build completed with failures. Results submitted to CDash.")
+endif()

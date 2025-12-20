@@ -20,6 +20,10 @@
 #include "ores.telemetry/domain/resource.hpp"
 #include "ores.platform/net/network_info.hpp"
 
+using ores::platform::net::get_hostname;
+using ores::platform::net::derive_machine_id;
+using ores::platform::net::get_process_id;
+
 namespace ores::telemetry::domain {
 
 std::optional<std::string> resource::service_name() const {
@@ -61,11 +65,11 @@ resource resource::from_environment(std::string_view service_name,
     res.attrs["service.version"] = std::string(service_version);
 
     // Host attributes (using cross-platform utility)
-    res.attrs["host.name"] = platform::net::get_hostname();
-    res.attrs["host.id"] = platform::net::derive_machine_id();
+    res.attrs["host.name"] = get_hostname();
+    res.attrs["host.id"] = derive_machine_id();
 
     // Process attributes
-    res.attrs["process.pid"] = platform::net::get_process_id();
+    res.attrs["process.pid"] = get_process_id();
 
     return res;
 }

@@ -20,8 +20,10 @@
 #include <catch2/catch_session.hpp>
 #include <catch2/reporters/catch_reporter_registrars.hpp>
 #include "ores.testing/logging_listener.hpp"
+#include "ores.testing/test_timeout_listener.hpp"
 
 CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
+CATCH_REGISTER_LISTENER(ores::testing::test_timeout_listener)
 
 int main(int argc, char* argv[]) {
     ores::testing::logging_listener::set_test_module_name("ores.comms.tests");

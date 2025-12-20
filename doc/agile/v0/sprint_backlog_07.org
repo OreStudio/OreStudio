@@ -17,46 +17,50 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-20 Sat 13:21], for Saturday, December 20, 2025.
-|      | <75>                               |        |      |      |       |
-| Tags | Headline                           | Time   |      |      |     % |
-|------+------------------------------------+--------+------+------+-------|
-|      | *Total time*                       | *3:29* |      |      | 100.0 |
-|------+------------------------------------+--------+------+------+-------|
-|      | Stories                            | 3:29   |      |      | 100.0 |
-|      | Active                             |        | 3:29 |      | 100.0 |
-| code | Rename =accounts= to =iam=         |        |      | 1:30 |  43.1 |
-| code | Create the observability component |        |      | 1:59 |  56.9 |
+#+CAPTION: Clock summary at [2025-12-20 Sat 23:35], for Saturday, December 20, 2025.
+|      | <75>                                      |        |      |      |       |
+| Tags | Headline                                  | Time   |      |      |     % |
+|------+-------------------------------------------+--------+------+------+-------|
+|      | *Total time*                              | *5:38* |      |      | 100.0 |
+|------+-------------------------------------------+--------+------+------+-------|
+|      | Stories                                   | 5:38   |      |      | 100.0 |
+|      | Active                                    |        | 5:38 |      | 100.0 |
+| code | Rename =accounts= to =iam=                |        |      | 1:30 |  26.6 |
+| code | Create the observability component        |        |      | 1:59 |  35.2 |
+| code | Consider renaming =utility= to =system=   |        |      | 0:25 |   7.4 |
+| code | Use chrono timepoints for domain entities |        |      | 1:44 |  30.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-20 Sat 13:21]
+#+CAPTION: Clock summary at [2025-12-20 Sat 23:35]
 |       | <75>                                              |         |       |      |       |
 | Tags  | Headline                                          | Time    |       |      |     % |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                      | *35:54* |       |      | 100.0 |
+|       | *Total time*                                      | *38:03* |       |      | 100.0 |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                           | 35:54   |       |      | 100.0 |
-|       | Active                                            |         | 35:54 |      | 100.0 |
-| agile | Sprint and product backlog refinement             |         |       | 1:07 |   3.1 |
-| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   2.5 |
-| code  | Consider compressing payload                      |         |       | 3:05 |   8.6 |
-| code  | Latest currencies should have different colour    |         |       | 1:28 |   4.1 |
-| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   3.9 |
-| code  | Add account management support to qt              |         |       | 3:43 |  10.4 |
-| code  | Add password reset functionality to accounts      |         |       | 1:49 |   5.1 |
-| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |  13.6 |
+|       | Stories                                           | 38:03   |       |      | 100.0 |
+|       | Active                                            |         | 38:03 |      | 100.0 |
+| agile | Sprint and product backlog refinement             |         |       | 1:07 |   2.9 |
+| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   2.3 |
+| code  | Consider compressing payload                      |         |       | 3:05 |   8.1 |
+| code  | Latest currencies should have different colour    |         |       | 1:28 |   3.9 |
+| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   3.7 |
+| code  | Add account management support to qt              |         |       | 3:43 |   9.8 |
+| code  | Add password reset functionality to accounts      |         |       | 1:49 |   4.8 |
+| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |  12.8 |
 | code  | Add exit confirmation dialog                      |         |       | 0:03 |   0.1 |
-| code  | Improve error messages in shell                   |         |       | 0:23 |   1.1 |
-| code  | Add support for relative time formatting          |         |       | 2:01 |   5.6 |
-| code  | Setup windows laptop with WSL                     |         |       | 5:10 |  14.4 |
-| code  | Add listen/notify to shell                        |         |       | 2:45 |   7.7 |
-| code  | Define type traits for message grouping           |         |       | 0:44 |   2.0 |
-| code  | Ignore warnings on windows and OSX                |         |       | 0:23 |   1.1 |
-| code  | Add flags for currencies                          |         |       | 2:34 |   7.1 |
-| code  | Rename =accounts= to =iam=                        |         |       | 1:30 |   4.2 |
-| code  | Create the observability component                |         |       | 1:59 |   5.5 |
+| code  | Improve error messages in shell                   |         |       | 0:23 |   1.0 |
+| code  | Add support for relative time formatting          |         |       | 2:01 |   5.3 |
+| code  | Setup windows laptop with WSL                     |         |       | 5:10 |  13.6 |
+| code  | Add listen/notify to shell                        |         |       | 2:45 |   7.2 |
+| code  | Define type traits for message grouping           |         |       | 0:44 |   1.9 |
+| code  | Rename =accounts= to =iam=                        |         |       | 1:30 |   3.9 |
+| code  | Create the observability component                |         |       | 1:59 |   5.2 |
+| code  | Consider renaming =utility= to =system=           |         |       | 0:25 |   1.1 |
+| code  | Use chrono timepoints for domain entities         |         |       | 1:44 |   4.6 |
+| code  | Ignore warnings on windows and OSX                |         |       | 0:23 |   1.0 |
+| code  | Add flags for currencies                          |         |       | 2:34 |   6.7 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -583,6 +587,270 @@ We should be able to create a type in the protocol that defines the grouping as
 traits and then supply the group as the template argument, /e.g./
 =messaging::subscribe=, which unpacks the tuple.
 
+*** COMPLETED Rename =accounts= to =iam=                               :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-20 Sat 13:11]--[2025-12-20 Sat 13:21] =>  0:10
+    CLOCK: [2025-12-20 Sat 11:20]--[2025-12-20 Sat 12:40] =>  1:20
+    :END:
+
+Gemini summary:
+
+#+begin_quote
+This pull request executes a significant refactoring effort by renaming the
+'accounts' module to 'IAM' (Identity and Access Management). This change
+clarifies the module's responsibilities, which extend beyond simple account
+management to encompass broader identity and access control functionalities. The
+renaming impacts various aspects of the project, ensuring consistency in naming
+conventions across the entire codebase, from file structures and build systems
+to C++ namespaces and user-facing documentation.
+
+Highlights:
+
+- Module Renaming: The ores.accounts module has been comprehensively renamed to
+  ores.iam to more accurately reflect its purpose as an Identity and Access
+  Management component.
+- Codebase-Wide Refactoring: This change involved updating directory names, C++
+  namespaces (ores::accounts to ores::iam), include paths, and references across
+  all relevant files, including source code, headers, build configurations
+  (CMakeLists.txt), and documentation.
+- Documentation and Diagram Updates: All internal and external documentation,
+  including CLAUDE.md, ores.hpp, Org-mode files (.org), and PlantUML diagrams
+  (.puml), have been updated to reflect the new ores.iam naming convention and
+  its expanded description.
+#+end_quote
+
+*** COMPLETED Create the observability component                       :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-20 Sat 09:20]--[2025-12-20 Sat 11:19] =>  1:59
+    :END:
+
+We need some kind of observability context so that we can look at related log
+entries. This is sort of related to logging by thread except with coroutines we
+are no longer interested in threads per se but on some kind of "work identifier"
+which is preserved across function calls. For this we can have an observability
+context which is passed around.
+
+Gemini summary;
+
+#+begin_quote
+This pull request integrates a new ores.telemetry component, establishing a
+robust framework for observability within the project. By adhering to the
+OpenTelemetry standard, it facilitates distributed tracing and log correlation,
+crucial for understanding complex system behavior. The design prioritizes
+coroutine-safety through explicit context management, ensuring that telemetry
+data can be accurately captured and propagated across asynchronous call chains.
+
+Highlights:
+
+- New Telemetry Component: Introduced a new ores.telemetry component, fully
+  aligned with the OpenTelemetry specification, to enable distributed tracing
+  and log correlation across the system.
+- Core Observability Domain Types: Defined essential domain types including
+  trace_id, span_id, span_context, span, log_record, and resource, providing a
+  structured foundation for telemetry data.
+- Unique ID Generators: Implemented thread-safe trace_id_generator and
+  span_id_generator classes that embed timestamps and machine IDs, ensuring
+  uniqueness, time-sortability, and efficient generation of identifiers.
+- Coroutine-Safe Context Propagation: Provided a telemetry_context class
+  designed for explicit, immutable context passing, making it safe and effective
+  for tracing within coroutine-based asynchronous operations.
+- Comprehensive Testing and Modeling: Included extensive unit tests for ID
+  generation, context propagation, and span lifecycle management, alongside
+  PlantUML diagrams for clear visualization of the component's architecture.
+#+end_quote
+
+Notes:
+
+- we should also add the notion of parents and children so that we can create a
+  graph with the relationships. We should create specific messages for this
+  which are not directly related to logging. The server can just keep track of
+  the observability contexts in a table. We should link it back to each client
+  etc.
+- the observability context should also extend to the server so that we can
+  filter all logs for that ID.
+- consider using mongo IDs for this or create our own IDs:
+
+#+begin_src c++
+Option A: 64-bit IDs (8 bytes) - Best balance
+cpp
+struct LogId {
+    uint32_t timestamp;  // seconds since 2020
+    uint16_t machine;    // 0-65535 machines
+    uint16_t sequence;   // per-second counter
+
+    // Encode to 11 Base64 chars or 8-10 Base62 chars
+};
+#+end_src
+
+Merged stories:
+
+*Log with session id*
+
+When we have a lot of clients all connecting we can't really see who is doing
+what in the server. We need an additional "tag" in logging to represent the
+session.
+
+*** COMPLETED History should have a revert button                      :code:
+
+It should be possible to choose a given version and ask the system to revert the
+currency to that version. It just makes an update with a new version to look
+like that version. It should also be possible to open at version. It shows the
+edit dialog in "read only mode" with the entity at that version. The tool bar
+should indicate this. It should also have a revert in that dialog.
+
+*** COMPLETED History should have a reload button                      :code:
+
+It should be possible to reload history without having to reload currencies. In
+an ideal world we should be able to listen to currency specific notifications.
+This will be needed in the future for other types of events.
+
+*** COMPLETED Consider renaming =utility= to =system=                  :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-20 Sat 18:50]--[2025-12-20 Sat 19:15] =>  0:25
+    :END:
+
+Try to avoid the "grab bag" component that is littered with all sorts of random
+stuff. System implies extensions to core libraries like std and boost.
+
+Gemini:
+
+#+begin_quote
+This pull request undertakes a significant refactoring effort to enhance the
+modularity and clarity of the codebase by splitting the monolithic ores.utility
+module into more focused components. The primary goal is to separate
+platform-specific functionalities into a dedicated ores.platform module, thereby
+improving dependency management and making the architecture more maintainable
+and extensible. This change ensures that core utilities remain lean, while
+system-level interactions are encapsulated in their own distinct layer.
+
+Highlights:
+
+- New Module: ores.platform: Introduced a new C++ module, ores.platform,
+  specifically designed to house platform-specific utilities and abstractions
+  for OS and hardware interaction. This module includes functionalities for
+  environment variables, filesystem operations, and network information.
+- Refactoring of ores.utility: Key components such as environment variable
+  handling, filesystem operations (file I/O, directory search), and network
+  information (hostname, MAC address, process ID) have been extracted from
+  ores.utility and moved into the new ores.platform module. The ores.utility
+  module has been updated to reflect these removals and now focuses on more
+  general-purpose utilities like logging, UUID generation, string manipulation,
+  DateTime, Converter (Base32/Base64), and program options.
+- Dependency Updates: Build configurations (CMakeLists.txt) and PlantUML
+  diagrams across various projects (ores.risk, ores.telemetry, ores.testing)
+  have been updated to correctly reference the new ores.platform module where
+  platform-specific functionalities are now located, ensuring proper linking and
+  architectural representation.
+- Codebase Migration: All existing code references to ores.utility::environment,
+  ores.utility::filesystem, and ores.utility::net have been updated to point to
+  their new locations within ores.platform::environment,
+  ores.platform::filesystem, and ores.platform::net respectively, ensuring a
+  seamless transition to the new modular structure.
+#+end_quote
+
+*** COMPLETED Use chrono timepoints for domain entities                :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-20 Sat 23:09]--[2025-12-20 Sat 23:35] =>  0:26
+    CLOCK: [2025-12-20 Sat 21:50]--[2025-12-20 Sat 23:08] =>  1:18
+    :END:
+
+Gemini:
+
+#+begin_quote
+This pull request undertakes a significant refactoring effort to enhance the
+modularity and clarity of the codebase by splitting the monolithic ores.utility
+module into more focused components. The primary goal is to separate
+platform-specific functionalities into a dedicated ores.platform module, thereby
+improving dependency management and making the architecture more maintainable
+and extensible. This change ensures that core utilities remain lean, while
+system-level interactions are encapsulated in their own distinct layer.
+
+Highlights:
+
+- New Module: ores.platform: Introduced a new C++ module, ores.platform,
+  specifically designed to house platform-specific utilities and abstractions
+  for OS and hardware interaction. This module includes functionalities for
+  environment variables, filesystem operations, and network information.
+- Refactoring of ores.utility: Key components such as environment variable
+  handling, filesystem operations (file I/O, directory search), and network
+  information (hostname, MAC address, process ID) have been extracted from
+  ores.utility and moved into the new ores.platform module. The ores.utility
+  module has been updated to reflect these removals and now focuses on more
+  general-purpose utilities like logging, UUID generation, string manipulation,
+  DateTime, Converter (Base32/Base64), and program options.
+- Dependency Updates: Build configurations (CMakeLists.txt) and PlantUML
+  diagrams across various projects (ores.risk, ores.telemetry, ores.testing)
+  have been updated to correctly reference the new ores.platform module where
+  platform-specific functionalities are now located, ensuring proper linking and
+  architectural representation.
+- Codebase Migration: All existing code references to ores.utility::environment,
+  ores.utility::filesystem, and ores.utility::net have been updated to point to
+  their new locations within ores.platform::environment,
+  ores.platform::filesystem, and ores.platform::net respectively, ensuring a
+  seamless transition to the new modular structure.
+#+end_quote
+**** Previous analysis
+
+Gemini made an interesting review comment for
+
+: projects/ores.accounts/include/ores.accounts/domain/account_role.hpp
+
+#+begin_src c++
+/**
+ * @brief Timestamp when this role assignment was created.
+ */
+std::string assigned_at;
+#+end_src
+
+For consistency with other domain event objects and for better type safety,
+consider using =std::chrono::system_clock::time_point= for assigned_at instead
+of =std::string=. Storing timestamps as strings in domain objects can be
+error-prone and makes date/time arithmetic difficult. The conversion from the
+database string format can be handled in the mapper.
+
+Suggested change:
+
+#+begin_src diff
+-std::string assigned_at;
++std::chrono::system_clock::time_point assigned_at;
+#+end_src
+
+Claude agrees:
+
+Using =std::chrono::system_clock::time_point= is architecturally better for
+several reasons:
+
+Advantages:
+
+- Type safety - Compiler catches errors; can't accidentally assign arbitrary
+  strings
+- Time arithmetic - Easy to compute durations, compare timestamps
+- Idiomatic C++ - Standard library type for time handling
+- Self-documenting - The type itself conveys "this is a point in time"
+
+Trade-offs:
+
+- Requires conversion code in mappers (string ↔ time_point)
+- Need to handle timezone consistently (UTC recommended)
+- Serialization to JSON/protocol buffers needs explicit handling
+
+My recommendation: I agree with the reviewer's suggestion. The conversion
+complexity is localized to mappers, and the benefits of type safety throughout
+the rest of the codebase outweigh the cost.
+
+However, this should be done consistently across all domain types (accounts,
+roles, permissions, etc.), not just RBAC. Otherwise you'd have mixed patterns -
+some types using strings, some using time_point.
+
+Good candidate for a separate PR that:
+
+- Adds timestamp conversion utilities to the mapper infrastructure
+- Updates all domain types to use time_point
+- Updates all mappers consistently
+
+This keeps the RBAC PR focused and makes the timestamp improvement a coherent,
+reviewable change.
+
 *** STARTED Windows clang build failures                               :code:
 
 Seems like we are failing with a SEGFAULT:
@@ -731,108 +999,50 @@ CREATE INDEX idx_icon_tags_tag_id ON icon_tags (tag_id);
 #+end_src
 
 
-*** STARTED Rename =accounts= to =iam=                                 :code:
-    :LOGBOOK:
-    CLOCK: [2025-12-20 Sat 13:11]--[2025-12-20 Sat 13:21] =>  0:10
-    CLOCK: [2025-12-20 Sat 11:20]--[2025-12-20 Sat 12:40] =>  1:20
-    :END:
+*** STARTED Add sign-up workflow                                       :code:
 
-Gemini summary:
+It should be possible to sign-up and create a new account.
+
+Gemini:
 
 #+begin_quote
-This pull request executes a significant refactoring effort by renaming the
-'accounts' module to 'IAM' (Identity and Access Management). This change
-clarifies the module's responsibilities, which extend beyond simple account
-management to encompass broader identity and access control functionalities. The
-renaming impacts various aspects of the project, ensuring consistency in naming
-conventions across the entire codebase, from file structures and build systems
-to C++ namespaces and user-facing documentation.
+This pull request introduces a comprehensive user self-registration feature,
+enabling new users to create accounts independently. It encompasses updates
+across the backend messaging system, a new service layer for robust validation
+and account creation, and a fully integrated user interface within the Qt
+client. The functionality is controlled by system-level feature flags, ensuring
+administrators can manage its availability and behavior.
 
 Highlights:
 
-- Module Renaming: The ores.accounts module has been comprehensively renamed to
-  ores.iam to more accurately reflect its purpose as an Identity and Access
-  Management component.
-- Codebase-Wide Refactoring: This change involved updating directory names, C++
-  namespaces (ores::accounts to ores::iam), include paths, and references across
-  all relevant files, including source code, headers, build configurations
-  (CMakeLists.txt), and documentation.
-- Documentation and Diagram Updates: All internal and external documentation,
-  including CLAUDE.md, ores.hpp, Org-mode files (.org), and PlantUML diagrams
-  (.puml), have been updated to reflect the new ores.iam naming convention and
-  its expanded description.
+- User Self-Registration (Signup) Workflow: Introduced a complete workflow for
+  new user self-registration, allowing unauthenticated users to create accounts
+  when enabled by a feature flag. This includes new messaging protocols, a
+  dedicated service for handling signup logic, and a frontend UI in the Qt
+  client.
+- New Messaging Protocol and Handler: Added signup_request and signup_response
+  messages to the accounts messaging protocol. The accounts_message_handler now
+  includes a handle_signup_request method to process these messages, leveraging
+  the new signup service.
+- Dedicated Signup Service: A new signup_service has been implemented to
+  encapsulate the business logic for user registration. This service performs
+  crucial validations such as checking for enabled user signups, username and
+  email uniqueness, and password policy compliance before creating new accounts.
+- Qt Client Integration: The Qt client has been updated with a new SignUpDialog
+  and a ClientManager::signup method. This provides a user-friendly interface
+  for self-registration, including input validation and asynchronous
+  communication with the backend.
+- System Flags for Control: Enhanced system flags with user_signups to
+  enable/disable the self-registration feature and signup_requires_authorization
+  (though not yet implemented) to control whether new accounts need admin
+  approval.
+- Account Repository Enhancement: The account_repository now includes a
+  read_latest_by_email method, essential for ensuring email address uniqueness
+  during the signup process.
+- Protocol Version Increment: The communication protocol minor version has been
+  incremented to 13.1 to reflect the addition of new message types and error
+  codes related to the signup workflow.
 #+end_quote
-
-*** STARTED Create the observability component                         :code:
-    :LOGBOOK:
-    CLOCK: [2025-12-20 Sat 09:20]--[2025-12-20 Sat 11:19] =>  1:59
-    :END:
-
-We need some kind of observability context so that we can look at related log
-entries. This is sort of related to logging by thread except with coroutines we
-are no longer interested in threads per se but on some kind of "work identifier"
-which is preserved across function calls. For this we can have an observability
-context which is passed around.
-
-Gemini summary;
-
-#+begin_quote
-This pull request integrates a new ores.telemetry component, establishing a
-robust framework for observability within the project. By adhering to the
-OpenTelemetry standard, it facilitates distributed tracing and log correlation,
-crucial for understanding complex system behavior. The design prioritizes
-coroutine-safety through explicit context management, ensuring that telemetry
-data can be accurately captured and propagated across asynchronous call chains.
-
-Highlights:
-
-- New Telemetry Component: Introduced a new ores.telemetry component, fully
-  aligned with the OpenTelemetry specification, to enable distributed tracing
-  and log correlation across the system.
-- Core Observability Domain Types: Defined essential domain types including
-  trace_id, span_id, span_context, span, log_record, and resource, providing a
-  structured foundation for telemetry data.
-- Unique ID Generators: Implemented thread-safe trace_id_generator and
-  span_id_generator classes that embed timestamps and machine IDs, ensuring
-  uniqueness, time-sortability, and efficient generation of identifiers.
-- Coroutine-Safe Context Propagation: Provided a telemetry_context class
-  designed for explicit, immutable context passing, making it safe and effective
-  for tracing within coroutine-based asynchronous operations.
-- Comprehensive Testing and Modeling: Included extensive unit tests for ID
-  generation, context propagation, and span lifecycle management, alongside
-  PlantUML diagrams for clear visualization of the component's architecture.
-#+end_quote
-
-Notes:
-
-- we should also add the notion of parents and children so that we can create a
-  graph with the relationships. We should create specific messages for this
-  which are not directly related to logging. The server can just keep track of
-  the observability contexts in a table. We should link it back to each client
-  etc.
-- the observability context should also extend to the server so that we can
-  filter all logs for that ID.
-- consider using mongo IDs for this or create our own IDs:
-
-#+begin_src c++
-Option A: 64-bit IDs (8 bytes) - Best balance
-cpp
-struct LogId {
-    uint32_t timestamp;  // seconds since 2020
-    uint16_t machine;    // 0-65535 machines
-    uint16_t sequence;   // per-second counter
-
-    // Encode to 11 Base64 chars or 8-10 Base62 chars
-};
-#+end_src
-
-Merged stories:
-
-*Log with session id*
-
-When we have a lot of clients all connecting we can't really see who is doing
-what in the server. We need an additional "tag" in logging to represent the
-session.
 
 *** Implement RBAC enforcement                                         :code:
 
@@ -917,77 +1127,6 @@ Test output
 #+end_src
 
 
-*** Consider renaming =utility= to =system=                            :code:
-
-Try to avoid the "grab bag" component that is littered with all sorts of random
-stuff. System implies extensions to core libraries like std and boost.
-
-*** Use chrono timepoints for domain entities                          :code:
-
-Gemini made an interesting review comment for
-
-: projects/ores.accounts/include/ores.accounts/domain/account_role.hpp
-
-#+begin_src c++
-/**
- * @brief Timestamp when this role assignment was created.
- */
-std::string assigned_at;
-#+end_src
-
-For consistency with other domain event objects and for better type safety,
-consider using =std::chrono::system_clock::time_point= for assigned_at instead
-of =std::string=. Storing timestamps as strings in domain objects can be
-error-prone and makes date/time arithmetic difficult. The conversion from the
-database string format can be handled in the mapper.
-
-Suggested change:
-
-#+begin_src diff
--std::string assigned_at;
-+std::chrono::system_clock::time_point assigned_at;
-#+end_src
-
-Claude agrees:
-
-Using =std::chrono::system_clock::time_point= is architecturally better for
-several reasons:
-
-Advantages:
-
-- Type safety - Compiler catches errors; can't accidentally assign arbitrary
-  strings
-- Time arithmetic - Easy to compute durations, compare timestamps
-- Idiomatic C++ - Standard library type for time handling
-- Self-documenting - The type itself conveys "this is a point in time"
-
-Trade-offs:
-
-- Requires conversion code in mappers (string ↔ time_point)
-- Need to handle timezone consistently (UTC recommended)
-- Serialization to JSON/protocol buffers needs explicit handling
-
-My recommendation: I agree with the reviewer's suggestion. The conversion
-complexity is localized to mappers, and the benefits of type safety throughout
-the rest of the codebase outweigh the cost.
-
-However, this should be done consistently across all domain types (accounts,
-roles, permissions, etc.), not just RBAC. Otherwise you'd have mixed patterns -
-some types using strings, some using time_point.
-
-Good candidate for a separate PR that:
-
-- Adds timestamp conversion utilities to the mapper infrastructure
-- Updates all domain types to use time_point
-- Updates all mappers consistently
-
-This keeps the RBAC PR focused and makes the timestamp improvement a coherent,
-reviewable change.
-
-*** Add sign-up workflow                                               :code:
-
-It should be possible to sign-up and create a new account.
-
 *** Add a dashboard for users                                          :code:
 
 Examples:
@@ -1066,20 +1205,6 @@ At present it is easy to see new rows or modified rows in an entity dialog. It
 is not possible to see deleted rows. One way to do this is to preserve state
 from before reload by key. Any entities which are not present after reload can
 be shown as red. History then allows users to re-instate deleted entities.
-
-*** History should have a revert button                                :code:
-
-It should be possible to choose a given version and ask the system to revert the
-currency to that version. It just makes an update with a new version to look
-like that version. It should also be possible to open at version. It shows the
-edit dialog in "read only mode" with the entity at that version. The tool bar
-should indicate this. It should also have a revert in that dialog.
-
-*** History should have a reload button                                :code:
-
-It should be possible to reload history without having to reload currencies. In
-an ideal world we should be able to listen to currency specific notifications.
-This will be needed in the future for other types of events.
 
 *** Add REPL to Qt                                                     :code:
 

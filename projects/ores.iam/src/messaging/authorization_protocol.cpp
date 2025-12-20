@@ -19,6 +19,7 @@
  */
 #include "ores.iam/messaging/authorization_protocol.hpp"
 
+#include <chrono>
 #include <expected>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
@@ -38,13 +39,28 @@ using namespace ores::comms::messaging;
 
 namespace {
 
+void write_timepoint(std::vector<std::byte>& buffer,
+                     std::chrono::system_clock::time_point tp) {
+    auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(
+        tp.time_since_epoch()).count();
+    writer::write_int64(buffer, nanos);
+}
+
+std::expected<std::chrono::system_clock::time_point, error_code>
+read_timepoint(std::span<const std::byte>& data) {
+    auto nanos = reader::read_int64(data);
+    if (!nanos) return std::unexpected(nanos.error());
+    return std::chrono::system_clock::time_point{
+        std::chrono::nanoseconds{*nanos}};
+}
+
 void serialize_role(std::vector<std::byte>& buffer, const domain::role& role) {
     writer::write_uint32(buffer, static_cast<std::uint32_t>(role.version));
     writer::write_uuid(buffer, role.id);
     writer::write_string(buffer, role.name);
     writer::write_string(buffer, role.description);
     writer::write_string(buffer, role.recorded_by);
-    writer::write_string(buffer, role.recorded_at);
+    write_timepoint(buffer, role.recorded_at);
     writer::write_uint32(buffer,
         static_cast<std::uint32_t>(role.permission_codes.size()));
     for (const auto& code : role.permission_codes) {
@@ -76,7 +92,7 @@ deserialize_role(std::span<const std::byte>& data) {
     if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
     role.recorded_by = *recorded_by_result;
 
-    auto recorded_at_result = reader::read_string(data);
+    auto recorded_at_result = read_timepoint(data);
     if (!recorded_at_result) return std::unexpected(recorded_at_result.error());
     role.recorded_at = *recorded_at_result;
 

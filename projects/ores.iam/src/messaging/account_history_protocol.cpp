@@ -19,6 +19,7 @@
  */
 #include "ores.iam/messaging/account_history_protocol.hpp"
 
+#include <chrono>
 #include <expected>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.comms/messaging/reader.hpp"
@@ -29,6 +30,21 @@ using namespace ores::comms::messaging;
 
 namespace {
 
+void write_timepoint(std::vector<std::byte>& buffer,
+                     std::chrono::system_clock::time_point tp) {
+    auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(
+        tp.time_since_epoch()).count();
+    writer::write_int64(buffer, nanos);
+}
+
+std::expected<std::chrono::system_clock::time_point, error_code>
+read_timepoint(std::span<const std::byte>& data) {
+    auto nanos = reader::read_int64(data);
+    if (!nanos) return std::unexpected(nanos.error());
+    return std::chrono::system_clock::time_point{
+        std::chrono::nanoseconds{*nanos}};
+}
+
 /**
  * @brief Helper function to serialize a single account version
  */
@@ -37,7 +53,7 @@ void serialize_account_version(std::vector<std::byte>& buffer,
     // Write account data
     writer::write_uint32(buffer, static_cast<std::uint32_t>(version.data.version));
     writer::write_string(buffer, version.data.recorded_by);
-    writer::write_string(buffer, version.data.recorded_at);
+    write_timepoint(buffer, version.data.recorded_at);
     writer::write_uuid(buffer, version.data.id);
     writer::write_string(buffer, version.data.username);
     writer::write_string(buffer, version.data.password_hash);
@@ -49,7 +65,7 @@ void serialize_account_version(std::vector<std::byte>& buffer,
     // Write version metadata
     writer::write_uint32(buffer, static_cast<std::uint32_t>(version.version_number));
     writer::write_string(buffer, version.recorded_by);
-    writer::write_string(buffer, version.recorded_at);
+    write_timepoint(buffer, version.recorded_at);
     writer::write_string(buffer, version.change_summary);
 }
 
@@ -66,7 +82,7 @@ deserialize_account_version(std::span<const std::byte>& data) {
     if (!recorded_by) return std::unexpected(recorded_by.error());
     version.data.recorded_by = *recorded_by;
 
-    auto recorded_at = reader::read_string(data);
+    auto recorded_at = read_timepoint(data);
     if (!recorded_at) return std::unexpected(recorded_at.error());
     version.data.recorded_at = *recorded_at;
 
@@ -107,7 +123,7 @@ deserialize_account_version(std::span<const std::byte>& data) {
     if (!version_recorded_by) return std::unexpected(version_recorded_by.error());
     version.recorded_by = *version_recorded_by;
 
-    auto version_recorded_at = reader::read_string(data);
+    auto version_recorded_at = read_timepoint(data);
     if (!version_recorded_at) return std::unexpected(version_recorded_at.error());
     version.recorded_at = *version_recorded_at;
 

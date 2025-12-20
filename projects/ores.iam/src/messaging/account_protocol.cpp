@@ -19,6 +19,7 @@
  */
 #include "ores.iam/messaging/account_protocol.hpp"
 
+#include <chrono>
 #include <expected>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
@@ -31,6 +32,25 @@
 namespace ores::iam::messaging {
 
 using namespace ores::comms::messaging;
+
+namespace {
+
+void write_timepoint(std::vector<std::byte>& buffer,
+                     std::chrono::system_clock::time_point tp) {
+    auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(
+        tp.time_since_epoch()).count();
+    writer::write_int64(buffer, nanos);
+}
+
+std::expected<std::chrono::system_clock::time_point, error_code>
+read_timepoint(std::span<const std::byte>& data) {
+    auto nanos = reader::read_int64(data);
+    if (!nanos) return std::unexpected(nanos.error());
+    return std::chrono::system_clock::time_point{
+        std::chrono::nanoseconds{*nanos}};
+}
+
+}
 
 std::vector<std::byte> create_account_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -144,7 +164,7 @@ std::vector<std::byte> list_accounts_response::serialize() const {
     for (const auto& account : accounts) {
         writer::write_uint32(buffer, static_cast<std::uint32_t>(account.version));
         writer::write_string(buffer, account.recorded_by);
-        writer::write_string(buffer, account.recorded_at);
+        write_timepoint(buffer, account.recorded_at);
         writer::write_uuid(buffer, account.id);
         writer::write_string(buffer, account.username);
         writer::write_string(buffer, account.password_hash);
@@ -188,7 +208,7 @@ list_accounts_response::deserialize(std::span<const std::byte> data) {
         if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
         account.recorded_by = *recorded_by_result;
 
-        auto recorded_at_result = reader::read_string(data);
+        auto recorded_at_result = read_timepoint(data);
         if (!recorded_at_result) return std::unexpected(recorded_at_result.error());
         account.recorded_at = *recorded_at_result;
 

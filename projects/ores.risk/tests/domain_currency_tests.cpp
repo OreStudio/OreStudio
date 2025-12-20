@@ -20,6 +20,7 @@
 #include "ores.risk/domain/currency.hpp"
 
 #include <array>
+#include <chrono>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/log/make_logger.hpp"
@@ -30,6 +31,17 @@ namespace {
 
 const std::string_view test_suite("ores.risk.tests");
 const std::string tags("[domain]");
+
+std::chrono::system_clock::time_point make_timepoint(int year, int month, int day) {
+    std::tm tm = {};
+    tm.tm_year = year - 1900;
+    tm.tm_mon = month - 1;
+    tm.tm_mday = day;
+    tm.tm_hour = 0;
+    tm.tm_min = 0;
+    tm.tm_sec = 0;
+    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+}
 
 }
 
@@ -51,7 +63,7 @@ TEST_CASE("create_currency_with_valid_fields", tags) {
     ccy.format = "%3% %1$.2f";
     ccy.currency_type = "Fiat";
     ccy.recorded_by = "admin";
-    ccy.recorded_at = "2025-01-01";
+    ccy.recorded_at = make_timepoint(2025, 1, 1);
 
     BOOST_LOG_SEV(lg, debug) << "Currency: " << ccy;
 
@@ -80,7 +92,7 @@ TEST_CASE("create_currency_with_faker", tags) {
     ccy.format = "%3% %1$.2f";
     ccy.currency_type = "";
     ccy.recorded_by = std::string(faker::internet::username());
-    ccy.recorded_at = "";
+    ccy.recorded_at = {};
 
     BOOST_LOG_SEV(lg, debug) << "Currency: " << ccy;
 
@@ -112,7 +124,7 @@ TEST_CASE("create_multiple_random_currencies", tags) {
         ccy.currency_type = "";
         ccy.recorded_by = std::string(faker::person::firstName()) + " " +
             std::string(faker::person::lastName());
-        ccy.recorded_at = "";
+        ccy.recorded_at = {};
 
         BOOST_LOG_SEV(lg, debug) << "Currency " << i << ": " << ccy;
 
@@ -137,7 +149,7 @@ TEST_CASE("create_currency_with_high_precision", tags) {
     ccy.format = "%3% %1$.8f";
     ccy.currency_type = "Cryptocurrency";
     ccy.recorded_by = "system";
-    ccy.recorded_at = "";
+    ccy.recorded_at = {};
 
     BOOST_LOG_SEV(lg, debug) << "High precision currency: " << ccy;
 
@@ -161,7 +173,7 @@ TEST_CASE("create_currency_with_no_fractions", tags) {
     ccy.format = "%3% %1$.0f";
     ccy.currency_type = "Fiat";
     ccy.recorded_by = "admin";
-    ccy.recorded_at = "";
+    ccy.recorded_at = {};
 
     BOOST_LOG_SEV(lg, debug) << "Currency with no fractions: " << ccy;
 
@@ -185,7 +197,7 @@ TEST_CASE("create_currency_with_three_decimal_places", tags) {
     ccy.format = "%3% %1$.3f";
     ccy.currency_type = "Fiat";
     ccy.recorded_by = "admin";
-    ccy.recorded_at = "";
+    ccy.recorded_at = {};
 
     BOOST_LOG_SEV(lg, debug) << "Currency with three decimal places: " << ccy;
 
@@ -222,7 +234,7 @@ TEST_CASE("create_currencies_with_different_symbols", tags) {
         ccy.format = "%3% %1$.2f";
         ccy.currency_type = "Fiat";
         ccy.recorded_by = "system";
-        ccy.recorded_at = "";
+        ccy.recorded_at = {};
 
         BOOST_LOG_SEV(lg, debug) << "Currency: " << ccy;
 
@@ -246,7 +258,7 @@ TEST_CASE("currency_convert_single_to_table", tags) {
     ccy.format = "%3% %1$.2f";
     ccy.currency_type = "Fiat";
     ccy.recorded_by = "admin";
-    ccy.recorded_at = "2025-01-01";
+    ccy.recorded_at = make_timepoint(2025, 1, 1);
 
     auto table = convert_to_table(ccy);
 
@@ -274,7 +286,7 @@ TEST_CASE("currency_convert_multiple_to_table", tags) {
         ccy.format = "%3% %1$.2f";
         ccy.currency_type = "Test";
         ccy.recorded_by = "system";
-        ccy.recorded_at = "";
+        ccy.recorded_at = {};
         currencies.push_back(ccy);
     }
 
@@ -307,7 +319,7 @@ TEST_CASE("currency_table_with_faker_data", tags) {
         ccy.format = "%3% %1$.2f";
         ccy.currency_type = "Fiat";
         ccy.recorded_by = std::string(faker::internet::username());
-        ccy.recorded_at = "";
+        ccy.recorded_at = {};
         currencies.push_back(ccy);
     }
 

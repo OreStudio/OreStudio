@@ -20,6 +20,7 @@
 #ifndef ORES_VARIABILITY_DOMAIN_FEATURE_FLAGS_HPP
 #define ORES_VARIABILITY_DOMAIN_FEATURE_FLAGS_HPP
 
+#include <chrono>
 #include <string>
 
 namespace ores::variability::domain {
@@ -56,7 +57,7 @@ struct feature_flags final {
     /**
      * @brief Timestamp when this version of the record was recorded in the system.
      */
-    std::string recorded_at;
+    std::chrono::system_clock::time_point recorded_at;
 };
 
 }

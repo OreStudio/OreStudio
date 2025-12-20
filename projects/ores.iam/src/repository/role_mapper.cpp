@@ -38,7 +38,7 @@ domain::role role_mapper::map(const role_entity& v) {
     r.name = v.name;
     r.description = v.description;
     r.recorded_by = v.modified_by;
-    r.recorded_at = v.valid_from.str();
+    r.recorded_at = timestamp_to_timepoint(v.valid_from);
     // Note: permission_codes must be populated separately via join query
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;

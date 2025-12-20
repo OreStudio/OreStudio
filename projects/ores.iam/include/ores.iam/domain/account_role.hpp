@@ -52,7 +52,7 @@ struct account_role final {
     /**
      * @brief Timestamp when this role assignment was created.
      */
-    std::string assigned_at;
+    std::chrono::system_clock::time_point assigned_at;
 };
 
 }

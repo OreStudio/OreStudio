@@ -20,6 +20,7 @@
 #ifndef ORES_IAM_DOMAIN_ACCOUNT_HPP
 #define ORES_IAM_DOMAIN_ACCOUNT_HPP
 
+#include <chrono>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 
@@ -78,7 +79,7 @@ struct account final {
     /**
      * @brief Timestamp when this version of the record was recorded in the system.
      */
-    std::string recorded_at;
+    std::chrono::system_clock::time_point recorded_at;
 };
 
 }

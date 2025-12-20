@@ -88,8 +88,3 @@ jobs:
           export preset=linux-gcc-debug
           export cmake_args="build_group=Canary,preset=${preset},code_coverage=1"
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
-
-      - name: Parse test results
-        run: |
-           python3 -m pip install defusedxml
-           python3 ./build/scripts/parse_catch2_results.py "./build/output/linux-gcc-debug/publish/bin/test-results-*.xml"

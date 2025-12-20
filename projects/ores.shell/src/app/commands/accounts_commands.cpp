@@ -39,7 +39,7 @@ using comms::net::client_session_error;
 void accounts_commands::
 register_commands(cli::Menu& root_menu, client_session& session) {
     auto accounts_menu =
-        std::make_unique<cli::Menu>("accounts");
+        std::make_unique<cli::Menu>("iam");
 
     accounts_menu->Insert("create", [&session](std::ostream & out,
             std::string username, std::string password, std::string totp_secret,
@@ -97,11 +97,11 @@ register_commands(cli::Menu& root_menu, client_session& session) {
             std::string username, std::string password) {
         process_login(std::ref(out), std::ref(session), std::move(username),
             std::move(password));
-    }, "Login with username and password (alias for 'accounts login')");
+    }, "Login with username and password (alias for 'iam login')");
 
     root_menu.Insert("logout", [&session](std::ostream& out) {
         process_logout(std::ref(out), std::ref(session));
-    }, "Logout the current user (alias for 'accounts logout')");
+    }, "Logout the current user (alias for 'iam logout')");
 }
 
 void accounts_commands::

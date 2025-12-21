@@ -38,7 +38,7 @@ add_compile_options(
 #
 # Catch2 args: common args, reporters specified per test target.
 #
-set(ORES_CATCH2_ARGS --durations yes --filenames-as-tags)
+set(ORES_CATCH2_ARGS --durations yes --filenames-as-tags -r compact)
 
 #
 # Java args for PlantUML

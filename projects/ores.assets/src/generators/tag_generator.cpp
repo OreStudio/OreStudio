@@ -59,11 +59,17 @@ std::vector<domain::tag> generate_unique_synthetic_tags(std::size_t n) {
     std::vector<domain::tag> r;
     r.reserve(n);
 
+    std::size_t suffix = 0;
     while (r.size() < n) {
         auto tag = generate_synthetic_tag();
-        bool not_seen = seen.insert(tag.name).second;
-        if (not_seen)
-            r.push_back(std::move(tag));
+        // Loop until we find a unique key
+        if (!seen.insert(tag.name).second) {
+            auto base_name = tag.name;
+            do {
+                tag.name = base_name + "_" + std::to_string(++suffix);
+            } while (!seen.insert(tag.name).second);
+        }
+        r.push_back(std::move(tag));
     }
     return r;
 }

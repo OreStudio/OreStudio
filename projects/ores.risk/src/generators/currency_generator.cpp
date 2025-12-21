@@ -172,11 +172,17 @@ generate_unique_synthetic_currencies(std::size_t n) {
     std::vector<domain::currency> r;
     r.reserve(n);
 
+    std::size_t suffix = 0;
     while (r.size() < n) {
         auto currency = generate_synthetic_currency();
-        bool not_seen = seen.insert(currency.iso_code).second;
-        if (not_seen)
-            r.push_back(std::move(currency));
+        // Loop until we find a unique key
+        if (!seen.insert(currency.iso_code).second) {
+            auto base_code = currency.iso_code;
+            do {
+                currency.iso_code = base_code + std::to_string(++suffix);
+            } while (!seen.insert(currency.iso_code).second);
+        }
+        r.push_back(std::move(currency));
     }
     return r;
 }

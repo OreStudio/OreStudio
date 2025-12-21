@@ -19,30 +19,18 @@
  */
 #include "ores.risk/csv/exporter.hpp"
 
-#include <chrono>
-#include <iomanip>
-#include <sstream>
 #include <string>
 #include <vector>
-#include <iostream>
+#include <sstream>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.utility/datetime/datetime.hpp"
 
 namespace ores::risk::csv {
 
 using domain::currency;
 using namespace ores::utility::log;
-
-namespace {
-
-std::string format_timepoint(std::chrono::system_clock::time_point tp) {
-    auto time = std::chrono::system_clock::to_time_t(tp);
-    std::ostringstream oss;
-    oss << std::put_time(std::gmtime(&time), "%Y-%m-%d %H:%M:%S");
-    return oss.str();
-}
-
-}
+using ores::utility::datetime::datetime;
 
 std::string exporter::escape_csv_field(const std::string& field) {
     // Check if field contains special characters that need escaping
@@ -94,7 +82,7 @@ exporter::export_currency_config(const std::vector<currency>& v) {
             << escape_csv_field(curr.format) << ","
             << escape_csv_field(curr.currency_type) << ","
             << escape_csv_field(curr.recorded_by) << ","
-            << escape_csv_field(format_timepoint(curr.recorded_at)) << "\n";
+            << escape_csv_field(datetime::format_time_point_utc(curr.recorded_at)) << "\n";
     }
 
     std::string result = oss.str();

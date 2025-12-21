@@ -31,13 +31,24 @@ namespace ores::utility::datetime {
 class datetime final {
 public:
     /**
-     * @brief Formats a time point as a string.
+     * @brief Formats a time point as a string using local time.
      *
      * @param tp Time point to format.
      * @param format Format string (e.g., "%Y-%m-%d %H:%M:%S").
      * @return Formatted string representation of the time point.
      */
     static std::string format_time_point(
+        const std::chrono::system_clock::time_point& tp,
+        const std::string& format = "%Y-%m-%d %H:%M:%S");
+
+    /**
+     * @brief Formats a time point as a string using UTC time.
+     *
+     * @param tp Time point to format.
+     * @param format Format string (e.g., "%Y-%m-%d %H:%M:%S").
+     * @return Formatted string representation of the time point in UTC.
+     */
+    static std::string format_time_point_utc(
         const std::chrono::system_clock::time_point& tp,
         const std::string& format = "%Y-%m-%d %H:%M:%S");
 

@@ -63,11 +63,17 @@ std::vector<domain::image> generate_unique_synthetic_images(std::size_t n) {
     std::vector<domain::image> r;
     r.reserve(n);
 
+    std::size_t suffix = 0;
     while (r.size() < n) {
         auto image = generate_synthetic_image();
-        bool not_seen = seen.insert(image.key).second;
-        if (not_seen)
-            r.push_back(std::move(image));
+        // Loop until we find a unique key
+        if (!seen.insert(image.key).second) {
+            auto base_key = image.key;
+            do {
+                image.key = base_key + "_" + std::to_string(++suffix);
+            } while (!seen.insert(image.key).second);
+        }
+        r.push_back(std::move(image));
     }
     return r;
 }

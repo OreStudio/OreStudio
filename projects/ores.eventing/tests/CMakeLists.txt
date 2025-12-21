@@ -49,7 +49,7 @@ add_custom_target(test_${tests_target_name}
 add_dependencies(run_all_tests test_${tests_target_name})
 
 add_test(NAME ${tests_target_name}
-    COMMAND ${tests_binary_name} ${ORES_CATCH2_ARGS} -r compact -r xml::out=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml
+    COMMAND ${tests_binary_name} ${ORES_CATCH2_ARGS} -r xml::out=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml
     WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 set_tests_properties(${tests_target_name} PROPERTIES

@@ -33,6 +33,7 @@ QWidget {
 QTableView {
     /* Base style for the data area */
     background-color: #1A1A1A; /* Primary Background */
+    alternate-background-color: #1A1A1A; /* Same as primary - no alternating */
     gridline-color: #333333; /* Faint row separators */
     color: #F0F0F0;
     border: 1px solid #007ACC; /* Subtle border using accent color */

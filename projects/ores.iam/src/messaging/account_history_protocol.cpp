@@ -42,7 +42,8 @@ read_timepoint(std::span<const std::byte>& data) {
     auto nanos = reader::read_int64(data);
     if (!nanos) return std::unexpected(nanos.error());
     return std::chrono::system_clock::time_point{
-        std::chrono::nanoseconds{*nanos}};
+        std::chrono::duration_cast<std::chrono::system_clock::duration>(
+            std::chrono::nanoseconds{*nanos})};
 }
 
 /**

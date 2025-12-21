@@ -17,50 +17,48 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-20 Sat 23:35], for Saturday, December 20, 2025.
-|      | <75>                                      |        |      |      |       |
-| Tags | Headline                                  | Time   |      |      |     % |
-|------+-------------------------------------------+--------+------+------+-------|
-|      | *Total time*                              | *5:38* |      |      | 100.0 |
-|------+-------------------------------------------+--------+------+------+-------|
-|      | Stories                                   | 5:38   |      |      | 100.0 |
-|      | Active                                    |        | 5:38 |      | 100.0 |
-| code | Rename =accounts= to =iam=                |        |      | 1:30 |  26.6 |
-| code | Create the observability component        |        |      | 1:59 |  35.2 |
-| code | Consider renaming =utility= to =system=   |        |      | 0:25 |   7.4 |
-| code | Use chrono timepoints for domain entities |        |      | 1:44 |  30.8 |
+#+CAPTION: Clock summary at [2025-12-21 Sun 12:05], for Sunday, December 21, 2025.
+|      | <75>                              |        |      |      |       |
+| Tags | Headline                          | Time   |      |      |     % |
+|------+-----------------------------------+--------+------+------+-------|
+|      | *Total time*                      | *2:27* |      |      | 100.0 |
+|------+-----------------------------------+--------+------+------+-------|
+|      | Stories                           | 2:27   |      |      | 100.0 |
+|      | Active                            |        | 2:27 |      | 100.0 |
+| code | Compilation fixes to current main |        |      | 2:27 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-20 Sat 23:35]
+#+CAPTION: Clock summary at [2025-12-21 Sun 12:05]
 |       | <75>                                              |         |       |      |       |
 | Tags  | Headline                                          | Time    |       |      |     % |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                      | *38:03* |       |      | 100.0 |
+|       | *Total time*                                      | *40:30* |       |      | 100.0 |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                           | 38:03   |       |      | 100.0 |
-|       | Active                                            |         | 38:03 |      | 100.0 |
-| agile | Sprint and product backlog refinement             |         |       | 1:07 |   2.9 |
-| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   2.3 |
-| code  | Consider compressing payload                      |         |       | 3:05 |   8.1 |
-| code  | Latest currencies should have different colour    |         |       | 1:28 |   3.9 |
-| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   3.7 |
-| code  | Add account management support to qt              |         |       | 3:43 |   9.8 |
-| code  | Add password reset functionality to accounts      |         |       | 1:49 |   4.8 |
-| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |  12.8 |
+|       | Stories                                           | 40:30   |       |      | 100.0 |
+|       | Active                                            |         | 40:30 |      | 100.0 |
+| agile | Sprint and product backlog refinement             |         |       | 1:07 |   2.8 |
+| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   2.2 |
+| code  | Consider compressing payload                      |         |       | 3:05 |   7.6 |
+| code  | Latest currencies should have different colour    |         |       | 1:28 |   3.6 |
+| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   3.5 |
+| code  | Add account management support to qt              |         |       | 3:43 |   9.2 |
+| code  | Add password reset functionality to accounts      |         |       | 1:49 |   4.5 |
+| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |  12.0 |
 | code  | Add exit confirmation dialog                      |         |       | 0:03 |   0.1 |
-| code  | Improve error messages in shell                   |         |       | 0:23 |   1.0 |
-| code  | Add support for relative time formatting          |         |       | 2:01 |   5.3 |
-| code  | Setup windows laptop with WSL                     |         |       | 5:10 |  13.6 |
-| code  | Add listen/notify to shell                        |         |       | 2:45 |   7.2 |
-| code  | Define type traits for message grouping           |         |       | 0:44 |   1.9 |
-| code  | Rename =accounts= to =iam=                        |         |       | 1:30 |   3.9 |
-| code  | Create the observability component                |         |       | 1:59 |   5.2 |
-| code  | Consider renaming =utility= to =system=           |         |       | 0:25 |   1.1 |
-| code  | Use chrono timepoints for domain entities         |         |       | 1:44 |   4.6 |
-| code  | Ignore warnings on windows and OSX                |         |       | 0:23 |   1.0 |
-| code  | Add flags for currencies                          |         |       | 2:34 |   6.7 |
+| code  | Improve error messages in shell                   |         |       | 0:23 |   0.9 |
+| code  | Add support for relative time formatting          |         |       | 2:01 |   5.0 |
+| code  | Setup windows laptop with WSL                     |         |       | 5:10 |  12.8 |
+| code  | Add listen/notify to shell                        |         |       | 2:45 |   6.8 |
+| code  | Define type traits for message grouping           |         |       | 0:44 |   1.8 |
+| code  | Rename =accounts= to =iam=                        |         |       | 1:30 |   3.7 |
+| code  | Create the observability component                |         |       | 1:59 |   4.9 |
+| code  | Consider renaming =utility= to =system=           |         |       | 0:25 |   1.0 |
+| code  | Use chrono timepoints for domain entities         |         |       | 1:44 |   4.3 |
+| code  | Compilation fixes to current main                 |         |       | 2:27 |   6.0 |
+| code  | Ignore warnings on windows and OSX                |         |       | 0:23 |   0.9 |
+| code  | Add flags for currencies                          |         |       | 2:34 |   6.3 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -850,6 +848,13 @@ Good candidate for a separate PR that:
 
 This keeps the RBAC PR focused and makes the timestamp improvement a coherent,
 reviewable change.
+
+*** COMPLETED Compilation fixes to current main                        :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-21 Sun 09:03]--[2025-12-21 Sun 11:30] =>  2:27
+    :END:
+
+Main is broken at present. Fix compilation and tests.
 
 *** STARTED Windows clang build failures                               :code:
 

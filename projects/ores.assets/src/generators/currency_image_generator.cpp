@@ -73,10 +73,12 @@ std::vector<domain::currency_image> generate_unique_synthetic_currency_images(st
     std::size_t suffix = 0;
     while (r.size() < n) {
         auto currency_image = generate_synthetic_currency_image();
-        // Append suffix to ensure uniqueness if faker returns duplicates
+        // Loop until we find a unique key
         if (!seen.insert(currency_image.iso_code).second) {
-            currency_image.iso_code += std::to_string(++suffix);
-            seen.insert(currency_image.iso_code);
+            auto base_code = currency_image.iso_code;
+            do {
+                currency_image.iso_code = base_code + std::to_string(++suffix);
+            } while (!seen.insert(currency_image.iso_code).second);
         }
         r.push_back(std::move(currency_image));
     }

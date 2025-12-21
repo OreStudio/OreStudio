@@ -175,10 +175,12 @@ generate_unique_synthetic_currencies(std::size_t n) {
     std::size_t suffix = 0;
     while (r.size() < n) {
         auto currency = generate_synthetic_currency();
-        // Append suffix to ensure uniqueness if faker returns duplicates
+        // Loop until we find a unique key
         if (!seen.insert(currency.iso_code).second) {
-            currency.iso_code += std::to_string(++suffix);
-            seen.insert(currency.iso_code);
+            auto base_code = currency.iso_code;
+            do {
+                currency.iso_code = base_code + std::to_string(++suffix);
+            } while (!seen.insert(currency.iso_code).second);
         }
         r.push_back(std::move(currency));
     }

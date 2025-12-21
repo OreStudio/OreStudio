@@ -45,6 +45,26 @@ std::string datetime::format_time_point(
     return oss.str();
 }
 
+std::string datetime::format_time_point_utc(
+    const std::chrono::system_clock::time_point& tp,
+    const std::string& format) {
+
+    const auto time = std::chrono::system_clock::to_time_t(tp);
+    std::tm tm_buf;
+
+#ifdef _WIN32
+    if (gmtime_s(&tm_buf, &time) != 0)
+        return "Invalid time";
+#else
+    if (gmtime_r(&time, &tm_buf) == nullptr)
+        return "Invalid time";
+#endif
+
+    std::ostringstream oss;
+    oss << std::put_time(&tm_buf, format.c_str());
+    return oss.str();
+}
+
 std::chrono::system_clock::time_point datetime::parse_time_point(
     const std::string& str,
     const std::string& format) {

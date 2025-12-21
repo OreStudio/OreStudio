@@ -851,12 +851,41 @@ reviewable change.
 
 *** STARTED Compilation fixes to current main                          :code:
     :LOGBOOK:
+    CLOCK: [2025-12-21 Sun 13:19]--[2025-12-21 Sun 13:23] =>  0:04
     CLOCK: [2025-12-21 Sun 13:13]--[2025-12-21 Sun 13:18] =>  0:05
     CLOCK: [2025-12-21 Sun 12:01]--[2025-12-21 Sun 13:12] =>  1:11
     CLOCK: [2025-12-21 Sun 09:03]--[2025-12-21 Sun 11:30] =>  2:27
     :END:
 
 Main is broken at present. Fix compilation and tests.
+
+Gemini:
+
+#+begin_quote
+This pull request significantly improves the robustness and testability of the
+project. It addresses critical issues that could lead to test timeouts by
+ensuring the reliable generation of unique synthetic data. Furthermore, it
+resolves platform-specific build failures on macOS and expands the test suite
+with dedicated unit tests for key generator components, contributing to a more
+stable and well-tested codebase.
+
+Highlights:
+
+- Test Stability: Resolved potential infinite loops in unique synthetic data
+  generation functions (e.g., for currency images, images, tags, and currencies)
+  by implementing a suffix-based uniqueness mechanism when the faker library
+  produces duplicate values.
+- Cross-Platform Compatibility: Fixed macOS build errors related to
+  std::chrono::system_clock::time_point construction by explicitly using
+  std::chrono::duration_cast when converting from nanoseconds.
+- Enhanced Test Coverage: Introduced new unit tests for tag, image, and
+  currency_image generators to ensure their correct functionality, including
+  single, multiple, and unique data generation scenarios.
+- Standardized Testing Configuration: Centralized and updated Catch2 test
+  arguments in the main CMakeLists.txt and individual project test
+  CMakeLists.txt files for consistent reporting, specifically changing the XML
+  reporter syntax.
+#+end_quote
 
 *** STARTED Windows clang build failures                               :code:
 

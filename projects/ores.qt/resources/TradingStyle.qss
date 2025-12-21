@@ -41,6 +41,10 @@ QTableView {
     selection-color: white;
 }
 
+QTableView::item {
+    padding: 6px 4px; /* Vertical and horizontal padding for better readability */
+}
+
 QTableView::item:hover {
     background-color: #191919; /* Slightly darker on hover */
 }

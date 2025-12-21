@@ -152,11 +152,8 @@ AccountMdiWindow(ClientManager* clientManager,
     accountTableView_->setSortingEnabled(true);
     accountTableView_->sortByColumn(0, Qt::AscendingOrder);
 
-    QHeaderView* verticalHeader(accountTableView_->verticalHeader());
     QHeaderView* horizontalHeader(accountTableView_->horizontalHeader());
-
-    verticalHeader->setDefaultSectionSize(24);
-    verticalHeader->setSectionResizeMode(QHeaderView::Fixed);
+    accountTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     // Connect signals

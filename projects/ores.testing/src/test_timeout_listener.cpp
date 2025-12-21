@@ -21,6 +21,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include "ores.platform/environment/environment.hpp"
 
 namespace ores::testing {
 
@@ -28,13 +29,10 @@ using namespace ores::utility::log;
 
 void test_timeout_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
     // Check for environment variable override
-    if (const char* env_timeout = std::getenv("ORES_TEST_TIMEOUT_SECONDS")) {
-        try {
-            timeout_ = std::chrono::seconds(std::stoi(env_timeout));
-        } catch (...) {
-            // Keep default on parse error
-        }
-    }
+    using ores::platform::environment::environment;
+    timeout_ = std::chrono::seconds(
+        environment::get_int_value_or_default("ORES_TEST_TIMEOUT_SECONDS",
+            static_cast<int>(timeout_.count())));
 
     current_test_name_ = testInfo.name;
     test_start_time_ = std::chrono::steady_clock::now();

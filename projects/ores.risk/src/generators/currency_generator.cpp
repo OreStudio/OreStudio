@@ -33,7 +33,10 @@ domain::currency generate_synthetic_currency() {
     r.iso_code = fakerCurrency.code;
     r.name = std::string(fakerCurrency.name);
     r.numeric_code = std::to_string(faker::number::integer(1, 999));
-    r.symbol = std::string(fakerCurrency.symbol);
+    // Some faker currencies don't have symbols; provide fallback using code
+    r.symbol = std::string(fakerCurrency.symbol.empty()
+        ? fakerCurrency.code
+        : fakerCurrency.symbol);
     r.fraction_symbol = "";
     r.fractions_per_unit = 100;
     r.rounding_type = "Closest";

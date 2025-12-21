@@ -21,6 +21,7 @@
 
 #include <sstream>
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep. Must be before rfl/json.hpp
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.risk/orexml/CurrencyConfig.hpp"
 #include "ores.risk/orexml/currency_mapper.hpp"

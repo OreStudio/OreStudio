@@ -21,6 +21,7 @@
 #define ORES_QT_RELATIVE_TIME_HELPER_HPP
 
 #include <QString>
+#include <chrono>
 #include <string>
 
 namespace ores::qt {
@@ -54,6 +55,14 @@ public:
      * @return Relative time string or the original string if parsing fails.
      */
     static QString format(const QString& recorded_at);
+
+    /**
+     * @brief Formats a time_point as relative time.
+     *
+     * @param recorded_at The time point to format.
+     * @return Relative time string (e.g., "5 minutes ago", "yesterday").
+     */
+    static QString format(const std::chrono::system_clock::time_point& recorded_at);
 };
 
 }

@@ -411,31 +411,19 @@ void ClientAccountModel::update_recent_accounts() {
     // Find accounts with recorded_at newer than last reload
     for (const auto& item : accounts_) {
         const auto& account = item.account;
-        if (account.recorded_at.empty()) {
+        if (account.recorded_at == std::chrono::system_clock::time_point{}) {
             continue;
         }
 
-        // Parse recorded_at as datetime (try multiple formats)
-        QDateTime recordedAt = QDateTime::fromString(
-            QString::fromStdString(account.recorded_at), Qt::ISODate);
-
-        if (!recordedAt.isValid()) {
-            // Try alternative format (YYYY-MM-DD HH:MM:SS)
-            recordedAt = QDateTime::fromString(
-                QString::fromStdString(account.recorded_at), "yyyy-MM-dd HH:mm:ss");
-        }
-
-        if (!recordedAt.isValid()) {
-            // Try date-only format (YYYY-MM-DD) - assume start of day
-            recordedAt = QDateTime::fromString(
-                QString::fromStdString(account.recorded_at), "yyyy-MM-dd");
-        }
+        // Convert time_point to QDateTime
+        const auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(
+            account.recorded_at.time_since_epoch()).count();
+        QDateTime recordedAt = QDateTime::fromMSecsSinceEpoch(msecs);
 
         if (recordedAt.isValid() && recordedAt > last_reload_time_) {
             recent_usernames_.insert(account.username);
             BOOST_LOG_SEV(lg(), trace) << "Account " << account.username
-                                       << " is recent (recorded_at: "
-                                       << account.recorded_at << ")";
+                                       << " is recent";
         }
     }
 

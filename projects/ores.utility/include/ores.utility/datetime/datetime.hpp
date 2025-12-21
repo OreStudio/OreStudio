@@ -40,6 +40,17 @@ public:
     static std::string format_time_point(
         const std::chrono::system_clock::time_point& tp,
         const std::string& format = "%Y-%m-%d %H:%M:%S");
+
+    /**
+     * @brief Parses a string into a time point.
+     *
+     * @param str String to parse.
+     * @param format Format string (e.g., "%Y-%m-%d %H:%M:%S").
+     * @return Parsed time point.
+     */
+    static std::chrono::system_clock::time_point parse_time_point(
+        const std::string& str,
+        const std::string& format = "%Y-%m-%d %H:%M:%S");
 };
 
 }

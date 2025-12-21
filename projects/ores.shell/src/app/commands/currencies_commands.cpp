@@ -118,7 +118,7 @@ process_add_currency(std::ostream& out, client_session& session,
                 .format = "",
                 .currency_type = "fiat",
                 .recorded_by = recorded_by,
-                .recorded_at = ""
+                .recorded_at = std::chrono::system_clock::now()
             }
         });
 

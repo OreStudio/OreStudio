@@ -237,7 +237,7 @@ TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip", tags) 
     original_ccy.format = "%3% %1$.8f";
     original_ccy.currency_type = "Cryptocurrency";
     original_ccy.recorded_by = "system";
-    original_ccy.recorded_at = "";
+    original_ccy.recorded_at = {};
 
     risk::repository::currency_repository repo;
     repo.write(h.context(), {original_ccy});
@@ -280,7 +280,7 @@ TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip", tags) 
         CHECK(retrieved_ccy.currency_type == original_ccy.currency_type);
         // Note: recorded_by and recorded_at are set by the repository
         CHECK(!retrieved_ccy.recorded_by.empty());
-        CHECK(!retrieved_ccy.recorded_at.empty());
+        CHECK(retrieved_ccy.recorded_at != std::chrono::system_clock::time_point{});
 
         test_completed = true;
     }, boost::asio::detached);

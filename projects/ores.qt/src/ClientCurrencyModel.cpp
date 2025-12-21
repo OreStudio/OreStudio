@@ -356,31 +356,19 @@ void ClientCurrencyModel::update_recent_currencies() {
 
     // Find currencies with recorded_at newer than last reload
     for (const auto& currency : currencies_) {
-        if (currency.recorded_at.empty()) {
+        if (currency.recorded_at == std::chrono::system_clock::time_point{}) {
             continue;
         }
 
-        // Parse recorded_at as datetime (try multiple formats)
-        QDateTime recordedAt = QDateTime::fromString(
-            QString::fromStdString(currency.recorded_at), Qt::ISODate);
-
-        if (!recordedAt.isValid()) {
-            // Try alternative format (YYYY-MM-DD HH:MM:SS)
-            recordedAt = QDateTime::fromString(
-                QString::fromStdString(currency.recorded_at), "yyyy-MM-dd HH:mm:ss");
-        }
-
-        if (!recordedAt.isValid()) {
-            // Try date-only format (YYYY-MM-DD) - assume start of day
-            recordedAt = QDateTime::fromString(
-                QString::fromStdString(currency.recorded_at), "yyyy-MM-dd");
-        }
+        // Convert time_point to QDateTime
+        const auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(
+            currency.recorded_at.time_since_epoch()).count();
+        QDateTime recordedAt = QDateTime::fromMSecsSinceEpoch(msecs);
 
         if (recordedAt.isValid() && recordedAt > last_reload_time_) {
             recent_iso_codes_.insert(currency.iso_code);
             BOOST_LOG_SEV(lg(), trace) << "Currency " << currency.iso_code
-                                       << " is recent (recorded_at: "
-                                       << currency.recorded_at << ")";
+                                       << " is recent";
         }
     }
 

@@ -17,11 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep. Must be before rfl/json.hpp
 #include "ores.risk/messaging/currency_protocol.hpp"
 
 #include <expected>
 #include "ores.comms/messaging/reader.hpp"
 #include "ores.comms/messaging/writer.hpp"
+#include "ores.utility/datetime/datetime.hpp"
 
 using namespace ores::risk;
 using namespace ores::comms::messaging;
@@ -44,7 +46,8 @@ void serialize_currency(std::vector<std::byte>& buffer, const domain::currency& 
     writer::write_string(buffer, currency.format);
     writer::write_string(buffer, currency.currency_type);
     writer::write_string(buffer, currency.recorded_by);
-    writer::write_string(buffer, currency.recorded_at);
+    writer::write_string(buffer,
+        ores::utility::datetime::datetime::format_time_point(currency.recorded_at));
 }
 
 std::expected<domain::currency, error_code>
@@ -101,7 +104,7 @@ deserialize_currency(std::span<const std::byte>& data) {
 
     auto recorded_at = reader::read_string(data);
     if (!recorded_at) return std::unexpected(recorded_at.error());
-    currency.recorded_at = *recorded_at;
+    currency.recorded_at = ores::utility::datetime::datetime::parse_time_point(*recorded_at);
 
     return currency;
 }
@@ -270,7 +273,8 @@ std::vector<std::byte> get_currencies_response::serialize() const {
         writer::write_string(buffer, currency.format);
         writer::write_string(buffer, currency.currency_type);
         writer::write_string(buffer, currency.recorded_by);
-        writer::write_string(buffer, currency.recorded_at);
+        writer::write_string(buffer,
+            ores::utility::datetime::datetime::format_time_point(currency.recorded_at));
     }
 
     return buffer;
@@ -349,7 +353,7 @@ get_currencies_response::deserialize(std::span<const std::byte> data) {
 
         auto recorded_at = reader::read_string(data);
         if (!recorded_at) return std::unexpected(recorded_at.error());
-        currency.recorded_at = *recorded_at;
+        currency.recorded_at = ores::utility::datetime::datetime::parse_time_point(*recorded_at);
 
         response.currencies.push_back(std::move(currency));
     }

@@ -45,4 +45,14 @@ std::string datetime::format_time_point(
     return oss.str();
 }
 
+std::chrono::system_clock::time_point datetime::parse_time_point(
+    const std::string& str,
+    const std::string& format) {
+
+    std::tm tm = {};
+    std::istringstream ss(str);
+    ss >> std::get_time(&tm, format.c_str());
+    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+}
+
 }

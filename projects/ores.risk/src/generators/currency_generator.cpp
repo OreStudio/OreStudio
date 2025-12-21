@@ -41,7 +41,7 @@ domain::currency generate_synthetic_currency() {
     r.format = "%3% %1$.2f";
     r.currency_type = "Fiat";
     r.recorded_by = std::string(faker::internet::username());
-    r.recorded_at = utility::faker::datetime::past_string();
+    r.recorded_at = utility::faker::datetime::past_timepoint();
 
     return r;
 }
@@ -60,7 +60,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .recorded_by = std::string(faker::internet::username()),
-        .recorded_at = utility::faker::datetime::past_string()
+        .recorded_at = utility::faker::datetime::past_timepoint()
     });
 
     r.push_back({
@@ -75,7 +75,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .recorded_by = std::string(faker::internet::username()),
-        .recorded_at = utility::faker::datetime::past_string()
+        .recorded_at = utility::faker::datetime::past_timepoint()
     });
 
     r.push_back({
@@ -90,7 +90,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .recorded_by = std::string(faker::internet::username()),
-        .recorded_at = utility::faker::datetime::past_string()
+        .recorded_at = utility::faker::datetime::past_timepoint()
     });
 
     r.push_back({
@@ -104,7 +104,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .recorded_by = std::string(faker::internet::username()),
-        .recorded_at = utility::faker::datetime::past_string()
+        .recorded_at = utility::faker::datetime::past_timepoint()
     });
 
     r.push_back({
@@ -119,7 +119,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .recorded_by = std::string(faker::internet::username()),
-        .recorded_at = utility::faker::datetime::past_string()
+        .recorded_at = utility::faker::datetime::past_timepoint()
     });
 
     r.push_back({
@@ -134,7 +134,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .recorded_by = std::string(faker::internet::username()),
-        .recorded_at = utility::faker::datetime::past_string()
+        .recorded_at = utility::faker::datetime::past_timepoint()
     });
 
     r.push_back({
@@ -149,7 +149,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies() {
         .format = "%3% %1$.2f",
         .currency_type = "master",
         .recorded_by = std::string(faker::internet::username()),
-        .recorded_at = utility::faker::datetime::past_string()
+        .recorded_at = utility::faker::datetime::past_timepoint()
     });
     return r;
 }

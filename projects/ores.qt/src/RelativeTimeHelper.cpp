@@ -64,4 +64,10 @@ QString relative_time_helper::format(const QString& recorded_at) {
     return QString::fromStdString(formatter.format(*tp));
 }
 
+QString relative_time_helper::format(
+    const std::chrono::system_clock::time_point& recorded_at) {
+    utility::datetime::relative_time_formatter formatter;
+    return QString::fromStdString(formatter.format(recorded_at));
+}
+
 }

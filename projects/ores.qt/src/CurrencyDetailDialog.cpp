@@ -34,6 +34,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
+#include "ores.utility/datetime/datetime.hpp"
 
 namespace ores::qt {
 
@@ -153,7 +154,8 @@ void CurrencyDetailDialog::setCurrency(const risk::domain::currency& currency) {
     ui_->currencyTypeEdit->setText(QString::fromStdString(currency.currency_type));
     ui_->versionEdit->setText(QString::number(currency.version));
     ui_->recordedByEdit->setText(QString::fromStdString(currency.recorded_by));
-    ui_->recordedAtEdit->setText(QString::fromStdString(currency.recorded_at));
+    ui_->recordedAtEdit->setText(QString::fromStdString(
+        utility::datetime::datetime::format_time_point(currency.recorded_at)));
 
     isDirty_ = false;
     emit isDirtyChanged(false);

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-xau" viewBox="0 0 640 480">
+  <defs>
+    <linearGradient id="gold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffd700"/>
+      <stop offset="50%" style="stop-color:#ffec80"/>
+      <stop offset="100%" style="stop-color:#daa520"/>
+    </linearGradient>
+    <linearGradient id="gold-side" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#b8860b"/>
+      <stop offset="100%" style="stop-color:#cd950c"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="640" height="480" fill="#1a1a2e"/>
+  <!-- Gold bar - top face -->
+  <polygon points="200,180 440,180 480,220 160,220" fill="url(#gold-gradient)" stroke="#b8860b" stroke-width="2"/>
+  <!-- Gold bar - front face -->
+  <polygon points="160,220 480,220 480,320 160,320" fill="url(#gold-gradient)" stroke="#b8860b" stroke-width="2"/>
+  <!-- Gold bar - right side -->
+  <polygon points="480,220 440,180 440,280 480,320" fill="url(#gold-side)" stroke="#b8860b" stroke-width="2"/>
+  <!-- Element symbol -->
+  <text x="320" y="290" font-family="Georgia, serif" font-size="72" font-weight="bold" fill="#1a1a2e" text-anchor="middle">Au</text>
+  <!-- Label -->
+  <text x="320" y="380" font-family="Arial, sans-serif" font-size="36" fill="#ffd700" text-anchor="middle">GOLD</text>
+</svg>

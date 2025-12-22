@@ -36,3 +36,9 @@
 
 \ir ./bootstrap_mode_setup.sql
 \ir ./disable_password_validation_setup.sql
+
+-- Populate reference data
+\ir ./load_flags.sql
+\ir ./flags_populate.sql
+\ir ./currencies_populate.sql
+\ir ./currency_images_populate.sql

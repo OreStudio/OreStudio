@@ -400,15 +400,15 @@ void AccountController::onRevertAccount(const iam::domain::account& account) {
     }
 
     // Create update request with the historical data
+    // Note: is_admin removed - admin privileges are now managed via RBAC
     QPointer<AccountController> self = this;
     const boost::uuids::uuid account_id = account.id;
     const std::string username = account.username;
     const std::string email = account.email;
-    const bool is_admin = account.is_admin;
     const std::string recorded_by = username_.toStdString();
 
     QFuture<std::pair<bool, std::string>> future =
-        QtConcurrent::run([self, account_id, email, is_admin, recorded_by]()
+        QtConcurrent::run([self, account_id, email, recorded_by]()
             -> std::pair<bool, std::string> {
             if (!self) return {false, ""};
 
@@ -418,7 +418,6 @@ void AccountController::onRevertAccount(const iam::domain::account& account) {
             iam::messaging::update_account_request request;
             request.account_id = account_id;
             request.email = email;
-            request.is_admin = is_admin;
             request.recorded_by = recorded_by;
 
             auto payload = request.serialize();

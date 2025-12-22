@@ -96,12 +96,13 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
         &AccountDetailDialog::onFieldChanged);
     connect(ui_->emailEdit, &QLineEdit::textChanged, this,
         &AccountDetailDialog::onFieldChanged);
-    connect(ui_->isAdminCheckBox, &QCheckBox::toggled, this,
-        &AccountDetailDialog::onFieldChanged);
     connect(ui_->passwordEdit, &QLineEdit::textChanged, this,
         &AccountDetailDialog::onFieldChanged);
     connect(ui_->confirmPasswordEdit, &QLineEdit::textChanged, this,
         &AccountDetailDialog::onFieldChanged);
+
+    // Hide isAdminCheckBox - admin privileges are now managed via RBAC role assignments
+    ui_->isAdminCheckBox->setVisible(false);
 
     // Initially disable save/reset buttons
     updateSaveResetButtonState();
@@ -132,7 +133,7 @@ void AccountDetailDialog::setAccount(const iam::domain::account& account) {
 
     ui_->usernameEdit->setText(QString::fromStdString(account.username));
     ui_->emailEdit->setText(QString::fromStdString(account.email));
-    ui_->isAdminCheckBox->setChecked(account.is_admin);
+    // Note: is_admin removed - admin privileges are now managed via RBAC
     ui_->versionEdit->setText(QString::number(account.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(account.recorded_by));
 
@@ -163,7 +164,7 @@ iam::domain::account AccountDetailDialog::getAccount() const {
     iam::domain::account account = currentAccount_;
     account.username = ui_->usernameEdit->text().toStdString();
     account.email = ui_->emailEdit->text().toStdString();
-    account.is_admin = ui_->isAdminCheckBox->isChecked();
+    // Note: is_admin removed - admin privileges are now managed via RBAC
     account.recorded_by = modifiedByUsername_.empty() ? "qt_user" : modifiedByUsername_;
 
     return account;
@@ -172,7 +173,6 @@ iam::domain::account AccountDetailDialog::getAccount() const {
 void AccountDetailDialog::clearDialog() {
     ui_->usernameEdit->clear();
     ui_->emailEdit->clear();
-    ui_->isAdminCheckBox->setChecked(false);
     ui_->passwordEdit->clear();
     ui_->confirmPasswordEdit->clear();
     ui_->versionEdit->clear();
@@ -301,16 +301,16 @@ void AccountDetailDialog::onSaveClicked() {
 
     if (isAddMode_) {
         // Create new account
+        // Note: is_admin removed - admin privileges are now managed via RBAC
         QPointer<AccountDetailDialog> self = this;
         const std::string username = ui_->usernameEdit->text().toStdString();
         const std::string password = ui_->passwordEdit->text().toStdString();
         const std::string email = ui_->emailEdit->text().toStdString();
         const std::string recorded_by = modifiedByUsername_.empty()
             ? "qt_user" : modifiedByUsername_;
-        const bool is_admin = ui_->isAdminCheckBox->isChecked();
 
         QFuture<std::pair<bool, std::string>> future =
-            QtConcurrent::run([self, username, password, email, recorded_by, is_admin]()
+            QtConcurrent::run([self, username, password, email, recorded_by]()
                 -> std::pair<bool, std::string> {
                 if (!self) return {false, ""};
 
@@ -322,7 +322,6 @@ void AccountDetailDialog::onSaveClicked() {
                 request.password = password;
                 request.email = email;
                 request.recorded_by = recorded_by;
-                request.is_admin = is_admin;
                 request.totp_secret = ""; // Not used yet
 
                 auto payload = request.serialize();
@@ -403,15 +402,15 @@ void AccountDetailDialog::onSaveClicked() {
         watcher->setFuture(future);
     } else {
         // Edit mode - update existing account
+        // Note: is_admin removed - admin privileges are now managed via RBAC
         QPointer<AccountDetailDialog> self = this;
         const boost::uuids::uuid account_id = currentAccount_.id;
         const std::string email = ui_->emailEdit->text().toStdString();
         const std::string recorded_by = modifiedByUsername_.empty()
             ? "qt_user" : modifiedByUsername_;
-        const bool is_admin = ui_->isAdminCheckBox->isChecked();
 
         QFuture<std::pair<bool, std::string>> future =
-            QtConcurrent::run([self, account_id, email, recorded_by, is_admin]()
+            QtConcurrent::run([self, account_id, email, recorded_by]()
                 -> std::pair<bool, std::string> {
                 if (!self) return {false, ""};
 
@@ -422,7 +421,6 @@ void AccountDetailDialog::onSaveClicked() {
                 request.account_id = account_id;
                 request.email = email;
                 request.recorded_by = recorded_by;
-                request.is_admin = is_admin;
 
                 auto payload = request.serialize();
                 frame request_frame(message_type::update_account_request,
@@ -656,7 +654,7 @@ void AccountDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
 void AccountDetailDialog::setFieldsReadOnly(bool readOnly) {
     ui_->usernameEdit->setReadOnly(readOnly);
     ui_->emailEdit->setReadOnly(readOnly);
-    ui_->isAdminCheckBox->setEnabled(!readOnly);
+    // Note: isAdminCheckBox is hidden - admin privileges managed via RBAC
 }
 
 void AccountDetailDialog::updateSaveResetButtonState() {

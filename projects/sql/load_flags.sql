@@ -43,6 +43,7 @@ WHERE NOT EXISTS (
 -- Function to load a single flag SVG file
 -- This function reads an SVG file and inserts it into the images table
 -- Returns void to suppress per-call output when loading many flags
+-- The function is idempotent: if the image already exists, it updates it
 CREATE OR REPLACE FUNCTION oresdb.load_flag(
     p_key text,
     p_description text,
@@ -50,20 +51,38 @@ CREATE OR REPLACE FUNCTION oresdb.load_flag(
 ) RETURNS void AS $$
 DECLARE
     v_image_id uuid;
+    v_existing_id uuid;
 BEGIN
-    -- Generate UUID for the image
-    v_image_id := gen_random_uuid();
+    -- Check if image with this key already exists
+    SELECT image_id INTO v_existing_id
+    FROM oresdb.images
+    WHERE key = p_key AND valid_to = '9999-12-31 23:59:59'::timestamp;
 
-    -- Insert the image
-    INSERT INTO oresdb.images (
-        image_id, version, key, description, svg_data,
-        modified_by, valid_from, valid_to
-    ) VALUES (
-        v_image_id, 0, p_key, p_description, p_svg_data,
-        'system', CURRENT_TIMESTAMP, '9999-12-31 23:59:59'::timestamp
-    );
+    IF v_existing_id IS NOT NULL THEN
+        -- Image exists, update it
+        UPDATE oresdb.images
+        SET description = p_description,
+            svg_data = p_svg_data,
+            modified_by = 'system'
+        WHERE image_id = v_existing_id
+          AND valid_to = '9999-12-31 23:59:59'::timestamp;
 
-    -- Link image to flag tag
+        v_image_id := v_existing_id;
+    ELSE
+        -- Generate UUID for new image
+        v_image_id := gen_random_uuid();
+
+        -- Insert the image
+        INSERT INTO oresdb.images (
+            image_id, version, key, description, svg_data,
+            modified_by, valid_from, valid_to
+        ) VALUES (
+            v_image_id, 0, p_key, p_description, p_svg_data,
+            'system', CURRENT_TIMESTAMP, '9999-12-31 23:59:59'::timestamp
+        );
+    END IF;
+
+    -- Link image to flag tag (skip if already linked)
     INSERT INTO oresdb.image_tags (
         image_id, tag_id, assigned_by, assigned_at, valid_from, valid_to
     )
@@ -71,7 +90,15 @@ BEGIN
         v_image_id, tag_id, 'system', CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP, '9999-12-31 23:59:59'::timestamp
     FROM oresdb.tags
-    WHERE name = 'flag' AND valid_to = '9999-12-31 23:59:59'::timestamp;
+    WHERE name = 'flag' AND valid_to = '9999-12-31 23:59:59'::timestamp
+      AND NOT EXISTS (
+          SELECT 1 FROM oresdb.image_tags it
+          WHERE it.image_id = v_image_id
+            AND it.tag_id = tags.tag_id
+            AND it.valid_to = '9999-12-31 23:59:59'::timestamp
+      );
+
+    RETURN v_image_id::text;
 END;
 $$ LANGUAGE plpgsql;
 

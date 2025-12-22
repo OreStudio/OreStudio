@@ -91,6 +91,13 @@ jobs:
       - name: Install dev packages
         run: ./build/scripts/install_debian_packages.sh
 
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          modules: 'qtsvg'
+          cache: true
+
       - name: Setup postgres
         uses: ikalnytskyi/action-setup-postgres@v8
         with:

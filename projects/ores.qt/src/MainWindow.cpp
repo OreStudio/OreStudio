@@ -344,7 +344,6 @@ void MainWindow::onLoginTriggered() {
 
 void MainWindow::updateMenuState() {
     const bool isConnected = clientManager_ && clientManager_->isConnected();
-    const bool isAdmin = clientManager_ && clientManager_->isAdmin();
 
     // Enable/disable menu actions based on connection state
     ui_->CurrenciesAction->setEnabled(isConnected);
@@ -353,9 +352,9 @@ void MainWindow::updateMenuState() {
     ui_->ActionConnect->setEnabled(!isConnected);
     ui_->ActionDisconnect->setEnabled(isConnected);
 
-    // System menu is always visible but only enabled for admin users
-    ui_->menuSystem->menuAction()->setEnabled(isAdmin);
-    ui_->ActionAccounts->setEnabled(isAdmin);
+    // System menu enabled when connected - permission checks happen server-side via RBAC
+    ui_->menuSystem->menuAction()->setEnabled(isConnected);
+    ui_->ActionAccounts->setEnabled(isConnected);
 
     // My Account menu item is enabled when connected
     ui_->ActionMyAccount->setEnabled(isConnected);
@@ -367,8 +366,7 @@ void MainWindow::updateMenuState() {
         connectionStatusIconLabel_->setPixmap(disconnectedIcon_.pixmap(16, 16));
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Menu state updated. Connected: "
-                               << isConnected << ", Admin: " << isAdmin;
+    BOOST_LOG_SEV(lg(), debug) << "Menu state updated. Connected: " << isConnected;
 }
 
 void MainWindow::createControllers() {

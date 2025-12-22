@@ -95,6 +95,6 @@ $$ LANGUAGE plpgsql;
 --     svg=$(cat "$f" | sed "s/'/''/g")
 --     echo "SELECT oresdb.load_flag('$key', '$desc', '$svg');"
 -- done > projects/sql/load_flags_data.sql
--- echo "SELECT 'Loaded ' || COUNT(*) || ' flags' AS summary FROM oresdb.images i JOIN oresdb.image_tags it ON i.image_id = it.image_id JOIN oresdb.tags t ON it.tag_id = t.tag_id WHERE t.name = 'flag';" >> projects/sql/load_flags_data.sql
+-- echo "SELECT 'Loaded ' || COUNT(*) || ' flags' AS summary FROM oresdb.image_tags it JOIN oresdb.tags t ON it.tag_id = t.tag_id WHERE t.name = 'flag' AND t.valid_to = '9999-12-31 23:59:59'::timestamptz AND it.valid_to = '9999-12-31 23:59:59'::timestamptz;" >> projects/sql/load_flags_data.sql
 --
 -- Then run: psql -h localhost -U oresadmin -d oresdb -f projects/sql/load_flags_data.sql

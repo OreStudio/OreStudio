@@ -41,15 +41,15 @@ register_commands(cli::Menu& root_menu, client_session& session) {
     auto accounts_menu =
         std::make_unique<cli::Menu>("accounts");
 
+    // Note: is_admin parameter removed - admin privileges are now managed via RBAC
     accounts_menu->Insert("create", [&session](std::ostream & out,
             std::string username, std::string password, std::string totp_secret,
-            std::string email, std::string is_admin_str) {
-        bool is_admin = (is_admin_str == "true" || is_admin_str == "1");
+            std::string email) {
         process_create_account(std::ref(out),
             std::ref(session), std::move(username),
             std::move(password), std::move(totp_secret),
-                std::move(email), is_admin);
-    }, "Create a new account (username password totp_secret email is_admin)");
+                std::move(email));
+    }, "Create a new account (username password totp_secret email)");
 
     accounts_menu->Insert("list", [&session](std::ostream& out) {
         process_list_accounts(std::ref(out), std::ref(session));
@@ -66,14 +66,14 @@ register_commands(cli::Menu& root_menu, client_session& session) {
         process_lock_account(std::ref(out),
             std::ref(session),
             std::move(account_id));
-    }, "Lock an account (account_id) - requires admin");
+    }, "Lock an account (account_id) - requires accounts:lock permission");
 
     accounts_menu->Insert("unlock",
         [&session](std::ostream& out, std::string account_id) {
         process_unlock_account(std::ref(out),
             std::ref(session),
             std::move(account_id));
-    }, "Unlock a locked account (account_id) - requires admin");
+    }, "Unlock a locked account (account_id) - requires accounts:unlock permission");
 
     accounts_menu->Insert("list-logins", [&session](std::ostream& out) {
         process_list_login_info(std::ref(out), std::ref(session));
@@ -151,10 +151,10 @@ process_login(std::ostream& out, client_session& session,
     out << "✓ Login successful!" << std::endl;
 
     // Update session state
+    // Note: Permission checks are now handled server-side via RBAC
     comms::net::client_session_info info{
         .account_id = response.account_id,
-        .username = std::move(username),
-        .is_admin = response.is_admin
+        .username = std::move(username)
     };
     session.set_session_info(std::move(info));
 }
@@ -253,12 +253,12 @@ process_unlock_account(std::ostream& out, client_session& session,
 
 void accounts_commands::process_create_account(std::ostream& out,
     client_session& session, std::string username,
-    std::string password, std::string totp_secret, std::string email,
-    bool is_admin) {
+    std::string password, std::string totp_secret, std::string email) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating create account request.";
 
     using iam::messaging::create_account_request;
     using iam::messaging::create_account_response;
+    // Note: is_admin removed - admin privileges are now managed via RBAC
     auto result = session.process_authenticated_request<create_account_request,
                                                         create_account_response,
                                                         message_type::create_account_request>
@@ -266,12 +266,11 @@ void accounts_commands::process_create_account(std::ostream& out,
             .username = std::move(username),
             .password = std::move(password),
             .totp_secret = std::move(totp_secret),
-            .email = std::move(email),
-            .is_admin = is_admin
+            .email = std::move(email)
         });
 
     if (!result) {
-        out << "✗ " << to_string(result.error()) << std::endl;
+        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
         return;
     }
 

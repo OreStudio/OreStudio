@@ -48,11 +48,13 @@ namespace ores::comms::net {
 
 /**
  * @brief Information about the client's authenticated session.
+ *
+ * Note: Permission checks are now handled server-side via RBAC.
+ * The client only tracks basic session info.
  */
 struct client_session_info {
     boost::uuids::uuid account_id;
     std::string username;
-    bool is_admin;
 };
 
 /**
@@ -187,9 +189,14 @@ public:
 
     /**
      * @brief Check if logged in as admin.
+     *
+     * @deprecated Permission checks are now performed server-side via RBAC.
+     *             This method always returns false. Use process_authenticated_request
+     *             and handle permission denied errors from the server instead.
      */
+    [[deprecated("Permission checks are now server-side via RBAC")]]
     [[nodiscard]] bool is_admin() const noexcept {
-        return session_info_.has_value() && session_info_->is_admin;
+        return false;
     }
 
     /**
@@ -303,32 +310,25 @@ public:
     /**
      * @brief Process a request that requires admin privileges.
      *
-     * Checks if logged in as admin before sending.
+     * @deprecated Permission checks are now performed server-side via RBAC.
+     *             Use process_authenticated_request instead; the server will
+     *             return a permission denied error if the user lacks the
+     *             required permissions.
      *
      * @tparam RequestType Request message type (must be Serializable)
      * @tparam ResponseType Response message type (must be Deserializable)
      * @tparam RequestMsgType The message_type enum value for the request
      * @param request The request to send
-     * @return Response on success, error on failure (including not_logged_in,
-     *         admin_required)
+     * @return Response on success, error on failure (including not_logged_in)
      */
     template <Serializable RequestType,
               Deserializable ResponseType,
               messaging::message_type RequestMsgType>
+    [[deprecated("Permission checks are now server-side via RBAC")]]
     std::expected<ResponseType, session_error>
     process_admin_request(RequestType request) {
-        using namespace ores::utility::log;
-        if (!is_logged_in()) {
-            BOOST_LOG_SEV(lg(), warn) << "Attempted admin request while "
-                                      << "not logged in";
-            return std::unexpected(session_error(client_session_error::not_logged_in));
-        }
-        if (!is_admin()) {
-            BOOST_LOG_SEV(lg(), warn) << "Attempted admin request without "
-                                      << "admin privileges";
-            return std::unexpected(session_error(client_session_error::admin_required));
-        }
-        return process_request<RequestType, ResponseType, RequestMsgType>(
+        // Permission checks now happen server-side via RBAC
+        return process_authenticated_request<RequestType, ResponseType, RequestMsgType>(
             std::move(request));
     }
 
@@ -382,20 +382,21 @@ public:
     /**
      * @brief Process a request using message_traits (requires admin).
      *
+     * @deprecated Permission checks are now performed server-side via RBAC.
+     *             Use process_authenticated_request instead.
+     *
      * @tparam RequestType Request message type (must have message_traits)
      * @param request The request to send
      * @return Response on success, error on failure
      */
     template <typename RequestType>
         requires messaging::has_message_traits<RequestType>
+    [[deprecated("Permission checks are now server-side via RBAC")]]
     std::expected<typename messaging::message_traits<RequestType>::response_type,
                   session_error>
     process_admin_request(RequestType request) {
-        using traits = messaging::message_traits<RequestType>;
-        return process_admin_request<
-            RequestType,
-            typename traits::response_type,
-            traits::request_message_type>(std::move(request));
+        // Permission checks now happen server-side via RBAC
+        return process_authenticated_request(std::move(request));
     }
 
     /**

@@ -28,7 +28,7 @@
 -- Create the 'flag' tag if it doesn't exist
 INSERT INTO oresdb.tags (tag_id, version, name, description, modified_by, valid_from, valid_to)
 SELECT
-    gen_random_uuid()::text,
+    gen_random_uuid(),
     0,
     'flag',
     'Country and region flag images',
@@ -48,11 +48,11 @@ CREATE OR REPLACE FUNCTION oresdb.load_flag(
     p_svg_data text
 ) RETURNS text AS $$
 DECLARE
-    v_image_id text;
-    v_tag_id text;
+    v_image_id uuid;
+    v_tag_id uuid;
 BEGIN
     -- Generate UUID for the image
-    v_image_id := gen_random_uuid()::text;
+    v_image_id := gen_random_uuid();
 
     -- Insert the image
     INSERT INTO oresdb.images (
@@ -78,7 +78,7 @@ BEGIN
         );
     END IF;
 
-    RETURN v_image_id;
+    RETURN v_image_id::text;
 END;
 $$ LANGUAGE plpgsql;
 

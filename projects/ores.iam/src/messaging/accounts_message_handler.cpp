@@ -24,6 +24,7 @@
 #include "ores.iam/messaging/protocol.hpp"
 #include "ores.iam/messaging/signup_protocol.hpp"
 #include "ores.iam/service/signup_service.hpp"
+#include "ores.iam/domain/permission.hpp"
 
 namespace ores::iam::messaging {
 
@@ -32,9 +33,10 @@ using comms::messaging::message_type;
 
 accounts_message_handler::accounts_message_handler(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
-    std::shared_ptr<comms::service::auth_session_service> sessions)
+    std::shared_ptr<comms::service::auth_session_service> sessions,
+    std::shared_ptr<service::authorization_service> auth_service)
     : service_(ctx), ctx_(ctx), system_flags_(std::move(system_flags)),
-      sessions_(std::move(sessions)) {}
+      sessions_(std::move(sessions)), auth_service_(std::move(auth_service)) {}
 
 accounts_message_handler::handler_result
 accounts_message_handler::handle_message(message_type type,

@@ -20,6 +20,7 @@
 #include <QApplication>
 #include <QFile>
 #include <QIcon>
+#include <QStyleFactory>
 #include <QTextStream>
 #include <QTimer>
 #include "ores.utility/version/version.hpp"
@@ -53,6 +54,11 @@ int main(int argc, char *argv[]) {
     auto lg(make_logger(logger_name));
 
     BOOST_LOG_SEV(lg, info) << "Started Qt UI " << product_version;
+
+    // Set Fusion style for consistent cross-platform appearance.
+    // This is especially important for WSL where Qt may detect a different
+    // platform style that conflicts with our dark theme stylesheet.
+    app.setStyle(QStyleFactory::create("Fusion"));
 
     // Load the stylesheet
     QFile file(":/TradingStyle.qss");

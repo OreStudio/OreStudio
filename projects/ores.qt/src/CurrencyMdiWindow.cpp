@@ -161,13 +161,8 @@ CurrencyMdiWindow(ClientManager* clientManager,
     currencyTableView_->setItemDelegate(
         new CurrencyItemDelegate(currencyTableView_));
 
-    QHeaderView* verticalHeader(currencyTableView_->verticalHeader());
     QHeaderView* horizontalHeader(currencyTableView_->horizontalHeader());
-
-    // Use uniform row height instead of resizing to contents
-    verticalHeader->setDefaultSectionSize(24); // Fixed row height
-    verticalHeader->setSectionResizeMode(QHeaderView::Fixed);
-
+    currencyTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     horizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     // Connect signals

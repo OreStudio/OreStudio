@@ -19,6 +19,7 @@
  */
 #include "ores.assets/repository/image_repository.hpp"
 
+#include <sstream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.database/repository/helpers.hpp"
@@ -87,16 +88,49 @@ image_repository::read_latest_by_ids(context ctx,
         return {};
     }
 
-    // Build results by querying each ID individually
-    // This could be optimized with raw SQL IN clause if needed
-    std::vector<domain::image> results;
-    results.reserve(image_ids.size());
-
-    for (const auto& id : image_ids) {
-        auto images = read_latest_by_id(ctx, id);
-        for (auto& img : images) {
-            results.push_back(std::move(img));
+    // Build IN clause with properly escaped values
+    std::ostringstream in_clause;
+    for (size_t i = 0; i < image_ids.size(); ++i) {
+        if (i > 0) in_clause << ", ";
+        // Escape single quotes by doubling them
+        std::string escaped_id;
+        for (char c : image_ids[i]) {
+            if (c == '\'') escaped_id += "''";
+            else escaped_id += c;
         }
+        in_clause << "'" << escaped_id << "'";
+    }
+
+    // Build the complete SQL query
+    std::ostringstream sql;
+    sql << "SELECT image_id, version, key, description, svg_data, "
+        << "modified_by, valid_from, valid_to "
+        << "FROM oresdb.images "
+        << "WHERE image_id IN (" << in_clause.str() << ") "
+        << "AND valid_to = '9999-12-31 23:59:59' "
+        << "ORDER BY valid_from DESC";
+
+    auto rows = execute_raw_multi_column_query(ctx, sql.str(), lg(),
+        "Reading latest images by IDs");
+
+    // Convert raw results to domain objects
+    std::vector<domain::image> results;
+    results.reserve(rows.size());
+
+    for (const auto& row : rows) {
+        if (row.size() < 8) continue;
+
+        image_entity entity;
+        entity.image_id = row[0].value_or("");
+        entity.version = row[1] ? std::stoi(*row[1]) : 0;
+        entity.key = row[2].value_or("");
+        entity.description = row[3].value_or("");
+        entity.svg_data = row[4].value_or("");
+        entity.modified_by = row[5].value_or("");
+        entity.valid_from = row[6].value_or("9999-12-31 23:59:59");
+        entity.valid_to = row[7].value_or("9999-12-31 23:59:59");
+
+        results.push_back(image_mapper::map(entity));
     }
 
     return results;

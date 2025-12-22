@@ -47,7 +47,6 @@ domain::account generate_synthetic_account() {
     using utility::faker::totp;
     r.totp_secret = totp::totp_secret();
 
-    r.is_admin = false;
     r.recorded_at = utility::faker::datetime::past_timepoint();
     return r;
 }

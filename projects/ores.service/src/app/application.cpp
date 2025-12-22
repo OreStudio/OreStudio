@@ -120,7 +120,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     system_flags->refresh();
 
     // Initialize and check bootstrap mode
-    iam::service::bootstrap_mode_service bootstrap_svc(ctx);
+    iam::service::bootstrap_mode_service bootstrap_svc(ctx, auth_service);
     bootstrap_svc.initialize_bootstrap_state();
 
     // Refresh system flags cache after bootstrap state initialization

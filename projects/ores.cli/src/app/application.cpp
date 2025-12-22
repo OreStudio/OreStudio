@@ -43,6 +43,9 @@
 #include "ores.risk/domain/currency_json.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
+#include "ores.iam/service/authorization_service.hpp"
+#include "ores.iam/service/rbac_seeder.hpp"
+#include "ores.iam/domain/role.hpp"
 #include "ores.iam/domain/account_json.hpp"
 #include "ores.iam/domain/account_table.hpp"
 #include "ores.iam/security/password_manager.hpp"
@@ -474,10 +477,14 @@ add_account(const config::add_account_options& cfg) const {
     const auto password_hash =
         password_manager::create_password_hash(cfg.password);
 
+    // Create authorization service and seed RBAC if needed
+    auto auth_service = std::make_shared<iam::service::authorization_service>(context_);
+    iam::service::rbac_seeder rbac_seeder(*auth_service);
+    rbac_seeder.seed(cfg.modified_by);
+
     // Construct account from command-line arguments
     iam::domain::account account;
     account.version = 0;
-    account.is_admin = cfg.is_admin.value_or(false);
     account.id = account_id;
     account.recorded_by = cfg.modified_by;
     account.username = cfg.username;
@@ -486,7 +493,7 @@ add_account(const config::add_account_options& cfg) const {
     account.totp_secret = "";    // Can be set later
     account.email = cfg.email;
 
-    iam::service::bootstrap_mode_service bootstrap_svc(context_);
+    iam::service::bootstrap_mode_service bootstrap_svc(context_, auth_service);
     bootstrap_svc.initialize_bootstrap_state();
     if (bootstrap_svc.is_in_bootstrap_mode())
         output_stream_ << "System is currently in bootstrap mode." << std::endl;
@@ -498,7 +505,19 @@ add_account(const config::add_account_options& cfg) const {
                    << " (ID: " << boost::uuids::to_string(account_id) << ")" << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Added account: " << account.username;
 
-    if (account.is_admin && bootstrap_svc.is_in_bootstrap_mode()) {
+    // If is_admin was requested, assign Admin role via RBAC
+    const bool is_admin = cfg.is_admin.value_or(false);
+    if (is_admin) {
+        auto admin_role = auth_service->find_role_by_name(iam::domain::roles::admin);
+        if (admin_role) {
+            auth_service->assign_role(account_id, admin_role->id, cfg.modified_by);
+            BOOST_LOG_SEV(lg(), info) << "Assigned Admin role to account: "
+                                      << account.username;
+            output_stream_ << "Assigned Admin role to account." << std::endl;
+        }
+    }
+
+    if (is_admin && bootstrap_svc.is_in_bootstrap_mode()) {
         bootstrap_svc.exit_bootstrap_mode();
         BOOST_LOG_SEV(lg(), info) << "Created first admin account - exiting bootstrap mode.";
         output_stream_ << "System exited bootstrap mode." << std::endl;

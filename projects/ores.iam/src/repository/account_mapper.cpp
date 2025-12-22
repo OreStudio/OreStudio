@@ -41,7 +41,6 @@ domain::account account_mapper::map(const account_entity& v) {
     r.password_salt = v.password_salt;
     r.totp_secret = v.totp_secret;
     r.email = v.email;
-    r.is_admin = v.is_admin != 0 ? true : false;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
@@ -59,7 +58,6 @@ account_entity account_mapper::map(const domain::account& v) {
     r.password_salt = v.password_salt;
     r.totp_secret = v.totp_secret;
     r.email = v.email;
-    r.is_admin = v.is_admin;
     r.modified_by = v.recorded_by;
     // Note: recorded_at is read-only; valid_from/valid_to are managed by database triggers
 

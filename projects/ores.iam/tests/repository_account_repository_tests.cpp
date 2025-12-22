@@ -231,7 +231,7 @@ TEST_CASE("read_nonexistent_username", tags) {
     CHECK(read_accounts.size() == 0);
 }
 
-TEST_CASE("write_and_read_admin_account", tags) {
+TEST_CASE("write_and_read_account_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -239,19 +239,18 @@ TEST_CASE("write_and_read_admin_account", tags) {
 
     account_repository repo(h.context());
 
-    // Create admin account
-    auto admin_acc = generate_synthetic_account();
-    admin_acc.is_admin = true;
-    BOOST_LOG_SEV(lg, debug) << "Admin account: " << admin_acc;
+    // Note: Admin privileges are now managed via RBAC role assignments
+    auto acc = generate_synthetic_account();
+    BOOST_LOG_SEV(lg, debug) << "Account: " << acc;
 
-    const auto admin_id = admin_acc.id;
-    repo.write({admin_acc});
+    const auto acc_id = acc.id;
+    repo.write({acc});
 
-    // Read back and verify admin flag
-    auto read_accounts = repo.read_latest(admin_id);
+    // Read back and verify data
+    auto read_accounts = repo.read_latest(acc_id);
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     REQUIRE(read_accounts.size() == 1);
-    CHECK(read_accounts[0].is_admin == true);
-    CHECK(read_accounts[0].username == admin_acc.username);
+    CHECK(read_accounts[0].username == acc.username);
+    CHECK(read_accounts[0].email == acc.email);
 }

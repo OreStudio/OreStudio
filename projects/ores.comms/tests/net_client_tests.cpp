@@ -320,6 +320,13 @@ TEST_CASE("test_heartbeat_configuration", tags) {
 }
 
 TEST_CASE("test_heartbeat_disconnect_detection", tags) {
+    // TODO: Remove this skip when the underlying Windows Clang coroutine issue
+    // is resolved. This test spawns multiple background coroutines (message loop
+    // and heartbeat), which triggers a segfault on Windows Clang.
+#if defined(_WIN32) && defined(__clang__)
+    SKIP("Windows Clang C++20 coroutine bug causes segfault");
+#endif
+
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 

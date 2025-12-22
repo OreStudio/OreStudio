@@ -49,7 +49,6 @@ CREATE OR REPLACE FUNCTION oresdb.load_flag(
 ) RETURNS text AS $$
 DECLARE
     v_image_id uuid;
-    v_tag_id uuid;
 BEGIN
     -- Generate UUID for the image
     v_image_id := gen_random_uuid();
@@ -63,20 +62,15 @@ BEGIN
         'system', CURRENT_TIMESTAMP, '9999-12-31 23:59:59'::timestamp
     );
 
-    -- Get the flag tag ID
-    SELECT tag_id INTO v_tag_id
+    -- Link image to flag tag
+    INSERT INTO oresdb.image_tags (
+        image_id, tag_id, assigned_by, assigned_at, valid_from, valid_to
+    )
+    SELECT
+        v_image_id, tag_id, 'system', CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP, '9999-12-31 23:59:59'::timestamp
     FROM oresdb.tags
     WHERE name = 'flag' AND valid_to = '9999-12-31 23:59:59'::timestamp;
-
-    -- Link image to flag tag
-    IF v_tag_id IS NOT NULL THEN
-        INSERT INTO oresdb.image_tags (
-            image_id, tag_id, assigned_by, assigned_at, valid_from, valid_to
-        ) VALUES (
-            v_image_id, v_tag_id, 'system', CURRENT_TIMESTAMP,
-            CURRENT_TIMESTAMP, '9999-12-31 23:59:59'::timestamp
-        );
-    END IF;
 
     RETURN v_image_id::text;
 END;

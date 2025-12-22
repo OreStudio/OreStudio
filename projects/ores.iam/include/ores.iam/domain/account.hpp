@@ -28,17 +28,15 @@ namespace ores::iam::domain {
 
 /**
  * @brief Represents a user account in the system.
+ *
+ * Note: Administrative privileges are now managed through RBAC roles and
+ * permissions. See authorization_service for permission checks.
  */
 struct account final {
     /**
      * @brief Version number for optimistic locking and change tracking.
      */
     int version = 0;
-
-    /**
-     * @brief Flag indicating whether the account has administrative privileges.
-     */
-    bool is_admin = false;
 
     /**
      * @brief Unique identifier for the account.

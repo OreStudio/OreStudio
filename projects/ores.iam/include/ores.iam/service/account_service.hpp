@@ -69,15 +69,18 @@ public:
      * the salt and hash, uses the account repository to create the account, and
      * adds a new login tracking entry.
      *
+     * Note: Administrative privileges are now managed through RBAC roles.
+     * Use authorization_service::assign_role() to grant roles after creation.
+     *
      * @param username The unique username for the account
      * @param email The email address for the account
      * @param password The plaintext password (will be hashed)
-     * @param is_admin Whether the account should have administrative privileges
+     * @param recorded_by The username of the person creating the account
      * @return The created account with computed fields
      */
     domain::account create_account(const std::string& username,
         const std::string& email, const std::string& password,
-        const std::string& recorded_by, bool is_admin = false);
+        const std::string& recorded_by);
 
     /**
      * @brief Gets a single account by its ID.
@@ -178,28 +181,22 @@ public:
     void logout(const boost::uuids::uuid& account_id);
 
     /**
-     * @brief Checks if an account has admin privileges.
-     *
-     * @param account_id The ID of the account to check
-     * @return true if the account exists and has admin privileges, false otherwise
-     */
-    bool is_admin(const boost::uuids::uuid& account_id);
-
-    /**
-     * @brief Updates an existing account's email and admin status.
+     * @brief Updates an existing account's email address.
      *
      * Username cannot be changed. This creates a new version of the account
      * in the temporal history.
      *
+     * Note: Role assignments are managed via authorization_service::assign_role()
+     * and revoke_role().
+     *
      * @param account_id The ID of the account to update
      * @param email The new email address
      * @param recorded_by The username making the change
-     * @param is_admin The new admin status
      * @return true if the account was updated successfully, false otherwise
      * @throws std::invalid_argument If account does not exist
      */
     bool update_account(const boost::uuids::uuid& account_id,
-        const std::string& email, const std::string& recorded_by, bool is_admin);
+        const std::string& email, const std::string& recorded_by);
 
     /**
      * @brief Retrieves all historical versions of an account by username.

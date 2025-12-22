@@ -61,6 +61,9 @@ std::ostream& operator<<(std::ostream& s, const login_request& v);
 
 /**
  * @brief Response containing authentication result and account information.
+ *
+ * Note: Administrative privileges are now determined via RBAC.
+ * Use get_account_permissions_request to retrieve the user's permissions.
  */
 struct login_response final {
     bool success = false;
@@ -68,7 +71,6 @@ struct login_response final {
     boost::uuids::uuid account_id;
     std::string username;
     std::string email;
-    bool is_admin = false;
     bool password_reset_required = false;
 
     /**
@@ -83,7 +85,6 @@ struct login_response final {
      * - N bytes: username (UTF-8)
      * - 2 bytes: email length
      * - N bytes: email (UTF-8)
-     * - 1 byte: is_admin (boolean)
      * - 1 byte: password_reset_required (boolean)
      */
     std::vector<std::byte> serialize() const;

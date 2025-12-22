@@ -33,6 +33,9 @@ namespace ores::iam::messaging {
 
 /**
  * @brief Request to create a new account.
+ *
+ * Note: Administrative privileges are managed through RBAC roles.
+ * Use assign_role_request to grant roles after account creation.
  */
 struct create_account_request final {
     std::string username;
@@ -40,7 +43,6 @@ struct create_account_request final {
     std::string totp_secret;
     std::string email;
     std::string recorded_by;
-    bool is_admin = false;
 
     /**
      * @brief Serialize request to bytes.
@@ -56,7 +58,6 @@ struct create_account_request final {
      * - N bytes: email (UTF-8)
      * - 2 bytes: recorded_by length
      * - N bytes: recorded_by (UTF-8)
-     * - 1 byte: is_admin (boolean)
      */
     std::vector<std::byte> serialize() const;
 
@@ -150,7 +151,6 @@ struct list_accounts_response final {
      *   - N bytes: totp_secret (UTF-8)
      *   - 2 bytes: email length
      *   - N bytes: email (UTF-8)
-     *   - 1 byte: is_admin (boolean)
      */
     std::vector<std::byte> serialize() const;
 
@@ -168,7 +168,7 @@ std::ostream& operator<<(std::ostream& s, const list_accounts_response& v);
  *
  * Supports batch operations by accepting a vector of account IDs.
  * Each account is processed independently - partial success is possible.
- * Requires admin privileges.
+ * Requires accounts:unlock permission.
  */
 struct unlock_account_request final {
     std::vector<boost::uuids::uuid> account_ids;
@@ -288,7 +288,7 @@ std::ostream& operator<<(std::ostream& s, const delete_account_response& v);
  *
  * Supports batch operations by accepting a vector of account IDs.
  * Each account is processed independently - partial success is possible.
- * Requires admin privileges.
+ * Requires accounts:lock permission.
  */
 struct lock_account_request final {
     std::vector<boost::uuids::uuid> account_ids;
@@ -357,14 +357,16 @@ std::ostream& operator<<(std::ostream& s, const lock_account_response& v);
 /**
  * @brief Request to update an existing account.
  *
- * Only email and is_admin fields can be updated. Username cannot be changed.
- * Requires admin privileges.
+ * Only email can be updated. Username cannot be changed.
+ * Requires accounts:update permission.
+ *
+ * Note: Role assignments are managed separately via assign_role_request
+ * and revoke_role_request.
  */
 struct update_account_request final {
     boost::uuids::uuid account_id;
     std::string email;
     std::string recorded_by;
-    bool is_admin = false;
 
     /**
      * @brief Serialize request to bytes.
@@ -375,7 +377,6 @@ struct update_account_request final {
      * - N bytes: email (UTF-8)
      * - 2 bytes: recorded_by length
      * - N bytes: recorded_by (UTF-8)
-     * - 1 byte: is_admin (boolean)
      */
     std::vector<std::byte> serialize() const;
 
@@ -419,7 +420,7 @@ std::ostream& operator<<(std::ostream& s, const update_account_response& v);
  *
  * Sets the password_reset_required flag on the target accounts, forcing
  * the user to change their password on next login. Supports batch operations.
- * Requires admin privileges.
+ * Requires accounts:reset_password permission.
  */
 struct reset_password_request final {
     std::vector<boost::uuids::uuid> account_ids;

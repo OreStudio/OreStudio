@@ -60,7 +60,6 @@ std::vector<std::byte> create_account_request::serialize() const {
     writer::write_string(buffer, totp_secret);
     writer::write_string(buffer, email);
     writer::write_string(buffer, recorded_by);
-    writer::write_bool(buffer, is_admin);
     return buffer;
 }
 
@@ -87,10 +86,6 @@ create_account_request::deserialize(std::span<const std::byte> data) {
     auto recorded_by_result = reader::read_string(data);
     if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
     request.recorded_by = *recorded_by_result;
-
-    auto is_admin_result = reader::read_bool(data);
-    if (!is_admin_result) return std::unexpected(is_admin_result.error());
-    request.is_admin = *is_admin_result;
 
     return request;
 }
@@ -172,7 +167,6 @@ std::vector<std::byte> list_accounts_response::serialize() const {
         writer::write_string(buffer, account.password_salt);
         writer::write_string(buffer, account.totp_secret);
         writer::write_string(buffer, account.email);
-        writer::write_bool(buffer, account.is_admin);
     }
 
     return buffer;
@@ -236,10 +230,6 @@ list_accounts_response::deserialize(std::span<const std::byte> data) {
         auto email_result = reader::read_string(data);
         if (!email_result) return std::unexpected(email_result.error());
         account.email = *email_result;
-
-        auto is_admin_result = reader::read_bool(data);
-        if (!is_admin_result) return std::unexpected(is_admin_result.error());
-        account.is_admin = *is_admin_result;
 
         response.accounts.push_back(std::move(account));
     }
@@ -480,7 +470,6 @@ std::vector<std::byte> update_account_request::serialize() const {
     writer::write_uuid(buffer, account_id);
     writer::write_string(buffer, email);
     writer::write_string(buffer, recorded_by);
-    writer::write_bool(buffer, is_admin);
     return buffer;
 }
 
@@ -499,10 +488,6 @@ update_account_request::deserialize(std::span<const std::byte> data) {
     auto recorded_by_result = reader::read_string(data);
     if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
     request.recorded_by = *recorded_by_result;
-
-    auto is_admin_result = reader::read_bool(data);
-    if (!is_admin_result) return std::unexpected(is_admin_result.error());
-    request.is_admin = *is_admin_result;
 
     return request;
 }

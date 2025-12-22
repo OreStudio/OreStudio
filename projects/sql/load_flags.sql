@@ -43,7 +43,7 @@ WHERE NOT EXISTS (
 -- Function to load a single flag SVG file
 -- This function reads an SVG file and inserts it into the images table
 -- Returns void to suppress per-call output when loading many flags
--- The function is idempotent: if the image already exists, it updates it
+-- The function is idempotent: if the image already exists, it creates a new version
 CREATE OR REPLACE FUNCTION oresdb.load_flag(
     p_key text,
     p_description text,
@@ -51,36 +51,25 @@ CREATE OR REPLACE FUNCTION oresdb.load_flag(
 ) RETURNS void AS $$
 DECLARE
     v_image_id uuid;
-    v_existing_id uuid;
 BEGIN
-    -- Check if image with this key already exists
-    SELECT image_id INTO v_existing_id
+    -- Check if image with this key already exists and get its ID
+    SELECT image_id INTO v_image_id
     FROM oresdb.images
     WHERE key = p_key AND valid_to = '9999-12-31 23:59:59'::timestamp;
 
-    IF v_existing_id IS NOT NULL THEN
-        -- Image exists, update it
-        UPDATE oresdb.images
-        SET description = p_description,
-            svg_data = p_svg_data,
-            modified_by = 'system'
-        WHERE image_id = v_existing_id
-          AND valid_to = '9999-12-31 23:59:59'::timestamp;
-
-        v_image_id := v_existing_id;
-    ELSE
-        -- Generate UUID for new image
+    -- If it's a new image, generate a new UUID
+    IF v_image_id IS NULL THEN
         v_image_id := gen_random_uuid();
-
-        -- Insert the image
-        INSERT INTO oresdb.images (
-            image_id, version, key, description, svg_data,
-            modified_by, valid_from, valid_to
-        ) VALUES (
-            v_image_id, 0, p_key, p_description, p_svg_data,
-            'system', CURRENT_TIMESTAMP, '9999-12-31 23:59:59'::timestamp
-        );
     END IF;
+
+    -- Insert the image. The 'update_images' trigger handles versioning.
+    INSERT INTO oresdb.images (
+        image_id, version, key, description, svg_data,
+        modified_by, valid_from, valid_to
+    ) VALUES (
+        v_image_id, 0, p_key, p_description, p_svg_data,
+        'system', CURRENT_TIMESTAMP, '9999-12-31 23:59:59'::timestamp
+    );
 
     -- Link image to flag tag (skip if already linked)
     INSERT INTO oresdb.image_tags (

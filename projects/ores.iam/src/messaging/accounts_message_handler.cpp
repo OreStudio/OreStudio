@@ -232,14 +232,14 @@ handle_login_request(std::span<const std::byte> payload,
         BOOST_LOG_SEV(lg(), info) << "LOGIN SUCCESS: User '" << account.username
                                   << "' authenticated from IP: " << ip_address
                                   << ", account_id: " << account.id
-                                  << ", is_admin: " << account.is_admin
                                   << ", password_reset_required: "
                                   << password_reset_required;
 
         // Store session for this client in the shared session service
+        // Note: Authorization is now handled via RBAC permissions checked at
+        // handler level using authorization_service.has_permission()
         sessions_->store_session(remote_address, comms::service::session_info{
-            .account_id = account.id,
-            .is_admin = account.is_admin
+            .account_id = account.id
         });
 
         login_response response{

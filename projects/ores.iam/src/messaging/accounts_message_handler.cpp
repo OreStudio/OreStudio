@@ -25,6 +25,7 @@
 #include "ores.iam/messaging/signup_protocol.hpp"
 #include "ores.iam/service/signup_service.hpp"
 #include "ores.iam/domain/permission.hpp"
+#include "ores.iam/domain/role.hpp"
 
 namespace ores::iam::messaging {
 
@@ -119,8 +120,8 @@ handle_create_account_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
     domain::account account =
-        service_.create_account( request.username, request.email,
-        request.password, request.recorded_by, request.is_admin);
+        service_.create_account(request.username, request.email,
+        request.password, request.recorded_by);
 
     BOOST_LOG_SEV(lg(), info) << "Created account with ID: " << account.id
                               << " for username: " << account.username;
@@ -248,7 +249,6 @@ handle_login_request(std::span<const std::byte> payload,
             .account_id = account.id,
             .username = account.username,
             .email = account.email,
-            .is_admin = account.is_admin,
             .password_reset_required = password_reset_required
         };
         co_return response.serialize();
@@ -264,7 +264,6 @@ handle_login_request(std::span<const std::byte> payload,
             .account_id = boost::uuids::nil_uuid(),
             .username = request.username,
             .email = "",
-            .is_admin = false,
             .password_reset_required = false
         };
         co_return response.serialize();
@@ -500,13 +499,24 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
     try {
+        // Create the initial admin account
         domain::account account = service_.create_account(
             request.username,
             request.email,
             request.password,
-            "bootstrap",
-            true
+            "bootstrap"
         );
+
+        // Assign Admin role to the account using RBAC
+        auto admin_role = auth_service_->find_role_by_name(domain::roles::admin);
+        if (admin_role) {
+            auth_service_->assign_role(account.id, admin_role->id, "bootstrap");
+            BOOST_LOG_SEV(lg(), info)
+                << "Assigned Admin role to initial admin account: " << account.id;
+        } else {
+            BOOST_LOG_SEV(lg(), error)
+                << "Admin role not found - RBAC may not be properly seeded";
+        }
 
         // Exit bootstrap mode - updates database and shared cache
         system_flags_->set_bootstrap_mode(false, "system");

@@ -102,7 +102,7 @@ auth_session_service::authorize_request(messaging::message_type type,
     if (!session) {
         BOOST_LOG_SEV(lg(), warn)
             << "Authentication failed for " << type
-            << " from " << remote_address << ": not logged in";
+            << " from " << remote_address << ": not authenticated";
         return std::unexpected(messaging::error_code::authentication_failed);
     }
 

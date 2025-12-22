@@ -56,7 +56,6 @@ create_account_request to_create_account_request(const domain::account& a) {
     r.totp_secret = a.totp_secret;
     r.email = a.email;
     r.recorded_by = a.recorded_by;
-    r.is_admin = a.is_admin;
     return r;
 }
 

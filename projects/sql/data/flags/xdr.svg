@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-xdr" viewBox="0 0 640 480">
+  <defs>
+    <linearGradient id="globe-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a90d9"/>
+      <stop offset="100%" style="stop-color:#2c5aa0"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="640" height="480" fill="#1a1a2e"/>
+  <!-- Globe circle -->
+  <circle cx="320" cy="220" r="120" fill="url(#globe-gradient)" stroke="#6ab0ff" stroke-width="3"/>
+  <!-- Globe meridians -->
+  <ellipse cx="320" cy="220" rx="120" ry="120" fill="none" stroke="#a0d0ff" stroke-width="1.5"/>
+  <ellipse cx="320" cy="220" rx="60" ry="120" fill="none" stroke="#a0d0ff" stroke-width="1.5"/>
+  <ellipse cx="320" cy="220" rx="30" ry="120" fill="none" stroke="#a0d0ff" stroke-width="1.5"/>
+  <!-- Globe parallels -->
+  <line x1="200" y1="220" x2="440" y2="220" stroke="#a0d0ff" stroke-width="1.5"/>
+  <ellipse cx="320" cy="220" rx="120" ry="40" fill="none" stroke="#a0d0ff" stroke-width="1.5"/>
+  <ellipse cx="320" cy="220" rx="110" ry="80" fill="none" stroke="#a0d0ff" stroke-width="1.5"/>
+  <!-- Currency symbols around globe -->
+  <text x="180" y="180" font-family="Arial, sans-serif" font-size="28" fill="#ffd700" text-anchor="middle">$</text>
+  <text x="460" y="180" font-family="Arial, sans-serif" font-size="28" fill="#ffd700" text-anchor="middle">€</text>
+  <text x="180" y="280" font-family="Arial, sans-serif" font-size="28" fill="#ffd700" text-anchor="middle">£</text>
+  <text x="460" y="280" font-family="Arial, sans-serif" font-size="28" fill="#ffd700" text-anchor="middle">¥</text>
+  <!-- SDR Label -->
+  <text x="320" y="400" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#6ab0ff" text-anchor="middle">SDR</text>
+  <text x="320" y="440" font-family="Arial, sans-serif" font-size="24" fill="#a0d0ff" text-anchor="middle">Special Drawing Rights</text>
+</svg>

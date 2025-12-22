@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-xag" viewBox="0 0 640 480">
+  <defs>
+    <linearGradient id="silver-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e8e8e8"/>
+      <stop offset="50%" style="stop-color:#ffffff"/>
+      <stop offset="100%" style="stop-color:#c0c0c0"/>
+    </linearGradient>
+    <linearGradient id="silver-side" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#a8a8a8"/>
+      <stop offset="100%" style="stop-color:#b8b8b8"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="640" height="480" fill="#1a1a2e"/>
+  <!-- Silver bar - top face -->
+  <polygon points="200,180 440,180 480,220 160,220" fill="url(#silver-gradient)" stroke="#808080" stroke-width="2"/>
+  <!-- Silver bar - front face -->
+  <polygon points="160,220 480,220 480,320 160,320" fill="url(#silver-gradient)" stroke="#808080" stroke-width="2"/>
+  <!-- Silver bar - right side -->
+  <polygon points="480,220 440,180 440,280 480,320" fill="url(#silver-side)" stroke="#808080" stroke-width="2"/>
+  <!-- Element symbol -->
+  <text x="320" y="290" font-family="Georgia, serif" font-size="72" font-weight="bold" fill="#1a1a2e" text-anchor="middle">Ag</text>
+  <!-- Label -->
+  <text x="320" y="380" font-family="Arial, sans-serif" font-size="36" fill="#c0c0c0" text-anchor="middle">SILVER</text>
+</svg>

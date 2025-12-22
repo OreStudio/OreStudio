@@ -237,8 +237,17 @@ SELECT link_currency_to_flag('MUR', 'mu');   -- Mauritian Rupee -> Mauritius
 SELECT link_currency_to_flag('SCR', 'sc');   -- Seychellois Rupee -> Seychelles
 SELECT link_currency_to_flag('KMF', 'km');   -- Comorian Franc -> Comoros
 
--- Note: Commodity currencies (XAU, XAG, XPT, XPD) and supranational (XDR)
--- do not have associated country flags.
+-- Multi-country currency
+SELECT link_currency_to_flag('XCD', 'ag');   -- East Caribbean Dollar -> Antigua (ECCB HQ)
+
+-- Commodity currencies (precious metals)
+SELECT link_currency_to_flag('XAU', 'xau');  -- Gold -> Gold bar icon
+SELECT link_currency_to_flag('XAG', 'xag');  -- Silver -> Silver bar icon
+SELECT link_currency_to_flag('XPT', 'xpt');  -- Platinum -> Platinum bar icon
+SELECT link_currency_to_flag('XPD', 'xpd');  -- Palladium -> Palladium bar icon
+
+-- Supranational currency
+SELECT link_currency_to_flag('XDR', 'xdr');  -- Special Drawing Rights -> SDR globe icon
 
 -- Clean up the helper function
 DROP FUNCTION IF EXISTS link_currency_to_flag(text, text);

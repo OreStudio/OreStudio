@@ -10779,4 +10779,106 @@ SELECT oresdb.load_flag('zw', 'Flag for code ZW', $svg$<svg xmlns="http://www.w3
   </g>
 </svg>$svg$);
 
--- Successfully loaded 271 flags
+-- Commodity currency icons (precious metals)
+SELECT oresdb.load_flag('xag', 'Icon for Silver (XAG)', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-xag" viewBox="0 0 640 480">
+  <defs>
+    <linearGradient id="silver-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e8e8e8"/>
+      <stop offset="50%" style="stop-color:#ffffff"/>
+      <stop offset="100%" style="stop-color:#c0c0c0"/>
+    </linearGradient>
+    <linearGradient id="silver-side" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#a8a8a8"/>
+      <stop offset="100%" style="stop-color:#b8b8b8"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="480" fill="#1a1a2e"/>
+  <polygon points="200,180 440,180 480,220 160,220" fill="url(#silver-gradient)" stroke="#808080" stroke-width="2"/>
+  <polygon points="160,220 480,220 480,320 160,320" fill="url(#silver-gradient)" stroke="#808080" stroke-width="2"/>
+  <polygon points="480,220 440,180 440,280 480,320" fill="url(#silver-side)" stroke="#808080" stroke-width="2"/>
+  <text x="320" y="290" font-family="Georgia, serif" font-size="72" font-weight="bold" fill="#1a1a2e" text-anchor="middle">Ag</text>
+  <text x="320" y="380" font-family="Arial, sans-serif" font-size="36" fill="#c0c0c0" text-anchor="middle">SILVER</text>
+</svg>$svg$);
+SELECT oresdb.load_flag('xau', 'Icon for Gold (XAU)', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-xau" viewBox="0 0 640 480">
+  <defs>
+    <linearGradient id="gold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffd700"/>
+      <stop offset="50%" style="stop-color:#ffec80"/>
+      <stop offset="100%" style="stop-color:#daa520"/>
+    </linearGradient>
+    <linearGradient id="gold-side" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#b8860b"/>
+      <stop offset="100%" style="stop-color:#cd950c"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="480" fill="#1a1a2e"/>
+  <polygon points="200,180 440,180 480,220 160,220" fill="url(#gold-gradient)" stroke="#b8860b" stroke-width="2"/>
+  <polygon points="160,220 480,220 480,320 160,320" fill="url(#gold-gradient)" stroke="#b8860b" stroke-width="2"/>
+  <polygon points="480,220 440,180 440,280 480,320" fill="url(#gold-side)" stroke="#b8860b" stroke-width="2"/>
+  <text x="320" y="290" font-family="Georgia, serif" font-size="72" font-weight="bold" fill="#1a1a2e" text-anchor="middle">Au</text>
+  <text x="320" y="380" font-family="Arial, sans-serif" font-size="36" fill="#ffd700" text-anchor="middle">GOLD</text>
+</svg>$svg$);
+SELECT oresdb.load_flag('xpd', 'Icon for Palladium (XPD)', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-xpd" viewBox="0 0 640 480">
+  <defs>
+    <linearGradient id="palladium-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#cec8c0"/>
+      <stop offset="50%" style="stop-color:#e0dad2"/>
+      <stop offset="100%" style="stop-color:#b8b0a8"/>
+    </linearGradient>
+    <linearGradient id="palladium-side" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#989088"/>
+      <stop offset="100%" style="stop-color:#a8a098"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="480" fill="#1a1a2e"/>
+  <polygon points="200,180 440,180 480,220 160,220" fill="url(#palladium-gradient)" stroke="#686058" stroke-width="2"/>
+  <polygon points="160,220 480,220 480,320 160,320" fill="url(#palladium-gradient)" stroke="#686058" stroke-width="2"/>
+  <polygon points="480,220 440,180 440,280 480,320" fill="url(#palladium-side)" stroke="#686058" stroke-width="2"/>
+  <text x="320" y="290" font-family="Georgia, serif" font-size="72" font-weight="bold" fill="#1a1a2e" text-anchor="middle">Pd</text>
+  <text x="320" y="380" font-family="Arial, sans-serif" font-size="36" fill="#cec8c0" text-anchor="middle">PALLADIUM</text>
+</svg>$svg$);
+SELECT oresdb.load_flag('xpt', 'Icon for Platinum (XPT)', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-xpt" viewBox="0 0 640 480">
+  <defs>
+    <linearGradient id="platinum-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e5e4e2"/>
+      <stop offset="50%" style="stop-color:#f5f5f5"/>
+      <stop offset="100%" style="stop-color:#d4d4d4"/>
+    </linearGradient>
+    <linearGradient id="platinum-side" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#a0a0a0"/>
+      <stop offset="100%" style="stop-color:#b0b0b0"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="480" fill="#1a1a2e"/>
+  <polygon points="200,180 440,180 480,220 160,220" fill="url(#platinum-gradient)" stroke="#707070" stroke-width="2"/>
+  <polygon points="160,220 480,220 480,320 160,320" fill="url(#platinum-gradient)" stroke="#707070" stroke-width="2"/>
+  <polygon points="480,220 440,180 440,280 480,320" fill="url(#platinum-side)" stroke="#707070" stroke-width="2"/>
+  <text x="320" y="290" font-family="Georgia, serif" font-size="72" font-weight="bold" fill="#1a1a2e" text-anchor="middle">Pt</text>
+  <text x="320" y="380" font-family="Arial, sans-serif" font-size="36" fill="#e5e4e2" text-anchor="middle">PLATINUM</text>
+</svg>$svg$);
+
+-- Supranational currency icon
+SELECT oresdb.load_flag('xdr', 'Icon for Special Drawing Rights (XDR)', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-xdr" viewBox="0 0 640 480">
+  <defs>
+    <linearGradient id="globe-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a90d9"/>
+      <stop offset="100%" style="stop-color:#2c5aa0"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="480" fill="#1a1a2e"/>
+  <circle cx="320" cy="220" r="120" fill="url(#globe-gradient)" stroke="#6ab0ff" stroke-width="3"/>
+  <ellipse cx="320" cy="220" rx="120" ry="120" fill="none" stroke="#a0d0ff" stroke-width="1.5"/>
+  <ellipse cx="320" cy="220" rx="60" ry="120" fill="none" stroke="#a0d0ff" stroke-width="1.5"/>
+  <ellipse cx="320" cy="220" rx="30" ry="120" fill="none" stroke="#a0d0ff" stroke-width="1.5"/>
+  <line x1="200" y1="220" x2="440" y2="220" stroke="#a0d0ff" stroke-width="1.5"/>
+  <ellipse cx="320" cy="220" rx="120" ry="40" fill="none" stroke="#a0d0ff" stroke-width="1.5"/>
+  <ellipse cx="320" cy="220" rx="110" ry="80" fill="none" stroke="#a0d0ff" stroke-width="1.5"/>
+  <text x="180" y="180" font-family="Arial, sans-serif" font-size="28" fill="#ffd700" text-anchor="middle">$</text>
+  <text x="460" y="180" font-family="Arial, sans-serif" font-size="28" fill="#ffd700" text-anchor="middle">€</text>
+  <text x="180" y="280" font-family="Arial, sans-serif" font-size="28" fill="#ffd700" text-anchor="middle">£</text>
+  <text x="460" y="280" font-family="Arial, sans-serif" font-size="28" fill="#ffd700" text-anchor="middle">¥</text>
+  <text x="320" y="400" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#6ab0ff" text-anchor="middle">SDR</text>
+  <text x="320" y="440" font-family="Arial, sans-serif" font-size="24" fill="#a0d0ff" text-anchor="middle">Special Drawing Rights</text>
+</svg>$svg$);
+
+-- Successfully loaded 276 flags and icons

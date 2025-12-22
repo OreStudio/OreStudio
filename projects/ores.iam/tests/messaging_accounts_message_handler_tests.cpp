@@ -34,6 +34,7 @@
 #include "ores.iam/messaging/protocol.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/service/rbac_seeder.hpp"
+#include "ores.iam/domain/role.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 
@@ -74,6 +75,15 @@ make_auth_service(ores::database::context& ctx) {
     service::rbac_seeder seeder(*auth);
     seeder.seed("test");
     return auth;
+}
+
+void assign_admin_role(
+    std::shared_ptr<service::authorization_service>& auth_service,
+    const boost::uuids::uuid& account_id) {
+    auto admin_role = auth_service->find_role_by_name(domain::roles::admin);
+    if (admin_role) {
+        auth_service->assign_role(account_id, admin_role->id, "test");
+    }
 }
 
 }
@@ -347,13 +357,11 @@ TEST_CASE("handle_unlock_account_request", tags) {
     // Use a consistent remote address for admin session
     const std::string admin_endpoint = "192.168.1.100:54321";
 
-    // Create an admin account first (to be the requester)
+    // Create an account and assign Admin role
     auto admin_account = generate_synthetic_account();
-    admin_account.is_admin = true;
     BOOST_LOG_SEV(lg, info) << "Admin account: " << admin_account;
 
     create_account_request admin_rq(to_create_account_request(admin_account));
-    admin_rq.is_admin = true;
     BOOST_LOG_SEV(lg, info) << "Admin request: " << admin_rq;
 
     boost::uuids::uuid admin_id;
@@ -369,6 +377,9 @@ TEST_CASE("handle_unlock_account_request", tags) {
         REQUIRE(response_result.has_value());
         admin_id = response_result.value().account_id;
     });
+
+    // Assign Admin role to the account
+    assign_admin_role(auth_service, admin_id);
 
     // Login as admin to establish session
     login_request admin_login_rq;
@@ -407,7 +418,7 @@ TEST_CASE("handle_unlock_account_request", tags) {
         account_id = response_result.value().account_id;
     });
 
-    // Attempt to unlock the account (admin is logged in from admin_endpoint)
+    // Attempt to unlock the account (account with Admin role is logged in from admin_endpoint)
     unlock_account_request urq;
     urq.account_ids = {account_id};
     BOOST_LOG_SEV(lg, info) << "Unlock request: " << urq;
@@ -504,7 +515,7 @@ TEST_CASE("handle_unlock_account_request_non_admin", tags) {
 
         REQUIRE(rp.results.size() == 1);
         CHECK(rp.results[0].success == false);
-        CHECK(rp.results[0].message.find("Admin") != std::string::npos);
+        CHECK(rp.results[0].message.find("Permission") != std::string::npos);
     });
 }
 
@@ -667,12 +678,10 @@ TEST_CASE("handle_lock_account_request", tags) {
     // Use a consistent remote address for admin session
     const std::string admin_endpoint = "192.168.1.100:54321";
 
-    // Create an admin account first (to be the requester)
+    // Create an account and assign Admin role
     auto admin_account = generate_synthetic_account();
-    admin_account.is_admin = true;
 
     create_account_request admin_rq(to_create_account_request(admin_account));
-    admin_rq.is_admin = true;
 
     boost::uuids::uuid admin_id;
     boost::asio::io_context io_ctx;
@@ -683,6 +692,9 @@ TEST_CASE("handle_lock_account_request", tags) {
         REQUIRE(r.has_value());
         admin_id = create_account_response::deserialize(r.value()).value().account_id;
     });
+
+    // Assign Admin role to the account
+    assign_admin_role(auth_service, admin_id);
 
     // Login as admin to establish session
     login_request admin_login_rq;
@@ -721,7 +733,7 @@ TEST_CASE("handle_lock_account_request", tags) {
         account_id = response_result.value().account_id;
     });
 
-    // Lock the account (admin is logged in from admin_endpoint)
+    // Lock the account (account with Admin role is logged in from admin_endpoint)
     lock_account_request lrq;
     lrq.account_ids = {account_id};
     BOOST_LOG_SEV(lg, info) << "Lock request: " << lrq;
@@ -758,12 +770,10 @@ TEST_CASE("handle_login_request_locked_account", tags) {
     const std::string admin_endpoint = "192.168.1.100:54321";
     const std::string user_endpoint = "192.168.1.200:12345";
 
-    // 1. Create an admin account (to be the requester for locking)
+    // 1. Create an account and assign Admin role
     auto admin_account = generate_synthetic_account();
-    admin_account.is_admin = true;
 
     create_account_request admin_rq(to_create_account_request(admin_account));
-    admin_rq.is_admin = true;
 
     boost::uuids::uuid admin_id;
     boost::asio::io_context io_ctx;
@@ -774,6 +784,9 @@ TEST_CASE("handle_login_request_locked_account", tags) {
         REQUIRE(r.has_value());
         admin_id = create_account_response::deserialize(r.value()).value().account_id;
     });
+
+    // Assign Admin role to the account
+    assign_admin_role(auth_service, admin_id);
 
     // Login as admin to establish session
     login_request admin_login_rq;

@@ -303,18 +303,19 @@ handle_lock_account_request(std::span<const std::byte> payload,
         co_return response.serialize();
     }
 
-    // Check if requester has admin privileges
-    if (!session->is_admin) {
+    // Check if requester has permission to lock accounts
+    if (!auth_service_->has_permission(session->account_id,
+            domain::permissions::accounts_lock)) {
         BOOST_LOG_SEV(lg(), warn) << "Lock account denied: requester "
                                   << boost::uuids::to_string(session->account_id)
-                                  << " is not an admin";
+                                  << " lacks accounts:lock permission";
         // Return error for all requested accounts
         lock_account_response response;
         for (const auto& id : request.account_ids) {
             response.results.push_back({
                 .account_id = id,
                 .success = false,
-                .message = "Admin privileges required to lock accounts"
+                .message = "Permission denied: accounts:lock required"
             });
         }
         co_return response.serialize();
@@ -375,18 +376,19 @@ handle_unlock_account_request(std::span<const std::byte> payload,
         co_return response.serialize();
     }
 
-    // Check if requester has admin privileges
-    if (!session->is_admin) {
+    // Check if requester has permission to unlock accounts
+    if (!auth_service_->has_permission(session->account_id,
+            domain::permissions::accounts_unlock)) {
         BOOST_LOG_SEV(lg(), warn) << "Unlock account denied: requester "
                                   << boost::uuids::to_string(session->account_id)
-                                  << " is not an admin";
+                                  << " lacks accounts:unlock permission";
         // Return error for all requested accounts
         unlock_account_response response;
         for (const auto& id : request.account_ids) {
             response.results.push_back({
                 .account_id = id,
                 .success = false,
-                .message = "Admin privileges required to unlock accounts"
+                .message = "Permission denied: accounts:unlock required"
             });
         }
         co_return response.serialize();
@@ -641,21 +643,22 @@ handle_update_account_request(std::span<const std::byte> payload,
         co_return response.serialize();
     }
 
-    // Check if requester has admin privileges
-    if (!session->is_admin) {
+    // Check if requester has permission to update accounts
+    if (!auth_service_->has_permission(session->account_id,
+            domain::permissions::accounts_update)) {
         BOOST_LOG_SEV(lg(), warn) << "Update account denied: requester "
                                   << boost::uuids::to_string(session->account_id)
-                                  << " is not an admin";
+                                  << " lacks accounts:update permission";
         update_account_response response{
             .success = false,
-            .error_message = "Admin privileges required to update accounts"
+            .error_message = "Permission denied: accounts:update required"
         };
         co_return response.serialize();
     }
 
     try {
         bool success = service_.update_account(request.account_id,
-            request.email, request.recorded_by, request.is_admin);
+            request.email, request.recorded_by);
 
         if (success) {
             BOOST_LOG_SEV(lg(), info) << "Successfully updated account: "
@@ -778,18 +781,19 @@ handle_reset_password_request(std::span<const std::byte> payload,
         co_return response.serialize();
     }
 
-    // Check if requester has admin privileges
-    if (!session->is_admin) {
+    // Check if requester has permission to reset passwords
+    if (!auth_service_->has_permission(session->account_id,
+            domain::permissions::accounts_reset_password)) {
         BOOST_LOG_SEV(lg(), warn) << "Reset password denied: requester "
                                   << boost::uuids::to_string(session->account_id)
-                                  << " is not an admin";
+                                  << " lacks accounts:reset_password permission";
         // Return error for all requested accounts
         reset_password_response response;
         for (const auto& id : request.account_ids) {
             response.results.push_back({
                 .account_id = id,
                 .success = false,
-                .message = "Admin privileges required to reset passwords"
+                .message = "Permission denied: accounts:reset_password required"
             });
         }
         co_return response.serialize();
@@ -808,7 +812,7 @@ handle_reset_password_request(std::span<const std::byte> payload,
 
         if (success) {
             BOOST_LOG_SEV(lg(), info)
-                << "Password reset: admin forced password reset for user '"
+                << "Password reset: forced password reset for user '"
                 << username << "' (account_id: "
                 << boost::uuids::to_string(account_id) << ")";
         } else {

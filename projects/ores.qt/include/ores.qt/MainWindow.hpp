@@ -44,6 +44,7 @@ namespace ores::qt {
 class DetachableMdiSubWindow;
 class CurrencyController;
 class AccountController;
+class ImageCache;
 
 /**
  * @brief Main application window providing the MDI interface and entity
@@ -218,6 +219,9 @@ private:
 
     /** @brief Client manager handling network connection and IO context */
     ClientManager* clientManager_;
+
+    /** @brief Cache for currency flag icons */
+    ImageCache* imageCache_;
 
     /** @brief Username of currently logged-in user */
     std::string username_;

@@ -43,6 +43,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/AboutDialog.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.comms/eventing/connection_events.hpp"
 
 namespace ores::qt {
@@ -53,6 +54,7 @@ MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent), ui_(new Ui::MainWindow), mdiArea_(nullptr),
     eventBus_(std::make_shared<eventing::service::event_bus>()),
     clientManager_(new ClientManager(eventBus_, this)),
+    imageCache_(new ImageCache(clientManager_, this)),
     systemTrayIcon_(nullptr), trayContextMenu_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating the main window.";
@@ -134,6 +136,11 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(clientManager_, &ClientManager::reconnected, this, [this]() {
         connectionStatusIconLabel_->setPixmap(connectedIcon_.pixmap(16, 16));
         ui_->statusbar->showMessage("Reconnected to server.", 5000);
+    });
+
+    // Load image cache when connected
+    connect(clientManager_, &ClientManager::connected, this, [this]() {
+        imageCache_->loadAll();
     });
 
     // Connect Currencies action to controller
@@ -375,10 +382,9 @@ void MainWindow::createControllers() {
     BOOST_LOG_SEV(lg(), debug) << "Creating entity controllers.";
 
     // Create currency controller
-    // It now takes ClientManager instead of client shared_ptr
     currencyController_ = std::make_unique<CurrencyController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_),
-        allDetachableWindows_, this);
+        this, mdiArea_, clientManager_, imageCache_,
+        QString::fromStdString(username_), allDetachableWindows_, this);
 
     // Connect controller signals to status bar
     connect(currencyController_.get(), &CurrencyController::statusMessage,

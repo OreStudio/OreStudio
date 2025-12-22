@@ -58,6 +58,7 @@ using namespace ores::utility::log;
 
 CurrencyMdiWindow::
 CurrencyMdiWindow(ClientManager* clientManager,
+                  ImageCache* imageCache,
                   const QString& username,
                   QWidget* parent)
     : QWidget(parent),
@@ -70,8 +71,9 @@ CurrencyMdiWindow(ClientManager* clientManager,
       addAction_(new QAction("Add", this)),
       editAction_(new QAction("Edit", this)),
       deleteAction_(new QAction("Delete", this)),
-      currencyModel_(std::make_unique<ClientCurrencyModel>(clientManager)),
+      currencyModel_(std::make_unique<ClientCurrencyModel>(clientManager, imageCache)),
       clientManager_(clientManager),
+      imageCache_(imageCache),
       username_(username) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating currency MDI window";

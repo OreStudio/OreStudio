@@ -35,6 +35,8 @@
 
 namespace ores::qt {
 
+class ImageCache;
+
 /**
  * @brief MDI window for displaying currencies.
  */
@@ -53,6 +55,7 @@ private:
 
 public:
     explicit CurrencyMdiWindow(ClientManager* clientManager,
+                               ImageCache* imageCache,
                                const QString& username,
                                QWidget* parent = nullptr);
     ~CurrencyMdiWindow() override;
@@ -131,6 +134,7 @@ private:
     std::unique_ptr<ClientCurrencyModel> currencyModel_;
     QSortFilterProxyModel* proxyModel_;
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
     QString username_;
     bool isStale_{false};
 };

@@ -38,7 +38,6 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         sqlgen::sqlgen
     PRIVATE
-        ores.utility.lib
-        reflectcpp::reflectcpp)
+        ores.utility.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

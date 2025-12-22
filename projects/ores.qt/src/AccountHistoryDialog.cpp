@@ -271,7 +271,10 @@ void AccountHistoryDialog::displayFullDetailsTab(int version_index) {
 
     ui_->usernameValue->setText(QString::fromStdString(data.username));
     ui_->emailValue->setText(QString::fromStdString(data.email));
-    ui_->isAdminValue->setText(data.is_admin ? tr("Yes") : tr("No"));
+    // Note: is_admin removed - admin privileges are now managed via RBAC
+    // Hide the isAdmin row in the UI
+    ui_->isAdminLabel->setVisible(false);
+    ui_->isAdminValue->setVisible(false);
     ui_->versionNumberValue->setText(QString::number(version.version_number));
     ui_->recordedByValue->setText(QString::fromStdString(version.recorded_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
@@ -303,8 +306,7 @@ calculateDiff(const iam::domain::account_version& current,
     CHECK_DIFF_STRING("Username", username);
     CHECK_DIFF_STRING("Email", email);
 
-    // Compare boolean fields
-    CHECK_DIFF_BOOL("Administrator", is_admin);
+    // Note: is_admin removed - admin privileges are now managed via RBAC
 
     return diffs;
 }

@@ -33,6 +33,7 @@
 #include "ores.iam/service/rbac_seeder.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.variability/messaging/registrar.hpp"
+#include "ores.assets/messaging/registrar.hpp"
 #include "ores.variability/service/system_flags_seeder.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
@@ -183,6 +184,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     ores::risk::messaging::registrar::register_handlers(*srv, ctx, system_flags);
     ores::iam::messaging::registrar::register_handlers(*srv, ctx, system_flags);
     ores::variability::messaging::registrar::register_handlers(*srv, ctx);
+    ores::assets::messaging::registrar::register_handlers(*srv, ctx);
 
     // Register subscription handler for subscribe/unsubscribe messages
     auto subscription_handler =

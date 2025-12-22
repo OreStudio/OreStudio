@@ -21,7 +21,7 @@
 --
 -- Populates the currency_images table with mappings from currencies to their flags.
 -- Each currency is mapped to the flag of its primary issuing country/region.
--- Currencies without an available flag are not included.
+-- Uses a single set-based INSERT for efficiency.
 --
 -- Prerequisites:
 --   - flags_populate.sql must be run first (to populate images table)
@@ -31,223 +31,189 @@
 SET search_path TO oresdb;
 
 --
--- Helper function to link a currency to a flag image by key.
--- Returns the image_id if successful, NULL otherwise.
---
-CREATE OR REPLACE FUNCTION link_currency_to_flag(
-    p_currency_code text,
-    p_flag_key text
-) RETURNS uuid AS $$
-DECLARE
-    v_image_id uuid;
-BEGIN
-    -- Look up the image_id for the flag
-    SELECT image_id INTO v_image_id
-    FROM images
-    WHERE key = p_flag_key
-    AND valid_to = '9999-12-31 23:59:59'::timestamptz;
-
-    IF v_image_id IS NULL THEN
-        RAISE NOTICE 'Flag not found for key: %', p_flag_key;
-        RETURN NULL;
-    END IF;
-
-    -- Check if the currency exists
-    IF NOT EXISTS (
-        SELECT 1 FROM currencies
-        WHERE iso_code = p_currency_code
-        AND valid_to = '9999-12-31 23:59:59'::timestamptz
-    ) THEN
-        RAISE NOTICE 'Currency not found: %', p_currency_code;
-        RETURN NULL;
-    END IF;
-
-    -- Insert the mapping
-    INSERT INTO currency_images (iso_code, image_id, assigned_by)
-    VALUES (p_currency_code, v_image_id, 'system');
-
-    RETURN v_image_id;
-END;
-$$ LANGUAGE plpgsql;
-
---
 -- Currency to flag mappings
--- Format: SELECT link_currency_to_flag('CURRENCY_CODE', 'flag_key');
+-- Uses a single INSERT ... SELECT with JOINs to ensure data integrity:
+-- - Only currencies that exist in the currencies table are linked
+-- - Only flags that exist in the images table are used
 --
+INSERT INTO currency_images (iso_code, image_id, assigned_by)
+SELECT
+    v.currency_code,
+    i.image_id,
+    'system'
+FROM (
+    VALUES
+        -- Americas
+        ('USD', 'us'),   -- US Dollar -> United States
+        ('CAD', 'ca'),   -- Canadian Dollar -> Canada
+        ('MXN', 'mx'),   -- Mexican Peso -> Mexico
+        ('BRL', 'br'),   -- Brazilian Real -> Brazil
+        ('ARS', 'ar'),   -- Argentine Peso -> Argentina
+        ('CLP', 'cl'),   -- Chilean Peso -> Chile
+        ('COP', 'co'),   -- Colombian Peso -> Colombia
+        ('PEN', 'pe'),   -- Peruvian Sol -> Peru
+        ('UYU', 'uy'),   -- Uruguayan Peso -> Uruguay
+        ('PYG', 'py'),   -- Paraguayan Guarani -> Paraguay
+        ('BOB', 'bo'),   -- Bolivian Boliviano -> Bolivia
+        ('VES', 've'),   -- Venezuelan Bolivar -> Venezuela
+        ('CRC', 'cr'),   -- Costa Rican Colon -> Costa Rica
+        ('PAB', 'pa'),   -- Panamanian Balboa -> Panama
+        ('GTQ', 'gt'),   -- Guatemalan Quetzal -> Guatemala
+        ('HNL', 'hn'),   -- Honduran Lempira -> Honduras
+        ('NIO', 'ni'),   -- Nicaraguan Cordoba -> Nicaragua
+        ('DOP', 'do'),   -- Dominican Peso -> Dominican Republic
+        ('CUP', 'cu'),   -- Cuban Peso -> Cuba
+        ('JMD', 'jm'),   -- Jamaican Dollar -> Jamaica
+        ('TTD', 'tt'),   -- Trinidad and Tobago Dollar -> Trinidad and Tobago
+        ('BBD', 'bb'),   -- Barbadian Dollar -> Barbados
+        ('BSD', 'bs'),   -- Bahamian Dollar -> Bahamas
+        ('HTG', 'ht'),   -- Haitian Gourde -> Haiti
+        ('SRD', 'sr'),   -- Surinamese Dollar -> Suriname
+        ('GYD', 'gy'),   -- Guyanese Dollar -> Guyana
+        ('BZD', 'bz'),   -- Belize Dollar -> Belize
+        ('AWG', 'aw'),   -- Aruban Florin -> Aruba
+        ('ANG', 'cw'),   -- Netherlands Antillean Guilder -> Curacao
+        ('KYD', 'ky'),   -- Cayman Islands Dollar -> Cayman Islands
+        ('BMD', 'bm'),   -- Bermudian Dollar -> Bermuda
+        ('FKP', 'fk'),   -- Falkland Islands Pound -> Falkland Islands
+        ('XCD', 'ag'),   -- East Caribbean Dollar -> Antigua (ECCB HQ)
 
--- Americas
-SELECT link_currency_to_flag('USD', 'us');   -- US Dollar -> United States
-SELECT link_currency_to_flag('CAD', 'ca');   -- Canadian Dollar -> Canada
-SELECT link_currency_to_flag('MXN', 'mx');   -- Mexican Peso -> Mexico
-SELECT link_currency_to_flag('BRL', 'br');   -- Brazilian Real -> Brazil
-SELECT link_currency_to_flag('ARS', 'ar');   -- Argentine Peso -> Argentina
-SELECT link_currency_to_flag('CLP', 'cl');   -- Chilean Peso -> Chile
-SELECT link_currency_to_flag('COP', 'co');   -- Colombian Peso -> Colombia
-SELECT link_currency_to_flag('PEN', 'pe');   -- Peruvian Sol -> Peru
-SELECT link_currency_to_flag('UYU', 'uy');   -- Uruguayan Peso -> Uruguay
-SELECT link_currency_to_flag('PYG', 'py');   -- Paraguayan Guarani -> Paraguay
-SELECT link_currency_to_flag('BOB', 'bo');   -- Bolivian Boliviano -> Bolivia
-SELECT link_currency_to_flag('VES', 've');   -- Venezuelan Bolivar -> Venezuela
-SELECT link_currency_to_flag('CRC', 'cr');   -- Costa Rican Colon -> Costa Rica
-SELECT link_currency_to_flag('PAB', 'pa');   -- Panamanian Balboa -> Panama
-SELECT link_currency_to_flag('GTQ', 'gt');   -- Guatemalan Quetzal -> Guatemala
-SELECT link_currency_to_flag('HNL', 'hn');   -- Honduran Lempira -> Honduras
-SELECT link_currency_to_flag('NIO', 'ni');   -- Nicaraguan Cordoba -> Nicaragua
-SELECT link_currency_to_flag('DOP', 'do');   -- Dominican Peso -> Dominican Republic
-SELECT link_currency_to_flag('CUP', 'cu');   -- Cuban Peso -> Cuba
-SELECT link_currency_to_flag('JMD', 'jm');   -- Jamaican Dollar -> Jamaica
-SELECT link_currency_to_flag('TTD', 'tt');   -- Trinidad and Tobago Dollar -> Trinidad and Tobago
-SELECT link_currency_to_flag('BBD', 'bb');   -- Barbadian Dollar -> Barbados
-SELECT link_currency_to_flag('BSD', 'bs');   -- Bahamian Dollar -> Bahamas
-SELECT link_currency_to_flag('HTG', 'ht');   -- Haitian Gourde -> Haiti
-SELECT link_currency_to_flag('SRD', 'sr');   -- Surinamese Dollar -> Suriname
-SELECT link_currency_to_flag('GYD', 'gy');   -- Guyanese Dollar -> Guyana
-SELECT link_currency_to_flag('BZD', 'bz');   -- Belize Dollar -> Belize
-SELECT link_currency_to_flag('AWG', 'aw');   -- Aruban Florin -> Aruba
-SELECT link_currency_to_flag('ANG', 'cw');   -- Netherlands Antillean Guilder -> Curacao
-SELECT link_currency_to_flag('KYD', 'ky');   -- Cayman Islands Dollar -> Cayman Islands
-SELECT link_currency_to_flag('BMD', 'bm');   -- Bermudian Dollar -> Bermuda
-SELECT link_currency_to_flag('FKP', 'fk');   -- Falkland Islands Pound -> Falkland Islands
+        -- Europe
+        ('EUR', 'eu'),   -- Euro -> European Union
+        ('GBP', 'gb'),   -- British Pound -> United Kingdom
+        ('CHF', 'ch'),   -- Swiss Franc -> Switzerland
+        ('NOK', 'no'),   -- Norwegian Krone -> Norway
+        ('SEK', 'se'),   -- Swedish Krona -> Sweden
+        ('DKK', 'dk'),   -- Danish Krone -> Denmark
+        ('ISK', 'is'),   -- Icelandic Krona -> Iceland
+        ('PLN', 'pl'),   -- Polish Zloty -> Poland
+        ('CZK', 'cz'),   -- Czech Koruna -> Czech Republic
+        ('HUF', 'hu'),   -- Hungarian Forint -> Hungary
+        ('RON', 'ro'),   -- Romanian Leu -> Romania
+        ('BGN', 'bg'),   -- Bulgarian Lev -> Bulgaria
+        ('HRK', 'hr'),   -- Croatian Kuna -> Croatia
+        ('RSD', 'rs'),   -- Serbian Dinar -> Serbia
+        ('BAM', 'ba'),   -- Bosnia and Herzegovina Mark -> Bosnia and Herzegovina
+        ('MKD', 'mk'),   -- Macedonian Denar -> North Macedonia
+        ('ALL', 'al'),   -- Albanian Lek -> Albania
+        ('MDL', 'md'),   -- Moldovan Leu -> Moldova
+        ('UAH', 'ua'),   -- Ukrainian Hryvnia -> Ukraine
+        ('BYN', 'by'),   -- Belarusian Ruble -> Belarus
+        ('RUB', 'ru'),   -- Russian Ruble -> Russia
+        ('GEL', 'ge'),   -- Georgian Lari -> Georgia
+        ('AMD', 'am'),   -- Armenian Dram -> Armenia
+        ('AZN', 'az'),   -- Azerbaijani Manat -> Azerbaijan
+        ('TRY', 'tr'),   -- Turkish Lira -> Turkey
+        ('GIP', 'gi'),   -- Gibraltar Pound -> Gibraltar
 
--- Europe
-SELECT link_currency_to_flag('EUR', 'eu');   -- Euro -> European Union
-SELECT link_currency_to_flag('GBP', 'gb');   -- British Pound -> United Kingdom
-SELECT link_currency_to_flag('CHF', 'ch');   -- Swiss Franc -> Switzerland
-SELECT link_currency_to_flag('NOK', 'no');   -- Norwegian Krone -> Norway
-SELECT link_currency_to_flag('SEK', 'se');   -- Swedish Krona -> Sweden
-SELECT link_currency_to_flag('DKK', 'dk');   -- Danish Krone -> Denmark
-SELECT link_currency_to_flag('ISK', 'is');   -- Icelandic Krona -> Iceland
-SELECT link_currency_to_flag('PLN', 'pl');   -- Polish Zloty -> Poland
-SELECT link_currency_to_flag('CZK', 'cz');   -- Czech Koruna -> Czech Republic
-SELECT link_currency_to_flag('HUF', 'hu');   -- Hungarian Forint -> Hungary
-SELECT link_currency_to_flag('RON', 'ro');   -- Romanian Leu -> Romania
-SELECT link_currency_to_flag('BGN', 'bg');   -- Bulgarian Lev -> Bulgaria
-SELECT link_currency_to_flag('HRK', 'hr');   -- Croatian Kuna -> Croatia
-SELECT link_currency_to_flag('RSD', 'rs');   -- Serbian Dinar -> Serbia
-SELECT link_currency_to_flag('BAM', 'ba');   -- Bosnia and Herzegovina Mark -> Bosnia and Herzegovina
-SELECT link_currency_to_flag('MKD', 'mk');   -- Macedonian Denar -> North Macedonia
-SELECT link_currency_to_flag('ALL', 'al');   -- Albanian Lek -> Albania
-SELECT link_currency_to_flag('MDL', 'md');   -- Moldovan Leu -> Moldova
-SELECT link_currency_to_flag('UAH', 'ua');   -- Ukrainian Hryvnia -> Ukraine
-SELECT link_currency_to_flag('BYN', 'by');   -- Belarusian Ruble -> Belarus
-SELECT link_currency_to_flag('RUB', 'ru');   -- Russian Ruble -> Russia
-SELECT link_currency_to_flag('GEL', 'ge');   -- Georgian Lari -> Georgia
-SELECT link_currency_to_flag('AMD', 'am');   -- Armenian Dram -> Armenia
-SELECT link_currency_to_flag('AZN', 'az');   -- Azerbaijani Manat -> Azerbaijan
-SELECT link_currency_to_flag('TRY', 'tr');   -- Turkish Lira -> Turkey
-SELECT link_currency_to_flag('GIP', 'gi');   -- Gibraltar Pound -> Gibraltar
+        -- Asia-Pacific
+        ('JPY', 'jp'),   -- Japanese Yen -> Japan
+        ('CNY', 'cn'),   -- Chinese Yuan -> China
+        ('HKD', 'hk'),   -- Hong Kong Dollar -> Hong Kong
+        ('TWD', 'tw'),   -- New Taiwan Dollar -> Taiwan
+        ('KRW', 'kr'),   -- South Korean Won -> South Korea
+        ('KPW', 'kp'),   -- North Korean Won -> North Korea
+        ('SGD', 'sg'),   -- Singapore Dollar -> Singapore
+        ('MYR', 'my'),   -- Malaysian Ringgit -> Malaysia
+        ('IDR', 'id'),   -- Indonesian Rupiah -> Indonesia
+        ('THB', 'th'),   -- Thai Baht -> Thailand
+        ('VND', 'vn'),   -- Vietnamese Dong -> Vietnam
+        ('PHP', 'ph'),   -- Philippine Peso -> Philippines
+        ('INR', 'in'),   -- Indian Rupee -> India
+        ('PKR', 'pk'),   -- Pakistani Rupee -> Pakistan
+        ('BDT', 'bd'),   -- Bangladeshi Taka -> Bangladesh
+        ('LKR', 'lk'),   -- Sri Lankan Rupee -> Sri Lanka
+        ('NPR', 'np'),   -- Nepalese Rupee -> Nepal
+        ('MMK', 'mm'),   -- Myanmar Kyat -> Myanmar
+        ('KHR', 'kh'),   -- Cambodian Riel -> Cambodia
+        ('LAK', 'la'),   -- Lao Kip -> Laos
+        ('MNT', 'mn'),   -- Mongolian Tugrik -> Mongolia
+        ('KZT', 'kz'),   -- Kazakhstani Tenge -> Kazakhstan
+        ('UZS', 'uz'),   -- Uzbekistani Som -> Uzbekistan
+        ('KGS', 'kg'),   -- Kyrgyzstani Som -> Kyrgyzstan
+        ('TJS', 'tj'),   -- Tajikistani Somoni -> Tajikistan
+        ('TMT', 'tm'),   -- Turkmenistani Manat -> Turkmenistan
+        ('AFN', 'af'),   -- Afghan Afghani -> Afghanistan
+        ('AUD', 'au'),   -- Australian Dollar -> Australia
+        ('NZD', 'nz'),   -- New Zealand Dollar -> New Zealand
+        ('FJD', 'fj'),   -- Fijian Dollar -> Fiji
+        ('PGK', 'pg'),   -- Papua New Guinean Kina -> Papua New Guinea
+        ('SBD', 'sb'),   -- Solomon Islands Dollar -> Solomon Islands
+        ('VUV', 'vu'),   -- Vanuatu Vatu -> Vanuatu
+        ('WST', 'ws'),   -- Samoan Tala -> Samoa
+        ('TOP', 'to'),   -- Tongan Paanga -> Tonga
+        ('MOP', 'mo'),   -- Macanese Pataca -> Macau
+        ('BND', 'bn'),   -- Brunei Dollar -> Brunei
+        ('BTN', 'bt'),   -- Bhutanese Ngultrum -> Bhutan
+        ('MVR', 'mv'),   -- Maldivian Rufiyaa -> Maldives
 
--- Asia-Pacific
-SELECT link_currency_to_flag('JPY', 'jp');   -- Japanese Yen -> Japan
-SELECT link_currency_to_flag('CNY', 'cn');   -- Chinese Yuan -> China
-SELECT link_currency_to_flag('HKD', 'hk');   -- Hong Kong Dollar -> Hong Kong
-SELECT link_currency_to_flag('TWD', 'tw');   -- New Taiwan Dollar -> Taiwan
-SELECT link_currency_to_flag('KRW', 'kr');   -- South Korean Won -> South Korea
-SELECT link_currency_to_flag('KPW', 'kp');   -- North Korean Won -> North Korea
-SELECT link_currency_to_flag('SGD', 'sg');   -- Singapore Dollar -> Singapore
-SELECT link_currency_to_flag('MYR', 'my');   -- Malaysian Ringgit -> Malaysia
-SELECT link_currency_to_flag('IDR', 'id');   -- Indonesian Rupiah -> Indonesia
-SELECT link_currency_to_flag('THB', 'th');   -- Thai Baht -> Thailand
-SELECT link_currency_to_flag('VND', 'vn');   -- Vietnamese Dong -> Vietnam
-SELECT link_currency_to_flag('PHP', 'ph');   -- Philippine Peso -> Philippines
-SELECT link_currency_to_flag('INR', 'in');   -- Indian Rupee -> India
-SELECT link_currency_to_flag('PKR', 'pk');   -- Pakistani Rupee -> Pakistan
-SELECT link_currency_to_flag('BDT', 'bd');   -- Bangladeshi Taka -> Bangladesh
-SELECT link_currency_to_flag('LKR', 'lk');   -- Sri Lankan Rupee -> Sri Lanka
-SELECT link_currency_to_flag('NPR', 'np');   -- Nepalese Rupee -> Nepal
-SELECT link_currency_to_flag('MMK', 'mm');   -- Myanmar Kyat -> Myanmar
-SELECT link_currency_to_flag('KHR', 'kh');   -- Cambodian Riel -> Cambodia
-SELECT link_currency_to_flag('LAK', 'la');   -- Lao Kip -> Laos
-SELECT link_currency_to_flag('MNT', 'mn');   -- Mongolian Tugrik -> Mongolia
-SELECT link_currency_to_flag('KZT', 'kz');   -- Kazakhstani Tenge -> Kazakhstan
-SELECT link_currency_to_flag('UZS', 'uz');   -- Uzbekistani Som -> Uzbekistan
-SELECT link_currency_to_flag('KGS', 'kg');   -- Kyrgyzstani Som -> Kyrgyzstan
-SELECT link_currency_to_flag('TJS', 'tj');   -- Tajikistani Somoni -> Tajikistan
-SELECT link_currency_to_flag('TMT', 'tm');   -- Turkmenistani Manat -> Turkmenistan
-SELECT link_currency_to_flag('AFN', 'af');   -- Afghan Afghani -> Afghanistan
-SELECT link_currency_to_flag('AUD', 'au');   -- Australian Dollar -> Australia
-SELECT link_currency_to_flag('NZD', 'nz');   -- New Zealand Dollar -> New Zealand
-SELECT link_currency_to_flag('FJD', 'fj');   -- Fijian Dollar -> Fiji
-SELECT link_currency_to_flag('PGK', 'pg');   -- Papua New Guinean Kina -> Papua New Guinea
-SELECT link_currency_to_flag('SBD', 'sb');   -- Solomon Islands Dollar -> Solomon Islands
-SELECT link_currency_to_flag('VUV', 'vu');   -- Vanuatu Vatu -> Vanuatu
-SELECT link_currency_to_flag('WST', 'ws');   -- Samoan Tala -> Samoa
-SELECT link_currency_to_flag('TOP', 'to');   -- Tongan Paanga -> Tonga
-SELECT link_currency_to_flag('MOP', 'mo');   -- Macanese Pataca -> Macau
-SELECT link_currency_to_flag('BND', 'bn');   -- Brunei Dollar -> Brunei
-SELECT link_currency_to_flag('BTN', 'bt');   -- Bhutanese Ngultrum -> Bhutan
-SELECT link_currency_to_flag('MVR', 'mv');   -- Maldivian Rufiyaa -> Maldives
+        -- Middle East
+        ('SAR', 'sa'),   -- Saudi Riyal -> Saudi Arabia
+        ('AED', 'ae'),   -- UAE Dirham -> United Arab Emirates
+        ('QAR', 'qa'),   -- Qatari Riyal -> Qatar
+        ('KWD', 'kw'),   -- Kuwaiti Dinar -> Kuwait
+        ('BHD', 'bh'),   -- Bahraini Dinar -> Bahrain
+        ('OMR', 'om'),   -- Omani Rial -> Oman
+        ('JOD', 'jo'),   -- Jordanian Dinar -> Jordan
+        ('ILS', 'il'),   -- Israeli New Shekel -> Israel
+        ('LBP', 'lb'),   -- Lebanese Pound -> Lebanon
+        ('SYP', 'sy'),   -- Syrian Pound -> Syria
+        ('IQD', 'iq'),   -- Iraqi Dinar -> Iraq
+        ('IRR', 'ir'),   -- Iranian Rial -> Iran
+        ('YER', 'ye'),   -- Yemeni Rial -> Yemen
 
--- Middle East
-SELECT link_currency_to_flag('SAR', 'sa');   -- Saudi Riyal -> Saudi Arabia
-SELECT link_currency_to_flag('AED', 'ae');   -- UAE Dirham -> United Arab Emirates
-SELECT link_currency_to_flag('QAR', 'qa');   -- Qatari Riyal -> Qatar
-SELECT link_currency_to_flag('KWD', 'kw');   -- Kuwaiti Dinar -> Kuwait
-SELECT link_currency_to_flag('BHD', 'bh');   -- Bahraini Dinar -> Bahrain
-SELECT link_currency_to_flag('OMR', 'om');   -- Omani Rial -> Oman
-SELECT link_currency_to_flag('JOD', 'jo');   -- Jordanian Dinar -> Jordan
-SELECT link_currency_to_flag('ILS', 'il');   -- Israeli New Shekel -> Israel
-SELECT link_currency_to_flag('LBP', 'lb');   -- Lebanese Pound -> Lebanon
-SELECT link_currency_to_flag('SYP', 'sy');   -- Syrian Pound -> Syria
-SELECT link_currency_to_flag('IQD', 'iq');   -- Iraqi Dinar -> Iraq
-SELECT link_currency_to_flag('IRR', 'ir');   -- Iranian Rial -> Iran
-SELECT link_currency_to_flag('YER', 'ye');   -- Yemeni Rial -> Yemen
+        -- Africa
+        ('ZAR', 'za'),   -- South African Rand -> South Africa
+        ('EGP', 'eg'),   -- Egyptian Pound -> Egypt
+        ('NGN', 'ng'),   -- Nigerian Naira -> Nigeria
+        ('KES', 'ke'),   -- Kenyan Shilling -> Kenya
+        ('GHS', 'gh'),   -- Ghanaian Cedi -> Ghana
+        ('TZS', 'tz'),   -- Tanzanian Shilling -> Tanzania
+        ('UGX', 'ug'),   -- Ugandan Shilling -> Uganda
+        ('ETB', 'et'),   -- Ethiopian Birr -> Ethiopia
+        ('MAD', 'ma'),   -- Moroccan Dirham -> Morocco
+        ('TND', 'tn'),   -- Tunisian Dinar -> Tunisia
+        ('DZD', 'dz'),   -- Algerian Dinar -> Algeria
+        ('LYD', 'ly'),   -- Libyan Dinar -> Libya
+        ('SDG', 'sd'),   -- Sudanese Pound -> Sudan
+        ('SSP', 'ss'),   -- South Sudanese Pound -> South Sudan
+        ('AOA', 'ao'),   -- Angolan Kwanza -> Angola
+        ('XAF', 'cm'),   -- Central African CFA Franc -> Cameroon (CEMAC HQ)
+        ('XOF', 'sn'),   -- West African CFA Franc -> Senegal (BCEAO HQ)
+        ('ZMW', 'zm'),   -- Zambian Kwacha -> Zambia
+        ('MZN', 'mz'),   -- Mozambican Metical -> Mozambique
+        ('BWP', 'bw'),   -- Botswana Pula -> Botswana
+        ('NAD', 'na'),   -- Namibian Dollar -> Namibia
+        ('SZL', 'sz'),   -- Swazi Lilangeni -> Eswatini
+        ('LSL', 'ls'),   -- Lesotho Loti -> Lesotho
+        ('MWK', 'mw'),   -- Malawian Kwacha -> Malawi
+        ('ZWL', 'zw'),   -- Zimbabwean Dollar -> Zimbabwe
+        ('RWF', 'rw'),   -- Rwandan Franc -> Rwanda
+        ('BIF', 'bi'),   -- Burundian Franc -> Burundi
+        ('CDF', 'cd'),   -- Congolese Franc -> DR Congo
+        ('DJF', 'dj'),   -- Djiboutian Franc -> Djibouti
+        ('ERN', 'er'),   -- Eritrean Nakfa -> Eritrea
+        ('SOS', 'so'),   -- Somali Shilling -> Somalia
+        ('GMD', 'gm'),   -- Gambian Dalasi -> Gambia
+        ('GNF', 'gn'),   -- Guinean Franc -> Guinea
+        ('SLL', 'sl'),   -- Sierra Leonean Leone -> Sierra Leone
+        ('LRD', 'lr'),   -- Liberian Dollar -> Liberia
+        ('CVE', 'cv'),   -- Cape Verdean Escudo -> Cape Verde
+        ('STN', 'st'),   -- Sao Tome Dobra -> Sao Tome and Principe
+        ('MRU', 'mr'),   -- Mauritanian Ouguiya -> Mauritania
+        ('MGA', 'mg'),   -- Malagasy Ariary -> Madagascar
+        ('MUR', 'mu'),   -- Mauritian Rupee -> Mauritius
+        ('SCR', 'sc'),   -- Seychellois Rupee -> Seychelles
+        ('KMF', 'km'),   -- Comorian Franc -> Comoros
 
--- Africa
-SELECT link_currency_to_flag('ZAR', 'za');   -- South African Rand -> South Africa
-SELECT link_currency_to_flag('EGP', 'eg');   -- Egyptian Pound -> Egypt
-SELECT link_currency_to_flag('NGN', 'ng');   -- Nigerian Naira -> Nigeria
-SELECT link_currency_to_flag('KES', 'ke');   -- Kenyan Shilling -> Kenya
-SELECT link_currency_to_flag('GHS', 'gh');   -- Ghanaian Cedi -> Ghana
-SELECT link_currency_to_flag('TZS', 'tz');   -- Tanzanian Shilling -> Tanzania
-SELECT link_currency_to_flag('UGX', 'ug');   -- Ugandan Shilling -> Uganda
-SELECT link_currency_to_flag('ETB', 'et');   -- Ethiopian Birr -> Ethiopia
-SELECT link_currency_to_flag('MAD', 'ma');   -- Moroccan Dirham -> Morocco
-SELECT link_currency_to_flag('TND', 'tn');   -- Tunisian Dinar -> Tunisia
-SELECT link_currency_to_flag('DZD', 'dz');   -- Algerian Dinar -> Algeria
-SELECT link_currency_to_flag('LYD', 'ly');   -- Libyan Dinar -> Libya
-SELECT link_currency_to_flag('SDG', 'sd');   -- Sudanese Pound -> Sudan
-SELECT link_currency_to_flag('SSP', 'ss');   -- South Sudanese Pound -> South Sudan
-SELECT link_currency_to_flag('AOA', 'ao');   -- Angolan Kwanza -> Angola
-SELECT link_currency_to_flag('XAF', 'cm');   -- Central African CFA Franc -> Cameroon (CEMAC HQ)
-SELECT link_currency_to_flag('XOF', 'sn');   -- West African CFA Franc -> Senegal (BCEAO HQ)
-SELECT link_currency_to_flag('ZMW', 'zm');   -- Zambian Kwacha -> Zambia
-SELECT link_currency_to_flag('MZN', 'mz');   -- Mozambican Metical -> Mozambique
-SELECT link_currency_to_flag('BWP', 'bw');   -- Botswana Pula -> Botswana
-SELECT link_currency_to_flag('NAD', 'na');   -- Namibian Dollar -> Namibia
-SELECT link_currency_to_flag('SZL', 'sz');   -- Swazi Lilangeni -> Eswatini
-SELECT link_currency_to_flag('LSL', 'ls');   -- Lesotho Loti -> Lesotho
-SELECT link_currency_to_flag('MWK', 'mw');   -- Malawian Kwacha -> Malawi
-SELECT link_currency_to_flag('ZWL', 'zw');   -- Zimbabwean Dollar -> Zimbabwe
-SELECT link_currency_to_flag('RWF', 'rw');   -- Rwandan Franc -> Rwanda
-SELECT link_currency_to_flag('BIF', 'bi');   -- Burundian Franc -> Burundi
-SELECT link_currency_to_flag('CDF', 'cd');   -- Congolese Franc -> DR Congo
-SELECT link_currency_to_flag('DJF', 'dj');   -- Djiboutian Franc -> Djibouti
-SELECT link_currency_to_flag('ERN', 'er');   -- Eritrean Nakfa -> Eritrea
-SELECT link_currency_to_flag('SOS', 'so');   -- Somali Shilling -> Somalia
-SELECT link_currency_to_flag('GMD', 'gm');   -- Gambian Dalasi -> Gambia
-SELECT link_currency_to_flag('GNF', 'gn');   -- Guinean Franc -> Guinea
-SELECT link_currency_to_flag('SLL', 'sl');   -- Sierra Leonean Leone -> Sierra Leone
-SELECT link_currency_to_flag('LRD', 'lr');   -- Liberian Dollar -> Liberia
-SELECT link_currency_to_flag('CVE', 'cv');   -- Cape Verdean Escudo -> Cape Verde
-SELECT link_currency_to_flag('STN', 'st');   -- Sao Tome Dobra -> Sao Tome and Principe
-SELECT link_currency_to_flag('MRU', 'mr');   -- Mauritanian Ouguiya -> Mauritania
-SELECT link_currency_to_flag('MGA', 'mg');   -- Malagasy Ariary -> Madagascar
-SELECT link_currency_to_flag('MUR', 'mu');   -- Mauritian Rupee -> Mauritius
-SELECT link_currency_to_flag('SCR', 'sc');   -- Seychellois Rupee -> Seychelles
-SELECT link_currency_to_flag('KMF', 'km');   -- Comorian Franc -> Comoros
+        -- Commodity currencies (precious metals)
+        ('XAU', 'xau'),  -- Gold -> Gold bar icon
+        ('XAG', 'xag'),  -- Silver -> Silver bar icon
+        ('XPT', 'xpt'),  -- Platinum -> Platinum bar icon
+        ('XPD', 'xpd'),  -- Palladium -> Palladium bar icon
 
--- Multi-country currency
-SELECT link_currency_to_flag('XCD', 'ag');   -- East Caribbean Dollar -> Antigua (ECCB HQ)
-
--- Commodity currencies (precious metals)
-SELECT link_currency_to_flag('XAU', 'xau');  -- Gold -> Gold bar icon
-SELECT link_currency_to_flag('XAG', 'xag');  -- Silver -> Silver bar icon
-SELECT link_currency_to_flag('XPT', 'xpt');  -- Platinum -> Platinum bar icon
-SELECT link_currency_to_flag('XPD', 'xpd');  -- Palladium -> Palladium bar icon
-
--- Supranational currency
-SELECT link_currency_to_flag('XDR', 'xdr');  -- Special Drawing Rights -> SDR globe icon
-
--- Clean up the helper function
-DROP FUNCTION IF EXISTS link_currency_to_flag(text, text);
+        -- Supranational currency
+        ('XDR', 'xdr')   -- Special Drawing Rights -> SDR globe icon
+) AS v(currency_code, flag_key)
+JOIN images i ON i.key = v.flag_key AND i.valid_to = '9999-12-31 23:59:59'::timestamptz
+JOIN currencies c ON c.iso_code = v.currency_code AND c.valid_to = '9999-12-31 23:59:59'::timestamptz;

@@ -86,7 +86,7 @@ domain::session session_mapper::map(const session_entity& v) {
     r.account_id = boost::lexical_cast<uuid>(v.account_id);
     r.is_admin = v.is_admin != 0;
     r.start_time = timestamp_to_timepoint(v.start_time.value());
-    r.end_time = v.end_time ? parse_timestamp(v.end_time->value()) : std::nullopt;
+    r.end_time = v.end_time ? parse_timestamp(v.end_time->str()) : std::nullopt;
     r.client_ip = ip::make_address(v.client_ip);
     r.client_identifier = v.client_identifier;
     r.client_version_major = static_cast<std::uint16_t>(v.client_version_major);

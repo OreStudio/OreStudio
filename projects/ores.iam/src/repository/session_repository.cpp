@@ -24,6 +24,7 @@
 #include <boost/lexical_cast.hpp>
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.iam/domain/session_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam/repository/session_mapper.hpp"
 #include "ores.iam/repository/session_entity.hpp"
@@ -138,7 +139,7 @@ session_repository::read(const boost::uuids::uuid& session_id) {
 
     const auto session_id_str = boost::lexical_cast<std::string>(session_id);
     const auto query = sqlgen::read<std::vector<session_entity>> |
-        where("id"_c == session_id_str) | limit(1_uz);
+        where("id"_c == session_id_str) | limit(static_cast<std::size_t>(1));
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -160,17 +161,15 @@ session_repository::read_by_account(const boost::uuids::uuid& account_id,
 
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
 
-    // Build query with optional limit and offset
+    // Build query - note: offset not supported by sqlgen, use limit only
     auto base_query = sqlgen::read<std::vector<session_entity>> |
         where("account_id"_c == account_id_str) |
-        order_by(desc("start_time"_c));
+        order_by("start_time"_c.desc());
 
     if (limit > 0) {
         base_query = base_query | sqlgen::limit(static_cast<std::size_t>(limit));
     }
-    if (offset > 0) {
-        base_query = base_query | sqlgen::offset(static_cast<std::size_t>(offset));
-    }
+    // Note: offset parameter is ignored as sqlgen doesn't support it directly
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(base_query);
     ensure_success(r, lg());
@@ -188,7 +187,7 @@ session_repository::read_active_by_account(const boost::uuids::uuid& account_id)
     const std::optional<std::string> null_end_time = std::nullopt;
     const auto query = sqlgen::read<std::vector<session_entity>> |
         where("account_id"_c == account_id_str && "end_time"_c == null_end_time) |
-        order_by(desc("start_time"_c));
+        order_by("start_time"_c.desc());
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -205,8 +204,11 @@ session_repository::count_active_by_account(const boost::uuids::uuid& account_id
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
     const std::optional<std::string> null_end_time = std::nullopt;
 
+    // HACK: Using single connection instead of session because sqlgen sessions
+    // doesn't seem to support SELECT FROM with aggregations. Plain connections
+    // work fine. See: https://github.com/getml/sqlgen/issues/99
     struct count_result {
-        std::int64_t count = 0;
+        long long count;
     };
 
     const auto query = sqlgen::select_from<session_entity>(
@@ -214,7 +216,7 @@ session_repository::count_active_by_account(const boost::uuids::uuid& account_id
         where("account_id"_c == account_id_str && "end_time"_c == null_end_time) |
         sqlgen::to<count_result>;
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    const auto r = ctx_.single_connection().and_then(query);
     ensure_success(r, lg());
 
     BOOST_LOG_SEV(lg(), debug) << "Active count: " << r->count;
@@ -228,8 +230,11 @@ session_repository::count_by_account(const boost::uuids::uuid& account_id) {
 
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
 
+    // HACK: Using single connection instead of session because sqlgen sessions
+    // doesn't seem to support SELECT FROM with aggregations. Plain connections
+    // work fine. See: https://github.com/getml/sqlgen/issues/99
     struct count_result {
-        std::int64_t count = 0;
+        long long count;
     };
 
     const auto query = sqlgen::select_from<session_entity>(
@@ -237,7 +242,7 @@ session_repository::count_by_account(const boost::uuids::uuid& account_id) {
         where("account_id"_c == account_id_str) |
         sqlgen::to<count_result>;
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    const auto r = ctx_.single_connection().and_then(query);
     ensure_success(r, lg());
 
     BOOST_LOG_SEV(lg(), debug) << "Count: " << r->count;
@@ -257,7 +262,7 @@ session_repository::read_by_time_range(
 
     const auto query = sqlgen::read<std::vector<session_entity>> |
         where("start_time"_c >= start_ts && "start_time"_c <= end_ts) |
-        order_by(desc("start_time"_c)) |
+        order_by("start_time"_c.desc()) |
         sqlgen::limit(static_cast<std::size_t>(limit_count));
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
@@ -274,7 +279,7 @@ session_repository::read_all_active() {
     const std::optional<std::string> null_end_time = std::nullopt;
     const auto query = sqlgen::read<std::vector<session_entity>> |
         where("end_time"_c == null_end_time) |
-        order_by(desc("start_time"_c));
+        order_by("start_time"_c.desc());
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -288,8 +293,11 @@ std::uint32_t session_repository::count_all_active() {
 
     const std::optional<std::string> null_end_time = std::nullopt;
 
+    // HACK: Using single connection instead of session because sqlgen sessions
+    // doesn't seem to support SELECT FROM with aggregations. Plain connections
+    // work fine. See: https://github.com/getml/sqlgen/issues/99
     struct count_result {
-        std::int64_t count = 0;
+        long long count;
     };
 
     const auto query = sqlgen::select_from<session_entity>(
@@ -297,7 +305,7 @@ std::uint32_t session_repository::count_all_active() {
         where("end_time"_c == null_end_time) |
         sqlgen::to<count_result>;
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    const auto r = ctx_.single_connection().and_then(query);
     ensure_success(r, lg());
 
     BOOST_LOG_SEV(lg(), debug) << "All active count: " << r->count;
@@ -320,7 +328,7 @@ session_repository::read_daily_statistics(
     const auto query = sqlgen::read<std::vector<session_statistics_entity>> |
         where("account_id"_c == account_id_str &&
               "day"_c >= start_str && "day"_c <= end_str) |
-        order_by(desc("day"_c));
+        order_by("day"_c.desc());
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
     ensure_success(r, lg());

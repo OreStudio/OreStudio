@@ -27,6 +27,7 @@ actor "Client" as C
 participant "Server" as S
 database "Session\nContext" as SC
 database "Account\nService" as AS
+database "Authorization\nService" as AZ
 
 == Connection Establishment ==
 
@@ -60,7 +61,7 @@ alt Valid Credentials
         deactivate AS
         S -> SC: Store session\n(remote_addr -> account_id)
         activate SC
-        S --> C: login_response\n(success=true, account_id, is_admin)
+        S --> C: login_response\n(success=true, account_id, username)
         note right: Session established
     end
 else Invalid Credentials
@@ -70,9 +71,9 @@ else Invalid Credentials
     S --> C: login_response\n(success=false, error="Invalid credentials")
 end
 
-== Authenticated Operations (Admin) ==
+== Authenticated Operations (RBAC Permission Check) ==
 
-group Lock Account [Requires Admin]
+group Lock Account [Requires accounts:lock permission]
     C -> S: lock_account_request\n(target_account_id)
     S -> SC: Get requester from session
     SC --> S: requester_account_id
@@ -80,20 +81,20 @@ group Lock Account [Requires Admin]
     alt No Session
         S --> C: error_response\n(authentication_failed, "Not authenticated")
     else Has Session
-        S -> AS: is_admin(requester_id)?
-        AS --> S: admin check result
+        S -> AZ: has_permission(requester_id, "accounts:lock")?
+        AZ --> S: permission check result
 
-        alt Is Admin
+        alt Has Permission
             S -> AS: lock_account(target_id)
             AS --> S: Account locked
             S --> C: lock_account_response\n(success=true)
-        else Not Admin
-            S --> C: lock_account_response\n(success=false, "Admin required")
+        else No Permission
+            S --> C: error_response\n(permission_denied, "accounts:lock required")
         end
     end
 end
 
-group Unlock Account [Requires Admin]
+group Unlock Account [Requires accounts:unlock permission]
     C -> S: unlock_account_request\n(target_account_id)
     S -> SC: Get requester from session
     SC --> S: requester_account_id
@@ -101,15 +102,15 @@ group Unlock Account [Requires Admin]
     alt No Session
         S --> C: error_response\n(authentication_failed, "Not authenticated")
     else Has Session
-        S -> AS: is_admin(requester_id)?
-        AS --> S: admin check result
+        S -> AZ: has_permission(requester_id, "accounts:unlock")?
+        AZ --> S: permission check result
 
-        alt Is Admin
+        alt Has Permission
             S -> AS: unlock_account(target_id)
             AS --> S: Account unlocked
             S --> C: unlock_account_response\n(success=true)
-        else Not Admin
-            S --> C: unlock_account_response\n(success=false, "Admin required")
+        else No Permission
+            S --> C: error_response\n(permission_denied, "accounts:unlock required")
         end
     end
 end

@@ -224,7 +224,7 @@ namespace ores #F2F2F2 {
 
                 class accounts_commands #ECECEC {
                     +{static} register_commands(root_menu: cli::Menu&, session: comms::net::client_session&): void
-                    +{static} process_create_account(out: std::ostream&, session: comms::net::client_session&, username: std::string, password: std::string, totp_secret: std::string, email: std::string, is_admin: bool): void
+                    +{static} process_create_account(out: std::ostream&, session: comms::net::client_session&, username: std::string, password: std::string, totp_secret: std::string, email: std::string): void
                     +{static} process_list_accounts(out: std::ostream&, session: comms::net::client_session&): void
                     +{static} process_login(out: std::ostream&, session: comms::net::client_session&, username: std::string, password: std::string): void
                     +{static} process_lock_account(out: std::ostream&, session: comms::net::client_session&, account_id: std::string): void

@@ -35,6 +35,7 @@
 #include "ores.comms/service/remote_event_adapter.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.utility/log/make_logger.hpp"
+#include "ores.iam/domain/session.hpp"
 
 namespace ores::qt {
 
@@ -54,6 +55,14 @@ struct SignupResult {
     bool success = false;
     QString error_message;
     QString username;
+};
+
+/**
+ * @brief Result of a session list request.
+ */
+struct SessionListResult {
+    std::vector<iam::domain::session> sessions;
+    std::uint32_t total_count = 0;
 };
 
 /**
@@ -243,6 +252,19 @@ public:
      * Provides access to the session for advanced use cases.
      */
     comms::net::client_session& session() { return session_; }
+
+    /**
+     * @brief List sessions for an account.
+     *
+     * @param accountId The account UUID (nil for own sessions)
+     * @param limit Maximum sessions to return
+     * @param offset Pagination offset
+     * @return Session list result or nullopt on error
+     */
+    std::optional<SessionListResult> listSessions(
+        const boost::uuids::uuid& accountId,
+        std::uint32_t limit = 100,
+        std::uint32_t offset = 0);
 
     /**
      * @brief Get the current client (internal use only).

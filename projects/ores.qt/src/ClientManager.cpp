@@ -29,6 +29,7 @@
 #include "ores.comms/eventing/connection_events.hpp"
 #include "ores.iam/messaging/protocol.hpp"
 #include "ores.iam/messaging/signup_protocol.hpp"
+#include "ores.iam/messaging/session_protocol.hpp"
 
 namespace ores::qt {
 
@@ -512,6 +513,74 @@ void ClientManager::unsubscribeFromEvent(const std::string& eventType) {
             BOOST_LOG_SEV(lg(), error) << "Unsubscribe failed with exception: " << e.what();
         }
     });
+}
+
+std::optional<SessionListResult> ClientManager::listSessions(
+    const boost::uuids::uuid& accountId,
+    std::uint32_t limit,
+    std::uint32_t offset) {
+
+    if (!isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot list sessions: not connected";
+        return std::nullopt;
+    }
+
+    try {
+        iam::messaging::list_sessions_request request{
+            .account_id = accountId,
+            .limit = limit,
+            .offset = offset
+        };
+
+        auto payload = request.serialize();
+        comms::messaging::frame request_frame(
+            comms::messaging::message_type::list_sessions_request,
+            0,
+            std::move(payload)
+        );
+
+        auto response_result = client_->send_request_sync(std::move(request_frame));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "List sessions failed: network error";
+            return std::nullopt;
+        }
+
+        const auto& header = response_result->header();
+
+        // Decompress payload
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            BOOST_LOG_SEV(lg(), error) << "List sessions failed: decompression error";
+            return std::nullopt;
+        }
+
+        // Check for error response
+        if (header.type == comms::messaging::message_type::error_response) {
+            auto error_resp = comms::messaging::error_response::deserialize(*payload_result);
+            BOOST_LOG_SEV(lg(), error) << "List sessions failed: "
+                << (error_resp ? error_resp->message : "unknown error");
+            return std::nullopt;
+        }
+
+        auto response = iam::messaging::list_sessions_response::deserialize(*payload_result);
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "List sessions failed: invalid response";
+            return std::nullopt;
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "Retrieved " << response->sessions.size()
+                                   << " sessions (total: " << response->total_count << ")";
+
+        return SessionListResult{
+            .sessions = std::move(response->sessions),
+            .total_count = response->total_count
+        };
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "List sessions exception: " << e.what();
+        return std::nullopt;
+    }
 }
 
 }

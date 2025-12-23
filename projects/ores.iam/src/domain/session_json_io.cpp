@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,20 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-\ir ./currency_images_drop.sql
-\ir ./image_tags_drop.sql
-\ir ./tags_drop.sql
-\ir ./images_drop.sql
-\ir ./rbac_functions_drop.sql
-\ir ./account_roles_drop.sql
-\ir ./role_permissions_drop.sql
-\ir ./roles_drop.sql
-\ir ./permissions_drop.sql
-\ir ./currencies_notify_trigger_drop.sql
-\ir ./currencies_drop.sql
-\ir ./accounts_notify_trigger_drop.sql
-\ir ./accounts_drop.sql
-\ir ./feature_flags_drop.sql
-\ir ./session_stats_drop.sql
-\ir ./sessions_drop.sql
-\ir ./login_info_drop.sql
+#include "ores.iam/domain/session_json_io.hpp"
+
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+
+namespace ores::iam::domain {
+
+std::ostream& operator<<(std::ostream& s, const session& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::ostream& operator<<(std::ostream& s, const session_statistics& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+}

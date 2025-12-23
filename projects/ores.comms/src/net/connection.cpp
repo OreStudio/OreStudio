@@ -96,6 +96,10 @@ connection::read_frame(bool skip_version_check, boost::asio::cancellation_slot c
         BOOST_LOG_SEV(lg(), debug) << "Successfully deserialized frame, type: "
                                  << frame_result->header().type
                                  << " total size: " << buffer.size();
+
+        // Track bytes received
+        bytes_received_.fetch_add(buffer.size(), std::memory_order_relaxed);
+
         co_return frame_result;
 
     } catch (const boost::system::system_error& e) {
@@ -120,6 +124,10 @@ connection::write_frame(const messaging::frame& frame,
         socket_,
         boost::asio::buffer(data),
         boost::asio::bind_cancellation_slot(cancel_slot, boost::asio::use_awaitable));
+
+    // Track bytes sent
+    bytes_sent_.fetch_add(data.size(), std::memory_order_relaxed);
+
     BOOST_LOG_SEV(lg(), debug) << "Successfully wrote frame";
 }
 
@@ -143,6 +151,19 @@ std::string connection::remote_address() const {
         BOOST_LOG_SEV(lg(), error) << msg;
         return msg;
     }
+}
+
+std::uint64_t connection::bytes_sent() const {
+    return bytes_sent_.load(std::memory_order_relaxed);
+}
+
+std::uint64_t connection::bytes_received() const {
+    return bytes_received_.load(std::memory_order_relaxed);
+}
+
+void connection::reset_byte_counters() {
+    bytes_sent_.store(0, std::memory_order_relaxed);
+    bytes_received_.store(0, std::memory_order_relaxed);
 }
 
 }

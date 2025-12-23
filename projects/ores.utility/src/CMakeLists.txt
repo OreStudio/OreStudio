@@ -39,6 +39,8 @@ set_target_properties(${lib_target_name}
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/ores.utility/include)
 
+find_package(maxminddb CONFIG REQUIRED)
+
 target_link_libraries(${lib_target_name}
     PUBLIC
         OpenSSL::SSL
@@ -46,6 +48,7 @@ target_link_libraries(${lib_target_name}
         Boost::program_options
         Boost::exception
         reflectcpp::reflectcpp
+        maxminddb::maxminddb
     PRIVATE
         faker-cxx::faker-cxx)
 

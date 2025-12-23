@@ -17,20 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-\ir ./currency_images_drop.sql
-\ir ./image_tags_drop.sql
-\ir ./tags_drop.sql
-\ir ./images_drop.sql
-\ir ./rbac_functions_drop.sql
-\ir ./account_roles_drop.sql
-\ir ./role_permissions_drop.sql
-\ir ./roles_drop.sql
-\ir ./permissions_drop.sql
-\ir ./currencies_notify_trigger_drop.sql
-\ir ./currencies_drop.sql
-\ir ./accounts_notify_trigger_drop.sql
-\ir ./accounts_drop.sql
-\ir ./feature_flags_drop.sql
-\ir ./session_stats_drop.sql
-\ir ./sessions_drop.sql
-\ir ./login_info_drop.sql
+set schema 'oresdb';
+
+-- Remove retention policy
+select remove_retention_policy('oresdb.sessions', if_exists => true);
+
+-- Remove compression policy
+select remove_compression_policy('oresdb.sessions', if_exists => true);
+
+-- Drop continuous aggregates that depend on sessions table
+drop materialized view if exists "oresdb"."session_stats_daily" cascade;
+drop materialized view if exists "oresdb"."session_stats_hourly" cascade;
+drop materialized view if exists "oresdb"."session_stats_aggregate_daily" cascade;
+
+-- Drop sessions table (this also drops the hypertable and all chunks)
+drop table if exists "oresdb"."sessions" cascade;

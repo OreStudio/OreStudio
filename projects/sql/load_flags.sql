@@ -34,10 +34,10 @@ SELECT
     'Country and region flag images',
     'system',
     CURRENT_TIMESTAMP,
-    '9999-12-31 23:59:59'::timestamp
+    '9999-12-31 23:59:59'::timestamptz
 WHERE NOT EXISTS (
     SELECT 1 FROM oresdb.tags
-    WHERE name = 'flag' AND valid_to = '9999-12-31 23:59:59'::timestamp
+    WHERE name = 'flag' AND valid_to = '9999-12-31 23:59:59'::timestamptz
 );
 
 -- Function to load a single flag SVG file
@@ -55,7 +55,7 @@ BEGIN
     -- Check if image with this key already exists and get its ID
     SELECT image_id INTO v_image_id
     FROM oresdb.images
-    WHERE key = p_key AND valid_to = '9999-12-31 23:59:59'::timestamp;
+    WHERE key = p_key AND valid_to = '9999-12-31 23:59:59'::timestamptz;
 
     -- If it's a new image, generate a new UUID
     IF v_image_id IS NULL THEN
@@ -68,7 +68,7 @@ BEGIN
         modified_by, valid_from, valid_to
     ) VALUES (
         v_image_id, 0, p_key, p_description, p_svg_data,
-        'system', CURRENT_TIMESTAMP, '9999-12-31 23:59:59'::timestamp
+        'system', CURRENT_TIMESTAMP, '9999-12-31 23:59:59'::timestamptz
     );
 
     -- Link image to flag tag (skip if already linked)
@@ -77,17 +77,17 @@ BEGIN
     )
     SELECT
         v_image_id, tag_id, 'system', CURRENT_TIMESTAMP,
-        CURRENT_TIMESTAMP, '9999-12-31 23:59:59'::timestamp
+        CURRENT_TIMESTAMP, '9999-12-31 23:59:59'::timestamptz
     FROM oresdb.tags
-    WHERE name = 'flag' AND valid_to = '9999-12-31 23:59:59'::timestamp
+    WHERE name = 'flag' AND valid_to = '9999-12-31 23:59:59'::timestamptz
       AND NOT EXISTS (
           SELECT 1 FROM oresdb.image_tags it
           WHERE it.image_id = v_image_id
             AND it.tag_id = tags.tag_id
-            AND it.valid_to = '9999-12-31 23:59:59'::timestamp
+            AND it.valid_to = '9999-12-31 23:59:59'::timestamptz
       );
 
-    RETURN v_image_id::text;
+    RETURN;
 END;
 $$ LANGUAGE plpgsql;
 

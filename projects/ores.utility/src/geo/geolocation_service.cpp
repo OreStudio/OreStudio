@@ -23,6 +23,8 @@
 
 namespace ores::utility::geo {
 
+using namespace ores::utility::log;
+
 struct geolocation_service::impl {
     MMDB_s mmdb;
     bool loaded = false;

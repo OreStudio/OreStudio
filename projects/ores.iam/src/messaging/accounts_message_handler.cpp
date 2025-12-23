@@ -262,12 +262,31 @@ handle_login_request(std::span<const std::byte> payload,
                                   << ", password_reset_required: "
                                   << password_reset_required;
 
-        // Store session for this client in the shared session service
-        // Note: Authorization is now handled via RBAC permissions checked at
-        // handler level using authorization_service.has_permission()
-        sessions_->store_session(remote_address, comms::service::session_info{
-            .account_id = account.id
-        });
+        // Create full session object for tracking
+        auto sess = std::make_shared<domain::session>();
+        sess->id = boost::uuids::random_generator()();
+        sess->account_id = account.id;
+        // Check if user has admin-level permissions via RBAC
+        sess->is_admin = auth_service_->has_permission(account.id,
+            domain::permissions::accounts_update);
+        sess->start_time = std::chrono::system_clock::now();
+        sess->client_ip = ip_address;
+        // Client identifier and version can be populated from handshake
+        // if available - for now leave default
+
+        // Persist session to database
+        try {
+            session_repo_.create(*sess);
+            BOOST_LOG_SEV(lg(), debug) << "Session persisted to database: "
+                                       << boost::uuids::to_string(sess->id);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to persist session to database: "
+                                      << e.what();
+            // Continue anyway - in-memory session tracking still works
+        }
+
+        // Store session in shared session service for authorization
+        sessions_->store_session_data(remote_address, sess);
 
         login_response response{
             .success = true,
@@ -1340,10 +1359,12 @@ handle_list_sessions_request(std::span<const std::byte> payload,
 
     // Determine which account's sessions to return
     boost::uuids::uuid target_account_id = request.account_id;
+    const bool is_admin = auth_service_->has_permission(session->account_id,
+        domain::permissions::accounts_read);
     if (target_account_id.is_nil()) {
         // Nil UUID means requesting own sessions
         target_account_id = session->account_id;
-    } else if (!session->is_admin && target_account_id != session->account_id) {
+    } else if (!is_admin && target_account_id != session->account_id) {
         // Non-admin trying to view someone else's sessions
         BOOST_LOG_SEV(lg(), warn) << "List sessions denied: non-admin trying to view "
                                   << "sessions for account "
@@ -1393,9 +1414,11 @@ handle_get_session_statistics_request(std::span<const std::byte> payload,
     // Determine target account
     boost::uuids::uuid target_account_id = request.account_id;
     bool aggregate_mode = target_account_id.is_nil();
+    const bool is_admin = auth_service_->has_permission(session->account_id,
+        domain::permissions::accounts_read);
 
     // Non-admin can only view their own stats, not aggregate
-    if (!session->is_admin) {
+    if (!is_admin) {
         if (aggregate_mode) {
             // Non-admin requesting aggregate - limit to their own account
             target_account_id = session->account_id;
@@ -1452,7 +1475,10 @@ handle_get_active_sessions_request(std::span<const std::byte> payload,
     }
 
     std::vector<domain::session> active_sessions;
-    if (session->is_admin && request.account_id.is_nil()) {
+    const bool is_admin = auth_service_->has_permission(session->account_id,
+        domain::permissions::accounts_read);
+
+    if (is_admin && request.account_id.is_nil()) {
         // Admin requesting all active sessions
         active_sessions = session_repo_.read_all_active();
         BOOST_LOG_SEV(lg(), info) << "Retrieved " << active_sessions.size()
@@ -1463,7 +1489,7 @@ handle_get_active_sessions_request(std::span<const std::byte> payload,
             ? session->account_id : request.account_id;
 
         // Non-admin can only view own sessions
-        if (!session->is_admin && target_account_id != session->account_id) {
+        if (!is_admin && target_account_id != session->account_id) {
             BOOST_LOG_SEV(lg(), warn) << "Get active sessions denied: non-admin trying to view "
                                       << "sessions for account "
                                       << boost::uuids::to_string(target_account_id);

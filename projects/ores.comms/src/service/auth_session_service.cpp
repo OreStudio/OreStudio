@@ -148,13 +148,11 @@ bool auth_session_service::requires_authentication(messaging::message_type type)
     case message_type::handshake_ack:
     // Login - obviously can't require auth
     case message_type::login_request:
-    // Signup - users register before having an account
+    // Signup - self-registration (flag-protected at handler level)
     case message_type::signup_request:
     // Bootstrap operations - only allowed in bootstrap mode anyway
     case message_type::create_initial_admin_request:
     case message_type::bootstrap_status_request:
-    // Signup - self-registration (flag-protected at handler level)
-    case message_type::signup_request:
         return false;
     default:
         // All other messages require authentication

@@ -92,7 +92,13 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // get_currency_images_request/response for retrieving currency-image mappings,
 // get_images_request/response for batched image retrieval (max 100 per request).
 // This enables the UI to display flag icons for currencies.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 14;
+//
+// Version 15.0 adds session tracking and statistics. New messages:
+// list_sessions_request/response for querying session history by account,
+// get_session_statistics_request/response for aggregated session metrics.
+// Sessions now track bytes sent/received, client version, and geolocation.
+// Session data is stored in a TimescaleDB hypertable for time-series analysis.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 15;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
@@ -201,6 +207,14 @@ enum class message_type {
     // User self-registration messages (0x2030 - 0x203F)
     signup_request = 0x2030,
     signup_response = 0x2031,
+
+    // Session tracking messages (0x2040 - 0x204F)
+    list_sessions_request = 0x2040,
+    list_sessions_response = 0x2041,
+    get_session_statistics_request = 0x2042,
+    get_session_statistics_response = 0x2043,
+    get_active_sessions_request = 0x2044,
+    get_active_sessions_response = 0x2045,
 
     // Variability subsystem messages (0x3000 - 0x3FFF)
     list_feature_flags_request = 0x3000,

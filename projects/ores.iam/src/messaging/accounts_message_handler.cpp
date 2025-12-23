@@ -1492,28 +1492,17 @@ handle_get_active_sessions_request(std::span<const std::byte> payload,
     const bool is_admin = auth_service_->has_permission(session->account_id,
         domain::permissions::accounts_read);
 
-    if (is_admin && request.account_id.is_nil()) {
-        // Admin requesting all active sessions
+    if (is_admin) {
+        // Admin gets all active sessions
         active_sessions = session_repo_.read_all_active();
         BOOST_LOG_SEV(lg(), info) << "Retrieved " << active_sessions.size()
                                   << " active sessions (admin view)";
     } else {
-        // Get active sessions for specific account
-        boost::uuids::uuid target_account_id = request.account_id.is_nil()
-            ? session->account_id : request.account_id;
-
-        // Non-admin can only view own sessions
-        if (!is_admin && target_account_id != session->account_id) {
-            BOOST_LOG_SEV(lg(), warn) << "Get active sessions denied: non-admin trying to view "
-                                      << "sessions for account "
-                                      << boost::uuids::to_string(target_account_id);
-            co_return std::unexpected(comms::messaging::error_code::authorization_failed);
-        }
-
-        active_sessions = session_repo_.read_active_by_account(target_account_id);
+        // Non-admin gets only their own active sessions
+        active_sessions = session_repo_.read_active_by_account(session->account_id);
         BOOST_LOG_SEV(lg(), info) << "Retrieved " << active_sessions.size()
                                   << " active sessions for account "
-                                  << boost::uuids::to_string(target_account_id);
+                                  << boost::uuids::to_string(session->account_id);
     }
 
     get_active_sessions_response response{

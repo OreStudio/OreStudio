@@ -22,7 +22,6 @@
 #include <format>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
-#include "sqlgen/Timestamp.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
@@ -191,7 +190,7 @@ session_repository::read_active_by_account(const boost::uuids::uuid& account_id)
                                << boost::uuids::to_string(account_id);
 
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
-    const std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> null_end_time = std::nullopt;
+    const std::optional<std::string> null_end_time = std::nullopt;
     const auto query = sqlgen::read<std::vector<session_entity>> |
         where("account_id"_c == account_id_str && "end_time"_c == null_end_time) |
         order_by("start_time"_c.desc());
@@ -209,7 +208,7 @@ session_repository::count_active_by_account(const boost::uuids::uuid& account_id
                                << boost::uuids::to_string(account_id);
 
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
-    const std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> null_end_time = std::nullopt;
+    const std::optional<std::string> null_end_time = std::nullopt;
 
     // HACK: Using single connection instead of session because sqlgen sessions
     // doesn't seem to support SELECT FROM with aggregations. Plain connections
@@ -283,7 +282,7 @@ std::vector<domain::session>
 session_repository::read_all_active() {
     BOOST_LOG_SEV(lg(), debug) << "Reading all active sessions";
 
-    const std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> null_end_time = std::nullopt;
+    const std::optional<std::string> null_end_time = std::nullopt;
     const auto query = sqlgen::read<std::vector<session_entity>> |
         where("end_time"_c == null_end_time) |
         order_by("start_time"_c.desc());
@@ -298,7 +297,7 @@ session_repository::read_all_active() {
 std::uint32_t session_repository::count_all_active() {
     BOOST_LOG_SEV(lg(), debug) << "Counting all active sessions";
 
-    const std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> null_end_time = std::nullopt;
+    const std::optional<std::string> null_end_time = std::nullopt;
 
     // HACK: Using single connection instead of session because sqlgen sessions
     // doesn't seem to support SELECT FROM with aggregations. Plain connections

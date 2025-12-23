@@ -27,14 +27,11 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.comms/messaging/frame.hpp"
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/net/client_session.hpp"
 #include "ores.risk/messaging/protocol.hpp"
 
 namespace ores::qt {
 
-using comms::messaging::frame;
-using comms::messaging::message_type;
 using namespace ores::utility::log;
 
 ClientCurrencyModel::
@@ -193,58 +190,26 @@ void ClientCurrencyModel::refresh(bool replace) {
                                        << offset << ", limit=" << page_size;
             if (!self) return {false, {}, 0};
 
+            // Fetch currencies using typed request
             risk::messaging::get_currencies_request request;
             request.offset = offset;
             request.limit = page_size;
-            auto payload = request.serialize();
 
-            frame request_frame(message_type::get_currencies_request,
-                0, std::move(payload));
+            auto result = self->clientManager_->
+                process_authenticated_request(std::move(request));
 
-            // Send request synchronously (on background thread)
-            // ClientManager handles connection check, but we checked before spawning too.
-            auto response_result =
-                self->clientManager_->sendRequest(std::move(request_frame));
-
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send request: "
-                                           << response_result.error();
+            if (!result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to fetch currencies: "
+                                           << comms::net::to_string(result.error());
                 return {false, {}, 0};
             }
 
-            // Log frame attributes for debugging
-            const auto& header = response_result->header();
-            BOOST_LOG_SEV(lg(), debug) << "Currencies response frame: type="
-                                       << static_cast<int>(header.type)
-                                       << ", compression=" << header.compression
-                                       << ", payload_size=" << response_result->payload().size();
-
-            // Decompress payload
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress currencies response"
-                                           << ", compression=" << header.compression
-                                           << ", error=" << payload_result.error();
-                return {false, {}, 0};
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Received a currencies response.";
-            auto response =
-                risk::messaging::get_currencies_response::deserialize(*payload_result);
-
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize currencies response"
-                                           << ", decompressed_payload_size="
-                                           << payload_result->size();
-                return {false, {}, 0};
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Received " << response->currencies.size()
+            BOOST_LOG_SEV(lg(), debug) << "Received " << result->currencies.size()
                                        << " currencies, total available: "
-                                       << response->total_available_count;
+                                       << result->total_available_count;
 
-            return {true, std::move(response->currencies),
-                    response->total_available_count};
+            return {true, std::move(result->currencies),
+                    result->total_available_count};
         });
 
      watcher_->setFuture(future);

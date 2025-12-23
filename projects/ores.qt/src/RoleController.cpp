@@ -24,18 +24,10 @@
 #include "ores.qt/RoleDetailDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
-#include "ores.iam/eventing/role_assigned_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::utility::log;
-
-namespace {
-    // Event type names for role changes
-    constexpr std::string_view role_assigned_event_name =
-        eventing::domain::event_traits<iam::eventing::role_assigned_event>::name;
-}
 
 RoleController::RoleController(
     QMainWindow* mainWindow,
@@ -48,42 +40,10 @@ RoleController::RoleController(
       allDetachableWindows_(allDetachableWindows),
       roleListWindow_(nullptr) {
     BOOST_LOG_SEV(lg(), debug) << "Role controller created";
-
-    // Connect to notification signal from ClientManager
-    if (clientManager_) {
-        connect(clientManager_, &ClientManager::notificationReceived,
-                this, &RoleController::onNotificationReceived);
-
-        // Subscribe to events when connected
-        connect(clientManager_, &ClientManager::connected,
-                this, [this]() {
-            BOOST_LOG_SEV(lg(), info) << "Subscribing to role change events";
-            clientManager_->subscribeToEvent(std::string{role_assigned_event_name});
-        });
-
-        // Re-subscribe after reconnection
-        connect(clientManager_, &ClientManager::reconnected,
-                this, [this]() {
-            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to role change events after reconnect";
-            clientManager_->subscribeToEvent(std::string{role_assigned_event_name});
-        });
-
-        // If already connected, subscribe now
-        if (clientManager_->isConnected()) {
-            BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to role change events";
-            clientManager_->subscribeToEvent(std::string{role_assigned_event_name});
-        }
-    }
 }
 
 RoleController::~RoleController() {
     BOOST_LOG_SEV(lg(), debug) << "Role controller destroyed";
-
-    // Unsubscribe from role change events
-    if (clientManager_) {
-        BOOST_LOG_SEV(lg(), debug) << "Unsubscribing from role change events";
-        clientManager_->unsubscribeFromEvent(std::string{role_assigned_event_name});
-    }
 }
 
 void RoleController::showListWindow() {
@@ -157,30 +117,6 @@ void RoleController::showListWindow() {
 void RoleController::closeAllWindows() {
     if (roleListWindow_) {
         roleListWindow_->close();
-    }
-}
-
-void RoleController::onNotificationReceived(
-    const QString& eventType, const QDateTime& timestamp) {
-    // Check if this is a role-related event
-    if (eventType != QString::fromStdString(std::string{role_assigned_event_name})) {
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Received role change notification at "
-                              << timestamp.toString(Qt::ISODate).toStdString();
-
-    markRoleListAsStale();
-}
-
-void RoleController::markRoleListAsStale() {
-    if (roleListWindow_) {
-        auto* roleWidget = qobject_cast<RoleMdiWindow*>(
-            roleListWindow_->widget());
-        if (roleWidget) {
-            roleWidget->markAsStale();
-            BOOST_LOG_SEV(lg(), debug) << "Marked role window as stale";
-        }
     }
 }
 

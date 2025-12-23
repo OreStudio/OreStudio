@@ -22,7 +22,6 @@
 
 #include <QPointer>
 #include <QList>
-#include <QDateTime>
 #include "ores.qt/EntityController.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.iam/domain/role.hpp"
@@ -102,19 +101,7 @@ private slots:
      */
     void onShowRoleDetails(const iam::domain::role& role);
 
-    /**
-     * @brief Handles role change notifications from the server.
-     *
-     * @param eventType The event type name
-     * @param timestamp When the event occurred
-     */
-    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp);
-
 private:
-    /**
-     * @brief Marks the role list as stale if it exists.
-     */
-    void markRoleListAsStale();
 
     /**
      * @brief Reference to MainWindow's list of all detachable windows.

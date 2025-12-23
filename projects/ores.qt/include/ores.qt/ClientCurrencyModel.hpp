@@ -32,6 +32,8 @@
 
 namespace ores::qt {
 
+class ImageCache;
+
 /**
  * @brief Model for displaying currencies fetched from the server via client.
  *
@@ -59,6 +61,7 @@ public:
      * and easier to refactor when columns are added, removed, or reordered.
      */
     enum Column {
+        Flag,          // Currency flag icon
         CurrencyName,
         IsoCode,
         Version,
@@ -76,6 +79,7 @@ public:
     };
 
     explicit ClientCurrencyModel(ClientManager* clientManager,
+                                   ImageCache* imageCache,
                                    QObject* parent = nullptr);
     ~ClientCurrencyModel() override = default;
 
@@ -190,6 +194,7 @@ private:
     using FutureWatcherResult = FetchResult;
 
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
     std::vector<risk::domain::currency> currencies_;
     QFutureWatcher<FutureWatcherResult>* watcher_;
     std::uint32_t page_size_{100};

@@ -33,6 +33,7 @@ qt_add_executable(${exe_binary_name} ${SOURCES} ${HEADERS} ${FORMS} ${RESOURCES}
 target_link_libraries(${exe_binary_name} PRIVATE
     ores.risk.lib
     ores.comms.lib
+    ores.assets.lib
     ores.iam.lib
     ores.eventing.lib
     ores.utility.lib
@@ -40,7 +41,8 @@ target_link_libraries(${exe_binary_name} PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
-    Qt6::Concurrent)
+    Qt6::Concurrent
+    Qt6::Svg)
 
 set_target_properties(${exe_binary_name} PROPERTIES
     AUTORCC_RESOURCE_DIRS "${ORES_QT_DIR}/resources;${ORES_QT_DIR}/resources/icons"

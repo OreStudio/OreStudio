@@ -138,7 +138,7 @@ find_package(OpenSSL REQUIRED)
 
 # Qt
 set(QT_NO_PRIVATE_MODULE_WARNING ON)
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent Svg)
 
 # Reflect CPP
 find_package(pugixml CONFIG REQUIRED)

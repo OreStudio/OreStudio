@@ -25,6 +25,7 @@
 #include <QColor>
 #include <QDateTime>
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
@@ -37,8 +38,10 @@ using comms::messaging::message_type;
 using namespace ores::utility::log;
 
 ClientCurrencyModel::
-ClientCurrencyModel(ClientManager* clientManager, QObject* parent)
+ClientCurrencyModel(ClientManager* clientManager, ImageCache* imageCache,
+    QObject* parent)
     : QAbstractTableModel(parent), clientManager_(clientManager),
+      imageCache_(imageCache),
       watcher_(new QFutureWatcher<FutureWatcherResult>(this)),
       pulse_timer_(new QTimer(this)) {
 
@@ -49,6 +52,17 @@ ClientCurrencyModel(ClientManager* clientManager, QObject* parent)
     // Setup pulse timer for recency color updates (same interval as reload button)
     connect(pulse_timer_, &QTimer::timeout,
         this, &ClientCurrencyModel::onPulseTimerTimeout);
+
+    // Connect to image cache to refresh decorations when images are loaded
+    if (imageCache_) {
+        connect(imageCache_, &ImageCache::imagesLoaded, this, [this]() {
+            if (!currencies_.empty()) {
+                emit dataChanged(index(0, Column::Flag),
+                    index(rowCount() - 1, Column::Flag),
+                    {Qt::DecorationRole});
+            }
+        });
+    }
 }
 
 int ClientCurrencyModel::rowCount(const QModelIndex& parent) const {
@@ -73,6 +87,14 @@ QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
 
     const auto& currency = currencies_[row];
 
+    // Handle DecorationRole for Flag column
+    if (role == Qt::DecorationRole && index.column() == Column::Flag) {
+        if (imageCache_) {
+            return imageCache_->getCurrencyIcon(currency.iso_code);
+        }
+        return {};
+    }
+
     if (role == Qt::ForegroundRole) {
         return recency_foreground_color(currency.iso_code);
     }
@@ -81,6 +103,7 @@ QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
         return {};
 
     switch (index.column()) {
+    case Column::Flag: return {};  // No text for flag column
     case Column::CurrencyName: return QString::fromStdString(currency.name);
     case Column::IsoCode: return QString::fromStdString(currency.iso_code);
     case Column::Version: return currency.version;
@@ -105,6 +128,7 @@ headerData(int section, Qt::Orientation orientation, int role) const {
 
     if (orientation == Qt::Horizontal) {
         switch (section) {
+        case Column::Flag: return tr("Flag");
         case Column::CurrencyName: return tr("Currency Name");
         case Column::IsoCode: return tr("ISO Code");
         case Column::Version: return tr("Version");

@@ -75,6 +75,12 @@ jobs:
       - name: Enable Developer Command Prompt
         uses: ilammy/msvc-dev-cmd@v1.13.0
 
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          cache: true
+
       - name: Setup postgres
         uses: ikalnytskyi/action-setup-postgres@v8
         with:

@@ -67,6 +67,8 @@ public:
     std::vector<domain::image>
     read_latest_by_id(context ctx, const std::string& image_id);
     std::vector<domain::image>
+    read_latest_by_ids(context ctx, const std::vector<std::string>& image_ids);
+    std::vector<domain::image>
     read_latest_by_key(context ctx, const std::string& key);
     /**@}*/
 

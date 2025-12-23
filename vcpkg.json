@@ -4,7 +4,6 @@
     "description": "GUI for Open Source Risk Engine (ORE)",
     "version-string": "0.0.7",
     "dependencies": [
-        "qtbase",
         "openssl",
         {
             "name": "reflectcpp",

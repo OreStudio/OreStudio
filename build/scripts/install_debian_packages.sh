@@ -38,8 +38,7 @@ sudo apt-get install \
      mesa-common-dev \
      pkg-config \
      xorg-dev \
-     libltdl-dev \
-     qt6-base-dev # Use Qt from the distro
+     libltdl-dev
 
 # Do it twice to hopefully fix intermittent issues with mirrors.
 sudo apt-get update
@@ -65,8 +64,7 @@ sudo apt-get install \
      mesa-common-dev \
      pkg-config \
      xorg-dev \
-     libltdl-dev \
-     qt6-base-dev # Use Qt from the distro
+     libltdl-dev
 
 
 sudo apt-get clean sudo apt-get autoremove -y

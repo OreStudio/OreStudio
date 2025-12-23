@@ -25,7 +25,7 @@
 
 // Configure magic_enum to support our enum value ranges
 #define MAGIC_ENUM_RANGE_MIN 0
-#define MAGIC_ENUM_RANGE_MAX 0x4000
+#define MAGIC_ENUM_RANGE_MAX 0x5000
 
 #include <magic_enum/magic_enum.hpp>
 
@@ -87,8 +87,13 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // New error codes: signup_disabled, username_taken, email_taken,
 // signup_requires_authorization. Signup is controlled by system.user_signups
 // feature flag.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 13;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
+//
+// Version 14.0 adds assets subsystem for dynamic image loading. New messages:
+// get_currency_images_request/response for retrieving currency-image mappings,
+// get_images_request/response for batched image retrieval (max 100 per request).
+// This enables the UI to display flag icons for currencies.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 14;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -99,6 +104,8 @@ constexpr std::uint16_t ACCOUNTS_SUBSYSTEM_MIN = 0x2000;
 constexpr std::uint16_t ACCOUNTS_SUBSYSTEM_MAX = 0x2FFF;
 constexpr std::uint16_t VARIABILITY_SUBSYSTEM_MIN = 0x3000;
 constexpr std::uint16_t VARIABILITY_SUBSYSTEM_MAX = 0x3FFF;
+constexpr std::uint16_t ASSETS_SUBSYSTEM_MIN = 0x4000;
+constexpr std::uint16_t ASSETS_SUBSYSTEM_MAX = 0x4FFF;
 
 /**
  * @brief Compression algorithm used for payload compression.
@@ -196,6 +203,12 @@ enum class message_type {
     // Variability subsystem messages (0x3000 - 0x3FFF)
     list_feature_flags_request = 0x3000,
     list_feature_flags_response = 0x3001,
+
+    // Assets subsystem messages (0x4000 - 0x4FFF)
+    get_currency_images_request = 0x4000,
+    get_currency_images_response = 0x4001,
+    get_images_request = 0x4002,
+    get_images_response = 0x4003,
 
     last_value
 };

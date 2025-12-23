@@ -41,6 +41,7 @@ target_link_libraries(${lib_target_name}
         ores.iam.lib
         ores.risk.lib
         ores.variability.lib
+        ores.assets.lib
         ores.eventing.lib
         ores.comms.lib
         ores.utility.lib)

@@ -23,6 +23,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.qt/CurrencyMdiWindow.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/CurrencyDetailDialog.hpp"
 #include "ores.qt/CurrencyHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
@@ -49,11 +50,13 @@ CurrencyController::CurrencyController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ImageCache* imageCache,
     const QString& username,
     QList<DetachableMdiSubWindow*>& allDetachableWindows,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, parent),
       allDetachableWindows_(allDetachableWindows),
+      imageCache_(imageCache),
       currencyListWindow_(nullptr) {
     BOOST_LOG_SEV(lg(), debug) << "Currency controller created";
 
@@ -122,8 +125,8 @@ void CurrencyController::showListWindow() {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new currencies MDI window";
     const QColor iconColor(220, 220, 220);
-    // Assuming CurrencyMdiWindow is updated to take ClientManager*
-    auto* currencyWidget = new CurrencyMdiWindow(clientManager_, username_, mainWindow_);
+    auto* currencyWidget = new CurrencyMdiWindow(clientManager_, imageCache_,
+                                                  username_, mainWindow_);
 
     // Connect status signals
     connect(currencyWidget, &CurrencyMdiWindow::statusChanged,

@@ -37,6 +37,7 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.variability.lib
+        ores.comms.lib
     PRIVATE
         ores.utility.lib
         ores.database.lib

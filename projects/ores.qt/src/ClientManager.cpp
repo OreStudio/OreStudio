@@ -21,10 +21,8 @@
 
 #include <QtConcurrent>
 #include <QFuture>
+#include <QThreadPool>
 #include <QTimeZone>
-#include <boost/asio/co_spawn.hpp>
-#include <boost/asio/detached.hpp>
-#include <boost/asio/use_future.hpp>
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.comms/messaging/handshake_protocol.hpp"
@@ -198,22 +196,27 @@ LoginResult ClientManager::connectAndLogin(
             return {.success = false, .error_message = QString::fromStdString(response->error_message)};
         }
 
-        // Success - swap in new client and store account_id, username, email
-        // Note: is_admin removed - permission checks now happen server-side via RBAC
+        // Success - swap in new client and attach to session
         client_ = new_client;
-        logged_in_account_id_ = response->account_id;
-        logged_in_username_ = response->username;
-        logged_in_email_ = response->email;
         connected_host_ = host;
         connected_port_ = port;
         const bool password_reset_required = response->password_reset_required;
-        BOOST_LOG_SEV(lg(), info) << "LOGIN SUCCESS: User '" << response->username
-                                  << "' authenticated to " << host << ":" << port
-                                  << ", password_reset_required: " << password_reset_required;
 
-        // Create event adapter for subscriptions
-        event_adapter_ = std::make_unique<comms::service::remote_event_adapter>(client_);
-        event_adapter_->set_notification_callback(
+        // Attach client to session and set session info
+        auto attach_result = session_.attach_client(client_);
+        if (!attach_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to attach client to session";
+            return {.success = false, .error_message = QString("Failed to initialize session")};
+        }
+
+        session_.set_session_info(comms::net::client_session_info{
+            .account_id = response->account_id,
+            .username = response->username,
+            .email = response->email
+        });
+
+        // Set notification callback to emit Qt signals
+        session_.set_notification_callback(
             [this](const std::string& event_type,
                    std::chrono::system_clock::time_point timestamp) {
                 BOOST_LOG_SEV(lg(), debug) << "Received notification for " << event_type;
@@ -227,6 +230,10 @@ LoginResult ClientManager::connectAndLogin(
                     emit notificationReceived(qEventType, qTimestamp);
                 }, Qt::QueuedConnection);
             });
+
+        BOOST_LOG_SEV(lg(), info) << "LOGIN SUCCESS: User '" << response->username
+                                  << "' authenticated to " << host << ":" << port
+                                  << ", password_reset_required: " << password_reset_required;
 
         // Publish connected event to event bus now that login succeeded
         if (event_bus_) {
@@ -372,8 +379,8 @@ void ClientManager::disconnect() {
         // Send logout request before disconnecting
         logout();
 
-        // Clean up event adapter before disconnecting
-        event_adapter_.reset();
+        // Detach session (clears session state and event adapter)
+        session_.detach_client();
 
         // The server closes the connection after logout, but we call disconnect
         // to ensure proper cleanup on the client side
@@ -391,7 +398,7 @@ bool ClientManager::logout() {
         return false;
     }
 
-    if (!logged_in_account_id_) {
+    if (!session_.is_logged_in()) {
         BOOST_LOG_SEV(lg(), debug) << "No logged-in account, skipping logout";
         return false;
     }
@@ -413,9 +420,7 @@ bool ClientManager::logout() {
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), warn) << "Logout request failed (network error)";
-            logged_in_account_id_ = std::nullopt;
-            logged_in_username_.clear();
-            logged_in_email_.clear();
+            session_.clear_session_info();
             return false;
         }
 
@@ -430,9 +435,7 @@ bool ClientManager::logout() {
         auto payload_result = response_result->decompressed_payload();
         if (!payload_result) {
             BOOST_LOG_SEV(lg(), warn) << "Logout failed: decompression error";
-            logged_in_account_id_ = std::nullopt;
-            logged_in_username_.clear();
-            logged_in_email_.clear();
+            session_.clear_session_info();
             return false;
         }
 
@@ -440,9 +443,7 @@ bool ClientManager::logout() {
 
         if (response && response->success) {
             BOOST_LOG_SEV(lg(), info) << "Logout successful";
-            logged_in_account_id_ = std::nullopt;
-            logged_in_username_.clear();
-            logged_in_email_.clear();
+            session_.clear_session_info();
             return true;
         } else {
             BOOST_LOG_SEV(lg(), warn) << "Logout failed: "
@@ -452,9 +453,7 @@ bool ClientManager::logout() {
         BOOST_LOG_SEV(lg(), error) << "Logout exception: " << e.what();
     }
 
-    logged_in_account_id_ = std::nullopt;
-    logged_in_username_.clear();
-    logged_in_email_.clear();
+    session_.clear_session_info();
     return false;
 }
 
@@ -476,49 +475,43 @@ ClientManager::sendRequest(comms::messaging::frame request) {
 }
 
 void ClientManager::subscribeToEvent(const std::string& eventType) {
-    if (!event_adapter_) {
-        BOOST_LOG_SEV(lg(), warn) << "Cannot subscribe: no event adapter";
+    if (!session_.is_connected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot subscribe: not connected";
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Subscribing to event: " << eventType;
 
-    // Run subscribe coroutine asynchronously to avoid blocking the GUI thread
-    auto task = [this, eventType]() -> boost::asio::awaitable<void> {
+    // Run subscription asynchronously to avoid blocking the GUI thread
+    QThreadPool::globalInstance()->start([this, eventType]() {
         try {
-            if (!co_await event_adapter_->subscribe(eventType)) {
+            if (!session_.subscribe(eventType)) {
                 BOOST_LOG_SEV(lg(), error) << "Subscription failed for " << eventType;
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error) << "Subscribe failed with exception: " << e.what();
         }
-    };
-
-    boost::asio::co_spawn(
-        io_context_->get_executor(), std::move(task), boost::asio::detached);
+    });
 }
 
 void ClientManager::unsubscribeFromEvent(const std::string& eventType) {
-    if (!event_adapter_) {
-        BOOST_LOG_SEV(lg(), warn) << "Cannot unsubscribe: no event adapter";
+    if (!session_.is_connected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot unsubscribe: not connected";
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Unsubscribing from event: " << eventType;
 
-    // Run unsubscribe coroutine asynchronously to avoid blocking the GUI thread
-    auto task = [this, eventType]() -> boost::asio::awaitable<void> {
+    // Run unsubscription asynchronously to avoid blocking the GUI thread
+    QThreadPool::globalInstance()->start([this, eventType]() {
         try {
-            if (!co_await event_adapter_->unsubscribe(eventType)) {
+            if (!session_.unsubscribe(eventType)) {
                 BOOST_LOG_SEV(lg(), error) << "Unsubscription failed for " << eventType;
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error) << "Unsubscribe failed with exception: " << e.what();
         }
-    };
-
-    boost::asio::co_spawn(
-        io_context_->get_executor(), std::move(task), boost::asio::detached);
+    });
 }
 
 }

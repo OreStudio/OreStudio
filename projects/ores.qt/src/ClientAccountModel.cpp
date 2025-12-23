@@ -27,16 +27,13 @@
 #include <QDateTime>
 #include <QFont>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.comms/messaging/frame.hpp"
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/net/client_session.hpp"
 #include "ores.iam/messaging/account_protocol.hpp"
 #include "ores.iam/messaging/login_protocol.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
 
-using comms::messaging::frame;
-using comms::messaging::message_type;
 using namespace ores::utility::log;
 
 ClientAccountModel::
@@ -179,76 +176,43 @@ void ClientAccountModel::refresh(bool replace) {
                                        << offset << ", limit=" << page_size;
             if (!self) return {false, {}, {}, 0};
 
-            // Fetch accounts
+            // Fetch accounts using typed request
             iam::messaging::list_accounts_request accounts_request;
             accounts_request.offset = offset;
             accounts_request.limit = page_size;
-            auto accounts_payload = accounts_request.serialize();
 
-            frame accounts_frame(message_type::list_accounts_request,
-                0, std::move(accounts_payload));
+            auto accounts_result = self->clientManager_->
+                process_authenticated_request(std::move(accounts_request));
 
-            auto accounts_response_result =
-                self->clientManager_->sendRequest(std::move(accounts_frame));
-
-            if (!accounts_response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send accounts request: "
-                                           << accounts_response_result.error();
+            if (!accounts_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to fetch accounts: "
+                                           << comms::net::to_string(accounts_result.error());
                 return {false, {}, {}, 0};
             }
 
-            auto accounts_payload_result = accounts_response_result->decompressed_payload();
-            if (!accounts_payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress accounts response";
-                return {false, {}, {}, 0};
-            }
-
-            auto accounts_response =
-                iam::messaging::list_accounts_response::deserialize(*accounts_payload_result);
-
-            if (!accounts_response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize accounts response";
-                return {false, {}, {}, 0};
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Received " << accounts_response->accounts.size()
+            BOOST_LOG_SEV(lg(), debug) << "Received " << accounts_result->accounts.size()
                                        << " accounts, total available: "
-                                       << accounts_response->total_available_count;
+                                       << accounts_result->total_available_count;
 
-            // Fetch login info
+            // Fetch login info using typed request
             iam::messaging::list_login_info_request login_info_request;
-            auto login_info_payload = login_info_request.serialize();
-
-            frame login_info_frame(message_type::list_login_info_request,
-                0, std::move(login_info_payload));
-
-            auto login_info_response_result =
-                self->clientManager_->sendRequest(std::move(login_info_frame));
 
             std::vector<iam::domain::login_info> login_infos;
-            if (login_info_response_result) {
-                auto login_payload_result = login_info_response_result->decompressed_payload();
-                if (login_payload_result) {
-                    auto login_response =
-                        iam::messaging::list_login_info_response::deserialize(*login_payload_result);
-                    if (login_response) {
-                        login_infos = std::move(login_response->login_infos);
-                        BOOST_LOG_SEV(lg(), debug) << "Received " << login_infos.size()
-                                                   << " login info records";
-                    } else {
-                        BOOST_LOG_SEV(lg(), warn) << "Failed to deserialize login info response";
-                    }
-                } else {
-                    BOOST_LOG_SEV(lg(), warn) << "Failed to decompress login info response";
-                }
+            auto login_info_result = self->clientManager_->
+                process_authenticated_request(std::move(login_info_request));
+
+            if (login_info_result) {
+                login_infos = std::move(login_info_result->login_infos);
+                BOOST_LOG_SEV(lg(), debug) << "Received " << login_infos.size()
+                                           << " login info records";
             } else {
                 BOOST_LOG_SEV(lg(), warn) << "Failed to fetch login info: "
-                                          << login_info_response_result.error();
+                                          << comms::net::to_string(login_info_result.error());
             }
 
-            return {true, std::move(accounts_response->accounts),
+            return {true, std::move(accounts_result->accounts),
                     std::move(login_infos),
-                    accounts_response->total_available_count};
+                    accounts_result->total_available_count};
         });
 
      watcher_->setFuture(future);

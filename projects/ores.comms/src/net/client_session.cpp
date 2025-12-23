@@ -40,14 +40,18 @@ client_session::connect(client_options options) {
 
     if (client_ && client_->is_connected()) {
         BOOST_LOG_SEV(lg(), info) << "Disconnecting existing connection";
-        client_->disconnect();
+        if (!external_client_) {
+            client_->disconnect();
+        }
         event_adapter_.reset();
         session_info_.reset();
+        external_client_ = false;
     }
 
     try {
         client_ = std::make_shared<client>(std::move(options));
         client_->connect_sync();
+        external_client_ = false;  // We own this client
 
         // Create the event adapter which handles subscriptions
         event_adapter_ = std::make_unique<service::remote_event_adapter>(client_);
@@ -65,10 +69,69 @@ client_session::connect(client_options options) {
         BOOST_LOG_SEV(lg(), error) << "Connection failed: " << e.what();
         event_adapter_.reset();
         client_.reset();
+        external_client_ = false;
         return std::unexpected(session_error(
             client_session_error::not_connected,
             std::string("Connection failed: ") + e.what()));
     }
+}
+
+std::expected<void, session_error>
+client_session::attach_client(std::shared_ptr<client> external_client) {
+    if (!external_client) {
+        BOOST_LOG_SEV(lg(), error) << "Cannot attach null client";
+        return std::unexpected(session_error(
+            client_session_error::not_connected,
+            "Cannot attach null client"));
+    }
+
+    if (!external_client->is_connected()) {
+        BOOST_LOG_SEV(lg(), error) << "Cannot attach disconnected client";
+        return std::unexpected(session_error(
+            client_session_error::not_connected,
+            "Client is not connected"));
+    }
+
+    // Clean up existing connection if any
+    if (client_) {
+        BOOST_LOG_SEV(lg(), info) << "Detaching existing client before attaching new one";
+        detach_client();
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Attaching external client";
+    client_ = std::move(external_client);
+    external_client_ = true;  // We don't own this client
+
+    // Create the event adapter which handles subscriptions
+    event_adapter_ = std::make_unique<service::remote_event_adapter>(client_);
+
+    // Register notification callback to queue notifications for display
+    event_adapter_->set_notification_callback(
+        [this](const std::string& event_type,
+               std::chrono::system_clock::time_point timestamp) {
+            on_notification(event_type, timestamp);
+        });
+
+    BOOST_LOG_SEV(lg(), info) << "External client attached successfully";
+    return {};
+}
+
+void client_session::detach_client() {
+    BOOST_LOG_SEV(lg(), debug) << "Detaching client";
+
+    // Clear event adapter first
+    event_adapter_.reset();
+
+    // Clear session state
+    session_info_.reset();
+    {
+        std::lock_guard lock(notifications_mutex_);
+        pending_notifications_.clear();
+    }
+
+    // Release client reference without disconnecting
+    client_.reset();
+    external_client_ = false;
 }
 
 void client_session::disconnect() {
@@ -77,15 +140,24 @@ void client_session::disconnect() {
         return;
     }
 
-    if (client_->is_connected()) {
-        // Reset adapter before disconnecting (clears notification callback)
-        event_adapter_.reset();
+    // Reset adapter before disconnecting (clears notification callback)
+    event_adapter_.reset();
+
+    if (external_client_) {
+        // External client: just detach, don't disconnect
+        BOOST_LOG_SEV(lg(), debug) << "Detaching external client (not disconnecting)";
+        client_.reset();
+    } else if (client_->is_connected()) {
+        // Internal client: actually disconnect
         client_->disconnect();
+        client_.reset();
         BOOST_LOG_SEV(lg(), info) << "Disconnected from server.";
     } else {
         BOOST_LOG_SEV(lg(), debug) << "Already disconnected.";
-        event_adapter_.reset();
+        client_.reset();
     }
+
+    external_client_ = false;
 
     // Clear session state
     session_info_.reset();
@@ -150,8 +222,18 @@ void client_session::on_notification(const std::string& event_type,
     std::chrono::system_clock::time_point timestamp) {
     BOOST_LOG_SEV(lg(), debug) << "Received notification for " << event_type;
 
+    // If external callback is set, use it instead of internal queuing
+    if (external_notification_callback_) {
+        external_notification_callback_(event_type, timestamp);
+        return;
+    }
+
     std::lock_guard lock(notifications_mutex_);
     pending_notifications_.push_back({event_type, timestamp});
+}
+
+void client_session::set_notification_callback(notification_callback_t callback) {
+    external_notification_callback_ = std::move(callback);
 }
 
 std::string to_string(client_session_error error) {

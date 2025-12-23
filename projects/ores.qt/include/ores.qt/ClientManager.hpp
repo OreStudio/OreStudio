@@ -31,6 +31,7 @@
 #include <QObject>
 #include <QDateTime>
 #include "ores.comms/net/client.hpp"
+#include "ores.comms/net/client_session.hpp"
 #include "ores.comms/service/remote_event_adapter.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.utility/log/make_logger.hpp"
@@ -147,34 +148,101 @@ public:
     bool isAdmin() const;
 
     /**
+     * @brief Check if currently logged in.
+     *
+     * @return true if logged in, false otherwise.
+     */
+    bool isLoggedIn() const { return session_.is_logged_in(); }
+
+    /**
      * @brief Get the current logged-in user's username.
      *
      * @return Username string, or empty if not logged in.
      */
-    const std::string& currentUsername() const { return logged_in_username_; }
+    std::string currentUsername() const { return session_.username(); }
 
     /**
      * @brief Get the current logged-in user's email.
      *
      * @return Email string, or empty if not logged in or not set.
      */
-    const std::string& currentEmail() const { return logged_in_email_; }
+    std::string currentEmail() const { return session_.email(); }
 
     /**
      * @brief Set the current logged-in user's email.
      *
      * Used after successful email update to keep local state in sync.
      */
-    void setCurrentEmail(const std::string& email) { logged_in_email_ = email; }
+    void setCurrentEmail(const std::string& email) { session_.set_email(email); }
+
+    /**
+     * @brief Get the account ID if logged in.
+     *
+     * @return Account UUID if logged in, nullopt otherwise.
+     */
+    std::optional<boost::uuids::uuid> accountId() const { return session_.account_id(); }
 
     /**
      * @brief Send a request if connected.
      *
      * @param request The request frame to send
      * @return Response frame or error code
+     * @deprecated Use typed process_request methods instead
      */
     std::expected<comms::messaging::frame, comms::messaging::error_code>
     sendRequest(comms::messaging::frame request);
+
+    /**
+     * @brief Process a request that does not require authentication.
+     *
+     * Uses message_traits to automatically determine the response type.
+     *
+     * @tparam RequestType Request message type (must have message_traits)
+     * @param request The request to send
+     * @return Response on success, error on failure
+     */
+    template <typename RequestType>
+        requires comms::messaging::has_message_traits<RequestType>
+    auto process_request(RequestType request) {
+        return session_.process_request(std::move(request));
+    }
+
+    /**
+     * @brief Process a request that requires authentication.
+     *
+     * Checks if logged in before sending.
+     *
+     * @tparam RequestType Request message type (must have message_traits)
+     * @param request The request to send
+     * @return Response on success, error on failure (including not_logged_in)
+     */
+    template <typename RequestType>
+        requires comms::messaging::has_message_traits<RequestType>
+    auto process_authenticated_request(RequestType request) {
+        return session_.process_authenticated_request(std::move(request));
+    }
+
+    /**
+     * @brief Process a request that requires admin privileges.
+     *
+     * Checks if logged in as admin before sending.
+     *
+     * @tparam RequestType Request message type (must have message_traits)
+     * @param request The request to send
+     * @return Response on success, error on failure
+     */
+    template <typename RequestType>
+        requires comms::messaging::has_message_traits<RequestType>
+    auto process_admin_request(RequestType request) {
+        return session_.process_admin_request(std::move(request));
+    }
+
+    /**
+     * @brief Get the underlying client session.
+     *
+     * Provides access to the session for advanced use cases.
+     */
+    comms::net::client_session& session() { return session_; }
 
     /**
      * @brief Get the current client (internal use only).
@@ -246,18 +314,11 @@ private:
         boost::asio::io_context::executor_type>> work_guard_;
     std::unique_ptr<std::thread> io_thread_;
 
-    // Transient client
+    // Transient client (owned by ClientManager, attached to session_)
     std::shared_ptr<comms::net::client> client_;
 
-    // Remote event adapter for subscriptions
-    std::unique_ptr<comms::service::remote_event_adapter> event_adapter_;
-
-    // Logged-in account tracking
-    std::optional<boost::uuids::uuid> logged_in_account_id_;
-    std::string logged_in_username_;
-    std::string logged_in_email_;
-
-    // Note: is_admin_ removed - permission checks now happen server-side via RBAC
+    // Client session for auth-aware request handling and session state
+    comms::net::client_session session_;
 
     // Event bus for publishing connection events (passed to client)
     std::shared_ptr<eventing::service::event_bus> event_bus_;

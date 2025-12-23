@@ -26,6 +26,7 @@
 #include <chrono>
 #include <optional>
 #include <expected>
+#include <functional>
 #include <string>
 #include <vector>
 #include <set>
@@ -55,6 +56,7 @@ namespace ores::comms::net {
 struct client_session_info {
     boost::uuids::uuid account_id;
     std::string username;
+    std::string email;
 };
 
 /**
@@ -143,17 +145,44 @@ public:
     /**
      * @brief Connect to the server.
      *
+     * Creates a new client internally and connects. Use this for standalone
+     * usage (e.g., in ores.shell).
+     *
      * @param options Connection options
      * @return Empty expected on success, error on failure
      */
     std::expected<void, session_error> connect(client_options options);
 
     /**
+     * @brief Attach an external client to this session.
+     *
+     * Use this when the client lifecycle is managed externally (e.g., in
+     * ores.qt where ClientManager owns the client). The session will use
+     * the provided client for requests but will not manage its lifecycle.
+     *
+     * @param external_client The client to attach (must be connected)
+     * @return Empty expected on success, error on failure
+     */
+    std::expected<void, session_error>
+    attach_client(std::shared_ptr<client> external_client);
+
+    /**
      * @brief Disconnect from the server.
      *
-     * Will logout first if logged in.
+     * For internally-created clients: disconnects and destroys the client.
+     * For externally-attached clients: detaches without disconnecting
+     * (caller is responsible for client lifecycle).
      */
     void disconnect();
+
+    /**
+     * @brief Detach an externally-attached client.
+     *
+     * Clears session state and event adapter, but does not disconnect the
+     * client. Use this when transferring client ownership or when the
+     * external client will be reused.
+     */
+    void detach_client();
 
     /**
      * @brief Check if connected to server.
@@ -192,6 +221,41 @@ public:
      */
     [[nodiscard]] const std::optional<client_session_info>& session_info() const noexcept {
         return session_info_;
+    }
+
+    /**
+     * @brief Get the current username if logged in.
+     */
+    [[nodiscard]] std::string username() const noexcept {
+        return session_info_.has_value() ? session_info_->username : std::string{};
+    }
+
+    /**
+     * @brief Get the current email if logged in.
+     */
+    [[nodiscard]] std::string email() const noexcept {
+        return session_info_.has_value() ? session_info_->email : std::string{};
+    }
+
+    /**
+     * @brief Set the current email.
+     *
+     * Used after successful email update to keep local state in sync.
+     */
+    void set_email(const std::string& email) {
+        if (session_info_.has_value()) {
+            session_info_->email = email;
+        }
+    }
+
+    /**
+     * @brief Get the account ID if logged in.
+     */
+    [[nodiscard]] std::optional<boost::uuids::uuid> account_id() const noexcept {
+        if (session_info_.has_value()) {
+            return session_info_->account_id;
+        }
+        return std::nullopt;
     }
 
     /**
@@ -440,6 +504,25 @@ public:
      */
     [[nodiscard]] bool has_pending_notifications() const;
 
+    /**
+     * @brief Notification callback function type.
+     */
+    using notification_callback_t = std::function<void(
+        const std::string& event_type,
+        std::chrono::system_clock::time_point timestamp)>;
+
+    /**
+     * @brief Set an external notification callback.
+     *
+     * When set, notifications will be delivered to this callback instead of
+     * being queued to pending_notifications_. This is useful for GUI clients
+     * that need to emit signals on notification receipt.
+     *
+     * @param callback The callback to invoke on notification, or nullptr to
+     *                 revert to internal queuing
+     */
+    void set_notification_callback(notification_callback_t callback);
+
 private:
     /**
      * @brief Handle incoming notification from the adapter.
@@ -455,6 +538,13 @@ private:
     std::optional<client_session_info> session_info_;
     mutable std::mutex notifications_mutex_;
     std::deque<pending_notification> pending_notifications_;
+
+    // External notification callback (if set, replaces internal queuing)
+    notification_callback_t external_notification_callback_;
+
+    // True when client is externally managed (attached via attach_client).
+    // In this mode, disconnect() will not call client_->disconnect().
+    bool external_client_{false};
 };
 
 /**

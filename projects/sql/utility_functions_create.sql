@@ -17,29 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-\ir ./create_database.sql
-\ir ./utility_functions_create.sql
-\ir ./currencies_create.sql
-\ir ./currencies_notify_trigger.sql
-\ir ./accounts_create.sql
-\ir ./accounts_notify_trigger.sql
-\ir ./feature_flags_create.sql
-\ir ./login_info_create.sql
-\ir ./permissions_create.sql
-\ir ./roles_create.sql
-\ir ./role_permissions_create.sql
-\ir ./account_roles_create.sql
-\ir ./rbac_functions_create.sql
-\ir ./images_create.sql
-\ir ./tags_create.sql
-\ir ./image_tags_create.sql
-\ir ./currency_images_create.sql
 
-\ir ./bootstrap_mode_setup.sql
-\ir ./disable_password_validation_setup.sql
+--
+-- Utility functions used across the database schema
+--
 
--- Populate reference data
-\ir ./load_flags.sql
-\ir ./flags_populate.sql
-\ir ./currencies_populate.sql
-\ir ./currency_images_populate.sql
+SET search_path TO oresdb;
+
+-- Returns the 'infinity' timestamp used for valid_to in temporal tables.
+-- This centralizes the sentinel value representing records that are currently valid.
+CREATE OR REPLACE FUNCTION oresdb.infinity_timestamp()
+RETURNS timestamptz AS $$
+    SELECT '9999-12-31 23:59:59'::timestamptz;
+$$ LANGUAGE sql IMMUTABLE;

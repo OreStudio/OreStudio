@@ -20,6 +20,8 @@
 #ifndef ORES_COMMS_NET_CONNECTION_HPP
 #define ORES_COMMS_NET_CONNECTION_HPP
 
+#include <atomic>
+#include <cstdint>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/awaitable.hpp>
@@ -108,8 +110,25 @@ public:
      */
     std::string remote_address() const;
 
+    /**
+     * @brief Get total bytes sent on this connection.
+     */
+    [[nodiscard]] std::uint64_t bytes_sent() const;
+
+    /**
+     * @brief Get total bytes received on this connection.
+     */
+    [[nodiscard]] std::uint64_t bytes_received() const;
+
+    /**
+     * @brief Reset byte counters to zero.
+     */
+    void reset_byte_counters();
+
 private:
     ssl_socket socket_;
+    std::atomic<std::uint64_t> bytes_sent_{0};
+    std::atomic<std::uint64_t> bytes_received_{0};
 };
 
 }

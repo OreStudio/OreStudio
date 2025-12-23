@@ -25,6 +25,7 @@
 #include "ores.iam/messaging/protocol.hpp"
 #include "ores.iam/messaging/signup_protocol.hpp"
 #include "ores.iam/messaging/authorization_protocol.hpp"
+#include "ores.iam/messaging/session_protocol.hpp"
 #include "ores.iam/service/signup_service.hpp"
 #include "ores.iam/domain/permission.hpp"
 #include "ores.iam/domain/role.hpp"
@@ -39,7 +40,8 @@ accounts_message_handler::accounts_message_handler(database::context ctx,
     std::shared_ptr<comms::service::auth_session_service> sessions,
     std::shared_ptr<service::authorization_service> auth_service)
     : service_(ctx), ctx_(ctx), system_flags_(std::move(system_flags)),
-      sessions_(std::move(sessions)), auth_service_(std::move(auth_service)) {}
+      sessions_(std::move(sessions)), auth_service_(std::move(auth_service)),
+      session_repo_(ctx) {}
 
 accounts_message_handler::handler_result
 accounts_message_handler::handle_message(message_type type,
@@ -98,6 +100,13 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_update_my_email_request(payload, remote_address);
     case message_type::signup_request:
         co_return co_await handle_signup_request(payload);
+    // Session tracking messages
+    case message_type::list_sessions_request:
+        co_return co_await handle_list_sessions_request(payload, remote_address);
+    case message_type::get_session_statistics_request:
+        co_return co_await handle_get_session_statistics_request(payload, remote_address);
+    case message_type::get_active_sessions_request:
+        co_return co_await handle_get_active_sessions_request(payload, remote_address);
     // RBAC messages
     case message_type::list_roles_request:
         co_return co_await handle_list_roles_request(payload, remote_address);
@@ -1303,6 +1312,173 @@ handle_get_account_permissions_request(std::span<const std::byte> payload,
                               << boost::uuids::to_string(request.account_id);
 
     get_account_permissions_response response{.permission_codes = std::move(permissions)};
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_list_sessions_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing list_sessions_request from "
+                               << remote_address;
+
+    auto request_result = list_sessions_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize list_sessions_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+
+    // Get the requester's session
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "List sessions denied: no active session for "
+                                  << remote_address;
+        co_return std::unexpected(comms::messaging::error_code::authentication_failed);
+    }
+
+    // Determine which account's sessions to return
+    boost::uuids::uuid target_account_id = request.account_id;
+    if (target_account_id.is_nil()) {
+        // Nil UUID means requesting own sessions
+        target_account_id = session->account_id;
+    } else if (!session->is_admin && target_account_id != session->account_id) {
+        // Non-admin trying to view someone else's sessions
+        BOOST_LOG_SEV(lg(), warn) << "List sessions denied: non-admin trying to view "
+                                  << "sessions for account "
+                                  << boost::uuids::to_string(target_account_id);
+        co_return std::unexpected(comms::messaging::error_code::authorization_failed);
+    }
+
+    // Query sessions from database
+    auto sessions_list = session_repo_.read_by_account(target_account_id,
+        request.limit, request.offset);
+    auto total_count = session_repo_.count_active_by_account(target_account_id);
+
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << sessions_list.size()
+                              << " sessions for account "
+                              << boost::uuids::to_string(target_account_id);
+
+    list_sessions_response response{
+        .sessions = std::move(sessions_list),
+        .total_count = static_cast<std::uint32_t>(total_count)
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_session_statistics_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_session_statistics_request from "
+                               << remote_address;
+
+    auto request_result = get_session_statistics_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_session_statistics_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+
+    // Get the requester's session
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "Get session statistics denied: no active session for "
+                                  << remote_address;
+        co_return std::unexpected(comms::messaging::error_code::authentication_failed);
+    }
+
+    // Determine target account
+    boost::uuids::uuid target_account_id = request.account_id;
+    bool aggregate_mode = target_account_id.is_nil();
+
+    // Non-admin can only view their own stats, not aggregate
+    if (!session->is_admin) {
+        if (aggregate_mode) {
+            // Non-admin requesting aggregate - limit to their own account
+            target_account_id = session->account_id;
+            aggregate_mode = false;
+        } else if (target_account_id != session->account_id) {
+            BOOST_LOG_SEV(lg(), warn) << "Get session statistics denied: non-admin trying to view "
+                                      << "statistics for account "
+                                      << boost::uuids::to_string(target_account_id);
+            co_return std::unexpected(comms::messaging::error_code::authorization_failed);
+        }
+    }
+
+    // Query statistics from database
+    std::vector<domain::session_statistics> stats;
+    if (aggregate_mode) {
+        // Admin requesting aggregate stats
+        stats = session_repo_.read_aggregate_daily_statistics(
+            request.start_time, request.end_time);
+    } else {
+        stats = session_repo_.read_daily_statistics(target_account_id,
+            request.start_time, request.end_time);
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << stats.size()
+                              << " statistics records";
+
+    get_session_statistics_response response{
+        .statistics = std::move(stats)
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_active_sessions_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_active_sessions_request from "
+                               << remote_address;
+
+    auto request_result = get_active_sessions_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_active_sessions_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+
+    // Get the requester's session
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "Get active sessions denied: no active session for "
+                                  << remote_address;
+        co_return std::unexpected(comms::messaging::error_code::authentication_failed);
+    }
+
+    std::vector<domain::session> active_sessions;
+    if (session->is_admin && request.account_id.is_nil()) {
+        // Admin requesting all active sessions
+        active_sessions = session_repo_.read_all_active();
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << active_sessions.size()
+                                  << " active sessions (admin view)";
+    } else {
+        // Get active sessions for specific account
+        boost::uuids::uuid target_account_id = request.account_id.is_nil()
+            ? session->account_id : request.account_id;
+
+        // Non-admin can only view own sessions
+        if (!session->is_admin && target_account_id != session->account_id) {
+            BOOST_LOG_SEV(lg(), warn) << "Get active sessions denied: non-admin trying to view "
+                                      << "sessions for account "
+                                      << boost::uuids::to_string(target_account_id);
+            co_return std::unexpected(comms::messaging::error_code::authorization_failed);
+        }
+
+        active_sessions = session_repo_.read_active_by_account(target_account_id);
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << active_sessions.size()
+                                  << " active sessions for account "
+                                  << boost::uuids::to_string(target_account_id);
+    }
+
+    get_active_sessions_response response{
+        .sessions = std::move(active_sessions)
+    };
     co_return response.serialize();
 }
 

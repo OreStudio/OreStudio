@@ -27,6 +27,7 @@
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.iam/service/account_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
+#include "ores.iam/repository/session_repository.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 
 namespace ores::iam::messaging {
@@ -51,6 +52,9 @@ namespace ores::iam::messaging {
  * - change_password_request: Changes user's password and clears password_reset_required flag
  * - update_my_email_request: Allows user to update their own email address
  * - signup_request: Creates a new account via self-registration (when enabled)
+ * - list_sessions_request: Lists session history for an account
+ * - get_session_statistics_request: Gets computed session statistics
+ * - get_active_sessions_request: Gets currently active sessions
  *
  * RBAC operations:
  * - list_roles_request: Lists all roles in the system
@@ -319,11 +323,42 @@ private:
      */
     static bool is_localhost(const std::string& remote_address);
 
+    /**
+     * @brief Handle list_sessions_request message.
+     *
+     * Requires authentication. Admin can view any account's sessions,
+     * regular users can only view their own.
+     */
+    handler_result
+    handle_list_sessions_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle get_session_statistics_request message.
+     *
+     * Requires authentication. Admin can view statistics for any account,
+     * regular users can only view their own.
+     */
+    handler_result
+    handle_get_session_statistics_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle get_active_sessions_request message.
+     *
+     * Requires authentication. Admin gets all active sessions,
+     * regular users get only their own active sessions.
+     */
+    handler_result
+    handle_get_active_sessions_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
     service::account_service service_;
     database::context ctx_;
     std::shared_ptr<variability::service::system_flags_service> system_flags_;
     std::shared_ptr<comms::service::auth_session_service> sessions_;
     std::shared_ptr<service::authorization_service> auth_service_;
+    repository::session_repository session_repo_;
 };
 
 }

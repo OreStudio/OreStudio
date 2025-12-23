@@ -153,6 +153,8 @@ bool auth_session_service::requires_authentication(messaging::message_type type)
     // Bootstrap operations - only allowed in bootstrap mode anyway
     case message_type::create_initial_admin_request:
     case message_type::bootstrap_status_request:
+    // Signup - self-registration (flag-protected at handler level)
+    case message_type::signup_request:
         return false;
     default:
         // All other messages require authentication

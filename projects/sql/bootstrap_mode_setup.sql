@@ -50,11 +50,13 @@ begin
     ) into flag_exists;
 
     if not flag_exists then
-        -- Count admin accounts
+        -- Count accounts with Admin role assigned via RBAC
         select count(*) into admin_count
-        from oresdb.accounts
-        where is_admin = 1
-          and valid_to = '9999-12-31 23:59:59'::timestamptz;
+        from oresdb.account_roles ar
+        join oresdb.roles r on ar.role_id = r.id
+        where r.name = 'Admin'
+          and ar.valid_to = '9999-12-31 23:59:59'::timestamptz
+          and r.valid_to = '9999-12-31 23:59:59'::timestamptz;
 
         -- Insert the flag with appropriate enabled state
         -- enabled=1 (true) if no admin accounts exist (bootstrap mode)

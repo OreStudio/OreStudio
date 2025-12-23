@@ -20,6 +20,7 @@
 #include "ores.iam/messaging/session_protocol.hpp"
 
 #include <expected>
+#include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include <rfl.hpp>
@@ -116,7 +117,9 @@ read_optional_double(std::span<const std::byte>& data) {
         if (!str) return std::unexpected(str.error());
         try {
             return std::stod(*str);
-        } catch (...) {
+        } catch (const std::invalid_argument&) {
+            return std::nullopt;
+        } catch (const std::out_of_range&) {
             return std::nullopt;
         }
     }

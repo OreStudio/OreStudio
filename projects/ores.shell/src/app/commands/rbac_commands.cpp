@@ -19,7 +19,9 @@
  */
 #include "ores.shell/app/commands/rbac_commands.hpp"
 
+#include <optional>
 #include <ostream>
+#include <string_view>
 #include <functional>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -34,6 +36,64 @@ namespace ores::shell::app::commands {
 using namespace ores::utility::log;
 using comms::messaging::message_type;
 using comms::net::client_session;
+
+namespace {
+
+/**
+ * @brief Logger for UUID parsing helper.
+ */
+[[nodiscard]] auto& parse_uuid_lg() {
+    static auto instance = make_logger("ores.shell.app.commands.rbac_commands");
+    return instance;
+}
+
+/**
+ * @brief Parse a string as a UUID, logging and outputting errors on failure.
+ *
+ * @param out Output stream for error messages
+ * @param id_str The string to parse as UUID
+ * @param id_name Human-readable name for the ID (e.g., "account ID", "role ID")
+ * @return The parsed UUID if successful, or std::nullopt on failure
+ */
+std::optional<boost::uuids::uuid> parse_uuid(std::ostream& out,
+    const std::string& id_str, std::string_view id_name) {
+    try {
+        return boost::lexical_cast<boost::uuids::uuid>(id_str);
+    } catch (const boost::bad_lexical_cast&) {
+        BOOST_LOG_SEV(parse_uuid_lg(), error) << "Invalid " << id_name
+                                              << " format: " << id_str;
+        out << "X Invalid " << id_name << " format. Expected UUID." << std::endl;
+        return std::nullopt;
+    }
+}
+
+/**
+ * @brief Format and output a list of strings with a title.
+ *
+ * @param out Output stream
+ * @param title The title to display above the list
+ * @param items The list of items to display
+ * @param empty_message Message to display when the list is empty
+ */
+void format_string_list(std::ostream& out, std::string_view title,
+    const std::vector<std::string>& items, std::string_view empty_message) {
+    out << std::endl;
+    out << title << std::endl;
+    out << std::string(title.size(), '=') << std::endl;
+    out << std::endl;
+
+    if (items.empty()) {
+        out << "  " << empty_message << std::endl;
+    } else {
+        for (const auto& item : items) {
+            out << "  - " << item << std::endl;
+        }
+    }
+    out << std::endl;
+    out << "Total: " << items.size() << " item(s)" << std::endl;
+}
+
+}
 
 void rbac_commands::
 register_commands(cli::Menu& root_menu, client_session& session) {
@@ -198,22 +258,13 @@ process_show_role(std::ostream& out, client_session& session,
 void rbac_commands::
 process_assign_role(std::ostream& out, client_session& session,
     std::string account_id, std::string role_id) {
-    boost::uuids::uuid parsed_account_id;
-    boost::uuids::uuid parsed_role_id;
-
-    try {
-        parsed_account_id = boost::lexical_cast<boost::uuids::uuid>(account_id);
-    } catch (const boost::bad_lexical_cast&) {
-        BOOST_LOG_SEV(lg(), error) << "Invalid account ID format: " << account_id;
-        out << "X Invalid account ID format. Expected UUID." << std::endl;
+    auto parsed_account_id = parse_uuid(out, account_id, "account ID");
+    if (!parsed_account_id) {
         return;
     }
 
-    try {
-        parsed_role_id = boost::lexical_cast<boost::uuids::uuid>(role_id);
-    } catch (const boost::bad_lexical_cast&) {
-        BOOST_LOG_SEV(lg(), error) << "Invalid role ID format: " << role_id;
-        out << "X Invalid role ID format. Expected UUID." << std::endl;
+    auto parsed_role_id = parse_uuid(out, role_id, "role ID");
+    if (!parsed_role_id) {
         return;
     }
 
@@ -226,8 +277,8 @@ process_assign_role(std::ostream& out, client_session& session,
                                                         assign_role_response,
                                                         message_type::assign_role_request>
         (assign_role_request{
-            .account_id = parsed_account_id,
-            .role_id = parsed_role_id
+            .account_id = *parsed_account_id,
+            .role_id = *parsed_role_id
         });
 
     if (!result) {
@@ -252,22 +303,13 @@ process_assign_role(std::ostream& out, client_session& session,
 void rbac_commands::
 process_revoke_role(std::ostream& out, client_session& session,
     std::string account_id, std::string role_id) {
-    boost::uuids::uuid parsed_account_id;
-    boost::uuids::uuid parsed_role_id;
-
-    try {
-        parsed_account_id = boost::lexical_cast<boost::uuids::uuid>(account_id);
-    } catch (const boost::bad_lexical_cast&) {
-        BOOST_LOG_SEV(lg(), error) << "Invalid account ID format: " << account_id;
-        out << "X Invalid account ID format. Expected UUID." << std::endl;
+    auto parsed_account_id = parse_uuid(out, account_id, "account ID");
+    if (!parsed_account_id) {
         return;
     }
 
-    try {
-        parsed_role_id = boost::lexical_cast<boost::uuids::uuid>(role_id);
-    } catch (const boost::bad_lexical_cast&) {
-        BOOST_LOG_SEV(lg(), error) << "Invalid role ID format: " << role_id;
-        out << "X Invalid role ID format. Expected UUID." << std::endl;
+    auto parsed_role_id = parse_uuid(out, role_id, "role ID");
+    if (!parsed_role_id) {
         return;
     }
 
@@ -280,8 +322,8 @@ process_revoke_role(std::ostream& out, client_session& session,
                                                         revoke_role_response,
                                                         message_type::revoke_role_request>
         (revoke_role_request{
-            .account_id = parsed_account_id,
-            .role_id = parsed_role_id
+            .account_id = *parsed_account_id,
+            .role_id = *parsed_role_id
         });
 
     if (!result) {
@@ -306,13 +348,8 @@ process_revoke_role(std::ostream& out, client_session& session,
 void rbac_commands::
 process_get_account_roles(std::ostream& out, client_session& session,
     std::string account_id) {
-    boost::uuids::uuid parsed_account_id;
-
-    try {
-        parsed_account_id = boost::lexical_cast<boost::uuids::uuid>(account_id);
-    } catch (const boost::bad_lexical_cast&) {
-        BOOST_LOG_SEV(lg(), error) << "Invalid account ID format: " << account_id;
-        out << "X Invalid account ID format. Expected UUID." << std::endl;
+    auto parsed_account_id = parse_uuid(out, account_id, "account ID");
+    if (!parsed_account_id) {
         return;
     }
 
@@ -323,7 +360,7 @@ process_get_account_roles(std::ostream& out, client_session& session,
     auto result = session.process_authenticated_request<get_account_roles_request,
                                                         get_account_roles_response,
                                                         message_type::get_account_roles_request>
-        (get_account_roles_request{.account_id = parsed_account_id});
+        (get_account_roles_request{.account_id = *parsed_account_id});
 
     if (!result) {
         out << "X " << comms::net::to_string(result.error()) << std::endl;
@@ -342,13 +379,8 @@ process_get_account_roles(std::ostream& out, client_session& session,
 void rbac_commands::
 process_get_account_permissions(std::ostream& out, client_session& session,
     std::string account_id) {
-    boost::uuids::uuid parsed_account_id;
-
-    try {
-        parsed_account_id = boost::lexical_cast<boost::uuids::uuid>(account_id);
-    } catch (const boost::bad_lexical_cast&) {
-        BOOST_LOG_SEV(lg(), error) << "Invalid account ID format: " << account_id;
-        out << "X Invalid account ID format. Expected UUID." << std::endl;
+    auto parsed_account_id = parse_uuid(out, account_id, "account ID");
+    if (!parsed_account_id) {
         return;
     }
 
@@ -359,7 +391,7 @@ process_get_account_permissions(std::ostream& out, client_session& session,
     auto result = session.process_authenticated_request<get_account_permissions_request,
                                                         get_account_permissions_response,
                                                         message_type::get_account_permissions_request>
-        (get_account_permissions_request{.account_id = parsed_account_id});
+        (get_account_permissions_request{.account_id = *parsed_account_id});
 
     if (!result) {
         out << "X " << comms::net::to_string(result.error()) << std::endl;
@@ -370,21 +402,8 @@ process_get_account_permissions(std::ostream& out, client_session& session,
                               << result->permission_codes.size()
                               << " permissions for account " << account_id;
 
-    out << std::endl;
-    out << "Effective Permissions for Account: " << account_id << std::endl;
-    out << "===================================" << std::endl;
-    out << std::endl;
-
-    if (result->permission_codes.empty()) {
-        out << "  (no permissions)" << std::endl;
-    } else {
-        for (const auto& code : result->permission_codes) {
-            out << "  - " << code << std::endl;
-        }
-    }
-    out << std::endl;
-    out << "Total: " << result->permission_codes.size() << " permission(s)"
-        << std::endl;
+    std::string title = "Effective Permissions for Account: " + account_id;
+    format_string_list(out, title, result->permission_codes, "(no permissions)");
 }
 
 }

@@ -19,6 +19,7 @@
  */
 #include "ores.qt/SessionHistoryDialog.hpp"
 
+#include <QDateTime>
 #include <QDialogButtonBox>
 #include <QHeaderView>
 #include <QLabel>
@@ -55,15 +56,15 @@ QVariant SessionHistoryModel::data(const QModelIndex& index, int role) const {
     if (role == Qt::DisplayRole) {
         switch (static_cast<Column>(index.column())) {
         case StartTime: {
-            auto start = std::chrono::system_clock::to_time_t(session.start_time);
-            return QString::fromStdString(
-                std::format("{:%Y-%m-%d %H:%M:%S}", *std::localtime(&start)));
+            auto qdt = QDateTime::fromSecsSinceEpoch(
+                std::chrono::system_clock::to_time_t(session.start_time));
+            return qdt.toString("yyyy-MM-dd hh:mm:ss");
         }
         case EndTime: {
             if (session.end_time) {
-                auto end = std::chrono::system_clock::to_time_t(*session.end_time);
-                return QString::fromStdString(
-                    std::format("{:%Y-%m-%d %H:%M:%S}", *std::localtime(&end)));
+                auto qdt = QDateTime::fromSecsSinceEpoch(
+                    std::chrono::system_clock::to_time_t(*session.end_time));
+                return qdt.toString("yyyy-MM-dd hh:mm:ss");
             }
             return tr("Active");
         }

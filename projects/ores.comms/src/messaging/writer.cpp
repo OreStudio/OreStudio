@@ -48,6 +48,17 @@ void writer::write_int64(std::vector<std::byte>& buffer, std::int64_t value) {
     buffer.push_back(static_cast<std::byte>(value & 0xFF));
 }
 
+void writer::write_uint64(std::vector<std::byte>& buffer, std::uint64_t value) {
+    buffer.push_back(static_cast<std::byte>(value >> 56));
+    buffer.push_back(static_cast<std::byte>((value >> 48) & 0xFF));
+    buffer.push_back(static_cast<std::byte>((value >> 40) & 0xFF));
+    buffer.push_back(static_cast<std::byte>((value >> 32) & 0xFF));
+    buffer.push_back(static_cast<std::byte>((value >> 24) & 0xFF));
+    buffer.push_back(static_cast<std::byte>((value >> 16) & 0xFF));
+    buffer.push_back(static_cast<std::byte>((value >> 8) & 0xFF));
+    buffer.push_back(static_cast<std::byte>(value & 0xFF));
+}
+
 void writer::write_string(std::vector<std::byte>& buffer, const std::string& str) {
     auto len = static_cast<std::uint16_t>(std::min(str.size(), size_t(65535)));
     write_uint16(buffer, len);

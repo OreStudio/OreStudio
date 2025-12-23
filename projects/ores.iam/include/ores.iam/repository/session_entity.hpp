@@ -61,9 +61,9 @@ struct session_entity {
     sqlgen::PrimaryKey<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> start_time;
 
     /**
-     * @brief Session end timestamp. Empty string if session is active.
+     * @brief Session end timestamp. std::nullopt if session is active.
      */
-    std::string end_time;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> end_time;
 
     /**
      * @brief Client IP address (IPv4 or IPv6).

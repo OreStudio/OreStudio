@@ -23,6 +23,7 @@
 #include <sstream>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
+#include "sqlgen/Timestamp.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.iam/domain/session_json_io.hpp" // IWYU pragma: keep.
 
@@ -88,7 +89,7 @@ domain::session session_mapper::map(const session_entity& v) {
     r.account_id = boost::lexical_cast<uuid>(v.account_id);
     r.is_admin = v.is_admin != 0;
     r.start_time = timestamp_to_timepoint(v.start_time.value());
-    r.end_time = parse_timestamp(v.end_time);
+    r.end_time = v.end_time ? parse_timestamp(v.end_time->value()) : std::nullopt;
     r.client_ip = ip::make_address(v.client_ip);
     r.client_identifier = v.client_identifier;
     r.client_version_major = static_cast<std::uint16_t>(v.client_version_major);
@@ -112,7 +113,9 @@ session_entity session_mapper::map(const domain::session& v) {
     r.account_id = boost::lexical_cast<std::string>(v.account_id);
     r.is_admin = v.is_admin ? 1 : 0;
     r.start_time = timepoint_to_timestamp(v.start_time, lg());
-    r.end_time = v.end_time ? format_timestamp(*v.end_time) : "";
+    r.end_time = v.end_time
+        ? std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">>{format_timestamp(*v.end_time)}
+        : std::nullopt;
     r.client_ip = v.client_ip.to_string();
     r.client_identifier = v.client_identifier;
     r.client_version_major = static_cast<int>(v.client_version_major);

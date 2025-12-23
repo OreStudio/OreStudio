@@ -124,6 +124,13 @@ public:
     std::uint32_t count_active_by_account(const boost::uuids::uuid& account_id);
 
     /**
+     * @brief Counts all sessions (active and inactive) for an account.
+     *
+     * Used for pagination when listing session history.
+     */
+    std::uint32_t count_by_account(const boost::uuids::uuid& account_id);
+
+    /**
      * @brief Reads sessions within a time range.
      *
      * @param start Start of time range

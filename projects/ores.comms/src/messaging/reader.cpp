@@ -64,6 +64,23 @@ reader::read_int64(std::span<const std::byte>& data) {
     return value;
 }
 
+std::expected<std::uint64_t, error_code>
+reader::read_uint64(std::span<const std::byte>& data) {
+    if (data.size() < 8) {
+        return std::unexpected(error_code::payload_too_large);
+    }
+    std::uint64_t value = (static_cast<std::uint64_t>(data[0]) << 56) |
+                          (static_cast<std::uint64_t>(data[1]) << 48) |
+                          (static_cast<std::uint64_t>(data[2]) << 40) |
+                          (static_cast<std::uint64_t>(data[3]) << 32) |
+                          (static_cast<std::uint64_t>(data[4]) << 24) |
+                          (static_cast<std::uint64_t>(data[5]) << 16) |
+                          (static_cast<std::uint64_t>(data[6]) << 8) |
+                          static_cast<std::uint64_t>(data[7]);
+    data = data.subspan(8);
+    return value;
+}
+
 std::expected<std::string, error_code>
 reader::read_string(std::span<const std::byte>& data) {
     auto len_result = read_uint16(data);

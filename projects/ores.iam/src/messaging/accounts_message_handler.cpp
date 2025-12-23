@@ -1375,7 +1375,7 @@ handle_list_sessions_request(std::span<const std::byte> payload,
     // Query sessions from database
     auto sessions_list = session_repo_.read_by_account(target_account_id,
         request.limit, request.offset);
-    auto total_count = session_repo_.count_active_by_account(target_account_id);
+    auto total_count = session_repo_.count_by_account(target_account_id);
 
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << sessions_list.size()
                               << " sessions for account "

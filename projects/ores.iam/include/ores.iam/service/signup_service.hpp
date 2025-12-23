@@ -90,7 +90,7 @@ public:
      * 3. Validates username uniqueness
      * 4. Validates email format and uniqueness
      * 5. Validates password against policy
-     * 6. Creates the account with is_admin=false
+     * 6. Creates the account
      *
      * @param username The desired username (must be unique)
      * @param email The user's email address (must be unique and valid format)

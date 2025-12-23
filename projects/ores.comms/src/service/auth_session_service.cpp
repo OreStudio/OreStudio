@@ -117,8 +117,8 @@ auth_session_service::clear_all_sessions() {
 
     std::vector<std::shared_ptr<iam::domain::session>> result;
     result.reserve(sessions_.size());
-    for (auto& [_, session] : sessions_) {
-        result.push_back(std::move(session));
+    for (const auto& [_, session] : sessions_) {
+        result.push_back(session);
     }
     sessions_.clear();
     return result;

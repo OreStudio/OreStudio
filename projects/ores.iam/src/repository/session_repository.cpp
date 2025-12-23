@@ -190,9 +190,9 @@ session_repository::read_active_by_account(const boost::uuids::uuid& account_id)
                                << boost::uuids::to_string(account_id);
 
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
-    const std::optional<std::string> null_end_time = std::nullopt;
+    const std::string empty_end_time;
     const auto query = sqlgen::read<std::vector<session_entity>> |
-        where("account_id"_c == account_id_str && "end_time"_c == null_end_time) |
+        where("account_id"_c == account_id_str && "end_time"_c == empty_end_time) |
         order_by("start_time"_c.desc());
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
@@ -208,7 +208,7 @@ session_repository::count_active_by_account(const boost::uuids::uuid& account_id
                                << boost::uuids::to_string(account_id);
 
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
-    const std::optional<std::string> null_end_time = std::nullopt;
+    const std::string empty_end_time;
 
     // HACK: Using single connection instead of session because sqlgen sessions
     // doesn't seem to support SELECT FROM with aggregations. Plain connections
@@ -219,7 +219,7 @@ session_repository::count_active_by_account(const boost::uuids::uuid& account_id
 
     const auto query = sqlgen::select_from<session_entity>(
         sqlgen::count().as<"count">()) |
-        where("account_id"_c == account_id_str && "end_time"_c == null_end_time) |
+        where("account_id"_c == account_id_str && "end_time"_c == empty_end_time) |
         sqlgen::to<count_result>;
 
     const auto r = ctx_.single_connection().and_then(query);
@@ -282,9 +282,9 @@ std::vector<domain::session>
 session_repository::read_all_active() {
     BOOST_LOG_SEV(lg(), debug) << "Reading all active sessions";
 
-    const std::optional<std::string> null_end_time = std::nullopt;
+    const std::string empty_end_time;
     const auto query = sqlgen::read<std::vector<session_entity>> |
-        where("end_time"_c == null_end_time) |
+        where("end_time"_c == empty_end_time) |
         order_by("start_time"_c.desc());
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
@@ -297,7 +297,7 @@ session_repository::read_all_active() {
 std::uint32_t session_repository::count_all_active() {
     BOOST_LOG_SEV(lg(), debug) << "Counting all active sessions";
 
-    const std::optional<std::string> null_end_time = std::nullopt;
+    const std::string empty_end_time;
 
     // HACK: Using single connection instead of session because sqlgen sessions
     // doesn't seem to support SELECT FROM with aggregations. Plain connections
@@ -308,7 +308,7 @@ std::uint32_t session_repository::count_all_active() {
 
     const auto query = sqlgen::select_from<session_entity>(
         sqlgen::count().as<"count">()) |
-        where("end_time"_c == null_end_time) |
+        where("end_time"_c == empty_end_time) |
         sqlgen::to<count_result>;
 
     const auto r = ctx_.single_connection().and_then(query);

@@ -61,12 +61,13 @@ struct session_entity {
     sqlgen::PrimaryKey<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> start_time;
 
     /**
-     * @brief Session end timestamp. std::nullopt if session is active.
+     * @brief Session end timestamp. Empty string if session is active.
      *
-     * Uses std::optional<std::string> instead of std::optional<Timestamp> because
-     * sqlgen doesn't support optional Timestamp types in UPDATE SET operations.
+     * Uses std::string instead of std::optional because sqlgen doesn't
+     * support optional types in UPDATE SET operations. Empty string
+     * represents NULL/active session in the database.
      */
-    std::optional<std::string> end_time;
+    std::string end_time;
 
     /**
      * @brief Client IP address (IPv4 or IPv6).

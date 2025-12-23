@@ -51,6 +51,15 @@ namespace ores::iam::messaging {
  * - change_password_request: Changes user's password and clears password_reset_required flag
  * - update_my_email_request: Allows user to update their own email address
  * - signup_request: Creates a new account via self-registration (when enabled)
+ *
+ * RBAC operations:
+ * - list_roles_request: Lists all roles in the system
+ * - list_permissions_request: Lists all permissions in the system
+ * - get_role_request: Gets a specific role by ID or name
+ * - assign_role_request: Assigns a role to an account
+ * - revoke_role_request: Revokes a role from an account
+ * - get_account_roles_request: Gets all roles assigned to an account
+ * - get_account_permissions_request: Gets effective permissions for an account
  */
 class accounts_message_handler final : public comms::messaging::message_handler {
 private:
@@ -234,6 +243,73 @@ private:
      */
     handler_result
     handle_signup_request(std::span<const std::byte> payload);
+
+    // =========================================================================
+    // RBAC Handlers
+    // =========================================================================
+
+    /**
+     * @brief Handle list_roles_request message.
+     *
+     * Requires authentication.
+     */
+    handler_result
+    handle_list_roles_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle list_permissions_request message.
+     *
+     * Requires authentication.
+     */
+    handler_result
+    handle_list_permissions_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle get_role_request message.
+     *
+     * Requires authentication. Returns a specific role by ID or name.
+     */
+    handler_result
+    handle_get_role_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle assign_role_request message.
+     *
+     * Requires authentication and roles:assign permission.
+     */
+    handler_result
+    handle_assign_role_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle revoke_role_request message.
+     *
+     * Requires authentication and roles:revoke permission.
+     */
+    handler_result
+    handle_revoke_role_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle get_account_roles_request message.
+     *
+     * Requires authentication.
+     */
+    handler_result
+    handle_get_account_roles_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle get_account_permissions_request message.
+     *
+     * Requires authentication.
+     */
+    handler_result
+    handle_get_account_permissions_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
 
     /**
      * @brief Check if a remote address is localhost.

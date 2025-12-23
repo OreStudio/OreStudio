@@ -21,8 +21,10 @@
 
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/lexical_cast.hpp>
 #include "ores.iam/messaging/protocol.hpp"
 #include "ores.iam/messaging/signup_protocol.hpp"
+#include "ores.iam/messaging/authorization_protocol.hpp"
 #include "ores.iam/service/signup_service.hpp"
 #include "ores.iam/domain/permission.hpp"
 #include "ores.iam/domain/role.hpp"
@@ -96,6 +98,21 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_update_my_email_request(payload, remote_address);
     case message_type::signup_request:
         co_return co_await handle_signup_request(payload);
+    // RBAC messages
+    case message_type::list_roles_request:
+        co_return co_await handle_list_roles_request(payload, remote_address);
+    case message_type::list_permissions_request:
+        co_return co_await handle_list_permissions_request(payload, remote_address);
+    case message_type::get_role_request:
+        co_return co_await handle_get_role_request(payload, remote_address);
+    case message_type::assign_role_request:
+        co_return co_await handle_assign_role_request(payload, remote_address);
+    case message_type::revoke_role_request:
+        co_return co_await handle_revoke_role_request(payload, remote_address);
+    case message_type::get_account_roles_request:
+        co_return co_await handle_get_account_roles_request(payload, remote_address);
+    case message_type::get_account_permissions_request:
+        co_return co_await handle_get_account_permissions_request(payload, remote_address);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown accounts message type " << type;
         co_return std::unexpected(comms::messaging::error_code::invalid_message_type);
@@ -1033,6 +1050,259 @@ handle_signup_request(std::span<const std::byte> payload) {
         .account_id = result.account_id,
         .username = result.username
     };
+    co_return response.serialize();
+}
+
+// ============================================================================
+// RBAC Handlers
+// ============================================================================
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_list_roles_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing list_roles_request from "
+                               << remote_address;
+
+    auto request_result = list_roles_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize list_roles_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto roles = auth_service_->list_roles();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << roles.size() << " roles.";
+
+    list_roles_response response{.roles = std::move(roles)};
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_list_permissions_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing list_permissions_request from "
+                               << remote_address;
+
+    auto request_result = list_permissions_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize list_permissions_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto permissions = auth_service_->list_permissions();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << permissions.size() << " permissions.";
+
+    list_permissions_response response{.permissions = std::move(permissions)};
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_role_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_role_request from "
+                               << remote_address;
+
+    auto request_result = get_role_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_role_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Looking up role: " << request.identifier;
+
+    // Try to parse as UUID first
+    std::optional<domain::role> found_role;
+    try {
+        auto role_id = boost::lexical_cast<boost::uuids::uuid>(request.identifier);
+        found_role = auth_service_->find_role(role_id);
+    } catch (const boost::bad_lexical_cast&) {
+        // Not a UUID, try by name
+        found_role = auth_service_->find_role_by_name(request.identifier);
+    }
+
+    get_role_response response;
+    if (found_role) {
+        BOOST_LOG_SEV(lg(), info) << "Found role: " << found_role->name;
+        response.found = true;
+        response.role = std::move(*found_role);
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "Role not found: " << request.identifier;
+        response.found = false;
+        response.error_message = "Role not found: " + request.identifier;
+    }
+
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_assign_role_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing assign_role_request from "
+                               << remote_address;
+
+    auto request_result = assign_role_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize assign_role_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+
+    // Get the requester's session from shared session service
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "Assign role denied: no active session for "
+                                  << remote_address;
+        assign_role_response response{
+            .success = false,
+            .error_message = "Authentication required to assign roles"
+        };
+        co_return response.serialize();
+    }
+
+    // Check if requester has permission to assign roles
+    if (!auth_service_->has_permission(session->account_id,
+            domain::permissions::roles_assign)) {
+        BOOST_LOG_SEV(lg(), warn) << "Assign role denied: requester "
+                                  << boost::uuids::to_string(session->account_id)
+                                  << " lacks roles:assign permission";
+        assign_role_response response{
+            .success = false,
+            .error_message = "Permission denied: roles:assign required"
+        };
+        co_return response.serialize();
+    }
+
+    try {
+        auth_service_->assign_role(request.account_id, request.role_id,
+            boost::uuids::to_string(session->account_id));
+
+        BOOST_LOG_SEV(lg(), info) << "Assigned role "
+                                  << boost::uuids::to_string(request.role_id)
+                                  << " to account "
+                                  << boost::uuids::to_string(request.account_id);
+
+        assign_role_response response{.success = true, .error_message = ""};
+        co_return response.serialize();
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to assign role: " << e.what();
+        assign_role_response response{
+            .success = false,
+            .error_message = std::string("Failed to assign role: ") + e.what()
+        };
+        co_return response.serialize();
+    }
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_revoke_role_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing revoke_role_request from "
+                               << remote_address;
+
+    auto request_result = revoke_role_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize revoke_role_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+
+    // Get the requester's session from shared session service
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "Revoke role denied: no active session for "
+                                  << remote_address;
+        revoke_role_response response{
+            .success = false,
+            .error_message = "Authentication required to revoke roles"
+        };
+        co_return response.serialize();
+    }
+
+    // Check if requester has permission to revoke roles
+    if (!auth_service_->has_permission(session->account_id,
+            domain::permissions::roles_revoke)) {
+        BOOST_LOG_SEV(lg(), warn) << "Revoke role denied: requester "
+                                  << boost::uuids::to_string(session->account_id)
+                                  << " lacks roles:revoke permission";
+        revoke_role_response response{
+            .success = false,
+            .error_message = "Permission denied: roles:revoke required"
+        };
+        co_return response.serialize();
+    }
+
+    try {
+        auth_service_->revoke_role(request.account_id, request.role_id);
+
+        BOOST_LOG_SEV(lg(), info) << "Revoked role "
+                                  << boost::uuids::to_string(request.role_id)
+                                  << " from account "
+                                  << boost::uuids::to_string(request.account_id);
+
+        revoke_role_response response{.success = true, .error_message = ""};
+        co_return response.serialize();
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to revoke role: " << e.what();
+        revoke_role_response response{
+            .success = false,
+            .error_message = std::string("Failed to revoke role: ") + e.what()
+        };
+        co_return response.serialize();
+    }
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_account_roles_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_account_roles_request from "
+                               << remote_address;
+
+    auto request_result = get_account_roles_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_account_roles_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Getting roles for account: "
+                               << boost::uuids::to_string(request.account_id);
+
+    auto roles = auth_service_->get_account_roles(request.account_id);
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << roles.size() << " roles for account "
+                              << boost::uuids::to_string(request.account_id);
+
+    get_account_roles_response response{.roles = std::move(roles)};
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_account_permissions_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_account_permissions_request from "
+                               << remote_address;
+
+    auto request_result = get_account_permissions_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_account_permissions_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Getting permissions for account: "
+                               << boost::uuids::to_string(request.account_id);
+
+    auto permissions = auth_service_->get_effective_permissions(request.account_id);
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << permissions.size()
+                              << " permissions for account "
+                              << boost::uuids::to_string(request.account_id);
+
+    get_account_permissions_response response{.permission_codes = std::move(permissions)};
     co_return response.serialize();
 }
 

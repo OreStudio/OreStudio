@@ -460,4 +460,67 @@ std::ostream& operator<<(std::ostream& s, const get_account_permissions_response
     return s;
 }
 
+// ============================================================================
+// Get Role
+// ============================================================================
+
+std::vector<std::byte> get_role_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_string(buffer, identifier);
+    return buffer;
+}
+
+std::expected<get_role_request, error_code>
+get_role_request::deserialize(std::span<const std::byte> data) {
+    get_role_request request;
+
+    auto identifier_result = reader::read_string(data);
+    if (!identifier_result) return std::unexpected(identifier_result.error());
+    request.identifier = *identifier_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const get_role_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> get_role_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, found);
+    if (found && role) {
+        serialize_role(buffer, *role);
+    } else {
+        writer::write_string(buffer, error_message);
+    }
+    return buffer;
+}
+
+std::expected<get_role_response, error_code>
+get_role_response::deserialize(std::span<const std::byte> data) {
+    get_role_response response;
+
+    auto found_result = reader::read_bool(data);
+    if (!found_result) return std::unexpected(found_result.error());
+    response.found = *found_result;
+
+    if (response.found) {
+        auto role_result = deserialize_role(data);
+        if (!role_result) return std::unexpected(role_result.error());
+        response.role = std::move(*role_result);
+    } else {
+        auto error_message_result = reader::read_string(data);
+        if (!error_message_result) return std::unexpected(error_message_result.error());
+        response.error_message = *error_message_result;
+    }
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const get_role_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
 }

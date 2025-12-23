@@ -23,6 +23,7 @@
 #include <span>
 #include <iosfwd>
 #include <vector>
+#include <optional>
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_types.hpp"
@@ -363,6 +364,68 @@ struct get_account_permissions_response final {
 
 std::ostream& operator<<(std::ostream& s, const get_account_permissions_response& v);
 
+// ============================================================================
+// Get Role
+// ============================================================================
+
+/**
+ * @brief Request to get a specific role by ID or name.
+ *
+ * The identifier can be either a UUID (for lookup by ID) or a string
+ * (for lookup by name). The server will attempt UUID parsing first,
+ * then fall back to name lookup.
+ */
+struct get_role_request final {
+    std::string identifier;
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 2 bytes: identifier length
+     * - N bytes: identifier (UTF-8, either UUID string or role name)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<get_role_request, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const get_role_request& v);
+
+/**
+ * @brief Response containing the requested role.
+ */
+struct get_role_response final {
+    bool found = false;
+    std::optional<domain::role> role;
+    std::string error_message;
+
+    /**
+     * @brief Serialize response to bytes.
+     *
+     * Format:
+     * - 1 byte: found (boolean)
+     * - If found:
+     *   - Role data (same format as in list_roles_response)
+     * - If not found:
+     *   - 2 bytes: error_message length
+     *   - N bytes: error_message (UTF-8)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize response from bytes.
+     */
+    static std::expected<get_role_response, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const get_role_response& v);
+
 }
 
 namespace ores::comms::messaging {
@@ -431,6 +494,17 @@ struct message_traits<iam::messaging::get_account_permissions_request> {
     using response_type = iam::messaging::get_account_permissions_response;
     static constexpr message_type request_message_type =
         message_type::get_account_permissions_request;
+};
+
+/**
+ * @brief Message traits specialization for get_role_request.
+ */
+template<>
+struct message_traits<iam::messaging::get_role_request> {
+    using request_type = iam::messaging::get_role_request;
+    using response_type = iam::messaging::get_role_response;
+    static constexpr message_type request_message_type =
+        message_type::get_role_request;
 };
 
 }

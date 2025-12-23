@@ -139,8 +139,11 @@ public:
     /**
      * @brief Check if the logged-in user has admin privileges.
      *
-     * @return true if user is an admin, false otherwise or if not logged in.
+     * @deprecated Permission checks are now performed server-side via RBAC.
+     *             This method always returns false.
+     * @return Always returns false. Use server-side permission checks instead.
      */
+    [[deprecated("Permission checks are now server-side via RBAC")]]
     bool isAdmin() const;
 
     /**
@@ -254,8 +257,7 @@ private:
     std::string logged_in_username_;
     std::string logged_in_email_;
 
-    // Admin status of logged-in user
-    bool is_admin_{false};
+    // Note: is_admin_ removed - permission checks now happen server-side via RBAC
 
     // Event bus for publishing connection events (passed to client)
     std::shared_ptr<eventing::service::event_bus> event_bus_;

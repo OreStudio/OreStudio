@@ -197,11 +197,11 @@ private:
      *
      * Using an enum instead of magic numbers makes the code self-documenting
      * and easier to refactor when columns are added, removed, or reordered.
+     * Note: IsAdmin removed - admin privileges are now managed via RBAC.
      */
     enum Column {
         Username,
         Email,
-        IsAdmin,
         Status,     // Login status: Never, LongAgo, Recent, Online
         Locked,
         Version,

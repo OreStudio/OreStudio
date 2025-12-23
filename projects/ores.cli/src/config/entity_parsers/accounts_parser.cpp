@@ -78,9 +78,9 @@ options_description make_add_account_options_description() {
         ("password",
             value<std::string>(),
             "Account password (required)")
-        ("is-admin",
+        ("admin",
             bool_switch()->default_value(false),
-            "Grant admin privileges to the account")
+            "Assign Admin role to the account via RBAC")
         ("modified-by",
             value<std::string>(),
             "Username of modifier (required)");
@@ -121,7 +121,7 @@ read_add_account_options(const variables_map& vm) {
     r.password = vm["password"].as<std::string>();
 
     // Optional account fields - bool_switch always provides a value
-    r.is_admin = vm["is-admin"].as<bool>();
+    r.admin = vm["admin"].as<bool>();
 
     return r;
 }

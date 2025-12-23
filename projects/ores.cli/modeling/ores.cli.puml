@@ -151,7 +151,7 @@ namespace ores #F2F2F2 {
                 +{field} username std::optional<std::string>
                 +{field} email std::optional<std::string>
                 +{field} password std::optional<std::string>
-                +{field} is_admin std::optional<bool>
+                +{field} admin std::optional<bool>
                 +{field} flag_name std::optional<std::string>
                 +{field} description std::optional<std::string>
                 +{field} enabled std::optional<bool>

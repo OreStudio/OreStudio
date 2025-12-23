@@ -126,7 +126,6 @@ namespace ores #F2F2F2 {
             -{field} logged_in_account_id_ std::optional<boost::uuids::uuid>
             -{field} logged_in_username_ std::string
             -{field} logged_in_email_ std::string
-            -{field} is_admin_ bool
         }
         note top of ClientManager
         Manages the lifecycle of the network client and IO context.
@@ -137,7 +136,7 @@ namespace ores #F2F2F2 {
         without closing.
 
         Key features:
-        - Session tracking (account_id, username, email, admin status)
+        - Session tracking (account_id, username, email)
         - Event subscriptions for server push notifications
         - Compression negotiation
 

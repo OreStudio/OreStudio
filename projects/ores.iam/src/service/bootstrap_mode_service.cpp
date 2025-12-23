@@ -21,14 +21,17 @@
 #include "ores.iam/service/bootstrap_mode_service.hpp"
 
 #include <algorithm>
+#include "ores.iam/domain/role.hpp"
 
 namespace ores::iam::service {
 
 using namespace ores::utility::log;
 
-bootstrap_mode_service::bootstrap_mode_service(database::context ctx)
+bootstrap_mode_service::bootstrap_mode_service(database::context ctx,
+    std::shared_ptr<authorization_service> auth_service)
     : account_repo_(ctx),
       system_flags_service_(ctx),
+      auth_service_(std::move(auth_service)),
       ctx_(ctx) {
     BOOST_LOG_SEV(lg(), debug) << "DML for account: " << account_repo_.sql();
     system_flags_service_.refresh();
@@ -46,9 +49,21 @@ bool bootstrap_mode_service::is_in_bootstrap_mode() {
 void bootstrap_mode_service::initialize_bootstrap_state() {
     BOOST_LOG_SEV(lg(), info) << "Initializing bootstrap mode state";
 
+    // Check if any account has the Admin role via RBAC
     auto accounts = account_repo_.read_latest();
-    bool admin_exists = std::ranges::any_of(accounts,
-        [](const domain::account& acc) { return acc.is_admin; });
+    auto admin_role = auth_service_->find_role_by_name(domain::roles::admin);
+    bool admin_exists = false;
+
+    if (admin_role) {
+        admin_exists = std::ranges::any_of(accounts,
+            [this, &admin_role](const domain::account& acc) {
+                auto roles = auth_service_->get_account_roles(acc.id);
+                return std::ranges::any_of(roles,
+                    [&admin_role](const domain::role& r) {
+                        return r.id == admin_role->id;
+                    });
+            });
+    }
 
     BOOST_LOG_SEV(lg(), debug) << "Total accounts: " << accounts.size();
     BOOST_LOG_SEV(lg(), debug) << "Admin exists: "

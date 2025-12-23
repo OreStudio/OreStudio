@@ -111,9 +111,9 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     variability::service::system_flags_seeder flags_seeder(ctx);
     flags_seeder.seed();
 
-    // Seed RBAC permissions and roles
-    iam::service::authorization_service auth_service(ctx);
-    iam::service::rbac_seeder rbac_seeder(auth_service);
+    // Create shared authorization service and seed RBAC permissions and roles
+    auto auth_service = std::make_shared<iam::service::authorization_service>(ctx);
+    iam::service::rbac_seeder rbac_seeder(*auth_service);
     rbac_seeder.seed("system");
 
     // Create shared system flags service and refresh cache from database
@@ -121,7 +121,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     system_flags->refresh();
 
     // Initialize and check bootstrap mode
-    iam::service::bootstrap_mode_service bootstrap_svc(ctx);
+    iam::service::bootstrap_mode_service bootstrap_svc(ctx, auth_service);
     bootstrap_svc.initialize_bootstrap_state();
 
     // Refresh system flags cache after bootstrap state initialization
@@ -182,7 +182,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
 
     // Register subsystem handlers
     ores::risk::messaging::registrar::register_handlers(*srv, ctx, system_flags);
-    ores::iam::messaging::registrar::register_handlers(*srv, ctx, system_flags);
+    ores::iam::messaging::registrar::register_handlers(*srv, ctx, system_flags, auth_service);
     ores::variability::messaging::registrar::register_handlers(*srv, ctx);
     ores::assets::messaging::registrar::register_handlers(*srv, ctx);
 

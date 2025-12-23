@@ -34,7 +34,7 @@ struct add_account_options final {
     std::string email;
     std::string password;
     std::string modified_by;
-    std::optional<bool> is_admin;
+    std::optional<bool> admin;
 };
 
 std::ostream& operator<<(std::ostream& s, const add_account_options& v);

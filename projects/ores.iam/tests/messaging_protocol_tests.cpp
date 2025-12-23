@@ -44,7 +44,6 @@ TEST_CASE("create_account_request_with_valid_fields", tags) {
     rq.totp_secret = "JBSWY3DPEHPK3PXP";
     rq.email = "test@example.com";
     rq.recorded_by = "admin";
-    rq.is_admin = false;
     BOOST_LOG_SEV(lg, info) << "Rrequest: " << rq;
 
     CHECK(rq.username == "testuser");
@@ -52,7 +51,6 @@ TEST_CASE("create_account_request_with_valid_fields", tags) {
     CHECK(rq.totp_secret == "JBSWY3DPEHPK3PXP");
     CHECK(rq.email == "test@example.com");
     CHECK(rq.recorded_by == "admin");
-    CHECK(rq.is_admin == false);
 }
 
 TEST_CASE("create_account_request_with_faker", tags) {
@@ -64,7 +62,6 @@ TEST_CASE("create_account_request_with_faker", tags) {
     rq.totp_secret = faker::string::alphanumeric(16);
     rq.email = std::string(faker::internet::email());
     rq.recorded_by = std::string(faker::internet::username());
-    rq.is_admin = faker::datatype::boolean();
     BOOST_LOG_SEV(lg, info) << "create_account_request: " << rq;
 
     CHECK(!rq.username.empty());
@@ -83,7 +80,6 @@ TEST_CASE("create_account_request_serialize_deserialize", tags) {
     e.totp_secret = faker::string::alphanumeric(20);
     e.email = std::string(faker::internet::email());
     e.recorded_by = std::string(faker::internet::username());
-    e.is_admin = false;
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -157,7 +153,6 @@ TEST_CASE("list_accounts_response_with_faker", tags) {
         a.password_salt = std::string(faker::crypto::sha256());
         a.totp_secret = faker::string::alphanumeric(20);
         a.email = std::string(faker::internet::email());
-        a.is_admin = faker::datatype::boolean();
         rp.accounts.push_back(a);
     }
     BOOST_LOG_SEV(lg, info) << "Response: " << rp;
@@ -182,7 +177,6 @@ TEST_CASE("list_accounts_response_serialize_deserialize", tags) {
         a.password_salt = std::string(faker::crypto::sha256());
         a.totp_secret = faker::string::alphanumeric(16);
         a.email = "user" + std::to_string(i) + "@example.com";
-        a.is_admin = (i == 0);
         e.accounts.push_back(a);
     }
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -199,7 +193,6 @@ TEST_CASE("list_accounts_response_serialize_deserialize", tags) {
         CHECK(a.accounts[i].version == e.accounts[i].version);
         CHECK(a.accounts[i].username == e.accounts[i].username);
         CHECK(a.accounts[i].email == e.accounts[i].email);
-        CHECK(a.accounts[i].is_admin == e.accounts[i].is_admin);
     }
 }
 
@@ -254,7 +247,6 @@ TEST_CASE("login_response_success", tags) {
     rp.error_message = "";
     rp.account_id = boost::uuids::random_generator()();
     rp.username = std::string(faker::internet::username());
-    rp.is_admin = faker::datatype::boolean();
     BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
     CHECK(rp.success == true);
@@ -271,7 +263,6 @@ TEST_CASE("login_response_failure", tags) {
     rp.error_message = "Invalid credentials";
     rp.account_id = boost::uuids::nil_uuid();
     rp.username = "";
-    rp.is_admin = false;
     BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
     CHECK(rp.success == false);
@@ -288,7 +279,6 @@ TEST_CASE("login_response_serialize_deserialize", tags) {
     e.error_message = "";
     e.account_id = boost::uuids::random_generator()();
     e.username = std::string(faker::internet::username());
-    e.is_admin = faker::datatype::boolean();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -302,7 +292,6 @@ TEST_CASE("login_response_serialize_deserialize", tags) {
     CHECK(a.error_message == e.error_message);
     CHECK(a.account_id == e.account_id);
     CHECK(a.username == e.username);
-    CHECK(a.is_admin == e.is_admin);
 }
 
 TEST_CASE("unlock_account_request_with_valid_uuid", tags) {
@@ -488,7 +477,6 @@ TEST_CASE("create_multiple_random_create_account_requests", tags) {
         rq.email = std::string(faker::internet::email());
         rq.recorded_by = std::string(faker::person::firstName()) + " " +
             std::string(faker::person::lastName());
-        rq.is_admin = faker::datatype::boolean();
         BOOST_LOG_SEV(lg, info) << "Request " << i << ":" << rq;
 
         CHECK(!rq.username.empty());
@@ -650,7 +638,6 @@ TEST_CASE("login_response_with_password_reset_required", tags) {
     rp.error_message = "";
     rp.account_id = boost::uuids::random_generator()();
     rp.username = std::string(faker::internet::username());
-    rp.is_admin = false;
     rp.password_reset_required = true;
     BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
@@ -666,7 +653,6 @@ TEST_CASE("login_response_serialize_deserialize_with_password_reset", tags) {
     e.error_message = "";
     e.account_id = boost::uuids::random_generator()();
     e.username = std::string(faker::internet::username());
-    e.is_admin = faker::datatype::boolean();
     e.password_reset_required = faker::datatype::boolean();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
@@ -681,7 +667,6 @@ TEST_CASE("login_response_serialize_deserialize_with_password_reset", tags) {
     CHECK(a.error_message == e.error_message);
     CHECK(a.account_id == e.account_id);
     CHECK(a.username == e.username);
-    CHECK(a.is_admin == e.is_admin);
     CHECK(a.password_reset_required == e.password_reset_required);
 }
 

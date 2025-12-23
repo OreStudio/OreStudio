@@ -120,9 +120,9 @@ signup_result signup_service::register_user(const std::string& username,
     auto password_hash = password_manager::create_password_hash(password);
 
     // Create the account
+    // Note: Admin privileges are now managed via RBAC role assignments
     domain::account new_account {
         .version = 0,
-        .is_admin = false,  // Self-registered users are never admins
         .id = id,
         .recorded_by = username,  // Self-registered
         .username = username,

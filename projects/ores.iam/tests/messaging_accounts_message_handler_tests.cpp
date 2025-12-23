@@ -32,6 +32,9 @@
 #include "ores.iam/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam/generators/account_generator.hpp"
 #include "ores.iam/messaging/protocol.hpp"
+#include "ores.iam/service/authorization_service.hpp"
+#include "ores.iam/service/rbac_seeder.hpp"
+#include "ores.iam/domain/role.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 
@@ -53,7 +56,6 @@ create_account_request to_create_account_request(const domain::account& a) {
     r.totp_secret = a.totp_secret;
     r.email = a.email;
     r.recorded_by = a.recorded_by;
-    r.is_admin = a.is_admin;
     return r;
 }
 
@@ -63,6 +65,24 @@ make_system_flags(ores::database::context& ctx) {
     // Disable bootstrap mode so tests can proceed
     flags->set_bootstrap_mode(false, "test");
     return flags;
+}
+
+std::shared_ptr<service::authorization_service>
+make_auth_service(ores::database::context& ctx) {
+    auto auth = std::make_shared<service::authorization_service>(ctx);
+    // Seed RBAC data for tests
+    service::rbac_seeder seeder(*auth);
+    seeder.seed("test");
+    return auth;
+}
+
+void assign_admin_role(
+    std::shared_ptr<service::authorization_service>& auth_service,
+    const boost::uuids::uuid& account_id) {
+    auto admin_role = auth_service->find_role_by_name(domain::roles::admin);
+    if (admin_role) {
+        auth_service->assign_role(account_id, admin_role->id, "test");
+    }
 }
 
 }
@@ -80,7 +100,8 @@ TEST_CASE("handle_single_create_account_request", tags) {
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
-    accounts_message_handler sut(h.context(), system_flags, sessions);
+    auto auth_service = make_auth_service(h.context());
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
     const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
@@ -113,7 +134,8 @@ TEST_CASE("handle_many_create_account_requests", tags) {
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
-    accounts_message_handler sut(h.context(), system_flags, sessions);
+    auto auth_service = make_auth_service(h.context());
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
     auto accounts = generate_synthetic_accounts(5);
 
     boost::asio::io_context io_ctx;
@@ -147,7 +169,8 @@ TEST_CASE("handle_list_accounts_request_empty", tags) {
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
-    accounts_message_handler sut(h.context(), system_flags, sessions);
+    auto auth_service = make_auth_service(h.context());
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
     list_accounts_request rq;
     BOOST_LOG_SEV(lg, info) << "Request: " << rq;
@@ -177,7 +200,8 @@ TEST_CASE("handle_list_accounts_request_with_accounts", tags) {
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
-    accounts_message_handler sut(h.context(), system_flags, sessions);
+    auto auth_service = make_auth_service(h.context());
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
     const int account_count = 5;
     auto accounts =
@@ -225,7 +249,8 @@ TEST_CASE("handle_login_request_with_valid_password", tags) {
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
-    accounts_message_handler sut(h.context(), system_flags, sessions);
+    auto auth_service = make_auth_service(h.context());
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
     const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
@@ -275,7 +300,8 @@ TEST_CASE("handle_login_request_with_invalid_password", tags) {
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
-    accounts_message_handler sut(h.context(), system_flags, sessions);
+    auto auth_service = make_auth_service(h.context());
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
     const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
@@ -324,18 +350,17 @@ TEST_CASE("handle_unlock_account_request", tags) {
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
-    accounts_message_handler sut(h.context(), system_flags, sessions);
+    auto auth_service = make_auth_service(h.context());
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
     // Use a consistent remote address for admin session
     const std::string admin_endpoint = "192.168.1.100:54321";
 
-    // Create an admin account first (to be the requester)
+    // Create an account and assign Admin role
     auto admin_account = generate_synthetic_account();
-    admin_account.is_admin = true;
     BOOST_LOG_SEV(lg, info) << "Admin account: " << admin_account;
 
     create_account_request admin_rq(to_create_account_request(admin_account));
-    admin_rq.is_admin = true;
     BOOST_LOG_SEV(lg, info) << "Admin request: " << admin_rq;
 
     boost::uuids::uuid admin_id;
@@ -351,6 +376,9 @@ TEST_CASE("handle_unlock_account_request", tags) {
         REQUIRE(response_result.has_value());
         admin_id = response_result.value().account_id;
     });
+
+    // Assign Admin role to the account
+    assign_admin_role(auth_service, admin_id);
 
     // Login as admin to establish session
     login_request admin_login_rq;
@@ -389,7 +417,7 @@ TEST_CASE("handle_unlock_account_request", tags) {
         account_id = response_result.value().account_id;
     });
 
-    // Attempt to unlock the account (admin is logged in from admin_endpoint)
+    // Attempt to unlock the account (account with Admin role is logged in from admin_endpoint)
     unlock_account_request urq;
     urq.account_ids = {account_id};
     BOOST_LOG_SEV(lg, info) << "Unlock request: " << urq;
@@ -420,7 +448,8 @@ TEST_CASE("handle_unlock_account_request_non_admin", tags) {
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
-    accounts_message_handler sut(h.context(), system_flags, sessions);
+    auto auth_service = make_auth_service(h.context());
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
     // Use a consistent remote address for non-admin session
     const std::string user_endpoint = "192.168.1.100:54321";
@@ -485,7 +514,7 @@ TEST_CASE("handle_unlock_account_request_non_admin", tags) {
 
         REQUIRE(rp.results.size() == 1);
         CHECK(rp.results[0].success == false);
-        CHECK(rp.results[0].message.find("Admin") != std::string::npos);
+        CHECK(rp.results[0].message.find("Permission") != std::string::npos);
     });
 }
 
@@ -496,7 +525,8 @@ TEST_CASE("handle_invalid_message_type", tags) {
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
-    accounts_message_handler sut(h.context(), system_flags, sessions);
+    auto auth_service = make_auth_service(h.context());
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
     std::vector<std::byte> empty_payload;
     boost::asio::io_context io_ctx;
@@ -516,7 +546,8 @@ TEST_CASE("handle_login_request_non_existent_user", tags) {
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
-    accounts_message_handler sut(h.context(), system_flags, sessions);
+    auto auth_service = make_auth_service(h.context());
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
     login_request lrq;
     lrq.username = "non_existent_user_" +
@@ -551,7 +582,8 @@ TEST_CASE("handle_delete_account_request_success", tags) {
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
-    accounts_message_handler sut(h.context(), system_flags, sessions);
+    auto auth_service = make_auth_service(h.context());
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
     // Create an account first
     const auto account = generate_synthetic_account();
@@ -605,7 +637,8 @@ TEST_CASE("handle_delete_account_request_non_existent_account", tags) {
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
-    accounts_message_handler sut(h.context(), system_flags, sessions);
+    auto auth_service = make_auth_service(h.context());
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
     // Try to delete a non-existent account
     delete_account_request drq;
@@ -638,17 +671,16 @@ TEST_CASE("handle_lock_account_request", tags) {
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
-    accounts_message_handler sut(h.context(), system_flags, sessions);
+    auto auth_service = make_auth_service(h.context());
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
     // Use a consistent remote address for admin session
     const std::string admin_endpoint = "192.168.1.100:54321";
 
-    // Create an admin account first (to be the requester)
+    // Create an account and assign Admin role
     auto admin_account = generate_synthetic_account();
-    admin_account.is_admin = true;
 
     create_account_request admin_rq(to_create_account_request(admin_account));
-    admin_rq.is_admin = true;
 
     boost::uuids::uuid admin_id;
     boost::asio::io_context io_ctx;
@@ -659,6 +691,9 @@ TEST_CASE("handle_lock_account_request", tags) {
         REQUIRE(r.has_value());
         admin_id = create_account_response::deserialize(r.value()).value().account_id;
     });
+
+    // Assign Admin role to the account
+    assign_admin_role(auth_service, admin_id);
 
     // Login as admin to establish session
     login_request admin_login_rq;
@@ -697,7 +732,7 @@ TEST_CASE("handle_lock_account_request", tags) {
         account_id = response_result.value().account_id;
     });
 
-    // Lock the account (admin is logged in from admin_endpoint)
+    // Lock the account (account with Admin role is logged in from admin_endpoint)
     lock_account_request lrq;
     lrq.account_ids = {account_id};
     BOOST_LOG_SEV(lg, info) << "Lock request: " << lrq;
@@ -727,18 +762,17 @@ TEST_CASE("handle_login_request_locked_account", tags) {
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
-    accounts_message_handler sut(h.context(), system_flags, sessions);
+    auto auth_service = make_auth_service(h.context());
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
     // Use a consistent remote address for admin session
     const std::string admin_endpoint = "192.168.1.100:54321";
     const std::string user_endpoint = "192.168.1.200:12345";
 
-    // 1. Create an admin account (to be the requester for locking)
+    // 1. Create an account and assign Admin role
     auto admin_account = generate_synthetic_account();
-    admin_account.is_admin = true;
 
     create_account_request admin_rq(to_create_account_request(admin_account));
-    admin_rq.is_admin = true;
 
     boost::uuids::uuid admin_id;
     boost::asio::io_context io_ctx;
@@ -749,6 +783,9 @@ TEST_CASE("handle_login_request_locked_account", tags) {
         REQUIRE(r.has_value());
         admin_id = create_account_response::deserialize(r.value()).value().account_id;
     });
+
+    // Assign Admin role to the account
+    assign_admin_role(auth_service, admin_id);
 
     // Login as admin to establish session
     login_request admin_login_rq;
@@ -836,7 +873,8 @@ TEST_CASE("handle_lock_account_request_unauthenticated", tags) {
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
-    accounts_message_handler sut(h.context(), system_flags, sessions);
+    auto auth_service = make_auth_service(h.context());
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
     // Create an account to try to lock
     const auto account = generate_synthetic_account();
@@ -881,7 +919,8 @@ TEST_CASE("handle_unlock_account_request_unauthenticated", tags) {
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
-    accounts_message_handler sut(h.context(), system_flags, sessions);
+    auto auth_service = make_auth_service(h.context());
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
     // Create an account to try to unlock
     const auto account = generate_synthetic_account();
@@ -926,7 +965,8 @@ TEST_CASE("handle_change_password_request_success", tags) {
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
-    accounts_message_handler sut(h.context(), system_flags, sessions);
+    auto auth_service = make_auth_service(h.context());
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
     // Use a consistent remote address for user session
     const std::string user_endpoint = "192.168.1.100:54321";
@@ -1005,7 +1045,8 @@ TEST_CASE("handle_change_password_request_unauthenticated", tags) {
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
-    accounts_message_handler sut(h.context(), system_flags, sessions);
+    auto auth_service = make_auth_service(h.context());
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
     // Try to change password without being logged in (no session established)
     change_password_request cp_rq;
@@ -1036,7 +1077,8 @@ TEST_CASE("handle_change_password_request_weak_password", tags) {
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
-    accounts_message_handler sut(h.context(), system_flags, sessions);
+    auto auth_service = make_auth_service(h.context());
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
     // Use a consistent remote address for user session
     const std::string user_endpoint = "192.168.1.100:54321";

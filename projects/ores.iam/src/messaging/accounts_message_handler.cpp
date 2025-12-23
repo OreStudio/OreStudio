@@ -24,6 +24,8 @@
 #include "ores.iam/messaging/protocol.hpp"
 #include "ores.iam/messaging/signup_protocol.hpp"
 #include "ores.iam/service/signup_service.hpp"
+#include "ores.iam/domain/permission.hpp"
+#include "ores.iam/domain/role.hpp"
 
 namespace ores::iam::messaging {
 
@@ -32,9 +34,10 @@ using comms::messaging::message_type;
 
 accounts_message_handler::accounts_message_handler(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
-    std::shared_ptr<comms::service::auth_session_service> sessions)
+    std::shared_ptr<comms::service::auth_session_service> sessions,
+    std::shared_ptr<service::authorization_service> auth_service)
     : service_(ctx), ctx_(ctx), system_flags_(std::move(system_flags)),
-      sessions_(std::move(sessions)) {}
+      sessions_(std::move(sessions)), auth_service_(std::move(auth_service)) {}
 
 accounts_message_handler::handler_result
 accounts_message_handler::handle_message(message_type type,
@@ -117,8 +120,8 @@ handle_create_account_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
     domain::account account =
-        service_.create_account( request.username, request.email,
-        request.password, request.recorded_by, request.is_admin);
+        service_.create_account(request.username, request.email,
+        request.password, request.recorded_by);
 
     BOOST_LOG_SEV(lg(), info) << "Created account with ID: " << account.id
                               << " for username: " << account.username;
@@ -230,14 +233,14 @@ handle_login_request(std::span<const std::byte> payload,
         BOOST_LOG_SEV(lg(), info) << "LOGIN SUCCESS: User '" << account.username
                                   << "' authenticated from IP: " << ip_address
                                   << ", account_id: " << account.id
-                                  << ", is_admin: " << account.is_admin
                                   << ", password_reset_required: "
                                   << password_reset_required;
 
         // Store session for this client in the shared session service
+        // Note: Authorization is now handled via RBAC permissions checked at
+        // handler level using authorization_service.has_permission()
         sessions_->store_session(remote_address, comms::service::session_info{
-            .account_id = account.id,
-            .is_admin = account.is_admin
+            .account_id = account.id
         });
 
         login_response response{
@@ -246,7 +249,6 @@ handle_login_request(std::span<const std::byte> payload,
             .account_id = account.id,
             .username = account.username,
             .email = account.email,
-            .is_admin = account.is_admin,
             .password_reset_required = password_reset_required
         };
         co_return response.serialize();
@@ -262,7 +264,6 @@ handle_login_request(std::span<const std::byte> payload,
             .account_id = boost::uuids::nil_uuid(),
             .username = request.username,
             .email = "",
-            .is_admin = false,
             .password_reset_required = false
         };
         co_return response.serialize();
@@ -301,18 +302,19 @@ handle_lock_account_request(std::span<const std::byte> payload,
         co_return response.serialize();
     }
 
-    // Check if requester has admin privileges
-    if (!session->is_admin) {
+    // Check if requester has permission to lock accounts
+    if (!auth_service_->has_permission(session->account_id,
+            domain::permissions::accounts_lock)) {
         BOOST_LOG_SEV(lg(), warn) << "Lock account denied: requester "
                                   << boost::uuids::to_string(session->account_id)
-                                  << " is not an admin";
+                                  << " lacks accounts:lock permission";
         // Return error for all requested accounts
         lock_account_response response;
         for (const auto& id : request.account_ids) {
             response.results.push_back({
                 .account_id = id,
                 .success = false,
-                .message = "Admin privileges required to lock accounts"
+                .message = "Permission denied: accounts:lock required"
             });
         }
         co_return response.serialize();
@@ -373,18 +375,19 @@ handle_unlock_account_request(std::span<const std::byte> payload,
         co_return response.serialize();
     }
 
-    // Check if requester has admin privileges
-    if (!session->is_admin) {
+    // Check if requester has permission to unlock accounts
+    if (!auth_service_->has_permission(session->account_id,
+            domain::permissions::accounts_unlock)) {
         BOOST_LOG_SEV(lg(), warn) << "Unlock account denied: requester "
                                   << boost::uuids::to_string(session->account_id)
-                                  << " is not an admin";
+                                  << " lacks accounts:unlock permission";
         // Return error for all requested accounts
         unlock_account_response response;
         for (const auto& id : request.account_ids) {
             response.results.push_back({
                 .account_id = id,
                 .success = false,
-                .message = "Admin privileges required to unlock accounts"
+                .message = "Permission denied: accounts:unlock required"
             });
         }
         co_return response.serialize();
@@ -496,13 +499,24 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
     try {
+        // Create the initial admin account
         domain::account account = service_.create_account(
             request.username,
             request.email,
             request.password,
-            "bootstrap",
-            true
+            "bootstrap"
         );
+
+        // Assign Admin role to the account using RBAC
+        auto admin_role = auth_service_->find_role_by_name(domain::roles::admin);
+        if (admin_role) {
+            auth_service_->assign_role(account.id, admin_role->id, "bootstrap");
+            BOOST_LOG_SEV(lg(), info)
+                << "Assigned Admin role to initial admin account: " << account.id;
+        } else {
+            BOOST_LOG_SEV(lg(), error)
+                << "Admin role not found - RBAC may not be properly seeded";
+        }
 
         // Exit bootstrap mode - updates database and shared cache
         system_flags_->set_bootstrap_mode(false, "system");
@@ -639,21 +653,22 @@ handle_update_account_request(std::span<const std::byte> payload,
         co_return response.serialize();
     }
 
-    // Check if requester has admin privileges
-    if (!session->is_admin) {
+    // Check if requester has permission to update accounts
+    if (!auth_service_->has_permission(session->account_id,
+            domain::permissions::accounts_update)) {
         BOOST_LOG_SEV(lg(), warn) << "Update account denied: requester "
                                   << boost::uuids::to_string(session->account_id)
-                                  << " is not an admin";
+                                  << " lacks accounts:update permission";
         update_account_response response{
             .success = false,
-            .error_message = "Admin privileges required to update accounts"
+            .error_message = "Permission denied: accounts:update required"
         };
         co_return response.serialize();
     }
 
     try {
         bool success = service_.update_account(request.account_id,
-            request.email, request.recorded_by, request.is_admin);
+            request.email, request.recorded_by);
 
         if (success) {
             BOOST_LOG_SEV(lg(), info) << "Successfully updated account: "
@@ -776,18 +791,19 @@ handle_reset_password_request(std::span<const std::byte> payload,
         co_return response.serialize();
     }
 
-    // Check if requester has admin privileges
-    if (!session->is_admin) {
+    // Check if requester has permission to reset passwords
+    if (!auth_service_->has_permission(session->account_id,
+            domain::permissions::accounts_reset_password)) {
         BOOST_LOG_SEV(lg(), warn) << "Reset password denied: requester "
                                   << boost::uuids::to_string(session->account_id)
-                                  << " is not an admin";
+                                  << " lacks accounts:reset_password permission";
         // Return error for all requested accounts
         reset_password_response response;
         for (const auto& id : request.account_ids) {
             response.results.push_back({
                 .account_id = id,
                 .success = false,
-                .message = "Admin privileges required to reset passwords"
+                .message = "Permission denied: accounts:reset_password required"
             });
         }
         co_return response.serialize();
@@ -806,7 +822,7 @@ handle_reset_password_request(std::span<const std::byte> payload,
 
         if (success) {
             BOOST_LOG_SEV(lg(), info)
-                << "Password reset: admin forced password reset for user '"
+                << "Password reset: forced password reset for user '"
                 << username << "' (account_id: "
                 << boost::uuids::to_string(account_id) << ")";
         } else {

@@ -373,7 +373,6 @@ namespace ores #F2F2F2 {
             class client_session_info #F7E5FF {
                 +{field} account_id boost::uuids::uuid
                 +{field} username std::string
-                +{field} is_admin bool
             }
 
             note top of client_session_info
@@ -383,7 +382,6 @@ namespace ores #F2F2F2 {
 
             - account_id: Unique identifier of the authenticated account.
             - username: Username of the authenticated user.
-            - is_admin: Whether the session has admin privileges.
             end note
 
             enum client_session_error #F2DAFD {
@@ -411,7 +409,6 @@ namespace ores #F2F2F2 {
                 +disconnect() void
                 +is_connected() bool
                 +is_logged_in() bool
-                +is_admin() bool
                 +set_session_info(info: client_session_info) void
                 +clear_session_info() void
                 +process_request<RequestType, ResponseType, RequestMsgType>(request: RequestType) std::expected<ResponseType, client_session_error>
@@ -1026,28 +1023,27 @@ namespace ores #F2F2F2 {
 
             class session_info #F7E5FF {
                 +{field} account_id boost::uuids::uuid
-                +{field} is_admin bool
             }
 
             note top of session_info
             Information about an authenticated session.
 
+            Authorization is now handled via RBAC permissions checked
+            at the handler level using authorization_service.
+
             Fields:
 
             - account_id: Unique identifier of the authenticated account.
-            - is_admin: Whether the session has admin privileges.
             end note
 
             class auth_session_service #ECECEC {
                 +get_session(std::string) std::optional<session_info>
                 +is_authenticated(std::string) bool
-                +is_admin(std::string) bool
                 +store_session(std::string, session_info) void
                 +remove_session(std::string) void
                 +clear_all_sessions() void
                 +authorize_request(messaging::message_type, std::string) std::expected<void, messaging::error_code>
                 -{static} requires_authentication(messaging::message_type) bool
-                -{static} requires_admin(messaging::message_type) bool
                 -{field} session_mutex_ std::mutex
                 -{field} sessions_ std::map<std::string, session_info>
             }

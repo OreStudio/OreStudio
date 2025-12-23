@@ -20,7 +20,9 @@
 #ifndef ORES_IAM_SERVICE_BOOTSTRAP_MODE_SERVICE_HPP
 #define ORES_IAM_SERVICE_BOOTSTRAP_MODE_SERVICE_HPP
 
+#include <memory>
 #include "ores.iam/repository/account_repository.hpp"
+#include "ores.iam/service/authorization_service.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
@@ -62,8 +64,10 @@ public:
      * @brief Constructs a bootstrap_mode_service with required repositories.
      *
      * @param ctx The database context for repository access
+     * @param auth_service The authorization service for RBAC checks
      */
-    explicit bootstrap_mode_service(database::context ctx);
+    explicit bootstrap_mode_service(database::context ctx,
+        std::shared_ptr<authorization_service> auth_service);
 
     /**
      * @brief Checks if the system is currently in bootstrap mode.
@@ -104,6 +108,7 @@ public:
 private:
     repository::account_repository account_repo_;
     variability::service::system_flags_service system_flags_service_;
+    std::shared_ptr<authorization_service> auth_service_;
     database::context ctx_;
 };
 

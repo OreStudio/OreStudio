@@ -96,10 +96,10 @@ bool auto_login(client_session& session, std::ostream& out,
     out << "✓ Logged in as: " << login_config.username << std::endl;
 
     // Update session state
+    // Note: Permission checks are now handled server-side via RBAC
     session.set_session_info(client_session_info{
         .account_id = response.account_id,
-        .username = login_config.username,
-        .is_admin = response.is_admin
+        .username = login_config.username
     });
     return true;
 }

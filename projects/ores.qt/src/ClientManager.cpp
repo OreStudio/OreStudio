@@ -198,18 +198,17 @@ LoginResult ClientManager::connectAndLogin(
             return {.success = false, .error_message = QString::fromStdString(response->error_message)};
         }
 
-        // Success - swap in new client and store account_id, username, email, and admin status
+        // Success - swap in new client and store account_id, username, email
+        // Note: is_admin removed - permission checks now happen server-side via RBAC
         client_ = new_client;
         logged_in_account_id_ = response->account_id;
         logged_in_username_ = response->username;
         logged_in_email_ = response->email;
-        is_admin_ = response->is_admin;
         connected_host_ = host;
         connected_port_ = port;
         const bool password_reset_required = response->password_reset_required;
         BOOST_LOG_SEV(lg(), info) << "LOGIN SUCCESS: User '" << response->username
                                   << "' authenticated to " << host << ":" << port
-                                  << ", is_admin: " << response->is_admin
                                   << ", password_reset_required: " << password_reset_required;
 
         // Create event adapter for subscriptions
@@ -444,7 +443,6 @@ bool ClientManager::logout() {
             logged_in_account_id_ = std::nullopt;
             logged_in_username_.clear();
             logged_in_email_.clear();
-            is_admin_ = false;
             return true;
         } else {
             BOOST_LOG_SEV(lg(), warn) << "Logout failed: "
@@ -457,7 +455,6 @@ bool ClientManager::logout() {
     logged_in_account_id_ = std::nullopt;
     logged_in_username_.clear();
     logged_in_email_.clear();
-    is_admin_ = false;
     return false;
 }
 
@@ -466,7 +463,8 @@ bool ClientManager::isConnected() const {
 }
 
 bool ClientManager::isAdmin() const {
-    return is_admin_;
+    // Deprecated: Permission checks are now performed server-side via RBAC
+    return false;
 }
 
 std::expected<comms::messaging::frame, comms::messaging::error_code>

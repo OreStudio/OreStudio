@@ -49,7 +49,6 @@ TEST_CASE("create_account_with_valid_fields", tags) {
     sut.password_salt = "randomly_generated_salt_value";
     sut.totp_secret = "JBSWY3DPEHPK3PXP";
     sut.email = "john.doe@example.com";
-    sut.is_admin = false;
     BOOST_LOG_SEV(lg, info) << "Account: " << sut;
 
     CHECK(sut.version == 1);
@@ -59,12 +58,12 @@ TEST_CASE("create_account_with_valid_fields", tags) {
     CHECK(sut.password_salt == "randomly_generated_salt_value");
     CHECK(sut.totp_secret == "JBSWY3DPEHPK3PXP");
     CHECK(sut.email == "john.doe@example.com");
-    CHECK(sut.is_admin == false);
 }
 
 TEST_CASE("create_admin_account", tags) {
     auto lg(make_logger(test_suite));
 
+    // Note: Admin privileges are now managed via RBAC roles
     account sut;
     sut.version = 1;
     sut.recorded_by = "system";
@@ -74,13 +73,11 @@ TEST_CASE("create_admin_account", tags) {
     sut.password_salt = "admin_salt_value";
     sut.totp_secret = "ADMIN_TOTP_SECRET";
     sut.email = "admin@example.com";
-    sut.is_admin = true;
     BOOST_LOG_SEV(lg, info) << "Account: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.recorded_by == "system");
     CHECK(sut.username == "admin");
-    CHECK(sut.is_admin == true);
     CHECK(sut.email == "admin@example.com");
 }
 
@@ -99,7 +96,6 @@ TEST_CASE("account_with_specific_uuid", tags) {
     sut.password_salt = "test_salt";
     sut.totp_secret = "";
     sut.email = "test@example.com";
-    sut.is_admin = false;
     BOOST_LOG_SEV(lg, info) << "Account: " << sut;
 
     CHECK(sut.version == 2);
@@ -118,7 +114,6 @@ TEST_CASE("account_insertion_operator", tags) {
     sut.password_salt = "salt456";
     sut.totp_secret = "TOTP789";
     sut.email = "serialize@test.com";
-    sut.is_admin = true;
     BOOST_LOG_SEV(lg, info) << "Account: " << sut;
 
     std::ostringstream os;
@@ -142,7 +137,6 @@ TEST_CASE("create_account_with_faker", tags) {
     sut.password_salt = faker::number::hexadecimal(32);
     sut.totp_secret = faker::string::alphanumeric(16);
     sut.email = std::string(faker::internet::email());
-    sut.is_admin = faker::datatype::boolean();
 
     BOOST_LOG_SEV(lg, info) << "Account: " << sut;
 
@@ -170,7 +164,6 @@ TEST_CASE("create_multiple_random_accounts", tags) {
         sut.password_salt = std::string(faker::crypto::sha256());
         sut.totp_secret = faker::string::alphanumeric(20);
         sut.email = std::string(faker::internet::email());
-        sut.is_admin = faker::datatype::boolean();
         BOOST_LOG_SEV(lg, info) << "Account " << i << ":" <<  sut;
 
         CHECK(sut.version >= 1);
@@ -191,7 +184,6 @@ TEST_CASE("account_convert_single_to_table", tags) {
     acc.password_salt = "salt456";
     acc.totp_secret = "TOTP789";
     acc.email = "john.doe@example.com";
-    acc.is_admin = false;
 
     std::vector<account> accounts = {acc};
     auto table = convert_to_table(accounts);
@@ -217,7 +209,6 @@ TEST_CASE("account_convert_multiple_to_table", tags) {
         acc.password_salt = "salt" + std::to_string(i);
         acc.totp_secret = "TOTP" + std::to_string(i);
         acc.email = "user" + std::to_string(i) + "@example.com";
-        acc.is_admin = (i == 0);
         accounts.push_back(acc);
     }
 
@@ -246,7 +237,6 @@ TEST_CASE("account_convert_single_to_json", tags) {
     acc.password_salt = "salt456";
     acc.totp_secret = "TOTP789";
     acc.email = "john.doe@example.com";
-    acc.is_admin = false;
 
     std::vector<account> accounts = {acc};
     auto json = convert_to_json(accounts);
@@ -272,7 +262,6 @@ TEST_CASE("account_convert_multiple_to_json", tags) {
         acc.password_salt = "salt" + std::to_string(i);
         acc.totp_secret = "TOTP" + std::to_string(i);
         acc.email = "user" + std::to_string(i) + "@example.com";
-        acc.is_admin = (i == 0);
         accounts.push_back(acc);
     }
 
@@ -314,7 +303,6 @@ TEST_CASE("account_table_with_faker_data", tags) {
         acc.password_salt = faker::number::hexadecimal(32);
         acc.totp_secret = faker::string::alphanumeric(16);
         acc.email = std::string(faker::internet::email());
-        acc.is_admin = faker::datatype::boolean();
         accounts.push_back(acc);
     }
 

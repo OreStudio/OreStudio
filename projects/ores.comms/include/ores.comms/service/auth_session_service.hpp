@@ -32,10 +32,12 @@ namespace ores::comms::service {
 
 /**
  * @brief Information about an authenticated session.
+ *
+ * Authorization is now handled via RBAC permissions checked at the handler
+ * level using authorization_service.
  */
 struct session_info {
     boost::uuids::uuid account_id;
-    bool is_admin;
 };
 
 /**
@@ -78,14 +80,6 @@ public:
     [[nodiscard]] bool is_authenticated(const std::string& remote_address) const;
 
     /**
-     * @brief Check if a remote address has an admin session.
-     *
-     * @param remote_address The client's remote address
-     * @return true if authenticated as admin, false otherwise
-     */
-    [[nodiscard]] bool is_admin(const std::string& remote_address) const;
-
-    /**
      * @brief Store session for a remote address.
      *
      * @param remote_address The client's remote address
@@ -108,16 +102,17 @@ public:
     /**
      * @brief Check if a request is authorized based on message type and session.
      *
-     * Centralizes authorization logic for all message types:
+     * Centralizes authentication logic for all message types:
      * - Some messages don't require authentication (login, bootstrap, heartbeat)
-     * - Some messages require authentication
-     * - Some messages require admin privileges
+     * - All other messages require authentication
+     *
+     * Note: Permission-based authorization is handled at the handler level
+     * using authorization_service.has_permission().
      *
      * @param type The message type being requested
      * @param remote_address The client's remote address
      * @return Empty expected on success, error_code on failure:
      *         - authentication_failed if auth required but not logged in
-     *         - authorization_failed if admin required but not admin
      */
     [[nodiscard]] std::expected<void, messaging::error_code>
     authorize_request(messaging::message_type type,
@@ -128,11 +123,6 @@ private:
      * @brief Check if a message type requires authentication.
      */
     static bool requires_authentication(messaging::message_type type);
-
-    /**
-     * @brief Check if a message type requires admin privileges.
-     */
-    static bool requires_admin(messaging::message_type type);
 
     mutable std::mutex session_mutex_;
     std::map<std::string, session_info> sessions_;

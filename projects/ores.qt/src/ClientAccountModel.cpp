@@ -80,8 +80,7 @@ QVariant ClientAccountModel::data(const QModelIndex& index, int role) const {
     // Recency highlighting for foreground color
     if (role == Qt::ForegroundRole) {
         // Skip recency coloring for badge columns (handled by delegate)
-        if (index.column() == Column::IsAdmin ||
-            index.column() == Column::Status ||
+        if (index.column() == Column::Status ||
             index.column() == Column::Locked) {
             return {};
         }
@@ -97,7 +96,6 @@ QVariant ClientAccountModel::data(const QModelIndex& index, int role) const {
     switch (index.column()) {
     case Column::Username: return QString::fromStdString(account.username);
     case Column::Email: return QString::fromStdString(account.email);
-    case Column::IsAdmin: return account.is_admin ? tr("Admin") : tr("-");
     case Column::Status: {
         auto status = calculateLoginStatus(item.loginInfo);
         switch (status) {
@@ -128,7 +126,6 @@ headerData(int section, Qt::Orientation orientation, int role) const {
         switch (section) {
         case Column::Username: return tr("Username");
         case Column::Email: return tr("Email");
-        case Column::IsAdmin: return tr("Admin");
         case Column::Status: return tr("Status");
         case Column::Locked: return tr("Locked");
         case Column::Version: return tr("Version");

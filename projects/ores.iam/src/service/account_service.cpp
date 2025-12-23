@@ -51,7 +51,7 @@ account_service::account_service(database::context ctx)
 domain::account
 account_service::create_account(const std::string& username,
     const std::string& email, const std::string& password,
-    const std::string& recorded_by, bool is_admin) {
+    const std::string& recorded_by) {
 
     throw_if_empty("Username", username);
     throw_if_empty("Email", email);
@@ -67,9 +67,9 @@ account_service::create_account(const std::string& username,
     auto password_hash = password_manager::create_password_hash(password);
 
     // Create the account object with computed fields
+    // Note: Administrative privileges are now managed through RBAC roles.
     domain::account new_account {
         .version = 0, // will be set by repository
-        .is_admin = is_admin,
         .id = id,
         .recorded_by = recorded_by,
         .username = username,
@@ -312,22 +312,8 @@ void account_service::logout(const boost::uuids::uuid& account_id) {
     login_info_repo_.update(login_info);
 }
 
-bool account_service::is_admin(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Checking admin status for account: "
-                               << boost::uuids::to_string(account_id);
-
-    auto accounts = account_repo_.read_latest(account_id);
-    if (accounts.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Account not found: "
-                                  << boost::uuids::to_string(account_id);
-        return false;
-    }
-
-    return accounts[0].is_admin;
-}
-
 bool account_service::update_account(const boost::uuids::uuid& account_id,
-    const std::string& email, const std::string& recorded_by, bool is_admin) {
+    const std::string& email, const std::string& recorded_by) {
     BOOST_LOG_SEV(lg(), debug) << "Updating account: "
                                << boost::uuids::to_string(account_id);
 
@@ -342,7 +328,6 @@ bool account_service::update_account(const boost::uuids::uuid& account_id,
     // Get existing account and create new version with updated fields
     auto account = accounts[0];
     account.email = email;
-    account.is_admin = is_admin;
     account.recorded_by = recorded_by;
     // Note: version is NOT incremented here - the database trigger handles it
     // The trigger uses optimistic locking: new.version must match current_version

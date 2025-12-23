@@ -59,6 +59,7 @@ public:
      * @brief Process a create account request.
      *
      * Creates a new account with the provided details.
+     * Note: Admin privileges are now managed via RBAC role assignments.
      *
      * @param out Output stream for results
      * @param session Client session for connectivity.
@@ -66,12 +67,11 @@ public:
      * @param password Account password
      * @param totp_secret TOTP secret for 2FA
      * @param email Account email
-     * @param is_admin Whether the account has admin privileges
      */
     static void process_create_account(std::ostream& out,
         comms::net::client_session& session,
         std::string username, std::string password, std::string totp_secret,
-        std::string email, bool is_admin);
+        std::string email);
 
     /**
      * @brief Process a list accounts request.
@@ -101,7 +101,7 @@ public:
     /**
      * @brief Process a lock account request.
      *
-     * Locks an account by account ID. Requires admin privileges.
+     * Locks an account by account ID. Requires accounts:lock permission.
      *
      * @param out Output stream for results
      * @param session Client session for connectivity.
@@ -114,7 +114,7 @@ public:
     /**
      * @brief Process an unlock account request.
      *
-     * Unlocks a locked account by account ID. Requires admin privileges.
+     * Unlocks a locked account by account ID. Requires accounts:unlock permission.
      *
      * @param out Output stream for results
      * @param session Client session for connectivity.

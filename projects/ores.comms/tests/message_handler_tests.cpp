@@ -401,7 +401,7 @@ TEST_CASE("test_dispatcher_with_registered_handler", tags) {
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     // Store a test session to pass authorization
     const std::string test_address = "127.0.0.1:54321";
-    sessions->store_session(test_address, {boost::uuids::random_generator()(), false});
+    sessions->store_session(test_address, {boost::uuids::random_generator()()});
 
     message_dispatcher dispatcher(sessions);
 
@@ -457,7 +457,7 @@ TEST_CASE("test_dispatcher_without_handler_returns_error", tags) {
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     // Store a test session to pass authorization
     const std::string test_address = "127.0.0.1:54321";
-    sessions->store_session(test_address, {boost::uuids::random_generator()(), false});
+    sessions->store_session(test_address, {boost::uuids::random_generator()()});
 
     message_dispatcher dispatcher(sessions);
     // No handler registered
@@ -489,7 +489,7 @@ TEST_CASE("test_dispatcher_preserves_correlation_id", tags) {
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     // Store a test session to pass authorization
     const std::string test_address = "127.0.0.1:54321";
-    sessions->store_session(test_address, {boost::uuids::random_generator()(), false});
+    sessions->store_session(test_address, {boost::uuids::random_generator()()});
 
     message_dispatcher dispatcher(sessions);
 

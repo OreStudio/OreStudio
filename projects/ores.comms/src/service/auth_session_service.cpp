@@ -40,21 +40,11 @@ bool auth_session_service::is_authenticated(const std::string& remote_address) c
     return sessions_.contains(remote_address);
 }
 
-bool auth_session_service::is_admin(const std::string& remote_address) const {
-    std::lock_guard lock(session_mutex_);
-    auto it = sessions_.find(remote_address);
-    if (it != sessions_.end()) {
-        return it->second.is_admin;
-    }
-    return false;
-}
-
 void auth_session_service::store_session(const std::string& remote_address,
     session_info session) {
     std::lock_guard lock(session_mutex_);
     BOOST_LOG_SEV(lg(), info) << "Storing session for " << remote_address
-                              << " account_id=" << session.account_id
-                              << " is_admin=" << session.is_admin;
+                              << " account_id=" << session.account_id;
     sessions_[remote_address] = std::move(session);
 }
 
@@ -88,6 +78,8 @@ bool auth_session_service::requires_authentication(messaging::message_type type)
     case message_type::handshake_ack:
     // Login - obviously can't require auth
     case message_type::login_request:
+    // Signup - users register before having an account
+    case message_type::signup_request:
     // Bootstrap operations - only allowed in bootstrap mode anyway
     case message_type::create_initial_admin_request:
     case message_type::bootstrap_status_request:
@@ -95,24 +87,6 @@ bool auth_session_service::requires_authentication(messaging::message_type type)
     default:
         // All other messages require authentication
         return true;
-    }
-}
-
-bool auth_session_service::requires_admin(messaging::message_type type) {
-    using messaging::message_type;
-
-    // Messages that require admin privileges
-    switch (type) {
-    // Account management (creating, deleting, unlocking accounts)
-    case message_type::create_account_request:
-    case message_type::delete_account_request:
-    case message_type::unlock_account_request:
-    // Currency modifications
-    case message_type::save_currency_request:
-    case message_type::delete_currency_request:
-        return true;
-    default:
-        return false;
     }
 }
 
@@ -129,21 +103,16 @@ auth_session_service::authorize_request(messaging::message_type type,
     auto session = get_session(remote_address);
     if (!session) {
         BOOST_LOG_SEV(lg(), warn)
-            << "Authorization failed for " << type
+            << "Authentication failed for " << type
             << " from " << remote_address << ": not authenticated";
         return std::unexpected(messaging::error_code::authentication_failed);
     }
 
-    // Check if admin is required
-    if (requires_admin(type) && !session->is_admin) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Authorization failed for " << type
-            << " from " << remote_address << ": admin required";
-        return std::unexpected(messaging::error_code::authorization_failed);
-    }
+    // Permission-based authorization is handled at the handler level
+    // using authorization_service.has_permission()
 
     BOOST_LOG_SEV(lg(), debug)
-        << "Authorization granted for " << type
+        << "Authentication granted for " << type
         << " from " << remote_address;
     return {};
 }

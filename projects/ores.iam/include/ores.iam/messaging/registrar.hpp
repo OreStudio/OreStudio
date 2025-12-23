@@ -25,6 +25,7 @@
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
+#include "ores.iam/service/authorization_service.hpp"
 
 namespace ores::iam::messaging {
 
@@ -37,6 +38,7 @@ namespace ores::iam::messaging {
  * @param server The server to register handlers with
  * @param ctx Database context for repository access
  * @param system_flags Shared system flags service for flag access
+ * @param auth_service Shared authorization service for RBAC permission checks
  */
 class registrar {
 private:
@@ -50,7 +52,8 @@ private:
 public:
     static void register_handlers(comms::net::server& server,
         database::context ctx,
-        std::shared_ptr<variability::service::system_flags_service> system_flags);
+        std::shared_ptr<variability::service::system_flags_service> system_flags,
+        std::shared_ptr<service::authorization_service> auth_service);
 };
 
 }

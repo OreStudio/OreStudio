@@ -29,7 +29,7 @@ std::ostream& operator<<(std::ostream& s, const add_account_options& v) {
       << ", password: [REDACTED]"
       << ", modified_by: " << v.modified_by;
 
-    if (v.is_admin) s << ", is_admin: " << (*v.is_admin ? "true" : "false");
+    if (v.admin) s << ", admin: " << (*v.admin ? "true" : "false");
 
     s << " }";
     return s;

@@ -34,10 +34,10 @@ SELECT
     'Country and region flag images',
     'system',
     CURRENT_TIMESTAMP,
-    '9999-12-31 23:59:59'::timestamp
+    oresdb.infinity_timestamp()
 WHERE NOT EXISTS (
     SELECT 1 FROM oresdb.tags
-    WHERE name = 'flag' AND valid_to = '9999-12-31 23:59:59'::timestamp
+    WHERE name = 'flag' AND valid_to = oresdb.infinity_timestamp()
 );
 
 -- Function to load a single flag SVG file
@@ -55,7 +55,7 @@ BEGIN
     -- Check if image with this key already exists and get its ID
     SELECT image_id INTO v_image_id
     FROM oresdb.images
-    WHERE key = p_key AND valid_to = '9999-12-31 23:59:59'::timestamp;
+    WHERE key = p_key AND valid_to = oresdb.infinity_timestamp();
 
     -- If it's a new image, generate a new UUID
     IF v_image_id IS NULL THEN
@@ -68,7 +68,7 @@ BEGIN
         modified_by, valid_from, valid_to
     ) VALUES (
         v_image_id, 0, p_key, p_description, p_svg_data,
-        'system', CURRENT_TIMESTAMP, '9999-12-31 23:59:59'::timestamp
+        'system', CURRENT_TIMESTAMP, oresdb.infinity_timestamp()
     );
 
     -- Link image to flag tag (skip if already linked)
@@ -77,17 +77,17 @@ BEGIN
     )
     SELECT
         v_image_id, tag_id, 'system', CURRENT_TIMESTAMP,
-        CURRENT_TIMESTAMP, '9999-12-31 23:59:59'::timestamp
+        CURRENT_TIMESTAMP, oresdb.infinity_timestamp()
     FROM oresdb.tags
-    WHERE name = 'flag' AND valid_to = '9999-12-31 23:59:59'::timestamp
+    WHERE name = 'flag' AND valid_to = oresdb.infinity_timestamp()
       AND NOT EXISTS (
           SELECT 1 FROM oresdb.image_tags it
           WHERE it.image_id = v_image_id
             AND it.tag_id = tags.tag_id
-            AND it.valid_to = '9999-12-31 23:59:59'::timestamp
+            AND it.valid_to = oresdb.infinity_timestamp()
       );
 
-    RETURN v_image_id::text;
+    RETURN;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -111,6 +111,6 @@ $$ LANGUAGE plpgsql;
 --     svg=$(cat "$f" | sed "s/'/''/g")
 --     echo "SELECT oresdb.load_flag('$key', '$desc', '$svg');"
 -- done > projects/sql/load_flags_data.sql
--- echo "SELECT 'Loaded ' || COUNT(*) || ' flags' AS summary FROM oresdb.image_tags it JOIN oresdb.tags t ON it.tag_id = t.tag_id WHERE t.name = 'flag' AND t.valid_to = '9999-12-31 23:59:59'::timestamptz AND it.valid_to = '9999-12-31 23:59:59'::timestamptz;" >> projects/sql/load_flags_data.sql
+-- echo "SELECT 'Loaded ' || COUNT(*) || ' flags' AS summary FROM oresdb.image_tags it JOIN oresdb.tags t ON it.tag_id = t.tag_id WHERE t.name = 'flag' AND t.valid_to = oresdb.infinity_timestamp() AND it.valid_to = oresdb.infinity_timestamp();" >> projects/sql/load_flags_data.sql
 --
 -- Then run: psql -h localhost -U oresadmin -d oresdb -f projects/sql/load_flags_data.sql

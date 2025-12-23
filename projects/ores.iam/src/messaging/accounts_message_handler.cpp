@@ -648,8 +648,22 @@ handle_logout_request(std::span<const std::byte> payload,
     try {
         service_.logout(account_id);
 
-        // Remove session for this client from the shared session service
-        sessions_->remove_session(remote_address);
+        // Remove session and persist end state to database
+        auto sess = sessions_->remove_session(remote_address);
+        if (sess) {
+            sess->end_time = std::chrono::system_clock::now();
+            try {
+                session_repo_.end_session(sess->id, sess->start_time,
+                    *sess->end_time, sess->bytes_sent, sess->bytes_received);
+                BOOST_LOG_SEV(lg(), debug) << "Session end persisted to database: "
+                                           << boost::uuids::to_string(sess->id)
+                                           << ", bytes_sent: " << sess->bytes_sent
+                                           << ", bytes_received: " << sess->bytes_received;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), warn) << "Failed to persist session end to database: "
+                                          << e.what();
+            }
+        }
 
         BOOST_LOG_SEV(lg(), info) << "Successfully logged out account: "
                                   << boost::uuids::to_string(account_id);

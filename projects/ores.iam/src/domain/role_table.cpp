@@ -26,6 +26,18 @@
 
 namespace ores::iam::domain {
 
+namespace {
+
+/**
+ * @brief Maximum number of permission codes to display inline in the table.
+ *
+ * When a role has more permissions than this limit, only the first N are shown
+ * followed by "(+X more)" to indicate truncation.
+ */
+constexpr std::size_t max_permissions_to_display = 3;
+
+}
+
 std::string convert_to_table(const std::vector<role>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
@@ -35,15 +47,15 @@ std::string convert_to_table(const std::vector<role>& v) {
 
     for (const auto& r : v) {
         std::string permissions_str;
-        if (r.permission_codes.size() <= 3) {
+        if (r.permission_codes.size() <= max_permissions_to_display) {
             permissions_str = boost::algorithm::join(r.permission_codes, ", ");
         } else {
-            std::vector<std::string> first_three(
+            std::vector<std::string> first_n(
                 r.permission_codes.begin(),
-                r.permission_codes.begin() + 3);
+                r.permission_codes.begin() + max_permissions_to_display);
             std::ostringstream oss;
-            oss << boost::algorithm::join(first_three, ", ")
-                << " (+" << (r.permission_codes.size() - 3) << " more)";
+            oss << boost::algorithm::join(first_n, ", ")
+                << " (+" << (r.permission_codes.size() - max_permissions_to_display) << " more)";
             permissions_str = oss.str();
         }
 

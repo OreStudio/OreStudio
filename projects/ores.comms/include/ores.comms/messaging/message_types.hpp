@@ -195,6 +195,8 @@ enum class message_type {
     get_account_roles_response = 0x2029,
     get_account_permissions_request = 0x202A,
     get_account_permissions_response = 0x202B,
+    get_role_request = 0x202C,
+    get_role_response = 0x202D,
 
     // User self-registration messages (0x2030 - 0x203F)
     signup_request = 0x2030,

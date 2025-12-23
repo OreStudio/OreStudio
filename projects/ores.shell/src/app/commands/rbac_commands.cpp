@@ -153,63 +153,39 @@ process_show_role(std::ostream& out, client_session& session,
     BOOST_LOG_SEV(lg(), debug) << "Initiating show role request for: "
                                << role_identifier;
 
-    // First, get all roles
-    using iam::messaging::list_roles_request;
-    using iam::messaging::list_roles_response;
-    auto result = session.process_authenticated_request<list_roles_request,
-                                                        list_roles_response,
-                                                        message_type::list_roles_request>
-        (list_roles_request{});
+    using iam::messaging::get_role_request;
+    using iam::messaging::get_role_response;
+    auto result = session.process_authenticated_request<get_role_request,
+                                                        get_role_response,
+                                                        message_type::get_role_request>
+        (get_role_request{.identifier = role_identifier});
 
     if (!result) {
         out << "X " << to_string(result.error()) << std::endl;
         return;
     }
 
-    // Try to parse as UUID first
-    boost::uuids::uuid role_uuid{};
-    bool is_uuid = false;
-    try {
-        role_uuid = boost::lexical_cast<boost::uuids::uuid>(role_identifier);
-        is_uuid = true;
-    } catch (const boost::bad_lexical_cast&) {
-        // Not a UUID, will search by name
-    }
-
-    // Find the matching role
-    const iam::domain::role* found_role = nullptr;
-    for (const auto& role : result->roles) {
-        if (is_uuid) {
-            if (role.id == role_uuid) {
-                found_role = &role;
-                break;
-            }
-        } else {
-            if (role.name == role_identifier) {
-                found_role = &role;
-                break;
-            }
-        }
-    }
-
-    if (!found_role) {
-        out << "X Role not found: " << role_identifier << std::endl;
+    if (!result->found || !result->role) {
+        out << "X " << result->error_message << std::endl;
         return;
     }
+
+    const auto& found_role = *result->role;
+    BOOST_LOG_SEV(lg(), info) << "Found role: " << found_role.name;
 
     // Display role details
     out << std::endl;
     out << "Role Details" << std::endl;
     out << "============" << std::endl;
-    out << "ID:          " << boost::uuids::to_string(found_role->id) << std::endl;
-    out << "Name:        " << found_role->name << std::endl;
-    out << "Description: " << found_role->description << std::endl;
-    out << "Version:     " << found_role->version << std::endl;
-    out << "Recorded By: " << found_role->recorded_by << std::endl;
+    out << "ID:          " << boost::uuids::to_string(found_role.id) << std::endl;
+    out << "Name:        " << found_role.name << std::endl;
+    out << "Description: " << found_role.description << std::endl;
+    out << "Version:     " << found_role.version << std::endl;
+    out << "Recorded By: " << found_role.recorded_by << std::endl;
     out << std::endl;
-    out << "Permissions (" << found_role->permission_codes.size() << "):" << std::endl;
+    out << "Permissions (" << found_role.permission_codes.size() << "):" << std::endl;
     out << "-------------" << std::endl;
-    for (const auto& code : found_role->permission_codes) {
+    for (const auto& code : found_role.permission_codes) {
         out << "  - " << code << std::endl;
     }
     out << std::endl;

@@ -505,9 +505,9 @@ add_account(const config::add_account_options& cfg) const {
                    << " (ID: " << boost::uuids::to_string(account_id) << ")" << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Added account: " << account.username;
 
-    // If is_admin was requested, assign Admin role via RBAC
-    const bool is_admin = cfg.is_admin.value_or(false);
-    if (is_admin) {
+    // If --admin was specified, assign Admin role via RBAC
+    const bool assign_admin = cfg.admin.value_or(false);
+    if (assign_admin) {
         auto admin_role = auth_service->find_role_by_name(iam::domain::roles::admin);
         if (admin_role) {
             auth_service->assign_role(account_id, admin_role->id, cfg.modified_by);
@@ -517,7 +517,7 @@ add_account(const config::add_account_options& cfg) const {
         }
     }
 
-    if (is_admin && bootstrap_svc.is_in_bootstrap_mode()) {
+    if (assign_admin && bootstrap_svc.is_in_bootstrap_mode()) {
         bootstrap_svc.exit_bootstrap_mode();
         BOOST_LOG_SEV(lg(), info) << "Created first admin account - exiting bootstrap mode.";
         output_stream_ << "System exited bootstrap mode." << std::endl;

@@ -188,18 +188,6 @@ public:
     }
 
     /**
-     * @brief Check if logged in as admin.
-     *
-     * @deprecated Permission checks are now performed server-side via RBAC.
-     *             This method always returns false. Use process_authenticated_request
-     *             and handle permission denied errors from the server instead.
-     */
-    [[deprecated("Permission checks are now server-side via RBAC")]]
-    [[nodiscard]] bool is_admin() const noexcept {
-        return false;
-    }
-
-    /**
      * @brief Get current session info if logged in.
      */
     [[nodiscard]] const std::optional<client_session_info>& session_info() const noexcept {

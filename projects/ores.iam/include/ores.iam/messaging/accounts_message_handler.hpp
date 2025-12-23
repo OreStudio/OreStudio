@@ -320,7 +320,6 @@ private:
     static bool is_localhost(const std::string& remote_address);
 
     service::account_service service_;
-    service::authorization_service auth_service_;
     database::context ctx_;
     std::shared_ptr<variability::service::system_flags_service> system_flags_;
     std::shared_ptr<comms::service::auth_session_service> sessions_;

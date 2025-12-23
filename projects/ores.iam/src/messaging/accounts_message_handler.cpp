@@ -1161,14 +1161,15 @@ handle_assign_role_request(std::span<const std::byte> payload,
         co_return response.serialize();
     }
 
-    // Check if requester has admin privileges
-    if (!session->is_admin) {
+    // Check if requester has permission to assign roles
+    if (!auth_service_->has_permission(session->account_id,
+            domain::permissions::roles_assign)) {
         BOOST_LOG_SEV(lg(), warn) << "Assign role denied: requester "
                                   << boost::uuids::to_string(session->account_id)
-                                  << " is not an admin";
+                                  << " lacks roles:assign permission";
         assign_role_response response{
             .success = false,
-            .error_message = "Admin privileges required to assign roles"
+            .error_message = "Permission denied: roles:assign required"
         };
         co_return response.serialize();
     }
@@ -1222,14 +1223,15 @@ handle_revoke_role_request(std::span<const std::byte> payload,
         co_return response.serialize();
     }
 
-    // Check if requester has admin privileges
-    if (!session->is_admin) {
+    // Check if requester has permission to revoke roles
+    if (!auth_service_->has_permission(session->account_id,
+            domain::permissions::roles_revoke)) {
         BOOST_LOG_SEV(lg(), warn) << "Revoke role denied: requester "
                                   << boost::uuids::to_string(session->account_id)
-                                  << " is not an admin";
+                                  << " lacks roles:revoke permission";
         revoke_role_response response{
             .success = false,
-            .error_message = "Admin privileges required to revoke roles"
+            .error_message = "Permission denied: roles:revoke required"
         };
         co_return response.serialize();
     }

@@ -25,6 +25,7 @@
 #include <boost/lexical_cast.hpp>
 #include "sqlgen/Timestamp.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.utility/datetime/datetime.hpp"
 #include "ores.iam/domain/session_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::iam::repository {
@@ -52,14 +53,10 @@ parse_timestamp(const std::string& str) {
 }
 
 /**
- * @brief Formats a time_point as a timestamp string.
+ * @brief Formats a time_point as a timestamp string (thread-safe).
  */
 std::string format_timestamp(const std::chrono::system_clock::time_point& tp) {
-    const auto time_t = std::chrono::system_clock::to_time_t(tp);
-    std::tm tm = *std::localtime(&time_t);
-    std::ostringstream ss;
-    ss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-    return ss.str();
+    return ores::utility::datetime::datetime::format_time_point(tp);
 }
 
 /**

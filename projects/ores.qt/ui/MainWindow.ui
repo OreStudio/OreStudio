@@ -52,6 +52,7 @@
      <string>&amp;System</string>
     </property>
     <addaction name="ActionAccounts"/>
+    <addaction name="ActionRoles"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -160,6 +161,18 @@
    </property>
    <property name="toolTip">
     <string>Manage user accounts (Admin only)</string>
+   </property>
+  </action>
+  <action name="ActionRoles">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_lock_closed_20_regular.svg</normaloff>:/icons/ic_fluent_lock_closed_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Roles</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage roles and permissions</string>
    </property>
   </action>
  </widget>

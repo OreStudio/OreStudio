@@ -39,6 +39,7 @@
 #include "ores.qt/MyAccountDialog.hpp"
 #include "ores.qt/CurrencyController.hpp"
 #include "ores.qt/AccountController.hpp"
+#include "ores.qt/RoleController.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -101,6 +102,8 @@ MainWindow::MainWindow(QWidget* parent) :
         ":/icons/ic_fluent_star_20_regular.svg", iconColor));
     ui_->ActionAccounts->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_person_accounts_20_regular.svg", iconColor));
+    ui_->ActionRoles->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_lock_closed_20_regular.svg", iconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_person_20_regular.svg", iconColor));
     ui_->ExitAction->setIcon(IconUtils::createRecoloredIcon(
@@ -155,6 +158,12 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->ActionAccounts, &QAction::triggered, this, [this]() {
         if (accountController_)
             accountController_->showListWindow();
+    });
+
+    // Connect Roles action to controller (admin only)
+    connect(ui_->ActionRoles, &QAction::triggered, this, [this]() {
+        if (roleController_)
+            roleController_->showListWindow();
     });
 
     // Initially disable data-related actions until logged in
@@ -341,6 +350,9 @@ void MainWindow::onLoginTriggered() {
         if (accountController_) {
             accountController_->setUsername(QString::fromStdString(username_));
         }
+        if (roleController_) {
+            roleController_->setUsername(QString::fromStdString(username_));
+        }
 
         BOOST_LOG_SEV(lg(), info) << "Successfully connected and authenticated.";
         ui_->statusbar->showMessage("Successfully connected and logged in.");
@@ -362,6 +374,7 @@ void MainWindow::updateMenuState() {
     // System menu enabled when connected - permission checks happen server-side via RBAC
     ui_->menuSystem->menuAction()->setEnabled(isConnected);
     ui_->ActionAccounts->setEnabled(isConnected);
+    ui_->ActionRoles->setEnabled(isConnected);
 
     // My Account menu item is enabled when connected
     ui_->ActionMyAccount->setEnabled(isConnected);
@@ -405,6 +418,21 @@ void MainWindow::createControllers() {
         ui_->statusbar->showMessage(message);
     });
     connect(accountController_.get(), &AccountController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create role controller (admin only functionality)
+    roleController_ = std::make_unique<RoleController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect role controller signals to status bar
+    connect(roleController_.get(), &RoleController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(roleController_.get(), &RoleController::errorMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });

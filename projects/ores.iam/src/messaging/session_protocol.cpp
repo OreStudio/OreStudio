@@ -21,6 +21,7 @@
 
 #include <expected>
 #include <stdexcept>
+#include <boost/system/system_error.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include <rfl.hpp>
@@ -178,7 +179,7 @@ read_session(std::span<const std::byte>& data) {
     if (!client_ip_str) return std::unexpected(client_ip_str.error());
     try {
         s.client_ip = boost::asio::ip::make_address(*client_ip_str);
-    } catch (...) {
+    } catch (const boost::system::system_error&) {
         s.client_ip = boost::asio::ip::address_v4();
     }
 

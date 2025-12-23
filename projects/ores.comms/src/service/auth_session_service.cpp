@@ -20,6 +20,7 @@
 #include "ores.comms/service/auth_session_service.hpp"
 
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 
 namespace ores::comms::service {
 
@@ -29,10 +30,23 @@ std::optional<session_info>
 auth_session_service::get_session(const std::string& remote_address) const {
     std::lock_guard lock(session_mutex_);
     auto it = sessions_.find(remote_address);
+    if (it != sessions_.end() && it->second) {
+        // Return legacy session_info from the full session object
+        return session_info{
+            .account_id = it->second->account_id
+        };
+    }
+    return std::nullopt;
+}
+
+std::shared_ptr<iam::domain::session>
+auth_session_service::get_session_data(const std::string& remote_address) const {
+    std::lock_guard lock(session_mutex_);
+    auto it = sessions_.find(remote_address);
     if (it != sessions_.end()) {
         return it->second;
     }
-    return std::nullopt;
+    return nullptr;
 }
 
 bool auth_session_service::is_authenticated(const std::string& remote_address) const {
@@ -40,29 +54,85 @@ bool auth_session_service::is_authenticated(const std::string& remote_address) c
     return sessions_.contains(remote_address);
 }
 
+bool auth_session_service::is_admin(const std::string& remote_address) const {
+    std::lock_guard lock(session_mutex_);
+    auto it = sessions_.find(remote_address);
+    if (it != sessions_.end() && it->second) {
+        return it->second->is_admin;
+    }
+    return false;
+}
+
 void auth_session_service::store_session(const std::string& remote_address,
-    session_info session) {
+    session_info info) {
+    // Create a minimal session object from the legacy session_info
+    auto session = std::make_shared<iam::domain::session>();
+    session->id = boost::uuids::random_generator()();
+    session->account_id = info.account_id;
+    session->start_time = std::chrono::system_clock::now();
+
+    store_session_data(remote_address, std::move(session));
+}
+
+void auth_session_service::store_session_data(const std::string& remote_address,
+    std::shared_ptr<iam::domain::session> session) {
     std::lock_guard lock(session_mutex_);
     BOOST_LOG_SEV(lg(), info) << "Storing session for " << remote_address
-                              << " account_id=" << session.account_id;
+                              << " session_id=" << session->id
+                              << " account_id=" << session->account_id
+                              << " is_admin=" << session->is_admin;
     sessions_[remote_address] = std::move(session);
 }
 
-void auth_session_service::remove_session(const std::string& remote_address) {
+void auth_session_service::update_session_bytes(const std::string& remote_address,
+    std::uint64_t bytes_sent, std::uint64_t bytes_received) {
     std::lock_guard lock(session_mutex_);
     auto it = sessions_.find(remote_address);
-    if (it != sessions_.end()) {
-        BOOST_LOG_SEV(lg(), info) << "Removing session for " << remote_address
-                                  << " account_id=" << it->second.account_id;
-        sessions_.erase(it);
+    if (it != sessions_.end() && it->second) {
+        it->second->bytes_sent = bytes_sent;
+        it->second->bytes_received = bytes_received;
     }
 }
 
-void auth_session_service::clear_all_sessions() {
+std::shared_ptr<iam::domain::session>
+auth_session_service::remove_session(const std::string& remote_address) {
+    std::lock_guard lock(session_mutex_);
+    auto it = sessions_.find(remote_address);
+    if (it != sessions_.end()) {
+        auto session = std::move(it->second);
+        BOOST_LOG_SEV(lg(), info) << "Removing session for " << remote_address
+                                  << " session_id=" << session->id
+                                  << " account_id=" << session->account_id;
+        sessions_.erase(it);
+        return session;
+    }
+    return nullptr;
+}
+
+std::vector<std::shared_ptr<iam::domain::session>>
+auth_session_service::clear_all_sessions() {
     std::lock_guard lock(session_mutex_);
     BOOST_LOG_SEV(lg(), info) << "Clearing all sessions (count="
                               << sessions_.size() << ")";
+
+    std::vector<std::shared_ptr<iam::domain::session>> result;
+    result.reserve(sessions_.size());
+    for (auto& [_, session] : sessions_) {
+        result.push_back(std::move(session));
+    }
     sessions_.clear();
+    return result;
+}
+
+std::vector<std::shared_ptr<iam::domain::session>>
+auth_session_service::get_all_sessions() const {
+    std::lock_guard lock(session_mutex_);
+    std::vector<std::shared_ptr<iam::domain::session>> result;
+    result.reserve(sessions_.size());
+    for (const auto& [_, session] : sessions_) {
+        result.push_back(session);
+    }
+    return result;
 }
 
 bool auth_session_service::requires_authentication(messaging::message_type type) {

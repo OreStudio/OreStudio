@@ -22,19 +22,23 @@
 
 #include <map>
 #include <mutex>
+#include <memory>
 #include <optional>
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/log/make_logger.hpp"
 #include "ores.comms/messaging/message_types.hpp"
+#include "ores.iam/domain/session.hpp"
 
 namespace ores::comms::service {
 
 /**
- * @brief Information about an authenticated session.
+ * @brief Lightweight session info for backward compatibility.
  *
  * Authorization is now handled via RBAC permissions checked at the handler
  * level using authorization_service.
+ *
+ * @deprecated Use get_session_data() to access the full session object.
  */
 struct session_info {
     boost::uuids::uuid account_id;
@@ -80,24 +84,72 @@ public:
     [[nodiscard]] bool is_authenticated(const std::string& remote_address) const;
 
     /**
-     * @brief Store session for a remote address.
+     * @brief Check if a remote address has an admin session.
+     *
+     * @param remote_address The client's remote address
+     * @return true if authenticated as admin, false otherwise
+     * @deprecated Use authorization_service.has_permission() for RBAC.
+     */
+    [[nodiscard]] bool is_admin(const std::string& remote_address) const;
+
+    /**
+     * @brief Store session for a remote address (legacy interface).
      *
      * @param remote_address The client's remote address
      * @param info Session information to store
+     * @deprecated Use store_session_data() for full session tracking.
      */
     void store_session(const std::string& remote_address, session_info info);
+
+    /**
+     * @brief Store full session data for a remote address.
+     *
+     * @param remote_address The client's remote address
+     * @param session Full session object with all tracking data
+     */
+    void store_session_data(const std::string& remote_address,
+        std::shared_ptr<iam::domain::session> session);
+
+    /**
+     * @brief Get full session data for a remote address.
+     *
+     * @param remote_address The client's remote address
+     * @return Shared pointer to session data, nullptr if not found
+     */
+    [[nodiscard]] std::shared_ptr<iam::domain::session>
+    get_session_data(const std::string& remote_address) const;
+
+    /**
+     * @brief Update byte counters for an active session.
+     *
+     * @param remote_address The client's remote address
+     * @param bytes_sent Total bytes sent on the connection
+     * @param bytes_received Total bytes received on the connection
+     */
+    void update_session_bytes(const std::string& remote_address,
+        std::uint64_t bytes_sent, std::uint64_t bytes_received);
 
     /**
      * @brief Remove session for a remote address.
      *
      * @param remote_address The client's remote address
+     * @return The removed session if found, nullptr otherwise
      */
-    void remove_session(const std::string& remote_address);
+    std::shared_ptr<iam::domain::session>
+    remove_session(const std::string& remote_address);
 
     /**
      * @brief Remove all sessions (e.g., on server shutdown).
+     *
+     * @return All removed sessions
      */
-    void clear_all_sessions();
+    std::vector<std::shared_ptr<iam::domain::session>> clear_all_sessions();
+
+    /**
+     * @brief Get all active sessions.
+     */
+    [[nodiscard]] std::vector<std::shared_ptr<iam::domain::session>>
+    get_all_sessions() const;
 
     /**
      * @brief Check if a request is authorized based on message type and session.
@@ -125,7 +177,7 @@ private:
     static bool requires_authentication(messaging::message_type type);
 
     mutable std::mutex session_mutex_;
-    std::map<std::string, session_info> sessions_;
+    std::map<std::string, std::shared_ptr<iam::domain::session>> sessions_;
 };
 
 }

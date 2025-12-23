@@ -32,7 +32,11 @@ set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/ores.comms/include)
+    ${CMAKE_SOURCE_DIR}/projects/ores.comms/include
+    # Header-only dependency on ores.iam for session domain type.
+    # We cannot link against ores.iam due to circular dependency chain
+    # (ores.comms -> ores.iam -> ores.variability -> ores.comms).
+    ${CMAKE_SOURCE_DIR}/projects/ores.iam/include)
 
 target_link_libraries(${lib_target_name}
     PUBLIC

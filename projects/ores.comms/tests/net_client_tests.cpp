@@ -36,6 +36,16 @@ namespace {
 const std::string_view test_suite("ores.comms.tests");
 const std::string tags("[networking]");
 
+// TODO: Remove this macro when the underlying Windows Clang coroutine issue
+// is resolved. Tests using co_spawn with detached coroutines cause segfaults
+// on Windows Clang due to a C++20 coroutine bug.
+#if defined(_WIN32) && defined(__clang__)
+#define SKIP_WINDOWS_CLANG_COROUTINE_BUG() \
+    SKIP("Windows Clang C++20 coroutine bug causes segfault")
+#else
+#define SKIP_WINDOWS_CLANG_COROUTINE_BUG() ((void)0)
+#endif
+
 // Embedded self-signed certificate and private key for testing
 const std::string server_cert = R"(-----BEGIN CERTIFICATE-----
 MIIDgTCCAmmgAwIBAgIUaV6QAAxLAN0vO97pugiqstoAZjswDQYJKoZIhvcNAQEL
@@ -95,6 +105,8 @@ tSF6X2Tz8FU6Whed2zL17v8=
 }
 
 TEST_CASE("test_client_server_connection", tags) {
+    SKIP_WINDOWS_CLANG_COROUTINE_BUG();
+
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -171,6 +183,8 @@ TEST_CASE("test_client_server_connection", tags) {
 }
 
 TEST_CASE("test_session_cancellation_on_server_stop", tags) {
+    SKIP_WINDOWS_CLANG_COROUTINE_BUG();
+
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 
@@ -320,12 +334,7 @@ TEST_CASE("test_heartbeat_configuration", tags) {
 }
 
 TEST_CASE("test_heartbeat_disconnect_detection", tags) {
-    // TODO: Remove this skip when the underlying Windows Clang coroutine issue
-    // is resolved. This test spawns multiple background coroutines (message loop
-    // and heartbeat), which triggers a segfault on Windows Clang.
-#if defined(_WIN32) && defined(__clang__)
-    SKIP("Windows Clang C++20 coroutine bug causes segfault");
-#endif
+    SKIP_WINDOWS_CLANG_COROUTINE_BUG();
 
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
@@ -419,6 +428,8 @@ TEST_CASE("test_heartbeat_disconnect_detection", tags) {
 }
 
 TEST_CASE("test_heartbeat_disabled", tags) {
+    SKIP_WINDOWS_CLANG_COROUTINE_BUG();
+
     using namespace ores::utility::log;
     auto lg(make_logger(test_suite));
 

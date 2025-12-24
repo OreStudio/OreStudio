@@ -28,6 +28,7 @@
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
 #include "ores.iam/domain/account_table_io.hpp"  // IWYU pragma: keep.
 #include "ores.iam/domain/login_info_table_io.hpp"  // IWYU pragma: keep.
+#include "ores.shell/app/commands/rbac_commands.hpp"
 
 namespace ores::shell::app::commands {
 
@@ -81,6 +82,12 @@ register_commands(cli::Menu& root_menu, client_session& session) {
     accounts_menu->Insert("logout", [&session](std::ostream& out) {
         process_logout(std::ref(out), std::ref(session));
     }, "Logout the current user");
+
+    accounts_menu->Insert("roles", [&session](std::ostream& out,
+            std::string account_id) {
+        rbac_commands::process_get_account_roles(std::ref(out), std::ref(session),
+            std::move(account_id));
+    }, "List roles assigned to an account (account_id)");
 
     root_menu.Insert(std::move(accounts_menu));
 

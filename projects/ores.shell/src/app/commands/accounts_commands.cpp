@@ -89,6 +89,24 @@ register_commands(cli::Menu& root_menu, client_session& session) {
             std::move(account_id));
     }, "List roles assigned to an account (account_id)");
 
+    accounts_menu->Insert("assign-role", [&session](std::ostream& out,
+            std::string account_id, std::string role_id) {
+        rbac_commands::process_assign_role(std::ref(out), std::ref(session),
+            std::move(account_id), std::move(role_id));
+    }, "Assign a role to an account (account_id role_id)");
+
+    accounts_menu->Insert("revoke-role", [&session](std::ostream& out,
+            std::string account_id, std::string role_id) {
+        rbac_commands::process_revoke_role(std::ref(out), std::ref(session),
+            std::move(account_id), std::move(role_id));
+    }, "Revoke a role from an account (account_id role_id)");
+
+    accounts_menu->Insert("permissions", [&session](std::ostream& out,
+            std::string account_id) {
+        rbac_commands::process_get_account_permissions(std::ref(out), std::ref(session),
+            std::move(account_id));
+    }, "List effective permissions for an account (account_id)");
+
     root_menu.Insert(std::move(accounts_menu));
 
     // Bootstrap command at root level (doesn't require authentication)

@@ -155,14 +155,17 @@ signup_result signup_service::register_user(const std::string& username,
 
     // Assign the default Viewer role to the new account
     auto viewer_role = auth_service_->find_role_by_name(domain::roles::viewer);
-    if (viewer_role) {
-        auth_service_->assign_role(id, viewer_role->id, username);
-        BOOST_LOG_SEV(lg(), info) << "Assigned Viewer role to new account: " << id;
-    } else {
-        BOOST_LOG_SEV(lg(), warn)
+    if (!viewer_role) {
+        BOOST_LOG_SEV(lg(), error)
             << "Viewer role not found - RBAC may not be properly seeded. "
-            << "Account " << id << " has no roles assigned.";
+            << "Signup failed for account " << id;
+        throw std::runtime_error(
+            "Default 'Viewer' role not found. Cannot create account without "
+            "default permissions.");
     }
+
+    auth_service_->assign_role(id, viewer_role->id, username);
+    BOOST_LOG_SEV(lg(), info) << "Assigned Viewer role to new account: " << id;
 
     BOOST_LOG_SEV(lg(), info) << "Signup successful for username: " << username
                               << ", account ID: " << id;

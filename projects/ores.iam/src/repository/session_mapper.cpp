@@ -84,7 +84,6 @@ domain::session session_mapper::map(const session_entity& v) {
 
     r.id = boost::lexical_cast<uuid>(v.id.value());
     r.account_id = boost::lexical_cast<uuid>(v.account_id);
-    r.is_admin = v.is_admin != 0;
     r.start_time = timestamp_to_timepoint(v.start_time.value());
     r.end_time = v.end_time.empty() ? std::nullopt : parse_timestamp(v.end_time);
     r.client_ip = ip::make_address(v.client_ip);
@@ -108,7 +107,6 @@ session_entity session_mapper::map(const domain::session& v) {
     session_entity r;
     r.id = boost::lexical_cast<std::string>(v.id);
     r.account_id = boost::lexical_cast<std::string>(v.account_id);
-    r.is_admin = v.is_admin ? 1 : 0;
     r.start_time = timepoint_to_timestamp(v.start_time, lg());
     r.end_time = v.end_time ? format_timestamp(*v.end_time) : "";
     r.client_ip = v.client_ip.to_string();

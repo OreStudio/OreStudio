@@ -84,15 +84,6 @@ public:
     [[nodiscard]] bool is_authenticated(const std::string& remote_address) const;
 
     /**
-     * @brief Check if a remote address has an admin session.
-     *
-     * @param remote_address The client's remote address
-     * @return true if authenticated as admin, false otherwise
-     * @deprecated Use authorization_service.has_permission() for RBAC.
-     */
-    [[nodiscard]] bool is_admin(const std::string& remote_address) const;
-
-    /**
      * @brief Store session for a remote address (legacy interface).
      *
      * @param remote_address The client's remote address

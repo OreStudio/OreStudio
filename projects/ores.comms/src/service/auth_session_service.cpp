@@ -54,15 +54,6 @@ bool auth_session_service::is_authenticated(const std::string& remote_address) c
     return sessions_.contains(remote_address);
 }
 
-bool auth_session_service::is_admin(const std::string& remote_address) const {
-    std::lock_guard lock(session_mutex_);
-    auto it = sessions_.find(remote_address);
-    if (it != sessions_.end() && it->second) {
-        return it->second->is_admin;
-    }
-    return false;
-}
-
 void auth_session_service::store_session(const std::string& remote_address,
     session_info info) {
     // Create a minimal session object from the legacy session_info
@@ -79,8 +70,7 @@ void auth_session_service::store_session_data(const std::string& remote_address,
     std::lock_guard lock(session_mutex_);
     BOOST_LOG_SEV(lg(), info) << "Storing session for " << remote_address
                               << " session_id=" << session->id
-                              << " account_id=" << session->account_id
-                              << " is_admin=" << session->is_admin;
+                              << " account_id=" << session->account_id;
     sessions_[remote_address] = std::move(session);
 }
 

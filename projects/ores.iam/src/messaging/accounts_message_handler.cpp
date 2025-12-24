@@ -266,9 +266,6 @@ handle_login_request(std::span<const std::byte> payload,
         auto sess = std::make_shared<domain::session>();
         sess->id = boost::uuids::random_generator()();
         sess->account_id = account.id;
-        // Check if user has admin-level permissions via RBAC
-        sess->is_admin = auth_service_->has_permission(account.id,
-            domain::permissions::accounts_update);
         sess->start_time = std::chrono::system_clock::now();
         sess->client_ip = ip_address;
         // Client identifier and version can be populated from handshake

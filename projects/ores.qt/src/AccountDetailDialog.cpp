@@ -149,7 +149,6 @@ void AccountDetailDialog::setAccount(const iam::domain::account& account) {
 
     ui_->usernameEdit->setText(QString::fromStdString(account.username));
     ui_->emailEdit->setText(QString::fromStdString(account.email));
-    // Note: is_admin removed - admin privileges are now managed via RBAC
     ui_->versionEdit->setText(QString::number(account.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(account.recorded_by));
 
@@ -191,7 +190,6 @@ iam::domain::account AccountDetailDialog::getAccount() const {
     iam::domain::account account = currentAccount_;
     account.username = ui_->usernameEdit->text().toStdString();
     account.email = ui_->emailEdit->text().toStdString();
-    // Note: is_admin removed - admin privileges are now managed via RBAC
     account.recorded_by = modifiedByUsername_.empty() ? "qt_user" : modifiedByUsername_;
 
     return account;
@@ -328,7 +326,6 @@ void AccountDetailDialog::onSaveClicked() {
 
     if (isAddMode_) {
         // Create new account
-        // Note: is_admin removed - admin privileges are now managed via RBAC
         QPointer<AccountDetailDialog> self = this;
         const std::string username = ui_->usernameEdit->text().toStdString();
         const std::string password = ui_->passwordEdit->text().toStdString();
@@ -429,7 +426,6 @@ void AccountDetailDialog::onSaveClicked() {
         watcher->setFuture(future);
     } else {
         // Edit mode - update existing account
-        // Note: is_admin removed - admin privileges are now managed via RBAC
         QPointer<AccountDetailDialog> self = this;
         const boost::uuids::uuid account_id = currentAccount_.id;
         const std::string email = ui_->emailEdit->text().toStdString();

@@ -47,7 +47,7 @@ using FutureResult = std::pair<bool, std::string>;
 AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     : QWidget(parent), ui_(new Ui::AccountDetailDialog), isDirty_(false),
       isAddMode_(false), isReadOnly_(false), historicalVersion_(0),
-      clientManager_(nullptr) {
+      clientManager_(nullptr), rolesWidget_(nullptr) {
 
     ui_->setupUi(this);
 
@@ -104,12 +104,28 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     // Hide isAdminCheckBox - admin privileges are now managed via RBAC role assignments
     ui_->isAdminCheckBox->setVisible(false);
 
+    // Create roles widget and add it to the layout before login status group
+    rolesWidget_ = new AccountRolesWidget(this);
+    if (mainLayout) {
+        // Insert after login status group (before the spacer)
+        mainLayout->insertWidget(mainLayout->count() - 1, rolesWidget_);
+    }
+
+    // Connect roles widget signals
+    connect(rolesWidget_, &AccountRolesWidget::statusMessage,
+            this, &AccountDetailDialog::statusMessage);
+    connect(rolesWidget_, &AccountRolesWidget::errorMessage,
+            this, &AccountDetailDialog::errorMessage);
+
     // Initially disable save/reset buttons
     updateSaveResetButtonState();
 }
 
 void AccountDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    if (rolesWidget_) {
+        rolesWidget_->setClientManager(clientManager);
+    }
 }
 
 void AccountDetailDialog::setUsername(const std::string& username) {
@@ -141,6 +157,12 @@ void AccountDetailDialog::setAccount(const iam::domain::account& account) {
     ui_->passwordEdit->clear();
     ui_->confirmPasswordEdit->clear();
 
+    // Set up roles widget for existing accounts
+    if (rolesWidget_ && !isAddMode_) {
+        rolesWidget_->setAccountId(account.id);
+        rolesWidget_->loadRoles();
+    }
+
     isDirty_ = false;
     emit isDirtyChanged(false);
     updateSaveResetButtonState();
@@ -158,6 +180,11 @@ void AccountDetailDialog::setCreateMode(bool createMode) {
     // Metadata and login status are not useful in create mode
     ui_->metadataGroup->setVisible(!createMode);
     ui_->loginStatusGroup->setVisible(!createMode);
+
+    // Roles widget is hidden in create mode (roles are assigned after creation)
+    if (rolesWidget_) {
+        rolesWidget_->setVisible(!createMode);
+    }
 }
 
 iam::domain::account AccountDetailDialog::getAccount() const {
@@ -647,6 +674,13 @@ void AccountDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
 
     // Hide password group in read-only mode
     ui_->passwordGroup->setVisible(false);
+
+    // Set roles widget to read-only or hide it for historical versions
+    if (rolesWidget_) {
+        rolesWidget_->setReadOnly(readOnly);
+        // Hide roles widget for historical versions (they don't have role data)
+        rolesWidget_->setVisible(versionNumber == 0);
+    }
 
     updateSaveResetButtonState();
 }

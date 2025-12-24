@@ -44,6 +44,7 @@ namespace ores::qt {
 class DetachableMdiSubWindow;
 class CurrencyController;
 class AccountController;
+class RoleController;
 class ImageCache;
 
 /**
@@ -213,6 +214,14 @@ private:
      * Only accessible to admin users.
      */
     std::unique_ptr<AccountController> accountController_;
+
+    /**
+     * @brief Controller managing all role-related windows and operations.
+     *
+     * Created after successful login, handles role list and detail windows.
+     * Only accessible to admin users.
+     */
+    std::unique_ptr<RoleController> roleController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

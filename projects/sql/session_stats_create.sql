@@ -35,7 +35,7 @@ select
     time_bucket('1 day', start_time) as day,
     account_id,
     count(*) as session_count,
-    avg(extract(epoch from (end_time - start_time))) as avg_duration_seconds,
+    avg(extract(epoch from (end_time::timestamp with time zone - start_time))) as avg_duration_seconds,
     sum(bytes_sent) as total_bytes_sent,
     sum(bytes_received) as total_bytes_received,
     avg(bytes_sent) as avg_bytes_sent,
@@ -43,7 +43,7 @@ select
     count(distinct country_code) filter (where country_code != '') as unique_countries,
     count(distinct city) filter (where city != '') as unique_cities
 from "ores"."sessions"
-where end_time is not null
+where end_time != ''
 group by day, account_id
 with no data;
 
@@ -66,11 +66,11 @@ select
     time_bucket('1 hour', start_time) as hour,
     account_id,
     count(*) as session_count,
-    avg(extract(epoch from (end_time - start_time))) as avg_duration_seconds,
+    avg(extract(epoch from (end_time::timestamp with time zone - start_time))) as avg_duration_seconds,
     sum(bytes_sent) as total_bytes_sent,
     sum(bytes_received) as total_bytes_received
 from "ores"."sessions"
-where end_time is not null
+where end_time != ''
 group by hour, account_id
 with no data;
 
@@ -93,7 +93,7 @@ select
     time_bucket('1 day', start_time) as day,
     count(*) as session_count,
     count(distinct account_id) as unique_accounts,
-    avg(extract(epoch from (end_time - start_time))) as avg_duration_seconds,
+    avg(extract(epoch from (end_time::timestamp with time zone - start_time))) as avg_duration_seconds,
     sum(bytes_sent) as total_bytes_sent,
     sum(bytes_received) as total_bytes_received,
     avg(bytes_sent) as avg_bytes_sent,
@@ -103,7 +103,7 @@ select
     -- Peak concurrent sessions approximation (sessions starting in this bucket)
     count(*) as sessions_started
 from "ores"."sessions"
-where end_time is not null
+where end_time != ''
 group by day
 with no data;
 
@@ -145,7 +145,7 @@ returns bigint
 language sql
 stable
 as $$
-    select count(*) from ores.sessions where end_time is null;
+    select count(*) from ores.sessions where end_time = '';
 $$;
 
 --
@@ -158,5 +158,5 @@ stable
 as $$
     select count(*)
     from ores.sessions
-    where account_id = p_account_id and end_time is null;
+    where account_id = p_account_id and end_time = '';
 $$;

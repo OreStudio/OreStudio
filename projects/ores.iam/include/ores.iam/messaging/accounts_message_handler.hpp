@@ -326,6 +326,45 @@ private:
     static bool is_localhost(const std::string& remote_address);
 
     /**
+     * @brief Result type for authorization checks.
+     *
+     * Contains the session if authorized, or an error code if not.
+     */
+    using auth_check_result = std::expected<
+        std::shared_ptr<domain::session>,
+        comms::messaging::error_code
+    >;
+
+    /**
+     * @brief Check if a request is authorized with the required permission.
+     *
+     * Verifies the requester has an active session and the required permission.
+     * Logs warnings for denied requests.
+     *
+     * @param remote_address The remote endpoint address
+     * @param permission The required permission (e.g., "accounts:create")
+     * @param operation_name Human-readable name for logging (e.g., "Create account")
+     * @return The session if authorized, or error code if not
+     */
+    auth_check_result check_authorization(
+        const std::string& remote_address,
+        std::string_view permission,
+        std::string_view operation_name);
+
+    /**
+     * @brief Get session for a request without permission check.
+     *
+     * Used for operations that require authentication but no specific permission.
+     *
+     * @param remote_address The remote endpoint address
+     * @param operation_name Human-readable name for logging
+     * @return The session if found, or error code if not
+     */
+    auth_check_result get_authenticated_session(
+        const std::string& remote_address,
+        std::string_view operation_name);
+
+    /**
      * @brief Handle list_sessions_request message.
      *
      * Requires authentication. Admin can view any account's sessions,

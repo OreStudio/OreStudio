@@ -19,50 +19,15 @@
  */
 #include "ores.iam/service/database_name_service.hpp"
 
-#include <libpq-fe.h>
 #include <sstream>
 #include <stdexcept>
+#include "ores.database/repository/bitemporal_operations.hpp"
 
 namespace ores::iam::service {
 
 using namespace ores::utility::log;
 
 namespace {
-
-/**
- * @brief RAII wrapper for PGconn to ensure proper cleanup.
- */
-struct pg_connection_guard {
-    PGconn* conn;
-    explicit pg_connection_guard(PGconn* c) : conn(c) {}
-    ~pg_connection_guard() { if (conn) PQfinish(conn); }
-    pg_connection_guard(const pg_connection_guard&) = delete;
-    pg_connection_guard& operator=(const pg_connection_guard&) = delete;
-};
-
-/**
- * @brief RAII wrapper for PGresult to ensure proper cleanup.
- */
-struct pg_result_guard {
-    PGresult* result;
-    explicit pg_result_guard(PGresult* r) : result(r) {}
-    ~pg_result_guard() { if (result) PQclear(result); }
-    pg_result_guard(const pg_result_guard&) = delete;
-    pg_result_guard& operator=(const pg_result_guard&) = delete;
-};
-
-/**
- * @brief Builds connection string from credentials.
- */
-std::string build_connection_string(const sqlgen::postgres::Credentials& creds) {
-    std::ostringstream oss;
-    oss << "host=" << creds.host
-        << " port=" << creds.port
-        << " dbname=" << creds.dbname
-        << " user=" << creds.user
-        << " password=" << creds.password;
-    return oss.str();
-}
 
 /**
  * @brief Builds a PostgreSQL array literal from a vector of strings.
@@ -97,36 +62,16 @@ database_name_service::database_name_service(database::context ctx)
 
 std::string database_name_service::execute_scalar_string_query(
     const std::string& sql) {
-
     BOOST_LOG_SEV(lg(), debug) << "Executing scalar query: " << sql;
 
-    const auto conn_str = build_connection_string(ctx_.credentials());
-    pg_connection_guard conn_guard(PQconnectdb(conn_str.c_str()));
+    auto rows = ores::database::repository::execute_raw_multi_column_query(
+        ctx_, sql, lg(), "Executing scalar string query");
 
-    if (PQstatus(conn_guard.conn) != CONNECTION_OK) {
-        const std::string err_msg = PQerrorMessage(conn_guard.conn);
-        BOOST_LOG_SEV(lg(), error) << "Connection failed: " << err_msg;
-        throw std::runtime_error("Database connection failed: " + err_msg);
+    if (rows.empty() || rows[0].empty() || !rows[0][0].has_value()) {
+        throw std::runtime_error("Query returned no results or a NULL value.");
     }
 
-    pg_result_guard result_guard(PQexec(conn_guard.conn, sql.c_str()));
-
-    if (PQresultStatus(result_guard.result) != PGRES_TUPLES_OK) {
-        const std::string err_msg = PQerrorMessage(conn_guard.conn);
-        BOOST_LOG_SEV(lg(), error) << "Query failed: " << err_msg;
-        throw std::runtime_error("Query execution failed: " + err_msg);
-    }
-
-    const int num_rows = PQntuples(result_guard.result);
-    if (num_rows == 0) {
-        throw std::runtime_error("Query returned no results");
-    }
-
-    if (PQgetisnull(result_guard.result, 0, 0)) {
-        throw std::runtime_error("Query returned NULL");
-    }
-
-    std::string result = PQgetvalue(result_guard.result, 0, 0);
+    std::string result = *rows[0][0];
     BOOST_LOG_SEV(lg(), debug) << "Query result: " << result;
     return result;
 }

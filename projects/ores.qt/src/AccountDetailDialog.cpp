@@ -679,7 +679,7 @@ void AccountDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
     if (rolesWidget_) {
         rolesWidget_->setReadOnly(readOnly);
         // Hide roles widget for historical versions (they don't have role data)
-        rolesWidget_->setVisible(!readOnly);
+        rolesWidget_->setVisible(versionNumber == 0);
     }
 
     updateSaveResetButtonState();

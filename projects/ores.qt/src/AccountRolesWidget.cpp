@@ -238,53 +238,28 @@ void AccountRolesWidget::onAssignRoleClicked() {
 
     const auto roleId = it->id;
     const auto roleName = it->name;
+    const auto accountId = accountId_;
 
     BOOST_LOG_SEV(lg(), info) << "Assigning role " << roleName
                               << " to account " << boost::uuids::to_string(accountId_);
 
-    QPointer<AccountRolesWidget> self = this;
-    const auto accountId = accountId_;
-
-    auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(this);
-    connect(watcher, &QFutureWatcher<std::pair<bool, std::string>>::finished, this,
-        [self, watcher, roleName]() {
-            auto [success, message] = watcher->result();
-            watcher->deleteLater();
-
-            if (!self) return;
-
-            if (success) {
-                emit self->statusMessage(QString("Role '%1' assigned successfully")
-                    .arg(QString::fromStdString(roleName)));
-                self->loadRoles();  // Refresh the list
-                emit self->rolesChanged();
-            } else {
-                emit self->errorMessage(QString("Failed to assign role: %1")
-                    .arg(QString::fromStdString(message)));
-                MessageBoxHelper::critical(self, "Assign Role Failed",
-                    QString::fromStdString(message));
-            }
-        });
-
-    QFuture<std::pair<bool, std::string>> future =
-        QtConcurrent::run([self, accountId, roleId]() -> std::pair<bool, std::string> {
-            if (!self) return {false, "Widget destroyed"};
-
+    executeRoleOperation(
+        [this, accountId, roleId]() -> std::pair<bool, std::string> {
             iam::messaging::assign_role_request request;
             request.account_id = accountId;
             request.role_id = roleId;
 
-            auto result = self->clientManager_->
+            auto result = clientManager_->
                 process_authenticated_request(std::move(request));
 
             if (!result) {
                 return {false, comms::net::to_string(result.error())};
             }
-
             return {result->success, result->error_message};
-        });
-
-    watcher->setFuture(future);
+        },
+        roleName,
+        "Role '%1' assigned successfully",
+        "Assign Role Failed");
 }
 
 void AccountRolesWidget::onRevokeRoleClicked() {
@@ -307,6 +282,7 @@ void AccountRolesWidget::onRevokeRoleClicked() {
     const auto& role = assignedRoles_[row];
     const auto roleId = role.id;
     const auto roleName = role.name;
+    const auto accountId = accountId_;
 
     auto reply = MessageBoxHelper::question(this, "Revoke Role",
         QString("Are you sure you want to revoke role '%1' from this account?")
@@ -320,49 +296,23 @@ void AccountRolesWidget::onRevokeRoleClicked() {
     BOOST_LOG_SEV(lg(), info) << "Revoking role " << roleName
                               << " from account " << boost::uuids::to_string(accountId_);
 
-    QPointer<AccountRolesWidget> self = this;
-    const auto accountId = accountId_;
-
-    auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(this);
-    connect(watcher, &QFutureWatcher<std::pair<bool, std::string>>::finished, this,
-        [self, watcher, roleName]() {
-            auto [success, message] = watcher->result();
-            watcher->deleteLater();
-
-            if (!self) return;
-
-            if (success) {
-                emit self->statusMessage(QString("Role '%1' revoked successfully")
-                    .arg(QString::fromStdString(roleName)));
-                self->loadRoles();  // Refresh the list
-                emit self->rolesChanged();
-            } else {
-                emit self->errorMessage(QString("Failed to revoke role: %1")
-                    .arg(QString::fromStdString(message)));
-                MessageBoxHelper::critical(self, "Revoke Role Failed",
-                    QString::fromStdString(message));
-            }
-        });
-
-    QFuture<std::pair<bool, std::string>> future =
-        QtConcurrent::run([self, accountId, roleId]() -> std::pair<bool, std::string> {
-            if (!self) return {false, "Widget destroyed"};
-
+    executeRoleOperation(
+        [this, accountId, roleId]() -> std::pair<bool, std::string> {
             iam::messaging::revoke_role_request request;
             request.account_id = accountId;
             request.role_id = roleId;
 
-            auto result = self->clientManager_->
+            auto result = clientManager_->
                 process_authenticated_request(std::move(request));
 
             if (!result) {
                 return {false, comms::net::to_string(result.error())};
             }
-
             return {result->success, result->error_message};
-        });
-
-    watcher->setFuture(future);
+        },
+        roleName,
+        "Role '%1' revoked successfully",
+        "Revoke Role Failed");
 }
 
 void AccountRolesWidget::onRoleSelectionChanged() {
@@ -396,6 +346,45 @@ void AccountRolesWidget::refreshRolesList() {
     groupBox_->setTitle(QString("Assigned Roles (%1)").arg(assignedRoles_.size()));
 
     updateButtonStates();
+}
+
+void AccountRolesWidget::executeRoleOperation(
+    std::function<std::pair<bool, std::string>()> requestFunc,
+    const std::string& roleName,
+    const QString& successMessage,
+    const QString& errorTitle) {
+
+    QPointer<AccountRolesWidget> self = this;
+    const auto roleNameCopy = roleName;
+
+    auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(this);
+    connect(watcher, &QFutureWatcher<std::pair<bool, std::string>>::finished, this,
+        [self, watcher, roleNameCopy, successMessage, errorTitle]() {
+            auto [success, message] = watcher->result();
+            watcher->deleteLater();
+
+            if (!self) return;
+
+            if (success) {
+                emit self->statusMessage(successMessage
+                    .arg(QString::fromStdString(roleNameCopy)));
+                self->loadRoles();
+                emit self->rolesChanged();
+            } else {
+                emit self->errorMessage(QString("Failed: %1")
+                    .arg(QString::fromStdString(message)));
+                MessageBoxHelper::critical(self, errorTitle,
+                    QString::fromStdString(message));
+            }
+        });
+
+    QFuture<std::pair<bool, std::string>> future =
+        QtConcurrent::run([self, requestFunc]() -> std::pair<bool, std::string> {
+            if (!self) return {false, "Widget destroyed"};
+            return requestFunc();
+        });
+
+    watcher->setFuture(future);
 }
 
 }

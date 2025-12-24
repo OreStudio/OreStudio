@@ -25,6 +25,7 @@
 #include <QToolButton>
 #include <QGroupBox>
 #include <vector>
+#include <functional>
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.utility/log/make_logger.hpp"
@@ -93,6 +94,20 @@ private slots:
 private:
     void updateButtonStates();
     void refreshRolesList();
+
+    /**
+     * @brief Executes an async role operation with common success/error handling.
+     *
+     * @param requestFunc Function that performs the actual request
+     * @param roleName Name of the role for status messages
+     * @param successMessage Message format for success (role name appended)
+     * @param errorTitle Title for error dialog
+     */
+    void executeRoleOperation(
+        std::function<std::pair<bool, std::string>()> requestFunc,
+        const std::string& roleName,
+        const QString& successMessage,
+        const QString& errorTitle);
 
 private:
     QGroupBox* groupBox_;

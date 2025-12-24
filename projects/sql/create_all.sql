@@ -26,7 +26,7 @@
 \ir ./feature_flags_create.sql
 \ir ./login_info_create.sql
 \ir ./sessions_create.sql
-\ir ./session_stats_create.sql
+-- \ir ./session_stats_create.sql -- FIXME: disabled until we sort out timescaledb
 \ir ./permissions_create.sql
 \ir ./roles_create.sql
 \ir ./role_permissions_create.sql

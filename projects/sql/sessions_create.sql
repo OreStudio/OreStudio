@@ -19,12 +19,16 @@
  */
 set schema 'oresdb';
 
+
+-- FIXME: due to to issues with timescale db setup, we have disabled it for now.
+-- FIXME: Raised a ticket to get more clarity on the correct setup.
+-- FIXME: https://github.com/timescale/timescaledb/issues/9080
 --
 -- Enable TimescaleDB extension if not already enabled.
 -- TimescaleDB provides automatic time-based partitioning, compression,
 -- continuous aggregates, and data retention policies.
 --
-create extension if not exists timescaledb;
+-- create extension if not exists timescaledb;
 
 --
 -- sessions table tracks individual user sessions with full lifecycle data.
@@ -37,9 +41,6 @@ create table if not exists "oresdb"."sessions" (
 
     -- Foreign key to accounts table
     "account_id" uuid not null,
-
-    -- Cached admin status for the session
-    "is_admin" integer not null default 0,
 
     -- Session start timestamp (login time)
     -- Part of primary key for TimescaleDB hypertable partitioning
@@ -75,12 +76,12 @@ create table if not exists "oresdb"."sessions" (
 
 -- Convert to hypertable with 7-day chunks
 -- This enables automatic time-based partitioning
-select create_hypertable(
-    'oresdb.sessions',
-    'start_time',
-    chunk_time_interval => interval '7 days',
-    if_not_exists => true
-);
+-- select create_hypertable(
+--     'oresdb.sessions',
+--     'start_time',
+--     chunk_time_interval => interval '7 days',
+--     if_not_exists => true
+-- );
 
 -- Indexes for common query patterns
 create index if not exists sessions_account_id_idx
@@ -96,21 +97,21 @@ where country_code != '';
 
 -- Enable compression for chunks older than 7 days
 -- Segment by account_id for efficient per-account queries
-alter table "oresdb"."sessions" set (
-    timescaledb.compress,
-    timescaledb.compress_segmentby = 'account_id',
-    timescaledb.compress_orderby = 'start_time desc'
-);
+-- alter table "oresdb"."sessions" set (
+--     timescaledb.compress,
+--     timescaledb.compress_segmentby = 'account_id',
+--     timescaledb.compress_orderby = 'start_time desc'
+-- );
 
-select add_compression_policy(
-    'oresdb.sessions',
-    compress_after => interval '7 days',
-    if_not_exists => true
-);
+-- select add_compression_policy(
+--     'oresdb.sessions',
+--     compress_after => interval '7 days',
+--     if_not_exists => true
+-- );
 
 -- Data retention policy: keep raw session data for 1 year
-select add_retention_policy(
-    'oresdb.sessions',
-    drop_after => interval '1 year',
-    if_not_exists => true
-);
+-- select add_retention_policy(
+--     'oresdb.sessions',
+--     drop_after => interval '1 year',
+--     if_not_exists => true
+-- );

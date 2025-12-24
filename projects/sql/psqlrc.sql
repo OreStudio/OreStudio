@@ -59,3 +59,4 @@ set SEARCH_PATH to "oresdb", "$user", "public";
 -- \set AUTOCOMMIT OFF
 
 \unset QUIET
+\pset pager off

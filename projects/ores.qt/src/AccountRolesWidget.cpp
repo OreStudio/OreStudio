@@ -26,6 +26,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <algorithm>
+#include <future>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -137,23 +138,31 @@ void AccountRolesWidget::loadRoles() {
     QFuture<LoadResult> future = QtConcurrent::run([self, accountId]() -> LoadResult {
         if (!self) return {false, {}, {}};
 
-        // Fetch assigned roles for this account
-        iam::messaging::get_account_roles_request accountRolesRequest;
-        accountRolesRequest.account_id = accountId;
+        // Execute both requests in parallel using std::async
+        auto accountRolesFuture = std::async(std::launch::async,
+            [&self, &accountId]() {
+                iam::messaging::get_account_roles_request request;
+                request.account_id = accountId;
+                return self->clientManager_->
+                    process_authenticated_request(std::move(request));
+            });
 
-        auto accountRolesResult = self->clientManager_->
-            process_authenticated_request(std::move(accountRolesRequest));
+        auto allRolesFuture = std::async(std::launch::async,
+            [&self]() {
+                iam::messaging::list_roles_request request;
+                return self->clientManager_->
+                    process_authenticated_request(std::move(request));
+            });
+
+        // Wait for both requests to complete
+        auto accountRolesResult = accountRolesFuture.get();
+        auto allRolesResult = allRolesFuture.get();
 
         if (!accountRolesResult) {
             BOOST_LOG_SEV(lg(), error) << "Failed to fetch account roles: "
                                        << comms::net::to_string(accountRolesResult.error());
             return {false, {}, {}};
         }
-
-        // Fetch all roles for the assign dropdown
-        iam::messaging::list_roles_request allRolesRequest;
-        auto allRolesResult = self->clientManager_->
-            process_authenticated_request(std::move(allRolesRequest));
 
         if (!allRolesResult) {
             BOOST_LOG_SEV(lg(), error) << "Failed to fetch all roles: "

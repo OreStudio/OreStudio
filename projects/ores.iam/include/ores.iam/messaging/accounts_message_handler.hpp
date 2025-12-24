@@ -328,10 +328,10 @@ private:
     /**
      * @brief Result type for authorization checks.
      *
-     * Contains the session if authorized, or an error code if not.
+     * Contains the session info if authorized, or an error code if not.
      */
     using auth_check_result = std::expected<
-        std::shared_ptr<domain::session>,
+        comms::service::session_info,
         comms::messaging::error_code
     >;
 

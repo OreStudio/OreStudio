@@ -535,7 +535,7 @@ accounts_message_handler::get_authenticated_session(
                                   << remote_address;
         return std::unexpected(comms::messaging::error_code::authentication_failed);
     }
-    return session;
+    return *session;
 }
 
 accounts_message_handler::auth_check_result
@@ -550,9 +550,9 @@ accounts_message_handler::check_authorization(
     }
 
     const auto& session = *session_result;
-    if (!auth_service_->has_permission(session->account_id, permission)) {
+    if (!auth_service_->has_permission(session.account_id, std::string(permission))) {
         BOOST_LOG_SEV(lg(), warn) << operation_name << " denied: requester "
-                                  << boost::uuids::to_string(session->account_id)
+                                  << boost::uuids::to_string(session.account_id)
                                   << " lacks " << permission << " permission";
         return std::unexpected(comms::messaging::error_code::authorization_failed);
     }

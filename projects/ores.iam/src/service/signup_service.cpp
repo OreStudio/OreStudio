@@ -20,6 +20,7 @@
 #include "ores.iam/service/signup_service.hpp"
 
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.iam/domain/role.hpp"
 #include "ores.iam/security/password_manager.hpp"
 #include "ores.iam/security/password_policy_validator.hpp"
 #include "ores.iam/security/email_validator.hpp"
@@ -30,10 +31,12 @@ using namespace ores::utility::log;
 using error_code = ores::comms::messaging::error_code;
 
 signup_service::signup_service(database::context ctx,
-    std::shared_ptr<variability::service::system_flags_service> system_flags)
+    std::shared_ptr<variability::service::system_flags_service> system_flags,
+    std::shared_ptr<authorization_service> auth_service)
     : account_repo_(ctx),
       login_info_repo_(ctx),
-      system_flags_(std::move(system_flags)) {}
+      system_flags_(std::move(system_flags)),
+      auth_service_(std::move(auth_service)) {}
 
 signup_result signup_service::register_user(const std::string& username,
     const std::string& email, const std::string& password) {
@@ -149,6 +152,17 @@ signup_result signup_service::register_user(const std::string& username,
 
     std::vector<domain::login_info> login_infos{li};
     login_info_repo_.write(login_infos);
+
+    // Assign the default Viewer role to the new account
+    auto viewer_role = auth_service_->find_role_by_name(domain::roles::viewer);
+    if (viewer_role) {
+        auth_service_->assign_role(id, viewer_role->id, username);
+        BOOST_LOG_SEV(lg(), info) << "Assigned Viewer role to new account: " << id;
+    } else {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Viewer role not found - RBAC may not be properly seeded. "
+            << "Account " << id << " has no roles assigned.";
+    }
 
     BOOST_LOG_SEV(lg(), info) << "Signup successful for username: " << username
                               << ", account ID: " << id;

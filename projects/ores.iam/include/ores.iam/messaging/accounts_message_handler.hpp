@@ -26,6 +26,7 @@
 #include "ores.comms/messaging/message_handler.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.iam/service/account_service.hpp"
+#include "ores.iam/service/account_setup_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/repository/session_repository.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
@@ -164,7 +165,8 @@ private:
      * Requires authentication. Only admin users can delete accounts.
      */
     handler_result
-    handle_delete_account_request(std::span<const std::byte> payload);
+    handle_delete_account_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
 
     /**
      * @brief Handle create_initial_admin_request message.
@@ -358,6 +360,7 @@ private:
     std::shared_ptr<variability::service::system_flags_service> system_flags_;
     std::shared_ptr<comms::service::auth_session_service> sessions_;
     std::shared_ptr<service::authorization_service> auth_service_;
+    service::account_setup_service setup_service_;
     repository::session_repository session_repo_;
 };
 

@@ -85,6 +85,7 @@ namespace roles {
     constexpr auto sales = "Sales";
     constexpr auto operations = "Operations";
     constexpr auto support = "Support";
+    constexpr auto viewer = "Viewer";
 }
 
 }

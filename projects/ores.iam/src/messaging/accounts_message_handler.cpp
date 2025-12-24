@@ -40,7 +40,8 @@ accounts_message_handler::accounts_message_handler(database::context ctx,
     std::shared_ptr<comms::service::auth_session_service> sessions,
     std::shared_ptr<service::authorization_service> auth_service)
     : service_(ctx), ctx_(ctx), system_flags_(std::move(system_flags)),
-      sessions_(std::move(sessions)), auth_service_(std::move(auth_service)),
+      sessions_(std::move(sessions)), auth_service_(auth_service),
+      setup_service_(service_, auth_service_),
       session_repo_(ctx) {}
 
 accounts_message_handler::handler_result
@@ -83,7 +84,7 @@ accounts_message_handler::handle_message(message_type type,
     case message_type::unlock_account_request:
         co_return co_await handle_unlock_account_request(payload, remote_address);
     case message_type::delete_account_request:
-        co_return co_await handle_delete_account_request(payload);
+        co_return co_await handle_delete_account_request(payload, remote_address);
     case message_type::create_initial_admin_request:
         co_return co_await handle_create_initial_admin_request(payload, remote_address);
     case message_type::bootstrap_status_request:
@@ -134,7 +135,21 @@ handle_create_account_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing create_account_request from "
                                << remote_address;
 
-    // Authorization is checked by dispatcher before reaching this handler
+    // Check if requester has permission to create accounts
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "Create account denied: no active session for "
+                                  << remote_address;
+        co_return std::unexpected(comms::messaging::error_code::authentication_failed);
+    }
+
+    if (!auth_service_->has_permission(session->account_id,
+            domain::permissions::accounts_create)) {
+        BOOST_LOG_SEV(lg(), warn) << "Create account denied: requester "
+                                  << boost::uuids::to_string(session->account_id)
+                                  << " lacks accounts:create permission";
+        co_return std::unexpected(comms::messaging::error_code::authorization_failed);
+    }
 
     auto request_result = create_account_request::deserialize(payload);
     if (!request_result) {
@@ -146,11 +161,12 @@ handle_create_account_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
     domain::account account =
-        service_.create_account(request.username, request.email,
+        setup_service_.create_account(request.username, request.email,
         request.password, request.recorded_by);
 
     BOOST_LOG_SEV(lg(), info) << "Created account with ID: " << account.id
-                              << " for username: " << account.username;
+                              << " for username: " << account.username
+                              << " with Viewer role assigned";
 
     create_account_response response{account.id};
     co_return response.serialize();
@@ -163,7 +179,21 @@ handle_list_accounts_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing list_accounts_request from "
                                << remote_address;
 
-    // Authorization is checked by dispatcher before reaching this handler
+    // Check if requester has permission to read accounts
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "List accounts denied: no active session for "
+                                  << remote_address;
+        co_return std::unexpected(comms::messaging::error_code::authentication_failed);
+    }
+
+    if (!auth_service_->has_permission(session->account_id,
+            domain::permissions::accounts_read)) {
+        BOOST_LOG_SEV(lg(), warn) << "List accounts denied: requester "
+                                  << boost::uuids::to_string(session->account_id)
+                                  << " lacks accounts:read permission";
+        co_return std::unexpected(comms::messaging::error_code::authorization_failed);
+    }
 
     auto request_result = list_accounts_request::deserialize(payload);
     if (!request_result) {
@@ -205,7 +235,21 @@ handle_list_login_info_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing list_login_info_request from "
                                << remote_address;
 
-    // Authorization is checked by dispatcher before reaching this handler
+    // Check if requester has permission to read login info
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "List login info denied: no active session for "
+                                  << remote_address;
+        co_return std::unexpected(comms::messaging::error_code::authentication_failed);
+    }
+
+    if (!auth_service_->has_permission(session->account_id,
+            domain::permissions::login_info_read)) {
+        BOOST_LOG_SEV(lg(), warn) << "List login info denied: requester "
+                                  << boost::uuids::to_string(session->account_id)
+                                  << " lacks login_info:read permission";
+        co_return std::unexpected(comms::messaging::error_code::authorization_failed);
+    }
 
     auto request_result = list_login_info_request::deserialize(payload);
     if (!request_result) {
@@ -459,8 +503,26 @@ handle_unlock_account_request(std::span<const std::byte> payload,
 }
 
 accounts_message_handler::handler_result accounts_message_handler::
-handle_delete_account_request(std::span<const std::byte> payload) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing delete_account_request";
+handle_delete_account_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_account_request from "
+                               << remote_address;
+
+    // Check if requester has permission to delete accounts
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << "Delete account denied: no active session for "
+                                  << remote_address;
+        co_return std::unexpected(comms::messaging::error_code::authentication_failed);
+    }
+
+    if (!auth_service_->has_permission(session->account_id,
+            domain::permissions::accounts_delete)) {
+        BOOST_LOG_SEV(lg(), warn) << "Delete account denied: requester "
+                                  << boost::uuids::to_string(session->account_id)
+                                  << " lacks accounts:delete permission";
+        co_return std::unexpected(comms::messaging::error_code::authorization_failed);
+    }
 
     auto request_result = delete_account_request::deserialize(payload);
     if (!request_result) {
@@ -1069,7 +1131,7 @@ handle_signup_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
     // Use signup_service which handles all validation and feature flag checks
-    service::signup_service signup_svc(ctx_, system_flags_);
+    service::signup_service signup_svc(ctx_, system_flags_, auth_service_);
     auto result = signup_svc.register_user(request.username, request.email,
         request.password);
 

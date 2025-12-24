@@ -51,11 +51,6 @@ struct session final {
     boost::uuids::uuid account_id;
 
     /**
-     * @brief Cached admin status for fast authorization checks.
-     */
-    bool is_admin = false;
-
-    /**
      * @brief Timestamp when the session started (login time).
      */
     std::chrono::system_clock::time_point start_time;

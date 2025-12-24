@@ -133,7 +133,6 @@ read_optional_double(std::span<const std::byte>& data) {
 void write_session(std::vector<std::byte>& buffer, const domain::session& s) {
     writer::write_uuid(buffer, s.id);
     writer::write_uuid(buffer, s.account_id);
-    writer::write_bool(buffer, s.is_admin);
     write_timestamp(buffer, s.start_time);
     write_optional_timestamp(buffer, s.end_time);
     writer::write_string(buffer, s.client_ip.to_string());
@@ -162,10 +161,6 @@ read_session(std::span<const std::byte>& data) {
     auto account_id = reader::read_uuid(data);
     if (!account_id) return std::unexpected(account_id.error());
     s.account_id = *account_id;
-
-    auto is_admin = reader::read_bool(data);
-    if (!is_admin) return std::unexpected(is_admin.error());
-    s.is_admin = *is_admin;
 
     auto start_time = read_timestamp(data);
     if (!start_time) return std::unexpected(start_time.error());

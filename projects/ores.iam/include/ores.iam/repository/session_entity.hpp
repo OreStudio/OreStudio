@@ -49,11 +49,6 @@ struct session_entity {
     std::string account_id;
 
     /**
-     * @brief Cached admin status for the session.
-     */
-    int is_admin = 0;
-
-    /**
      * @brief Session start timestamp - part of composite primary key.
      *
      * Required in primary key for TimescaleDB hypertable partitioning.

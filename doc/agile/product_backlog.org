@@ -468,16 +468,6 @@ Why Let's Encrypt doesn't work for local development
   domain.
 #+end_quote
 
-*** Use prebuilt qt                                                    :code:
-
-At present we are having problems creating an installable gui. This is because
-Qt is hard to build and package from vcpkg. We should use prebuilt binaries for
-all platforms.
-
-Links:
-
-- [[https://github.com/jurplel/install-qt-action][install-qt-action]]
-
 *** Add =[[nodiscard]]= to repository operations returning data        :code:
 
 At present we can create an account and ignore the result, etc. We should be

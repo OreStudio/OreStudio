@@ -400,7 +400,6 @@ void AccountController::onRevertAccount(const iam::domain::account& account) {
     }
 
     // Create update request with the historical data
-    // Note: is_admin removed - admin privileges are now managed via RBAC
     QPointer<AccountController> self = this;
     const boost::uuids::uuid account_id = account.id;
     const std::string username = account.username;

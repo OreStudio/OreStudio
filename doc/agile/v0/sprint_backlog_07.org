@@ -17,48 +17,54 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-21 Sun 13:18], for Sunday, December 21, 2025.
-|      | <75>                              |        |      |      |       |
-| Tags | Headline                          | Time   |      |      |     % |
-|------+-----------------------------------+--------+------+------+-------|
-|      | *Total time*                      | *3:43* |      |      | 100.0 |
-|------+-----------------------------------+--------+------+------+-------|
-|      | Stories                           | 3:43   |      |      | 100.0 |
-|      | Active                            |        | 3:43 |      | 100.0 |
-| code | Compilation fixes to current main |        |      | 3:43 | 100.0 |
+#+CAPTION: Clock summary at [2025-12-24 Wed 11:06], for Wednesday, December 24, 2025.
+|      | <75>                                       |        |      |      |       |
+| Tags | Headline                                   | Time   |      |      |     % |
+|------+--------------------------------------------+--------+------+------+-------|
+|      | *Total time*                               | *2:04* |      |      | 100.0 |
+|------+--------------------------------------------+--------+------+------+-------|
+|      | Stories                                    | 2:04   |      |      | 100.0 |
+|      | Active                                     |        | 2:04 |      | 100.0 |
+| code | Add session information to database        |        |      | 1:36 |  77.4 |
+| code | Add UI for roles and permission management |        |      | 0:28 |  22.6 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-21 Sun 13:18]
+#+CAPTION: Clock summary at [2025-12-24 Wed 11:06]
 |       | <75>                                              |         |       |      |       |
 | Tags  | Headline                                          | Time    |       |      |     % |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                      | *41:46* |       |      | 100.0 |
+|       | *Total time*                                      | *53:20* |       |      | 100.0 |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                           | 41:46   |       |      | 100.0 |
-|       | Active                                            |         | 41:46 |      | 100.0 |
-| agile | Sprint and product backlog refinement             |         |       | 1:07 |   2.7 |
-| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   2.1 |
-| code  | Consider compressing payload                      |         |       | 3:05 |   7.4 |
-| code  | Latest currencies should have different colour    |         |       | 1:28 |   3.5 |
-| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   3.4 |
-| code  | Add account management support to qt              |         |       | 3:43 |   8.9 |
-| code  | Add password reset functionality to accounts      |         |       | 1:49 |   4.3 |
-| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |  11.7 |
+|       | Stories                                           | 53:20   |       |      | 100.0 |
+|       | Active                                            |         | 53:20 |      | 100.0 |
+| agile | Sprint and product backlog refinement             |         |       | 1:07 |   2.1 |
+| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   1.7 |
+| code  | Consider compressing payload                      |         |       | 3:05 |   5.8 |
+| code  | Latest currencies should have different colour    |         |       | 1:28 |   2.8 |
+| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   2.7 |
+| code  | Add account management support to qt              |         |       | 3:43 |   7.0 |
+| code  | Add password reset functionality to accounts      |         |       | 1:49 |   3.4 |
+| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |   9.1 |
 | code  | Add exit confirmation dialog                      |         |       | 0:03 |   0.1 |
-| code  | Improve error messages in shell                   |         |       | 0:23 |   0.9 |
-| code  | Add support for relative time formatting          |         |       | 2:01 |   4.8 |
-| code  | Setup windows laptop with WSL                     |         |       | 5:10 |  12.4 |
-| code  | Add listen/notify to shell                        |         |       | 2:45 |   6.6 |
-| code  | Define type traits for message grouping           |         |       | 0:44 |   1.8 |
-| code  | Rename =accounts= to =iam=                        |         |       | 1:30 |   3.6 |
-| code  | Create the observability component                |         |       | 1:59 |   4.7 |
-| code  | Consider renaming =utility= to =system=           |         |       | 0:25 |   1.0 |
-| code  | Use chrono timepoints for domain entities         |         |       | 1:44 |   4.2 |
-| code  | Compilation fixes to current main                 |         |       | 3:43 |   8.9 |
-| code  | Ignore warnings on windows and OSX                |         |       | 0:23 |   0.9 |
-| code  | Add flags for currencies                          |         |       | 2:34 |   6.1 |
+| code  | Improve error messages in shell                   |         |       | 0:23 |   0.7 |
+| code  | Add support for relative time formatting          |         |       | 2:01 |   3.8 |
+| code  | Setup windows laptop with WSL                     |         |       | 5:10 |   9.7 |
+| code  | Add listen/notify to shell                        |         |       | 2:45 |   5.2 |
+| code  | Define type traits for message grouping           |         |       | 0:44 |   1.4 |
+| code  | Rename =accounts= to =iam=                        |         |       | 1:30 |   2.8 |
+| code  | Create the observability component                |         |       | 1:59 |   3.7 |
+| code  | Consider renaming =utility= to =system=           |         |       | 0:25 |   0.8 |
+| code  | Use chrono timepoints for domain entities         |         |       | 1:44 |   3.2 |
+| code  | Use prebuilt qt                                   |         |       | 0:26 |   0.8 |
+| code  | Add flags for currencies                          |         |       | 4:45 |   8.9 |
+| code  | Compilation fixes to current main                 |         |       | 3:47 |   7.1 |
+| code  | Ignore warnings on windows and OSX                |         |       | 0:23 |   0.7 |
+| code  | Add sign-up workflow                              |         |       | 0:15 |   0.5 |
+| code  | Implement RBAC enforcement                        |         |       | 6:34 |  12.3 |
+| code  | Add session information to database               |         |       | 1:36 |   3.0 |
+| code  | Add UI for roles and permission management        |         |       | 0:28 |   0.9 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -849,45 +855,20 @@ Good candidate for a separate PR that:
 This keeps the RBAC PR focused and makes the timestamp improvement a coherent,
 reviewable change.
 
-*** STARTED Compilation fixes to current main                          :code:
+*** COMPLETED Use prebuilt qt                                          :code:
     :LOGBOOK:
-    CLOCK: [2025-12-21 Sun 13:19]--[2025-12-21 Sun 13:23] =>  0:04
-    CLOCK: [2025-12-21 Sun 13:13]--[2025-12-21 Sun 13:18] =>  0:05
-    CLOCK: [2025-12-21 Sun 12:01]--[2025-12-21 Sun 13:12] =>  1:11
-    CLOCK: [2025-12-21 Sun 09:03]--[2025-12-21 Sun 11:30] =>  2:27
+    CLOCK: [2025-12-22 Mon 11:40]--[2025-12-22 Mon 12:06] =>  0:26
     :END:
 
-Main is broken at present. Fix compilation and tests.
+At present we are having problems creating an installable gui. This is because
+Qt is hard to build and package from vcpkg. We should use prebuilt binaries for
+all platforms.
 
-Gemini:
+Links:
 
-#+begin_quote
-This pull request significantly improves the robustness and testability of the
-project. It addresses critical issues that could lead to test timeouts by
-ensuring the reliable generation of unique synthetic data. Furthermore, it
-resolves platform-specific build failures on macOS and expands the test suite
-with dedicated unit tests for key generator components, contributing to a more
-stable and well-tested codebase.
+- [[https://github.com/jurplel/install-qt-action][install-qt-action]]
 
-Highlights:
-
-- Test Stability: Resolved potential infinite loops in unique synthetic data
-  generation functions (e.g., for currency images, images, tags, and currencies)
-  by implementing a suffix-based uniqueness mechanism when the faker library
-  produces duplicate values.
-- Cross-Platform Compatibility: Fixed macOS build errors related to
-  std::chrono::system_clock::time_point construction by explicitly using
-  std::chrono::duration_cast when converting from nanoseconds.
-- Enhanced Test Coverage: Introduced new unit tests for tag, image, and
-  currency_image generators to ensure their correct functionality, including
-  single, multiple, and unique data generation scenarios.
-- Standardized Testing Configuration: Centralized and updated Catch2 test
-  arguments in the main CMakeLists.txt and individual project test
-  CMakeLists.txt files for consistent reporting, specifically changing the XML
-  reporter syntax.
-#+end_quote
-
-*** STARTED Windows clang build failures                               :code:
+*** COMPLETED Windows clang build failures                             :code:
 
 Seems like we are failing with a SEGFAULT:
 
@@ -909,26 +890,10 @@ Seems like we are failing with a SEGFAULT:
   </TestCase>
 #+end_src
 
-*** STARTED Ignore warnings on windows and OSX                         :code:
+*** COMPLETED Add flags for currencies                                 :code:
     :LOGBOOK:
-    CLOCK: [2025-12-17 Wed 00:09]--[2025-12-17 Wed 00:32] =>  0:23
-    :END:
-
-At present we have a number of spurious warnings on both windows and OSX. Try to
-see if we can get CDash to ignore them.
-
-Notes:
-
-- Raised a Kitware ticket.
-
-Links:
-
-- [[https://gitlab.kitware.com/cmake/cmake/-/issues/27367][CTest: Using regexes to filter warnings for CDash]]
-- [[https://stackoverflow.com/questions/26458652/ctest-custom-warning-exception][SO: ctest custom warning exception]]
-- [[https://www.reddit.com/r/cmake/comments/1poie3j/ignoring_configure_time_warnings_in_cdash/][reddit: Ignoring configure time warnings in CDash]]
-
-*** STARTED Add flags for currencies                                   :code:
-    :LOGBOOK:
+    CLOCK: [2025-12-23 Tue 09:00]--[2025-12-23 Tue 09:45] =>  0:45
+    CLOCK: [2025-12-21 Sun 22:10]--[2025-12-21 Sun 23:36] =>  1:26
     CLOCK: [2025-12-19 Fri 08:12]--[2025-12-19 Fri 10:46] =>  2:34
     :END:
 
@@ -1035,7 +1000,67 @@ CREATE INDEX idx_icon_tags_tag_id ON icon_tags (tag_id);
 #+end_src
 
 
+*** STARTED Compilation fixes to current main                          :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-21 Sun 13:19]--[2025-12-21 Sun 13:23] =>  0:04
+    CLOCK: [2025-12-21 Sun 13:13]--[2025-12-21 Sun 13:18] =>  0:05
+    CLOCK: [2025-12-21 Sun 12:01]--[2025-12-21 Sun 13:12] =>  1:11
+    CLOCK: [2025-12-21 Sun 09:03]--[2025-12-21 Sun 11:30] =>  2:27
+    :END:
+
+Main is broken at present. Fix compilation and tests.
+
+Gemini:
+
+#+begin_quote
+This pull request significantly improves the robustness and testability of the
+project. It addresses critical issues that could lead to test timeouts by
+ensuring the reliable generation of unique synthetic data. Furthermore, it
+resolves platform-specific build failures on macOS and expands the test suite
+with dedicated unit tests for key generator components, contributing to a more
+stable and well-tested codebase.
+
+Highlights:
+
+- Test Stability: Resolved potential infinite loops in unique synthetic data
+  generation functions (e.g., for currency images, images, tags, and currencies)
+  by implementing a suffix-based uniqueness mechanism when the faker library
+  produces duplicate values.
+- Cross-Platform Compatibility: Fixed macOS build errors related to
+  std::chrono::system_clock::time_point construction by explicitly using
+  std::chrono::duration_cast when converting from nanoseconds.
+- Enhanced Test Coverage: Introduced new unit tests for tag, image, and
+  currency_image generators to ensure their correct functionality, including
+  single, multiple, and unique data generation scenarios.
+- Standardized Testing Configuration: Centralized and updated Catch2 test
+  arguments in the main CMakeLists.txt and individual project test
+  CMakeLists.txt files for consistent reporting, specifically changing the XML
+  reporter syntax.
+#+end_quote
+
+*** STARTED Ignore warnings on windows and OSX                         :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-17 Wed 00:09]--[2025-12-17 Wed 00:32] =>  0:23
+    :END:
+
+At present we have a number of spurious warnings on both windows and OSX. Try to
+see if we can get CDash to ignore them.
+
+Notes:
+
+- Raised a Kitware ticket.
+
+Links:
+
+- [[https://gitlab.kitware.com/cmake/cmake/-/issues/27367][CTest: Using regexes to filter warnings for CDash]]
+- [[https://stackoverflow.com/questions/26458652/ctest-custom-warning-exception][SO: ctest custom warning exception]]
+- [[https://www.reddit.com/r/cmake/comments/1poie3j/ignoring_configure_time_warnings_in_cdash/][reddit: Ignoring configure time warnings in CDash]]
+
 *** STARTED Add sign-up workflow                                       :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-22 Mon 00:24]--[2025-12-22 Mon 00:35] =>  0:11
+    CLOCK: [2025-12-22 Mon 00:19]--[2025-12-22 Mon 00:23] =>  0:04
+    :END:
 
 It should be possible to sign-up and create a new account.
 
@@ -1080,7 +1105,43 @@ Highlights:
   codes related to the signup workflow.
 #+end_quote
 
-*** Implement RBAC enforcement                                         :code:
+At present this fails:
+
+#+begin_src logview
+2025-12-22 00:21:41.174342 [DEBUG] [ores.comms.net.server_session] Received message type signup_request (0x2030)
+2025-12-22 00:21:41.174444 [DEBUG] [ores.comms.messaging.message_dispatcher] Dispatching message type signup_request (0x2030)
+2025-12-22 00:21:41.174536 [WARN] [ores.comms.service.auth_session_service] Authorization failed for signup_request (0x2030) from 127.0.0.1:38118: not authenticated
+2025-12-22 00:21:41.174576 [WARN] [ores.comms.messaging.message_dispatcher] Authorization denied for signup_request (0x2030) from 127.0.0.1:38118
+2025-12-22 00:21:41.174620 [ERROR] [ores.comms.net.server_session] Message dispatch failed: 10
+2025-12-22 00:21:41.175062 [DEBUG] [ores.comms.net.server_session] Sending error response: Authentication failed (correlation_id=1)
+2025-12-22 00:21:41.175190 [DEBUG] [ores.comms.messaging.frame] Serialised frame error_response (0x4), size: 104
+2025-12-22 00:21:41.175266 [DEBUG] [ores.comms.net.connection] Writing frame of size 104 type: error_response (0x4) sequence: 2
+2025-12-22 00:21:41.175499 [DEBUG] [ores.comms.net.connection] Successfully wrote frame
+2025-12-22 00:21:41.175569 [DEBUG] [ores.comms.net.server_session] Sent response for message type signup_request (0x2030)
+2025-12-22 00:21:41.175636 [DEBUG] [ores.comms.net.connection] Waiting to read the next frame (skip_version_check=false) cancel_slot.is_connected=false
+2025-12-22 00:21:41.180487 [ERROR] [ores.comms.net.connection] Network error in read_frame: stream truncated [asio.ssl.stream:1]
+2025-12-22 00:21:41.180768 [INFO] [ores.comms.net.server_session] Client disconnected
+2025-12-22 00:21:41.183120 [ERROR] [ores.comms.net.server_session] Exception in notification writer: co_await: Operation canceled [system:125]
+2025-12-22 00:21:41.183430 [DEBUG] [ores.comms.net.server_session] Notification writer coroutine ended
+2025-12-22 00:21:41.184552 [INFO] [ores.comms.net.server_session] Unregistering session '127.0.0.1:38118' from subscription manager
+2025-12-22 00:21:41.184856 [INFO] [ores.comms.service.subscription_manager] Unregistered session '127.0.0.1:38118' (had 0 subscriptions, remaining sessions: 0)
+2025-12-22 00:21:41.185205 [INFO] [ores.comms.net.server_session] Session ended for client: 127.0.0.1:38118
+2025-12-22 00:21:41.185372 [DEBUG] [ores.comms.net.server] Session completed, active connections: 0
+#+end_src
+
+
+
+*** STARTED Implement RBAC enforcement                                 :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-23 Tue 21:10]--[2025-12-23 Tue 23:30] =>  2:20
+    CLOCK: [2025-12-23 Tue 17:01]--[2025-12-23 Tue 19:16] =>  2:15
+    CLOCK: [2025-12-23 Tue 10:10]--[2025-12-23 Tue 10:17] =>  0:07
+    CLOCK: [2025-12-23 Tue 09:46]--[2025-12-23 Tue 10:09] =>  0:23
+    CLOCK: [2025-12-22 Mon 11:00]--[2025-12-22 Mon 11:22] =>  0:22
+    CLOCK: [2025-12-22 Mon 10:01]--[2025-12-22 Mon 10:28] =>  0:27
+    CLOCK: [2025-12-22 Mon 00:09]--[2025-12-22 Mon 00:18] =>  0:09
+    CLOCK: [2025-12-21 Sun 23:37]--[2025-12-22 Mon 00:08] =>  0:31
+    :END:
 
 Conversation with Claude:
 
@@ -1138,10 +1199,76 @@ Notes:
 - add tests for all new entities. Code coverage has dropped a lot after adding
   them.
 
-*** Add UI for roles and permission management                         :code:
+*** STARTED Add session information to database                        :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-24 Wed 10:19]--[2025-12-24 Wed 10:37] =>  0:18
+    CLOCK: [2025-12-24 Wed 09:00]--[2025-12-24 Wed 10:18] =>  1:18
+    :END:
+
+At present we register the last login etc. It would be nice to record every
+session as well, including the duration.
+
+Notes:
+
+- record bytes sent/received.
+- keep track of geolocation so we know where users are logging in from.
+- calculate statistical measures (average session duration, average bytes etc)
+  and consider plotting them. Also in the aggregate so we can see patterns over
+  time.
+- keep track of the session id so we know what client we are using, the version
+  etc. We should display this information in the accounts dialog.
+- on the main accounts dialog we should show the number of open sessions.
+
+*** STARTED Add UI for roles and permission management                 :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-24 Wed 10:38]--[2025-12-24 Wed 11:06] =>  0:28
+    :END:
 
 We added the core infrastructure but we need a way to manage it from Qt and from
 the shell.
+
+*** Sign-up dialog should be disabled if feature is disabled           :code:
+
+At present you can click on sign up and fill in all details but then you get a
+server error:
+
+#+begin_src logview
+2025-12-24 10:46:48.212905 [DEBUG] [ores.iam.messaging.accounts_message_handler] Request: signup_request{username=newuser4, email=newuser4@example.com}
+2025-12-24 10:46:48.213049 [INFO] [ores.iam.service.signup_service] Signup attempt for username: newuser4, email: newuser4@example.com
+2025-12-24 10:46:48.213144 [WARN] [ores.iam.service.signup_service] Signup rejected: signups are disabled
+2025-12-24 10:46:48.213186 [WARN] [ores.iam.messaging.accounts_message_handler] Signup failed for username: newuser4, reason: User registration is currently disabled
+2025-12-24 10:46:48.213898 [DEBUG] [ores.comms.messaging.compression] Compressed 68 bytes to 60 bytes using zlib (0x)
+#+end_src
+
+Makes more sense for sign-up button to also be disabled in client. Trouble is,
+we do not know as we are not connected. This means the handshake has to provide
+some kind of flag saying sign-up is enabled or disabled.
+
+*** Add sign-up approval workflow                                      :code:
+
+Should also handle invite codes, etc.
+
+*** Clean up test databases                                            :code:
+
+Sometimes we end up with a few test db's left:
+
+#+begin_src fundamental
+template1=> \l
+                                                            List of databases
+          Name           |  Owner   | Encoding | Locale Provider |   Collate   |    Ctype    | Locale | ICU Rules |   Access privileges
+-------------------------+----------+----------+-----------------+-------------+-------------+--------+-----------+-----------------------
+ oresdb_test_210496_4571 | ores     | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |        |           |
+ oresdb_test_214711_1947 | ores     | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |        |           |
+ oresdb_test_215309_7714 | ores     | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |        |           |
+ oresdb_test_216112_5205 | ores     | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |        |           |
+ oresdb_test_216966_9268 | ores     | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |        |           |
+ postgres                | postgres | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |        |           |
+ template0               | postgres | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |        |           | =c/postgres          +
+                         |          |          |                 |             |             |        |           | postgres=CTc/postgres
+ template1               | postgres | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |        |           | =c/postgres          +
+#+end_src
+
+We should have a script that tidies these up.
 
 *** Tests are logging to stdout in github                              :code:
 
@@ -1284,22 +1411,6 @@ removed to avoid dead code.
 
 At present we can only add new currencies. We also need to be able to update.
 Also, adding currencies requires supplying all parameters.
-
-*** Add session information to database                                :code:
-
-At present we register the last login etc. It would be nice to record every
-session as well, including the duration.
-
-Notes:
-
-- record bytes sent/received.
-- keep track of geolocation so we know where users are logging in from.
-- calculate statistical measures (average session duration, average bytes etc)
-  and consider plotting them. Also in the aggregate so we can see patterns over
-  time.
-- keep track of the session id so we know what client we are using, the version
-  etc. We should display this information in the accounts dialog.
-- on the main accounts dialog we should show the number of open sessions.
 
 *** Subscribe on reconnect fails                                       :code:
 
@@ -1454,6 +1565,15 @@ It should be possible to filter the open currencies by a string. This should be
 any field. The user needs to know when the list has been filtered. Ideally we
 should have buttons at the top per field and filter using those. It should go
 back to database rather than just filter what is available in UI.
+
+Links:
+
+- [[https://github.com/timescale/pg_textsearch][GH pg_textsearch]]: Modern ranked text search for Postgres.
+  - Simple syntax: ORDER BY content <@> 'search terms'
+  - BM25 ranking with configurable parameters (k1, b)
+  - Works with Postgres text search configurations (english, french, german, etc.)
+  - Supports partitioned tables
+  - Goal: state-of-the-art performance and scalability
 
 * Footer
 

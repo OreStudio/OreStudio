@@ -41,7 +41,6 @@ register_commands(cli::Menu& root_menu, client_session& session) {
     auto accounts_menu =
         std::make_unique<cli::Menu>("accounts");
 
-    // Note: is_admin parameter removed - admin privileges are now managed via RBAC
     accounts_menu->Insert("create", [&session](std::ostream & out,
             std::string username, std::string password, std::string totp_secret,
             std::string email) {
@@ -258,7 +257,6 @@ void accounts_commands::process_create_account(std::ostream& out,
 
     using iam::messaging::create_account_request;
     using iam::messaging::create_account_response;
-    // Note: is_admin removed - admin privileges are now managed via RBAC
     auto result = session.process_authenticated_request<create_account_request,
                                                         create_account_response,
                                                         message_type::create_account_request>

@@ -169,7 +169,7 @@ namespace ores #F2F2F2 {
 
             ORM Settings:
 
-            - Schema: oresdb
+            - Schema: ores
             - Table: feature_flags
 
             Fields:

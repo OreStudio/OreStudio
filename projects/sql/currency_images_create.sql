@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'oresdb';
+set schema 'ores';
 
 --
 -- currency_images table: Associates currencies with their primary image (flag)
 -- Each currency has one primary image only
 --
-create table if not exists "oresdb"."currency_images" (
+create table if not exists "ores"."currency_images" (
     "iso_code" text not null,
     "image_id" uuid not null,
     "assigned_by" text not null,
@@ -40,14 +40,14 @@ create table if not exists "oresdb"."currency_images" (
 
 -- Index for lookups by image (reverse lookup)
 create index if not exists currency_images_image_idx
-on "oresdb"."currency_images" (image_id)
+on "ores"."currency_images" (image_id)
 where valid_to = '9999-12-31 23:59:59'::timestamptz;
 
 create or replace function update_currency_images()
 returns trigger as $$
 begin
     -- Close any existing current record for this iso_code
-    update "oresdb"."currency_images"
+    update "ores"."currency_images"
     set valid_to = current_timestamp
     where iso_code = new.iso_code
     and valid_to = '9999-12-31 23:59:59'::timestamptz;
@@ -65,15 +65,15 @@ end;
 $$ language plpgsql;
 
 create or replace trigger update_currency_images_trigger
-before insert on "oresdb"."currency_images"
+before insert on "ores"."currency_images"
 for each row
 execute function update_currency_images();
 
 -- Use a RULE for soft deletes
 create or replace rule delete_currency_images_rule as
-on delete to "oresdb"."currency_images"
+on delete to "ores"."currency_images"
 do instead
-  update "oresdb"."currency_images"
+  update "ores"."currency_images"
   set valid_to = current_timestamp
   where iso_code = old.iso_code
   and valid_to = '9999-12-31 23:59:59'::timestamptz;

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'oresdb';
+set schema 'ores';
 
 --
 -- RBAC query functions for efficient batch operations.
@@ -30,9 +30,9 @@ returns table(code text) as $$
 begin
     return query
     select distinct p.code
-    from oresdb.permissions p
-    join oresdb.role_permissions rp on p.id = rp.permission_id
-    join oresdb.account_roles ar on rp.role_id = ar.role_id
+    from ores.permissions p
+    join ores.role_permissions rp on p.id = rp.permission_id
+    join ores.account_roles ar on rp.role_id = ar.role_id
     where ar.account_id = p_account_id
     and p.valid_to = '9999-12-31 23:59:59'::timestamptz
     and rp.valid_to = '9999-12-31 23:59:59'::timestamptz
@@ -48,8 +48,8 @@ returns table(role_id text, code text) as $$
 begin
     return query
     select rp.role_id::text, p.code
-    from oresdb.role_permissions rp
-    join oresdb.permissions p on rp.permission_id = p.id
+    from ores.role_permissions rp
+    join ores.permissions p on rp.permission_id = p.id
     where rp.valid_to = '9999-12-31 23:59:59'::timestamptz
     and p.valid_to = '9999-12-31 23:59:59'::timestamptz
     order by rp.role_id, p.code;
@@ -63,8 +63,8 @@ returns table(role_id text, code text) as $$
 begin
     return query
     select rp.role_id::text, p.code
-    from oresdb.role_permissions rp
-    join oresdb.permissions p on rp.permission_id = p.id
+    from ores.role_permissions rp
+    join ores.permissions p on rp.permission_id = p.id
     where rp.role_id = any(p_role_ids)
     and rp.valid_to = '9999-12-31 23:59:59'::timestamptz
     and p.valid_to = '9999-12-31 23:59:59'::timestamptz
@@ -85,7 +85,7 @@ returns table(
 begin
     return query
     select r.id, r.version, r.name, r.description, r.modified_by
-    from oresdb.roles r
+    from ores.roles r
     where r.id = any(p_role_ids)
     and r.valid_to = '9999-12-31 23:59:59'::timestamptz
     order by r.name;
@@ -113,11 +113,11 @@ begin
         r.description,
         r.modified_by,
         coalesce(string_agg(p.code, ',' order by p.code), '') as permission_codes
-    from oresdb.account_roles ar
-    join oresdb.roles r on ar.role_id = r.id
-    left join oresdb.role_permissions rp on r.id = rp.role_id
+    from ores.account_roles ar
+    join ores.roles r on ar.role_id = r.id
+    left join ores.role_permissions rp on r.id = rp.role_id
         and rp.valid_to = '9999-12-31 23:59:59'::timestamptz
-    left join oresdb.permissions p on rp.permission_id = p.id
+    left join ores.permissions p on rp.permission_id = p.id
         and p.valid_to = '9999-12-31 23:59:59'::timestamptz
     where ar.account_id = p_account_id
     and ar.valid_to = '9999-12-31 23:59:59'::timestamptz

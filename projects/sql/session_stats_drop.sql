@@ -17,22 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'oresdb';
+set schema 'ores';
 
 -- Remove retention policies from continuous aggregates
-select remove_retention_policy('oresdb.session_stats_daily', if_exists => true);
-select remove_retention_policy('oresdb.session_stats_hourly', if_exists => true);
+select remove_retention_policy('ores.session_stats_daily', if_exists => true);
+select remove_retention_policy('ores.session_stats_hourly', if_exists => true);
 
 -- Remove continuous aggregate policies
-select remove_continuous_aggregate_policy('oresdb.session_stats_daily', if_exists => true);
-select remove_continuous_aggregate_policy('oresdb.session_stats_hourly', if_exists => true);
-select remove_continuous_aggregate_policy('oresdb.session_stats_aggregate_daily', if_exists => true);
+select remove_continuous_aggregate_policy('ores.session_stats_daily', if_exists => true);
+select remove_continuous_aggregate_policy('ores.session_stats_hourly', if_exists => true);
+select remove_continuous_aggregate_policy('ores.session_stats_aggregate_daily', if_exists => true);
 
 -- Drop helper functions
-drop function if exists oresdb.active_session_count();
-drop function if exists oresdb.active_session_count_for_account(uuid);
+drop function if exists ores.active_session_count();
+drop function if exists ores.active_session_count_for_account(uuid);
 
 -- Drop continuous aggregates
-drop materialized view if exists "oresdb"."session_stats_daily" cascade;
-drop materialized view if exists "oresdb"."session_stats_hourly" cascade;
-drop materialized view if exists "oresdb"."session_stats_aggregate_daily" cascade;
+drop materialized view if exists "ores"."session_stats_daily" cascade;
+drop materialized view if exists "ores"."session_stats_hourly" cascade;
+drop materialized view if exists "ores"."session_stats_aggregate_daily" cascade;

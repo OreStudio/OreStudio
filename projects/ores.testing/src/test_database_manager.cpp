@@ -83,7 +83,7 @@ database::database_options test_database_manager::make_database_options() {
         .host = environment::environment::get_value_or_default(
             prefix + "HOST", "localhost"),
         .database = environment::environment::get_value_or_default(
-            prefix + "DATABASE", "oresdb"),
+            prefix + "DATABASE", "ores_default"),
         .port = environment::environment::get_int_value_or_default(
             prefix + "PORT", 5432)
     };
@@ -102,7 +102,7 @@ std::string test_database_manager::generate_test_database_name() {
     const auto random_suffix = dis(gen);
 
     std::ostringstream oss;
-    oss << "oresdb_test_" << pid << "_" << random_suffix;
+    oss << "ores_test_" << pid << "_" << random_suffix;
 
     const auto db_name = oss.str();
     BOOST_LOG_SEV(lg(), info) << "Generated test database name: " << db_name;
@@ -120,7 +120,7 @@ void test_database_manager::create_test_database(const std::string& db_name) {
 
         // Create database from template
         const auto create_sql = "CREATE DATABASE " + db_name +
-                              " WITH TEMPLATE = oresdb_template";
+                              " WITH TEMPLATE = ores_template";
 
         const auto execute_create = [&](auto&& session) {
             return session->execute(create_sql);

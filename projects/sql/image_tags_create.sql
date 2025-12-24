@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'oresdb';
+set schema 'ores';
 
 --
 -- image_tags table: Junction table for many-to-many relationship between images and tags
 --
-create table if not exists "oresdb"."image_tags" (
+create table if not exists "ores"."image_tags" (
     "image_id" uuid not null,
     "tag_id" uuid not null,
     "assigned_by" text not null,
@@ -40,19 +40,19 @@ create table if not exists "oresdb"."image_tags" (
 
 -- Index for lookups by image
 create index if not exists image_tags_image_idx
-on "oresdb"."image_tags" (image_id)
+on "ores"."image_tags" (image_id)
 where valid_to = '9999-12-31 23:59:59'::timestamptz;
 
 -- Index for lookups by tag
 create index if not exists image_tags_tag_idx
-on "oresdb"."image_tags" (tag_id)
+on "ores"."image_tags" (tag_id)
 where valid_to = '9999-12-31 23:59:59'::timestamptz;
 
 create or replace function update_image_tags()
 returns trigger as $$
 begin
     -- Close any existing current record for this image_id and tag_id pair
-    update "oresdb"."image_tags"
+    update "ores"."image_tags"
     set valid_to = current_timestamp
     where image_id = new.image_id and tag_id = new.tag_id
     and valid_to = '9999-12-31 23:59:59'::timestamptz;
@@ -70,15 +70,15 @@ end;
 $$ language plpgsql;
 
 create or replace trigger update_image_tags_trigger
-before insert on "oresdb"."image_tags"
+before insert on "ores"."image_tags"
 for each row
 execute function update_image_tags();
 
 -- Use a RULE for soft deletes
 create or replace rule delete_image_tags_rule as
-on delete to "oresdb"."image_tags"
+on delete to "ores"."image_tags"
 do instead
-  update "oresdb"."image_tags"
+  update "ores"."image_tags"
   set valid_to = current_timestamp
   where image_id = old.image_id
   and tag_id = old.tag_id

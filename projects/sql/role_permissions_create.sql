@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'oresdb';
+set schema 'ores';
 
 --
 -- Role-Permission junction table for RBAC.
 -- Links roles to permissions in a many-to-many relationship.
 -- Uses composite primary key (role_id, permission_id, valid_from).
 --
-create table if not exists "oresdb"."role_permissions" (
+create table if not exists "ores"."role_permissions" (
     "role_id" uuid not null,
     "permission_id" uuid not null,
     "valid_from" timestamp with time zone not null,
@@ -40,19 +40,19 @@ create table if not exists "oresdb"."role_permissions" (
 
 -- Index for looking up permissions by role
 create index if not exists role_permissions_role_idx
-on "oresdb"."role_permissions" (role_id)
+on "ores"."role_permissions" (role_id)
 where valid_to = '9999-12-31 23:59:59'::timestamptz;
 
 -- Index for looking up roles by permission
 create index if not exists role_permissions_permission_idx
-on "oresdb"."role_permissions" (permission_id)
+on "ores"."role_permissions" (permission_id)
 where valid_to = '9999-12-31 23:59:59'::timestamptz;
 
 create or replace function update_role_permissions()
 returns trigger as $$
 begin
     -- Close any existing record with this role_id/permission_id combination
-    update "oresdb"."role_permissions"
+    update "ores"."role_permissions"
     set valid_to = current_timestamp
     where role_id = new.role_id
     and permission_id = new.permission_id
@@ -67,16 +67,16 @@ end;
 $$ language plpgsql;
 
 create or replace trigger update_role_permissions_trigger
-before insert on "oresdb"."role_permissions"
+before insert on "ores"."role_permissions"
 for each row
 execute function update_role_permissions();
 
 -- Use a RULE instead of a trigger to avoid tuple modification conflicts
 -- Rules rewrite the query before execution, so there's no conflict with the DELETE
 create or replace rule delete_role_permissions_rule as
-on delete to "oresdb"."role_permissions"
+on delete to "ores"."role_permissions"
 do instead
-  update "oresdb"."role_permissions"
+  update "ores"."role_permissions"
   set valid_to = current_timestamp
   where role_id = old.role_id
   and permission_id = old.permission_id

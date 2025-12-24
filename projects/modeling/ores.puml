@@ -118,7 +118,7 @@ package "Infrastructure Layer" #F2F2F2 {
     - Listeners: logging_listener and database_lifecycle_listener for auto-setup
     - Logging: Boost.Log configured per-test-case with suite-based organization
     - Database Helpers: Table truncation and context management
-    - Template Databases: Tests clone from oresdb_template with full schema
+    - Template Databases: Tests clone from ores_template with full schema
     - Configuration: Environment-driven via TEST_ORES_DB_* variables
     end note
 }

@@ -114,7 +114,7 @@ role_repository::read_latest_by_ids(const std::vector<boost::uuids::uuid>& ids) 
     // Call the SQL function defined in rbac_functions_create.sql
     const std::string sql =
         "SELECT id, version, name, description, modified_by "
-        "FROM oresdb.get_roles_by_ids(" + array_literal + ")";
+        "FROM ores.get_roles_by_ids(" + array_literal + ")";
 
     const auto rows = execute_raw_multi_column_query(ctx_, sql, lg(),
         "Reading roles by IDs");

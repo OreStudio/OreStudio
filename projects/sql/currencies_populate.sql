@@ -25,7 +25,7 @@
 -- Rounding types: standard, swedish (rounds to 0.05), none
 --
 
-SET search_path TO oresdb;
+SET search_path TO ores;
 
 -- Major world currencies (ISO 4217)
 INSERT INTO currencies (iso_code, version, name, numeric_code, symbol, fraction_symbol, fractions_per_unit, rounding_type, rounding_precision, format, currency_type, modified_by)

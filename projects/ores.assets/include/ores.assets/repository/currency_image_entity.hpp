@@ -33,7 +33,7 @@ namespace ores::assets::repository {
  * Each currency has one primary image (typically a flag).
  */
 struct currency_image_entity {
-    constexpr static const char* schema = "oresdb";
+    constexpr static const char* schema = "ores";
     constexpr static const char* tablename = "currency_images";
 
     sqlgen::PrimaryKey<std::string> iso_code;

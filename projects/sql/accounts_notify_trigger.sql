@@ -18,7 +18,7 @@
  *
  */
 -- Trigger function to send notifications on account changes
-create or replace function oresdb.notify_account_changes()
+create or replace function ores.notify_account_changes()
 returns trigger as $$
 declare
     notification_payload jsonb;
@@ -40,5 +40,5 @@ $$ language plpgsql;
 
 -- trigger to fire after insert, update, or delete on the accounts table
 create or replace trigger account_change_notify_trigger
-after insert or update or delete on oresdb.accounts
-for each row execute function oresdb.notify_account_changes();
+after insert or update or delete on ores.accounts
+for each row execute function ores.notify_account_changes();

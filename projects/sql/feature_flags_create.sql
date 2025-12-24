@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'oresdb';
+set schema 'ores';
 
-create table if not exists "oresdb"."feature_flags" (
+create table if not exists "ores"."feature_flags" (
     "name" text not null,
     "version" integer not null,
     "enabled" integer not null default 0,
@@ -37,7 +37,7 @@ create table if not exists "oresdb"."feature_flags" (
 
 -- Unique constraint on version for current records ensures version uniqueness per entity
 create unique index if not exists feature_flags_version_unique_idx
-on "oresdb"."feature_flags" (name, version)
+on "ores"."feature_flags" (name, version)
 where valid_to = '9999-12-31 23:59:59'::timestamptz;
 
 create or replace function update_feature_flags()
@@ -47,7 +47,7 @@ declare
 begin
     -- Get the current version of the existing record (if any)
     select version into current_version
-    from "oresdb"."feature_flags"
+    from "ores"."feature_flags"
     where name = new.name
     and valid_to = '9999-12-31 23:59:59'::timestamptz;
 
@@ -63,7 +63,7 @@ begin
         new.version = current_version + 1;
 
         -- Close the existing record
-        update "oresdb"."feature_flags"
+        update "ores"."feature_flags"
         set valid_to = current_timestamp
         where name = new.name
         and valid_to = '9999-12-31 23:59:59'::timestamptz
@@ -85,6 +85,6 @@ end;
 $$ language plpgsql;
 
 create or replace trigger update_feature_flags_trigger
-before insert on "oresdb"."feature_flags"
+before insert on "ores"."feature_flags"
 for each row
 execute function update_feature_flags();

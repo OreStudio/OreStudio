@@ -18,17 +18,17 @@
  *
  */
 -- Drop template database if it exists
--- update pg_database set datistemplate = false where datname = 'oresdb_template';
--- drop database if exists oresdb_template;
+-- update pg_database set datistemplate = false where datname = 'ores_template';
+-- drop database if exists ores_template;
 
 -- Create template database with clean template0 as base
-create database oresdb_template with template = template0;
+create database ores_template with template = template0;
 
 -- Grant permissions to ores user
-grant all privileges on database oresdb_template to ores;
+grant all privileges on database ores_template to ores;
 
 -- Connect to template database to create schema
-\c oresdb_template
+\c ores_template
 
 -- Run all schema creation scripts
 \ir ./create_database.sql
@@ -37,4 +37,4 @@ grant all privileges on database oresdb_template to ores;
 -- Mark database as template to prevent accidental direct connections
 -- NOTE: This requires superuser privileges, so it's commented out
 -- The database will still work as a template without this
--- update pg_database set datistemplate = true where datname = 'oresdb_template';
+-- update pg_database set datistemplate = true where datname = 'ores_template';

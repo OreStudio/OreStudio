@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'oresdb';
+set schema 'ores';
 
 --
 -- Permissions table for RBAC.
 -- Permissions are seed data and rarely change, so we use simple temporal support.
 --
-create table if not exists "oresdb"."permissions" (
+create table if not exists "ores"."permissions" (
     "id" uuid not null,
     "code" text not null,
     "description" text not null,
@@ -39,14 +39,14 @@ create table if not exists "oresdb"."permissions" (
 
 -- Unique constraint on code for current records
 create unique index if not exists permissions_code_unique_idx
-on "oresdb"."permissions" (code)
+on "ores"."permissions" (code)
 where valid_to = '9999-12-31 23:59:59'::timestamptz;
 
 create or replace function update_permissions()
 returns trigger as $$
 begin
     -- Close any existing record with this id
-    update "oresdb"."permissions"
+    update "ores"."permissions"
     set valid_to = current_timestamp
     where id = new.id
     and valid_to = '9999-12-31 23:59:59'::timestamptz
@@ -60,16 +60,16 @@ end;
 $$ language plpgsql;
 
 create or replace trigger update_permissions_trigger
-before insert on "oresdb"."permissions"
+before insert on "ores"."permissions"
 for each row
 execute function update_permissions();
 
 -- Use a RULE instead of a trigger to avoid tuple modification conflicts
 -- Rules rewrite the query before execution, so there's no conflict with the DELETE
 create or replace rule delete_permissions_rule as
-on delete to "oresdb"."permissions"
+on delete to "ores"."permissions"
 do instead
-  update "oresdb"."permissions"
+  update "ores"."permissions"
   set valid_to = current_timestamp
   where id = old.id
   and valid_to = '9999-12-31 23:59:59'::timestamptz;

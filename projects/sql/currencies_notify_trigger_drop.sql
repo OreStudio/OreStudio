@@ -18,7 +18,7 @@
  *
  */
 -- Drop the notification trigger
-drop trigger if exists currency_change_notify_trigger on oresdb.currencies;
+drop trigger if exists currency_change_notify_trigger on ores.currencies;
 
 -- Drop the notification function
-drop function if exists oresdb.notify_currency_changes();
+drop function if exists ores.notify_currency_changes();

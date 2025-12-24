@@ -34,7 +34,7 @@ namespace ores::testing {
  * databases for each test process. This allows multiple test processes
  * to run concurrently without interference.
  *
- * Each test database is created from the oresdb_template database, which
+ * Each test database is created from the ores_template database, which
  * must be pre-configured with the full schema.
  */
 class test_database_manager {
@@ -69,14 +69,14 @@ private:
      * @brief Generates a unique database name for this test process.
      *
      * The database name is based on the process ID and a random suffix
-     * to ensure uniqueness: oresdb_test_{pid}_{random}
+     * to ensure uniqueness: ores_test_{pid}_{random}
      *
      * @return A unique database name string
      */
     static std::string generate_test_database_name();
 
     /**
-     * @brief Creates a test database from the oresdb_template.
+     * @brief Creates a test database from the ores_template.
      *
      * This method connects to the postgres database (admin database) and
      * executes CREATE DATABASE with the template parameter.

@@ -46,7 +46,7 @@ public:
     /**
      * @brief Truncates the specified table.
      *
-     * @param table_name Fully qualified table name (e.g., "oresdb.accounts")
+     * @param table_name Fully qualified table name (e.g., "ores.accounts")
      */
     void truncate_table(const std::string& table_name);
 

@@ -138,7 +138,7 @@ role_permission_repository::read_all_role_permission_codes() {
 
     // Call the SQL function defined in rbac_functions_create.sql
     const std::string sql =
-        "SELECT role_id, code FROM oresdb.get_all_role_permission_codes()";
+        "SELECT role_id, code FROM ores.get_all_role_permission_codes()";
 
     return execute_raw_grouped_query(ctx_, sql, lg(),
         "Reading all role permission codes");
@@ -164,7 +164,7 @@ role_permission_repository::read_role_permission_codes(
 
     // Call the SQL function defined in rbac_functions_create.sql
     const std::string sql =
-        "SELECT role_id, code FROM oresdb.get_role_permission_codes(" +
+        "SELECT role_id, code FROM ores.get_role_permission_codes(" +
         array_literal + ")";
 
     return execute_raw_grouped_query(ctx_, sql, lg(),

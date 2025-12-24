@@ -27,6 +27,7 @@
 #include "ores.qt/AccountMdiWindow.hpp"
 #include "ores.qt/AccountDetailDialog.hpp"
 #include "ores.qt/AccountHistoryDialog.hpp"
+#include "ores.qt/SessionHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -138,6 +139,8 @@ void AccountController::showListWindow() {
             this, &AccountController::onShowAccountDetails);
     connect(accountWidget, &AccountMdiWindow::showAccountHistory,
             this, &AccountController::onShowAccountHistory);
+    connect(accountWidget, &AccountMdiWindow::showSessionHistory,
+            this, &AccountController::onShowSessionHistory);
 
     accountListWindow_ = new DetachableMdiSubWindow();
     accountListWindow_->setAttribute(Qt::WA_DeleteOnClose);
@@ -257,6 +260,53 @@ void AccountController::onShowAccountHistory(const QString& username) {
 
     // Load the history data
     historyDialog->loadHistory();
+}
+
+void AccountController::onShowSessionHistory(const boost::uuids::uuid& accountId,
+                                              const QString& username) {
+    BOOST_LOG_SEV(lg(), info) << "Showing session history for: "
+                             << username.toStdString();
+
+    const QColor iconColor(220, 220, 220);
+
+    auto* sessionDialog = new SessionHistoryDialog(clientManager_, mainWindow_);
+
+    // Connect status signals
+    connect(sessionDialog, &SessionHistoryDialog::statusMessage,
+            this, [this](const QString& message) {
+        emit statusMessage(message);
+    });
+    connect(sessionDialog, &SessionHistoryDialog::errorMessage,
+            this, [this](const QString& err_msg) {
+        emit errorMessage(err_msg);
+    });
+
+    // Create and configure window
+    auto* sessionWindow = new DetachableMdiSubWindow();
+    sessionWindow->setAttribute(Qt::WA_DeleteOnClose);
+    sessionWindow->setWidget(sessionDialog);
+    sessionWindow->setWindowTitle(QString("Session History: %1").arg(username));
+    sessionWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_clock_16_regular.svg", iconColor));
+
+    // Track window for cleanup
+    allDetachableWindows_.append(sessionWindow);
+    QPointer<AccountController> self = this;
+    QPointer<DetachableMdiSubWindow> windowBeingDestroyed = sessionWindow;
+    connect(sessionWindow, &QObject::destroyed, this,
+        [self, windowBeingDestroyed]() {
+        if (!self) return;
+        if (!windowBeingDestroyed.isNull()) {
+            self->allDetachableWindows_.removeAll(windowBeingDestroyed.data());
+        }
+    });
+
+    mdiArea_->addSubWindow(sessionWindow);
+    sessionWindow->adjustSize();
+    sessionWindow->show();
+
+    // Load the session data for this account
+    sessionDialog->setAccount(accountId, username);
 }
 
 void AccountController::markAccountListAsStale() {

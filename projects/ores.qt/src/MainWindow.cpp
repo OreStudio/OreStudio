@@ -37,6 +37,7 @@
 #include "ui_MainWindow.h"
 #include "ores.qt/LoginDialog.hpp"
 #include "ores.qt/MyAccountDialog.hpp"
+#include "ores.qt/SessionHistoryDialog.hpp"
 #include "ores.qt/CurrencyController.hpp"
 #include "ores.qt/AccountController.hpp"
 #include "ores.qt/RoleController.hpp"
@@ -106,6 +107,8 @@ MainWindow::MainWindow(QWidget* parent) :
         ":/icons/ic_fluent_lock_closed_20_regular.svg", iconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_person_20_regular.svg", iconColor));
+    ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_clock_16_regular.svg", iconColor));
     ui_->ExitAction->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_dismiss_20_regular.svg", iconColor));
 
@@ -116,6 +119,8 @@ MainWindow::MainWindow(QWidget* parent) :
         &MainWindow::onDisconnectTriggered);
     connect(ui_->ActionMyAccount, &QAction::triggered, this,
         &MainWindow::onMyAccountTriggered);
+    connect(ui_->ActionMySessions, &QAction::triggered, this,
+        &MainWindow::onMySessionsTriggered);
     connect(ui_->ActionAbout, &QAction::triggered, this,
         &MainWindow::onAboutTriggered);
     connect(ui_->ExitAction, &QAction::triggered, this, &QMainWindow::close);
@@ -376,8 +381,9 @@ void MainWindow::updateMenuState() {
     ui_->ActionAccounts->setEnabled(isConnected);
     ui_->ActionRoles->setEnabled(isConnected);
 
-    // My Account menu item is enabled when connected
+    // My Account and My Sessions menu items are enabled when connected
     ui_->ActionMyAccount->setEnabled(isConnected);
+    ui_->ActionMySessions->setEnabled(isConnected);
 
     // Update connection status icon in status bar
     if (isConnected) {
@@ -460,6 +466,29 @@ void MainWindow::onMyAccountTriggered() {
     BOOST_LOG_SEV(lg(), debug) << "My Account triggered";
     MyAccountDialog dialog(clientManager_, this);
     dialog.exec();
+}
+
+void MainWindow::onMySessionsTriggered() {
+    BOOST_LOG_SEV(lg(), debug) << "My Sessions triggered";
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Not connected, cannot show sessions";
+        return;
+    }
+
+    const auto accountId = clientManager_->accountId();
+    if (!accountId) {
+        BOOST_LOG_SEV(lg(), warn) << "No account ID available";
+        return;
+    }
+
+    const QString username = QString::fromStdString(clientManager_->username());
+
+    auto* sessionDialog = new SessionHistoryDialog(clientManager_, this);
+    sessionDialog->setAccount(*accountId, username);
+    sessionDialog->setAttribute(Qt::WA_DeleteOnClose);
+    sessionDialog->setModal(false);
+    sessionDialog->show();
 }
 
 void MainWindow::onDetachAllTriggered() {

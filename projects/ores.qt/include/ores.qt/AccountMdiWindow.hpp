@@ -71,6 +71,7 @@ signals:
     void addNewRequested();
     void showAccountDetails(const AccountWithLoginInfo& accountWithLoginInfo);
     void showAccountHistory(const QString& username);
+    void showSessionHistory(const boost::uuids::uuid& accountId, const QString& username);
     void accountDeleted(const boost::uuids::uuid& account_id);
 
 public slots:
@@ -82,6 +83,7 @@ public slots:
     void unlockSelected();
     void resetPasswordSelected();
     void viewHistorySelected();
+    void viewSessionsSelected();
 
     /**
      * @brief Mark the data as stale (changed on server).
@@ -133,6 +135,7 @@ private:
     QAction* unlockAction_;
     QAction* resetPasswordAction_;
     QAction* historyAction_;
+    QAction* sessionsAction_;
 
     std::unique_ptr<ClientAccountModel> accountModel_;
     QSortFilterProxyModel* proxyModel_;

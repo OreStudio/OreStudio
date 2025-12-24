@@ -482,7 +482,7 @@ void MainWindow::onMySessionsTriggered() {
         return;
     }
 
-    const QString username = QString::fromStdString(clientManager_->username());
+    const QString username = QString::fromStdString(clientManager_->currentUsername());
 
     auto* sessionDialog = new SessionHistoryDialog(clientManager_, this);
     sessionDialog->setAccount(*accountId, username);

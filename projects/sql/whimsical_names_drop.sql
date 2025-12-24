@@ -17,32 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-\ir ./create_database.sql
-\ir ./utility_functions_create.sql
-\ir ./whimsical_names_create.sql
-\ir ./currencies_create.sql
-\ir ./currencies_notify_trigger.sql
-\ir ./accounts_create.sql
-\ir ./accounts_notify_trigger.sql
-\ir ./feature_flags_create.sql
-\ir ./login_info_create.sql
-\ir ./sessions_create.sql
--- \ir ./session_stats_create.sql -- FIXME: disabled until we sort out timescaledb
-\ir ./permissions_create.sql
-\ir ./roles_create.sql
-\ir ./role_permissions_create.sql
-\ir ./account_roles_create.sql
-\ir ./rbac_functions_create.sql
-\ir ./images_create.sql
-\ir ./tags_create.sql
-\ir ./image_tags_create.sql
-\ir ./currency_images_create.sql
 
-\ir ./bootstrap_mode_setup.sql
-\ir ./disable_password_validation_setup.sql
+SET search_path TO ores;
 
--- Populate reference data
-\ir ./load_flags.sql
-\ir ./flags_populate.sql
-\ir ./currencies_populate.sql
-\ir ./currency_images_populate.sql
+DROP FUNCTION IF EXISTS ores.generate_unique_database_name_from_server();
+DROP FUNCTION IF EXISTS ores.generate_unique_database_name(TEXT[], INT);
+DROP FUNCTION IF EXISTS ores.generate_database_name(BOOLEAN);
+DROP FUNCTION IF EXISTS ores.generate_whimsical_name(BOOLEAN);
+DROP FUNCTION IF EXISTS ores.generate_whimsical_name();
+DROP FUNCTION IF EXISTS ores.whimsical_nouns();
+DROP FUNCTION IF EXISTS ores.whimsical_adjectives();

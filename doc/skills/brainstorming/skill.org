@@ -234,7 +234,7 @@ where to cache. Second question:
 Should the cache be:
 
 A) Server-side (in ores.service memory, shared across all clients)
-B) Client-side (in ores.qt, each client caches locally)  
+B) Client-side (in ores.qt, each client caches locally)
 C) Both levels (server reduces DB load, client reduces network calls)
 
 User: A - server side for now, we can add client later.

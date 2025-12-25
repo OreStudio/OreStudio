@@ -17,18 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'oresdb';
+set schema 'ores';
 
 -- Remove retention policy
-select remove_retention_policy('oresdb.sessions', if_exists => true);
+select remove_retention_policy('ores.sessions', if_exists => true);
 
 -- Remove compression policy
-select remove_compression_policy('oresdb.sessions', if_exists => true);
+select remove_compression_policy('ores.sessions', if_exists => true);
 
 -- Drop continuous aggregates that depend on sessions table
-drop materialized view if exists "oresdb"."session_stats_daily" cascade;
-drop materialized view if exists "oresdb"."session_stats_hourly" cascade;
-drop materialized view if exists "oresdb"."session_stats_aggregate_daily" cascade;
+drop materialized view if exists "ores"."session_stats_daily" cascade;
+drop materialized view if exists "ores"."session_stats_hourly" cascade;
+drop materialized view if exists "ores"."session_stats_aggregate_daily" cascade;
 
 -- Drop sessions table (this also drops the hypertable and all chunks)
-drop table if exists "oresdb"."sessions" cascade;
+drop table if exists "ores"."sessions" cascade;

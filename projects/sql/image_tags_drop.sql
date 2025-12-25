@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'oresdb';
+set schema 'ores';
 
-drop rule if exists delete_image_tags_rule on "oresdb"."image_tags";
-drop trigger if exists update_image_tags_trigger on "oresdb"."image_tags";
+drop rule if exists delete_image_tags_rule on "ores"."image_tags";
+drop trigger if exists update_image_tags_trigger on "ores"."image_tags";
 drop function if exists update_image_tags;
 drop index if exists image_tags_tag_idx;
 drop index if exists image_tags_image_idx;
-drop table if exists "oresdb"."image_tags";
+drop table if exists "ores"."image_tags";

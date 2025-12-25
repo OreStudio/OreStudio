@@ -17,6 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-drop schema if exists oresdb;
+drop schema if exists ores;
 drop extension if exists btree_gist;
-drop database if exists oresdb;
+drop database if exists ores;

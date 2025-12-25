@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'oresdb';
+set schema 'ores';
 
 --
 -- tags table: Stores categories for images (e.g., 'flag', 'currency', 'commodity')
 --
-create table if not exists "oresdb"."tags" (
+create table if not exists "ores"."tags" (
     "tag_id" uuid not null,
     "version" integer not null,
     "name" text not null,
@@ -40,12 +40,12 @@ create table if not exists "oresdb"."tags" (
 
 -- Unique constraint on version for current records
 create unique index if not exists tags_version_unique_idx
-on "oresdb"."tags" (tag_id, version)
+on "ores"."tags" (tag_id, version)
 where valid_to = '9999-12-31 23:59:59'::timestamptz;
 
 -- Unique constraint on name for current records
 create unique index if not exists tags_name_unique_idx
-on "oresdb"."tags" (name)
+on "ores"."tags" (name)
 where valid_to = '9999-12-31 23:59:59'::timestamptz;
 
 create or replace function update_tags()
@@ -55,7 +55,7 @@ declare
 begin
     -- Get the current version of the existing record (if any)
     select version into current_version
-    from "oresdb"."tags"
+    from "ores"."tags"
     where tag_id = new.tag_id
     and valid_to = '9999-12-31 23:59:59'::timestamptz;
 
@@ -71,7 +71,7 @@ begin
         new.version = current_version + 1;
 
         -- Close the existing record
-        update "oresdb"."tags"
+        update "ores"."tags"
         set valid_to = current_timestamp
         where tag_id = new.tag_id
         and valid_to = '9999-12-31 23:59:59'::timestamptz
@@ -93,15 +93,15 @@ end;
 $$ language plpgsql;
 
 create or replace trigger update_tags_trigger
-before insert on "oresdb"."tags"
+before insert on "ores"."tags"
 for each row
 execute function update_tags();
 
 -- Use a RULE for soft deletes
 create or replace rule delete_tags_rule as
-on delete to "oresdb"."tags"
+on delete to "ores"."tags"
 do instead
-  update "oresdb"."tags"
+  update "ores"."tags"
   set valid_to = current_timestamp
   where tag_id = old.tag_id
   and valid_to = '9999-12-31 23:59:59'::timestamptz;

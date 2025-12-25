@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'oresdb';
+set schema 'ores';
 
 --
 -- Account-Role junction table for RBAC.
 -- Links accounts to roles in a many-to-many relationship.
 -- Uses composite primary key (account_id, role_id, valid_from).
 --
-create table if not exists "oresdb"."account_roles" (
+create table if not exists "ores"."account_roles" (
     "account_id" uuid not null,
     "role_id" uuid not null,
     "assigned_by" text not null,
@@ -42,19 +42,19 @@ create table if not exists "oresdb"."account_roles" (
 
 -- Index for looking up roles by account
 create index if not exists account_roles_account_idx
-on "oresdb"."account_roles" (account_id)
+on "ores"."account_roles" (account_id)
 where valid_to = '9999-12-31 23:59:59'::timestamptz;
 
 -- Index for looking up accounts by role
 create index if not exists account_roles_role_idx
-on "oresdb"."account_roles" (role_id)
+on "ores"."account_roles" (role_id)
 where valid_to = '9999-12-31 23:59:59'::timestamptz;
 
 create or replace function update_account_roles()
 returns trigger as $$
 begin
     -- Close any existing record with this account_id/role_id combination
-    update "oresdb"."account_roles"
+    update "ores"."account_roles"
     set valid_to = current_timestamp
     where account_id = new.account_id
     and role_id = new.role_id
@@ -73,16 +73,16 @@ end;
 $$ language plpgsql;
 
 create or replace trigger update_account_roles_trigger
-before insert on "oresdb"."account_roles"
+before insert on "ores"."account_roles"
 for each row
 execute function update_account_roles();
 
 -- Use a RULE instead of a trigger to avoid tuple modification conflicts
 -- Rules rewrite the query before execution, so there's no conflict with the DELETE
 create or replace rule delete_account_roles_rule as
-on delete to "oresdb"."account_roles"
+on delete to "ores"."account_roles"
 do instead
-  update "oresdb"."account_roles"
+  update "ores"."account_roles"
   set valid_to = current_timestamp
   where account_id = old.account_id
   and role_id = old.role_id

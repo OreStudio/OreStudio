@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'oresdb';
+set schema 'ores';
 
 --
 -- Drop RBAC query functions.

@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'oresdb';
+set schema 'ores';
 
 --
 -- Roles table for RBAC with version tracking and temporal support.
 --
-create table if not exists "oresdb"."roles" (
+create table if not exists "ores"."roles" (
     "id" uuid not null,
     "version" integer not null,
     "name" text not null,
@@ -40,12 +40,12 @@ create table if not exists "oresdb"."roles" (
 
 -- Unique constraint on name for current records
 create unique index if not exists roles_name_unique_idx
-on "oresdb"."roles" (name)
+on "ores"."roles" (name)
 where valid_to = '9999-12-31 23:59:59'::timestamptz;
 
 -- Unique constraint on version for current records
 create unique index if not exists roles_version_unique_idx
-on "oresdb"."roles" (id, version)
+on "ores"."roles" (id, version)
 where valid_to = '9999-12-31 23:59:59'::timestamptz;
 
 create or replace function update_roles()
@@ -55,7 +55,7 @@ declare
 begin
     -- Get the current version of the existing record (if any)
     select version into current_version
-    from "oresdb"."roles"
+    from "ores"."roles"
     where id = new.id
     and valid_to = '9999-12-31 23:59:59'::timestamptz;
 
@@ -70,7 +70,7 @@ begin
         new.version = current_version + 1;
 
         -- Close the existing record
-        update "oresdb"."roles"
+        update "ores"."roles"
         set valid_to = current_timestamp
         where id = new.id
         and valid_to = '9999-12-31 23:59:59'::timestamptz
@@ -91,16 +91,16 @@ end;
 $$ language plpgsql;
 
 create or replace trigger update_roles_trigger
-before insert on "oresdb"."roles"
+before insert on "ores"."roles"
 for each row
 execute function update_roles();
 
 -- Use a RULE instead of a trigger to avoid tuple modification conflicts
 -- Rules rewrite the query before execution, so there's no conflict with the DELETE
 create or replace rule delete_roles_rule as
-on delete to "oresdb"."roles"
+on delete to "ores"."roles"
 do instead
-  update "oresdb"."roles"
+  update "ores"."roles"
   set valid_to = current_timestamp
   where id = old.id
   and valid_to = '9999-12-31 23:59:59'::timestamptz;

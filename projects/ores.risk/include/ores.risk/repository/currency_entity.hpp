@@ -31,7 +31,7 @@ namespace ores::risk::repository {
  * @brief Represents a currency in the database.
  */
 struct currency_entity {
-    constexpr static const char* schema = "oresdb";
+    constexpr static const char* schema = "ores";
     constexpr static const char* tablename = "currencies";
 
     sqlgen::PrimaryKey<std::string> iso_code;

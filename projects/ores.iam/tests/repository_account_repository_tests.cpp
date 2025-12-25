@@ -33,7 +33,7 @@
 namespace {
 
 const std::string_view test_suite("ores.iam.tests");
-const std::string database_table("oresdb.accounts");
+const std::string database_table("ores.accounts");
 const std::string tags("[repository]");
 
 }

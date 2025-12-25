@@ -19,6 +19,7 @@
  */
 \ir ./create_database.sql
 \ir ./utility_functions_create.sql
+\ir ./whimsical_names_create.sql
 \ir ./currencies_create.sql
 \ir ./currencies_notify_trigger.sql
 \ir ./accounts_create.sql

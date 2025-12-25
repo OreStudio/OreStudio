@@ -292,7 +292,7 @@ namespace ores #F2F2F2 {
 
             ORM Settings:
 
-            - Schema: oresdb
+            - Schema: ores
             - Table: accounts
 
             Fields:
@@ -324,7 +324,7 @@ namespace ores #F2F2F2 {
 
             ORM Settings:
 
-            - Schema: oresdb
+            - Schema: ores
             - Table: login_info
 
             Fields:
@@ -454,7 +454,7 @@ namespace ores #F2F2F2 {
 
             ORM Settings:
 
-            - Schema: oresdb
+            - Schema: ores
             - Table: permissions
             end note
 
@@ -502,7 +502,7 @@ namespace ores #F2F2F2 {
 
             ORM Settings:
 
-            - Schema: oresdb
+            - Schema: ores
             - Table: roles
             end note
 
@@ -548,7 +548,7 @@ namespace ores #F2F2F2 {
 
             ORM Settings:
 
-            - Schema: oresdb
+            - Schema: ores
             - Table: account_roles
             - Primary Key: (account_id, role_id) at database level
             end note
@@ -599,7 +599,7 @@ namespace ores #F2F2F2 {
 
             ORM Settings:
 
-            - Schema: oresdb
+            - Schema: ores
             - Table: role_permissions
             - Primary Key: (role_id, permission_id) at database level
             end note

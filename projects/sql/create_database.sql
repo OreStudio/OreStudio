@@ -20,6 +20,6 @@
 -- Create main database from template
 -- This provides a fast way to get a fully-configured database
 -- with all schemas, tables, functions, and extensions
-create database oresdb with template = oresdb_template;
-create schema if not exists oresdb;
+create database ores with template = ores_template;
+create schema if not exists ores;
 create extension if not exists btree_gist;

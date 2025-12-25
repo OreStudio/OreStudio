@@ -34,3 +34,4 @@
 \ir ./session_stats_drop.sql
 \ir ./sessions_drop.sql
 \ir ./login_info_drop.sql
+\ir ./whimsical_names_drop.sql

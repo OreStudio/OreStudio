@@ -33,7 +33,7 @@ namespace ores::assets::repository {
  * Junction table entity for many-to-many relationship between images and tags.
  */
 struct image_tag_entity {
-    constexpr static const char* schema = "oresdb";
+    constexpr static const char* schema = "ores";
     constexpr static const char* tablename = "image_tags";
 
     sqlgen::PrimaryKey<std::string> image_id;

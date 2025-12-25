@@ -28,7 +28,7 @@
 --   - currencies_populate.sql must be run first (to populate currencies table)
 --
 
-SET search_path TO oresdb;
+SET search_path TO ores;
 
 --
 -- Currency to flag mappings

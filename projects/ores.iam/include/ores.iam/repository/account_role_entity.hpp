@@ -33,7 +33,7 @@ namespace ores::iam::repository {
  * at the database schema level since sqlgen doesn't support composite keys.
  */
 struct account_role_entity {
-    constexpr static const char* schema = "oresdb";
+    constexpr static const char* schema = "ores";
     constexpr static const char* tablename = "account_roles";
 
     std::string account_id;

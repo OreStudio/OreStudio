@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'oresdb';
+set schema 'ores';
 
 --
 -- login_info table tracks login security information for accounts.
 -- note: this is a current-state table without temporal versioning.
 --
-create table if not exists "oresdb"."login_info" (
+create table if not exists "ores"."login_info" (
     "account_id" uuid not null,
     "last_ip" inet not null,
     "last_attempt_ip" inet not null,
@@ -36,8 +36,8 @@ create table if not exists "oresdb"."login_info" (
 );
 
 create index if not exists login_info_account_id_idx
-on "oresdb"."login_info" (account_id);
+on "ores"."login_info" (account_id);
 
 create index if not exists login_info_locked_idx
-on "oresdb"."login_info" (locked)
+on "ores"."login_info" (locked)
 where locked = 0;

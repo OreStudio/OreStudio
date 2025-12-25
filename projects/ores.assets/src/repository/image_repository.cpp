@@ -105,7 +105,7 @@ image_repository::read_latest_by_ids(context ctx,
     std::ostringstream sql;
     sql << "SELECT image_id, version, key, description, svg_data, "
         << "modified_by, valid_from, valid_to "
-        << "FROM oresdb.images "
+        << "FROM ores.images "
         << "WHERE image_id IN (" << in_clause.str() << ") "
         << "AND valid_to = '9999-12-31 23:59:59' "
         << "ORDER BY valid_from DESC";

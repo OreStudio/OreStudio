@@ -31,7 +31,7 @@ namespace ores::assets::repository {
  * @brief Represents an image in the database.
  */
 struct image_entity {
-    constexpr static const char* schema = "oresdb";
+    constexpr static const char* schema = "ores";
     constexpr static const char* tablename = "images";
 
     sqlgen::PrimaryKey<std::string> image_id;

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'oresdb';
+set schema 'ores';
 
 
 -- FIXME: due to to issues with timescale db setup, we have disabled it for now.
@@ -35,7 +35,7 @@ set schema 'oresdb';
 -- This is a TimescaleDB hypertable partitioned by start_time for efficient
 -- time-series queries.
 --
-create table if not exists "oresdb"."sessions" (
+create table if not exists "ores"."sessions" (
     -- Session identifier
     "id" uuid not null,
 
@@ -77,7 +77,7 @@ create table if not exists "oresdb"."sessions" (
 -- Convert to hypertable with 7-day chunks
 -- This enables automatic time-based partitioning
 -- select create_hypertable(
---     'oresdb.sessions',
+--     'ores.sessions',
 --     'start_time',
 --     chunk_time_interval => interval '7 days',
 --     if_not_exists => true
@@ -85,33 +85,33 @@ create table if not exists "oresdb"."sessions" (
 
 -- Indexes for common query patterns
 create index if not exists sessions_account_id_idx
-on "oresdb"."sessions" (account_id, start_time desc);
+on "ores"."sessions" (account_id, start_time desc);
 
 create index if not exists sessions_active_idx
-on "oresdb"."sessions" (account_id)
+on "ores"."sessions" (account_id)
 where end_time is null;
 
 create index if not exists sessions_country_idx
-on "oresdb"."sessions" (country_code, start_time desc)
+on "ores"."sessions" (country_code, start_time desc)
 where country_code != '';
 
 -- Enable compression for chunks older than 7 days
 -- Segment by account_id for efficient per-account queries
--- alter table "oresdb"."sessions" set (
+-- alter table "ores"."sessions" set (
 --     timescaledb.compress,
 --     timescaledb.compress_segmentby = 'account_id',
 --     timescaledb.compress_orderby = 'start_time desc'
 -- );
 
 -- select add_compression_policy(
---     'oresdb.sessions',
+--     'ores.sessions',
 --     compress_after => interval '7 days',
 --     if_not_exists => true
 -- );
 
 -- Data retention policy: keep raw session data for 1 year
 -- select add_retention_policy(
---     'oresdb.sessions',
+--     'ores.sessions',
 --     drop_after => interval '1 year',
 --     if_not_exists => true
 -- );

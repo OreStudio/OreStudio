@@ -33,7 +33,7 @@
  *   \i projects/sql/toggle_password_validation.sql
  */
 
-set schema 'oresdb';
+set schema 'ores';
 
 -- Default to enabled (0) if not specified
 \if :{?new_value}
@@ -43,7 +43,7 @@ set schema 'oresdb';
 \endif
 
 -- Update the flag using bitemporal pattern
-insert into oresdb.feature_flags (name, enabled, description, modified_by, valid_from, valid_to)
+insert into ores.feature_flags (name, enabled, description, modified_by, valid_from, valid_to)
 values (
     'system.disable_password_validation',
     true,
@@ -55,7 +55,7 @@ values (
 
 -- Show the updated state
 select name, enabled, description, modified_by, valid_from
-from oresdb.feature_flags
+from ores.feature_flags
 where name = 'system.disable_password_validation'
   and valid_to = '9999-12-31 23:59:59'::timestamptz;
 

@@ -50,7 +50,7 @@ database_configuration::make_options_description() {
             value<std::string>()->default_value("localhost"),
             "Database host.")
         ("db-database",
-            value<std::string>()->default_value("oresdb"),
+            value<std::string>()->default_value("ores_default"),
             "Database name.")
         ("db-port",
             value<int>()->default_value(5432),

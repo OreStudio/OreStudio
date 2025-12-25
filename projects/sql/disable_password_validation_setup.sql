@@ -31,7 +31,7 @@
  * The script is idempotent and can be safely run multiple times.
  */
 
-set schema 'oresdb';
+set schema 'ores';
 
 -- Insert the password validation disable flag if it doesn't already exist
 do $$
@@ -40,14 +40,14 @@ declare
 begin
     -- Check if the flag already exists
     select exists(
-        select 1 from oresdb.feature_flags
+        select 1 from ores.feature_flags
         where name = 'system.disable_password_validation'
           and valid_to = '9999-12-31 23:59:59'::timestamptz
     ) into flag_exists;
 
     if not flag_exists then
         -- Insert the flag with enabled=0 (validation ENABLED by default for security)
-        insert into oresdb.feature_flags (name, enabled, description, modified_by, valid_from, valid_to)
+        insert into ores.feature_flags (name, enabled, description, modified_by, valid_from, valid_to)
         values (
             'system.disable_password_validation',
             0,  -- 0 = false = password validation ENABLED (secure default)
@@ -66,6 +66,6 @@ $$ language plpgsql;
 
 -- Query to check current state
 select name, enabled, description, modified_by
-from oresdb.feature_flags
+from ores.feature_flags
 where name = 'system.disable_password_validation'
   and valid_to = '9999-12-31 23:59:59'::timestamptz;

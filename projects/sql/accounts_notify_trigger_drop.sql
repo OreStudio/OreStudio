@@ -18,7 +18,7 @@
  *
  */
 -- Drop the notification trigger
-drop trigger if exists account_change_notify_trigger on oresdb.accounts;
+drop trigger if exists account_change_notify_trigger on ores.accounts;
 
 -- Drop the notification function
-drop function if exists oresdb.notify_account_changes();
+drop function if exists ores.notify_account_changes();

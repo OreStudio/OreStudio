@@ -33,7 +33,7 @@
  *    - enabled=0 (false): Admin accounts exist, system in secure mode
  */
 
-set schema 'oresdb';
+set schema 'ores';
 
 -- Insert the bootstrap mode feature flag if it doesn't already exist
 -- The enabled state depends on whether admin accounts exist
@@ -44,7 +44,7 @@ declare
 begin
     -- Check if the flag already exists
     select exists(
-        select 1 from oresdb.feature_flags
+        select 1 from ores.feature_flags
         where name = 'system.bootstrap_mode'
           and valid_to = '9999-12-31 23:59:59'::timestamptz
     ) into flag_exists;
@@ -52,8 +52,8 @@ begin
     if not flag_exists then
         -- Count accounts with Admin role assigned via RBAC
         select count(*) into admin_count
-        from oresdb.account_roles ar
-        join oresdb.roles r on ar.role_id = r.id
+        from ores.account_roles ar
+        join ores.roles r on ar.role_id = r.id
         where r.name = 'Admin'
           and ar.valid_to = '9999-12-31 23:59:59'::timestamptz
           and r.valid_to = '9999-12-31 23:59:59'::timestamptz;
@@ -61,7 +61,7 @@ begin
         -- Insert the flag with appropriate enabled state
         -- enabled=1 (true) if no admin accounts exist (bootstrap mode)
         -- enabled=0 (false) if admin accounts exist (secure mode)
-        insert into oresdb.feature_flags (name, enabled, description, modified_by, valid_from, valid_to)
+        insert into ores.feature_flags (name, enabled, description, modified_by, valid_from, valid_to)
         values (
             'system.bootstrap_mode',
             case when admin_count = 0 then 1 else 0 end,

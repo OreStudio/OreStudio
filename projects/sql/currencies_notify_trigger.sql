@@ -1,5 +1,5 @@
 -- Trigger function to send notifications on currency changes
-create or replace function oresdb.notify_currency_changes()
+create or replace function ores.notify_currency_changes()
 returns trigger as $$
 declare
     notification_payload jsonb;
@@ -21,5 +21,5 @@ $$ language plpgsql;
 
 -- trigger to fire after insert, update, or delete on the currencies table
 create or replace trigger currency_change_notify_trigger
-after insert or update or delete on oresdb.currencies
-for each row execute function oresdb.notify_currency_changes();
+after insert or update or delete on ores.currencies
+for each row execute function ores.notify_currency_changes();

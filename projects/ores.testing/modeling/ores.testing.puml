@@ -164,7 +164,7 @@ namespace ores #F2F2F2 {
         databases for each test process. This allows multiple test processes
         to run concurrently without interference.
 
-        Each test database is created from the oresdb_template database, which
+        Each test database is created from the ores_template database, which
         must be pre-configured with the full schema.
 
         Methods:
@@ -172,7 +172,7 @@ namespace ores #F2F2F2 {
         - make_context: Creates a database context from environment variables.
         - make_database_options: Creates database options from environment variables.
         - generate_test_database_name: Generates a unique database name for this test process.
-        - create_test_database: Creates a test database from the oresdb_template.
+        - create_test_database: Creates a test database from the ores_template.
         - drop_test_database: Drops the test database.
         - set_test_database_env: Sets the TEST_ORES_DB_DATABASE environment variable.
         - make_admin_context: Creates a database context connected to the postgres database.

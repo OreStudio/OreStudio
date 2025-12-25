@@ -18,15 +18,12 @@
  *
  */
 
---
--- Utility functions used across the database schema
---
-
 SET search_path TO ores;
 
--- Returns the 'infinity' timestamp used for valid_to in temporal tables.
--- This centralizes the sentinel value representing records that are currently valid.
-CREATE OR REPLACE FUNCTION ores.infinity_timestamp()
-RETURNS timestamptz AS $$
-    SELECT '9999-12-31 23:59:59'::timestamptz;
-$$ LANGUAGE sql IMMUTABLE;
+DROP FUNCTION IF EXISTS ores.generate_unique_database_name_from_server();
+DROP FUNCTION IF EXISTS ores.generate_unique_database_name(TEXT[], INT);
+DROP FUNCTION IF EXISTS ores.generate_database_name(BOOLEAN);
+DROP FUNCTION IF EXISTS ores.generate_whimsical_name(BOOLEAN);
+DROP FUNCTION IF EXISTS ores.generate_whimsical_name();
+DROP FUNCTION IF EXISTS ores.whimsical_nouns();
+DROP FUNCTION IF EXISTS ores.whimsical_adjectives();

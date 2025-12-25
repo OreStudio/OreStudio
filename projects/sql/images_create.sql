@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'oresdb';
+set schema 'ores';
 
 --
 -- images table: Stores dynamically loaded SVG images
 --
-create table if not exists "oresdb"."images" (
+create table if not exists "ores"."images" (
     "image_id" uuid not null,
     "version" integer not null,
     "key" text not null,
@@ -41,12 +41,12 @@ create table if not exists "oresdb"."images" (
 
 -- Unique constraint on version for current records
 create unique index if not exists images_version_unique_idx
-on "oresdb"."images" (image_id, version)
+on "ores"."images" (image_id, version)
 where valid_to = '9999-12-31 23:59:59'::timestamptz;
 
 -- Unique constraint on key for current records
 create unique index if not exists images_key_unique_idx
-on "oresdb"."images" (key)
+on "ores"."images" (key)
 where valid_to = '9999-12-31 23:59:59'::timestamptz;
 
 create or replace function update_images()
@@ -56,7 +56,7 @@ declare
 begin
     -- Get the current version of the existing record (if any)
     select version into current_version
-    from "oresdb"."images"
+    from "ores"."images"
     where image_id = new.image_id
     and valid_to = '9999-12-31 23:59:59'::timestamptz;
 
@@ -72,7 +72,7 @@ begin
         new.version = current_version + 1;
 
         -- Close the existing record
-        update "oresdb"."images"
+        update "ores"."images"
         set valid_to = current_timestamp
         where image_id = new.image_id
         and valid_to = '9999-12-31 23:59:59'::timestamptz
@@ -94,15 +94,15 @@ end;
 $$ language plpgsql;
 
 create or replace trigger update_images_trigger
-before insert on "oresdb"."images"
+before insert on "ores"."images"
 for each row
 execute function update_images();
 
 -- Use a RULE for soft deletes
 create or replace rule delete_images_rule as
-on delete to "oresdb"."images"
+on delete to "ores"."images"
 do instead
-  update "oresdb"."images"
+  update "ores"."images"
   set valid_to = current_timestamp
   where image_id = old.image_id
   and valid_to = '9999-12-31 23:59:59'::timestamptz;

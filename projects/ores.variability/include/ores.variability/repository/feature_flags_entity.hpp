@@ -30,7 +30,7 @@ namespace ores::variability::repository {
  * @brief Represents a feature flag in the database.
  */
 struct feature_flags_entity {
-    constexpr static const char* schema = "oresdb";
+    constexpr static const char* schema = "ores";
     constexpr static const char* tablename = "feature_flags";
 
     sqlgen::PrimaryKey<std::string> name;

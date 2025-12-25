@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: D6D86317-4961-6754-A6DB-9C12B5FAC997
 :END:
-#+title: PlantUML Modeler Skill
+#+title: PlantUML Class Modeler Skill
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
 #+startup: inlineimages
@@ -9,8 +9,8 @@
 
 #+begin_export markdown
 ---
-name: plantuml-modeler
-description: Concise PlantUML class diagrams for ORE Studio components.
+name: plantuml-class-modeler
+description: PlantUML class diagrams for ORE Studio C++ components.
 license: See LICENSE.txt
 ---
 #+end_export

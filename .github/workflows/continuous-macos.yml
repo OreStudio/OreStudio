@@ -25,7 +25,8 @@ on:  # yamllint disable-line rule:truthy
     branches:
       - main
     paths-ignore:
-      - 'docs/**'
+      - 'doc/**'
+      - '.claude/**'
     tags:
       - '*'
   pull_request:
@@ -33,7 +34,8 @@ on:  # yamllint disable-line rule:truthy
     branches:
       - main
     paths-ignore:
-      - 'docs/**'
+      - 'doc/**'
+      - '.claude/**'
 
 jobs:
   build:

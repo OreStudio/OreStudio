@@ -41,35 +41,35 @@ create schema if not exists ores;
 create extension if not exists btree_gist;
 
 -- Utility functions
-\ir ../utility_functions_create.sql
-\ir ../whimsical_names_create.sql
+\ir ../schema/utility_functions_create.sql
+\ir ../schema/whimsical_names_create.sql
 \ir ./database_functions.sql
 
 -- Core tables
-\ir ../currencies_create.sql
-\ir ../currencies_notify_trigger.sql
-\ir ../accounts_create.sql
-\ir ../accounts_notify_trigger.sql
-\ir ../feature_flags_create.sql
-\ir ../login_info_create.sql
-\ir ../sessions_create.sql
--- \ir ../session_stats_create.sql -- FIXME: disabled until we sort out timescaledb
+\ir ../schema/currencies_create.sql
+\ir ../schema/currencies_notify_trigger.sql
+\ir ../schema/accounts_create.sql
+\ir ../schema/accounts_notify_trigger.sql
+\ir ../schema/feature_flags_create.sql
+\ir ../schema/login_info_create.sql
+\ir ../schema/sessions_create.sql
+-- \ir ../schema/session_stats_create.sql -- FIXME: disabled until we sort out timescaledb
 
 -- RBAC tables
-\ir ../permissions_create.sql
-\ir ../roles_create.sql
-\ir ../role_permissions_create.sql
-\ir ../account_roles_create.sql
-\ir ../rbac_functions_create.sql
+\ir ../schema/permissions_create.sql
+\ir ../schema/roles_create.sql
+\ir ../schema/role_permissions_create.sql
+\ir ../schema/account_roles_create.sql
+\ir ../schema/rbac_functions_create.sql
 
 -- Image/asset tables
-\ir ../images_create.sql
-\ir ../tags_create.sql
-\ir ../image_tags_create.sql
-\ir ../currency_images_create.sql
+\ir ../schema/images_create.sql
+\ir ../schema/tags_create.sql
+\ir ../schema/image_tags_create.sql
+\ir ../schema/currency_images_create.sql
 
 -- Reference data (immutable, belongs in template)
-\ir ../load_flags.sql
-\ir ../flags_populate.sql
-\ir ../currencies_populate.sql
-\ir ../currency_images_populate.sql
+\ir ../data/load_flags.sql
+\ir ../data/flags_populate.sql
+\ir ../data/currencies_populate.sql
+\ir ../data/currency_images_populate.sql

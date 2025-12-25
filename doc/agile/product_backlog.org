@@ -1169,6 +1169,62 @@ Links:
 - [[https://github.com/destrex271/postgresexporter][GH postgresexporter]]: "Unofficial Postgres Exporter for OTEL"
 - [[https://opentelemetry-cpp.readthedocs.io/en/latest/otel_docs/classopentelemetry_1_1sdk_1_1trace_1_1SpanExporter.html][SpanExporter]]: create your own exporter.
 
+*** Instrument components with telemetry context                        :code:
+
+Now that logging has been integrated with telemetry, the next step is to
+instrument key components with the =TLOG_SEV= macro to enable trace correlation.
+
+Tasks:
+
+- Instrument =server_session= with root span on connection, child spans per
+  request.
+- Instrument =client_session= with spans for outgoing requests.
+- Pass =telemetry_context= through message handlers in ores.iam, ores.risk, etc.
+- Add spans for database operations in ores.database.
+
+*** Add trace context propagation to messaging protocol                 :code:
+
+To enable distributed tracing across client and server, trace context needs to
+be propagated in the messaging protocol.
+
+Tasks:
+
+- Extend frame header to include optional trace_id and span_id fields.
+- Update frame serialization/deserialization.
+- Client includes trace context in outgoing request frames.
+- Server extracts trace context and creates child spans linked to client's
+  trace.
+
+*** Create span collection and export infrastructure                    :code:
+
+The telemetry component has span types defined but no infrastructure to collect
+and export completed spans.
+
+Tasks:
+
+- Create =span_collector= interface for accumulating completed spans.
+- Implement =span_exporter= interface (similar to =log_exporter=).
+- Create =file_span_exporter= that writes spans as JSON Lines.
+- Integrate span export with =lifecycle_manager= or create =telemetry_provider=.
+
+*** Add OTLP exporter for OpenTelemetry collector                       :code:
+
+For production observability, export telemetry data to an OpenTelemetry
+collector using the OTLP protocol.
+
+Tasks:
+
+- Add OTLP protocol buffer definitions or use existing C++ OTLP library.
+- Implement =otlp_log_exporter= for log records.
+- Implement =otlp_span_exporter= for traces.
+- Add configuration for collector endpoint.
+- Consider gRPC vs HTTP transport.
+
+Links:
+
+- [[https://opentelemetry.io/docs/specs/otlp/][OTLP Specification]]
+- [[https://github.com/open-telemetry/opentelemetry-cpp][opentelemetry-cpp]]
+
 *** Add chat support                                                   :code:
 
 Links:

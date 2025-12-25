@@ -75,7 +75,7 @@ license: Complete terms in LICENSE.txt
 #+end_src
 
      Updating the following fields:
-        - =GUID=: use =uuid= tool to generate a new UUID.
+        - =GUID=: use =python3 -c "import uuid; print(uuid.uuid4())"= to generate a new UUID.
         - =TITLE=: title for the new skill, short and descriptive, properly
           capitalised.
         - =SKILL-NAME=: must match the folder used by the new skill.

@@ -27,6 +27,7 @@ using the org-mode publishing system.
 
 - [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner]]: Run CMake targets.
 - [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]]: Create a new domain type with all of it's basic services.
+- [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][SQL Schema Creator]]: Create SQL table definitions, triggers, and population scripts.
 - [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][Unit Test Writer]]: Generate Catch2 unit tests following ORE Studio conventions.
 - [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Summary]]: Generate a title and summary for an open PR of the work in this
   branch.

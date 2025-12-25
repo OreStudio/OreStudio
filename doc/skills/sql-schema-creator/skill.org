@@ -1,0 +1,226 @@
+:PROPERTIES:
+:ID: a08fc2a2-4e42-41ec-ac92-d1af50dc61cb
+:END:
+#+title: SQL Schema Creator
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+#+begin_export markdown
+---
+name: sql-schema-creator
+description: Guide for creating SQL table definitions, triggers, and population scripts for ORE Studio.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When you need to add new SQL tables, triggers, or reference data to the ORE
+Studio database. This skill complements the [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]] skill by
+handling the database schema aspects of domain types.
+
+* How to use this skill
+
+1. Gather requirements about the table (name, columns, relationships).
+2. Follow the detailed instructions to create the required SQL files.
+3. Update the orchestration scripts to include the new files.
+4. Test the schema creation.
+
+* Detailed instructions
+
+** SQL file organization
+
+All SQL files are located under =projects/sql/= with the following structure:
+
+- =schema/=: Table creation scripts (=*_create.sql=), trigger scripts (=*_trigger.sql=), and function scripts
+- =drop/=: Drop scripts (=*_drop.sql=) for cleanup and rollback
+- =data/=: Population scripts (=*_populate.sql=) and reference data (SVG flags)
+- =template/=: Template database orchestration (=create_schema.sql=, =database_functions.sql=)
+- =instance/=: Instance-specific initialization (=init_instance.sql=)
+- Root: Entry point scripts (=setup_template.sql=, =create_instance.sql=, etc.)
+
+** Step 1: Create the table definition
+
+Create a file =projects/sql/schema/TABLE_NAME_create.sql=.
+
+The file must include:
+
+1. *GPL license header* (copy from existing files)
+2. *Set schema*: =set schema 'ores';=
+3. *Table definition* with temporal support:
+
+#+begin_src sql
+create table if not exists "ores"."TABLE_NAME" (
+    "id" uuid not null,
+    "version" integer not null,
+    -- domain columns here
+    "modified_by" text not null,
+    "valid_from" timestamp with time zone not null,
+    "valid_to" timestamp with time zone not null,
+    primary key (id, valid_from, valid_to),
+    exclude using gist (
+        id WITH =,
+        tstzrange(valid_from, valid_to) WITH &&
+    ),
+    check ("valid_from" < "valid_to")
+);
+#+end_src
+
+4. *Unique indexes* for current records (using =where valid_to = '9999-12-31 23:59:59'::timestamptz=)
+5. *Version trigger function* for temporal versioning
+6. *Insert/update triggers*
+
+Follow the pattern in =projects/sql/schema/accounts_create.sql=.
+
+** Step 2: Create notification trigger (if needed)
+
+If the table needs real-time notifications, create =projects/sql/schema/TABLE_NAME_notify_trigger.sql=:
+
+#+begin_src sql
+set schema 'ores';
+
+create or replace function notify_TABLE_NAME_changes()
+returns trigger as $$
+begin
+    perform pg_notify('TABLE_NAME_changes', row_to_json(NEW)::text);
+    return NEW;
+end;
+$$ language plpgsql;
+
+create trigger TABLE_NAME_notify_trigger
+after insert or update on "ores"."TABLE_NAME"
+for each row
+execute function notify_TABLE_NAME_changes();
+#+end_src
+
+Follow the pattern in =projects/sql/schema/accounts_notify_trigger.sql=.
+
+** Step 3: Create drop script
+
+Create =projects/sql/drop/TABLE_NAME_drop.sql=:
+
+#+begin_src sql
+set schema 'ores';
+
+drop trigger if exists TABLE_NAME_insert_trigger on "ores"."TABLE_NAME";
+drop trigger if exists TABLE_NAME_update_trigger on "ores"."TABLE_NAME";
+drop function if exists update_TABLE_NAME();
+drop table if exists "ores"."TABLE_NAME";
+#+end_src
+
+If you created a notify trigger, also create =projects/sql/drop/TABLE_NAME_notify_trigger_drop.sql=.
+
+** Step 4: Create population script (if needed)
+
+For reference data, create =projects/sql/data/TABLE_NAME_populate.sql=:
+
+#+begin_src sql
+set schema 'ores';
+
+insert into "ores"."TABLE_NAME" (id, version, ..., modified_by, valid_from, valid_to)
+values
+    (gen_random_uuid(), 1, ..., 'system', current_timestamp, '9999-12-31 23:59:59'::timestamptz),
+    ...
+on conflict do nothing;
+#+end_src
+
+Follow the pattern in =projects/sql/data/currencies_populate.sql=.
+
+** Step 5: Update orchestration scripts
+
+1. Add the new creation script to =projects/sql/template/create_schema.sql=:
+
+#+begin_src sql
+-- In appropriate section (Core tables, RBAC tables, etc.)
+\ir ../schema/TABLE_NAME_create.sql
+\ir ../schema/TABLE_NAME_notify_trigger.sql  -- if applicable
+#+end_src
+
+2. Add the drop script to =projects/sql/drop_all.sql= (in reverse dependency order):
+
+#+begin_src sql
+\ir ./drop/TABLE_NAME_drop.sql
+#+end_src
+
+3. If you have population data, add it to =template/create_schema.sql=:
+
+#+begin_src sql
+-- Reference data section
+\ir ../data/TABLE_NAME_populate.sql
+#+end_src
+
+** Step 6: Test the schema
+
+1. Drop and recreate the template database:
+
+#+begin_src sh
+psql -U postgres -c "DROP DATABASE IF EXISTS ores_template"
+psql -U postgres -f projects/sql/setup_template.sql
+#+end_src
+
+2. Create a test instance:
+
+#+begin_src sh
+psql -U postgres -f projects/sql/create_instance.sql
+#+end_src
+
+3. Verify the table exists:
+
+#+begin_src sh
+psql -U ores -d ores_silent_meadow -c "\d ores.TABLE_NAME"
+#+end_src
+
+* SQL conventions
+
+** Temporal table patterns
+
+All entity tables use bitemporal support with:
+- =valid_from= / =valid_to=: Validity period for the record
+- =version=: Incrementing version number for optimistic concurrency
+- =modified_by=: Username or system identifier that made the change
+- GiST exclusion constraint to prevent overlapping validity periods
+
+** Naming conventions
+
+- Table names: lowercase with underscores (e.g., =account_roles=)
+- Column names: lowercase with underscores
+- Trigger functions: =update_TABLE_NAME()=, =notify_TABLE_NAME_changes()=
+- Indexes: =TABLE_NAME_COLUMN_unique_idx=
+
+** Infinity timestamp
+
+Use ='9999-12-31 23:59:59'::timestamptz= as the "infinity" timestamp for current/active records.
+
+* Integration with Domain Type Creator
+
+When creating a new domain type using the [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]] skill, the SQL
+schema creation is typically done as part of Step 5 (Create repository entity
+and mapper). Use this skill to:
+
+1. Create the table definition matching the entity structure
+2. Add appropriate triggers for versioning and notifications
+3. Update orchestration scripts
+4. Add any reference data population
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

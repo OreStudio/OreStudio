@@ -496,6 +496,127 @@ ores-shell>
 ores-shell> Bye!
 #+end_example
 
+*** Lock
+    :PROPERTIES:
+    :header-args+: :var login_args="--login-username newuser3"
+    :END:
+
+Lock an account to prevent login.
+
+#+name: lock-account
+#+begin_src ores-shell :exports none
+accounts lock e7bddd23-c004-4652-99e1-8d4ff5856fe1
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<lock-account>>
+EOF
+#+END_SRC
+
+*** Unlock
+    :PROPERTIES:
+    :header-args+: :var login_args="--login-username newuser3"
+    :END:
+
+Unlock a previously locked account.
+
+#+name: unlock-account
+#+begin_src ores-shell :exports none
+accounts unlock e7bddd23-c004-4652-99e1-8d4ff5856fe1
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<unlock-account>>
+EOF
+#+END_SRC
+
+*** Account Roles
+    :PROPERTIES:
+    :header-args+: :var login_args="--login-username newuser3"
+    :END:
+
+List roles assigned to an account.
+
+#+name: account-roles
+#+begin_src ores-shell :exports none
+accounts roles e7bddd23-c004-4652-99e1-8d4ff5856fe1
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<account-roles>>
+EOF
+#+END_SRC
+
+*** Account Permissions
+    :PROPERTIES:
+    :header-args+: :var login_args="--login-username newuser3"
+    :END:
+
+List effective permissions for an account.
+
+#+name: account-permissions
+#+begin_src ores-shell :exports none
+accounts permissions e7bddd23-c004-4652-99e1-8d4ff5856fe1
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<account-permissions>>
+EOF
+#+END_SRC
+
+*** Assign Role
+    :PROPERTIES:
+    :header-args+: :var login_args="--login-username newuser3"
+    :END:
+
+Assign a role to an account.
+
+#+name: assign-role
+#+begin_src ores-shell :exports none
+roles list
+accounts assign-role e7bddd23-c004-4652-99e1-8d4ff5856fe1 019b13ea-d4a7-7514-8ae2-0cd90a0e4c23
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<assign-role>>
+EOF
+#+END_SRC
+
+*** Revoke Role
+    :PROPERTIES:
+    :header-args+: :var login_args="--login-username newuser3"
+    :END:
+
+Revoke a role from an account.
+
+#+name: revoke-role
+#+begin_src ores-shell :exports none
+accounts revoke-role e7bddd23-c004-4652-99e1-8d4ff5856fe1 019b13ea-d4a7-7514-8ae2-0cd90a0e4c23
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<revoke-role>>
+EOF
+#+END_SRC
+
 ** Variability
    :PROPERTIES:
    :header-args+: :var login_args="--login-username newuser3"
@@ -579,7 +700,6 @@ ores-shell>
 
 ores-shell> Bye!
 #+end_example
-
 
 
 ** Currencies
@@ -791,6 +911,280 @@ Type 'help' for available commands, 'exit' to quit
 ores-shell> ✓ Currency added successfully!
 ores-shell> Bye!
 #+end_example
+
+
+** RBAC
+   :PROPERTIES:
+   :header-args+: :var login_args="--login-username newuser3"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :END:
+
+Role-Based Access Control functionality for managing permissions and roles.
+
+*** Help Menu Permissions
+
+#+name: help-permissions-exit
+#+begin_src ores-shell :exports none
+permissions
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<help-permissions-exit>>
+EOF
+#+end_src
+
+*** Help Menu Roles
+
+#+name: help-roles-exit
+#+begin_src ores-shell :exports none
+roles
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<help-roles-exit>>
+EOF
+#+end_src
+
+*** List Permissions
+
+List all permissions in the system.
+
+#+name: list-permissions
+#+begin_src ores-shell :exports none
+permissions list
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<list-permissions>>
+EOF
+#+end_src
+
+*** List Roles
+
+List all roles in the system.
+
+#+name: list-roles
+#+begin_src ores-shell :exports none
+roles list
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<list-roles>>
+EOF
+#+end_src
+
+*** Show Role
+
+Show details for a specific role.
+
+#+name: show-role
+#+begin_src ores-shell :exports none
+roles show administrator
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<show-role>>
+EOF
+#+end_src
+
+
+** Events
+   :PROPERTIES:
+   :header-args+: :var login_args="--login-username newuser3"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :END:
+
+Event subscription functionality for receiving notifications from the server.
+
+*** Help Menu
+
+#+name: help-events-exit
+#+begin_src ores-shell :exports none
+events
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<help-events-exit>>
+EOF
+#+end_src
+
+*** Channels
+
+List available event channels.
+
+#+name: events-channels
+#+begin_src ores-shell :exports none
+events channels
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<events-channels>>
+EOF
+#+end_src
+
+*** Listen
+
+Subscribe to notifications for an event type.
+
+#+name: events-listen
+#+begin_src ores-shell :exports none
+events listen ores.risk.currency_changed
+events subscriptions
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<events-listen>>
+EOF
+#+end_src
+
+*** Unlisten
+
+Unsubscribe from notifications.
+
+#+name: events-unlisten
+#+begin_src ores-shell :exports none
+events listen ores.risk.currency_changed
+events unlisten ores.risk.currency_changed
+events subscriptions
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<events-unlisten>>
+EOF
+#+end_src
+
+*** Subscriptions
+
+List active subscriptions.
+
+#+name: events-subscriptions
+#+begin_src ores-shell :exports none
+events subscriptions
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<events-subscriptions>>
+EOF
+#+end_src
+
+*** Notifications
+
+Display and clear pending notifications.
+
+#+name: events-notifications
+#+begin_src ores-shell :exports none
+events notifications
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<events-notifications>>
+EOF
+#+end_src
+
+
+** Compression
+
+Compression settings for client-server communication.
+
+*** Show Status
+
+Show current compression setting.
+
+#+name: compression-status
+#+begin_src ores-shell :exports none
+compression
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<compression-status>>
+EOF
+#+end_src
+
+*** Disable Compression
+
+Disable compression for new connections.
+
+#+name: compression-off
+#+begin_src ores-shell :exports none
+compression off
+compression
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<compression-off>>
+EOF
+#+end_src
+
+*** Enable All Compression
+
+Enable all compression algorithms.
+
+#+name: compression-on-all
+#+begin_src ores-shell :exports none
+compression on
+compression
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<compression-on-all>>
+EOF
+#+end_src
+
+*** Enable Specific Algorithm
+
+Enable a specific compression algorithm (zlib, gzip, or bzip2).
+
+#+name: compression-on-zlib
+#+begin_src ores-shell :exports none
+compression on zlib
+compression
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<compression-on-zlib>>
+EOF
+#+end_src
 
 
 * Footer

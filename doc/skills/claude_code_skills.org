@@ -39,6 +39,10 @@ using the org-mode publishing system.
 - [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][Component Creator]]: Create new components in the ORE Studio product.
 - [[id:f8a12c4e-9b3d-4e5f-a1c2-8d7e6f5a4b3c][Binary Protocol Developer]]: Guide for extending and modifying the ORE Studio binary messaging protocol.
 
+** Design
+
+- [[id:460c89da-50d2-40c3-88b2-be52e430d170][Brainstorming]]: Explore user intent, requirements and design through collaborative dialogue before implementation.
+
 ** Code Review
 
 - [[id:04ca6bd9-7739-4213-a9dc-17aaace43252][Code Review PR]]: Review pull request changes for code quality, conventions, and correctness.

@@ -17,32 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-\ir ./create_database.sql
-\ir ./utility_functions_create.sql
-\ir ./whimsical_names_create.sql
-\ir ./currencies_create.sql
-\ir ./currencies_notify_trigger.sql
-\ir ./accounts_create.sql
-\ir ./accounts_notify_trigger.sql
-\ir ./feature_flags_create.sql
-\ir ./login_info_create.sql
-\ir ./sessions_create.sql
--- \ir ./session_stats_create.sql -- FIXME: disabled until we sort out timescaledb
-\ir ./permissions_create.sql
-\ir ./roles_create.sql
-\ir ./role_permissions_create.sql
-\ir ./account_roles_create.sql
-\ir ./rbac_functions_create.sql
-\ir ./images_create.sql
-\ir ./tags_create.sql
-\ir ./image_tags_create.sql
-\ir ./currency_images_create.sql
 
-\ir ./bootstrap_mode_setup.sql
-\ir ./disable_password_validation_setup.sql
+/**
+ * DEPRECATED: This file is kept for backwards compatibility.
+ *
+ * The SQL scripts have been reorganized. Please use:
+ *
+ *   - setup_template.sql      : Create the template database (one-time setup)
+ *   - create_instance.sql     : Create instance from template (fast, recommended)
+ *   - create_database_direct.sql : Create database without template (slower)
+ *
+ * This file now delegates to the new structure.
+ */
 
--- Populate reference data
-\ir ./load_flags.sql
-\ir ./flags_populate.sql
-\ir ./currencies_populate.sql
-\ir ./currency_images_populate.sql
+\echo ''
+\echo 'WARNING: create_all.sql is deprecated.'
+\echo 'Please use the new organized scripts instead.'
+\echo ''
+\echo 'See: setup_template.sql, create_instance.sql, create_database_direct.sql'
+\echo ''
+
+-- Include schema creation (for backwards compatibility when run in existing database)
+\ir ./template/create_schema.sql
+
+-- Include instance initialization
+\ir ./instance/init_instance.sql

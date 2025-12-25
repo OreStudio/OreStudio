@@ -19,19 +19,18 @@
  */
 
 /**
- * DEPRECATED: This file is kept for backwards compatibility.
+ * Instance Initialization Script
  *
- * Creates a database named 'ores' using the direct creation method.
+ * This script initializes instance-specific data that should NOT be
+ * part of the template. Each new database instance needs to run this
+ * after creation.
  *
- * For new usage, please use:
- *   - create_instance.sql     : Create from template with whimsical name (fast)
- *   - create_database_direct.sql : Create without template (specify any name)
+ * Includes:
+ * - Bootstrap mode feature flag (instance-specific state)
+ * - Password validation flag (development/production config)
+ *
+ * This script is idempotent and can be safely run multiple times.
  */
 
-\echo ''
-\echo 'WARNING: create_database.sql is deprecated.'
-\echo 'Using create_database_direct.sql with default name "ores"'
-\echo ''
-
-\set db_name 'ores'
-\ir ./create_database_direct.sql
+\ir ../bootstrap_mode_setup.sql
+\ir ../disable_password_validation_setup.sql

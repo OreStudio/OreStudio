@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+\ir ./template/database_functions_drop.sql
 \ir ./currency_images_drop.sql
 \ir ./image_tags_drop.sql
 \ir ./tags_drop.sql

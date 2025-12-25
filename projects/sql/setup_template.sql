@@ -17,7 +17,29 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
--- Drop template database if it exists
+
+/**
+ * Template Database Setup
+ *
+ * Creates the ores_template database which serves as a blueprint for
+ * creating new ORES database instances quickly.
+ *
+ * USAGE:
+ *   psql -U postgres -f setup_template.sql
+ *
+ * PREREQUISITES:
+ *   - PostgreSQL superuser access
+ *   - The 'ores' user must exist (run setup.sql first)
+ *
+ * After running this script, create new instances using:
+ *   psql -U postgres -f create_instance.sql
+ *
+ * Or for a specific name:
+ *   psql -U postgres -v db_name='my_database' -f create_instance.sql
+ */
+
+-- Drop template database if it exists (requires superuser)
+-- Uncomment these lines to recreate the template:
 -- update pg_database set datistemplate = false where datname = 'ores_template';
 -- drop database if exists ores_template;
 
@@ -30,11 +52,20 @@ grant all privileges on database ores_template to ores;
 -- Connect to template database to create schema
 \c ores_template
 
--- Run all schema creation scripts
-\ir ./create_database.sql
-\ir ./create_all.sql
+-- Create the complete schema (tables, functions, reference data)
+\ir ./template/create_schema.sql
 
--- Mark database as template to prevent accidental direct connections
--- NOTE: This requires superuser privileges, so it's commented out
--- The database will still work as a template without this
--- update pg_database set datistemplate = true where datname = 'ores_template';
+-- NOTE: Instance-specific initialization (feature flags) is NOT included here.
+-- Each instance created from this template should run instance/init_instance.sql
+
+\echo ''
+\echo '=========================================='
+\echo 'Template database created successfully!'
+\echo '=========================================='
+\echo ''
+\echo 'To create a new instance with a whimsical name:'
+\echo '  psql -U postgres -f create_instance.sql'
+\echo ''
+\echo 'To create an instance with a specific name:'
+\echo '  psql -U postgres -v db_name=my_database -f create_instance.sql'
+\echo ''

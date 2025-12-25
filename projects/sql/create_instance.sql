@@ -38,6 +38,11 @@
  * OUTPUT:
  *   Creates a fully-configured database with all tables, functions, and
  *   reference data. Instance-specific feature flags are initialized.
+ *
+ * NOTE: When using auto-generated names, there is a small race condition
+ * window between name generation and database creation. If running multiple
+ * instances of this script concurrently, consider using explicit db_name
+ * parameters to avoid potential conflicts.
  */
 
 \set ON_ERROR_STOP on

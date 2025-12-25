@@ -37,7 +37,7 @@ target_link_libraries(${exe_binary_name} PRIVATE
     ores.iam.lib
     ores.eventing.lib
     ores.telemetry.lib
-        ores.utility.lib
+    ores.utility.lib
     Boost::process
     Qt6::Core
     Qt6::Gui

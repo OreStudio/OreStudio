@@ -23,7 +23,6 @@
 #include <string>
 #include <vector>
 #include <cstdint>
-#include "ores.telemetry/log/make_logger.hpp"
 
 namespace ores::utility::converter {
 
@@ -31,16 +30,6 @@ namespace ores::utility::converter {
  * @brief Minimal Base64 encoder.
  */
 class base64_converter {
-private:
-    inline static std::string_view logger_name =
-        "ores.utility.converter.base64_converter";
-
-    [[nodiscard]] static auto& lg() {
-        using namespace ores::telemetry::log;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
 public:
     /**
      * @brief Convert to Base64.

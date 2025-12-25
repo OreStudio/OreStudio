@@ -21,7 +21,6 @@
 #define ORES_UTILITY_STRING_CONVERTER_HPP
 
 #include <string>
-#include "ores.telemetry/log/make_logger.hpp"
 
 namespace ores::utility::string {
 
@@ -29,15 +28,6 @@ namespace ores::utility::string {
  * @brief Type conversion utilities.
  */
 class converter {
-private:
-    inline static std::string_view logger_name = "ores.utility.string.converter";
-
-    static auto& lg() {
-        using namespace ores::telemetry::log;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
 public:
     /**
      * @brief Converts a string into an integer.

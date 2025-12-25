@@ -24,10 +24,7 @@
 
 namespace ores::utility::string {
 
-using namespace ores::telemetry::log;
-
 int converter::string_to_int(std::string s, int base) {
-    BOOST_LOG_SEV(lg(), debug) << "Converting to int: " << s;
     int r;
     auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), r, base);
 
@@ -36,16 +33,12 @@ int converter::string_to_int(std::string s, int base) {
     const std::string other_conversion_error("Unspecified conversion error: ");
 
      if (ec == std::errc()) {
-        BOOST_LOG_SEV(lg(), debug) << "Converted successfully: " << r;
         return r;
      } else if (ec == std::errc::invalid_argument) {
-        BOOST_LOG_SEV(lg(), error) << invalid_argument << s;
         BOOST_THROW_EXCEPTION(conversion_error(invalid_argument + s));
     } else if (ec == std::errc::result_out_of_range) {
-        BOOST_LOG_SEV(lg(), error) << invalid_argument << s;
         BOOST_THROW_EXCEPTION(conversion_error(out_of_range + s));
      } else {
-         BOOST_LOG_SEV(lg(), error) << other_conversion_error << s;
          BOOST_THROW_EXCEPTION(conversion_error(other_conversion_error + s));
      }
 }

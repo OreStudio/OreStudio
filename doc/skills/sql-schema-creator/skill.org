@@ -166,10 +166,10 @@ psql -U postgres -f projects/sql/setup_template.sql
 psql -U postgres -f projects/sql/create_instance.sql
 #+end_src
 
-3. Verify the table exists:
+3. Verify the table exists (use the database name printed by =create_instance.sql=):
 
 #+begin_src sh
-psql -U ores -d ores_silent_meadow -c "\d ores.TABLE_NAME"
+psql -U ores -d <your_database_name> -c "\d ores.TABLE_NAME"
 #+end_src
 
 * SQL conventions

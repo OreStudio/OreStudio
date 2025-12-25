@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: 30D0AE60-5892-411C-8013-E858FFBF628B
+:END:
+#+title: ORE Shell Recipes Skill
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+#+begin_export markdown
+---
+name: ores-shell-recipes
+description: Update shell recipes by comparing commands to the recipe documentation.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Use this skill when:
+- The user wants to update the ORE Studio Shell recipes documentation
+- New shell commands have been added and need to be documented
+- Existing shell commands have changed and recipes need updating
+
+* How to use this skill
+
+1. Compare the commands in =projects/ores.shell/src/app/commands= to
+   =doc/recipes/shell_recipes.org=.
+2. Identify any missing commands that are not documented.
+3. Add recipes for missing commands following the existing pattern.
+4. Use the Detailed Instructions section for the proper recipe format.
+
+* Detailed instructions
+
+** Recipe file location
+
+The shell recipes are stored in =doc/recipes/shell_recipes.org=. This file
+demonstrates all functionality available in the ORE Studio Shell.
+
+** Command source locations
+
+Commands are implemented in the following files:
+- =projects/ores.shell/src/app/commands/accounts_commands.cpp=: Account management
+- =projects/ores.shell/src/app/commands/rbac_commands.cpp=: Role-based access control
+- =projects/ores.shell/src/app/commands/currencies_commands.cpp=: Currency management
+- =projects/ores.shell/src/app/commands/variability_commands.cpp=: Feature flags
+- =projects/ores.shell/src/app/commands/subscription_commands.cpp=: Event subscriptions
+- =projects/ores.shell/src/app/commands/compression_commands.cpp=: Compression settings
+- =projects/ores.shell/src/app/commands/connection_commands.cpp=: Server connectivity
+
+** Recipe format
+
+Each recipe follows this pattern:
+
+#+begin_src fundamental
+*** Recipe Name
+    :PROPERTIES:
+    :header-args+: :var login_args="--login-username newuser3"
+    :END:
+
+Description of what this recipe demonstrates.
+
+#+name: recipe-name
+#+begin_src ores-shell :exports none
+command1
+command2
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<recipe-name>>
+EOF
+#+end_src
+#+end_src
+
+** Recipe sections
+
+Recipes are organized into sections:
+
+- *General*: Help, version, and basic REPL commands
+- *Connectivity*: Connect, disconnect, auto-connect
+- *Accounts*: Bootstrap, login, logout, create, list, lock, unlock, roles
+- *Variability*: Feature flag management
+- *Currencies*: Currency CRUD operations
+- *RBAC*: Permissions and roles management
+- *Events*: Event subscriptions and notifications
+- *Compression*: Compression settings
+
+** Adding a new recipe
+
+1. Identify which section the command belongs to.
+2. Create a named src block with the ores-shell commands (=#+name: recipe-name=).
+3. Create a sh src block that invokes ores.shell with the named block using noweb.
+4. Include appropriate properties (login_args, connect_args) based on whether authentication is required.
+5. Add a descriptive paragraph explaining what the recipe demonstrates.
+
+** Recipe naming conventions
+
+- Use lowercase with dashes: =lock-account=, =list-permissions=
+- Be descriptive: =currencies-add= not just =add=
+- Group related commands: =events-listen=, =events-unlisten=
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

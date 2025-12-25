@@ -242,24 +242,11 @@ Follow the test patterns in =projects/ores.accounts.tests/=.
 
 ** Step 9: Build and verify
 
-1. Reconfigure CMake to pick up new files:
+Using the [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner]] skill:
 
-#+begin_src sh
-cmake --preset linux-clang-debug
-#+end_src
-
-2. Build the project:
-
-#+begin_src sh
-cmake --build --preset linux-clang-debug --target COMPONENT.lib
-#+end_src
-
-3. Build and run tests:
-
-#+begin_src sh
-cmake --build --preset linux-clang-debug --target COMPONENT.tests
-./build/output/linux-clang-debug/publish/bin/COMPONENT.tests
-#+end_src
+1. Configure the project (reconfigure to pick up new files).
+2. Build the component library (=COMPONENT.lib= target).
+3. Build and run the component tests (=test_COMPONENT.tests= target).
 
 * Common patterns and conventions
 

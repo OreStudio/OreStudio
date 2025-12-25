@@ -703,7 +703,7 @@ Successfully added account: newuser5 (ID: e7bddd23-c004-4652-99e1-8d4ff5856fe1)
 export ORES_CLI_DB_PASSWORD
 ./ores.cli accounts add ${db_args} ${log_args} \
   --username adminuser2 --email adminuser2@example.com \
-  --password "Admin-Password-456" --is-admin --modified-by admin
+  --password "Admin-Password-456" --admin --modified-by admin
 #+end_src
 
 #+RESULTS:

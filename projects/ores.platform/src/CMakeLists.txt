@@ -41,6 +41,7 @@ target_link_libraries(${lib_target_name}
         Boost::exception
     PRIVATE
         Boost::process
+        ores.telemetry.lib
         ores.utility.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

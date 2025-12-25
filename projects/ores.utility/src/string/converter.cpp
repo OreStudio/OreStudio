@@ -24,7 +24,7 @@
 
 namespace ores::utility::string {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 int converter::string_to_int(std::string s, int base) {
     BOOST_LOG_SEV(lg(), debug) << "Converting to int: " << s;

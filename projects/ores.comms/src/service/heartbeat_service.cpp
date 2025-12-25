@@ -26,7 +26,7 @@ namespace ores::comms::service {
 
 using messaging::create_pong_frame;
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 boost::asio::awaitable<void> heartbeat_service::handle_ping(
     net::connection& conn,

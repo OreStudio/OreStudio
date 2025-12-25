@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/log/logging_options_validator.hpp"
+#include "ores.telemetry/log/logging_options_validator.hpp"
 
 #include <boost/throw_exception.hpp>
 #include <boost/filesystem/operations.hpp>
-#include "ores.utility/log/severity_level.hpp"
-#include "ores.utility/log/logging_exception.hpp"
+#include "ores.telemetry/log/boost_severity.hpp"
+#include "ores.telemetry/log/logging_exception.hpp"
 
-namespace ores::utility::log {
+namespace ores::telemetry::log {
 
 void logging_options_validator::validate(const logging_options& cfg) {
     /*
@@ -49,7 +49,7 @@ void logging_options_validator::validate(const logging_options& cfg) {
     /*
      * Attempt to convert severity. Function throws if invalid.
      */
-    to_severity_level(cfg.severity);
+    to_boost_severity(cfg.severity);
 }
 
 }

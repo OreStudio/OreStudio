@@ -39,6 +39,7 @@ target_link_libraries(${lib_target_name}
         ores.variability.lib
         ores.comms.lib
     PRIVATE
+        ores.telemetry.lib
         ores.utility.lib
         ores.database.lib
         faker-cxx::faker-cxx

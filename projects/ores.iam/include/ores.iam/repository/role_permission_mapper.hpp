@@ -22,7 +22,7 @@
 
 #include "ores.iam/domain/role_permission.hpp"
 #include "ores.iam/repository/role_permission_entity.hpp"
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
 namespace ores::iam::repository {
 
@@ -35,7 +35,7 @@ private:
         "ores.iam.repository.role_permission_mapper";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

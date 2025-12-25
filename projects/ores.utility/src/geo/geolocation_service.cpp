@@ -23,7 +23,7 @@
 
 namespace ores::utility::geo {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 struct geolocation_service::impl {
     MMDB_s mmdb;

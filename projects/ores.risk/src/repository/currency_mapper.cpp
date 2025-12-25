@@ -24,7 +24,7 @@
 
 namespace ores::risk::repository {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using namespace ores::database::repository;
 
 domain::currency currency_mapper::map(const currency_entity& v) {

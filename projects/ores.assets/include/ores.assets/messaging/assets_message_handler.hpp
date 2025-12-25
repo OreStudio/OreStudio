@@ -21,7 +21,7 @@
 #define ORES_ASSETS_MESSAGING_ASSETS_MESSAGE_HANDLER_HPP
 
 #include "ores.comms/messaging/message_handler.hpp"
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.assets/repository/image_repository.hpp"
 #include "ores.assets/repository/currency_image_repository.hpp"
@@ -44,7 +44,7 @@ private:
         "ores.assets.messaging.assets_message_handler";
 
    static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

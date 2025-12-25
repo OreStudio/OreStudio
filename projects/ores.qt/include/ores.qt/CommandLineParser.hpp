@@ -24,7 +24,7 @@
 #include <optional>
 #include <QCoreApplication>
 #include <QCommandLineParser>
-#include "ores.utility/log/logging_options.hpp"
+#include "ores.telemetry/log/logging_options.hpp"
 
 namespace ores::qt {
 

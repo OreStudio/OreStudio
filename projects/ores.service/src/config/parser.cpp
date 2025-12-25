@@ -26,7 +26,7 @@
 #include "ores.comms/net/server_options.hpp"
 #include "ores.service/config/parser_exception.hpp"
 #include "ores.utility/version/version.hpp"
-#include "ores.utility/log/logging_configuration.hpp"
+#include "ores.telemetry/log/logging_configuration.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
 namespace {
@@ -59,7 +59,7 @@ using ores::service::config::parser_exception;
  */
 options_description make_options_description() {
     using ores::database::database_configuration;
-    using ores::utility::log::logging_configuration;
+    using ores::telemetry::log::logging_configuration;
 
     options_description god("General");
     god.add_options()
@@ -171,7 +171,7 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     }
 
     // Parse configuration
-    using ores::utility::log::logging_configuration;
+    using ores::telemetry::log::logging_configuration;
 
     options r;
     r.logging = logging_configuration::read_options(vm);

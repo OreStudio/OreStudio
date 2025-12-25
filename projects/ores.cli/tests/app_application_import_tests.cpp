@@ -22,7 +22,7 @@
 #include <sstream>
 #include <filesystem>
 #include <catch2/catch_test_macros.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.cli/config/options.hpp"
@@ -39,7 +39,7 @@ const std::string tags("[import]");
 
 using namespace ores;
 using namespace ores::cli;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("import_currencies_from_test_file", tags) {
     auto lg(make_logger(test_suite));

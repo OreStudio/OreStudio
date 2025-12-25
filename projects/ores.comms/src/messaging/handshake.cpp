@@ -21,14 +21,14 @@
 
 #include <rfl.hpp>
 #include <rfl/bson.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
 namespace {
 
 std::string_view logger_name = "ores.comms.messaging.handshake";
 
 auto& lg() {
-    using namespace ores::utility::log;
+    using namespace ores::telemetry::log;
     static auto instance = make_logger(logger_name);
     return instance;
 }
@@ -37,7 +37,7 @@ auto& lg() {
 
 namespace ores::comms::messaging {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 std::vector<std::byte>
 handshake_request::serialize(handshake_request v) {

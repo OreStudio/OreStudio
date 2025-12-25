@@ -25,7 +25,7 @@
 
 namespace ores::shell::app::commands {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using comms::messaging::COMPRESSION_SUPPORT_ZLIB;
 using comms::messaging::COMPRESSION_SUPPORT_GZIP;
 using comms::messaging::COMPRESSION_SUPPORT_BZIP2;

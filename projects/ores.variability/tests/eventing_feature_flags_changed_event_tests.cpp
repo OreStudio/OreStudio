@@ -24,7 +24,7 @@
 #include <thread>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
 namespace {
 
@@ -36,7 +36,7 @@ const std::string tags("[eventing]");
 using ores::variability::eventing::feature_flags_changed_event;
 using ores::eventing::domain::event_traits;
 using ores::eventing::domain::has_event_traits;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("event_traits_feature_flags_changed_event", tags) {
     auto lg(make_logger(test_suite));

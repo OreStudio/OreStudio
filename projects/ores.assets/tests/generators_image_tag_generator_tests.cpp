@@ -19,7 +19,7 @@
  */
 #include <set>
 #include <catch2/catch_test_macros.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.assets/domain/image_tag.hpp" // IWYU pragma: keep.
 #include "ores.assets/domain/image_tag_json_io.hpp" // IWYU pragma: keep.
@@ -33,7 +33,7 @@ const std::string tags("[generators]");
 }
 
 using namespace ores::assets::generators;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("generate_single_image_tag", tags) {
     auto lg(make_logger(test_suite));

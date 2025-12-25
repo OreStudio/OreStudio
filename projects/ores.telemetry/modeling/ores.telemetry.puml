@@ -16,12 +16,12 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 @startuml
 
-title ores.telemetry Component - OpenTelemetry-Aligned Distributed Tracing
+title ores.telemetry Component - Observability (Tracing, Logging, Export)
 
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
-    note "Telemetry component providing distributed tracing,\nlog correlation, and observability context.\nAligned with OpenTelemetry specification." as ores_telemetry_note
+    note "Unified observability component providing:\n- Distributed tracing (OpenTelemetry-aligned)\n- Logging infrastructure (Boost.Log-based)\n- Log correlation with traces\n- Telemetry export (JSON, OTLP)" as ores_telemetry_note
     telemetry --- ores_telemetry_note
 
     namespace telemetry #E8F4E8 {
@@ -185,6 +185,89 @@ namespace ores #F2F2F2 {
 
             trace_id_generator ..> domain::trace_id : creates
             span_id_generator ..> domain::span_id : creates
+        }
+
+        namespace log #E8E8F4 {
+            note "Logging infrastructure built on Boost.Log\nwith telemetry integration for log correlation." as log_note
+
+            enum boost_severity {
+                trace
+                debug
+                info
+                warn
+                error
+            }
+            note right of boost_severity
+                Internal enum for Boost.Log.
+                Maps to domain::severity_level.
+            end note
+
+            class lifecycle_manager <<class>> {
+                -file_sink_ : shared_ptr<file_sink_type>
+                -console_sink_ : shared_ptr<console_sink_type>
+                -telemetry_sink_ : shared_ptr<telemetry_sink_type>
+                --
+                +lifecycle_manager(options)
+                +~lifecycle_manager()
+                +add_telemetry_sink(resource, handler)
+            }
+            note right of lifecycle_manager
+                Manages Boost.Log sinks:
+                console, file, and telemetry.
+            end note
+
+            class telemetry_sink_backend <<class>> {
+                -resource_ : shared_ptr<resource>
+                -handler_ : log_record_handler
+                --
+                +telemetry_sink_backend(resource, handler)
+                +consume(record_view)
+            }
+            note bottom of telemetry_sink_backend
+                Boost.Log sink that converts
+                log records to telemetry format
+                with trace/span correlation.
+            end note
+
+            class logging_options <<struct>> {
+                +severity : string
+                +filename : string
+                +output_to_console : bool
+                +output_directory : path
+                +tag : string
+            }
+
+            lifecycle_manager o-- telemetry_sink_backend
+            telemetry_sink_backend ..> domain::log_record : creates
+            telemetry_sink_backend o-- domain::resource
+        }
+
+        namespace exp #F4E8E8 {
+            note "Exporters for telemetry data." as exp_note
+
+            interface log_exporter <<interface>> {
+                +export_record(log_record)
+                +flush()
+                +shutdown()
+            }
+
+            class file_log_exporter <<class>> {
+                -mutex_ : mutex
+                -file_ : ofstream
+                -is_open_ : bool
+                --
+                +file_log_exporter(path)
+                +export_record(log_record)
+                +flush()
+                +shutdown()
+            }
+            note right of file_log_exporter
+                Exports log records as
+                JSON Lines format.
+            end note
+
+            file_log_exporter ..|> log_exporter
+            log_exporter ..> domain::log_record : exports
         }
     }
 }

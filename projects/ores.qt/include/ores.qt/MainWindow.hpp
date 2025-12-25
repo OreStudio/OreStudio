@@ -30,7 +30,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/MdiAreaWithBackground.hpp"
 #include "ores.eventing/service/event_bus.hpp"
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ui_MainWindow.h"
 
 namespace Ui {
@@ -76,7 +76,7 @@ private:
     inline static std::string_view logger_name = "ores.qt.main_window";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

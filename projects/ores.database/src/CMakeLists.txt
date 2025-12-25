@@ -38,6 +38,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         sqlgen::sqlgen
     PRIVATE
+        ores.telemetry.lib
         ores.utility.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

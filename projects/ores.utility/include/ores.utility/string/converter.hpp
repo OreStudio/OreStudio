@@ -21,7 +21,7 @@
 #define ORES_UTILITY_STRING_CONVERTER_HPP
 
 #include <string>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
 namespace ores::utility::string {
 
@@ -33,7 +33,7 @@ private:
     inline static std::string_view logger_name = "ores.utility.string.converter";
 
     static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

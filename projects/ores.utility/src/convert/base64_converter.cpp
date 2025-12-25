@@ -27,7 +27,7 @@
 
 namespace ores::utility::converter {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 std::string base64_converter::convert(const std::vector<unsigned char>& data) {
     BIO *bio = nullptr, *b64 = nullptr;

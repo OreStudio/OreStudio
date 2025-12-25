@@ -28,7 +28,7 @@
 
 namespace ores::shell::app::commands {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using comms::net::client_session;
 using utility::datetime::datetime;
 

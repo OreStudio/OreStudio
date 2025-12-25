@@ -21,7 +21,7 @@
 #define ORES_TESTING_DATABASE_HELPER_HPP
 
 #include <string>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 
 namespace ores::testing {
@@ -35,7 +35,7 @@ private:
         "ores.testing.database_helper";
 
     static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

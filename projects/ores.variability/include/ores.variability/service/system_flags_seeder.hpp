@@ -21,7 +21,7 @@
 #define ORES_VARIABILITY_SERVICE_SYSTEM_FLAGS_SEEDER_HPP
 
 #include <string_view>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.variability/service/feature_flags_service.hpp"
 
@@ -46,7 +46,7 @@ private:
         "ores.variability.service.system_flags_seeder";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

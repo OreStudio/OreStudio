@@ -26,7 +26,7 @@
 
 namespace ores::iam::repository {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using namespace ores::database::repository;
 
 domain::login_info login_info_mapper::map(const login_info_entity& v) {

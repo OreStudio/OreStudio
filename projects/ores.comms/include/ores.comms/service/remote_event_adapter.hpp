@@ -27,7 +27,7 @@
 #include <functional>
 #include <string_view>
 #include <boost/asio/awaitable.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.comms/net/client.hpp"
 
 namespace ores::comms::service {
@@ -50,7 +50,7 @@ private:
         "ores.comms.service.remote_event_adapter";
 
     static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

@@ -27,7 +27,7 @@
 
 namespace ores::iam::service {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using error_code = ores::comms::messaging::error_code;
 
 signup_service::signup_service(database::context ctx,

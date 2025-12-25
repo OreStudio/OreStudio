@@ -21,7 +21,7 @@
 #define ORES_ASSETS_MESSAGING_REGISTRAR_HPP
 
 #include "ores.comms/net/server.hpp"
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 
 namespace ores::assets::messaging {
@@ -41,7 +41,7 @@ private:
         "ores.assets.messaging.registrar";
 
     static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

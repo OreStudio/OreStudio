@@ -32,7 +32,7 @@
 
 namespace ores::iam::messaging {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using comms::messaging::message_type;
 
 accounts_message_handler::accounts_message_handler(database::context ctx,

@@ -24,7 +24,7 @@
 
 namespace ores::iam::service {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 namespace perms = domain::permissions;
 namespace roles = domain::roles;
 

@@ -21,7 +21,7 @@
 #define ORES_IAM_REPOSITORY_SESSION_MAPPER_HPP
 
 #include <vector>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.iam/domain/session.hpp"
 #include "ores.iam/repository/session_entity.hpp"
 
@@ -36,7 +36,7 @@ private:
         "ores.iam.repository.session_mapper";
 
     static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

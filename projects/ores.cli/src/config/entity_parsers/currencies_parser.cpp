@@ -27,7 +27,7 @@
 #include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/add_currency_options.hpp"
 #include "ores.database/config/database_configuration.hpp"
-#include "ores.utility/log/logging_configuration.hpp"
+#include "ores.telemetry/log/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
 
 namespace ores::cli::config::entity_parsers {
@@ -282,7 +282,7 @@ handle_currencies_command(bool has_help,
 
     // Read common options
     using ores::database::database_configuration;
-    using ores::utility::log::logging_configuration;
+    using ores::telemetry::log::logging_configuration;
     r.database = database_configuration::read_options(vm);
     r.logging = logging_configuration::read_options(vm);
 

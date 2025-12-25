@@ -31,7 +31,7 @@ using namespace boost::asio::experimental::awaitable_operators;
 
 namespace ores::comms::net {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 server_session::server_session(std::unique_ptr<connection> conn, std::string server_id,
     std::shared_ptr<messaging::message_dispatcher> dispatcher,

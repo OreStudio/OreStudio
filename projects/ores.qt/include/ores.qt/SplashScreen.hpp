@@ -24,7 +24,7 @@
 #include <QSplashScreen>
 #include <QApplication>
 #include <QTimer>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
 namespace ores::qt {
 
@@ -36,7 +36,7 @@ private:
     inline static std::string_view logger_name = "ores.qt.splash_screen";
 
     static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

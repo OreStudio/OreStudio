@@ -33,6 +33,7 @@ target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
         ores.risk.lib
+        ores.telemetry.lib
         ores.utility.lib
         ores.testing.lib
         Catch2::Catch2

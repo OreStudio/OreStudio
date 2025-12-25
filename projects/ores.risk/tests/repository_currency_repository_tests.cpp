@@ -23,7 +23,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.risk/domain/currency.hpp" // IWYU pragma: keep.
@@ -42,7 +42,7 @@ using namespace ores::risk::generators;
 using ores::risk::domain::currency;
 using ores::risk::repository::currency_repository;
 using ores::testing::scoped_database_helper;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("write_single_currency", tags) {
     auto lg(make_logger(test_suite));

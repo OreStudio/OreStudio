@@ -23,7 +23,7 @@
 
 namespace ores::assets::repository {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using namespace ores::database::repository;
 
 domain::tag tag_mapper::map(const tag_entity& v) {

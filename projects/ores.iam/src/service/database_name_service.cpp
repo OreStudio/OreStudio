@@ -25,7 +25,7 @@
 
 namespace ores::iam::service {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 namespace {
 

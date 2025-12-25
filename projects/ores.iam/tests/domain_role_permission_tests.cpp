@@ -23,7 +23,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
 namespace {
 
@@ -33,7 +33,7 @@ const std::string tags("[domain]");
 }
 
 using ores::iam::domain::role_permission;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("create_role_permission_with_valid_uuids", tags) {
     auto lg(make_logger(test_suite));

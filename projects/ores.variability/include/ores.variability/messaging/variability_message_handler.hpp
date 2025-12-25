@@ -21,7 +21,7 @@
 #define ORES_VARIABILITY_MESSAGING_VARIABILITY_MESSAGE_HANDLER_HPP
 
 #include "ores.comms/messaging/message_handler.hpp"
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.variability/repository/feature_flags_repository.hpp"
 
@@ -42,7 +42,7 @@ private:
         "ores.variability.messaging.variability_message_handler";
 
    static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

@@ -24,7 +24,7 @@
 #include <optional>
 #include <vector>
 #include <sqlgen/postgres.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/helpers.hpp"
 
@@ -64,7 +64,7 @@ template<typename EntityType, typename DomainType, typename QueryType, typename 
 std::vector<DomainType> execute_read_query(context ctx, const QueryType& query,
     MapperFunc&& mapper, utility::log::logger_t& lg, const std::string& operation_desc) {
 
-    using namespace ores::utility::log;
+    using namespace ores::telemetry::log;
     using namespace sqlgen;
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
@@ -102,7 +102,7 @@ template<typename EntityType>
 void execute_write_query(context ctx, const EntityType& entity,
     utility::log::logger_t& lg, const std::string& operation_desc) {
 
-    using namespace ores::utility::log;
+    using namespace ores::telemetry::log;
     using namespace sqlgen;
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
@@ -139,7 +139,7 @@ template<typename QueryType>
 void execute_delete_query(context ctx, const QueryType& query,
     utility::log::logger_t& lg, const std::string& operation_desc) {
 
-    using namespace ores::utility::log;
+    using namespace ores::telemetry::log;
     using namespace sqlgen;
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ".";

@@ -26,7 +26,7 @@
 
 namespace ores::qt {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 RoleDetailDialog::RoleDetailDialog(QWidget* parent)
     : QWidget(parent),

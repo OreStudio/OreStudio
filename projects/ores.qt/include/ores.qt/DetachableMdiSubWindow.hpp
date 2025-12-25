@@ -25,7 +25,7 @@
 #include <QPointer>
 #include <QPoint>
 #include <QSize>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
 namespace ores::qt {
 
@@ -44,7 +44,7 @@ private:
         "ores.qt.detachable_mdi_sub_window";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

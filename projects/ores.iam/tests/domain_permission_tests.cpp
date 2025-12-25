@@ -22,7 +22,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.iam/domain/permission_json_io.hpp" // IWYU pragma: keep.
 
 namespace {
@@ -34,7 +34,7 @@ const std::string tags("[domain]");
 
 using ores::iam::domain::permission;
 using namespace ores::iam::domain::permissions;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("create_permission_with_valid_fields", tags) {
     auto lg(make_logger(test_suite));

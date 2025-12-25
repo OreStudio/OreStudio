@@ -28,7 +28,7 @@ namespace ores::variability::repository {
 
 using namespace sqlgen;
 using namespace sqlgen::literals;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using namespace ores::database::repository;
 
 std::string feature_flags_repository::sql() {

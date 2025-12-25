@@ -52,7 +52,7 @@ void send_notify(const sqlgen::postgres::Credentials& credentials,
 
 }
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using namespace ores::eventing::domain;
 using namespace ores::eventing::service;
 using namespace ores::eventing::generators;

@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/log/logging_configuration.hpp"
+#include "ores.telemetry/log/logging_configuration.hpp"
 
 #include <format>
 #include <boost/throw_exception.hpp>
-#include "ores.utility/log/severity_level.hpp"
-#include "ores.utility/log/logging_exception.hpp"
+#include "ores.telemetry/log/boost_severity.hpp"
+#include "ores.telemetry/log/logging_exception.hpp"
 
-namespace ores::utility::log {
+namespace ores::telemetry::log {
 
 namespace {
 
@@ -71,7 +71,7 @@ read_options(const boost::program_options::variables_map& vm) {
     r.output_directory = vm[logging_log_dir_arg].as<std::string>();
     const auto s(vm[logging_log_level_arg].as<std::string>());
     try {
-        to_severity_level(s);
+        to_boost_severity(s);
         r.severity = s;
     } catch(const std::exception&) {
         BOOST_THROW_EXCEPTION(logging_exception(

@@ -40,7 +40,7 @@
 
 namespace ores::qt {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 RoleMdiWindow::
 RoleMdiWindow(ClientManager* clientManager,

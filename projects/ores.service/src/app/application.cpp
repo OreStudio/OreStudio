@@ -50,7 +50,7 @@
 #include "ores.service/app/application_exception.hpp"
 
 namespace ores::service::app {
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 database::context application::make_context(
     const std::optional<database::database_options>& db_opts) {

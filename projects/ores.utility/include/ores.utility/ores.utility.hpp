@@ -26,13 +26,14 @@
  * Provides core infrastructure and helper functions that don't fit into
  * domain-specific modules. Key namespaces:
  *
- * - database: PostgreSQL connection management with libpq integration
- * - repository: Database context abstraction for ORM operations
- * - log: Boost.Log integration with per-module and per-test-case logging
  * - filesystem: File I/O utilities, directory operations, recursive search
  * - string: Type conversion and string manipulation utilities
  * - uuid: UUID v7 generation for time-ordered unique identifiers
  * - environment: Environment variable access with type conversion
+ * - geo: Geolocation services
+ * - convert: Base64/Base32 encoding utilities
+ *
+ * Note: Logging functionality has moved to ores.telemetry.
  *
  * This module has no dependencies on other ORE Studio components, making it
  * the foundation layer upon which all other modules are built.

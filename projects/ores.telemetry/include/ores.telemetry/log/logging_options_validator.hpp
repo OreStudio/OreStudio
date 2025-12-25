@@ -17,29 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_LOG_LOGGING_EXCEPTION_HPP
-#define ORES_UTILITY_LOG_LOGGING_EXCEPTION_HPP
+#ifndef ORES_TELEMETRY_LOG_LOGGING_OPTIONS_VALIDATOR_HPP
+#define ORES_TELEMETRY_LOG_LOGGING_OPTIONS_VALIDATOR_HPP
 
-#include <string>
-#include <boost/exception/info.hpp>
+#include "ores.telemetry/log/logging_options.hpp"
 
-namespace ores::utility::log {
+namespace ores::telemetry::log {
 
 /**
- * @brief An exception has occurred during logging.
+ * @brief Checks the validity of the supplied logging options.
  */
-class logging_exception : public virtual std::exception,
-                          public virtual boost::exception {
+class logging_options_validator final {
 public:
-    explicit logging_exception(std::string_view message = "")
-        : message_(message) {}
-
-    [[nodiscard]] const char* what() const noexcept override {
-        return message_.c_str();
-    }
-
-private:
-    std::string message_;
+    logging_options_validator() = delete;
+    static void validate(const logging_options& cfg);
 };
 
 }

@@ -23,7 +23,7 @@
 
 namespace ores::risk::orexml {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 domain::currency currency_mapper::map(const CurrencyElement& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping ORE XML entity: " << v;

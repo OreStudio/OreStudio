@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 #include <sqlgen/postgres.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.assets/domain/tag.hpp"
 
@@ -38,7 +38,7 @@ private:
         "ores.assets.repository.tag_repository";
 
     static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

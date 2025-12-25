@@ -44,6 +44,7 @@ target_link_libraries(${lib_target_name}
         ores.assets.lib
         ores.eventing.lib
         ores.comms.lib
+        ores.telemetry.lib
         ores.utility.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

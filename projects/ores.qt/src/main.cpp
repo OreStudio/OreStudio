@@ -24,8 +24,8 @@
 #include <QTextStream>
 #include <QTimer>
 #include "ores.utility/version/version.hpp"
-#include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/log/lifecycle_manager.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.telemetry/log/lifecycle_manager.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.qt/CommandLineParser.hpp"
 #include "ores.qt/MainWindow.hpp"
@@ -35,7 +35,7 @@ namespace {
 
 inline static std::string_view logger_name = "ores.qt.main";
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 const std::string product_version("Qt UI for ORE Studio v" ORES_VERSION);
 
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
     ores::qt::CommandLineParser parser;
     parser.process(app);
 
-    ores::utility::log::lifecycle_manager lm(parser.loggingOptions());
+    ores::telemetry::log::lifecycle_manager lm(parser.loggingOptions());
 
     auto lg(make_logger(logger_name));
 

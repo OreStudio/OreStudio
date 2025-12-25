@@ -33,7 +33,7 @@
 
 namespace ores::iam::security {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using ores::utility::converter::base64_converter;
 
 std::string password_manager::create_password_hash(const std::string& password) {

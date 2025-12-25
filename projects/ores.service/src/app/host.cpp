@@ -21,16 +21,16 @@
 
 #include <cstdlib>
 #include <boost/exception/diagnostic_information.hpp>
-#include "ores.utility/log/lifecycle_manager.hpp"
+#include "ores.telemetry/log/lifecycle_manager.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.service/app/application.hpp"
 #include "ores.service/config/parser.hpp"
 
 namespace ores::service::app {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using ores::service::config::parser;
-using ores::utility::log::lifecycle_manager;
+using ores::telemetry::log::lifecycle_manager;
 
 boost::asio::awaitable<int>
 host::execute(const std::vector<std::string>& args, std::ostream& std_output,

@@ -21,7 +21,7 @@
 #define ORES_SHELL_APP_COMMANDS_CONNECTION_COMMANDS_HPP
 
 #include <string>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.comms/net/client_session.hpp"
 
 namespace cli {
@@ -41,7 +41,7 @@ private:
         "ores.shell.app.commands.connection";
 
     auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

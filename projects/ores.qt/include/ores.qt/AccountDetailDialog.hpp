@@ -29,7 +29,7 @@
 #include "ores.iam/domain/login_info.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/AccountRolesWidget.hpp"
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
 
 namespace Ui {
@@ -60,7 +60,7 @@ private:
         "ores.qt.account_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

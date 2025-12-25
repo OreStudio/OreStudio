@@ -23,7 +23,7 @@
 
 namespace ores::variability::messaging {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 variability_message_handler::variability_message_handler(database::context ctx)
     : feature_flags_repo_(std::move(ctx)) {}

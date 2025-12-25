@@ -21,7 +21,7 @@
 
 namespace ores::comms::messaging {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 message_dispatcher::message_dispatcher(
     std::shared_ptr<service::auth_session_service> sessions)

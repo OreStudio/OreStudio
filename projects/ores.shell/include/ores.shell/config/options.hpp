@@ -24,7 +24,7 @@
 #include <optional>
 #include "ores.shell/config/login_options.hpp"
 #include "ores.comms/net/client_options.hpp"
-#include "ores.utility/log/logging_options.hpp"
+#include "ores.telemetry/log/logging_options.hpp"
 
 namespace ores::shell::config {
 

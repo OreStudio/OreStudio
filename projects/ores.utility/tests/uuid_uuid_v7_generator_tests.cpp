@@ -25,7 +25,7 @@
 #include <iomanip>
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
 namespace {
 
@@ -35,7 +35,7 @@ const std::string tags("[uuid]");
 }
 
 using ores::utility::uuid::uuid_v7_generator;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("generate_uuid_v7_is_not_nil", tags) {
     auto lg(make_logger(test_suite));

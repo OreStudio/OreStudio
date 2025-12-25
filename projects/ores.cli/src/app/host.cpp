@@ -23,16 +23,16 @@
 #include <ostream>
 #include <iostream>
 #include <boost/exception/diagnostic_information.hpp>
-#include "ores.utility/log/lifecycle_manager.hpp"
+#include "ores.telemetry/log/lifecycle_manager.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.cli/app/application.hpp"
 #include "ores.cli/config/parser.hpp"
 
 namespace ores::cli::app {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using ores::cli::config::parser;
-using ores::utility::log::lifecycle_manager;
+using ores::telemetry::log::lifecycle_manager;
 
 int host::execute(const std::vector<std::string>& args,
     std::ostream& std_output, std::ostream& error_output) {

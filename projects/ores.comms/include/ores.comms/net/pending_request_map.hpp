@@ -25,7 +25,7 @@
 #include <cstdint>
 #include <unordered_map>
 #include <boost/asio/any_io_executor.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.comms/net/response_channel.hpp"
@@ -46,7 +46,7 @@ private:
       "ores.comms.net.pending_request_map";
 
     static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

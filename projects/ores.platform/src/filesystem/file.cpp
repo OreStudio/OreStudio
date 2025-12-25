@@ -27,7 +27,7 @@
 
 namespace ores::platform::filesystem {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 std::string file::read_content(std::istream& s) {
     s.exceptions(std::ifstream::failbit | std::ifstream::badbit);

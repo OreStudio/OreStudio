@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
 namespace ores::utility::converter {
 
@@ -36,7 +36,7 @@ private:
         "ores.utility.converter.base64_converter";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

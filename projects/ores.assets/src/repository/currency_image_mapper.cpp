@@ -23,7 +23,7 @@
 
 namespace ores::assets::repository {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using namespace ores::database::repository;
 
 domain::currency_image currency_image_mapper::map(const currency_image_entity& v) {

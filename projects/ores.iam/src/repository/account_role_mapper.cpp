@@ -25,7 +25,7 @@
 
 namespace ores::iam::repository {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using namespace ores::database::repository;
 
 domain::account_role account_role_mapper::map(const account_role_entity& v) {

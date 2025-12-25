@@ -25,7 +25,7 @@
 
 namespace ores::iam::service {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 bootstrap_mode_service::bootstrap_mode_service(database::context ctx,
     std::shared_ptr<authorization_service> auth_service)

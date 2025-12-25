@@ -17,16 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/log/logging_options.hpp"
+#ifndef ORES_TELEMETRY_LOG_MAKE_LOGGER_HPP
+#define ORES_TELEMETRY_LOG_MAKE_LOGGER_HPP
 
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include <string_view>
+#include <boost/log/sources/record_ostream.hpp>
+#include <boost/log/sources/severity_channel_logger.hpp>
+#include "ores.telemetry/log/boost_severity.hpp"
 
-namespace ores::utility::log {
+namespace ores::telemetry::log {
 
-std::ostream& operator<<(std::ostream& s, const logging_options& v) {
-    rfl::json::write(v, s);
-    return s;
+using logger_t = boost::log::sources::severity_channel_logger_mt<
+    boost_severity, std::string_view>;
+
+inline logger_t make_logger(std::string_view component_name) {
+    using namespace boost::log;
+    return logger_t(keywords::channel = component_name);
 }
 
 }
+
+#endif

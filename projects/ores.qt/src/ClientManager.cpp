@@ -33,7 +33,7 @@
 
 namespace ores::qt {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 ClientManager::ClientManager(std::shared_ptr<eventing::service::event_bus> event_bus,
                              QObject* parent)

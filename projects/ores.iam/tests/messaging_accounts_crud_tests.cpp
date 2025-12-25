@@ -34,6 +34,7 @@
 #include "ores.iam/messaging/protocol.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/service/rbac_seeder.hpp"
+#include "ores.iam/domain/role.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 
@@ -73,6 +74,36 @@ make_auth_service(ores::database::context& ctx) {
     return auth;
 }
 
+/**
+ * @brief Sets up an authenticated admin session for testing.
+ *
+ * Creates a session with admin permissions and stores it in the session service.
+ *
+ * @param sessions The session service to store the session in
+ * @param auth_service The auth service to look up the admin role
+ * @param endpoint The remote address to associate with the session
+ * @return The account ID of the test admin user
+ */
+boost::uuids::uuid setup_admin_session(
+    std::shared_ptr<ores::comms::service::auth_session_service>& sessions,
+    std::shared_ptr<service::authorization_service>& auth_service,
+    const std::string& endpoint) {
+    // Create a test admin account ID
+    auto account_id = boost::uuids::random_generator()();
+
+    // Store session info for this endpoint
+    ores::comms::service::session_info info{.account_id = account_id};
+    sessions->store_session(endpoint, info);
+
+    // Assign admin role to the account
+    auto admin_role = auth_service->find_role_by_name(domain::roles::admin);
+    if (admin_role) {
+        auth_service->assign_role(account_id, admin_role->id, "test");
+    }
+
+    return account_id;
+}
+
 }
 
 using namespace ores::utility::log;
@@ -91,6 +122,10 @@ TEST_CASE("handle_single_create_account_request", tags) {
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
+    // Set up authenticated admin session
+    const auto test_endpoint = internet::endpoint();
+    setup_admin_session(sessions, auth_service, test_endpoint);
+
     const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
 
@@ -103,7 +138,7 @@ TEST_CASE("handle_single_create_account_request", tags) {
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::create_account_request,
-            payload, internet::endpoint());
+            payload, test_endpoint);
 
         REQUIRE(r.has_value());
         const auto response_result =
@@ -124,6 +159,11 @@ TEST_CASE("handle_many_create_account_requests", tags) {
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
+
+    // Set up authenticated admin session
+    const auto test_endpoint = internet::endpoint();
+    setup_admin_session(sessions, auth_service, test_endpoint);
+
     auto accounts = generate_synthetic_accounts(5);
 
     boost::asio::io_context io_ctx;
@@ -137,7 +177,7 @@ TEST_CASE("handle_many_create_account_requests", tags) {
         run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
             auto r = co_await sut.handle_message(
                 message_type::create_account_request,
-                payload, internet::endpoint());
+                payload, test_endpoint);
 
             REQUIRE(r.has_value());
             const auto response_result =
@@ -160,6 +200,10 @@ TEST_CASE("handle_list_accounts_request_empty", tags) {
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
+    // Set up authenticated admin session
+    const auto test_endpoint = internet::endpoint();
+    setup_admin_session(sessions, auth_service, test_endpoint);
+
     list_accounts_request rq;
     BOOST_LOG_SEV(lg, info) << "Request: " << rq;
 
@@ -169,7 +213,7 @@ TEST_CASE("handle_list_accounts_request_empty", tags) {
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::list_accounts_request,
-            payload, internet::endpoint());
+            payload, test_endpoint);
 
         REQUIRE(r.has_value());
         const auto response_result =
@@ -191,6 +235,10 @@ TEST_CASE("handle_list_accounts_request_with_accounts", tags) {
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
+    // Set up authenticated admin session
+    const auto test_endpoint = internet::endpoint();
+    setup_admin_session(sessions, auth_service, test_endpoint);
+
     const int account_count = 5;
     auto accounts =
         generate_synthetic_accounts(account_count);
@@ -206,7 +254,7 @@ TEST_CASE("handle_list_accounts_request_with_accounts", tags) {
         run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
             auto r = co_await sut.handle_message(
                 message_type::create_account_request,
-                create_payload, internet::endpoint());
+                create_payload, test_endpoint);
             REQUIRE(r.has_value());
         });
     }
@@ -218,7 +266,7 @@ TEST_CASE("handle_list_accounts_request_with_accounts", tags) {
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::list_accounts_request,
-            payload, internet::endpoint());
+            payload, test_endpoint);
 
         REQUIRE(r.has_value());
         const auto response_result =
@@ -240,6 +288,10 @@ TEST_CASE("handle_delete_account_request_success", tags) {
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
+    // Set up authenticated admin session
+    const auto test_endpoint = internet::endpoint();
+    setup_admin_session(sessions, auth_service, test_endpoint);
+
     const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
@@ -253,7 +305,7 @@ TEST_CASE("handle_delete_account_request_success", tags) {
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::create_account_request,
-            create_payload, internet::endpoint());
+            create_payload, test_endpoint);
         REQUIRE(r.has_value());
 
         const auto response_result =
@@ -270,7 +322,7 @@ TEST_CASE("handle_delete_account_request_success", tags) {
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::delete_account_request,
-            delete_payload, internet::endpoint());
+            delete_payload, test_endpoint);
 
         REQUIRE(r.has_value());
         const auto response_result =
@@ -293,6 +345,10 @@ TEST_CASE("handle_delete_account_request_non_existent_account", tags) {
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
+    // Set up authenticated admin session
+    const auto test_endpoint = internet::endpoint();
+    setup_admin_session(sessions, auth_service, test_endpoint);
+
     delete_account_request drq;
     drq.account_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, info) << "Delete request: " << drq;
@@ -303,7 +359,7 @@ TEST_CASE("handle_delete_account_request_non_existent_account", tags) {
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::delete_account_request,
-            payload, internet::endpoint());
+            payload, test_endpoint);
 
         REQUIRE(r.has_value());
         const auto response_result =

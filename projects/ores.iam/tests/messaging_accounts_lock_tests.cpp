@@ -81,6 +81,37 @@ void assign_admin_role(std::shared_ptr<service::authorization_service> auth,
     auth->assign_role(account_id, admin_role->id, "test");
 }
 
+/**
+ * @brief Sets up an authenticated admin session for testing.
+ *
+ * Creates a session with admin permissions and stores it in the session service.
+ * This is used to bootstrap tests that need authentication before creating accounts.
+ *
+ * @param sessions The session service to store the session in
+ * @param auth_service The auth service to look up the admin role
+ * @param endpoint The remote address to associate with the session
+ * @return The account ID of the test admin user
+ */
+boost::uuids::uuid setup_admin_session(
+    std::shared_ptr<ores::comms::service::auth_session_service>& sessions,
+    std::shared_ptr<service::authorization_service>& auth_service,
+    const std::string& endpoint) {
+    // Create a test admin account ID
+    auto account_id = boost::uuids::random_generator()();
+
+    // Store session info for this endpoint
+    ores::comms::service::session_info info{.account_id = account_id};
+    sessions->store_session(endpoint, info);
+
+    // Assign admin role to the account
+    auto admin_role = auth_service->find_role_by_name(domain::roles::admin);
+    if (admin_role) {
+        auth_service->assign_role(account_id, admin_role->id, "test");
+    }
+
+    return account_id;
+}
+
 }
 
 using namespace ores::utility::log;
@@ -103,7 +134,10 @@ TEST_CASE("handle_unlock_account_request", tags) {
     // Use a consistent remote address for admin session
     const std::string admin_endpoint = internet::endpoint();
 
-    // Create an admin account first (to be the requester)
+    // Set up authenticated admin session for account creation
+    setup_admin_session(sessions, auth_service, admin_endpoint);
+
+    // Create an admin account (to be the requester)
     auto admin_account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Admin account: " << admin_account;
 
@@ -115,7 +149,7 @@ TEST_CASE("handle_unlock_account_request", tags) {
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::create_account_request,
-            admin_rq.serialize(), internet::endpoint());
+            admin_rq.serialize(), admin_endpoint);
         REQUIRE(r.has_value());
 
         const auto response_result =
@@ -124,10 +158,10 @@ TEST_CASE("handle_unlock_account_request", tags) {
         admin_id = response_result.value().account_id;
     });
 
-    // Assign admin role using RBAC
+    // Assign admin role to the newly created account
     assign_admin_role(auth_service, admin_id);
 
-    // Login as admin to establish session
+    // Login as admin to establish proper session with correct account_id
     login_request admin_login_rq;
     admin_login_rq.username = admin_rq.username;
     admin_login_rq.password = admin_rq.password;
@@ -155,7 +189,7 @@ TEST_CASE("handle_unlock_account_request", tags) {
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::create_account_request,
-            create_payload, internet::endpoint());
+            create_payload, admin_endpoint);
         REQUIRE(r.has_value());
 
         const auto response_result =
@@ -198,8 +232,13 @@ TEST_CASE("handle_unlock_account_request_non_admin", tags) {
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
-    // Use a consistent remote address for non-admin session
+    // Use a consistent remote address for admin session (to create accounts)
+    const std::string admin_endpoint = internet::endpoint();
+    // Use a different endpoint for non-admin session
     const std::string user_endpoint = internet::endpoint();
+
+    // Set up authenticated admin session for account creation
+    setup_admin_session(sessions, auth_service, admin_endpoint);
 
     // Create two regular (non-admin) accounts
     const auto account1 = generate_synthetic_account();
@@ -210,7 +249,7 @@ TEST_CASE("handle_unlock_account_request_non_admin", tags) {
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::create_account_request,
-            ca_rq1.serialize(), internet::endpoint());
+            ca_rq1.serialize(), admin_endpoint);
         REQUIRE(r.has_value());
         account1_id = create_account_response::deserialize(r.value()).value().account_id;
     });
@@ -222,7 +261,7 @@ TEST_CASE("handle_unlock_account_request_non_admin", tags) {
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::create_account_request,
-            ca_rq2.serialize(), internet::endpoint());
+            ca_rq2.serialize(), admin_endpoint);
         REQUIRE(r.has_value());
         account2_id = create_account_response::deserialize(r.value()).value().account_id;
     });
@@ -277,7 +316,10 @@ TEST_CASE("handle_lock_account_request", tags) {
     // Use a consistent remote address for admin session
     const std::string admin_endpoint = internet::endpoint();
 
-    // Create an admin account first (to be the requester)
+    // Set up authenticated admin session for account creation
+    setup_admin_session(sessions, auth_service, admin_endpoint);
+
+    // Create an admin account (to be the requester)
     auto admin_account = generate_synthetic_account();
 
     create_account_request admin_rq(to_create_account_request(admin_account));
@@ -287,15 +329,15 @@ TEST_CASE("handle_lock_account_request", tags) {
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::create_account_request,
-            admin_rq.serialize(), internet::endpoint());
+            admin_rq.serialize(), admin_endpoint);
         REQUIRE(r.has_value());
         admin_id = create_account_response::deserialize(r.value()).value().account_id;
     });
 
-    // Assign admin role using RBAC
+    // Assign admin role to the newly created account
     assign_admin_role(auth_service, admin_id);
 
-    // Login as admin to establish session
+    // Login as admin to establish proper session with correct account_id
     login_request admin_login_rq;
     admin_login_rq.username = admin_rq.username;
     admin_login_rq.password = admin_rq.password;
@@ -323,7 +365,7 @@ TEST_CASE("handle_lock_account_request", tags) {
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::create_account_request,
-            create_payload, internet::endpoint());
+            create_payload, admin_endpoint);
         REQUIRE(r.has_value());
 
         const auto response_result =
@@ -365,6 +407,10 @@ TEST_CASE("handle_lock_account_request_unauthenticated", tags) {
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
+    // Use admin endpoint to create the account
+    const std::string admin_endpoint = internet::endpoint();
+    setup_admin_session(sessions, auth_service, admin_endpoint);
+
     // Create an account to try to lock
     const auto account = generate_synthetic_account();
     create_account_request ca_rq(to_create_account_request(account));
@@ -374,12 +420,13 @@ TEST_CASE("handle_lock_account_request_unauthenticated", tags) {
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::create_account_request,
-            ca_rq.serialize(), internet::endpoint());
+            ca_rq.serialize(), admin_endpoint);
         REQUIRE(r.has_value());
         account_id = create_account_response::deserialize(r.value()).value().account_id;
     });
 
-    // Try to lock without being logged in (no session established)
+    // Try to lock from a different endpoint without being logged in (no session)
+    const std::string unauthenticated_endpoint = internet::endpoint();
     lock_account_request lrq;
     lrq.account_ids = {account_id};
     BOOST_LOG_SEV(lg, info) << "Lock request (unauthenticated): " << lrq;
@@ -387,7 +434,7 @@ TEST_CASE("handle_lock_account_request_unauthenticated", tags) {
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::lock_account_request,
-            lrq.serialize(), internet::endpoint());
+            lrq.serialize(), unauthenticated_endpoint);
 
         REQUIRE(r.has_value());
         const auto response_result =
@@ -411,6 +458,10 @@ TEST_CASE("handle_unlock_account_request_unauthenticated", tags) {
     auto auth_service = make_auth_service(h.context());
     accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
 
+    // Use admin endpoint to create the account
+    const std::string admin_endpoint = internet::endpoint();
+    setup_admin_session(sessions, auth_service, admin_endpoint);
+
     // Create an account to try to unlock
     const auto account = generate_synthetic_account();
     create_account_request ca_rq(to_create_account_request(account));
@@ -420,12 +471,13 @@ TEST_CASE("handle_unlock_account_request_unauthenticated", tags) {
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::create_account_request,
-            ca_rq.serialize(), internet::endpoint());
+            ca_rq.serialize(), admin_endpoint);
         REQUIRE(r.has_value());
         account_id = create_account_response::deserialize(r.value()).value().account_id;
     });
 
-    // Try to unlock without being logged in (no session established)
+    // Try to unlock from a different endpoint without being logged in (no session)
+    const std::string unauthenticated_endpoint = internet::endpoint();
     unlock_account_request urq;
     urq.account_ids = {account_id};
     BOOST_LOG_SEV(lg, info) << "Unlock request (unauthenticated): " << urq;
@@ -433,7 +485,7 @@ TEST_CASE("handle_unlock_account_request_unauthenticated", tags) {
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
             message_type::unlock_account_request,
-            urq.serialize(), internet::endpoint());
+            urq.serialize(), unauthenticated_endpoint);
 
         REQUIRE(r.has_value());
         const auto response_result =

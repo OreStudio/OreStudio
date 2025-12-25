@@ -124,37 +124,6 @@ register_commands(cli::Menu& root_menu, client_session& session) {
     }, "Show role details (role_name or role_id)");
 
     root_menu.Insert(std::move(roles_menu));
-
-    // =========================================================================
-    // Account-Role submenu (extends account operations)
-    // =========================================================================
-    auto account_roles_menu = std::make_unique<cli::Menu>("account-roles");
-
-    account_roles_menu->Insert("assign", [&session](std::ostream& out,
-            std::string account_id, std::string role_id) {
-        process_assign_role(std::ref(out), std::ref(session),
-            std::move(account_id), std::move(role_id));
-    }, "Assign a role to an account (account_id role_id)");
-
-    account_roles_menu->Insert("revoke", [&session](std::ostream& out,
-            std::string account_id, std::string role_id) {
-        process_revoke_role(std::ref(out), std::ref(session),
-            std::move(account_id), std::move(role_id));
-    }, "Revoke a role from an account (account_id role_id)");
-
-    account_roles_menu->Insert("list", [&session](std::ostream& out,
-            std::string account_id) {
-        process_get_account_roles(std::ref(out), std::ref(session),
-            std::move(account_id));
-    }, "List roles assigned to an account (account_id)");
-
-    account_roles_menu->Insert("permissions", [&session](std::ostream& out,
-            std::string account_id) {
-        process_get_account_permissions(std::ref(out), std::ref(session),
-            std::move(account_id));
-    }, "List effective permissions for an account (account_id)");
-
-    root_menu.Insert(std::move(account_roles_menu));
 }
 
 // =============================================================================

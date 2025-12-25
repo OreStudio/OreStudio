@@ -47,11 +47,12 @@ create table if not exists "ores"."sessions" (
     "start_time" timestamp with time zone not null,
 
     -- Session end timestamp (logout or disconnect)
-    -- NULL if session is still active
-    "end_time" timestamp with time zone,
+    -- Empty string if session is still active (sqlgen doesn't support NULL)
+    "end_time" text not null default '',
 
     -- Client IP address (supports IPv4 and IPv6)
-    "client_ip" inet not null,
+    -- Using text instead of inet for sqlgen compatibility
+    "client_ip" text not null,
 
     -- Client application identifier from handshake
     "client_identifier" text not null default '',
@@ -67,8 +68,10 @@ create table if not exists "ores"."sessions" (
     -- Geolocation data (optional, based on IP lookup)
     "country_code" text not null default '',
     "city" text not null default '',
-    "latitude" double precision,
-    "longitude" double precision,
+    -- Using text instead of double precision for sqlgen compatibility
+    -- Empty string represents NULL value
+    "latitude" text not null default '',
+    "longitude" text not null default '',
 
     -- Composite primary key: id + start_time required for TimescaleDB
     primary key (id, start_time)
@@ -89,7 +92,7 @@ on "ores"."sessions" (account_id, start_time desc);
 
 create index if not exists sessions_active_idx
 on "ores"."sessions" (account_id)
-where end_time is null;
+where end_time = '';
 
 create index if not exists sessions_country_idx
 on "ores"."sessions" (country_code, start_time desc)

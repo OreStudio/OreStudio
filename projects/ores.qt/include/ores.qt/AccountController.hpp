@@ -24,6 +24,7 @@
 #include <QPointer>
 #include <QList>
 #include <QDateTime>
+#include <boost/uuid/uuid.hpp>
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/ClientAccountModel.hpp"
 #include "ores.utility/log/make_logger.hpp"
@@ -140,6 +141,18 @@ private slots:
      * @param username The username of the account to show history for
      */
     void onShowAccountHistory(const QString& username);
+
+    /**
+     * @brief Handles request to show session history.
+     *
+     * Creates and displays a session history dialog for viewing login
+     * sessions of an account.
+     *
+     * @param accountId The account UUID
+     * @param username The username of the account
+     */
+    void onShowSessionHistory(const boost::uuids::uuid& accountId,
+                              const QString& username);
 
     /**
      * @brief Handles request to open a historical account version in read-only mode.

@@ -48,6 +48,8 @@ namespace ores::iam::service {
  * - Sales: currencies:read, flags:read
  * - Operations: currencies:*, flags:read, accounts:read
  * - Support: All read permissions
+ * - Viewer: Basic read-only access (currencies:read, flags:read) - default role
+ *   for new accounts
  */
 class rbac_seeder {
 private:

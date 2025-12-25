@@ -67,6 +67,7 @@ AccountMdiWindow(ClientManager* clientManager,
       unlockAction_(new QAction("Unlock", this)),
       resetPasswordAction_(new QAction("Reset Pwd", this)),
       historyAction_(new QAction("History", this)),
+      sessionsAction_(new QAction("Sessions", this)),
       accountModel_(std::make_unique<ClientAccountModel>(clientManager)),
       proxyModel_(new QSortFilterProxyModel(this)),
       clientManager_(clientManager),
@@ -135,6 +136,13 @@ AccountMdiWindow(ClientManager* clientManager,
     connect(historyAction_, &QAction::triggered, this,
         &AccountMdiWindow::viewHistorySelected);
     toolBar_->addAction(historyAction_);
+
+    sessionsAction_->setIcon(IconUtils::createRecoloredIcon(
+            ":/icons/ic_fluent_clock_16_regular.svg", iconColor));
+    sessionsAction_->setToolTip("View session history");
+    connect(sessionsAction_, &QAction::triggered, this,
+        &AccountMdiWindow::viewSessionsSelected);
+    toolBar_->addAction(sessionsAction_);
 
     verticalLayout_->addWidget(toolBar_);
     verticalLayout_->addWidget(accountTableView_);
@@ -999,6 +1007,27 @@ void AccountMdiWindow::viewHistorySelected() {
     emit showAccountHistory(QString::fromStdString(account->username));
 }
 
+void AccountMdiWindow::viewSessionsSelected() {
+    const auto selected = accountTableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Sessions requested but no row selected";
+        return;
+    }
+
+    // Map proxy index to source index
+    const QModelIndex sourceIndex = proxyModel_->mapToSource(selected.first());
+    const auto* account = accountModel_->getAccount(sourceIndex.row());
+    if (!account) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get account for row: "
+                                 << sourceIndex.row();
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Emitting showSessionHistory for account: "
+                             << account->username;
+    emit showSessionHistory(account->id, QString::fromStdString(account->username));
+}
+
 QSize AccountMdiWindow::sizeHint() const {
     const int minimumWidth = 800;
     const int minimumHeight = 500;
@@ -1015,9 +1044,10 @@ void AccountMdiWindow::updateActionStates() {
     const bool hasSingleSelection = selection_count == 1;
     const bool hasSelection = selection_count > 0;
 
-    // Edit and history only work on single selection (opens a dialog)
+    // Edit, history, and sessions only work on single selection (opens a dialog)
     editAction_->setEnabled(hasSingleSelection);
     historyAction_->setEnabled(hasSingleSelection);
+    sessionsAction_->setEnabled(hasSingleSelection);
 
     // Delete, lock, unlock, reset password support multi-selection
     deleteAction_->setEnabled(hasSelection);

@@ -29,18 +29,11 @@ namespace ores::qt {
 namespace {
 
 // Column indices (matches ClientAccountModel::Column enum)
-constexpr int admin_column_index = 2;
-constexpr int status_column_index = 3;
-constexpr int locked_column_index = 4;
-constexpr int version_column_index = 5;
-constexpr int recorded_by_column_index = 6;
-constexpr int recorded_at_column_index = 7;
-
-// Badge colors
-const QColor admin_badge_bg(59, 130, 246);      // Blue background for "Yes"
-const QColor admin_badge_text(255, 255, 255);   // White text for "Yes"
-const QColor non_admin_badge_bg(107, 114, 128); // Gray background for "No"
-const QColor non_admin_badge_text(255, 255, 255); // White text for "No"
+constexpr int status_column_index = 2;
+constexpr int locked_column_index = 3;
+constexpr int version_column_index = 4;
+constexpr int recorded_by_column_index = 5;
+constexpr int recorded_at_column_index = 6;
 
 // Login status badge colors
 const QColor status_never_bg(107, 114, 128);    // Gray for never logged in
@@ -76,8 +69,7 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
     initStyleOption(&opt, index);
 
     // Handle badge columns
-    if (index.column() == admin_column_index ||
-        index.column() == status_column_index ||
+    if (index.column() == status_column_index ||
         index.column() == locked_column_index) {
 
         // Draw the background (for selection highlighting)
@@ -89,18 +81,7 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
         QColor bgColor, textColor;
         QString badgeText;
 
-        if (index.column() == admin_column_index) {
-            // Admin column
-            if (text == "Admin") {
-                bgColor = admin_badge_bg;
-                textColor = admin_badge_text;
-                badgeText = tr("Yes");
-            } else {
-                bgColor = non_admin_badge_bg;
-                textColor = non_admin_badge_text;
-                badgeText = tr("No");
-            }
-        } else if (index.column() == status_column_index) {
+        if (index.column() == status_column_index) {
             // Login status column - different color for each status
             if (text == "Online") {
                 bgColor = status_online_bg;
@@ -177,8 +158,7 @@ QSize AccountItemDelegate::sizeHint(const QStyleOptionViewItem& option,
     QSize size = QStyledItemDelegate::sizeHint(option, index);
 
     // Ensure minimum height for badge columns
-    if (index.column() == admin_column_index ||
-        index.column() == status_column_index ||
+    if (index.column() == status_column_index ||
         index.column() == locked_column_index) {
         size.setHeight(qMax(size.height(), 24));
         // Status column needs more width for "Recent" and "Online" text

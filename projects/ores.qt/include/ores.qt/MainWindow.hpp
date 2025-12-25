@@ -136,6 +136,11 @@ private slots:
     void onMyAccountTriggered();
 
     /**
+     * @brief Displays the session history for the current user.
+     */
+    void onMySessionsTriggered();
+
+    /**
      * @brief Detaches all MDI windows to separate floating windows.
      */
     void onDetachAllTriggered();

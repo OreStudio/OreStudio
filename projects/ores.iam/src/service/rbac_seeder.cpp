@@ -149,6 +149,11 @@ void rbac_seeder::seed_roles(const std::string& recorded_by) {
                 perms::login_info_read, perms::roles_read
             }
         },
+        {
+            roles::viewer,
+            "Viewer - basic read-only access to domain data",
+            {perms::currencies_read, perms::flags_read}
+        },
     };
 
     std::size_t created = 0;

@@ -47,6 +47,10 @@ void CurrencyItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
     // Apply monospace font and alignment based on column
     using Column = ClientCurrencyModel::Column;
     switch (index.column()) {
+        case Column::Flag:
+            opt.decorationAlignment = Qt::AlignCenter;
+            opt.decorationPosition = QStyleOptionViewItem::Top;
+            break;
         case Column::CurrencyName:
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;

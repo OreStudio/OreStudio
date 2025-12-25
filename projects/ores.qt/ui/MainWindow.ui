@@ -38,6 +38,7 @@
     <addaction name="ActionDisconnect"/>
     <addaction name="separator"/>
     <addaction name="ActionMyAccount"/>
+    <addaction name="ActionMySessions"/>
     <addaction name="separator"/>
     <addaction name="ExitAction"/>
    </widget>
@@ -102,6 +103,18 @@
    </property>
    <property name="text">
     <string>&amp;My Account...</string>
+   </property>
+  </action>
+  <action name="ActionMySessions">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_clock_16_regular.svg</normaloff>:/icons/ic_fluent_clock_16_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>My &amp;Sessions...</string>
+   </property>
+   <property name="toolTip">
+    <string>View my login session history</string>
    </property>
   </action>
   <action name="CurrenciesAction">

@@ -40,7 +40,8 @@ accounts_message_handler::accounts_message_handler(database::context ctx,
     std::shared_ptr<comms::service::auth_session_service> sessions,
     std::shared_ptr<service::authorization_service> auth_service)
     : service_(ctx), ctx_(ctx), system_flags_(std::move(system_flags)),
-      sessions_(std::move(sessions)), auth_service_(std::move(auth_service)),
+      sessions_(std::move(sessions)), auth_service_(auth_service),
+      setup_service_(service_, auth_service_),
       session_repo_(ctx) {}
 
 accounts_message_handler::handler_result
@@ -83,7 +84,7 @@ accounts_message_handler::handle_message(message_type type,
     case message_type::unlock_account_request:
         co_return co_await handle_unlock_account_request(payload, remote_address);
     case message_type::delete_account_request:
-        co_return co_await handle_delete_account_request(payload);
+        co_return co_await handle_delete_account_request(payload, remote_address);
     case message_type::create_initial_admin_request:
         co_return co_await handle_create_initial_admin_request(payload, remote_address);
     case message_type::bootstrap_status_request:
@@ -134,7 +135,11 @@ handle_create_account_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing create_account_request from "
                                << remote_address;
 
-    // Authorization is checked by dispatcher before reaching this handler
+    auto auth_result = check_authorization(remote_address,
+        domain::permissions::accounts_create, "Create account");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
 
     auto request_result = create_account_request::deserialize(payload);
     if (!request_result) {
@@ -146,11 +151,12 @@ handle_create_account_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
     domain::account account =
-        service_.create_account(request.username, request.email,
+        setup_service_.create_account(request.username, request.email,
         request.password, request.recorded_by);
 
     BOOST_LOG_SEV(lg(), info) << "Created account with ID: " << account.id
-                              << " for username: " << account.username;
+                              << " for username: " << account.username
+                              << " with Viewer role assigned";
 
     create_account_response response{account.id};
     co_return response.serialize();
@@ -163,7 +169,11 @@ handle_list_accounts_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing list_accounts_request from "
                                << remote_address;
 
-    // Authorization is checked by dispatcher before reaching this handler
+    auto auth_result = check_authorization(remote_address,
+        domain::permissions::accounts_read, "List accounts");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
 
     auto request_result = list_accounts_request::deserialize(payload);
     if (!request_result) {
@@ -205,7 +215,11 @@ handle_list_login_info_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing list_login_info_request from "
                                << remote_address;
 
-    // Authorization is checked by dispatcher before reaching this handler
+    auto auth_result = check_authorization(remote_address,
+        domain::permissions::login_info_read, "List login info");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
 
     auto request_result = list_login_info_request::deserialize(payload);
     if (!request_result) {
@@ -459,8 +473,16 @@ handle_unlock_account_request(std::span<const std::byte> payload,
 }
 
 accounts_message_handler::handler_result accounts_message_handler::
-handle_delete_account_request(std::span<const std::byte> payload) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing delete_account_request";
+handle_delete_account_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_account_request from "
+                               << remote_address;
+
+    auto auth_result = check_authorization(remote_address,
+        domain::permissions::accounts_delete, "Delete account");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
 
     auto request_result = delete_account_request::deserialize(payload);
     if (!request_result) {
@@ -499,6 +521,43 @@ bool accounts_message_handler::is_localhost(const std::string& remote_address) {
         remote_address.starts_with("127.0.0.1:") ||
         remote_address.starts_with("::1") ||
         remote_address.starts_with("[::1]");
+}
+
+accounts_message_handler::auth_check_result
+accounts_message_handler::get_authenticated_session(
+    const std::string& remote_address,
+    std::string_view operation_name) {
+
+    auto session = sessions_->get_session(remote_address);
+    if (!session) {
+        BOOST_LOG_SEV(lg(), warn) << operation_name
+                                  << " denied: no active session for "
+                                  << remote_address;
+        return std::unexpected(comms::messaging::error_code::authentication_failed);
+    }
+    return *session;
+}
+
+accounts_message_handler::auth_check_result
+accounts_message_handler::check_authorization(
+    const std::string& remote_address,
+    std::string_view permission,
+    std::string_view operation_name) {
+
+    auto session_result = get_authenticated_session(remote_address, operation_name);
+    if (!session_result) {
+        return session_result;
+    }
+
+    const auto& session = *session_result;
+    if (!auth_service_->has_permission(session.account_id, std::string(permission))) {
+        BOOST_LOG_SEV(lg(), warn) << operation_name << " denied: requester "
+                                  << boost::uuids::to_string(session.account_id)
+                                  << " lacks " << permission << " permission";
+        return std::unexpected(comms::messaging::error_code::authorization_failed);
+    }
+
+    return session;
 }
 
 accounts_message_handler::handler_result accounts_message_handler::
@@ -1069,7 +1128,7 @@ handle_signup_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
     // Use signup_service which handles all validation and feature flag checks
-    service::signup_service signup_svc(ctx_, system_flags_);
+    service::signup_service signup_svc(ctx_, system_flags_, auth_service_);
     auto result = signup_svc.register_user(request.username, request.email,
         request.password);
 

@@ -18,20 +18,6 @@
  *
  */
 
-/**
- * DEPRECATED: This file is kept for backwards compatibility.
- *
- * Creates a database named 'ores' using the direct creation method.
- *
- * For new usage, please use:
- *   - create_instance.sql     : Create from template with whimsical name (fast)
- *   - create_database_direct.sql : Create without template (specify any name)
- */
-
-\echo ''
-\echo 'WARNING: create_database.sql is deprecated.'
-\echo 'Using create_database_direct.sql with default name "ores"'
-\echo ''
-
-\set db_name 'ores'
-\ir ./create_database_direct.sql
+DROP FUNCTION IF EXISTS ores.list_ores_databases();
+DROP FUNCTION IF EXISTS ores.create_database_command(TEXT);
+DROP FUNCTION IF EXISTS ores.generate_create_database_sql(TEXT);

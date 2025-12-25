@@ -496,92 +496,6 @@ ores-shell>
 ores-shell> Bye!
 #+end_example
 
-** Variability
-   :PROPERTIES:
-   :header-args+: :var login_args="--login-username newuser3"
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
-   :END:
-
-Functionality related to the accounts domain entity in [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ORE Studio Variability
-Component]].
-
-*** Help Menu
-
-#+name: help-variability-exit
-#+begin_src ores-shell :exports none
-variability
-help
-exit
-#+end_src
-
-#+begin_src sh :noweb yes :results output  :wrap example
-./ores.shell ${log_args} << 'EOF'
-<<help-variability-exit>>
-EOF
-#+end_src
-
-#+RESULTS:
-#+begin_example
-ORE Studio Shell REPL v0.0.6
-Type 'help' for available commands, 'exit' to quit
-
-ores-shell> variability> Commands available:
- - help
-	This help message
- - exit
-	Quit the session
- - history
-	Show the history
- - ! <history entry index>
-	Exec a command by index in the history
- - list-flags
-	Retrieve all feature flags from the server
- - ores-shell
-	(menu)
-variability> Bye!
-#+end_example
-
-
-*** List Feature Flags
-    :PROPERTIES:
-    :header-args+: :var login_args="--login-username newuser3"
-    :END:
-
-#+name: list-feature-flags
-#+begin_src ores-shell :exports none
-variability list-flags
-exit
-#+end_src
-
-#+begin_src sh :noweb yes :results output  :wrap example
-export ORES_SHELL_LOGIN_PASSWORD
-./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
-<<list-feature-flags>>
-EOF
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-✓ Connected to :55555
-✓ Logged in as: newuser3
-ORE Studio Shell REPL v0.0.6
-Type 'help' for available commands, 'exit' to quit
-
-ores-shell>
-+------------------------------------+---------+----------------------------------------------------------------------------------------+---------+-------------+
-| Name                               | Version | Description                                                                            | Enabled | Modified By |
-+------------------------------------+---------+----------------------------------------------------------------------------------------+---------+-------------+
-| system.bootstrap_mode              | 0       | Indicates whether the system is in bootstrap mode (waiting for initial admin account). | 0       | system      |
-| system.user_signups                | 0       | Controls whether user self-registration is allowed.                                    | 0       | system      |
-| system.disable_password_validation | 0       | When enabled (1), disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.   | 0       | system      |
-+------------------------------------+---------+----------------------------------------------------------------------------------------+---------+-------------+
-
-
-ores-shell> Bye!
-#+end_example
-
-
-
 *** Lock
     :PROPERTIES:
     :header-args+: :var login_args="--login-username newuser3"
@@ -702,6 +616,91 @@ export ORES_SHELL_LOGIN_PASSWORD
 <<revoke-role>>
 EOF
 #+END_SRC
+
+** Variability
+   :PROPERTIES:
+   :header-args+: :var login_args="--login-username newuser3"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :END:
+
+Functionality related to the accounts domain entity in [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ORE Studio Variability
+Component]].
+
+*** Help Menu
+
+#+name: help-variability-exit
+#+begin_src ores-shell :exports none
+variability
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.shell ${log_args} << 'EOF'
+<<help-variability-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.6
+Type 'help' for available commands, 'exit' to quit
+
+ores-shell> variability> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - list-flags
+	Retrieve all feature flags from the server
+ - ores-shell
+	(menu)
+variability> Bye!
+#+end_example
+
+
+*** List Feature Flags
+    :PROPERTIES:
+    :header-args+: :var login_args="--login-username newuser3"
+    :END:
+
+#+name: list-feature-flags
+#+begin_src ores-shell :exports none
+variability list-flags
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_SHELL_LOGIN_PASSWORD
+./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
+<<list-feature-flags>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.6
+Type 'help' for available commands, 'exit' to quit
+
+ores-shell>
++------------------------------------+---------+----------------------------------------------------------------------------------------+---------+-------------+
+| Name                               | Version | Description                                                                            | Enabled | Modified By |
++------------------------------------+---------+----------------------------------------------------------------------------------------+---------+-------------+
+| system.bootstrap_mode              | 0       | Indicates whether the system is in bootstrap mode (waiting for initial admin account). | 0       | system      |
+| system.user_signups                | 0       | Controls whether user self-registration is allowed.                                    | 0       | system      |
+| system.disable_password_validation | 0       | When enabled (1), disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.   | 0       | system      |
++------------------------------------+---------+----------------------------------------------------------------------------------------+---------+-------------+
+
+
+ores-shell> Bye!
+#+end_example
+
 
 ** Currencies
    :PROPERTIES:

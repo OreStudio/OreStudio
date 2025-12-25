@@ -1,0 +1,293 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+
+title ORES Database Schema
+hide circle
+skinparam linetype ortho
+
+note as SchemaNote
+ORES Database Schema
+
+All tables use temporal support with valid_from/valid_to
+for bitemporal data management. Junction tables enable
+soft deletes via validity period closure.
+end note
+
+'
+' ==================== IAM Domain ====================
+'
+package "IAM (Identity & Access Management)" #E8F4FD {
+    entity accounts <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * username : text <<unique>>
+        * password_hash : text
+        * password_salt : text
+        * totp_secret : text
+        * email : text <<unique>>
+        * modified_by : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of accounts
+    User accounts with authentication credentials.
+    Supports optimistic locking via version field.
+    Username and email unique for current records.
+    end note
+
+    entity login_info #F7E5FF {
+        * account_id : uuid <<PK, FK>>
+        --
+        * last_ip : inet
+        * last_attempt_ip : inet
+        * failed_logins : integer
+        * locked : integer
+        * last_login : timestamptz
+        * online : integer
+        * password_reset_required : integer
+    }
+
+    note right of login_info
+    Security tracking for login attempts.
+    Current-state table (no temporal versioning).
+    Tracks failed attempts and lock status.
+    end note
+
+    entity sessions <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        * start_time : timestamptz <<PK>>
+        --
+        * account_id : uuid <<FK>>
+        * end_time : text
+        * client_ip : text
+        * client_identifier : text
+        * client_version_major : smallint
+        * client_version_minor : smallint
+        * bytes_sent : bigint
+        * bytes_received : bigint
+        * country_code : text
+        * city : text
+        * latitude : text
+        * longitude : text
+    }
+
+    note right of sessions
+    User session tracking with geolocation.
+    Designed for TimescaleDB hypertable.
+    Partitioned by start_time.
+    end note
+}
+
+'
+' ==================== RBAC Domain ====================
+'
+package "RBAC (Role-Based Access Control)" #FFF3E0 {
+    entity roles <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * name : text <<unique>>
+        * description : text
+        * modified_by : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of roles
+    Named roles for grouping permissions.
+    Examples: admin, viewer, editor.
+    end note
+
+    entity permissions <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        --
+        * code : text <<unique>>
+        * description : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of permissions
+    Fine-grained permission codes.
+    Seed data, rarely changes.
+    end note
+
+    entity account_roles <<junction>> #ECECEC {
+        * account_id : uuid <<PK, FK>>
+        * role_id : uuid <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * assigned_by : text
+        * assigned_at : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note bottom of account_roles
+    Many-to-many: accounts to roles.
+    Tracks who assigned the role.
+    end note
+
+    entity role_permissions <<junction>> #ECECEC {
+        * role_id : uuid <<PK, FK>>
+        * permission_id : uuid <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * valid_to : timestamptz
+    }
+
+    note bottom of role_permissions
+    Many-to-many: roles to permissions.
+    end note
+}
+
+'
+' ==================== Assets Domain ====================
+'
+package "Assets (Images & Currencies)" #F3E5F5 {
+    entity images <<temporal>> #C6F0D8 {
+        * image_id : uuid <<PK>>
+        --
+        * version : integer
+        * key : text <<unique>>
+        * description : text
+        * svg_data : text
+        * modified_by : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of images
+    SVG image storage.
+    Key provides human-readable lookup.
+    end note
+
+    entity tags <<temporal>> #C6F0D8 {
+        * tag_id : uuid <<PK>>
+        --
+        * version : integer
+        * name : text <<unique>>
+        * description : text
+        * modified_by : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of tags
+    Categories for images.
+    Examples: flag, currency, commodity.
+    end note
+
+    entity image_tags <<junction>> #ECECEC {
+        * image_id : uuid <<PK, FK>>
+        * tag_id : uuid <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * assigned_by : text
+        * assigned_at : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note bottom of image_tags
+    Many-to-many: images to tags.
+    end note
+
+    entity currencies <<temporal>> #C6F0D8 {
+        * iso_code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * numeric_code : text
+        * symbol : text
+        * fraction_symbol : text
+        * fractions_per_unit : integer
+        * rounding_type : text
+        * rounding_precision : integer
+        * format : text
+        * currency_type : text
+        * modified_by : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of currencies
+    ISO 4217 currency definitions.
+    Includes formatting rules.
+    end note
+
+    entity currency_images <<junction>> #ECECEC {
+        * iso_code : text <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * image_id : uuid <<FK>>
+        * assigned_by : text
+        * assigned_at : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note bottom of currency_images
+    One-to-one: currency to primary image (flag).
+    end note
+}
+
+'
+' ==================== Variability Domain ====================
+'
+package "Variability (Feature Flags)" #E8F5E9 {
+    entity feature_flags <<temporal>> #C6F0D8 {
+        * name : text <<PK>>
+        --
+        * version : integer
+        * enabled : integer
+        * description : text
+        * modified_by : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of feature_flags
+    Feature toggles for runtime configuration.
+    Uses name as natural key.
+    end note
+}
+
+'
+' ==================== Relationships ====================
+'
+
+' IAM relationships
+accounts ||--o| login_info : "has"
+accounts ||--o{ sessions : "creates"
+
+' RBAC relationships
+accounts ||--o{ account_roles : "assigned"
+roles ||--o{ account_roles : "granted to"
+roles ||--o{ role_permissions : "has"
+permissions ||--o{ role_permissions : "included in"
+
+' Assets relationships
+images ||--o{ image_tags : "tagged with"
+tags ||--o{ image_tags : "applied to"
+currencies ||--o| currency_images : "displayed as"
+images ||--o{ currency_images : "represents"
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores_schema.puml"
+' End:
+@enduml

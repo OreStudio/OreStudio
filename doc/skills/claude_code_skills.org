@@ -19,7 +19,8 @@ using the org-mode publishing system.
 ** Documentation
 
 - [[id:2df8adaf-20c9-4757-9399-798eec6df828][Agile Product Owner]]: Manage development team through story creation, prioritization, and sprint planning.
-- [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Modeler]]: Generate PlantUML diagrams.
+- [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Class Modeler]]: PlantUML class diagrams for C++ components.
+- [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][PlantUML ER Modeler]]: Entity-Relationship diagrams for database schema.
 - [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][New Sprint]]: Create new sprint backlogs.
 - [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][Release Notes Generator]]: Generates the release notes for a sprint backlog.
 - [[id:30D0AE60-5892-411C-8013-E858FFBF628B][ORE Shell Recipes]]: Update shell recipes by comparing commands to recipe documentation.

@@ -50,7 +50,7 @@ bitemporal data management. Key patterns include:
 
 - Junction tables enable soft deletes via validity period closure
 - EXCLUDE constraints prevent overlapping validity periods using =gist= indexes
-- Unique indexes filter on current records where =valid_to = '9999-12-31 23:59:59'=
+- Unique indexes filter on current records where =valid_to = '9999-12-31 23:59:59'::timestamptz=
 - Version fields provide optimistic locking (version 0 is "force overwrite" sentinel)
 - Triggers manage version auto-increment and temporal validity period transitions
 
